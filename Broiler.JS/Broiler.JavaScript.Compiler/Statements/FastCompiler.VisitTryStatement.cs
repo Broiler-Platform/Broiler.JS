@@ -1,5 +1,4 @@
-﻿using Broiler.JavaScript.Ast.Expressions;
-using Broiler.JavaScript.Ast.Misc;
+﻿using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.Runtime;
@@ -107,7 +106,7 @@ partial class FastCompiler
             else
             {
                 // Optional catch binding: catch { ... }
-                var pe = this.scope.Top.CreateException("__catchParam__");
+                var pe = scope.Top.CreateException("__catchParam__");
                 var catchBlock = BExpression.Block(ResetCompletion(completionVar), VisitStatement(cb));
                 var cbExp = BExpression.Catch(pe.Variable, catchBlock.ToJSValue());
 

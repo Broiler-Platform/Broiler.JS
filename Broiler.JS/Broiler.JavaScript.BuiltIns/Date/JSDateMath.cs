@@ -59,8 +59,8 @@ internal static class JSDateMath
         return y;
     }
 
-    private static readonly int[] CumulativeDays = { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334 };
-    private static readonly int[] CumulativeDaysLeap = { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335 };
+    private static readonly int[] CumulativeDays = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+    private static readonly int[] CumulativeDaysLeap = [0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335];
 
     /// <summary>Month (0-11) from timestamp.</summary>
     internal static int MonthFromTime(double t)

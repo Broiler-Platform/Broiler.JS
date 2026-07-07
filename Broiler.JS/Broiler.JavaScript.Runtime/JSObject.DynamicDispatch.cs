@@ -10,7 +10,7 @@ public partial class JSObject
     {
         var p = GetInternalProperty(KeyStrings.valueOf, false);
         if (!p.IsEmpty)
-            return this.GetValue(p).InvokeFunction(new Arguments(this));
+            return GetValue(p).InvokeFunction(new Arguments(this));
 
         return this;
     }
@@ -20,7 +20,7 @@ public partial class JSObject
         var p = GetInternalProperty(KeyStrings.valueOf, false);
         if (!p.IsEmpty)
         {
-            value = this.GetValue(p).InvokeFunction(new Arguments(this));
+            value = GetValue(p).InvokeFunction(new Arguments(this));
             return true;
         }
 
@@ -80,9 +80,9 @@ public partial class JSObject
         return ToPrimitiveDefault().Equals(value);
     }
 
-    public override bool EqualsLiteral(double value) => Equals(JSValue.CreateNumber(value));
+    public override bool EqualsLiteral(double value) => Equals(CreateNumber(value));
 
-    public override bool EqualsLiteral(string value) => Equals(JSValue.CreateString(value));
+    public override bool EqualsLiteral(string value) => Equals(CreateString(value));
 
     public override bool StrictEquals(JSValue value) => ReferenceEquals(this, value);
 

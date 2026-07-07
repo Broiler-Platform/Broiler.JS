@@ -31,7 +31,6 @@ using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.Engine.Core;
-using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns;
 
@@ -1078,7 +1077,7 @@ internal static class BuiltInsAssemblyInitializer
         // accessors and both properties (test262 ThrowTypeError/unique-per-realm-*,
         // Function/prototype/{caller,arguments}/prop-desc). %ThrowTypeError% is
         // anonymous (name ""), length 0, and non-extensible/frozen.
-        var throwTypeError = Broiler.JavaScript.BuiltIns.Function.JSFunction.GetOrCreateThrowTypeError();
+        var throwTypeError = JSFunction.GetOrCreateThrowTypeError();
 
         var callerKey = KeyStrings.GetOrCreate("caller");
         if (functionCtor.prototype.GetOwnPropertyDescriptor(JSValue.CreateStringWithKey(callerKey.ToString(), callerKey)).IsUndefined)
@@ -1960,20 +1959,20 @@ internal static class BuiltInsAssemblyInitializer
     // list but deliberately NOT "with" — "with" is a reserved word and can never name a
     // binding shadowed inside a `with` statement, so it is absent from the spec list.
     private static readonly string[] ArrayUnscopableNames =
-    {
+    [
         "at", "copyWithin", "entries", "fill", "find", "findIndex",
         "findLast", "findLastIndex", "flat", "flatMap", "includes",
         "keys", "toReversed", "toSorted", "toSpliced", "values"
-    };
+    ];
 
     private static readonly string[] TypedArrayConstructorNames =
-    {
+    [
         "Int8Array", "Uint8Array", "Uint8ClampedArray",
         "Int16Array", "Uint16Array",
         "Int32Array", "Uint32Array",
         "BigInt64Array", "BigUint64Array",
         "Float16Array", "Float32Array", "Float64Array"
-    };
+    ];
 
     private static void PatchTypedArrayBuiltIns(JSContext context)
     {

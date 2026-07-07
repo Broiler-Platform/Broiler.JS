@@ -416,9 +416,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         if (source.IsNullOrUndefined)
             throw JSEngine.NewTypeError("Cannot convert undefined or null to object");
 
-        var method = source[JSValue.SymbolIterator];
+        var method = source[SymbolIterator];
         if (method.IsNullOrUndefined)
-            return JSValue.UndefinedValue;
+            return UndefinedValue;
 
         if (!method.IsFunction)
             throw JSEngine.NewTypeError("Symbol(Symbol.iterator) value is not callable");
@@ -800,7 +800,7 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     private static bool IsNonIterableArrayLike(JSValue source) =>
         // GetMethod(source, @@iterator) treats a null @@iterator the same as an absent (undefined) one,
         // so a source whose @@iterator is null/undefined is consumed as an array-like, not iterated.
-        JSValue.SymbolIterator == null || source.PropertyOrUndefined(JSValue.SymbolIterator).IsNullOrUndefined;
+        SymbolIterator == null || source.PropertyOrUndefined(SymbolIterator).IsNullOrUndefined;
 
     struct ElementEnumerator(JSTypedArray typedArray, int startIndex = 0) : IElementEnumerator
     {

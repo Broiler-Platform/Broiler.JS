@@ -5,7 +5,6 @@ using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
-using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.Promise;
 
@@ -141,7 +140,7 @@ public partial class JSPromise
         for (int i = 1; i < a.Length; i++)
             extraArgs[i - 1] = a.GetAt(i);
 
-        var executor = JSValue.CreateFunction((in Arguments executorArgs) =>
+        var executor = CreateFunction((in Arguments executorArgs) =>
         {
             var resolve = executorArgs.Get1();
             var reject = executorArgs.GetAt(1);
@@ -232,7 +231,7 @@ public partial class JSPromise
     {
         var iterable = a.Get1();
         var constructor = a.This;
-        var result = JSValue.CreateArray();
+        var result = CreateArray();
         uint index = 0;
 
         return CreatePromiseFromConstructor(constructor, (resolve, reject) =>
@@ -437,7 +436,7 @@ public partial class JSPromise
     {
         var iterable = a.Get1();
         var constructor = a.This;
-        var result = JSValue.CreateArray();
+        var result = CreateArray();
         uint index = 0;
 
         return CreatePromiseFromConstructor(constructor, (resolve, reject) =>
@@ -479,7 +478,7 @@ public partial class JSPromise
                             return JSUndefined.Value;
                         alreadyCalled = true;
                         var entry = new JSObject();
-                        entry[KeyStrings.GetOrCreate("status")] = JSValue.CreateString("fulfilled");
+                        entry[KeyStrings.GetOrCreate("status")] = CreateString("fulfilled");
                         entry[KeyStrings.GetOrCreate("value")] = args.Get1();
                         result[currentIndex] = entry;
                         Settle();
@@ -491,7 +490,7 @@ public partial class JSPromise
                             return JSUndefined.Value;
                         alreadyCalled = true;
                         var entry = new JSObject();
-                        entry[KeyStrings.GetOrCreate("status")] = JSValue.CreateString("rejected");
+                        entry[KeyStrings.GetOrCreate("status")] = CreateString("rejected");
                         entry[KeyStrings.GetOrCreate("reason")] = args.Get1();
                         result[currentIndex] = entry;
                         Settle();
@@ -535,14 +534,14 @@ public partial class JSPromise
         {
             var value = obj.GetValue(property);
             var entry = new JSObject();
-            if (value is JSPromise promise && promise.state == JSPromise.PromiseState.Rejected)
+            if (value is JSPromise promise && promise.state == PromiseState.Rejected)
             {
-                entry[KeyStrings.GetOrCreate("status")] = JSValue.CreateString("rejected");
+                entry[KeyStrings.GetOrCreate("status")] = CreateString("rejected");
                 entry[KeyStrings.GetOrCreate("reason")] = promise.result;
             }
             else
             {
-                entry[KeyStrings.GetOrCreate("status")] = JSValue.CreateString("fulfilled");
+                entry[KeyStrings.GetOrCreate("status")] = CreateString("fulfilled");
                 entry[KeyStrings.GetOrCreate("value")] = value is JSPromise settled ? settled.result : value;
             }
 
@@ -560,7 +559,7 @@ public partial class JSPromise
     {
         var iterable = a.Get1();
         var constructor = a.This;
-        var errors = JSValue.CreateArray();
+        var errors = CreateArray();
         uint errorIndex = 0;
 
         return CreatePromiseFromConstructor(constructor, (resolve, reject) =>

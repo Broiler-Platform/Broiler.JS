@@ -62,7 +62,7 @@ public partial class JSBoolean : JSPrimitive
 
     [JSPrototypeMethod]
     [JSExport("toString")]
-    public static JSValue ToString(in Arguments a) => JSValue.CreateString(ToBoolean(a.This).ToString());
+    public static JSValue ToString(in Arguments a) => CreateString(ToBoolean(a.This).ToString());
 
     [JSPrototypeMethod]
     [JSExport("valueOf")]

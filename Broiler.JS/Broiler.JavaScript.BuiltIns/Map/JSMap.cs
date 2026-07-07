@@ -28,7 +28,7 @@ public partial class JSMap : JSObject
         public bool Deleted;
     }
 
-    private readonly List<Entry> store = new();
+    private readonly List<Entry> store = [];
     private StringMap<int> index = new();
     private int liveCount;
 
@@ -54,7 +54,7 @@ public partial class JSMap : JSObject
             try
             {
                 if (item is not JSObject entry)
-                    throw JSEngine.NewTypeError(JSObject.NotEntry(item));
+                    throw JSEngine.NewTypeError(NotEntry(item));
 
                 adder.InvokeFunction(new Arguments(this, entry[0], entry[1]));
             }
@@ -275,7 +275,7 @@ public partial class JSMap : JSObject
     /// </summary>
     private static JSValue CanonicalizeKey(JSValue key)
         => key is JSNumber n && n.value == 0.0 && double.IsNegative(n.value)
-            ? JSValue.CreateNumber(0.0)
+            ? CreateNumber(0.0)
             : key;
 
     [JSExport("getOrInsert", Length = 2)]

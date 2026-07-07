@@ -37,7 +37,7 @@ public partial class JSObject
             foreach (var (key, property) in @object.GetElements(false).AllValues())
             {
                 if (!property.IsEmpty)
-                    keys.Add(JSValue.CreateString(key.ToString()));
+                    keys.Add(CreateString(key.ToString()));
             }
         }
 
@@ -55,7 +55,7 @@ public partial class JSObject
             if (property.IsEmpty)
                 continue;
 
-            var symbol = JSValue.GetSymbolByKeyFactory?.Invoke(key)
+            var symbol = GetSymbolByKeyFactory?.Invoke(key)
                 ?? throw new InvalidOperationException($"Unknown symbol key {key}");
             symbolKeys ??= [];
             symbolKeys.Add((key, (JSValue)symbol));
@@ -118,7 +118,7 @@ public partial class JSObject
     {
         var target = ToObjectOrThrow(a.Get1());
 
-        var r = JSValue.CreateArray();
+        var r = CreateArray();
 
         // EnumerableOwnProperties(O, key+value): snapshot the own String-keyed
         // property names ([[OwnPropertyKeys]]) BEFORE reading any value, then for
@@ -133,7 +133,7 @@ public partial class JSObject
             if (!descriptor[KeyStrings.enumerable].BooleanValue)
                 continue;
 
-            var entry = JSValue.CreateArray();
+            var entry = CreateArray();
             entry.AddArrayItem(key);
             entry.AddArrayItem(target[key]);
             r.AddArrayItem(entry);
@@ -153,9 +153,9 @@ public partial class JSObject
     internal static JSValue IsExtensible(in Arguments a)
     {
         if (a.Get1() is JSObject @object && @object.IsExtensible())
-            return JSValue.BooleanTrue;
+            return BooleanTrue;
 
-        return JSValue.BooleanFalse;
+        return BooleanFalse;
     }
 
     [JSExport("isFrozen")]
@@ -163,12 +163,12 @@ public partial class JSObject
     {
         var value = a.Get1();
         if (value is not JSObject @object)
-            return JSValue.BooleanTrue;
+            return BooleanTrue;
 
         if (@object is IJSIntegerIndexedObject { HasIntegerIndexedElements: true })
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
-        return TestIntegrityLevel(@object, frozen: true) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        return TestIntegrityLevel(@object, frozen: true) ? BooleanTrue : BooleanFalse;
     }
 
     [JSExport("isSealed")]
@@ -176,12 +176,12 @@ public partial class JSObject
     {
         var value = a.Get1();
         if (value is not JSObject @object)
-            return JSValue.BooleanTrue;
+            return BooleanTrue;
 
         if (@object is IJSIntegerIndexedObject { HasIntegerIndexedElements: true })
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
-        return TestIntegrityLevel(@object, frozen: false) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        return TestIntegrityLevel(@object, frozen: false) ? BooleanTrue : BooleanFalse;
     }
 
     [JSExport("keys")]
@@ -189,7 +189,7 @@ public partial class JSObject
     {
         var target = ToObjectOrThrow(a.Get1());
 
-        var r = JSValue.CreateArray();
+        var r = CreateArray();
 
         // EnumerableOwnProperties(O, key) (§7.3.23): snapshot the own String-keyed names
         // ([[OwnPropertyKeys]]) first, then for EACH key call [[GetOwnProperty]] and keep it
@@ -214,7 +214,7 @@ public partial class JSObject
     {
         var target = ToObjectOrThrow(a.Get1());
 
-        var r = JSValue.CreateArray();
+        var r = CreateArray();
 
         // EnumerableOwnProperties(O, value): mirror Object.entries but keep only the
         // values; the per-key [[GetOwnProperty]] / [[Get]] interleaving still holds.
@@ -273,7 +273,7 @@ public partial class JSObject
         var jobj = ToObjectOrThrow(a.Get1());
 
         var en = jobj.GetAllKeys(false, false);
-        var r = JSValue.CreateArray();
+        var r = CreateArray();
         while (en.MoveNext(out var hasValue, out var value, out var index))
         {
             if (hasValue && ShouldIncludeOwnPropertyKey(value, includeSymbols: false))
@@ -287,7 +287,7 @@ public partial class JSObject
     {
         var jobj = ToObjectOrThrow(a.Get1());
 
-        var r = JSValue.CreateArray();
+        var r = CreateArray();
         HashSet<uint> emittedSymbols = null;
 
         foreach (var value in GetOwnPropertyKeysInListOrder(jobj))
@@ -308,7 +308,7 @@ public partial class JSObject
             if (property.IsEmpty || (emittedSymbols != null && emittedSymbols.Contains(key)))
                 continue;
 
-            var symbol = JSValue.GetSymbolByKeyFactory?.Invoke(key)
+            var symbol = GetSymbolByKeyFactory?.Invoke(key)
                 ?? throw new InvalidOperationException($"Unknown symbol key {key}");
             r.AddArrayItem((JSValue)symbol);
         }

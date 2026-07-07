@@ -363,7 +363,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                     shadowed.Add(entries[i].OverlayVariable);
             }
 
-            return (variables, shadowed.Count == 0 ? System.Array.Empty<JSVariable>() : [.. shadowed]);
+            return (variables, shadowed.Count == 0 ? Array.Empty<JSVariable>() : [.. shadowed]);
         }
 
         public bool TryGetOverlayShadowing(in KeyString name, out bool isShadowing)
@@ -1052,7 +1052,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     {
         value.RequireObjectCoercible();
         var @object = value as JSObject
-            ?? JSObject.CreatePrimitiveObject(value) as JSObject
+            ?? CreatePrimitiveObject(value) as JSObject
             ?? throw new InvalidOperationException("CreatePrimitiveObject returned a non-object value.");
         return new WithScope(this, @object);
     }
@@ -1150,7 +1150,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
             var unscopablesSymbol = this[KeyStrings.Symbol][UnscopablesKey];
             var unscopables = unscopablesSymbol.IsUndefined
-                ? JSValue.UndefinedValue
+                ? UndefinedValue
                 : current.Object[unscopablesSymbol];
             if (unscopables is JSObject unscopablesObject
                 && unscopablesObject[propertyKey].BooleanValue)
@@ -1481,7 +1481,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         // property so the body can read it, so without this guard the fall-through
         // below would delete that transient property and wrongly report success.
         if (IsWithFallbackOverlayBinding(name))
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
         if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
         {
@@ -1499,7 +1499,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
                 // observing the now-removed local's stale value (test262 eval-code/direct/
                 // var-env-{var,func}-init-local-new-delete).
                 directEvalBinding.MarkDeleted();
-                return JSValue.BooleanTrue;
+                return BooleanTrue;
             }
         }
 
@@ -1509,10 +1509,10 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         if (hasVariable)
         {
             if (property.IsEmpty)
-                return JSValue.BooleanFalse;
+                return BooleanFalse;
 
             if (!property.IsConfigurable)
-                return JSValue.BooleanFalse;
+                return BooleanFalse;
 
             var deleted = Delete(name);
             if (deleted.BooleanValue)
@@ -1522,9 +1522,9 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         }
 
         if (!property.IsEmpty)
-            return property.IsConfigurable ? Delete(name) : JSValue.BooleanFalse;
+            return property.IsConfigurable ? Delete(name) : BooleanFalse;
 
-        return JSValue.BooleanTrue;
+        return BooleanTrue;
     }
 
     internal void FillStackTrace(StringBuilder sb) { }
@@ -1546,12 +1546,12 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         // Built-in global constructors are { writable, enumerable: false, configurable }.
         // The indexer would install them as enumerable (so they'd wrongly show up in a
         // global for-in / Object.keys), so add them with ConfigurableValue attributes.
-        this.FastAddValue(KeyStrings.Function, func, JSPropertyAttributes.ConfigurableValue);
+        FastAddValue(KeyStrings.Function, func, JSPropertyAttributes.ConfigurableValue);
         FunctionPrototype = ((IJSFunction)func).Prototype as JSObject;
         if (FunctionPrototype.GetInternalProperty(KeyStrings.length, false).IsEmpty)
-            FunctionPrototype.FastAddValue(KeyStrings.length, JSValue.NumberZero, JSPropertyAttributes.ConfigurableReadonlyValue);
+            FunctionPrototype.FastAddValue(KeyStrings.length, NumberZero, JSPropertyAttributes.ConfigurableReadonlyValue);
         Object = JSEngine.CreateObjectClass(this, false);
-        this.FastAddValue(KeyStrings.Object, Object, JSPropertyAttributes.ConfigurableValue);
+        FastAddValue(KeyStrings.Object, Object, JSPropertyAttributes.ConfigurableValue);
         ObjectPrototype = ((IJSFunction)Object).Prototype as JSObject;
         ObjectPrototype.BasePrototypeObject = null;
         // %Object.prototype% is an immutable prototype exotic object (§10.4.7):
@@ -1592,8 +1592,8 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
             IntrinsicPromisePrototype = promiseProto;
         }
         // globalThis is { writable, enumerable: false, configurable } per spec.
-        this.FastAddValue(KeyStrings.globalThis, this, JSPropertyAttributes.ConfigurableValue);
-        this[KeyStrings.debug] = JSValue.CreateFunction(Debug);
+        FastAddValue(KeyStrings.globalThis, this, JSPropertyAttributes.ConfigurableValue);
+        this[KeyStrings.debug] = CreateFunction(Debug);
         InstallDynamicImport();
 
         // The global object inherits from Object.prototype (as in Node's
@@ -1684,7 +1684,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     {
         var ctx = synchronizationContext ?? throw JSEngine.NewTypeError($"Synchronization context must be present to set timeout");
         var key = Interlocked.Increment(ref nextTimeout);
-        JSValue[] args = System.Array.Empty<JSValue>();
+        JSValue[] args = Array.Empty<JSValue>();
 
         if (a.Length > 2)
         {
@@ -1723,7 +1723,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     {
         var ctx = synchronizationContext ?? throw JSEngine.NewTypeError($"Synchronization context must be present to set timeout");
         var key = Interlocked.Increment(ref nextInterval);
-        JSValue[] args = System.Array.Empty<JSValue>();
+        JSValue[] args = Array.Empty<JSValue>();
 
         if (a.Length > 2)
         {
@@ -1777,9 +1777,9 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     // script. `import` is a reserved word, so this property is reachable only through that fallback
     // (and is non-enumerable to stay out of global property enumeration).
     private void InstallDynamicImport()
-        => this.FastAddValue(
+        => FastAddValue(
             KeyStrings.GetOrCreate("import"),
-            JSValue.CreateFunction((in Arguments a) => DynamicImport(a.GetAt(0), a.GetAt(1))),
+            CreateFunction((in Arguments a) => DynamicImport(a.GetAt(0), a.GetAt(1))),
             JSPropertyAttributes.ConfigurableValue);
 
     // HostImportModuleDynamically: always returns a promise. The specifier is ToString-coerced (an
@@ -1976,14 +1976,14 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
         var promiseObj = JSEngine.CreatePromiseFromDelegate((resolve, reject) =>
         {
-            var resolveF = JSValue.CreateFunction((in Arguments a) =>
+            var resolveF = CreateFunction((in Arguments a) =>
             {
                 var a1 = a.Get1();
                 resolve(a1);
                 return a1;
             });
 
-            var rejectF = JSValue.CreateFunction((in Arguments a) =>
+            var rejectF = CreateFunction((in Arguments a) =>
             {
                 var a1 = a.Get1();
                 reject(a1);

@@ -64,9 +64,9 @@ public partial class JSGenerator : JSObject, IJSGenerator
         {
             BasePrototypeObject = prototypeBase
         };
-        prototype.FastAddValue(KeyStrings.next, JSValue.CreateFunction(IteratorNext, "next", null, 0, false), JSPropertyAttributes.ConfigurableValue);
-        prototype.FastAddValue((IJSSymbol)JSSymbol.iterator, JSValue.CreateFunction(static (in Arguments a) => a.This, "[Symbol.iterator]", null, 0, false), JSPropertyAttributes.ConfigurableValue);
-        prototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString(name), JSPropertyAttributes.ConfigurableReadonlyValue);
+        prototype.FastAddValue(KeyStrings.next, CreateFunction(IteratorNext, "next", null, 0, false), JSPropertyAttributes.ConfigurableValue);
+        prototype.FastAddValue((IJSSymbol)JSSymbol.iterator, CreateFunction(static (in Arguments a) => a.This, "[Symbol.iterator]", null, 0, false), JSPropertyAttributes.ConfigurableValue);
+        prototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, CreateString(name), JSPropertyAttributes.ConfigurableReadonlyValue);
         return prototype;
     }
 
@@ -120,19 +120,19 @@ public partial class JSGenerator : JSObject, IJSGenerator
                         {
                             done = true;
                             this.value = JSUndefined.Value;
-                            return NewWithProperties().AddProperty(KeyStrings.value, ret.Value).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
+                            return NewWithProperties().AddProperty(KeyStrings.value, ret.Value).AddProperty(KeyStrings.done, BooleanTrue);
                         }
                     }
 
                     done = true;
                     this.value = JSUndefined.Value;
-                    return NewWithProperties().AddProperty(KeyStrings.value, delegatedValue).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
+                    return NewWithProperties().AddProperty(KeyStrings.value, delegatedValue).AddProperty(KeyStrings.done, BooleanTrue);
                 }
 
                 cg.EndDelegation(value);
                 done = true;
                 this.value = JSUndefined.Value;
-                return NewWithProperties().AddProperty(KeyStrings.value, value).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
+                return NewWithProperties().AddProperty(KeyStrings.value, value).AddProperty(KeyStrings.done, BooleanTrue);
             }
             catch (Exception ex)
             {
@@ -157,7 +157,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
             {
                 done = true;
                 this.value = JSUndefined.Value;
-                return NewWithProperties().AddProperty(KeyStrings.value, ret.Value).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
+                return NewWithProperties().AddProperty(KeyStrings.value, ret.Value).AddProperty(KeyStrings.done, BooleanTrue);
             }
         }
 
@@ -165,7 +165,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
         done = true;
         this.value = JSUndefined.Value;
 
-        return NewWithProperties().AddProperty(KeyStrings.value, value).AddProperty(KeyStrings.done, JSValue.BooleanTrue);
+        return NewWithProperties().AddProperty(KeyStrings.value, value).AddProperty(KeyStrings.done, BooleanTrue);
     }
 
     public JSValue Throw(JSValue value)
@@ -221,7 +221,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
         throw JSException.FromValue(value);
     }
 
-    public JSValue ValueObject => NewWithProperties().AddProperty(KeyStrings.value, value).AddProperty(KeyStrings.done, done ? JSValue.BooleanTrue : JSValue.BooleanFalse);
+    public JSValue ValueObject => NewWithProperties().AddProperty(KeyStrings.value, value).AddProperty(KeyStrings.done, done ? BooleanTrue : BooleanFalse);
 
     public bool MoveNext(JSValue replaceOld, out JSValue item)
     {
@@ -407,7 +407,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
 
             return AwaitThenable(operand,
                 settled => JSEngine.CreateResolvedOrRejectedPromise(
-                    NewWithProperties().AddProperty(KeyStrings.value, settled).AddProperty(KeyStrings.done, JSValue.BooleanFalse),
+                    NewWithProperties().AddProperty(KeyStrings.value, settled).AddProperty(KeyStrings.done, BooleanFalse),
                     true),
                 error => DriveAsync(() => Throw(error)));
         }
@@ -432,7 +432,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
             }
 
             thenable.InvokeMethod(in KeyStrings.then,
-                JSValue.CreateFunction((in Arguments a) =>
+                CreateFunction((in Arguments a) =>
                 {
                     var settled = a.Get1();
                     Queue(() =>
@@ -442,7 +442,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
                     });
                     return JSUndefined.Value;
                 }),
-                JSValue.CreateFunction((in Arguments a) =>
+                CreateFunction((in Arguments a) =>
                 {
                     var error = a.Get1();
                     Queue(() =>

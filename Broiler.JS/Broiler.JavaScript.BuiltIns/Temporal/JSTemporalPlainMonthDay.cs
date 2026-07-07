@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.JavaScript.BuiltIns.Function;
-using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
@@ -184,7 +183,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
         var other = Require(ToTemporalMonthDay(a.GetAt(0)));
         return isoMonth == other.isoMonth && isoDay == other.isoDay && referenceISOYear == other.referenceISOYear
             && calendarId == other.calendarId
-            ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+            ? BooleanTrue : BooleanFalse;
     }
 
     [JSExport("toPlainDate", Length = 1)]

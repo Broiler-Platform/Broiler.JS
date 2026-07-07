@@ -5,7 +5,6 @@ using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
-using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.Function;
 

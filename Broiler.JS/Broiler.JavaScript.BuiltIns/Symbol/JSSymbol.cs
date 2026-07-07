@@ -1,9 +1,7 @@
 ﻿using Broiler.JavaScript.BuiltIns.Function;
-using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
-using System;
 using System.Collections.Concurrent;
 using System.Threading;
 

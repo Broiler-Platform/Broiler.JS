@@ -1,7 +1,5 @@
-using System;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Temporal;
@@ -39,13 +37,13 @@ internal static class TemporalCalendar
     // Meiji era at the 1873 Gregorian adoption while still numbering its years from 1868, so Meiji
     // 1–5 (1868–1872) display as the Gregorian ce era. Dates before Meiji fall back to ce/bce.
     private static readonly (string code, int y, int m, int d, int baseYear)[] JapaneseEras =
-    {
+    [
         ("reiwa", 2019, 5, 1, 2019),
         ("heisei", 1989, 1, 8, 1989),
         ("showa", 1926, 12, 25, 1926),
         ("taisho", 1912, 7, 30, 1912),
         ("meiji", 1873, 1, 1, 1868),
-    };
+    ];
 
     private static int CompareDate(int y1, int m1, int d1, int y2, int m2, int d2)
     {

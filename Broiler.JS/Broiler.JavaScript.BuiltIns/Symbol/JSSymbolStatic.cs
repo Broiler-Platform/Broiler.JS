@@ -1,6 +1,5 @@
 ﻿using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
-using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.Symbol;
 
@@ -74,7 +73,7 @@ public partial class JSSymbol
         if (a.Get1() is not JSSymbol symbol)
             throw JSEngine.NewTypeError("Symbol.keyFor requires a symbol");
 
-        return IsRegistered(symbol) ? JSValue.CreateString(symbol.Description) : JSUndefined.Value;
+        return IsRegistered(symbol) ? CreateString(symbol.Description) : JSUndefined.Value;
     }
 
     /// <summary>

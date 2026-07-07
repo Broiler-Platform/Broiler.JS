@@ -1,5 +1,4 @@
 ﻿using Broiler.JavaScript.Ast.Misc;
-using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Null;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -16,7 +15,6 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Proxy;
 using Broiler.JavaScript.BuiltIns.Symbol;
-using Broiler.JavaScript.Storage;
 using System.Text.Json;
 
 // Maps a holder object to the parse-time source text and originally-parsed value of
@@ -170,11 +168,11 @@ public partial class JSJSON : JSObject
                 if (indent != null)
                     sb.WriteLine();
 
-                var jsValue = ToJson(array[index], JSValue.CreateString(index.ToString()));
+                var jsValue = ToJson(array[index], CreateString(index.ToString()));
                 // A PropertyList never filters array elements; only a function
                 // replacer is consulted here.
                 if (replacer != null)
-                    jsValue = replacer((array, JSValue.CreateString(index.ToString()), jsValue));
+                    jsValue = replacer((array, CreateString(index.ToString()), jsValue));
 
                 // SerializeJSONArray: an element whose serialization is undefined — an
                 // undefined / callable / Symbol value — is rendered as the literal "null".
@@ -283,7 +281,7 @@ public partial class JSJSON : JSObject
     {
         if (key.Length > 0)
         {
-            var propertyKey = JSValue.CreateString(key).ToKey(false);
+            var propertyKey = CreateString(key).ToKey(false);
             if (propertyKey.Type == KeyType.UInt)
                 return InternalizeJsonProperty(holder, propertyKey.Index, reviver, sourceMap);
         }
@@ -300,7 +298,7 @@ public partial class JSJSON : JSObject
                     if (revived.IsUndefined)
                         valueObject.Delete(index);
                     else
-                        CreateDataProperty(valueObject, JSValue.CreateNumber(index), revived);
+                        CreateDataProperty(valueObject, CreateNumber(index), revived);
                 }
             }
             else
@@ -311,7 +309,7 @@ public partial class JSJSON : JSObject
                     if (revived.IsUndefined)
                         valueObject.Delete(propertyKey);
                     else
-                        CreateDataProperty(valueObject, JSValue.CreateString(propertyKey), revived);
+                        CreateDataProperty(valueObject, CreateString(propertyKey), revived);
                 }
             }
 
@@ -355,7 +353,7 @@ public partial class JSJSON : JSObject
                     if (revived.IsUndefined)
                         valueObject.Delete(childIndex);
                     else
-                        CreateDataProperty(valueObject, JSValue.CreateNumber(childIndex), revived);
+                        CreateDataProperty(valueObject, CreateNumber(childIndex), revived);
                 }
             }
             else
@@ -366,7 +364,7 @@ public partial class JSJSON : JSObject
                     if (revived.IsUndefined)
                         valueObject.Delete(propertyKey);
                     else
-                        CreateDataProperty(valueObject, JSValue.CreateString(propertyKey), revived);
+                        CreateDataProperty(valueObject, CreateString(propertyKey), revived);
                 }
             }
 
@@ -430,7 +428,7 @@ public partial class JSJSON : JSObject
         // CreateDataPropertyOrThrow, not [[Set]]: an inherited setter on
         // Object.prototype[""] must not be invoked when building the wrapper.
         var root = new JSObject();
-        CreateDataProperty(root, JSValue.EmptyString, parsed);
+        CreateDataProperty(root, EmptyString, parsed);
         return InternalizeJsonProperty(
                 root,
                 "",
@@ -465,9 +463,9 @@ public partial class JSJSON : JSObject
                 if (space is JSPrimitiveObject spaceWrapper)
                 {
                     if (spaceWrapper.value is JSNumber)
-                        space = JSValue.CreateNumber(CoerceJsonWrapperToPrimitive(spaceWrapper, preferString: false).DoubleValue);
+                        space = CreateNumber(CoerceJsonWrapperToPrimitive(spaceWrapper, preferString: false).DoubleValue);
                     else if (spaceWrapper.value.IsString)
-                        space = JSValue.CreateString(CoerceJsonWrapperToPrimitive(spaceWrapper, preferString: true).ToString());
+                        space = CreateString(CoerceJsonWrapperToPrimitive(spaceWrapper, preferString: true).ToString());
                 }
 
                 if (space.IsNumber)
@@ -504,14 +502,14 @@ public partial class JSJSON : JSObject
         // CreateDataPropertyOrThrow, not [[Set]]: an inherited setter on
         // Object.prototype[""] must not be invoked when building the wrapper.
         var root = new JSObject();
-        CreateDataProperty(root, JSValue.EmptyString, f);
+        CreateDataProperty(root, EmptyString, f);
 
-        f = ToJson(f, JSValue.EmptyString);
+        f = ToJson(f, EmptyString);
         // Only a function replacer participates in SerializeJSONProperty for the
         // root holder; a PropertyList (array replacer) restricts object keys only
         // and must not be applied to the root value.
         if (replacer != null)
-            f = replacer((root, JSValue.EmptyString, f));
+            f = replacer((root, EmptyString, f));
 
         // SerializeJSONProperty yields undefined for an undefined/callable/symbol
         // root value; JSON.stringify then returns the undefined value rather than
@@ -534,7 +532,7 @@ public partial class JSJSON : JSObject
 
     public static string Stringify(JSValue value)
     {
-        value = ToJson(value, JSValue.EmptyString);
+        value = ToJson(value, EmptyString);
         var sb = new StringWriter();
         Stringify(sb, value, null, null, null, []);
         return sb.ToString();
@@ -570,8 +568,8 @@ public partial class JSJSON : JSObject
         // carrying the [[IsRawJSON]] marker (the own "rawJSON" data property) and frozen.
         var result = new JSObject();
         result.BasePrototypeObject = null;
-        result.FastAddValue(rawJSONKey, JSValue.CreateString(str), JSPropertyAttributes.ConfigurableValue);
-        JSObject.FreezeObject(result);
+        result.FastAddValue(rawJSONKey, CreateString(str), JSPropertyAttributes.ConfigurableValue);
+        FreezeObject(result);
         return result;
     }
 
@@ -626,9 +624,9 @@ public partial class JSJSON : JSObject
                 // ToNumber(wrapper): ToPrimitive then ToNumber, so when valueOf/toString are
                 // removed and ToPrimitive falls back to Object.prototype.toString ("[object
                 // Number]"), the final ToNumber yields NaN and the value serializes as null.
-                target = JSValue.CreateNumber(CoerceJsonWrapperToPrimitive(wrapper, preferString: false).DoubleValue);
+                target = CreateNumber(CoerceJsonWrapperToPrimitive(wrapper, preferString: false).DoubleValue);
             else if (wrapped.IsString)
-                target = JSValue.CreateString(CoerceJsonWrapperToPrimitive(wrapper, preferString: true).ToString());
+                target = CreateString(CoerceJsonWrapperToPrimitive(wrapper, preferString: true).ToString());
             else
                 target = wrapped;
         }
@@ -748,7 +746,7 @@ public partial class JSJSON : JSObject
             // listed keys are still serialized), ignoring own-property order.
             foreach (var key in propertyList)
             {
-                var keyValue = JSValue.CreateString(key);
+                var keyValue = CreateString(key);
                 EmitMember(key, keyValue, obj[KeyStrings.GetOrCreate(key)]);
             }
         }
@@ -770,7 +768,7 @@ public partial class JSJSON : JSObject
             }
             else
             {
-                snapshot = new List<string>();
+                snapshot = [];
                 foreach (var (index, element) in obj.GetElements(create: false).AllValues())
                 {
                     if (element.IsEmpty || !element.IsEnumerable)
@@ -788,7 +786,7 @@ public partial class JSJSON : JSObject
             }
 
             foreach (var keyText in snapshot)
-                EmitMember(keyText, JSValue.CreateString(keyText), obj[KeyStrings.GetOrCreate(keyText)]);
+                EmitMember(keyText, CreateString(keyText), obj[KeyStrings.GetOrCreate(keyText)]);
         }
 
         if (indent != null)
@@ -862,7 +860,7 @@ public partial class JSJSON : JSObject
             if (!toPrimitive.IsFunction)
                 throw JSEngine.NewTypeError("@@toPrimitive is not callable");
 
-            var hint = JSValue.CreateString(preferString ? "string" : "number");
+            var hint = CreateString(preferString ? "string" : "number");
             var primitive = toPrimitive.InvokeFunction(new Arguments(wrapper, hint));
             if (primitive.IsObject)
                 throw JSEngine.NewTypeError("Cannot convert object to primitive value");

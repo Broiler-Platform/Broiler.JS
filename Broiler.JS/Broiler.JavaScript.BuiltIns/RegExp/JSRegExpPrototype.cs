@@ -1,8 +1,6 @@
-using System;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Storage;
 using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
@@ -25,7 +23,7 @@ public partial class JSRegExp
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void SetObservableLastIndex(int value)
     {
-        if (!SetValue(KeyStrings.lastIndex, JSValue.CreateNumber(value), this, true))
+        if (!SetValue(KeyStrings.lastIndex, CreateNumber(value), this, true))
             return;
 
         lastIndex = value;
@@ -49,7 +47,7 @@ public partial class JSRegExp
     public JSValue Compile(in Arguments a)
     {
         var patternValue = a.Get1();
-        var flagsValue = a.TryGetAt(1, out var second) ? second : JSValue.UndefinedValue;
+        var flagsValue = a.TryGetAt(1, out var second) ? second : UndefinedValue;
 
         if (!ReferenceEquals(GetPrototypeOf(), GetCurrentPrototype()))
             throw JSEngine.NewTypeError("RegExp.prototype.compile called on incompatible receiver");
@@ -107,8 +105,8 @@ public partial class JSRegExp
             throw JSEngine.NewTypeError("RegExp.prototype.test called on a non-object");
 
         var s = a.Get1().StringValue;
-        var match = RegExpExec(receiver, JSValue.CreateString(s));
-        return match.IsNull ? JSValue.BooleanFalse : JSValue.BooleanTrue;
+        var match = RegExpExec(receiver, CreateString(s));
+        return match.IsNull ? BooleanFalse : BooleanTrue;
     }
 
     // §22.2.7.1 RegExpExec ( R, S ): use a callable `exec` property if present,
@@ -150,7 +148,7 @@ public partial class JSRegExp
         if (useLastIndex && observableLastIndex > input.Length)
         {
             SetObservableLastIndex(0);
-            return JSValue.NullValue;
+            return NullValue;
         }
 
         // Perform the regular expression matching. RunMatch dispatches to the
@@ -170,7 +168,7 @@ public partial class JSRegExp
             if (globalSearch || sticky)
                 SetObservableLastIndex(0);
 
-            return JSValue.NullValue;
+            return NullValue;
         }
 
         if (globalSearch || sticky)
@@ -199,7 +197,7 @@ public partial class JSRegExp
             legacyContext.LegacyRegExp.Update(input, match.Index, match.Index + match.Length, capturedValues);
         }
 
-        var result = JSValue.CreateArray((uint)c);
+        var result = CreateArray((uint)c);
         var resultObject = (JSObject)result;
 
         // RegExpBuiltinExec installs each capture (step 28: CreateDataPropertyOrThrow),
@@ -210,21 +208,21 @@ public partial class JSRegExp
         for (int i = 0; i < c; i++)
         {
             var group = groups[i];
-            resultObject.CreateDataProperty((uint)i, group.Success ? JSValue.CreateString(group.Value) : JSUndefined.Value);
+            resultObject.CreateDataProperty((uint)i, group.Success ? CreateString(group.Value) : JSUndefined.Value);
         }
 
-        result[KeyStrings.index] = JSValue.CreateNumber(match.Index);
+        result[KeyStrings.index] = CreateNumber(match.Index);
         // RegExpBuiltinExec stores the *coerced* (ToString) subject string in the
         // result's `input` property, not the raw argument — e.g. exec(undefined)
         // yields input === "undefined".
-        result[KeyStrings.input] = JSValue.CreateString(input);
+        result[KeyStrings.input] = CreateString(input);
 
         var groupsKey = KeyStrings.GetOrCreate("groups");
         var indicesKey = KeyStrings.GetOrCreate("indices");
         JSObject indicesGroups = null;
         if (hasIndices)
         {
-            var indices = JSValue.CreateArray((uint)c);
+            var indices = CreateArray((uint)c);
             var indicesObject = (JSObject)indices;
             for (int i = 0; i < c; i++)
             {
@@ -235,16 +233,16 @@ public partial class JSRegExp
                 }
                 else
                 {
-                    var range = JSValue.CreateArray(2);
+                    var range = CreateArray(2);
                     var rangeObject = (JSObject)range;
-                    rangeObject.CreateDataProperty(0u, JSValue.CreateNumber(group.Index));
-                    rangeObject.CreateDataProperty(1u, JSValue.CreateNumber(group.Index + group.Length));
+                    rangeObject.CreateDataProperty(0u, CreateNumber(group.Index));
+                    rangeObject.CreateDataProperty(1u, CreateNumber(group.Index + group.Length));
                     indicesObject.CreateDataProperty((uint)i, range);
                 }
             }
 
             indicesGroups = new JSObject();
-            indicesGroups.SetPrototypeOf(JSValue.NullValue);
+            indicesGroups.SetPrototypeOf(NullValue);
             indicesObject.FastAddValue(groupsKey, JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);
             ((JSObject)result).FastAddValue(indicesKey, indices, JSPropertyAttributes.EnumerableConfigurableValue);
         }
@@ -259,7 +257,7 @@ public partial class JSRegExp
         if (captureMap != null && captureMap.NamedGroups.Count > 0)
         {
             var namedGroups = new JSObject();
-            namedGroups.SetPrototypeOf(JSValue.NullValue);
+            namedGroups.SetPrototypeOf(NullValue);
 
             foreach (var (name, indices) in captureMap.NamedGroups)
             {
@@ -279,16 +277,16 @@ public partial class JSRegExp
                 }
 
                 namedGroups.FastAddValue(nameKey, found
-                    ? JSValue.CreateString(matched.Value)
+                    ? CreateString(matched.Value)
                     : JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);
 
                 if (hasIndices)
                 {
                     if (found)
                     {
-                        var range = JSValue.CreateArray(2);
-                        range[0] = JSValue.CreateNumber(matched.Index);
-                        range[1] = JSValue.CreateNumber(matched.Index + matched.Length);
+                        var range = CreateArray(2);
+                        range[0] = CreateNumber(matched.Index);
+                        range[1] = CreateNumber(matched.Index + matched.Length);
                         indicesGroups.FastAddValue(nameKey, range, JSPropertyAttributes.EnumerableConfigurableValue);
                     }
                     else
@@ -321,6 +319,6 @@ public partial class JSRegExp
 
         var pattern = receiver[KeyStrings.GetOrCreate("source")].StringValue;
         var flags = receiver[KeyStrings.GetOrCreate("flags")].StringValue;
-        return JSValue.CreateString($"/{pattern}/{flags}");
+        return CreateString($"/{pattern}/{flags}");
     }
 }

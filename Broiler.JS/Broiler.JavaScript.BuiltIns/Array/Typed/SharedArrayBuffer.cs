@@ -2,7 +2,6 @@ using System;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
 
@@ -120,7 +119,7 @@ public partial class SharedArrayBuffer : JSArrayBuffer
         // The new buffer is allocated through SpeciesConstructor(O, %SharedArrayBuffer%); the
         // result must itself be a (distinct, large-enough) SharedArrayBuffer.
         var ctor = GetSharedSpeciesConstructor(source);
-        var created = ctor?.CreateInstance(JSValue.CreateNumber(newLen)) ?? new SharedArrayBuffer(newLen);
+        var created = ctor?.CreateInstance(CreateNumber(newLen)) ?? new SharedArrayBuffer(newLen);
         if (created is not SharedArrayBuffer target)
             throw JSEngine.NewTypeError("SharedArrayBuffer species constructor did not return a SharedArrayBuffer");
         if (ReferenceEquals(target, source))

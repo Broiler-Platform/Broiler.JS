@@ -5,7 +5,6 @@ using Broiler.JavaScript.BuiltIns.Proxy;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.Class;
 

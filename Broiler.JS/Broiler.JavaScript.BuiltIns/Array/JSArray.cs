@@ -4,9 +4,7 @@ using System.Text;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.BuiltIns.Error;
 using Broiler.JavaScript.BuiltIns.Number;
-using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Array;
@@ -104,7 +102,7 @@ public partial class JSArray : JSObject
     public double ArrayLength
     {
         get => _length;
-        set => SetLengthValue(JSValue.CreateNumber(value), true);
+        set => SetLengthValue(CreateNumber(value), true);
     }
 
     public override int Length
@@ -140,7 +138,7 @@ public partial class JSArray : JSObject
     // are no further string keys), reproducing the array's [[OwnPropertyKeys]] order.
     private sealed class ArrayLengthKeyEnumerator(IElementEnumerator inner) : IElementEnumerator
     {
-        private static readonly JSValue LengthKey = JSValue.CreateString("length");
+        private static readonly JSValue LengthKey = CreateString("length");
 
         private bool lengthPending = true;
         private bool hasBuffered;
@@ -221,7 +219,7 @@ public partial class JSArray : JSObject
                     return true;
             }
 
-            value = JSValue.UndefinedValue;
+            value = UndefinedValue;
             return false;
         }
 
@@ -259,10 +257,10 @@ public partial class JSArray : JSObject
             // enumerable, writable, configurable own property — otherwise the returned
             // descriptor appears empty to Object.keys/JSON.stringify/structural compares.
             var descriptor = new JSObject();
-            descriptor.FastAddValue(KeyStrings.value, JSValue.CreateNumber(_length), JSPropertyAttributes.EnumerableConfigurableValue);
-            descriptor.FastAddValue(KeyStrings.writable, IsLengthReadOnly() ? JSValue.BooleanFalse : JSValue.BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
-            descriptor.FastAddValue(KeyStrings.enumerable, JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
-            descriptor.FastAddValue(KeyStrings.configurable, JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.value, CreateNumber(_length), JSPropertyAttributes.EnumerableConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.writable, IsLengthReadOnly() ? BooleanFalse : BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.enumerable, BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.configurable, BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
             return descriptor;
         }
 
@@ -272,7 +270,7 @@ public partial class JSArray : JSObject
     internal protected override JSValue GetValue(KeyString key, JSValue receiver, bool throwError = true)
     {
         if (key.Key == KeyStrings.length.Key)
-            return JSValue.CreateNumber(_length);
+            return CreateNumber(_length);
 
         return base.GetValue(key, receiver, throwError);
     }
@@ -299,7 +297,7 @@ public partial class JSArray : JSObject
     public override JSValue Delete(in KeyString key)
     {
         if (key.Key == KeyStrings.length.Key)
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
         return base.Delete(key);
     }
@@ -508,7 +506,7 @@ public partial class JSArray : JSObject
         // [[DefineOwnProperty]] predicate — return false (Object.defineProperty's
         // OrThrow caller converts it to a TypeError; Reflect.defineProperty returns it).
         if (index >= _length && IsLengthReadOnly())
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
         var result = base.DefineProperty(index, propertyDescription);
         if (_length <= index)
@@ -550,7 +548,7 @@ public partial class JSArray : JSObject
             || (hasEnumerable && propertyDescription[KeyStrings.enumerable].BooleanValue)
             || hasGet || hasSet)
         {
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
         }
 
         // Read writability AFTER the value coercion (which may have changed it); an absent
@@ -565,7 +563,7 @@ public partial class JSArray : JSObject
             if (requestedWritable is bool w)
             {
                 if (!currentWritable && w)
-                    return JSValue.BooleanFalse;
+                    return BooleanFalse;
                 SetLengthWritable(w);
             }
             return JSUndefined.Value;
@@ -578,7 +576,7 @@ public partial class JSArray : JSObject
             // Growing or unchanged: a non-writable length rejects a changed value or an
             // attempt to set [[Writable]] back to true; an unchanged value is a no-op.
             if (!currentWritable && (newLength != oldLength || requestedWritable == true))
-                return JSValue.BooleanFalse;
+                return BooleanFalse;
 
             _length = newLength;
             SetLengthWritable(requestedWritable ?? currentWritable);
@@ -586,7 +584,7 @@ public partial class JSArray : JSObject
         }
 
         if (!currentWritable)
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
         var newWritable = requestedWritable ?? true;
         ref var elements = ref GetElements();
@@ -612,7 +610,7 @@ public partial class JSArray : JSObject
             {
                 _length = actualIndex + 1;
                 SetLengthWritable(newWritable);
-                return JSValue.BooleanFalse;
+                return BooleanFalse;
             }
 
             elements.RemoveAt(actualIndex);
@@ -664,7 +662,7 @@ public partial class JSArray : JSObject
     private void SetLengthWritable(bool writable)
     {
         var attributes = writable ? JSPropertyAttributes.Value : JSPropertyAttributes.ReadonlyValue;
-        GetOwnProperties().Put(KeyStrings.length.Key) = new JSProperty(KeyStrings.length, JSValue.CreateNumber(_length), attributes);
+        GetOwnProperties().Put(KeyStrings.length.Key) = new JSProperty(KeyStrings.length, CreateNumber(_length), attributes);
     }
 }
 

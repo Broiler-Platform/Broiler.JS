@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;

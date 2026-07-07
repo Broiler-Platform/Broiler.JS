@@ -120,7 +120,7 @@ public class JSValueBuilder
 
     public static Expression TypeOf(Expression target) => Expression.Call(target, _TypeOf);
 
-    private static MethodInfo _GetPrototypeOf = type.GetMethod(nameof(JSValue.GetPrototypeOf), System.Type.EmptyTypes);
+    private static MethodInfo _GetPrototypeOf = type.GetMethod(nameof(JSValue.GetPrototypeOf), Type.EmptyTypes);
 
     /// <summary>
     /// The home object's prototype used to resolve <c>super.x</c> inside an object

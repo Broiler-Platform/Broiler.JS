@@ -28,7 +28,7 @@ public partial class JSString
               .Append('"');
         }
         sb.Append('>').Append(value).Append("</").Append(tagName).Append('>');
-        return JSValue.CreateString(sb.ToString());
+        return CreateString(sb.ToString());
     }
 
     [JSPrototypeMethod]
@@ -109,11 +109,11 @@ public partial class JSString
                 if (!matcher.IsFunction)
                     throw JSEngine.NewTypeError("String.prototype.matchAll requires @@matchAll to be callable");
 
-                return matcher.Call(pattern, JSValue.CreateString(a.This.StringValue));
+                return matcher.Call(pattern, CreateString(a.This.StringValue));
             }
         }
 
-        var text = JSValue.CreateString(a.This.StringValue);
+        var text = CreateString(a.This.StringValue);
         var rx = new JSRegExp(pattern.IsUndefined ? string.Empty : pattern.StringValue, "g");
         var matcherFunction = rx[(IJSSymbol)JSSymbol.matchAll];
         return matcherFunction.InvokeFunction(new Arguments(rx, text));

@@ -88,8 +88,8 @@ public partial class JSIteratorObject : JSObject
     // [[Prototype]] is that realm's %Iterator.prototype%; they (not the base prototype) carry next /
     // return. Keyed by the base prototype so each realm resolves its own pair. (Stored off-object so
     // they do not appear among %Iterator.prototype%'s own properties, which test262 pins exactly.)
-    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSObject, JSObject> HelperPrototypes = new();
-    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSObject, JSObject> WrapPrototypes = new();
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSObject, JSObject> HelperPrototypes = [];
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSObject, JSObject> WrapPrototypes = [];
 
     internal static void RegisterHelperPrototypes(JSObject baseProto, JSObject helperProto, JSObject wrapProto)
     {
@@ -388,7 +388,7 @@ public partial class JSIteratorObject : JSObject
     private static JSObject GetOptionsObject(JSValue options)
     {
         if (options.IsUndefined)
-            return JSObject.NewWithProperties();
+            return NewWithProperties();
 
         if (options is JSObject optionObject)
             return optionObject;
@@ -689,7 +689,7 @@ public partial class JSIteratorObject : JSObject
         {
             try
             {
-                accumulator = fn.InvokeFunction(new Arguments(JSUndefined.Value, accumulator, value, JSValue.CreateNumber(count++)));
+                accumulator = fn.InvokeFunction(new Arguments(JSUndefined.Value, accumulator, value, CreateNumber(count++)));
             }
             catch
             {
@@ -722,7 +722,7 @@ public partial class JSIteratorObject : JSObject
         {
             try
             {
-                fn.InvokeFunction(new Arguments(JSUndefined.Value, value, JSValue.CreateNumber(count++)));
+                fn.InvokeFunction(new Arguments(JSUndefined.Value, value, CreateNumber(count++)));
             }
             catch
             {
@@ -745,7 +745,7 @@ public partial class JSIteratorObject : JSObject
             var result = false;
             try
             {
-                result = fn.InvokeFunction(new Arguments(JSUndefined.Value, value, JSValue.CreateNumber(count++))).BooleanValue;
+                result = fn.InvokeFunction(new Arguments(JSUndefined.Value, value, CreateNumber(count++))).BooleanValue;
             }
             catch
             {
@@ -775,7 +775,7 @@ public partial class JSIteratorObject : JSObject
             var result = false;
             try
             {
-                result = fn.InvokeFunction(new Arguments(JSUndefined.Value, value, JSValue.CreateNumber(count++))).BooleanValue;
+                result = fn.InvokeFunction(new Arguments(JSUndefined.Value, value, CreateNumber(count++))).BooleanValue;
             }
             catch
             {
@@ -804,7 +804,7 @@ public partial class JSIteratorObject : JSObject
             var result = false;
             try
             {
-                result = fn.InvokeFunction(new Arguments(JSUndefined.Value, value, JSValue.CreateNumber(count++))).BooleanValue;
+                result = fn.InvokeFunction(new Arguments(JSUndefined.Value, value, CreateNumber(count++))).BooleanValue;
             }
             catch
             {
@@ -1139,7 +1139,7 @@ public partial class JSIteratorObject : JSObject
                     if (property.IsEmpty)
                         continue;
 
-                    var symbol = JSValue.GetSymbolByKeyFactory?.Invoke(symbolKey);
+                    var symbol = GetSymbolByKeyFactory?.Invoke(symbolKey);
                     if (symbol != null)
                         ownKeys.Add((JSValue)symbol);
                 }
@@ -1231,7 +1231,7 @@ public partial class JSIteratorObject : JSObject
 
             // Per spec the zipKeyed result is OrdinaryObjectCreate(null): a
             // null-prototype object whose own data properties are the zipped values.
-            var result = JSObject.NewWithProperties();
+            var result = NewWithProperties();
             result.BasePrototypeObject = null;
 
             for (int i = 0; i < _iterators.Count; i++)
@@ -1240,7 +1240,7 @@ public partial class JSIteratorObject : JSObject
                 if (iter == null)
                 {
                     if (_mode == "longest")
-                        result.FastAddValue(_keys[i], GetPaddingValue(i), Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
+                        result.FastAddValue(_keys[i], GetPaddingValue(i), JSPropertyAttributes.EnumerableConfigurableValue);
 
                     continue;
                 }
@@ -1252,7 +1252,7 @@ public partial class JSIteratorObject : JSObject
                         _iterators[i] = null;
                         if (_mode == "longest")
                         {
-                            result.FastAddValue(_keys[i], GetPaddingValue(i), Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
+                            result.FastAddValue(_keys[i], GetPaddingValue(i), JSPropertyAttributes.EnumerableConfigurableValue);
                             continue;
                         }
 
@@ -1303,7 +1303,7 @@ public partial class JSIteratorObject : JSObject
                         return false;
                     }
 
-                    result.FastAddValue(_keys[i], item, Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
+                    result.FastAddValue(_keys[i], item, JSPropertyAttributes.EnumerableConfigurableValue);
                 }
                 catch
                 {
@@ -1407,7 +1407,7 @@ public partial class JSIteratorObject : JSObject
         // iterator (IfAbruptCloseIterator) before the error propagates; the close error is swallowed.
         private JSValue Invoke(JSValue item)
         {
-            try { return fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++))); }
+            try { return fn.InvokeFunction(new Arguments(JSUndefined.Value, item, CreateNumber(_count++))); }
             catch { CloseIteratorIfPossible(source); throw; }
         }
 
@@ -1475,7 +1475,7 @@ public partial class JSIteratorObject : JSObject
         // iterator (IfAbruptCloseIterator) before the error propagates; the close error is swallowed.
         private bool Test(JSValue item)
         {
-            try { return fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(predicateCount++))).BooleanValue; }
+            try { return fn.InvokeFunction(new Arguments(JSUndefined.Value, item, CreateNumber(predicateCount++))).BooleanValue; }
             catch { CloseIteratorIfPossible(source); throw; }
         }
 
@@ -1750,7 +1750,7 @@ public partial class JSIteratorObject : JSObject
         // error propagates (IfAbruptCloseIterator); the close error is swallowed.
         private IElementEnumerator MapItem(JSValue item)
         {
-            try { return GetFlattenableEnumerator(fn.InvokeFunction(new Arguments(JSUndefined.Value, item, JSValue.CreateNumber(_count++)))); }
+            try { return GetFlattenableEnumerator(fn.InvokeFunction(new Arguments(JSUndefined.Value, item, CreateNumber(_count++)))); }
             catch { CloseIteratorIfPossible(source); throw; }
         }
 

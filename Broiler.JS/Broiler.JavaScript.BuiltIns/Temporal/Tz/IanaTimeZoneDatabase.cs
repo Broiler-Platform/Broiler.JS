@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Reflection;
 using System.Text;
 
 namespace Broiler.JavaScript.BuiltIns.Temporal.Tz;
@@ -80,7 +79,7 @@ internal static class IanaTimeZoneDatabase
     // CLDR/ECMAScript non-primary identifiers that tzdata ships as standalone Zones.
     // Each resolves to the primary IANA zone it is an alias of.
     private static readonly (string Alias, string Target)[] LegacyPrimaryAliases =
-    {
+    [
         ("CET", "Europe/Brussels"),
         ("CST6CDT", "America/Chicago"),
         ("EET", "Europe/Athens"),
@@ -92,7 +91,7 @@ internal static class IanaTimeZoneDatabase
         ("MST7MDT", "America/Denver"),
         ("PST8PDT", "America/Los_Angeles"),
         ("WET", "Europe/Lisbon"),
-    };
+    ];
 
     private static void EnsureLoaded()
     {

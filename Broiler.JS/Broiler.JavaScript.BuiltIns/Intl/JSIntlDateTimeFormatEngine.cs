@@ -177,9 +177,9 @@ internal static class JSIntlDateTimeFormatEngine
         new(StringComparer.Ordinal) { "chinese", "dangi" };
 
     private static readonly string[] SexagenaryStems =
-        { "甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸" };
+        ["甲", "乙", "丙", "丁", "戊", "己", "庚", "辛", "壬", "癸"];
     private static readonly string[] SexagenaryBranches =
-        { "子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥" };
+        ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
 
     // The sexagenary (stem+branch) year name for a Gregorian year, e.g. 2017 → 丁酉.
     private static string SexagenaryYearName(int year)
@@ -206,9 +206,9 @@ internal static class JSIntlDateTimeFormatEngine
             || ArithmeticCalendars.Contains(calendar) || calendar == "hebrew");
 
     private static readonly string[] IslamicMonthWide =
-        { "Muharram", "Safar", "Rabiʻ I", "Rabiʻ II", "Jumada I", "Jumada II", "Rajab", "Shaʻban", "Ramadan", "Shawwal", "Dhuʻl-Qiʻdah", "Dhuʻl-Hijjah" };
+        ["Muharram", "Safar", "Rabiʻ I", "Rabiʻ II", "Jumada I", "Jumada II", "Rajab", "Shaʻban", "Ramadan", "Shawwal", "Dhuʻl-Qiʻdah", "Dhuʻl-Hijjah"];
     private static readonly string[] IslamicMonthShort =
-        { "Muh.", "Saf.", "Rab. I", "Rab. II", "Jum. I", "Jum. II", "Raj.", "Sha.", "Ram.", "Shaw.", "Dhuʻl-Q.", "Dhuʻl-H." };
+        ["Muh.", "Saf.", "Rab. I", "Rab. II", "Jum. I", "Jum. II", "Raj.", "Sha.", "Ram.", "Shaw.", "Dhuʻl-Q.", "Dhuʻl-H."];
 
     internal static bool IsSupportedCalendar(string calendar)
         => calendar != null && (EraCalendars.ContainsKey(calendar) || CyclicYearCalendars.Contains(calendar)
@@ -217,17 +217,17 @@ internal static class JSIntlDateTimeFormatEngine
 
     // ── en locale data ──
     private static readonly string[] MonthShort =
-        { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+        ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     private static readonly string[] MonthWide =
-        { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+        ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     private static readonly string[] MonthNarrow =
-        { "J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D" };
+        ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
     private static readonly string[] WeekdayWide =
-        { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+        ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     private static readonly string[] WeekdayShort =
-        { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+        ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     private static readonly string[] WeekdayNarrow =
-        { "S", "M", "T", "W", "T", "F", "S" };
+        ["S", "M", "T", "W", "T", "F", "S"];
 
     // 0 = Sunday .. 6 = Saturday for a Gregorian/ISO date, valid across the full ±275760-year range.
     private static int DayOfWeek(in Fields f)
@@ -249,7 +249,7 @@ internal static class JSIntlDateTimeFormatEngine
     // Significance order for greatest-difference detection (higher index = lower
     // significance). The first (most significant) differing field type wins.
     private static readonly string[] FieldSignificance =
-        { "era", "year", "month", "day", "dayPeriod", "hour", "minute", "second", "fractionalSecond" };
+        ["era", "year", "month", "day", "dayPeriod", "hour", "minute", "second", "fractionalSecond"];
 
     // ── Pattern resolution ──
     internal static Pattern ResolvePattern(

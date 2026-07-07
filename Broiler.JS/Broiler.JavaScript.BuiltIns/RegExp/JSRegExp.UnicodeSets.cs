@@ -38,7 +38,7 @@ partial class JSRegExp
     /// </summary>
     private sealed class ClassSetValue
     {
-        public readonly List<(int Lo, int Hi)> Ranges = new();
+        public readonly List<(int Lo, int Hi)> Ranges = [];
         public readonly HashSet<string> Strings = new(StringComparer.Ordinal);
 
         public void AddCodePoint(int cp) => Ranges.Add((cp, cp));
@@ -461,10 +461,10 @@ partial class JSRegExp
         switch (escape)
         {
             case 'd':
-                ranges = new (int Lo, int Hi)[] { ('0', '9') };
+                ranges = [('0', '9')];
                 return true;
             case 'D':
-                ranges = new (int Lo, int Hi)[] { (0, '0' - 1), ('9' + 1, 0x10FFFF) };
+                ranges = [(0, '0' - 1), ('9' + 1, 0x10FFFF)];
                 return true;
             case 'w':
                 ranges = WordRanges;
@@ -479,9 +479,9 @@ partial class JSRegExp
     }
 
     private static readonly (int Lo, int Hi)[] WordRanges =
-    {
+    [
         ('0', '9'), ('A', 'Z'), ('_', '_'), ('a', 'z')
-    };
+    ];
 
     /// <summary>Reads one code point (with escapes) and advances <paramref name="pos"/>.</summary>
     private static int ReadCodePoint(string s, ref int pos)
@@ -634,12 +634,12 @@ partial class JSRegExp
     }
 
     private static (int Lo, int Hi)[] ComplementRanges((int Lo, int Hi)[] ranges)
-        => SubtractRanges(new List<(int Lo, int Hi)> { (0, 0x10FFFF) }, Normalize(ranges)).ToArray();
+        => SubtractRanges([(0, 0x10FFFF)], Normalize(ranges)).ToArray();
 
     private static ClassSetValue ComplementCodePoints(ClassSetValue v)
     {
         var result = new ClassSetValue();
-        foreach (var r in SubtractRanges(new List<(int Lo, int Hi)> { (0, 0x10FFFF) }, Normalize(v.Ranges)))
+        foreach (var r in SubtractRanges([(0, 0x10FFFF)], Normalize(v.Ranges)))
             result.AddRange(r.Lo, r.Hi);
         return result;
     }

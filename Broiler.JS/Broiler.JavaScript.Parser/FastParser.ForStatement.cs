@@ -1,5 +1,4 @@
-﻿using Broiler.JavaScript.Ast;
-using Broiler.JavaScript.Ast.Expressions;
+﻿using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
@@ -792,7 +791,7 @@ partial class FastParser
                 var tryBody = new AstBlock(declaration.Start, declaration.End, bodyStatements);
                 var finallyBody = new AstBlock(declaration.Start, declaration.End, finallyStatements);
                 var tryStmt = new AstTryStatement(declaration.Start, declaration.End, tryBody, null, null, finallyBody);
-                statementList = new Sequence<AstStatement>(2) { null!, tryStmt };
+                statementList = [null!, tryStmt];
             }
 
             if (requiresReplacement)

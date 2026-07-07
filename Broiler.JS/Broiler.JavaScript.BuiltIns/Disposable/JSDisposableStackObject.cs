@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
-using Broiler.JavaScript.Engine.Extensions;
 
 namespace Broiler.JavaScript.BuiltIns.Disposable;
 
@@ -21,7 +19,7 @@ public partial class JSDisposableStackObject : JSObject
     private bool _disposed;
     // Disposal thunks in insertion order; disposed last-in-first-out (iterate in reverse).
     // A thunk returns the dispose call's result (unused for the synchronous stack).
-    private List<Func<JSValue>> _resources = new();
+    private List<Func<JSValue>> _resources = [];
 
     [JSExport(Length = 0)]
     public JSDisposableStackObject(in Arguments a) : base(DisposableStackShared.ResolveConstructorPrototype("DisposableStack"))
@@ -104,7 +102,7 @@ public partial class JSDisposableStackObject : JSObject
         };
 
         // This stack relinquishes its resources and is marked disposed (without running them).
-        _resources = new List<Func<JSValue>>();
+        _resources = [];
         _disposed = true;
         return moved;
     }

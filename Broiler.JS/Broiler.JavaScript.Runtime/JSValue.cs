@@ -766,7 +766,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         var pc = prototypeChain;
 
         if (pc != null)
-            return this.GetValue(pc.GetInternalProperty(name));
+            return GetValue(pc.GetInternalProperty(name));
 
         return UndefinedValue;
     }
@@ -776,7 +776,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         var pc = prototypeChain;
 
         if (pc != null)
-            return this.GetValue(pc.GetInternalProperty(name));
+            return GetValue(pc.GetInternalProperty(name));
 
         return UndefinedValue;
     }
@@ -786,7 +786,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         var pc = prototypeChain;
 
         if (pc != null)
-            return this.GetValue(pc.GetInternalProperty(name));
+            return GetValue(pc.GetInternalProperty(name));
 
         return UndefinedValue;
     }

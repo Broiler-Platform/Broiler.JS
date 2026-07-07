@@ -133,7 +133,7 @@ public partial class JSString
         // non-functional replaceValue happens before the substitution.
         var replaceText = s.IsFunction
             ? s.InvokeFunction(new Arguments(JSUndefined.Value,
-                JSValue.CreateString(substr), JSValue.CreateNumber(start), JSValue.CreateString(@this))).StringValue
+                CreateString(substr), CreateNumber(start), CreateString(@this))).StringValue
             : GetSubstitution(substr, @this, start, replacementTemplate);
 
         // Replace only the first match.
@@ -182,11 +182,11 @@ public partial class JSString
         var searchString = searchValue.IsUndefined ? "undefined" : searchValue.StringValue;
         var functionalReplace = replaceValue.IsFunction;
         var replacementText = functionalReplace ? null : replaceValue.StringValue;
-        var source = JSValue.CreateString(@this);
+        var source = CreateString(@this);
 
         string GetReplacement(int position)
             => functionalReplace
-                ? replaceValue.InvokeFunction(new Arguments(JSUndefined.Value, JSValue.CreateString(searchString), JSValue.CreateNumber(position), source)).StringValue
+                ? replaceValue.InvokeFunction(new Arguments(JSUndefined.Value, CreateString(searchString), CreateNumber(position), source)).StringValue
                 : GetSubstitution(searchString, @this, position, replacementText!);
 
         if (searchString.Length == 0)
@@ -199,7 +199,7 @@ public partial class JSString
                     emptySearchResult.Append(@this[position]);
             }
 
-            return JSValue.CreateString(emptySearchResult.ToString());
+            return CreateString(emptySearchResult.ToString());
         }
 
         var result = new StringBuilder();
@@ -216,10 +216,10 @@ public partial class JSString
         }
 
         if (result.Length == 0 && searchStart == 0)
-            return JSValue.CreateString(@this);
+            return CreateString(@this);
 
         result.Append(@this, searchStart, @this.Length - searchStart);
-        return JSValue.CreateString(result.ToString());
+        return CreateString(result.ToString());
     }
 
     /// <summary>
@@ -274,7 +274,7 @@ public partial class JSString
         if (_separator is JSRegExp jSRegExp)
         {
             if (limitMax == 0)
-                return JSValue.CreateArray();
+                return CreateArray();
             return jSRegExp.Split(@this, limitMax);
         }
 
@@ -287,16 +287,16 @@ public partial class JSString
             separator = _separator.StringValue;
 
         if (limitMax == 0)
-            return JSValue.CreateArray();
+            return CreateArray();
 
         if (_separator.IsUndefined)
         {
-            var single = JSValue.CreateArray();
+            var single = CreateArray();
             single.AddArrayItem(new JSString(@this));
             return single;
         }
 
-        var result = JSValue.CreateArray();
+        var result = CreateArray();
         if (string.IsNullOrEmpty(separator))
         {
             for (int i = 0; i < @this.Length; i++)

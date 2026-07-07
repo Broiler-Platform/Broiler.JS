@@ -2,7 +2,6 @@ using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.Promise;
 
@@ -67,7 +66,7 @@ public partial class JSPromise
         if (!constructor.IsObject)
             throw JSEngine.NewTypeError("Promise constructor must be an object");
 
-        var species = constructor[(IJSSymbol)BuiltIns.Symbol.JSSymbol.species];
+        var species = constructor[(IJSSymbol)Symbol.JSSymbol.species];
         if (species.IsNullOrUndefined)
             return null;
 
@@ -164,7 +163,7 @@ public partial class JSPromise
         if (!constructor.IsObject)
             throw JSEngine.NewTypeError("Promise constructor must be an object");
 
-        var species = constructor[(IJSSymbol)BuiltIns.Symbol.JSSymbol.species];
+        var species = constructor[(IJSSymbol)Symbol.JSSymbol.species];
         if (species.IsNullOrUndefined)
             return defaultConstructor;
 

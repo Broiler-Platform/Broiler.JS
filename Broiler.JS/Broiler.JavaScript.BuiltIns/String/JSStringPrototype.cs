@@ -14,13 +14,13 @@ public partial class JSString
         if ((JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null)
         {
             if (a.Length == 0)
-                return JSValue.CreateString(string.Empty);
+                return CreateString(string.Empty);
 
             var value = a.Get1();
             if (value is JSSymbol symbol)
-                return JSValue.CreateString(symbol.ToDescriptiveString());
+                return CreateString(symbol.ToDescriptiveString());
 
-            return JSValue.CreateString(value.StringValue);
+            return CreateString(value.StringValue);
         }
 
         if (a.Length == 0)

@@ -56,7 +56,7 @@ public partial class JSMath : JSObject
         if (first.IsDecimal)
         {
             var dv = first.DecimalValue;
-            return JSValue.CreateDecimal(Math.Floor(dv + 0.5m));
+            return CreateDecimal(Math.Floor(dv + 0.5m));
         }
 
         var number = first.DoubleValue;
@@ -89,7 +89,7 @@ public partial class JSMath : JSObject
     {
         var first = args.Get1();
         if (first.IsDecimal)
-            return JSValue.CreateDecimal(Math.Floor(first.DecimalValue));
+            return CreateDecimal(Math.Floor(first.DecimalValue));
 
         var d = first.DoubleValue;
         var r = new JSNumber(Math.Floor(d));
@@ -111,7 +111,7 @@ public partial class JSMath : JSObject
     {
         var first = args.Get1();
         if (first.IsDecimal)
-            return JSValue.CreateDecimal(Math.Abs(first.DecimalValue));
+            return CreateDecimal(Math.Abs(first.DecimalValue));
 
         var d = first.DoubleValue;
         var r = new JSNumber(Math.Abs(d));
@@ -233,7 +233,7 @@ public partial class JSMath : JSObject
     {
         var first = args.Get1();
         if (first.IsDecimal)
-            return JSValue.CreateDecimal(Math.Ceiling(first.DecimalValue));
+            return CreateDecimal(Math.Ceiling(first.DecimalValue));
 
         var d = first.DoubleValue;
         var r = new JSNumber(Math.Ceiling(d));
@@ -260,7 +260,7 @@ public partial class JSMath : JSObject
     {
         var first = args.Get1();
         var d = first.DoubleValue;
-        var x = JSValue.ToUint32(d);
+        var x = ToUint32(d);
 
         x |= x >> 1;       // Propagate leftmost
         x |= x >> 2;       // 1-bit to the right.
@@ -530,7 +530,7 @@ public partial class JSMath : JSObject
         var first = args.Get1();
 
         if (first.IsDecimal)
-            return JSValue.CreateDecimal(Math.Sign(first.DecimalValue));
+            return CreateDecimal(Math.Sign(first.DecimalValue));
 
         var d = first.DoubleValue;
 
@@ -601,7 +601,7 @@ public partial class JSMath : JSObject
     {
         var first = args.Get1();
         if (first.IsDecimal)
-            return JSValue.CreateDecimal(Math.Truncate(first.DecimalValue));
+            return CreateDecimal(Math.Truncate(first.DecimalValue));
 
         var d = first.DoubleValue;
         var r = new JSNumber(Math.Truncate(d));

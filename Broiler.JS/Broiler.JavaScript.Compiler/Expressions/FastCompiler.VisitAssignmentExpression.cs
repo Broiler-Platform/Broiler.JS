@@ -429,8 +429,10 @@ partial class FastCompiler
         bool forceDynamicAssignment = false)
     {
         using var temp = scope.Top.GetTempVariable(typeof(JSValue));
-        var inits = new Sequence<BExpression>();
-        inits.Add(BExpression.Assign(temp.Variable, init));
+        var inits = new Sequence<BExpression>
+        {
+            BExpression.Assign(temp.Variable, init)
+        };
         CreateAssignment(inits, pattern, temp.Expression, createVariable, newScope, suppressAnonymousFunctionNameInference, initializeVariable, readOnlyAfterAssign, forceDynamicAssignment);
         inits.Add(temp.Expression);
 

@@ -3,7 +3,6 @@ using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Storage;
 using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.BuiltIns.Function;
@@ -32,9 +31,9 @@ public class JSGeneratorFunctionV2 : JSFunction
             prototype.BasePrototypeObject = functionPrototype;
 
         var constructorName = asyncGenerator ? "AsyncGeneratorFunction" : "GeneratorFunction";
-        var constructor = (JSFunction)JSValue.CreateFunction((in Arguments a) =>
+        var constructor = (JSFunction)CreateFunction((in Arguments a) =>
         {
-            var created = JSFunction.CreateDynamicFunction(in a, asyncGenerator ? "async function*" : "function*");
+            var created = CreateDynamicFunction(in a, asyncGenerator ? "async function*" : "function*");
             if (created is JSFunction function)
                 function.prototype = null;
 
@@ -59,7 +58,7 @@ public class JSGeneratorFunctionV2 : JSFunction
         }
 
         // §27.3.3.2 / §27.4.3.2: GeneratorFunction.prototype[@@toStringTag] / AsyncGeneratorFunction.prototype[@@toStringTag]
-        prototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString(constructorName), JSPropertyAttributes.ConfigurableReadonlyValue);
+        prototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, CreateString(constructorName), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         return prototype;
     }
@@ -91,7 +90,7 @@ public class JSGeneratorFunctionV2 : JSFunction
         AddAsyncGeneratorMethod(generatorPrototype, asyncGeneratorPrototype, KeyStrings.GetOrCreate("return"), "return");
         AddAsyncGeneratorMethod(generatorPrototype, asyncGeneratorPrototype, KeyStrings.GetOrCreate("throw"), "throw");
 
-        asyncGeneratorPrototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("AsyncGenerator"), JSPropertyAttributes.ConfigurableReadonlyValue);
+        asyncGeneratorPrototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, CreateString("AsyncGenerator"), JSPropertyAttributes.ConfigurableReadonlyValue);
         return cache.AsyncGeneratorPrototype = asyncGeneratorPrototype;
     }
 
@@ -104,7 +103,7 @@ public class JSGeneratorFunctionV2 : JSFunction
 
         asyncIteratorPrototype.FastAddValue(
             (IJSSymbol)JSSymbol.asyncIterator,
-            JSValue.CreateFunction(static (in Arguments a) => a.This,
+            CreateFunction(static (in Arguments a) => a.This,
                 "[Symbol.asyncIterator]", "function [Symbol.asyncIterator]() { [native code] }", 0, createPrototype: false),
             JSPropertyAttributes.ConfigurableValue);
 
@@ -112,7 +111,7 @@ public class JSGeneratorFunctionV2 : JSFunction
         // `return` method, returning a promise (the fulfillment value of return is ignored).
         asyncIteratorPrototype.FastAddValue(
             (IJSSymbol)JSSymbol.asyncDispose,
-            JSValue.CreateFunction(static (in Arguments a) =>
+            CreateFunction(static (in Arguments a) =>
             {
                 var iterator = a.This;
                 return new Broiler.JavaScript.BuiltIns.Promise.JSPromise((resolve, reject) =>
@@ -160,7 +159,7 @@ public class JSGeneratorFunctionV2 : JSFunction
             return Engine.Core.JSEngine.CreateResolvedOrRejectedPromise(JSException.ErrorFrom(error), false);
         }
 
-        target.FastAddValue(key, JSValue.CreateFunction(Method, name, null, 1, createPrototype: false), JSPropertyAttributes.ConfigurableValue);
+        target.FastAddValue(key, CreateFunction(Method, name, null, 1, createPrototype: false), JSPropertyAttributes.ConfigurableValue);
     }
 
     private static JSObject GetGeneratorFunctionPrototype(bool asyncGenerator)
@@ -210,7 +209,7 @@ public class JSGeneratorFunctionV2 : JSFunction
     {
         using var realmScope = EnterRealm();
         var args = CoerceThisOnInvoke
-            ? a.OverrideThis(JSFunction.CoerceNonStrictThis(a.This))
+            ? a.OverrideThis(CoerceNonStrictThis(a.This))
             : a;
 
         var generator = JSGeneratorBuilder.CreateFromClrV2(new ClrGeneratorV2(this, @delegate, args, asyncGenerator));

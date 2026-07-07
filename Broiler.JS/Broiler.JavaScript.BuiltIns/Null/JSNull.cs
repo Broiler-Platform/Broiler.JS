@@ -25,7 +25,7 @@ public sealed class JSNull : JSValue
 
     public override int IntValue => 0;
 
-    public override JSValue Negate() => JSValue.NumberNegativeZero;
+    public override JSValue Negate() => NumberNegativeZero;
 
     internal override PropertyKey ToKey(bool create = false) => KeyStrings.@null;
 

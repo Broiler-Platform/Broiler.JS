@@ -46,7 +46,7 @@ public partial class JSString : JSPrimitive
 
     public override JSValue AddValue(double value)
     {
-        var numStr = JSValue.NumberToECMAString(value);
+        var numStr = NumberToECMAString(value);
 
         if (this.value.IsEmpty())
             return new JSString(numStr);
@@ -197,7 +197,7 @@ public partial class JSString : JSPrimitive
         // String exotic whose [[StringData]] is "" (length 0). The static `s.length`
         // path already resolved locally; this keeps the dynamic-key path consistent.
         if (key.Key == KeyStrings.length.Key)
-            return JSValue.CreateNumber(value.Length);
+            return CreateNumber(value.Length);
 
         return base.GetValue(key, receiver, throwError);
     }
@@ -367,9 +367,9 @@ public partial class JSString : JSPrimitive
     internal override JSValue Is(JSValue value)
     {
         if (value is JSString @string && this.value == @string.value)
-            return JSValue.BooleanTrue;
+            return BooleanTrue;
 
-        return JSValue.BooleanFalse;
+        return BooleanFalse;
     }
 
     // Array-like / property-index access enumerates by UTF-16 code unit (used by
@@ -390,7 +390,7 @@ public partial class JSString : JSPrimitive
     // spread/`for-of` over a string with a custom String.prototype iterator).
     public override IElementEnumerator GetIterableEnumerator()
     {
-        var symbolIterator = JSValue.SymbolIterator;
+        var symbolIterator = SymbolIterator;
         if (symbolIterator != null)
         {
             var iterator = this[symbolIterator];
@@ -440,7 +440,7 @@ public partial class JSString : JSPrimitive
             var first = span[pos];
             if (char.IsHighSurrogate(first) && pos + 1 < span.Length && char.IsLowSurrogate(span[pos + 1]))
             {
-                value = new JSString(new string(new[] { first, span[pos + 1] }));
+                value = new JSString(new string([first, span[pos + 1]]));
                 pos += 2;
             }
             else

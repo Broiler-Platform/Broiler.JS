@@ -13,8 +13,8 @@ public class JSClassGenerator : IIncrementalGenerator
     {
         var jsClasses = context.SyntaxProvider
             .CreateSyntaxProvider(
-                Broiler.JavaScript.JSClassGenerator.SyntaxNodeExtensions.CouldBeJSClassAsync,
-                Broiler.JavaScript.JSClassGenerator.SyntaxNodeExtensions.GetJSClassTypeOrNull)
+                SyntaxNodeExtensions.CouldBeJSClassAsync,
+                SyntaxNodeExtensions.GetJSClassTypeOrNull)
             .Where(x => x is not null)
             .Collect();
 

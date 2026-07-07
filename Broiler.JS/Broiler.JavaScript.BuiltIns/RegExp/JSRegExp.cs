@@ -7,7 +7,6 @@ using System;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
-using Broiler.JavaScript.Storage;
 using UnicodeEmoji.StringProperties;
 using Broiler.Unicode.Properties;
 
@@ -69,7 +68,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             sb.Append(c);
         }
 
-        return JSValue.CreateString(sb.ToString());
+        return CreateString(sb.ToString());
     }
 
     private static bool TryAppendEscape(StringBuilder sb, char c, bool isFirstCharacter)
@@ -369,7 +368,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         // Initialize lastIndex as an own data property (writable, non-configurable, non-enumerable)
         ref var ownProperties = ref GetOwnProperties();
-        ownProperties.Put(KeyStrings.lastIndex, JSValue.NumberZero, JSPropertyAttributes.Value);
+        ownProperties.Put(KeyStrings.lastIndex, NumberZero, JSPropertyAttributes.Value);
     }
 
     public JSRegExp(string pattern, string flags) : this()
@@ -380,7 +379,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         // Initialize lastIndex as an own data property (writable, non-configurable, non-enumerable)
         ref var ownProps = ref GetOwnProperties();
-        ownProps.Put(KeyStrings.lastIndex, JSValue.NumberZero, JSPropertyAttributes.Value);
+        ownProps.Put(KeyStrings.lastIndex, NumberZero, JSPropertyAttributes.Value);
     }
 
     /// <summary>
@@ -398,17 +397,17 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         SetObservableLastIndex(0);
         var inputString = input.StringValue;
-        var matchValues = JSValue.CreateArray();
+        var matchValues = CreateArray();
         uint matchCount = 0;
 
         while (true)
         {
-            var result = ExecuteMatch(JSValue.CreateString(inputString));
+            var result = ExecuteMatch(CreateString(inputString));
             if (result.IsNull)
-                return matchCount == 0 ? JSValue.NullValue : matchValues;
+                return matchCount == 0 ? NullValue : matchValues;
 
             var match = result[0].StringValue;
-            matchValues[matchCount++] = JSValue.CreateString(match);
+            matchValues[matchCount++] = CreateString(match);
 
             if (match.Length != 0)
                 continue;
@@ -459,13 +458,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
     {
         // Return an empty array if limit = 0.
         if (limit == 0)
-            return JSValue.CreateArray();
+            return CreateArray();
 
         // Find the first match.
         Match match = value.Match(input, 0);
 
 
-        var results = JSValue.CreateArray();
+        var results = CreateArray();
         int startIndex = 0;
         Match lastMatch = null;
 
@@ -482,7 +481,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
             // Add the match results to the array.
             var element = input.Substring(startIndex, match.Index - startIndex);
-            results.AddArrayItem(JSValue.CreateString(element));
+            results.AddArrayItem(CreateString(element));
 
             if (results.Length >= limit)
                 return results;
@@ -495,7 +494,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 if (group.Captures.Count == 0)
                     results.AddArrayItem(JSUndefined.Value);       // Non-capturing groups return "undefined".
                 else
-                    results.AddArrayItem(JSValue.CreateString(match.Groups[i].Value));
+                    results.AddArrayItem(CreateString(match.Groups[i].Value));
 
                 if (results.Length >= limit)
                     return results;
@@ -508,7 +507,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             match = match.NextMatch();
         }
         var ele = input.Substring(startIndex, input.Length - startIndex);
-        results.AddArrayItem(JSValue.CreateString(ele));
+        results.AddArrayItem(CreateString(ele));
         return results;
     }
 
@@ -537,13 +536,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 if (match.Groups[i].Success == false)
                     parameters[i] = JSUndefined.Value;
                 else
-                    parameters[i] = JSValue.CreateString(match.Groups[i].Value);
+                    parameters[i] = CreateString(match.Groups[i].Value);
             }
 
-            parameters[match.Groups.Count] = JSValue.CreateNumber(match.Index);
-            parameters[match.Groups.Count + 1] = JSValue.CreateString(input);
+            parameters[match.Groups.Count] = CreateNumber(match.Index);
+            parameters[match.Groups.Count + 1] = CreateString(input);
 
-            var a = new Arguments(JSValue.NullValue, parameters);
+            var a = new Arguments(NullValue, parameters);
             return replaceFunction.InvokeFunction(a).ToString();
         }, globalSearch == true ? int.MaxValue : 1);
     }
@@ -1283,7 +1282,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             anyNamed = true;
             if (!nameToIndices.TryGetValue(decodedName, out var list))
             {
-                nameToIndices[decodedName] = list = new List<int>();
+                nameToIndices[decodedName] = list = [];
                 orderedNames.Add(decodedName);
             }
             list.Add(index);
@@ -1612,7 +1611,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             if (!IsZeroWidthGroup(pattern, open, i))
                 continue;
 
-            (replacements ??= new List<(int, int)>()).Add((i + 1, qEnd - (i + 1)));
+            (replacements ??= []).Add((i + 1, qEnd - (i + 1)));
         }
 
         if (replacements == null)
@@ -2659,13 +2658,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
     private static void AppendBmpSubRangeAlternatives(List<string> alts, int lo, int hi)
     {
         if (lo <= 0xD7FF)
-            alts.Add(UnitRange(lo, System.Math.Min(hi, 0xD7FF)));
+            alts.Add(UnitRange(lo, Math.Min(hi, 0xD7FF)));
         if (hi >= 0xD800 && lo <= 0xDBFF)
-            alts.Add(UnitRange(System.Math.Max(lo, 0xD800), System.Math.Min(hi, 0xDBFF)) + "(?![\uDC00-\uDFFF])");
+            alts.Add(UnitRange(Math.Max(lo, 0xD800), Math.Min(hi, 0xDBFF)) + "(?![\uDC00-\uDFFF])");
         if (hi >= 0xDC00 && lo <= 0xDFFF)
-            alts.Add("(?<![\uD800-\uDBFF])" + UnitRange(System.Math.Max(lo, 0xDC00), System.Math.Min(hi, 0xDFFF)));
+            alts.Add("(?<![\uD800-\uDBFF])" + UnitRange(Math.Max(lo, 0xDC00), Math.Min(hi, 0xDFFF)));
         if (hi >= 0xE000)
-            alts.Add(UnitRange(System.Math.Max(lo, 0xE000), hi));
+            alts.Add(UnitRange(Math.Max(lo, 0xE000), hi));
     }
 
     // Decomposes the code-point range [lo, hi] (which reaches into the supplementary
@@ -2678,7 +2677,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
         // as a lone unit.
         if (lo <= 0xFFFF)
         {
-            int bmpHi = System.Math.Min(hi, 0xFFFF);
+            int bmpHi = Math.Min(hi, 0xFFFF);
             AppendBmpSubRangeAlternatives(alts, lo, bmpHi);
             if (hi <= 0xFFFF)
                 return;
@@ -2715,7 +2714,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 continue;
             foreach (var e in kv.Value)
                 if (e < lo || e > hi)
-                    (extras ??= new SortedSet<int>()).Add(e);
+                    (extras ??= []).Add(e);
         }
         if (extras == null)
             return;
@@ -3391,7 +3390,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// the <see cref="EmojiSequenceProperties"/> mask. Building the alternation walks the
     /// whole emoji trie (thousands of sequences for <c>RGI_Emoji</c>), so it is computed once.
     /// </summary>
-    private static readonly Dictionary<EmojiSequenceProperties, string> EmojiAlternationCache = new();
+    private static readonly Dictionary<EmojiSequenceProperties, string> EmojiAlternationCache = [];
 
     private static Dictionary<string, string> BuildGeneralCategoryNames()
     {
@@ -3818,7 +3817,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                         return null;
                     if (lo > cursor)
                         AppendClassRange(complement, cursor, lo - 1);
-                    cursor = System.Math.Max(cursor, hi + 1);
+                    cursor = Math.Max(cursor, hi + 1);
                 }
                 if (cursor <= 0xFFFF)
                     AppendClassRange(complement, cursor, 0xFFFF);
@@ -3871,7 +3870,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
         {
             if (lo > cursor)
                 result.Add((cursor, lo - 1));
-            cursor = System.Math.Max(cursor, hi + 1);
+            cursor = Math.Max(cursor, hi + 1);
         }
         if (cursor <= 0x10FFFF)
             result.Add((cursor, 0x10FFFF));
@@ -3888,7 +3887,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
         {
             if (lo <= 0xFFFF)
             {
-                AppendBmpRange(bmp, loneSurrogates, lo, System.Math.Min(hi, 0xFFFF));
+                AppendBmpRange(bmp, loneSurrogates, lo, Math.Min(hi, 0xFFFF));
                 if (hi <= 0xFFFF)
                     continue;
                 AppendSupplementaryRange(supplementary, 0x10000, hi);
@@ -3935,20 +3934,20 @@ public partial class JSRegExp : JSObject, IJSRegExp
     private static void AppendBmpRange(StringBuilder bmp, List<string> loneSurrogates, int lo, int hi)
     {
         if (lo < 0xD800)
-            AppendClassRange(bmp, lo, System.Math.Min(hi, 0xD7FF));
+            AppendClassRange(bmp, lo, Math.Min(hi, 0xD7FF));
 
-        var highLo = System.Math.Max(lo, 0xD800);
-        var highHi = System.Math.Min(hi, 0xDBFF);
+        var highLo = Math.Max(lo, 0xD800);
+        var highHi = Math.Min(hi, 0xDBFF);
         if (highLo <= highHi)
             loneSurrogates.Add(SurrogateClass(highLo, highHi) + "(?![\\uDC00-\\uDFFF])");
 
-        var lowLo = System.Math.Max(lo, 0xDC00);
-        var lowHi = System.Math.Min(hi, 0xDFFF);
+        var lowLo = Math.Max(lo, 0xDC00);
+        var lowHi = Math.Min(hi, 0xDFFF);
         if (lowLo <= lowHi)
             loneSurrogates.Add("(?<![\\uD800-\\uDBFF])" + SurrogateClass(lowLo, lowHi));
 
         if (hi > 0xDFFF)
-            AppendClassRange(bmp, System.Math.Max(lo, 0xE000), hi);
+            AppendClassRange(bmp, Math.Max(lo, 0xE000), hi);
 
         static string SurrogateClass(int lo, int hi)
             => lo == hi ? $"[\\u{lo:X4}]" : $"[\\u{lo:X4}-\\u{hi:X4}]";
@@ -4881,11 +4880,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
     // recover the grouping). Each inner array is one class; every member folds to the
     // others under ECMAScript Canonicalize in Unicode mode.
     private static readonly char[][] MultiUnitCaseFoldClasses =
-    {
-        new[] { '\u0390', '\u1FD3' }, // GREEK SMALL LETTER IOTA WITH DIALYTIKA AND TONOS / OXIA
-        new[] { '\u03B0', '\u1FE3' }, // GREEK SMALL LETTER UPSILON WITH DIALYTIKA AND TONOS / OXIA
-        new[] { '\uFB05', '\uFB06' }, // LATIN SMALL LIGATURE LONG S T / ST
-    };
+    [
+        ['\u0390', '\u1FD3'], // GREEK SMALL LETTER IOTA WITH DIALYTIKA AND TONOS / OXIA
+        ['\u03B0', '\u1FE3'], // GREEK SMALL LETTER UPSILON WITH DIALYTIKA AND TONOS / OXIA
+        ['\uFB05', '\uFB06'], // LATIN SMALL LIGATURE LONG S T / ST
+    ];
 
     private static void MergeCaseFoldClass(Dictionary<char, char[]> map, char[] equivalenceClass)
     {
@@ -4932,7 +4931,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     private static int CaseFoldKeyCodePoint(int cp)
     {
         var r = new System.Text.Rune(cp);
-        return System.Text.Rune.ToLowerInvariant(System.Text.Rune.ToUpperInvariant(r)).Value;
+        return Rune.ToLowerInvariant(Rune.ToUpperInvariant(r)).Value;
     }
 
     // Reverse map from a SUPPLEMENTARY-plane code point to the other members of its
@@ -5003,7 +5002,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
         else
         {
-            map[member] = new[] { other };
+            map[member] = [other];
         }
     }
 

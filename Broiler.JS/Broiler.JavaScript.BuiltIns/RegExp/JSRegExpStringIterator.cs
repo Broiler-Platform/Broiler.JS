@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Storage;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Symbol;
 
@@ -43,12 +42,12 @@ internal sealed class JSRegExpStringIterator : JSObject
     private static JSObject CreateIteratorPrototype(JSObject iteratorPrototype)
     {
         var prototype = new JSObject { BasePrototypeObject = iteratorPrototype };
-        prototype.FastAddValue(KeyStrings.next, JSValue.CreateFunction(Next, "next", null, 0, false), JSPropertyAttributes.ConfigurableValue);
-        prototype.FastAddValue((IJSSymbol)JSSymbol.iterator, JSValue.CreateFunction(static (in Arguments a) => a.This, "[Symbol.iterator]", null, 0, false), JSPropertyAttributes.ConfigurableValue);
+        prototype.FastAddValue(KeyStrings.next, CreateFunction(Next, "next", null, 0, false), JSPropertyAttributes.ConfigurableValue);
+        prototype.FastAddValue((IJSSymbol)JSSymbol.iterator, CreateFunction(static (in Arguments a) => a.This, "[Symbol.iterator]", null, 0, false), JSPropertyAttributes.ConfigurableValue);
         // §22.2.9.3 %RegExpStringIteratorPrototype% [ @@toStringTag ] = "RegExp String Iterator",
         // { [[Writable]]: false, [[Enumerable]]: false, [[Configurable]]: true }. Without it the
         // tag inherits "Iterator" from %IteratorPrototype% (the new ES2025 accessor).
-        prototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("RegExp String Iterator"), JSPropertyAttributes.ConfigurableReadonlyValue);
+        prototype.FastAddValue((IJSSymbol)JSSymbol.toStringTag, CreateString("RegExp String Iterator"), JSPropertyAttributes.ConfigurableReadonlyValue);
         return prototype;
     }
 
@@ -79,7 +78,7 @@ internal sealed class JSRegExpStringIterator : JSObject
         }
 
         var matchValue = JSUndefined.Value;
-        var ownZero = match.GetOwnPropertyDescriptor(JSValue.CreateString("0"));
+        var ownZero = match.GetOwnPropertyDescriptor(CreateString("0"));
         if (!ownZero.IsUndefined)
         {
             var getter = ownZero[KeyStrings.get];
@@ -105,7 +104,7 @@ internal sealed class JSRegExpStringIterator : JSObject
             if (unicode && advanced < s.Length
                 && char.IsHighSurrogate(s[nextIndex]) && char.IsLowSurrogate(s[advanced]))
                 advanced++;
-            regexp[KeyStrings.lastIndex] = JSValue.CreateNumber(advanced);
+            regexp[KeyStrings.lastIndex] = CreateNumber(advanced);
         }
 
         return CreateIterResult(match, false);
@@ -147,7 +146,7 @@ internal sealed class JSRegExpStringIterator : JSObject
     {
         var result = NewWithProperties();
         result.FastAddValue(KeyStrings.value, value, JSPropertyAttributes.EnumerableConfigurableValue);
-        result.FastAddValue(KeyStrings.done, done ? JSValue.BooleanTrue : JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(KeyStrings.done, done ? BooleanTrue : BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
         return result;
     }
 }

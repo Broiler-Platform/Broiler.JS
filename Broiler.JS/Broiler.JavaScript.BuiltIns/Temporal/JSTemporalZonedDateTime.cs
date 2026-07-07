@@ -330,7 +330,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var other = Require(ToZonedDateTime(a.GetAt(0)));
         return epochNanoseconds == other.epochNanoseconds && TimeZoneEquals(timeZoneId, other.timeZoneId)
             && calendarId == other.calendarId
-            ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+            ? BooleanTrue : BooleanFalse;
     }
 
     [JSExport("withTimeZone", Length = 1)]
@@ -1155,7 +1155,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     }
 
     private static readonly string[] UnitRankOrder =
-        { "year", "month", "week", "day", "hour", "minute", "second", "millisecond", "microsecond", "nanosecond" };
+        ["year", "month", "week", "day", "hour", "minute", "second", "millisecond", "microsecond", "nanosecond"];
 
     private static int UnitRank(string unit) => System.Array.IndexOf(UnitRankOrder, unit);
 

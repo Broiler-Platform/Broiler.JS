@@ -22,7 +22,7 @@ public partial class JSArray
         if (value.IsNullOrUndefined)
             throw JSEngine.NewTypeError(JSException.Cannot_convert_undefined_or_null_to_object);
 
-        return (JSObject)JSObject.CreatePrimitiveObject(value);
+        return (JSObject)CreatePrimitiveObject(value);
     }
 
     private static JSValue ToNumberPrimitive(JSValue value)
@@ -165,7 +165,7 @@ public partial class JSArray
         // ArraySpeciesCreate step 8: Construct(C, « 𝔽(length) »). The length is passed to the
         // custom constructor as a Number (up to 2^53-1) — it is NOT clamped to the 2^32 array-
         // index limit here; only the default ArrayCreate path (above) enforces that limit.
-        var created = species.CreateInstance(new Arguments(JSUndefined.Value, JSValue.CreateNumber((double)length)));
+        var created = species.CreateInstance(new Arguments(JSUndefined.Value, CreateNumber((double)length)));
         if (created is not JSObject createdObject)
             throw JSEngine.NewTypeError("Array species constructor did not return an object");
 
@@ -244,7 +244,7 @@ public partial class JSArray
                 return true;
             }
 
-            value = JSValue.UndefinedValue;
+            value = UndefinedValue;
             return false;
         }
 
@@ -286,11 +286,11 @@ public partial class JSArray
         {
             if (++index < GetArrayLikeLength(@object))
             {
-                value = JSValue.CreateNumber(index);
+                value = CreateNumber(index);
                 return true;
             }
 
-            value = JSValue.UndefinedValue;
+            value = UndefinedValue;
             return false;
         }
 
@@ -331,14 +331,14 @@ public partial class JSArray
             // created (but before it is exhausted) remain reachable.
             if (++index < GetArrayLikeLength(@object))
             {
-                var entry = JSValue.CreateArray();
-                entry.AddArrayItem(JSValue.CreateNumber(index));
+                var entry = CreateArray();
+                entry.AddArrayItem(CreateNumber(index));
                 entry.AddArrayItem(@object[(uint)index]);
                 value = entry;
                 return true;
             }
 
-            value = JSValue.UndefinedValue;
+            value = UndefinedValue;
             return false;
         }
 
@@ -524,7 +524,7 @@ public partial class JSArray
             // FlattenIntoArray: HasProperty then Get, so holes are skipped and exotic
             // sources (a Proxy / array-like) are observed through their has/get traps
             // rather than only their dense own elements (test262 flat/proxy-access-count).
-            if (!@this.HasProperty(JSValue.CreateString(i.ToString())).BooleanValue)
+            if (!@this.HasProperty(CreateString(i.ToString())).BooleanValue)
                 continue;
 
             var elementValue = @this[i];

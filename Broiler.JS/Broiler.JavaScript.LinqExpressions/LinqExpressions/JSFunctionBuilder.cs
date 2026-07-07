@@ -56,7 +56,7 @@ public class JSFunctionBuilder
             ?? throw new InvalidOperationException($"InvokeSuperConstructor method not found on {type.FullName}");
         _normalizeConstructorReturn = type.PublicMethod("ThrowDerivedConstructorReturnTypeError")
             ?? throw new InvalidOperationException($"ThrowDerivedConstructorReturnTypeError method not found on {type.FullName}");
-        _resolveTailCall = typeof(JSTailCall).GetMethod("Resolve", new[] { typeof(JSValue) })
+        _resolveTailCall = typeof(JSTailCall).GetMethod("Resolve", [typeof(JSValue)])
             ?? throw new InvalidOperationException("Resolve(JSValue) method not found on JSTailCall");
     }
 

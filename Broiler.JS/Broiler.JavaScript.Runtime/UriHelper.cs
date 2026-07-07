@@ -277,27 +277,27 @@ internal static class UriHelper
     private static byte[] Utf8Encode(int codePoint)
     {
         if (codePoint <= 0x7F)
-            return new[] { (byte)codePoint };
+            return [(byte)codePoint];
         if (codePoint <= 0x7FF)
-            return new[]
-            {
+            return
+            [
                 (byte)(0xC0 | (codePoint >> 6)),
                 (byte)(0x80 | (codePoint & 0x3F)),
-            };
+            ];
         if (codePoint <= 0xFFFF)
-            return new[]
-            {
+            return
+            [
                 (byte)(0xE0 | (codePoint >> 12)),
                 (byte)(0x80 | ((codePoint >> 6) & 0x3F)),
                 (byte)(0x80 | (codePoint & 0x3F)),
-            };
-        return new[]
-        {
+            ];
+        return
+        [
             (byte)(0xF0 | (codePoint >> 18)),
             (byte)(0x80 | ((codePoint >> 12) & 0x3F)),
             (byte)(0x80 | ((codePoint >> 6) & 0x3F)),
             (byte)(0x80 | (codePoint & 0x3F)),
-        };
+        ];
     }
 
     internal static string Escape(string input)

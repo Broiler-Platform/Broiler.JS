@@ -85,9 +85,9 @@ public partial class JSString
         var pos = a[0]?.IntegerValue ?? 0;
 
         if (pos < 0 || pos >= text.Length)
-            return JSValue.NumberNaN;
+            return NumberNaN;
 
-        return JSValue.CreateNumber(text[pos]);
+        return CreateNumber(text[pos]);
     }
 
     [JSPrototypeMethod]
@@ -102,14 +102,14 @@ public partial class JSString
 
         int firstCodePoint = text[pos];
         if (firstCodePoint < 0xD800 || firstCodePoint > 0xDBFF || pos + 1 == text.Length)
-            return JSValue.CreateNumber(firstCodePoint);
+            return CreateNumber(firstCodePoint);
 
         int secondCodePoint = text[pos + 1];
         if (secondCodePoint < 0xDC00 || secondCodePoint > 0xDFFF)
-            return JSValue.CreateNumber(firstCodePoint);
+            return CreateNumber(firstCodePoint);
 
         var output = (double)((firstCodePoint - 0xD800) * 1024 + (secondCodePoint - 0xDC00) + 0x10000);
-        return JSValue.CreateNumber(output);
+        return CreateNumber(output);
 
     }
 

@@ -297,7 +297,7 @@ public partial class JSAtomics : JSObject
     {
         var number = (a.GetAt(0) ?? JSUndefined.Value).DoubleValue;
         var size = double.IsNaN(number) ? 0 : Math.Truncate(number);
-        return size is 1 or 2 or 4 or 8 ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        return size is 1 or 2 or 4 or 8 ? BooleanTrue : BooleanFalse;
     }
 
     // ── wait / notify ───────────────────────────────────────────────────────────
@@ -382,7 +382,7 @@ public partial class JSAtomics : JSObject
     private static JSObject WaitAsyncResult(bool async, JSValue value)
     {
         var result = new JSObject();
-        result[KeyStrings.GetOrCreate("async")] = async ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        result[KeyStrings.GetOrCreate("async")] = async ? BooleanTrue : BooleanFalse;
         result[KeyStrings.GetOrCreate("value")] = value;
         return result;
     }

@@ -1,13 +1,10 @@
 ﻿using System;
 using Broiler.JavaScript.ExpressionCompiler;
-using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.BuiltIns.Symbol;
-using Broiler.JavaScript.BuiltIns.DataView;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
-using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
@@ -136,8 +133,8 @@ public partial class JSArrayBuffer : JSObject
     [JSExport("isView", Length = 1)]
     public static JSValue IsView(in Arguments a)
         => a.Get1() is JSTypedArray || a.Get1() is DataView.DataView
-            ? JSValue.BooleanTrue
-            : JSValue.BooleanFalse;
+            ? BooleanTrue
+            : BooleanFalse;
 
     internal byte[] buffer;
     internal bool isDetached;
@@ -478,7 +475,7 @@ public partial class JSArrayBuffer : JSObject
 
         int newLen = Math.Max(end - begin, 0);
         var ctor = GetSpeciesConstructor(source);
-        var created = ctor?.CreateInstance(JSValue.CreateNumber(newLen)) ?? new JSArrayBuffer(newLen);
+        var created = ctor?.CreateInstance(CreateNumber(newLen)) ?? new JSArrayBuffer(newLen);
         if (created is not JSArrayBuffer target)
             throw JSEngine.NewTypeError("ArrayBuffer species constructor did not return an ArrayBuffer");
         if (target.isImmutable)

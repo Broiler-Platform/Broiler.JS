@@ -1,5 +1,4 @@
 extern alias BRegex;
-using System;
 using System.Collections.Generic;
 using BRegex::Broiler.Regex;
 using BRegex::Broiler.Regex.Ast;

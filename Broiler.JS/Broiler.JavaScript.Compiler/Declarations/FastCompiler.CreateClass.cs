@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Storage;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using System.Reflection;
 
@@ -908,8 +906,8 @@ partial class FastCompiler
 
             var start = span.Offset;
             var endSpan = member.End.Span;
-            var end = System.Math.Min(source.Length, endSpan.Offset + endSpan.Length);
-            if (end > start && source.IndexOf("eval", start, end - start, System.StringComparison.Ordinal) >= 0)
+            var end = Math.Min(source.Length, endSpan.Offset + endSpan.Length);
+            if (end > start && source.IndexOf("eval", start, end - start, StringComparison.Ordinal) >= 0)
                 return true;
         }
 

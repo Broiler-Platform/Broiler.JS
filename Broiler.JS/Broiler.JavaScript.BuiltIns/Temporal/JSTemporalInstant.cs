@@ -274,7 +274,7 @@ public partial class JSTemporalInstant : JSObject
     public JSValue Equals(in Arguments a)
     {
         var other = RequireInstant(ToTemporalInstant(a.GetAt(0)));
-        return epochNanoseconds == other.epochNanoseconds ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        return epochNanoseconds == other.epochNanoseconds ? BooleanTrue : BooleanFalse;
     }
 
     [JSExport("toString", Length = 0)]

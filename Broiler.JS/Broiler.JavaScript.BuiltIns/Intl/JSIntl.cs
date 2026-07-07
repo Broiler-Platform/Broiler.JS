@@ -13,14 +13,13 @@ using Broiler.JavaScript.BuiltIns.Temporal;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Storage;
 using UnicodeCldr.LocaleData;
 
 namespace Broiler.JavaScript.BuiltIns.Intl;
 
 public static class JSIntl
 {
-    private static readonly ConditionalWeakTable<JSObject, JSObject> Cache = new();
+    private static readonly ConditionalWeakTable<JSObject, JSObject> Cache = [];
     private static readonly KeyString DateTimeFormatKey = KeyStrings.GetOrCreate("DateTimeFormat");
     private static readonly KeyString RelativeTimeFormatKey = KeyStrings.GetOrCreate("RelativeTimeFormat");
     private static readonly KeyString NumberFormatKey = KeyStrings.GetOrCreate("NumberFormat");
@@ -183,7 +182,7 @@ public static class JSIntl
                 if (key == "timeZone")
                 {
                     var list = JSValue.CreateArray();
-                    foreach (var tz in Temporal.JSTemporalZonedDateTime.AvailablePrimaryTimeZoneIdentifiers())
+                    foreach (var tz in JSTemporalZonedDateTime.AvailablePrimaryTimeZoneIdentifiers())
                         list.AddArrayItem(JSValue.CreateString(tz));
                     return list;
                 }
@@ -894,15 +893,15 @@ public static class JSIntl
         if (OptionString(options, KeyStrings.GetOrCreate("variants")) is { } variantsOpt)
         {
             var subtags = variantsOpt.ToLowerInvariant().Split('-');
-            var seen = new HashSet<string>(System.StringComparer.Ordinal);
+            var seen = new HashSet<string>(StringComparer.Ordinal);
             foreach (var sub in subtags)
             {
                 if (!Regex.IsMatch(sub, "^(?:[0-9a-z]{5,8}|[0-9][0-9a-z]{3})$", RegexOptions.CultureInvariant)
                     || !seen.Add(sub))
                     throw JSEngine.NewRangeError("Invalid variants option");
             }
-            variants = new List<string>(subtags);
-            variants.Sort(System.StringComparer.Ordinal);
+            variants = [.. subtags];
+            variants.Sort(StringComparer.Ordinal);
         }
 
         // Unicode-extension keyword options.
@@ -1427,12 +1426,14 @@ public static class JSIntl
             if (seen.Add(v))
                 variants.Add(v);
         }
-        variants.Sort(System.StringComparer.Ordinal);
+        variants.Sort(StringComparer.Ordinal);
 
         // Rebuild: pre-variant prefix (with any replaced language) + canonical variants +
         // everything after the variant run (extension singletons / private-use).
-        var rebuilt = new List<string>(variantStart + variants.Count + (parts.Length - i));
-        rebuilt.Add(language);
+        var rebuilt = new List<string>(variantStart + variants.Count + (parts.Length - i))
+        {
+            language
+        };
         for (var j = 1; j < variantStart; j++) rebuilt.Add(parts[j]);
         rebuilt.AddRange(variants);
         for (var j = i; j < parts.Length; j++) rebuilt.Add(parts[j]);
@@ -1446,7 +1447,7 @@ public static class JSIntl
     // so this composes with the rest of the language-tag canonicalization pipeline.
     private static string CanonicalizeTransformedExtension(string tag)
     {
-        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-t-", System.StringComparison.OrdinalIgnoreCase) < 0)
+        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-t-", StringComparison.OrdinalIgnoreCase) < 0)
             return tag;
 
         var parts = tag.Split('-');
@@ -1508,7 +1509,7 @@ public static class JSIntl
                 variants.Add(payload[p]);
                 p++;
             }
-            variants.Sort(System.StringComparer.Ordinal);
+            variants.Sort(StringComparer.Ordinal);
             canonical.AddRange(variants);
         }
 
@@ -1537,7 +1538,7 @@ public static class JSIntl
                         values[v] = preferred;
             fields.Add((key, values));
         }
-        fields.Sort((a, b) => System.StringComparer.Ordinal.Compare(a.Key, b.Key));
+        fields.Sort((a, b) => StringComparer.Ordinal.Compare(a.Key, b.Key));
         foreach (var (key, values) in fields)
         {
             canonical.Add(key);
@@ -1627,15 +1628,15 @@ public static class JSIntl
     // (UTS #35 §3.2.1): take the most likely region for the tag's (language, script) — ignoring
     // the source region — and use it when it is in the list, otherwise the first list entry.
     private static readonly string[] SovietUnionSuccessors =
-        { "RU", "AM", "AZ", "BY", "EE", "GE", "KZ", "KG", "LV", "LT", "MD", "TJ", "TM", "UA", "UZ" };
+        ["RU", "AM", "AZ", "BY", "EE", "GE", "KZ", "KG", "LV", "LT", "MD", "TJ", "TM", "UA", "UZ"];
 
     private static readonly Dictionary<string, string[]> MultiRegionAliases = new(StringComparer.Ordinal)
     {
         // SU / 810 (Soviet Union) and CS (Serbia and Montenegro) and NT (Neutral Zone).
         ["SU"] = SovietUnionSuccessors,
         ["810"] = SovietUnionSuccessors,
-        ["CS"] = new[] { "RS", "ME" },
-        ["NT"] = new[] { "SA", "IQ" },
+        ["CS"] = ["RS", "ME"],
+        ["NT"] = ["SA", "IQ"],
     };
 
     // Bcp47 region subtag aliases (CLDR supplemental territoryAlias) whose deprecated code
@@ -1899,7 +1900,7 @@ public static class JSIntl
                 continue;
 
             var singleton = char.ToLowerInvariant(subtags[i][0]);
-            singletons ??= new HashSet<char>();
+            singletons ??= [];
             if (!singletons.Add(singleton))
                 return true;
 
@@ -2356,7 +2357,7 @@ public static class JSIntl
     // ("-t-", "-x-", …) are preserved.
     private static string FilterUnicodeExtensionKeywords(string tag, string[] relevantKeys)
     {
-        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-u-", System.StringComparison.OrdinalIgnoreCase) < 0)
+        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase) < 0)
             return tag;
 
         var parts = tag.Split('-');
@@ -2431,7 +2432,7 @@ public static class JSIntl
     // "traditio", "finance") are intentionally absent — they are not valid `-u-nu-`
     // values. Stored sorted (code-unit order) for supportedValuesOf.
     internal static readonly string[] SupportedNumberingSystemsSorted =
-    {
+    [
         "adlm", "ahom", "arab", "arabext", "bali", "beng", "bhks", "brah", "cakm",
         "cham", "deva", "diak", "fullwide", "gara", "gong", "gonm", "gujr", "gukh",
         "guru", "hanidec", "hmng", "hmnp", "java", "kali", "kawi", "khmr", "knda",
@@ -2441,7 +2442,7 @@ public static class JSIntl
         "nkoo", "olck", "onao", "orya", "osma", "outlined", "rohg", "saur", "segment",
         "shrd", "sind", "sinh", "sora", "sund", "sunu", "takr", "talu", "tamldec",
         "telu", "thai", "tibt", "tirh", "tnsa", "tols", "vaii", "wara", "wcho",
-    };
+    ];
 
     private static readonly HashSet<string> SupportedNumberingSystems =
         new(SupportedNumberingSystemsSorted, StringComparer.Ordinal);
@@ -2452,11 +2453,11 @@ public static class JSIntl
     // deliberately excluded (they are not part of the required/available set, matching V8 and
     // test262 supportedValuesOf/calendars-required-by-intl-era-monthcode).
     internal static readonly string[] AvailableCanonicalCalendars =
-    {
+    [
         "buddhist", "chinese", "coptic", "dangi", "ethioaa", "ethiopic", "gregory", "hebrew",
         "indian", "islamic-civil", "islamic-tbla", "islamic-umalqura",
         "iso8601", "japanese", "persian", "roc",
-    };
+    ];
 
     internal static bool IsSupportedNumberingSystem(string value)
         => value != null && SupportedNumberingSystems.Contains(value);
@@ -2679,7 +2680,7 @@ public static class JSIntl
         var j = u + 1;
         while (j < parts.Length && parts[j].Length != 1)
         {
-            if (parts[j].Length == 2 && string.Equals(parts[j], key, System.StringComparison.OrdinalIgnoreCase))
+            if (parts[j].Length == 2 && string.Equals(parts[j], key, StringComparison.OrdinalIgnoreCase))
             {
                 var types = new List<string>();
                 var t = j + 1;
@@ -2888,7 +2889,7 @@ public class JSIntlRelativeTimeFormat : JSObject
         var sb = new StringBuilder();
         foreach (var (_, partValue, _) in PartitionRelativeTimePattern(value, unit))
             sb.Append(partValue);
-        return JSValue.CreateString(sb.ToString());
+        return CreateString(sb.ToString());
     }
 
     public static JSValue FormatPrototype(in Arguments a)
@@ -2908,14 +2909,14 @@ public class JSIntlRelativeTimeFormat : JSObject
         var valueKey = KeyStrings.GetOrCreate("value");
         var unitKey = KeyStrings.GetOrCreate("unit");
 
-        var parts = JSValue.CreateArray();
+        var parts = CreateArray();
         foreach (var (type, partValue, partUnit) in @this.PartitionRelativeTimePattern(value, unit))
         {
             var part = new JSObject();
-            part.FastAddValue(typeKey, JSValue.CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
-            part.FastAddValue(valueKey, JSValue.CreateString(partValue), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(typeKey, CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(valueKey, CreateString(partValue), JSPropertyAttributes.EnumerableConfigurableValue);
             if (partUnit != null)
-                part.FastAddValue(unitKey, JSValue.CreateString(partUnit), JSPropertyAttributes.EnumerableConfigurableValue);
+                part.FastAddValue(unitKey, CreateString(partUnit), JSPropertyAttributes.EnumerableConfigurableValue);
             parts.AddArrayItem(part);
         }
         return parts;
@@ -2970,9 +2971,9 @@ public class JSIntlRelativeTimeFormat : JSObject
         if (prefix.Length > 0)
             result.Add(("literal", prefix, null));
 
-        var numberArgs = new Arguments(JSUndefined.Value, JSValue.CreateString(locale));
+        var numberArgs = new Arguments(JSUndefined.Value, CreateString(locale));
         var numberFormat = new JSIntlNumberFormat(in numberArgs);
-        foreach (var (type, value) in numberFormat.ComputeFormatParts(JSValue.CreateNumber(magnitude)))
+        foreach (var (type, value) in numberFormat.ComputeFormatParts(CreateNumber(magnitude)))
             result.Add((type, value, unit));
 
         if (suffix.Length > 0)
@@ -2992,10 +2993,10 @@ public class JSIntlRelativeTimeFormat : JSObject
             throw JSEngine.NewTypeError("Intl.RelativeTimeFormat.prototype.resolvedOptions called on incompatible receiver");
 
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), JSValue.CreateString(@this.style));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numeric"), JSValue.CreateString(@this.numeric));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), JSValue.CreateString(@this.numberingSystem));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(@this.style));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numeric"), CreateString(@this.numeric));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), CreateString(@this.numberingSystem));
         return result;
     }
 
@@ -3033,8 +3034,8 @@ public sealed class JSIntlSegmenter : JSObject
             throw JSEngine.NewTypeError("Intl.Segmenter.prototype.resolvedOptions called on incompatible receiver");
 
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("granularity"), JSValue.CreateString(@this.Granularity));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("granularity"), CreateString(@this.Granularity));
         return result;
     }
 
@@ -3089,7 +3090,7 @@ public sealed class JSIntlSegments : JSObject
         // is observable, in addition to the internal GetIterableEnumerator that backs for-of.
         FastAddValue(
             (IJSSymbol)JSSymbol.iterator,
-            JSValue.CreateFunction(static (in Arguments a) =>
+            CreateFunction(static (in Arguments a) =>
             {
                 if (a.This is not JSIntlSegments self)
                     throw JSEngine.NewTypeError("%Segments.prototype%[Symbol.iterator] called on incompatible receiver");
@@ -3112,7 +3113,7 @@ public sealed class JSIntlSegments : JSObject
         var iterator = new JSObject();
         iterator.FastAddValue(
             KeyStrings.GetOrCreate("next"),
-            JSValue.CreateFunction((in Arguments a) =>
+            CreateFunction((in Arguments a) =>
             {
                 var result = new JSObject();
                 if (index < list.Count)
@@ -3120,12 +3121,12 @@ public sealed class JSIntlSegments : JSObject
                     var (start, length) = list[index];
                     index++;
                     result.FastAddValue(valueKey, segments.CreateSegmentDataObject(start, length), JSPropertyAttributes.EnumerableConfigurableValue);
-                    result.FastAddValue(doneKey, JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+                    result.FastAddValue(doneKey, BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
                 }
                 else
                 {
                     result.FastAddValue(valueKey, JSUndefined.Value, JSPropertyAttributes.EnumerableConfigurableValue);
-                    result.FastAddValue(doneKey, JSValue.BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
+                    result.FastAddValue(doneKey, BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
                 }
 
                 return result;
@@ -3133,7 +3134,7 @@ public sealed class JSIntlSegments : JSObject
             JSPropertyAttributes.ConfigurableValue);
         iterator.FastAddValue(
             (IJSSymbol)JSSymbol.iterator,
-            JSValue.CreateFunction(static (in Arguments a) => a.This, "[Symbol.iterator]", null, 0, false),
+            CreateFunction(static (in Arguments a) => a.This, "[Symbol.iterator]", null, 0, false),
             JSPropertyAttributes.ConfigurableValue);
         return iterator;
     }
@@ -3167,13 +3168,13 @@ public sealed class JSIntlSegments : JSObject
     private JSObject CreateSegmentDataObject(int start, int length)
     {
         var result = new JSObject();
-        result.FastAddValue(SegmentKey, JSValue.CreateString(_input.Substring(start, length)), JSPropertyAttributes.EnumerableConfigurableValue);
-        result.FastAddValue(IndexKey, JSValue.CreateNumber(start), JSPropertyAttributes.EnumerableConfigurableValue);
-        result.FastAddValue(InputKey, JSValue.CreateString(_input), JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(SegmentKey, CreateString(_input.Substring(start, length)), JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(IndexKey, CreateNumber(start), JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(InputKey, CreateString(_input), JSPropertyAttributes.EnumerableConfigurableValue);
         if (_granularity == "word")
         {
             var isWordLike = IsWordLike(_input.Substring(start, length));
-            result.FastAddValue(IsWordLikeKey, isWordLike ? JSValue.BooleanTrue : JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+            result.FastAddValue(IsWordLikeKey, isWordLike ? BooleanTrue : BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
         }
 
         return result;
@@ -3356,15 +3357,15 @@ public sealed class JSIntlDurationFormat : JSObject
 {
     // Units in ECMA-402 processing order, with their singular NumberFormat unit name.
     private static readonly string[] Units =
-        { "years", "months", "weeks", "days", "hours", "minutes", "seconds", "milliseconds", "microseconds", "nanoseconds" };
+        ["years", "months", "weeks", "days", "hours", "minutes", "seconds", "milliseconds", "microseconds", "nanoseconds"];
     private static readonly string[] SingularUnits =
-        { "year", "month", "week", "day", "hour", "minute", "second", "millisecond", "microsecond", "nanosecond" };
+        ["year", "month", "week", "day", "hour", "minute", "second", "millisecond", "microsecond", "nanosecond"];
 
-    private static readonly string[] DateStyles = { "long", "short", "narrow" };
-    private static readonly string[] TimeStyles = { "long", "short", "narrow", "numeric", "2-digit" };
-    private static readonly string[] SubSecondStyles = { "long", "short", "narrow", "numeric" };
-    private static readonly string[] StyleValues = { "long", "short", "narrow", "digital" };
-    private static readonly string[] DisplayValues = { "auto", "always" };
+    private static readonly string[] DateStyles = ["long", "short", "narrow"];
+    private static readonly string[] TimeStyles = ["long", "short", "narrow", "numeric", "2-digit"];
+    private static readonly string[] SubSecondStyles = ["long", "short", "narrow", "numeric"];
+    private static readonly string[] StyleValues = ["long", "short", "narrow", "digital"];
+    private static readonly string[] DisplayValues = ["auto", "always"];
 
     private readonly string locale;
     private readonly string numberingSystem;       // null => NumberFormat default
@@ -3444,7 +3445,7 @@ public sealed class JSIntlDurationFormat : JSObject
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.format called on incompatible receiver");
 
         var durationObject = ToDurationFormatRecord(a.Get1());
-        return JSValue.CreateString(self.Format(durationObject));
+        return CreateString(self.Format(durationObject));
     }
 
     // Temporal.Duration.prototype.toLocaleString(locales, options): formats the duration with a
@@ -3457,7 +3458,7 @@ public sealed class JSIntlDurationFormat : JSObject
             "DurationFormat", in args, out var canonical, requireNew: false, coerceOptions: false);
         var locale = JSIntl.ResolveLocaleFromCanonical(canonical);
         var df = new JSIntlDurationFormat(locale, optionsObject);
-        return JSValue.CreateString(df.Format(ToDurationFormatRecord(duration)));
+        return CreateString(df.Format(ToDurationFormatRecord(duration)));
     }
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
@@ -3466,7 +3467,7 @@ public sealed class JSIntlDurationFormat : JSObject
             throw JSEngine.NewTypeError("Intl.DurationFormat.prototype.formatToParts called on incompatible receiver");
 
         var durationObject = ToDurationFormatRecord(a.Get1());
-        var parts = JSValue.CreateArray();
+        var parts = CreateArray();
 
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
@@ -3474,12 +3475,12 @@ public sealed class JSIntlDurationFormat : JSObject
         foreach (var (type, value, unit) in self.FormatToParts(durationObject))
         {
             var part = new JSObject();
-            part.FastAddValue(typeKey, JSValue.CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
-            part.FastAddValue(valueKey, JSValue.CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(typeKey, CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(valueKey, CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
             // Parts produced from a unit's NumberFormat carry the singular unit
             // name; list separators and ListFormat literals leave it absent.
             if (unit != null)
-                part.FastAddValue(unitKey, JSValue.CreateString(unit), JSPropertyAttributes.EnumerableConfigurableValue);
+                part.FastAddValue(unitKey, CreateString(unit), JSPropertyAttributes.EnumerableConfigurableValue);
             parts.AddArrayItem(part);
         }
         return parts;
@@ -3494,16 +3495,16 @@ public sealed class JSIntlDurationFormat : JSObject
         void Put(string key, JSValue value) =>
             result.FastAddValue(KeyStrings.GetOrCreate(key), value, JSPropertyAttributes.EnumerableConfigurableValue);
 
-        Put("locale", JSValue.CreateString(self.locale ?? "en"));
-        Put("numberingSystem", JSValue.CreateString(self.numberingSystem ?? "latn"));
-        Put("style", JSValue.CreateString(self.style));
+        Put("locale", CreateString(self.locale ?? "en"));
+        Put("numberingSystem", CreateString(self.numberingSystem ?? "latn"));
+        Put("style", CreateString(self.style));
         for (var i = 0; i < Units.Length; i++)
         {
-            Put(Units[i], JSValue.CreateString(self.unitStyle[i]));
-            Put(Units[i] + "Display", JSValue.CreateString(self.unitDisplay[i]));
+            Put(Units[i], CreateString(self.unitStyle[i]));
+            Put(Units[i] + "Display", CreateString(self.unitDisplay[i]));
         }
         if (self.fractionalDigits is { } digits)
-            Put("fractionalDigits", JSValue.CreateNumber(digits));
+            Put("fractionalDigits", CreateNumber(digits));
         return result;
     }
 
@@ -3688,37 +3689,37 @@ public sealed class JSIntlDurationFormat : JSObject
         void Set(string key, JSValue v) => options.FastAddValue(KeyStrings.GetOrCreate(key), v, JSPropertyAttributes.EnumerableConfigurableValue);
 
         if (numberingSystem != null)
-            Set("numberingSystem", JSValue.CreateString(numberingSystem));
+            Set("numberingSystem", CreateString(numberingSystem));
 
         if (unitStyleValue == "2-digit")
-            Set("minimumIntegerDigits", JSValue.CreateNumber(2));
+            Set("minimumIntegerDigits", CreateNumber(2));
 
         if (unitStyleValue is not ("numeric" or "2-digit"))
         {
-            Set("style", JSValue.CreateString("unit"));
-            Set("unit", JSValue.CreateString(singularUnit));
-            Set("unitDisplay", JSValue.CreateString(unitStyleValue));
+            Set("style", CreateString("unit"));
+            Set("unit", CreateString(singularUnit));
+            Set("unitDisplay", CreateString(unitStyleValue));
         }
         else
         {
-            Set("useGrouping", JSValue.BooleanFalse);
+            Set("useGrouping", BooleanFalse);
         }
 
         if (fractional)
         {
-            Set("maximumFractionDigits", JSValue.CreateNumber(fractionalDigits ?? 9));
-            Set("minimumFractionDigits", JSValue.CreateNumber(fractionalDigits ?? 0));
-            Set("roundingMode", JSValue.CreateString("trunc"));
+            Set("maximumFractionDigits", CreateNumber(fractionalDigits ?? 9));
+            Set("minimumFractionDigits", CreateNumber(fractionalDigits ?? 0));
+            Set("roundingMode", CreateString("trunc"));
         }
 
         if (signNever)
-            Set("signDisplay", JSValue.CreateString("never"));
+            Set("signDisplay", CreateString("never"));
 
-        var args = new Arguments(JSUndefined.Value, JSValue.CreateString(locale), options);
+        var args = new Arguments(JSUndefined.Value, CreateString(locale), options);
         var nf = new JSIntlNumberFormat(in args);
         // A folded fractional value is formatted from its exact decimal string (parsed as an Intl
         // mathematical value) so no sub-second precision is lost to the double round-trip.
-        var operand = exactValue != null ? JSValue.CreateString(exactValue) : JSValue.CreateNumber(value);
+        var operand = exactValue != null ? CreateString(exactValue) : CreateNumber(value);
         return nf.ComputeFormatParts(operand);
     }
 
@@ -3748,7 +3749,7 @@ public sealed class JSIntlDurationFormat : JSObject
             };
             var record = new JSObject();
             for (var i = 0; i < Units.Length; i++)
-                record.FastAddValue(KeyStrings.GetOrCreate(Units[i]), JSValue.CreateNumber(slots[i]), JSPropertyAttributes.EnumerableConfigurableValue);
+                record.FastAddValue(KeyStrings.GetOrCreate(Units[i]), CreateNumber(slots[i]), JSPropertyAttributes.EnumerableConfigurableValue);
             return record;
         }
 
@@ -3845,7 +3846,7 @@ public sealed class JSIntlListFormat : JSObject
             throw JSEngine.NewTypeError("Intl.ListFormat.prototype.format called on incompatible receiver");
 
         var items = StringListFromIterable(a.Get1());
-        return JSValue.CreateString(@this.FormatList(items));
+        return CreateString(@this.FormatList(items));
     }
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
@@ -3855,10 +3856,10 @@ public sealed class JSIntlListFormat : JSObject
 
         var items = StringListFromIterable(a.Get1());
         var parts = @this.BuildParts(items);
-        var result = JSValue.CreateArray();
+        var result = CreateArray();
         var arr = (JSObject)result;
         for (uint i = 0; i < (uint)parts.Count; i++)
-            arr.SetPropertyOrThrow(JSValue.CreateNumber(i), MakePart(parts[(int)i].type, parts[(int)i].value));
+            arr.SetPropertyOrThrow(CreateNumber(i), MakePart(parts[(int)i].type, parts[(int)i].value));
         return result;
     }
 
@@ -3878,20 +3879,20 @@ public sealed class JSIntlListFormat : JSObject
     {
         var count = items.Count;
         if (count == 0)
-            return new List<(string, string)>();
+            return [];
         if (count == 1)
-            return new List<(string, string)> { ("element", items[0]) };
+            return [("element", items[0])];
 
         var (start, middle, end, pair) = GetPatterns();
         if (count == 2)
-            return ExpandPattern(pair, new List<(string, string)> { ("element", items[0]) }, new List<(string, string)> { ("element", items[1]) });
+            return ExpandPattern(pair, [("element", items[0])], [("element", items[1])]);
 
         var inner = ExpandPattern(end,
-            new List<(string, string)> { ("element", items[count - 2]) },
-            new List<(string, string)> { ("element", items[count - 1]) });
+            [("element", items[count - 2])],
+            [("element", items[count - 1])]);
         for (var i = count - 3; i >= 1; i--)
-            inner = ExpandPattern(middle, new List<(string, string)> { ("element", items[i]) }, inner);
-        return ExpandPattern(start, new List<(string, string)> { ("element", items[0]) }, inner);
+            inner = ExpandPattern(middle, [("element", items[i])], inner);
+        return ExpandPattern(start, [("element", items[0])], inner);
     }
 
     // Walk a "{0} … {1}" pattern emitting placeholder substitutions as the supplied
@@ -3942,8 +3943,8 @@ public sealed class JSIntlListFormat : JSObject
     private static JSObject MakePart(string type, string value)
     {
         var part = new JSObject();
-        part[KeyStrings.GetOrCreate("type")] = JSValue.CreateString(type);
-        part[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(value);
+        part[KeyStrings.GetOrCreate("type")] = CreateString(type);
+        part[KeyStrings.GetOrCreate("value")] = CreateString(value);
         return part;
     }
 
@@ -4031,9 +4032,9 @@ public sealed class JSIntlListFormat : JSObject
             throw JSEngine.NewTypeError("Intl.ListFormat.prototype.resolvedOptions called on incompatible receiver");
 
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), JSValue.CreateString(@this.type));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), JSValue.CreateString(@this.style));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(@this.type));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(@this.style));
         return result;
     }
 }
@@ -4062,9 +4063,9 @@ public sealed class JSIntlDisplayNames : JSObject
         // Intl.supportedValuesOf("currency") returns) resolve to a name; an unknown but well-formed code
         // follows the fallback option — "code" yields the code, "none" yields undefined.
         if (@this.options.Type == "currency" && !IntlEnumerationData.CurrencySet.Contains(canonical))
-            return @this.options.Fallback == "none" ? JSUndefined.Value : JSValue.CreateString(canonical);
+            return @this.options.Fallback == "none" ? JSUndefined.Value : CreateString(canonical);
 
-        return JSValue.CreateString(canonical);
+        return CreateString(canonical);
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
@@ -4073,12 +4074,12 @@ public sealed class JSIntlDisplayNames : JSObject
             throw JSEngine.NewTypeError("Intl.DisplayNames.prototype.resolvedOptions called on incompatible receiver");
 
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), JSValue.CreateString(@this.options.Style));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), JSValue.CreateString(@this.options.Type));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("fallback"), JSValue.CreateString(@this.options.Fallback));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(@this.options.Style));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(@this.options.Type));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("fallback"), CreateString(@this.options.Fallback));
         if (@this.options.Type == "language")
-            result.CreateDataProperty(KeyStrings.GetOrCreate("languageDisplay"), JSValue.CreateString(@this.options.LanguageDisplay));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("languageDisplay"), CreateString(@this.options.LanguageDisplay));
         return result;
     }
 
@@ -4193,12 +4194,12 @@ public sealed class JSIntlLocale : JSObject
     // (when present) first, then the remaining list entries that differ from it.
     private static JSValue CreateArrayFromListAndPreferred(string preferred, params string[] list)
     {
-        var array = JSValue.CreateArray();
+        var array = CreateArray();
         if (preferred != null)
-            array.AddArrayItem(JSValue.CreateString(preferred));
+            array.AddArrayItem(CreateString(preferred));
         foreach (var item in list)
             if (preferred == null || !string.Equals(item, preferred, StringComparison.Ordinal))
-                array.AddArrayItem(JSValue.CreateString(item));
+                array.AddArrayItem(CreateString(item));
         return array;
     }
 
@@ -4318,7 +4319,7 @@ public sealed class JSIntlLocale : JSObject
         var info = new JSObject();
         info.FastAddValue(
             KeyStrings.GetOrCreate("direction"),
-            JSValue.CreateString(locale.IsRightToLeft() ? "rtl" : "ltr"),
+            CreateString(locale.IsRightToLeft() ? "rtl" : "ltr"),
             JSPropertyAttributes.EnumerableConfigurableValue);
         return info;
     }
@@ -4330,12 +4331,12 @@ public sealed class JSIntlLocale : JSObject
 
         // Per spec, getTimeZones returns undefined for a locale without a region.
         if (region == null)
-            return JSValue.UndefinedValue;
+            return UndefinedValue;
 
         // Region→IANA time-zone data is not bundled; return a representative
         // non-empty list (a primary zone for known regions, UTC otherwise).
-        var array = JSValue.CreateArray();
-        array.AddArrayItem(JSValue.CreateString(
+        var array = CreateArray();
+        array.AddArrayItem(CreateString(
             RegionPrimaryTimeZone.TryGetValue(region, out var zone) ? zone : "UTC"));
         return array;
     }
@@ -4353,13 +4354,13 @@ public sealed class JSIntlLocale : JSObject
         var firstDay = WeekdayToNumber(locale.GetUnicodeKeyword("fw"))
             ?? (region != null && SundayFirstRegions.Contains(region) ? 7 : 1);
 
-        var weekend = JSValue.CreateArray();
-        weekend.AddArrayItem(JSValue.CreateNumber(6)); // Saturday
-        weekend.AddArrayItem(JSValue.CreateNumber(7)); // Sunday
+        var weekend = CreateArray();
+        weekend.AddArrayItem(CreateNumber(6)); // Saturday
+        weekend.AddArrayItem(CreateNumber(7)); // Sunday
 
         var info = new JSObject();
         info.FastAddValue(KeyStrings.GetOrCreate("firstDay"),
-            JSValue.CreateNumber(firstDay), JSPropertyAttributes.EnumerableConfigurableValue);
+            CreateNumber(firstDay), JSPropertyAttributes.EnumerableConfigurableValue);
         info.FastAddValue(KeyStrings.GetOrCreate("weekend"),
             weekend, JSPropertyAttributes.EnumerableConfigurableValue);
         return info;
@@ -4380,13 +4381,13 @@ public sealed class JSIntlLocale : JSObject
     };
 
     public static JSValue ToStringPrototype(in Arguments a)
-        => JSValue.CreateString(RequireLocale(in a, "toString").tag);
+        => CreateString(RequireLocale(in a, "toString").tag);
 
     public static JSValue BaseNamePrototype(in Arguments a)
-        => JSValue.CreateString(RequireLocale(in a, "baseName").GetBaseName());
+        => CreateString(RequireLocale(in a, "baseName").GetBaseName());
 
     public static JSValue LanguagePrototype(in Arguments a)
-        => JSValue.CreateString(RequireLocale(in a, "language").GetLanguage());
+        => CreateString(RequireLocale(in a, "language").GetLanguage());
 
     public static JSValue ScriptPrototype(in Arguments a)
         => OptionalString(RequireLocale(in a, "script").GetScript());
@@ -4419,11 +4420,11 @@ public sealed class JSIntlLocale : JSObject
     {
         var value = RequireLocale(in a, "numeric").GetUnicodeKeyword("kn");
         var numeric = value != null && (value.Length == 0 || value == "true");
-        return numeric ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        return numeric ? BooleanTrue : BooleanFalse;
     }
 
     private static JSValue OptionalString(string value)
-        => value == null ? JSValue.UndefinedValue : JSValue.CreateString(value);
+        => value == null ? UndefinedValue : CreateString(value);
 
     // --- BCP-47 language tag parsing (over the stored, already-validated tag) ---
 
@@ -4618,11 +4619,11 @@ public sealed class JSIntlPluralRules : JSObject
     {
         if (notation != "compact")
             return 0;
-        var abs = System.Math.Abs(n);
+        var abs = Math.Abs(n);
         if (!(abs >= 1000) || !double.IsFinite(abs))
             return 0;
-        var e = 3 * (int)System.Math.Floor(System.Math.Log10(abs) / 3);
-        return System.Math.Min(e, 14);
+        var e = 3 * (int)Math.Floor(Math.Log10(abs) / 3);
+        return Math.Min(e, 14);
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
@@ -4634,7 +4635,7 @@ public sealed class JSIntlPluralRules : JSObject
         JSValue Digit(string name, int fallback)
         {
             var v = digits?[KeyStrings.GetOrCreate(name)];
-            return v == null || v.IsUndefined ? JSValue.CreateNumber(fallback) : v;
+            return v == null || v.IsUndefined ? CreateNumber(fallback) : v;
         }
         bool HasDigit(string name) => digits != null && !digits[KeyStrings.GetOrCreate(name)].IsUndefined;
 
@@ -4642,9 +4643,9 @@ public sealed class JSIntlPluralRules : JSObject
         // fraction-digit or significant-digit pair (significant digits override when supplied),
         // then pluralCategories.
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), JSValue.CreateString(@this.type));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), JSValue.CreateString(@this.notation));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("type"), CreateString(@this.type));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), CreateString(@this.notation));
         result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), Digit("minimumIntegerDigits", 1));
 
         if (HasDigit("minimumSignificantDigits") || HasDigit("maximumSignificantDigits"))
@@ -4658,12 +4659,12 @@ public sealed class JSIntlPluralRules : JSObject
             result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), Digit("maximumFractionDigits", 3));
         }
 
-        var pluralCategories = JSValue.CreateArray();
+        var pluralCategories = CreateArray();
         result.CreateDataProperty(KeyStrings.GetOrCreate("pluralCategories"), pluralCategories);
         if (pluralCategories is JSObject array)
         {
             foreach (var category in CldrLocaleData.GetPluralCategories(@this.locale, @this.type))
-                array.AddArrayItem(JSValue.CreateString(category));
+                array.AddArrayItem(CreateString(category));
         }
 
         return result;
@@ -4735,7 +4736,7 @@ public class JSIntlNumberFormat : JSObject
         var sb = new StringBuilder();
         foreach (var (_, value) in ComputeFormatParts(a.Get1()))
             sb.Append(value);
-        return JSValue.CreateString(sb.ToString());
+        return CreateString(sb.ToString());
     }
 
     public static JSValue FormatToPartsPrototype(in Arguments a)
@@ -4745,12 +4746,12 @@ public class JSIntlNumberFormat : JSObject
 
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
-        var parts = JSValue.CreateArray();
+        var parts = CreateArray();
         foreach (var (type, value) in @this.ComputeFormatParts(a.Get1()))
         {
             var part = new JSObject();
-            part.FastAddValue(typeKey, JSValue.CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
-            part.FastAddValue(valueKey, JSValue.CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(typeKey, CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(valueKey, CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
             parts.AddArrayItem(part);
         }
         return parts;
@@ -5015,7 +5016,7 @@ public class JSIntlNumberFormat : JSObject
     // Numbering systems whose digits are not a contiguous range.
     private static readonly Dictionary<string, string[]> AlgorithmicDigits = new()
     {
-        ["hanidec"] = new[] { "〇", "一", "二", "三", "四", "五", "六", "七", "八", "九" },
+        ["hanidec"] = ["〇", "一", "二", "三", "四", "五", "六", "七", "八", "九"],
     };
 
     internal static string MapDigit(string numberingSystem, int d)
@@ -5794,7 +5795,7 @@ public class JSIntlNumberFormat : JSObject
     // The currency option is canonicalized to upper case (CanonicalizeUCurrencyCode); the
     // value has already been validated as a well-formed 3-letter code at construction time.
     private static JSValue CanonicalCurrencyValue(JSValue currency)
-        => JSValue.CreateString(currency.StringValue.ToUpperInvariant());
+        => CreateString(currency.StringValue.ToUpperInvariant());
 
     private string ReadStringOption(string name, string fallback)
     {
@@ -5812,7 +5813,7 @@ public class JSIntlNumberFormat : JSObject
         var sb = new StringBuilder();
         foreach (var (_, value, _) in self.ComputeRangeParts(a[0], a.GetAt(1)))
             sb.Append(value);
-        return JSValue.CreateString(sb.ToString());
+        return CreateString(sb.ToString());
     }
 
     public static JSValue FormatRangeToPartsPrototype(in Arguments a)
@@ -5823,13 +5824,13 @@ public class JSIntlNumberFormat : JSObject
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
         var sourceKey = KeyStrings.GetOrCreate("source");
-        var parts = JSValue.CreateArray();
+        var parts = CreateArray();
         foreach (var (type, value, source) in self.ComputeRangeParts(a[0], a.GetAt(1)))
         {
             var part = new JSObject();
-            part.FastAddValue(typeKey, JSValue.CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
-            part.FastAddValue(valueKey, JSValue.CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
-            part.FastAddValue(sourceKey, JSValue.CreateString(source), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(typeKey, CreateString(type), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(valueKey, CreateString(value), JSPropertyAttributes.EnumerableConfigurableValue);
+            part.FastAddValue(sourceKey, CreateString(source), JSPropertyAttributes.EnumerableConfigurableValue);
             parts.AddArrayItem(part);
         }
         return parts;
@@ -5967,12 +5968,12 @@ public class JSIntlNumberFormat : JSObject
             throw JSEngine.NewTypeError("Intl.NumberFormat.prototype.resolvedOptions called on incompatible receiver");
 
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), JSValue.CreateString(@this.numberingSystem));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), CreateString(@this.numberingSystem));
 
         var styleKey = KeyStrings.GetOrCreate("style");
         var style = @this.options is null || @this.options[styleKey].IsUndefined ? "decimal" : @this.options[styleKey].StringValue;
-        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), JSValue.CreateString(style));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("style"), CreateString(style));
 
         if (@this.options != null)
         {
@@ -5994,9 +5995,9 @@ public class JSIntlNumberFormat : JSObject
                 if (!@this.options[currencyKey].IsUndefined)
                     result.CreateDataProperty(currencyKey, CanonicalCurrencyValue(@this.options[currencyKey]));
                 result.CreateDataProperty(KeyStrings.GetOrCreate("currencyDisplay"),
-                    JSValue.CreateString(@this.ReadStringOption("currencyDisplay", "symbol")));
+                    CreateString(@this.ReadStringOption("currencyDisplay", "symbol")));
                 result.CreateDataProperty(KeyStrings.GetOrCreate("currencySign"),
-                    JSValue.CreateString(@this.CurrencySignOption()));
+                    CreateString(@this.CurrencySignOption()));
             }
             // A currency option supplied without style:"currency" is validated at construction
             // but is NOT reflected by resolvedOptions (ECMA-402 only emits currency/currencyDisplay/
@@ -6008,7 +6009,7 @@ public class JSIntlNumberFormat : JSObject
             // is null otherwise).
             if (@this.resolved?.UnitDisplay != null)
                 result.CreateDataProperty(KeyStrings.GetOrCreate("unitDisplay"),
-                    JSValue.CreateString(@this.resolved.UnitDisplay));
+                    CreateString(@this.resolved.UnitDisplay));
             // Digit options reflect the construction-time snapshot (read once),
             // not the live options bag, so resolvedOptions does not re-trigger
             // option getters.
@@ -6017,15 +6018,15 @@ public class JSIntlNumberFormat : JSObject
             if (digits != null && !digits[minimumIntegerDigitsKey].IsUndefined)
                 result.CreateDataProperty(minimumIntegerDigitsKey, digits[minimumIntegerDigitsKey]);
             else
-                result.CreateDataProperty(minimumIntegerDigitsKey, JSValue.CreateNumber(1));
+                result.CreateDataProperty(minimumIntegerDigitsKey, CreateNumber(1));
 
             // Fraction-digit reflection mirrors the formatter: the style-dependent defaults
             // (currency → its minor-unit digit count) feed the SetNumberFormatDigitOptions
             // resolution, so e.g. JPY reports 0/0 and USD 2/2 rather than the decimal 0/3.
             var (defMinFrac, defMaxFrac) = @this.DefaultFractionDigits();
             var (minFrac, maxFrac) = @this.ResolveFractionDigits(defMinFrac, defMaxFrac);
-            result.CreateDataProperty(minimumFractionDigitsKey, JSValue.CreateNumber(minFrac));
-            result.CreateDataProperty(maximumFractionDigitsKey, JSValue.CreateNumber(maxFrac));
+            result.CreateDataProperty(minimumFractionDigitsKey, CreateNumber(minFrac));
+            result.CreateDataProperty(maximumFractionDigitsKey, CreateNumber(maxFrac));
 
             // When either significant-digit option is supplied the other gets its
             // SetNumberFormatDigitOptions default (minimum → 1, maximum → 21), so
@@ -6035,9 +6036,9 @@ public class JSIntlNumberFormat : JSObject
             if (hasMinSig || hasMaxSig)
             {
                 result.CreateDataProperty(minimumSignificantDigitsKey,
-                    hasMinSig ? digits[minimumSignificantDigitsKey] : JSValue.CreateNumber(1));
+                    hasMinSig ? digits[minimumSignificantDigitsKey] : CreateNumber(1));
                 result.CreateDataProperty(maximumSignificantDigitsKey,
-                    hasMaxSig ? digits[maximumSignificantDigitsKey] : JSValue.CreateNumber(21));
+                    hasMaxSig ? digits[maximumSignificantDigitsKey] : CreateNumber(21));
             }
 
             // useGrouping always has a resolved value ("auto"/"always"/"min2", or boolean
@@ -6045,14 +6046,14 @@ public class JSIntlNumberFormat : JSObject
             // "false" sentinel maps back to the boolean.
             var resolvedGrouping = @this.resolved?.UseGrouping ?? "auto";
             result.CreateDataProperty(useGroupingKey,
-                resolvedGrouping == "false" ? JSValue.BooleanFalse : JSValue.CreateString(resolvedGrouping));
+                resolvedGrouping == "false" ? BooleanFalse : CreateString(resolvedGrouping));
         }
         else
         {
-            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), JSValue.CreateNumber(1));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumFractionDigits"), JSValue.CreateNumber(0));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), JSValue.CreateNumber(3));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("useGrouping"), JSValue.CreateString("auto"));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumIntegerDigits"), CreateNumber(1));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("minimumFractionDigits"), CreateNumber(0));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("maximumFractionDigits"), CreateNumber(3));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("useGrouping"), CreateString("auto"));
         }
 
         // notation/signDisplay always have a resolved value; compactDisplay is
@@ -6064,17 +6065,17 @@ public class JSIntlNumberFormat : JSObject
         var r = @this.resolved;
         if (r != null)
         {
-            result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), JSValue.CreateString(r.Notation));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("notation"), CreateString(r.Notation));
             if (r.CompactDisplay != null)
-                result.CreateDataProperty(KeyStrings.GetOrCreate("compactDisplay"), JSValue.CreateString(r.CompactDisplay));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("signDisplay"), JSValue.CreateString(r.SignDisplay));
+                result.CreateDataProperty(KeyStrings.GetOrCreate("compactDisplay"), CreateString(r.CompactDisplay));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("signDisplay"), CreateString(r.SignDisplay));
 
             // SetNumberFormatDigitOptions rounding slots are always present (spec order:
             // after notation/compactDisplay/signDisplay).
-            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingIncrement"), JSValue.CreateNumber(r.RoundingIncrement));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingMode"), JSValue.CreateString(r.RoundingMode));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingPriority"), JSValue.CreateString(r.RoundingPriority));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("trailingZeroDisplay"), JSValue.CreateString(r.TrailingZeroDisplay));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingIncrement"), CreateNumber(r.RoundingIncrement));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingMode"), CreateString(r.RoundingMode));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingPriority"), CreateString(r.RoundingPriority));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("trailingZeroDisplay"), CreateString(r.TrailingZeroDisplay));
         }
 
         return result;
@@ -6298,10 +6299,10 @@ public class JSIntlCollator : JSObject
         // NFD (canonical decomposition) folds the orderings together before the locale-aware
         // collation runs, matching the spec's "canonically equivalent strings compare equal"
         // requirement (test262 intl402/Collator/prototype/compare/canonically-equivalent-strings).
-        if (!left.IsNormalized(System.Text.NormalizationForm.FormD))
-            left = left.Normalize(System.Text.NormalizationForm.FormD);
-        if (!right.IsNormalized(System.Text.NormalizationForm.FormD))
-            right = right.Normalize(System.Text.NormalizationForm.FormD);
+        if (!left.IsNormalized(NormalizationForm.FormD))
+            left = left.Normalize(NormalizationForm.FormD);
+        if (!right.IsNormalized(NormalizationForm.FormD))
+            right = right.Normalize(NormalizationForm.FormD);
 
         var options = CompareOptions.None;
         if (sensitivity == "base")
@@ -6332,7 +6333,7 @@ public class JSIntlCollator : JSObject
                 result = Math.Sign(string.CompareOrdinal(left, right));
         }
 
-        return JSValue.CreateNumber(result);
+        return CreateNumber(result);
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
@@ -6341,13 +6342,13 @@ public class JSIntlCollator : JSObject
             throw JSEngine.NewTypeError("Intl.Collator.prototype.resolvedOptions called on incompatible receiver");
 
         var result = new JSObject();
-        result.FastAddValue(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.locale), JSPropertyAttributes.EnumerableConfigurableValue);
-        result.FastAddValue(KeyStrings.GetOrCreate("usage"), JSValue.CreateString(@this.usage), JSPropertyAttributes.EnumerableConfigurableValue);
-        result.FastAddValue(KeyStrings.GetOrCreate("sensitivity"), JSValue.CreateString(@this.sensitivity), JSPropertyAttributes.EnumerableConfigurableValue);
-        result.FastAddValue(KeyStrings.GetOrCreate("ignorePunctuation"), @this.ignorePunctuation ? JSValue.BooleanTrue : JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
-        result.FastAddValue(KeyStrings.GetOrCreate("collation"), JSValue.CreateString(@this.collation), JSPropertyAttributes.EnumerableConfigurableValue);
-        result.FastAddValue(KeyStrings.GetOrCreate("numeric"), @this.numeric ? JSValue.BooleanTrue : JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
-        result.FastAddValue(KeyStrings.GetOrCreate("caseFirst"), JSValue.CreateString(@this.caseFirst), JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(KeyStrings.GetOrCreate("locale"), CreateString(@this.locale), JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(KeyStrings.GetOrCreate("usage"), CreateString(@this.usage), JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(KeyStrings.GetOrCreate("sensitivity"), CreateString(@this.sensitivity), JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(KeyStrings.GetOrCreate("ignorePunctuation"), @this.ignorePunctuation ? BooleanTrue : BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(KeyStrings.GetOrCreate("collation"), CreateString(@this.collation), JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(KeyStrings.GetOrCreate("numeric"), @this.numeric ? BooleanTrue : BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+        result.FastAddValue(KeyStrings.GetOrCreate("caseFirst"), CreateString(@this.caseFirst), JSPropertyAttributes.EnumerableConfigurableValue);
         return result;
     }
 
@@ -6434,13 +6435,13 @@ public class JSIntlDateTimeFormat : JSObject
     private static readonly KeyString FormatMatcherKey = KeyStrings.GetOrCreate("formatMatcher");
 
     // The sanctioned value sets for the date/time option getters (CreateDateTimeFormat).
-    private static readonly string[] NarrowShortLong = { "narrow", "short", "long" };
-    private static readonly string[] NumericTwoDigit = { "2-digit", "numeric" };
-    private static readonly string[] MonthValues = { "2-digit", "numeric", "narrow", "short", "long" };
-    private static readonly string[] HourCycleValues = { "h11", "h12", "h23", "h24" };
+    private static readonly string[] NarrowShortLong = ["narrow", "short", "long"];
+    private static readonly string[] NumericTwoDigit = ["2-digit", "numeric"];
+    private static readonly string[] MonthValues = ["2-digit", "numeric", "narrow", "short", "long"];
+    private static readonly string[] HourCycleValues = ["h11", "h12", "h23", "h24"];
     private static readonly string[] TimeZoneNameValues =
-        { "short", "long", "shortOffset", "longOffset", "shortGeneric", "longGeneric" };
-    private static readonly string[] FormatMatcherValues = { "basic", "best fit" };
+        ["short", "long", "shortOffset", "longOffset", "shortGeneric", "longGeneric"];
+    private static readonly string[] FormatMatcherValues = ["basic", "best fit"];
     private readonly CultureInfo locale;
     private readonly string localeTag;
     private readonly string numberingSystem;
@@ -6451,7 +6452,7 @@ public class JSIntlDateTimeFormat : JSObject
     // raw user options object would surface the original (possibly non-string) value
     // — e.g. `{ dateStyle: { toString() { return "full"; } } }` must resolve to the
     // string "full", not the object.
-    internal static readonly string[] DateTimeStyleValues = { "full", "long", "medium", "short" };
+    internal static readonly string[] DateTimeStyleValues = ["full", "long", "medium", "short"];
     private readonly string dateStyle;
     private readonly string timeStyle;
 
@@ -6676,17 +6677,17 @@ public class JSIntlDateTimeFormat : JSObject
     // DateTimeFormat.prototype.format agree). An optional default time zone is injected when absent
     // (used by ZonedDateTime, which formats in its own zone); a conflicting one is a RangeError.
     private static readonly string[] DateTimeComponentKeys =
-    {
+    [
         "weekday", "era", "year", "month", "day", "dayPeriod",
         "hour", "minute", "second", "fractionalSecondDigits", "timeZoneName",
-    };
+    ];
 
     private static readonly string[] DateTimeFormatOptionKeys =
-    {
+    [
         "localeMatcher", "calendar", "numberingSystem", "hour12", "hourCycle", "timeZone",
         "weekday", "era", "year", "month", "day", "dayPeriod", "hour", "minute", "second",
         "fractionalSecondDigits", "timeZoneName", "formatMatcher", "dateStyle", "timeStyle",
-    };
+    ];
 
     public static JSValue TemporalToLocaleString(JSValue temporal, JSValue locales, JSValue options, string defaultTimeZone = null)
     {
@@ -6709,7 +6710,7 @@ public class JSIntlDateTimeFormat : JSObject
             if (!resolved[TimeZoneKey].IsUndefined)
                 throw JSEngine.NewTypeError(
                     "Temporal.ZonedDateTime.toLocaleString: the timeZone option is not allowed");
-            resolved[TimeZoneKey] = JSValue.CreateString(defaultTimeZone);
+            resolved[TimeZoneKey] = CreateString(defaultTimeZone);
             options = resolved;
         }
 
@@ -6720,9 +6721,9 @@ public class JSIntlDateTimeFormat : JSObject
     // The date/time component options whose presence suppresses defaulting (era / timeZoneName are
     // supplementary and do not count).
     private static readonly string[] DateTimeNeedsDefaultsKeys =
-    {
+    [
         "weekday", "year", "month", "day", "dayPeriod", "hour", "minute", "second", "fractionalSecondDigits",
-    };
+    ];
 
     // ToDateTimeOptions(options, "any", "all"): when no date/time component or style is requested, the
     // default is the full date+time. Used by Date.prototype.toLocaleString (the legacy [[Call]] uses
@@ -6750,13 +6751,13 @@ public class JSIntlDateTimeFormat : JSObject
             if (!v.IsUndefined) merged[key] = v;
         }
         foreach (var name in new[] { "year", "month", "day", "hour", "minute", "second" })
-            merged[KeyStrings.GetOrCreate(name)] = JSValue.CreateString("numeric");
+            merged[KeyStrings.GetOrCreate(name)] = CreateString("numeric");
         return merged;
     }
 
-    private static readonly string[] DateComponentKeys = { "weekday", "year", "month", "day" };
+    private static readonly string[] DateComponentKeys = ["weekday", "year", "month", "day"];
     private static readonly string[] TimeComponentKeys =
-        { "dayPeriod", "hour", "minute", "second", "fractionalSecondDigits" };
+        ["dayPeriod", "hour", "minute", "second", "fractionalSecondDigits"];
 
     // ToDateTimeOptions (ECMA-402 §11.5.1.1), parameterised by the <paramref name="required"/> and
     // <paramref name="defaults"/> fields ("date" / "time" / "all" / "any"). Date.prototype's legacy
@@ -6800,10 +6801,10 @@ public class JSIntlDateTimeFormat : JSObject
 
         if (needDefaults && defaults is "date" or "all")
             foreach (var name in new[] { "year", "month", "day" })
-                merged[KeyStrings.GetOrCreate(name)] = JSValue.CreateString("numeric");
+                merged[KeyStrings.GetOrCreate(name)] = CreateString("numeric");
         if (needDefaults && defaults is "time" or "all")
             foreach (var name in new[] { "hour", "minute", "second" })
-                merged[KeyStrings.GetOrCreate(name)] = JSValue.CreateString("numeric");
+                merged[KeyStrings.GetOrCreate(name)] = CreateString("numeric");
 
         return merged;
     }
@@ -6962,14 +6963,14 @@ public class JSIntlDateTimeFormat : JSObject
         var typeKey = KeyStrings.GetOrCreate("type");
         var valueKey = KeyStrings.GetOrCreate("value");
         var sourceKey = KeyStrings.GetOrCreate("source");
-        var array = JSValue.CreateArray();
+        var array = CreateArray();
         foreach (var p in parts)
         {
             var obj = new JSObject();
-            obj[typeKey] = JSValue.CreateString(p.Type);
-            obj[valueKey] = JSValue.CreateString(p.Value);
+            obj[typeKey] = CreateString(p.Type);
+            obj[valueKey] = CreateString(p.Value);
             if (p.Source != null)
-                obj[sourceKey] = JSValue.CreateString(p.Source);
+                obj[sourceKey] = CreateString(p.Source);
             array.AddArrayItem(obj);
         }
         return array;
@@ -7020,7 +7021,7 @@ public class JSIntlDateTimeFormat : JSObject
         var sb = new StringBuilder();
         foreach (var part in parts)
             sb.Append(part.Value);
-        return JSValue.CreateString(sb.ToString());
+        return CreateString(sb.ToString());
     }
 
     public static JSValue FormatRangeToPartsPrototype(in Arguments a)
@@ -7086,22 +7087,22 @@ public class JSIntlDateTimeFormat : JSObject
         if (@this.SupportsDayPeriod())
         {
             var (h, m) = @this.WallHourMinute(clipped);
-            var dayPeriodParts = JSValue.CreateArray();
+            var dayPeriodParts = CreateArray();
             if (@this.UsesHourFormatting())
             {
                 var hourPart = new JSObject();
-                hourPart[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("hour");
-                hourPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(FormatEnglishHour(h));
+                hourPart[KeyStrings.GetOrCreate("type")] = CreateString("hour");
+                hourPart[KeyStrings.GetOrCreate("value")] = CreateString(FormatEnglishHour(h));
                 var literalPart = new JSObject();
-                literalPart[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("literal");
-                literalPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(" ");
+                literalPart[KeyStrings.GetOrCreate("type")] = CreateString("literal");
+                literalPart[KeyStrings.GetOrCreate("value")] = CreateString(" ");
                 dayPeriodParts.AddArrayItem(hourPart);
                 dayPeriodParts.AddArrayItem(literalPart);
             }
 
             var dayPeriodPart = new JSObject();
-            dayPeriodPart[KeyStrings.GetOrCreate("type")] = JSValue.CreateString("dayPeriod");
-            dayPeriodPart[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(@this.DayPeriodNameForStyle(h, m, @this.DayPeriodStyle()));
+            dayPeriodPart[KeyStrings.GetOrCreate("type")] = CreateString("dayPeriod");
+            dayPeriodPart[KeyStrings.GetOrCreate("value")] = CreateString(@this.DayPeriodNameForStyle(h, m, @this.DayPeriodStyle()));
             dayPeriodParts.AddArrayItem(dayPeriodPart);
             return dayPeriodParts;
         }
@@ -7114,7 +7115,7 @@ public class JSIntlDateTimeFormat : JSObject
             && @this.options[HourKey].IsUndefined)
         {
             var localTime = DateTimeOffset.FromUnixTimeMilliseconds((long)clipped).ToLocalTime();
-            var timeParts = JSValue.CreateArray();
+            var timeParts = CreateArray();
             AddDateTimePart(timeParts, "minute", localTime.Minute.ToString("D2", CultureInfo.InvariantCulture));
             AddDateTimePart(timeParts, "literal", ":");
             AddDateTimePart(timeParts, "second", localTime.Second.ToString("D2", CultureInfo.InvariantCulture));
@@ -7179,8 +7180,8 @@ public class JSIntlDateTimeFormat : JSObject
     private static void AddDateTimePart(JSValue parts, string type, string value)
     {
         var part = new JSObject();
-        part[KeyStrings.GetOrCreate("type")] = JSValue.CreateString(type);
-        part[KeyStrings.GetOrCreate("value")] = JSValue.CreateString(value);
+        part[KeyStrings.GetOrCreate("type")] = CreateString(type);
+        part[KeyStrings.GetOrCreate("value")] = CreateString(value);
         parts.AddArrayItem(part);
     }
 
@@ -7190,17 +7191,17 @@ public class JSIntlDateTimeFormat : JSObject
             throw JSEngine.NewTypeError("Intl.DateTimeFormat.prototype.resolvedOptions called on incompatible receiver");
 
         var result = new JSObject();
-        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), JSValue.CreateString(@this.localeTag));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("locale"), CreateString(@this.localeTag));
         // resolvedOptions reports dtf.[[Calendar]] — the resolved calendar IDENTIFIER (e.g. "iso8601",
         // not collapsed to "gregory") after the ResolveLocale `ca` negotiation, NOT the raw option.
-        result.CreateDataProperty(KeyStrings.GetOrCreate("calendar"), JSValue.CreateString(@this.ResolvedCalendarId()));
-        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), JSValue.CreateString(@this.numberingSystem));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("calendar"), CreateString(@this.ResolvedCalendarId()));
+        result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), CreateString(@this.numberingSystem));
         // The default time zone must be reported as a CANONICAL identifier — a host whose local
         // zone is "Etc/UTC" (e.g. a UTC container) reports "UTC", not "Etc/UTC" (test262
         // DateTimeFormat/prototype/resolvedOptions/basic). SystemTimeZoneId normalizes Windows ids
         // to IANA (falling back to UTC); CanonicalizeTimeZoneId then applies the UTC-cluster rule.
         result.CreateDataProperty(KeyStrings.GetOrCreate("timeZone"),
-            JSValue.CreateString(Temporal.JSTemporalZonedDateTime.CanonicalizeTimeZoneId(Temporal.JSTemporalNow.SystemTimeZoneId())));
+            CreateString(JSTemporalZonedDateTime.CanonicalizeTimeZoneId(JSTemporalNow.SystemTimeZoneId())));
 
         if (@this.options != null)
         {
@@ -7211,15 +7212,15 @@ public class JSIntlDateTimeFormat : JSObject
             // hour12 derived to match. They appear right after timeZone per the spec.
             if (@this.UsesHourFormatting())
             {
-                result.CreateDataProperty(KeyStrings.GetOrCreate("hourCycle"), JSValue.CreateString(@this.ResolveHourCycle()));
-                result.CreateDataProperty(KeyStrings.GetOrCreate("hour12"), @this.ResolveHour12() ? JSValue.BooleanTrue : JSValue.BooleanFalse);
+                result.CreateDataProperty(KeyStrings.GetOrCreate("hourCycle"), CreateString(@this.ResolveHourCycle()));
+                result.CreateDataProperty(KeyStrings.GetOrCreate("hour12"), @this.ResolveHour12() ? BooleanTrue : BooleanFalse);
             }
             // dateStyle / timeStyle report the coerced+validated string captured at
             // construction (not the raw option value).
             if (@this.dateStyle != null)
-                result.CreateDataProperty(DateStyleKey, JSValue.CreateString(@this.dateStyle));
+                result.CreateDataProperty(DateStyleKey, CreateString(@this.dateStyle));
             if (@this.timeStyle != null)
-                result.CreateDataProperty(TimeStyleKey, JSValue.CreateString(@this.timeStyle));
+                result.CreateDataProperty(TimeStyleKey, CreateString(@this.timeStyle));
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "weekday");
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "era");
             JSIntlResolvedOptionsExtensions.SetIfDefined(result, @this.options, "year");
@@ -7365,7 +7366,7 @@ public class JSIntlDateTimeFormat : JSObject
         void Capture(KeyString key, string value)
         {
             if (value != null)
-                snapshot[key] = JSValue.CreateString(value);
+                snapshot[key] = CreateString(value);
         }
 
         // localeMatcher (step 4) was already read by ValidateConstructorArguments.
@@ -7380,7 +7381,7 @@ public class JSIntlDateTimeFormat : JSObject
         // hour12 (Boolean) then hourCycle.
         var hour12 = userOptions == null ? JSUndefined.Value : userOptions[Hour12Key];
         if (!hour12.IsUndefined)
-            snapshot[Hour12Key] = hour12.BooleanValue ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+            snapshot[Hour12Key] = hour12.BooleanValue ? BooleanTrue : BooleanFalse;
         Capture(HourCycleKey, JSIntl.GetOption(userOptions, HourCycleKey, HourCycleValues, false, null));
 
         // timeZone (Get + ToString + offset-identifier normalization).
@@ -7399,7 +7400,7 @@ public class JSIntlDateTimeFormat : JSObject
         Capture(SecondKey, JSIntl.GetOption(userOptions, SecondKey, NumericTwoDigit, false, null));
         var fractionalSecondDigits = JSIntl.GetNumberOption(userOptions, FractionalSecondDigitsKey, 1, 3);
         if (fractionalSecondDigits.HasValue)
-            snapshot[FractionalSecondDigitsKey] = JSValue.CreateNumber(fractionalSecondDigits.Value);
+            snapshot[FractionalSecondDigitsKey] = CreateNumber(fractionalSecondDigits.Value);
 
         // timeZoneName then formatMatcher.
         Capture(TimeZoneNameKey, JSIntl.GetOption(userOptions, TimeZoneNameKey, TimeZoneNameValues, false, null));
@@ -7436,9 +7437,9 @@ public class JSIntlDateTimeFormat : JSObject
 
             if (!hasComponent)
             {
-                snapshot[YearKey] = JSValue.CreateString("numeric");
-                snapshot[MonthKey] = JSValue.CreateString("numeric");
-                snapshot[DayKey] = JSValue.CreateString("numeric");
+                snapshot[YearKey] = CreateString("numeric");
+                snapshot[MonthKey] = CreateString("numeric");
+                snapshot[DayKey] = CreateString("numeric");
                 dateDefaultsApplied = true;
             }
         }
@@ -7486,7 +7487,7 @@ public class JSIntlDateTimeFormat : JSObject
         // A named time zone is validated against the IANA database and case-normalized — "utc" → "UTC",
         // "africa/abidjan" → "Africa/Abidjan" — but NOT canonicalized through backward links
         // ("Asia/Calcutta" stays "Asia/Calcutta"); an unknown or legacy non-IANA name is a RangeError.
-        return Temporal.JSTemporalZonedDateTime.CanonicalizeTimeZoneId(timeZone);
+        return JSTemporalZonedDateTime.CanonicalizeTimeZoneId(timeZone);
     }
 
     internal JSIntlDateTimeFormat(CultureInfo locale) : base()

@@ -39,7 +39,7 @@ public partial class JSModule : JSObject
 
     [JSPrototypeMethod]
     [JSExport("id")]
-    public JSValue Id => JSValue.CreateString(filePath);
+    public JSValue Id => CreateString(filePath);
 
     JSValue exports;
 
@@ -70,7 +70,7 @@ public partial class JSModule : JSObject
 
     public Task<JSValue> ImportAsync(string name)
     {
-        var result = Import.InvokeFunction(new Arguments(JSUndefined.Value, JSValue.CreateString(name)));
+        var result = Import.InvokeFunction(new Arguments(JSUndefined.Value, CreateString(name)));
         return (result as IJSPromise).Task;
     }
 

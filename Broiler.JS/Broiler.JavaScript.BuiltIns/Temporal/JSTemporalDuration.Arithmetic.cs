@@ -2,7 +2,6 @@ using System;
 using System.Numerics;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Temporal;
@@ -25,7 +24,7 @@ public partial class JSTemporalDuration
     private BigInteger TimePlusDaysNanoseconds() => TotalNanoseconds();
 
     private static readonly string[] UnitOrder =
-        { "year", "month", "week", "day", "hour", "minute", "second", "millisecond", "microsecond", "nanosecond" };
+        ["year", "month", "week", "day", "hour", "minute", "second", "millisecond", "microsecond", "nanosecond"];
 
     private static int UnitIndex(string unit) => System.Array.IndexOf(UnitOrder, unit);
 
@@ -428,7 +427,7 @@ public partial class JSTemporalDuration
     // range-validated as part of ToRelativeTemporalObject, so a non-finite hour/minute/second/…
     // is a RangeError even though only the date is ultimately consumed as a 24-hour-day relativeTo.
     private static readonly string[] RelativeBagTimeFields =
-        { "hour", "minute", "second", "millisecond", "microsecond", "nanosecond" };
+        ["hour", "minute", "second", "millisecond", "microsecond", "nanosecond"];
 
     private static void ValidateRelativeBagTimeFields(JSValue rel)
     {

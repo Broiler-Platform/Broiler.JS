@@ -1,6 +1,5 @@
 ﻿using Broiler.JavaScript.BuiltIns.RegExp;
 using System;
-using System.Globalization;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Symbol;
@@ -33,9 +32,9 @@ public partial class JSString
         position = Math.Min(Math.Max(0, position), @this.Length);
 
         if (@this.IndexOf(arg, position) >= 0)
-            return JSValue.BooleanTrue;
+            return BooleanTrue;
 
-        return JSValue.BooleanFalse;
+        return BooleanFalse;
     }
 
     [JSPrototypeMethod]
@@ -52,17 +51,17 @@ public partial class JSString
         var fs = f.StringValue;
 
         if (endPosition == int.MaxValue)
-            return @this.EndsWith(fs) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+            return @this.EndsWith(fs) ? BooleanTrue : BooleanFalse;
 
         endPosition = Math.Min(Math.Max(0, endPosition), @this.Length);
 
         if (fs.Length > endPosition)
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
         if (string.Compare(@this, endPosition - fs.Length, fs, 0, fs.Length) == 0)
-            return JSValue.BooleanTrue;
+            return BooleanTrue;
 
-        return JSValue.BooleanFalse;
+        return BooleanFalse;
     }
 
     [JSPrototypeMethod]
@@ -78,7 +77,7 @@ public partial class JSString
 
         var search = searchStr.StringValue;
         if (pos == 0)
-            return @this.StartsWith(search) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+            return @this.StartsWith(search) ? BooleanTrue : BooleanFalse;
 
         pos = Math.Min(Math.Max(0, pos), @this.Length);
         // §22.1.3.22 step 8: if searchLength + start > len, return false. Otherwise
@@ -87,11 +86,11 @@ public partial class JSString
         // at any in-range position, including start == len
         // (test262: String/prototype/startsWith/return-true-if-searchstring-is-empty).
         if (pos + search.Length > @this.Length)
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
         return string.CompareOrdinal(@this.Substring(pos, search.Length), search) == 0
-            ? JSValue.BooleanTrue
-            : JSValue.BooleanFalse;
+            ? BooleanTrue
+            : BooleanFalse;
     }
 
     [JSPrototypeMethod]
@@ -106,7 +105,7 @@ public partial class JSString
             throw JSEngine.NewTypeError("Substring argument must not be a regular expression.");
 
         pos = Math.Min(Math.Max(pos, 0), @this.Length);
-        return @this.IndexOf(searchStr.StringValue, pos) >= 0 ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        return @this.IndexOf(searchStr.StringValue, pos) >= 0 ? BooleanTrue : BooleanFalse;
     }
 
     [JSPrototypeMethod]
@@ -123,7 +122,7 @@ public partial class JSString
         pos = Math.Min(Math.Max(pos, 0), @this.Length);
 
         var index = @this.IndexOf(searchString, pos);
-        return JSValue.CreateNumber(index);
+        return CreateNumber(index);
     }
 
     [JSPrototypeMethod]
@@ -143,12 +142,12 @@ public partial class JSString
         if (startIndex < 0)
         {
             if (@this == string.Empty && search.Length == 0)
-                return JSValue.NumberZero;
+                return NumberZero;
 
-            return JSValue.NumberMinusOne;
+            return NumberMinusOne;
         }
 
-        return JSValue.CreateNumber(@this.LastIndexOf(search, startIndex, StringComparison.Ordinal));
+        return CreateNumber(@this.LastIndexOf(search, startIndex, StringComparison.Ordinal));
     }
 
     [JSPrototypeMethod]
@@ -166,7 +165,7 @@ public partial class JSString
         // Intl.Collator(locales, options).compare(this, that), so the ordering matches
         // Intl.Collator for every locale/option combination.
         var collator = new Intl.JSIntlCollator(new Arguments(JSUndefined.Value, locale, options));
-        return collator.Compare(new Arguments(JSUndefined.Value, JSValue.CreateString(@this.ToString()), JSValue.CreateString(str)));
+        return collator.Compare(new Arguments(JSUndefined.Value, CreateString(@this.ToString()), CreateString(str)));
     }
 
     [JSPrototypeMethod]
@@ -191,7 +190,7 @@ public partial class JSString
 
         //search string not defined
         if (search.IsUndefined)
-            return JSValue.NumberZero;
+            return NumberZero;
 
         // is Regex?
         if (search is JSRegExp jSRegExp)
@@ -199,8 +198,8 @@ public partial class JSString
             var reg = jSRegExp.value.Match(@this);
 
             if (!reg.Success)
-                return JSValue.NumberMinusOne;
-            return JSValue.CreateNumber(reg.Index);
+                return NumberMinusOne;
+            return CreateNumber(reg.Index);
         }
 
         var created = new JSRegExp(search.StringValue, "");
@@ -208,6 +207,6 @@ public partial class JSString
         // §22.1.3.12 step 5: Invoke(rx, @@search, « string »), where string is ToString(O)
         // (computed above as @this) — not the raw receiver. A boxed String receiver must
         // therefore reach the built-in @@search as the primitive string it coerces to.
-        return builtinSearcher.InvokeFunction(new Arguments(created, JSValue.CreateString(@this)));
+        return builtinSearcher.InvokeFunction(new Arguments(created, CreateString(@this)));
     }
 }

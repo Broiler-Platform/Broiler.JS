@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
@@ -255,7 +254,7 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
                 replaceContext: fx.Context, replaceScriptInfo: scriptInfo);
             // Pre-rewrite the top-level-await body only; nested lambdas are threaded
             // by the later full rewrite. See LambdaRewriter.rewriteNestedLambdas.
-            Broiler.JavaScript.ExpressionCompiler.LambdaRewriter.RewriteRootOnly(g);
+            ExpressionCompiler.LambdaRewriter.RewriteRootOnly(g);
 
             var jsf = JSAsyncFunctionBuilder.Create(JSGeneratorFunctionBuilderV2.New(g, StringSpanBuilder.New("vm"), StringSpanBuilder.New(code.Value)));
             var np = BExpression.Parameter(ArgumentsBuilder.refType, "a");

@@ -7,7 +7,6 @@ using System;
 using System.Linq;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
-using Broiler.JavaScript.LinqExpressions.Utils;
 using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Compiler;
@@ -35,7 +34,7 @@ partial class FastCompiler
         // `switch (f = () => x, null) { case …: let x; }` captures the OUTER `x`.
         var discriminant = VisitExpression(switchStatement.Target);
 
-        var switchLexicalScope = this.scope.Push(new FastFunctionScope(this.scope.Top));
+        var switchLexicalScope = scope.Push(new FastFunctionScope(scope.Top));
         var lexicalBindings = CollectSwitchLexicalBindings(switchStatement.Cases);
         var hoistingScope = switchStatement.HoistingScope;
         if (hoistingScope != null)
@@ -81,7 +80,7 @@ partial class FastCompiler
             // so its body can be emitted at its original position in the
             // fall-through sequence even when it is not the last clause.
             int defaultInsertIndex = -1;
-            var @continue = this.scope.Top.Loop?.Top?.Continue;
+            var @continue = scope.Top.Loop?.Top?.Continue;
             var @break = BExpression.Label();
             var completionVar = BExpression.Variable(typeof(JSValue), "#cv");
             var outerCompletionVars = GetCompletionVariables();
@@ -89,7 +88,7 @@ partial class FastCompiler
             var cases = new Sequence<SwitchInfo>(switchStatement.Cases.Count + 2);
             var functionInitializers = new Sequence<BExpression>();
             using var completion = completionScopes.Push(completionVar);
-            using var bt = this.scope.Top.Loop.Push(ls);
+            using var bt = scope.Top.Loop.Push(ls);
             SwitchInfo lastCase = new(switchPoolScope);
             var casesEn = switchStatement.Cases.GetFastEnumerator();
 

@@ -13,7 +13,7 @@ namespace Broiler.JavaScript.Runtime;
 public sealed class LegacyRegExpState
 {
     // §B.2.4 UpdateLegacyRegExpStaticProperties: the nine numbered capture slots.
-    private readonly string[] parens = { "", "", "", "", "", "", "", "", "" };
+    private readonly string[] parens = ["", "", "", "", "", "", "", "", ""];
 
     public string Input { get; set; } = "";
     public string LastMatch { get; private set; } = "";

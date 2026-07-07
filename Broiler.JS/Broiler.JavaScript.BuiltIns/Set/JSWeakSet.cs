@@ -1,6 +1,5 @@
 using Broiler.JavaScript.BuiltIns.Map;
 using Broiler.JavaScript.BuiltIns.Symbol;
-using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Iterator;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -19,7 +18,7 @@ public partial class JSWeakSet : JSObject
     // The index holds each WeakValue only weakly; a ConditionalWeakTable keyed by the element keeps
     // it alive for exactly as long as the element is reachable, so a `has` does not spuriously miss a
     // live member after a GC. See the matching note in JSWeakMap.
-    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSValue, WeakValue> anchor = new();
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSValue, WeakValue> anchor = [];
 
     public JSWeakSet(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {

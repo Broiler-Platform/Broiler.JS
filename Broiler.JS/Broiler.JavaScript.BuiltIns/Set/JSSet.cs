@@ -25,7 +25,7 @@ public partial class JSSet : JSObject
     // instead. Iteration walks the list by index so that entries added during iteration
     // are observed and removed entries are skipped, matching the spec's [[SetData]]
     // semantics (and avoiding "Collection was modified" exceptions from foreach).
-    private List<JSValue> store = new();
+    private List<JSValue> store = [];
     private StringMap<int> index;
     private int liveCount;
 

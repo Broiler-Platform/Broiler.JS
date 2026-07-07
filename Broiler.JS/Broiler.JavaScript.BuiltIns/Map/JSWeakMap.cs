@@ -1,4 +1,3 @@
-using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Iterator;
 using Broiler.JavaScript.BuiltIns.Symbol;
@@ -36,7 +35,7 @@ public partial class JSWeakMap: JSObject
     // as its key is reachable: the entry vanishes only when the key itself is collected. Using an
     // ephemeron table (rather than a strong reference from the key) keeps the classic
     // value-references-key cycle collectable once the key becomes externally unreachable.
-    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSValue, WeakValue> anchor = new();
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSValue, WeakValue> anchor = [];
 
     public JSWeakMap(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
@@ -57,7 +56,7 @@ public partial class JSWeakMap: JSObject
             try
             {
                 if (item is not JSObject entry)
-                    throw JSEngine.NewTypeError(JSObject.NotEntry(item));
+                    throw JSEngine.NewTypeError(NotEntry(item));
 
                 adder.InvokeFunction(new Arguments(this, entry[0], entry[1]));
             }

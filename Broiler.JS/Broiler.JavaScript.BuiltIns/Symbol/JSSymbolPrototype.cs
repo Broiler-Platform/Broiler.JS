@@ -25,10 +25,10 @@ public partial class JSSymbol
     public static JSValue ToString(in Arguments a)
     {
         if (a.This is JSSymbol symbol)
-            return JSValue.CreateString(symbol.ToDescriptiveString());
+            return CreateString(symbol.ToDescriptiveString());
 
         if (a.This is JSSymbolObject symbolObject)
-            return JSValue.CreateString(symbolObject.WrappedSymbol.ToDescriptiveString());
+            return CreateString(symbolObject.WrappedSymbol.ToDescriptiveString());
 
         throw JSEngine.NewTypeError("Symbol.prototype.toString requires a symbol receiver");
     }

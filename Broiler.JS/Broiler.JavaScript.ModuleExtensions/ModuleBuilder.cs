@@ -11,7 +11,7 @@ namespace Broiler.JavaScript.ModuleExtensions
 {
     public class ModuleBuilder
     {
-        private readonly List<(string name, object value)> exportedObjects = new List<(string name, object value)>();
+        private readonly List<(string name, object value)> exportedObjects = [];
         private readonly string _moduleName;
 
         public ModuleBuilder(string moduleName)

@@ -165,7 +165,7 @@ public class JSModuleContext : JSContext
             np[0] = CurrentPath;
             np[1] = CurrentPath + "/node_modules";
 
-            System.Array.Copy(paths, 0, np, 2, paths.Length);
+            Array.Copy(paths, 0, np, 2, paths.Length);
             paths = np;
         }
 
@@ -371,7 +371,7 @@ public class JSModuleContext : JSContext
             module,
             module.Import,
             module.Id,
-            JSValue.CreateString(module.dirPath)
+            CreateString(module.dirPath)
         ])) is IJSPromise result)
         {
             await result.Task;

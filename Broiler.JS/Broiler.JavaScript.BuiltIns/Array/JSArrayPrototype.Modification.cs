@@ -3,7 +3,6 @@ using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.BuiltIns.Null;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Array;
@@ -11,7 +10,7 @@ namespace Broiler.JavaScript.BuiltIns.Array;
 public partial class JSArray
 {
     private static bool HasIndexedProperty(JSObject @object, uint index)
-        => @object.HasProperty(JSValue.CreateNumber(index)).BooleanValue;
+        => @object.HasProperty(CreateNumber(index)).BooleanValue;
 
     private static JSValue GetIndexedValue(JSObject @object, uint index)
         => @object[index];
@@ -32,31 +31,31 @@ public partial class JSArray
     private static bool HasIndexedProperty(JSObject @object, long index)
         => index < uint.MaxValue
             ? HasIndexedProperty(@object, (uint)index)
-            : @object.HasProperty(JSValue.CreateNumber(index)).BooleanValue;
+            : @object.HasProperty(CreateNumber(index)).BooleanValue;
 
     private static JSValue GetIndexedValue(JSObject @object, long index)
         => index < uint.MaxValue
             ? GetIndexedValue(@object, (uint)index)
-            : @object[JSValue.CreateNumber(index)];
+            : @object[CreateNumber(index)];
 
     private static void SetIndexedValue(JSObject @object, long index, JSValue value)
     {
         if (index < uint.MaxValue)
             SetIndexedValue(@object, (uint)index, value);
         else
-            @object.SetValue(JSValue.CreateNumber(index), value, @object, true);
+            @object.SetValue(CreateNumber(index), value, @object, true);
     }
 
     private static void DeleteIndexedValueOrThrow(JSObject @object, long index)
     {
         if (index < uint.MaxValue)
             DeleteIndexedValueOrThrow(@object, (uint)index);
-        else if (!@object.Delete(JSValue.CreateNumber(index)).BooleanValue)
+        else if (!@object.Delete(CreateNumber(index)).BooleanValue)
             throw JSEngine.NewTypeError($"Cannot delete property {index}");
     }
 
     private static void SetArrayLikeLength(JSObject @object, long length)
-        => @object.SetValue(KeyStrings.length, JSValue.CreateNumber(length), @object, true);
+        => @object.SetValue(KeyStrings.length, CreateNumber(length), @object, true);
 
     [JSPrototypeMethod]
     [JSExport("copyWithin", Length = 2)]
@@ -90,12 +89,12 @@ public partial class JSArray
 
         while (count > 0)
         {
-            var fromKey = JSValue.CreateNumber((double)start);
+            var fromKey = CreateNumber((double)start);
             if (@this.HasProperty(fromKey).BooleanValue)
             {
                 SetIndexedValue(@this, target, @this.GetValue(fromKey, @this));
             }
-            else if (!@this.Delete(JSValue.CreateNumber((double)target)).BooleanValue)
+            else if (!@this.Delete(CreateNumber((double)target)).BooleanValue)
             {
                 throw JSEngine.NewTypeError($"Cannot delete property {target}");
             }
@@ -161,7 +160,7 @@ public partial class JSArray
             {
                 var arrayIndex = (uint)length;
                 array.SetValue(arrayIndex, a.GetAt(index), array, true);
-                if (array.GetOwnPropertyDescriptor(JSValue.CreateNumber(arrayIndex)).IsUndefined)
+                if (array.GetOwnPropertyDescriptor(CreateNumber(arrayIndex)).IsUndefined)
                     mustSetLengthThroughProperty = true;
             }
 
@@ -211,7 +210,7 @@ public partial class JSArray
 
         DeleteIndexedValueOrThrow(@this, index);
 
-        @this.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSValue.CreateNumber(index));
+        @this.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), CreateNumber(index));
         return element;
     }
 
@@ -477,7 +476,7 @@ public partial class JSArray
         // (its length already matches), but a real, observable [[Set]] on a @@species
         // result — e.g. a Proxy records the set/getOwnPropertyDescriptor/defineProperty
         // traps (test262 splice/property-traps-order-with-species).
-        deletedItems.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSValue.CreateNumber(deleteCount));
+        deletedItems.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), CreateNumber(deleteCount));
 
         // Move the trailing elements.
         int offset = itemsLength - deleteCountInt;
@@ -550,7 +549,7 @@ public partial class JSArray
 
         // Step 12: Set(A, "length", actualDeleteCount, true) — observable on a @@species
         // proxy result, mirroring the 32-bit splice path above.
-        deletedItems.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSValue.CreateNumber(deleteCount));
+        deletedItems.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), CreateNumber(deleteCount));
 
         var newLength = len - deleteCount + itemsLength;
 

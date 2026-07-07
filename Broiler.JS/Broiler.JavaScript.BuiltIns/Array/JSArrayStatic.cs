@@ -3,7 +3,6 @@ using Broiler.JavaScript.BuiltIns.Error;
 using Broiler.JavaScript.BuiltIns.Promise;
 using Broiler.JavaScript.BuiltIns.Proxy;
 using System;
-using System.Collections.Generic;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
@@ -32,9 +31,9 @@ public partial class JSArray
         // directly on the primitive (GetV uses the primitive as the receiver), so a user-defined
         // String.prototype[@@iterator] getter observes the primitive string as its this value rather than
         // a transient wrapper object.
-        JSValue iteratorMethod = JSValue.SymbolIterator == null
+        JSValue iteratorMethod = SymbolIterator == null
             ? JSUndefined.Value
-            : f.PropertyOrUndefined(JSValue.SymbolIterator);
+            : f.PropertyOrUndefined(SymbolIterator);
 
         var useArrayLike = iteratorMethod.IsUndefined || iteratorMethod.IsNull;
 
@@ -43,7 +42,7 @@ public partial class JSArray
             var arrayLike = ToArrayLikeObject(f);
             var length = GetArrayLikeLength(arrayLike);
             var arrayLikeResult = constructor != null
-                ? constructor.CreateInstance(new Arguments(JSUndefined.Value, JSValue.CreateNumber(length))) as JSObject
+                ? constructor.CreateInstance(new Arguments(JSUndefined.Value, CreateNumber(length))) as JSObject
                 : new JSArray();
             if (arrayLikeResult == null)
                 throw JSEngine.NewTypeError("Array.from constructor must return an object");
@@ -63,7 +62,7 @@ public partial class JSArray
             if (arrayLikeResult is JSArray arrayLikeArray)
                 arrayLikeArray._length = length;
             else
-                arrayLikeResult.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSValue.CreateNumber(length));
+                arrayLikeResult.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), CreateNumber(length));
 
             return arrayLikeResult;
         }
@@ -109,7 +108,7 @@ public partial class JSArray
         if (r is JSArray array)
             array._length = index;
         else
-            r.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSValue.CreateNumber(index));
+            r.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), CreateNumber(index));
 
         return r;
     }
@@ -148,14 +147,14 @@ public partial class JSArray
         var t = a.This;
         if (JSConstructorOperations.IsConstructor(t) && t is JSObject ctor)
         {
-            var result = ctor.CreateInstance(new Arguments(JSUndefined.Value, JSValue.CreateNumber(len))) as JSObject;
+            var result = ctor.CreateInstance(new Arguments(JSUndefined.Value, CreateNumber(len))) as JSObject;
             if (result == null)
                 throw JSEngine.NewTypeError("Array.of constructor must return an object");
 
             for (var k = 0; k < len; k++)
                 CreateDataPropertyOrThrow(result, (uint)k, a.GetAt(k));
 
-            result.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSValue.CreateNumber(len));
+            result.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), CreateNumber(len));
             return result;
         }
 

@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.Parser;
 
 public partial class FastScopeItem(FastNodeType nodeType) : LinkedStackItem<FastScopeItem>
 {
-    private Dictionary<string, (StringSpan name, FastVariableKind kind)> Variables = new();
+    private Dictionary<string, (StringSpan name, FastVariableKind kind)> Variables = [];
     public readonly FastNodeType NodeType = nodeType;
 
     // True for an arrow-function scope. An arrow has no `arguments` object of its own,
@@ -25,7 +25,7 @@ public partial class FastScopeItem(FastNodeType nodeType) : LinkedStackItem<Fast
         if (name.IsNullOrWhiteSpace())
             return;
 
-        annexBFunctionNames ??= new List<StringSpan>();
+        annexBFunctionNames ??= [];
         foreach (var existing in annexBFunctionNames)
         {
             if (existing.Value == name.Value)

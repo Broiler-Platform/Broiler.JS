@@ -4,7 +4,6 @@ using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.ShadowRealm;
 
@@ -166,7 +165,7 @@ public partial class JSShadowRealm : JSObject
             // therefore aborts the copy and is re-surfaced as a TypeError below, and "length"
             // is only Get when the own property exists (test262
             // ShadowRealm/.../evaluate/throws-typeerror-wrap-throwing).
-            if (!target.GetOwnPropertyDescriptor(JSValue.CreateString("length")).IsUndefined)
+            if (!target.GetOwnPropertyDescriptor(CreateString("length")).IsUndefined)
                 lengthValue = target[KeyStrings.length];
             nameValue = target[KeyStrings.name];
         }
@@ -204,11 +203,11 @@ public partial class JSShadowRealm : JSObject
             if (destRealm != null)
                 JSEngine.CurrentContext = destRealm;
 
-            wrapped = JSValue.CreateFunction(del, name, null, 0, createPrototype: false);
+            wrapped = CreateFunction(del, name, null, 0, createPrototype: false);
             if (wrapped is JSFunction wrappedFunction)
             {
-                wrappedFunction.FastAddValue(KeyStrings.length, JSValue.CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
-                wrappedFunction.FastAddValue(KeyStrings.name, JSValue.CreateString(name), JSPropertyAttributes.ConfigurableReadonlyValue);
+                wrappedFunction.FastAddValue(KeyStrings.length, CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
+                wrappedFunction.FastAddValue(KeyStrings.name, CreateString(name), JSPropertyAttributes.ConfigurableReadonlyValue);
             }
         }
         finally

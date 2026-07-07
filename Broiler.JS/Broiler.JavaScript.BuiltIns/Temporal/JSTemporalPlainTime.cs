@@ -303,7 +303,7 @@ public partial class JSTemporalPlainTime : JSObject
     public JSValue Equals(in Arguments a)
     {
         var other = RequireTime(ToTemporalTime(a.GetAt(0), "constrain"));
-        return TotalNanoseconds() == other.TotalNanoseconds() ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        return TotalNanoseconds() == other.TotalNanoseconds() ? BooleanTrue : BooleanFalse;
     }
 
     [JSExport("toString", Length = 0)]

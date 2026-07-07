@@ -3,10 +3,8 @@ using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using System.Collections.Generic;
 using System.Reflection;
 using Broiler.JavaScript.ExpressionCompiler.Core;
-using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
-using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 using Broiler.JavaScript.Runtime;
@@ -361,7 +359,7 @@ partial class FastCompiler
                 // rewrite can thread (and box) those captures with the complete scope
                 // chain — descending here would strand them (KeyNotFound / type
                 // mismatch at IL-gen). See LambdaRewriter.rewriteNestedLambdas.
-                Broiler.JavaScript.ExpressionCompiler.LambdaRewriter.RewriteRootOnly(lambda);
+                ExpressionCompiler.LambdaRewriter.RewriteRootOnly(lambda);
 
                 jsf = JSAsyncFunctionBuilder.Create(JSGeneratorFunctionBuilderV2.New(lambda, fxName, code, functionLength));
             }

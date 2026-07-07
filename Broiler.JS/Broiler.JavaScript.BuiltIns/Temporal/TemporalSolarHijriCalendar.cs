@@ -1,7 +1,5 @@
 using System;
 using System.Globalization;
-using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Temporal;
@@ -38,7 +36,7 @@ internal static class TemporalSolarHijriCalendar
     // ── ICU 33-year-cycle arithmetic (full-range fallback) ────────────────────────
 
     private const long PersianEpochIn1970Days = 1948320L - 2440588L; // Julian day 1948320 − JD(1970-01-01)
-    private static readonly int[] MonthFirstDay = { 0, 31, 62, 93, 124, 155, 186, 216, 246, 276, 306, 336 };
+    private static readonly int[] MonthFirstDay = [0, 31, 62, 93, 124, 155, 186, 216, 246, 276, 306, 336];
 
     private static long FloorDiv(long a, long b)
     {

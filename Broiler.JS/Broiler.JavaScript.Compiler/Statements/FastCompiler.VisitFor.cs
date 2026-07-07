@@ -16,7 +16,7 @@ partial class FastCompiler
         FastFunctionScope? tdzScope = null;
         if (forInStatement.HeadTdzNames != null)
         {
-            tdzScope = this.scope.Push(new FastFunctionScope(this.scope.Top));
+            tdzScope = scope.Push(new FastFunctionScope(scope.Top));
             var tdzNames = forInStatement.HeadTdzNames.GetFastEnumerator();
             while (tdzNames.MoveNext(out var name))
             {
@@ -129,7 +129,7 @@ partial class FastCompiler
         FastFunctionScope? tdzScope = null;
         if (forOfStatement.HeadTdzNames != null)
         {
-            tdzScope = this.scope.Push(new FastFunctionScope(this.scope.Top));
+            tdzScope = scope.Push(new FastFunctionScope(scope.Top));
             var tdzNames = forOfStatement.HeadTdzNames.GetFastEnumerator();
             while (tdzNames.MoveNext(out var name))
             {
@@ -350,7 +350,7 @@ partial class FastCompiler
         // bindings — silently replacing an outer `let x` and leaving its value
         // visible after the loop (test262 language/statements/for/scope-head-lex-open).
         var forScope = forStatement.Init is AstVariableDeclaration { Kind: FastVariableKind.Let or FastVariableKind.Const }
-            ? this.scope.Push(new FastFunctionScope(this.scope.Top))
+            ? scope.Push(new FastFunctionScope(scope.Top))
             : null;
         try
         {

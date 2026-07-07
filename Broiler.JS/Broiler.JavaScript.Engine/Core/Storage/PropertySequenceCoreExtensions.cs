@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
 

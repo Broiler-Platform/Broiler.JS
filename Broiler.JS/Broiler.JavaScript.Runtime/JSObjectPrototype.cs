@@ -51,7 +51,7 @@ public partial class JSObject
             ref var elements = ref @object.GetElements();
             ref var property = ref elements.Get(key.Index);
             if (!property.IsEmpty)
-                return property.IsEnumerable ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+                return property.IsEnumerable ? BooleanTrue : BooleanFalse;
 
             return EnumerableFromDescriptor(@object, a.Get1());
         }
@@ -61,7 +61,7 @@ public partial class JSObject
             ref var symbols = ref @object.GetSymbols();
             ref var property = ref symbols.GetRefOrDefault(key.Symbol.Key, ref JSProperty.Empty);
             if (!property.IsEmpty)
-                return property.IsEnumerable ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+                return property.IsEnumerable ? BooleanTrue : BooleanFalse;
 
             return EnumerableFromDescriptor(@object, a.Get1());
         }
@@ -69,8 +69,8 @@ public partial class JSObject
         ref var ownProperties = ref @object.GetOwnProperties(false);
         ref var ownProperty = ref ownProperties.GetValue(key.KeyString.Key);
         if (!ownProperty.IsEmpty)
-            return !JSObject.IsPrivateName(in key.KeyString) && ownProperty.IsEnumerable
-                ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+            return !IsPrivateName(in key.KeyString) && ownProperty.IsEnumerable
+                ? BooleanTrue : BooleanFalse;
 
         return EnumerableFromDescriptor(@object, a.Get1());
     }
@@ -82,9 +82,9 @@ public partial class JSObject
     private static JSValue EnumerableFromDescriptor(JSObject @object, JSValue key)
     {
         if (@object.GetOwnPropertyDescriptor(key) is JSObject descriptor)
-            return descriptor[KeyStrings.enumerable].BooleanValue ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+            return descriptor[KeyStrings.enumerable].BooleanValue ? BooleanTrue : BooleanFalse;
 
-        return JSValue.BooleanFalse;
+        return BooleanFalse;
     }
 
     /// <summary>
@@ -97,10 +97,10 @@ public partial class JSObject
     public static JSValue ToString(in Arguments a)
     {
         if (a.This.IsNull)
-            return JSValue.CreateString("[object Null]");
+            return CreateString("[object Null]");
 
         if (a.This.IsUndefined)
-            return JSValue.CreateString("[object Undefined]");
+            return CreateString("[object Undefined]");
 
         // The builtin tag (§20.1.3.6 steps 4-21) is computed first; a string-valued
         // @@toStringTag (step 22-23) overrides it. Error objects have an [[ErrorData]]
@@ -132,11 +132,11 @@ public partial class JSObject
             {
                 var tag = tagHolder[toStringTag];
                 if (tag.IsString)
-                    return JSValue.CreateString($"[object {tag}]");
+                    return CreateString($"[object {tag}]");
             }
         }
 
-        return JSValue.CreateString($"[object {builtinTag}]");
+        return CreateString($"[object {builtinTag}]");
     }
 
     [JSPrototypeMethod][JSExport("toLocaleString")]
@@ -166,7 +166,7 @@ public partial class JSObject
     internal static JSValue HasOwnProperty(in Arguments a)
     {
         if (!a.This.TryAsObjectThrowIfNullOrUndefined(out var @object))
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
         var first = a.Get1();
         var key = first.ToKey(false);
@@ -175,9 +175,9 @@ public partial class JSObject
             ref var elements = ref @object.GetElements();
             ref var property = ref elements.Get(key.Index);
             if (!property.IsEmpty)
-                return JSValue.BooleanTrue;
+                return BooleanTrue;
 
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
         }
 
         if (key.IsSymbol)
@@ -185,20 +185,20 @@ public partial class JSObject
             ref var symbols = ref @object.GetSymbols();
             ref var property = ref symbols.GetRefOrDefault(key.Symbol.Key, ref JSProperty.Empty);
             if (!property.IsEmpty)
-                return JSValue.BooleanTrue;
-            return JSValue.BooleanFalse;
+                return BooleanTrue;
+            return BooleanFalse;
         }
 
         ref var op = ref @object.GetOwnProperties(false);
         ref var ownProperty = ref op.GetValue(key.KeyString.Key);
         if (!ownProperty.IsEmpty)
         {
-            if (JSObject.IsPrivateName(in key.KeyString))
-                return JSValue.BooleanFalse;
-            return JSValue.BooleanTrue;
+            if (IsPrivateName(in key.KeyString))
+                return BooleanFalse;
+            return BooleanTrue;
         }
 
-        return JSValue.BooleanFalse;
+        return BooleanFalse;
     }
 
     [JSPrototypeMethod][JSExport("__defineGetter__", Length = 2)]
@@ -213,8 +213,8 @@ public partial class JSObject
 
         var descriptor = new JSObject();
         descriptor[KeyStrings.get] = getter;
-        descriptor[KeyStrings.enumerable] = JSValue.BooleanTrue;
-        descriptor[KeyStrings.configurable] = JSValue.BooleanTrue;
+        descriptor[KeyStrings.enumerable] = BooleanTrue;
+        descriptor[KeyStrings.configurable] = BooleanTrue;
         @object.DefineProperty(propertyName, descriptor);
         return JSUndefined.Value;
     }
@@ -233,17 +233,17 @@ public partial class JSObject
     internal static JSValue IsPrototypeOf(in Arguments a)
     {
         if (a.Get1() is not JSObject candidate)
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
         if (!a.This.TryAsObjectThrowIfNullOrUndefined(out var @this))
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
         for (var current = candidate.GetPrototypeOf(); current is JSObject currentObject; current = currentObject.GetPrototypeOf())
         {
             if (ReferenceEquals(@this, currentObject))
-                return JSValue.BooleanTrue;
+                return BooleanTrue;
         }
 
-        return JSValue.BooleanFalse;
+        return BooleanFalse;
     }
 }

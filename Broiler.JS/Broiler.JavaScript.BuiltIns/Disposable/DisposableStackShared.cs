@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Broiler.JavaScript.BuiltIns.Error;
 using Broiler.JavaScript.BuiltIns.Promise;
-using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
-using Broiler.JavaScript.Engine.Extensions;
 
 namespace Broiler.JavaScript.BuiltIns.Disposable;
 

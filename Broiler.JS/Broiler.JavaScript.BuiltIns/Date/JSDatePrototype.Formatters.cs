@@ -72,7 +72,7 @@ public partial class JSDate
             if (receiver.IsNullOrUndefined)
                 throw JSEngine.NewTypeError(JSException.Cannot_convert_undefined_or_null_to_object);
 
-            @object = (JSObject)JSObject.CreatePrimitiveObject(receiver);
+            @object = (JSObject)CreatePrimitiveObject(receiver);
         }
 
         var primitive = ToNumberPrimitive(@object);
@@ -178,7 +178,7 @@ public partial class JSDate
     {
         var opts = Intl.JSIntlDateTimeFormat.ToDateTimeOptions(format, required, defaults);
         var dtf = new Intl.JSIntlDateTimeFormat(new Arguments(JSUndefined.Value, locale, opts));
-        return dtf.Format(new Arguments(JSUndefined.Value, JSValue.CreateNumber(GetTimeMs())));
+        return dtf.Format(new Arguments(JSUndefined.Value, CreateNumber(GetTimeMs())));
     }
 
     // The Broiler .NET extension path: a non-spec convenience where the second argument is a .NET
@@ -248,9 +248,9 @@ public partial class JSDate
     // Abbreviated weekday/month names used by the ECMAScript date/time string
     // representations (Date.prototype.toString / toUTCString / toDateString). These are
     // locale-independent: the spec mandates these exact English abbreviations.
-    private static readonly string[] WeekDayNames = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+    private static readonly string[] WeekDayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     private static readonly string[] MonthNames =
-        { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+        ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     // DateString (ECMA-262 §21.4.4.41.2): "Thu Jan 01 1970".
     private static string DateString(double t)

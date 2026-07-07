@@ -63,7 +63,7 @@ public partial class JSObject
         if (rval is not JSObject obj)
             throw NewTypeError("Cannot use 'in' operator to check for a private name in a non-object");
 
-        return obj.GetInternalProperty(key).IsEmpty ? JSValue.BooleanFalse : JSValue.BooleanTrue;
+        return obj.GetInternalProperty(key).IsEmpty ? BooleanFalse : BooleanTrue;
     }
 
     // Brand check for a private member access (`obj.#x`). A private name must be
@@ -200,42 +200,42 @@ public partial class JSObject
         {
             case KeyType.String:
                 if (IsPrivateName(in key.KeyString))
-                    return JSValue.UndefinedValue;
+                    return UndefinedValue;
 
                 if (ownProperties.TryGetValue(key.KeyString.Key, out var p))
                     return JSObjectCoreExtensions.PropertyToJSValue(in p);
-                return JSValue.UndefinedValue;
+                return UndefinedValue;
 
             case KeyType.UInt:
                 if (elements.TryGetValue(key.Index, out var p1))
                     return JSObjectCoreExtensions.PropertyToJSValue(in p1);
-                return JSValue.UndefinedValue;
+                return UndefinedValue;
 
             case KeyType.Symbol:
                 if (symbols.TryGetValue(key.Symbol.Key, out var p3))
                     return JSObjectCoreExtensions.PropertyToJSValue(in p3);
-                return JSValue.UndefinedValue;
+                return UndefinedValue;
         }
 
-        return JSValue.UndefinedValue;
+        return UndefinedValue;
     }
 
     public override JSValue GetOwnProperty(in KeyString name)
     {
         ref var p = ref ownProperties.GetValue(name.Key);
-        return this.GetValue(p);
+        return GetValue(p);
     }
 
     public override JSValue GetOwnProperty(IJSSymbol name)
     {
         ref var p = ref symbols.GetRefOrDefault(name.Key, ref JSProperty.Empty);
-        return this.GetValue(p);
+        return GetValue(p);
     }
 
     public override JSValue GetOwnProperty(uint name)
     {
         ref var p = ref elements.Get(name);
-        return this.GetValue(p);
+        return GetValue(p);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -784,7 +784,7 @@ public partial class JSObject
         var target = receiver as JSObject ?? this;
         if (!ReferenceEquals(target, this))
         {
-            var descriptor = target.GetOwnPropertyDescriptor(JSValue.CreateNumber(name)) as JSObject;
+            var descriptor = target.GetOwnPropertyDescriptor(CreateNumber(name)) as JSObject;
             if (descriptor != null)
             {
                 if (TrySetReceiverAccessorProperty(target, descriptor, receiver, value, name, throwError, out var accessorResult))
@@ -863,14 +863,14 @@ public partial class JSObject
         }
 
         var target = receiver as JSObject ?? this;
-        if (name.Key == JSValue.SymbolIterator.Key)
+        if (name.Key == SymbolIterator.Key)
             target.HasIterator = true;
-        else if (JSValue.SymbolAsyncIterator != null && name.Key == JSValue.SymbolAsyncIterator.Key)
+        else if (SymbolAsyncIterator != null && name.Key == SymbolAsyncIterator.Key)
             target.HasAsyncIterator = true;
 
         if (!ReferenceEquals(target, this))
         {
-            var symbolValue = (JSValue)(JSValue.GetSymbolByKeyFactory?.Invoke(name.Key)
+            var symbolValue = (JSValue)(GetSymbolByKeyFactory?.Invoke(name.Key)
                 ?? throw new InvalidOperationException($"Unknown symbol key {name.Key}"));
             var descriptor = target.GetOwnPropertyDescriptor(symbolValue) as JSObject;
             if (descriptor != null)
@@ -1099,9 +1099,9 @@ public partial class JSObject
     {
         var descriptor = new JSObject();
         descriptor.FastAddValue(KeyStrings.value, value, JSPropertyAttributes.EnumerableConfigurableValue);
-        descriptor.FastAddValue(KeyStrings.writable, attributes.HasFlag(JSPropertyAttributes.Readonly) ? JSValue.BooleanFalse : JSValue.BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
-        descriptor.FastAddValue(KeyStrings.enumerable, attributes.HasFlag(JSPropertyAttributes.Enumerable) ? JSValue.BooleanTrue : JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
-        descriptor.FastAddValue(KeyStrings.configurable, attributes.HasFlag(JSPropertyAttributes.Configurable) ? JSValue.BooleanTrue : JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+        descriptor.FastAddValue(KeyStrings.writable, attributes.HasFlag(JSPropertyAttributes.Readonly) ? BooleanFalse : BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
+        descriptor.FastAddValue(KeyStrings.enumerable, attributes.HasFlag(JSPropertyAttributes.Enumerable) ? BooleanTrue : BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+        descriptor.FastAddValue(KeyStrings.configurable, attributes.HasFlag(JSPropertyAttributes.Configurable) ? BooleanTrue : BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
         return descriptor;
     }
 
@@ -1158,7 +1158,7 @@ public partial class JSObject
             if (p.get is IJSFunction getter)
                 return getter.InvokeFunction(new Arguments(receiver ?? this));
 
-            return JSValue.UndefinedValue;
+            return UndefinedValue;
         }
 
         return base.GetValue(key, receiver, throwError);
@@ -1169,11 +1169,11 @@ public partial class JSObject
         var k = key.ToKey();
         return k.Type switch
         {
-            KeyType.Empty => JSValue.BooleanFalse,
+            KeyType.Empty => BooleanFalse,
             KeyType.UInt => DefineProperty(k.Index, propertyDescription),
             KeyType.String => DefineProperty(k.KeyString, propertyDescription),
             KeyType.Symbol => DefineProperty(k.Symbol, propertyDescription),
-            _ => JSValue.BooleanFalse,
+            _ => BooleanFalse,
         };
     }
 
@@ -1182,17 +1182,17 @@ public partial class JSObject
         var key = name.Key;
         var old = symbols[key];
         if (old.IsEmpty && !IsExtensible())
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
         if (!old.IsEmpty)
         {
             CompletePropertyDescriptor(pd, in old);
             if (!IsCompatiblePropertyRedefinition(in old, pd))
-                return JSValue.BooleanFalse;
+                return BooleanFalse;
         }
 
         symbols.Put(key) = pd.ToProperty(key);
         PropertyChanged?.Invoke(this, (uint.MaxValue, uint.MaxValue, name));
-        return JSValue.UndefinedValue;
+        return UndefinedValue;
     }
 
     public virtual JSValue DefineProperty(uint key, JSObject pd)
@@ -1200,19 +1200,19 @@ public partial class JSObject
         ref var elements = ref GetElements(true);
         var old = elements[key];
         if (old.IsEmpty && !IsExtensible())
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
         if (!old.IsEmpty)
         {
             CompletePropertyDescriptor(pd, in old);
             if (!IsCompatiblePropertyRedefinition(in old, pd))
-                return JSValue.BooleanFalse;
+                return BooleanFalse;
         }
 
         elements.Put(key) = pd.ToProperty(key);
-        this.UpdateArrayLengthIfNeeded(key);
+        UpdateArrayLengthIfNeeded(key);
 
         PropertyChanged?.Invoke(this, (uint.MaxValue, key, null));
-        return JSValue.UndefinedValue;
+        return UndefinedValue;
     }
 
     public virtual JSValue DefineProperty(in KeyString name, JSObject pd)
@@ -1221,7 +1221,7 @@ public partial class JSObject
         ref var ownProperties = ref GetOwnProperties();
         ref var old = ref ownProperties.GetValue(name.Key);
         if (old.IsEmpty && !IsExtensible())
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
         if (!old.IsEmpty)
         {
@@ -1233,17 +1233,17 @@ public partial class JSObject
             {
                 var currentLength = Length;
                 if (currentLength >= 0)
-                    pd.FastAddValue(KeyStrings.value, JSValue.CreateNumber(currentLength), JSPropertyAttributes.EnumerableConfigurableValue);
+                    pd.FastAddValue(KeyStrings.value, CreateNumber(currentLength), JSPropertyAttributes.EnumerableConfigurableValue);
             }
 
             CompletePropertyDescriptor(pd, in old);
             if (!IsCompatiblePropertyRedefinition(in old, pd))
-                return JSValue.BooleanFalse;
+                return BooleanFalse;
         }
         // p.key = name;
         ownProperties.Put(key) = pd.ToProperty(key);
         PropertyChanged?.Invoke(this, (name.Key, uint.MaxValue, null));
-        return JSValue.UndefinedValue;
+        return UndefinedValue;
     }
 
     private static void CompletePropertyDescriptor(JSObject descriptor, in JSProperty current)
@@ -1258,27 +1258,27 @@ public partial class JSObject
         var descriptorIsData = hasValue || hasWritable;
 
         if (!hasConfigurable)
-            descriptor.FastAddValue(KeyStrings.configurable, current.IsConfigurable ? JSValue.BooleanTrue : JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.configurable, current.IsConfigurable ? BooleanTrue : BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
 
         if (!hasEnumerable)
-            descriptor.FastAddValue(KeyStrings.enumerable, current.IsEnumerable ? JSValue.BooleanTrue : JSValue.BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.enumerable, current.IsEnumerable ? BooleanTrue : BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
 
         if (current.IsProperty)
         {
             if (!descriptorIsData && !hasGet)
-                descriptor[KeyStrings.get] = current.get as JSValue ?? JSValue.UndefinedValue;
+                descriptor[KeyStrings.get] = current.get as JSValue ?? UndefinedValue;
 
             if (!descriptorIsData && !hasSet)
-                descriptor[KeyStrings.set] = current.set as JSValue ?? JSValue.UndefinedValue;
+                descriptor[KeyStrings.set] = current.set as JSValue ?? UndefinedValue;
 
             return;
         }
 
         if (!descriptorIsAccessor && !hasValue)
-            descriptor.FastAddValue(KeyStrings.value, current.value as JSValue ?? JSValue.UndefinedValue, JSPropertyAttributes.EnumerableConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.value, current.value as JSValue ?? UndefinedValue, JSPropertyAttributes.EnumerableConfigurableValue);
 
         if (!descriptorIsAccessor && !hasWritable)
-            descriptor.FastAddValue(KeyStrings.writable, current.IsReadOnly ? JSValue.BooleanFalse : JSValue.BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
+            descriptor.FastAddValue(KeyStrings.writable, current.IsReadOnly ? BooleanFalse : BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
     }
 
     private static bool IsCompatiblePropertyRedefinition(in JSProperty current, JSObject descriptor)
@@ -1421,45 +1421,45 @@ public partial class JSObject
     {
         var property = ownProperties.GetValue(key.Key);
         if (!property.IsEmpty && !property.IsConfigurable)
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
         if (ownProperties.RemoveAt(key.Key))
         {
             PropertyChanged?.Invoke(this, (key.Key, uint.MaxValue, null));
-            return JSValue.BooleanTrue;
+            return BooleanTrue;
         }
 
-        return JSValue.BooleanTrue;
+        return BooleanTrue;
     }
 
     public override JSValue Delete(uint key)
     {
         if (elements.TryGetValue(key, out var property) && !property.IsConfigurable)
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
         ref var element = ref elements.Get(key);
 
         if (elements.RemoveAt(key))
         {
             PropertyChanged?.Invoke(this, (uint.MaxValue, key, null));
-            return JSValue.BooleanTrue;
+            return BooleanTrue;
         }
 
-        return JSValue.BooleanTrue;
+        return BooleanTrue;
     }
 
     public override JSValue Delete(IJSSymbol symbol)
     {
         if (symbols.TryGetValue(symbol.Key, out var property) && !property.IsConfigurable)
-            return JSValue.BooleanFalse;
+            return BooleanFalse;
 
         if (symbols.RemoveAt(symbol.Key))
         {
             PropertyChanged?.Invoke(this, (uint.MaxValue, uint.MaxValue, symbol));
-            return JSValue.BooleanTrue;
+            return BooleanTrue;
         }
 
-        return JSValue.BooleanTrue;
+        return BooleanTrue;
     }
     internal override bool TryGetValue(uint i, out JSProperty value) => elements.TryGetValue(i, out value);
 
@@ -1467,7 +1467,7 @@ public partial class JSObject
     {
         if (elements.TryGetValue(i, out var p))
         {
-            value = this.GetValue(p);
+            value = GetValue(p);
             return true;
         }
 
@@ -1536,7 +1536,7 @@ public partial class JSObject
     {
         if (HasIterator)
         {
-            var v = this.GetValue(symbols[JSValue.SymbolIterator.Key]);
+            var v = GetValue(symbols[SymbolIterator.Key]);
             if (!v.IsFunction)
                 throw NewTypeError("@@iterator is not a function");
 
@@ -1587,7 +1587,7 @@ public partial class JSObject
 
     public override IElementEnumerator GetIterableEnumerator()
     {
-        var iterator = this[JSValue.SymbolIterator];
+        var iterator = this[SymbolIterator];
         if (iterator.IsNullOrUndefined)
             throw NewTypeError(NotIterable(this));
 
@@ -1603,10 +1603,10 @@ public partial class JSObject
 
     public override IElementEnumerator GetAsyncElementEnumerator()
     {
-        if (JSValue.SymbolAsyncIterator != null
-            && (HasAsyncIterator || symbols.TryGetValue(JSValue.SymbolAsyncIterator.Key, out _)))
+        if (SymbolAsyncIterator != null
+            && (HasAsyncIterator || symbols.TryGetValue(SymbolAsyncIterator.Key, out _)))
         {
-            var v = this.GetValue(symbols[JSValue.SymbolAsyncIterator.Key]);
+            var v = GetValue(symbols[SymbolAsyncIterator.Key]);
             if (!v.IsFunction)
                 throw NewTypeError("@@asyncIterator is not a function");
 
@@ -1622,9 +1622,9 @@ public partial class JSObject
 
     public override IElementEnumerator GetAsyncIterableEnumerator()
     {
-        if (JSValue.SymbolAsyncIterator != null)
+        if (SymbolAsyncIterator != null)
         {
-            var asyncIterator = this[JSValue.SymbolAsyncIterator];
+            var asyncIterator = this[SymbolAsyncIterator];
             if (!asyncIterator.IsNullOrUndefined)
             {
                 if (!asyncIterator.IsFunction)
@@ -1673,7 +1673,7 @@ public partial class JSObject
             }
 
             hasValue = false;
-            value = JSValue.UndefinedValue;
+            value = UndefinedValue;
             index = 0;
             return false;
         }
@@ -1686,7 +1686,7 @@ public partial class JSObject
                 return true;
             }
 
-            value = JSValue.UndefinedValue;
+            value = UndefinedValue;
             return false;
         }
 

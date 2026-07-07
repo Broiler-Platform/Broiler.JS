@@ -436,7 +436,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         var other = Require(ToTemporalYearMonth(a.GetAt(0)));
         return isoYear == other.isoYear && isoMonth == other.isoMonth && referenceISODay == other.referenceISODay
             && calendarId == other.calendarId
-            ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+            ? BooleanTrue : BooleanFalse;
     }
 
     [JSExport("toPlainDate", Length = 1)]

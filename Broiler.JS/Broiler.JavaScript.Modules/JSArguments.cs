@@ -4,7 +4,6 @@ using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
-using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.Modules;
 
@@ -19,7 +18,7 @@ public class JSArguments: JSObject, IJSArguments
     // prototype exists (early bootstrap), in which case the constructor falls back to the
     // equivalent length-bound function below.
     private static JSValue ArrayValuesIntrinsic
-        => (JSEngine.Current as IJSExecutionContext)?.IntrinsicArrayValues ?? JSValue.UndefinedValue;
+        => (JSEngine.Current as IJSExecutionContext)?.IntrinsicArrayValues ?? UndefinedValue;
 
     // Fallback @@iterator for arguments before %Array.prototype.values% is available:
     // a CreateArrayIterator-equivalent that re-reads "length" on every step. Using
@@ -51,7 +50,7 @@ public class JSArguments: JSObject, IJSArguments
                 return true;
             }
 
-            value = JSValue.UndefinedValue;
+            value = UndefinedValue;
             return false;
         }
 
@@ -97,7 +96,7 @@ public class JSArguments: JSObject, IJSArguments
         // than minting a fresh function per arguments object) so the callee poison's
         // get/set — and the accessors across arguments objects — are SameValue-equal.
         var throwTypeError = JSFunction.GetOrCreateThrowTypeError();
-        properties.Put(KeyStrings.length, JSValue.CreateNumber(args.Length), JSPropertyAttributes.ConfigurableValue);
+        properties.Put(KeyStrings.length, CreateNumber(args.Length), JSPropertyAttributes.ConfigurableValue);
         properties.Put(KeyStrings.callee, throwTypeError, throwTypeError, JSPropertyAttributes.Property);
         // §20.1.3.6 step 14: an Arguments object's "[object Arguments]" tag comes from the
         // [[ParameterMap]] internal slot (modelled here via the IJSArguments marker and recognised
@@ -107,7 +106,7 @@ public class JSArguments: JSObject, IJSArguments
         ref var symbols = ref GetSymbols();
         var iterator = ArrayValuesIntrinsic;
         var iteratorFn = iterator.IsFunction ? iterator : new JSFunction(Values);
-        symbols.Put(JSValue.SymbolIterator.Key) = JSProperty.Property(iteratorFn, JSPropertyAttributes.ConfigurableValue);
+        symbols.Put(SymbolIterator.Key) = JSProperty.Property(iteratorFn, JSPropertyAttributes.ConfigurableValue);
         ref var elements = ref CreateElements();
         
         for (int i = 0; i < args.Length; i++)
@@ -209,10 +208,10 @@ public class JSArguments: JSObject, IJSArguments
         if (mappedParameters == null || !mappedParameters.TryGetValue(key, out var mappedParameter))
             return result;
 
-        var hasGet = !pd.GetOwnPropertyDescriptor(JSValue.CreateString("get")).IsUndefined;
-        var hasSet = !pd.GetOwnPropertyDescriptor(JSValue.CreateString("set")).IsUndefined;
-        var hasValue = !pd.GetOwnPropertyDescriptor(JSValue.CreateString("value")).IsUndefined;
-        var hasWritable = !pd.GetOwnPropertyDescriptor(JSValue.CreateString("writable")).IsUndefined;
+        var hasGet = !pd.GetOwnPropertyDescriptor(CreateString("get")).IsUndefined;
+        var hasSet = !pd.GetOwnPropertyDescriptor(CreateString("set")).IsUndefined;
+        var hasValue = !pd.GetOwnPropertyDescriptor(CreateString("value")).IsUndefined;
+        var hasWritable = !pd.GetOwnPropertyDescriptor(CreateString("writable")).IsUndefined;
 
         if (hasGet || hasSet)
         {

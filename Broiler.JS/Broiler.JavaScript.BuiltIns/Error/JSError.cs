@@ -74,9 +74,9 @@ public partial class JSError : JSObject, IJSError
         Stack = CreateStack();
 
         if (hasMessage && !messageValue.IsUndefined)
-            FastAddValue(KeyStrings.message, JSValue.CreateString(message), JSPropertyAttributes.ConfigurableValue);
+            FastAddValue(KeyStrings.message, CreateString(message), JSPropertyAttributes.ConfigurableValue);
 
-        FastAddValue(KeyStrings.stack, JSValue.CreateString(Stack), JSPropertyAttributes.ConfigurableValue);
+        FastAddValue(KeyStrings.stack, CreateString(Stack), JSPropertyAttributes.ConfigurableValue);
 
         InstallErrorCause(a.GetAt(1));
     }
@@ -85,14 +85,14 @@ public partial class JSError : JSObject, IJSError
     internal static JSValue IsError(in Arguments a)
     {
         var arg = a.Get1();
-        return arg is JSError ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        return arg is JSError ? BooleanTrue : BooleanFalse;
     }
 
     [JSExport("toString")]
     public new JSValue ToString(in Arguments a)
     {
         var name = prototypeChain.Object[KeyStrings.constructor][KeyStrings.name];
-        return JSValue.CreateString($"{name}: {Message}");
+        return CreateString($"{name}: {Message}");
     }
 
     public override string ToString() => ToString(Arguments.Empty).ToString();
@@ -108,8 +108,8 @@ public partial class JSError : JSObject, IJSError
         Message = ex.RawMessage ?? ex.Message;
         Stack = ex.JSStackTrace.ToString();
 
-        FastAddValue(KeyStrings.message, JSValue.CreateString(Message), JSPropertyAttributes.ConfigurableValue);
-        FastAddValue(KeyStrings.stack, JSValue.CreateString(Stack), JSPropertyAttributes.ConfigurableValue);
+        FastAddValue(KeyStrings.message, CreateString(Message), JSPropertyAttributes.ConfigurableValue);
+        FastAddValue(KeyStrings.stack, CreateString(Stack), JSPropertyAttributes.ConfigurableValue);
     }
 
     internal JSError(JSException ex, string msg) : this()
@@ -119,8 +119,8 @@ public partial class JSError : JSObject, IJSError
         Message = msg;
         Stack = ex.JSStackTrace.ToString();
 
-        FastAddValue(KeyStrings.message, JSValue.CreateString(msg), JSPropertyAttributes.ConfigurableValue);
-        FastAddValue(KeyStrings.stack, JSValue.CreateString(Stack), JSPropertyAttributes.ConfigurableValue);
+        FastAddValue(KeyStrings.message, CreateString(msg), JSPropertyAttributes.ConfigurableValue);
+        FastAddValue(KeyStrings.stack, CreateString(Stack), JSPropertyAttributes.ConfigurableValue);
     }
 
     public static JSValue From(Exception ex)

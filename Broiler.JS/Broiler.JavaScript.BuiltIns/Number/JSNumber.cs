@@ -1,5 +1,4 @@
-﻿using Broiler.JavaScript.BuiltIns.Null;
-using Broiler.JavaScript.ExpressionCompiler;
+﻿using Broiler.JavaScript.ExpressionCompiler;
 using System;
 using System.Globalization;
 using Broiler.JavaScript.Runtime;
@@ -93,7 +92,7 @@ public sealed partial class JSNumber : JSPrimitive
         if (n > 0 && n < uint.MaxValue && ((uint)n) == n)
             return (uint)n;
 
-        var text = JSValue.NumberToECMAString(n);
+        var text = NumberToECMAString(n);
         if (!create)
         {
             if (KeyStrings.TryGet(text, out var k))
@@ -427,15 +426,15 @@ public sealed partial class JSNumber : JSPrimitive
         if (value is JSNumber number)
         {
             if (this.value == 0 || number.value == 0)
-                return BitConverter.DoubleToInt64Bits(this.value) == BitConverter.DoubleToInt64Bits(number.value) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+                return BitConverter.DoubleToInt64Bits(this.value) == BitConverter.DoubleToInt64Bits(number.value) ? BooleanTrue : BooleanFalse;
 
             if (double.IsNaN(this.value))
-                return double.IsNaN(number.value) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+                return double.IsNaN(number.value) ? BooleanTrue : BooleanFalse;
 
             if (this.value == number.value)
-                return JSValue.BooleanTrue;
+                return BooleanTrue;
         }
 
-        return JSValue.BooleanFalse;
+        return BooleanFalse;
     }
 }

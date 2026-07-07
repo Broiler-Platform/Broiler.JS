@@ -4,13 +4,10 @@ using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.ExpressionCompiler;
-using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
-using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
-using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.BuiltIns.Proxy;
 
@@ -95,8 +92,8 @@ public partial class JSProxy : JSObject
         var propertyKey = key.ToKey(false);
         return propertyKey.Type switch
         {
-            KeyType.UInt => JSValue.CreateString(propertyKey.Index.ToString()),
-            KeyType.String => JSValue.CreateString(propertyKey.KeyString.ToString()),
+            KeyType.UInt => CreateString(propertyKey.Index.ToString()),
+            KeyType.String => CreateString(propertyKey.KeyString.ToString()),
             KeyType.Symbol => (JSValue)(JSSymbol)propertyKey.Symbol,
             _ => key
         };
@@ -123,7 +120,7 @@ public partial class JSProxy : JSObject
         // back to [[GetOwnProperty]] so e.g. `Reflect.set(arr, "length", v, proxy)`
         // (from pop/shift via a Proxy) sees `length` as a real (non-configurable)
         // property rather than reporting it as absent.
-        var name = key.IsUInt ? JSValue.CreateNumber(key.Index) : key.KeyString.ToJSValue();
+        var name = key.IsUInt ? CreateNumber(key.Index) : key.KeyString.ToJSValue();
         if (target.GetOwnPropertyDescriptor(name) is JSObject descriptor && IsDataDescriptor(descriptor))
         {
             bool Flag(KeyString field) => HasDescriptorField(descriptor, field) && descriptor[field].BooleanValue;
@@ -487,7 +484,7 @@ public partial class JSProxy : JSObject
 
     public override JSValue DefineProperty(in KeyString name, JSObject pd) => DefineProperty(name.ToJSValue(), pd);
 
-    public override JSValue DefineProperty(uint key, JSObject pd) => DefineProperty(JSValue.CreateString(key.ToString()), pd);
+    public override JSValue DefineProperty(uint key, JSObject pd) => DefineProperty(CreateString(key.ToString()), pd);
 
     public override JSValue DefineProperty(IJSSymbol name, JSObject pd) => DefineProperty((JSValue)(JSSymbol)name, pd);
 
@@ -496,7 +493,7 @@ public partial class JSProxy : JSObject
     // it must fire the defineProperty trap and throw if the define is rejected.
     public override void CreateDataProperty(KeyString key, JSValue value) => CreateDataPropertyOrThrow(key.ToJSValue(), value);
 
-    public override void CreateDataProperty(uint index, JSValue value) => CreateDataPropertyOrThrow(JSValue.CreateString(index.ToString()), value);
+    public override void CreateDataProperty(uint index, JSValue value) => CreateDataPropertyOrThrow(CreateString(index.ToString()), value);
 
     public override void CreateDataProperty(JSValue key, JSValue value) => CreateDataPropertyOrThrow(key, value);
 
@@ -527,7 +524,7 @@ public partial class JSProxy : JSObject
 
     public override JSValue Delete(in KeyString key) => Delete(key.ToJSValue());
 
-    public override JSValue Delete(uint key) => Delete(JSValue.CreateString(key.ToString()));
+    public override JSValue Delete(uint key) => Delete(CreateString(key.ToString()));
 
     public override JSValue Delete(IJSSymbol symbol) => Delete((JSValue)(JSSymbol)symbol);
 
@@ -627,7 +624,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.get);
         if (!fx.IsUndefined)
         {
-            var result = fx.InvokeFunction(new Arguments(handler, target, JSValue.CreateString(key.ToString()), receiver));
+            var result = fx.InvokeFunction(new Arguments(handler, target, CreateString(key.ToString()), receiver));
             ValidateGetInvariant(target, key, result);
             return result;
         }
@@ -672,7 +669,7 @@ public partial class JSProxy : JSObject
         var fx = GetTrap(KeyStrings.set);
         if (!fx.IsUndefined)
         {
-            var setResult = fx.InvokeFunction(new Arguments(handler, target, JSValue.CreateString(name.ToString()), value, receiver));
+            var setResult = fx.InvokeFunction(new Arguments(handler, target, CreateString(name.ToString()), value, receiver));
             if (!setResult.BooleanValue)
                 return false;
 
@@ -823,7 +820,7 @@ public partial class JSProxy : JSObject
             return 0;
 
         const double maxSafeInteger = 9007199254740991.0; // 2^53 - 1
-        return number >= maxSafeInteger ? (long)maxSafeInteger : (long)System.Math.Floor(number);
+        return number >= maxSafeInteger ? (long)maxSafeInteger : (long)Math.Floor(number);
     }
 
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true)
@@ -911,7 +908,7 @@ public partial class JSProxy : JSObject
                 if (property.IsEmpty)
                     continue;
 
-                var symbol = JSValue.GetSymbolByKeyFactory?.Invoke(key)
+                var symbol = GetSymbolByKeyFactory?.Invoke(key)
                     ?? throw new InvalidOperationException($"Unknown symbol key {key}");
                 keys.Add((JSValue)symbol);
             }
@@ -940,7 +937,7 @@ public partial class JSProxy : JSObject
         var (target, handler) = a.Get2();
         var proxy = new JSProxy((target as JSObject, handler as JSObject));
         var result = new JSObject();
-        var revoke = JSValue.CreateFunction((in Arguments _) =>
+        var revoke = CreateFunction((in Arguments _) =>
         {
             proxy.Revoke();
             return JSUndefined.Value;

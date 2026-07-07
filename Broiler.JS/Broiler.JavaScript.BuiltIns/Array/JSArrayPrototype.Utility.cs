@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Text;
-using System.Globalization;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.BuiltIns.Symbol;
 
@@ -69,7 +67,7 @@ public partial class JSArray
         for (int i = 0; i < a.Length; i++)
             Append(a.GetAt(i));
 
-        result.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), JSValue.CreateNumber(resultIndex));
+        result.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), CreateNumber(resultIndex));
         return result;
     }
 

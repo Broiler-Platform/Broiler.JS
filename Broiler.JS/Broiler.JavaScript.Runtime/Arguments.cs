@@ -53,7 +53,7 @@ public readonly partial struct Arguments
                 return new Arguments(Args![0], Args[1]!, Args[2]!, Args[3]!, Args[4]!);
             default:
                 var sa = new JSValue[Length - 1];
-                System.Array.Copy(Args, 1, sa, 0, sa.Length);
+                Array.Copy(Args, 1, sa, 0, sa.Length);
                 return new Arguments(Args![0], sa);
         }
     }

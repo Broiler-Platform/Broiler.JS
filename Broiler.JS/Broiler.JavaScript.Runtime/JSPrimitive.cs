@@ -144,7 +144,7 @@ public abstract class JSPrimitive: JSValue
     // keeps its dedicated code-point enumerator by overriding this.
     public override IElementEnumerator GetIterableEnumerator()
     {
-        var iterator = this[JSValue.SymbolIterator];
+        var iterator = this[SymbolIterator];
         if (iterator.IsNullOrUndefined)
             throw NewTypeError(JSException.NotIterable(this));
 

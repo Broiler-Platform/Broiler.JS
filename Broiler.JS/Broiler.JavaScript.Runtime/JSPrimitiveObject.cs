@@ -50,7 +50,7 @@ public class JSPrimitiveObject : JSObject
                 return JSObjectCoreExtensions.PropertyToJSValue(new JSProperty(key.Index, value[key.Index], JSPropertyAttributes.EnumerableReadonlyValue));
 
             if (key.Type == KeyType.String && key.KeyString.Key == KeyStrings.length.Key)
-                return JSObjectCoreExtensions.PropertyToJSValue(new JSProperty(KeyStrings.length.Key, JSValue.CreateNumber(value.Length), JSPropertyAttributes.ReadonlyValue));
+                return JSObjectCoreExtensions.PropertyToJSValue(new JSProperty(KeyStrings.length.Key, CreateNumber(value.Length), JSPropertyAttributes.ReadonlyValue));
         }
 
         return base.GetOwnPropertyDescriptor(name);
@@ -61,7 +61,7 @@ public class JSPrimitiveObject : JSObject
         if (key.Key == KeyStrings.length.Key)
         {
             if (value.IsString)
-                return JSValue.CreateNumber(value.Length);
+                return CreateNumber(value.Length);
         }
 
         return base.GetValue(key, receiver, throwError);
@@ -74,7 +74,7 @@ public class JSPrimitiveObject : JSObject
             ref var elements = ref GetElements();
 
             if (elements.TryGetValue(name, out var p))
-                return this.GetValue(p);
+                return GetValue(p);
 
             return value[name];
         }
@@ -164,7 +164,7 @@ public class JSPrimitiveObject : JSObject
             }
 
             if (!propertyDescription.GetInternalProperty(KeyStrings.value, false).IsEmpty
-                && !propertyDescription[KeyStrings.value].Is(JSValue.CreateNumber(value.Length)).BooleanValue)
+                && !propertyDescription[KeyStrings.value].Is(CreateNumber(value.Length)).BooleanValue)
             {
                 return BooleanFalse;
             }
@@ -234,7 +234,7 @@ public class JSPrimitiveObject : JSObject
             // which stringifies indices. Emitting raw numbers here would make
             // Object.keys/entries/getOwnPropertyNames return numeric keys.
             if (hasValue)
-                keys.Add(JSValue.CreateString(index.ToString()));
+                keys.Add(CreateString(index.ToString()));
         }
 
         // Partition the remaining own keys: array-index keys (which belong with the
@@ -264,7 +264,7 @@ public class JSPrimitiveObject : JSObject
         {
             extraIndexKeys.Sort();
             foreach (var index in extraIndexKeys)
-                keys.Add(JSValue.CreateString(index.ToString()));
+                keys.Add(CreateString(index.ToString()));
         }
 
         // String exotic objects also have a non-writable, non-enumerable,

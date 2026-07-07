@@ -181,7 +181,7 @@ public partial class JSObject : JSValue
                 ref var l = ref ownp.GetValue(KeyStrings.length.Key);
                 if (!l.IsEmpty)
                 {
-                    var n = this.GetValue(l);
+                    var n = GetValue(l);
                     var nvalue = ((uint)n.DoubleValue) >> 0;
                     return (int)nvalue;
                 }
@@ -204,7 +204,7 @@ public partial class JSObject : JSValue
                 throw NewTypeError($"Cannot modify property length of {this}");
 
             ref var ownp = ref GetOwnProperties();
-            ownp.Put(KeyStrings.length, JSValue.CreateNumber(value));
+            ownp.Put(KeyStrings.length, CreateNumber(value));
             PropertyChanged?.Invoke(this, (KeyStrings.length.Key, uint.MaxValue, null));
         }
     }

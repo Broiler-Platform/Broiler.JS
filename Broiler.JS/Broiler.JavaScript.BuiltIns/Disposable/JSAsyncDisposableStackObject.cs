@@ -4,9 +4,7 @@ using Broiler.JavaScript.BuiltIns.Promise;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
-using Broiler.JavaScript.Engine.Extensions;
 
 namespace Broiler.JavaScript.BuiltIns.Disposable;
 
@@ -17,7 +15,7 @@ namespace Broiler.JavaScript.BuiltIns.Disposable;
 public partial class JSAsyncDisposableStackObject : JSObject
 {
     private bool _disposed;
-    private List<Func<JSValue>> _resources = new();
+    private List<Func<JSValue>> _resources = [];
 
     [JSExport(Length = 0)]
     public JSAsyncDisposableStackObject(in Arguments a) : base(DisposableStackShared.ResolveConstructorPrototype("AsyncDisposableStack"))
@@ -102,7 +100,7 @@ public partial class JSAsyncDisposableStackObject : JSObject
             _resources = _resources,
         };
 
-        _resources = new List<Func<JSValue>>();
+        _resources = [];
         _disposed = true;
         return moved;
     }

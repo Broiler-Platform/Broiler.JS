@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Broiler.JavaScript.BuiltIns.Error;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Disposable;

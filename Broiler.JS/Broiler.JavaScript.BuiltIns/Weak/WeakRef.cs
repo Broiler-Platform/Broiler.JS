@@ -16,7 +16,7 @@ public partial class JSFinalizationRegistry : JSObject
     // a Symbol, which cannot hold a hidden property, so unregister-by-token is tracked in
     // an explicit list keyed by SameValue rather than via a property on the token object
     // (test262: FinalizationRegistry/prototype/unregister/unregister-symbol-token).
-    private readonly List<(JSValue Token, WeakObject Ref)> tokenCells = new();
+    private readonly List<(JSValue Token, WeakObject Ref)> tokenCells = [];
     private readonly JSFunction finalizer;
 
     [JSExport(Length = 1)]
@@ -47,7 +47,7 @@ public partial class JSFinalizationRegistry : JSObject
         if (!CanBeHeldWeakly(a[0]))
             throw JSEngine.NewTypeError("Argument must be an object or symbol");
 
-        return Unregister(a[0]) ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        return Unregister(a[0]) ? BooleanTrue : BooleanFalse;
     }
 
     [JSExport(Length = 2)]

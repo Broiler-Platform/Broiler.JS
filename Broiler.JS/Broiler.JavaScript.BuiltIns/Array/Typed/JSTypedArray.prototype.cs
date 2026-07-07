@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
 using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Boolean;
-using Broiler.JavaScript.BuiltIns.Generator;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
-using System.Linq;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
@@ -684,7 +681,7 @@ partial class JSTypedArray
                     this[(uint)(relativeStart + i)] = values[i];
             }
 
-            return JSValue.UndefinedValue;
+            return UndefinedValue;
         }
 
         // SetTypedArrayFromArrayLike: read source.length (a getter may resize the target's buffer),
@@ -696,9 +693,9 @@ partial class JSTypedArray
 
         var rs = (uint)relativeStart;
         for (long i = 0; i < srcLength; i++)
-            this[rs + (uint)i] = source[JSValue.CreateNumber(i)];
+            this[rs + (uint)i] = source[CreateNumber(i)];
 
-        return JSValue.UndefinedValue;
+        return UndefinedValue;
     }
 
     [JSExport("slice", Length = 2)]

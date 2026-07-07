@@ -139,7 +139,7 @@ public partial class DataView : JSObject
     public DataView(JSArrayBuffer buffer, int byteOffset, int byteLength) : this()
     {
         this.buffer = buffer;
-        this.explicitByteLength = byteLength;
+        explicitByteLength = byteLength;
         this.byteOffset = byteOffset;
     }
 
@@ -457,7 +457,7 @@ public partial class DataView : JSObject
     private static byte[] RawBytesFor(JSValue value)
     {
         var big = value is JSBigInt bigint ? bigint.value : new System.Numerics.BigInteger(value.BigIntValue);
-        ulong bits = (ulong)(big & ((System.Numerics.BigInteger.One << 64) - 1));
+        ulong bits = (ulong)(big & ((BigInteger.One << 64) - 1));
         return BitConverter.GetBytes(bits);
     }
 
@@ -596,7 +596,7 @@ public partial class DataView : JSObject
         // setBigInt64(0) with no value is a TypeError (ToBigInt(undefined)), and a value
         // whose valueOf throws is observed even when the index is out of range
         // (test262: DataView/prototype/setUint8/range-check-after-value-conversion).
-        value = bigInt ? JSBigInt.Coerce(value) : JSValue.CreateNumber(value.DoubleValue);
+        value = bigInt ? JSBigInt.Coerce(value) : CreateNumber(value.DoubleValue);
 
         var littleEndian = a[2]?.BooleanValue ?? false;
 

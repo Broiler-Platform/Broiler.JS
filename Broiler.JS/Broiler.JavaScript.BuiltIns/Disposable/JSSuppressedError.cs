@@ -1,7 +1,6 @@
 using Broiler.JavaScript.BuiltIns.Error;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Storage;
 using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.BuiltIns.Disposable;

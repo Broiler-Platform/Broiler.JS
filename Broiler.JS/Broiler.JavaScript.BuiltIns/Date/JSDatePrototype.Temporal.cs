@@ -1,7 +1,6 @@
 using System.Numerics;
 using Broiler.JavaScript.BuiltIns.Temporal;
 using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Date;

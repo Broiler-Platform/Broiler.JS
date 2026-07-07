@@ -578,7 +578,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     public JSValue Equals(in Arguments a)
     {
         var other = RequireDateTime(ToTemporalDateTime(a.GetAt(0)));
-        return CompareTo(other) == 0 && calendarId == other.calendarId ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+        return CompareTo(other) == 0 && calendarId == other.calendarId ? BooleanTrue : BooleanFalse;
     }
 
     [JSExport("toString", Length = 0)]

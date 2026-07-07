@@ -363,7 +363,7 @@ public partial class JSTemporalPlainDate : JSObject
         var other = RequireDate(ToTemporalDate(a.GetAt(0)));
         return isoYear == other.isoYear && isoMonth == other.isoMonth && isoDay == other.isoDay
             && calendarId == other.calendarId
-            ? JSValue.BooleanTrue : JSValue.BooleanFalse;
+            ? BooleanTrue : BooleanFalse;
     }
 
     [JSExport("toString", Length = 0)]
@@ -594,7 +594,7 @@ public partial class JSTemporalPlainDate : JSObject
     // roundingIncrement and roundingMode and returns the resolved largestUnit. The valid date units
     // are year > month > week > day; smallestUnit must not be larger than largestUnit. (Rounding
     // with a smallestUnit/increment beyond "day"/1 is validated here but not yet applied — see TODO.)
-    private static readonly string[] DateUnits = { "year", "month", "week", "day" };
+    private static readonly string[] DateUnits = ["year", "month", "week", "day"];
 
     private static (string largestUnit, string smallestUnit, int increment, string roundingMode) ReadDifferenceSettings(JSValue options)
     {

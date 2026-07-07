@@ -270,11 +270,11 @@ partial class FastCompiler
             if (isPrivateMethodKey)
             {
                 using var keyTemp = scope.Top.GetTempVariable(typeof(KeyString));
-                invocation = BExpression.Block(new BExpression[]
-                {
+                invocation = BExpression.Block(
+                [
                     BExpression.Assign(keyTemp.Variable, name),
                     JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, keyTemp.Variable, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain),
-                });
+                ]);
             }
             else
             {

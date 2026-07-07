@@ -20,7 +20,7 @@ public partial class JSArray
         if (index < 0 || index >= length)
             return JSUndefined.Value;
 
-        return @this[JSValue.CreateNumber(index)];
+        return @this[CreateNumber(index)];
     }
 
     [JSPrototypeMethod]
@@ -57,7 +57,7 @@ public partial class JSArray
     {
         if (index <= uint.MaxValue - 1 && @object.TryGetElement((uint)index, out var item))
             return item;
-        return @object[JSValue.CreateNumber((double)index)];
+        return @object[CreateNumber((double)index)];
     }
 
     // Whether the element at a (possibly > 2^32) index exists (own or inherited), used by indexOf /
@@ -66,7 +66,7 @@ public partial class JSArray
     {
         if (index <= uint.MaxValue - 1 && @object.TryGetElement((uint)index, out _))
             return true;
-        return @object.HasProperty(JSValue.CreateNumber((double)index)).BooleanValue;
+        return @object.HasProperty(CreateNumber((double)index)).BooleanValue;
     }
 
     [JSPrototypeMethod]

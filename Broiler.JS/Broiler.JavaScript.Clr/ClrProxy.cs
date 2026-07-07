@@ -67,24 +67,24 @@ public partial class ClrProxy : JSObject
         return (input) => Marshal(input);
     }
 
-    public static JSValue Marshal(int value) => JSValue.CreateNumber(value);
-    public static JSValue Marshal(uint value) => JSValue.CreateNumber(value);
-    public static JSValue Marshal(long value) => JSValue.CreateNumber(value);
-    public static JSValue Marshal(ulong value) => JSValue.CreateNumber(value);
-    public static JSValue Marshal(string value) => JSValue.CreateString(value);
-    public static JSValue Marshal(in StringSpan value) => JSValue.CreateString(value.Value);
-    public static JSValue Marshal(bool value) => value ? JSValue.BooleanTrue : JSValue.BooleanFalse;
-    public static JSValue Marshal(short value) => JSValue.CreateNumber(value);
-    public static JSValue Marshal(ushort value) => JSValue.CreateNumber(value);
-    public static JSValue Marshal(byte value) => JSValue.CreateNumber(value);
-    public static JSValue Marshal(sbyte value) => JSValue.CreateNumber(value);
-    public static JSValue Marshal(DateTime value) => JSValue.CreateDate(new DateTimeOffset(value));
-    public static JSValue Marshal(DateTimeOffset value) => JSValue.CreateDate(value);
-    public static JSValue Marshal(double value) => JSValue.CreateNumber(value);
-    public static JSValue Marshal(float value) => JSValue.CreateNumber(value);
-    public static JSValue Marshal(Task task) => JSValue.CreatePromiseFromUntypedTask(task);
-    public static JSValue Marshal(Task<JSValue> task) => JSValue.CreatePromiseFromTask(task);
-    public static JSValue Marshal<T>(Task<T> task) => JSValue.CreatePromiseFromGenericTask(task);
+    public static JSValue Marshal(int value) => CreateNumber(value);
+    public static JSValue Marshal(uint value) => CreateNumber(value);
+    public static JSValue Marshal(long value) => CreateNumber(value);
+    public static JSValue Marshal(ulong value) => CreateNumber(value);
+    public static JSValue Marshal(string value) => CreateString(value);
+    public static JSValue Marshal(in StringSpan value) => CreateString(value.Value);
+    public static JSValue Marshal(bool value) => value ? BooleanTrue : BooleanFalse;
+    public static JSValue Marshal(short value) => CreateNumber(value);
+    public static JSValue Marshal(ushort value) => CreateNumber(value);
+    public static JSValue Marshal(byte value) => CreateNumber(value);
+    public static JSValue Marshal(sbyte value) => CreateNumber(value);
+    public static JSValue Marshal(DateTime value) => CreateDate(new DateTimeOffset(value));
+    public static JSValue Marshal(DateTimeOffset value) => CreateDate(value);
+    public static JSValue Marshal(double value) => CreateNumber(value);
+    public static JSValue Marshal(float value) => CreateNumber(value);
+    public static JSValue Marshal(Task task) => CreatePromiseFromUntypedTask(task);
+    public static JSValue Marshal(Task<JSValue> task) => CreatePromiseFromTask(task);
+    public static JSValue Marshal<T>(Task<T> task) => CreatePromiseFromGenericTask(task);
     public static JSValue Marshal(IJavaScriptObject javaScriptObject) => From(javaScriptObject);
     public static JSValue Marshal(IElementEnumerator en) => JSGeneratorBuilder.CreateFromEnumerator(en, "Clr Iterator");
     public static JSValue Marshal(IEnumerable<JSValue> en) => JSGeneratorBuilder.CreateFromEnumerator(new ClrEnumerableElementEnumerator(en), "Clr Iterator");
@@ -97,40 +97,40 @@ public partial class ClrProxy : JSObject
     public static JSValue Marshal(object value)
     {
         if (value == null)
-            return JSValue.NullValue;
+            return NullValue;
 
         var type = value.GetType();
 
         if (type.IsEnum)
-            return JSValue.CreateString(value.ToString());
+            return CreateString(value.ToString());
 
         var t = Type.GetTypeCode(type);
 
         return t switch
         {
-            TypeCode.Boolean => (bool)value ? JSValue.BooleanTrue : JSValue.BooleanFalse,
-            TypeCode.Byte => JSValue.CreateNumber((byte)value),
-            TypeCode.Char => JSValue.CreateString(((char)value).ToString()),
-            TypeCode.DateTime => JSValue.CreateDate(new DateTimeOffset((DateTime)value)),
-            TypeCode.DBNull => JSValue.NullValue,
-            TypeCode.Decimal => JSValue.CreateNumber((double)(decimal)value),
-            TypeCode.Double => JSValue.CreateNumber((double)value),
-            TypeCode.Int16 => JSValue.CreateNumber((short)value),
-            TypeCode.Int32 => JSValue.CreateNumber((int)value),
-            TypeCode.Int64 => JSValue.CreateNumber((long)value),
-            TypeCode.SByte => JSValue.CreateNumber((sbyte)value),
-            TypeCode.Single => JSValue.CreateNumber((float)value),
-            TypeCode.String => JSValue.CreateString((string)value),
-            TypeCode.UInt16 => JSValue.CreateNumber((ushort)value),
-            TypeCode.UInt32 => JSValue.CreateNumber((uint)value),
-            TypeCode.UInt64 => JSValue.CreateNumber((long)value),
+            TypeCode.Boolean => (bool)value ? BooleanTrue : BooleanFalse,
+            TypeCode.Byte => CreateNumber((byte)value),
+            TypeCode.Char => CreateString(((char)value).ToString()),
+            TypeCode.DateTime => CreateDate(new DateTimeOffset((DateTime)value)),
+            TypeCode.DBNull => NullValue,
+            TypeCode.Decimal => CreateNumber((double)(decimal)value),
+            TypeCode.Double => CreateNumber((double)value),
+            TypeCode.Int16 => CreateNumber((short)value),
+            TypeCode.Int32 => CreateNumber((int)value),
+            TypeCode.Int64 => CreateNumber((long)value),
+            TypeCode.SByte => CreateNumber((sbyte)value),
+            TypeCode.Single => CreateNumber((float)value),
+            TypeCode.String => CreateString((string)value),
+            TypeCode.UInt16 => CreateNumber((ushort)value),
+            TypeCode.UInt32 => CreateNumber((uint)value),
+            TypeCode.UInt64 => CreateNumber((long)value),
             _ => value switch
             {
                 JSValue jsValue => jsValue,
-                DateTimeOffset dateTimeOffset => JSValue.CreateDate(dateTimeOffset),
+                DateTimeOffset dateTimeOffset => CreateDate(dateTimeOffset),
                 Type valueType => ClrType.From(valueType),
-                Task<JSValue> task => JSValue.CreatePromiseFromTask(task),
-                Task task => JSValue.CreatePromiseFromUntypedTask(task),
+                Task<JSValue> task => CreatePromiseFromTask(task),
+                Task task => CreatePromiseFromUntypedTask(task),
                 IJavaScriptObject obj => From(obj),
                 IEnumerable<JSValue> en => JSGeneratorBuilder.CreateFromEnumerator(new ClrEnumerableElementEnumerator(en), "Clr Iterator"),
                 _ => From(value),
@@ -259,7 +259,7 @@ public partial class ClrProxy : JSObject
     public static JSValue From(object value)
     {
         if (value == null)
-            return JSValue.NullValue;
+            return NullValue;
 
         if (value is IJavaScriptObject scriptObject)
             return From(scriptObject);
@@ -271,7 +271,7 @@ public partial class ClrProxy : JSObject
     public static JSValue From(object value, JSObject prototype)
     {
         if (value == null)
-            return JSValue.NullValue;
+            return NullValue;
 
         if (value is IJavaScriptObject javaScriptObject)
         {

@@ -136,8 +136,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     /// </summary>
     public JSValue AddLegacyCallerAndArguments()
     {
-        FastAddValue(LegacyCallerKey, JSValue.NullValue, JSPropertyAttributes.ReadonlyValue);
-        FastAddValue(KeyStrings.arguments, JSValue.NullValue, JSPropertyAttributes.ReadonlyValue);
+        FastAddValue(LegacyCallerKey, NullValue, JSPropertyAttributes.ReadonlyValue);
+        FastAddValue(KeyStrings.arguments, NullValue, JSPropertyAttributes.ReadonlyValue);
         HasLegacyCallerArguments = true;
         return this;
     }
@@ -161,7 +161,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             && ordinary.IsOrdinaryUserFunction
             && !ordinary.IsStrictMode
             ? callerFunction
-            : JSValue.NullValue;
+            : NullValue;
 
         FastAddValue(LegacyCallerKey, value, JSPropertyAttributes.ReadonlyValue);
     }
@@ -184,7 +184,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         var length = a.Length;
         for (uint i = 0; i < length; i++)
             argumentsObject.FastAddValue(i, a.GetAt((int)i), JSPropertyAttributes.EnumerableConfigurableValue);
-        argumentsObject.FastAddValue(KeyStrings.length, JSValue.CreateNumber(length), JSPropertyAttributes.ConfigurableValue);
+        argumentsObject.FastAddValue(KeyStrings.length, CreateNumber(length), JSPropertyAttributes.ConfigurableValue);
         return argumentsObject;
     }
 
@@ -234,8 +234,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         prototype.FastAddValue(KeyStrings.constructor, type, JSPropertyAttributes.EnumerableConfigurableValue);
         ownProperties.Put(KeyStrings.prototype.Key) = JSProperty.Property(KeyStrings.prototype, (IPropertyValue)prototype, JSPropertyAttributes.Value);
 
-        FastAddValue(KeyStrings.name, name.IsEmpty ? JSValue.CreateString("native") : JSValue.CreateString(name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);
-        FastAddValue(KeyStrings.length, JSValue.CreateNumber(0), JSPropertyAttributes.ConfigurableReadonlyValue);
+        FastAddValue(KeyStrings.name, name.IsEmpty ? CreateString("native") : CreateString(name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);
+        FastAddValue(KeyStrings.length, CreateNumber(0), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         constructor = this;
     }
@@ -262,8 +262,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         prototype.GetOwnProperties(true).Put(KeyStrings.constructor, this);
 
             ownProperties.Put(KeyStrings.prototype, prototype, JSPropertyAttributes.Value);
-        ownProperties.Put(KeyStrings.length, JSValue.NumberZero, JSPropertyAttributes.ConfigurableReadonlyValue);
-        ownProperties.Put(KeyStrings.name, name.IsEmpty ? JSValue.CreateString("native") : JSValue.CreateString(name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);
+        ownProperties.Put(KeyStrings.length, NumberZero, JSPropertyAttributes.ConfigurableReadonlyValue);
+        ownProperties.Put(KeyStrings.name, name.IsEmpty ? CreateString("native") : CreateString(name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         constructor = this;
     }
@@ -298,8 +298,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         // Own-key order per spec: a function's "length" and "name" are installed
         // before its "prototype" (SetFunctionName/SetFunctionLength then
         // MakeConstructor), so getOwnPropertyNames yields [length, name, prototype].
-        ownProperties.Put(KeyStrings.length, JSValue.CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
-        ownProperties.Put(KeyStrings.name, JSValue.CreateString(publicName), JSPropertyAttributes.ConfigurableReadonlyValue);
+        ownProperties.Put(KeyStrings.length, CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
+        ownProperties.Put(KeyStrings.name, CreateString(publicName), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         if (createPrototype)
         {
@@ -330,8 +330,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         IsAnonymousNamePending = name.IsEmpty && !source.IsEmpty;
 
         // Own-key order per spec: [length, name, prototype] (see above).
-        ownProperties.Put(KeyStrings.length, JSValue.CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
-        ownProperties.Put(KeyStrings.name, JSValue.CreateString(publicName), JSPropertyAttributes.ConfigurableReadonlyValue);
+        ownProperties.Put(KeyStrings.length, CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
+        ownProperties.Put(KeyStrings.name, CreateString(publicName), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         if (createPrototype)
         {
@@ -375,15 +375,15 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             createPrototype: false);
 
         ref var ownProperties = ref throwTypeError.GetOwnProperties();
-        ownProperties.Put(KeyStrings.length, JSValue.NumberZero, JSPropertyAttributes.ReadonlyValue);
-        ownProperties.Put(KeyStrings.name, JSValue.CreateString(string.Empty), JSPropertyAttributes.ReadonlyValue);
+        ownProperties.Put(KeyStrings.length, NumberZero, JSPropertyAttributes.ReadonlyValue);
+        ownProperties.Put(KeyStrings.name, CreateString(string.Empty), JSPropertyAttributes.ReadonlyValue);
         throwTypeError.f = (in Arguments a) => throw JSEngine.NewTypeError(message);
         throwTypeError.PreventExtensions();
         return throwTypeError;
     }
 
     internal void SetNameProperty(string name, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableReadonlyValue)
-        => GetOwnProperties().Put(KeyStrings.name, JSValue.CreateString(name), attributes);
+        => GetOwnProperties().Put(KeyStrings.name, CreateString(name), attributes);
 
     // Override the source text reported by Function.prototype.toString. Used by the
     // dynamic Function constructor, which builds the function from an *anonymous*
@@ -636,8 +636,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         {
             if (trackLegacyCaller)
             {
-                SetLegacyCaller(JSValue.NullValue);
-                SetLegacyArguments(JSValue.NullValue);
+                SetLegacyCaller(NullValue);
+                SetLegacyArguments(NullValue);
             }
             JSEngine.ExecutingFunction = previousExecutingFunction;
             if (ec != null)
@@ -766,8 +766,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
                     {
                         if (trackLegacyCaller)
                         {
-                            current.SetLegacyCaller(JSValue.NullValue);
-                            current.SetLegacyArguments(JSValue.NullValue);
+                            current.SetLegacyCaller(NullValue);
+                            current.SetLegacyArguments(NullValue);
                         }
                     }
                 }
@@ -876,8 +876,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         if (originalFunction != null)
             fx.prototypeChain = originalFunction.prototypeChain;
         ref var ownProperties = ref fx.GetOwnProperties();
-        ownProperties.Put(KeyStrings.name, JSValue.CreateString(boundName), JSPropertyAttributes.ConfigurableReadonlyValue);
-        ownProperties.Put(KeyStrings.length, JSValue.CreateNumber(boundLength), JSPropertyAttributes.ConfigurableReadonlyValue);
+        ownProperties.Put(KeyStrings.name, CreateString(boundName), JSPropertyAttributes.ConfigurableReadonlyValue);
+        ownProperties.Put(KeyStrings.length, CreateNumber(boundLength), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         // Function.prototype.toString of a bound function is the implementation-defined
         // NativeFunction form with NO name: the bound "name" property ("bound …") is not a
@@ -898,14 +898,14 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             // Per spec (Function.prototype.toString), any callable object (e.g. a Proxy whose
             // target is callable) returns an implementation-defined NativeFunction representation.
             if (a.This is JSObject { IsFunction: true })
-                return JSValue.CreateString("function () { [native code] }");
+                return CreateString("function () { [native code] }");
 
             throw JSEngine.NewTypeError($"Function.prototype.toString cannot be called with non function");
         }
         
         var source = fx.source;
         if (source.IsEmpty)
-            return JSValue.CreateString(string.Empty);
+            return CreateString(string.Empty);
 
         if (source.Source.Length != source.Length || source.Offset != 0)
             source = source.Value;
@@ -915,7 +915,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         // with those exact characters preserved (test262
         // Function/prototype/toString/line-terminator-normalisation-*). Return the
         // verbatim source text.
-        return JSValue.CreateString(source.Source);
+        return CreateString(source.Source);
     }
 
     /// <summary>
@@ -1052,7 +1052,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         if (value.IsObject)
             return value;
 
-        return JSObject.CreatePrimitiveObject(value);
+        return CreatePrimitiveObject(value);
     }
 
     public override bool ConvertTo(Type type, out object value)

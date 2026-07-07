@@ -13,10 +13,10 @@ public class BConvertExpression(BExpression exp, Type type, MethodInfo? method) 
     public readonly MethodInfo? Method = method;
 
     private static Sequence<(MethodInfo method, Type inputType)> ConvertMethods =
-        new( typeof(Convert).GetMethods()
+        [.. typeof(Convert).GetMethods()
             .Select(x => (x, x.GetParameters()))
             .Where(x => x.Item2.Length == 1)
-            .Select(x => (x.Item1, x.Item2.First().ParameterType)));
+            .Select(x => (x.Item1, x.Item2.First().ParameterType))];
 
     public static bool TryGetConversionMethod(Type from, Type to, out MethodInfo? m)
     {

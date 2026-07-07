@@ -1,8 +1,5 @@
 using Broiler.JavaScript.Runtime;
 using System;
-using System.Globalization;
-using Broiler.JavaScript.BuiltIns.Function;
-using Broiler.JavaScript.BuiltIns.String;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;

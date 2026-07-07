@@ -22,8 +22,8 @@ namespace Broiler.JavaScript.ExpressionCompiler.Generator;
 /// </summary>
 internal sealed class FinallyBranchScanner : BExpressionMapVisitor
 {
-    private readonly HashSet<BLabelTarget> internalLabels = new();
-    private readonly List<BLabelTarget> branchTargets = new();
+    private readonly HashSet<BLabelTarget> internalLabels = [];
+    private readonly List<BLabelTarget> branchTargets = [];
     private bool hasReturn;
 
     public static bool BranchesOut(BExpression @finally)

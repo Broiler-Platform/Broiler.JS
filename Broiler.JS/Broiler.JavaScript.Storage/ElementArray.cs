@@ -55,7 +55,7 @@ public struct ElementArray
         // ascending order are identical to the old dense scan.
         List<uint> keys = null;
         foreach (var (key, _) in Storage.AllValues())
-            (keys ??= new List<uint>()).Add(key);
+            (keys ??= []).Add(key);
 
         if (keys == null)
             yield break;

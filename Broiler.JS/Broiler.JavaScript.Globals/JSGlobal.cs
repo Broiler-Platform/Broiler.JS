@@ -308,7 +308,7 @@ public partial class JSGlobalStatic
     public static JSValue StructuredClone(in Arguments a)
     {
         var value = a.Get1();
-        var seen = new Dictionary<JSValue, JSValue>(System.Collections.Generic.ReferenceEqualityComparer.Instance);
+        var seen = new Dictionary<JSValue, JSValue>(ReferenceEqualityComparer.Instance);
         var transferredBuffers = GetTransferredArrayBuffers(a.Length > 1 ? a[1] : JSUndefined.Value);
         foreach (var (source, clone) in transferredBuffers)
             seen[source] = clone;
@@ -321,7 +321,7 @@ public partial class JSGlobalStatic
 
     private static Dictionary<JSValue, JSValue> GetTransferredArrayBuffers(JSValue options)
     {
-        var transferredBuffers = new Dictionary<JSValue, JSValue>(System.Collections.Generic.ReferenceEqualityComparer.Instance);
+        var transferredBuffers = new Dictionary<JSValue, JSValue>(ReferenceEqualityComparer.Instance);
         if (options is not JSObject optionsObject)
             return transferredBuffers;
 

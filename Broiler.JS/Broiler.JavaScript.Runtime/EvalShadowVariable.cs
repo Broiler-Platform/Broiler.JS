@@ -1,5 +1,3 @@
-using Broiler.JavaScript.Ast.Misc;
-
 namespace Broiler.JavaScript.Runtime;
 
 /// <summary>

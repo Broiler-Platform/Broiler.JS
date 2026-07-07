@@ -1,15 +1,12 @@
 ﻿using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
-using Broiler.JavaScript.BuiltIns.Null;
 using Broiler.JavaScript.ExpressionCompiler;
-using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Extensions;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Proxy;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
-using Broiler.JavaScript.Engine.Extensions;
 
 namespace Broiler.JavaScript.BuiltIns.Objects;
 
@@ -82,7 +79,7 @@ public partial class JSReflect : JSObject
 
         // ToPropertyDescriptor: resolve inherited / accessor descriptor fields into a
         // fresh own-only record before defining.
-        var pd = JSObject.NormalizeDescriptor(userDesc);
+        var pd = NormalizeDescriptor(userDesc);
 
         // Dispatch through the JSValue [[DefineOwnProperty]] overload, which exotic
         // objects override (e.g. JSArray routes `length` and integer indices to its
@@ -91,7 +88,7 @@ public partial class JSReflect : JSObject
         // "length", {value:0})` would not shrink the array, unlike Object.defineProperty.
         var result = key.Type switch
         {
-            KeyType.UInt => targetObject.DefineProperty(JSValue.CreateNumber(key.Index), pd),
+            KeyType.UInt => targetObject.DefineProperty(CreateNumber(key.Index), pd),
             KeyType.String => targetObject.DefineProperty(key.KeyString.ToJSValue(), pd),
             KeyType.Symbol => targetObject.DefineProperty(key.Symbol, pd),
             _ => throw JSEngine.NewTypeError($"Cannot define property {propertyKey}")
@@ -189,7 +186,7 @@ public partial class JSReflect : JSObject
                 if (property.IsEmpty)
                     continue;
 
-                var symbol = JSValue.GetSymbolByKeyFactory?.Invoke(key);
+                var symbol = GetSymbolByKeyFactory?.Invoke(key);
                 if (symbol != null)
                     r.Add((JSValue)symbol);
             }

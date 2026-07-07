@@ -17,7 +17,7 @@ public partial class JSObject
                 return existing;
         }
 
-        return new JSProperty(KeyStrings.length, JSValue.CreateNumber(target.Length), JSPropertyAttributes.Value);
+        return new JSProperty(KeyStrings.length, CreateNumber(target.Length), JSPropertyAttributes.Value);
     }
 
     private static void SetArrayLengthWritable(JSObject target, bool writable)
@@ -25,7 +25,7 @@ public partial class JSObject
         ref var ownProperties = ref target.GetOwnProperties();
         ownProperties.Put(KeyStrings.length.Key) = new JSProperty(
             KeyStrings.length,
-            JSValue.CreateNumber(target.Length),
+            CreateNumber(target.Length),
             writable ? JSPropertyAttributes.Value : JSPropertyAttributes.ReadonlyValue);
         target.PropertyChanged?.Invoke(target, (KeyStrings.length.Key, uint.MaxValue, null));
     }
@@ -110,7 +110,7 @@ public partial class JSObject
             if (!currentWritable && newLength != currentLength)
                 throw NewTypeError("Cannot redefine property");
 
-            target[KeyStrings.length] = JSValue.CreateNumber(newLength);
+            target[KeyStrings.length] = CreateNumber(newLength);
             SetArrayLengthWritable(target, newWritable);
             return;
         }
@@ -124,13 +124,13 @@ public partial class JSObject
             var index = i - 1;
             if (!target.Delete(index).BooleanValue)
             {
-                target[KeyStrings.length] = JSValue.CreateNumber(index + 1);
+                target[KeyStrings.length] = CreateNumber(index + 1);
                 SetArrayLengthWritable(target, newWritable);
                 throw NewTypeError("Cannot redefine property");
             }
         }
 
-        target[KeyStrings.length] = JSValue.CreateNumber(newLength);
+        target[KeyStrings.length] = CreateNumber(newLength);
         SetArrayLengthWritable(target, newWritable);
     }
 
@@ -144,7 +144,7 @@ public partial class JSObject
 
         if (target.GetType() != typeof(JSObject))
         {
-            var result = target.DefineProperty(JSValue.CreateNumber(index), descriptor);
+            var result = target.DefineProperty(CreateNumber(index), descriptor);
             if (result.IsBoolean && !result.BooleanValue)
                 throw NewTypeError("Cannot define property");
             return;
@@ -213,9 +213,9 @@ public partial class JSObject
     private static JSObject CreateIntegrityDescriptor(bool writable)
     {
         var descriptor = new JSObject();
-        descriptor.SetPropertyOrThrow(KeyStrings.configurable.ToJSValue(), JSValue.BooleanFalse);
+        descriptor.SetPropertyOrThrow(KeyStrings.configurable.ToJSValue(), BooleanFalse);
         if (writable)
-            descriptor.SetPropertyOrThrow(KeyStrings.writable.ToJSValue(), JSValue.BooleanFalse);
+            descriptor.SetPropertyOrThrow(KeyStrings.writable.ToJSValue(), BooleanFalse);
 
         return descriptor;
     }
@@ -301,7 +301,7 @@ public partial class JSObject
             foreach (var (key, property) in source.GetSymbols().AllValues())
             {
                 if (!property.IsEmpty && property.IsEnumerable && (copiedSymbols == null || !copiedSymbols.Contains(key)))
-                    target.SetPropertyOrThrow((JSValue)(JSValue.GetSymbolByKeyFactory?.Invoke(key)
+                    target.SetPropertyOrThrow((JSValue)(GetSymbolByKeyFactory?.Invoke(key)
                         ?? throw new InvalidOperationException($"Unknown symbol key {key}")), source.GetValue(property));
             }
         }
@@ -336,7 +336,7 @@ public partial class JSObject
 
             // ToPropertyDescriptor for each descriptor (resolves inherited / accessor
             // fields), performed during the enumeration pass like the spec.
-            descriptors.Add((key, JSObject.NormalizeDescriptor(itemObject)));
+            descriptors.Add((key, NormalizeDescriptor(itemObject)));
         }
 
         foreach (var (key, descriptor) in descriptors)
@@ -358,7 +358,7 @@ public partial class JSObject
 
         // ToPropertyDescriptor: read the descriptor fields (which may be inherited or
         // accessor-backed) into a fresh own-only record before defining.
-        var pd = JSObject.NormalizeDescriptor(userDesc);
+        var pd = NormalizeDescriptor(userDesc);
 
         var propertyKey = key.ToKey();
         switch (propertyKey.Type)
@@ -396,15 +396,15 @@ public partial class JSObject
         if (a[0] is not JSObject obj)
             throw NewTypeError(NotIterable("undefined"));
 
-        var r = JSValue.CreateArray();
+        var r = CreateArray();
 
         var es = obj.GetElementEnumerator();
         while (es.MoveNext(out var hasValue, out var value, out var index))
         {
             if (hasValue)
             {
-                var entry = JSValue.CreateArray();
-                entry.AddArrayItem(JSValue.CreateNumber(index));
+                var entry = CreateArray();
+                entry.AddArrayItem(CreateNumber(index));
                 entry.AddArrayItem(value);
                 r.AddArrayItem(entry);
             }
@@ -413,7 +413,7 @@ public partial class JSObject
         var vp = new PropertyValueEnumerator(obj, false);
         while (vp.MoveNext(out var value, out var key))
         {
-            var entry = JSValue.CreateArray();
+            var entry = CreateArray();
             entry.AddArrayItem(JSObjectCoreExtensions.KeyStringToJSValue(key));
             entry.AddArrayItem(value);
             r.AddArrayItem(entry);
@@ -598,16 +598,16 @@ public partial class JSObject
             if (!hasValue)
                 continue;
 
-            var key = JSObjectCoreExtensions.CallWith(callbackfn, JSValue.UndefinedValue, item, JSValue.CreateNumber(index));
+            var key = JSObjectCoreExtensions.CallWith(callbackfn, UndefinedValue, item, CreateNumber(index));
             // ToPropertyKey: a Symbol key stays a Symbol, everything else coerces to a String. Keep the
             // key as a JSValue (not a CLR string) so the property store canonicalises an array-index name
             // such as "4" to an integer index — otherwise the group is unreachable as result[4].
-            var keyValue = key is IJSSymbol ? key : JSValue.CreateString(key.StringValue);
+            var keyValue = key is IJSSymbol ? key : CreateString(key.StringValue);
             var group = result[keyValue];
 
             if (group.IsNullOrUndefined)
             {
-                group = JSValue.CreateArray();
+                group = CreateArray();
                 result.FastAddValue(keyValue, group, JSPropertyAttributes.EnumerableConfigurableValue);
             }
 

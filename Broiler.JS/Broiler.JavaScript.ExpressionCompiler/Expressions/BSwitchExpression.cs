@@ -1,6 +1,5 @@
 ﻿#nullable enable
 using System.CodeDom.Compiler;
-using System.Linq;
 using System.Reflection;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Expressions;

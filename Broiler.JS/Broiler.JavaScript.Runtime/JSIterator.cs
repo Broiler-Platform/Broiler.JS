@@ -1,4 +1,3 @@
-using System;
 using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.Runtime;
@@ -198,8 +197,8 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
     private static JSValue MakeDoneResult(JSValue value)
     {
         var iteratorResult = JSObject.NewWithProperties();
-        iteratorResult.FastAddValue(KeyStrings.value, value, Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
-        iteratorResult.FastAddValue(KeyStrings.done, JSValue.BooleanTrue, Broiler.JavaScript.Storage.JSPropertyAttributes.EnumerableConfigurableValue);
+        iteratorResult.FastAddValue(KeyStrings.value, value, JSPropertyAttributes.EnumerableConfigurableValue);
+        iteratorResult.FastAddValue(KeyStrings.done, JSValue.BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
         return iteratorResult;
     }
 
