@@ -1,12 +1,12 @@
 [submodule "Broiler.Unicode"]
 	path = Broiler.Unicode
-	url = https://github.com/MaiRat/Broiler.Unicode.git
+	url = https://github.com/Broiler-Platform/Broiler.Unicode.git
 	branch = main
 [submodule "Broiler.DateTime"]
 	path = Broiler.DateTime
-	url = https://github.com/MaiRat/Broiler.DateTime.git
+	url = https://github.com/Broiler-Platform/Broiler.DateTime.git
 	branch = main
 [submodule "Broiler.Regex"]
 	path = Broiler.Regex
-	url = https://github.com/MaiRat/Broiler.Regex.git
+	url = https://github.com/Broiler-Platform/Broiler.Regex.git
 	branch = main
