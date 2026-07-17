@@ -83,7 +83,18 @@ public partial class JSGlobalStatic
     public static readonly JSValue Undefined = JSUndefined.Value;
 
     [JSExport("Intl")]
-    public static JSValue Intl => DefaultBuiltInRegistry.IntlFactory?.Invoke() ?? JSUndefined.Value;
+    public static JSValue Intl
+    {
+        get
+        {
+            if (JSEngine.CurrentContext is JSContext context
+                && (!context.Options.BootstrapProfile.Includes(BuiltInFeatureId.Intl)
+                    || context.Options.BootstrapProfile.IsLazy(BuiltInFeatureId.Intl)))
+                return JSUndefined.Value;
+
+            return DefaultBuiltInRegistry.IntlFactory?.Invoke() ?? JSUndefined.Value;
+        }
+    }
 
     [JSExport("decodeURI", Length = 1)]
     public static JSValue DecodeURI(in Arguments a)
@@ -304,7 +315,7 @@ public partial class JSGlobalStatic
     /// Supports: primitives, plain objects, arrays, Date, RegExp, Map, Set,
     /// ArrayBuffer, typed arrays, Error. Handles circular references.
     /// </summary>
-    [JSExport("structuredClone", Length = 1)]
+    [JSExport("structuredClone", Length = 1, Feature = (int)JavaScriptFeatureFlags.StructuredClone)]
     public static JSValue StructuredClone(in Arguments a)
     {
         var value = a.Get1();
@@ -436,7 +447,7 @@ public partial class JSGlobalStatic
                 if (!prop.IsValue)
                     continue;
 
-                clone[key.Value] = StructuredCloneValue((JSValue)prop.value, seen);
+                clone[key.Value] = StructuredCloneValue(obj.GetValue(prop), seen);
             }
 
             return clone;

@@ -245,7 +245,11 @@ partial class FastCompiler
         if (left.Type != FastNodeType.MemberExpression)
             throw new FastParseException(left.Start, "Invalid left-hand side in assignment");
 
-        return Assign(Visit(left), right, assignmentOperator);
+        // Keep property caches on read sites only. VisitMemberExpression may lower a
+        // constant-key read to a cache helper call, which is deliberately not an
+        // assignable expression. Build the ordinary index reference directly for the
+        // simple write path.
+        return Assign(CreateMemberAssignmentTarget((AstMemberExpression)left), right, assignmentOperator);
     }
 
     // Compiles an assignment whose target is an EvalShadowVariable. Reads/writes use
@@ -507,22 +511,10 @@ partial class FastCompiler
                 return;
 
             case FastNodeType.MemberExpression:
-                // A computed `super[key]` destructuring/for-head target: Visit() would
-                // spill the key into a temp and return a Block (the key-before-
-                // GetSuperBase ordering used for reads), which is not an assignable
-                // reference — the IL backend's VisitAssign would reject the Block-typed
-                // left. Build the super-index reference directly so the assignment lowers
-                // to the super-index setter, mirroring the direct `super[key] = v` path.
-                if (pattern is AstMemberExpression { Computed: true, Object.Type: FastNodeType.Super } superMember)
-                {
-                    var superTarget = JSValueBuilder.Index(
-                        scope.Top.ThisExpression, scope.Top.Super,
-                        VisitExpression(superMember.Property), superMember.Coalesce);
-                    inits.Add(BinaryOperation.Assign(superTarget, init, TokenTypes.Assign));
-                    return;
-                }
-
-                inits.Add(BinaryOperation.Assign(Visit(pattern), init, TokenTypes.Assign));
+                inits.Add(BinaryOperation.Assign(
+                    CreateMemberAssignmentTarget((AstMemberExpression)pattern),
+                    init,
+                    TokenTypes.Assign));
                 return;
 
             case FastNodeType.ObjectPattern:

@@ -33,7 +33,7 @@ public class CoreScript
     /// (for use in <see cref="Arguments"/> construction) together with
     /// its <see cref="ICodeCache"/>.
     /// </summary>
-    internal static Func<(JSValue value, ICodeCache codeCache)> GetCurrentContext;
+    internal static Func<(JSValue value, ICodeCache codeCache, JSCompilationOptions compilationOptions)> GetCurrentContext;
 
     /// <summary>
     /// Returns the <see cref="Task"/> representing pending async work
@@ -89,14 +89,25 @@ public class CoreScript
         set => _compiler = value ?? throw new ArgumentNullException(nameof(value));
     }
 
-    public static JSFunctionDelegate Compile(in StringSpan code, string location = null, IList<string> args = null, ICodeCache codeCache = null)
+    public static JSFunctionDelegate Compile(
+        in StringSpan code,
+        string location = null,
+        IList<string> args = null,
+        ICodeCache codeCache = null,
+        JSCompilationOptions? compilationOptions = null)
     {
         try
         {
-            codeCache ??= GetDefaultCodeCache();
+            var current = GetCurrentContext?.Invoke() ?? default;
+            codeCache ??= current.codeCache ?? GetDefaultCodeCache();
             var script = code;
             var compiler = Compiler;
-            var jsc = new JSCode(location, code, args, () => compiler.Compile(script, location, args, codeCache));
+            var jsc = new JSCode(
+                location,
+                code,
+                args,
+                () => compiler.Compile(script, location, args, codeCache),
+                compilationOptions ?? current.compilationOptions);
             return codeCache.GetOrCreate(in jsc);
         }
         catch (FastParseException ex)

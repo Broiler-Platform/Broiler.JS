@@ -65,7 +65,7 @@ public partial class ILCodeGenerator
             case BExpressionType.ArrayIndex:
                 return AssignArrayIndex(exp.Right, exp.Left as BArrayIndexExpression, savedIndex);
         }
-        throw new NotImplementedException();
+        throw new NotImplementedException($"Assignment target {exp.Left.NodeType} ({exp.Left.GetType().Name}) is not supported");
     }
 
     private CodeInfo Assign(BExpression left, DataSource source, int savedIndex = -1)

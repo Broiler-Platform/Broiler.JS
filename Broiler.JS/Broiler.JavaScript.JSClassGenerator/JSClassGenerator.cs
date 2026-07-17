@@ -1,85 +1,124 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
 namespace Broiler.JavaScript.JSClassGenerator;
 
-
 [Generator]
-public class JSClassGenerator : IIncrementalGenerator
+public sealed class JSClassGenerator : IIncrementalGenerator
 {
+    private const string AttributeNamespace = "Broiler.JavaScript.ExpressionCompiler.";
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var jsClasses = context.SyntaxProvider
-            .CreateSyntaxProvider(
-                SyntaxNodeExtensions.CouldBeJSClassAsync,
-                SyntaxNodeExtensions.GetJSClassTypeOrNull)
-            .Where(x => x is not null)
-            .Collect();
+        var classModels = context.SyntaxProvider.ForAttributeWithMetadataName(
+                AttributeNamespace + "JSClassGeneratorAttribute",
+                static (_, _) => true,
+                static (attributeContext, _) => CreateTypeModel((ITypeSymbol)attributeContext.TargetSymbol))
+            .Where(static model => model != null)!;
 
-        context.RegisterSourceOutput(jsClasses, GenerateCode);
+        var functionModels = context.SyntaxProvider.ForAttributeWithMetadataName(
+                AttributeNamespace + "JSFunctionGeneratorAttribute",
+                static (_, _) => true,
+                static (attributeContext, _) => CreateTypeModel((ITypeSymbol)attributeContext.TargetSymbol))
+            .Where(static model => model != null)!;
+
+        context.RegisterSourceOutput(classModels, static (productionContext, model) =>
+            productionContext.AddSource(model!.HintName, model.Code));
+        context.RegisterSourceOutput(functionModels, static (productionContext, model) =>
+            productionContext.AddSource(model!.HintName, model.Code));
+
+        // Project the per-type source model to compact registration metadata before
+        // Collect. A method-body-only change can regenerate its own source without
+        // invalidating the aggregate Names/registration output.
+        var classRegistrationModels = classModels
+            .Select(static (model, _) => model!.Registration);
+        var functionRegistrationModels = functionModels
+            .Select(static (model, _) => model!.Registration);
+        var allModels = classRegistrationModels.Collect()
+            .Combine(functionRegistrationModels.Collect())
+            .Select(static (pair, _) => Combine(pair.Left, pair.Right));
+
+        var registrationTargets = context.SyntaxProvider.ForAttributeWithMetadataName(
+                AttributeNamespace + "JSRegistrationGeneratorAttribute",
+                static (_, _) => true,
+                static (attributeContext, _) => CreateRegistrationTarget((ITypeSymbol)attributeContext.TargetSymbol));
+
+        context.RegisterSourceOutput(
+            registrationTargets.Combine(allModels),
+            static (productionContext, input) =>
+            {
+                productionContext.AddSource(
+                    input.Left.HintName,
+                    RegistrationGenerator.GenerateNames(input.Left, input.Right));
+            });
     }
 
-
-    private static void GenerateCode(
-        SourceProductionContext context,
-        ImmutableArray<ITypeSymbol> enumerations)
+    private static GeneratedTypeModel? CreateTypeModel(ITypeSymbol symbol)
     {
-        if (enumerations.IsDefaultOrEmpty)
-            return;
+        var attribute = symbol.GetAttribute();
+        if (attribute == null)
+            return null;
 
-        var types = new List<(ITypeSymbol type, AttributeData attribute)>();
-        ITypeSymbol names = null!;
-        
+        var generatorContext = new JSGeneratorContext([(symbol, attribute)]);
+        var type = generatorContext.AssemblyTypes[0];
+        var code = ClassGenerator.GenerateClass(type, generatorContext);
+        var ns = symbol.ContainingNamespace.IsGlobalNamespace
+            ? string.Empty
+            : symbol.ContainingNamespace.ToDisplayString();
 
-        
-
-        // first lets build all classes
-
-        // then build names...
-
-        foreach (var type in enumerations)
-        {
-            var a = type.GetAttribute();
-            if (a?.AttributeClass?.Name == null)
-            {
-                continue;
-            }
-            if (a.AttributeClass.Name.StartsWith("JSRegistration"))
-            {
-                names = type;
-                continue;
-            }
-            types.Add((type,a));
-        }
-
-        var allNames = new List<string>();
-        foreach (var name in names.GetMembers().Where(x => x.Kind == SymbolKind.Field))
-        {
-            allNames.Add(name.Name);
-        }
-
-        var gc = new JSGeneratorContext(types);
-
-
-        foreach(var type in  gc.AssemblyTypes)
-        {
-            var code = "";
-            code = ClassGenerator.GenerateClass(type, gc);
-            var typeNamespace = type.Type.ContainingNamespace.IsGlobalNamespace
-                ? null
-                    : $"{type.Type.ContainingNamespace}.";
-
-            context.AddSource($"{typeNamespace}{type.Type.Name}.g.cs", code);
-        }
-
-        var c = RegistrationGenerator.GenerateNames(names, gc);
-        var cNS = names.ContainingNamespace.IsGlobalNamespace
-            ? null
-                : $"{names.ContainingNamespace}.";
-
-        context.AddSource($"{cNS}{names.Name}.g.cs", c);
+        var registration = new RegistrationTypeModel(
+            ns,
+            type.ClrClassName,
+            type.BaseClrClassName ?? string.Empty,
+            FeatureName(ns),
+            type.Register,
+            generatorContext.Names.Distinct().OrderBy(static name => name).ToImmutableArray());
+        return new GeneratedTypeModel(
+            string.IsNullOrEmpty(ns) ? $"{symbol.Name}.g.cs" : $"{ns}.{symbol.Name}.g.cs",
+            code,
+            registration);
     }
 
+    private static string FeatureName(string @namespace)
+    {
+        if (@namespace.Contains(".Temporal"))
+            return "Temporal";
+        if (@namespace.Contains(".Intl"))
+            return "Intl";
+        return "Core";
+    }
+
+    private static RegistrationTargetModel CreateRegistrationTarget(ITypeSymbol symbol)
+    {
+        var ns = symbol.ContainingNamespace.IsGlobalNamespace
+            ? string.Empty
+            : symbol.ContainingNamespace.ToDisplayString();
+        var fields = symbol.GetMembers()
+            .Where(static member => member.Kind == SymbolKind.Field)
+            .Select(static member => member.Name)
+            .OrderBy(static name => name)
+            .ToImmutableArray();
+        return new RegistrationTargetModel(
+            string.IsNullOrEmpty(ns) ? $"{symbol.Name}.g.cs" : $"{ns}.{symbol.Name}.g.cs",
+            ns,
+            symbol.Name,
+            fields);
+    }
+
+    private static ImmutableArray<RegistrationTypeModel> Combine(
+        ImmutableArray<RegistrationTypeModel> classes,
+        ImmutableArray<RegistrationTypeModel> functions)
+    {
+        var builder = ImmutableArray.CreateBuilder<RegistrationTypeModel>(classes.Length + functions.Length);
+        foreach (var model in classes)
+            builder.Add(model);
+        foreach (var model in functions)
+            builder.Add(model);
+
+        builder.Sort(static (left, right) =>
+            string.CompareOrdinal(left.QualifiedClrName, right.QualifiedClrName));
+        return builder.ToImmutable();
+    }
 }

@@ -12,7 +12,7 @@ Adding fluent interface for module registering.</Description>
       <IncludeSymbols>true</IncludeSymbols>
       <SymbolPackageFormat>snupkg</SymbolPackageFormat>
       <EmbedAllSources>True</EmbedAllSources>
-      <IsPackable>false</IsPackable>
+      <IsPackable>true</IsPackable>
     </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

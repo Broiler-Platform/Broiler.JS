@@ -21,7 +21,7 @@ public partial class JSFloat64Array : JSTypedArray
     {
         if (index < 0 || index >= length)
             return JSUndefined.Value;
-        return new JSNumber(BitConverter.ToDouble(buffer.buffer, byteOffset + (int)index * 8));
+        return new JSNumber(BitConverter.ToDouble(buffer.buffer.AsSpan(byteOffset + (int)index * 8, 8)));
     }
 
     public override bool SetValue(uint index, JSValue value, JSValue receiver, bool throwError = true)
@@ -32,7 +32,7 @@ public partial class JSFloat64Array : JSTypedArray
         var number = (value ?? JSUndefined.Value).DoubleValue;
         if (index >= length)
             return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)
-        System.Array.Copy(BitConverter.GetBytes(number), 0, buffer.buffer, byteOffset + index * 8, 8);
+        BitConverter.TryWriteBytes(buffer.buffer.AsSpan(byteOffset + (int)index * 8, 8), number);
         return true;
     }
 

@@ -81,6 +81,10 @@ public class FastList<T> : IList<T>, IDisposable
 
         var copy = new T[Count];
         Array.Copy(items, copy, Count);
+        pool.ReleaseArray(items);
+        items = null;
+        size = 0;
+        Count = 0;
         return copy;
     }
 
@@ -102,9 +106,9 @@ public class FastList<T> : IList<T>, IDisposable
         if (items == null)
             return false;
 
-        foreach (var i in items)
+        for (var index = 0; index < Count; index++)
         {
-            if (Equals(i, item))
+            if (Equals(items[index], item))
                 return true;
         }
 
@@ -187,14 +191,12 @@ public class FastList<T> : IList<T>, IDisposable
 
     public int IndexOf(T item)
     {
-        int i = -1;
         if (items == null)
-            return i;
+            return -1;
 
-        foreach (var e in items)
+        for (var i = 0; i < Count; i++)
         {
-            i++;
-            if (Equals(e, item))
+            if (Equals(items[i], item))
                 return i;
         }
 

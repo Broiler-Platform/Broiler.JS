@@ -1,9 +1,11 @@
 ﻿using Broiler.JavaScript.ExpressionCompiler;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Engine;
 
 namespace Broiler.JavaScript.BuiltIns.Objects;
 
@@ -240,14 +242,6 @@ public partial class JSMath : JSObject
         return r;
     }
 
-    private static readonly int[] clz32Table = [
-        32, 31,  0, 16,  0, 30,  3,  0, 15,  0,  0,  0, 29, 10,  2,  0,
-         0,  0, 12, 14, 21,  0, 19,  0,  0, 28,  0, 25,  0,  9,  1,  0,
-        17,  0,  4,  0,  0,  0, 11,  0, 13, 22, 20,  0, 26,  0,  0, 18,
-         5,  0,  0, 23,  0, 27,  0,  6,  0, 24,  7,  0,  8,  0,  0,  0
-    ];
-
-
     /// <summary>
     /// we have Int value, so we might want to replace DoubleValue with Intvalue, 
     /// But since the implementation is not complete, we have continued with Doublevalue
@@ -262,15 +256,7 @@ public partial class JSMath : JSObject
         var d = first.DoubleValue;
         var x = ToUint32(d);
 
-        x |= x >> 1;       // Propagate leftmost
-        x |= x >> 2;       // 1-bit to the right.
-        x |= x >> 4;
-        x |= x >> 8;
-        x |= x >> 16;
-        x *= 0x06EB14F9;     // Multiplier is 7*255**3.
-
-        var r = clz32Table[x >> 26];
-        return new JSNumber(r);
+        return new JSNumber(BitOperations.LeadingZeroCount(x));
     }
 
     [JSExport]
@@ -636,7 +622,7 @@ public partial class JSMath : JSObject
     /// intermediate overflow does not lose precision). See
     /// https://github.com/tc39/proposal-math-sum.
     /// </summary>
-    [JSExport("sumPrecise", Length = 1)]
+    [JSExport("sumPrecise", Length = 1, Feature = (int)JavaScriptFeatureFlags.MathSumPrecise)]
     public static JSValue SumPrecise(in Arguments args)
     {
         var iterable = args.Get1();

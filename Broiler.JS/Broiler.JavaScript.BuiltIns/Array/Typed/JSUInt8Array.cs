@@ -3,6 +3,7 @@ using System;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Engine;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
@@ -46,7 +47,7 @@ public partial class JSUInt8Array : JSTypedArray
     /// ES2026 §4.3.1 — Uint8Array.fromBase64(str)
     /// Creates a new Uint8Array from a Base64-encoded string.
     /// </summary>
-    [JSExport("fromBase64", Length = 1)]
+    [JSExport("fromBase64", Length = 1, Feature = (int)JavaScriptFeatureFlags.Uint8ArrayBase64)]
     public static JSValue FromBase64(in Arguments a)
     {
         var str = a.Get1();
@@ -62,7 +63,7 @@ public partial class JSUInt8Array : JSTypedArray
     /// ES2026 §4.3.3 — Uint8Array.fromHex(str)
     /// Creates a new Uint8Array from a hex-encoded string.
     /// </summary>
-    [JSExport("fromHex")]
+    [JSExport("fromHex", Feature = (int)JavaScriptFeatureFlags.Uint8ArrayBase64)]
     public static JSValue FromHex(in Arguments a)
     {
         var str = a.Get1();
@@ -85,7 +86,7 @@ public partial class JSUInt8Array : JSTypedArray
     /// ES2026 §4.3.2 — Uint8Array.prototype.toBase64()
     /// Returns a Base64-encoded string of the typed array content.
     /// </summary>
-    [JSExport("toBase64", Length = 0)]
+    [JSExport("toBase64", Length = 0, Feature = (int)JavaScriptFeatureFlags.Uint8ArrayBase64)]
     public JSValue ToBase64(in Arguments a)
     {
         var options = a.Length > 0 ? a[0] : JSUndefined.Value;
@@ -105,7 +106,7 @@ public partial class JSUInt8Array : JSTypedArray
     /// ES2026 §4.3.4 — Uint8Array.prototype.toHex()
     /// Returns a hex-encoded string of the typed array content.
     /// </summary>
-    [JSExport("toHex")]
+    [JSExport("toHex", Feature = (int)JavaScriptFeatureFlags.Uint8ArrayBase64)]
     public JSValue ToHex(in Arguments a)
     {
         var src = new byte[length];
@@ -118,7 +119,7 @@ public partial class JSUInt8Array : JSTypedArray
     /// Decodes a Base64 string and writes bytes into this typed array.
     /// Returns an object { read, written }.
     /// </summary>
-    [JSExport("setFromBase64", Length = 1)]
+    [JSExport("setFromBase64", Length = 1, Feature = (int)JavaScriptFeatureFlags.Uint8ArrayBase64)]
     public JSValue SetFromBase64(in Arguments a)
     {
         var str = a.Get1();
@@ -404,7 +405,7 @@ public partial class JSUInt8Array : JSTypedArray
     /// Decodes a hex string and writes bytes into this typed array.
     /// Returns an object { read, written }.
     /// </summary>
-    [JSExport("setFromHex", Length = 1)]
+    [JSExport("setFromHex", Length = 1, Feature = (int)JavaScriptFeatureFlags.Uint8ArrayBase64)]
     public JSValue SetFromHex(in Arguments a)
     {
         var str = a.Get1();

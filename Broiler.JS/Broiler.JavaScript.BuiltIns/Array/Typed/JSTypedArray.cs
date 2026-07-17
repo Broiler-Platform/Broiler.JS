@@ -17,6 +17,22 @@ namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 [JSClassGenerator("TypedArray")]
 public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 {
+    internal protected override bool HasOwnProperty(in PropertyKey key)
+    {
+        if (key.Type == KeyType.UInt)
+            return IsValidIntegerIndex(key.Index);
+
+        if (key.Type == KeyType.String)
+        {
+            if (key.KeyString.Key == KeyStrings.length.Key)
+                return true;
+            if (TryGetCanonicalNumericIndex(key.KeyString, out var numericIndex))
+                return IsValidIntegerIndex(numericIndex);
+        }
+
+        return base.HasOwnProperty(in key);
+    }
+
     internal static int ToIntegerOrInfinity(JSValue value, int defaultValue = 0)
     {
         if (value == null || value.IsUndefined)
@@ -514,6 +530,13 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 
     private static bool TryGetCanonicalNumericIndex(in KeyString key, out double numericIndex)
     {
+        var metadata = key.Metadata;
+        if (metadata.IsCanonicalNumericIndex)
+        {
+            numericIndex = metadata.CanonicalNumericIndex;
+            return true;
+        }
+
         var text = key.Value.Value;
         if (text == "-0")
         {

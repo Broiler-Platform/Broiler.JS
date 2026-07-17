@@ -251,7 +251,7 @@ public class JSArguments: JSObject, IJSArguments
             return;
         }
 
-        elements.Put(key) = JSProperty.Property(key, mappedParameter.Value, property.Attributes);
+        elements.Set(key, JSProperty.Property(key, mappedParameter.Value, property.Attributes));
     }
 
     public override string ToString() => "[object Arguments]";

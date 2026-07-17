@@ -14,28 +14,7 @@
 	  <SymbolPackageFormat>snupkg</SymbolPackageFormat>
 	  <EmbedAllSources>True</EmbedAllSources>
 	  <LangVersion>latest</LangVersion>
-	  <!-- <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-	  <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath> -->
-  </PropertyGroup>
-
-	<PropertyGroup>
-		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-		<CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
 	</PropertyGroup>
-	<Target Name="AddSourceGeneratedFiles" AfterTargets="CoreCompile">
-		<ItemGroup>
-			<Compile Include="Generated\**" />
-		</ItemGroup>
-	</Target>
-	<Target Name="RemoveSourceGeneratedFiles" BeforeTargets="CoreCompile">
-		<ItemGroup>
-			<Compile Remove="Generated\**" />
-		</ItemGroup>
-	</Target>
-
-	<!-- <ItemGroup>
-		<Compile Remove="$(CompilerGeneratedFilesOutputPath)/*/**/*.cs" />
-	</ItemGroup> -->
 
 	<ItemGroup>
 		<ProjectReference Include="..\Broiler.JavaScript.BuiltIns\Broiler.JavaScript.BuiltIns.csproj" />
@@ -47,7 +26,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Broiler.JavaScript.JSClassGenerator\Broiler.JavaScript.JSClassGenerator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" />
+		<ProjectReference Include="..\Broiler.JavaScript.JSClassGenerator\Broiler.JavaScript.JSClassGenerator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" GlobalPropertiesToRemove="PublishTrimmed;PublishAot;PublishReadyToRun;RuntimeIdentifier;SelfContained" />
 		<ProjectReference Include="..\Broiler.JavaScript.Engine\Broiler.JavaScript.Engine.csproj" />
 
 	</ItemGroup>

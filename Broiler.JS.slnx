@@ -10,11 +10,16 @@
     <Project Path="Broiler.JS/Broiler.JavaScript.ModuleExtensions.Tests/Broiler.JavaScript.ModuleExtensions.Tests.csproj" />
     <Project Path="Broiler.JS/Broiler.JavaScript.Modules.Tests/Broiler.JavaScript.Modules.Tests.csproj" />
     <Project Path="Broiler.JS/Broiler.JavaScript.Parser.Tests/Broiler.JavaScript.Parser.Tests.csproj" />
+    <Project Path="Broiler.JS/Broiler.JavaScript.Portable.Tests/Broiler.JavaScript.Portable.Tests.csproj" />
     <Project Path="Broiler.JS/Broiler.JavaScript.Runtime.Tests/Broiler.JavaScript.Runtime.Tests.csproj" />
     <Project Path="Broiler.JS/Broiler.JavaScript.Storage.Tests/Broiler.JavaScript.Storage.Tests.csproj" />
   </Folder>
   <Folder Name="/Benchmarks/">
     <Project Path="Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Broiler.JavaScript.Engine.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/Samples/">
+    <Project Path="Broiler.JS/samples/Broiler.JavaScript.NativeAotSample/Broiler.JavaScript.NativeAotSample.csproj" />
+    <Project Path="Broiler.JS/samples/Broiler.JavaScript.StartupHost/Broiler.JavaScript.StartupHost.csproj" />
   </Folder>
   <Project Path="Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj" />
@@ -25,12 +30,16 @@
   <Project Path="Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.Extensions/Broiler.JavaScript.Extensions.csproj" />
+  <Project Path="Broiler.JS/Broiler.JavaScript.Feature.Sample/Broiler.JavaScript.Feature.Sample.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.Globals/Broiler.JavaScript.Globals.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.JSClassGenerator/Broiler.JavaScript.JSClassGenerator.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.LinqExpressions/Broiler.JavaScript.LinqExpressions.csproj" />
+  <Project Path="Broiler.JS/Broiler.JavaScript.Minimal/Broiler.JavaScript.Minimal.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.ModuleExtensions/Broiler.JavaScript.ModuleExtensions.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.Modules/Broiler.JavaScript.Modules.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj" />
+  <Project Path="Broiler.JS/Broiler.JavaScript.Portable.Compiler/Broiler.JavaScript.Portable.Compiler.csproj" />
+  <Project Path="Broiler.JS/Broiler.JavaScript.Portable/Broiler.JavaScript.Portable.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj" />
   <Project Path="Broiler.Regex/Broiler.Regex/Broiler.Regex.csproj" />

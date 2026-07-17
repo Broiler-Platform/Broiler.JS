@@ -191,12 +191,16 @@ internal static class ObjectClassFactory
                 "function setPrototypeOf() { [native code] }", 2, false),
             JSPropertyAttributes.ConfigurableValue);
 
-        // groupBy
-        @class.FastAddValue(
-            (KeyString)"groupBy",
-            JSValue.CreateFunction(JSObject.GroupBy, "groupBy",
-                "function groupBy() { [native code] }", 2, false),
-            JSPropertyAttributes.ConfigurableValue);
+        // groupBy (experimental): do not construct its function when disabled.
+        if (context is JSContext jsContext
+            && jsContext.HasExperimentalFeature(JavaScriptFeatureFlags.ObjectMapGroupBy))
+        {
+            @class.FastAddValue(
+                (KeyString)"groupBy",
+                JSValue.CreateFunction(JSObject.GroupBy, "groupBy",
+                    "function groupBy() { [native code] }", 2, false),
+                JSPropertyAttributes.ConfigurableValue);
+        }
 
         // ── Static introspection methods ────────────────────────────
 

@@ -15,7 +15,7 @@ internal static class CoreScriptCoreExtensions
         CoreScript.GetCurrentContext = () =>
         {
             var ctx = JSEngine.Current;
-            return (ctx as JSValue, ctx?.CodeCache);
+            return (ctx as JSValue, ctx?.CodeCache, (ctx as JSContext)?.CompilationOptions ?? default);
         };
         CoreScript.GetCurrentWaitTask = () => JSEngine.Current?.WaitTask;
         CoreScript.CreateSyntaxError = (msg, fn, path, line) =>

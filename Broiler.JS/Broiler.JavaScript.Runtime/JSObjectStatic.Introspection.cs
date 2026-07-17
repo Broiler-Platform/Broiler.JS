@@ -6,6 +6,9 @@ namespace Broiler.JavaScript.Runtime;
 
 public partial class JSObject
 {
+    private static bool HasOrdinaryOwnPropertyStorage(JSObject target)
+        => target.GetType() == typeof(JSObject) || target is IJSContext;
+
     private static bool ShouldIncludeOwnPropertyKey(JSValue value, bool includeSymbols) =>
         includeSymbols ? value is IJSSymbol : value is not IJSSymbol;
 
@@ -78,6 +81,28 @@ public partial class JSObject
     private static List<JSValue> SnapshotOwnStringKeys(JSObject target)
     {
         var keys = new List<JSValue>();
+
+        // Exact JSObject instances use OrdinaryOwnPropertyKeys. Walk their internal
+        // struct enumerators directly; Proxy and exotic subclasses retain the virtual
+        // ownKeys/descriptor path below.
+        if (HasOrdinaryOwnPropertyStorage(target))
+        {
+            foreach (var (index, property) in target.GetElements(false).AllValues())
+            {
+                if (!property.IsEmpty)
+                    keys.Add(CreateString(index.ToString()));
+            }
+
+            var properties = target.GetOwnProperties(false).GetEnumerator(showEnumerableOnly: false);
+            while (properties.MoveNextKey(out var key))
+            {
+                if (!IsPrivateName(in key))
+                    keys.Add(JSObjectCoreExtensions.KeyStringToJSValue(key));
+            }
+
+            return keys;
+        }
+
         var en = target.GetAllKeys(showEnumerableOnly: false, inherited: false);
         while (en.MoveNext(out var hasValue, out var key, out var _))
         {
@@ -85,6 +110,19 @@ public partial class JSObject
                 keys.Add(key);
         }
         return keys;
+    }
+
+    private static bool IsEnumerableOwnStringProperty(JSObject target, JSValue key)
+    {
+        if (HasOrdinaryOwnPropertyStorage(target))
+        {
+            var propertyKey = key.ToKey(false);
+            return target.TryGetOrdinaryOwnProperty(in propertyKey, out var property)
+                && property.IsEnumerable;
+        }
+
+        return target.GetOwnPropertyDescriptor(key) is JSObject descriptor
+            && descriptor[KeyStrings.enumerable].BooleanValue;
     }
 
     private static bool HasDescriptorField(JSObject descriptor, KeyString key) =>
@@ -128,9 +166,7 @@ public partial class JSObject
         // mutates the object from injecting a freshly-added key into the result.
         foreach (var key in SnapshotOwnStringKeys(target))
         {
-            if (target.GetOwnPropertyDescriptor(key) is not JSObject descriptor)
-                continue;
-            if (!descriptor[KeyStrings.enumerable].BooleanValue)
+            if (!IsEnumerableOwnStringProperty(target, key))
                 continue;
 
             var entry = CreateArray();
@@ -198,9 +234,7 @@ public partial class JSObject
         // so Object.keys(proxy) only triggered the ownKeys trap. Mirrors Object.values/entries.
         foreach (var key in SnapshotOwnStringKeys(target))
         {
-            if (target.GetOwnPropertyDescriptor(key) is not JSObject descriptor)
-                continue;
-            if (!descriptor[KeyStrings.enumerable].BooleanValue)
+            if (!IsEnumerableOwnStringProperty(target, key))
                 continue;
 
             r.AddArrayItem(key);
@@ -220,9 +254,7 @@ public partial class JSObject
         // values; the per-key [[GetOwnProperty]] / [[Get]] interleaving still holds.
         foreach (var key in SnapshotOwnStringKeys(target))
         {
-            if (target.GetOwnPropertyDescriptor(key) is not JSObject descriptor)
-                continue;
-            if (!descriptor[KeyStrings.enumerable].BooleanValue)
+            if (!IsEnumerableOwnStringProperty(target, key))
                 continue;
 
             r.AddArrayItem(target[key]);

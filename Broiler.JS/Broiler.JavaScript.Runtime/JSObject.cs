@@ -56,7 +56,10 @@ public partial class JSObject : JSValue
     {
         set
         {
-            prototypeChain = (value as JSObject)?.PrototypeObject;
+            var prototype = value as JSObject;
+            prototype?.MarkUsedAsPrototype();
+            prototypeChain = prototype?.PrototypeObject;
+            NotifyPrototypeChainMutation();
             PropertyChanged?.Invoke(this, (uint.MaxValue, uint.MaxValue, null));
             currentPrototype?.Dirty();
         }
@@ -77,7 +80,135 @@ public partial class JSObject : JSValue
     private ElementArray elements;
     private PropertySequence ownProperties;
     private SAUint32Map<JSProperty> symbols;
+    private ObjectShape objectShape = ObjectShape.Empty;
+    private JSValue[] shapeSlots = Array.Empty<JSValue>();
     private long? uid;
+
+    private bool isUsedAsPrototype;
+    private static long indexedPrototypeVersion;
+    private static long prototypeMutationVersion;
+
+    internal static long IndexedPrototypeVersion => Interlocked.Read(ref indexedPrototypeVersion);
+    internal static long PrototypeMutationVersion => Interlocked.Read(ref prototypeMutationVersion);
+
+    internal void MarkUsedAsPrototype()
+    {
+        if (isUsedAsPrototype)
+            return;
+        isUsedAsPrototype = true;
+        Interlocked.Increment(ref indexedPrototypeVersion);
+        InvalidatePrototypeAssumptions();
+    }
+
+    internal void NotifyIndexedPropertyMutation()
+    {
+        if (isUsedAsPrototype)
+        {
+            Interlocked.Increment(ref indexedPrototypeVersion);
+            InvalidatePrototypeAssumptions();
+        }
+    }
+
+    internal void NotifyNamedPropertyMutation()
+    {
+        if (isUsedAsPrototype)
+            InvalidatePrototypeAssumptions();
+    }
+
+    internal static void NotifyPrototypeChainMutation()
+    {
+        Interlocked.Increment(ref indexedPrototypeVersion);
+        InvalidatePrototypeAssumptions();
+    }
+
+    private static void InvalidatePrototypeAssumptions()
+    {
+        Interlocked.Increment(ref prototypeMutationVersion);
+        PropertyOptimizationDiagnostics.RecordPrototypeInvalidation();
+    }
+
+    internal void TrackShapeDataProperty(in KeyString key, JSValue value, JSPropertyAttributes attributes)
+    {
+        if (GetType() != typeof(JSObject))
+            return;
+
+        if (objectShape.IsDictionary
+            || value == null
+            || key.Metadata.IsPrivateName
+            || attributes != JSPropertyAttributes.EnumerableConfigurableValue)
+        {
+            AbandonObjectShape();
+            NotifyNamedPropertyMutation();
+            return;
+        }
+
+        if (!objectShape.TryGetSlot(key.Key, out var slot))
+        {
+            objectShape = objectShape.Add(key.Key);
+            slot = objectShape.SlotCount - 1;
+            if (shapeSlots.Length <= slot)
+            {
+                var replacement = new JSValue[Math.Max(4, Math.Max(objectShape.SlotCount, shapeSlots.Length * 2))];
+                Array.Copy(shapeSlots, replacement, shapeSlots.Length);
+                shapeSlots = replacement;
+            }
+        }
+
+        shapeSlots[slot] = value;
+        NotifyNamedPropertyMutation();
+    }
+
+    internal void AbandonObjectShape()
+    {
+        if (GetType() != typeof(JSObject) || objectShape.IsDictionary)
+            return;
+        objectShape = ObjectShape.Dictionary;
+        shapeSlots = Array.Empty<JSValue>();
+        PropertyOptimizationDiagnostics.RecordDictionaryFallback();
+    }
+
+    internal bool TryGetShapeSlot(in KeyString key, out int shapeId, out int slot)
+    {
+        if (GetType() == typeof(JSObject)
+            && !objectShape.IsDictionary
+            && objectShape.TryGetSlot(key.Key, out slot))
+        {
+            shapeId = objectShape.Id;
+            return true;
+        }
+
+        shapeId = 0;
+        slot = -1;
+        return false;
+    }
+
+    internal bool TryReadShapeSlot(int shapeId, int slot, uint key, out JSValue value)
+    {
+        if (GetType() == typeof(JSObject)
+            && objectShape.Id == shapeId
+            && !objectShape.IsDictionary
+            && objectShape.TryGetSlot(key, out var actualSlot)
+            && actualSlot == slot
+            && (uint)slot < (uint)shapeSlots.Length
+            && shapeSlots[slot] != null)
+        {
+            value = shapeSlots[slot];
+            return true;
+        }
+
+        value = null;
+        return false;
+    }
+
+    internal bool HasIndexedPropertiesOnPrototypeChain()
+    {
+        for (var current = prototypeChain?.Object as JSObject; current != null; current = current.prototypeChain?.Object as JSObject)
+        {
+            if (current.elements.Count != 0)
+                return true;
+        }
+        return false;
+    }
 
     private static long NextID = 0;
     internal long UniqueID => uid ??= Interlocked.Increment(ref NextID);
@@ -113,6 +244,7 @@ public partial class JSObject : JSValue
 
     public JSObject(IEnumerable<JSProperty> entries) : this(GetCurrentObjectPrototype())
     {
+        AbandonObjectShape();
         foreach (var p in entries)
             ownProperties.Put(p.key) = p;
     }

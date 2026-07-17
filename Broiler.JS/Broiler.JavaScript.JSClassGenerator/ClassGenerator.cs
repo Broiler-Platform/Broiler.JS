@@ -240,6 +240,9 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
     {
         sb.AppendLine($"// Exporting {exports.Member.Name} as {exports.Name}");
 
+        if (exports.Feature is int feature)
+            sb.AppendLine($"if (JSValue.IsFeatureEnabled(context, {feature})) {{");
+
         var target = exports.IsPrototypeMethod || !exports.Member.IsStatic
                 ? "prototype"
                 : "@class";
@@ -263,6 +266,9 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
                 GenerateProperty(sb, target, name, exports);
                 break;
         }
+
+        if (exports.Feature.HasValue)
+            sb.AppendLine("}");
     }
 
     private void GenerateField(

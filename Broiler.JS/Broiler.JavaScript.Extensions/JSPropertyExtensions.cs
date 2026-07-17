@@ -13,7 +13,7 @@ public static class JSPropertyExtensions
             return JSUndefined.Value;
 
         if (!p.IsProperty)
-            return (JSValue)p.value;
+            return p.value is LazyDataPropertyCell lazy ? lazy.Resolve() : (JSValue)p.value;
 
         return p.get is IJSFunction getter
             ? getter.InvokeFunction(new Arguments(target))
@@ -33,7 +33,9 @@ public static class JSPropertyExtensions
                 .AddProperty(KeyStrings.configurable, px.IsConfigurable ? t : f)
                 .AddProperty(KeyStrings.enumerable, px.IsEnumerable ? t : f)
                 .AddProperty(KeyStrings.writable, !px.IsReadOnly ? t : f)
-                .AddProperty(KeyStrings.value, (JSValue)px.value);
+                .AddProperty(
+                    KeyStrings.value,
+                    px.value is LazyDataPropertyCell lazy ? lazy.Resolve() : (JSValue)px.value);
         }
         else
         {

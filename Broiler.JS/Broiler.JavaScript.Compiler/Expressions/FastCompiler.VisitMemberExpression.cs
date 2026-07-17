@@ -50,10 +50,21 @@ partial class FastCompiler
         // Inside an optional chain, member access routes through the skip-aware links
         // (a `?.` link short-circuits on a nullish base; a trailing link only propagates
         // an in-flight short-circuit). Outside a chain it is an ordinary index.
-        BExpression Access(BExpression keyExpr) =>
-            memberExpression.InOptionalChain
+        BExpression Access(BExpression keyExpr, bool allowCache = true)
+        {
+            if (allowCache
+                && super == null
+                && !memberExpression.InOptionalChain
+                && !memberExpression.Coalesce
+                && keyExpr.Type == typeof(KeyString))
+            {
+                return JSValueBuilder.CachedIndex(target, keyExpr);
+            }
+
+            return memberExpression.InOptionalChain
                 ? JSValueBuilder.ChainAccess(target, super, keyExpr, memberExpression.Coalesce)
                 : JSValueBuilder.Index(target, super, keyExpr, memberExpression.Coalesce);
+        }
 
         // A COMPUTED key inside an optional chain whose link is `?.` (or trails an in-flight
         // short-circuit) must NOT be evaluated when the chain has already short-circuited —
@@ -106,7 +117,7 @@ partial class FastCompiler
                                 JSValueBuilder.Index(recv.Expression, super, key, false)));
                     }
 
-                    return Access(key);
+                    return Access(key, allowCache: !isPrivate);
                 }
 
                 // Computed identifier key (`a?.[b]` where b parsed as an Identifier reference).

@@ -21,7 +21,7 @@ public class EvalEventArgs : EventArgs
     public string Location { get; set; }
 }
 
-public class JSContext : JSObject, IJSExecutionContext, IDisposable
+public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDisposable
 {
     private static long contextId = 1;
     private static readonly KeyString UnscopablesKey = KeyStrings.GetOrCreate("unscopables");
@@ -91,6 +91,16 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     public event ErrorEventHandler Error;
     public event ConsoleEvent ConsoleEvent;
     public JavaScriptFeatureFlags ExperimentalFeatures { get; }
+    public JSContextOptions Options { get; }
+    public FunctionTieringController FunctionTiering { get; }
+    private readonly IBuiltInRegistry builtInRegistry;
+
+    public BuiltInManifest BootstrapManifest => builtInRegistry?.Manifest ?? BuiltInManifest.Empty;
+
+    public JSCompilationOptions CompilationOptions => new(
+        Options.ScriptHostMode,
+        (int)ExperimentalFeatures,
+        Options.CompilationBackend);
 
     SAUint32Map<JSVariable> globalVars = new();
     private int directEvalDepth;
@@ -1531,12 +1541,20 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
     public JSContext(
         SynchronizationContext synchronizationContext = null,
-        JavaScriptFeatureFlags experimentalFeatures = JavaScriptFeatureFlags.None)
+        JavaScriptFeatureFlags experimentalFeatures = JavaScriptFeatureFlags.None,
+        JSContextOptions options = null)
     {
-        JSEngine.EnsureBuiltInsAssemblyLoaded();
-
         this.synchronizationContext = synchronizationContext ?? SynchronizationContext.Current;
         ExperimentalFeatures = experimentalFeatures;
+        Options = options ?? JSContextOptions.Default;
+        FunctionTiering = new FunctionTieringController(Options.FunctionTiering);
+        if (Options.BuiltInRegistry == null && !JSEngine.HasExplicitBuiltInRegistry)
+            JSEngine.EnsureBuiltInsAssemblyLoaded();
+        builtInRegistry = Options.BuiltInRegistry ?? JSEngine.BuiltInRegistry;
+        StartupOptimizationDiagnostics.RecordContext(Options.BootstrapProfile.IsConformant);
+        CodeCache = Options.UseProcessSharedCodeCache
+            ? DictionaryCodeCache.Current
+            : new DictionaryCodeCache(Options.CodeCache);
 
         JSEngine.CurrentContext = this;
 
@@ -1563,9 +1581,9 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         FunctionPrototype.BasePrototypeObject = ObjectPrototype;
         ReattachFunctionPrototypeMethods();
 
-        if (JSEngine.BuiltInRegistry != null)
+        if (builtInRegistry != null)
         {
-            JSEngine.BuiltInRegistry.Register(this);
+            builtInRegistry.Register(this);
         }
         else
         {
@@ -1601,6 +1619,19 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         // Object.prototype and inherited methods such as hasOwnProperty /
         // propertyIsEnumerable are callable on the top-level `this`.
         BasePrototypeObject = ObjectPrototype;
+    }
+
+    public JSValue ResolveBuiltInFeature(BuiltInFeatureId feature)
+    {
+        if (!Options.BootstrapProfile.Includes(feature))
+            throw new InvalidOperationException(
+                $"Built-in feature '{feature}' is not enabled by profile '{Options.BootstrapProfile.Name}'.");
+        if (builtInRegistry == null)
+            throw new InvalidOperationException("No built-in registry was configured for this realm.");
+
+        StartupOptimizationDiagnostics.RecordFeatureResolution();
+        using var scope = JSEngine.EnterContext(this);
+        return builtInRegistry.ResolveFeature(this, feature);
     }
 
     private void ReattachFunctionPrototypeMethods()
@@ -1757,7 +1788,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
         return key;
     }
 
-    public ICodeCache CodeCache { get; set; } = DictionaryCodeCache.Current;
+    public ICodeCache CodeCache { get; set; }
 
     internal ConcurrentDictionary<long, JSValue> PendingPromises = new();
 
@@ -1890,6 +1921,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
 
     public JSValue Eval(string code, string codeFilePath = null, JSValue @this = null)
     {
+        using var realmScope = JSEngine.EnterContext(this);
         @this ??= this;
         if (Debugger == null)
         {
@@ -1916,6 +1948,7 @@ public class JSContext : JSObject, IJSExecutionContext, IDisposable
     /// </summary>
     public async Task<JSValue> EvalWithTopLevelAwaitAsync(string code, string codeFilePath = null, JSValue @this = null)
     {
+        using var realmScope = JSEngine.EnterContext(this);
         @this ??= this;
         JSValue result;
 

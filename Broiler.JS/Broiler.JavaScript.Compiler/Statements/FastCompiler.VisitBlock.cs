@@ -2,6 +2,7 @@
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
+using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Compiler;
 
@@ -115,9 +116,17 @@ partial class FastCompiler
                 }
 
                 var hoistToDirectEvalRoot = isEvalRootHoist;
+                var useScalarLocal = !hoistToDirectEvalRoot
+                    && !isLexical
+                    && scope.CanScalarReplaceLocals
+                    && scope.Function != null
+                    && !v.Equals("arguments")
+                    && !v.Equals("eval");
                 var variable = hoistToDirectEvalRoot
                     ? GetOrCreateDirectEvalRootVariable(v)
-                    : scope.CreateVariable(v, null, true, initialize: isLexical == false);
+                    : useScalarLocal
+                        ? scope.CreateVariable(v, JSUndefinedBuilder.Value, true, typeof(JSValue), initialize: true)
+                        : scope.CreateVariable(v, null, true, initialize: isLexical == false);
                 variable.IsLexical = isLexical;
                 if (hoistToDirectEvalRoot && directEvalBindingNames != null && Array.IndexOf(directEvalBindingNames, v.Value) >= 0)
                     variable.Expression = JSContextBuilder.Index(KeyOfName(v));

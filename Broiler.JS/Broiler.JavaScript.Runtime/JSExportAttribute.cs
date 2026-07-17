@@ -11,4 +11,5 @@ public class JSExportAttribute(string? name = null) : Attribute
     public int Length { get; set; }
     public bool Pure { get; set; }
     public bool IsConstructor { get; set; }
+    public int Feature { get; set; }
 }

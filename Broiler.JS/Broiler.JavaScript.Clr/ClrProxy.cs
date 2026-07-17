@@ -78,7 +78,7 @@ public partial class ClrProxy : JSObject
     public static JSValue Marshal(ushort value) => CreateNumber(value);
     public static JSValue Marshal(byte value) => CreateNumber(value);
     public static JSValue Marshal(sbyte value) => CreateNumber(value);
-    public static JSValue Marshal(DateTime value) => CreateDate(new DateTimeOffset(value));
+    public static JSValue Marshal(System.DateTime value) => CreateDate(new DateTimeOffset(value));
     public static JSValue Marshal(DateTimeOffset value) => CreateDate(value);
     public static JSValue Marshal(double value) => CreateNumber(value);
     public static JSValue Marshal(float value) => CreateNumber(value);
@@ -111,7 +111,7 @@ public partial class ClrProxy : JSObject
             TypeCode.Boolean => (bool)value ? BooleanTrue : BooleanFalse,
             TypeCode.Byte => CreateNumber((byte)value),
             TypeCode.Char => CreateString(((char)value).ToString()),
-            TypeCode.DateTime => CreateDate(new DateTimeOffset((DateTime)value)),
+            TypeCode.DateTime => CreateDate(new DateTimeOffset((System.DateTime)value)),
             TypeCode.DBNull => NullValue,
             TypeCode.Decimal => CreateNumber((double)(decimal)value),
             TypeCode.Double => CreateNumber((double)value),

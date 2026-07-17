@@ -24,6 +24,7 @@ public partial class ILCodeGenerator
     private readonly TextWriter? expressionWriter;
     private int tailCallTryDepth;
     private int tailCallBlockedDepth;
+    private readonly bool enableJavaScriptTailCalls;
 
     private readonly Dictionary<BParameterExpression,(Type type, int localIndex)> uninitialized
         = new(Core.ReferenceEqualityComparer.Instance);
@@ -43,7 +44,8 @@ public partial class ILCodeGenerator
         IMethodBuilder methodBuilder,
         TextWriter? writer = null,
         TextWriter? expressionWriter = null,
-        bool captureDiagnostics = false)
+        bool captureDiagnostics = false,
+        bool enableJavaScriptTailCalls = false)
     {
         if(!GenerateLogs && !captureDiagnostics)
         {
@@ -56,6 +58,7 @@ public partial class ILCodeGenerator
         tempVariables = new TempVariables(this.il);
         this.methodBuilder = methodBuilder;
         this.expressionWriter = expressionWriter;
+        this.enableJavaScriptTailCalls = enableJavaScriptTailCalls;
     }
 
     private void InitializeClosure(BParameterExpression pe)

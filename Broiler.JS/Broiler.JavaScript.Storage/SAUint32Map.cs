@@ -16,7 +16,7 @@ public struct SAUint32Map<T>
         public T Value;
     }
 
-    enum NodeState : byte
+    internal enum NodeState : byte
     {
         Empty = 0,
         Filled = 1,
@@ -26,7 +26,7 @@ public struct SAUint32Map<T>
     static Node Empty = new();
 
     [DebuggerDisplay("{Key}={Value}")]
-    struct Node
+    internal struct Node
     {
         public readonly bool HasValue
         {
@@ -52,6 +52,7 @@ public struct SAUint32Map<T>
     }
 
     private VirtualMemory<Node> nodes;
+    private int liveCount;
 
     // first set of roots
     private VirtualArray roots;
@@ -67,6 +68,12 @@ public struct SAUint32Map<T>
 
     public readonly bool IsNull => nodes.IsEmpty;
 
+    public readonly int Count => liveCount;
+
+    public readonly int Capacity => nodes.Capacity;
+
+    public readonly int UsedNodeCount => nodes.UsedCount;
+
 
     public IEnumerable<KeyValue> All
     {
@@ -77,16 +84,60 @@ public struct SAUint32Map<T>
         }
     }
 
-    public readonly IEnumerable<(uint Key, T Value)> AllValues()
-    {
-        if (nodes.IsEmpty)
-            yield break;
+    public readonly ValueEnumerable AllValues() => new(nodes);
 
-        for (int i = 0; i < nodes.Count; i++)
+    public readonly struct ValueEnumerable : IEnumerable<(uint Key, T Value)>
+    {
+        private readonly VirtualMemory<Node> nodes;
+
+        internal ValueEnumerable(VirtualMemory<Node> nodes) => this.nodes = nodes;
+
+        public ValueEnumerator GetEnumerator() => new(nodes);
+
+        IEnumerator<(uint Key, T Value)> IEnumerable<(uint Key, T Value)>.GetEnumerator() => GetEnumerator();
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    public struct ValueEnumerator : IEnumerator<(uint Key, T Value)>
+    {
+        private readonly VirtualMemory<Node> nodes;
+        private readonly int usedCount;
+        private int index = -1;
+        private (uint Key, T Value) current;
+
+        internal ValueEnumerator(VirtualMemory<Node> nodes)
         {
-            var node = nodes.GetAt(i);
-            if (node.HasValue)
-                yield return (node.Key, node.Value);
+            this.nodes = nodes;
+            usedCount = nodes.UsedCount;
+        }
+
+        public readonly (uint Key, T Value) Current => current;
+
+        readonly object System.Collections.IEnumerator.Current => current;
+
+        public bool MoveNext()
+        {
+            while (++index < usedCount)
+            {
+                var node = nodes.GetAt(index);
+                if (!node.HasValue)
+                    continue;
+
+                current = (node.Key, node.Value);
+                return true;
+            }
+
+            current = default;
+            return false;
+        }
+
+        public readonly void Dispose() { }
+
+        public void Reset()
+        {
+            index = -1;
+            current = default;
         }
     }
 
@@ -117,6 +168,7 @@ public struct SAUint32Map<T>
             value = node.Value;
             node.Value = default;
             node.State = NodeState.Filled;
+            liveCount--;
             return true;
         }
 
@@ -127,6 +179,8 @@ public struct SAUint32Map<T>
     public void Save(uint key, T value)
     {
         ref var node = ref GetNode(key, true);
+        if (!node.HasValue)
+            liveCount++;
         node.Value = value;
         node.State |= NodeState.HasValue;
     }
@@ -134,6 +188,8 @@ public struct SAUint32Map<T>
     public ref T Put(uint key)
     {
         ref var node = ref GetNode(key, true);
+        if (!node.HasValue)
+            liveCount++;
         node.State |= NodeState.HasValue;
         return ref node.Value;
     }
@@ -154,6 +210,7 @@ public struct SAUint32Map<T>
         {
             node.State = NodeState.Filled;
             node.Value = default;
+            liveCount--;
             return true;
         }
 

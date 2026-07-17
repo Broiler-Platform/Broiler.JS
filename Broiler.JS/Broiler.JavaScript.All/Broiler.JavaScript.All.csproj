@@ -3,7 +3,12 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Description>Meta-package that transitively includes all Broiler JavaScript engine assemblies (Core, Clr, Compiler, Modules, ModuleExtensions, BuiltIns, Debugger, Network, NodePollyfill).</Description>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>false</SuppressDependenciesWhenPacking>
+    <!-- A dependency-only package intentionally has a dependency group without a
+         matching lib/ref assembly. -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <Description>Dependency-only meta-package for the Broiler JavaScript engine, CLR bridge, compiler, core built-ins, globals, modules, extensions, and debugger. Network and Node polyfills remain optional packages.</Description>
   </PropertyGroup>
 
   <ItemGroup>

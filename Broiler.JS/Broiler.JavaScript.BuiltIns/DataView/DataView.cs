@@ -1,6 +1,7 @@
 ﻿using Broiler.JavaScript.BuiltIns.Array.Typed;
 using Broiler.JavaScript.ExpressionCompiler;
 using System;
+using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Numerics;
 using Broiler.JavaScript.BuiltIns.BigInt;
@@ -47,17 +48,36 @@ public partial class DataView : JSObject
     private int RequireInBoundsByteLength()
     {
         if (buffer.isDetached)
-            throw JSEngine.NewTypeError("Cannot operate on a detached ArrayBuffer");
+            ThrowDetachedBuffer();
 
         var bufferByteLength = buffer.buffer.Length;
         if (byteOffset > bufferByteLength
             || (!isLengthTracking && byteOffset + explicitByteLength > bufferByteLength))
         {
-            throw JSEngine.NewTypeError("DataView is out of bounds");
+            ThrowOutOfBoundsView();
         }
 
         return isLengthTracking ? bufferByteLength - byteOffset : explicitByteLength;
     }
+
+    // Keep exception construction and message formatting out of the successful access
+    // path. These helpers are deliberately not inlined; the Phase 0 disassembly job can
+    // therefore verify that ordinary DataView reads/writes branch to cold throw blocks.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowDetachedBuffer()
+        => throw JSEngine.NewTypeError("Cannot operate on a detached ArrayBuffer");
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowOutOfBoundsView()
+        => throw JSEngine.NewTypeError("DataView is out of bounds");
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowOffsetOutOfBounds(int offset)
+        => throw JSEngine.NewRangeError($"Offset {offset} is outside the bounds of DataView");
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void ThrowImmutableBuffer()
+        => throw JSEngine.NewTypeError("Cannot modify a DataView backed by an immutable ArrayBuffer");
 
     [JSExport(Length = 1)]
     public DataView(in Arguments a) : this()
@@ -143,27 +163,38 @@ public partial class DataView : JSObject
         this.byteOffset = byteOffset;
     }
 
-    /// <summary>
-    /// Stores a series of bytes at the specified byte offset from the start of the
-    /// DataView.
-    /// </summary>
-    /// <param name="byteOffset"> The offset, in bytes, from the start of the view where to
-    /// store the data. </param>
-    /// <param name="bytes"> The bytes to store. </param>
-    /// <param name="littleEndian"> Indicates whether the bytes are stored in little- or
-    /// big-endian format. If false, a big-endian value is written. </param>
-    internal void SetCore(int byteOffset, byte[] bytes, bool littleEndian)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private Span<byte> BytesAt(int offset, int length)
+        => buffer.buffer.AsSpan(byteOffset + offset, length);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void WriteUInt16(int offset, ushort value, bool littleEndian)
     {
+        var bytes = BytesAt(offset, sizeof(ushort));
         if (littleEndian)
-        {
-            for (int i = 0; i < bytes.Length; i++)
-                buffer.buffer[this.byteOffset + byteOffset + i] = bytes[i];
-        }
+            BinaryPrimitives.WriteUInt16LittleEndian(bytes, value);
         else
-        {
-            for (int i = 0; i < bytes.Length; i++)
-                buffer.buffer[this.byteOffset + byteOffset + bytes.Length - 1 - i] = bytes[i];
-        }
+            BinaryPrimitives.WriteUInt16BigEndian(bytes, value);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void WriteUInt32(int offset, uint value, bool littleEndian)
+    {
+        var bytes = BytesAt(offset, sizeof(uint));
+        if (littleEndian)
+            BinaryPrimitives.WriteUInt32LittleEndian(bytes, value);
+        else
+            BinaryPrimitives.WriteUInt32BigEndian(bytes, value);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void WriteUInt64(int offset, ulong value, bool littleEndian)
+    {
+        var bytes = BytesAt(offset, sizeof(ulong));
+        if (littleEndian)
+            BinaryPrimitives.WriteUInt64LittleEndian(bytes, value);
+        else
+            BinaryPrimitives.WriteUInt64BigEndian(bytes, value);
     }
 
     [JSExport]
@@ -216,57 +247,37 @@ public partial class DataView : JSObject
     public JSValue GetBigInt64(in Arguments a) => new JSBigInt(GetInt64(in a));
 
     //internal method
-    public unsafe long GetInt64(in Arguments a)
+    public long GetInt64(in Arguments a)
     {
         var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         var littleEndian = a[1]?.BooleanValue ?? false;
 
         if (byteOffset < 0 || byteOffset > RequireInBoundsByteLength() - 8)
-            throw JSEngine.NewRangeError($"Offset {byteOffset} is outside the bounds of DataView");
+            ThrowOffsetOutOfBounds(byteOffset);
 
-        fixed (byte* ptr = &buffer.buffer[this.byteOffset + byteOffset])
-        {
-            if (littleEndian)
-            {
-                int temp1 = (*ptr) | (*(ptr + 1) << 8) | (*(ptr + 2) << 16) | (*(ptr + 3) << 24);
-                int temp2 = (*(ptr + 4)) | (*(ptr + 5) << 8) | (*(ptr + 6) << 16) | (*(ptr + 7) << 24);
-                return (uint)temp1 | ((long)temp2 << 32);
-            }
-            else
-            {
-                int temp1 = (*ptr << 24) | (*(ptr + 1) << 16) | (*(ptr + 2) << 8) | (*(ptr + 3));
-                int temp2 = (*(ptr + 4) << 24) | (*(ptr + 5) << 16) | (*(ptr + 6) << 8) | (*(ptr + 7));
-                return (uint)temp2 | ((long)temp1 << 32);
-            }
-        }
+        var bytes = BytesAt(byteOffset, sizeof(long));
+        return littleEndian
+            ? BinaryPrimitives.ReadInt64LittleEndian(bytes)
+            : BinaryPrimitives.ReadInt64BigEndian(bytes);
     }
 
     [JSExport("getBigUint64", Length = 1)]
     public JSValue GetBigUInt64(in Arguments a) => new JSBigInt(new BigInteger((ulong)GetInt64(in a)));
 
     //internal method
-    public unsafe int GetInt32Int(in Arguments a)
+    public int GetInt32Int(in Arguments a)
     {
         var @this = this;
         var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         var littleEndian = a[1]?.BooleanValue ?? false;
         
         if (byteOffset < 0 || byteOffset > @this.RequireInBoundsByteLength() - 4)
-            throw JSEngine.NewRangeError($"Offset {byteOffset} is outside the bounds of DataView");
+            ThrowOffsetOutOfBounds(byteOffset);
 
-        var buffer = @this.buffer;
-
-        fixed (byte* ptr = &buffer.buffer[@this.byteOffset + byteOffset])
-        {
-            if (littleEndian)
-            {
-                return (*ptr) | (*(ptr + 1) << 8) | (*(ptr + 2) << 16) | (*(ptr + 3) << 24);
-            }
-            else
-            {
-                return (*ptr << 24) | (*(ptr + 1) << 16) | (*(ptr + 2) << 8) | (*(ptr + 3));
-            }
-        }
+        var bytes = @this.BytesAt(byteOffset, sizeof(int));
+        return littleEndian
+            ? BinaryPrimitives.ReadInt32LittleEndian(bytes)
+            : BinaryPrimitives.ReadInt32BigEndian(bytes);
     }
 
     /// <summary>
@@ -280,10 +291,10 @@ public partial class DataView : JSObject
     /// <returns> The 32-bit floating point number at the specified byte offset from the start
     /// of the DataView. </returns>
     [JSExport(Length = 1)]
-    public unsafe JSValue GetFloat32(in Arguments a)
+    public JSValue GetFloat32(in Arguments a)
     {
         int temp = GetInt32Int(in a);
-        return new JSNumber(*(float*)&temp);
+        return new JSNumber(BitConverter.Int32BitsToSingle(temp));
     }
 
     /// <summary>
@@ -294,7 +305,7 @@ public partial class DataView : JSObject
     public JSValue GetFloat16(in Arguments a)
     {
         int temp = GetInt16Int(in a);
-        var half = BitConverter.ToHalf(BitConverter.GetBytes((short)temp), 0);
+        var half = BitConverter.UInt16BitsToHalf((ushort)temp);
         return new JSNumber((double)half);
     }
 
@@ -309,35 +320,26 @@ public partial class DataView : JSObject
     /// <returns> The 64-bit floating point number at the specified byte offset from the start
     /// of the DataView. </returns>
     [JSExport(Length = 1)]
-    public unsafe JSValue GetFloat64(in Arguments a)
+    public JSValue GetFloat64(in Arguments a)
     {
         long temp = GetInt64(in a);
-        return new JSNumber(*(double*)&temp);
+        return new JSNumber(BitConverter.Int64BitsToDouble(temp));
     }
 
     //internal
-    public unsafe int GetInt16Int(in Arguments a)
+    public int GetInt16Int(in Arguments a)
     {
         var @this = this;
         var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         var littleEndian = a[1]?.BooleanValue ?? false;
 
         if (byteOffset < 0 || byteOffset > @this.RequireInBoundsByteLength() - 2)
-            throw JSEngine.NewRangeError($"Offset {byteOffset} is outside the bounds of DataView");
+            ThrowOffsetOutOfBounds(byteOffset);
 
-        var buffer = @this.buffer;
-
-        fixed (byte* ptr = &buffer.buffer[@this.byteOffset + byteOffset])
-        {
-            if (littleEndian)
-            {
-                return (short)((*ptr) | (*(ptr + 1) << 8));
-            }
-            else
-            {
-                return (short)((*ptr << 8) | (*(ptr + 1)));
-            }
-        }
+        var bytes = @this.BytesAt(byteOffset, sizeof(short));
+        return littleEndian
+            ? BinaryPrimitives.ReadInt16LittleEndian(bytes)
+            : BinaryPrimitives.ReadInt16BigEndian(bytes);
     }
 
 
@@ -385,7 +387,7 @@ public partial class DataView : JSObject
         var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
 
         if (byteOffset < 0 || byteOffset > @this.RequireInBoundsByteLength() - 1)
-            throw JSEngine.NewRangeError($"Offset {byteOffset} is outside the bounds of DataView");
+            ThrowOffsetOutOfBounds(byteOffset);
 
         var buffer = @this.buffer;
         return (sbyte)buffer.buffer[@this.byteOffset + byteOffset];
@@ -435,7 +437,7 @@ public partial class DataView : JSObject
         var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
         
         if (byteOffset < 0 || byteOffset > @this.RequireInBoundsByteLength() - 1)
-            throw JSEngine.NewRangeError($"{byteOffset} offset is outside the bounds of DataView");
+            ThrowOffsetOutOfBounds(byteOffset);
 
         var buffer = @this.buffer;
         return new JSNumber(buffer.buffer[@this.byteOffset + byteOffset]);
@@ -450,22 +452,21 @@ public partial class DataView : JSObject
     /// <param name="value"> The value to set. </param>
     /// <param name="littleEndian"> Indicates whether the 64-bit float is stored in little- or
     /// big-endian format. If false or undefined, a big-endian value is written. </param>
-    // RawBytesFor reduces a (ToBigInt-coerced) value to its low 64 bits — the
+    // RawBitsFor reduces a (ToBigInt-coerced) value to its low 64 bits — the
     // two's-complement 8-byte pattern shared by setBigInt64/setBigUint64. A plain
     // (long)/(ulong) cast on JSBigInt.BigIntValue overflows for magnitudes that do
     // not fit a signed 64-bit integer, so mask the BigInteger directly.
-    private static byte[] RawBytesFor(JSValue value)
+    private static ulong RawBitsFor(JSValue value)
     {
         var big = value is JSBigInt bigint ? bigint.value : new System.Numerics.BigInteger(value.BigIntValue);
-        ulong bits = (ulong)(big & ((BigInteger.One << 64) - 1));
-        return BitConverter.GetBytes(bits);
+        return (ulong)(big & ((BigInteger.One << 64) - 1));
     }
 
     [JSExport(Length = 2)]
     public JSValue SetBigInt64(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 8, bigInt: true);
-        @this.SetCore(byteOffset, RawBytesFor(value), littleEndian);
+        @this.WriteUInt64(byteOffset, RawBitsFor(value), littleEndian);
         return JSUndefined.Value;
     }
 
@@ -473,7 +474,7 @@ public partial class DataView : JSObject
     public JSValue SetBigUInt64(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 8, bigInt: true);
-        @this.SetCore(byteOffset, RawBytesFor(value), littleEndian);
+        @this.WriteUInt64(byteOffset, RawBitsFor(value), littleEndian);
         return JSUndefined.Value;
     }
 
@@ -481,9 +482,7 @@ public partial class DataView : JSObject
     public JSValue SetFloat32(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 4);
-        var bytes = BitConverter.GetBytes((float)value.DoubleValue);
-
-        @this.SetCore(byteOffset, bytes, littleEndian);
+        @this.WriteUInt32(byteOffset, (uint)BitConverter.SingleToInt32Bits((float)value.DoubleValue), littleEndian);
         return JSUndefined.Value;
     }
 
@@ -496,9 +495,7 @@ public partial class DataView : JSObject
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 2);
         var half = (Half)value.DoubleValue;
-        var bytes = BitConverter.GetBytes(half);
-
-        @this.SetCore(byteOffset, bytes, littleEndian);
+        @this.WriteUInt16(byteOffset, BitConverter.HalfToUInt16Bits(half), littleEndian);
         return JSUndefined.Value;
     }
 
@@ -507,9 +504,7 @@ public partial class DataView : JSObject
     public JSValue SetFloat64(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 8);
-        var bytes = BitConverter.GetBytes(value.DoubleValue);
-
-        @this.SetCore(byteOffset, bytes, littleEndian);
+        @this.WriteUInt64(byteOffset, (ulong)BitConverter.DoubleToInt64Bits(value.DoubleValue), littleEndian);
         return JSUndefined.Value;
     }
 
@@ -517,9 +512,7 @@ public partial class DataView : JSObject
     public JSValue SetInt16(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 2);
-        var bytes = BitConverter.GetBytes((short)(uint)value.IntValue);
-
-        @this.SetCore(byteOffset, bytes, littleEndian);
+        @this.WriteUInt16(byteOffset, (ushort)value.IntValue, littleEndian);
         return JSUndefined.Value;
     }
 
@@ -527,9 +520,7 @@ public partial class DataView : JSObject
     public JSValue SetInt32(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 4);
-        var bytes = BitConverter.GetBytes(value.IntValue);
-
-        @this.SetCore(byteOffset, bytes, littleEndian);
+        @this.WriteUInt32(byteOffset, (uint)value.IntValue, littleEndian);
         return JSUndefined.Value;
     }
 
@@ -548,9 +539,7 @@ public partial class DataView : JSObject
     public JSValue SetUint16(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 2);
-        var bytes = BitConverter.GetBytes((ushort)value.IntValue);
-
-        @this.SetCore(byteOffset, bytes, littleEndian);
+        @this.WriteUInt16(byteOffset, (ushort)value.IntValue, littleEndian);
         return JSUndefined.Value;
     }
 
@@ -558,9 +547,7 @@ public partial class DataView : JSObject
     public JSValue SetUint32(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 4);
-        var bytes = BitConverter.GetBytes((uint)value.IntValue);
-
-        @this.SetCore(byteOffset, bytes, littleEndian);
+        @this.WriteUInt32(byteOffset, (uint)value.IntValue, littleEndian);
         return JSUndefined.Value;
     }
 
@@ -584,7 +571,7 @@ public partial class DataView : JSObject
         // user code via valueOf/toString). See DataView.prototype.set* immutable-buffer
         // tests in test262.
         if (@this.buffer.isImmutable)
-            throw JSEngine.NewTypeError("Cannot modify a DataView backed by an immutable ArrayBuffer");
+            ThrowImmutableBuffer();
 
         // An omitted byteOffset is ToIndex(undefined) = 0 and an omitted value is undefined
         // (coerced per type); neither argument is required.
@@ -596,12 +583,14 @@ public partial class DataView : JSObject
         // setBigInt64(0) with no value is a TypeError (ToBigInt(undefined)), and a value
         // whose valueOf throws is observed even when the index is out of range
         // (test262: DataView/prototype/setUint8/range-check-after-value-conversion).
-        value = bigInt ? JSBigInt.Coerce(value) : CreateNumber(value.DoubleValue);
+        value = bigInt
+            ? JSBigInt.Coerce(value)
+            : value.IsNumber ? value : CreateNumber(value.DoubleValue);
 
         var littleEndian = a[2]?.BooleanValue ?? false;
 
         if (byteOffset < 0 || byteOffset > @this.RequireInBoundsByteLength() - length)
-            throw JSEngine.NewRangeError($"Offset {byteOffset} is outside the bounds of DataView");
+            ThrowOffsetOutOfBounds(byteOffset);
 
         return (byteOffset, littleEndian, @this, value);
     }

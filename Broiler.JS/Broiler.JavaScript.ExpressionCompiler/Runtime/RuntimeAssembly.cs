@@ -53,7 +53,8 @@ public static class RuntimeAssembly
         this BLambdaExpression exp,
         Type boundType = null,
         IMethodBuilder methodBuilder = null,
-        bool captureDiagnostics = false)
+        bool captureDiagnostics = false,
+        bool enableJavaScriptTailCalls = false)
     {
         // create closure...
 
@@ -68,7 +69,13 @@ public static class RuntimeAssembly
         StringWriter sw = captureDiagnostics ? new StringWriter() : null;
         StringWriter expWriter = captureDiagnostics ? new StringWriter() : null;
         // ILCodeGenerator.GenerateLogs = true;
-        ILCodeGenerator icg = new(ilg, methodBuilder, sw, expWriter, captureDiagnostics);
+        ILCodeGenerator icg = new(
+            ilg,
+            methodBuilder,
+            sw,
+            expWriter,
+            captureDiagnostics,
+            enableJavaScriptTailCalls);
         icg.Emit(exp);
 
         string il = sw?.ToString() ?? string.Empty;

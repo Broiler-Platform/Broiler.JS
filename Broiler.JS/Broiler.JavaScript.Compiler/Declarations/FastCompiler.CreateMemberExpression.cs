@@ -27,16 +27,18 @@ partial class FastCompiler
                 switch (l.TokenType)
                 {
                     case TokenTypes.True:
-                        return BExpression.Constant(1);
+                        return computed ? VisitLiteral(l) : KeyOfName(l.StringValue);
 
                     case TokenTypes.False:
-                        return BExpression.Constant(0);
+                        return computed ? VisitLiteral(l) : KeyOfName(l.StringValue);
 
                     case TokenTypes.String:
                         return computed ? VisitLiteral(l) : KeyOfName(l.Start.CookedText);
 
                     case TokenTypes.Number:
-                        if (l.NumericValue >= 0 && (l.NumericValue % 1 == 0))
+                        if (l.NumericValue >= 0
+                            && l.NumericValue < uint.MaxValue
+                            && (l.NumericValue % 1 == 0))
                             return BExpression.Constant((uint)l.NumericValue);
 
                         return VisitLiteral(l);
@@ -47,12 +49,17 @@ partial class FastCompiler
                         return BigIntPropertyKey(l.StringValue);
 
                     default:
+                        if (computed)
+                            return VisitLiteral(l);
                         throw new NotImplementedException();
                 }
 
             case FastNodeType.MemberExpression:
                 var se = (AstMemberExpression)property;
-                return Visit(se.Property);
+                // A computed key such as obj[Symbol.iterator] evaluates the complete
+                // member expression. Visiting only `.Property` incorrectly resolves
+                // `iterator` as a standalone identifier.
+                return Visit(se);
         }
 
         if (computed)
@@ -68,5 +75,18 @@ partial class FastCompiler
             return JSValueBuilder.Index(target, key);
 
         throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Builds an assignable member reference without routing the read through an
+    /// inline-cache helper call. Destructuring and for-in/of heads share this path
+    /// with ordinary assignment writes.
+    /// </summary>
+    private BExpression CreateMemberAssignmentTarget(AstMemberExpression member)
+    {
+        var key = CreatePropertyKeyExpression(member.Property, member.Computed);
+        return member.Object.Type == FastNodeType.Super
+            ? JSValueBuilder.Index(scope.Top.ThisExpression, scope.Top.Super, key, member.Coalesce)
+            : JSValueBuilder.Index(VisitExpression(member.Object), key, member.Coalesce);
     }
 }

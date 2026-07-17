@@ -7,6 +7,7 @@ namespace Broiler.JavaScript.Storage;
 public struct JSObjectProperty
 {
     public JSProperty Property;
+    public uint Previous;
     public uint Next;
 
     public static JSObjectProperty Empty;
@@ -162,7 +163,11 @@ public struct PropertySequence
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool HasKey(uint key) => map.HasKey(key);
+    public bool HasKey(uint key)
+    {
+        ref var node = ref map.GetRefOrDefault(key, ref JSObjectProperty.Empty);
+        return !node.Property.IsEmpty;
+    }
 
     public bool RemoveAt(uint key)
     {
@@ -188,30 +193,17 @@ public struct PropertySequence
         // an enumerator currently parked on this node (a for-in body that deletes the
         // property it is about to visit) can still advance past it instead of stranding
         // at a Next of 0 (test262 for-in/S12.6.4_A7_T1).
+        var previous = objectProperty.Previous;
         var next = objectProperty.Next;
-        if (head == key)
-        {
+        if (previous == 0)
             head = next;
-            if (tail == key)
-                tail = 0; // removed the only / last remaining linked property
-        }
         else
-        {
-            var prev = head;
-            while (prev != 0)
-            {
-                ref var prevNode = ref map.GetRefOrDefault(prev, ref JSObjectProperty.Empty);
-                if (prevNode.Next == key)
-                {
-                    prevNode.Next = next;
-                    if (tail == key)
-                        tail = prev;
-                    break;
-                }
+            map.GetRefOrDefault(previous, ref JSObjectProperty.Empty).Next = next;
 
-                prev = prevNode.Next;
-            }
-        }
+        if (next == 0)
+            tail = previous;
+        else
+            map.GetRefOrDefault(next, ref JSObjectProperty.Empty).Previous = previous;
 
         property = JSProperty.Empty;
 
@@ -256,6 +248,8 @@ public struct PropertySequence
         {
             tail = head = key;
             ref var objP = ref map.Put(key);
+            objP.Previous = 0;
+            objP.Next = 0;
             return ref objP.Property;
         }
 
@@ -269,6 +263,7 @@ public struct PropertySequence
         // reset it to 0 here now that it becomes the new tail.
         if (@new.Property.IsEmpty && tail != key)
         {
+            @new.Previous = tail;
             @new.Next = 0;
             ref var last = ref map.GetRefOrDefault(tail, ref JSObjectProperty.Empty);
             last.Next = key;

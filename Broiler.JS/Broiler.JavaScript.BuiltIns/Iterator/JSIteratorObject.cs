@@ -319,7 +319,7 @@ public partial class JSIteratorObject : JSObject
     // ---------------------------------------------------------------
     // Static: Iterator.concat  (§4.8)
     // ---------------------------------------------------------------
-    [JSExport("concat")]
+    [JSExport("concat", Feature = (int)JavaScriptFeatureFlags.IteratorConcat)]
     internal static JSValue Concat(in Arguments a)
     {
         var iterables = new ConcatSource[a.Length];

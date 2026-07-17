@@ -51,7 +51,6 @@ internal static class BuiltInsAssemblyInitializer
         DefaultBuiltInRegistry.AdditionalRegistrations = existing == null
             ? static context =>
             {
-                context.RegisterBuiltInClasses();
                 PatchErrorConstructors(context);
                 PatchLegacyDatePrototype(context);
                 PatchCompatibilityBuiltIns(context);
@@ -60,7 +59,6 @@ internal static class BuiltInsAssemblyInitializer
             : context =>
             {
                 existing(context);
-                context.RegisterBuiltInClasses();
                 PatchErrorConstructors(context);
                 PatchLegacyDatePrototype(context);
                 PatchCompatibilityBuiltIns(context);
@@ -656,6 +654,26 @@ internal static class BuiltInsAssemblyInitializer
     // globals). Each constructor's prototype carries its "Temporal.X" @@toStringTag.
     private static void PatchTemporal(JSContext context)
     {
+        var profile = context.Options.BootstrapProfile;
+        if (!profile.Includes(BuiltInFeatureId.Temporal))
+            return;
+
+        var temporalKey = KeyStrings.GetOrCreate("Temporal");
+        if (profile.IsLazy(BuiltInFeatureId.Temporal))
+        {
+            context.FastAddLazyDataProperty(
+                temporalKey,
+                context,
+                BuiltInFeatureId.Temporal,
+                JSPropertyAttributes.ConfigurableValue);
+            return;
+        }
+
+        context.FastAddValue(temporalKey, CreateTemporalObject(context), JSPropertyAttributes.ConfigurableValue);
+    }
+
+    internal static JSObject CreateTemporalObject(JSContext context)
+    {
         var temporal = new JSObject();
 
         void Attach(string name, JSFunction ctor)
@@ -696,7 +714,7 @@ internal static class BuiltInsAssemblyInitializer
         temporal.FastAddValue(KeyStrings.GetOrCreate("Now"), now, JSPropertyAttributes.ConfigurableValue);
 
         SetToStringTag(temporal, "Temporal");
-        context.FastAddValue(KeyStrings.GetOrCreate("Temporal"), temporal, JSPropertyAttributes.ConfigurableValue);
+        return temporal;
     }
 
     // Explicit Resource Management: wire the symbol-keyed disposal aliases and toStringTags

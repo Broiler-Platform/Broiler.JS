@@ -22,4 +22,6 @@
 /.vs/Broiler.JS.slnx/v18/TestStore/0/027.testlog
 /.vs/Broiler.JS.slnx/v18/TestStore/0/testlog.manifest
 /repro-out.txt
+/artifacts/
+/BenchmarkDotNet.Artifacts/
 /.vs

@@ -9,7 +9,15 @@ public struct VirtualMemory<T>
 
     public readonly bool IsEmpty => Count == 0;
 
-    public readonly int Count => nodes?.Length ?? 0;
+    /// <summary>Number of slots handed out by <see cref="Allocate"/>.</summary>
+    public readonly int Count => last;
+
+    public readonly int UsedCount => last;
+
+    public readonly int HighWaterMark => last;
+
+    /// <summary>Number of reserved backing-array slots.</summary>
+    public readonly int Capacity => nodes?.Length ?? 0;
 
     public VirtualMemory() { }
 

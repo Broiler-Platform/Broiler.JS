@@ -271,7 +271,7 @@ public class Issue783Tests
     public void PersianMatchesDotNetOverOverlap()
     {
         var pc = new PersianCalendar();
-        var epoch1970 = new DateTime(1970, 1, 1);
+        var epoch1970 = new System.DateTime(1970, 1, 1);
         using var ctx = new JSContext();
         // Sample one date per year across the .NET-supported range.
         for (int y = 1; y <= 9377; y += 7)

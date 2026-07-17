@@ -1,3 +1,5 @@
+using System;
+
 namespace Broiler.JavaScript.Runtime;
 
 /// <summary>
@@ -14,6 +16,9 @@ namespace Broiler.JavaScript.Runtime;
 /// </remarks>
 public interface IBuiltInRegistry
 {
+    /// <summary>Generated, trimming-visible feature and registration metadata.</summary>
+    BuiltInManifest Manifest => BuiltInManifest.Empty;
+
     /// <summary>
     /// Registers built-in objects into the specified context.
     /// Implementations should call <c>CreateClass</c> for each built-in type
@@ -21,4 +26,9 @@ public interface IBuiltInRegistry
     /// </summary>
     /// <param name="context">The context to populate with built-in objects.</param>
     void Register(IJSContext context);
+
+    /// <summary>Realizes one lazy feature for a specific realm.</summary>
+    JSValue ResolveFeature(IJSContext context, BuiltInFeatureId feature)
+        => throw new InvalidOperationException(
+            $"Built-in feature '{feature}' is not provided by manifest '{Manifest.Name}'.");
 }

@@ -1,7 +1,18 @@
-test/built-ins/ArrayBuffer/length.js
-test/built-ins/ArrayBuffer/name.js
-test/built-ins/ArrayBuffer/is-a-constructor.js
-test/built-ins/ArrayBuffer/init-zero.js
-test/built-ins/DataView/length.js
-test/built-ins/DataView/constructor.js
-test/built-ins/DataView/buffer-reference.js
+# ArrayBuffer, DataView, typed arrays, endianness, detach, and resize semantics.
+test/built-ins/ArrayBuffer
+test/built-ins/SharedArrayBuffer
+test/built-ins/DataView
+test/built-ins/TypedArray
+test/built-ins/TypedArrayConstructors
+test/built-ins/Float16Array
+test/built-ins/Float32Array
+test/built-ins/Float64Array
+test/built-ins/Int16Array
+test/built-ins/Int32Array
+test/built-ins/Int8Array
+test/built-ins/Uint16Array
+test/built-ins/Uint32Array
+test/built-ins/Uint8Array
+test/built-ins/Uint8ClampedArray
+test/built-ins/BigInt64Array
+test/built-ins/BigUint64Array

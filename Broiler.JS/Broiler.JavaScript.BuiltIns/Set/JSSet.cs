@@ -11,6 +11,7 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.BuiltIns.Collections;
 
 namespace Broiler.JavaScript.BuiltIns.Set;
 
@@ -26,7 +27,7 @@ public partial class JSSet : JSObject
     // are observed and removed entries are skipped, matching the spec's [[SetData]]
     // semantics (and avoiding "Collection was modified" exceptions from foreach).
     private List<JSValue> store = [];
-    private StringMap<int> index;
+    private Dictionary<JSValue, int> index = new(SameValueZeroComparer.Instance);
     private int liveCount;
 
     [JSExport]
@@ -69,11 +70,9 @@ public partial class JSSet : JSObject
         if (key.IsNumber && JSNumber.IsNegativeZero(key.DoubleValue))
             key = JSNumber.Zero;
 
-        HashedString uk = key.ToUniqueID();
-
-        if (!index.TryGetValue(in uk, out _))
+        if (!index.ContainsKey(key))
         {
-            index.Put(in uk) = store.Count;
+            index[key] = store.Count;
             store.Add(key);
             liveCount++;
         }
@@ -91,7 +90,7 @@ public partial class JSSet : JSObject
         for (var i = 0; i < store.Count; i++)
             store[i] = null;
 
-        index = new();
+        index = new(SameValueZeroComparer.Instance);
         liveCount = 0;
         return JSUndefined.Value;
     }
@@ -100,11 +99,9 @@ public partial class JSSet : JSObject
     public JSValue Delete(in Arguments a)
     {
         var f = a[0];
-        HashedString uk = f.ToUniqueID();
-        if (index.TryGetValue(in uk, out var pos))
+        if (index.Remove(f, out var pos))
         {
             store[pos] = null;
-            index.TryRemove(uk.Value, out _);
             liveCount--;
             return JSBoolean.True;
         }
@@ -114,18 +111,15 @@ public partial class JSSet : JSObject
 
     private bool Contains(JSValue key)
     {
-        HashedString uk = key.ToUniqueID();
-        return index.TryGetValue(in uk, out _);
+        return index.ContainsKey(key);
     }
 
     private bool Remove(JSValue key)
     {
-        HashedString uk = key.ToUniqueID();
-        if (!index.TryGetValue(in uk, out var pos))
+        if (!index.Remove(key, out var pos))
             return false;
 
         store[pos] = null;
-        index.TryRemove(uk.Value, out _);
         liveCount--;
         return true;
     }
@@ -268,9 +262,7 @@ public partial class JSSet : JSObject
     public JSValue Has(in Arguments a)
     {
         var f = a.Get1();
-        HashedString uk = f.ToUniqueID();
-
-        if (index.TryGetValue(in uk, out var i))
+        if (index.ContainsKey(f))
             return JSBoolean.True;
 
         return JSBoolean.False;

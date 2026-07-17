@@ -527,6 +527,41 @@ public class CompilerTests
     }
 
     [Fact]
+    public void Compile_ObjectSpread_Uses_Snapshot_Of_String_And_Symbol_Keys()
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval("""
+            (function () {
+                var source = {};
+                var originalSymbol = Symbol("original");
+                var lateSymbol = Symbol("late");
+                Object.defineProperty(source, "a", {
+                    enumerable: true,
+                    get: function () {
+                        source.b = "late";
+                        source[lateSymbol] = "late-symbol";
+                        delete source.c;
+                        return "a";
+                    }
+                });
+                source.c = "deleted";
+                source[originalSymbol] = "symbol";
+
+                var copy = { ...source };
+                return [
+                    Object.keys(copy).join(","),
+                    copy.a,
+                    typeof copy.b,
+                    lateSymbol in copy,
+                    copy[originalSymbol]
+                ].join("|");
+            })()
+            """);
+
+        Assert.Equal("a|a|undefined|false|symbol", result.ToString());
+    }
+
+    [Fact]
     public void Compile_ObjectDestructuring_Rest_Copies_Only_Remaining_Properties()
     {
         using var ctx = new JSContext();
@@ -3755,12 +3790,8 @@ public class CompilerTests
     [Fact]
     public void Compile_TailPosition_Call_Uses_Trampoline()
     {
-        var previousScriptHost = Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST");
-        try
-        {
-            Environment.SetEnvironmentVariable("BROILER_SCRIPT_HOST", "1");
-            using var ctx = new JSContext();
-            var result = ctx.Eval("""
+        using var ctx = new JSContext(options: new JSContextOptions { ScriptHostMode = true });
+        var result = ctx.Eval("""
                 (function () {
                     'use strict';
                     var callCount = 0;
@@ -3776,12 +3807,7 @@ public class CompilerTests
                 })()
                 """);
 
-            Assert.Equal(1.0, result.DoubleValue);
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("BROILER_SCRIPT_HOST", previousScriptHost);
-        }
+        Assert.Equal(1.0, result.DoubleValue);
     }
 
     [Fact]

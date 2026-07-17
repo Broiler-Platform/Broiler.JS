@@ -11,3 +11,5 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Globals")]
 [assembly: InternalsVisibleTo("Broiler.JavaScript.Debugger")]
 [assembly: InternalsVisibleTo("Broiler.JavaScript.LinqExpressions")]
+[assembly: InternalsVisibleTo("Broiler.JavaScript.Runtime.Tests")]
+[assembly: InternalsVisibleTo("Broiler.JavaScript.Engine.Benchmarks")]

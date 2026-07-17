@@ -3,8 +3,10 @@ using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using System.Collections.Generic;
 using System.Reflection;
 using Broiler.JavaScript.ExpressionCompiler.Core;
+using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
+using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 using Broiler.JavaScript.Runtime;
@@ -62,6 +64,7 @@ partial class FastCompiler
         thisIsUninitialized: thisIsUninitialized,
         previousNewTarget: previousNewTarget));
         {
+            cs.CanScalarReplaceLocals = IsScalarReplacementEligible(functionDeclaration);
             // super() in a derived constructor (or an arrow nested in it) targets the
             // superclass constructor, which differs from the home-object prototype.
             cs.SuperConstructor = superConstructor ?? (functionDeclaration.IsArrowFunction ? previousScope.SuperConstructor : null);
@@ -387,6 +390,20 @@ partial class FastCompiler
                 // capture must not be skipped for direct-eval compilation.
                 if (withBoundaries.Count > 0)
                     jsf = JSFunctionBuilder.CaptureWithScopes(jsf);
+
+                if (createPrototype
+                    && !createClass
+                    && !functionDeclaration.IsArrowFunction
+                    && !isDirectEvalCompilation
+                    && cs.CanScalarReplaceLocals
+                    && !cs.HasOuterFunctionCaptures
+                    && withBoundaries.Count == 0)
+                {
+                    jsf = JSFunctionBuilder.EnableTiering(
+                        jsf,
+                        NumericLoopPlanner.TryCreate(functionDeclaration),
+                        location);
+                }
             }
 
             IsStrictMode = previousStrictMode;
@@ -595,5 +612,79 @@ partial class FastCompiler
         }
 
         return [.. bindings];
+    }
+
+    private static bool IsScalarReplacementEligible(AstFunctionExpression functionDeclaration)
+    {
+        if (functionDeclaration.Async
+            || functionDeclaration.Generator
+            || ParametersContainDirectEval(functionDeclaration)
+            || BodyContainsDirectEval(functionDeclaration))
+        {
+            return false;
+        }
+
+        var detector = new ScalarReplacementHazardDetector();
+        detector.Visit(functionDeclaration.Body);
+        return !detector.Found;
+    }
+
+    // A first deliberately conservative classification: functions with nested closures,
+    // with-environments, or debugger visibility keep JSVariable cells. This guarantees
+    // every scalarized var is noncaptured and not dynamically observable.
+    private sealed class ScalarReplacementHazardDetector : Broiler.JavaScript.Ast.AstReduce
+    {
+        public bool Found { get; private set; }
+
+        // AstReduce deliberately treats these compact structs as leaves because most
+        // rewriting visitors handle them explicitly. Scalar eligibility must inspect
+        // their children, otherwise a closure hidden in a variable initializer,
+        // destructuring default, or switch clause can capture a raw local.
+        protected override VariableDeclarator VisitVariableDeclarator(VariableDeclarator declarator)
+        {
+            Visit(declarator.Identifier);
+            if (declarator.Init != null)
+                Visit(declarator.Init);
+            return declarator;
+        }
+
+        protected override ObjectProperty VisitObjectProperty(ObjectProperty property)
+        {
+            if (property.Key != null)
+                Visit(property.Key);
+            if (property.Value != null)
+                Visit(property.Value);
+            if (property.Init != null)
+                Visit(property.Init);
+            return property;
+        }
+
+        protected override Case VisitCase(Case @case)
+        {
+            if (@case.Test != null)
+                Visit(@case.Test);
+            var statements = @case.Statements.GetFastEnumerator();
+            while (statements.MoveNext(out var statement))
+                Visit(statement);
+            return @case;
+        }
+
+        protected override AstNode VisitFunctionExpression(AstFunctionExpression functionExpression)
+        {
+            Found = true;
+            return functionExpression;
+        }
+
+        protected override AstNode VisitWithStatement(AstWithStatement withStatement)
+        {
+            Found = true;
+            return withStatement;
+        }
+
+        protected override AstNode VisitDebuggerStatement(AstDebuggerStatement debuggerStatement)
+        {
+            Found = true;
+            return debuggerStatement;
+        }
     }
 }

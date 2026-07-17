@@ -7,6 +7,7 @@ using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Engine;
 
 namespace Broiler.JavaScript.BuiltIns.Array;
 
@@ -172,7 +173,7 @@ public partial class JSArray
     /// Creates an array from an async iterable or iterable/array-like,
     /// returning a Promise that resolves to the new array.
     /// </summary>
-    [JSExport("fromAsync", Length = 1)]
+    [JSExport("fromAsync", Length = 1, Feature = (int)JavaScriptFeatureFlags.ArrayFromAsync)]
     public static JSValue StaticFromAsync(in Arguments a)
     {
         var (items, mapFn, thisArg) = a.Get3();

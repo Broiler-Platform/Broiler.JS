@@ -48,6 +48,9 @@ internal static class EngineAssemblyInitializer
         // ── JSValue.MarshalObject delegate ──────────────────────────
         JSValue.IsStrictModeEnabled = static () => JSEngine.IsStrictMode;
         JSValue.MarshalObject = static obj => JSEngine.ClrInterop.Marshal(obj);
+        JSValue.IsFeatureEnabledFactory = static (context, feature) =>
+            context is JSContext jsContext
+            && jsContext.HasExperimentalFeature((JavaScriptFeatureFlags)feature);
 
         // ── new.target access delegates ─────────────────────────────
         JSEngine.GetNewTargetFromTop = ctx =>

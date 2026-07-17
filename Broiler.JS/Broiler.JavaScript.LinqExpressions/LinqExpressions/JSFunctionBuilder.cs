@@ -19,6 +19,7 @@ public class JSFunctionBuilder
     private static MethodInfo _captureWithScopes;
     private static MethodInfo _addLegacyCallerAndArguments;
     private static PropertyInfo _isOrdinaryUserFunction;
+    private static MethodInfo _enableTiering;
 
     private static MethodInfo invokeFunction;
 
@@ -27,6 +28,10 @@ public class JSFunctionBuilder
     private static MethodInfo _normalizeConstructorReturn;
 
     private static MethodInfo _resolveTailCall;
+    private static readonly MethodInfo NumericLoopPlanFactory = typeof(NumericLoopPlan).GetMethod(
+        nameof(NumericLoopPlan.Create),
+        [typeof(int), typeof(double), typeof(double), typeof(double), typeof(int), typeof(double), typeof(double)])
+        ?? throw new InvalidOperationException("NumericLoopPlan.Create factory not found");
 
     /// <summary>
     /// Initializes the builder with the concrete JSFunction type.
@@ -45,6 +50,8 @@ public class JSFunctionBuilder
             ?? throw new InvalidOperationException($"IsStrictMode property not found on {type.FullName}");
         _isOrdinaryUserFunction = type.GetProperty("IsOrdinaryUserFunction")
             ?? throw new InvalidOperationException($"IsOrdinaryUserFunction property not found on {type.FullName}");
+        _enableTiering = type.PublicMethod("EnableTiering", typeof(NumericLoopPlan), typeof(string))
+            ?? throw new InvalidOperationException($"EnableTiering(NumericLoopPlan, string) not found on {type.FullName}");
         _captureWithScopes = type.PublicMethod("CaptureWithScopes", typeof(JSValue))
             ?? throw new InvalidOperationException($"CaptureWithScopes(JSValue) not found on {type.FullName}");
         _addLegacyCallerAndArguments = type.PublicMethod("AddLegacyCallerAndArguments")
@@ -185,6 +192,32 @@ public class JSFunctionBuilder
             temp.AsSequence(),
             Expression.Assign(temp, target),
             Expression.Call(temp, _addLegacyCallerAndArguments),
+            temp);
+    }
+
+    public static Expression EnableTiering(Expression target, NumericLoopPlan numericPlan, string location)
+    {
+        var temp = Expression.Parameter(type, "#tieredFunction");
+        var planExpression = numericPlan == null
+            ? Expression.Constant(null, typeof(NumericLoopPlan))
+            : Expression.Call(
+                null,
+                NumericLoopPlanFactory,
+                Expression.Constant(numericPlan.LimitArgumentIndex),
+                Expression.Constant(numericPlan.AccumulatorInitialValue),
+                Expression.Constant(numericPlan.InductionInitialValue),
+                Expression.Constant(numericPlan.InductionStep),
+                Expression.Constant((int)numericPlan.Comparison),
+                Expression.Constant(numericPlan.TermScale),
+                Expression.Constant(numericPlan.TermOffset));
+        return Expression.Block(
+            temp.AsSequence(),
+            Expression.Assign(temp, target),
+            Expression.Call(
+                temp,
+                _enableTiering,
+                planExpression,
+                Expression.Constant(location)),
             temp);
     }
 

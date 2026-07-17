@@ -1,24 +1,19 @@
-using Broiler.JavaScript.BuiltIns.Map;
-using Broiler.JavaScript.BuiltIns.Symbol;
+using System.Runtime.CompilerServices;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Iterator;
-using Broiler.JavaScript.ExpressionCompiler;
-using System;
-using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.ExpressionCompiler;
+using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.BuiltIns.Set;
 
 [JSClassGenerator("WeakSet")]
 public partial class JSWeakSet : JSObject
 {
-    private StringMap<WeakReference<WeakValue>> index;
-
-    // The index holds each WeakValue only weakly; a ConditionalWeakTable keyed by the element keeps
-    // it alive for exactly as long as the element is reachable, so a `has` does not spuriously miss a
-    // live member after a GC. See the matching note in JSWeakMap.
-    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSValue, WeakValue> anchor = [];
+    private static readonly object Present = new();
+    private readonly ConditionalWeakTable<JSValue, object> entries = [];
 
     public JSWeakSet(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
@@ -55,57 +50,25 @@ public partial class JSWeakSet : JSObject
         if (!JSSymbol.CanBeHeldWeakly(value))
             throw JSEngine.NewTypeError("WeakSet value must be an object or a non-registered symbol");
 
-        HashedString key = value.ToUniqueID();
-        lock (this)
-        {
-            if (!index.TryGetValue(key, out var w) || !w.TryGetTarget(out _))
-            {
-                var weakValue = new WeakValue(key, value, Unregister);
-                index.Put(key) = new(weakValue);
-                anchor.AddOrUpdate(value, weakValue);
-            }
-        }
-
-        // WeakSet.prototype.add returns the WeakSet itself (not the value) so
-        // calls can be chained: `ws.add(a).add(b)`.
+        entries.GetValue(value, static _ => Present);
         return this;
     }
-
-    private void Unregister(in HashedString key) => index.RemoveAt(key.Value);
 
     [JSExport("delete")]
     public JSValue Delete(in Arguments a)
     {
-        var keyValue = a.Get1();
-        var key = keyValue.ToUniqueID();
-        lock (this)
-        {
-            if (index.TryRemove(key, out var w))
-            {
-                if (w.TryGetTarget(out var target))
-                    GC.SuppressFinalize(target);
-                anchor.Remove(keyValue);
-
-                return JSBoolean.True;
-            }
-        }
-
-        return JSBoolean.False;
+        var key = a.Get1();
+        return JSSymbol.CanBeHeldWeakly(key) && entries.Remove(key)
+            ? JSBoolean.True
+            : JSBoolean.False;
     }
 
     [JSExport("has")]
     public JSValue Has(in Arguments a)
     {
-        var key = a.Get1().ToUniqueID();
-        lock (this)
-        {
-            if (index.TryGetValue(key, out var v))
-            {
-                if (v.TryGetTarget(out var target))
-                    return JSBoolean.True;
-            }
-        }
-
-        return JSBoolean.False;
+        var key = a.Get1();
+        return JSSymbol.CanBeHeldWeakly(key) && entries.TryGetValue(key, out _)
+            ? JSBoolean.True
+            : JSBoolean.False;
     }
 }

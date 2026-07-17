@@ -139,6 +139,9 @@ public class JSValueBuilder
     private static MethodInfo _PropertyOrUndefinedKeyString = type.PublicMethod(nameof(JSValue.PropertyOrUndefined), KeyStringsBuilder.RefType);
     private static MethodInfo _PropertyOrUndefinedUInt = type.PublicMethod(nameof(JSValue.PropertyOrUndefined), typeof(uint));
     private static MethodInfo _PropertyOrUndefined = type.PublicMethod(nameof(JSValue.PropertyOrUndefined), typeof(JSValue));
+    private static readonly MethodInfo _CachedPropertyGet = typeof(PropertyInlineCacheSite)
+        .GetMethod(nameof(PropertyInlineCacheSite.Get), [typeof(int), typeof(JSValue), typeof(KeyString)])
+        ?? throw new InvalidOperationException("PropertyInlineCacheSite.Get not found");
 
     private static MethodInfo _OptionalLinkKeyString = type.PublicMethod(nameof(JSValue.OptionalLink), KeyStringsBuilder.RefType);
     private static MethodInfo _OptionalLinkUInt = type.PublicMethod(nameof(JSValue.OptionalLink), typeof(uint));
@@ -172,6 +175,13 @@ public class JSValueBuilder
 
     public static Expression UnwrapOptionalChain(Expression chainResult)
         => Expression.Call(chainResult, _UnwrapOptionalChain);
+
+    /// <summary>Creates one bounded inline-cache side-table entry for an emitted constant-key read.</summary>
+    public static Expression CachedIndex(Expression target, Expression property)
+    {
+        var site = PropertyInlineCacheSite.Allocate();
+        return Expression.Call(null, _CachedPropertyGet, Expression.Constant(site), target, property);
+    }
 
     public static Expression InvokeMethod(Expression targetTemp, Expression methodTemp, Expression target, Expression name, IFastEnumerable<Expression> args, bool spread, bool memberCoalesce, bool callCoalesce = false, bool inChain = false)
     {

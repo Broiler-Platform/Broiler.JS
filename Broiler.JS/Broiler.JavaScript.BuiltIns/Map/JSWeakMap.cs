@@ -1,41 +1,26 @@
+using System.Runtime.CompilerServices;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Iterator;
 using Broiler.JavaScript.BuiltIns.Symbol;
-using Broiler.JavaScript.ExpressionCompiler;
-using System;
-using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
-using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Engine.Extensions;
+using Broiler.JavaScript.ExpressionCompiler;
+using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.BuiltIns.Map;
 
-internal delegate void UnregisterWeakValue(in HashedString key);
-
-internal class WeakValue(HashedString key, JSValue value, UnregisterWeakValue unregister)
+internal sealed class WeakMapValueBox(JSValue value)
 {
-    public readonly JSValue value = value;
-
-    ~WeakValue()
-    {
-        unregister(in key);
-    }
+    internal JSValue Value = value;
 }
 
 [JSClassGenerator("WeakMap")]
-public partial class JSWeakMap: JSObject
+public partial class JSWeakMap : JSObject
 {
-    private StringMap<WeakReference<WeakValue>> index;
-
-    // The index references each WeakValue only WEAKLY, so without a separate owner the WeakValue
-    // (and thus the mapped value) would be collected on the next GC even while the key is still
-    // strongly reachable — making `has`/`get` spuriously miss live keys (test262
-    // TypedArray/sort_large_countingsort, which relies on a WeakMap surviving a GC-provoking sort).
-    // A ConditionalWeakTable keyed by the key object keeps each WeakValue alive for exactly as long
-    // as its key is reachable: the entry vanishes only when the key itself is collected. Using an
-    // ephemeron table (rather than a strong reference from the key) keeps the classic
-    // value-references-key cycle collectable once the key becomes externally unreachable.
-    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSValue, WeakValue> anchor = [];
+    // ConditionalWeakTable is already a thread-safe, reference-identity ephemeron table.
+    // A value -> key cycle therefore does not keep an otherwise unreachable key alive.
+    private readonly ConditionalWeakTable<JSValue, WeakMapValueBox> entries = [];
 
     public JSWeakMap(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
@@ -71,147 +56,72 @@ public partial class JSWeakMap: JSObject
     [JSExport("set")]
     public JSValue Set(in Arguments a)
     {
-        var (keyValue, value) = a.Get2();
-        if (!JSSymbol.CanBeHeldWeakly(keyValue))
-            throw JSEngine.NewTypeError("WeakMap key must be an object or a non-registered symbol");
-
-        HashedString uk = keyValue.ToUniqueID();
-
-        lock (this)
-        {
-            // Replacing an existing entry: detach the previous WeakValue's
-            // finalizer so its ~WeakValue() can't later Unregister (and thus
-            // remove) the freshly stored entry for the same key.
-            if (index.TryGetValue(uk, out var existing) && existing.TryGetTarget(out var oldTarget))
-                GC.SuppressFinalize(oldTarget);
-
-            var weakValue = new WeakValue(uk, value, Unregister);
-            index.Put(uk) = new(weakValue);
-            // Anchor the WeakValue to the key's lifetime (replacing any prior anchor for this key).
-            anchor.AddOrUpdate(keyValue, weakValue);
-        }
-
-        // WeakMap.prototype.set returns the WeakMap object (Return M), enabling chaining.
+        var (key, value) = a.Get2();
+        EnsureWeakKey(key);
+        entries.AddOrUpdate(key, new WeakMapValueBox(value));
         return this;
     }
-
-    private void Unregister(in HashedString key) => index.RemoveAt(key.Value);
 
     [JSExport("delete")]
     public JSValue Delete(in Arguments a)
     {
-        var keyValue = a.Get1();
-        var key = keyValue.ToUniqueID();
-        lock (this)
-        {
-            if (index.TryRemove(key, out var w))
-            {
-                if (w.TryGetTarget(out var target))
-                    GC.SuppressFinalize(target);
-                anchor.Remove(keyValue);
-
-                return JSBoolean.True;
-            }
-        }
-
-        return JSBoolean.False;
+        var key = a.Get1();
+        return JSSymbol.CanBeHeldWeakly(key) && entries.Remove(key)
+            ? JSBoolean.True
+            : JSBoolean.False;
     }
 
     [JSExport("has")]
     public JSValue Has(in Arguments a)
     {
-        var key = a.Get1().ToUniqueID();
-        lock (this)
-        {
-            if (index.TryGetValue(key, out var v))
-            {
-                if (v.TryGetTarget(out var target))
-                    return JSBoolean.True;
-            }
-        }
-
-        return JSBoolean.False;
+        var key = a.Get1();
+        return JSSymbol.CanBeHeldWeakly(key) && entries.TryGetValue(key, out _)
+            ? JSBoolean.True
+            : JSBoolean.False;
     }
-
 
     [JSExport("get")]
     public JSValue Get(in Arguments a)
     {
-        var keyValue = a.Get1();
-        if (!JSSymbol.CanBeHeldWeakly(keyValue))
+        var key = a.Get1();
+        if (!JSSymbol.CanBeHeldWeakly(key))
             return JSUndefined.Value;
 
-        var uk = keyValue.ToUniqueID();
-        lock (this)
-        {
-            if (index.TryGetValue(uk, out var v))
-            {
-                if (v.TryGetTarget(out var target))
-                    return target.value;
-            }
-        }
-
-        return JSUndefined.Value;
+        return entries.TryGetValue(key, out var box) ? box.Value : JSUndefined.Value;
     }
 
-    /// <summary>
-    /// ES2026 §4.9.3 — WeakMap.prototype.getOrInsert(key, defaultValue)
-    /// Returns the value for key if present, otherwise inserts defaultValue
-    /// and returns it.
-    /// </summary>
-    [JSExport("getOrInsert", Length = 2)]
+    [JSExport("getOrInsert", Length = 2, Feature = (int)JavaScriptFeatureFlags.MapUpsert)]
     public JSValue GetOrInsert(in Arguments a)
     {
-        var (keyVal, defaultValue) = a.Get2();
-        if (!JSSymbol.CanBeHeldWeakly(keyVal))
-            throw JSEngine.NewTypeError("WeakMap key must be an object or a non-registered symbol");
+        var (key, defaultValue) = a.Get2();
+        EnsureWeakKey(key);
 
-        var uk = keyVal.ToUniqueID();
-        lock (this)
-        {
-            if (index.TryGetValue(uk, out var v))
-            {
-                if (v.TryGetTarget(out var target))
-                    return target.value;
-            }
+        if (entries.TryGetValue(key, out var box))
+            return box.Value;
 
-            var weakValue = new WeakValue(uk, defaultValue, Unregister);
-            index.Put(uk) = new WeakReference<WeakValue>(weakValue);
-            anchor.AddOrUpdate(keyVal, weakValue);
-        }
-
+        entries.AddOrUpdate(key, new WeakMapValueBox(defaultValue));
         return defaultValue;
     }
 
-    /// <summary>
-    /// ES2026 §4.9.3 — WeakMap.prototype.getOrInsertComputed(key, callback)
-    /// Returns the value for key if present, otherwise calls callback(key),
-    /// inserts the result, and returns it.
-    /// </summary>
-    [JSExport("getOrInsertComputed")]
+    [JSExport("getOrInsertComputed", Feature = (int)JavaScriptFeatureFlags.MapUpsert)]
     public JSValue GetOrInsertComputed(in Arguments a)
     {
-        var (keyVal, callbackfn) = a.Get2();
-        if (!JSSymbol.CanBeHeldWeakly(keyVal))
-            throw JSEngine.NewTypeError("WeakMap key must be an object or a non-registered symbol");
-
+        var (key, callbackfn) = a.Get2();
+        EnsureWeakKey(key);
         if (!callbackfn.IsFunction)
             throw JSEngine.NewTypeError("getOrInsertComputed requires a callback function");
 
-        var uk = keyVal.ToUniqueID();
-        lock (this)
-        {
-            if (index.TryGetValue(uk, out var v))
-            {
-                if (v.TryGetTarget(out var target))
-                    return target.value;
-            }
+        if (entries.TryGetValue(key, out var box))
+            return box.Value;
 
-            var value = callbackfn.Call(JSUndefined.Value, keyVal);
-            var weakValue = new WeakValue(uk, value, Unregister);
-            index.Put(uk) = new WeakReference<WeakValue>(weakValue);
-            anchor.AddOrUpdate(keyVal, weakValue);
-            return value;
-        }
+        var value = callbackfn.Call(JSUndefined.Value, key);
+        entries.AddOrUpdate(key, new WeakMapValueBox(value));
+        return value;
+    }
+
+    private static void EnsureWeakKey(JSValue key)
+    {
+        if (!JSSymbol.CanBeHeldWeakly(key))
+            throw JSEngine.NewTypeError("WeakMap key must be an object or a non-registered symbol");
     }
 }

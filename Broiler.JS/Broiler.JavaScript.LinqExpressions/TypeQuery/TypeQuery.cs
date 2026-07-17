@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -8,16 +8,17 @@ namespace Broiler.JavaScript.LinqExpressions.TypeQuery;
 public static class TypeQuery
 {
     // we will try to reduce cache
-    private static Dictionary<MethodInfo, object> cache = [];
+    private static readonly ConcurrentDictionary<(MethodInfo Method, Type ResultType), Lazy<object>> cache = new();
 
     private static T GetOrCreate<T>(MethodInfo method, Func<T> fx)
     {
-        if (cache.TryGetValue(method, out var r))
-            return (T)r;
-
-        var rt = fx();
-        cache[method] = rt;
-        return rt;
+        var value = cache.GetOrAdd(
+            (method, typeof(T)),
+            static (_, factory) => new Lazy<object>(
+                () => factory(),
+                System.Threading.LazyThreadSafetyMode.ExecutionAndPublication),
+            fx);
+        return (T)value.Value;
     }
 
     public static ConstructorInfo QueryConstructor<T>(Func<Expression<Func<T>>> fx) => GetOrCreate(fx.Method, () =>

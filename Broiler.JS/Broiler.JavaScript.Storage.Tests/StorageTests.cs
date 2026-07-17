@@ -6,6 +6,11 @@ namespace Broiler.JavaScript.Storage.Tests;
 
 public class StorageTests
 {
+    private sealed class TestValue(string name) : IPropertyValue
+    {
+        public override string ToString() => name;
+    }
+
     [Fact]
     public void KeyStrings_GetOrCreate_ReturnsSameKeyForSameString()
     {
@@ -39,10 +44,29 @@ public class StorageTests
         var vm = new VirtualMemory<int>();
         Assert.Equal(0, vm.Count);
         vm.Allocate(3);
-        Assert.True(vm.Count >= 3);
+        Assert.Equal(3, vm.Count);
+        Assert.True(vm.Capacity >= vm.Count);
         var countAfterFirst = vm.Count;
         vm.Allocate(2);
-        Assert.True(vm.Count >= countAfterFirst);
+        Assert.Equal(countAfterFirst + 2, vm.Count);
+    }
+
+    [Fact]
+    public void SAUint32Map_EnumeratesOnlyLiveNodesAfterLargeReserve()
+    {
+        var map = new SAUint32Map<string>();
+        map.Resize(1_000_000);
+        map.Save(1, "one");
+        map.Save(900_000, "large");
+        Assert.True(map.RemoveAt(1));
+
+        Assert.Equal(1, map.Count);
+        Assert.True(map.Capacity >= 1_000_000);
+
+        var enumerator = map.AllValues().GetEnumerator();
+        Assert.True(enumerator.MoveNext());
+        Assert.Equal((900_000u, "large"), enumerator.Current);
+        Assert.False(enumerator.MoveNext());
     }
 
     [Fact]
@@ -53,5 +77,80 @@ public class StorageTests
         Assert.True(attrs.HasFlag(JSPropertyAttributes.Enumerable));
         Assert.True(attrs.HasFlag(JSPropertyAttributes.Configurable));
         Assert.False(attrs.HasFlag(JSPropertyAttributes.Readonly));
+    }
+
+    [Fact]
+    public void KeyStrings_PublishesImmutableIndexAndPrivateMetadata()
+    {
+        var index = KeyStrings.GetOrCreate("4294967294");
+        Assert.True(index.Metadata.IsArrayIndex);
+        Assert.Equal(4_294_967_294u, index.Metadata.ArrayIndex);
+        Assert.True(index.Metadata.IsCanonicalNumericIndex);
+
+        Assert.False(KeyStrings.GetOrCreate("4294967295").Metadata.IsArrayIndex);
+        Assert.False(KeyStrings.GetOrCreate("01").Metadata.IsArrayIndex);
+        Assert.True(KeyStrings.GetOrCreate("\u0001#secret").Metadata.IsPrivateName);
+        Assert.Equal(index.Metadata.StableOrdinalHash, KeyStrings.GetOrCreate("4294967294").Metadata.StableOrdinalHash);
+    }
+
+    [Fact]
+    public void KeyStrings_ConcurrentHitsPublishOneKey()
+    {
+        var ids = new uint[256];
+        Parallel.For(0, ids.Length, i => ids[i] = KeyStrings.GetOrCreate("contended-key").Key);
+        Assert.All(ids, id => Assert.Equal(ids[0], id));
+        Assert.Equal("contended-key", KeyStrings.GetNameString(ids[0]).Value);
+    }
+
+    [Fact]
+    public void PropertySequence_DeleteAndReaddMovesKeyToTail()
+    {
+        var sequence = new PropertySequence();
+        var a = KeyStrings.GetOrCreate("phase2-a");
+        var b = KeyStrings.GetOrCreate("phase2-b");
+        var c = KeyStrings.GetOrCreate("phase2-c");
+        sequence.Put(a, new TestValue("a"));
+        sequence.Put(b, new TestValue("b"));
+        sequence.Put(c, new TestValue("c"));
+
+        Assert.True(sequence.RemoveAt(b.Key));
+        Assert.False(sequence.HasKey(b.Key));
+        sequence.Put(b, new TestValue("b2"));
+
+        var keys = new List<uint>();
+        var enumerator = sequence.GetEnumerator(false);
+        while (enumerator.MoveNext(out var key, out _))
+            keys.Add(key.Key);
+        Assert.Equal([a.Key, c.Key, b.Key], keys);
+    }
+
+    [Fact]
+    public void ElementArray_TransitionsPackedHoleyAndDictionaryInOrder()
+    {
+        var elements = new ElementArray();
+        elements.Put(0, new TestValue("zero"));
+        elements.Put(1, new TestValue("one"));
+        Assert.Equal(ElementKind.Packed, elements.Kind);
+
+        Assert.True(elements.RemoveAt(0));
+        Assert.Equal(ElementKind.Holey, elements.Kind);
+
+        elements.Put(1_000_000, new TestValue("sparse"));
+        Assert.Equal(ElementKind.Dictionary, elements.Kind);
+        Assert.Equal(2, elements.Count);
+
+        var keys = new List<uint>();
+        foreach (var (key, _) in elements.AllValues())
+            keys.Add(key);
+        Assert.Equal([1u, 1_000_000u], keys);
+    }
+
+    [Fact]
+    public void ElementArray_CustomDescriptorSelectsDictionaryMode()
+    {
+        var elements = new ElementArray();
+        elements.Put(0, new TestValue("readonly"), JSPropertyAttributes.EnumerableReadonlyValue);
+        Assert.Equal(ElementKind.Dictionary, elements.Kind);
+        Assert.False(elements.HasDefaultDescriptors);
     }
 }

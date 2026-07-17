@@ -3,8 +3,6 @@ using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Engine.Benchmarks;
 
-[MemoryDiagnoser]
-[ShortRunJob]
 public class PromiseBenchmarks
 {
     private const string PromiseChainScript = """

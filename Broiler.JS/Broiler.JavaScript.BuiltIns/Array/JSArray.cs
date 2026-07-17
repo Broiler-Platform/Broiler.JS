@@ -14,7 +14,29 @@ namespace Broiler.JavaScript.BuiltIns.Array;
 
 public partial class JSArray : JSObject
 {
+    internal protected override bool HasOwnProperty(in PropertyKey key)
+        => key.Type == KeyType.String && key.KeyString.Key == KeyStrings.length.Key
+            || base.HasOwnProperty(in key);
+
     internal uint _length;
+    private long indexedPrototypeVersion = -1;
+    private bool indexedPrototypeSafe;
+
+    private bool CanUseDenseElementFastPath()
+    {
+        if (GetType() != typeof(JSArray) || !IsExtensible() || IsSealedOrFrozen())
+            return false;
+
+        var currentVersion = JSObject.IndexedPrototypeVersion;
+        if (indexedPrototypeVersion != currentVersion)
+        {
+            indexedPrototypeSafe = !HasIndexedPropertiesOnPrototypeChain();
+            indexedPrototypeVersion = currentVersion;
+        }
+
+        ref var elements = ref GetElements(false);
+        return indexedPrototypeSafe && elements.IsDense && elements.HasDefaultDescriptors;
+    }
 
     private bool IsLengthReadOnly()
     {

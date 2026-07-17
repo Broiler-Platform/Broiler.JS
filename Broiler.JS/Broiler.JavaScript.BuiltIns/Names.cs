@@ -1,5 +1,6 @@
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.ExpressionCompiler;
+using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.BuiltIns;
 
@@ -24,5 +25,6 @@ internal static partial class Names
     /// Registers all built-in types defined in the BuiltIns assembly
     /// into the given <see cref="JSContext"/>.
     /// </summary>
-    public static void RegisterBuiltInClasses(this JSContext context) => RegisterAll(context);
+    public static void RegisterBuiltInClasses(this JSContext context, BuiltInFeatures features)
+        => RegisterAll(context, features);
 }

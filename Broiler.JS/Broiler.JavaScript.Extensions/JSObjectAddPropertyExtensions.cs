@@ -32,7 +32,7 @@ public static class JSObjectExtensions
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static JSObject AddProperty(this JSObject target, uint key, JSValue value, JSPropertyAttributes attributes = JSPropertyAttributes.EnumerableConfigurableValue)
     {
-        target.GetElements().Put(key) = JSProperty.Property(value, attributes);
+        target.GetElements().Put(key, value, attributes);
         return target;
     }
 

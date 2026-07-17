@@ -30,9 +30,5 @@ internal static class JSValueCoreExtensions
         JSValue.CreatePrototypeObject = value => (value as JSObject)?.PrototypeObject;
         Arguments.Empty = new Arguments(JSUndefined.Value);
 
-        // Proactively load the BuiltIns assembly so that its ModuleInitializer
-        // wires string/number/boolean factories (JSValue.CreateString, etc.)
-        // before any user code runs—even without a JSContext being created.
-        JSEngine.EnsureBuiltInsAssemblyLoaded();
     }
 }

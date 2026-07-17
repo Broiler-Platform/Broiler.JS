@@ -21,6 +21,7 @@
     <ProjectReference Include="..\Broiler.JavaScript.Extensions\Broiler.JavaScript.Extensions.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Modules\Broiler.JavaScript.Modules.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Engine\Broiler.JavaScript.Engine.csproj" />
+    <ProjectReference Include="..\Broiler.JavaScript.Feature.Sample\Broiler.JavaScript.Feature.Sample.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />

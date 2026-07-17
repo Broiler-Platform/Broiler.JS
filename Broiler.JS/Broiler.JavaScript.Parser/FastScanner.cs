@@ -1493,9 +1493,9 @@ public class FastScanner
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private FastToken ReadIdentifier(State state)
     {
-        var sb = pool.AllocateStringBuilder();
-        var builder = sb.Builder;
-        var escaped = false;
+        FastStringBuilder lease = default;
+        StringBuilder builder = null;
+        var identifierStart = position;
         var start = true;
 
         try
@@ -1505,9 +1505,15 @@ public class FastScanner
                 var current = Peek();
                 if (current == '\\')
                 {
+                    if (builder == null)
+                    {
+                        lease = pool.AllocateStringBuilder();
+                        builder = lease.Builder;
+                        builder.Append(Text.Source, Text.Offset + identifierStart, position - identifierStart);
+                    }
+
                     Consume();
                     builder.Append(ReadIdentifierEscape(start));
-                    escaped = true;
                     start = false;
                     continue;
                 }
@@ -1521,8 +1527,11 @@ public class FastScanner
                         if (!(start ? codePoint.IsIdentifierStart() : codePoint.IsIdentifierPart()))
                             break;
 
-                        builder.Append(current);
-                        builder.Append(low);
+                        if (builder != null)
+                        {
+                            builder.Append(current);
+                            builder.Append(low);
+                        }
                         Consume();
                         Consume();
                         start = false;
@@ -1533,16 +1542,17 @@ public class FastScanner
                 if (!(start ? current.IsIdentifierStart() : current.IsIdentifierPart()))
                     break;
 
-                builder.Append(current);
+                builder?.Append(current);
                 Consume();
                 start = false;
             }
 
-            return state.CommitIdentifier(keywords, escaped ? builder.ToString() : null);
+            return state.CommitIdentifier(keywords, builder?.ToString());
         }
         finally
         {
-            sb.Clear();
+            if (builder != null)
+                lease.Clear();
         }
     }
 

@@ -12,17 +12,8 @@ public class TailCallTests
 {
     private static JSValue EvalWithScriptHost(string code)
     {
-        var previous = Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST");
-        Environment.SetEnvironmentVariable("BROILER_SCRIPT_HOST", "1");
-        try
-        {
-            using var ctx = new JSContext();
-            return ctx.Eval(code);
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("BROILER_SCRIPT_HOST", previous);
-        }
+        using var ctx = new JSContext(options: new JSContextOptions { ScriptHostMode = true });
+        return ctx.Eval(code);
     }
 
     private const string Prelude = "\"use strict\";\nvar N = 300000;\n";

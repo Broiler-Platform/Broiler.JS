@@ -26,27 +26,27 @@ namespace Broiler.JavaScript.BuiltIns;
 public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
 {
     private static readonly KeyString ShadowRealmKey = KeyStrings.GetOrCreate("ShadowRealm");
-    private static readonly KeyString StructuredCloneKey = KeyStrings.GetOrCreate("structuredClone");
-    private static readonly KeyString SumPreciseKey = KeyStrings.GetOrCreate("sumPrecise");
-    private static readonly KeyString FromBase64Key = KeyStrings.GetOrCreate("fromBase64");
-    private static readonly KeyString FromHexKey = KeyStrings.GetOrCreate("fromHex");
-    private static readonly KeyString ToBase64Key = KeyStrings.GetOrCreate("toBase64");
-    private static readonly KeyString ToHexKey = KeyStrings.GetOrCreate("toHex");
-    private static readonly KeyString SetFromBase64Key = KeyStrings.GetOrCreate("setFromBase64");
-    private static readonly KeyString SetFromHexKey = KeyStrings.GetOrCreate("setFromHex");
-    private static readonly KeyString GetOrInsertKey = KeyStrings.GetOrCreate("getOrInsert");
-    private static readonly KeyString GetOrInsertComputedKey = KeyStrings.GetOrCreate("getOrInsertComputed");
-    private static readonly KeyString IsErrorKey = KeyStrings.GetOrCreate("isError");
-    private static readonly KeyString FromAsyncKey = KeyStrings.GetOrCreate("fromAsync");
-    private static readonly KeyString GroupByKey = KeyStrings.GetOrCreate("groupBy");
     private static readonly KeyString IteratorKey = KeyStrings.GetOrCreate("Iterator");
-    private static readonly KeyString ConcatKey = KeyStrings.GetOrCreate("concat");
     private static readonly KeyString ValuesKey = KeyStrings.GetOrCreate("values");
+    private static readonly KeyString IntlKey = KeyStrings.GetOrCreate("Intl");
 
     /// <summary>
     /// Shared singleton instance — the default registry is stateless.
     /// </summary>
     public static readonly DefaultBuiltInRegistry Instance = new();
+
+    private static readonly BuiltInManifest BuiltInManifest = new(
+        "broiler-default",
+        "4.0.0",
+        new BuiltInFeatureDescriptor[]
+        {
+            new(BuiltInFeatureId.Core, "Core", "Broiler.JavaScript.BuiltIns", BuiltInFeatures.None, false),
+            new(BuiltInFeatureId.Intl, "Intl", "Broiler.JavaScript.BuiltIns", BuiltInFeatures.Core, true),
+            new(BuiltInFeatureId.Temporal, "Temporal", "Broiler.JavaScript.BuiltIns", BuiltInFeatures.Core | BuiltInFeatures.Intl, true),
+        },
+        Names.GeneratedRegistrationDescriptors);
+
+    public BuiltInManifest Manifest => BuiltInManifest;
 
     /// <summary>
     /// Optional delegate invoked after Core's generated classes are registered.
@@ -88,8 +88,6 @@ public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
     /// <inheritdoc />
     public void Register(IJSContext ctx)
     {
-        JSEngine.EnsureBuiltInsAssemblyLoaded();
-
         var context = ctx as JSContext
             ?? throw new ArgumentException("Expected JSContext instance", nameof(ctx));
 
@@ -99,14 +97,28 @@ public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
         JSEngine.CoreClassRegistrations?.Invoke(context);
 
         // Register built-in types from satellite assemblies.
+        context.RegisterBuiltInClasses(context.Options.BootstrapProfile.Features);
         AdditionalRegistrations?.Invoke(context);
+
+        if (!context.Options.BootstrapProfile.Includes(BuiltInFeatureId.Intl))
+        {
+            context.Delete(in IntlKey);
+        }
+        else if (context.Options.BootstrapProfile.IsLazy(BuiltInFeatureId.Intl))
+        {
+            // JSGlobal installed the key in generated export order with an undefined
+            // placeholder. Replacing its slot preserves key order without realizing Intl.
+            context.FastAddLazyDataProperty(
+                IntlKey,
+                context,
+                BuiltInFeatureId.Intl,
+                JSPropertyAttributes.ConfigurableValue);
+        }
 
         // Now that every satellite assembly (BuiltIns and Globals) has registered, alias
         // the spec-shared built-in functions whose two homes live in different assemblies
         // (Number.parseFloat/parseInt are the global parseFloat/parseInt objects).
         BuiltInsAssemblyInitializer.PatchNumberConstructor(context);
-
-        ApplyExperimentalFeatureFlags(context);
 
         // Set up Iterator.prototype helpers and prototype chain (ES2025). This wires
         // the sync %GeneratorPrototype%.[[Prototype]] to %IteratorPrototype%. The async
@@ -129,69 +141,17 @@ public sealed class DefaultBuiltInRegistry : IBuiltInRegistry
             context[KeyStrings.console] = JSEngine.ClrInterop.Marshal(ConsoleFactory(context));
     }
 
-    private static void ApplyExperimentalFeatureFlags(JSContext context)
+    public JSValue ResolveFeature(IJSContext ctx, BuiltInFeatureId feature)
     {
-        if (!context.HasExperimentalFeature(JavaScriptFeatureFlags.StructuredClone))
-            context.Delete(StructuredCloneKey);
+        var context = ctx as JSContext
+            ?? throw new ArgumentException("Expected JSContext instance", nameof(ctx));
 
-        if (!context.HasExperimentalFeature(JavaScriptFeatureFlags.MathSumPrecise) &&
-            context[KeyStrings.Math] is JSObject mathObject)
+        return feature switch
         {
-            mathObject.Delete(SumPreciseKey);
-        }
-
-        if (context[KeyStrings.Uint8Array] is JSFunction uint8ArrayCtor &&
-            !context.HasExperimentalFeature(JavaScriptFeatureFlags.Uint8ArrayBase64))
-        {
-            uint8ArrayCtor.Delete(FromBase64Key);
-            uint8ArrayCtor.Delete(FromHexKey);
-            uint8ArrayCtor.prototype.Delete(ToBase64Key);
-            uint8ArrayCtor.prototype.Delete(ToHexKey);
-            uint8ArrayCtor.prototype.Delete(SetFromBase64Key);
-            uint8ArrayCtor.prototype.Delete(SetFromHexKey);
-        }
-
-        if (!context.HasExperimentalFeature(JavaScriptFeatureFlags.MapUpsert))
-        {
-            if (context[KeyStrings.Map] is JSFunction mapCtor)
-            {
-                mapCtor.prototype.Delete(GetOrInsertKey);
-                mapCtor.prototype.Delete(GetOrInsertComputedKey);
-            }
-
-            if (context[KeyStrings.WeakMap] is JSFunction weakMapCtor)
-            {
-                weakMapCtor.prototype.Delete(GetOrInsertKey);
-                weakMapCtor.prototype.Delete(GetOrInsertComputedKey);
-            }
-        }
-
-        if (context[KeyStrings.Error] is JSFunction errorCtor &&
-            !context.HasExperimentalFeature(JavaScriptFeatureFlags.ErrorIsError))
-        {
-            errorCtor.Delete(IsErrorKey);
-        }
-
-        if (context[KeyStrings.Array] is JSFunction arrayCtor &&
-            !context.HasExperimentalFeature(JavaScriptFeatureFlags.ArrayFromAsync))
-        {
-            arrayCtor.Delete(FromAsyncKey);
-        }
-
-        if (!context.HasExperimentalFeature(JavaScriptFeatureFlags.ObjectMapGroupBy))
-        {
-            if (context[KeyStrings.Object] is JSFunction objectCtor)
-                objectCtor.Delete(GroupByKey);
-
-            if (context[KeyStrings.Map] is JSFunction mapCtor)
-                mapCtor.Delete(GroupByKey);
-        }
-
-        if (context[IteratorKey] is JSFunction iteratorCtor &&
-            !context.HasExperimentalFeature(JavaScriptFeatureFlags.IteratorConcat))
-        {
-            iteratorCtor.Delete(ConcatKey);
-        }
+            BuiltInFeatureId.Intl => IntlFactory?.Invoke() ?? JSUndefined.Value,
+            BuiltInFeatureId.Temporal => BuiltInsAssemblyInitializer.CreateTemporalObject(context),
+            _ => throw new InvalidOperationException($"Feature '{feature}' is not lazy in the default manifest."),
+        };
     }
 
     private static void SetupIteratorPrototypeChain(JSContext context)

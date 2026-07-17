@@ -4,8 +4,6 @@ using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.Engine.Benchmarks;
 
-[MemoryDiagnoser]
-[ShortRunJob]
 public class ContextStartupBenchmarks
 {
     [Benchmark]

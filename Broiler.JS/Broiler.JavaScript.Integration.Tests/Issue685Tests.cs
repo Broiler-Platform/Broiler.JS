@@ -39,17 +39,8 @@ public class Issue685Tests
     // made at compile time, so the flag must be set before Eval compiles the body.
     private static string EvalScriptHost(string code)
     {
-        var previous = Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST");
-        Environment.SetEnvironmentVariable("BROILER_SCRIPT_HOST", "1");
-        try
-        {
-            using var ctx = new JSContext();
-            return ctx.Eval(code).ToString();
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("BROILER_SCRIPT_HOST", previous);
-        }
+        using var ctx = new JSContext(options: new JSContextOptions { ScriptHostMode = true });
+        return ctx.Eval(code).ToString();
     }
 
     // ---- Problem 10: tail-call callback must not leak a JSTailCall sentinel ----

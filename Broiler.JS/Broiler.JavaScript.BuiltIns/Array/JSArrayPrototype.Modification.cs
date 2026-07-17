@@ -78,6 +78,17 @@ public partial class JSArray
         // Calculate the number of values to copy.
         long count = Math.Min(end - start, length - target);
 
+        if (@this is JSArray denseArray
+            && count >= 0
+            && target <= uint.MaxValue
+            && start <= uint.MaxValue
+            && count <= uint.MaxValue
+            && denseArray.CanUseDenseElementFastPath()
+            && denseArray.GetElements(false).TryCopyWithin((uint)target, (uint)start, (uint)count, denseArray._length))
+        {
+            return denseArray;
+        }
+
         // Check if we need to copy in reverse due to an overlap.
         long direction = 1;
         if (start < target && target < start + count)
@@ -129,6 +140,15 @@ public partial class JSArray
 
         var startIndex = relativeStart < 0 ? Math.Max(len + relativeStart, 0) : Math.Min(relativeStart, len);
         var endIndex = relativeEnd < 0 ? Math.Max(len + relativeEnd, 0) : Math.Min(relativeEnd, len);
+
+        if (@this is JSArray denseArray
+            && startIndex <= uint.MaxValue
+            && endIndex <= uint.MaxValue
+            && denseArray.CanUseDenseElementFastPath()
+            && denseArray.GetElements(false).TryFill((uint)startIndex, (uint)endIndex, value, denseArray._length))
+        {
+            return denseArray;
+        }
 
         for (var index = startIndex; index < endIndex; index++)
             SetIndexedValue(@this, index, value);
@@ -226,6 +246,13 @@ public partial class JSArray
         var upper = GetArrayLikeLengthLong(@this);
         if (upper == 0)
             return @this;
+
+        if (@this is JSArray denseArray
+            && denseArray.CanUseDenseElementFastPath()
+            && denseArray.GetElements(false).TryReverse(denseArray._length))
+        {
+            return denseArray;
+        }
 
         upper--;
         while (lower < upper)

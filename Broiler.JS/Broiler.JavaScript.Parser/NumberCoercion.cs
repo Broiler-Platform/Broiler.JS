@@ -1,495 +1,111 @@
 using Broiler.JavaScript.Ast.Misc;
 using System;
-using System.IO;
+using System.Buffers;
+using System.Globalization;
 using System.Numerics;
 
 namespace Broiler.JavaScript.Parser;
 
-/// <summary>
-/// Number parsing utilities for the lexer.
-/// Extracted from Broiler.JavaScript.Core.Utils.NumberParser.
-/// </summary>
+/// <summary>Allocation-free parsing for the scanner's validated numeric tokens.</summary>
 internal static class NumberCoercion
 {
-    /// <summary>
-    /// Converts a string to a number (used during lexical scanning of number tokens).
-    /// </summary>
     internal static double CoerceToNumber(in StringSpan input)
     {
-        // Legacy octal integer literal: a leading '0' followed only by octal
-        // digits (0-7) denotes an octal value in non-strict code (e.g. 010 === 8,
-        // 0123 === 83). A non-octal digit (8 or 9), a '.', an exponent, or a radix
-        // prefix instead makes it an ordinary decimal literal, handled by the
-        // general path below. Numeric separators are not permitted in a legacy
-        // octal literal, so the presence of '_' also falls through to decimal.
-        // Strict-mode rejection of these literals happens earlier in the scanner,
-        // so this value is only ever consumed in non-strict code.
-        var text = input.Value;
-        if (text.Length >= 2 && text[0] == '0')
+        var text = input.AsSpan();
+        if (text.IsEmpty)
+            return 0;
+
+        if (IsLegacyOctal(text))
+            return ParseSmallRadix(text[1..], 8);
+
+        if (text.Length > 2 && text[0] == '0')
         {
-            bool allOctal = true;
-            for (int i = 1; i < text.Length; i++)
+            var radix = text[1] switch
             {
-                char ch = text[i];
-                if (ch < '0' || ch > '7') { allOctal = false; break; }
-            }
-
-            if (allOctal)
-            {
-                double octalResult = 0;
-                for (int i = 1; i < text.Length; i++)
-                    octalResult = octalResult * 8 + (text[i] - '0');
-                return octalResult;
-            }
+                'x' or 'X' => 16,
+                'o' or 'O' => 8,
+                'b' or 'B' => 2,
+                _ => 0
+            };
+            if (radix != 0)
+                return ParseRadix(text[2..], radix);
         }
 
-        // supporting ES2021 _ number separator
-        var reader = new StringReader(input.Value.Replace("_", ""));
+        if (text.IndexOf('_') < 0)
+            return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var result)
+                ? result
+                : double.NaN;
 
-        // Skip whitespace and line terminators.
-        while (IsWhiteSpaceOrLineTerminator(reader.Peek()))
-            reader.Read();
-
-        // Empty strings return 0.
-        int firstChar = reader.Read();
-        if (firstChar == -1)
-            return 0.0;
-
-        // The number can start with a plus or minus sign.
-        bool negative = false;
-        switch (firstChar)
-        {
-            case '-':
-                negative = true;
-                firstChar = reader.Read();
-                break;
-
-            case '+':
-                firstChar = reader.Read();
-                break;
-        }
-
-        // Infinity or -Infinity are also valid.
-        if (firstChar == 'I')
-        {
-            string restOfString1 = reader.ReadToEnd();
-            if (restOfString1.StartsWith("nfinity", StringComparison.Ordinal) == true)
-            {
-                // Check the end of the string for junk.
-                for (int i = 7; i < restOfString1.Length; i++)
-                    if (IsWhiteSpaceOrLineTerminator(restOfString1[i]) == false)
-                        return double.NaN;
-                
-                return negative ? double.NegativeInfinity : double.PositiveInfinity;
-            }
-        }
-
-        // Return NaN if the first digit is not a number or a period.
-        if ((firstChar < '0' || firstChar > '9') && firstChar != '.')
-            return double.NaN;
-
-        // Parse the number.
-        double result = ParseCore(reader, (char)firstChar, out ParseCoreStatus status, allowES3Octal: false);
-
-        // Handle various error cases.
-        switch (status)
-        {
-            case ParseCoreStatus.NoDigits:
-            case ParseCoreStatus.NoExponent:
-                return double.NaN;
-        }
-
-        // Check the end of the string for junk.
-        string restOfString2 = reader.ReadToEnd();
-        for (int i = 0; i < restOfString2.Length; i++)
-            if (IsWhiteSpaceOrLineTerminator(restOfString2[i]) == false)
-                return double.NaN;
-
-        return negative ? -result : result;
+        return ParseSeparatedDecimal(text);
     }
 
-    private static readonly int[] integerPowersOfTen = [
-        1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000
-    ];
-
-    private enum ParseCoreStatus
+    private static bool IsLegacyOctal(ReadOnlySpan<char> text)
     {
-        Success,
-        NoDigits,
-        NoFraction,
-        NoExponent,
-        ExponentHasLeadingZero,
-        HexLiteral,
-        ES3OctalLiteral,
-        ES6OctalLiteral,
-        BinaryLiteral,
-        InvalidHexLiteral,
-        InvalidOctalLiteral,
-        InvalidBinaryLiteral,
+        if (text.Length < 2 || text[0] != '0')
+            return false;
+
+        for (var i = 1; i < text.Length; i++)
+        {
+            if (text[i] is < '0' or > '7')
+                return false;
+        }
+        return true;
     }
 
-    private static double ParseCore(TextReader reader, char firstChar, out ParseCoreStatus status, bool decimalOnly = false, bool allowES3Octal = true)
+    private static double ParseRadix(ReadOnlySpan<char> text, int radix)
     {
-        double result;
-        int totalDigits = 0;
-        status = ParseCoreStatus.Success;
+        // The overwhelmingly common small literals stay entirely on the stack.
+        if (text.Length <= 13)
+            return ParseSmallRadix(text, radix);
 
-        if (firstChar == '0' && decimalOnly == false)
+        var value = BigInteger.Zero;
+        foreach (var ch in text)
         {
-            int c = reader.Peek();
-            if (c == 'x' || c == 'X')
-            {
-                reader.Read();
-                result = ParseHex(reader);
-                if (double.IsNaN(result) == true)
-                {
-                    status = ParseCoreStatus.InvalidHexLiteral;
-                    return double.NaN;
-                }
-                status = ParseCoreStatus.HexLiteral;
-                return result;
-            }
-            else if (c == 'o' || c == 'O')
-            {
-                reader.Read();
-                result = ParseOctal(reader);
-                if (double.IsNaN(result) == true)
-                {
-                    status = ParseCoreStatus.InvalidOctalLiteral;
-                    return double.NaN;
-                }
-                status = ParseCoreStatus.ES6OctalLiteral;
-                return result;
-            }
-            else if (c == 'b' || c == 'B')
-            {
-                reader.Read();
-                result = ParseBinary(reader);
-                if (double.IsNaN(result) == true)
-                {
-                    status = ParseCoreStatus.InvalidBinaryLiteral;
-                    return double.NaN;
-                }
-                status = ParseCoreStatus.BinaryLiteral;
-                return result;
-            }
-            else if (c >= '0' && c <= '9' && allowES3Octal == true)
-            {
-                result = ParseOctal(reader);
-                if (double.IsNaN(result) == true)
-                {
-                    status = ParseCoreStatus.InvalidOctalLiteral;
-                    return double.NaN;
-                }
-                status = ParseCoreStatus.ES3OctalLiteral;
-                return result;
-            }
+            if (ch == '_')
+                continue;
+            value = value * radix + Digit(ch);
         }
-
-        int desired1 = 0;
-        int desired2 = 0;
-        var desired3 = BigInteger.Zero;
-        int exponentBase10 = 0;
-
-        if (firstChar >= '0' && firstChar <= '9')
-        {
-            desired1 = firstChar - '0';
-            totalDigits = 1;
-
-            while (true)
-            {
-                int c = reader.Peek();
-                if (c < '0' || c > '9')
-                    break;
-
-                reader.Read();
-
-                if (totalDigits < 9)
-                    desired1 = desired1 * 10 + (c - '0');
-                else if (totalDigits < 18)
-                    desired2 = desired2 * 10 + (c - '0');
-                else
-                    desired3 = BigInteger.Add( BigInteger.Multiply(desired3, 10), c - '0');
-                
-                totalDigits++;
-            }
-        }
-
-        if (firstChar == '.' || reader.Peek() == '.')
-        {
-            if (firstChar != '.')
-                reader.Read();
-
-            int fractionalDigits = 0;
-            while (true)
-            {
-                int c = reader.Peek();
-                if (c < '0' || c > '9')
-                    break;
-                
-                reader.Read();
-
-                if (totalDigits < 9)
-                    desired1 = desired1 * 10 + (c - '0');
-                else if (totalDigits < 18)
-                    desired2 = desired2 * 10 + (c - '0');
-                else
-                    desired3 = BigInteger.Add(BigInteger.Multiply(desired3, 10), c - '0');
-                
-                totalDigits++;
-                fractionalDigits++;
-                exponentBase10--;
-            }
-
-            if (totalDigits == 0)
-            {
-                status = ParseCoreStatus.NoDigits;
-                return double.NaN;
-            }
-
-            if (fractionalDigits == 0)
-                status = ParseCoreStatus.NoFraction;
-        }
-
-        if (reader.Peek() == 'e' || reader.Peek() == 'E')
-        {
-            reader.Read();
-
-            bool exponentNegative = false;
-            int c = reader.Peek();
-            if (c == '+')
-                reader.Read();
-            else if (c == '-')
-            {
-                reader.Read();
-                exponentNegative = true;
-            }
-
-            int firstExponentChar = reader.Read();
-            int exponent = 0;
-            if (firstExponentChar < '0' || firstExponentChar > '9')
-            {
-                status = ParseCoreStatus.NoExponent;
-            }
-            else
-            {
-                exponent = firstExponentChar - '0';
-                int exponentDigits = 1;
-                while (true)
-                {
-                    c = reader.Peek();
-                    if (c < '0' || c > '9')
-                        break;
-                    reader.Read();
-                    exponent = Math.Min(exponent * 10 + (c - '0'), 9999);
-                    exponentDigits++;
-                }
-
-                if (firstExponentChar == '0' && exponentDigits > 1 && status == ParseCoreStatus.Success)
-                    status = ParseCoreStatus.ExponentHasLeadingZero;
-            }
-
-            exponentBase10 += exponentNegative ? -exponent : exponent;
-        }
-
-        if (totalDigits < 16)
-        {
-            result = (long)desired1 * integerPowersOfTen[Math.Max(totalDigits - 9, 0)] + desired2;
-        }
-        else
-        {
-            var temp = desired3;
-            desired3 = new BigInteger((long)desired1 * integerPowersOfTen[Math.Min(totalDigits - 9, 9)] + desired2);
-            
-            if (totalDigits > 18)
-            {
-                desired3 = BigInteger.Multiply(desired3, BigInteger.Pow(10, totalDigits - 18));
-                desired3 = BigInteger.Add(desired3, temp);
-            }
-
-            result = (double)desired3;
-        }
-
-        if (exponentBase10 > 0)
-            result *= Math.Pow(10, exponentBase10);
-        else if (exponentBase10 < 0 && exponentBase10 >= -308)
-            result /= Math.Pow(10, -exponentBase10);
-        else if (exponentBase10 < -308)
-        {
-            result /= Math.Pow(10, 308);
-            result /= Math.Pow(10, -exponentBase10 - 308);
-        }
-
-        // The direct Math.Pow scaling above is only correctly rounded on the Clinger
-        // fast path: an exactly representable significand (< 2^53, i.e. < 16 decimal
-        // digits) multiplied/divided by an exact power of ten (10^0..10^22). Outside
-        // that range the single floating-point operation accumulates rounding error
-        // (e.g. 1.23456789e+34 → 1.2345678900000002e+34), so refine against the exact
-        // integer significand. Build desired3 for the <16-digit case where it is unset.
-        if (totalDigits >= 16)
-            return RefineEstimate(result, exponentBase10, desired3);
-
-        if (Math.Abs(exponentBase10) > 22)
-        {
-            desired3 = new BigInteger((long)desired1 * integerPowersOfTen[Math.Max(totalDigits - 9, 0)] + desired2);
-            return RefineEstimate(result, exponentBase10, desired3);
-        }
-
-        return result;
+        return (double)value;
     }
 
-    private static double ParseHex(TextReader reader)
+    private static double ParseSmallRadix(ReadOnlySpan<char> text, int radix)
     {
-        double result = 0;
-        int digitsRead = 0;
-
-        while (true)
+        double value = 0;
+        foreach (var ch in text)
         {
-            int c = reader.Peek();
-            if (c >= '0' && c <= '9')
-                result = result * 16 + c - '0';
-            else if (c >= 'a' && c <= 'f')
-                result = result * 16 + c - 'a' + 10;
-            else if (c >= 'A' && c <= 'F')
-                result = result * 16 + c - 'A' + 10;
-            else
-                break;
-
-            digitsRead++;
-            reader.Read();
+            if (ch == '_')
+                continue;
+            value = value * radix + Digit(ch);
         }
-        
-        if (digitsRead == 0)
-            return double.NaN;
-        
-        return result;
+        return value;
     }
 
-    private static double ParseOctal(TextReader reader)
+    private static int Digit(char ch) => ch switch
     {
-        double result = 0;
+        >= '0' and <= '9' => ch - '0',
+        >= 'a' and <= 'f' => ch - 'a' + 10,
+        >= 'A' and <= 'F' => ch - 'A' + 10,
+        _ => 0
+    };
 
-        while (true)
-        {
-            int c = reader.Peek();
-            if (c >= '0' && c <= '7')
-                result = result * 8 + c - '0';
-            else if (c == '8' || c == '9')
-                return double.NaN;
-            else
-                break;
-            
-            reader.Read();
-        }
-        
-        return result;
-    }
-
-    private static double ParseBinary(TextReader reader)
+    private static double ParseSeparatedDecimal(ReadOnlySpan<char> text)
     {
-        double result = 0;
-
-        while (true)
+        char[] rented = null;
+        Span<char> buffer = text.Length <= 256
+            ? stackalloc char[text.Length]
+            : (rented = ArrayPool<char>.Shared.Rent(text.Length));
+        var length = 0;
+        foreach (var ch in text)
         {
-            int c = reader.Peek();
-            if (c == '0')
-                result = result * 2;
-            else if (c == '1')
-                result = result * 2 + 1;
-            else if (c >= '2' && c <= '9')
-                return double.NaN;
-            else
-                break;
-            
-            reader.Read();
-        }
-        
-        return result;
-    }
-
-    private static bool IsWhiteSpaceOrLineTerminator(int c) => c == 9 || c == 0x0b || c == 0x0c || c == ' ' || c == 0xa0 || c == 0xfeff ||
-            c == 0x1680 || (c >= 0x2000 && c <= 0x200a) || c == 0x202f || c == 0x205f || c == 0x3000 ||
-            c == 0x0a || c == 0x0d || c == 0x2028 || c == 0x2029;
-
-    private static double RefineEstimate(double initialEstimate, int base10Exponent, BigInteger desiredValue)
-    {
-        int direction = double.IsPositiveInfinity(initialEstimate) ? -1 : 1;
-        int precision = 32;
-
-        double result = initialEstimate;
-        double result2 = AddUlps(result, direction);
-
-        BigInteger multiplier = BigInteger.One;
-        if (base10Exponent < 0)
-            multiplier = BigInteger.Pow(10, -base10Exponent);
-        else if (base10Exponent > 0)
-            desiredValue = BigInteger.Multiply(desiredValue, BigInteger.Pow(10, base10Exponent));
-
-        while (precision <= 160)
-        {
-            var actual1 = ScaleToInteger(result, multiplier, precision);
-            var actual2 = ScaleToInteger(result2, multiplier, precision);
-
-            var baseline = desiredValue << precision;
-            var diff1 = BigInteger.Subtract(actual1, baseline);
-            var diff2 = BigInteger.Subtract(actual2, baseline);
-
-            if (diff1.Sign == direction && diff2.Sign == direction)
-            {
-                direction = -direction;
-                result2 = AddUlps(result, direction);
-            }
-            else if (diff1.Sign == -direction && diff2.Sign == -direction)
-            {
-                result = result2;
-                result2 = AddUlps(result, direction);
-            }
-            else
-            {
-                diff1 = BigInteger.Abs(diff1);
-                diff2 = BigInteger.Abs(diff2);
-                if (BigInteger.Compare(diff1, BigInteger.Subtract(diff2, BigInteger.One)) < 0)
-                    return result;
-                if (BigInteger.Compare(diff2, BigInteger.Subtract(diff1, BigInteger.One)) < 0)
-                    return result2;
-
-                precision += 32;
-            }
-
-            if (double.IsNaN(result2) == true)
-                return result;
+            if (ch != '_')
+                buffer[length++] = ch;
         }
 
-        return (BitConverter.DoubleToInt64Bits(result) & 1) == 0 ? result : result2;
-    }
-
-    private static double AddUlps(double value, int ulps) =>
-        BitConverter.Int64BitsToDouble(BitConverter.DoubleToInt64Bits(value) + ulps);
-
-    private static BigInteger ScaleToInteger(double value, BigInteger multiplier, int shift)
-    {
-        long bits = BitConverter.DoubleToInt64Bits(value);
-
-        var base2Exponent = (int)((bits & 0x7FF0000000000000) >> 52) - 1023;
-
-        long mantissa = bits & 0xFFFFFFFFFFFFF;
-        if (base2Exponent > -1023)
-        {
-            mantissa |= 0x10000000000000;
-            base2Exponent -= 52;
-        }
-        else
-        {
-            base2Exponent -= 51;
-        }
-
-        if (bits < 0)
-            mantissa = -mantissa;
-
-        var result = new BigInteger(mantissa);
-        result = BigInteger.Multiply(result, multiplier);
-        shift += base2Exponent;
-        result = result << shift;
-        return result;
+        var parsed = double.TryParse(buffer[..length], NumberStyles.Float, CultureInfo.InvariantCulture, out var result)
+            ? result
+            : double.NaN;
+        if (rented != null)
+            ArrayPool<char>.Shared.Return(rented);
+        return parsed;
     }
 }

@@ -46,4 +46,6 @@ public readonly struct KeyString
     public override string ToString() => KeyStrings.GetNameString(Key).Value;
 
     public StringSpan Value => KeyStrings.GetNameString(Key);
+
+    public KeyMetadata Metadata => KeyStrings.GetMetadata(Key);
 }

@@ -24,5 +24,5 @@ internal static partial class Names
     /// Registers all global types defined in the Globals assembly
     /// into the given <see cref="JSContext"/>.
     /// </summary>
-    public static void RegisterGlobalClasses(this JSContext context) => RegisterAll(context);
+    public static void RegisterGlobalClasses(this JSContext context) => RegisterAll(context, context.Options.BootstrapProfile.Features);
 }

@@ -43,7 +43,7 @@ public partial class ILCodeGenerator
 
     private bool TryEmitJavaScriptTailCallValue(BCallExpression callExpression)
     {
-        if (!string.Equals(Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST"), "1", StringComparison.Ordinal))
+        if (!enableJavaScriptTailCalls)
             return false;
 
         if (tailCallBlockedDepth != 0)

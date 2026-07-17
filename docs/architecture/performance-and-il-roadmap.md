@@ -902,6 +902,11 @@ throughput is unchanged.
 
 ### Phase 0 — trustworthy baselines and invariants
 
+Implementation entry point: [`../performance/phase0-baselines.md`](../performance/phase0-baselines.md).
+It defines the checked-in jobs/schema, child-process lifecycle harness, EventPipe
+workloads, build/package/IL/publish collectors, focused conformance manifests, ownership
+map, repeatability bands, and CI artifact workflow used as the gate for later phases.
+
 Deliver:
 
 - lifecycle and primitive benchmarks from Workstream A;
@@ -917,6 +922,8 @@ Exit gate: two repeatable baseline runs agree within the documented noise band a
 future work items have a benchmark plus semantic test owner.
 
 ### Phase 1 — low-risk hot-path cleanup
+
+Implementation and local verification: [`../performance/phase1-results.md`](../performance/phase1-results.md).
 
 Deliver in small independent PRs:
 
@@ -937,6 +944,8 @@ intended objects disappeared, and pinned focused conformance subsets remain clea
 
 ### Phase 2 — collections, keys, and element layout
 
+Implementation and local verification: [`../performance/phase2-results.md`](../performance/phase2-results.md).
+
 Deliver:
 
 1. SameValueZero Map/Set storage;
@@ -951,6 +960,8 @@ Exit gate: packed and sparse workloads both meet their targets; memory per eleme
 property is recorded; mutation/Proxy/hole/species test matrices pass.
 
 ### Phase 3 — compiler specialization
+
+Implementation and local verification: [`../performance/phase3-results.md`](../performance/phase3-results.md).
 
 Deliver:
 
@@ -967,6 +978,8 @@ regress.
 
 ### Phase 4 — startup and packaging
 
+Implementation and local verification: [`../performance/phase4-results.md`](../performance/phase4-results.md).
+
 Deliver:
 
 1. generated manifests/descriptors;
@@ -981,6 +994,8 @@ hosts demonstrate lower loaded bytes and working set; property order/descriptors
 realm identity are unchanged.
 
 ### Phase 5 — advanced execution modes
+
+Implementation and local verification: [`../performance/phase5-results.md`](../performance/phase5-results.md).
 
 Deliver only after earlier foundations are stable:
 

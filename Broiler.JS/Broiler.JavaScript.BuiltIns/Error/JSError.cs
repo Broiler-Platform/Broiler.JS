@@ -81,7 +81,7 @@ public partial class JSError : JSObject, IJSError
         InstallErrorCause(a.GetAt(1));
     }
 
-    [JSExport("isError")]
+    [JSExport("isError", Feature = (int)JavaScriptFeatureFlags.ErrorIsError)]
     internal static JSValue IsError(in Arguments a)
     {
         var arg = a.Get1();

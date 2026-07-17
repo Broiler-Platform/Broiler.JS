@@ -17,6 +17,8 @@ public sealed class ExpressionCompilationOptions
     public ExpressionCompilationBackend Backend { get; init; } = ExpressionCompilationBackend.DynamicMethod;
 
     public bool CaptureDiagnostics { get; init; }
+
+    public bool EnableJavaScriptTailCalls { get; init; }
 }
 
 public sealed class ExpressionCompilationResult<T>
@@ -81,12 +83,16 @@ internal sealed class DynamicMethodExpressionCompilationBackend : IExpressionCom
             []) as BLambdaExpression;
 
         LambdaRewriter.Rewrite(outerLambda);
-        var runtimeMethodBuilder = new RuntimeMethodBuilder(repository, options.CaptureDiagnostics);
+        var runtimeMethodBuilder = new RuntimeMethodBuilder(
+            repository,
+            options.CaptureDiagnostics,
+            options.EnableJavaScriptTailCalls);
 
         var (outer, il, exp) = outerLambda.CompileToBoundDynamicMethod(
             typeof(Closures),
             runtimeMethodBuilder,
-            options.CaptureDiagnostics);
+            options.CaptureDiagnostics,
+            options.EnableJavaScriptTailCalls);
 
         repository.IL = il;
         repository.Exp = exp;

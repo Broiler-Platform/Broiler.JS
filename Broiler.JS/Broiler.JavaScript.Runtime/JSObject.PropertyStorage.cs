@@ -10,7 +10,42 @@ namespace Broiler.JavaScript.Runtime;
 public partial class JSObject
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public ref PropertySequence GetOwnProperties(bool create = true) => ref ownProperties;
+    internal protected virtual bool HasOwnProperty(in PropertyKey key) => key.Type switch
+    {
+        KeyType.UInt => elements.HasKey(key.Index),
+        KeyType.String => !IsPrivateName(in key.KeyString) && ownProperties.HasKey(key.KeyString.Key),
+        KeyType.Symbol => symbols.HasKey(key.Symbol.Key),
+        _ => false
+    };
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal bool TryGetOrdinaryOwnProperty(in PropertyKey key, out JSProperty property)
+    {
+        switch (key.Type)
+        {
+            case KeyType.UInt:
+                return elements.TryGetValue(key.Index, out property);
+            case KeyType.String when !IsPrivateName(in key.KeyString):
+                return ownProperties.TryGetValue(key.KeyString.Key, out property);
+            case KeyType.Symbol:
+                return symbols.TryGetValue(key.Symbol.Key, out property);
+            default:
+                property = JSProperty.Empty;
+                return false;
+        }
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ref PropertySequence GetOwnProperties(bool create = true)
+    {
+        // Returning a mutable ref permits callers in other assemblies to bypass the
+        // shape tracker. Conservatively abandon the fast layout for exact ordinary
+        // objects whenever mutable access is requested; read-only enumeration passes
+        // create:false and retains its shape.
+        if (create)
+            AbandonObjectShape();
+        return ref ownProperties;
+    }
 
     /// <summary>
     /// Internal marker character prefixed to a private name's property key so it
@@ -29,10 +64,7 @@ public partial class JSObject
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool IsPrivateName(in KeyString key)
-    {
-        var value = key.Value.Value;
-        return !string.IsNullOrEmpty(value) && value[0] == PrivateNameMarker;
-    }
+        => key.Metadata.IsPrivateName;
 
     // True when a property key (as surfaced by the own-key enumeration) is a private name.
     // Private names are never own property keys per spec, so key-walking operations that must
@@ -252,26 +284,64 @@ public partial class JSObject
     internal ref ElementArray CreateElements(uint size = 4) => ref elements;
     [EditorBrowsable(EditorBrowsableState.Never)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void FastAddValue(uint index, JSValue value, JSPropertyAttributes attributes) => elements.Put(index, value, attributes);
+    public void FastAddValue(uint index, JSValue value, JSPropertyAttributes attributes)
+    {
+        elements.Put(index, value, attributes);
+        NotifyIndexedPropertyMutation();
+    }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void FastAddProperty(uint index, JSValue getter, JSValue setter, JSPropertyAttributes attributes) => elements.Put(index) = new JSProperty(index, getter, setter, getter, attributes);
+    public void FastAddProperty(uint index, JSValue getter, JSValue setter, JSPropertyAttributes attributes)
+    {
+        elements.Set(index, new JSProperty(index, getter, setter, getter, attributes));
+        NotifyIndexedPropertyMutation();
+    }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void FastAddValue(KeyString key, JSValue value, JSPropertyAttributes attributes)
     {
-        ref var pr = ref GetOwnProperties(true);
-        pr.Put(key.Key) = new JSProperty(key.Key, value, attributes);
+        CancelLazyDataProperty(in ownProperties.GetValue(key.Key));
+        ownProperties.Put(key.Key) = new JSProperty(key.Key, value, attributes);
+        TrackShapeDataProperty(in key, value, attributes);
+    }
+
+    /// <summary>
+    /// Adds an ordinary data property whose per-realm value is resolved on demand.
+    /// Key order and attributes are installed immediately; enumeration does not realize it.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void FastAddLazyDataProperty(
+        KeyString key,
+        IJSFeatureResolver resolver,
+        BuiltInFeatureId feature,
+        JSPropertyAttributes attributes)
+    {
+        CancelLazyDataProperty(in ownProperties.GetValue(key.Key));
+        ownProperties.Put(key.Key) = new JSProperty(
+            key,
+            null,
+            null,
+            new LazyDataPropertyCell(resolver, feature),
+            attributes);
+        AbandonObjectShape();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void CancelLazyDataProperty(in JSProperty property)
+    {
+        if (property.value is LazyDataPropertyCell lazy)
+            lazy.Cancel();
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void FastAddProperty(KeyString key, JSValue getter, JSValue setter, JSPropertyAttributes attributes)
     {
-        ref var pr = ref GetOwnProperties(true);
-        pr.Put(key.Key) = new JSProperty(key, getter, setter, attributes);
+        ownProperties.Put(key.Key) = new JSProperty(key, getter, setter, attributes);
+        AbandonObjectShape();
+        NotifyNamedPropertyMutation();
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -280,6 +350,7 @@ public partial class JSObject
     {
         ref var pr = ref GetSymbols();
         pr.Put(key.Key) = new JSProperty(key.Key, value, attributes);
+        NotifyNamedPropertyMutation();
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -288,6 +359,7 @@ public partial class JSObject
     {
         ref var pr = ref GetSymbols();
         pr.Put(key.Key) = new JSProperty(key.Key, getter, setter, getter, attributes);
+        NotifyNamedPropertyMutation();
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -340,6 +412,118 @@ public partial class JSObject
     // so the copy goes through [[OwnPropertyKeys]] / [[GetOwnProperty]] / [[Get]].
     private protected virtual bool UseObservableSpreadCopy => false;
 
+    private readonly struct OrdinaryOwnKey
+    {
+        public readonly KeyType Type;
+        public readonly uint Index;
+        public readonly KeyString Name;
+
+        public OrdinaryOwnKey(KeyType type, uint index, in KeyString name)
+        {
+            Type = type;
+            Index = index;
+            Name = name;
+        }
+    }
+
+    // CopyDataProperties obtains [[OwnPropertyKeys]] before it invokes a getter. Keep the
+    // compact direct-slot path for ordinary objects, but snapshot the keys so a getter may
+    // add/delete sparse elements without invalidating the storage enumerator or changing
+    // the key list being copied.
+    private static List<OrdinaryOwnKey> SnapshotOrdinaryOwnKeys(JSObject target)
+    {
+        var keys = new List<OrdinaryOwnKey>(target.elements.Count + target.symbols.Count);
+
+        foreach (var (index, _) in target.elements.AllValues())
+            keys.Add(new OrdinaryOwnKey(KeyType.UInt, index, KeyString.Empty));
+
+        var properties = target.ownProperties.GetEnumerator(showEnumerableOnly: false);
+        while (properties.MoveNext(out var name, out _))
+            keys.Add(new OrdinaryOwnKey(KeyType.String, 0, name));
+
+        foreach (var (symbol, _) in target.symbols.AllValues())
+            keys.Add(new OrdinaryOwnKey(KeyType.Symbol, symbol, KeyString.Empty));
+
+        return keys;
+    }
+
+    private static List<JSValue> SnapshotObservableOwnKeys(JSObject target)
+    {
+        var snapshot = new List<JSValue>();
+        var keys = target.GetAllKeys(showEnumerableOnly: false, inherited: false);
+        while (keys.MoveNext(out var hasKey, out var key, out _))
+            if (hasKey)
+                snapshot.Add(key);
+        return snapshot;
+    }
+
+    private void CopyObservableDataProperties(JSObject target, JSObject excludedKeys = null)
+    {
+        foreach (var key in SnapshotObservableOwnKeys(target))
+        {
+            // Exclusions are checked before [[GetOwnProperty]]/[[Get]], as required by
+            // CopyDataProperties (and observable through Proxy traps).
+            if (excludedKeys != null && excludedKeys.IsExcludedOwnKey(key.ToKey()))
+                continue;
+
+            if (target.GetOwnPropertyDescriptor(key) is not JSObject descriptor
+                || !descriptor[KeyStrings.enumerable].BooleanValue)
+                continue;
+
+            CreateDataProperty(key, target[key]);
+        }
+    }
+
+    private void CopyOrdinaryDataProperties(JSObject target, JSObject excludedKeys = null)
+    {
+        foreach (var key in SnapshotOrdinaryOwnKeys(target))
+        {
+            JSProperty property;
+            switch (key.Type)
+            {
+                case KeyType.UInt:
+                    if ((excludedKeys != null && excludedKeys.elements.HasKey(key.Index))
+                        || !target.elements.TryGetValue(key.Index, out property))
+                        continue;
+                    break;
+                case KeyType.String:
+                    if ((excludedKeys != null && excludedKeys.ownProperties.HasKey(key.Name.Key))
+                        || !target.ownProperties.TryGetValue(key.Name.Key, out property))
+                        continue;
+                    break;
+                case KeyType.Symbol:
+                    if ((excludedKeys != null && excludedKeys.symbols.HasKey(key.Index))
+                        || !target.symbols.TryGetValue(key.Index, out property))
+                        continue;
+                    break;
+                default:
+                    continue;
+            }
+
+            // The descriptor is looked up after the key snapshot and before invoking its
+            // getter. A key deleted by an earlier getter is therefore skipped, while a key
+            // added by one is not copied.
+            if (!property.IsEnumerable)
+                continue;
+
+            var value = (IPropertyValue)target.GetValue(property);
+
+            switch (key.Type)
+            {
+                case KeyType.UInt:
+                    elements.Set(key.Index, JSProperty.Property(key.Index, value));
+                    break;
+                case KeyType.String:
+                    ownProperties.Put(key.Name.Key) = JSProperty.Property(key.Name, value);
+                    TrackShapeDataProperty(in key.Name, value as JSValue, JSPropertyAttributes.EnumerableConfigurableValue);
+                    break;
+                case KeyType.Symbol:
+                    symbols.Put(key.Index) = JSProperty.Property(key.Index, value);
+                    break;
+            }
+        }
+    }
+
     public void FastAddRange(JSValue value)
     {
         if (value is not JSObject target)
@@ -364,56 +548,11 @@ public partial class JSObject
             // each key read its descriptor (firing the getOwnPropertyDescriptor
             // trap) and copy only enumerable properties, reading the value via
             // [[Get]] (firing the get trap).
-            var keys = target.GetAllKeys(showEnumerableOnly: false, inherited: false);
-            while (keys.MoveNext(out var hasKey, out var key, out _))
-            {
-                if (!hasKey)
-                    continue;
-
-                if (target.GetOwnPropertyDescriptor(key) is not JSObject descriptor
-                    || !descriptor[KeyStrings.enumerable].BooleanValue)
-                    continue;
-
-                CreateDataProperty(key, target[key]);
-            }
-
+            CopyObservableDataProperties(target);
             return;
         }
 
-        // CopyDataProperties copies only the source's own *enumerable* properties, so
-        // a slot stored non-enumerable (e.g. an array index or string/symbol property
-        // defined with enumerable:false via Object.defineProperty) is skipped here too.
-        foreach (var (i, p) in target.elements.AllValues())
-        {
-            if (!p.IsEmpty && p.IsEnumerable)
-                elements.Put(i) = p.IsValue
-                    ? JSProperty.Property(i, p.value)
-                    : JSProperty.Property(i, (IPropertyValue)target.GetValue(p));
-        }
-
-        var pe = target.ownProperties.GetEnumerator();
-        while (pe.MoveNext(out var key, out var val) && !val.IsEmpty)
-        {
-            if (!val.IsEnumerable)
-                continue;
-
-            ownProperties.Put(key.Key) = val.IsValue
-                ? JSProperty.Property(key, val.value)
-                : JSProperty.Property(key, (IPropertyValue)target.GetValue(val));
-        }
-
-        foreach (var symbol in target.symbols.All)
-        {
-            var key = symbol.Key;
-            var sv = symbol.Value;
-
-            if (sv.IsEmpty || !sv.IsEnumerable)
-                continue;
-
-            symbols.Put(key) = sv.IsValue
-                ? JSProperty.Property(key, sv.value)
-                : JSProperty.Property(key, (IPropertyValue)target.GetValue(sv));
-        }
+        CopyOrdinaryDataProperties(target);
     }
 
     // CopyDataProperties with an exclusion set — object rest destructuring
@@ -439,57 +578,11 @@ public partial class JSObject
 
         if (target.UseObservableSpreadCopy)
         {
-            var keys = target.GetAllKeys(showEnumerableOnly: false, inherited: false);
-            while (keys.MoveNext(out var hasKey, out var key, out _))
-            {
-                if (!hasKey)
-                    continue;
-
-                // Skip excluded keys before the descriptor read (no gopd/get trap fires).
-                if (excludedKeys.IsExcludedOwnKey(key.ToKey()))
-                    continue;
-
-                if (target.GetOwnPropertyDescriptor(key) is not JSObject descriptor
-                    || !descriptor[KeyStrings.enumerable].BooleanValue)
-                    continue;
-
-                CreateDataProperty(key, target[key]);
-            }
-
+            CopyObservableDataProperties(target, excludedKeys);
             return;
         }
 
-        foreach (var (i, p) in target.elements.AllValues())
-        {
-            if (!p.IsEmpty && p.IsEnumerable && !excludedKeys.elements.HasKey(i))
-                elements.Put(i) = p.IsValue
-                    ? JSProperty.Property(i, p.value)
-                    : JSProperty.Property(i, (IPropertyValue)target.GetValue(p));
-        }
-
-        var pe = target.ownProperties.GetEnumerator();
-        while (pe.MoveNext(out var key, out var val) && !val.IsEmpty)
-        {
-            if (!val.IsEnumerable || excludedKeys.ownProperties.HasKey(key.Key))
-                continue;
-
-            ownProperties.Put(key.Key) = val.IsValue
-                ? JSProperty.Property(key, val.value)
-                : JSProperty.Property(key, (IPropertyValue)target.GetValue(val));
-        }
-
-        foreach (var symbol in target.symbols.All)
-        {
-            var key = symbol.Key;
-            var sv = symbol.Value;
-
-            if (sv.IsEmpty || !sv.IsEnumerable || excludedKeys.symbols.HasKey(key))
-                continue;
-
-            symbols.Put(key) = sv.IsValue
-                ? JSProperty.Property(key, sv.value)
-                : JSProperty.Property(key, (IPropertyValue)target.GetValue(sv));
-        }
+        CopyOrdinaryDataProperties(target, excludedKeys);
     }
 
     // True when `key` names one of this object's own properties — used as the exclusion test
@@ -995,8 +1088,8 @@ public partial class JSObject
     {
         if (ReferenceEquals(target, this))
         {
-            ref var own = ref target.GetOwnProperties();
-            own.Put(name, value, attributes);
+            target.ownProperties.Put(name, value, attributes);
+            target.TrackShapeDataProperty(in name, value, attributes);
             target.PropertyChanged?.Invoke(target, (name.Key, uint.MaxValue, null));
             return true;
         }
@@ -1018,6 +1111,7 @@ public partial class JSObject
         {
             ref var elements = ref target.CreateElements();
             elements.Put(name, value, attributes);
+            target.NotifyIndexedPropertyMutation();
             target.PropertyChanged?.Invoke(target, (uint.MaxValue, name, null));
             return true;
         }
@@ -1038,6 +1132,7 @@ public partial class JSObject
         if (ReferenceEquals(target, this))
         {
             target.symbols.Put(name.Key) = new JSProperty(name.Key, value, attributes);
+            target.NotifyNamedPropertyMutation();
             target.PropertyChanged?.Invoke(target, (uint.MaxValue, uint.MaxValue, name));
             return true;
         }
@@ -1153,7 +1248,7 @@ public partial class JSObject
         if (!p.IsEmpty)
         {
             if (p.IsValue)
-                return (JSValue)p.value;
+                return ResolvePropertyValue(p.value);
 
             if (p.get is IJSFunction getter)
                 return getter.InvokeFunction(new Arguments(receiver ?? this));
@@ -1181,16 +1276,18 @@ public partial class JSObject
     {
         var key = name.Key;
         var old = symbols[key];
+        var preserveCurrentValue = false;
         if (old.IsEmpty && !IsExtensible())
             return BooleanFalse;
         if (!old.IsEmpty)
         {
-            CompletePropertyDescriptor(pd, in old);
-            if (!IsCompatiblePropertyRedefinition(in old, pd))
+            preserveCurrentValue = CompletePropertyDescriptor(pd, in old);
+            if (!IsCompatiblePropertyRedefinition(in old, pd, preserveCurrentValue))
                 return BooleanFalse;
         }
 
-        symbols.Put(key) = pd.ToProperty(key);
+        symbols.Put(key) = ToPropertyPreservingLazyValue(pd, key, in old, preserveCurrentValue);
+        NotifyNamedPropertyMutation();
         PropertyChanged?.Invoke(this, (uint.MaxValue, uint.MaxValue, name));
         return UndefinedValue;
     }
@@ -1199,17 +1296,19 @@ public partial class JSObject
     {
         ref var elements = ref GetElements(true);
         var old = elements[key];
+        var preserveCurrentValue = false;
         if (old.IsEmpty && !IsExtensible())
             return BooleanFalse;
         if (!old.IsEmpty)
         {
-            CompletePropertyDescriptor(pd, in old);
-            if (!IsCompatiblePropertyRedefinition(in old, pd))
+            preserveCurrentValue = CompletePropertyDescriptor(pd, in old);
+            if (!IsCompatiblePropertyRedefinition(in old, pd, preserveCurrentValue))
                 return BooleanFalse;
         }
 
-        elements.Put(key) = pd.ToProperty(key);
+        elements.Set(key, ToPropertyPreservingLazyValue(pd, key, in old, preserveCurrentValue));
         UpdateArrayLengthIfNeeded(key);
+        NotifyIndexedPropertyMutation();
 
         PropertyChanged?.Invoke(this, (uint.MaxValue, key, null));
         return UndefinedValue;
@@ -1217,9 +1316,11 @@ public partial class JSObject
 
     public virtual JSValue DefineProperty(in KeyString name, JSObject pd)
     {
+        AbandonObjectShape();
         var key = name.Key;
         ref var ownProperties = ref GetOwnProperties();
         ref var old = ref ownProperties.GetValue(name.Key);
+        var preserveCurrentValue = false;
         if (old.IsEmpty && !IsExtensible())
             return BooleanFalse;
 
@@ -1236,17 +1337,20 @@ public partial class JSObject
                     pd.FastAddValue(KeyStrings.value, CreateNumber(currentLength), JSPropertyAttributes.EnumerableConfigurableValue);
             }
 
-            CompletePropertyDescriptor(pd, in old);
-            if (!IsCompatiblePropertyRedefinition(in old, pd))
+            preserveCurrentValue = CompletePropertyDescriptor(pd, in old);
+            if (!IsCompatiblePropertyRedefinition(in old, pd, preserveCurrentValue))
                 return BooleanFalse;
         }
         // p.key = name;
-        ownProperties.Put(key) = pd.ToProperty(key);
+        if (!preserveCurrentValue)
+            CancelLazyDataProperty(in old);
+        ownProperties.Put(key) = ToPropertyPreservingLazyValue(pd, key, in old, preserveCurrentValue);
+        NotifyNamedPropertyMutation();
         PropertyChanged?.Invoke(this, (name.Key, uint.MaxValue, null));
         return UndefinedValue;
     }
 
-    private static void CompletePropertyDescriptor(JSObject descriptor, in JSProperty current)
+    private static bool CompletePropertyDescriptor(JSObject descriptor, in JSProperty current)
     {
         var hasConfigurable = !descriptor.GetInternalProperty(KeyStrings.configurable, false).IsEmpty;
         var hasEnumerable = !descriptor.GetInternalProperty(KeyStrings.enumerable, false).IsEmpty;
@@ -1271,17 +1375,40 @@ public partial class JSObject
             if (!descriptorIsData && !hasSet)
                 descriptor[KeyStrings.set] = current.set as JSValue ?? UndefinedValue;
 
-            return;
+            return false;
         }
 
+        var preserveCurrentValue = !descriptorIsAccessor
+            && !hasValue
+            && current.value is LazyDataPropertyCell;
         if (!descriptorIsAccessor && !hasValue)
-            descriptor.FastAddValue(KeyStrings.value, current.value as JSValue ?? UndefinedValue, JSPropertyAttributes.EnumerableConfigurableValue);
+            descriptor.FastAddValue(
+                KeyStrings.value,
+                preserveCurrentValue ? UndefinedValue : ResolvePropertyValue(current.value),
+                JSPropertyAttributes.EnumerableConfigurableValue);
 
         if (!descriptorIsAccessor && !hasWritable)
             descriptor.FastAddValue(KeyStrings.writable, current.IsReadOnly ? BooleanFalse : BooleanTrue, JSPropertyAttributes.EnumerableConfigurableValue);
+
+        return preserveCurrentValue;
     }
 
-    private static bool IsCompatiblePropertyRedefinition(in JSProperty current, JSObject descriptor)
+    private static JSProperty ToPropertyPreservingLazyValue(
+        JSObject descriptor,
+        uint key,
+        in JSProperty current,
+        bool preserveCurrentValue)
+    {
+        var replacement = descriptor.ToProperty(key);
+        return preserveCurrentValue
+            ? new JSProperty(key, replacement.get, replacement.set, current.value, replacement.Attributes)
+            : replacement;
+    }
+
+    private static bool IsCompatiblePropertyRedefinition(
+        in JSProperty current,
+        JSObject descriptor,
+        bool preserveCurrentValue)
     {
         if (current.IsConfigurable)
             return true;
@@ -1314,7 +1441,8 @@ public partial class JSObject
             return false;
 
         if (current.IsReadOnly
-            && !descriptor[KeyStrings.value].Is(current.value as JSValue ?? JSUndefined.Value).BooleanValue)
+            && !preserveCurrentValue
+            && !descriptor[KeyStrings.value].Is(ResolvePropertyValue(current.value)).BooleanValue)
         {
             return false;
         }
@@ -1425,6 +1553,9 @@ public partial class JSObject
 
         if (ownProperties.RemoveAt(key.Key))
         {
+            CancelLazyDataProperty(in property);
+            AbandonObjectShape();
+            NotifyNamedPropertyMutation();
             PropertyChanged?.Invoke(this, (key.Key, uint.MaxValue, null));
             return BooleanTrue;
         }
@@ -1441,6 +1572,7 @@ public partial class JSObject
 
         if (elements.RemoveAt(key))
         {
+            NotifyIndexedPropertyMutation();
             PropertyChanged?.Invoke(this, (uint.MaxValue, key, null));
             return BooleanTrue;
         }
@@ -1455,6 +1587,7 @@ public partial class JSObject
 
         if (symbols.RemoveAt(symbol.Key))
         {
+            NotifyNamedPropertyMutation();
             PropertyChanged?.Invoke(this, (uint.MaxValue, uint.MaxValue, symbol));
             return BooleanTrue;
         }
@@ -1493,7 +1626,7 @@ public partial class JSObject
             for (uint i = (uint)start, j = (uint)to; i <= end; i++, j++)
             {
                 if (TryRemove(i, out var p))
-                    elements.Put(j) = p;
+                    elements.Set(j, p);
             }
 
             Length += diff;
@@ -1504,7 +1637,7 @@ public partial class JSObject
             for (int i = end, j = Length + diff - 1; i >= start; i--, j--)
             {
                 if (TryRemove((uint)i, out var p))
-                    elements.Put((uint)j) = p;
+                    elements.Set((uint)j, p);
             }
 
             Length += diff;
@@ -1641,16 +1774,16 @@ public partial class JSObject
         return GetIterableEnumerator();
     }
 
-    private readonly struct ElementEnumerator(JSObject @object, bool enumerableOnly = false) : IElementEnumerator
+    private struct ElementEnumerator(JSObject @object, bool enumerableOnly = false) : IElementEnumerator
     {
-        readonly IEnumerator<(uint Key, JSProperty Value)> en = @object.elements.AllValues().GetEnumerator();
+        ElementArray.ValueEnumerator en = @object.elements.StoredValues().GetEnumerator();
         readonly bool enumerableOnly = enumerableOnly;
 
         // Advance to the next stored element, skipping non-enumerable ones when key
         // enumeration requested enumerable-only (Object.keys / for-in).
         private bool MoveNextSlot(out uint key, out JSProperty prop)
         {
-            while (en?.MoveNext() ?? false)
+            while (en.MoveNext())
             {
                 (key, prop) = en.Current;
                 if (!enumerableOnly || prop.IsEnumerable)

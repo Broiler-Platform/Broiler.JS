@@ -225,6 +225,10 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
                 {
                     Init = BExpression.Assign(Variable, exp);
                 }
+                else if (initialize && Variable.Type == typeof(JSValue))
+                {
+                    Init = BExpression.Assign(Variable, JSUndefinedBuilder.Value);
+                }
             }
         }
     }
@@ -237,6 +241,8 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     internal void AddExternalVariable(in StringSpan name, VariableScope scope) => variableScopeList[name] = scope;
 
     public AstFunctionExpression Function { get; }
+    public bool CanScalarReplaceLocals { get; internal set; }
+    public bool HasOuterFunctionCaptures { get; private set; }
 
     // True when this function scope is an eval-shadow boundary: a sloppy function whose
     // parameter list or body contains a direct eval, so identifier references resolving
@@ -505,6 +511,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         Loop = p.Loop;
         ReturnLabel = p.ReturnLabel;
         NewTargetExpression = p.NewTargetExpression;
+        CanScalarReplaceLocals = p.CanScalarReplaceLocals;
     }
 
     public BExpression this[string name] => GetVariable(name).Expression;
@@ -736,8 +743,9 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         }
 
         // we need to move variable in top scope...
-        var pe = BExpression.Parameter(type ?? typeof(JSVariable), name.Value);
-        var ve = JSVariable.ValueExpression(pe);
+        var variableType = type ?? typeof(JSVariable);
+        var pe = BExpression.Parameter(variableType, name.Value);
+        var ve = variableType == typeof(JSVariable) ? JSVariable.ValueExpression(pe) : pe;
         
         v = new VariableScope
         {
@@ -751,6 +759,8 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         
         v.SetInit(init, initialize);
         variableScopeList[name] = v;
+        if (variableType == typeof(JSValue))
+            CompilerSpecializationDiagnostics.RecordScalarLocal();
         
         return v;
     }
@@ -762,7 +772,11 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         while (start != null)
         {
             if (start.variableScopeList.TryGetValue(name, out var result))
+            {
+                if (result.OwnerFunction != null && !ReferenceEquals(result.OwnerFunction, Function))
+                    RootScope.HasOuterFunctionCaptures = true;
                 return result;
+            }
 
             start = start.Parent;
         }

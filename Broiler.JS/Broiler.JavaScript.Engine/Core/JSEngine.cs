@@ -89,6 +89,12 @@ public static class JSEngine
     public static IBuiltInRegistry BuiltInRegistry { get; set; }
 
     /// <summary>
+    /// True when a host selected the default registry through the explicit bootstrap API.
+    /// Explicit hosts never enter the legacy magic-name assembly probing adapter.
+    /// </summary>
+    internal static bool HasExplicitBuiltInRegistry { get; set; }
+
+    /// <summary>
     /// Delegate for registering Core's source-generated built-in classes.
     /// Wired by Core's module initializer.
     /// </summary>
@@ -249,25 +255,29 @@ public static class JSEngine
     /// factory delegates, CLR interop, module helpers, and additional
     /// built-in type registrations.
     /// </summary>
+    private static readonly object CompatibilityAssemblyLoadLock = new();
+    private static bool compatibilityAssembliesLoaded;
+
     internal static void EnsureBuiltInsAssemblyLoaded()
     {
-        if (BuiltInRegistry != null
-            && CreateFunctionClass != null
-            && CreateObjectClass != null
-            && CreateTypeError != null
-            && CreateError != null)
-            return;
+        lock (CompatibilityAssemblyLoadLock)
+        {
+            if (compatibilityAssembliesLoaded)
+                return;
 
-        TryLoadAssembly("Broiler.JavaScript.Engine");
-        TryLoadAssembly("Broiler.JavaScript.BuiltIns");
-        TryLoadAssembly("Broiler.JavaScript.Clr");
-        TryLoadAssembly("Broiler.JavaScript.Globals");
-        TryLoadAssembly("Broiler.JavaScript.Extensions");
-        TryLoadAssembly("Broiler.JavaScript.Modules");
+            TryLoadAssembly("Broiler.JavaScript.Engine");
+            TryLoadAssembly("Broiler.JavaScript.BuiltIns");
+            TryLoadAssembly("Broiler.JavaScript.Clr");
+            TryLoadAssembly("Broiler.JavaScript.Globals");
+            TryLoadAssembly("Broiler.JavaScript.Extensions");
+            TryLoadAssembly("Broiler.JavaScript.Modules");
+            compatibilityAssembliesLoaded = true;
+        }
     }
 
     private static void TryLoadAssembly(string name)
     {
+        StartupOptimizationDiagnostics.RecordCompatibilityAssemblyProbe();
         try
         {
             var assembly = Assembly.Load(name);

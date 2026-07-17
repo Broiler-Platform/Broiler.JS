@@ -29,6 +29,13 @@ public readonly struct PropertyKey
 
     public static implicit operator PropertyKey(int index) => new(KeyType.UInt, (uint)index, KeyString.Empty);
     public static implicit operator PropertyKey(uint index) => new(KeyType.UInt, index, KeyString.Empty);
-    public static implicit operator PropertyKey(in KeyString key) => new(KeyType.String, 0, key);
-    public static implicit operator PropertyKey(string key) => new(KeyType.String, 0, KeyStrings.GetOrCreate(key));
+    public static implicit operator PropertyKey(in KeyString key)
+    {
+        var metadata = key.Metadata;
+        return metadata.IsArrayIndex
+            ? new PropertyKey(KeyType.UInt, metadata.ArrayIndex, KeyString.Empty)
+            : new PropertyKey(KeyType.String, 0, key);
+    }
+
+    public static implicit operator PropertyKey(string key) => (PropertyKey)KeyStrings.GetOrCreate(key);
 }

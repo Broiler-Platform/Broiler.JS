@@ -4,8 +4,6 @@ using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Engine.Benchmarks;
 
-[MemoryDiagnoser]
-[ShortRunJob]
 public class BuiltInHeavyBenchmarks
 {
     private static readonly IReadOnlyDictionary<string, string> Scripts = new Dictionary<string, string>

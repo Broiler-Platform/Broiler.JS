@@ -26,7 +26,7 @@ internal static class JSObjectCoreExtensions
         if (px.IsValue)
         {
             obj = JSObject.NewWithProperties()
-                .AddProperty(KeyStrings.value, (JSValue)px.value)
+                .AddProperty(KeyStrings.value, JSValue.ResolvePropertyValue(px.value))
                 .AddProperty(KeyStrings.writable, !px.IsReadOnly ? t : f)
                 .AddProperty(KeyStrings.enumerable, px.IsEnumerable ? t : f)
                 .AddProperty(KeyStrings.configurable, px.IsConfigurable ? t : f);

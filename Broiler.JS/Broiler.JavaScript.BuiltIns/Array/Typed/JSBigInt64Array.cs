@@ -24,7 +24,7 @@ public partial class JSBigInt64Array : JSTypedArray
         if (index >= length)
             return JSUndefined.Value;
 
-        return new JSBigInt(new BigInteger(BitConverter.ToInt64(buffer.buffer, byteOffset + (int)index * 8)));
+        return new JSBigInt(new BigInteger(BitConverter.ToInt64(buffer.buffer.AsSpan(byteOffset + (int)index * 8, 8))));
     }
 
     public override bool SetValue(uint index, JSValue value, JSValue receiver, bool throwError = true)
@@ -39,7 +39,7 @@ public partial class JSBigInt64Array : JSTypedArray
         if (index >= length)
             return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)
 
-        System.Array.Copy(BitConverter.GetBytes(bits), 0, buffer.buffer, byteOffset + index * 8, 8);
+        BitConverter.TryWriteBytes(buffer.buffer.AsSpan(byteOffset + (int)index * 8, 8), bits);
         return true;
     }
 

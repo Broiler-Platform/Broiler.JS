@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -46,6 +47,9 @@ public partial class ILCodeGenerator
     {
 
         using var tmp = tempVariables.Push();
+
+        if (TryEmitDenseIntegerSwitch(node) || TryEmitStringHashSwitch(node))
+            return true;
 
         bool isString = node.Target.Type == typeof(string);
 
@@ -175,5 +179,168 @@ public partial class ILCodeGenerator
 
     }
 
+    private bool TryEmitDenseIntegerSwitch(BSwitchExpression node)
+    {
+        if (node.Type != typeof(void) || node.Target.Type != typeof(int))
+            return false;
 
+        var tests = new List<(int Value, int Case)>();
+        for (var caseIndex = 0; caseIndex < node.Cases.Length; caseIndex++)
+        {
+            foreach (var test in node.Cases[caseIndex].TestValues)
+            {
+                if (test is not BInt32ConstantExpression integer)
+                    return false;
+                tests.Add((integer.Value, caseIndex));
+            }
+        }
+
+        if (tests.Count < 4)
+            return false;
+
+        var firstCases = new Dictionary<int, int>();
+        var min = int.MaxValue;
+        var max = int.MinValue;
+        foreach (var test in tests)
+        {
+            firstCases.TryAdd(test.Value, test.Case);
+            min = Math.Min(min, test.Value);
+            max = Math.Max(max, test.Value);
+        }
+
+        var range64 = (long)max - min + 1;
+        // Explicit code-size budget: at most 256 table entries and at least 50%
+        // occupancy. Small/sparse switches retain the generic comparison emitter.
+        if (range64 > 256 || range64 > firstCases.Count * 2L)
+            return false;
+
+        var range = (int)range64;
+        var @break = il.DefineLabel("denseSwitchBreak", il.Top);
+        var @default = il.DefineLabel("denseSwitchDefault", il.Top);
+        var caseLabels = new ILWriterLabel[node.Cases.Length];
+        for (var i = 0; i < caseLabels.Length; i++)
+            caseLabels[i] = il.DefineLabel("denseSwitchCase", il.Top);
+
+        var table = new Label[range];
+        Array.Fill(table, @default.Value);
+        foreach (var item in firstCases)
+            table[item.Key - min] = caseLabels[item.Value].Value;
+
+        Visit(node.Target);
+        if (min != 0)
+        {
+            il.EmitConstant(min);
+            il.Emit(OpCodes.Sub);
+        }
+        il.Emit(OpCodes.Switch, table);
+        il.Emit(OpCodes.Br, @default);
+
+        for (var i = 0; i < node.Cases.Length; i++)
+        {
+            il.MarkLabel(caseLabels[i]);
+            Visit(node.Cases[i].Body);
+            il.Emit(OpCodes.Br, @break);
+        }
+
+        il.MarkLabel(@default);
+        if (node.Default != null)
+            Visit(node.Default);
+        il.Emit(OpCodes.Br, @break);
+        il.MarkLabel(@break);
+        ILSpecializationDiagnostics.RecordDenseIntegerSwitch(range);
+        return true;
+    }
+
+    private bool TryEmitStringHashSwitch(BSwitchExpression node)
+    {
+        if (node.Type != typeof(void) || node.Target.Type != typeof(string))
+            return false;
+
+        var tests = new List<(string Value, int Case, int Hash)>();
+        for (var caseIndex = 0; caseIndex < node.Cases.Length; caseIndex++)
+        {
+            foreach (var test in node.Cases[caseIndex].TestValues)
+            {
+                if (test is not BStringConstantExpression text)
+                    return false;
+                tests.Add((text.Value, caseIndex, text.Value.UnsafeGetHashCode()));
+            }
+        }
+
+        if (tests.Count < 4 || tests.Count > 256)
+            return false;
+
+        var bucketCount = 4;
+        while (bucketCount < tests.Count && bucketCount < 256)
+            bucketCount <<= 1;
+        var mask = bucketCount - 1;
+        var buckets = new List<(string Value, int Case)>[bucketCount];
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var test in tests)
+        {
+            if (!seen.Add(test.Value))
+                continue;
+            var bucket = test.Hash & mask;
+            (buckets[bucket] ??= new List<(string, int)>()).Add((test.Value, test.Case));
+        }
+
+        var @break = il.DefineLabel("stringSwitchBreak", il.Top);
+        var @default = il.DefineLabel("stringSwitchDefault", il.Top);
+        var caseLabels = new ILWriterLabel[node.Cases.Length];
+        for (var i = 0; i < caseLabels.Length; i++)
+            caseLabels[i] = il.DefineLabel("stringSwitchCase", il.Top);
+        var bucketLabels = new ILWriterLabel[bucketCount];
+        var table = new Label[bucketCount];
+        for (var i = 0; i < bucketCount; i++)
+        {
+            bucketLabels[i] = il.DefineLabel("stringSwitchBucket", il.Top);
+            table[i] = bucketLabels[i].Value;
+        }
+
+        using var target = il.NewTemp(typeof(string));
+        using var hash = il.NewTemp(typeof(int));
+        Visit(node.Target);
+        il.EmitSaveLocal(target.LocalIndex);
+        il.EmitLoadLocal(target.LocalIndex);
+        il.EmitConstant(0);
+        il.EmitConstant(0);
+        il.EmitCall(UnsafeGetHashCode);
+        il.EmitSaveLocal(hash.LocalIndex);
+        il.EmitLoadLocal(hash.LocalIndex);
+        il.EmitConstant(mask);
+        il.Emit(OpCodes.And);
+        il.Emit(OpCodes.Switch, table);
+        il.Emit(OpCodes.Br, @default);
+
+        for (var i = 0; i < bucketCount; i++)
+        {
+            il.MarkLabel(bucketLabels[i]);
+            if (buckets[i] != null)
+            {
+                foreach (var test in buckets[i])
+                {
+                    il.EmitLoadLocal(target.LocalIndex);
+                    il.EmitConstant(test.Value);
+                    il.EmitCall(StringEqualsMethod);
+                    il.Emit(OpCodes.Brtrue, caseLabels[test.Case]);
+                }
+            }
+            il.Emit(OpCodes.Br, @default);
+        }
+
+        for (var i = 0; i < node.Cases.Length; i++)
+        {
+            il.MarkLabel(caseLabels[i]);
+            Visit(node.Cases[i].Body);
+            il.Emit(OpCodes.Br, @break);
+        }
+
+        il.MarkLabel(@default);
+        if (node.Default != null)
+            Visit(node.Default);
+        il.Emit(OpCodes.Br, @break);
+        il.MarkLabel(@break);
+        ILSpecializationDiagnostics.RecordStringHashSwitch(bucketCount);
+        return true;
+    }
 }

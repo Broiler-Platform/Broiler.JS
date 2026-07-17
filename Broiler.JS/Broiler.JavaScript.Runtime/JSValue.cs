@@ -53,11 +53,16 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     internal static Func<string, Exception> NewTypeError;
     internal static Func<bool> IsStrictModeEnabled;
     internal static Func<object, JSValue> MarshalObject;
+    internal static Func<JSObject, int, bool> IsFeatureEnabledFactory;
     internal static Func<JSValue, object, bool, object> ForceConvertHelper;
     internal static Func<Expression, JSValue, DynamicMetaObject> CreateDynamicMetaObject;
     internal static Func<double, string> NumberToECMAString;
     internal static Func<JSValue, IJSPrototype> CreatePrototypeObject;
     internal static Func<IPropertyAccessor, JSValue, JSValue> InvokePropertyGetter;
+
+    /// <summary>Used by generated registration code to avoid constructing disabled members.</summary>
+    public static bool IsFeatureEnabled(JSObject context, int feature)
+        => IsFeatureEnabledFactory?.Invoke(context, feature) == true;
 
     /// <summary>
     /// Factory delegate for creating a <c>JSDecimal</c> from a <c>decimal</c> value.
@@ -427,7 +432,12 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual JSValue BasePrototypeObject
     {
-        set => prototypeChain = CreatePrototypeObject?.Invoke(value);
+        set
+        {
+            (value as JSObject)?.MarkUsedAsPrototype();
+            prototypeChain = CreatePrototypeObject?.Invoke(value);
+            JSObject.NotifyPrototypeChainMutation();
+        }
     }
 
 
@@ -735,8 +745,11 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         if (this is not JSObject target)
             throw NewTypeError($"Cannot use 'in' operator to search for '{propertyKey}' in {this}");
 
-        // §10.1.7 OrdinaryHasProperty: check own property first
-        if (!target.GetOwnPropertyDescriptor(propertyKey).IsUndefined)
+        var key = propertyKey.ToKey(false);
+
+        // §10.1.7 OrdinaryHasProperty only needs an existence check. Avoid building
+        // the observable descriptor object used by Object.getOwnPropertyDescriptor.
+        if (target.HasOwnProperty(in key))
             return BooleanTrue;
 
         // Then delegate to the prototype's [[HasProperty]] (not GetOwnPropertyDescriptor)
@@ -758,8 +771,17 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         if (p.IsEmpty)
             return UndefinedValue;
 
-        return !p.IsProperty ? (JSValue)p.value : InvokePropertyGetter(p.get, this);
+        return !p.IsProperty ? ResolvePropertyValue(p.value) : InvokePropertyGetter(p.get, this);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static JSValue ResolvePropertyValue(IPropertyValue value) => value switch
+    {
+        JSValue jsValue => jsValue,
+        LazyDataPropertyCell lazy => lazy.Resolve(),
+        null => UndefinedValue,
+        _ => throw new InvalidOperationException($"Unsupported property value storage '{value.GetType().FullName}'.")
+    };
 
     public virtual JSValue GetOwnProperty(in KeyString name)
     {

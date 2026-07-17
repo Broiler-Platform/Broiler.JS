@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.BuiltIns.Proxy;
@@ -64,6 +65,9 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public readonly StringSpan name;
 
     internal JSFunctionDelegate f;
+    private FunctionTieringController tieringController;
+    private FunctionTieringState tieringState;
+    private string tieringLocation;
     private JSContext realm;
     public bool CoerceThisOnInvoke { get; set; }
     public bool IsStrictMode { get; set; }
@@ -195,8 +199,60 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     /// </summary>
     public JSFunctionDelegate Delegate
     {
-        get => f;
-        set => f = value;
+        get => Volatile.Read(ref f);
+        set => Volatile.Write(ref f, value);
+    }
+
+    /// <summary>Enables the compiler-proven, opt-in tiering site for this function.</summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public void EnableTiering(NumericLoopPlan numericPlan, string location)
+    {
+        CaptureRealm();
+        tieringController = realm?.FunctionTiering;
+        if (tieringController?.Enabled != true || source.IsEmpty || tieringState != null)
+            return;
+
+        tieringLocation = string.IsNullOrWhiteSpace(location) ? "tiered-function.js" : location;
+        tieringState = tieringController.CreateState(
+            checked(Math.Max(256, source.Length * 6L)),
+            () => RecompileForTiering(numericPlan));
+    }
+
+    private JSFunctionDelegate SelectInvocationDelegate()
+    {
+        var current = Volatile.Read(ref f);
+        var replacement = tieringState?.ObserveInvocation();
+        if (replacement == null)
+            return current;
+
+        Volatile.Write(ref f, replacement);
+        return replacement;
+    }
+
+    private JSFunctionDelegate RecompileForTiering(NumericLoopPlan numericPlan)
+    {
+        var baseline = Volatile.Read(ref f);
+        if (numericPlan != null)
+            return numericPlan.Compile(baseline, tieringController.RecordDeoptimization);
+
+        using var realmScope = EnterRealm();
+        var oneShotCache = new DictionaryCodeCache(new DictionaryCodeCacheOptions
+        {
+            MaxEntries = 1,
+            MaxRetainedSourceBytes = Math.Max(1_024, source.Length * 4L),
+            MaxEstimatedCodeBytes = Math.Max(1_024, source.Length * 8L),
+        });
+        var wrappedSource = $"({source.Value})";
+        var factory = CoreScript.Compile(
+            wrappedSource,
+            tieringLocation + "#tier1",
+            codeCache: oneShotCache,
+            compilationOptions: realm.CompilationOptions);
+        var value = JSTailCall.Resolve(factory(new Arguments(realm)));
+        if (value is not JSFunction optimized)
+            throw new InvalidOperationException("Tiering recompilation did not produce a function.");
+
+        return Volatile.Read(ref optimized.f);
     }
 
     /// <inheritdoc />
@@ -597,10 +653,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
         JSValue r;
         var context = JSEngine.Current as JSContext;
-        var scriptHostMode = string.Equals(
-            Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST"),
-            "1",
-            StringComparison.Ordinal);
+        var scriptHostMode = context?.Options.ScriptHostMode == true;
         using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
         using var withFallback = context?.PushWithFallbackScopes(CapturedWithFallbackScopes);
         using var withScope = context?.PushWithScopes(CapturedWithObjects);
@@ -630,7 +683,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
                 // to g()'s real value before the "explicit object return vs new instance" decision —
                 // otherwise the raw JSTailCall object leaks out (e.g. `new (function(){return {a:1}})().a`
                 // was undefined). Mirrors InvokeCallback.
-                r = JSTailCall.Resolve(f(a1) ?? JSUndefined.Value);
+                r = JSTailCall.Resolve(SelectInvocationDelegate()(a1) ?? JSUndefined.Value);
         }
         finally
         {
@@ -702,17 +755,14 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     {
         using var realmScope = EnterRealm();
         var context = JSEngine.Current as JSContext;
-        var scriptHostMode = string.Equals(
-            Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST"),
-            "1",
-            StringComparison.Ordinal);
+        var scriptHostMode = context?.Options.ScriptHostMode == true;
         using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
         using var withFallback = context?.PushWithFallbackScopes(CapturedWithFallbackScopes);
         using var withScope = context?.PushWithScopes(CapturedWithObjects);
         JSValue r;
         try
         {
-            r = f(in a) ?? JSUndefined.Value;
+            r = SelectInvocationDelegate()(in a) ?? JSUndefined.Value;
         }
         catch (NullReferenceException ex)
         {
@@ -747,16 +797,14 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
                 using (JSEngine.EnterStrictMode(current.IsStrictMode))
                 {
                     var context = JSEngine.Current as JSContext;
-                    var scriptHostMode = string.Equals(
-                        Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST"),
-                        "1",
-                        StringComparison.Ordinal);
+                    var scriptHostMode = context?.Options.ScriptHostMode == true;
                     using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
                     using var withFallback = context?.PushWithFallbackScopes(current.CapturedWithFallbackScopes);
                     using var withScope = context?.PushWithScopes(current.CapturedWithObjects);
                     try
                     {
-                        result = current.f(current.CoerceThisOnInvoke ? currentArguments.OverrideThis(CoerceNonStrictThis(currentArguments.This)) : currentArguments) ?? JSUndefined.Value;
+                        var invocationDelegate = current.SelectInvocationDelegate();
+                        result = invocationDelegate(current.CoerceThisOnInvoke ? currentArguments.OverrideThis(CoerceNonStrictThis(currentArguments.This)) : currentArguments) ?? JSUndefined.Value;
                     }
                     catch (NullReferenceException ex)
                     {
@@ -809,7 +857,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     internal JSValue InvokeCallback(in Arguments a)
     {
         using var realmScope = EnterRealm();
-        return JSTailCall.Resolve((CoerceThisOnInvoke ? f(a.OverrideThis(CoerceNonStrictThis(a.This))) : f(in a)) ?? JSUndefined.Value);
+        var invocationDelegate = SelectInvocationDelegate();
+        return JSTailCall.Resolve((CoerceThisOnInvoke ? invocationDelegate(a.OverrideThis(CoerceNonStrictThis(a.This))) : invocationDelegate(in a)) ?? JSUndefined.Value);
     }
 
     // Function.prototype has no own `valueOf`: per the spec it simply inherits

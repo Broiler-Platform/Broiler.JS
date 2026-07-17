@@ -41,6 +41,18 @@ public class JSPrimitiveObject : JSObject
     // than the fast direct-slot copy, which would observe an empty wrapper.
     private protected override bool UseObservableSpreadCopy => value.IsString;
 
+    internal protected override bool HasOwnProperty(in PropertyKey key)
+    {
+        if (value.IsString
+            && ((key.Type == KeyType.UInt && key.Index < value.Length)
+                || (key.Type == KeyType.String && key.KeyString.Key == KeyStrings.length.Key)))
+        {
+            return true;
+        }
+
+        return base.HasOwnProperty(in key);
+    }
+
     public override JSValue GetOwnPropertyDescriptor(JSValue name)
     {
         var key = name.ToKey(false);

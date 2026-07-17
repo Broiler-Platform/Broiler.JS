@@ -11,6 +11,7 @@ public class JSExportInfo
     public bool IsConstructor;
     public string? Symbol;
     public bool IsPrototypeMethod;
+    public int? Feature;
     internal IMethodSymbol? Method;
     internal ISymbol Member;
     internal IPropertySymbol? Property;
@@ -62,6 +63,10 @@ internal static class ITypeSymbolExtensions
                     if(kvp.Key == "IsConstructor")
                     {
                         e.IsConstructor = true;
+                    }
+                    if (kvp.Key == "Feature" && kvp.Value.Value is int feature)
+                    {
+                        e.Feature = feature;
                     }
                 }
             }

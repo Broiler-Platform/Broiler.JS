@@ -163,6 +163,38 @@ partial class FastCompiler
     {
         public bool Found { get; private set; }
 
+        // AstReduce leaves these compact containers to specialized rewriters.
+        // Direct-eval analysis must inspect them so `var x = eval(...)`, pattern
+        // defaults, and switch-clause evals establish the correct dynamic boundary.
+        protected override VariableDeclarator VisitVariableDeclarator(VariableDeclarator declarator)
+        {
+            Visit(declarator.Identifier);
+            if (declarator.Init != null)
+                Visit(declarator.Init);
+            return declarator;
+        }
+
+        protected override ObjectProperty VisitObjectProperty(ObjectProperty property)
+        {
+            if (property.Key != null)
+                Visit(property.Key);
+            if (property.Value != null)
+                Visit(property.Value);
+            if (property.Init != null)
+                Visit(property.Init);
+            return property;
+        }
+
+        protected override Case VisitCase(Case @case)
+        {
+            if (@case.Test != null)
+                Visit(@case.Test);
+            var statements = @case.Statements.GetFastEnumerator();
+            while (statements.MoveNext(out var statement))
+                Visit(statement);
+            return @case;
+        }
+
         protected override AstNode VisitCallExpression(AstCallExpression callExpression)
         {
             if (callExpression.Callee is AstIdentifier callee && callee.Name.Equals("eval"))

@@ -5,8 +5,6 @@ using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Engine.Benchmarks;
 
-[MemoryDiagnoser]
-[ShortRunJob]
 public class JIntSmokeBenchmarks
 {
     private const string DromaeoHelpers = """

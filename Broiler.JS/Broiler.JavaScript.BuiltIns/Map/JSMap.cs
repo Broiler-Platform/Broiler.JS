@@ -10,6 +10,7 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.BuiltIns.Collections;
 
 namespace Broiler.JavaScript.BuiltIns.Map;
 
@@ -29,7 +30,7 @@ public partial class JSMap : JSObject
     }
 
     private readonly List<Entry> store = [];
-    private StringMap<int> index = new();
+    private Dictionary<JSValue, int> index = new(SameValueZeroComparer.Instance);
     private int liveCount;
 
     [JSExport]
@@ -66,7 +67,7 @@ public partial class JSMap : JSObject
         }
     }
 
-    [JSExport("groupBy")]
+    [JSExport("groupBy", Feature = (int)JavaScriptFeatureFlags.ObjectMapGroupBy)]
     internal static new JSValue GroupBy(in Arguments a)
     {
         var (items, callbackfn) = a.Get2();
@@ -108,9 +109,9 @@ public partial class JSMap : JSObject
     [JSExport("set")]
     public JSValue Set(JSValue key, JSValue value)
     {
-        HashedString uk = key.ToUniqueID();
+        key = CanonicalizeKey(key);
 
-        if (index.TryGetValue(in uk, out var pos))
+        if (index.TryGetValue(key, out var pos))
         {
             var e = store[pos];
             e.Value = value;
@@ -118,7 +119,7 @@ public partial class JSMap : JSObject
         }
         else
         {
-            index.Put(in uk) = store.Count;
+            index[key] = store.Count;
             store.Add(new Entry { Key = key, Value = value });
             liveCount++;
         }
@@ -141,7 +142,7 @@ public partial class JSMap : JSObject
             store[i] = e;
         }
 
-        index = new();
+        index = new(SameValueZeroComparer.Instance);
         liveCount = 0;
 
         return JSUndefined.Value;
@@ -151,16 +152,13 @@ public partial class JSMap : JSObject
     public JSValue Delete(in Arguments a)
     {
         var f = a[0];
-        HashedString uk = f.ToUniqueID();
-
-        if (index.TryGetValue(in uk, out var pos))
+        if (index.Remove(f, out var pos))
         {
             var e = store[pos];
             e.Deleted = true;
             e.Key = JSUndefined.Value;
             e.Value = JSUndefined.Value;
             store[pos] = e;
-            index.TryRemove(uk.Value, out _);
             liveCount--;
             return JSBoolean.True;
         }
@@ -214,8 +212,7 @@ public partial class JSMap : JSObject
     public JSValue Has(in Arguments a)
     {
         var f = a.Get1();
-        HashedString uk = f.ToUniqueID();
-        if (index.TryGetValue(in uk, out _))
+        if (index.ContainsKey(f))
             return JSBoolean.True;
 
         return JSBoolean.False;
@@ -225,8 +222,7 @@ public partial class JSMap : JSObject
     [JSExport("get")]
     public JSValue Get(JSValue key)
     {
-        HashedString uk = key.ToUniqueID();
-        if (index.TryGetValue(in uk, out var pos))
+        if (index.TryGetValue(key, out var pos))
             return store[pos].Value;
 
         return JSUndefined.Value;
@@ -278,17 +274,15 @@ public partial class JSMap : JSObject
             ? CreateNumber(0.0)
             : key;
 
-    [JSExport("getOrInsert", Length = 2)]
+    [JSExport("getOrInsert", Length = 2, Feature = (int)JavaScriptFeatureFlags.MapUpsert)]
     public JSValue GetOrInsert(in Arguments a)
     {
         var (key, defaultValue) = a.Get2();
         key = CanonicalizeKey(key);
-        HashedString uk = key.ToUniqueID();
-
-        if (index.TryGetValue(in uk, out var pos))
+        if (index.TryGetValue(key, out var pos))
             return store[pos].Value;
 
-        index.Put(in uk) = store.Count;
+        index[key] = store.Count;
         store.Add(new Entry { Key = key, Value = defaultValue });
         liveCount++;
 
@@ -300,7 +294,7 @@ public partial class JSMap : JSObject
     /// Returns the value for key if present, otherwise calls callback(key),
     /// inserts the result, and returns it.
     /// </summary>
-    [JSExport("getOrInsertComputed")]
+    [JSExport("getOrInsertComputed", Feature = (int)JavaScriptFeatureFlags.MapUpsert)]
     public JSValue GetOrInsertComputed(in Arguments a)
     {
         var (key, callbackfn) = a.Get2();
@@ -308,13 +302,12 @@ public partial class JSMap : JSObject
             throw JSEngine.NewTypeError("getOrInsertComputed requires a callback function");
 
         key = CanonicalizeKey(key);
-        HashedString uk = key.ToUniqueID();
-        if (index.TryGetValue(in uk, out var pos))
+        if (index.TryGetValue(key, out var pos))
             return store[pos].Value;
 
         var value = callbackfn.Call(JSUndefined.Value, key);
         // Re-check: the callback may have inserted this key already.
-        if (index.TryGetValue(in uk, out pos))
+        if (index.TryGetValue(key, out pos))
         {
             var existing = store[pos];
             existing.Value = value;
@@ -322,7 +315,7 @@ public partial class JSMap : JSObject
             return value;
         }
 
-        index.Put(in uk) = store.Count;
+        index[key] = store.Count;
         store.Add(new Entry { Key = key, Value = value });
         liveCount++;
 
