@@ -1,0 +1,7 @@
+# Strict/sloppy call state, directive prologues, arguments, and function code.
+test/language/directive-prologue
+test/language/arguments-object
+test/language/function-code
+test/language/global-code
+test/built-ins/Function
+test/built-ins/FunctionPrototype

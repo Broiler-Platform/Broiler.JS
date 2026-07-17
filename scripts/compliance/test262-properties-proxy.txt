@@ -1,0 +1,7 @@
+# Ordinary and exotic property semantics used by descriptor-free lookup work.
+test/built-ins/Object
+test/built-ins/Reflect
+test/built-ins/Proxy
+test/language/expressions/in
+test/language/expressions/delete
+test/language/expressions/property-accessors

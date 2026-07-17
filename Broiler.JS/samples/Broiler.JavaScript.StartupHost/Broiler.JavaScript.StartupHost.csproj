@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>false</IsPackable>
+    <BroilerHostProfile Condition="'$(BroilerHostProfile)' == ''">Minimal</BroilerHostProfile>
+    <DefineConstants Condition="'$(BroilerHostProfile)' == 'Full'">$(DefineConstants);BROILER_FULL_HOST</DefineConstants>
+    <TrimMode>partial</TrimMode>
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Broiler.JavaScript.Compiler\Broiler.JavaScript.Compiler.csproj" />
+    <ProjectReference Include="..\..\Broiler.JavaScript.BuiltIns\Broiler.JavaScript.BuiltIns.csproj" />
+    <ProjectReference Include="..\..\Broiler.JavaScript.Globals\Broiler.JavaScript.Globals.csproj" />
+    <ProjectReference Include="..\..\Broiler.JavaScript.Extensions\Broiler.JavaScript.Extensions.csproj" />
+    <ProjectReference Include="..\..\Broiler.JavaScript.Engine\Broiler.JavaScript.Engine.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(BroilerHostProfile)' == 'Full'">
+    <ProjectReference Include="..\..\Broiler.JavaScript.Clr\Broiler.JavaScript.Clr.csproj" />
+    <ProjectReference Include="..\..\Broiler.JavaScript.Debugger\Broiler.JavaScript.Debugger.csproj" />
+    <ProjectReference Include="..\..\Broiler.JavaScript.Modules\Broiler.JavaScript.Modules.csproj" />
+    <ProjectReference Include="..\..\Broiler.JavaScript.ModuleExtensions\Broiler.JavaScript.ModuleExtensions.csproj" />
+    <ProjectReference Include="..\..\Broiler.JavaScript.Feature.Sample\Broiler.JavaScript.Feature.Sample.csproj" />
+  </ItemGroup>
+</Project>

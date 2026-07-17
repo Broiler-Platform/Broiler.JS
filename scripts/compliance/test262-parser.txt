@@ -1,0 +1,8 @@
+# Identifier, keyword, literal, source text, and switch parsing invariants.
+test/language/comments
+test/language/identifiers
+test/language/keywords
+test/language/literals
+test/language/numeric-separator-literal
+test/language/source-text
+test/language/statements/switch

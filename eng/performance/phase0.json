@@ -1,0 +1,119 @@
+{
+  "$schema": "schemas/phase0-config.schema.json",
+  "schemaVersion": "1.0.0",
+  "benchmark": {
+    "project": "Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Broiler.JavaScript.Engine.Benchmarks.csproj",
+    "targetFramework": "net10.0",
+    "configuration": "Release",
+    "profiles": {
+      "smoke": {
+        "repetitions": 2,
+        "lifecycleSamplesPerRepetition": 3,
+        "noiseBandPercent": 20.0,
+        "filters": [
+          "*ContextStartupBenchmarks*",
+          "*CodeCacheBenchmarks.ProductionStructuralHit*",
+          "*FunctionCallBenchmarks.ScriptSloppy*",
+          "*PropertyOperationBenchmarks.OwnGet*",
+          "*ArrayPrimitiveBenchmarks.DenseRead*",
+          "*MapSetBenchmarks.Run*",
+          "*BinaryDataBenchmarks.DataViewFloat64Write*",
+          "*ParserCompilerBenchmarks.ParseOnly*"
+        ]
+      },
+      "baseline": {
+        "repetitions": 2,
+        "lifecycleSamplesPerRepetition": 10,
+        "noiseBandPercent": 7.5,
+        "filters": [
+          "*ContextStartupBenchmarks*",
+          "*ScriptEvaluationBenchmarks*",
+          "*CodeCacheBenchmarks*",
+          "*FunctionCallBenchmarks*",
+          "*PropertyOperationBenchmarks*",
+          "*KeyMetadataBenchmarks*",
+          "*ArrayPrimitiveBenchmarks*",
+          "*SparseMapBenchmarks*",
+          "*MapSetBenchmarks*",
+          "*BinaryDataBenchmarks*",
+          "*ParserCompilerBenchmarks*",
+          "*ObjectAndArrayBenchmarks*",
+          "*PromiseBenchmarks*",
+          "*BuiltInHeavyBenchmarks*"
+        ]
+      },
+      "disassembly": {
+        "repetitions": 1,
+        "lifecycleSamplesPerRepetition": 0,
+        "noiseBandPercent": 0.0,
+        "filters": [
+          "*FunctionCallBenchmarks.ScriptSloppy*",
+          "*PropertyOperationBenchmarks.OwnGet*",
+          "*ArrayPrimitiveBenchmarks.DenseRead*",
+          "*BinaryDataBenchmarks.DataViewFloat64Write*"
+        ]
+      }
+    }
+  },
+  "eventPipe": {
+    "provider": "Microsoft-Windows-DotNETRuntime:0x4c14fccbd:5",
+    "scenarios": {
+      "context": 25,
+      "functions": 25,
+      "properties": 25,
+      "arrays": 25,
+      "parsing": 25,
+      "mapset": 25
+    }
+  },
+  "build": {
+    "project": "Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj",
+    "touchFile": "Broiler.JS/Broiler.JavaScript.BuiltIns/Array/JSArray.cs",
+    "configuration": "Release"
+  },
+  "publish": {
+    "project": "Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj",
+    "rids": [
+      "win-x64",
+      "linux-x64",
+      "linux-arm64"
+    ],
+    "variants": {
+      "framework-dependent": {
+        "SelfContained": false,
+        "PublishReadyToRun": false,
+        "PublishTrimmed": false
+      },
+      "ready-to-run": {
+        "SelfContained": false,
+        "PublishReadyToRun": true,
+        "PublishTrimmed": false
+      },
+      "trimmed": {
+        "SelfContained": false,
+        "PublishReadyToRun": false,
+        "PublishTrimmed": true
+      }
+    }
+  },
+  "platformMatrix": [
+    {
+      "os": "windows",
+      "architecture": "x64",
+      "cpuFeatures": ["AVX2 enabled", "AVX2 disabled"],
+      "gcModes": ["server", "workstation"]
+    },
+    {
+      "os": "linux",
+      "architecture": "x64",
+      "cpuFeatures": ["AVX2 enabled", "AVX2 disabled"],
+      "gcModes": ["server", "workstation"]
+    },
+    {
+      "os": "linux",
+      "architecture": "arm64",
+      "cpuFeatures": ["AdvSimd"],
+      "gcModes": ["server", "workstation"]
+    }
+  ]
+}

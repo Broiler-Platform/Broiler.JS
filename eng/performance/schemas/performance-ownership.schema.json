@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://broiler.dev/schemas/performance/ownership.schema.json",
+  "title": "Broiler.JS performance benchmark and semantic ownership",
+  "type": "object",
+  "required": ["schemaVersion", "items"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "type": "string", "const": "1.0.0" },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "priority", "benchmark", "semanticOwner", "manifest"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "priority": { "type": "string", "enum": ["P0", "P1", "P2", "P3"] },
+          "benchmark": { "type": "string", "minLength": 1 },
+          "semanticOwner": { "type": "string", "minLength": 1 },
+          "manifest": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

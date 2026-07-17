@@ -1,0 +1,5 @@
+# Realm-sensitive intrinsics and ShadowRealm behavior. Host-harness-dependent
+# files remain visible in audit output even when the raw script host excludes them.
+test/built-ins/ShadowRealm
+test/built-ins/eval
+test/built-ins/globalThis

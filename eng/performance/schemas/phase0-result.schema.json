@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://broiler.dev/schemas/performance/phase0-result.schema.json",
+  "title": "Broiler.JS Phase 0 collected result",
+  "type": "object",
+  "required": ["schemaVersion", "kind", "timestampUtc", "repository", "environment", "commands", "artifacts"],
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "1.0.0" },
+    "kind": { "type": "string", "enum": ["phase0-run", "phase0-repeatability"] },
+    "timestampUtc": { "type": "string", "format": "date-time" },
+    "repository": {
+      "type": "object",
+      "required": ["commit", "dirty"],
+      "properties": {
+        "commit": { "type": "string" },
+        "dirty": { "type": "boolean" }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "required": ["runtime", "os", "rid", "architecture", "processorCount", "serverGc", "dotnetInfo"],
+      "additionalProperties": true
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["argv", "exitCode", "elapsedSeconds"],
+        "properties": {
+          "argv": { "type": "array", "items": { "type": "string" } },
+          "exitCode": { "type": "integer" },
+          "elapsedSeconds": { "type": "number", "minimum": 0 },
+          "stdout": { "type": "string" },
+          "stderr": { "type": "string" }
+        }
+      }
+    },
+    "artifacts": { "type": "object", "additionalProperties": true },
+    "lifecycle": { "type": "array", "items": { "type": "object" } },
+    "benchmarks": { "type": "array", "items": { "type": "object" } },
+    "build": { "type": "object" },
+    "packages": { "type": "object" },
+    "assemblies": { "type": "array", "items": { "type": "object" } },
+    "sparseStorage": { "type": "object" },
+    "publishes": { "type": "array", "items": { "type": "object" } },
+    "profiles": { "type": "array", "items": { "type": "object" } },
+    "comparisons": { "type": "array", "items": { "type": "object" } },
+    "withinNoiseBand": { "type": "boolean" }
+  },
+  "additionalProperties": true
+}

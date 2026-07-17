@@ -1,0 +1,9 @@
+<Project>
+  <!-- Persisted generator output is a diagnostics opt-in. This file is imported after
+       project properties, so Configuration and TargetFramework are both available and
+       parallel builds cannot share an output directory. -->
+  <PropertyGroup Condition="'$(BroilerPersistGeneratedFiles)' == 'true'">
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>$(MSBuildProjectDirectory)\obj\generated\$(Configuration)\$(TargetFramework)</CompilerGeneratedFilesOutputPath>
+  </PropertyGroup>
+</Project>

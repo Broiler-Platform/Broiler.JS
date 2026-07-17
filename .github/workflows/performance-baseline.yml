@@ -1,0 +1,115 @@
+name: Performance baselines
+
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Benchmark profile
+        type: choice
+        options: [smoke, baseline, disassembly]
+        default: smoke
+      include_eventpipe:
+        description: Collect EventPipe traces
+        type: boolean
+        default: false
+      include_build_baselines:
+        description: Collect clean/no-op/one-file build timings
+        type: boolean
+        default: false
+      include_publish:
+        description: Collect framework-dependent/R2R/trim publish sizes
+        type: boolean
+        default: false
+  schedule:
+    - cron: "23 3 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  collect:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
+    env:
+      PROFILE: ${{ inputs.profile || 'smoke' }}
+      INCLUDE_EVENTPIPE: ${{ inputs.include_eventpipe || 'false' }}
+      INCLUDE_BUILD: ${{ inputs.include_build_baselines || 'false' }}
+      INCLUDE_PUBLISH: ${{ inputs.include_publish || 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Validate Phase 0 configuration
+        run: python -m unittest discover -s scripts/performance/tests -v
+
+      - name: Validate Phase 2 collection and element invariants
+        if: matrix.os == 'ubuntu-latest' && env.PROFILE == 'smoke'
+        run: |
+          dotnet test Broiler.JS/Broiler.JavaScript.Storage.Tests/Broiler.JavaScript.Storage.Tests.csproj -c Release -m:1
+          dotnet test Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Broiler.JavaScript.BuiltIns.Tests.csproj -c Release -m:1 --filter Phase2CollectionsAndArraysTests
+
+      - name: Validate Phase 3 compiler specialization and invalidation
+        if: matrix.os == 'ubuntu-latest' && env.PROFILE == 'smoke'
+        run: dotnet test Broiler.JS/Broiler.JavaScript.Compiler.Tests/Broiler.JavaScript.Compiler.Tests.csproj -c Release -m:1 --filter Phase3CompilerSpecializationTests
+
+      - name: Validate Phase 4 startup profiles and lazy data properties
+        if: matrix.os == 'ubuntu-latest' && env.PROFILE == 'smoke'
+        run: dotnet test Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Broiler.JavaScript.BuiltIns.Tests.csproj -c Release -m:1 --filter Phase4StartupAndPackagingTests
+
+      - name: Validate Phase 5 tiering and portable execution
+        if: matrix.os == 'ubuntu-latest' && env.PROFILE == 'smoke'
+        run: |
+          dotnet test Broiler.JS/Broiler.JavaScript.Compiler.Tests/Broiler.JavaScript.Compiler.Tests.csproj -c Release -m:1 --filter Phase5AdvancedExecutionTests
+          dotnet test Broiler.JS/Broiler.JavaScript.Runtime.Tests/Broiler.JavaScript.Runtime.Tests.csproj -c Release -m:1 --filter Phase5TaggedValuePrototypeTests
+          dotnet test Broiler.JS/Broiler.JavaScript.Portable.Tests/Broiler.JavaScript.Portable.Tests.csproj -c Release -m:1
+
+      - name: Validate pristine package consumer
+        if: matrix.os == 'ubuntu-latest' && env.PROFILE == 'smoke'
+        run: python scripts/packaging/test_pristine_consumer.py
+
+      - name: Collect evidence
+        shell: pwsh
+        run: |
+          $arguments = @(
+            "scripts/performance/collect_phase0.py",
+            "--profile", $env:PROFILE,
+            "--output", "artifacts/performance"
+          )
+          if ($env:INCLUDE_EVENTPIPE -eq "true") {
+            dotnet tool install --tool-path .tools dotnet-trace
+            $env:PATH = "$(Resolve-Path .tools)$([IO.Path]::PathSeparator)$env:PATH"
+            $arguments += "--include-eventpipe"
+          }
+          if ($env:INCLUDE_BUILD -eq "true") { $arguments += "--include-build-baselines" }
+          if ($env:INCLUDE_PUBLISH -eq "true") { $arguments += "--include-publish" }
+          python @arguments
+
+      - name: Collect Phase 4 package and publish evidence
+        if: env.INCLUDE_PUBLISH == 'true'
+        run: python scripts/performance/collect_phase4.py --output artifacts/performance/phase4
+
+      - name: Collect Phase 5 Native AOT evidence
+        if: env.INCLUDE_PUBLISH == 'true'
+        run: python scripts/performance/collect_phase5.py --output artifacts/performance/phase5
+
+      - name: Verify deterministic generated output
+        if: matrix.os == 'ubuntu-latest' && env.PROFILE == 'smoke'
+        run: python scripts/performance/check_generator_determinism.py --output artifacts/performance/generator-determinism.json
+
+      - name: Upload raw evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-${{ matrix.os }}-${{ env.PROFILE }}
+          path: artifacts/performance
+          if-no-files-found: error
+          retention-days: 30

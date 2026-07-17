@@ -1,0 +1,4 @@
+# Array element, length, hole, species, callback, and iteration semantics.
+test/built-ins/Array
+test/built-ins/ArrayIteratorPrototype
+test/language/expressions/array

@@ -1,0 +1,7 @@
+# SameValueZero, identity, live iteration, mutation, and weak collection behavior.
+test/built-ins/Map
+test/built-ins/MapIteratorPrototype
+test/built-ins/Set
+test/built-ins/SetIteratorPrototype
+test/built-ins/WeakMap
+test/built-ins/WeakSet

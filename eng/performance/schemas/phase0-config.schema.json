@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://broiler.dev/schemas/performance/phase0-config.schema.json",
+  "title": "Broiler.JS Phase 0 performance configuration",
+  "type": "object",
+  "required": ["schemaVersion", "benchmark", "eventPipe", "build", "publish", "platformMatrix"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "type": "string", "const": "1.0.0" },
+    "benchmark": {
+      "type": "object",
+      "required": ["project", "targetFramework", "configuration", "profiles"],
+      "properties": {
+        "project": { "type": "string" },
+        "targetFramework": { "type": "string" },
+        "configuration": { "type": "string" },
+        "profiles": {
+          "type": "object",
+          "required": ["smoke", "baseline", "disassembly"],
+          "additionalProperties": { "$ref": "#/$defs/benchmarkProfile" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "eventPipe": {
+      "type": "object",
+      "required": ["provider", "scenarios"],
+      "properties": {
+        "provider": { "type": "string" },
+        "scenarios": {
+          "type": "object",
+          "required": ["context", "functions", "properties", "arrays", "parsing", "mapset"],
+          "additionalProperties": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "additionalProperties": false
+    },
+    "build": { "$ref": "#/$defs/projectOperation" },
+    "publish": {
+      "type": "object",
+      "required": ["project", "rids", "variants"],
+      "properties": {
+        "project": { "type": "string" },
+        "rids": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+        "variants": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "object" } }
+      },
+      "additionalProperties": false
+    },
+    "platformMatrix": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["os", "architecture", "cpuFeatures", "gcModes"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "$defs": {
+    "benchmarkProfile": {
+      "type": "object",
+      "required": ["repetitions", "lifecycleSamplesPerRepetition", "noiseBandPercent", "filters"],
+      "properties": {
+        "repetitions": { "type": "integer", "minimum": 1 },
+        "lifecycleSamplesPerRepetition": { "type": "integer", "minimum": 0 },
+        "noiseBandPercent": { "type": "number", "minimum": 0 },
+        "filters": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "projectOperation": {
+      "type": "object",
+      "required": ["project", "configuration"],
+      "properties": {
+        "project": { "type": "string" },
+        "touchFile": { "type": "string" },
+        "configuration": { "type": "string" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "schemas/performance-ownership.schema.json",
+  "schemaVersion": "1.0.0",
+  "items": [
+    { "id": "host-mode-options", "priority": "P0", "benchmark": "FunctionCallBenchmarks", "semanticOwner": "Broiler.JavaScript.Runtime.Tests", "manifest": "scripts/compliance/test262-strict-mode.txt" },
+    { "id": "descriptor-free-has-property", "priority": "P0", "benchmark": "PropertyOperationBenchmarks", "semanticOwner": "Broiler.JavaScript.Runtime.Tests", "manifest": "scripts/compliance/test262-properties-proxy.txt" },
+    { "id": "allocation-free-binary-writes", "priority": "P0", "benchmark": "BinaryDataBenchmarks", "semanticOwner": "Broiler.JavaScript.BuiltIns.Tests", "manifest": "scripts/compliance/test262-binary-data.txt" },
+    { "id": "virtual-memory-occupancy", "priority": "P0", "benchmark": "ArrayPrimitiveBenchmarks", "semanticOwner": "Broiler.JavaScript.Storage.Tests", "manifest": "scripts/compliance/test262-arrays.txt" },
+    { "id": "parser-span-fast-paths", "priority": "P0", "benchmark": "ParserCompilerBenchmarks", "semanticOwner": "Broiler.JavaScript.Parser.Tests", "manifest": "scripts/compliance/test262-parser.txt" },
+    { "id": "bounded-code-cache", "priority": "P0", "benchmark": "CodeCacheBenchmarks", "semanticOwner": "Broiler.JavaScript.Core.Tests", "manifest": "scripts/compliance/test262-realm-isolation.txt" },
+    { "id": "same-value-zero-map-set", "priority": "P1", "benchmark": "MapSetBenchmarks", "semanticOwner": "Broiler.JavaScript.BuiltIns.Tests", "manifest": "scripts/compliance/test262-map-set.txt" },
+    { "id": "weak-collection-ephemerons", "priority": "P1", "benchmark": "MapSetBenchmarks", "semanticOwner": "Broiler.JavaScript.BuiltIns.Tests", "manifest": "scripts/compliance/test262-map-set.txt" },
+    { "id": "lock-free-key-metadata", "priority": "P1", "benchmark": "PropertyOperationBenchmarks", "semanticOwner": "Broiler.JavaScript.Storage.Tests", "manifest": "scripts/compliance/test262-properties-proxy.txt" },
+    { "id": "property-order-deletion", "priority": "P1", "benchmark": "ObjectAndArrayBenchmarks", "semanticOwner": "Broiler.JavaScript.Runtime.Tests", "manifest": "scripts/compliance/test262-properties-proxy.txt" },
+    { "id": "packed-holey-arrays", "priority": "P1", "benchmark": "ArrayPrimitiveBenchmarks", "semanticOwner": "Broiler.JavaScript.BuiltIns.Tests", "manifest": "scripts/compliance/test262-arrays.txt" },
+    { "id": "function-call-fast-path", "priority": "P1", "benchmark": "FunctionCallBenchmarks", "semanticOwner": "Broiler.JavaScript.Compiler.Tests", "manifest": "scripts/compliance/test262-strict-mode.txt" },
+    { "id": "lazy-builtin-descriptors", "priority": "P1", "benchmark": "ContextStartupBenchmarks", "semanticOwner": "Broiler.JavaScript.BuiltIns.Tests", "manifest": "scripts/compliance/test262-properties-proxy.txt" },
+    { "id": "scalar-replace-locals", "priority": "P2", "benchmark": "ParserCompilerBenchmarks", "semanticOwner": "Broiler.JavaScript.Compiler.Tests", "manifest": "scripts/compliance/test262-parser.txt" },
+    { "id": "switch-dispatch", "priority": "P2", "benchmark": "ParserCompilerBenchmarks", "semanticOwner": "Broiler.JavaScript.Compiler.Tests", "manifest": "scripts/compliance/test262-parser.txt" },
+    { "id": "shapes-inline-caches", "priority": "P2", "benchmark": "PropertyOperationBenchmarks", "semanticOwner": "Broiler.JavaScript.Runtime.Tests", "manifest": "scripts/compliance/test262-properties-proxy.txt" },
+    { "id": "feature-satellite-assemblies", "priority": "P2", "benchmark": "ContextStartupBenchmarks", "semanticOwner": "Broiler.JavaScript.Integration.Tests", "manifest": "scripts/compliance/test262-realm-isolation.txt" },
+    { "id": "incremental-generators", "priority": "P2", "benchmark": "phase0-build-one-file", "semanticOwner": "Broiler.JavaScript.Core.Tests", "manifest": "scripts/compliance/test262-parser.txt" },
+    { "id": "tiered-unboxed-locals", "priority": "P3", "benchmark": "ParserCompilerBenchmarks", "semanticOwner": "Broiler.JavaScript.Compiler.Tests", "manifest": "scripts/compliance/test262-parser.txt" },
+    { "id": "tagged-js-value", "priority": "P3", "benchmark": "FunctionCallBenchmarks", "semanticOwner": "Broiler.JavaScript.Runtime.Tests", "manifest": "scripts/compliance/test262-realm-isolation.txt" },
+    { "id": "native-aot-mode", "priority": "P3", "benchmark": "phase0-publish", "semanticOwner": "Broiler.JavaScript.Integration.Tests", "manifest": "scripts/compliance/test262-language-basics.txt" }
+  ]
+}
