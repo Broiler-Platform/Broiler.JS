@@ -76,7 +76,12 @@ public class JSModuleContext : JSContext
 
     protected string[] extensions = [".js"];
 
-    internal string Resolve(string dirPath, string relativePath)
+    /// <summary>
+    /// Resolves an import specifier to a module key. The default is a filesystem/node_modules resolution.
+    /// A host that loads modules over another scheme (e.g. a browser resolving URLs against a base and
+    /// fetching them) overrides this to return its own key form (typically an absolute URL).
+    /// </summary>
+    protected virtual string Resolve(string dirPath, string relativePath)
     {
         bool Exists(string folder, string file, out string path)
         {
@@ -297,7 +302,7 @@ public class JSModuleContext : JSContext
         m = moduleCache.GetOrCreate(fullPath, () =>
         {
             var newModule = new JSModule(this, fullPath);
-            var dirPath = Path.GetDirectoryName(fullPath);
+            var dirPath = GetModuleDirectory(fullPath);
 
             newModule.Import = new JSFunction((in Arguments a) =>
             {
@@ -332,17 +337,33 @@ public class JSModuleContext : JSContext
         return m.Exports;
     }
 
+    /// <summary>
+    /// Returns the base directory a resolved module's own relative imports resolve against. The default is
+    /// the filesystem directory of <paramref name="fullPath"/>; a URL-loading host overrides this to return
+    /// the module URL's base so nested relative imports resolve as URLs rather than being mangled by
+    /// filesystem path semantics.
+    /// </summary>
+    protected virtual string GetModuleDirectory(string fullPath) => Path.GetDirectoryName(fullPath);
+
+    /// <summary>
+    /// Reads the source text of a resolved module whose <see cref="JSModule.Code"/> has not been supplied.
+    /// The default reads the file at <see cref="JSModule.filePath"/>; a host that fetches modules over
+    /// another transport (e.g. HTTP/data URLs under a content-security policy) overrides this.
+    /// </summary>
+    protected virtual async Task<string> ReadModuleSourceAsync(JSModule module)
+    {
+        using var reader = new StreamReader(module.filePath, Encoding.UTF8);
+        return await reader.ReadToEndAsync();
+    }
+
     internal protected virtual async Task CompileModuleAsync(JSModule module)
     {
         // Console.WriteLine($"{DateTime.Now} - Compiling module {module.filePath}");
         var filePath = module.filePath;
 
-        // if this is a json file... then pad with module.exports = 
+        // if this is a json file... then pad with module.exports =
         if (module.Code == null)
-        {
-            using var reader = new StreamReader(filePath, Encoding.UTF8);
-            module.Code = await reader.ReadToEndAsync();
-        }
+            module.Code = await ReadModuleSourceAsync(module);
 
         var code = module.Code;
 
