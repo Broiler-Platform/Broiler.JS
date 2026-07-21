@@ -183,6 +183,19 @@ public class JSModuleContext : JSContext
         ];
     }
 
+    /// <summary>
+    /// Converts a .NET <see cref="Task{JSValue}"/> into a JS promise using the engine-native promise
+    /// factory rather than <c>JSEngine.ClrInterop.Marshal</c>. The CLR interop is only the full
+    /// <see cref="DefaultClrInterop"/> when the optional <c>Broiler.JavaScript.Clr</c> assembly is loaded;
+    /// otherwise it is the fallback, whose <c>Marshal</c> returns <c>undefined</c> for a <see cref="Task"/>.
+    /// Modules does not reference Clr, so routing <c>import()</c>/<c>require()</c> module tasks through the
+    /// interop made an imported module resolve to <c>undefined</c> whenever Clr was absent — the exports
+    /// bound but their value was lost. This factory (the same one <see cref="DefaultClrInterop"/> uses for a
+    /// <c>Task&lt;JSValue&gt;</c>) is populated by the always-referenced BuiltIns assembly, so it works
+    /// regardless of Clr.
+    /// </summary>
+    private static JSValue TaskToPromise(Task<JSValue> task) => JSValue.CreatePromiseFromTask(task);
+
     private static IDisposable CreateSynchronizationContext()
     {
         if (SynchronizationContext.Current == null)
@@ -194,10 +207,13 @@ public class JSModuleContext : JSContext
         return DisposableAction.Empty;
     }
 
-    public async Task<JSValue> RunAsync(string folder, string relativeFile, string[] paths = null)
-    {
-        using var sc = CreateSynchronizationContext();
+    public Task<JSValue> RunAsync(string folder, string relativeFile, string[] paths = null)
+        // As with RunScriptAsync: pump the whole module init on one AsyncPump loop so top-level-await
+        // module bodies run to completion instead of stalling on the default un-pumped context.
+        => Task.Run(() => AsyncPump.Run(() => RunCoreAsync(folder, relativeFile, paths)));
 
+    private async Task<JSValue> RunCoreAsync(string folder, string relativeFile, string[] paths)
+    {
         CurrentPath = folder;
         UpdatePaths(paths);
 
@@ -219,10 +235,17 @@ public class JSModuleContext : JSContext
     /// <param name="uniqueModuleID">Module ID if you want get this module later (in <see cref="ImportModule"/> or import in js)</param>
     /// <returns>Module as JSObject</returns>
     /// <exception cref="JSException"></exception>
-    public async Task<JSValue> RunScriptAsync(string script, string moduleFolder, string[] paths = null, string uniqueModuleID = null)
-    {
-        using var sc = CreateSynchronizationContext();
+    public Task<JSValue> RunScriptAsync(string script, string moduleFolder, string[] paths = null, string uniqueModuleID = null)
+        // Run the whole module init under one pumped AsyncPump loop on a worker thread — exactly like
+        // JSContext.ExecuteAsync. A module body compiled with top-level await suspends its async
+        // continuation onto the ambient SynchronizationContext; on the default (un-pumped) context those
+        // continuations never drain, so the body stalls at its first await (which every static import is).
+        // The async-local current context flows across the Task.Run boundary, so engine state resolves on
+        // the worker thread.
+        => Task.Run(() => AsyncPump.Run(() => RunScriptCoreAsync(script, moduleFolder, paths, uniqueModuleID)));
 
+    private async Task<JSValue> RunScriptCoreAsync(string script, string moduleFolder, string[] paths, string uniqueModuleID)
+    {
         CurrentPath = moduleFolder;
         UpdatePaths(paths);
         uniqueModuleID ??= Guid.NewGuid().ToString("N") + ".js";
@@ -236,8 +259,7 @@ public class JSModuleContext : JSContext
             if (!name.IsString)
                 throw NewTypeError("import method's parameter must be a string");
 
-            var result = LoadModuleAsync(dirPath, name.StringValue);
-            return JSEngine.ClrInterop.Marshal(result);
+            return TaskToPromise(LoadModuleAsync(dirPath, name.StringValue));
         });
 
         newModule.Require = new JSFunction((in Arguments a) =>
@@ -255,8 +277,16 @@ public class JSModuleContext : JSContext
             var task = CompileModuleAsync(newModule);
             return JSEngine.ClrInterop.Marshal(task);
         });
+        // Prefer the direct (non-marshalled) compile path so a top-level-await body runs to completion on
+        // this pumped loop instead of settling at its first suspension behind a Task→promise→Task marshal.
+        newModule.CompileDirect = () => CompileModuleAsync(newModule);
 
         await newModule.InitAsync();
+
+        var w = WaitTask;
+        if (w != null)
+            await w;
+
         return newModule.Exports;
     }
 
@@ -310,8 +340,7 @@ public class JSModuleContext : JSContext
                 if (!name.IsString)
                     throw NewTypeError("import method's parameter must be a string");
 
-                var result = LoadModuleAsync(dirPath, name.StringValue);
-                return JSEngine.ClrInterop.Marshal(result);
+                return TaskToPromise(LoadModuleAsync(dirPath, name.StringValue));
             });
 
             newModule.Require = new JSFunction((in Arguments a) =>
@@ -329,6 +358,9 @@ public class JSModuleContext : JSContext
                 var task = CompileModuleAsync(newModule);
                 return JSEngine.ClrInterop.Marshal(task);
             });
+            // Direct compile so a nested/transitive module's top-level-await body also runs to completion
+            // on the pumped loop rather than stalling behind the Task→promise→Task marshal.
+            newModule.CompileDirect = () => CompileModuleAsync(newModule);
 
             return newModule;
         });

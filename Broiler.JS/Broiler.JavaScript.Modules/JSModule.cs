@@ -78,12 +78,29 @@ public partial class JSModule : JSObject
     [JSExport("compile")]
     public JSValue Compile { get; set; }
 
+    /// <summary>
+    /// Direct (non-marshalled) compile hook. When set, <see cref="InitAsync"/> awaits this .NET task
+    /// instead of invoking the <see cref="Compile"/> JS function, which would marshal the compile task
+    /// into a JS promise and re-await it (<c>Task → IJSPromise → Task</c>). That double-marshal re-posts
+    /// the module body's async continuation off the running event loop, so a body that suspends at a
+    /// top-level <c>await</c> (which every static <c>import</c> desugars to) settles at the first
+    /// suspension and never runs to completion — leaving the module's exports unbound. Awaiting the compile
+    /// task directly keeps the whole init on one pumped loop. Falls back to the JS-function path when null.
+    /// </summary>
+    internal Func<Task> CompileDirect { get; set; }
+
     internal async Task InitAsync()
     {
         if (exports != null)
             return;
 
         exports = new JSObject();
+
+        if (CompileDirect != null)
+        {
+            await CompileDirect();
+            return;
+        }
 
         var result = Compile.InvokeFunction(new Arguments(this));
         if (result is IJSPromise promise)
