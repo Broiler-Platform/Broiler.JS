@@ -92,7 +92,25 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
             vlist.Add(box);
             boxes.Add(Expression.Assign(box, ClrGeneratorV2Builder.GetVariable(pe, index, original.Type)));
             if (original == _replaceScriptInfo)
-                boxes.Add(Expression.Assign(Expression.Field(_scriptInfoBox, "Value"), _replaceScriptInfo));
+            {
+                // Seed the ScriptInfo box from the incoming `scriptInfo` local — but ONLY on the
+                // first entry (`nextJump == 0`). This box-load prologue runs on *every* (re)entry,
+                // including each await/yield resume, and the seed value `_replaceScriptInfo` is a
+                // body-local whose only writes were redirected into `_scriptInfoBox.Value`, so as a
+                // bare local it is always its default (null) at prologue time. Seeding unconditionally
+                // therefore clobbers, on every resume, the ScriptInfo the box persisted from the first
+                // run — including its `Indices` key table — back to null; any post-resume identifier /
+                // member access that resolves a name through `scriptInfo.Value.Indices[…]` then
+                // dereferences null (constant receivers and bare globals resolve via constant
+                // KeyStrings and survive, which made the fault look receiver-shaped). Guarding on
+                // `nextJump == 0` keeps the first-entry seed that nested async/generator functions rely
+                // on, while preserving the persisted value across every resume.
+                boxes.Add(Expression.IfThen(
+                    Expression.Equal(nextJump, Expression.Constant(0)),
+                    Expression.Block(
+                        Expression.Assign(Expression.Field(_scriptInfoBox, "Value"), _replaceScriptInfo),
+                        Expression.Empty)));
+            }
         }
 
         if (vlist.Count == 0)
