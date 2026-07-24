@@ -219,7 +219,6 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
             }
         }
 
-        vList.AddRange(fx.VariableParameters);
         sList.AddRange(fx.InitList);
 
         // register globals..
@@ -245,6 +244,20 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
 
         sList.Add(BExpression.Return(l, script.ToJSValue()));
         sList.Add(BExpression.Label(l, JSUndefinedBuilder.Value));
+
+        // Snapshot the function scope's variable parameters into the body block AFTER the
+        // whole body has been visited AND the trailing register/return statements above have
+        // been built (script.ToJSValue() and JSContext.Register can still mint pooled #Temp
+        // scratch locals via GetTempVariable). Capturing at the former position — right after
+        // Visit(jScript) — left any temp minted afterwards in the function scope but in NO
+        // block's variable list, so no local was declared for it up front: the
+        // "#TempJSValue… was not present in the dictionary" compile crash (#1419) and, once
+        // patches/0013+0014 declare it on demand mid-method instead, the desynchronised
+        // `body-:0,0 — Index was outside the bounds of the array.` runtime crash (#1422/#1425).
+        // VariableParameters here is a superset of the earlier snapshot, so a currently
+        // succeeding compilation is unchanged; only a would-be-dropped temp is now declared
+        // up front in the body block, in visit order.
+        vList.AddRange(fx.VariableParameters);
 
         script = BExpression.Block(vList, BExpression.TryFinally(BExpression.Block(sList), JSContextStackBuilder.Pop(stackItem, lScope)));
 
