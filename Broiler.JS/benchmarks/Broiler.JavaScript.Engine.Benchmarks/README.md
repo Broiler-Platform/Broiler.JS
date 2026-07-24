@@ -2,7 +2,7 @@
 
 BenchmarkDotNet baseline for the Broiler.JS engine performance roadmap. Shared jobs,
 repeatability thresholds, EventPipe workloads, and the machine-readable result format
-are documented in `docs/performance/phase0-baselines.md`.
+are documented in `docs/performance.md`.
 
 Run a focused smoke check:
 

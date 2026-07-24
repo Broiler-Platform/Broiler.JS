@@ -3013,8 +3013,7 @@ public class CompilerTests
     }
 
     // ----------------------------------------------------------------
-    // Seeded property-based parameterized tests (recommendation #5 from
-    // docs/compliance/testsuite-optimization.md).  Each fixture generates
+    // Seeded property-based parameterized compliance tests. Each fixture generates
     // inputs from a fixed seed so failures are reproducible and surface
     // under the existing `dotnet test` evidence command.
     // ----------------------------------------------------------------

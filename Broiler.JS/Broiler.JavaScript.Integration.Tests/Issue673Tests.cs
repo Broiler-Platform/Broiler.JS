@@ -28,10 +28,10 @@ namespace Broiler.JavaScript.Integration.Tests;
 // destructuring/for-of iterator). See JSGenerator.Return and the
 // GeneratorReturnCompletion handling in ClrGeneratorV2.GetNext.
 //
-// The remaining issue #673 categories (finally abrupt-completion override in
-// plain code, direct-eval var injection, Unicode identifier start coverage,
-// Intl range formatting, and the private-name vs computed-property collision)
-// are triaged in docs/compliance/triage-issue-673.md and remain open.
+// Current failures and host gaps are tracked by
+// scripts/compliance/test262-failures.txt and docs/compliance/known-gaps.md.
+// This test file preserves the issue-specific regressions without treating the
+// issue's original category list as the current roadmap.
 public class Issue673Tests
 {
     private static string Eval(string code)

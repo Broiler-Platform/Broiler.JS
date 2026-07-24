@@ -4,12 +4,10 @@ namespace Broiler.JavaScript.Integration.Tests;
 
 // Regression tests for https://github.com/MaiRat/Broiler.JS/issues/675
 //
-// Issue #675 reports the ten most-common test262 failure categories from the
-// full script-host runner. Problems 2, 4–7 overlap with categories triaged
-// in docs/compliance/triage-issue-673.md (generator return, object-literal
-// constructor accessors, primitive iteration and concat-spreadable are fixed
-// there; direct-eval var injection, Unicode identifier coverage and Intl range
-// formatting remain open and tracked).
+// Issue #675 reported ten common test262 failure categories from a historical
+// full script-host run. Current failures and host gaps are tracked by
+// scripts/compliance/test262-failures.txt and docs/compliance/known-gaps.md;
+// this file preserves the regressions fixed for that issue.
 //
 // Problem 1 (Array.from-over-string with overridden iterator), Problem 3
 // (finally abrupt completion), Problems 6 & 7 (Unicode ID_Start coverage —

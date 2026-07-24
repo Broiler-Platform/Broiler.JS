@@ -7,14 +7,21 @@ Broiler.JS uses a layered architecture derived from earlier YantraJS concepts bu
 1. **Storage and AST foundations**: `Broiler.JavaScript.Storage` and `Broiler.JavaScript.Ast` define reusable primitives with no dependency on concrete built-ins.
 2. **Parsing and runtime model**: `Broiler.JavaScript.Parser` turns source text into AST structures, while `Broiler.JavaScript.Runtime` models JavaScript values and arguments.
 3. **Engine and compiler**: `Broiler.JavaScript.Engine`, `Broiler.JavaScript.ExpressionCompiler`, and `Broiler.JavaScript.Compiler` coordinate execution, compilation, and host contexts.
-4. **Feature satellites**: `Broiler.JavaScript.BuiltIns`, `Broiler.JavaScript.Modules`, `Broiler.JavaScript.ModuleExtensions`, `Broiler.JavaScript.Clr`, `Broiler.JavaScript.Extensions`, and optional host packages add behavior through module initializers and registration delegates.
+4. **Feature satellites**: `Broiler.JavaScript.BuiltIns`, `Broiler.JavaScript.Globals`, `Broiler.JavaScript.Modules`, `Broiler.JavaScript.ModuleExtensions`, `Broiler.JavaScript.Clr`, `Broiler.JavaScript.Extensions`, and optional host packages add behavior through explicit bootstrap, manifests, module initializers, and registration delegates.
 
 ## Modularity rules
 
 - Core engine projects must not reference feature satellites such as `Broiler.JavaScript.BuiltIns`.
 - Feature satellites may register additional behavior through documented delegates rather than editing core runtime types directly.
 - Compliance fixes should land in the narrowest owning assembly and include tests in the matching `*.Tests` project.
-- Performance work and compiler-platform changes are tracked in the [Performance and IL roadmap](performance-and-il-roadmap.md).
+- The detailed current boundary rules are in
+  [Assembly boundaries and dependencies](dependencies.md).
+- Use the [extraction pattern](extraction-pattern.md) and
+  [module-initializer/bootstrap guide](module-initializers.md) when changing an assembly
+  boundary.
+- Active performance, compliance, packaging, and release work is tracked in the
+  [repository roadmap](../roadmap.md). Repeatable measurement guidance lives in
+  [performance.md](../performance.md).
 
 ## YantraJS migration status
 

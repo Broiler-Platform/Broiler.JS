@@ -68,7 +68,7 @@ aims to pass nearly the full suite, and conformance is tracked continuously in C
 |---|---|
 | [Compliance dashboard](docs/compliance/dashboard.md) | Current pass/fail status by feature area |
 | [Known gaps](docs/compliance/known-gaps.md) | Features not yet implemented |
-| [Roadmap to 100%](docs/compliance/roadmap-to-100-percent.md) | Planned work to close remaining gaps |
+| [Current roadmap](docs/roadmap.md) | Active compliance, integration, performance, and release work |
 | [Compliance process](docs/compliance/process.md) | How test262 runs are managed in CI |
 
 ---
@@ -79,7 +79,8 @@ aims to pass nearly the full suite, and conformance is tracked continuously in C
 |---|---|
 | [Public API reference](docs/public-api.md) | Supported packages, entry points, module boundaries |
 | [Architecture overview](docs/architecture/overview.md) | Engine layers and satellite assemblies |
-| [Performance and IL roadmap](docs/architecture/performance-and-il-roadmap.md) | Runtime optimization plan and Roslyn/.NET IL platform direction |
+| [Assembly boundaries](docs/architecture/dependencies.md) | Dependency direction and supported cross-assembly seams |
+| [Performance measurement](docs/performance.md) | Repeatable baselines, bootstrap profiles, and execution-mode boundaries |
 | [Contributing built-ins](docs/architecture/contributing-builtins.md) | How to implement new built-in objects |
 | [LogParser usage](logs/README.md) | Shard log summarizer and JSON export |
 | [Contributing](CONTRIBUTING.md) | CI pipeline, test262 workflow, running tests locally |
