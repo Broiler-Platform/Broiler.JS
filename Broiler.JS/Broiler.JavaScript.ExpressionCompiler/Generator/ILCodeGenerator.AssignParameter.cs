@@ -23,7 +23,29 @@ public partial class ILCodeGenerator
             if (TryResolveClosureByName(yParameterExpression.Name, out var closure))
                 return Assign(closure, exp, savedIndex);
 
-            varInfo = variables[yParameterExpression];
+            if (IsCompilerTemp(yParameterExpression.Name))
+            {
+                // Store-path counterpart to the read-path fallback in VisitParameter: a
+                // pooled compiler scratch temp (#Temp<Type><id>) can reach the assignment
+                // undeclared when the block that lists it in its Variables was not visited
+                // by the IL generator before this write (an out-of-order VariableParameters
+                // snapshot). Declare the local on demand — temps are keyed by reference, so
+                // the on-demand local is the identical one every later read/write of this
+                // temp resolves to (VisitParameter's TryGetValue and VisitBlock both find
+                // the already-present key), keeping value semantics intact regardless of
+                // visit order. Without this, a temp whose *first* emitted reference is a
+                // write still fell through to the throwing indexer below and aborted the
+                // whole script's compilation with KeyNotFoundException — the asymmetry that
+                // the read-only VisitParameter fix left open. This branch only runs on the
+                // path that already threw, so it cannot change a compilation that currently
+                // succeeds; genuine user-variable resolution failures still surface via the
+                // original throwing indexer (guarded to the unreachable "#Temp" prefix).
+                varInfo = variables.Create(yParameterExpression);
+            }
+            else
+            {
+                varInfo = variables[yParameterExpression];
+            }
         }
 
         il.Comment($"save {varInfo.Name}");
