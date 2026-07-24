@@ -32,9 +32,12 @@ test/staging/sm/Array/unshift-01.js
 test/staging/sm/RegExp/unicode-ignoreCase.js
 test/staging/sm/class/newTargetEval.js
 test/staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode.js
+test/staging/sm/eval/exhaustive-global-normalcaller-direct-normalcode.js
+test/staging/sm/eval/exhaustive-global-normalcaller-indirect-normalcode.js
+test/staging/sm/eval/exhaustive-global-strictcaller-indirect-normalcode.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-arguments.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
 test/staging/sm/lexical-environment/var-in-catch-body-annex-b-eval.js
 test/staging/sm/regress/regress-602621.js
 test/staging/sm/regress/regress-610026.js
-test/staging/sm/strict/15.5.5.1.js
+test/staging/sm/strict/15.5.5.2.js
