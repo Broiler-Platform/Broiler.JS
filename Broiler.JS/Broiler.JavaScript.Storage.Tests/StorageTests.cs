@@ -153,4 +153,27 @@ public class StorageTests
         Assert.Equal(ElementKind.Dictionary, elements.Kind);
         Assert.False(elements.HasDefaultDescriptors);
     }
+
+    // Regression for issue #1428: StringMap's "not found" sentinel node was a
+    // shared mutable static. A create-path overflow could hand that sentinel to
+    // a caller that wrote a (large, cumulative) value into it; afterwards a fresh
+    // map (storage==null) returned the sentinel and reported a false hit with the
+    // stale value for ANY key, without ever matching it. In the engine that made
+    // a new script's key resolve to a stale index while its key List stayed
+    // empty, so ScriptInfo.Indices (sized to List.Count) was indexed out of
+    // bounds at runtime. Fill one StringArray heavily to exercise the overflow,
+    // then assert a fresh StringArray is fully independent.
+    [Fact]
+    public void StringArray_FreshInstance_IsNotPoisonedByHeavyPriorInstance()
+    {
+        var heavy = new StringArray();
+        for (int i = 0; i < 200_000; i++)
+            heavy.GetOrAdd(new StringSpan("heavy_key_" + i));
+
+        var fresh = new StringArray();
+        Assert.Equal(0u, fresh.GetOrAdd(new StringSpan("alpha")));
+        Assert.Equal(1u, fresh.GetOrAdd(new StringSpan("beta")));
+        Assert.Equal(0u, fresh.GetOrAdd(new StringSpan("alpha"))); // stable, no re-add
+        Assert.Equal(2, fresh.List.Count);
+    }
 }

@@ -21,7 +21,19 @@ public struct StringMap<T>
         HasValue = 4
     }
 
-    static Node Empty = new();
+    // The "not found" sentinel returned by ref from GetNode. It MUST stay
+    // pristine (State=Empty), but create-path overflow returns can hand it to a
+    // caller (Put/Save/indexer) that writes a value into it. A shared static
+    // therefore leaks that stale value into every later lookup — on a fresh map
+    // (storage==null) GetNode returns this sentinel and TryGetValue reports a
+    // false hit with the stale value, without ever matching the key. Over a long
+    // in-process run this poisons every subsequent compilation's key resolution
+    // (issue #1428: a fresh script's Indices is sized to List.Count but a key
+    // resolves to the leaked cumulative index -> IndexOutOfRange in the body
+    // lambda). Make it [ThreadStatic] (no cross-thread races) and reset it to a
+    // pristine node at each GetNode entry so a stray write can never persist.
+    [ThreadStatic]
+    private static Node Empty;
 
     struct Node
     {
@@ -163,6 +175,9 @@ public struct StringMap<T>
 
     private ref Node GetNode(in HashedString originalKey, bool create = false)
     {
+        // Reset the sentinel so a value written into it by a prior create-path
+        // overflow return cannot be observed as a false hit by this lookup.
+        Empty = default;
         ref var node = ref Empty;
 
         if (storage == null)
