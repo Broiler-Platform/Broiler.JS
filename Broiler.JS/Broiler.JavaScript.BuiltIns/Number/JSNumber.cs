@@ -1,5 +1,6 @@
 ﻿using Broiler.JavaScript.ExpressionCompiler;
 using System;
+using System.Runtime.CompilerServices;
 using System.Globalization;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
@@ -105,6 +106,62 @@ public sealed partial class JSNumber : JSPrimitive
     }
 
     public JSNumber(double value) : base() => this.value = value;
+
+    // ── small-number cache ───────────────────────────────────────────────────────────
+
+    private const int CacheMinimum = -128;
+    private const int CacheMaximum = 1024;
+    private const int CacheSize = CacheMaximum - CacheMinimum + 1;
+    private const int ZeroIndex = -CacheMinimum;
+
+    /// <summary>
+    /// The integers in <c>[-128, 1024]</c>, minted once per thread and reused
+    /// (docs/performance-roadmap.md P2-2). Array indices, loop counters below the bound,
+    /// character codes and small arithmetic results are the overwhelming majority of the
+    /// numbers a program creates, and every one of them was a fresh 24-byte allocation.
+    /// </summary>
+    /// <remarks>
+    /// Per-<em>thread</em>, and that is load-bearing rather than incidental. A
+    /// <see cref="JSPrimitive"/> has one piece of mutable state — the
+    /// <c>prototypeChain</c> scratch field that <c>ResolvePrototype</c> fills in from the
+    /// CURRENT realm immediately before every read of it. Sharing an instance between
+    /// realms on one thread is therefore fine: the field is re-derived each time, never
+    /// consulted stale. Sharing one between *threads* is not, because the write and the read
+    /// can interleave and hand one thread the other realm's prototype. A thread-local table
+    /// removes that interleaving by construction, and leaves a cached number exactly as
+    /// exposed as an ordinary freshly allocated one — no more, since every object this
+    /// engine allocates carries the same single-threaded-per-context contract.
+    /// </remarks>
+    [ThreadStatic]
+    private static JSNumber[] smallNumbers;
+
+    /// <summary>
+    /// The <see cref="JSNumber"/> for <paramref name="value"/>, reusing a cached instance
+    /// when the value is a small integer. Numbers have no observable identity in JavaScript —
+    /// they compare by value and cannot carry properties — so a shared instance is
+    /// indistinguishable from a fresh one.
+    /// </summary>
+    public static JSValue Create(double value)
+    {
+        // Range-tested on the double first: two compares reject a large magnitude, a NaN and
+        // an infinity, and a loop counting to a million misses on all but its first thousand
+        // iterations — so the miss path is the one that has to stay cheap.
+        if (value >= CacheMinimum && value <= CacheMaximum)
+        {
+            // The int round trip only survives for a double that is exactly the integer the
+            // cast produced, so this is what rejects a fraction. Negative zero survives it
+            // too (IEEE says `0 == -0`) and must not be conflated with zero — `Object.is`
+            // and `1 / x` both tell them apart — so the index it collides with is excluded.
+            var index = (int)value - CacheMinimum;
+            if (index + CacheMinimum == value && (index != ZeroIndex || !IsNegativeZero(value)))
+            {
+                var table = smallNumbers ??= new JSNumber[CacheSize];
+                return table[index] ??= new JSNumber(value);
+            }
+        }
+
+        return new JSNumber(value);
+    }
 
     public override double DoubleValue => value;
 
@@ -294,7 +351,7 @@ public sealed partial class JSNumber : JSPrimitive
 
     public static bool IsNaN(JSValue n) => double.IsNaN(n.DoubleValue);
 
-    public override JSValue Negate() => new JSNumber(-value);
+    public override JSValue Negate() => Create(-value);
 
     public override JSValue AddValue(JSValue value)
     {
@@ -309,10 +366,10 @@ public sealed partial class JSNumber : JSPrimitive
         if (value is JSObject @object)
             return new JSString(ToECMAString(this.value) + @object.StringValue);
 
-        return new JSNumber(this.value + value.DoubleValue);
+        return Create(this.value + value.DoubleValue);
     }
 
-    public override JSValue AddValue(double value) => new JSNumber(this.value + value);
+    public override JSValue AddValue(double value) => Create(this.value + value);
 
     public override JSValue AddValue(string value) => new JSString(ToECMAString(this.value) + value);
 

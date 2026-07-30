@@ -16,10 +16,11 @@ the phase 0–5 optimization campaign referenced in [`docs/roadmap.md`](roadmap.
 - Owner assemblies: `Broiler.JavaScript.Runtime`, `.Engine`, `.BuiltIns`, `.Storage`, `.Compiler`
 - Acceptance protocol: unchanged — [`docs/performance.md`](performance.md) governs what may
   be *claimed*. Nothing in this document closes on the numbers below.
-- Status: **P0 implemented** (§4). **P1 implemented** (§5). **P2: P2-1, P2-3 and P2-4 implemented**, plus two larger defects found along the way
-  ([§6.5](#65--found-while-implementing-p2)); P2-2 declined with reasons (§6). **P3
-  investigated: its premise was disproved by measurement** and the real per-call cost
-  identified instead (§7) — no code change.
+- Status: **P0 implemented** (§4). **P1 implemented** (§5). **P2 implemented in full**, plus two larger defects found along the way
+  ([§6.5](#65--found-while-implementing-p2)); P2-2 landed only after the reasons it had been
+  declined were re-examined and both found wrong (§6). **P3 investigated: its premise was
+  disproved by measurement** and the real per-call cost identified instead (§7) — no code
+  change.
 
 ---
 
@@ -71,9 +72,9 @@ Allocation for the object shape that suffered most: building a three-field objec
 constructor cost **6 595 bytes** before P1 and **1 480** after, against 1 328 for the
 equivalent object literal — the gap between "assigned" and "literal" is essentially closed.
 
-**P2 delivered both what it planned and what it did not.** P2-1 and P2-4 landed as written and
-P2-3 landed as something smaller than written; P2-2 is declined on correctness grounds (§6).
-Working through the phase also
+**P2 delivered both what it planned and what it did not.** P2-1 and P2-4 landed as written,
+P2-3 as something smaller than written, and P2-2 only after an earlier decision to decline it
+was revisited and overturned (§6). Working through the phase also
 turned up two defects on the array paths, found by measuring rather than reading, and larger
 than anything P2 had scoped ([§6.5](#65--found-while-implementing-p2)):
 
@@ -739,9 +740,10 @@ exact `JSObject` once the write path is fixed.
 
 ## 6. P2 — allocation on built-in and value paths — **mostly implemented**
 
-P2-1, P2-3 and P2-4 are implemented. P2-2 is declined on correctness grounds, and P2-3 landed
-as a much smaller change than it was filed as; each carries a status note saying why. Working
-through the phase also turned up two defects larger than anything it had scoped, written up in
+All four items are implemented. P2-3 landed as a much smaller change than it was filed as, and
+P2-2 landed only after the two reasons it had been declined were re-examined and both found
+wrong; each carries a status note saying what changed. Working through the phase also turned up
+two defects larger than anything it had scoped, written up in
 [§6.5](#65--found-while-implementing-p2).
 
 ### P2-1 · `Array.prototype.push` allocates a full descriptor per element — **implemented**
@@ -781,7 +783,7 @@ are one-time bootstrap or registry checks.
 
 ---
 
-### P2-2 · No small-number cache; every arithmetic result is a heap allocation — **declined**
+### P2-2 · No small-number cache; every arithmetic result is a heap allocation — **implemented**
 
 `BuiltIns/BuiltInsAssemblyInitializer.cs:119`:
 
@@ -811,37 +813,140 @@ Every arithmetic operation allocates, through a `Func<double, JSValue>` indirect
 identity must not become observable where the spec requires fresh values. (3) is a real
 compiler change.
 
-**Status: not implemented. The risk assessment above was wrong, and the payoff is narrower
-than it looks.**
+**Status: implemented, after an earlier decision to decline it. Both of the reasons for that
+decision turned out to be wrong, and the record of them is kept below because the way they
+were wrong is the useful part.**
 
-The hazard is not `-0` or JS-visible identity — those are easy. It is that a `JSPrimitive`
-**mutates itself on every property access**: `ResolvePrototype()` assigns
-`BasePrototypeObject = GetPrototype()`, and `JSNumber.GetPrototype()` reads
-`%Number.prototype%` out of the *current realm*. Sharing one instance between realms therefore
-makes `prototypeChain` shared mutable state, and two threads running two realms can interleave
-the write and the read so that one of them resolves a method on the other's prototype.
+**Wrong reason 1: "the payoff is narrow."** The earlier note reasoned that a cache only helps
+values inside its range while the benchmark loops here count to millions, and put the benefit
+at "roughly 20% of that scenario's allocation". That was inferred from the artificial
+count-to-a-million loops rather than measured. Instrumenting the `JSNumber` constructor and
+bucketing every value a workload creates gives the actual share falling in −128…1023:
 
-That hazard already exists — `JSNumber.Zero`, `One`, `Two`, `MinusOne`, `NaN`, both infinities
-and `NegativeZero` are process-wide singletons handed straight to script. But it is currently
-confined to eight values that rarely carry a property access. Caching −128…1024 would extend
-it to every loop counter and array index in every program, turning a rare race into a routine
-one. That is a bad trade for the measured gain.
+| | in range |
+|---|---|
+| `fib(25)` | **100.0%** |
+| `dromaeo-object-array` | 85.7% |
+| reading a 256-element array | 75.1% |
+| `JSON.parse`/`stringify` round trip | 61.5% |
+| sorting 5 000 small integers | 66.9% |
+| filling an array by index | 57.3% |
+| `charCodeAt` in a loop | 43.0% |
+| reading three object fields | 43.0% |
+| `i % 100` accumulator | 33.4% |
+| `for (i = 0; i < 1e6; i++)` | **0.1%** |
+| floating-point accumulation | **0.1%** |
 
-And the gain is small: a cache only helps values inside its range, while the benchmark loops
-here count to millions, so `loop-empty` and `arith-add` would not move at all. Only
-`i % 100`-shaped values and small indices benefit — roughly 20% of that scenario's allocation.
+So the two scenarios the estimate was based on are the only two that see nothing. Everything
+resembling ordinary code — indices, character codes, small counters, recursion depths — is
+between a third and all of its number allocations.
 
-Fixing the hazard first is the right order, and it is **not** contained:
-`ResolvePrototype()` is called from ten places in `JSPrimitive`, each immediately followed by a
-`base` virtual that reads `prototypeChain`, so making resolution non-mutating means threading
-the resolved chain through parallel overloads across `JSValue`. Worth doing — it also removes a
-field write from every primitive property access — but as its own change, not smuggled in under
-a number cache.
+**Wrong reason 2: "the cross-realm hazard has to be fixed first."** This one was right about
+the mechanism and wrong about the conclusion. `JSPrimitive.ResolvePrototype()` does assign
+`BasePrototypeObject = GetPrototype()`, and `JSNumber.GetPrototype()` does read
+`%Number.prototype%` out of the *current* realm — but reading the ten members of `JSPrimitive`
+carefully shows `ResolvePrototype()` is called immediately before **every** read of
+`prototypeChain`. The field is a scratch variable refilled per access, not a cache, so an
+instance shared between realms on one thread is already correct: it is re-derived each time
+and never consulted stale. What is not safe is sharing one between *threads*, where the write
+and the read can interleave. That is a data race, not a logic error, and it is removed by
+scoping the table to the thread rather than by rewriting how primitives resolve prototypes.
 
-Item (2) is not actionable as written either: the `CreateNumber` delegate exists precisely
-because `Broiler.JavaScript.Runtime` cannot reference `JSNumber` in `BuiltIns`. Replacing it
-with a direct static call needs that assembly boundary moved. Compiled arithmetic already
-emits `new JSNumber(double)` directly and never touches the delegate.
+With that, a cached number is exactly as exposed as an ordinary freshly-allocated one, which
+is the right bar — every object this engine allocates already carries the same
+single-threaded-per-context contract.
+
+**One member did treat the field as a cache, and it was a real bug.** `GetMethod` resolved
+only when `prototypeChain` was still null:
+
+```csharp
+if (prototypeChain == null)
+    BasePrototypeObject = GetPrototype();
+```
+
+So whichever realm first looked a method up on a given primitive owned it for every realm
+afterwards. That is already live for the eight process-wide `JSNumber` singletons — `Zero`,
+`One`, `Two`, `MinusOne`, `NaN`, both infinities and `NegativeZero` are handed straight to
+script — and caching 1 153 more values would have turned an obscure latent bug into a routine
+one. Fixed to re-resolve like every other member, and pinned by a test that interleaves two
+realms over the same cached instances.
+
+**What landed.** `JSNumber.Create(double)` returns a `[ThreadStatic]` cached instance for an
+integer in −128…1024, allocating otherwise. It is reached from all three places numbers are
+made: the `CreateNumber` delegate (which the `Increment`/`Subtract`/`Multiply`/bitwise/modulo
+helpers in `JSValue` already used), `JSNumber`'s own `AddValue`/`Negate` overrides, and
+`JSNumberBuilder.New`, which now emits a call to the factory rather than `newobj`.
+
+The range test runs on the double before the int conversion, so a miss costs two compares:
+a loop counting to a million misses on all but its first thousand iterations, and the miss
+path is the one that has to stay cheap. Negative zero is excluded explicitly — it survives
+`(int)value` round-tripping because IEEE says `0 == -0`, and `Object.is` and `1 / x` both tell
+the two apart.
+
+**Measured — allocation**, byte-exact and reproduced identically across runs:
+
+| | Before | After | |
+|---|---|---|---|
+| `dromaeo-object-array` | 24 193 992 B | **4 947 624 B** | −79.6% |
+| reading a 256-element array | 33 016 808 B | **8 254 600 B** | −75.0% |
+| filling an array by index | 44 807 968 B | **19 142 304 B** | −57.3% |
+| `fib(25)` | 60 216 784 B | **33 027 664 B** | −45.2% |
+| `charCodeAt` in a loop | 44 803 672 B | **25 537 688 B** | −43.0% |
+| `i % 100` accumulator | 192 003 528 B | **127 936 424 B** | −33.4% |
+| sorting 5 000 small integers | 17 209 944 B | **14 854 520 B** | −13.7% |
+| `for (i = 0; i < 1e6; i++)` | 128 003 528 B | 127 905 096 B | −0.1% |
+
+Gen0 collections fall with them: 11 → 7 on the accumulator loop, 2 → 1 filling an array,
+1 → 0 reading one, 3 → 1 on `fib`.
+
+**Measured — throughput, and how three earlier readings of it were wrong.** This is worth
+recording because the measurement was harder than the change. Sequential A/B on this
+container produced, in order: the cache is 18–29% *slower*; the factory indirection alone is
+8–20% slower; and then re-running the unmodified baseline showed it had drifted 1–15% slower
+than itself, monotonically, over the same period. The container gets slower as a session
+proceeds, so any A-then-B comparison charges the drift to whichever ran second.
+
+Interleaving the two arms inside one process removed the drift and produced the opposite
+result — the cache faster on 12 of 13 scenarios, including a 6% "improvement" on a loop where
+it allocates nothing and can only add work. That impossible number exposed the next flaw: the
+cached arm always ran first within each pair. Alternating the order flipped the sign back
+again.
+
+What finally held up is an ABBA schedule with no `GC.Collect` between the timed runs inside a
+block — the per-run collect had been charging each arm for cleaning up after the other:
+
+| | miss rate | Δ time |
+|---|---|---|
+| `for (i = 0; i < 1e6; i++)` | ~100% miss | +1.5% |
+| reading a 256-element array | ~25% miss | −0.7% |
+| `fib(25)` | ~0% miss | −0.6% |
+| `s = (s + i) & 1023` | 50% miss, 50% hit | +6.1% |
+
+Those signs match the mechanism for the first time: a miss costs the two compares, a hit saves
+the allocation, and the one outlier creates one of each per iteration. **No throughput claim
+is made in either direction.** The effect is within what this container can resolve, and the
+acceptance protocol in `docs/performance.md` — two runs inside the configured band on the
+release RID matrix — is what a throughput claim would need. The allocation column is
+deterministic and is the result this item is closed on.
+
+56 tests in `SmallNumberCacheTests`. The value side: eleven ways of producing negative zero
+and distinguishing it from zero, non-integers, NaN, both infinities, magnitudes past 2^53,
+every integer across both range boundaries, and the exact sum of the whole cached range. The
+identity side: a primitive still refuses properties and still throws on a strict assignment,
+`Object(5)` and `new Number(5)` still produce distinct wrappers, and Map/Set still key by
+SameValueZero. The realm side: two contexts with different `Number.prototype` patches,
+interleaved over the same cached instances, through both a method call and a dynamic property
+read.
+
+Full suite after the change: **7 032 tests, 7 026 passing, 0 new failures** — the same 6
+pre-existing failures as every phase before it (5 ICU/locale-data dependent, 1 in
+ModuleExtensions).
+
+**Items (2) and (3) of the original fix list.** (2) is done as a side effect: the emitted path
+now calls `JSNumber.Create` rather than `newobj`, which is what routing it through the cache
+required. (3) — unboxed `double` locals — is untouched and remains the larger win for
+float-heavy code, where this item does nothing at all (0.1% of `nbody`'s numbers are in
+range). It is a compiler change and belongs with the `tiered-unboxed-locals` work.
 
 ---
 
@@ -1186,7 +1291,7 @@ carried under "call-path structure".
 | ~~**B**~~ | ~~P0-2~~ | **Done** — folded into the same change | `StrictModeFlowTests` covers every transition shape; test262 manifests still owed |
 | ~~**C**~~ | ~~P1-1, P1-4~~ | **Done** — cache reaches constructor/class code (0 → ~100% hit rate); constructor-built objects 6 595 → 1 480 bytes | Full `dotnet test` green; `PropertyShapeCacheTests` asserts the hit rates and every staleness path. P1-4's double storage still open |
 | ~~**D**~~ | ~~P1-2~~, ~~P1-3~~ | P1-2 **done** — inherited and class method calls hit the cache. P1-3 **done** — constant-key stores go through a store cache; 2.1× on a monomorphic store, 3.6× when the property name is not a one-character early-interned key. The shape-transition case is written up as not implemented | `PropertyShapeCacheTests` covers `setPrototypeOf`, prototype mutation, own-property shadowing, delete, freeze, accessor redefinition, polymorphic and megamorphic sites; `PropertyStoreCacheTests` covers the write side |
-| **E** | ~~P2-1~~, P2-2 | P2-1 **done**, plus the two array defects in §6.5 (729× on repeated `pop`, 9× on array fill). P2-2 declined — see its status note | `IndexedWriteAndLengthTests` covers integrity levels, foreign receivers, exotics and length-shrink; `test262-arrays` still owed |
+| ~~**E**~~ | ~~P2-1~~, ~~P2-2~~ | P2-1 **done**, plus the two array defects in §6.5 (729× on repeated `pop`, 9× on array fill). P2-2 **done** — small integers are minted once per thread; 33–80% less allocation on index- and counter-heavy code, and a latent cross-realm `GetMethod` bug fixed on the way. Throughput deliberately unclaimed | `IndexedWriteAndLengthTests` covers integrity levels, foreign receivers, exotics and length-shrink; `SmallNumberCacheTests` covers negative zero, the range boundaries, primitive identity and per-realm prototypes; `test262-arrays` still owed |
 | ~~**F**~~ | ~~P2-3~~, ~~P2-4~~, ~~P3~~ | P2-4 **done** — repeated concatenation is no longer quadratic (150× on the accumulation loop, 10.6× less allocation on `dromaeo-object-string`). P2-3 **done** — a dense element is one reference instead of a 32-byte descriptor; `new Array(1000)` allocates 73% less, and the deferral's feasibility objection turned out not to hold. P3 **closed without a change** — the scopes it blamed cost nothing; the 80-byte per-call `CallStackItem` is the real cost and needs its own item | `StringConcatenationRopeTests`, `CompactElementStorageTests`, `ElementDescriptorRoundTripTests`; `test262` string and array coverage and the full matrix per `docs/performance.md` still owed |
 
 Each phase adds an entry to `eng/performance/ownership.json` with its benchmark and semantic

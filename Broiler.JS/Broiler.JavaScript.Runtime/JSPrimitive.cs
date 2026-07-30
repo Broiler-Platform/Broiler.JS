@@ -121,12 +121,17 @@ public abstract class JSPrimitive: JSValue
         return base.GetValue(key, receiver, throwError);
     }
 
+    // Re-resolved on every call, like every other member here. Resolving only when the
+    // field was still null made the FIRST realm to look a method up on a given primitive
+    // own it permanently: the eight process-wide JSNumber singletons (Zero, One, NaN, the
+    // infinities …) are handed straight to script, so a method looked up on `0` in one
+    // realm was served from that realm's Number.prototype in every other one afterwards.
+    // Every other member treats prototypeChain as a scratch field refilled before each
+    // read; this one treated it as a cache, and it is the only reason a shared primitive
+    // instance could observe the wrong realm at all.
     internal override JSFunctionDelegate GetMethod(in KeyString key)
     {
-        if(prototypeChain == null)
-        {
-            BasePrototypeObject = GetPrototype();
-        }
+        ResolvePrototype();
         return prototypeChain?.GetMethod(key);
     }
 
