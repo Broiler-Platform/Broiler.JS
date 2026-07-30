@@ -65,6 +65,10 @@ partial class FastCompiler
         previousNewTarget: previousNewTarget));
         {
             cs.CanScalarReplaceLocals = IsScalarReplacementEligible(functionDeclaration);
+            // Only worth asking when the locals are scalar-replaceable at all: the analysis
+            // assumes no closure can capture the binding and no eval/with can rename it.
+            if (cs.CanScalarReplaceLocals)
+                cs.NumericLocals = NumericLocalAnalysis.Analyze(functionDeclaration);
             // super() in a derived constructor (or an arrow nested in it) targets the
             // superclass constructor, which differs from the home-object prototype.
             cs.SuperConstructor = superConstructor ?? (functionDeclaration.IsArrowFunction ? previousScope.SuperConstructor : null);

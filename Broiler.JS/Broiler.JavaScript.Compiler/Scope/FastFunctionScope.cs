@@ -177,6 +177,20 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         // GetValue/SetValue rather than the JSVariable.Value property.
         public bool IsEvalShadow { get; internal set; }
 
+        /// <summary>
+        /// The raw CLR <c>double</c> holding this binding, for a local the compiler proved
+        /// only ever holds a number (docs/performance-roadmap.md P2-2 item 3). Null for every
+        /// ordinary binding.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="Expression"/> stays a boxing READ of this local, so the hundreds of
+        /// places that consume a binding as a <c>JSValue</c> keep working untouched. Only the
+        /// writes, and the arithmetic that wants the number unboxed, reach for the storage
+        /// directly — and a write through <see cref="Expression"/> would be an assignment to a
+        /// method call, which the IL backend rejects loudly rather than miscompiling.
+        /// </remarks>
+        public BParameterExpression NumericStorage { get; internal set; }
+
         public void Dispose() => InUse = false;
 
         public void SetPostInit(BExpression exp)
@@ -242,6 +256,13 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
 
     public AstFunctionExpression Function { get; }
     public bool CanScalarReplaceLocals { get; internal set; }
+
+    /// <summary>
+    /// Names this function's analysis proved only ever hold a number, so they can live in a
+    /// CLR <c>double</c> (docs/performance-roadmap.md P2-2 item 3). Never null.
+    /// </summary>
+    public System.Collections.Generic.IReadOnlySet<string> NumericLocals { get; internal set; }
+        = System.Collections.Immutable.ImmutableHashSet<string>.Empty;
     public bool HasOuterFunctionCaptures { get; private set; }
 
     // True when this function scope is an eval-shadow boundary: a sloppy function whose
@@ -512,6 +533,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         ReturnLabel = p.ReturnLabel;
         NewTargetExpression = p.NewTargetExpression;
         CanScalarReplaceLocals = p.CanScalarReplaceLocals;
+        NumericLocals = p.NumericLocals;
     }
 
     public BExpression this[string name] => GetVariable(name).Expression;
@@ -745,7 +767,13 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         // we need to move variable in top scope...
         var variableType = type ?? typeof(JSVariable);
         var pe = BExpression.Parameter(variableType, name.Value);
-        var ve = variableType == typeof(JSVariable) ? JSVariable.ValueExpression(pe) : pe;
+        // A numeric local's readable Expression BOXES its storage, so every consumer that
+        // expects a JSValue keeps working; writes go through NumericStorage instead.
+        var ve = variableType == typeof(JSVariable)
+            ? JSVariable.ValueExpression(pe)
+            : variableType == typeof(double)
+                ? JSNumberBuilder.New(pe)
+                : pe;
         
         v = new VariableScope
         {
@@ -757,10 +785,14 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             OwnerFunction = Function
         };
         
+        if (variableType == typeof(double))
+            v.NumericStorage = pe;
         v.SetInit(init, initialize);
         variableScopeList[name] = v;
-        if (variableType == typeof(JSValue))
+        if (variableType == typeof(JSValue) || variableType == typeof(double))
             CompilerSpecializationDiagnostics.RecordScalarLocal();
+        if (variableType == typeof(double))
+            CompilerSpecializationDiagnostics.RecordNumericLocal();
         
         return v;
     }

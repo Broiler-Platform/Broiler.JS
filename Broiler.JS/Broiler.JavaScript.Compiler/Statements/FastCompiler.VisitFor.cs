@@ -359,7 +359,12 @@ partial class FastCompiler
         BExpression init = Visit(forStatement.Init);
         var innerBody = new Sequence<BExpression>();
 
-        var update = Visit(forStatement.Update);
+        // The update clause's value is discarded, so an `i++` on a numeric local needs no
+        // boxed result (docs/performance-roadmap.md P2-2 item 3).
+        var update = forStatement.Update is AstUnaryExpression
+            { Operator: UnaryOperator.Increment or UnaryOperator.Decrement } counterUpdate
+            ? InternalVisitUpdateExpression(counterUpdate, discardResult: true)
+            : Visit(forStatement.Update);
         var test = Visit(forStatement.Test);
 
         if (test != null)

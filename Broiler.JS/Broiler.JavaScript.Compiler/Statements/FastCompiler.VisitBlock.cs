@@ -122,11 +122,17 @@ partial class FastCompiler
                     && scope.Function != null
                     && !v.Equals("arguments")
                     && !v.Equals("eval");
+                // A name the analysis proved numeric lives in a raw double. Its hoisted value
+                // is 0 rather than undefined, which is only sound because the analysis
+                // rejected any name that can be READ before its initializer runs.
+                var useNumericLocal = useScalarLocal && scope.NumericLocals.Contains(v.Value);
                 var variable = hoistToDirectEvalRoot
                     ? GetOrCreateDirectEvalRootVariable(v)
-                    : useScalarLocal
-                        ? scope.CreateVariable(v, JSUndefinedBuilder.Value, true, typeof(JSValue), initialize: true)
-                        : scope.CreateVariable(v, null, true, initialize: isLexical == false);
+                    : useNumericLocal
+                        ? scope.CreateVariable(v, BExpression.Constant(0d), true, typeof(double), initialize: true)
+                        : useScalarLocal
+                            ? scope.CreateVariable(v, JSUndefinedBuilder.Value, true, typeof(JSValue), initialize: true)
+                            : scope.CreateVariable(v, null, true, initialize: isLexical == false);
                 variable.IsLexical = isLexical;
                 if (hoistToDirectEvalRoot && directEvalBindingNames != null && Array.IndexOf(directEvalBindingNames, v.Value) >= 0)
                     variable.Expression = JSContextBuilder.Index(KeyOfName(v));

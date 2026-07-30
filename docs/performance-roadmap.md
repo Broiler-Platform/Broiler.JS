@@ -16,7 +16,9 @@ the phase 0–5 optimization campaign referenced in [`docs/roadmap.md`](roadmap.
 - Owner assemblies: `Broiler.JavaScript.Runtime`, `.Engine`, `.BuiltIns`, `.Storage`, `.Compiler`
 - Acceptance protocol: unchanged — [`docs/performance.md`](performance.md) governs what may
   be *claimed*. Nothing in this document closes on the numbers below.
-- Status: **P0 implemented** (§4). **P1 implemented** (§5). **P2 implemented in full**, plus two larger defects found along the way
+- Status: **P0 implemented** (§4). **P1 implemented** (§5). **P2 implemented in full**, including the unboxed-`double`-locals item that was
+  filed as "longer term" and turned out to be the largest win here (20–25× on a counted
+  loop, which now allocates nothing), plus two larger defects found along the way
   ([§6.5](#65--found-while-implementing-p2)); P2-2 landed only after the reasons it had been
   declined were re-examined and both found wrong (§6). **P3 investigated: its premise was
   disproved by measurement** and the real per-call cost identified instead (§7) — no code
@@ -942,11 +944,99 @@ Full suite after the change: **7 032 tests, 7 026 passing, 0 new failures** — 
 pre-existing failures as every phase before it (5 ICU/locale-data dependent, 1 in
 ModuleExtensions).
 
-**Items (2) and (3) of the original fix list.** (2) is done as a side effect: the emitted path
-now calls `JSNumber.Create` rather than `newobj`, which is what routing it through the cache
-required. (3) — unboxed `double` locals — is untouched and remains the larger win for
-float-heavy code, where this item does nothing at all (0.1% of `nbody`'s numbers are in
-range). It is a compiler change and belongs with the `tiered-unboxed-locals` work.
+**Item (2) of the original fix list** is done as a side effect: the emitted path now calls
+`JSNumber.Create` rather than `newobj`, which is what routing it through the cache required.
+
+---
+
+### P2-2 item 3 · Unboxed `double` locals — **implemented**
+
+The last item of P2-2's fix list, and by a wide margin the largest win in this document.
+`ToNativeExpression` reported "is a number" only for literals, so `a + b` on two numeric
+locals never took the native `double` path — every intermediate value in a numeric expression
+was a heap-allocated `JSNumber`.
+
+**The analysis.** A `var` local is held in a CLR `double` when the compiler can prove it only
+ever holds a number. `NumericLocalAnalysis` is an optimistic fixed point: every candidate
+starts out assumed numeric and is dropped as soon as anything could give it another type, and
+because dropping one invalidates the assignments that read it, the sweep repeats until nothing
+changes. Starting optimistic is what lets a self-referential counter — `i = i + 1`, which
+depends on itself — come out numeric at all.
+
+**The hard part was not the type, it was `var` hoisting.** A `var` is observably `undefined`
+from function entry until its initializer runs, and `undefined` is not a double. Rather than a
+definite-assignment dataflow, the analysis requires the declaration to be a direct statement of
+the function body (or the init of a top-level `for`) and requires no reference to the name to
+appear textually before it. Together those mean the initializer has always run before any read:
+a preceding top-level statement either completes — and none of them mentions the name — or
+leaves the function, in which case nothing after it runs. A declaration nested inside an `if`
+or a loop is not eligible, which is why `mandelbrot-ish` below barely moves.
+
+**Storage, and why the change stayed small.** `VariableScope.Expression` becomes a *boxing
+read* of the double, so the hundreds of places that consume a binding as a `JSValue` keep
+working untouched; only the writes and the arithmetic reach for the raw storage. That choice
+also made the change self-policing: an unconverted write path is an assignment to a method
+call, which the IL backend rejects loudly. The first run failed 38 of 68 probes with
+`Assignment target Call is not supported` — every one a write site, none a wrong answer.
+
+**Measured**, fastest of 11 runs against the same tree with only this change reverted:
+
+| | Before | After | | Allocation |
+|---|---|---|---|---|
+| `for (i…) s += i` | 64.9 ms | **3.1 ms** | 20.9× | 128 MB → **3 264 B** |
+| `for (i…) s = s + i` | 72.5 ms | **2.9 ms** | 25.0× | 128 MB → **3 264 B** |
+| float accumulation (`nbody`-ish) | 40.2 ms | **3.9 ms** | 10.3× | 67 MB → **3 264 B** |
+| `t += i % 100` | 123.9 ms | **17.3 ms** | 7.2× | 128 MB → **3 264 B** |
+| `s = (s + i) & 1023` | 128.9 ms | **55.7 ms** | 2.3× | 128 MB → 32 MB |
+| filling an array by index | 44.4 ms | **19.6 ms** | 2.3× | 19 MB → **7 760 B** |
+| `charCodeAt` in a loop | 62.2 ms | **43.5 ms** | 1.4× | 25.5 MB → 6.4 MB |
+| nested `var` in a loop body | 692.9 ms | 611.8 ms | 1.1× | unchanged |
+| reading a 256-element array | 21.8 ms | 24.1 ms | 0.9× | unchanged |
+
+A counted loop over numeric locals now allocates **nothing at all** — the 3 264 bytes are the
+`Eval` call itself, not the loop. This is the one item in the document whose timing is far
+outside what the container's noise could manufacture, so unlike P2-2 and P2-3 the wall-clock
+numbers are quoted as real; they still owe the release matrix before being *claimed* under
+`docs/performance.md`.
+
+**Three things are deliberately left native-free**, because a CLR double operator would give
+the wrong answer:
+
+- **`<=` and `>=`.** The backend emits an ORDERED compare, which answers true when either
+  side is NaN — every relational comparison involving NaN is false in JavaScript. Caught by a
+  probe, not by the suite: the full run was green with these lowered natively and wrong.
+  `<` and `>` do not have the problem and are what a loop test uses.
+- **Bitwise and shift operators.** They run ToInt32 first, whose modulo-2³² wrapping a plain
+  cast does not reproduce. This is why `s = (s + i) & 1023` keeps one allocation per iteration.
+- **Speculative compilation.** Deciding whether a subtree is native is done on the *syntax*
+  before anything is visited, because compiling a subtree and discarding it would leak what
+  the visit allocated on the way — an inline-cache site per discarded attempt, among other
+  compile-time state.
+
+102 tests in `NumericLocalTests`, split the same way the risk is. That the right shapes
+specialize: counted/while/do-while loops, prefix and postfix update in value and statement
+position, all twelve compound assignment operators, and arithmetic chains. That the awkward
+values survive: every relational comparison against NaN, both zeroes, the infinities, `%` with
+a negative left operand, `%` and `/` by zero, `2 ** -1`. That a specialized local is
+indistinguishable from an ordinary number when it escapes — into an array, an object, JSON, a
+method call, a string concatenation, a comparison against a member or a string. And that the
+analysis refuses everything it must: a name later holding a string, object, null or undefined;
+a name read before its initializer; a `var` declared inside an `if`; closures, `with`, direct
+eval; for-in and for-of heads; parameters; and `delete`/`typeof` on the binding itself.
+
+Full suite after the change: **7 190 tests, 7 184 passing, 0 new failures** — the same 6
+pre-existing failures. Two runs during this work each showed one *additional* failure
+(`Issue709Tests`, then `EngineModuleImportBindingTests`), both a `NullReferenceException` in
+identifier resolution inside a `body-:0,0` frame, both passing in isolation and neither
+reproducing on a re-run. That is the signature of the shared-mutable-static sentinel bug in
+the interning maps recorded in §6.5 — one instance of which was fixed there — so a third copy
+of that pattern is likely still in the tree. It is pre-existing and unrelated to this change,
+but it is now visible often enough to be worth hunting down on its own.
+
+**Still open.** A `var` declared inside a block or loop body is not eligible, which is the
+gap `mandelbrot-ish` sits in and would need definite-assignment analysis to close. Parameters
+are never specialized, so a numeric function argument stays boxed. And `let`/`const` are
+excluded to avoid reasoning about TDZ.
 
 ---
 

@@ -193,6 +193,16 @@ partial class FastCompiler
 
             if (assignmentOperator == TokenTypes.Assign)
             {
+                // `x = <numeric>` into a numeric local: keep the right-hand side unboxed all
+                // the way into storage. Visiting it generically would box the value and then
+                // immediately unbox it again, which is one allocation per execution.
+                if (variable.NumericStorage != null)
+                {
+                    var (_, isNativeNumber, nativeRight) = ToNativeExpression(right);
+                    if (isNativeNumber)
+                        return BExpression.Assign(variable.NumericStorage, nativeRight);
+                }
+
                 var initExpr = Visit(right);
                 if (!IsAnonymousFunctionDefinition(right) || shouldSuppressAnonymousFunctionName)
                     initExpr = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, BExpression.Constant(""), BExpression.Constant(false));
@@ -203,7 +213,7 @@ partial class FastCompiler
                     initExpr = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, BExpression.Constant(identifier.Name.Value), BExpression.Constant(true));
                 if (IsDestructuringAssignmentExpression(right))
                     return AssignMaterializedValue(variable.Expression, initExpr);
-                return BExpression.Assign(variable.Expression, initExpr);
+                return AssignToVariable(variable, initExpr);
             }
 
             // A parenthesized assignment target is not an IdentifierReference, so a
@@ -219,6 +229,11 @@ partial class FastCompiler
                     Visit(right), BExpression.Constant(""), BExpression.Constant(false));
                 return BinaryOperation.Assign(variable.Expression, suppressedRight, assignmentOperator);
             }
+
+            // `x op= v` on a numeric local: the store targets the raw double.
+            // BinaryOperation.Assign would write through the binding's boxing read.
+            if (variable.NumericStorage != null)
+                return CreateNumericCompoundAssignment(variable, right, assignmentOperator);
 
             return Assign(variable.Expression, right, assignmentOperator);
         }
@@ -421,6 +436,46 @@ partial class FastCompiler
                 typeof(JSValue)));
     }
 
+    /// <summary>
+    /// Builds `local op= value` for a numeric local, storing back into its raw double.
+    /// </summary>
+    /// <remarks>
+    /// Covers every operator the analysis is willing to call numeric, not just the ones with
+    /// a native form: the four that map straight onto a CLR double operator take it, and the
+    /// rest keep the ordinary JSValue operator and unbox its result on the way back into
+    /// storage. Leaving an operator uncovered here would fall through to an assignment
+    /// against the binding's boxing read, which the IL backend rejects — the short-circuit
+    /// forms (`||=`, `&amp;&amp;=`, `??=`) never arrive because the analysis refuses to call
+    /// their result numeric in the first place.
+    /// </remarks>
+    private BExpression CreateNumericCompoundAssignment(
+        FastFunctionScope.VariableScope variable, AstExpression right, TokenTypes assignmentOperator)
+    {
+        var storage = variable.NumericStorage;
+        var (_, isRightNumber, rightExp) = ToNativeExpression(right);
+
+        if (isRightNumber)
+        {
+            BExpression native = assignmentOperator switch
+            {
+                TokenTypes.AssignAdd => BExpression.Add(storage, rightExp),
+                TokenTypes.AssignSubtract => BExpression.Subtract(storage, rightExp),
+                TokenTypes.AssignMultiply => BExpression.Multiply(storage, rightExp),
+                TokenTypes.AssignDivide => BExpression.Divide(storage, rightExp),
+                _ => null,
+            };
+
+            if (native != null)
+                return BExpression.Assign(storage, native);
+        }
+
+        var combined = BinaryOperation.Operation(
+            ToJSValueExpression(storage),
+            ToJSValueExpression(rightExp),
+            CompoundAssignmentToBinaryOperator(assignmentOperator));
+        return BExpression.Assign(storage, ToDoubleExpression(combined));
+    }
+
     private BExpression Assign(BExpression exp, AstExpression right, TokenTypes assignmentOperator)
     {
         if (assignmentOperator == TokenTypes.AssignAdd && right.Type == FastNodeType.Literal && right is AstLiteral literal)
@@ -503,6 +558,14 @@ partial class FastCompiler
                         if (!newScope && variable.IsLexical && variable.Variable?.Type == typeof(JSVariable))
                         {
                             inits.Add(JSVariableBuilder.Assign(variable.Variable, init));
+                            return;
+                        }
+
+                        // A numeric local is written through its raw storage; Expression is
+                        // a boxing read and cannot be assigned to.
+                        if (variable.NumericStorage != null)
+                        {
+                            inits.Add(AssignToVariable(variable, init));
                             return;
                         }
 
