@@ -17,8 +17,9 @@ the phase 0–5 optimization campaign referenced in [`docs/roadmap.md`](roadmap.
 - Acceptance protocol: unchanged — [`docs/performance.md`](performance.md) governs what may
   be *claimed*. Nothing in this document closes on the numbers below.
 - Status: **P0 implemented** (§4). **P1 implemented** apart from a compiler-level store cache
-  (§5). **P2 partially implemented** — P2-1 plus two larger defects found while doing it
-  ([§6.5](#65--found-while-implementing-p2)); P2-2/3/4 deferred with reasons (§6). P3 not started.
+  (§5). **P2: P2-1 and P2-4 implemented**, plus two larger defects found along the way
+  ([§6.5](#65--found-while-implementing-p2)); P2-2 declined and P2-3 deferred, both with
+  reasons (§6). P3 not started.
 
 ---
 
@@ -70,16 +71,20 @@ Allocation for the object shape that suffered most: building a three-field objec
 constructor cost **6 595 bytes** before P1 and **1 480** after, against 1 328 for the
 equivalent object literal — the gap between "assigned" and "literal" is essentially closed.
 
-**P2 delivered mostly what it did not plan.** P2-1 landed as written; the other three are
-deferred with reasons (§6). What actually came out of the phase were two defects on the array
-paths, both found by measuring rather than reading, and both larger than anything P2 had
-scoped ([§6.5](#65--found-while-implementing-p2)):
+**P2 delivered both what it planned and what it did not.** P2-1 and P2-4 landed as written;
+P2-2 is declined on correctness grounds and P2-3 deferred (§6). Working through the phase also
+turned up two defects on the array paths, found by measuring rather than reading, and larger
+than anything P2 had scoped ([§6.5](#65--found-while-implementing-p2)):
 
 | | Before | After |
 |---|---:|---:|
+| **P2-4** `s = s + x` × 20 000 — was quadratic | 1 604 ms / 3.20 GB / 913 gen2 | **10.7 ms / 4.4 MB / 0 gen2** |
+| **P2-4** `script:dromaeo-object-string` | 4 733 ms / 15.9 GB | **1 662 ms / 1.5 GB** |
 | 200 000 `pop()`s — length shrink was O(n) per call, so the loop was quadratic | 466 427 ms | **640 ms** (729×) |
 | Filling a fresh array, per element — the indexed twin of P1-1 | 1 350 B | **145 B** (9×) |
 | `push`, per element (P2-1 plus the above) | 3 803 B | **1 480 B** |
+| `script:dromaeo-object-array` | 5 564 ms | **646 ms** (8.6×) |
+| `script:array-stress` | 422 ms | **113 ms** (3.7×) |
 
 ---
 
@@ -622,15 +627,14 @@ exact `JSObject` once the write path is fixed.
 
 ---
 
-## 6. P2 — allocation on built-in and value paths — **partially implemented**
+## 6. P2 — allocation on built-in and value paths — **mostly implemented**
 
-P2-1 is implemented. P2-2, P2-3 and P2-4 are **not**, and each carries a status note saying
-why — the first for a correctness reason, the other two because working through P2 turned up
-two defects that were far larger than anything this phase had scoped, and fixing them changed
-the arithmetic on what was left. Those two are written up in
-[§6.5](#65--found-while-implementing-p2) and are the bulk of what this phase delivered.
+P2-1 and P2-4 are implemented. P2-2 is declined on correctness grounds and P2-3 is deferred;
+each carries a status note saying why. Working through the phase also turned up two defects
+larger than anything it had scoped, written up in
+[§6.5](#65--found-while-implementing-p2).
 
-### P2-1 · `Array.prototype.push` allocates a full descriptor per element
+### P2-1 · `Array.prototype.push` allocates a full descriptor per element — **implemented**
 
 `BuiltIns/Array/JSArrayPrototype.Modification.cs:183`:
 
@@ -667,7 +671,7 @@ are one-time bootstrap or registry checks.
 
 ---
 
-### P2-2 · No small-number cache; every arithmetic result is a heap allocation
+### P2-2 · No small-number cache; every arithmetic result is a heap allocation — **declined**
 
 `BuiltIns/BuiltInsAssemblyInitializer.cs:119`:
 
@@ -731,7 +735,7 @@ emits `new JSNumber(double)` directly and never touches the delegate.
 
 ---
 
-### P2-3 · Dense element storage is 4× larger than it needs to be
+### P2-3 · Dense element storage is 4× larger than it needs to be — **deferred**
 
 `ElementArray` stores `JSProperty[]` for dense (packed/holey) arrays. `JSProperty` is
 attributes + key + `get` + `set` + `value` — **32 bytes** — where a default-descriptor dense
@@ -762,7 +766,7 @@ hand out those refs, so the change reaches `JSObject`'s element paths too, not j
 
 ---
 
-### P2-4 · Strings are flat; repeated concatenation is quadratic
+### P2-4 · Strings are flat; repeated concatenation is quadratic — **implemented**
 
 `JSString` wraps a plain .NET `string` (`BuiltIns/String/JSString.cs:17`), so `s += x` in a
 loop copies the whole accumulated string every iteration. `dromaeo-object-string` allocates
@@ -777,18 +781,55 @@ every production engine does.
 interning, `DoubleValue` caching, and the `ToKey` fast paths all assume a flat backing string.
 Worth scoping as its own change, after P0 and P1.
 
-**Status: not implemented. This is now the largest single item left in the whole document.**
+Re-measured before the change: `s = s + 'abcdefgh'` twenty thousand times allocated **160 KB
+per concatenation** — 3.2 GB in total for a 160 KB result — and provoked ~915 gen1 and ~913
+gen2 collections. It was the only workload in the set to reach gen2 at all, and unlike
+everything else in P2 it was genuinely quadratic rather than merely wasteful, so the cost grew
+with the program's data rather than with its instruction count.
 
-Re-measured: `s = s + 'abcdefgh'` twenty thousand times allocates **160 KB per concatenation**
-— 3.2 GB in total for a 160 KB result — and provokes ~915 gen1 and ~913 gen2 collections. It
-is the only workload in the set that reaches gen2 at all, and unlike everything else in P2 it
-is genuinely quadratic rather than merely wasteful, so the cost grows with the program's data
-rather than with its instruction count.
+**Status: implemented.**
 
-Nothing cheaper than a rope helps: string `+` bottoms out in
-`CreateString(self.StringValue + value.StringValue)`, a plain CLR concat, and there is no
-intermediate representation to reuse. The risk assessment above stands unchanged — this needs
-its own change with its own test pass, and it should be next.
+A `JSString` now holds *either* a flat `string` or a pending `Rope` — never both — and the
+`value` member changed from a field to a property that materializes on first demand. That
+detail is what kept the change small: the roughly forty reads of `value` inside `JSString`
+kept compiling unchanged, and the field was never visible outside its own file.
+
+Design notes, in the order they mattered:
+
+- **Ropes are left-leaning, and `Right` is always an already-flat string.** That is exactly the
+  shape `s = s + x` produces. Joining a right operand that is itself pending flattens that
+  side rather than nesting, which keeps `Flatten` a simple spine descent instead of a tree
+  walk — worth the occasional extra copy for how much simpler it makes the invariant.
+- **Flattening is iterative.** The spine is exactly as deep as the number of appends, so a
+  recursive flatten would overflow the stack on precisely the workload this exists for. It
+  walks the spine writing each segment into a `string.Create` buffer back-to-front, one
+  O(total) pass. `AVeryDeepConcatenationFlattensWithoutOverflowingTheStack` pins this at
+  100 000 appends.
+- **A threshold of 64 characters.** A rope node plus its `JSString` costs on the order of a
+  hundred bytes, so deferring a short join loses; `'Hello, ' + name` stays a plain copy. An
+  accumulating string passes the threshold within a few iterations and is O(1) per append from
+  then on.
+- **`Length` never flattens** — the rope carries its own total. So `s.length`, the emptiness
+  tests in the concatenation paths, and every internal range check stay free while a join is
+  still pending.
+- **Publication order.** The flat value is written before the rope reference is dropped, both
+  with volatile writes, so a reader that observes a null rope is guaranteed to see the string.
+  Dropping the rope is what lets the whole chain of intermediate nodes become garbage.
+
+| | Before | After |
+|---|---:|---:|
+| `s = s + 'abcdefgh'` × 20 000 | 1 604 ms | **10.7 ms** (150×) |
+| — allocation | 3.20 GB | **4.4 MB** (734×) |
+| — gen0 / gen1 / gen2 collections | 926 / 915 / 913 | **0 / 0 / 0** |
+| `script:dromaeo-object-string` | 4 733 ms | **1 662 ms** (2.8×) |
+| — allocation | 15.9 GB | **1.5 GB** (10.6×) |
+| — gen2 collections | 693 | **59** |
+
+40 tests in `StringConcatenationRopeTests` assert that a deferred string is indistinguishable
+from the flat one it stands for: indexing, slicing, searching, splitting, regex matching, JSON
+round-trip, use as a property key, `===` against an eagerly built equal string, coercion and
+relational comparison, `+` with numbers and objects, the `TypeError` on a Symbol, and that
+extending one does not disturb it or any sibling derived from the same prefix.
 
 ---
 
@@ -870,7 +911,7 @@ Sequence this **after** P0; measuring it before then would just be measuring P0-
 | ~~**C**~~ | ~~P1-1, P1-4~~ | **Done** — cache reaches constructor/class code (0 → ~100% hit rate); constructor-built objects 6 595 → 1 480 bytes | Full `dotnet test` green; `PropertyShapeCacheTests` asserts the hit rates and every staleness path. P1-4's double storage still open |
 | **D** | ~~P1-2~~, P1-3 | P1-2 **done** — inherited and class method calls hit the cache. P1-3 open: only a runtime fast path landed, not a store cache | `PropertyShapeCacheTests` covers `setPrototypeOf`, prototype mutation, own-property shadowing, delete, freeze, accessor redefinition, polymorphic and megamorphic sites |
 | **E** | ~~P2-1~~, P2-2 | P2-1 **done**, plus the two array defects in §6.5 (729× on repeated `pop`, 9× on array fill). P2-2 declined — see its status note | `IndexedWriteAndLengthTests` covers integrity levels, foreign receivers, exotics and length-shrink; `test262-arrays` still owed |
-| **F** | P2-3, P2-4, P3 | Memory footprint, string-heavy code, call structure. **P2-4 is now the largest single item left** | Full matrix per `docs/performance.md` |
+| **F** | P2-3, ~~P2-4~~, P3 | P2-4 **done** — repeated concatenation is no longer quadratic (150× on the accumulation loop, 10.6× less allocation on `dromaeo-object-string`). P2-3 and P3 remain | `StringConcatenationRopeTests`; `test262` string coverage and the full matrix per `docs/performance.md` still owed |
 
 Each phase adds an entry to `eng/performance/ownership.json` with its benchmark and semantic
 owner, and closes only under the acceptance rules in `docs/performance.md` — two runs inside
