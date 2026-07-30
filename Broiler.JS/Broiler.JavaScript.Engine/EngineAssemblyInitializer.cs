@@ -81,7 +81,7 @@ internal static class EngineAssemblyInitializer
 
                 sb.AppendLine($"    at {fx}:{file}:{top.Line},{top.Column}");
                 trace.Add((fx, file, top.Line, top.Column));
-                top = top.Parent;
+                top = top.Caller;
             }
         };
 

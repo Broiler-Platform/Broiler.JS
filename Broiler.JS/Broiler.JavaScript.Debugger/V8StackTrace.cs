@@ -1,4 +1,4 @@
-﻿using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Engine;
 using System.Collections.Generic;
 
 namespace Broiler.JavaScript.Debugger;
@@ -21,7 +21,7 @@ public class V8StackTrace
                 ColumnNumber = top.Column
             });
 
-            top = top.Parent;
+            top = top.Caller;
         }
 
         CallFrames = cflist;

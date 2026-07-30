@@ -186,7 +186,11 @@ partial class FastCompiler
 
             var point = node.Start.Start;
 
-            sList.Add(BExpression.Assign(stackItem, CallStackItemBuilder.New(cs.Context, scriptInfo, nameOffset, nameLength, point.Line, point.Column)));
+            // A generator or async body is rewritten into a state machine whose frame is
+            // pushed once, at priming, and then held across every suspension — so it keeps
+            // its caller's frame pinned out of the recycling pool (see CallStackItem.PinSuspendable).
+            sList.Add(BExpression.Assign(stackItem, CallStackItemBuilder.New(cs.Context, scriptInfo, nameOffset, nameLength, point.Line, point.Column,
+                suspendable: functionDeclaration.Generator || functionDeclaration.Async)));
 
             var argumentElements = args;
 

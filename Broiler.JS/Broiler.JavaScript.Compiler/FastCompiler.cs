@@ -191,7 +191,9 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
             BExpression.Assign(lScope, JSContextBuilder.Current)
         };
 
-        JSContextStackBuilder.Push(sList, lScope, stackItem, BExpression.Constant(location), StringSpanBuilder.Empty, 0, 0);
+        // A top-level-await program is rewritten into a state machine below, so its frame
+        // suspends just like a generator body's and must pin whatever it was pushed under.
+        JSContextStackBuilder.Push(sList, lScope, stackItem, BExpression.Constant(location), StringSpanBuilder.Empty, 0, 0, suspendable: jScript.IsAsync);
         sList.Add(ScriptInfoBuilder.Build(scriptInfo, _keyStrings));
 
         // GlobalDeclarationInstantiation step 8: every top-level FunctionDeclaration of a

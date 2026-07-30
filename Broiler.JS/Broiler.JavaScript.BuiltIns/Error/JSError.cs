@@ -47,7 +47,7 @@ public partial class JSError : JSObject, IJSError
                 file = "file";
 
             sb.AppendLine($"    at {fx}:{file}:{top.Line},{top.Column}");
-            top = top.Parent;
+            top = top.Caller;
         }
 
         return sb.ToString();

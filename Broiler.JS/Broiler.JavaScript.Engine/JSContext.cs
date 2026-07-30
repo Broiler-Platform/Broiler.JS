@@ -644,7 +644,7 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
 
     internal bool TryResolveDirectEvalBinding(in KeyString name, out JSVariable variable, bool includeUninitializedShadows = false)
     {
-        for (var current = Top; current != null; current = current.Parent)
+        for (var current = Top; current != null; current = current.Caller)
         {
             if (current.TryGetDirectEvalBinding(name, out variable))
             {
@@ -1495,7 +1495,7 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
 
         if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
         {
-            for (var current = Top; current != null; current = current.Parent)
+            for (var current = Top; current != null; current = current.Caller)
             {
                 if (!current.TryGetDirectEvalBinding(name, out var existingBinding)
                     || !ReferenceEquals(existingBinding, directEvalBinding))

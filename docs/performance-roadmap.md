@@ -1321,7 +1321,7 @@ an exact-`JSObject` test and overridden by `JSArray` — so integer-indexed exot
 
 ---
 
-## 7. P3 — call-path structure — **premise disproved; the real cost is elsewhere**
+## 7. P3 — call-path structure — **premise disproved; the real cost was the activation record, now removed**
 
 The original item read:
 
@@ -1413,6 +1413,96 @@ capturing a trace, a direct eval, a generator suspending). That is a redesign of
 activation record, with its own test pass, and it should be filed as its own item rather than
 carried under "call-path structure".
 
+### The activation record — **implemented, by recycling rather than by redesign**
+
+The paragraph above proposed materializing frames lazily. That was not necessary. Frames are
+now **rented from a free list** and returned by the `Pop` their own call already emitted, which
+gets the same result — no allocation on the ordinary path — without moving frame data anywhere
+or changing what a frame is.
+
+Measured against a floor with the identical loop shape, so the loop's own cost cancels:
+
+| | before | after |
+|---|---:|---:|
+| `f()` — no arguments | 80.0 B/call | **0.0** |
+| `f(a)` | 136.0 B/call | **56.0** |
+| `o.m(a)` | 136.0 B/call | **56.0** |
+| arrow `(a) => a` | 136.0 B/call | **56.0** |
+
+The 56 bytes that remain are argument passing, not the frame. Whole-scenario allocation falls
+**7–65%** (`fib(27)` −65%, a 200-deep recursion loop −65%, a 1M-iteration method call −41%,
+`new C()` −7%).
+
+Throughput is **unchanged** — between −3.0% and +2.9% across nine scenarios with the median at
+zero, measured ABBA-interleaved in one process against a runtime switch, for the reasons P2-2
+documents. The first version was consistently ~1.5% *slower*: renting and releasing touched two
+`[ThreadStatic]` fields each, and four thread-local lookups per call cost more than the gen0
+bump they replace. Putting the head and the count in one holder object behind a single
+`[ThreadStatic]` cell removed that. So this is an allocation win, banked at no throughput cost —
+not a speedup.
+
+#### What made it hard, and the two rules that came out of it
+
+The deferral above was right that frames escape; it was wrong about which escape matters.
+`new.target` is read straight out of the frame and never outlives it, and direct-eval bindings
+are cleared by `Pop`. What actually breaks recycling is that **a frame's lifetime is not always
+a synchronous span**:
+
+- a generator or async body is pushed once, when primed, and then leaves the stack at *every*
+  suspension without running its `finally` — stranding itself, and everything it had called,
+  holding parent links to frames that later return;
+- `JSGenerator.MoveNext` restores the `Top` it captured on entry, and the body it just ran may
+  have popped that frame — so the engine can legitimately be sitting on a frame that has
+  already returned.
+
+Three defects came out of that, and every one of them appeared as a corrupted or looping parent
+chain rather than as a wrong answer — two only as an intermittent hang, which is why the local
+suite was no help at all: it stayed green through all three.
+
+1. **Re-pointing a suspended body's parent on resumption** — the first attempt at keeping
+   parent links fresh. It is wrong: an async body resumes from a microtask continuation whose
+   current top is unrelated to its caller, so re-linking splices the body into a foreign chain
+   and `Pop` then restores *that* frame as the top. 17 test262 async-generator files failed.
+2. **A stale parent link followed into a reissued frame.** Once the object is handed to another
+   call, a walk from a stranded frame leaves the generator into an unrelated live chain — and
+   if that call was made from inside the resumed body, the chain closes into a cycle and every
+   walker spins. **Rule: a link records the parent's push count and is followed only while that
+   count still matches** (`CallStackItem.Caller`, which the five walkers now use instead of
+   `Parent`). Reissuing a frame invalidates every link into it without having to find them, and
+   a stale link reads as "no caller" — exactly what the pre-pooling engine reported, since `Pop`
+   had nulled that frame's own `Parent`.
+3. **A frame reissued while it was still the top**, via the `MoveNext` restore above. The next
+   call then links itself under *itself*, and a one-element cycle passes any stamp check.
+   **Rule: a released frame is never anybody's parent** — a dead top is treated as "no caller".
+
+Generator and async bodies additionally opt out of recycling altogether. Theirs is the one frame
+rented in one synchronous span and released in another — possibly on another thread, since an
+async continuation may resume anywhere — and the pool is thread-local with a plain release-once
+flag. That costs one un-recycled frame per generator instance, against zero per ordinary call.
+
+Diagnosis was by bisection, not by reading: the failing test262 file was reduced to a standalone
+script, run 20–40 times per configuration to get a failure *rate* rather than a verdict, and the
+cycle was then dumped frame by frame. The first two hypotheses — thread migration, and the extra
+field clearing in `Pop` — were both wrong and both were discarded on the numbers.
+
+#### Evidence
+
+- Full suite **7 212 tests, 7 212 passing, 0 failures**, including 13 new owned tests.
+- test262 over generators, async generators, async functions, `eval-code`, `Error`, calls,
+  `try` and the Intl surfaces: **2 412 passing, 51 failing, 0 timed out** — byte-identical to
+  the pre-change baseline on the overlapping set, nothing newly failing, and no test newly
+  timing out (a hang shows up there as a timeout, so that column is the one that matters).
+- The specific file that exposed rules 2 and 3 — `built-ins/AsyncGeneratorPrototype/throw/
+  this-val-not-async-generator.js` — went from 10/20 hanging to **40/40 clean**.
+- Both rules are mutation-tested: deleting either makes exactly one owned test fail. That check
+  was worth running — the JavaScript-level tests pass with *either* rule removed, because the
+  corruption needs a job-queue interleaving the xUnit host does not reproduce, so the rules are
+  also asserted directly against the frame API.
+
+The lazy-materialization redesign is no longer needed for allocation. It would still be the way
+to remove the frame's remaining *work* (the push/pop bookkeeping itself), which this does not
+touch — but there is no measured cost there to remove.
+
 ---
 
 ## 8. Sequencing and exit gates
@@ -1424,7 +1514,7 @@ carried under "call-path structure".
 | ~~**C**~~ | ~~P1-1, P1-4~~ | **Done** — cache reaches constructor/class code (0 → ~100% hit rate); constructor-built objects 6 595 → 1 480 bytes | Full `dotnet test` green; `PropertyShapeCacheTests` asserts the hit rates and every staleness path. P1-4's double storage still open |
 | ~~**D**~~ | ~~P1-2~~, ~~P1-3~~ | P1-2 **done** — inherited and class method calls hit the cache. P1-3 **done** — constant-key stores go through a store cache; 2.1× on a monomorphic store, 3.6× when the property name is not a one-character early-interned key. The shape-transition case is written up as not implemented | `PropertyShapeCacheTests` covers `setPrototypeOf`, prototype mutation, own-property shadowing, delete, freeze, accessor redefinition, polymorphic and megamorphic sites; `PropertyStoreCacheTests` covers the write side |
 | ~~**E**~~ | ~~P2-1~~, ~~P2-2~~ | P2-1 **done**, plus the two array defects in §6.5 (729× on repeated `pop`, 9× on array fill). P2-2 **done** — small integers are minted once per thread; 33–80% less allocation on index- and counter-heavy code, and a latent cross-realm `GetMethod` bug fixed on the way. Throughput deliberately unclaimed | `IndexedWriteAndLengthTests` covers integrity levels, foreign receivers, exotics and length-shrink; `SmallNumberCacheTests` covers negative zero, the range boundaries, primitive identity and per-realm prototypes; `test262-arrays` still owed |
-| ~~**F**~~ | ~~P2-3~~, ~~P2-4~~, ~~P3~~ | P2-4 **done** — repeated concatenation is no longer quadratic (150× on the accumulation loop, 10.6× less allocation on `dromaeo-object-string`). P2-3 **done** — a dense element is one reference instead of a 32-byte descriptor; `new Array(1000)` allocates 73% less, and the deferral's feasibility objection turned out not to hold. P3 **closed without a change** — the scopes it blamed cost nothing; the 80-byte per-call `CallStackItem` is the real cost and needs its own item | `StringConcatenationRopeTests`, `CompactElementStorageTests`, `ElementDescriptorRoundTripTests`; `test262` string and array coverage and the full matrix per `docs/performance.md` still owed |
+| ~~**F**~~ | ~~P2-3~~, ~~P2-4~~, ~~P3~~ | P2-4 **done** — repeated concatenation is no longer quadratic (150× on the accumulation loop, 10.6× less allocation on `dromaeo-object-string`). P2-3 **done** — a dense element is one reference instead of a 32-byte descriptor; `new Array(1000)` allocates 73% less, and the deferral's feasibility objection turned out not to hold. P3 **done** — the scopes it blamed cost nothing, but the 80-byte per-call `CallStackItem` they hid was the whole fixed cost of an argument-less call; frames are now recycled and that call allocates **nothing** (`f(a)` 136 → 56 bytes, whole-scenario allocation −7% to −65%, throughput unchanged) | `StringConcatenationRopeTests`, `CompactElementStorageTests`, `ElementDescriptorRoundTripTests`, `CallFramePoolTests` (both frame-lifetime rules mutation-tested); P3 additionally gated on a test262 run over generators/async/eval/Error/calls showing no new failure and no new timeout. `test262` string and array coverage and the full matrix per `docs/performance.md` still owed |
 
 Each phase adds an entry to `eng/performance/ownership.json` with its benchmark and semantic
 owner, and closes only under the acceptance rules in `docs/performance.md` — two runs inside
