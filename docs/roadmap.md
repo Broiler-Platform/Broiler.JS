@@ -70,8 +70,14 @@ Broiler.JS owns the integration gate:
 
 ## 4. Performance and deployment evidence
 
-The optimization implementation phases are complete, but release evidence and several
-product decisions remain:
+The phase 0-5 optimization campaign is complete for the work it scoped (storage layouts,
+startup, packaging, SIMD, tiering experiments). It did not leave the engine's steady-state
+execution paths finished: a subsequent investigation found that the object-shape layout and
+property inline cache those phases delivered are inert for most real JavaScript, and that
+three pieces of always-on bookkeeping dominate the call path. That work is planned in
+[Execution-performance roadmap](performance-roadmap.md) and is not tracked here.
+
+The deployment evidence and product decisions still outstanding are:
 
 - collect repeatable baselines on Windows x64, Linux x64, and Linux Arm64;
 - exercise x64 with AVX2 enabled and disabled and Arm64 with AdvSimd where claimed;

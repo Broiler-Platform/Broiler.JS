@@ -81,6 +81,7 @@ aims to pass nearly the full suite, and conformance is tracked continuously in C
 | [Architecture overview](docs/architecture/overview.md) | Engine layers and satellite assemblies |
 | [Assembly boundaries](docs/architecture/dependencies.md) | Dependency direction and supported cross-assembly seams |
 | [Performance measurement](docs/performance.md) | Repeatable baselines, bootstrap profiles, and execution-mode boundaries |
+| [Execution-performance roadmap](docs/performance-roadmap.md) | Measured hot-path findings and the plan to close them |
 | [Contributing built-ins](docs/architecture/contributing-builtins.md) | How to implement new built-in objects |
 | [LogParser usage](logs/README.md) | Shard log summarizer and JSON export |
 | [Contributing](CONTRIBUTING.md) | CI pipeline, test262 workflow, running tests locally |
