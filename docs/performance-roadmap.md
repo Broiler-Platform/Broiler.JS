@@ -1456,7 +1456,7 @@ entry, matching the existing fix.
 
 Every phase above reports "0 new failures" against a standing baseline of **6 pre-existing
 failures** (5 ICU/locale-data dependent, 1 in ModuleExtensions). That baseline is gone: the
-suite now runs **7 196 tests, 7 196 passing, 0 failures**.
+suite now runs **7 199 tests, 7 199 passing, 0 failures**.
 
 One was a real defect. Five were tests asserting behaviour the engine is right to refuse, each
 checked against the pinned test262 suite rather than against my reading of the spec — the six
@@ -1503,6 +1503,18 @@ The lesson worth keeping is the one from P2-2's measurement and the `NaN <= x` b
 unboxed-locals work: a failing test is a claim, not a verdict, and the pinned conformance suite
 settles it faster and more reliably than reasoning from spec text. My first reading of
 ECMA-402's `hour12` clause said the engine was wrong; the test262 vector says it is right.
+
+**A seventh defect, found next to the currency one.** Reading the currency rule turned up its
+mirror image three lines below: `resolvedOptions` reflected `unit` *unconditionally*, where
+`SetNumberFormatUnitOptions` sets `[[Unit]]` only for style `"unit"`. So
+`new Intl.NumberFormat('en', {unit:'meter'}).resolvedOptions().unit` returned `"meter"`, as did
+the same option under `style:"percent"` and even under `style:"currency"`, where the property
+then sat next to a live currency group. The sibling `unitDisplay` was already gated correctly,
+and construction-time validation was already unconditional and correct — only the reflection
+was wrong, so the fix is the one missing `style == "unit"` guard, with `unit` and `unitDisplay`
+folded into a single block mirroring the currency one above it. No test in the tree covered it
+in either direction; `NumberFormat/constructor-unit.js` and `constructor-unitDisplay.js` pin it
+upstream, and three repository tests now cover the drop, the round-trip and the validation.
 
 ---
 

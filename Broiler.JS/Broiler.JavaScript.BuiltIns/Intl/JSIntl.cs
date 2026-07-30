@@ -6002,14 +6002,22 @@ public class JSIntlNumberFormat : JSObject
             // A currency option supplied without style:"currency" is validated at construction
             // but is NOT reflected by resolvedOptions (ECMA-402 only emits currency/currencyDisplay/
             // currencySign for the currency style).
-            if (!@this.options[unitKey].IsUndefined)
-                result.CreateDataProperty(unitKey, @this.options[unitKey]);
-            // unitDisplay sits with unit in the resolvedOptions table — before the digit
-            // options — and is reflected only when style is "unit" (resolved.UnitDisplay
-            // is null otherwise).
-            if (@this.resolved?.UnitDisplay != null)
-                result.CreateDataProperty(KeyStrings.GetOrCreate("unitDisplay"),
-                    CreateString(@this.resolved.UnitDisplay));
+
+            // unit and unitDisplay sit together in the resolvedOptions table — after the currency
+            // group, before the digit options — and are subject to the mirror-image rule:
+            // SetNumberFormatUnitOptions sets [[Unit]] and [[UnitDisplay]] only when style is
+            // "unit", so a unit supplied under any other style is validated at construction and
+            // then dropped (test262 NumberFormat/constructor-unit.js asserts `"unit" in
+            // resolvedOptions()` is false for style:"percent", and constructor-unitDisplay.js
+            // asserts the same for unitDisplay).
+            if (style == "unit")
+            {
+                if (!@this.options[unitKey].IsUndefined)
+                    result.CreateDataProperty(unitKey, @this.options[unitKey]);
+                if (@this.resolved?.UnitDisplay != null)
+                    result.CreateDataProperty(KeyStrings.GetOrCreate("unitDisplay"),
+                        CreateString(@this.resolved.UnitDisplay));
+            }
             // Digit options reflect the construction-time snapshot (read once),
             // not the live options bag, so resolvedOptions does not re-trigger
             // option getters.

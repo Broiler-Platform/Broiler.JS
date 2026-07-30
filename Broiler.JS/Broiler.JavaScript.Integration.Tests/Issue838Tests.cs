@@ -413,6 +413,34 @@ public class Issue838Tests
         => Assert.Equal("RangeError", Eval(
             "try { new Intl.NumberFormat('en', { currency: 'jp' }); 'no-throw'; } catch (e) { e.constructor.name; }"));
 
+    // The mirror-image rule for units: SetNumberFormatUnitOptions sets [[Unit]]/[[UnitDisplay]]
+    // only when style is "unit", so a unit supplied under any other style is dropped — including
+    // under style:"currency", where both option groups are present (test262
+    // NumberFormat/constructor-unit.js and constructor-unitDisplay.js).
+    [Fact]
+    public void NumberFormatDoesNotReflectUnitWhenStyleNotUnit()
+        => Assert.Equal("false,false,false,false", Eval(
+            "function has(o, k) { return Object.prototype.hasOwnProperty.call(" +
+            "  new Intl.NumberFormat('en', o).resolvedOptions(), k); }" +
+            "[has({unit:'meter'}, 'unit')," +
+            " has({style:'percent', unit:'meter'}, 'unit')," +
+            " has({style:'currency', currency:'USD', unit:'meter'}, 'unit')," +
+            " has({style:'percent', unit:'meter', unitDisplay:'long'}, 'unitDisplay')].join(',')"));
+
+    [Fact]
+    public void NumberFormatStillReflectsUnitWhenStyleIsUnit()
+        => Assert.Equal("unit,meter,long,5 meters", Eval(
+            "var f = new Intl.NumberFormat('en', { style:'unit', unit:'meter', unitDisplay:'long' });" +
+            "var r = f.resolvedOptions();" +
+            "[r.style, r.unit, r.unitDisplay, f.format(5)].join(',')"));
+
+    [Fact]
+    public void NumberFormatStillValidatesUnitWhenStyleNotUnit()
+        => Assert.Equal("RangeError,RangeError", Eval(
+            "function kind(o) { try { new Intl.NumberFormat('en', o); return 'no-throw'; }" +
+            "                  catch (e) { return e.constructor.name; } }" +
+            "[kind({unit:'bogus'}), kind({unit:'meter', unitDisplay:'bogus'})].join(',')"));
+
     [Fact]
     public void NumberFormatStillFormatsCurrencyGivenLowercaseCode()
         => Assert.Equal("$5.00", Eval(
