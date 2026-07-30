@@ -19,7 +19,8 @@ the phase 0–5 optimization campaign referenced in [`docs/roadmap.md`](roadmap.
 - Status: **P0 implemented** (§4). **P1 implemented** apart from a compiler-level store cache
   (§5). **P2: P2-1 and P2-4 implemented**, plus two larger defects found along the way
   ([§6.5](#65--found-while-implementing-p2)); P2-2 declined and P2-3 deferred, both with
-  reasons (§6). P3 not started.
+  reasons (§6). **P3 investigated: its premise was disproved by measurement** and the real
+  per-call cost identified instead (§7) — no code change.
 
 ---
 
@@ -883,22 +884,97 @@ an exact-`JSObject` test and overridden by `JSArray` — so integer-indexed exot
 
 ---
 
-## 7. P3 — call-path structure
+## 7. P3 — call-path structure — **premise disproved; the real cost is elsewhere**
 
-`JSFunction.InvokeFunction` (`BuiltIns/Function/JSFunction.cs`) wraps every call in four
-`using` scopes (`EnterRealm`, `EnterStrictMode`, `PushWithFallbackScopes`, `PushWithScopes`,
-plus a conditional `SuspendWithScopes`), a `JSEngine.Current as JSContext` type test, and a
-`try`/`catch (NullReferenceException)`/`finally` — the last of which also blocks inlining of
-the whole method.
+The original item read:
 
-After P0-2 and P0-3 remove the two expensive scopes, the remainder is worth restructuring:
-hoist a fast path for the overwhelmingly common case (ordinary function, same realm, no `with`
-scopes, no legacy tracking, not a tail-call target) that skips straight to the invocation
-delegate, and keep today's full path as the fallback. The `catch (NullReferenceException)` →
-`ReferenceError` translation in particular should be established once per compilation rather
-than per call if it can be.
+> `JSFunction.InvokeFunction` wraps every call in four `using` scopes (`EnterRealm`,
+> `EnterStrictMode`, `PushWithFallbackScopes`, `PushWithScopes`, plus a conditional
+> `SuspendWithScopes`), a `JSEngine.Current as JSContext` type test, and a
+> `try`/`catch (NullReferenceException)`/`finally` — the last of which also blocks inlining of
+> the whole method. […] hoist a fast path for the overwhelmingly common case that skips
+> straight to the invocation delegate, and keep today's full path as the fallback.
 
-Sequence this **after** P0; measuring it before then would just be measuring P0-2 and P0-3.
+**That was built, measured, and reverted.** The scopes are not the cost.
+
+### What the measurement showed
+
+The fast path was implemented as described — a `CanUseFastInvoke()` guard (no legacy tracking,
+no captured `with` scopes, realm already current, not script-host mode) selecting a stripped
+invocation loop that kept only the executing-function record, the strict-mode scope, the
+`NullReferenceException` translation, and the tail-call trampoline. Three runs of each
+scenario, with and without, medians in ms:
+
+| Scenario | Without | With | With (repeat) |
+|---|---:|---:|---:|
+| `f()` | 457 | 466 | 466 |
+| `f()` strict | 402 | 371 | 357 |
+| `o.m()` | 508 | 485 | **538** |
+| `p.m()` inherited | 602 | 572 | **635** |
+| arrow | 354 | 349 | **369** |
+| `map` callback | 3 556 | 3 389 | 3 586 |
+| recursion, depth 20 | 517 | 542 | 533 |
+
+The results swing in both directions by more than the effect being looked for — `o.m()` was
+485 ms on one run with the fast path and 538 ms on the next, against 508 ms without it. There
+is no signal. Allocation was byte-identical, which is the tell: the scopes never allocated in
+the first place.
+
+Reverted rather than kept. It was ~100 lines duplicating the tail-call trampoline, which would
+have to stay in sync with the general one forever, in exchange for nothing measurable.
+
+### Why the premise was wrong
+
+Two things, both checkable:
+
+- `PushWithScopes(null)` and `PushWithFallbackScopes(null)` **return `null` without
+  allocating**, and `SuspendWithScopes()` returns `null` unless a `with` is actually active.
+  For an ordinary function all three are a null test. Only `EnterRealm` and `EnterStrictMode`
+  do anything, and after P0-2 the strict scope writes only on a transition.
+- A `try`/`finally` that does not throw is close to free on .NET. Its cost is in inhibiting
+  some optimizations, not in per-call work — nothing like the "five nested scopes" framing
+  implied.
+
+### What the per-call cost actually is
+
+An empty-bodied function still allocates **80 bytes per call**, and the body makes no
+difference — `f(){}`, `f(){return 1}`, `f(){return undefined}` and `f(){var x;}` all measure
+176 bytes against a 96-byte loop floor. It is fixed per-invocation overhead.
+
+It is the `CallStackItem` that every compiled function body allocates on entry (emitted by
+`CallStackItemBuilder`). Its layout accounts for the measurement exactly:
+
+| | bytes |
+|---|---:|
+| object header | 16 |
+| `Parent`, `NewTarget`, `context`, `FileName`, `directEvalBindings` (5 refs) | 40 |
+| `Function` (`StringSpan`: string ref + 2 ints) | 16 |
+| `Line`, `Column` | 8 |
+| **total** | **80** |
+
+So the call path's remaining cost is one activation record per invocation, not the scope
+machinery around it.
+
+### Why that is not a contained change
+
+Frames are pushed and popped strictly LIFO (`Pop` restores `context.Top = Parent`), which
+makes per-depth pooling look obvious. It is not safe as things stand:
+
+- a **generator or async body suspends mid-frame** and resumes later, so its frame outlives
+  the synchronous call;
+- **direct eval captures the frame** — the compiler passes `scope.Top.StackItem` as the
+  activation owner, and `RegisterDirectEvalBinding` stores bindings on it;
+- `new.target` is handed off through it during construction.
+
+Reusing a frame whose identity any of those still holds would corrupt live state. Shrinking it
+instead does not help much either — every field is genuinely used, and the two obvious
+candidates (`FileName`, `directEvalBindings`) are one reference each.
+
+The real fix is to stop allocating an activation record per call at all: keep frame data on the
+CLR stack and materialize a `CallStackItem` only when something actually asks for one (a throw
+capturing a trace, a direct eval, a generator suspending). That is a redesign of the engine's
+activation record, with its own test pass, and it should be filed as its own item rather than
+carried under "call-path structure".
 
 ---
 
@@ -911,7 +987,7 @@ Sequence this **after** P0; measuring it before then would just be measuring P0-
 | ~~**C**~~ | ~~P1-1, P1-4~~ | **Done** — cache reaches constructor/class code (0 → ~100% hit rate); constructor-built objects 6 595 → 1 480 bytes | Full `dotnet test` green; `PropertyShapeCacheTests` asserts the hit rates and every staleness path. P1-4's double storage still open |
 | **D** | ~~P1-2~~, P1-3 | P1-2 **done** — inherited and class method calls hit the cache. P1-3 open: only a runtime fast path landed, not a store cache | `PropertyShapeCacheTests` covers `setPrototypeOf`, prototype mutation, own-property shadowing, delete, freeze, accessor redefinition, polymorphic and megamorphic sites |
 | **E** | ~~P2-1~~, P2-2 | P2-1 **done**, plus the two array defects in §6.5 (729× on repeated `pop`, 9× on array fill). P2-2 declined — see its status note | `IndexedWriteAndLengthTests` covers integrity levels, foreign receivers, exotics and length-shrink; `test262-arrays` still owed |
-| **F** | P2-3, ~~P2-4~~, P3 | P2-4 **done** — repeated concatenation is no longer quadratic (150× on the accumulation loop, 10.6× less allocation on `dromaeo-object-string`). P2-3 and P3 remain | `StringConcatenationRopeTests`; `test262` string coverage and the full matrix per `docs/performance.md` still owed |
+| **F** | P2-3, ~~P2-4~~, ~~P3~~ | P2-4 **done** — repeated concatenation is no longer quadratic (150× on the accumulation loop, 10.6× less allocation on `dromaeo-object-string`). P3 **closed without a change** — the scopes it blamed cost nothing; the 80-byte per-call `CallStackItem` is the real cost and needs its own item. P2-3 remains | `StringConcatenationRopeTests`; `test262` string coverage and the full matrix per `docs/performance.md` still owed |
 
 Each phase adds an entry to `eng/performance/ownership.json` with its benchmark and semantic
 owner, and closes only under the acceptance rules in `docs/performance.md` — two runs inside
