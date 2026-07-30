@@ -20,13 +20,20 @@ public enum ElementKind : byte
 /// Dense modes keep properties contiguous; dictionary mode uses the radix map for lookup
 /// plus a sorted live-key vector for allocation-free ECMAScript-order enumeration.
 /// </summary>
+/// <remarks>
+/// Anything that is not a plain writable/enumerable/configurable data property moves the whole
+/// array to dictionary mode, so the dense store never has to describe a descriptor: it holds
+/// bare values, and the attributes, the absent accessors and the key are all implied by the
+/// mode and the slot. A dense slot is therefore one reference rather than a 32-byte
+/// <see cref="JSProperty"/>, and descriptors are rebuilt on the way out.
+/// </remarks>
 public struct ElementArray
 {
     private const int InitialDenseCapacity = 4;
     private const uint MaximumDenseIndex = 1_048_575;
     private const int SparseDensityDivisor = 4;
 
-    private JSProperty[] dense;
+    private IPropertyValue[] dense;
     private Dictionary<uint, JSProperty> dictionary;
     private SortedSet<uint> orderedDictionaryKeys;
     private ElementKind kind;
@@ -61,39 +68,61 @@ public struct ElementArray
     /// </summary>
     public ref JSProperty Put(uint index)
     {
-        ref var slot = ref PrepareSlot(index, forceDictionary: true);
+        TransitionToDictionary();
         hasCustomDescriptors = true;
-        return ref slot;
+        return ref PrepareDictionarySlot(index);
     }
 
     public void Set(uint index, in JSProperty property)
     {
         var custom = property.Attributes != JSPropertyAttributes.EnumerableConfigurableValue;
-        ref var slot = ref PrepareSlot(index, custom);
-        slot = property;
+
+        if (!custom
+            && kind != ElementKind.Dictionary
+            && IsDenseRepresentable(in property)
+            && !ShouldUseDictionary(index))
+        {
+            EnsureDenseCapacity(checked((int)index + 1));
+            if (dense[index] == null)
+                liveCount++;
+            if (index >= Length)
+                Length = index + 1;
+            kind = liveCount == Length ? ElementKind.Packed : ElementKind.Holey;
+            dense[index] = property.value;
+            return;
+        }
+
+        TransitionToDictionary();
+        PrepareDictionarySlot(index) = property;
         hasCustomDescriptors |= custom;
     }
 
-    public ref JSProperty Get(uint index)
-    {
-        if (kind == ElementKind.Dictionary)
-        {
-            ref var value = ref CollectionsMarshal.GetValueRefOrNullRef(dictionary, index);
-            return ref (Unsafe.IsNullRef(ref value) ? ref JSProperty.Empty : ref value);
-        }
-        if (dense != null && index < dense.Length && index < Length && !dense[index].IsEmpty)
-            return ref dense[index];
-        return ref JSProperty.Empty;
-    }
+    /// <summary>
+    /// Whether <see cref="Rebuild"/> can reproduce this property exactly from its value alone.
+    /// A derived accessor is always either the value itself or null, so those two cases are the
+    /// whole reconstructible set; a real setter or a missing value is not representable.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsDenseRepresentable(in JSProperty property)
+        => property.value != null
+            && property.set == null
+            && (property.get == null || ReferenceEquals(property.get, property.value));
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static JSProperty Rebuild(uint index, IPropertyValue value)
+        => JSProperty.Property(index, value);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public readonly JSProperty Get(uint index) => TryGetValue(index, out var value) ? value : JSProperty.Empty;
 
     public JSProperty this[uint index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => TryGetValue(index, out var value) ? value : JSProperty.Empty;
+        get => Get(index);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetValue(uint index, out JSProperty value)
+    public readonly bool TryGetValue(uint index, out JSProperty value)
     {
         if (kind == ElementKind.Dictionary)
         {
@@ -104,8 +133,12 @@ public struct ElementArray
         }
         if (dense != null && index < dense.Length && index < Length)
         {
-            value = dense[index];
-            return !value.IsEmpty;
+            var stored = dense[index];
+            if (stored != null)
+            {
+                value = Rebuild(index, stored);
+                return true;
+            }
         }
         value = JSProperty.Empty;
         return false;
@@ -129,12 +162,12 @@ public struct ElementArray
             return true;
         }
 
-        if (dense == null || index >= dense.Length || index >= Length || dense[index].IsEmpty)
+        if (dense == null || index >= dense.Length || index >= Length || dense[index] == null)
             return false;
 
-        dense[index] = JSProperty.Empty;
+        dense[index] = null;
         liveCount--;
-        kind = liveCount == 0 ? ElementKind.Holey : ElementKind.Holey;
+        kind = ElementKind.Holey;
         return true;
     }
 
@@ -143,7 +176,7 @@ public struct ElementArray
     {
         if (kind == ElementKind.Dictionary)
             return dictionary != null && dictionary.ContainsKey(index);
-        return dense != null && index < dense.Length && index < Length && !dense[index].IsEmpty;
+        return dense != null && index < dense.Length && index < Length && dense[index] != null;
     }
 
     public readonly ValueEnumerable AllValues() => new(this);
@@ -174,11 +207,11 @@ public struct ElementArray
 
     public bool TryFill(uint start, uint end, IPropertyValue value, uint logicalLength)
     {
-        if (!CanBulkMutate(logicalLength) || start > end || end > logicalLength)
+        // A null would punch holes rather than fill them, so leave it to the generic path.
+        if (value == null || !CanBulkMutate(logicalLength) || start > end || end > logicalLength)
             return false;
 
-        var property = JSProperty.Property(value, JSPropertyAttributes.EnumerableConfigurableValue);
-        System.Array.Fill(dense, property, checked((int)start), checked((int)(end - start)));
+        System.Array.Fill(dense, value, checked((int)start), checked((int)(end - start)));
         Length = Math.Max(Length, logicalLength);
         RecountDense(logicalLength);
         return true;
@@ -202,43 +235,7 @@ public struct ElementArray
         return true;
     }
 
-    private ref JSProperty PrepareSlot(uint index, bool forceDictionary)
-    {
-        if (kind == ElementKind.Dictionary)
-            return ref PrepareDictionarySlot(index);
-
-        if (forceDictionary || ShouldUseDictionary(index))
-        {
-            TransitionToDictionary();
-            return ref PrepareDictionarySlot(index);
-        }
-
-        EnsureDenseCapacity(checked((int)index + 1));
-        var wasEmpty = dense[index].IsEmpty;
-        if (wasEmpty)
-            liveCount++;
-
-        if (kind == ElementKind.Empty)
-            kind = index == 0 ? ElementKind.Packed : ElementKind.Holey;
-        else if (index != Length || !wasEmpty)
-        {
-            if (index > Length)
-                kind = ElementKind.Holey;
-        }
-
-        if (index >= Length)
-        {
-            if (index != Length)
-                kind = ElementKind.Holey;
-            Length = index + 1;
-        }
-
-        kind = liveCount == Length ? ElementKind.Packed : ElementKind.Holey;
-
-        return ref dense[index];
-    }
-
-    private bool ShouldUseDictionary(uint index)
+    private readonly bool ShouldUseDictionary(uint index)
     {
         if (index > MaximumDenseIndex)
             return true;
@@ -258,11 +255,11 @@ public struct ElementArray
             var limit = Math.Min((uint)dense.Length, Length);
             for (uint i = 0; i < limit; i++)
             {
-                var property = dense[i];
-                if (property.IsEmpty)
+                var value = dense[i];
+                if (value == null)
                     continue;
                 dictionary ??= new Dictionary<uint, JSProperty>(liveCount);
-                dictionary[i] = property;
+                dictionary[i] = Rebuild(i, value);
                 keys.Add(i);
             }
         }
@@ -308,7 +305,7 @@ public struct ElementArray
             var capacity = InitialDenseCapacity;
             while (capacity < required)
                 capacity = checked(capacity * 2);
-            dense = new JSProperty[capacity];
+            dense = new IPropertyValue[capacity];
             return;
         }
         if (required <= dense.Length)
@@ -325,7 +322,7 @@ public struct ElementArray
         liveCount = 0;
         for (uint i = 0; i < logicalLength; i++)
         {
-            if (!dense[i].IsEmpty)
+            if (dense[i] != null)
                 liveCount++;
         }
         kind = liveCount == logicalLength ? ElementKind.Packed : ElementKind.Holey;
@@ -394,7 +391,7 @@ public struct ElementArray
     public struct ValueEnumerator : IEnumerator<(uint Key, JSProperty Value)>
     {
         private readonly ElementKind kind;
-        private readonly JSProperty[] dense;
+        private readonly IPropertyValue[] dense;
         private readonly Dictionary<uint, JSProperty> dictionary;
         private readonly SortedSet<uint> orderedKeys;
         private SortedSet<uint>.Enumerator orderedEnumerator;
@@ -436,9 +433,9 @@ public struct ElementArray
                 while (++position < denseLimit)
                 {
                     var value = dense[position];
-                    if (!value.IsEmpty)
+                    if (value != null)
                     {
-                        current = ((uint)position, value);
+                        current = ((uint)position, Rebuild((uint)position, value));
                         return true;
                     }
                 }

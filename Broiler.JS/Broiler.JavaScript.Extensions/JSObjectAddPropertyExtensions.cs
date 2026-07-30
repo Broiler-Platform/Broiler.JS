@@ -40,14 +40,10 @@ public static class JSObjectExtensions
     public static JSObject AddProperty(this JSObject target, uint key, JSValue getter, JSValue setter, JSPropertyAttributes attributes = JSPropertyAttributes.EnumerableConfigurableProperty)
     {
         ref var ownProperties = ref target.GetElements();
-        ref var p = ref ownProperties.Get(key);
-        if (p.IsEmpty)
-        {
-            ownProperties.Put(key) = JSProperty.Property(getter, setter, attributes);
-            return target;
-        }
-
-        p = JSProperty.Property(getter ?? p.get, setter ?? p.set, attributes);
+        var p = ownProperties.Get(key);
+        ownProperties.Set(key, p.IsEmpty
+            ? JSProperty.Property(getter, setter, attributes)
+            : JSProperty.Property(getter ?? p.get, setter ?? p.set, attributes));
         return target;
     }
 

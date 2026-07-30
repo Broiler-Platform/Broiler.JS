@@ -49,7 +49,7 @@ public partial class V8Runtime(V8InspectorProtocol inspectorContext) : V8Protoco
                 ref var e = ref c.GetElements(false);
                 for (uint i = 0; i < e.Length; i++)
                 {
-                    ref var p = ref e.Get(i);
+                    var p = e.Get(i);
                     if (p.IsEmpty)
                         continue;
                     list.Add(new V8PropertyDescriptor(i.ToString(), v, p, true));

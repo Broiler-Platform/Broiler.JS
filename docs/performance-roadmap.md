@@ -17,10 +17,10 @@ the phase 0–5 optimization campaign referenced in [`docs/roadmap.md`](roadmap.
 - Acceptance protocol: unchanged — [`docs/performance.md`](performance.md) governs what may
   be *claimed*. Nothing in this document closes on the numbers below.
 - Status: **P0 implemented** (§4). **P1 implemented** apart from a compiler-level store cache
-  (§5). **P2: P2-1 and P2-4 implemented**, plus two larger defects found along the way
-  ([§6.5](#65--found-while-implementing-p2)); P2-2 declined and P2-3 deferred, both with
-  reasons (§6). **P3 investigated: its premise was disproved by measurement** and the real
-  per-call cost identified instead (§7) — no code change.
+  (§5). **P2: P2-1, P2-3 and P2-4 implemented**, plus two larger defects found along the way
+  ([§6.5](#65--found-while-implementing-p2)); P2-2 declined with reasons (§6). **P3
+  investigated: its premise was disproved by measurement** and the real per-call cost
+  identified instead (§7) — no code change.
 
 ---
 
@@ -72,8 +72,9 @@ Allocation for the object shape that suffered most: building a three-field objec
 constructor cost **6 595 bytes** before P1 and **1 480** after, against 1 328 for the
 equivalent object literal — the gap between "assigned" and "literal" is essentially closed.
 
-**P2 delivered both what it planned and what it did not.** P2-1 and P2-4 landed as written;
-P2-2 is declined on correctness grounds and P2-3 deferred (§6). Working through the phase also
+**P2 delivered both what it planned and what it did not.** P2-1 and P2-4 landed as written and
+P2-3 landed as something smaller than written; P2-2 is declined on correctness grounds (§6).
+Working through the phase also
 turned up two defects on the array paths, found by measuring rather than reading, and larger
 than anything P2 had scoped ([§6.5](#65--found-while-implementing-p2)):
 
@@ -630,9 +631,9 @@ exact `JSObject` once the write path is fixed.
 
 ## 6. P2 — allocation on built-in and value paths — **mostly implemented**
 
-P2-1 and P2-4 are implemented. P2-2 is declined on correctness grounds and P2-3 is deferred;
-each carries a status note saying why. Working through the phase also turned up two defects
-larger than anything it had scoped, written up in
+P2-1, P2-3 and P2-4 are implemented. P2-2 is declined on correctness grounds, and P2-3 landed
+as a much smaller change than it was filed as; each carries a status note saying why. Working
+through the phase also turned up two defects larger than anything it had scoped, written up in
 [§6.5](#65--found-while-implementing-p2).
 
 ### P2-1 · `Array.prototype.push` allocates a full descriptor per element — **implemented**
@@ -736,7 +737,7 @@ emits `new JSNumber(double)` directly and never touches the delegate.
 
 ---
 
-### P2-3 · Dense element storage is 4× larger than it needs to be — **deferred**
+### P2-3 · Dense element storage is 4× larger than it needs to be — **implemented**
 
 `ElementArray` stores `JSProperty[]` for dense (packed/holey) arrays. `JSProperty` is
 attributes + key + `get` + `set` + `value` — **32 bytes** — where a default-descriptor dense
@@ -749,21 +750,112 @@ element-storage analogue of P1-4.
 
 **Risk: medium** — touches every element read/write path. `test262-arrays.txt`.
 
-**Status: not implemented, and now lower priority than when this was written.**
+**Status: implemented — but not as the dual representation described above.**
 
-Two things changed. First, the indexed-write fix in §6.5 removed the dominant term: filling a
-fresh array cost about 1 350 bytes an element and now costs ~145, of which ~96 is the loop
-counter's own `JSNumber`. The 32-byte backing slot is now roughly a sixth of what remains, so
-halving it is worth ~17% of an array fill rather than the 4× the framing above suggests. It
-still matters for *footprint* — `new Array(1000)` reserves 32 KB of `JSProperty` for 8 KB of
-values — but that is a memory argument, not the allocation-rate one this item was filed under.
+This item was deferred once, on two grounds, and both are worth recording because only one of
+them survived contact with the code.
 
-Second, it is not as contained as "`ElementArray` already tracks `hasCustomDescriptors`"
-implies. `dense` is confined to that one file, but the type leaks through the API: `JSObject`
-takes `ref JSProperty` *into* the array (`ref var p = ref elements.Get(key)`), and
-`PrepareSlot` returns `ref JSProperty` for callers to write through. A `JSValue[]` store cannot
-hand out those refs, so the change reaches `JSObject`'s element paths too, not just
-`ElementArray`.
+The first was a **priority** argument and it still stands: the indexed-write fix in §6.5 had
+already removed the dominant term. Filling a fresh array cost about 1 350 bytes an element and
+now costs ~145, of which ~96 is the loop counter's own `JSNumber`. So the backing slot is about
+a sixth of what remains, and shrinking it is worth ~17% of a fill rather than the 4× the
+framing above suggests. That is why this landed last in P2 rather than first, and why the
+result below is a footprint win far more than a throughput one.
+
+The second was a **feasibility** argument — that the `JSProperty` type leaks out of
+`ElementArray` through `ref`-returning members, so the change would reach into `JSObject`'s
+element paths too. That one was wrong in its details, and checking it is what made the item
+small.
+
+**What the deferral missed.** `Set` computes
+`custom = property.Attributes != EnumerableConfigurableValue` and passes it to
+`PrepareSlot(index, forceDictionary: custom)`. So a non-default descriptor does not get stored
+densely with its attributes alongside — it moves the *entire array* to dictionary mode first.
+The dense store was therefore **already** exclusively plain writable/enumerable/configurable
+data properties, and had been all along. There was nothing to promote and no second
+representation to add: the mode transition that a dual store would have introduced already
+existed. `JSProperty[]` simply became `IPropertyValue[]`, and the descriptor is rebuilt on read
+from the value plus the two facts the storage mode already implies.
+
+Reconstruction has to be exact, so the write path checks it rather than assuming it. A dense
+slot is taken only when the property is *reproducible from its value alone*:
+
+```csharp
+private static bool IsDenseRepresentable(in JSProperty property)
+    => property.value != null
+        && property.set == null
+        && (property.get == null || ReferenceEquals(property.get, property.value));
+```
+
+The `get` clause looks odd and is the point of the check. Every `JSProperty` constructor derives
+a data property's accessor as `value as IPropertyAccessor`, so a stored `get` is only ever the
+value itself or null — those two cases are the whole reconstructible set, and two reference
+compares decide it without a type test. Anything else (a real setter, a getter that is not the
+value, a null value) falls to the dictionary, where it is stored in full. That is strictly more
+conservative than the old `Attributes`-only test, so the compact store can never lose a
+descriptor it should have kept.
+
+The key is synthesized as the slot index. No element consumer reads it, and the previous behaviour was inconsistent anyway: `Put` stored key 0 while
+`Set(key.Index, …)` stored the index, and array `shift`/`unshift` moved properties between
+indices without rewriting it. Deriving it from the slot makes it right by construction.
+
+**Where the `ref` really leaked.** `ElementArray.Get` returned `ref JSProperty`, and eight
+call sites took it. Seven only read through the ref, so `Get` returns by value now; one of
+those (`JSObject.Delete`) did not use the result at all. The eighth,
+`JSObjectExtensions.AddProperty(uint, getter, setter)`, genuinely wrote through it, and was
+rewritten to `Set` — which is a fix in passing, since writing through the ref bypassed
+`hasCustomDescriptors` and left an array claiming default descriptors while holding an
+accessor. The other ref-returning member, `Put(uint)`, turned out to have no callers at all;
+it still forces dictionary mode, as documented.
+
+Returning by value also removes a live hazard: on a miss, `Get` handed back
+`ref JSProperty.Empty` — a **mutable static field** — so any caller writing through the ref
+would have corrupted the shared "not found" sentinel for the whole process. That is the same
+shape as the `StringMap` and `SAUint32Map` sentinel bugs recorded in §6.5.
+
+**Measured.** Seven runs of each scenario, medians, against the same tree with only this
+change reverted:
+
+| | Before | After | |
+|---|---|---|---|
+| `new Array(1000)`, allocation per array | 33 640 B | 9 064 B | **−73%** |
+| Fill a dense 200 k array | 35 981 256 B | 23 398 440 B | −35% |
+| Allocate and fill `new Array(1000)` ×2 000 | 259 587 584 B | 210 435 584 B | −19% |
+| `dromaeo-object-array` | 137 391 592 B | 119 007 592 B | −13% |
+
+The per-array figure is the whole change in one number: 24 576 bytes saved is exactly
+1024 × (32 − 8), the backing store and nothing else.
+
+**On the timings: they are reported as unchanged, deliberately.** Medians moved between −21%
+and +6% across the scenario set, but re-running the *unmodified* baseline twice gave
+dromaeo-object-array at 121.1 ms and 134.0 ms and array-stress at 1 889 ms and 2 110 ms — ~11%
+run-to-run variance on identical binaries, straddling every "after" number. Nothing in the time
+column clears that noise floor in either direction, so nothing in it is claimed. The
+allocation column is byte-exact and reproduced identically across both baseline runs, which is
+why the table above is allocation only. A throughput claim needs the release matrix under
+`docs/performance.md`, not this probe.
+
+**Left alone deliberately.** Sorting an array with holes writes `JSProperty.Empty` through
+`Set`, whose attributes are `Empty` rather than `EnumerableConfigurableValue`, so it forces
+dictionary mode and permanently disables the bulk-mutation paths for that array. That is
+pre-existing, orthogonal to storage width, and changing it would change sort behaviour — it is
+noted here rather than fixed under a storage item.
+
+70 new tests cover it from both sides. 27 in `CompactElementStorageTests` pin the storage
+invariant directly — that every non-default descriptor and every accessor pair leaves dense
+mode, that a plain value in dictionary mode still counts as a default descriptor, that the
+rebuilt descriptor carries the right attributes, key and derived accessor, that holes read as
+empty on all five read paths, and that promotion preserves every value and its ordering. 43 in
+`ElementDescriptorRoundTripTests` assert the same thing through JavaScript, where the rebuild
+is actually observable: `getOwnPropertyDescriptor` over seven ways of producing a dense
+element, descriptors surviving the move to sparse storage and the arrival of a custom
+descriptor elsewhere, accessors round-tripping to values and back, `Object.keys` ordering,
+`for…in`, `propertyIsEnumerable`, `fill`/`copyWithin`/`reverse`/`sort`, freeze and seal, and
+that string exotics, typed arrays and mapped `arguments` are untouched.
+
+Full suite after the change: **6 991 tests, 6 985 passing, 0 new failures** — the same 6
+pre-existing failures as every phase before it (5 ICU/locale-data dependent, 1 in
+ModuleExtensions).
 
 ---
 
@@ -987,7 +1079,7 @@ carried under "call-path structure".
 | ~~**C**~~ | ~~P1-1, P1-4~~ | **Done** — cache reaches constructor/class code (0 → ~100% hit rate); constructor-built objects 6 595 → 1 480 bytes | Full `dotnet test` green; `PropertyShapeCacheTests` asserts the hit rates and every staleness path. P1-4's double storage still open |
 | **D** | ~~P1-2~~, P1-3 | P1-2 **done** — inherited and class method calls hit the cache. P1-3 open: only a runtime fast path landed, not a store cache | `PropertyShapeCacheTests` covers `setPrototypeOf`, prototype mutation, own-property shadowing, delete, freeze, accessor redefinition, polymorphic and megamorphic sites |
 | **E** | ~~P2-1~~, P2-2 | P2-1 **done**, plus the two array defects in §6.5 (729× on repeated `pop`, 9× on array fill). P2-2 declined — see its status note | `IndexedWriteAndLengthTests` covers integrity levels, foreign receivers, exotics and length-shrink; `test262-arrays` still owed |
-| **F** | P2-3, ~~P2-4~~, ~~P3~~ | P2-4 **done** — repeated concatenation is no longer quadratic (150× on the accumulation loop, 10.6× less allocation on `dromaeo-object-string`). P3 **closed without a change** — the scopes it blamed cost nothing; the 80-byte per-call `CallStackItem` is the real cost and needs its own item. P2-3 remains | `StringConcatenationRopeTests`; `test262` string coverage and the full matrix per `docs/performance.md` still owed |
+| ~~**F**~~ | ~~P2-3~~, ~~P2-4~~, ~~P3~~ | P2-4 **done** — repeated concatenation is no longer quadratic (150× on the accumulation loop, 10.6× less allocation on `dromaeo-object-string`). P2-3 **done** — a dense element is one reference instead of a 32-byte descriptor; `new Array(1000)` allocates 73% less, and the deferral's feasibility objection turned out not to hold. P3 **closed without a change** — the scopes it blamed cost nothing; the 80-byte per-call `CallStackItem` is the real cost and needs its own item | `StringConcatenationRopeTests`, `CompactElementStorageTests`, `ElementDescriptorRoundTripTests`; `test262` string and array coverage and the full matrix per `docs/performance.md` still owed |
 
 Each phase adds an entry to `eng/performance/ownership.json` with its benchmark and semantic
 owner, and closes only under the acceptance rules in `docs/performance.md` — two runs inside

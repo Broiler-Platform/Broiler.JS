@@ -266,7 +266,7 @@ public partial class JSObject
 
     public override JSValue GetOwnProperty(uint name)
     {
-        ref var p = ref elements.Get(name);
+        var p = elements.Get(name);
         return GetValue(p);
     }
 
@@ -1473,7 +1473,7 @@ public partial class JSObject
 
     public override JSValue GetValue(uint key, JSValue receiver, bool throwError = true)
     {
-        ref var p = ref elements.Get(key);
+        var p = elements.Get(key);
         if (!p.IsEmpty)
         {
             if (p.IsValue)
@@ -1824,8 +1824,6 @@ public partial class JSObject
     {
         if (elements.TryGetValue(key, out var property) && !property.IsConfigurable)
             return BooleanFalse;
-
-        ref var element = ref elements.Get(key);
 
         if (elements.RemoveAt(key))
         {
