@@ -58,8 +58,21 @@ public partial class JSObject : JSValue
         {
             var prototype = value as JSObject;
             prototype?.MarkUsedAsPrototype();
+
+            // Distinguish a brand-new object adopting its FIRST prototype (every
+            // `new JSObject()`, which runs this from the constructor) from a real
+            // [[SetPrototypeOf]] on a live object. Only the latter can invalidate anything:
+            // nothing can hold a cached assumption about a chain that did not exist a moment
+            // ago, and an object that is not yet anyone's prototype is in no other object's
+            // chain — becoming one goes through MarkUsedAsPrototype, which publishes the
+            // version itself. Bumping unconditionally made the prototype version advance once
+            // per object allocation, which would leave any prototype-keyed cache permanently
+            // invalid in a loop that allocates. See docs/performance-roadmap.md P1-2.
+            var replacingExistingPrototype = prototypeChain != null;
             prototypeChain = prototype?.PrototypeObject;
-            NotifyPrototypeChainMutation();
+            if (replacingExistingPrototype || isUsedAsPrototype)
+                NotifyPrototypeChainMutation();
+
             PropertyChanged?.Invoke(this, (uint.MaxValue, uint.MaxValue, null));
             currentPrototype?.Dirty();
         }
@@ -127,6 +140,24 @@ public partial class JSObject : JSValue
         PropertyOptimizationDiagnostics.RecordPrototypeInvalidation();
     }
 
+    /// <summary>
+    /// Whether a property with these attributes can occupy a shape slot.
+    /// </summary>
+    /// <remarks>
+    /// Any plain data property qualifies, whatever its writable/enumerable/configurable
+    /// flags: a slot records where the VALUE lives, and none of those flags move it. This
+    /// used to demand exactly <see cref="JSPropertyAttributes.EnumerableConfigurableValue"/>,
+    /// which quietly excluded every prototype object in the engine — a function's
+    /// <c>prototype</c> carries a non-enumerable <c>constructor</c>, and class methods are
+    /// non-enumerable too, so each one abandoned its shape as it was built and no inherited
+    /// method could ever be cached. An accessor is still excluded: reading it runs a getter,
+    /// not a slot load.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool IsShapeTrackableData(JSPropertyAttributes attributes)
+        => (attributes & JSPropertyAttributes.Value) != 0
+            && (attributes & JSPropertyAttributes.Property) == 0;
+
     internal void TrackShapeDataProperty(in KeyString key, JSValue value, JSPropertyAttributes attributes)
     {
         if (GetType() != typeof(JSObject))
@@ -135,7 +166,7 @@ public partial class JSObject : JSValue
         if (objectShape.IsDictionary
             || value == null
             || key.Metadata.IsPrivateName
-            || attributes != JSPropertyAttributes.EnumerableConfigurableValue)
+            || !IsShapeTrackableData(attributes))
         {
             AbandonObjectShape();
             NotifyNamedPropertyMutation();
@@ -182,18 +213,66 @@ public partial class JSObject : JSValue
         return false;
     }
 
-    internal bool TryReadShapeSlot(int shapeId, int slot, uint key, out JSValue value)
+    /// <summary>
+    /// The receiver's shape id for a lookup that resolved on the PROTOTYPE chain, or 0 when
+    /// this receiver cannot be safely keyed by shape.
+    /// </summary>
+    /// <remarks>
+    /// Requires a shape that is neither <see cref="ObjectShape.Dictionary"/> nor
+    /// <see cref="ObjectShape.Empty"/>, because both are shared by every object in that state
+    /// — two unrelated dictionary-mode receivers would report the same id while disagreeing
+    /// about their own properties and their prototypes. A concrete shape is not shared that
+    /// way: it is reached only by adding exactly its key set, and while an object is in shape
+    /// mode its tracked keys ARE its complete set of own named properties (any untrackable
+    /// addition abandons the shape). So "key absent from this shape" genuinely means "no own
+    /// property shadows the prototype's".
+    /// </remarks>
+    internal int GetPrototypeLookupShapeId(in KeyString key)
     {
-        if (GetType() == typeof(JSObject)
-            && objectShape.Id == shapeId
-            && !objectShape.IsDictionary
-            && objectShape.TryGetSlot(key, out var actualSlot)
-            && actualSlot == slot
-            && (uint)slot < (uint)shapeSlots.Length
-            && shapeSlots[slot] != null)
+        var shape = objectShape;
+        if (GetType() != typeof(JSObject)
+            || shape.IsDictionary
+            || ReferenceEquals(shape, ObjectShape.Empty)
+            || shape.TryGetSlot(key.Key, out _))
+        {
+            return 0;
+        }
+
+        return shape.Id;
+    }
+
+    /// <summary>Shape id as observed by a cache guard; 0 when not shape-keyable.</summary>
+    internal int CurrentShapeId => objectShape.IsDictionary ? 0 : objectShape.Id;
+
+    /// <summary>
+    /// The immediate [[Prototype]] as a plain object, read straight off the chain link.
+    /// Unlike <see cref="GetPrototypeOf"/> this is non-virtual and fires no Proxy trap, so it
+    /// is safe to walk from inside a cache guard or while populating one.
+    /// </summary>
+    internal JSObject PrototypeChainObject => prototypeChain?.Object as JSObject;
+
+    /// <summary>
+    /// Reads a slot an inline cache previously resolved on a receiver of the same shape.
+    /// </summary>
+    /// <remarks>
+    /// The shape id alone validates the read. An <see cref="ObjectShape"/> is immutable and
+    /// its key-to-slot map is fixed at construction, so two objects reporting the same shape
+    /// id necessarily agree on which slot a given key occupies — re-resolving the key through
+    /// the shape's dictionary, as this used to, only re-derived the slot the cache had already
+    /// recorded and threw away the point of caching it. Anything that could invalidate the
+    /// mapping (a delete, an accessor or non-default-attribute redefinition, a private name,
+    /// or any mutable access from outside this assembly) routes through
+    /// <see cref="AbandonObjectShape"/>, which swaps in the dictionary shape and so changes
+    /// the id. The remaining bounds and null checks are cheap and keep a stale or
+    /// partially-initialized cache entry from reading out of range.
+    /// </remarks>
+    internal bool TryReadShapeSlot(int shapeId, int slot, out JSValue value)
+    {
+        if (objectShape.Id == shapeId
+            && (uint)slot < (uint)shapeSlots.Length)
         {
             value = shapeSlots[slot];
-            return true;
+            return value != null;
         }
 
         value = null;

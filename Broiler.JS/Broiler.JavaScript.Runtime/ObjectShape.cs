@@ -213,10 +213,21 @@ public static class PropertyInlineCacheSite
                 for (var i = 0; i < count; i++)
                 {
                     ref readonly var entry = ref entries[i];
-                    if (receiver.TryReadShapeSlot(entry.ShapeId, entry.Slot, property.Key, out var value))
+                    if (entry.Holder == null)
+                    {
+                        if (receiver.TryReadShapeSlot(entry.ShapeId, entry.Slot, out var own))
+                        {
+                            PropertyOptimizationDiagnostics.RecordCacheHit();
+                            return own;
+                        }
+                    }
+                    else if (receiver.CurrentShapeId == entry.ShapeId
+                        && ReferenceEquals(receiver.PrototypeChainObject, entry.ReceiverPrototype)
+                        && entry.PrototypeVersion == JSObject.PrototypeMutationVersion
+                        && entry.Holder.TryReadShapeSlot(entry.HolderShapeId, entry.Slot, out var inherited))
                     {
                         PropertyOptimizationDiagnostics.RecordCacheHit();
-                        return value;
+                        return inherited;
                     }
                 }
             }
@@ -227,6 +238,11 @@ public static class PropertyInlineCacheSite
             if (megamorphic || target is not JSObject ordinary || property.Metadata.IsPrivateName)
                 return result;
 
+            // A key that is also an array index names an ELEMENT, which the shape does not
+            // track and [[Get]] resolves out of the element table instead. Never cache one.
+            if (property.Metadata.IsArrayIndex || property.Metadata.IsCanonicalNumericIndex)
+                return result;
+
             if (key == 0)
                 key = property.Key;
             else if (key != property.Key)
@@ -235,11 +251,11 @@ public static class PropertyInlineCacheSite
                 return result;
             }
 
-            if (!ordinary.TryGetShapeSlot(in property, out var shapeId, out var slot))
+            if (!TryDescribe(ordinary, in property, out var entryToAdd))
                 return result;
 
             for (var i = 0; i < count; i++)
-                if (entries[i].ShapeId == shapeId)
+                if (entries[i].ShapeId == entryToAdd.ShapeId && entries[i].Holder == entryToAdd.Holder)
                     return result;
 
             if (count == MaxEntries)
@@ -248,10 +264,71 @@ public static class PropertyInlineCacheSite
                 return result;
             }
 
-            entries[count++] = new Entry(shapeId, slot);
+            entries[count++] = entryToAdd;
             if (count == 2)
                 PropertyOptimizationDiagnostics.RecordPolymorphicPromotion();
             return result;
+        }
+
+        /// <summary>Classifies where the property lives, as an own slot or on the chain.</summary>
+        private static bool TryDescribe(JSObject receiver, in KeyString property, out Entry entry)
+        {
+            if (receiver.TryGetShapeSlot(in property, out var shapeId, out var slot))
+            {
+                entry = new Entry(shapeId, slot, null, null, 0, 0);
+                return true;
+            }
+
+            // Not own: look for a shape-tracked data slot on the prototype chain.
+            //
+            // Three things have to hold at read time, and each gets its own guard:
+            //  * nothing on the receiver shadows the key — its shape id, since a shape-mode
+            //    object's tracked keys are exactly its own named properties;
+            //  * the receiver still points at the same prototype — a reference compare,
+            //    because two receivers can share a shape id and yet have been created with
+            //    different prototypes (`Object.create(a).v=1` vs `Object.create(b).v=1`
+            //    reach the same shape), which no mutation counter would ever catch;
+            //  * nothing along the chain moved — the global prototype version, which both
+            //    [[SetPrototypeOf]] and any property mutation on an object used as a
+            //    prototype publish to. Deliberately coarse: one prototype mutation anywhere
+            //    retires every prototype entry in the process.
+            var receiverShapeId = receiver.GetPrototypeLookupShapeId(in property);
+            if (receiverShapeId == 0)
+            {
+                entry = default;
+                return false;
+            }
+
+            var receiverPrototype = receiver.PrototypeChainObject;
+            var version = JSObject.PrototypeMutationVersion;
+
+            // Walked through the raw chain link rather than the virtual GetPrototypeOf, which
+            // would fire a Proxy's getPrototypeOf trap — a visible side effect that must not
+            // happen just because a cache is warming up.
+            for (var holder = receiverPrototype; holder != null; holder = holder.PrototypeChainObject)
+            {
+                // Only a plain object resolves by slot read. An exotic or proxied holder has
+                // its own [[Get]], so stop rather than reason about what it would return.
+                if (holder.GetType() != typeof(JSObject))
+                    break;
+
+                if (holder.TryGetShapeSlot(in property, out var holderShapeId, out var holderSlot))
+                {
+                    entry = new Entry(receiverShapeId, holderSlot, holder, receiverPrototype, holderShapeId, version);
+                    return true;
+                }
+
+                // Present on this holder, but not as a plain tracked data slot (an accessor,
+                // a non-default attribute set, or a lazily-realized cell). Reading it is not
+                // a slot read, and it shadows anything further up, so stop here. Tested by
+                // presence rather than by value: a holder whose own value IS undefined still
+                // shadows, and must not be walked past.
+                if (!holder.GetInternalProperty(property, inherited: false).IsEmpty)
+                    break;
+            }
+
+            entry = default;
+            return false;
         }
 
         private void BecomeMegamorphic()
@@ -262,6 +339,19 @@ public static class PropertyInlineCacheSite
             PropertyOptimizationDiagnostics.RecordMegamorphic();
         }
 
-        private readonly record struct Entry(int ShapeId, int Slot);
+        /// <summary>
+        /// An own-slot entry has a null <see cref="Holder"/> and reads <see cref="Slot"/> off
+        /// the receiver, guarded by <see cref="ShapeId"/> alone. A prototype entry reads
+        /// <see cref="Slot"/> off <see cref="Holder"/>, guarded by the receiver's
+        /// <see cref="ShapeId"/>, its <see cref="ReceiverPrototype"/> identity, and
+        /// <see cref="PrototypeVersion"/>.
+        /// </summary>
+        private readonly record struct Entry(
+            int ShapeId,
+            int Slot,
+            JSObject Holder,
+            JSObject ReceiverPrototype,
+            int HolderShapeId,
+            long PrototypeVersion);
     }
 }

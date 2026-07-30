@@ -183,7 +183,12 @@ public class JSValueBuilder
         return Expression.Call(null, _CachedPropertyGet, Expression.Constant(site), target, property);
     }
 
-    public static Expression InvokeMethod(Expression targetTemp, Expression methodTemp, Expression target, Expression name, IFastEnumerable<Expression> args, bool spread, bool memberCoalesce, bool callCoalesce = false, bool inChain = false)
+    /// <param name="allowCache">
+    /// Whether the callee read may go through the property inline cache. False for a private
+    /// method, whose key is a per-class-evaluation variable rather than a constant and would
+    /// only drive the site megamorphic.
+    /// </param>
+    public static Expression InvokeMethod(Expression targetTemp, Expression methodTemp, Expression target, Expression name, IFastEnumerable<Expression> args, bool spread, bool memberCoalesce, bool callCoalesce = false, bool inChain = false, bool allowCache = false)
     {
         var method = _Index;
 
@@ -212,9 +217,17 @@ public class JSValueBuilder
             // this mirrors the optional-chain path below. (A missing method on a defined
             // receiver still leaves the arguments evaluated before the not-a-function throw,
             // exactly as the spec requires.)
+            // `o.m()` resolves the callee with an ordinary [[Get]], so it can use the same
+            // inline cache a bare `o.m` read does. It did not before, which meant the single
+            // most common shape of property access in real JavaScript — calling an inherited
+            // method — always took the generic lookup. See docs/performance-roadmap.md P1-2.
+            var calleeRead = allowCache && name.Type == typeof(KeyString)
+                ? CachedIndex(targetTemp, name)
+                : Expression.MakeIndex(targetTemp, method, name);
+
             return Expression.Block(
                 Expression.Assign(targetTemp, target),
-                Expression.Assign(methodTemp, Expression.MakeIndex(targetTemp, method, name)),
+                Expression.Assign(methodTemp, calleeRead),
                 JSFunctionBuilder.InvokeFunction(methodTemp, ArgumentsBuilder.New(targetTemp, args, spread)));
         }
 

@@ -16,7 +16,8 @@ the phase 0–5 optimization campaign referenced in [`docs/roadmap.md`](roadmap.
 - Owner assemblies: `Broiler.JavaScript.Runtime`, `.Engine`, `.BuiltIns`, `.Storage`, `.Compiler`
 - Acceptance protocol: unchanged — [`docs/performance.md`](performance.md) governs what may
   be *claimed*. Nothing in this document closes on the numbers below.
-- Status: **P0 implemented** (§4). P1–P3 are planned and not started.
+- Status: **P0 implemented** (§4). **P1 implemented** apart from a compiler-level store cache
+  (§5). P2–P3 are planned and not started.
 
 ---
 
@@ -52,9 +53,21 @@ Full suite after the change: **6 824 tests, 6 818 passing, 0 new failures** (the
 pre-existing: 5 ICU/locale-data dependent, 1 in ModuleExtensions). 21 of those tests are new
 and cover the reworked behaviour.
 
-Beyond P0, the shape/inline-cache system needs real work: it still never fires for
-constructor-assigned fields, class instances, prototype methods, or any property write. The
-inline-cache counters are unchanged by P0, as expected — P1 is what moves them.
+**P1 is implemented too**, apart from a compiler-level store cache (see P1-3). It targets a
+different axis — the inline cache, which P0 left untouched — so it is measured by hit rate
+rather than by wall clock. Over 200k-iteration monomorphic sites:
+
+| Site | Before P1 | After P1 |
+|---|---:|---:|
+| `var o = {}; o.x = 1` then read `o.x` | **0** hits / 200 000 misses | 199 999 / 1 |
+| `class C { constructor(v){ this.v = v } }` then read `c.v` | **0** / 200 000 | 199 999 / 1 |
+| `P.prototype.get` — inherited method call | **0** / 200 001 | 399 998 / 3 |
+| class method call | **0** / 200 000 | 399 998 / 2 |
+| dictionary-mode fallbacks (inherited method loop) | 200 006 | **0** |
+
+Allocation for the object shape that suffered most: building a three-field object through a
+constructor cost **6 595 bytes** before P1 and **1 480** after, against 1 328 for the
+equivalent object literal — the gap between "assigned" and "literal" is essentially closed.
 
 ---
 
@@ -129,7 +142,8 @@ acceptance evidence still owed.
 `JSObject.NotifyPrototypeChainMutation()` — even when the prototype being assigned is `null`,
 which is the case for every primitive.
 
-`Broiler.JavaScript.Runtime/JSValue.cs`, `BasePrototypeObject` and the `JSValue(JSValue)` constructor (shown as they were before the fix):
+`Broiler.JavaScript.Runtime/JSValue.cs` — `BasePrototypeObject` and the `JSValue(JSValue)`
+constructor, as they were before the fix:
 
 ```csharp
 public virtual JSValue BasePrototypeObject
@@ -159,8 +173,8 @@ Two of those three counters are pure waste:
   counter with no consumer.
 - The diagnostics counters themselves are unconditional `Interlocked.Increment` calls on
   shared statics, taken on **every** cache hit and every cache miss
-  (`ObjectShape.cs`, `RecordCacheHit`/`RecordCacheMiss`). On a multi-threaded host this is a cache-line ping-pong on
-  the engine's hottest line.
+  (`ObjectShape.cs`, `RecordCacheHit`/`RecordCacheMiss`). On a multi-threaded host this is a
+  cache-line ping-pong on the engine's hottest line.
 
 `indexedPrototypeVersion` does have a real consumer — `JSArray.CanUseDenseElementFastPath()`
 (`BuiltIns/Array/JSArray.cs:30`) — but assigning a *null* prototype cannot add an indexed
@@ -186,11 +200,13 @@ provably cannot invalidate anything.
   counters now read zero unless a caller opts in. `Reset()` deliberately does not change it.
   The two tests in `Phase3CompilerSpecializationTests` that assert on the counters were
   updated to take the scope.
-- **Not done:** `JSObject`'s own `BasePrototypeObject` override still bumps the version on
-  every object allocation, because a fresh object adopting its initial prototype cannot be
-  distinguished from `Object.setPrototypeOf` on a live object without extra state — and
-  getting that wrong would let `JSArray.CanUseDenseElementFastPath` cache a stale "safe".
-  Worth roughly 8% on `obj-alloc` and left for P1, where the shape rework touches this anyway.
+- **Deferred at the time, done in P1:** `JSObject`'s own `BasePrototypeObject` override also
+  bumped the version on every object allocation. P1-2 needed a prototype version that is
+  stable in a loop that allocates, so it now distinguishes a brand-new object adopting its
+  first prototype (`prototypeChain` was null and the object is not yet anyone's prototype)
+  from a real `[[SetPrototypeOf]]`. Sound for the array fast path too: a fresh object cannot
+  be in any existing chain, and becoming someone's prototype publishes the version via
+  `MarkUsedAsPrototype`.
 
 **Owners.** `Broiler.JavaScript.Runtime` · semantic owner `Broiler.JavaScript.Runtime.Tests`.
 
@@ -350,10 +366,15 @@ manifest `test262-strict-mode.txt` plus the Annex B forbidden-extension tests.
 
 ---
 
-## 5. P1 — make shapes and inline caches actually work
+## 5. P1 — make shapes and inline caches actually work — **implemented**
 
 The shape system exists and is correct; it is simply almost never reachable. This is the
 largest *remaining* win after P0 and the one that needs design rather than deletion.
+
+P1-1, P1-2 and P1-4 are implemented and covered by `PropertyShapeCacheTests`. P1-3 is
+implemented only as a runtime fast path, not as the compiler-level store cache described
+below — see its status note for why. As with P0 these are not *closed*: §8 lists the
+acceptance evidence still owed.
 
 ### P1-1 · An ordinary property write destroys the object's shape
 
@@ -427,11 +448,43 @@ comments already in the file document real test262 failures that were fixed by r
 `DefineProperty`. The fast path must be entered only when it is provably unobservable. Gate on
 `test262-properties-proxy.txt` and the full `Broiler.JavaScript.Runtime.Tests` suite.
 
+**Status: implemented, both halves.**
+
+- `DefineProperty(in KeyString, JSObject)` no longer abandons the shape. It reads the property
+  map through the field rather than `GetOwnProperties()` (whose `create: true` guard exists for
+  callers in *other* assemblies that could write behind the tracker's back) and, after the
+  write, hands the resulting property to `TrackShapeDataProperty`, which is the single
+  decision point for track-or-abandon. Only two cases are decided at the call site, both
+  abandoning: an accessor, whose `value` field holds the getter, and a preserved
+  `LazyDataPropertyCell`.
+- The descriptor round-trip is gone for the ordinary case:
+  `TrySetOrdinaryReceiverDataProperty` applies a receiver-mismatch write directly when the
+  target is an exact `JSObject`, reproducing the generic path's decisions exactly
+  (`GetReceiverAttributes` provably reconstructs the existing property's own attributes for a
+  data property, so they are simply reused). It declines — and the generic path runs
+  unchanged — for a Proxy or any exotic, an array-index key, a private name, or a pending
+  lazy cell.
+- Every `ownProperties` mutation was audited to confirm it still either tracks or abandons:
+  `FastAddValue` tracks; `FastAddProperty`, `FastAddLazyDataProperty`, `FastAddDeferredValue`,
+  `Delete`, and `GetOwnProperties(create: true)` abandon; freeze and seal route through
+  `DefineProperty` with non-default attributes, which abandons.
+- `TrackShapeDataProperty` now accepts **any** plain data property rather than only the exact
+  default attribute set. That restriction quietly excluded every prototype object in the
+  engine — a function's `prototype` carries a non-enumerable `constructor`, and class methods
+  are non-enumerable — so each one abandoned its shape as it was built and no inherited method
+  could ever be cached. A slot records where the value lives; writable/enumerable/configurable
+  do not move it. Accessors are still excluded.
+
+**Found while doing this, not fixed here:** `Reflect.set(base, k, v, receiver)` where the
+receiver has no own `k` gives the new property the *base's* attributes instead of the
+all-true attributes `CreateDataProperty` mandates. Verified identical before the change, so
+it is pre-existing and unrelated; it belongs in the compliance manifest.
+
 ---
 
 ### P1-2 · The inline cache does not cover prototype lookups — so method calls never hit
 
-`PropertyInlineCache.Get` (`Runtime/ObjectShape.cs`, `PropertyInlineCache.Get`) validates an **own** data slot only.
+`PropertyInlineCache.Get` (`Runtime/ObjectShape.cs`) validates an **own** data slot only.
 A prototype method is by definition not an own property of the receiver, so `obj.method()`
 misses unconditionally: **0 hits / 200 001 misses** in the probe, plus two `Interlocked`
 increments per miss for the diagnostics.
@@ -453,6 +506,33 @@ callee read through the cache.
 anywhere in the chain must all invalidate. A per-chain generation counter is the conservative
 choice for a first cut.
 
+**Status: implemented.** A cache entry is now either an own-slot entry (null holder, guarded
+by the receiver's shape id alone) or a prototype entry carrying the holder, the holder's slot,
+and three guards:
+
+1. **the receiver's shape id** — "nothing here shadows the key". Sound because a shape-mode
+   object's tracked keys are exactly its own named properties: any untrackable addition
+   abandons the shape. Dictionary-mode and empty shapes are refused outright, since both ids
+   are shared by every object in that state.
+2. **the receiver's immediate prototype, by reference** — two receivers can reach the *same*
+   shape id and still have different prototypes (`Object.create(a).v=1` versus
+   `Object.create(b).v=1`), which no mutation counter would ever notice. Without this the
+   cache silently returns the wrong object's property; it is covered by
+   `TwoReceiversSharingAShapeButNotAPrototype_StayDistinct`.
+3. **the global prototype version** — every `[[SetPrototypeOf]]` and every property mutation
+   on an object used as a prototype publishes to it. Deliberately coarse: one prototype
+   mutation anywhere retires every prototype entry in the process.
+
+The chain walk during population uses the raw prototype link rather than the virtual
+`GetPrototypeOf`, so warming a cache cannot fire a Proxy's `getPrototypeOf` trap, and it stops
+at any holder that is not an exact `JSObject`. It also stops at a holder that *has* the key
+but not as a plain tracked slot — tested by presence, not by value, so a holder whose own
+value is `undefined` still shadows what is above it.
+
+`JSValueBuilder.InvokeMethod` now routes the callee read of `o.m()` through the same cache a
+bare `o.m` uses, for the non-optional-chain path and non-private keys (a private name's key is
+a per-class-evaluation variable, so caching it would only drive the site megamorphic).
+
 ---
 
 ### P1-3 · There is no store (put) inline cache
@@ -461,6 +541,26 @@ choice for a first cut.
 Once P1-1 restores shapes on the write path, a monomorphic store cache
 (`shapeId → slot`, plus a shape-transition cache for the "adds a new property" case) becomes
 straightforward and is worth roughly what the read cache is worth.
+
+**Status: partially implemented — a runtime fast path, not an inline cache. Still open.**
+
+The estimate above was wrong about the shape of the work. A read has one emission site,
+`CachedIndex`, so routing it through a cache was a two-line change. A *store* has no such
+choke point: assignments are built as `IndexExpression` targets in many places — plain member
+assignment, compound assignment, destructuring and object patterns, `for-in`/`for-of` targets,
+class field initializers — and lowering them to a cached helper call means either changing all
+of those sites or intercepting index assignment inside `ILCodeGenerator`. That is a materially
+larger and riskier surface than the rest of P1, and it was not attempted here.
+
+What was done instead is contained to the runtime and needs no compiler change:
+`JSObject.SetValue(KeyString, …)` now short-circuits the overwhelmingly common case — an
+existing, writable own data property on an exact `JSObject` being overwritten through itself.
+The general path resolved that same property *twice*, once in `SetValue` and again inside
+`SetKeyStringOnReceiver`, before reaching the identical `Put`. Worth about 13% on
+`prop-own-set` (477 → 417 ms).
+
+The real store cache remains open, and should be scoped on its own rather than folded into a
+phase with three unrelated items.
 
 ---
 
@@ -487,7 +587,23 @@ Two further structural costs:
   which excludes `JSArray`, `JSFunction`, and every built-in exotic. Class instances happen to
   be plain `JSObject` and so qualify — but P1-1 disqualifies them anyway.
 
-**Fix.** Trust the shape id on the cache-hit path and index `shapeSlots` directly (the shape id
+**Status: implemented for the hit path; the double storage remains.** `TryReadShapeSlot` is now
+a shape-id compare, a bounds check and an array index — the key parameter is gone, along with
+the `GetType()` call and the dictionary re-resolution. Sound because an `ObjectShape` is
+immutable and its key-to-slot map fixed at construction, so equal shape ids necessarily agree
+on which slot a key occupies; everything that could invalidate the mapping routes through
+`AbandonObjectShape`, which swaps in the dictionary shape and changes the id. The
+`ObjectShape.Empty` and `.Dictionary` ids are never recorded by a cache entry, and both carry
+an empty slot array, so the bounds check rejects them anyway.
+
+**Still open:** `TrackShapeDataProperty` continues to write each value into `shapeSlots` *in
+addition to* the `PropertySequence` entry, so a tracked object stores every value twice and
+has to keep the two in sync. Collapsing them to one storage is the remaining half of this item.
+Shape eligibility is also still limited to exact `JSObject`, which excludes `JSArray` and
+`JSFunction`.
+
+**Original fix note.** Trust the shape id on the cache-hit path and index `shapeSlots`
+directly (the shape id
 already implies the key→slot mapping — that is the invariant a shape provides). Make the slot
 array the single storage for tracked data properties. Then widen shape eligibility beyond
 exact `JSObject` once the write path is fixed.
@@ -613,8 +729,8 @@ Sequence this **after** P0; measuring it before then would just be measuring P0-
 |---|---|---|---|
 | ~~**A**~~ | ~~P0-1, P0-3~~ | **Done** — 2.0–2.9× on call paths, 6× less call allocation | Full `dotnet test` green (6 824 tests, 0 new failures); 21 new owned tests. test262 manifests still owed |
 | ~~**B**~~ | ~~P0-2~~ | **Done** — folded into the same change | `StrictModeFlowTests` covers every transition shape; test262 manifests still owed |
-| **C** | P1-1, P1-4 | Inline cache becomes reachable for constructor/class code; ~5× less allocation on constructor-built objects | `test262-properties-proxy`; `PropertyOptimizationDiagnostics` shows non-zero hits for the constructor and class-field probes |
-| **D** | P1-2, P1-3 | Method calls and property writes hit cache | `test262-properties-proxy`, `test262-realm-isolation`; targeted invalidation tests (`setPrototypeOf`, `__proto__`, own-property shadowing) |
+| ~~**C**~~ | ~~P1-1, P1-4~~ | **Done** — cache reaches constructor/class code (0 → ~100% hit rate); constructor-built objects 6 595 → 1 480 bytes | Full `dotnet test` green; `PropertyShapeCacheTests` asserts the hit rates and every staleness path. P1-4's double storage still open |
+| **D** | ~~P1-2~~, P1-3 | P1-2 **done** — inherited and class method calls hit the cache. P1-3 open: only a runtime fast path landed, not a store cache | `PropertyShapeCacheTests` covers `setPrototypeOf`, prototype mutation, own-property shadowing, delete, freeze, accessor redefinition, polymorphic and megamorphic sites |
 | **E** | P2-1, P2-2 | `push` and arithmetic allocation | `test262-arrays`; `-0` and number-identity coverage |
 | **F** | P2-3, P2-4, P3 | Memory footprint, string-heavy code, call structure | Full matrix per `docs/performance.md` |
 
@@ -623,13 +739,26 @@ owner, and closes only under the acceptance rules in `docs/performance.md` — t
 the configured band, on the release RID matrix, with allocation, latency and working set
 reported together.
 
-**Phases A and B are implemented and covered by repository tests, but are not *closed*.**
-Closing them still requires the pinned test262 run over
-`test262-arrays`, `test262-properties-proxy` and `test262-strict-mode` (plus the Annex B
-forbidden-extension paths), a `PropertyOperationBenchmarks`/`FunctionCallBenchmarks`
-comparison, and the two-run repeatability evidence on the release RID matrix. The numbers in
-this document come from an ad-hoc in-process harness on a shared container and are not
-acceptance evidence.
+**Phases A–C and most of D are implemented and covered by repository tests, but none are
+*closed*.** Closing them still requires the pinned test262 run over `test262-arrays`,
+`test262-properties-proxy`, `test262-strict-mode` and `test262-realm-isolation` (plus the
+Annex B forbidden-extension paths), a
+`PropertyOperationBenchmarks`/`FunctionCallBenchmarks` comparison, and the two-run
+repeatability evidence on the release RID matrix. The numbers in this document come from an
+ad-hoc in-process harness on a shared container and are not acceptance evidence. P1-1 in
+particular touches `OrdinarySetWithOwnDescriptor`, the single most spec-sensitive path in the
+engine, and the local suite is not a substitute for test262 there.
+
+### Fixed along the way, unrelated to any phase
+
+`SAUint32Map<T>` held its not-found sentinel in a plain mutable static. `GetNode` returns it by
+`ref`, including from the create path, so `Put`/`Save` could set `HasValue` and store a value
+straight into it — after which every later miss on any map of that `T` reported a false hit
+with stale contents. That surfaced as an intermittent `NullReferenceException` resolving a
+global binding, from a completely unrelated test, only in a full parallel run. It is the same
+defect `StringMap.Empty` already carries a fix for (issue #1428, the `body-:0,0` frame); this
+second copy of the pattern had been missed. Now thread-local and reset at every `GetNode`
+entry, matching the existing fix.
 
 ---
 

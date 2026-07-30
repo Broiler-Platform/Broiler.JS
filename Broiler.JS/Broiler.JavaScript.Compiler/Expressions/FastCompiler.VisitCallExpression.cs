@@ -278,7 +278,7 @@ partial class FastCompiler
             }
             else
             {
-                invocation = JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, name, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain);
+                invocation = JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, name, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain, allowCache: true);
             }
 
             // A parenthesized optional chain closes its chain at the parens, so the
