@@ -7221,15 +7221,24 @@ public class BuiltInsTests
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
 
+        // UTS #35 §3.2.1 multi-region territoryAlias: the successor is chosen by the most
+        // likely region for the language AND script. The script only decides the outcome when
+        // it is the only evidence — the likely-subtags lookup tries "<language>" before
+        // "und-<script>", so a present language always wins (test262
+        // Intl/getCanonicalLocales/complex-region-subtag-replacement.js pairs "und-Armn-SU" →
+        // "und-Armn-AM" with "en-SU" → "en-RU", and Locale/likely-subtags.js pins the same
+        // ordering with "en-Arab" → "en-Arab-US" rather than "en-Arab-EG").
         var result = ctx.Eval("""
             [
               Intl.getCanonicalLocales('ru-SU')[0],
+              Intl.getCanonicalLocales('und-Armn-SU')[0],
               Intl.getCanonicalLocales('ru-Armn-SU')[0],
-              Intl.getCanonicalLocales('ru-Cyrl-SU')[0]
+              Intl.getCanonicalLocales('ru-Cyrl-SU')[0],
+              Intl.getCanonicalLocales('hy-SU')[0]
             ].join('|');
             """);
 
-        Assert.Equal("ru-RU|ru-Armn-AM|ru-Cyrl-RU", result.ToString());
+        Assert.Equal("ru-RU|und-Armn-AM|ru-Armn-RU|ru-Cyrl-RU|hy-AM", result.ToString());
     }
 
     [Fact]

@@ -54,9 +54,9 @@ Timings are the **slower** of two post-change runs against a single pre-change r
 variance on this container is 10–15%, so treat the factors as approximate. Allocation is
 deterministic — the byte counts were identical across runs and are quoted exactly.
 
-Full suite after the change: **6 824 tests, 6 818 passing, 0 new failures** (the 6 failures are
-pre-existing: 5 ICU/locale-data dependent, 1 in ModuleExtensions). 21 of those tests are new
-and cover the reworked behaviour.
+Full suite after the change: **6 824 tests, 6 818 passing, 0 new failures** (the 6 failures were
+pre-existing: 5 ICU/locale-data dependent, 1 in ModuleExtensions — all six are resolved now, see
+§8). 21 of those tests are new and cover the reworked behaviour.
 
 **P1 is implemented too.** It targets a
 different axis — the inline cache, which P0 left untouched — so it is measured by hit rate
@@ -1451,6 +1451,58 @@ global binding, from a completely unrelated test, only in a full parallel run. I
 defect `StringMap.Empty` already carries a fix for (issue #1428, the `body-:0,0` frame); this
 second copy of the pattern had been missed. Now thread-local and reset at every `GetNode`
 entry, matching the existing fix.
+
+### The six pre-existing failures — resolved; the suite is green
+
+Every phase above reports "0 new failures" against a standing baseline of **6 pre-existing
+failures** (5 ICU/locale-data dependent, 1 in ModuleExtensions). That baseline is gone: the
+suite now runs **7 196 tests, 7 196 passing, 0 failures**.
+
+One was a real defect. Five were tests asserting behaviour the engine is right to refuse, each
+checked against the pinned test262 suite rather than against my reading of the spec — the six
+deciding test262 files were run directly through `scripts/compliance/run_test262.py` and all
+six pass.
+
+**The defect.** `ModuleBuilder.ExportValue` marshalled its argument at *record* time
+(`value.Marshal()`), which reaches `JSValue.CreateString` — a static delegate the BuiltIns
+assembly wires in a `[ModuleInitializer]`. Building a module before anything had touched the
+engine hit the unwired delegate and threw `NullReferenceException`. It now records the .NET
+value and marshals in `AddModuleToContext`, matching its two sibling methods (`ExportType` and
+`ExportFunction` both already deferred) and its `default:` case, which was already the intended
+destination. Deferring also fixes a quieter problem: the conversion now happens against the
+context the module is registered with, and `Type` and `JSFunctionDelegate` values reach their
+explicit switch cases instead of falling through to a generic proxy.
+
+**The five wrong expectations.** In each case the assertion is not merely unsupported — it
+contradicts a test262 vector the engine passes:
+
+- **`ru-Armn-SU` → `ru-Armn-AM`.** The likely-subtags lookup tries `<language>` before
+  `und-<script>`, so a present language always wins and the answer is `ru-Armn-RU`.
+  `complex-region-subtag-replacement.js` makes the script-conditional case `und-Armn-SU` →
+  `und-Armn-AM` — with no language to lose to — and pairs it with `en-SU` → `en-RU`;
+  `Locale/likely-subtags.js` pins the same ordering with `en-Arab` → `en-Arab-US`, not
+  `en-Arab-EG`. Changing the lookup order to satisfy the old assertion would have broken both.
+- **`{currency:'jpy'}` with no `style` → `"JPY"`.** `SetNumberFormatUnitOptions` sets
+  `[[Currency]]` only when style is `"currency"`, so `resolvedOptions` omits the property
+  entirely; `NumberFormat/prototype/resolvedOptions/basic.js` asserts exactly that with
+  `verifyProperty(actual, "currency", undefined)`. The code is still *validated* — the
+  replacement test keeps that half, which is what the original was reaching for.
+- **`en-u-ca-hebrew` → `gregory`** (asserted twice). True when written; the formatting engine
+  has since gained the Hebrew calendar and renders it correctly
+  (`new Intl.DateTimeFormat('en-u-ca-hebrew', …).format(new Date(2017,11,12))` is
+  `"Kislev 24, 5778"`). `resolvedOptions/calendar.js` *requires* `hebrew` to round-trip, so
+  restoring the fallback would have broken conformance. Both tests now use an identifier that
+  is genuinely outside the available set, and a new test pins the Hebrew rendering.
+- **`fr-FR` with `hour12:true` → `h11`.** `hour12` selects the locale's preferred clock of the
+  requested kind from CLDR's `<hours>` data (`[[hourCycle12]]` / `[[hourCycle24]]`), not a
+  cycle derived from the locale default. `hourCycle-default.js` asserts the 24-hour clock is
+  `"h23"` in every locale and the 12-hour clock is `"h12"` in every locale *except* `ja` —
+  which is precisely the rule `Prefers11HourCycle` already implements.
+
+The lesson worth keeping is the one from P2-2's measurement and the `NaN <= x` bug in the
+unboxed-locals work: a failing test is a claim, not a verdict, and the pinned conformance suite
+settles it faster and more reliably than reasoning from spec text. My first reading of
+ECMA-402's `hour12` clause said the engine was wrong; the test262 vector says it is right.
 
 ---
 

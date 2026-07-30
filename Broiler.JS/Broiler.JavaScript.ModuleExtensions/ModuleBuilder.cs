@@ -31,9 +31,15 @@ namespace Broiler.JavaScript.ModuleExtensions
             return this;
         }
 
+        /// <summary>
+        /// Records a value for export.  The value is kept in its .NET form and
+        /// marshalled in <see cref="AddModuleToContext"/>, so that the conversion
+        /// happens against the context the module is registered with rather than
+        /// against whatever engine state happened to exist when the builder ran.
+        /// </summary>
         public ModuleBuilder ExportValue(string name, object value)
         {
-            exportedObjects.Add((name, value.Marshal()));
+            exportedObjects.Add((name, value));
             return this;
         }
 

@@ -396,10 +396,22 @@ public class Issue838Tests
             "new Intl.NumberFormat('en', { style: 'currency', currency: 'Eur' }).resolvedOptions().currency + ',' +" +
             "new Intl.NumberFormat('en', { style: 'currency', currency: 'uSd' }).resolvedOptions().currency"));
 
+    // A currency option is read and validated whatever the style is, but SetNumberFormatUnitOptions
+    // only sets [[Currency]] when style is "currency", so resolvedOptions omits the property
+    // entirely otherwise (test262 NumberFormat/prototype/resolvedOptions/basic.js asserts
+    // `verifyProperty(actual, "currency", undefined)` on a default decimal formatter).
     [Fact]
-    public void NumberFormatCanonicalizesCurrencyEvenWhenStyleNotCurrency()
-        => Assert.Equal("JPY", Eval(
-            "new Intl.NumberFormat('en', { currency: 'jpy' }).resolvedOptions().currency"));
+    public void NumberFormatDoesNotReflectCurrencyWhenStyleNotCurrency()
+        => Assert.Equal("undefined,false", Eval(
+            "var ro = new Intl.NumberFormat('en', { currency: 'jpy' }).resolvedOptions();" +
+            "String(ro.currency) + ',' + Object.prototype.hasOwnProperty.call(ro, 'currency')"));
+
+    // ...but the code is still validated at construction, so a malformed one is a RangeError
+    // even though it would never be reflected.
+    [Fact]
+    public void NumberFormatStillValidatesCurrencyWhenStyleNotCurrency()
+        => Assert.Equal("RangeError", Eval(
+            "try { new Intl.NumberFormat('en', { currency: 'jp' }); 'no-throw'; } catch (e) { e.constructor.name; }"));
 
     [Fact]
     public void NumberFormatStillFormatsCurrencyGivenLowercaseCode()
@@ -457,11 +469,17 @@ public class Issue838Tests
             "new Intl.DateTimeFormat('en', { calendar: 'islamicc' }).resolvedOptions().calendar + ',' +" +
             "new Intl.DateTimeFormat('en-u-ca-islamicc').resolvedOptions().calendar"));
 
+    // Every calendar this implementation lists as available round-trips through -u-ca- (test262
+    // DateTimeFormat/prototype/resolvedOptions/calendar.js requires the full Intl.Era-monthcode
+    // set, "hebrew" included); only an identifier outside that set falls back to the default
+    // "gregory" and drops the keyword from the resolved locale.
     [Fact]
     public void SupportedCalendarStillResolvesAndUnsupportedStillFallsBack()
-        => Assert.Equal("chinese,gregory", Eval(
+        => Assert.Equal("chinese,hebrew,gregory,en", Eval(
             "new Intl.DateTimeFormat('en-u-ca-chinese').resolvedOptions().calendar + ',' +" +
-            "new Intl.DateTimeFormat('en-u-ca-hebrew').resolvedOptions().calendar"));
+            "new Intl.DateTimeFormat('en-u-ca-hebrew').resolvedOptions().calendar + ',' +" +
+            "new Intl.DateTimeFormat('en-u-ca-invalid').resolvedOptions().calendar + ',' +" +
+            "new Intl.DateTimeFormat('en-u-ca-invalid').resolvedOptions().locale"));
 
     // ---- Problem 79: an unsupported collation resolves to "default" ----
 

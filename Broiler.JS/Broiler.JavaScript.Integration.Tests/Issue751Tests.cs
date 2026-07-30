@@ -362,12 +362,18 @@ public class Issue751Tests
             Hc("fr-FR", "{hour:'numeric'}"),
             Hc("ja-JP", "{hour:'numeric'}")));
 
+    // hour12 selects the locale's preferred clock of the requested kind from CLDR's <hours> data
+    // ([[hourCycle12]] / [[hourCycle24]]), NOT a cycle derived from the locale default: test262
+    // DateTimeFormat/prototype/resolvedOptions/hourCycle-default.js asserts the 24-hour clock is
+    // "h23" in every locale and the 12-hour clock is "h12" in every locale except "ja".
     [Fact]
     public void HourCycleFromHour12()
-        => Assert.Equal("h12,h23,h11", string.Join(",",
+        => Assert.Equal("h12,h23,h12,h23,h11", string.Join(",",
             Hc("en-US", "{hour:'numeric',hour12:true}"),
             Hc("en-US", "{hour:'numeric',hour12:false}"),
-            Hc("fr-FR", "{hour:'numeric',hour12:true}")));
+            Hc("fr-FR", "{hour:'numeric',hour12:true}"),
+            Hc("fr-FR", "{hour:'numeric',hour12:false}"),
+            Hc("ja-JP", "{hour:'numeric',hour12:true}")));
 
     [Fact]
     public void Hour12ConsistentWithHourCycle()
