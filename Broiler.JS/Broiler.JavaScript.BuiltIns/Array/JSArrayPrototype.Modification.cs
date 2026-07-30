@@ -180,7 +180,15 @@ public partial class JSArray
             {
                 var arrayIndex = (uint)length;
                 array.SetValue(arrayIndex, a.GetAt(index), array, true);
-                if (array.GetOwnPropertyDescriptor(CreateNumber(arrayIndex)).IsUndefined)
+
+                // Did the element actually land? This used to ask via
+                // GetOwnPropertyDescriptor, which builds a four-property descriptor OBJECT
+                // and needs a JSNumber just to carry the key — roughly 2.6 KB of garbage per
+                // element for a boolean answer, and the single largest allocation source in
+                // the engine's benchmark set. HasOwnProperty answers the same question off
+                // the element table, allocation-free, and stays virtual so an exotic
+                // subclass would still be consulted. See docs/performance-roadmap.md P2-1.
+                if (!array.HasOwnProperty(arrayIndex))
                     mustSetLengthThroughProperty = true;
             }
 

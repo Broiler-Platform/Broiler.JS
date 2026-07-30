@@ -17,7 +17,8 @@ the phase 0–5 optimization campaign referenced in [`docs/roadmap.md`](roadmap.
 - Acceptance protocol: unchanged — [`docs/performance.md`](performance.md) governs what may
   be *claimed*. Nothing in this document closes on the numbers below.
 - Status: **P0 implemented** (§4). **P1 implemented** apart from a compiler-level store cache
-  (§5). P2–P3 are planned and not started.
+  (§5). **P2 partially implemented** — P2-1 plus two larger defects found while doing it
+  ([§6.5](#65--found-while-implementing-p2)); P2-2/3/4 deferred with reasons (§6). P3 not started.
 
 ---
 
@@ -68,6 +69,17 @@ rather than by wall clock. Over 200k-iteration monomorphic sites:
 Allocation for the object shape that suffered most: building a three-field object through a
 constructor cost **6 595 bytes** before P1 and **1 480** after, against 1 328 for the
 equivalent object literal — the gap between "assigned" and "literal" is essentially closed.
+
+**P2 delivered mostly what it did not plan.** P2-1 landed as written; the other three are
+deferred with reasons (§6). What actually came out of the phase were two defects on the array
+paths, both found by measuring rather than reading, and both larger than anything P2 had
+scoped ([§6.5](#65--found-while-implementing-p2)):
+
+| | Before | After |
+|---|---:|---:|
+| 200 000 `pop()`s — length shrink was O(n) per call, so the loop was quadratic | 466 427 ms | **640 ms** (729×) |
+| Filling a fresh array, per element — the indexed twin of P1-1 | 1 350 B | **145 B** (9×) |
+| `push`, per element (P2-1 plus the above) | 3 803 B | **1 480 B** |
 
 ---
 
@@ -610,7 +622,13 @@ exact `JSObject` once the write path is fixed.
 
 ---
 
-## 6. P2 — allocation on built-in and value paths
+## 6. P2 — allocation on built-in and value paths — **partially implemented**
+
+P2-1 is implemented. P2-2, P2-3 and P2-4 are **not**, and each carries a status note saying
+why — the first for a correctness reason, the other two because working through P2 turned up
+two defects that were far larger than anything this phase had scoped, and fixing them changed
+the arithmetic on what was left. Those two are written up in
+[§6.5](#65--found-while-implementing-p2) and are the bulk of what this phase delivered.
 
 ### P2-1 · `Array.prototype.push` allocates a full descriptor per element
 
@@ -637,6 +655,15 @@ Measured: **4 046 bytes per `push`**, versus 1 382 bytes for the equivalent `a[i
 for the same shape: `GetOwnPropertyDescriptor(...).IsUndefined` used as a presence test.
 
 **Risk: low.** Local to `Push`; gate on `test262-arrays.txt`.
+
+**Status: implemented.** The probe is now `array.HasOwnProperty(arrayIndex)`, which answers the
+same question off the element table with no allocation and stays virtual so an exotic subclass
+would still be consulted. `array-push` fell from 3 803 to 2 660 bytes per element on the spot,
+and to about 1 480 once the indexed-write defect in §6.5 was fixed as well.
+
+The audit for the same pattern found no other instance in a hot loop —
+`GetOwnPropertyDescriptor(...).IsUndefined` appears about a dozen more times, but all of them
+are one-time bootstrap or registry checks.
 
 ---
 
@@ -670,6 +697,38 @@ Every arithmetic operation allocates, through a `Func<double, JSValue>` indirect
 identity must not become observable where the spec requires fresh values. (3) is a real
 compiler change.
 
+**Status: not implemented. The risk assessment above was wrong, and the payoff is narrower
+than it looks.**
+
+The hazard is not `-0` or JS-visible identity — those are easy. It is that a `JSPrimitive`
+**mutates itself on every property access**: `ResolvePrototype()` assigns
+`BasePrototypeObject = GetPrototype()`, and `JSNumber.GetPrototype()` reads
+`%Number.prototype%` out of the *current realm*. Sharing one instance between realms therefore
+makes `prototypeChain` shared mutable state, and two threads running two realms can interleave
+the write and the read so that one of them resolves a method on the other's prototype.
+
+That hazard already exists — `JSNumber.Zero`, `One`, `Two`, `MinusOne`, `NaN`, both infinities
+and `NegativeZero` are process-wide singletons handed straight to script. But it is currently
+confined to eight values that rarely carry a property access. Caching −128…1024 would extend
+it to every loop counter and array index in every program, turning a rare race into a routine
+one. That is a bad trade for the measured gain.
+
+And the gain is small: a cache only helps values inside its range, while the benchmark loops
+here count to millions, so `loop-empty` and `arith-add` would not move at all. Only
+`i % 100`-shaped values and small indices benefit — roughly 20% of that scenario's allocation.
+
+Fixing the hazard first is the right order, and it is **not** contained:
+`ResolvePrototype()` is called from ten places in `JSPrimitive`, each immediately followed by a
+`base` virtual that reads `prototypeChain`, so making resolution non-mutating means threading
+the resolved chain through parallel overloads across `JSValue`. Worth doing — it also removes a
+field write from every primitive property access — but as its own change, not smuggled in under
+a number cache.
+
+Item (2) is not actionable as written either: the `CreateNumber` delegate exists precisely
+because `Broiler.JavaScript.Runtime` cannot reference `JSNumber` in `BuiltIns`. Replacing it
+with a direct static call needs that assembly boundary moved. Compiled arithmetic already
+emits `new JSNumber(double)` directly and never touches the delegate.
+
 ---
 
 ### P2-3 · Dense element storage is 4× larger than it needs to be
@@ -684,6 +743,22 @@ a `JSValue[]`, promoted to `JSProperty[]` on the first non-default descriptor. T
 element-storage analogue of P1-4.
 
 **Risk: medium** — touches every element read/write path. `test262-arrays.txt`.
+
+**Status: not implemented, and now lower priority than when this was written.**
+
+Two things changed. First, the indexed-write fix in §6.5 removed the dominant term: filling a
+fresh array cost about 1 350 bytes an element and now costs ~145, of which ~96 is the loop
+counter's own `JSNumber`. The 32-byte backing slot is now roughly a sixth of what remains, so
+halving it is worth ~17% of an array fill rather than the 4× the framing above suggests. It
+still matters for *footprint* — `new Array(1000)` reserves 32 KB of `JSProperty` for 8 KB of
+values — but that is a memory argument, not the allocation-rate one this item was filed under.
+
+Second, it is not as contained as "`ElementArray` already tracks `hasCustomDescriptors`"
+implies. `dense` is confined to that one file, but the type leaks through the API: `JSObject`
+takes `ref JSProperty` *into* the array (`ref var p = ref elements.Get(key)`), and
+`PrepareSlot` returns `ref JSProperty` for callers to write through. A `JSValue[]` store cannot
+hand out those refs, so the change reaches `JSObject`'s element paths too, not just
+`ElementArray`.
 
 ---
 
@@ -701,6 +776,69 @@ every production engine does.
 **Risk: medium-high** — `JSString` is load-bearing across the built-ins, and `KeyString`
 interning, `DoubleValue` caching, and the `ToKey` fast paths all assume a flat backing string.
 Worth scoping as its own change, after P0 and P1.
+
+**Status: not implemented. This is now the largest single item left in the whole document.**
+
+Re-measured: `s = s + 'abcdefgh'` twenty thousand times allocates **160 KB per concatenation**
+— 3.2 GB in total for a 160 KB result — and provokes ~915 gen1 and ~913 gen2 collections. It
+is the only workload in the set that reaches gen2 at all, and unlike everything else in P2 it
+is genuinely quadratic rather than merely wasteful, so the cost grows with the program's data
+rather than with its instruction count.
+
+Nothing cheaper than a rope helps: string `+` bottoms out in
+`CreateString(self.StringValue + value.StringValue)`, a plain CLR concat, and there is no
+intermediate representation to reuse. The risk assessment above stands unchanged — this needs
+its own change with its own test pass, and it should be next.
+
+---
+
+### 6.5 · Found while implementing P2
+
+Neither of these was in the plan. Both are larger than everything P2 had scoped, and both were
+found by measuring the array paths rather than by reading them.
+
+#### Shrinking an array's `length` scanned the whole element table
+
+`JSArray.DefineLengthProperty` deleted the tail by enumerating **every stored element**,
+collecting the in-range indices into a `List<uint>`, and sorting it. The comment explained why:
+walking `[newLength, oldLength)` directly would loop billions of times when shrinking a
+sparse array from `2**32-1`. True — but the correction was total, so the scan also ran when the
+range was a single index.
+
+Every `pop()` shrinks the length by one. So each pop scanned and sorted the entire array, and
+popping *n* elements was O(n²): **200 000 pops took 466 seconds**.
+
+Fixed by picking the smaller side — walk the range when `oldLength - newLength` is at most the
+number of stored elements, otherwise scan the stored elements as before. Both the dense-pop and
+the huge-sparse-shrink cases are cheap, and the deletion order (high→low, halting at the first
+non-configurable element) is unchanged.
+
+**466 427 ms → 640 ms, a 729× improvement**, on a benchmark that also does 200 000 pushes.
+
+#### Storing into an absent element did a descriptor round-trip — the indexed twin of P1-1
+
+Exactly the defect P1-1 fixed for named properties, on the element path, and missed because P1
+only looked at `SetKeyStringOnReceiver`. When the element is not already present,
+`JSObject.SetValue(uint, …)` finds nothing own, recurses into the prototype, bottoms out at
+`%Object.prototype%`, and re-enters `SetIndexOnReceiver` with the real array as a *foreign*
+receiver — which allocated a `JSNumber` for the key and a four-property descriptor object, per
+element.
+
+The signature was unmistakable once measured: storing into an element that already existed cost
+**0 bytes** over the loop's own overhead, while storing into a fresh one cost **~1 350 bytes** —
+constant per element, independent of array size, so not a growth or resizing problem.
+
+Fixed with `TrySetOrdinaryReceiverIndexedProperty`, mirroring the named version: it writes the
+element table directly when the target's indexed `[[DefineOwnProperty]]` is the ordinary one,
+and declines otherwise. Eligibility is a virtual, `SupportsOrdinaryIndexedWrite`, defaulting to
+an exact-`JSObject` test and overridden by `JSArray` — so integer-indexed exotics, mapped
+`arguments`, and proxies all keep the descriptor path, and each is covered by a test.
+
+| | before | after |
+|---|---:|---:|
+| `new Array(n)` + fill, per element | 1 350 B | **145 B** |
+| `[]` + fill, per element | 1 382 B | **182 B** |
+| `[]` + `push`, per element | 2 680 B | **1 480 B** |
 
 ---
 
@@ -731,8 +869,8 @@ Sequence this **after** P0; measuring it before then would just be measuring P0-
 | ~~**B**~~ | ~~P0-2~~ | **Done** — folded into the same change | `StrictModeFlowTests` covers every transition shape; test262 manifests still owed |
 | ~~**C**~~ | ~~P1-1, P1-4~~ | **Done** — cache reaches constructor/class code (0 → ~100% hit rate); constructor-built objects 6 595 → 1 480 bytes | Full `dotnet test` green; `PropertyShapeCacheTests` asserts the hit rates and every staleness path. P1-4's double storage still open |
 | **D** | ~~P1-2~~, P1-3 | P1-2 **done** — inherited and class method calls hit the cache. P1-3 open: only a runtime fast path landed, not a store cache | `PropertyShapeCacheTests` covers `setPrototypeOf`, prototype mutation, own-property shadowing, delete, freeze, accessor redefinition, polymorphic and megamorphic sites |
-| **E** | P2-1, P2-2 | `push` and arithmetic allocation | `test262-arrays`; `-0` and number-identity coverage |
-| **F** | P2-3, P2-4, P3 | Memory footprint, string-heavy code, call structure | Full matrix per `docs/performance.md` |
+| **E** | ~~P2-1~~, P2-2 | P2-1 **done**, plus the two array defects in §6.5 (729× on repeated `pop`, 9× on array fill). P2-2 declined — see its status note | `IndexedWriteAndLengthTests` covers integrity levels, foreign receivers, exotics and length-shrink; `test262-arrays` still owed |
+| **F** | P2-3, P2-4, P3 | Memory footprint, string-heavy code, call structure. **P2-4 is now the largest single item left** | Full matrix per `docs/performance.md` |
 
 Each phase adds an entry to `eng/performance/ownership.json` with its benchmark and semantic
 owner, and closes only under the acceptance rules in `docs/performance.md` — two runs inside
