@@ -140,16 +140,43 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     /// </summary>
     public JSValue AddLegacyCallerAndArguments()
     {
-        FastAddValue(LegacyCallerKey, NullValue, JSPropertyAttributes.ReadonlyValue);
-        FastAddValue(KeyStrings.arguments, NullValue, JSPropertyAttributes.ReadonlyValue);
+        // Both are backed by deferred data properties rather than stored values. Their
+        // observable shape is unchanged — still non-writable, non-enumerable,
+        // non-configurable DATA properties whose value is null while the function is not
+        // on the stack — but nothing is computed until script actually reads one.
+        //
+        // The eager alternative built a complete arguments object (a JSObject plus an
+        // indexed property per argument plus `length`) and wrote it, and the caller, into
+        // this function's own property table on EVERY non-strict invocation, then
+        // overwrote both with null on the way out. Almost no program reads f.arguments,
+        // yet it accounted for roughly 1.3 KB of the ~1.8 KB a sloppy call allocated. See
+        // docs/performance-roadmap.md P0-3.
+        FastAddDeferredValue(LegacyCallerKey, new LegacyCallerCell(this), JSPropertyAttributes.ReadonlyValue);
+        FastAddDeferredValue(KeyStrings.arguments, new LegacyArgumentsCell(this), JSPropertyAttributes.ReadonlyValue);
         HasLegacyCallerArguments = true;
         return this;
     }
 
+    // The invocation currently on the stack for this function object, pushed by [[Call]]
+    // and [[Construct]] and restored on the way out. `legacyFrameActive` distinguishes
+    // "executing with zero arguments" from "not executing", and saving/restoring rather
+    // than clearing keeps an outer invocation's values visible again once a recursive
+    // inner one returns.
+    private JSValue legacyCallerValue;
+    private Arguments legacyFrameArguments;
+    private bool legacyFrameActive;
+
+    internal readonly struct LegacyFrame(JSValue caller, Arguments arguments, bool active)
+    {
+        internal readonly JSValue Caller = caller;
+        internal readonly Arguments Arguments = arguments;
+        internal readonly bool Active = active;
+    }
+
     /// <summary>
-    /// Updates the legacy <c>caller</c> own property to reflect the function
-    /// that invoked this one. Non-strict ordinary callers are exposed as a data
-    /// value; strict-mode, native, or absent callers expose <c>null</c>.
+    /// Records the in-progress invocation so the legacy <c>caller</c>/<c>arguments</c>
+    /// properties can report it, returning the frame to hand back to
+    /// <see cref="PopLegacyFrame"/> when the invocation completes.
     /// </summary>
     /// <remarks>
     /// Per the Annex B.2 forbidden extension, the value observed through
@@ -157,27 +184,50 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     /// A strict caller is therefore reported as <c>null</c> rather than via a
     /// throwing %ThrowTypeError% accessor: test262's
     /// <c>forbidden-ext/b2/*-indirect-access-prop-caller</c> tests read the
-    /// property directly and require that the access does not throw.
+    /// property directly and require that the access does not throw. That filter is
+    /// applied here, on entry, rather than at read time, because it depends on the
+    /// calling function, which is only known now.
     /// </remarks>
-    private void SetLegacyCaller(JSValue callerFunction)
+    private LegacyFrame PushLegacyFrame(JSValue callerFunction, in Arguments arguments)
     {
-        var value = callerFunction is JSFunction ordinary
+        var saved = new LegacyFrame(legacyCallerValue, legacyFrameArguments, legacyFrameActive);
+
+        legacyCallerValue = callerFunction is JSFunction ordinary
             && ordinary.IsOrdinaryUserFunction
             && !ordinary.IsStrictMode
             ? callerFunction
             : NullValue;
+        legacyFrameArguments = arguments;
+        legacyFrameActive = true;
 
-        FastAddValue(LegacyCallerKey, value, JSPropertyAttributes.ReadonlyValue);
+        return saved;
+    }
+
+    private void PopLegacyFrame(in LegacyFrame saved)
+    {
+        legacyCallerValue = saved.Caller;
+        legacyFrameArguments = saved.Arguments;
+        legacyFrameActive = saved.Active;
+    }
+
+    /// <summary>Backs <c>f.caller</c>: the current invocation's caller, or null.</summary>
+    private sealed class LegacyCallerCell(JSFunction owner) : IDeferredPropertyValue
+    {
+        public JSValue Resolve() => owner.legacyCallerValue ?? NullValue;
     }
 
     /// <summary>
-    /// Updates the legacy <c>arguments</c> own property to the arguments object of
-    /// the in-progress invocation (Annex B web-reality behaviour: a non-strict
-    /// function's <c>f.arguments</c> is non-null while <c>f</c> is on the stack).
-    /// Reset to <c>null</c> when the invocation completes.
+    /// Backs <c>f.arguments</c>: the arguments object of the in-progress invocation
+    /// (Annex B web-reality behaviour — a non-strict function's <c>f.arguments</c> is
+    /// non-null while <c>f</c> is on the stack), otherwise null.
     /// </summary>
-    private void SetLegacyArguments(JSValue argumentsObject)
-        => FastAddValue(KeyStrings.arguments, argumentsObject, JSPropertyAttributes.ReadonlyValue);
+    private sealed class LegacyArgumentsCell(JSFunction owner) : IDeferredPropertyValue
+    {
+        public JSValue Resolve()
+            => owner.legacyFrameActive
+                ? CreateLegacyArgumentsObject(owner.legacyFrameArguments)
+                : NullValue;
+    }
 
     private static JSObject CreateLegacyArgumentsObject(in Arguments a)
     {
@@ -665,11 +715,9 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         var previousExecutingFunction = JSEngine.ExecutingFunction;
         JSEngine.ExecutingFunction = this;
         var trackLegacyCaller = HasLegacyCallerArguments;
+        var savedLegacyFrame = default(LegacyFrame);
         if (trackLegacyCaller)
-        {
-            SetLegacyCaller(previousExecutingFunction);
-            SetLegacyArguments(CreateLegacyArgumentsObject(a1));
-        }
+            savedLegacyFrame = PushLegacyFrame(previousExecutingFunction, in a1);
         try
         {
             // [[Construct]] must run the body under its own strict-mode setting,
@@ -688,10 +736,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         finally
         {
             if (trackLegacyCaller)
-            {
-                SetLegacyCaller(NullValue);
-                SetLegacyArguments(NullValue);
-            }
+                PopLegacyFrame(in savedLegacyFrame);
             JSEngine.ExecutingFunction = previousExecutingFunction;
             if (ec != null)
                 ec.CurrentNewTarget = restoreNewTarget;
@@ -787,11 +832,9 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
                 JSEngine.ExecutingFunction = current;
 
                 var trackLegacyCaller = current.HasLegacyCallerArguments;
+                var savedLegacyFrame = default(LegacyFrame);
                 if (trackLegacyCaller)
-                {
-                    current.SetLegacyCaller(previousExecutingFunction);
-                    current.SetLegacyArguments(CreateLegacyArgumentsObject(currentArguments));
-                }
+                    savedLegacyFrame = current.PushLegacyFrame(previousExecutingFunction, in currentArguments);
 
                 using (current.EnterRealm())
                 using (JSEngine.EnterStrictMode(current.IsStrictMode))
@@ -813,10 +856,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
                     finally
                     {
                         if (trackLegacyCaller)
-                        {
-                            current.SetLegacyCaller(NullValue);
-                            current.SetLegacyArguments(NullValue);
-                        }
+                            current.PopLegacyFrame(in savedLegacyFrame);
                     }
                 }
 

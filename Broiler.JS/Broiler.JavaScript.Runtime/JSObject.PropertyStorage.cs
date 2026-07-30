@@ -328,6 +328,22 @@ public partial class JSObject
         AbandonObjectShape();
     }
 
+    /// <summary>
+    /// Adds an ordinary data property whose value is recomputed on every read. The property
+    /// is observably a data property (value/writable, not get/set) — see
+    /// <see cref="IDeferredPropertyValue"/> — so this suits a spec- or web-reality-mandated
+    /// data property whose value tracks live engine state.
+    /// </summary>
+    internal void FastAddDeferredValue(
+        KeyString key,
+        IDeferredPropertyValue deferred,
+        JSPropertyAttributes attributes)
+    {
+        CancelLazyDataProperty(in ownProperties.GetValue(key.Key));
+        ownProperties.Put(key.Key) = new JSProperty(key, null, null, deferred, attributes);
+        AbandonObjectShape();
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void CancelLazyDataProperty(in JSProperty property)
     {

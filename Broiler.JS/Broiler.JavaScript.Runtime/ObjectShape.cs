@@ -60,7 +60,16 @@ public readonly record struct PropertyOptimizationSnapshot(
     long PrototypeInvalidations,
     long PrototypeVersion);
 
-/// <summary>Low-overhead counters for validating shape/cache invalidation behavior.</summary>
+/// <summary>
+/// Counters for validating shape/cache invalidation behavior.
+/// <para>
+/// Disabled by default. Every counter is an <see cref="Interlocked"/> increment on a
+/// process-wide static, and the cache-hit and cache-miss counters sit on the engine's
+/// hottest path — one per property read — where they turn a shared static into a
+/// contended cache line. Recording is therefore opt-in: set <see cref="Enabled"/> before
+/// the code you want to measure, and prefer <see cref="Enable"/> so it is restored.
+/// </para>
+/// </summary>
 public static class PropertyOptimizationDiagnostics
 {
     private static long shapeTransitions;
@@ -71,13 +80,41 @@ public static class PropertyOptimizationDiagnostics
     private static long megamorphicSites;
     private static long prototypeInvalidations;
 
-    internal static void RecordShapeTransition() => Interlocked.Increment(ref shapeTransitions);
-    internal static void RecordDictionaryFallback() => Interlocked.Increment(ref dictionaryFallbacks);
-    internal static void RecordCacheHit() => Interlocked.Increment(ref cacheHits);
-    internal static void RecordCacheMiss() => Interlocked.Increment(ref cacheMisses);
-    internal static void RecordPolymorphicPromotion() => Interlocked.Increment(ref polymorphicPromotions);
-    internal static void RecordMegamorphic() => Interlocked.Increment(ref megamorphicSites);
-    internal static void RecordPrototypeInvalidation() => Interlocked.Increment(ref prototypeInvalidations);
+    /// <summary>
+    /// Whether the counters below are recorded. Defaults to <c>false</c>; while it is
+    /// <c>false</c> every <c>Record*</c> call is a predictable branch and the snapshot
+    /// reports whatever was accumulated while it was last enabled.
+    /// <see cref="Reset"/> does not change it.
+    /// </summary>
+    public static bool Enabled;
+
+    /// <summary>
+    /// Enables recording until the returned scope is disposed, restoring the previous
+    /// setting. Does not reset the counters — call <see cref="Reset"/> for that.
+    /// </summary>
+    public static RecordingScope Enable() => new(true);
+
+    /// <summary>Restores <see cref="Enabled"/> when disposed.</summary>
+    public readonly struct RecordingScope : IDisposable
+    {
+        private readonly bool previous;
+
+        internal RecordingScope(bool enabled)
+        {
+            previous = Enabled;
+            Enabled = enabled;
+        }
+
+        public void Dispose() => Enabled = previous;
+    }
+
+    internal static void RecordShapeTransition() { if (Enabled) Interlocked.Increment(ref shapeTransitions); }
+    internal static void RecordDictionaryFallback() { if (Enabled) Interlocked.Increment(ref dictionaryFallbacks); }
+    internal static void RecordCacheHit() { if (Enabled) Interlocked.Increment(ref cacheHits); }
+    internal static void RecordCacheMiss() { if (Enabled) Interlocked.Increment(ref cacheMisses); }
+    internal static void RecordPolymorphicPromotion() { if (Enabled) Interlocked.Increment(ref polymorphicPromotions); }
+    internal static void RecordMegamorphic() { if (Enabled) Interlocked.Increment(ref megamorphicSites); }
+    internal static void RecordPrototypeInvalidation() { if (Enabled) Interlocked.Increment(ref prototypeInvalidations); }
 
     public static PropertyOptimizationSnapshot Snapshot() => new(
         Interlocked.Read(ref shapeTransitions),

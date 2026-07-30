@@ -208,9 +208,21 @@ public static class JSEngine
 
     public static JSObject NewTargetPrototype => GetNewTargetPrototypeFromTop?.Invoke(Current);
 
-    private static readonly AsyncLocal<int> _strictModeDepth = new();
+    // Strictness of the code currently executing on this flow.
+    //
+    // This must remain an AsyncLocal rather than a [ThreadStatic]: an async function body
+    // suspends at `await` and resumes on whatever thread the microtask queue pumps it from,
+    // and any property [[Set]] after that await still has to observe the awaiting function's
+    // strictness. ExecutionContext capture is what carries it across the suspension.
+    //
+    // An AsyncLocal SET is expensive though — it boxes, copies the value map, and allocates a
+    // fresh ExecutionContext — and InvokeFunction enters a scope around every single call, so
+    // a naive save/restore paid for two of those per JS call. Reads are cheap, so the scope
+    // below only writes on an actual strict/sloppy TRANSITION, which real code performs rarely
+    // (calls within one strictness level are the norm). See docs/performance-roadmap.md P0-2.
+    private static readonly AsyncLocal<bool> _strictMode = new();
 
-    internal static bool IsStrictMode => _strictModeDepth.Value > 0;
+    internal static bool IsStrictMode => _strictMode.Value;
 
     internal static StrictModeScope EnterStrictMode(bool enabled) => new(enabled);
 
@@ -218,24 +230,35 @@ public static class JSEngine
 
     internal readonly struct StrictModeScope : IDisposable
     {
-        private readonly int previous;
+        private readonly bool previous;
+        private readonly bool changed;
 
         public StrictModeScope(bool enabled)
         {
             // Strictness reflects the CURRENTLY executing code, not "any strict frame on
             // the stack". A strict function (or class constructor) entered from sloppy
-            // code raises the level; a sloppy function entered from strict code must drop
+            // code becomes strict; a sloppy function entered from strict code must drop
             // back to non-strict so its property [[Set]] semantics stay lenient. Modelling
-            // this as a save/restore of an absolute level (rather than a one-way counter
+            // this as a save/restore of an absolute state (rather than a one-way counter
             // that a sloppy callee leaves untouched) keeps a sloppy callee invoked from a
             // strict caller from inheriting the caller's strict-mode set semantics.
-            previous = _strictModeDepth.Value;
-            _strictModeDepth.Value = enabled ? previous + 1 : 0;
+            //
+            // This was previously a depth counter read as `depth > 0`, with the scope
+            // assigning `enabled ? previous + 1 : 0`. That is exactly a boolean assignment:
+            // the observable value after entry is `enabled` for any prior depth, and after
+            // Dispose it is the saved one. Storing the boolean directly is therefore
+            // behaviour-preserving, and it is what makes the no-transition case a no-op —
+            // with a counter, strict-calls-strict still moved 1 -> 2 and had to write.
+            previous = _strictMode.Value;
+            changed = previous != enabled;
+            if (changed)
+                _strictMode.Value = enabled;
         }
 
         public void Dispose()
         {
-            _strictModeDepth.Value = previous;
+            if (changed)
+                _strictMode.Value = previous;
         }
     }
 

@@ -16,6 +16,7 @@ the phase 0–5 optimization campaign referenced in [`docs/roadmap.md`](roadmap.
 - Owner assemblies: `Broiler.JavaScript.Runtime`, `.Engine`, `.BuiltIns`, `.Storage`, `.Compiler`
 - Acceptance protocol: unchanged — [`docs/performance.md`](performance.md) governs what may
   be *claimed*. Nothing in this document closes on the numbers below.
+- Status: **P0 implemented** (§4). P1–P3 are planned and not started.
 
 ---
 
@@ -28,28 +29,32 @@ problems; three are always-on bookkeeping that can be removed or made lazy, and 
 property-write path that silently disables the engine's own optimization for the most common
 way JavaScript builds objects.
 
-Measured on the probes in [Appendix A](#appendix-a--reproducing-the-measurements):
+**The three P0 items are implemented** (see the status note on each). Measured on the probes
+in [Appendix A](#appendix-a--reproducing-the-measurements), before against after:
 
-| Hot path | Now | With the three P0 fixes prototyped | Factor |
-|---|---:|---:|---:|
-| Plain function call (sloppy) | 945 ms | 248 ms | **3.8×** |
-| Closure call | 953 ms | 264 ms | **3.6×** |
-| Prototype method call | 861 ms | 300 ms | **2.9×** |
-| Built-in call (`Math.max`) | 443 ms | 188 ms | **2.4×** |
-| Empty `for` loop | 426 ms | 192 ms | **2.2×** |
-| Own property read | 491 ms | 281 ms | **1.7×** |
-| Integer arithmetic | 476 ms | 317 ms | **1.5×** |
-| `script:stopwatch` (real script) | 976 ms | 630 ms | **1.6×** |
+| Hot path | Before | After | Factor | Alloc before | Alloc after |
+|---|---:|---:|---:|---:|---:|
+| Plain function call (sloppy) | 945 ms | 327 ms | **2.9×** | 1 784 B/call | **264 B** |
+| Closure call | 953 ms | 357 ms | **2.7×** | 1 816 B/call | **296 B** |
+| Prototype method call | 861 ms | 370 ms | **2.3×** | 1 632 B/call | **264 B** |
+| Built-in call (`Math.max`) | 443 ms | 217 ms | **2.0×** | 400 B/call | **176 B** |
+| Empty `for` loop | 426 ms | 210 ms | **2.0×** | 96 B/iter | 96 B/iter |
+| Own property read | 491 ms | 333 ms | **1.5×** | 128 B/iter | 128 B/iter |
+| Integer arithmetic | 476 ms | 342 ms | **1.4×** | 128 B/iter | 128 B/iter |
+| Class field read | 215 ms | 160 ms | **1.3×** | — | — |
+| `script:stopwatch` (real script) | 976 ms | 669 ms | **1.5×** | 736 MB | **264 MB** |
 
-Allocation falls at least as sharply: a sloppy JS function call allocates **1 784 bytes**
-today and **264 bytes** with the P0 fixes prototyped.
+Timings are the **slower** of two post-change runs against a single pre-change run; run-to-run
+variance on this container is 10–15%, so treat the factors as approximate. Allocation is
+deterministic — the byte counts were identical across runs and are quoted exactly.
 
-These prototypes were throwaway measurement patches and have been reverted; two of the three
-are not shippable as written (see the risk notes per item). They establish the *size of the
-prize*, not the design.
+Full suite after the change: **6 824 tests, 6 818 passing, 0 new failures** (the 6 failures are
+pre-existing: 5 ICU/locale-data dependent, 1 in ModuleExtensions). 21 of those tests are new
+and cover the reworked behaviour.
 
-Beyond P0, the shape/inline-cache system needs real work: today it never fires for
-constructor-assigned fields, class instances, prototype methods, or any property write.
+Beyond P0, the shape/inline-cache system needs real work: it still never fires for
+constructor-assigned fields, class instances, prototype methods, or any property write. The
+inline-cache counters are unchanged by P0, as expected — P1 is what moves them.
 
 ---
 
@@ -60,23 +65,28 @@ Single-machine, in-process timing and allocation counting via
 `PropertyOptimizationDiagnostics` counters. Each scenario is compiled and run once to warm,
 then measured on a second evaluation in the same context.
 
-- Commit `833b74a`, `Release`, .NET SDK 10.0.110
+- "Before" = commit `833b74a`; "after" = the P0 implementation. Both `Release`, .NET SDK 10.0.110
 - Linux x64, 4 × Intel Xeon @ 2.80 GHz, 15 GB RAM, containerized
+- Each engine build was measured from a clean `bin`/`obj` so no stale assembly could be mixed in
 
-**These numbers are for prioritization only.** They are single-run, on a shared 4-core
-container, and the two `dromaeo-object-*` scenarios in particular are GC-dominated and swung
-±25% between runs in both directions — no claim in this document rests on them. Any
-*published* performance claim must go through the repeatability and semantic gates in
+**These numbers are for prioritization only.** Timings vary 10–15% run to run on a shared
+4-core container; the reported "after" figures are the slower of two runs, so the factors are
+conservative but approximate. Allocation counts are deterministic and repeated exactly across
+runs. The two `dromaeo-object-*` scenarios are GC-dominated and swung ±25% in both directions
+— no claim in this document rests on them.
+
+Any *published* performance claim must go through the repeatability and semantic gates in
 [`docs/performance.md`](performance.md) (two runs inside the configured band, fresh-process
 lifecycle samples, the release RID matrix, and the semantic owners named in
-`eng/performance/ownership.json`).
+`eng/performance/ownership.json`). Nothing here has been through those gates.
 
 ---
 
-## 3. Baseline
+## 3. Baseline (pre-P0, commit `833b74a`)
 
-Times are for the iteration counts in [Appendix A](#appendix-a--reproducing-the-measurements);
-compare columns, not absolute values.
+The state the findings below were diagnosed against, kept for reference. Times are for the
+iteration counts in [Appendix A](#appendix-a--reproducing-the-measurements); compare columns,
+not absolute values.
 
 | Scenario | ms | bytes/iteration |
 |---|---:|---:|
@@ -106,7 +116,12 @@ Inline-cache behaviour on a monomorphic constant-key read site, 200k iterations:
 
 ---
 
-## 4. P0 — always-on bookkeeping in the hot path
+## 4. P0 — always-on bookkeeping in the hot path — **implemented**
+
+All three items below are implemented and covered by repository tests. Each keeps its original
+problem statement and evidence, followed by a **Status** note recording what shipped, what was
+deliberately rejected, and what was left behind. They are not *closed*: see §8 for the
+acceptance evidence still owed.
 
 ### P0-1 · Every value allocation invalidates every inline cache
 
@@ -114,7 +129,7 @@ Inline-cache behaviour on a monomorphic constant-key read site, 200k iterations:
 `JSObject.NotifyPrototypeChainMutation()` — even when the prototype being assigned is `null`,
 which is the case for every primitive.
 
-`Broiler.JavaScript.Runtime/JSValue.cs:433` and `:634`:
+`Broiler.JavaScript.Runtime/JSValue.cs`, `BasePrototypeObject` and the `JSValue(JSValue)` constructor (shown as they were before the fix):
 
 ```csharp
 public virtual JSValue BasePrototypeObject
@@ -140,11 +155,11 @@ Two of those three counters are pure waste:
 
 - `prototypeMutationVersion` is written on every allocation and **read by nothing** except
   `PropertyOptimizationDiagnostics.Snapshot()`. The property inline cache does not consult it
-  (`ObjectShape.cs:172`, `PropertyInlineCache.Get`, validates the shape id only). It is a
+  (`ObjectShape.cs`, `PropertyInlineCache.Get`, validates the shape id only). It is a
   counter with no consumer.
 - The diagnostics counters themselves are unconditional `Interlocked.Increment` calls on
   shared statics, taken on **every** cache hit and every cache miss
-  (`ObjectShape.cs:181`, `:187`). On a multi-threaded host this is a cache-line ping-pong on
+  (`ObjectShape.cs`, `RecordCacheHit`/`RecordCacheMiss`). On a multi-threaded host this is a cache-line ping-pong on
   the engine's hottest line.
 
 `indexedPrototypeVersion` does have a real consumer — `JSArray.CanUseDenseElementFastPath()`
@@ -156,14 +171,26 @@ opt-in behind a static switch (or `[Conditional]`) so they cost nothing when dis
 either delete `prototypeMutationVersion` or give it its real job (see P1-2, where a
 prototype-validity generation is exactly what a prototype-chain cache needs).
 
-**Measured.** `loop-empty` 426→207 ms, `arith-add` 476→294 ms, `prop-own-get` 491→300 ms,
-`array-rw` 270→169 ms, `class-field` 215→155 ms. Prototype invalidations 800 013 → 4.
+**Measured.** `loop-empty` 426→210 ms, `arith-add` 476→342 ms, `prop-own-get` 491→333 ms,
+`array-rw` 270→206 ms, `class-field` 215→160 ms. Prototype invalidations 800 013 → 3.
 
 **Risk: low.** The only removed behaviour on the null path is a global version bump that
-provably cannot invalidate anything. Requires a full `dotnet test` pass plus the
-`test262-arrays` and `test262-properties-proxy` manifests. Making the diagnostics opt-in is a
-public-surface change to `PropertyOptimizationDiagnostics` — the counters become meaningful
-only when enabled, which must be documented.
+provably cannot invalidate anything.
+
+**Status: implemented.**
+
+- `JSValue.BasePrototypeObject` returns early when the assigned prototype is `null`, with the
+  soundness argument recorded inline at the call site.
+- `PropertyOptimizationDiagnostics` gains an `Enabled` switch, defaulting to **off**, plus an
+  `Enable()` scope that restores the previous setting. This is a public-surface change: the
+  counters now read zero unless a caller opts in. `Reset()` deliberately does not change it.
+  The two tests in `Phase3CompilerSpecializationTests` that assert on the counters were
+  updated to take the scope.
+- **Not done:** `JSObject`'s own `BasePrototypeObject` override still bumps the version on
+  every object allocation, because a fresh object adopting its initial prototype cannot be
+  distinguished from `Object.setPrototypeOf` on a live object without extra state — and
+  getting that wrong would let `JSArray.CanUseDenseElementFastPath` cache a stale "safe".
+  Worth roughly 8% on `obj-alloc` and left for P1, where the shape rework touches this anyway.
 
 **Owners.** `Broiler.JavaScript.Runtime` · semantic owner `Broiler.JavaScript.Runtime.Tests`.
 
@@ -171,7 +198,7 @@ only when enabled, which must be documented.
 
 ### P0-2 · `AsyncLocal<int>` written twice per JavaScript function call
 
-`Broiler.JavaScript.Engine/Core/JSEngine.cs:211`:
+`Broiler.JavaScript.Engine/Core/JSEngine.cs`, as it was before the fix:
 
 ```csharp
 private static readonly AsyncLocal<int> _strictModeDepth = new();
@@ -189,10 +216,36 @@ before it has done anything.
 `fn-call-strict` 390→234 ms and 488→264 bytes/call; `builtin-call` 322→175 ms and
 400→176 bytes/call; `proto-method-call` 825→632 ms.
 
-**Risk: high — `[ThreadStatic]` is not a correct fix.** `AsyncLocal` was presumably chosen so
-strict-mode state flows across `await` boundaries; a thread-static would lose it when an async
-function resumes on a different thread. The shippable design is to stop using ambient state
-for this at all:
+**Status: implemented — but not by swapping the storage.** The scope now stores a `bool` and
+**only writes on an actual strict/sloppy transition**:
+
+- The counter was only ever read as `depth > 0`, and the scope assigned
+  `enabled ? previous + 1 : 0`. That is exactly a boolean assignment — the observable value
+  after entry is `enabled` for any prior depth — so storing the boolean directly is
+  behaviour-preserving, and it is what makes the common case a no-op. With a counter,
+  strict-calling-strict still moved 1 → 2 and had to write.
+- It remains an `AsyncLocal`, so ExecutionContext capture still carries it; nothing about
+  async flow changed. Reads are cheap, writes are what cost, and real code changes strictness
+  rarely — calls within one strictness level are the norm and now write nothing.
+- Nine tests in `StrictModeFlowTests` cover the transition shapes: strict-from-sloppy,
+  sloppy-from-strict, restoration after each kind of nested call, and a same-strictness chain
+  (the case the optimization makes free).
+
+While writing those tests a **separate pre-existing gap** surfaced, verified identical on the
+unmodified engine and unrelated to this change: **async and generator bodies never enter the
+runtime strict-mode scope at all.** `JSFunction.InvokeFunction` wraps ordinary calls in
+`EnterStrictMode`, but the rewritten async/generator drivers do not, so a failing `[[Set]]`
+inside a `'use strict'` async function or generator does not throw — even in the async
+function's synchronous prefix, before any `await`, and in a generator before any `yield`. It is
+pinned green as `KnownGap_AsyncAndGeneratorBodiesDoNotEnterRuntimeStrictMode` so it cannot
+change silently, and belongs in the compliance failure manifest rather than here.
+
+(Also observed while testing: async continuations do not run at all under in-process `Eval` or
+`Execute`, so post-`await` strictness is not currently observable from a unit test.)
+
+**Rejected: `[ThreadStatic]`.** It measures well but is wrong — it would lose the value when an
+async function resumes on a different thread. The eventual right answer is to stop using
+ambient state for this at all:
 
 - Strictness is a **static property of the code being compiled**, not of the dynamic call
   stack. The compiler already knows it. `JSValue`'s set accessors consult it dynamically via
@@ -214,7 +267,7 @@ is the gating manifest, and async/generator resumption needs explicit coverage.
 
 ### P0-3 · Legacy `f.caller` / `f.arguments` materialized on every sloppy call
 
-`BuiltIns/Function/JSFunction.cs:790`, inside `InvokeFunction`:
+`BuiltIns/Function/JSFunction.cs`, inside `InvokeFunction`, as it was before the fix:
 
 ```csharp
 var trackLegacyCaller = current.HasLegacyCallerArguments;
@@ -233,11 +286,14 @@ same on every `new`.
 
 Almost no program ever reads `f.arguments`. The engine pays for it unconditionally.
 
-There is a second, larger cost hiding here. `SetLegacyArguments` uses `FastAddValue`, which
-calls `TrackShapeDataProperty`, and the read-only attribute set forces `AbandonObjectShape()`.
-In the prototype-method-call probe this fires **200 006 dictionary fallbacks in a
-200 000-iteration loop** — the legacy bookkeeping is destroying shape information once per
-call. Disabling it drops that to **5**.
+A secondary effect shows up in the counters: `CreateLegacyArgumentsObject` installs `length`
+with `ConfigurableValue` attributes, which is not the default data-property set, so
+`TrackShapeDataProperty` calls `AbandonObjectShape()` on the object it just built. The
+prototype-method-call probe records **200 006 dictionary fallbacks in a 200 000-iteration
+loop** for this reason. Note this is the *throwaway* arguments object being dictionary-ized,
+not a receiver whose shape any inline cache depends on — the function object itself is a
+`JSFunction`, which the shape tracker skips entirely. The wasted work is real; the inline
+cache is not the victim. (P1-1 is what actually keeps caches from working.)
 
 **Measured** (tracking disabled purely to size it): `fn-call` 678→272 ms and
 1 560→264 bytes/call; `proto-method-call` 632→309 ms and 1 408→264 bytes/call;
@@ -250,17 +306,44 @@ reads these properties directly and requires that the access not throw, and the 
 The fix is to make it **lazy**, not to remove it:
 
 1. Store the in-flight `Arguments` (a struct already on the stack) and the caller reference in
-   plain fields on `JSFunction`, not as observable properties. Push/pop is then two field
+   plain fields on `JSFunction`, not as observable properties. Push/pop is then a few field
    writes.
-2. Back the observable `caller` / `arguments` properties with accessors that materialize the
-   arguments object **on read**, from those fields.
-3. Because they stop being data properties written through `FastAddValue`, the shape is no
-   longer abandoned — which is where most of the win actually comes from.
+2. Back the observable `caller` / `arguments` properties with values that materialize the
+   arguments object **on read**, from those fields — without turning them into accessor
+   properties, which would change their observable descriptor shape.
 
 Care is needed on two points the current code gets right: a strict caller must be reported as
 `null` rather than through a throwing accessor, and the properties must still shadow
-`Function.prototype`'s poison-pill accessors. Recursion also needs a stack of saved values,
-not a single field.
+`Function.prototype`'s poison-pill accessors. Recursion also needs saved values restored on
+exit rather than cleared.
+
+**Status: implemented.**
+
+- A new `IDeferredPropertyValue` (Runtime) is a property value that is recomputed on each read
+  and resolved by `JSValue.ResolvePropertyValue`. Crucially the property stays an ordinary
+  **data** property — `[[Get]]`, `[[GetOwnProperty]]` and `Object.getOwnPropertyDescriptor` all
+  still report `value`/`writable`, not `get`/`set` — so the observable descriptor shape the
+  Annex B tests check is unchanged. An accessor-backed design would not have preserved that.
+- `JSFunction` keeps the in-flight caller and `Arguments` in plain fields, pushed and popped
+  around [[Call]] and [[Construct]]. `PushLegacyFrame` returns the previous frame and
+  `PopLegacyFrame` restores it, so an outer invocation's values become visible again when a
+  recursive inner one returns — the previous code cleared to `null` instead, which is why
+  `RecursiveInvocation_RestoresTheOuterFrameWhenTheInnerReturns` fails on the old engine and
+  passes on the new one. That is the one intentional behaviour change here, and it is a fix.
+- The strict-caller filter still runs on entry (it depends on the calling function, which is
+  only known then); only the arguments *object* is deferred.
+- Three unrelated code paths cast `JSProperty.value` straight to `JSValue`
+  (`JSPropertyExtensions` ×2, `CoreInternalHelpers`) and would have thrown on a deferred cell;
+  all three now route through `ResolvePropertyValue`, which also makes them handle
+  `LazyDataPropertyCell` consistently.
+- Twelve tests in `LegacyCallerArgumentsTests` cover: null off-stack, live while running,
+  descriptor shape and attributes, descriptor read while on stack, strict-caller hiding,
+  recursion, throwing invocations, `[[Construct]]`, redefinition freezing, strict functions
+  having no own property at all, rejected assignment, unmapped-ness, and non-enumerability.
+- Measured after implementation: `fn-call` 945→327 ms and **1 784→264 bytes/call**;
+  `proto-method-call` 861→370 ms and **1 632→264 bytes/call**; `closure-call` 953→357 ms and
+  **1 816→296 bytes/call**. Dictionary fallbacks in the prototype-method-call probe:
+  200 006 → 4.
 
 **Owners.** `Broiler.JavaScript.BuiltIns` · semantic owner `Broiler.JavaScript.BuiltIns.Tests`,
 manifest `test262-strict-mode.txt` plus the Annex B forbidden-extension tests.
@@ -289,10 +372,10 @@ The `Object.create(null)` row is the tell, and it identifies the cause exactly.
 
 `JSObject.SetValue(KeyString, …)` does not find the property own, so it recurses into the
 prototype: `prototypeObject.SetValue(name, value, receiver ?? this, throwError)`
-(`Runtime/JSObject.PropertyStorage.cs:679`). The recursion bottoms out at `%Object.prototype%`,
+(`Runtime/JSObject.PropertyStorage.cs:796`). The recursion bottoms out at `%Object.prototype%`,
 which calls `SetKeyStringOnReceiver` with `this` = `%Object.prototype%` and `target` = the real
 receiver. Because `!ReferenceEquals(target, this)`, the write takes the generic receiver path
-(`:797`) and lands in `DefineReceiverDataProperty` (`:1087`), whose `else` branch does:
+(`:813`) and lands in `DefineReceiverDataProperty` (`:1103`), whose `else` branch does:
 
 ```csharp
 var descriptor = CreateDataDescriptor(value, attributes);
@@ -300,7 +383,7 @@ var result = target.DefineProperty(name, descriptor);
 ```
 
 and `DefineProperty(in KeyString, JSObject)` opens with `AbandonObjectShape()`
-(`:1317`).
+(`:1335`).
 
 So a plain `obj.x = 1`:
 
@@ -331,7 +414,7 @@ most idiomatic JavaScript — get zero benefit from shapes or inline caches toda
    attributes are the default data-property set, write directly through the shape-tracking
    path (`ownProperties.Put` + `TrackShapeDataProperty`) instead of round-tripping through a
    descriptor object. The `ReferenceEquals(target, this)` branch already does exactly this
-   (`:1089`); the receiver-mismatch branch needs the same treatment when the receiver is
+   (`:1105`); the receiver-mismatch branch needs the same treatment when the receiver is
    ordinary and no proxy/accessor is involved.
 2. Do not call `AbandonObjectShape()` in `DefineProperty` when the descriptor being defined is
    a plain data property with default attributes on an ordinary object — add the slot instead.
@@ -348,7 +431,7 @@ comments already in the file document real test262 failures that were fixed by r
 
 ### P1-2 · The inline cache does not cover prototype lookups — so method calls never hit
 
-`PropertyInlineCache.Get` (`Runtime/ObjectShape.cs:172`) validates an **own** data slot only.
+`PropertyInlineCache.Get` (`Runtime/ObjectShape.cs`, `PropertyInlineCache.Get`) validates an **own** data slot only.
 A prototype method is by definition not an own property of the receiver, so `obj.method()`
 misses unconditionally: **0 hits / 200 001 misses** in the probe, plus two `Interlocked`
 increments per miss for the diagnostics.
@@ -507,7 +590,7 @@ Worth scoping as its own change, after P0 and P1.
 
 ## 7. P3 — call-path structure
 
-`JSFunction.InvokeFunction` (`BuiltIns/Function/JSFunction.cs:777`) wraps every call in four
+`JSFunction.InvokeFunction` (`BuiltIns/Function/JSFunction.cs`) wraps every call in four
 `using` scopes (`EnterRealm`, `EnterStrictMode`, `PushWithFallbackScopes`, `PushWithScopes`,
 plus a conditional `SuspendWithScopes`), a `JSEngine.Current as JSContext` type test, and a
 `try`/`catch (NullReferenceException)`/`finally` — the last of which also blocks inlining of
@@ -528,8 +611,8 @@ Sequence this **after** P0; measuring it before then would just be measuring P0-
 
 | Phase | Items | Expected | Gate |
 |---|---|---|---|
-| **A** | P0-1, P0-3 | 2–3.5× on call- and allocation-heavy paths | Full `dotnet test`; `test262-arrays`, `test262-properties-proxy`, `test262-strict-mode` + Annex B forbidden-extension tests; no regression in `PropertyOperationBenchmarks`, `FunctionCallBenchmarks` |
-| **B** | P0-2 | ~1.5× further on call paths | `test262-strict-mode`; explicit async/generator strict-mode-resumption coverage |
+| ~~**A**~~ | ~~P0-1, P0-3~~ | **Done** — 2.0–2.9× on call paths, 6× less call allocation | Full `dotnet test` green (6 824 tests, 0 new failures); 21 new owned tests. test262 manifests still owed |
+| ~~**B**~~ | ~~P0-2~~ | **Done** — folded into the same change | `StrictModeFlowTests` covers every transition shape; test262 manifests still owed |
 | **C** | P1-1, P1-4 | Inline cache becomes reachable for constructor/class code; ~5× less allocation on constructor-built objects | `test262-properties-proxy`; `PropertyOptimizationDiagnostics` shows non-zero hits for the constructor and class-field probes |
 | **D** | P1-2, P1-3 | Method calls and property writes hit cache | `test262-properties-proxy`, `test262-realm-isolation`; targeted invalidation tests (`setPrototypeOf`, `__proto__`, own-property shadowing) |
 | **E** | P2-1, P2-2 | `push` and arithmetic allocation | `test262-arrays`; `-0` and number-identity coverage |
@@ -540,8 +623,13 @@ owner, and closes only under the acceptance rules in `docs/performance.md` — t
 the configured band, on the release RID matrix, with allocation, latency and working set
 reported together.
 
-Ordering matters: **C must follow A**, because P0-3's legacy-arguments write is itself
-abandoning shapes 200 000 times in the probe and would mask any P1-1 improvement.
+**Phases A and B are implemented and covered by repository tests, but are not *closed*.**
+Closing them still requires the pinned test262 run over
+`test262-arrays`, `test262-properties-proxy` and `test262-strict-mode` (plus the Annex B
+forbidden-extension paths), a `PropertyOperationBenchmarks`/`FunctionCallBenchmarks`
+comparison, and the two-run repeatability evidence on the release RID matrix. The numbers in
+this document come from an ad-hoc in-process harness on a shared container and are not
+acceptance evidence.
 
 ---
 
