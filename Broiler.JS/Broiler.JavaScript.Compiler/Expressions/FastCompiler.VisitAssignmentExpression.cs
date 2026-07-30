@@ -245,11 +245,18 @@ partial class FastCompiler
         if (left.Type != FastNodeType.MemberExpression)
             throw new FastParseException(left.Start, "Invalid left-hand side in assignment");
 
-        // Keep property caches on read sites only. VisitMemberExpression may lower a
-        // constant-key read to a cache helper call, which is deliberately not an
-        // assignable expression. Build the ordinary index reference directly for the
-        // simple write path.
-        return Assign(CreateMemberAssignmentTarget((AstMemberExpression)left), right, assignmentOperator);
+        // A simple `obj.name = value` goes through the store inline cache; anything the cache
+        // cannot key (a computed or private key, super, an optional chain) keeps the ordinary
+        // assignable index reference. A compound assignment never reaches here — it returned
+        // above, where the target has to stay assignable because it is read as well as written.
+        var simpleMember = (AstMemberExpression)left;
+        if (assignmentOperator == TokenTypes.Assign
+            && TryCreateCachedMemberStore(simpleMember, () => Visit(right)) is { } cachedStore)
+        {
+            return cachedStore;
+        }
+
+        return Assign(CreateMemberAssignmentTarget(simpleMember), right, assignmentOperator);
     }
 
     // Compiles an assignment whose target is an EvalShadowVariable. Reads/writes use
@@ -511,10 +518,12 @@ partial class FastCompiler
                 return;
 
             case FastNodeType.MemberExpression:
-                inits.Add(BinaryOperation.Assign(
-                    CreateMemberAssignmentTarget((AstMemberExpression)pattern),
-                    init,
-                    TokenTypes.Assign));
+                var memberPattern = (AstMemberExpression)pattern;
+                inits.Add(TryCreateCachedMemberStore(memberPattern, () => init)
+                    ?? BinaryOperation.Assign(
+                        CreateMemberAssignmentTarget(memberPattern),
+                        init,
+                        TokenTypes.Assign));
                 return;
 
             case FastNodeType.ObjectPattern:

@@ -142,6 +142,9 @@ public class JSValueBuilder
     private static readonly MethodInfo _CachedPropertyGet = typeof(PropertyInlineCacheSite)
         .GetMethod(nameof(PropertyInlineCacheSite.Get), [typeof(int), typeof(JSValue), typeof(KeyString)])
         ?? throw new InvalidOperationException("PropertyInlineCacheSite.Get not found");
+    private static readonly MethodInfo _CachedPropertySet = typeof(PropertyInlineCacheSite)
+        .GetMethod(nameof(PropertyInlineCacheSite.Set), [typeof(int), typeof(JSValue), typeof(KeyString), typeof(JSValue)])
+        ?? throw new InvalidOperationException("PropertyInlineCacheSite.Set not found");
 
     private static MethodInfo _OptionalLinkKeyString = type.PublicMethod(nameof(JSValue.OptionalLink), KeyStringsBuilder.RefType);
     private static MethodInfo _OptionalLinkUInt = type.PublicMethod(nameof(JSValue.OptionalLink), typeof(uint));
@@ -181,6 +184,16 @@ public class JSValueBuilder
     {
         var site = PropertyInlineCacheSite.Allocate();
         return Expression.Call(null, _CachedPropertyGet, Expression.Constant(site), target, property);
+    }
+
+    /// <summary>
+    /// Creates one bounded store-cache side-table entry for an emitted constant-key write, and
+    /// yields the assigned value so the call can stand in for the assignment expression.
+    /// </summary>
+    public static Expression CachedStore(Expression target, Expression property, Expression value)
+    {
+        var site = PropertyInlineCacheSite.AllocateStore();
+        return Expression.Call(null, _CachedPropertySet, Expression.Constant(site), target, property, value);
     }
 
     /// <param name="allowCache">

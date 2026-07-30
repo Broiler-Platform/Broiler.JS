@@ -214,6 +214,25 @@ public partial class JSObject : JSValue
     }
 
     /// <summary>
+    /// The slot for a key that is not only tracked but currently WRITABLE through it — what a
+    /// store cache needs before it is worth recording an entry.
+    /// </summary>
+    /// <remarks>
+    /// A shape tracks any data property, read-only ones included, because a slot records where
+    /// the value lives and that does not depend on writability. A store entry for a read-only
+    /// property would therefore be installed happily and then decline every write it was
+    /// consulted for, so the descriptor is checked once here instead of on every store.
+    /// </remarks>
+    internal bool TryGetWritableShapeSlot(in KeyString key, out int shapeId, out int slot)
+    {
+        if (!TryGetShapeSlot(in key, out shapeId, out slot))
+            return false;
+
+        ref var own = ref ownProperties.GetValue(key.Key);
+        return own.IsValue && !own.IsReadOnly && own.value is JSValue;
+    }
+
+    /// <summary>
     /// The receiver's shape id for a lookup that resolved on the PROTOTYPE chain, or 0 when
     /// this receiver cannot be safely keyed by shape.
     /// </summary>
@@ -277,6 +296,47 @@ public partial class JSObject : JSValue
 
         value = null;
         return false;
+    }
+
+    /// <summary>
+    /// Overwrites a slot a store inline cache previously resolved on a receiver of the same
+    /// shape. Returns false when this receiver cannot take the write, leaving the caller to
+    /// run the ordinary [[Set]].
+    /// </summary>
+    /// <remarks>
+    /// The shape id answers <em>which slot</em>, never <em>may I write to it</em>. Making a
+    /// property non-writable — directly, or through <c>Object.freeze</c> — rewrites its
+    /// attributes in place and deliberately keeps the shape, because a slot records where the
+    /// VALUE lives and read-only does not move it. So the descriptor still has to be read, and
+    /// that read is also what supplies the attributes to preserve. It is one lookup rather than
+    /// the two the generic path performs, and it replaces
+    /// <see cref="TrackShapeDataProperty"/>'s key-to-slot re-resolution with the cached slot.
+    /// <para>
+    /// Note what is deliberately absent: no extensibility or frozen test. Both only bear on
+    /// whether a property may be ADDED or whether it is writable, and an existing own data
+    /// property that still reports writable answers the second question by itself.
+    /// </para>
+    /// </remarks>
+    internal bool TryWriteShapeSlot(int shapeId, int slot, in KeyString key, JSValue value)
+    {
+        if (value == null
+            || objectShape.Id != shapeId
+            || (uint)slot >= (uint)shapeSlots.Length)
+        {
+            return false;
+        }
+
+        ref var own = ref ownProperties.GetValue(key.Key);
+        if (!own.IsValue || own.IsReadOnly || own.value is not JSValue)
+            return false;
+
+        // Written through the ref the lookup already produced; re-entering the map to Put
+        // would walk it a second time for a node that is known to exist.
+        own = new JSProperty(key, value, own.Attributes);
+        shapeSlots[slot] = value;
+        NotifyNamedPropertyMutation();
+        PropertyChanged?.Invoke(this, (key.Key, uint.MaxValue, null));
+        return true;
     }
 
     internal bool HasIndexedPropertiesOnPrototypeChain()

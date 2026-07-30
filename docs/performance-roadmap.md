@@ -16,8 +16,7 @@ the phase 0–5 optimization campaign referenced in [`docs/roadmap.md`](roadmap.
 - Owner assemblies: `Broiler.JavaScript.Runtime`, `.Engine`, `.BuiltIns`, `.Storage`, `.Compiler`
 - Acceptance protocol: unchanged — [`docs/performance.md`](performance.md) governs what may
   be *claimed*. Nothing in this document closes on the numbers below.
-- Status: **P0 implemented** (§4). **P1 implemented** apart from a compiler-level store cache
-  (§5). **P2: P2-1, P2-3 and P2-4 implemented**, plus two larger defects found along the way
+- Status: **P0 implemented** (§4). **P1 implemented** (§5). **P2: P2-1, P2-3 and P2-4 implemented**, plus two larger defects found along the way
   ([§6.5](#65--found-while-implementing-p2)); P2-2 declined with reasons (§6). **P3
   investigated: its premise was disproved by measurement** and the real per-call cost
   identified instead (§7) — no code change.
@@ -56,7 +55,7 @@ Full suite after the change: **6 824 tests, 6 818 passing, 0 new failures** (the
 pre-existing: 5 ICU/locale-data dependent, 1 in ModuleExtensions). 21 of those tests are new
 and cover the reworked behaviour.
 
-**P1 is implemented too**, apart from a compiler-level store cache (see P1-3). It targets a
+**P1 is implemented too.** It targets a
 different axis — the inline cache, which P0 left untouched — so it is measured by hit rate
 rather than by wall clock. Over 200k-iteration monomorphic sites:
 
@@ -390,10 +389,11 @@ manifest `test262-strict-mode.txt` plus the Annex B forbidden-extension tests.
 The shape system exists and is correct; it is simply almost never reachable. This is the
 largest *remaining* win after P0 and the one that needs design rather than deletion.
 
-P1-1, P1-2 and P1-4 are implemented and covered by `PropertyShapeCacheTests`. P1-3 is
-implemented only as a runtime fast path, not as the compiler-level store cache described
-below — see its status note for why. As with P0 these are not *closed*: §8 lists the
-acceptance evidence still owed.
+All four items are implemented, covered by `PropertyShapeCacheTests` on the read side and
+`PropertyStoreCacheTests` on the write side. Two carry a documented remainder: P1-3 caches
+overwrites but not the shape transition that *creating* a property needs, and P1-4's double
+storage is still there. As with P0 these are not *closed*: §8 lists the acceptance evidence
+still owed.
 
 ### P1-1 · An ordinary property write destroys the object's shape
 
@@ -554,32 +554,140 @@ a per-class-evaluation variable, so caching it would only drive the site megamor
 
 ---
 
-### P1-3 · There is no store (put) inline cache
+### P1-3 · There is no store (put) inline cache — **implemented**
 
 `CachedIndex` exists only for reads. Every property write performs a full generic lookup.
 Once P1-1 restores shapes on the write path, a monomorphic store cache
 (`shapeId → slot`, plus a shape-transition cache for the "adds a new property" case) becomes
 straightforward and is worth roughly what the read cache is worth.
 
-**Status: partially implemented — a runtime fast path, not an inline cache. Still open.**
+**Status: implemented for overwrites. The transition case is not, and is written up below.**
 
-The estimate above was wrong about the shape of the work. A read has one emission site,
-`CachedIndex`, so routing it through a cache was a two-line change. A *store* has no such
-choke point: assignments are built as `IndexExpression` targets in many places — plain member
-assignment, compound assignment, destructuring and object patterns, `for-in`/`for-of` targets,
-class field initializers — and lowering them to a cached helper call means either changing all
-of those sites or intercepting index assignment inside `ILCodeGenerator`. That is a materially
-larger and riskier surface than the rest of P1, and it was not attempted here.
+This item was left open once, with a note that a store has no single emission point the way a
+read does — assignments are built as `IndexExpression` targets in several places, so lowering
+them to a helper call meant changing all of them or intercepting index assignment inside
+`ILCodeGenerator`. That reading was pessimistic. The sites do funnel through two helpers,
+`CreateMemberAssignmentTarget` and `CreateMemberExpression`, and only the first of those
+carries plain `obj.name = value`; the rest are compound assignments and destructuring forms
+that need the target to stay assignable because they *read* it as well. Routing the simple
+form is one eligibility predicate shared by two call sites, and the target does not have to
+stay assignable there because nothing reads it back.
 
-What was done instead is contained to the runtime and needs no compiler change:
-`JSObject.SetValue(KeyString, …)` now short-circuits the overwhelmingly common case — an
-existing, writable own data property on an exact `JSObject` being overwritten through itself.
-The general path resolved that same property *twice*, once in `SetValue` and again inside
-`SetKeyStringOnReceiver`, before reaching the identical `Put`. Worth about 13% on
-`prop-own-set` (477 → 417 ms).
+**Where a store's time actually went.** Measured before changing anything, against a
+three-million-iteration loop whose own overhead was subtracted:
 
-The real store cache remains open, and should be scoped on its own rather than folded into a
-phase with three unrelated items.
+| | ns per operation |
+|---|---|
+| cached read `o.x` | 8.7 |
+| store `o.x = i` | **29.6** |
+| store to a longer, later-interned key | **39.8** |
+
+The key-length sensitivity is the tell. `PropertySequence` is an `SAUint32Map`, a radix-4
+trie, so a lookup costs about one step per two bits of the interned key id. The old fast path
+walked it **twice** — `GetValue` to read the descriptor, then `Put` to write it back — and
+then `TrackShapeDataProperty` re-resolved the key a third time through the shape's
+`Dictionary<uint,int>` to find the slot it was about to write. On top of that every store went
+through the virtual `JSValue.set_Item`, which resolves the ambient strict flag by invoking a
+delegate that reads an `AsyncLocal<bool>`.
+
+**What landed.**
+
+*A store cache, `PropertyInlineCacheSite.Set(site, target, key, value)*`. The write twin of the
+read cache: same bounded four-entry polymorphic table, same megamorphic retirement, and the
+entry is just `(ShapeId, Slot)`. There is no prototype form — a write that resolves on the
+chain either runs a setter or creates an own property, and neither is a slot write on a
+holder.
+
+*The hit path never consults strict mode.* This is what makes the change worth more than the
+lookups it saves. The strict flag only decides how a **rejected** write is reported, and an
+entry is only taken when the write is known to succeed, so a hit can skip the indexer
+entirely — and with it the `AsyncLocal` read. A miss still goes through `target[key] = value`
+verbatim, so rejection, the strict `TypeError`, and the primitive-assignment throw all behave
+exactly as before. No strict-mode semantics were touched.
+
+*A single descriptor lookup, written through the ref it already produced.* Both the cache hit
+path and the generic fast path now do `ref var own = ref ownProperties.GetValue(key)` and
+assign through that ref, instead of looking the node up again through `Put`.
+
+*The frozen check is gone.* `IsFrozen()` was only reached once the property had already been
+established as a writable data property — which a frozen object cannot have — so it could
+never return true there. It is not a cheap test either: `ObjectStatus.Frozen` is never
+actually set anywhere, so `IsFrozen()` falls through to enumerating own properties, elements
+and symbols.
+
+**The guard the shape does not give you.** A shape id answers *which slot*, never *may I write
+to it*. `Object.defineProperty(o, 'x', { writable: false })` and `Object.freeze(o)` rewrite
+attributes in place and deliberately keep the shape, because a slot records where the value
+lives and read-only does not move it. So `TryWriteShapeSlot` reads the descriptor on every hit
+and declines on `IsReadOnly` — which is also the lookup that supplies the attributes to
+preserve, so it costs nothing extra. Without that, a frozen object would keep accepting writes
+through a warm site.
+
+**Sites that can never hit retire themselves.** The first cut installed an entry whenever the
+key resolved to a tracked slot — including read-only ones, which the shape tracks like any
+other data property. The entry was then consulted and declined on every subsequent store, and
+`o.x = i` against a non-writable property measured *slower* than before the cache (178 → 195
+ms). Two changes fixed it: an entry is only installed for a slot that is currently writable,
+and a site that fails to install four times without ever having installed anything retires
+itself. That second rule is what keeps a store through an inherited setter — ordinary in
+class-based code — from paying a failed guard and a failed install forever.
+
+**Measured**, fastest of seven runs against the same tree with only this change reverted. Each
+row is three million stores unless noted; the empty-loop row is there so the loop's own cost
+can be subtracted.
+
+| | Before | After |
+|---|---|---|
+| *(empty loop, for subtraction)* | *118 ms* | *111 ms* |
+| `o.x = i`, monomorphic | 207 ms | **154 ms** |
+| the same with a longer property name | 228 ms | **141 ms** |
+| three fields in rotation | 165 ms | **95 ms** |
+| polymorphic site, three shapes | 367 ms | **262 ms** |
+| shadowing an inherited data property | 233 ms | **162 ms** |
+| read-modify-write (`t = o.x; o.x = o.y; o.y = t`) | 244 ms | **170 ms** |
+| `this.x = v` through a method call | 674 ms | **595 ms** |
+| store that runs an inherited setter | 687 ms | **603 ms** |
+| `o.x += 1` — compound, keeps the old lowering | 256 ms | **220 ms** |
+| computed `o[k] = i` — not cacheable | 185 ms | **177 ms** |
+| non-writable target — site retires itself | 163 ms | 163 ms |
+
+Net of the loop, that is **29.6 ns → 14.4 ns** per store (2.1×), and **36.6 ns → 10.2 ns**
+(3.6×) for the longer property name. The long-name row is the one that matters for real code:
+`x` is interned early and sits near the root of the trie, while an application's property
+names do not.
+
+The last three rows are paths that deliberately do not end up using the cache. They improve
+only from the single-lookup change, or not at all, and none regress — which was the point of
+the retirement rule.
+
+**Not implemented: the shape-transition cache.** Creating a property — `var o = {}; o.x = i`
+in a loop, or a constructor assigning its fields — still misses every time, because the entry
+records the shape the object has *after* the store while the next fresh object arrives with
+the shape it had *before*. Caching that needs an `oldShapeId → (newShape, slot)` entry plus
+the `shapeSlots` growth, which is a different mechanism from the one here. Nothing regressed
+by leaving it: fresh-object creation measured 73 → 67 ms purely from the generic path getting
+cheaper, and a three-field constructor 173 → 177 ms, inside this container's noise band.
+
+**Also out of scope, deliberately:** compound assignment (`o.x += 1`), update expressions
+(`o.x++`), computed keys, `super`, optional chains and private names all keep the existing
+lowering. Compound and update forms read the target as well as write it, so the expression has
+to stay assignable; giving them a cache means splitting each into a cached read plus a cached
+store, which changes the short-circuit forms (`||=`, `&&=`, `??=`) and is its own change.
+`o.x++` is currently the most expensive of these at ~270 ms and is the obvious next item.
+
+41 tests in `PropertyStoreCacheTests` split along the two halves this needs. That the hot
+shapes hit: seven ways of creating the property, writes through `this`, shadowing an inherited
+data property, a four-shape polymorphic site, and the two retirement rules. That a write can
+still be refused or redirected *after* the site is warm: `writable: false`, `freeze`, `seal`,
+redefinition as an accessor, a setter appearing on the prototype, `delete`, `preventExtensions`,
+dictionary mode, Proxy receivers and Proxies in the chain, arrays, typed arrays, functions and
+primitives, computed and array-index and private keys, `super`, plus that attributes,
+enumeration order, JSON, read caches and prototype visibility all still see the write, and
+that the base is evaluated once and before the value.
+
+Full suite after the change: **7 032 tests, 7 026 passing, 0 new failures** — the same 6
+pre-existing failures as every phase before it (5 ICU/locale-data dependent, 1 in
+ModuleExtensions).
 
 ---
 
@@ -1077,7 +1185,7 @@ carried under "call-path structure".
 | ~~**A**~~ | ~~P0-1, P0-3~~ | **Done** — 2.0–2.9× on call paths, 6× less call allocation | Full `dotnet test` green (6 824 tests, 0 new failures); 21 new owned tests. test262 manifests still owed |
 | ~~**B**~~ | ~~P0-2~~ | **Done** — folded into the same change | `StrictModeFlowTests` covers every transition shape; test262 manifests still owed |
 | ~~**C**~~ | ~~P1-1, P1-4~~ | **Done** — cache reaches constructor/class code (0 → ~100% hit rate); constructor-built objects 6 595 → 1 480 bytes | Full `dotnet test` green; `PropertyShapeCacheTests` asserts the hit rates and every staleness path. P1-4's double storage still open |
-| **D** | ~~P1-2~~, P1-3 | P1-2 **done** — inherited and class method calls hit the cache. P1-3 open: only a runtime fast path landed, not a store cache | `PropertyShapeCacheTests` covers `setPrototypeOf`, prototype mutation, own-property shadowing, delete, freeze, accessor redefinition, polymorphic and megamorphic sites |
+| ~~**D**~~ | ~~P1-2~~, ~~P1-3~~ | P1-2 **done** — inherited and class method calls hit the cache. P1-3 **done** — constant-key stores go through a store cache; 2.1× on a monomorphic store, 3.6× when the property name is not a one-character early-interned key. The shape-transition case is written up as not implemented | `PropertyShapeCacheTests` covers `setPrototypeOf`, prototype mutation, own-property shadowing, delete, freeze, accessor redefinition, polymorphic and megamorphic sites; `PropertyStoreCacheTests` covers the write side |
 | **E** | ~~P2-1~~, P2-2 | P2-1 **done**, plus the two array defects in §6.5 (729× on repeated `pop`, 9× on array fill). P2-2 declined — see its status note | `IndexedWriteAndLengthTests` covers integrity levels, foreign receivers, exotics and length-shrink; `test262-arrays` still owed |
 | ~~**F**~~ | ~~P2-3~~, ~~P2-4~~, ~~P3~~ | P2-4 **done** — repeated concatenation is no longer quadratic (150× on the accumulation loop, 10.6× less allocation on `dromaeo-object-string`). P2-3 **done** — a dense element is one reference instead of a 32-byte descriptor; `new Array(1000)` allocates 73% less, and the deferral's feasibility objection turned out not to hold. P3 **closed without a change** — the scopes it blamed cost nothing; the 80-byte per-call `CallStackItem` is the real cost and needs its own item | `StringConcatenationRopeTests`, `CompactElementStorageTests`, `ElementDescriptorRoundTripTests`; `test262` string and array coverage and the full matrix per `docs/performance.md` still owed |
 

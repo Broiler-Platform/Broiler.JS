@@ -667,11 +667,13 @@ public partial class JSObject
             ref var existingOwn = ref ownProperties.GetValue(name.Key);
             if (existingOwn.IsValue
                 && !existingOwn.IsReadOnly
-                && existingOwn.value is JSValue
-                && !IsFrozen())
+                && existingOwn.value is JSValue)
             {
                 var existingAttributes = existingOwn.Attributes;
-                ownProperties.Put(name.Key) = new JSProperty(name, value, existingAttributes);
+                // Written through the ref the lookup above already produced. Re-entering the
+                // map through Put walked it a second time to reach a node known to exist, and
+                // the property map is a radix trie, so that walk is proportional to the key.
+                existingOwn = new JSProperty(name, value, existingAttributes);
                 TrackShapeDataProperty(in name, value, existingAttributes);
                 PropertyChanged?.Invoke(this, (name.Key, uint.MaxValue, null));
                 return true;
