@@ -1231,8 +1231,50 @@ extending one does not disturb it or any sibling derived from the same prefix.
 
 ### 6.5 · Found while implementing P2
 
-Neither of these was in the plan. Both are larger than everything P2 had scoped, and both were
-found by measuring the array paths rather than by reading them.
+None of these was in the plan. The first two are larger than everything P2 had scoped and were
+found by measuring the array paths rather than by reading them; the third was found by chasing
+an intermittent test failure that turned out not to be intermittent at all.
+
+#### A removed key could come back holding null
+
+Both radix maps — `SAUint32Map<T>` and `StringMap<T>` — keep each slot's keys ordered, so
+inserting a smaller key displaces the node sitting there down to a child:
+
+```csharp
+var oldKey = node.Key;
+var oldValue = node.Value;
+node.Key = originalKey;
+node.State = NodeState.Filled;
+node.Value = default;
+ref var newChild = ref GetNode(oldKey, true);
+newChild.Key = oldKey;
+newChild.Value = oldValue;
+newChild.State |= NodeState.HasValue;   // ← unconditional
+```
+
+`RemoveAt`/`TryRemove` clear `HasValue` but deliberately **keep the node's `Key`**. So the
+displaced node can be a *deleted* entry whose `Value` is already `default`, and asserting
+`HasValue` on the relocated copy resurrected it as a live entry holding **null**. The next
+lookup of that deleted key reported a hit with a null value, which surfaced far away as a
+`NullReferenceException` on the caller's first dereference — in the engine,
+`JSContext.ResolveIdentifierOrUndefined`, whose `globalVars` entries are removed when a
+direct-eval binding is torn down. `Count` was wrong too: the resurrected entry was never
+counted.
+
+**It was not a race.** It presented as one — two different tests in two different assemblies
+failing once each across seven full-suite runs, both passing in isolation — which is what the
+two earlier sentinel bugs in this same file had looked like, so it was initially filed as a
+third instance of that pattern. It is not. Whether the displacement happens at all depends on
+the numeric order of the interned keys and on which bindings have been deleted, so it moves
+with test ordering and looks intermittent while being fully deterministic. A randomized
+insert/remove/probe loop reproduced it on the **first** trial once the right question was
+asked.
+
+Fixed in three places (one in `SAUint32Map`, two copies in `StringMap`) by carrying the flag
+across instead of asserting it. `StorageTests` now pins both maps with a randomized
+insert/remove/probe sequence; both tests fail on the unfixed code.
+
+---
 
 #### Shrinking an array's `length` scanned the whole element table
 

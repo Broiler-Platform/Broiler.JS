@@ -233,6 +233,7 @@ public struct StringMap<T>
                 {
                     var oldKey = node.Key;
                     var oldValue = node.Value;
+                    var oldHasValue = node.HasValue;
                     var oldChild = node.Children;
                     node.Key = originalKey;
                     node.State = NodeState.Filled;
@@ -240,7 +241,11 @@ public struct StringMap<T>
                     ref var newChild = ref GetNode(oldKey, true);
                     newChild.Key = oldKey;
                     newChild.Value = oldValue;
-                    newChild.State |= NodeState.HasValue;
+                    // See the sibling branch below: a displaced node may be a DELETED entry
+                    // (RemoveAt clears HasValue but keeps the Key), so asserting HasValue on
+                    // the relocated copy resurrects it holding null.
+                    if (oldHasValue)
+                        newChild.State |= NodeState.HasValue;
                     // this is case when array is resized
                     // and we still might have reference to old node
                     node = ref storage[index];
@@ -295,6 +300,7 @@ public struct StringMap<T>
                     {
                         var oldKey = node.Key;
                         var oldValue = node.Value;
+                        var oldHasValue = node.HasValue;
                         var oldChild = node.Children;
                         node.Key = originalKey;
                         node.State = NodeState.Filled;
@@ -302,7 +308,15 @@ public struct StringMap<T>
                         ref var newChild = ref GetNode(oldKey, true);
                         newChild.Key = oldKey;
                         newChild.Value = oldValue;
-                        newChild.State |= NodeState.HasValue;
+                        // Relocating a node must not RESURRECT it. RemoveAt/TryRemove clear
+                        // HasValue but deliberately keep the node's Key, so a displaced node may
+                        // be a deleted entry whose Value is already default. Setting HasValue
+                        // unconditionally turned that into a live entry holding null, and the
+                        // next lookup of the deleted key reported a hit with a null value —
+                        // surfacing far away as a NullReferenceException on the caller's first
+                        // dereference. Carry the flag across instead of asserting it.
+                        if (oldHasValue)
+                            newChild.State |= NodeState.HasValue;
                         // this is case when array is resized
                         // and we still might have reference to old node
                         node = ref storage[index];

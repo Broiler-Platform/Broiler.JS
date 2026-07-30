@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Storage;
@@ -152,6 +154,86 @@ public class StorageTests
         elements.Put(0, new TestValue("readonly"), JSPropertyAttributes.EnumerableReadonlyValue);
         Assert.Equal(ElementKind.Dictionary, elements.Kind);
         Assert.False(elements.HasDefaultDescriptors);
+    }
+
+    // Regression: removing a key and then inserting a SMALLER one could resurrect the
+    // removed key holding null.
+    //
+    // The radix trie keeps keys ordered per slot, so inserting a smaller key displaces the
+    // sitting node down to a child. RemoveAt clears HasValue but deliberately keeps the
+    // node's Key, so the displaced node can be a deleted entry whose Value is already
+    // default — and the relocation asserted HasValue on the copy unconditionally. The
+    // deleted key then reported a hit with a null value, which surfaced far away as a
+    // NullReferenceException on the caller's first dereference (in the engine:
+    // JSContext.ResolveIdentifierOrUndefined, whose globalVars entries are removed when a
+    // direct-eval binding is torn down). It looked intermittent only because whether the
+    // displacement happens depends on the interned key values.
+    [Fact]
+    public void SAUint32Map_ARemovedKeyIsNotResurrectedByALaterSmallerInsert()
+    {
+        var map = new SAUint32Map<string>();
+        var live = new Dictionary<uint, string>();
+        var seen = new List<uint>();
+        var random = new Random(12345);
+
+        for (var step = 0; step < 400; step++)
+        {
+            if (step % 3 == 2 && seen.Count > 0)
+            {
+                var victim = seen[random.Next(seen.Count)];
+                map.RemoveAt(victim);
+                live.Remove(victim);
+            }
+            else
+            {
+                var key = (uint)random.Next(1, 400);
+                map.Save(key, "v" + key);
+                live[key] = "v" + key;
+                seen.Add(key);
+            }
+
+            foreach (var probe in seen)
+            {
+                var hit = map.TryGetValue(probe, out var value);
+                Assert.Equal(live.ContainsKey(probe), hit);
+                if (hit)
+                    Assert.Equal(live[probe], value);
+            }
+        }
+    }
+
+    [Fact]
+    public void StringMap_ARemovedKeyIsNotResurrectedByALaterSmallerInsert()
+    {
+        var map = new StringMap<string>();
+        var live = new Dictionary<string, string>();
+        var seen = new List<string>();
+        var random = new Random(999);
+
+        for (var step = 0; step < 400; step++)
+        {
+            if (step % 3 == 2 && seen.Count > 0)
+            {
+                var victim = seen[random.Next(seen.Count)];
+                map.RemoveAt(new StringSpan(victim));
+                live.Remove(victim);
+            }
+            else
+            {
+                var key = "k" + random.Next(1, 400);
+                map.Save(new StringSpan(key), "v" + key);
+                live[key] = "v" + key;
+                seen.Add(key);
+            }
+
+            foreach (var probe in seen)
+            {
+                var hit = map.TryGetValue(new StringSpan(probe), out var value);
+                Assert.Equal(live.ContainsKey(probe), hit);
+                if (hit)
+                    Assert.Equal(live[probe], value);
+            }
+        }
     }
 
     // Regression for issue #1428: StringMap's "not found" sentinel node was a
