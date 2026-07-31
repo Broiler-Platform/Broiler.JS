@@ -1099,11 +1099,12 @@ wrong, in a new disguise.
 
 #### Tests
 
-The behavioural half is worthless here — a capture that gets scalarized still computes the right
-answer, because the lambda rewriter boxes captured locals and the numeric analysis independently
-rejects any name a nested function writes a non-number to. Removing the exclusion entirely leaves
-every behavioural test green. So the tests assert the **counts** (`CompilerSpecializationDiagnostics`),
-which is what the rule actually changes:
+The behavioural half is nearly worthless here — a capture that gets scalarized still computes the
+right answer, because the lambda rewriter boxes captured locals and the numeric analysis
+independently rejects any name a nested function writes a non-number to. Removing the exclusion
+entirely leaves every *behavioural* test green, including forty-five hand-written capture shapes.
+So the tests assert the **counts** (`CompilerSpecializationDiagnostics`), which is what the rule
+actually changes:
 
 - a nested function naming neither local leaves both specialized (fails if the old gate is restored);
 - a nested function naming one local leaves exactly the other specialized;
@@ -1114,6 +1115,30 @@ which is what the rule actually changes:
 
 Both directions are mutation-tested: restoring the old gate fails five tests, and disabling the
 exclusion fails two.
+
+#### Is the exclusion needed at all?
+
+Worth asking, because nothing above proves it. It was kept as a conservative measure — capture
+works regardless, via boxing — and forty-five capture shapes could not tell the two settings
+apart. So it was removed outright and the whole suite re-run.
+
+It does not survive that. Beyond the two tests above it breaks a **pre-existing** one,
+`Phase3CompilerSpecializationTests.ScalarReplacement_UsesRawLocals_OnlyWhenBindingsAreUnobservable`,
+which asserts zero raw locals across four guarded snippets and reports one. The snippet is
+
+```js
+var b = (function () { var x = 3; return function () { return x; }; })()();
+```
+
+— a closure that **escapes**, returned and called after the enclosing function has already
+returned. Every probe written for this change called its closures while the enclosing frame was
+still live, which is exactly why none of them could tell the difference; the case that can was
+sitting in the suite from Phase 3, with the invariant in its name.
+
+The value is still right without the exclusion (`b` is 3 either way), so this is not a
+demonstrated miscompile. What it demonstrates is that the codebase already decided this
+question — a binding a closure can observe does not go in a raw local — and that the deciding
+case is one the obvious tests do not reach. The exclusion stays.
 
 Full suite **7 241 tests, 7 241 passing, 0 failures**. test262 was extended for this change to
 the areas it actually touches — `statements/function`, `expressions/function`,
