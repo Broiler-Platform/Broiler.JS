@@ -558,7 +558,18 @@ partial class FastParser
             stream.Consume();
 
             var current = stream.Current;
-            if (current.Type == TokenTypes.SemiColon || current.Type == TokenTypes.LineTerminator)
+            // `ReturnStatement : return [no LineTerminator here] Expression? ;`. The
+            // terminating semicolon is inserted automatically when the offending token is
+            // `}` or the end of input, so those end an argument-less `return` exactly as
+            // an explicit `;` or a newline does — the token set EndOfStatement accepts.
+            // Without them `function f(){ return }` fell through to ExpressionSequence,
+            // which reports success with an AstEmptyExpression when it parses nothing; the
+            // return then carried a void-typed argument and compiled to a store from an
+            // empty evaluation stack (InvalidProgramException at first call).
+            if (current.Type == TokenTypes.SemiColon
+                || current.Type == TokenTypes.LineTerminator
+                || current.Type == TokenTypes.CurlyBracketEnd
+                || current.Type == TokenTypes.EOF)
             {
                 statement = new AstReturnStatement(begin, current);
                 return true;
