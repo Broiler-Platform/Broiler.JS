@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -23,7 +24,20 @@ public struct SAUint32Map<T>
         HasValue = 4
     }
 
-    static Node Empty = new();
+    // Not-found sentinel handed back by GetNode as a `ref`. It must never be able to retain a
+    // write: the create path can also return it (an overflow return), and Put/Save then set
+    // State |= HasValue and store a value straight into it. A shared static so poisoned makes
+    // every LATER miss on any map of this T report a false hit — TryGetValue returns true with
+    // whatever was left behind, which surfaces far away as a null binding or a stale index.
+    // Exactly the failure StringMap.Empty already carries a fix for (issue #1428, the
+    // `body-:0,0` frame); this copy of the pattern was missed. Thread-local so there is no
+    // cross-thread race, and reset at every GetNode entry so a stray write cannot persist even
+    // within one thread.
+    //
+    // No initializer: a [ThreadStatic] field's initializer runs only on the thread that first
+    // touches the type, so the reset in GetNode is what actually establishes it per thread.
+    [ThreadStatic]
+    private static Node Empty;
 
     [DebuggerDisplay("{Key}={Value}")]
     internal struct Node
@@ -220,6 +234,9 @@ public struct SAUint32Map<T>
 
     private ref Node GetNode(uint originalKey, bool create = false)
     {
+        // Hand back a pristine sentinel on every miss, whatever a previous caller may have
+        // written into the last one. See the field comment.
+        Empty = default;
         ref var node = ref Empty;
 
         if (roots.IsEmpty) 
@@ -271,6 +288,7 @@ public struct SAUint32Map<T>
                     // need to make this non recursive...
                     var oldKey = node.Key;
                     var oldValue = node.Value;
+                    var oldHasValue = node.HasValue;
                     // var oldChild = node.Children;
                     node.Key = originalKey;
                     node.State = NodeState.Filled;
@@ -280,7 +298,15 @@ public struct SAUint32Map<T>
                     newChild.Value = oldValue;
                     // var newChildren = newChild.Children;
                     // newChild.Children = oldChild;
-                    newChild.State |= NodeState.HasValue;
+                    // Relocating a node must not RESURRECT it. RemoveAt/TryRemove clear
+                    // HasValue but deliberately keep the node's Key, so a displaced node may
+                    // be a deleted entry whose Value is already default. Setting HasValue
+                    // unconditionally turned that into a live entry holding null, and the
+                    // next lookup of the deleted key reported a hit with a null value —
+                    // surfacing far away as a NullReferenceException on the caller's first
+                    // dereference. Carry the flag across instead of asserting it.
+                    if (oldHasValue)
+                        newChild.State |= NodeState.HasValue;
                     // this is case when array is resized
                     // and we still might have reference to old node
                     node = ref nodes[leaves, index];

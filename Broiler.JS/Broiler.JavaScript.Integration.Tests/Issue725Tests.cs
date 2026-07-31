@@ -504,9 +504,18 @@ public class Issue725Tests
     public void BuddhistCalendarFormatsYearPlus543WithEra()
         => Assert.Equal("12/12/2560 BE", Eval("new Intl.DateTimeFormat('en-u-ca-buddhist').format(new Date(2017,11,12));"));
 
+    // An identifier outside the available set falls back to the default calendar; "hebrew" is
+    // inside it (the formatter projects the date through the Hebrew calendar and renders its
+    // month names), so it resolves to itself — see SupportedCalendarStillResolvesAndUnsupported-
+    // StillFallsBack, and test262 DateTimeFormat/prototype/resolvedOptions/calendar.js.
     [Fact]
     public void UnsupportedCalendarResolvesToGregory()
-        => Assert.Equal("gregory", Eval("new Intl.DateTimeFormat('en-u-ca-hebrew').resolvedOptions().calendar;"));
+        => Assert.Equal("gregory", Eval("new Intl.DateTimeFormat('en-u-ca-invalid').resolvedOptions().calendar;"));
+
+    [Fact]
+    public void HebrewCalendarFormatsHebrewMonthAndYear()
+        => Assert.Equal("Kislev 24, 5778", Eval(
+            "new Intl.DateTimeFormat('en-u-ca-hebrew',{year:'numeric',month:'long',day:'numeric'}).format(new Date(2017,11,12));"));
 
 
         // related-year.js: the chinese calendar shows the year as relatedYear(yearName),

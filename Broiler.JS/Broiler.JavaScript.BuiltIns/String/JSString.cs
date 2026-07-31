@@ -2,6 +2,7 @@
 using Broiler.JavaScript.Ast.Misc;
 using System;
 using System.Globalization;
+using System.Threading;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Core;
@@ -14,7 +15,104 @@ public partial class JSString : JSPrimitive
 {
     internal static JSString Empty = new(string.Empty);
 
-    internal readonly string value;
+    /// <summary>
+    /// Minimum combined length before a concatenation is deferred into a rope rather than
+    /// copied. A rope node plus its JSString costs on the order of a hundred bytes, so
+    /// deferring a short join would lose; an accumulating string passes this within a few
+    /// iterations and is O(1) per append from then on.
+    /// </summary>
+    private const int RopeThreshold = 64;
+
+    // Exactly one of these is set. `flat` is the materialized value; `rope` is a pending
+    // concatenation that has not been copied out yet. Flatten() moves a string from the
+    // second state to the first, permanently.
+    private string flat;
+    private Rope rope;
+
+    /// <summary>One deferred concatenation: <c>Left + Right</c>, of total <c>Length</c>.</summary>
+    /// <remarks>
+    /// Immutable, and only ever left-leaning — <c>Right</c> is always an already-flat string.
+    /// That is the shape `s = s + x` produces, which is the case worth optimizing; a join
+    /// whose right side is itself a rope flattens that side rather than nesting, keeping the
+    /// walk in <see cref="Flatten"/> a simple spine descent.
+    /// </remarks>
+    private sealed class Rope(JSString left, string right, int length)
+    {
+        internal readonly JSString Left = left;
+        internal readonly string Right = right;
+        internal readonly int Length = length;
+    }
+
+    /// <summary>
+    /// The string's characters, materializing a pending concatenation on first demand.
+    /// </summary>
+    internal string value => flat ?? Flatten();
+
+    /// <summary>
+    /// Copies a pending rope out into a real string, iteratively.
+    /// </summary>
+    /// <remarks>
+    /// Walks the left spine writing each segment into the buffer back-to-front, so a rope
+    /// built by n appends costs one O(total) pass instead of the n copies that eager
+    /// concatenation performed. Iterative rather than recursive because the spine is exactly
+    /// as deep as the number of appends — a recursive flatten would overflow the stack on the
+    /// very workload this exists for.
+    /// </remarks>
+    private string Flatten()
+    {
+        var pending = rope;
+        if (pending == null)
+            return flat;
+
+        var materialized = string.Create(pending.Length, this, static (span, start) =>
+        {
+            var position = span.Length;
+            var node = start;
+            while (true)
+            {
+                // Read once: a concurrent Flatten on this node may clear it, but the node we
+                // captured stays valid because a Rope is immutable.
+                var segment = node.rope;
+                if (segment == null)
+                {
+                    var tail = Volatile.Read(ref node.flat);
+                    position -= tail.Length;
+                    tail.AsSpan().CopyTo(span[position..]);
+                    return;
+                }
+
+                position -= segment.Right.Length;
+                segment.Right.AsSpan().CopyTo(span[position..]);
+                node = segment.Left;
+            }
+        });
+
+        // Publish the flat value before dropping the rope, and drop it with a volatile write
+        // so a reader that observes a null rope is guaranteed to see the string. Releasing
+        // the rope is what lets the whole chain of intermediate nodes become garbage.
+        Volatile.Write(ref flat, materialized);
+        Volatile.Write(ref rope, null);
+        return materialized;
+    }
+
+    /// <summary>Builds the deferred join, or copies when it is too small to be worth deferring.</summary>
+    private JSString Concat(string right)
+    {
+        var length = Length;
+        if (right.Length == 0)
+            return this;
+
+        if (length == 0)
+            return new JSString(right);
+
+        var total = length + right.Length;
+        if (total < RopeThreshold)
+            return new JSString(string.Concat(value, right));
+
+        return new JSString(new Rope(this, right, total));
+    }
+
+    private JSString(Rope pending) : base() => rope = pending;
 
     /// <summary>
     /// Gets the underlying string value of this JSString instance.
@@ -40,39 +138,29 @@ public partial class JSString : JSPrimitive
         }
     }
 
-    public override bool BooleanValue => value.Length > 0;
+    public override bool BooleanValue => Length > 0;
     public override long BigIntValue => long.TryParse(ToString(), out var n) ? n : 0;
     public override bool IsString => true;
 
-    public override JSValue AddValue(double value)
-    {
-        var numStr = NumberToECMAString(value);
+    // The three concatenation entry points all defer through Concat, so `s = s + x` in a
+    // loop builds a rope instead of copying the accumulated string every iteration. The
+    // emptiness tests use Length rather than the characters, so they no longer force a
+    // pending concatenation to materialize just to find out whether it is empty.
+    public override JSValue AddValue(double value) => Concat(NumberToECMAString(value));
 
-        if (this.value.IsEmpty())
-            return new JSString(numStr);
-
-        return new JSString(string.Concat(this.value, numStr));
-    }
-
-    public override JSValue AddValue(string value)
-    {
-        if (this.value.IsEmpty())
-            return new JSString(value);
-
-        return new JSString(string.Concat(this.value, value));
-    }
+    public override JSValue AddValue(string value) => Concat(value);
 
     public override JSValue AddValue(JSValue value)
     {
         if (value is JSString vString)
         {
-            if (this.value.IsEmpty())
+            if (Length == 0)
                 return vString;
 
-            if (vString.value.IsEmpty())
+            if (vString.Length == 0)
                 return this;
 
-            return new JSString(string.Concat(this.value, vString.value));
+            return Concat(vString.value);
         }
 
         // `string + obj` coerces the object with ToPrimitive (default hint), not a
@@ -81,14 +169,7 @@ public partial class JSString : JSPrimitive
         if (value is JSObject valueObject)
             value = valueObject.ToDefaultPrimitive();
 
-        if (this.value.IsEmpty())
-            return new JSString(value.StringValue);
-
-        var v = value.StringValue;
-        if (v.Length == 0)
-            return this;
-
-        return new JSString(string.Concat(this.value, v));
+        return Concat(value.StringValue);
     }
 
     public override bool ConvertTo(Type type, out object value)
@@ -142,10 +223,10 @@ public partial class JSString : JSPrimitive
 
     protected override JSValue GetPrototype() => ((JSEngine.Current as JSObject)?[Names.String] as JSFunction).prototype;
 
-    public JSString(string value) : base() => this.value = value;
-    public JSString(JSObject prototype, string value) : base(prototype) => this.value = value;
+    public JSString(string value) : base() => flat = value;
+    public JSString(JSObject prototype, string value) : base(prototype) => flat = value;
 
-    public JSString(in StringSpan value) : base() => this.value = value.Value;
+    public JSString(in StringSpan value) : base() => flat = value.Value;
 
 
     public JSString(char ch) : this(new string(ch, 1)) { }
@@ -229,8 +310,17 @@ public partial class JSString : JSPrimitive
     // a for-in key (`for (var {length:x} in "foo")`) reads `.length` off a number.
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true) => new StringIndexKeyEnumerator(Length);
 
+    // A rope knows its length without being copied out, so `s.length` — and every internal
+    // range check — stays free while a concatenation is still pending.
     [JSExport]
-    public override int Length => value.Length;
+    public override int Length
+    {
+        get
+        {
+            var pending = rope;
+            return pending != null ? pending.Length : value.Length;
+        }
+    }
 
     public override int GetHashCode() => value.GetHashCode();
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
@@ -121,12 +121,21 @@ partial class FastCompiler
                     && scope.CanScalarReplaceLocals
                     && scope.Function != null
                     && !v.Equals("arguments")
-                    && !v.Equals("eval");
+                    && !v.Equals("eval")
+                    // A closure captures through a cell, so a name any nested function
+                    // mentions keeps one; the rest of the function's vars need not.
+                    && !scope.CapturedByNestedFunctions.Contains(v.Value);
+                // A name the analysis proved numeric lives in a raw double. Its hoisted value
+                // is 0 rather than undefined, which is only sound because the analysis
+                // rejected any name that can be READ before its initializer runs.
+                var useNumericLocal = useScalarLocal && scope.NumericLocals.Contains(v.Value);
                 var variable = hoistToDirectEvalRoot
                     ? GetOrCreateDirectEvalRootVariable(v)
-                    : useScalarLocal
-                        ? scope.CreateVariable(v, JSUndefinedBuilder.Value, true, typeof(JSValue), initialize: true)
-                        : scope.CreateVariable(v, null, true, initialize: isLexical == false);
+                    : useNumericLocal
+                        ? scope.CreateVariable(v, BExpression.Constant(0d), true, typeof(double), initialize: true)
+                        : useScalarLocal
+                            ? scope.CreateVariable(v, JSUndefinedBuilder.Value, true, typeof(JSValue), initialize: true)
+                            : scope.CreateVariable(v, null, true, initialize: isLexical == false);
                 variable.IsLexical = isLexical;
                 if (hoistToDirectEvalRoot && directEvalBindingNames != null && Array.IndexOf(directEvalBindingNames, v.Value) >= 0)
                     variable.Expression = JSContextBuilder.Index(KeyOfName(v));
@@ -140,7 +149,7 @@ partial class FastCompiler
             if (exp == null)
                 continue;
 
-            blockList.Add(CallStackItemBuilder.Step(scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
+            blockList.Add(CallStackItemBuilder.Step(scope.Context, scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
             blockList.Add(exp);
         }
 

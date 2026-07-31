@@ -8,7 +8,7 @@ namespace Broiler.JavaScript.LinqExpressions.LinqExpressions;
 public class JSNumberBuilder
 {
     private static Type type;
-    private static ConstructorInfo _ctor;
+    private static MethodInfo _create;
 
     public static Expression NaN;
     public static Expression Zero;
@@ -23,7 +23,8 @@ public class JSNumberBuilder
     internal static void Initialize(Type numberType)
     {
         type = numberType;
-        _ctor = type.GetConstructor([typeof(double)]);
+        _create = type.GetMethod("Create", [typeof(double)])
+            ?? throw new InvalidOperationException("JSNumber.Create(double) not found");
 
         NaN = Expression.Field(null, type.GetField("NaN"));
         Zero = Expression.Field(null, type.GetField("Zero"));
@@ -32,11 +33,16 @@ public class JSNumberBuilder
         Two = Expression.Field(null, type.GetField("Two"));
     }
 
+    /// <summary>
+    /// Emits the creation of a number. Routed through the factory rather than the
+    /// constructor so a small integer reuses a cached instance
+    /// (docs/performance-roadmap.md P2-2).
+    /// </summary>
     public static Expression New(Expression exp)
     {
         if (exp.Type != typeof(double))
             exp = Expression.Convert(exp, typeof(double));
 
-        return Expression.TypeAs(Expression.New(_ctor, exp), typeof(JSValue));
+        return Expression.Call(null, _create, exp);
     }
 }

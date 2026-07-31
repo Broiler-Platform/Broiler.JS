@@ -68,6 +68,14 @@ partial class FastCompiler
                                 BExpression.Assign(lexicalInitTemp.Expression, initExpr),
                                 BExpression.Assign(v.Expression, lexicalInitTemp.Expression)));
                         }
+                        else if (v.NumericStorage != null)
+                        {
+                            // A numeric local only exists in a function with no `with` and no
+                            // direct eval, so none of the with-object resolution below can
+                            // apply to it — and its binding is a raw double, not an
+                            // assignable JSValue.
+                            list.Add(AssignToVariable(v, initExpr));
+                        }
                         else if (withBoundaries.Count > 0
                             && TryGetStaticIdentifierVariable(id, out var staticVar) && staticVar != null)
                         {
@@ -78,7 +86,7 @@ partial class FastCompiler
                             // otherwise a `var x = init` whose name collides with a
                             // with-object property would store into the object and leave the
                             // local undefined.
-                            list.Add(BExpression.Assign(v.Expression, initExpr));
+                            list.Add(AssignToVariable(v, initExpr));
                         }
                         else
                         {

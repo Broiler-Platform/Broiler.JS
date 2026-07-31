@@ -31,9 +31,12 @@ public sealed class JSUndefined : JSValue
         get
         {
 #if DEBUG
-            var st = new System.Diagnostics.StackTrace(true);
-            Console.Error.WriteLine($"[JSUndefined] Cannot get property {name} of undefined");
-            Console.Error.WriteLine(st.ToString());
+            if (JSException.LogThrows)
+            {
+                var st = new System.Diagnostics.StackTrace(true);
+                Console.Error.WriteLine($"[JSUndefined] Cannot get property {name} of undefined");
+                Console.Error.WriteLine(st.ToString());
+            }
 #endif
             throw NewTypeError($"Cannot get property {name} of undefined");
         }

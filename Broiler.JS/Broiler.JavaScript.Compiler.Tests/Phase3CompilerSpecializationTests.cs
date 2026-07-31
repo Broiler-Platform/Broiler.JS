@@ -136,6 +136,7 @@ public sealed class Phase3CompilerSpecializationTests
     public void PropertyCaches_PromoteBoundedly_AndKeepDictionaryAndProxySlowPaths()
     {
         using var context = new JSContext();
+        using var recording = PropertyOptimizationDiagnostics.Enable();
         PropertyOptimizationDiagnostics.Reset();
 
         var result = context.Eval("""
@@ -188,6 +189,7 @@ public sealed class Phase3CompilerSpecializationTests
     public void PrototypeMutations_AdvanceTheVersion_AndInvalidateSafely()
     {
         using var context = new JSContext();
+        using var recording = PropertyOptimizationDiagnostics.Enable();
         PropertyOptimizationDiagnostics.Reset();
         var before = PropertyOptimizationDiagnostics.Snapshot();
 

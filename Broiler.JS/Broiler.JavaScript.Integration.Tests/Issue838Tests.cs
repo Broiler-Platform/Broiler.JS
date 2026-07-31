@@ -396,10 +396,50 @@ public class Issue838Tests
             "new Intl.NumberFormat('en', { style: 'currency', currency: 'Eur' }).resolvedOptions().currency + ',' +" +
             "new Intl.NumberFormat('en', { style: 'currency', currency: 'uSd' }).resolvedOptions().currency"));
 
+    // A currency option is read and validated whatever the style is, but SetNumberFormatUnitOptions
+    // only sets [[Currency]] when style is "currency", so resolvedOptions omits the property
+    // entirely otherwise (test262 NumberFormat/prototype/resolvedOptions/basic.js asserts
+    // `verifyProperty(actual, "currency", undefined)` on a default decimal formatter).
     [Fact]
-    public void NumberFormatCanonicalizesCurrencyEvenWhenStyleNotCurrency()
-        => Assert.Equal("JPY", Eval(
-            "new Intl.NumberFormat('en', { currency: 'jpy' }).resolvedOptions().currency"));
+    public void NumberFormatDoesNotReflectCurrencyWhenStyleNotCurrency()
+        => Assert.Equal("undefined,false", Eval(
+            "var ro = new Intl.NumberFormat('en', { currency: 'jpy' }).resolvedOptions();" +
+            "String(ro.currency) + ',' + Object.prototype.hasOwnProperty.call(ro, 'currency')"));
+
+    // ...but the code is still validated at construction, so a malformed one is a RangeError
+    // even though it would never be reflected.
+    [Fact]
+    public void NumberFormatStillValidatesCurrencyWhenStyleNotCurrency()
+        => Assert.Equal("RangeError", Eval(
+            "try { new Intl.NumberFormat('en', { currency: 'jp' }); 'no-throw'; } catch (e) { e.constructor.name; }"));
+
+    // The mirror-image rule for units: SetNumberFormatUnitOptions sets [[Unit]]/[[UnitDisplay]]
+    // only when style is "unit", so a unit supplied under any other style is dropped — including
+    // under style:"currency", where both option groups are present (test262
+    // NumberFormat/constructor-unit.js and constructor-unitDisplay.js).
+    [Fact]
+    public void NumberFormatDoesNotReflectUnitWhenStyleNotUnit()
+        => Assert.Equal("false,false,false,false", Eval(
+            "function has(o, k) { return Object.prototype.hasOwnProperty.call(" +
+            "  new Intl.NumberFormat('en', o).resolvedOptions(), k); }" +
+            "[has({unit:'meter'}, 'unit')," +
+            " has({style:'percent', unit:'meter'}, 'unit')," +
+            " has({style:'currency', currency:'USD', unit:'meter'}, 'unit')," +
+            " has({style:'percent', unit:'meter', unitDisplay:'long'}, 'unitDisplay')].join(',')"));
+
+    [Fact]
+    public void NumberFormatStillReflectsUnitWhenStyleIsUnit()
+        => Assert.Equal("unit,meter,long,5 meters", Eval(
+            "var f = new Intl.NumberFormat('en', { style:'unit', unit:'meter', unitDisplay:'long' });" +
+            "var r = f.resolvedOptions();" +
+            "[r.style, r.unit, r.unitDisplay, f.format(5)].join(',')"));
+
+    [Fact]
+    public void NumberFormatStillValidatesUnitWhenStyleNotUnit()
+        => Assert.Equal("RangeError,RangeError", Eval(
+            "function kind(o) { try { new Intl.NumberFormat('en', o); return 'no-throw'; }" +
+            "                  catch (e) { return e.constructor.name; } }" +
+            "[kind({unit:'bogus'}), kind({unit:'meter', unitDisplay:'bogus'})].join(',')"));
 
     [Fact]
     public void NumberFormatStillFormatsCurrencyGivenLowercaseCode()
@@ -457,11 +497,17 @@ public class Issue838Tests
             "new Intl.DateTimeFormat('en', { calendar: 'islamicc' }).resolvedOptions().calendar + ',' +" +
             "new Intl.DateTimeFormat('en-u-ca-islamicc').resolvedOptions().calendar"));
 
+    // Every calendar this implementation lists as available round-trips through -u-ca- (test262
+    // DateTimeFormat/prototype/resolvedOptions/calendar.js requires the full Intl.Era-monthcode
+    // set, "hebrew" included); only an identifier outside that set falls back to the default
+    // "gregory" and drops the keyword from the resolved locale.
     [Fact]
     public void SupportedCalendarStillResolvesAndUnsupportedStillFallsBack()
-        => Assert.Equal("chinese,gregory", Eval(
+        => Assert.Equal("chinese,hebrew,gregory,en", Eval(
             "new Intl.DateTimeFormat('en-u-ca-chinese').resolvedOptions().calendar + ',' +" +
-            "new Intl.DateTimeFormat('en-u-ca-hebrew').resolvedOptions().calendar"));
+            "new Intl.DateTimeFormat('en-u-ca-hebrew').resolvedOptions().calendar + ',' +" +
+            "new Intl.DateTimeFormat('en-u-ca-invalid').resolvedOptions().calendar + ',' +" +
+            "new Intl.DateTimeFormat('en-u-ca-invalid').resolvedOptions().locale"));
 
     // ---- Problem 79: an unsupported collation resolves to "default" ----
 

@@ -266,7 +266,7 @@ public partial class JSObject
 
     public override JSValue GetOwnProperty(uint name)
     {
-        ref var p = ref elements.Get(name);
+        var p = elements.Get(name);
         return GetValue(p);
     }
 
@@ -325,6 +325,22 @@ public partial class JSObject
             null,
             new LazyDataPropertyCell(resolver, feature),
             attributes);
+        AbandonObjectShape();
+    }
+
+    /// <summary>
+    /// Adds an ordinary data property whose value is recomputed on every read. The property
+    /// is observably a data property (value/writable, not get/set) — see
+    /// <see cref="IDeferredPropertyValue"/> — so this suits a spec- or web-reality-mandated
+    /// data property whose value tracks live engine state.
+    /// </summary>
+    internal void FastAddDeferredValue(
+        KeyString key,
+        IDeferredPropertyValue deferred,
+        JSPropertyAttributes attributes)
+    {
+        CancelLazyDataProperty(in ownProperties.GetValue(key.Key));
+        ownProperties.Put(key.Key) = new JSProperty(key, null, null, deferred, attributes);
         AbandonObjectShape();
     }
 
@@ -640,6 +656,30 @@ public partial class JSObject
             return SetPrivateMember(in name, value, receiver, throwError);
         }
 
+        // Overwriting an existing, writable own data property on this very object — the
+        // shape a hot loop's `o.x = v` takes. The general path below resolves that same own
+        // property twice (here, then again inside SetKeyStringOnReceiver) before arriving at
+        // exactly the Put performed here. Restricted to an exact JSObject so no exotic
+        // [[DefineOwnProperty]] is skipped, and to a stored JSValue so a lazily-realized
+        // cell still goes the long way round and gets cancelled properly.
+        if (ReferenceEquals(receiver, this) && GetType() == typeof(JSObject))
+        {
+            ref var existingOwn = ref ownProperties.GetValue(name.Key);
+            if (existingOwn.IsValue
+                && !existingOwn.IsReadOnly
+                && existingOwn.value is JSValue)
+            {
+                var existingAttributes = existingOwn.Attributes;
+                // Written through the ref the lookup above already produced. Re-entering the
+                // map through Put walked it a second time to reach a node known to exist, and
+                // the property map is a radix trie, so that walk is proportional to the key.
+                existingOwn = new JSProperty(name, value, existingAttributes);
+                TrackShapeDataProperty(in name, value, existingAttributes);
+                PropertyChanged?.Invoke(this, (name.Key, uint.MaxValue, null));
+                return true;
+            }
+        }
+
         // `obj.__proto__ = v` is an ordinary [[Set]] of the inherited %Object.prototype%
         // `__proto__` accessor: it must walk the prototype chain so that an exotic [[Set]]
         // on the way (e.g. a Proxy in the chain) intercepts it, and only the accessor's own
@@ -796,6 +836,9 @@ public partial class JSObject
         var target = receiver as JSObject ?? this;
         if (!ReferenceEquals(target, this))
         {
+            if (TrySetOrdinaryReceiverDataProperty(target, in name, value, defaultAttributes, throwError, out var ordinaryResult))
+                return ordinaryResult;
+
             var descriptor = target.GetOwnPropertyDescriptor(name.ToJSValue()) as JSObject;
             if (descriptor != null)
             {
@@ -877,6 +920,9 @@ public partial class JSObject
         var target = receiver as JSObject ?? this;
         if (!ReferenceEquals(target, this))
         {
+            if (TrySetOrdinaryReceiverIndexedProperty(target, name, value, defaultAttributes, throwError, out var ordinaryResult))
+                return ordinaryResult;
+
             var descriptor = target.GetOwnPropertyDescriptor(CreateNumber(name)) as JSObject;
             if (descriptor != null)
             {
@@ -1031,6 +1077,191 @@ public partial class JSObject
         }
 
         return DefineReceiverDataProperty(target, name, value, !p.IsEmpty ? p.Attributes : defaultAttributes, throwError);
+    }
+
+    /// <summary>
+    /// Applies an ordinary [[Set]] whose receiver is a DIFFERENT plain object from the base
+    /// whose prototype chain was walked, without materializing property descriptors.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is the ordinary-object case of the generic receiver path below, which asks for a
+    /// full descriptor object, reads four properties back out of it, builds a second
+    /// descriptor, and hands that to [[DefineOwnProperty]]. Every plain <c>obj.x = 1</c> on an
+    /// object that has a prototype arrives here — the chain walk in
+    /// <c>SetValue</c> bottoms out at %Object.prototype% and comes back with the real object
+    /// as the receiver — so that round-trip was the standing cost of the single most common
+    /// write in JavaScript. See docs/performance-roadmap.md P1-1.
+    /// </para>
+    /// <para>
+    /// Returns false (leaving <paramref name="result"/> unset) whenever anything about the
+    /// target could make the generic path observably different, so the caller falls through:
+    /// a non-exact <see cref="JSObject"/> (a Proxy, an array, a typed array, any exotic with
+    /// its own [[DefineOwnProperty]]), a key that also names an array index and therefore
+    /// lives in the element table, or a lazily-realized cell that the descriptor path cancels.
+    /// </para>
+    /// <para>
+    /// The decisions below mirror the generic path exactly. For an existing data property
+    /// <c>GetReceiverAttributes</c> reconstructs precisely that property's own attributes, so
+    /// they are reused directly; an accessor own property makes the write fail per
+    /// OrdinarySetWithOwnDescriptor without invoking the setter; and a missing property is the
+    /// CreateDataProperty case, whose only failure is a non-extensible target.
+    /// </para>
+    /// </remarks>
+    private static bool TrySetOrdinaryReceiverDataProperty(
+        JSObject target,
+        in KeyString name,
+        JSValue value,
+        JSPropertyAttributes defaultAttributes,
+        bool throwError,
+        out bool result)
+    {
+        result = false;
+
+        if (target.GetType() != typeof(JSObject))
+            return false;
+
+        var metadata = name.Metadata;
+        if (metadata.IsArrayIndex || metadata.IsCanonicalNumericIndex || metadata.IsPrivateName)
+            return false;
+
+        ref var own = ref target.ownProperties.GetValue(name.Key);
+        JSPropertyAttributes attributes;
+
+        if (own.IsEmpty)
+        {
+            if (!target.IsExtensible())
+            {
+                if (throwError)
+                    throw NewTypeError($"Cannot modify property {name} of {target}");
+
+                return true;
+            }
+
+            attributes = defaultAttributes;
+        }
+        else
+        {
+            // An accessor here is the receiver's own; OrdinarySetWithOwnDescriptor returns
+            // false rather than calling its setter (a setter found while walking the BASE's
+            // chain was already handled before this point).
+            if (own.IsProperty)
+            {
+                if (throwError)
+                    throw NewTypeError($"Cannot assign to property {name} of {target} whose receiver has an accessor");
+
+                return true;
+            }
+
+            if (own.IsReadOnly)
+            {
+                if (throwError)
+                    throw NewTypeError($"Cannot modify property {name} of {target}");
+
+                return true;
+            }
+
+            // Cancelling a pending lazy cell is the descriptor path's job; leave it to it.
+            if (own.value is LazyDataPropertyCell)
+                return false;
+
+            attributes = own.Attributes;
+        }
+
+        target.ownProperties.Put(name.Key) = new JSProperty(name, value, attributes);
+        target.TrackShapeDataProperty(in name, value, attributes);
+        target.PropertyChanged?.Invoke(target, (name.Key, uint.MaxValue, null));
+        result = true;
+        return true;
+    }
+
+    /// <summary>
+    /// Whether an indexed [[Set]] onto this object as a FOREIGN receiver may write the
+    /// element table directly instead of going through [[DefineOwnProperty]] with a
+    /// descriptor. True only where the ordinary element semantics apply.
+    /// </summary>
+    /// <remarks>
+    /// Overridden by <c>JSArray</c>, whose indexed define is the ordinary one (it overrides
+    /// only the <c>JSValue</c>-keyed overload, to special-case the <c>length</c> string).
+    /// Integer-indexed exotics (<c>JSTypedArray</c>), mapped <c>arguments</c>, and proxies all
+    /// derive from <see cref="JSObject"/> rather than the array, so the exact-type test here
+    /// excludes them and they keep the descriptor path.
+    /// </remarks>
+    internal virtual bool SupportsOrdinaryIndexedWrite => GetType() == typeof(JSObject);
+
+    /// <summary>
+    /// The indexed twin of <see cref="TrySetOrdinaryReceiverDataProperty"/>.
+    /// </summary>
+    /// <remarks>
+    /// Storing into an element that is not already present walks the prototype chain (the
+    /// slot is absent, so <c>SetValue</c> recurses), bottoms out at %Object.prototype%, and
+    /// returns here with the real array as a foreign receiver — so filling a fresh array cost
+    /// a `JSNumber` for the key plus a four-property descriptor object *per element*, around
+    /// 1 350 bytes each, while overwriting an element already present cost nothing. That is
+    /// why `new Array(1000)` plus a fill allocated 1.3 MB. Same defect as P1-1, on the
+    /// indexed path; see docs/performance-roadmap.md.
+    /// </remarks>
+    private static bool TrySetOrdinaryReceiverIndexedProperty(
+        JSObject target,
+        uint name,
+        JSValue value,
+        JSPropertyAttributes defaultAttributes,
+        bool throwError,
+        out bool result)
+    {
+        result = false;
+
+        if (!target.SupportsOrdinaryIndexedWrite)
+            return false;
+
+        JSPropertyAttributes attributes;
+        if (!target.elements.TryGetValue(name, out var existing) || existing.IsEmpty)
+        {
+            // CreateDataProperty on the receiver; its only ordinary failure is extensibility.
+            if (!target.IsExtensible())
+            {
+                if (throwError)
+                    throw NewTypeError($"Cannot modify property {name} of {target}");
+
+                return true;
+            }
+
+            attributes = defaultAttributes;
+        }
+        else
+        {
+            // OrdinarySetWithOwnDescriptor: the receiver's own accessor makes the write fail
+            // rather than invoking its setter.
+            if (existing.IsProperty)
+            {
+                if (throwError)
+                    throw NewTypeError($"Cannot assign to property {name} of {target} whose receiver has an accessor");
+
+                return true;
+            }
+
+            if (existing.IsReadOnly)
+            {
+                if (throwError)
+                    throw NewTypeError($"Cannot modify property {name} of {target}");
+
+                return true;
+            }
+
+            // Cancelling a pending lazy cell is the descriptor path's job; leave it to it.
+            if (existing.value is LazyDataPropertyCell)
+                return false;
+
+            // GetReceiverAttributes reconstructs exactly these for a data property.
+            attributes = existing.Attributes;
+        }
+
+        target.elements.Put(name, value, attributes);
+        target.UpdateArrayLengthIfNeeded(name);
+        target.NotifyIndexedPropertyMutation();
+        target.PropertyChanged?.Invoke(target, (uint.MaxValue, name, null));
+        result = true;
+        return true;
     }
 
     private static bool TrySetReceiverAccessorProperty(JSObject target, JSObject descriptor, JSValue receiver, JSValue value, object name, bool throwError, out bool result)
@@ -1244,7 +1475,7 @@ public partial class JSObject
 
     public override JSValue GetValue(uint key, JSValue receiver, bool throwError = true)
     {
-        ref var p = ref elements.Get(key);
+        var p = elements.Get(key);
         if (!p.IsEmpty)
         {
             if (p.IsValue)
@@ -1316,9 +1547,18 @@ public partial class JSObject
 
     public virtual JSValue DefineProperty(in KeyString name, JSObject pd)
     {
-        AbandonObjectShape();
+        // Deliberately touches the `ownProperties` field rather than GetOwnProperties(),
+        // which abandons the shape on every mutable access. That guard exists for callers
+        // in other assemblies, who receive a mutable ref and could write behind the shape
+        // tracker's back; this method owns the write and tracks it explicitly below.
+        //
+        // Abandoning here was what made shapes and the property inline cache unreachable
+        // for most real JavaScript: an ordinary `obj.x = 1` on an object with a prototype
+        // walks the chain, comes back through SetKeyStringOnReceiver's receiver-mismatch
+        // branch, and lands here — so a single assignment, or one constructor storing one
+        // field, permanently dropped the object into dictionary mode. See
+        // docs/performance-roadmap.md P1-1.
         var key = name.Key;
-        ref var ownProperties = ref GetOwnProperties();
         ref var old = ref ownProperties.GetValue(name.Key);
         var preserveCurrentValue = false;
         if (old.IsEmpty && !IsExtensible())
@@ -1344,8 +1584,27 @@ public partial class JSObject
         // p.key = name;
         if (!preserveCurrentValue)
             CancelLazyDataProperty(in old);
-        ownProperties.Put(key) = ToPropertyPreservingLazyValue(pd, key, in old, preserveCurrentValue);
-        NotifyNamedPropertyMutation();
+
+        // Built before the Put: `old` is a ref into the property map, and Put may grow it.
+        var replacement = ToPropertyPreservingLazyValue(pd, key, in old, preserveCurrentValue);
+        ownProperties.Put(key) = replacement;
+
+        // A plain data property keeps the fast layout. TrackShapeDataProperty is the single
+        // decision point — it abandons on its own for a non-default attribute set, a private
+        // name, or a receiver that is not an exact JSObject — so the only cases handled here
+        // are the ones whose value is not a JSValue at all: an accessor (whose `value` holds
+        // the getter) and a preserved LazyDataPropertyCell. Both must abandon, otherwise the
+        // inline cache could hand back a slot the property no longer describes.
+        if (replacement.IsValue && replacement.value is JSValue trackableValue)
+        {
+            TrackShapeDataProperty(in name, trackableValue, replacement.Attributes);
+        }
+        else
+        {
+            AbandonObjectShape();
+            NotifyNamedPropertyMutation();
+        }
+
         PropertyChanged?.Invoke(this, (name.Key, uint.MaxValue, null));
         return UndefinedValue;
     }
@@ -1567,8 +1826,6 @@ public partial class JSObject
     {
         if (elements.TryGetValue(key, out var property) && !property.IsConfigurable)
             return BooleanFalse;
-
-        ref var element = ref elements.Get(key);
 
         if (elements.RemoveAt(key))
         {

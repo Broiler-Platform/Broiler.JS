@@ -89,4 +89,42 @@ partial class FastCompiler
             ? JSValueBuilder.Index(scope.Top.ThisExpression, scope.Top.Super, key, member.Coalesce)
             : JSValueBuilder.Index(VisitExpression(member.Object), key, member.Coalesce);
     }
+
+    /// <summary>
+    /// Lowers `obj.name = value` to a store inline cache, or returns null when this member is
+    /// not a plain constant-key write and has to keep the ordinary assignable index reference.
+    /// </summary>
+    /// <remarks>
+    /// The mirror image of the read cache in
+    /// <see cref="VisitMemberExpression"/>, and eligible on the same terms: a constant
+    /// <see cref="KeyString"/> key, an ordinary base, and no super or optional-chain
+    /// involvement. A private name is excluded because `obj.#x = v` is a brand check rather
+    /// than an ordinary [[Set]], and a computed key is excluded because it would drive one
+    /// site through every key the expression produces (see docs/performance-roadmap.md P1-3).
+    /// <para>
+    /// The caller must not have compiled the value expression yet: the emitted call evaluates
+    /// the base before the value, and the tree has to be built in that order.
+    /// </para>
+    /// </remarks>
+    private BExpression TryCreateCachedMemberStore(AstMemberExpression member, Func<BExpression> compileValue)
+    {
+        if (member.Computed
+            || member.Coalesce
+            || member.InOptionalChain
+            || member.Object == null
+            || member.Object.Type == FastNodeType.Super)
+        {
+            return null;
+        }
+
+        if (member.Property is AstIdentifier { Name.Length: > 0 } id && id.Name.Value[0] == '#')
+            return null;
+
+        var key = CreatePropertyKeyExpression(member.Property, false);
+        if (key.Type != typeof(KeyString))
+            return null;
+
+        var target = VisitExpression(member.Object);
+        return JSValueBuilder.CachedStore(target, key, compileValue());
+    }
 }

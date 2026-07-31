@@ -23,7 +23,12 @@ partial class FastCompiler
     private static JSValue ThrowInvalidUpdateReference() =>
         throw JSEngine.NewReferenceError("Invalid left-hand side expression for update");
 
-    private BExpression InternalVisitUpdateExpression(AstUnaryExpression updateExpression)
+    /// <param name="discardResult">
+    /// True when the caller is a statement position that throws the value away — a `for`
+    /// update clause. It lets a numeric local's `i++` compile to a bare double add with no
+    /// boxing at all, which is the whole point of holding the counter unboxed.
+    /// </param>
+    private BExpression InternalVisitUpdateExpression(AstUnaryExpression updateExpression, bool discardResult = false)
     {
         // added support for a++, a--
         updateExpression.Argument.VerifyIdentifierForUpdate(IsStrictMode);
@@ -93,6 +98,31 @@ partial class FastCompiler
                         BExpression.Block(withStatements),
                         BExpression.Block(dynamicStatements),
                         typeof(JSValue)));
+            }
+
+            // `i++` on a numeric local: a native double add. No ToNumeric (the value is
+            // already a number), no JSValue arithmetic, and — when the result is discarded,
+            // which is where a loop counter lives — no boxing at all.
+            if (variable.NumericStorage != null)
+            {
+                var storage = variable.NumericStorage;
+                var delta = BExpression.Constant(updateExpression.Operator == UnaryOperator.Increment ? 1d : -1d);
+
+                var advance = BExpression.Assign(storage, BExpression.Add(storage, delta));
+                if (discardResult)
+                    return advance;
+
+                // Outside a statement position the expression still has to produce a
+                // JSValue, so the result — and only the result — is boxed.
+                if (updateExpression.Prefix)
+                    return JSNumberBuilder.New(advance);
+
+                using var previousValue = scope.Top.GetTempVariable(typeof(double));
+                return BExpression.Block(
+                    previousValue.Variable.AsSequence(),
+                    BExpression.Assign(previousValue.Variable, storage),
+                    advance,
+                    JSNumberBuilder.New(previousValue.Expression));
             }
 
             if (variable.Variable?.Type == typeof(JSVariable) && !variable.IsDeletable)

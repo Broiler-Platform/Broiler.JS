@@ -42,8 +42,8 @@ public interface IJSExecutionContext : IJSContext
     /// </summary>
     JSValue IntrinsicArrayValues { get; }
 
-    /// <summary>Gets or sets the current top of the call stack.</summary>
-    CallStackItem Top { get; set; }
+    /// <summary>Gets this context's call stack.</summary>
+    CallFrameStack Frames { get; }
 
     /// <summary>Gets or sets the current <c>new.target</c> value.</summary>
     JSValue CurrentNewTarget { get; set; }

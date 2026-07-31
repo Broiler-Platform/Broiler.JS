@@ -30,7 +30,7 @@ internal static class CoreInternalHelpers
                 .AddProperty(KeyStrings.configurable, px.IsConfigurable ? t : f)
                 .AddProperty(KeyStrings.enumerable, px.IsEnumerable ? t : f)
                 .AddProperty(KeyStrings.writable, !px.IsReadOnly ? t : f)
-                .AddProperty(KeyStrings.value, (JSValue)px.value);
+                .AddProperty(KeyStrings.value, JSValue.ResolvePropertyValue(px.value));
         }
         else
         {

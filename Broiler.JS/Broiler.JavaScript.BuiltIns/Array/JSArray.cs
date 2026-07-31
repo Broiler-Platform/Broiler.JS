@@ -93,6 +93,12 @@ public partial class JSArray : JSObject
 
     public override bool IsArray => true;
 
+    // An array's indexed [[DefineOwnProperty]] is the ordinary one — only the JSValue-keyed
+    // overload is specialized here, to intercept the `length` string — so an indexed write
+    // with this array as a foreign receiver can go straight to the element table. Exact type
+    // only: a subclass could specialize it.
+    internal override bool SupportsOrdinaryIndexedWrite => GetType() == typeof(JSArray);
+
     internal override void UpdateArrayLengthIfNeeded(uint key)
     {
         // Array indices run 0..2^32-2; uint.MaxValue (2^32-1) is not a valid index, so it never
@@ -611,12 +617,45 @@ public partial class JSArray : JSObject
         var newWritable = requestedWritable ?? true;
         ref var elements = ref GetElements();
 
-        // Only the indices that are actually stored need to be deleted; absent
-        // indices delete trivially. Walking the whole [newLength, oldLength) range
-        // would loop billions of times when shrinking from a huge sparse length
-        // (e.g. length = 2**32 - 1 back to 2). Collect the stored indices in range,
-        // then delete them high→low so the first non-configurable element halts the
-        // shrink at the spec-mandated point (ArraySetLength deletes from the top).
+        // ArraySetLength deletes from the top and halts at the first non-configurable
+        // element, so either strategy below walks high→low. Which one is cheap depends
+        // entirely on the array:
+        //
+        //  * walking [newLength, oldLength) costs one probe per index in the range, and
+        //    would loop billions of times shrinking a huge SPARSE length (2**32-1 back
+        //    to 2) — the case the collect-and-sort path below was written for;
+        //  * collecting the stored indices costs a full scan of the element table plus a
+        //    sort, which is ruinous when the range is tiny and the array is large. Every
+        //    `pop()` shrinks the length by exactly one, so paying a scan-and-sort of the
+        //    whole table per call made `while (a.length) a.pop()` quadratic: popping
+        //    200 000 elements took over seven minutes.
+        //
+        // Pick the smaller side. `removedRange` is computed in 64-bit because the range
+        // can span the whole uint domain.
+        var removedRange = (long)oldLength - newLength;
+        if (removedRange <= elements.Count)
+        {
+            for (var index = oldLength; index > newLength;)
+            {
+                index--;
+                if (!elements.TryGetValue(index, out var rangeProperty))
+                    continue;
+
+                if (!rangeProperty.IsConfigurable)
+                {
+                    _length = index + 1;
+                    SetLengthWritable(newWritable);
+                    return BooleanFalse;
+                }
+
+                elements.RemoveAt(index);
+            }
+
+            _length = newLength;
+            SetLengthWritable(newWritable);
+            return JSUndefined.Value;
+        }
+
         var doomed = new List<uint>();
         foreach (var (key, _) in elements.StoredValues())
         {

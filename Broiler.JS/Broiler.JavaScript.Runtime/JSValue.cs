@@ -434,6 +434,27 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     {
         set
         {
+            // Assigning a null prototype cannot invalidate anything, so it must not pay for
+            // the global mutation notice. Every primitive takes this path — JSPrimitive's
+            // constructor chains to JSValue(null) and the default GetCurrentPrototype()
+            // returns null — so a bare `new JSNumber(x)` would otherwise perform a delegate
+            // invoke plus three interlocked increments on process-wide statics, making a
+            // three-instruction arithmetic loop bump the prototype version once per
+            // intermediate value.
+            //
+            // Soundness: the two published versions both answer "may something have been
+            // ADDED to a prototype chain". IndexedPrototypeVersion gates
+            // JSArray.CanUseDenseElementFastPath, which caches
+            // !HasIndexedPropertiesOnPrototypeChain(); clearing a prototype can only shorten
+            // a chain, so a stale cached answer stays conservative (an array keeps taking the
+            // slow path) and never wrongly reports the fast path as safe. MarkUsedAsPrototype
+            // and CreatePrototypeObject are both no-ops on null.
+            if (value is null)
+            {
+                prototypeChain = null;
+                return;
+            }
+
             (value as JSObject)?.MarkUsedAsPrototype();
             prototypeChain = CreatePrototypeObject?.Invoke(value);
             JSObject.NotifyPrototypeChainMutation();
@@ -779,6 +800,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     {
         JSValue jsValue => jsValue,
         LazyDataPropertyCell lazy => lazy.Resolve(),
+        IDeferredPropertyValue deferred => deferred.Resolve(),
         null => UndefinedValue,
         _ => throw new InvalidOperationException($"Unsupported property value storage '{value.GetType().FullName}'.")
     };

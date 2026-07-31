@@ -116,7 +116,7 @@ internal static class BuiltInsAssemblyInitializer
         JSValue.NumberNegativeZero = JSNumber.NegativeZero;
         JSValue.NumberPositiveInfinity = JSNumber.PositiveInfinity;
         JSValue.NumberNegativeInfinity = JSNumber.NegativeInfinity;
-        JSValue.CreateNumber = static v => new JSNumber(v);
+        JSValue.CreateNumber = JSNumber.Create;
         JSValue.NumberToECMAString = JSNumber.ToECMAString;
         JSValue.IsPositiveZeroCheck = JSNumber.IsPositiveZero;
         JSValue.IsNegativeZeroCheck = JSNumber.IsNegativeZero;

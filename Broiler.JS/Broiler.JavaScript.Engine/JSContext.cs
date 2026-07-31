@@ -45,7 +45,17 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     private LegacyRegExpState _legacyRegExp;
     public LegacyRegExpState LegacyRegExp => _legacyRegExp ??= new LegacyRegExpState();
 
-    public CallStackItem Top { get; set; }
+    /// <summary>
+    /// This context's call stack. Frames live in its array rather than as one object per call;
+    /// see <see cref="CallFrameStack"/>.
+    /// </summary>
+    public CallFrameStack Frames { get; } = new();
+
+    /// <summary>Source position of the innermost running frame, or 0 when nothing is running.</summary>
+    public int CurrentLine => Frames.CurrentLine;
+
+    /// <summary>Source column of the innermost running frame, or 0 when nothing is running.</summary>
+    public int CurrentColumn => Frames.CurrentColumn;
 
     public JSValue CurrentNewTarget { get; set; }
 
@@ -110,7 +120,7 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     private readonly List<string[]> directEvalBindingNameScopes = [];
     private readonly List<string[]> directEvalLexicalBindingNameScopes = [];
     private readonly List<DirectEvalScope> activeDirectEvalScopes = [];
-    private readonly List<CallStackItem> directEvalActivationOwners = [];
+    private readonly List<FrameToken> directEvalActivationOwners = [];
     private readonly List<JSValue> directEvalSuperValues = [];
     private WithScope withScope;
 
@@ -498,34 +508,22 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         return false;
     }
 
-    private sealed class DirectEvalActivationScope(JSContext context, CallStackItem owner) : IDisposable
+    private sealed class DirectEvalActivationScope(JSContext context) : IDisposable
     {
-        public void Dispose()
-        {
-            if (owner == null)
-                return;
-
-            for (var i = context.directEvalActivationOwners.Count - 1; i >= 0; i--)
-            {
-                if (!ReferenceEquals(context.directEvalActivationOwners[i], owner))
-                    continue;
-
-                context.directEvalActivationOwners.RemoveAt(i);
-                break;
-            }
-        }
+        // Strictly nested with the eval it belongs to, so the innermost entry is always ours.
+        public void Dispose() => context.directEvalActivationOwners.RemoveAt(context.directEvalActivationOwners.Count - 1);
     }
 
-    internal IDisposable PushDirectEvalActivation(CallStackItem owner)
+    internal IDisposable PushDirectEvalActivation(FrameToken owner)
     {
-        if (owner == null)
+        if (owner.IsNone)
             return null;
 
         directEvalActivationOwners.Add(owner);
-        return new DirectEvalActivationScope(this, owner);
+        return new DirectEvalActivationScope(this);
     }
 
-    private bool TryGetCurrentDirectEvalActivationOwner(out CallStackItem owner)
+    private bool TryGetCurrentDirectEvalActivationOwner(out FrameToken owner)
     {
         if (directEvalActivationOwners.Count > 0)
         {
@@ -533,7 +531,7 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
             return true;
         }
 
-        owner = null;
+        owner = FrameToken.None;
         return false;
     }
 
@@ -644,9 +642,17 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
 
     internal bool TryResolveDirectEvalBinding(in KeyString name, out JSVariable variable, bool includeUninitializedShadows = false)
     {
-        for (var current = Top; current != null; current = current.Parent)
+        // Walked on every context-level name lookup, so the overwhelmingly common case — no
+        // eval has introduced anything anywhere on the stack — is answered without a walk.
+        if (!Frames.AnyDirectEvalBindings)
         {
-            if (current.TryGetDirectEvalBinding(name, out variable))
+            variable = null;
+            return false;
+        }
+
+        for (var i = Frames.Depth - 1; i >= 0; i--)
+        {
+            if (Frames.TryGetDirectEvalBinding(i, name, out variable))
             {
                 // An uninitialized EvalShadowVariable means a sloppy parameter-eval
                 // shadow whose name the eval has not (yet) introduced; it forwards to
@@ -851,7 +857,7 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         if (directEvalLocalVarEnvironmentDepth > 0
             && TryGetCurrentDirectEvalActivationOwner(out var activationOwner))
         {
-            activationOwner.RegisterDirectEvalBinding(variable);
+            Frames.RegisterDirectEvalBinding(in activationOwner, variable);
             return JSUndefined.Value;
         }
 
@@ -1013,7 +1019,7 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
 
         var variable = new JSVariable(fallback, name.Value);
         if (directEvalLocalVarEnvironmentDepth > 0 && TryGetCurrentDirectEvalActivationOwner(out var owner))
-            owner.RegisterDirectEvalBinding(variable);
+            Frames.RegisterDirectEvalBinding(in owner, variable);
 
         return variable;
     }
@@ -1495,15 +1501,15 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
 
         if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
         {
-            for (var current = Top; current != null; current = current.Parent)
+            for (var i = Frames.Depth - 1; i >= 0; i--)
             {
-                if (!current.TryGetDirectEvalBinding(name, out var existingBinding)
+                if (!Frames.TryGetDirectEvalBinding(i, name, out var existingBinding)
                     || !ReferenceEquals(existingBinding, directEvalBinding))
                 {
                     continue;
                 }
 
-                current.DeleteDirectEvalBinding(name);
+                Frames.DeleteDirectEvalBinding(i, name);
                 // A closure created in the same direct eval may still hold this binding object;
                 // tear it down so a later read through it throws a ReferenceError rather than
                 // observing the now-removed local's stale value (test262 eval-code/direct/
