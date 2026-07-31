@@ -40,4 +40,3 @@ test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
 test/staging/sm/lexical-environment/var-in-catch-body-annex-b-eval.js
 test/staging/sm/regress/regress-602621.js
 test/staging/sm/regress/regress-610026.js
-test/staging/sm/strict/15.5.5.2.js
