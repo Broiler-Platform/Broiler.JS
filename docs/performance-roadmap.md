@@ -1038,6 +1038,27 @@ gap `mandelbrot-ish` sits in and would need definite-assignment analysis to clos
 are never specialized, so a numeric function argument stays boxed. And `let`/`const` are
 excluded to avoid reasoning about TDZ.
 
+**And one gate that is far coarser than it looks — measured while benchmarking P3.** The
+eligibility test (`IsScalarReplacementEligible`) rejects a function that contains *any* nested
+function, and "any" is literal: a declaration, a function expression or an arrow; referenced or
+never referenced; written before the loop or after it. All six shapes measure the same.
+
+| enclosing function contains | per loop iteration |
+|---|---:|
+| nothing else | **0.8 B** |
+| `function f(){}` | 96.9 B |
+| `var f = function(){}` | 97.0 B |
+| `var f = () => 1` | 96.9 B |
+| `function f(){ return 1; }`, never referenced | 97.0 B |
+| `function f(){}` written *after* the loop | 96.9 B |
+
+So `for (var i = 0; i < n; i++)` boxes its counter in any function that also happens to define a
+helper — which is most real code, and is why the P3 floors in §7 sit at ~96 B/iteration rather
+than at zero. The gate is conservative rather than necessary: an unreferenced `function f(){}`
+cannot capture `i`, and the analysis already tracks which names a closure reads. Narrowing it
+from "contains a nested function" to "a nested function references this binding" is the largest
+single allocation win left in the document, and it is a change to one predicate, not a redesign.
+
 ---
 
 ### P2-3 · Dense element storage is 4× larger than it needs to be — **implemented**
