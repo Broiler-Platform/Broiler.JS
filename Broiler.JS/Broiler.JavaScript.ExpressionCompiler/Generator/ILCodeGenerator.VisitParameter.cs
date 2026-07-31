@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -20,6 +22,12 @@ public partial class ILCodeGenerator
     private static readonly MethodInfo KeyStringsGetOrCreateMethod = KeyStringsType
         .GetMethod("GetOrCreate", [StringSpanType.MakeByRefType()])
         ?? throw new InvalidOperationException("KeyStrings.GetOrCreate(StringSpan) not found");
+    private static readonly Type JsEngineType = Type.GetType("Broiler.JavaScript.Engine.Core.JSEngine, Broiler.JavaScript.Engine", true)!;
+    private static readonly FieldInfo JsEngineCurrentField = JsEngineType.GetField("Current")
+        ?? throw new InvalidOperationException("JSEngine.Current not found");
+    private static readonly Type JsContextBoxType = typeof(Broiler.JavaScript.ExpressionCompiler.ClosureSeparator.Box<>).MakeGenericType(JsContextType);
+    private static readonly ConstructorInfo JsContextBoxCtor = JsContextBoxType.GetConstructor(Type.EmptyTypes)!;
+    private static readonly FieldInfo JsContextBoxValueField = JsContextBoxType.GetField("Value")!;
 
     protected override CodeInfo VisitParameter(BParameterExpression yParameterExpression)
     {
@@ -65,9 +73,53 @@ public partial class ILCodeGenerator
                 // a compilation that currently succeeds.
                 v = variables.Create(yParameterExpression);
             }
+            else if (IsScopeContext(yParameterExpression))
+            {
+                // A function scope's own JSContext parameter ("Context<sID>", created by
+                // FastFunctionScope) can reach here belonging to a scope that has no local
+                // in the method being emitted: LambdaRewriter.CheckForClosure walks the
+                // lambda stack for the scope that declares a referenced parameter and, on
+                // reaching the outermost scope without finding it, returns the parameter
+                // unchanged — so it lands in a closure's capture array raw, and the method
+                // building that array has no local to load it from. Previously this fell
+                // through to the indexer below and threw KeyNotFoundException ("The given
+                // key 'Context60' was not present in the dictionary"), aborting compilation
+                // of the whole script: the Octane zlib and CodeLoad failures, and any eval
+                // whose functions nest deeply enough to reach the same path.
+                //
+                // Reading the ambient context here is not a stand-in for the missing local,
+                // it is the same value: every Context<sID> is initialized at its function's
+                // entry from exactly this field (FastCompiler.CreateFunction emits
+                // `Assign(cs.Context, JSContextBuilder.Current)`, and JSContextBuilder.Current
+                // *is* JSEngine.Current), and a capture array is built while the declaring
+                // invocation is still the current one — so the closure captures the very
+                // context its declaring scope would have handed it.
+                //
+                // A Box, not a bare JSContext: an unresolved parameter reaches IL generation
+                // only through ClosureRepository.Inputs, which RuntimeMethodBuilder.Relay
+                // emits as a `Box[]`, and the capturing lambda reads the binding back as
+                // Box<JSContext>.Value. Pushing the context unboxed fails the array's
+                // covariance check (ArrayTypeMismatchException). This mirrors the ScriptInfo
+                // branch above, which boxes for the same reason.
+                il.Comment($"Load {yParameterExpression.Name} (ambient JSEngine.Current)");
+                il.EmitNew(JsContextBoxCtor);
+                il.Emit(OpCodes.Dup);
+                il.Emit(OpCodes.Ldsfld, JsEngineCurrentField);
+                if (!JsContextType.IsAssignableFrom(JsEngineCurrentField.FieldType))
+                    il.Emit(OpCodes.Castclass, JsContextType);
+                il.Emit(OpCodes.Stfld, JsContextBoxValueField);
+                return true;
+            }
             else
             {
-                v = variables[yParameterExpression];
+                // The dictionary's own message names the parameter and nothing else, saying
+                // neither what kind of binding failed to resolve nor where. Report the
+                // parameter, its type, and the locals that were in scope so the next
+                // occurrence is diagnosable from the exception alone.
+                throw new KeyNotFoundException(
+                    $"IL generation references the undeclared parameter '{yParameterExpression.Name}' "
+                    + $"of type {yParameterExpression.Type}. Locals in scope: "
+                    + $"{string.Join(", ", variables.Values.Select(static x => x.Name))}.");
             }
         }
 
@@ -119,6 +171,29 @@ public partial class ILCodeGenerator
     // variable resolution failure — which must still surface.
     private static bool IsCompilerTemp(string name)
         => name is not null && name.StartsWith("#Temp", StringComparison.Ordinal);
+
+    // The per-function-scope JSContext binding FastFunctionScope creates as
+    // "Context<sID>". Both halves of the test matter: a JS source identifier can be
+    // spelled `Context60`, but a user binding is never a bare JSContext-typed
+    // parameter (it is a JSVariable/JSValue), so requiring the type as well as the
+    // name keeps this from swallowing a genuine resolution failure.
+    private static bool IsScopeContext(BParameterExpression pe)
+        => pe.Type == JsContextType && IsScopeContextName(pe.Name);
+
+    private static bool IsScopeContextName(string name)
+    {
+        const string prefix = "Context";
+        if (name is null || name.Length <= prefix.Length || !name.StartsWith(prefix, StringComparison.Ordinal))
+            return false;
+
+        for (var i = prefix.Length; i < name.Length; i++)
+        {
+            if (!char.IsAsciiDigit(name[i]))
+                return false;
+        }
+
+        return true;
+    }
 
     private bool TryResolveVariableByName(string name, out Variable variable)
     {
