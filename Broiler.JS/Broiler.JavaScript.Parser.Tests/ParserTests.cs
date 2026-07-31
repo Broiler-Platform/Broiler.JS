@@ -541,4 +541,84 @@ public class ParserTests
         var parser = new FastParser(stream);
         Assert.Throws<FastParseException>(() => parser.ParseProgram());
     }
+
+    // `ReturnStatement : return [no LineTerminator here] Expression? ;` — the semicolon
+    // is inserted automatically when the offending token is `}`, so `{ return }` is an
+    // argument-less return exactly like `{ return; }`. It previously fell through to
+    // ExpressionSequence, which reports success with an AstEmptyExpression when it parses
+    // nothing, leaving the return with a void-typed argument the compiler could not emit.
+    [Theory]
+    [InlineData("function f(){ return }")]
+    [InlineData("function f(){ return; }")]
+    [InlineData("function f(){ return\n}")]
+    public void ParseProgram_BareReturn_HasNoArgument(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        var statement = Assert.IsType<AstExpressionStatement>(Assert.Single(program.Statements.ToArray()));
+        var function = Assert.IsType<AstFunctionExpression>(statement.Expression);
+        var body = Assert.IsType<AstBlock>(function.Body);
+        var returnStatement = Assert.IsType<AstReturnStatement>(Assert.Single(body.Statements.ToArray()));
+
+        Assert.Null(returnStatement.Argument);
+    }
+
+    // ExpressionSequence reports success with an AstEmptyExpression when it parses
+    // nothing, which is only correct where the grammar makes the expression optional
+    // (a `for` head's clauses). Everywhere else the omission is a SyntaxError; accepting
+    // it gave the caller a void-typed node that reached the IL generator and crashed the
+    // engine with InvalidProgramException instead of reporting the error.
+    [Theory]
+    [InlineData("if(){}")]
+    [InlineData("if()1;")]
+    [InlineData("while(){}")]
+    [InlineData("do{}while()")]
+    [InlineData("switch(){}")]
+    [InlineData("switch(1){case:}")]
+    [InlineData("var a=[1];a[];")]
+    [InlineData("var a={};a?.[];")]
+    [InlineData("for(var x in ){}")]
+    [InlineData("function f(){ return ) }")]
+    public void ParseProgram_OmittedRequiredExpression_ThrowsFastParseException(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+        Assert.Throws<FastParseException>(() => parser.ParseProgram());
+    }
+
+    // The `for` head is where an omitted expression IS legal, so each clause must stay
+    // independently optional.
+    [Theory]
+    [InlineData("for(;;){}")]
+    [InlineData("for(var i=0;;){}")]
+    [InlineData("for(;i<3;){}")]
+    [InlineData("for(;;i++){}")]
+    [InlineData("for(var i=0;i<3;){}")]
+    [InlineData("for(var i=0;;i++){}")]
+    [InlineData("for(;i<3;i++){}")]
+    [InlineData("for(var i=0;i<3;i++){}")]
+    public void ParseProgram_ForHead_KeepsEveryClauseOptional(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+
+        Assert.NotNull(parser.ParseProgram());
+    }
+
+    [Fact]
+    public void ParseProgram_ReturnWithArgument_KeepsArgument()
+    {
+        var stream = new FastTokenStream(new StringSpan("function f(){ return 1 }"));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        var statement = Assert.IsType<AstExpressionStatement>(Assert.Single(program.Statements.ToArray()));
+        var function = Assert.IsType<AstFunctionExpression>(statement.Expression);
+        var body = Assert.IsType<AstBlock>(function.Body);
+        var returnStatement = Assert.IsType<AstReturnStatement>(Assert.Single(body.Statements.ToArray()));
+
+        Assert.IsType<AstLiteral>(returnStatement.Argument);
+    }
 }

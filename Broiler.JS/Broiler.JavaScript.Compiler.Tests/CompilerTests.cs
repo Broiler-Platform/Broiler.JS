@@ -3841,4 +3841,60 @@ public class CompilerTests
         Assert.Equal("1|f|2|x", result.ToString());
     }
 
+    [Theory]
+    // An argument-less `return` whose semicolon comes from ASI at `}` used to reach the
+    // compiler carrying an empty, void-typed argument instead of no argument at all. The
+    // body then stored that non-value into the return temp, so the method began with a
+    // store from an empty evaluation stack and every call threw InvalidProgramException.
+    // Octane's Box2D hit it in b2ContactManager.AddPair (`if(...)return}` inside a loop).
+    [InlineData("function f(a){if(a){return}return 'x'}String(f(true));", "undefined")]
+    [InlineData("function f(a){if(a){return}return 'x'}f(false);", "x")]
+    [InlineData("function f(a){return}String(f(1));", "undefined")]
+    [InlineData("var f=function(a){if(a){return}return 'x'};String(f(true));", "undefined")]
+    [InlineData("var f=(a)=>{if(a){return}return 'x'};String(f(true));", "undefined")]
+    // The shape from AddPair: a bare `return` in a block nested in a loop, with the loop
+    // still having to fall through to the code after it when the guard never fires.
+    [InlineData("function f(n){var h=-1;for(var i=0;i<n;i++){if(i===2){h=i;return h}}return h}f(5);", "2")]
+    [InlineData("var h=-1;function f(n){for(var i=0;i<n;i++){if(i===2){h=i;return}}h=99}f(5);h;", "2")]
+    [InlineData("var h=-1;function f(n){for(var i=0;i<n;i++){if(i===2){h=i;return}}h=99}f(1);h;", "99")]
+    public void BareReturn_TerminatedByAutomaticSemicolon_Compiles_To_Valid_IL(string code, string expected)
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval(code);
+        Assert.Equal(expected, result.ToString());
+    }
+
+    [Theory]
+    // A condition the grammar requires cannot be omitted. The parser used to accept the
+    // omission and hand the compiler an empty, void-typed expression, so these reached
+    // the IL generator and branched on an empty evaluation stack — the engine died with
+    // InvalidProgramException rather than reporting the error to the script.
+    [InlineData("if(){}")]
+    [InlineData("while(){}")]
+    [InlineData("do{}while()")]
+    [InlineData("switch(){}")]
+    [InlineData("var a=[1];a[];")]
+    [InlineData("for(var x in ){}")]
+    public void OmittedRequiredExpression_Is_SyntaxError_Not_InvalidProgram(string code)
+    {
+        using var ctx = new JSContext();
+        var ex = Assert.Throws<JSException>(() => ctx.Eval(code));
+
+        Assert.Equal("SyntaxError", ex.Error[KeyStrings.constructor][KeyStrings.name].ToString());
+    }
+
+    [Theory]
+    // The `for` head is the one place the omission is legal, and each clause is
+    // independently optional.
+    [InlineData("var n=0;for(;;){n++;if(n>2)break}n;", "3")]
+    [InlineData("var s=0;for(var i=0;i<3;){s+=i;i++}s;", "3")]
+    [InlineData("var s=0;for(var i=0;;i++){if(i>2)break;s+=i}s;", "3")]
+    [InlineData("var s=0,i=0;for(;i<3;i++){s+=i}s;", "3")]
+    public void ForHead_OmittedClauses_Keep_Working(string code, string expected)
+    {
+        using var ctx = new JSContext();
+        var result = ctx.Eval(code);
+        Assert.Equal(expected, result.ToString());
+    }
+
 }
