@@ -5,24 +5,21 @@ using Broiler.JavaScript.Ast.Misc;
 
 namespace Broiler.JavaScript.Integration.Tests;
 
-// docs/performance-roadmap.md §7 (P3): a call's activation record (CallStackItem) is rented
-// from a free list instead of being allocated, which removed the entire fixed 80-byte cost of
-// an argument-less call.
+// docs/performance-roadmap.md §7 (P3): a call's activation record lives in the context's
+// CallFrameStack — a growable array of structs addressed by a FrameToken the body holds as an
+// ordinary CLR local — rather than as one heap object per call.
 //
-// Recycling is only sound while a frame's lifetime is a synchronous span, and in this engine
-// it often is not: a generator or async body strands itself — and everything it had called —
-// off the stack at every suspension without running their finallys, and JSGenerator.MoveNext
-// restores a `Top` it captured on entry, which the body it just ran may have popped. Each of
-// those produced a real defect, and every one showed up as a corrupted or looping Parent chain
-// rather than as a wrong answer — two of them only as an intermittent hang.
+// What makes any of this delicate is that a frame's lifetime is not always a contiguous span
+// of the stack: a generator or async body is entered once, when primed, then leaves the stack
+// at every suspension without unwinding — stranding itself and everything it had called — and
+// is resumed later under a different caller entirely. Getting that wrong does not produce a
+// wrong answer; it produces a corrupted stack, which surfaces as a bad trace or a hang.
 //
-// The tests come in two layers, because the first layer alone is not enough. The JavaScript
-// ones below exercise the machinery end to end and would catch a gross regression, but neither
-// rule's removal makes them fail: the corruptions need a job-queue interleaving the test host
-// does not reproduce (the script host fails outright on the same code). So the two rules are
-// also asserted directly against the frame API, and those assertions do fail when their rule
-// is removed.
-public class CallFramePoolTests
+// The tests come in two layers, because the first is not enough on its own. The JavaScript
+// ones exercise the machinery end to end and would catch a gross regression, but the states
+// that break the stack's invariants need a job-queue interleaving the test host does not
+// reproduce. So the invariants are also asserted directly against the frame API.
+public class CallFrameStackTests
 {
     private static string Eval(string code)
     {
@@ -30,10 +27,10 @@ public class CallFramePoolTests
         return ctx.Eval(code).ToString();
     }
 
-    // ── the chain is still the real chain after frames have been recycled ──
+    // ── the trace is still the real trace after slots have been reused ──
 
     [Fact]
-    public void StackTraceNamesEveryFrameAfterManyRecycles()
+    public void StackTraceNamesEveryFrameAfterManySlotReuses()
         => Assert.Equal("true", Eval(@"
             function inner() { return new Error('x').stack; }
             function middle() { return inner(); }
@@ -43,7 +40,7 @@ public class CallFramePoolTests
             String(s.indexOf('inner') >= 0 && s.indexOf('middle') >= 0 && s.indexOf('outer') >= 0);"));
 
     [Fact]
-    public void StackTraceDepthMatchesRecursionDepthAfterRecycles()
+    public void StackTraceDepthMatchesRecursionDepthAfterSlotReuse()
         => Assert.Equal("true", Eval(@"
             function d(n) { return n === 0 ? new Error('x').stack : d(n - 1); }
             for (var i = 0; i < 200; i++) d(20);
@@ -51,11 +48,7 @@ public class CallFramePoolTests
             var again  = d(20).split('\n').length;
             String(frames === again && frames > 20);"));
 
-    // ── a suspended body strands frames; the chain must not loop or grow ──
-    //
-    // Before the "a released frame is never anybody's parent" rule, a frame that was still the
-    // top after being popped could be reissued and link itself under itself, and every walker
-    // spun forever. A hang is what this asserts against; xUnit's own timeout is the backstop.
+    // ── a suspended body strands frames; the trace must not loop or grow ──
 
     [Fact]
     public void StackTraceInsideResumedGeneratorTerminates()
@@ -82,8 +75,8 @@ public class CallFramePoolTests
                 it.next();
                 var n = work();
                 if (first === 0) first = n;
-                // A stale parent link would splice this call into the suspended generator's
-                // chain and the depth would drift upward run over run.
+                // A frame left behind by the suspended generator would splice this call in
+                // below it, and the depth would drift upward run over run.
                 if (n !== first) { ok = false; break; }
                 it.next(); it.next();
             }
@@ -104,15 +97,11 @@ public class CallFramePoolTests
         Assert.Equal(200d, result.DoubleValue);
     }
 
-    // The shape that actually caught the "a released frame is never anybody's parent" rule, cut
-    // down from test262 built-ins/AsyncGeneratorPrototype/throw/this-val-not-async-generator.
-    // Rejecting an async-generator method on a bad receiver settles a promise from inside the
-    // job queue, and Promise.all's iteration then builds a native iterator while the engine is
-    // sitting on a frame the generator machinery had already popped — reissue that frame and the
-    // next call links itself under itself. Everything downstream that walks the chain then spins.
-    //
-    // Without the rule this fails every run; the loop is what makes it deterministic, and the
-    // timeout is what turns the hang into a failure rather than a stuck suite.
+    // Cut down from test262 built-ins/AsyncGeneratorPrototype/throw/this-val-not-async-generator,
+    // which is the densest exercise of the awkward case in the tree: async-generator rejections
+    // settle from inside the job queue, and Promise.all's iteration then builds a native iterator
+    // while the engine is positioned on a frame the generator machinery has already left. The
+    // timeout turns a corrupted stack into a failure rather than a stuck suite.
     [Fact(Timeout = 120000)]
     public void AsyncGeneratorRejectionsUnderPromiseAllDoNotCorruptTheFrameChain()
     {
@@ -148,89 +137,102 @@ public class CallFramePoolTests
         Assert.Equal("40", ctx.Eval("String(globalThis.completedRounds)").ToString());
     }
 
-    // ── the two invariants, asserted directly ──
+    // ── the stack's own invariants, asserted directly ──
     //
-    // The end-to-end shapes above exercise the machinery but do not reliably reproduce either
-    // corruption: both depend on an interleaving of the job queue that the test host does not
-    // reproduce (removing either rule leaves every JavaScript-level test here green, while the
-    // script host fails outright). So the rules are pinned at the level they are stated, by
-    // driving the frame API into the two states the engine can actually reach.
+    // The JavaScript shapes above exercise the machinery but do not pin these: the states that
+    // break them are reachable only through an interleaving of the job queue that the test host
+    // does not reproduce. So they are driven through the frame API instead.
 
-    // JSGenerator.MoveNext restores the top it captured on entry, which the body it just ran
-    // may have popped — so `Top` can legitimately be a frame that has already returned. If that
-    // corpse is reissued while it is still the top, the frame taking it links itself under
-    // itself, and every walker spins on the one-element cycle.
+    // A suspendable body loses its slot at every suspension and takes a fresh one when it is
+    // resumed, under whatever caller resumed it. Its identity — and therefore its trace entry
+    // and its new.target — has to survive that, which is the whole reason it holds a heap frame
+    // rather than living in the array like everything else.
     [Fact]
-    public void ARecycledFrameIsNeverItsOwnCaller()
+    public void ASuspendableFrameSurvivesLosingItsSlotAndRetakesOne()
     {
         using var ctx = new JSContext();
-        var ec = (IJSExecutionContext)ctx;
-        var saved = ec.Top;
-        try
-        {
-            var dead = CallStackItem.EnterScope(ctx, "a.js", new StringSpan("a"), 1, 1);
-            dead.Pop(ctx);          // released, and back on the free list
-            ec.Top = dead;          // ...but still the top, as the generator restore can leave it
+        var frames = ((IJSExecutionContext)ctx).Frames;
+        var baseDepth = frames.Depth;
 
-            var next = CallStackItem.EnterScope(ctx, "b.js", new StringSpan("b"), 2, 2);
-            Assert.Same(dead, next);                 // precondition: the corpse was reissued
-            Assert.NotSame(next, next.Caller);       // ...and did not become its own caller
-            Assert.Null(next.Caller);
+        var body = CallFrames.EnterSuspendableScope(ctx, "gen.js", new StringSpan("g"), 7, 3);
+        CallFrames.Step(ctx, body, 11, 5);
+        frames.Describe(frames.Depth - 1, out var name, out _, out var line, out _);
+        Assert.Equal("g", name.Value);
+        Assert.Equal(11, line);
 
-            var depth = 0;
-            for (var frame = next; frame != null && depth <= 64; frame = frame.Caller)
-                depth++;
-            Assert.True(depth <= 64, "walking Caller did not terminate");
-            next.Pop(ctx);
-        }
-        finally
-        {
-            ec.Top = saved;
-        }
+        // The suspension: everything the body occupied goes away without it being popped.
+        frames.RestoreDepth(baseDepth);
+        Assert.Equal(baseDepth, frames.Depth);
+
+        // Resumed under a different caller than the one it was primed under.
+        var resumer = CallFrames.EnterScope(ctx, "other.js", new StringSpan("resumer"), 1, 1);
+        CallFrames.Step(ctx, body, 12, 9);
+
+        frames.Describe(frames.Depth - 1, out name, out _, out line, out _);
+        Assert.Equal("g", name.Value);
+        Assert.Equal(12, line);
+
+        CallFrames.Pop(ctx, body);
+        CallFrames.Pop(ctx, resumer);
+        Assert.Equal(baseDepth, frames.Depth);
     }
 
-    // A generator that suspends strands frames whose parent later returns and is reissued. The
-    // stale link must read as "no caller" rather than resolving to whatever owns that object
-    // now — otherwise a trace walks out of the suspended body into an unrelated live chain.
+    // Unwinding to a remembered depth is how a generator's caller gets its stack back, and it
+    // must only ever shrink. Growing back into slots that were abandoned would resurrect frames
+    // whose contents are gone — the array-shaped version of handing a dead frame to a new owner.
     [Fact]
-    public void AStrandedFrameStopsNamingItsParentOnceThatFrameIsReissued()
+    public void RestoringADepthOnlyEverUnwinds()
     {
         using var ctx = new JSContext();
-        var ec = (IJSExecutionContext)ctx;
-        var saved = ec.Top;
-        try
-        {
-            var caller = CallStackItem.EnterScope(ctx, "a.js", new StringSpan("a"), 1, 1);
-            var stranded = CallStackItem.EnterScope(ctx, "b.js", new StringSpan("b"), 2, 2);
-            Assert.Same(caller, stranded.Caller);    // live link
+        var frames = ((IJSExecutionContext)ctx).Frames;
 
-            // The caller returns while `stranded` is still off-stack holding a link to it —
-            // what a suspension leaves behind. `stranded` is deliberately never popped.
-            caller.Pop(ctx);
-            var reissued = CallStackItem.EnterScope(ctx, "c.js", new StringSpan("c"), 3, 3);
-            Assert.Same(caller, reissued);           // precondition: the same object came back
+        var outer = CallFrames.EnterScope(ctx, "a.js", new StringSpan("a"), 1, 1);
+        var deep = frames.Depth;
+        var inner = CallFrames.EnterScope(ctx, "b.js", new StringSpan("b"), 2, 2);
+        Assert.Equal(deep + 1, frames.Depth);
 
-            Assert.Null(stranded.Caller);            // the stale link is no longer followed
-            Assert.Same(caller, stranded.Parent);    // ...though the raw field still points at it
-            reissued.Pop(ctx);
-        }
-        finally
-        {
-            ec.Top = saved;
-        }
+        frames.RestoreDepth(deep);
+        Assert.Equal(deep, frames.Depth);
+
+        frames.RestoreDepth(deep + 5);          // stale, deeper: must not take effect
+        Assert.Equal(deep, frames.Depth);
+
+        frames.Describe(deep - 1, out var name, out _, out _, out _);
+        Assert.Equal("a", name.Value);          // and the surviving frame is still itself
+
+        CallFrames.Pop(ctx, outer);
     }
 
-    // ── new.target must not survive into a recycled frame ──
+    // Popping names the frame to unwind to, not "one frame", so a call whose callees were left
+    // behind — which is what a suspension inside it does — still restores its caller's depth
+    // exactly rather than leaking the abandoned slots.
+    [Fact]
+    public void PoppingUnwindsToTheNamedFrameEvenWithStrandedCallees()
+    {
+        using var ctx = new JSContext();
+        var frames = ((IJSExecutionContext)ctx).Frames;
+        var baseDepth = frames.Depth;
+
+        var outer = CallFrames.EnterScope(ctx, "a.js", new StringSpan("a"), 1, 1);
+        CallFrames.EnterScope(ctx, "b.js", new StringSpan("b"), 2, 2);
+        CallFrames.EnterScope(ctx, "c.js", new StringSpan("c"), 3, 3);
+        Assert.Equal(baseDepth + 3, frames.Depth);
+
+        CallFrames.Pop(ctx, outer);             // b and c were never popped
+        Assert.Equal(baseDepth, frames.Depth);
+    }
+
+    // ── new.target must not survive into a reused frame slot ──
 
     [Fact]
-    public void NewTargetIsNotInheritedByARecycledFrame()
+    public void NewTargetIsNotInheritedByAReusedFrameSlot()
         => Assert.Equal("true", Eval(@"
             function C() { this.nt = new.target !== undefined; }
             function plain() { return new.target !== undefined; }
             var ok = true;
             for (var i = 0; i < 5000; i++) {
-                // Alternating construct and plain call reuses the same frame objects; a frame
-                // that kept the previous call's new.target would report true here.
+                // Alternating construct and plain call reuses the same slot; a slot that kept
+                // the previous call's new.target would report true here.
                 if (!(new C()).nt) { ok = false; break; }
                 if (plain()) { ok = false; break; }
             }

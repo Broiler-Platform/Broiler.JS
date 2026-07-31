@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -6,6 +6,7 @@ using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
@@ -496,7 +497,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         }
 
         Context = BExpression.Parameter(typeof(JSContext), $"{nameof(Context)}{sID}");
-        StackItem = BExpression.Parameter(typeof(CallStackItem), $"{nameof(StackItem)}{sID}");
+        StackItem = BExpression.Parameter(typeof(FrameToken), $"{nameof(StackItem)}{sID}");
 
         Loop = new LinkedStack<LoopScope>();
         TempVariables = [];

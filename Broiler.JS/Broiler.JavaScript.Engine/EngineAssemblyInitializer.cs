@@ -54,10 +54,10 @@ internal static class EngineAssemblyInitializer
 
         // ── new.target access delegates ─────────────────────────────
         JSEngine.GetNewTargetFromTop = ctx =>
-            (ctx as IJSExecutionContext)?.Top?.NewTarget;
+            (ctx as IJSExecutionContext)?.Frames.CurrentNewTarget;
 
         JSEngine.GetNewTargetPrototypeFromTop = ctx =>
-            ((ctx as IJSExecutionContext)?.Top?.NewTarget
+            ((ctx as IJSExecutionContext)?.Frames.CurrentNewTarget
                 ?? (ctx as IJSExecutionContext)?.CurrentNewTarget)?[KeyStrings.prototype] as JSObject;
 
         // ── JSObject factory delegate for ObjectPrototype access ────
@@ -67,11 +67,10 @@ internal static class EngineAssemblyInitializer
         // ── Stack trace walking delegate ────────────────────────────
         JSEngine.AppendStackTrace = static (sb, trace) =>
         {
-            var top = (JSEngine.Current as IJSExecutionContext)?.Top;
-            while (top != null)
+            var frames = (JSEngine.Current as IJSExecutionContext)?.Frames;
+            for (var i = (frames?.Depth ?? 0) - 1; i >= 0; i--)
             {
-                var fx = top.Function;
-                var file = top.FileName;
+                frames.Describe(i, out var fx, out var file, out var line, out var column);
 
                 if (fx.IsNullOrWhiteSpace())
                     fx = "native";
@@ -79,9 +78,8 @@ internal static class EngineAssemblyInitializer
                 if (string.IsNullOrWhiteSpace(file))
                     file = "file";
 
-                sb.AppendLine($"    at {fx}:{file}:{top.Line},{top.Column}");
-                trace.Add((fx, file, top.Line, top.Column));
-                top = top.Caller;
+                sb.AppendLine($"    at {fx}:{file}:{line},{column}");
+                trace.Add((fx, file, line, column));
             }
         };
 

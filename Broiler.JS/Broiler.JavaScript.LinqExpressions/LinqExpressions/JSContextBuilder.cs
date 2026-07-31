@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
 using ParameterExpression = Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression;
@@ -13,7 +13,7 @@ namespace Broiler.JavaScript.LinqExpressions.LinqExpressions;
 
 public class JSContextStackBuilder
 {
-    public readonly static Type itemTypeRef = typeof(CallStackItem).MakeByRefType();
+    public readonly static Type itemTypeRef = typeof(FrameToken).MakeByRefType();
 
     public static void Push(Sequence<Expression> stmtList, Expression context, Expression stack, Expression fileName, Expression function, int line, int column, bool suspendable = false)
     {
@@ -99,10 +99,8 @@ public class JSContextBuilder
     public static Expression RegisterDirectEvalVariable(Expression variable) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _RegisterDirectEvalVariable, variable);
     private static MethodInfo _GetOrCreateDirectEvalLocalBinding = typeof(JSContext).GetMethod(nameof(JSContext.GetOrCreateDirectEvalLocalBinding), [typeof(KeyString).MakeByRefType(), typeof(JSValue)]);
     public static Expression GetOrCreateDirectEvalLocalBinding(Expression key, Expression fallback) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _GetOrCreateDirectEvalLocalBinding, key, fallback);
-    public static Expression Top => Current.PropertyExpression<IJSExecutionContext, CallStackItem>(() => (x) => x.Top);
-
     public static Expression NewTarget() => Expression.Coalesce(
-        Top.FieldExpression<CallStackItem, JSValue>(() => (x) => x.NewTarget),
+        NewLambdaExpression.StaticCallExpression<JSValue>(() => () => CallFrames.CurrentNewTarget(null), Current),
         JSUndefinedBuilder.Value);
 
     public static Expression Register(ParameterExpression lScope, ParameterExpression variable) => lScope.CallExpression<IJSExecutionContext, JSVariable, JSValue>(() => (x, a) => x.Register(a), variable);

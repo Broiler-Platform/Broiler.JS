@@ -1,4 +1,4 @@
-﻿using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.LinqExpressions.LambdaGen;
 using Broiler.JavaScript.Runtime;
 using Expression = Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression;
@@ -20,8 +20,8 @@ public static class EvalShadowBuilder
     public static Expression SetValue(Expression target, Expression value) =>
         target.CallExpression<JSVariable, JSValue, JSValue>(() => (x, v) => x.SetValue(v), value);
 
-    public static Expression Register(Expression stackItem, Expression variable) =>
-        stackItem.CallExpression<CallStackItem>(() => x => x.RegisterDirectEvalBinding(null), variable);
+    public static Expression Register(Expression context, Expression stackItem, Expression variable) =>
+        NewLambdaExpression.StaticCallExpression(() => () => CallFrames.RegisterDirectEvalBinding(null, default, null), context, stackItem, variable);
 
     // Reference-stable compound assignment (see JSVariable.CaptureReference).
     public static Expression CaptureReference(Expression target) =>

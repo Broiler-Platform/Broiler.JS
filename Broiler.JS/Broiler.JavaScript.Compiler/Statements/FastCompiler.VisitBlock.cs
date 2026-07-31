@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
@@ -146,7 +146,7 @@ partial class FastCompiler
             if (exp == null)
                 continue;
 
-            blockList.Add(CallStackItemBuilder.Step(scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
+            blockList.Add(CallStackItemBuilder.Step(scope.Context, scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
             blockList.Add(exp);
         }
 

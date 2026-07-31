@@ -8,20 +8,19 @@ public class V8StackTrace
     public V8StackTrace(JSContext context)
     {
         List<V8CallFrame> cflist = [];
-        var top = context.Top;
+        var frames = context.Frames;
 
-        while (top != null)
+        for (var i = frames.Depth - 1; i >= 0; i--)
         {
+            frames.Describe(i, out var function, out var fileName, out var line, out var column);
             cflist.Add(new V8CallFrame
             {
-                FunctionName = top.Function.Value,
-                ScriptId = top.FileName,
-                Url = top.FileName,
-                LineNumber = top.Line,
-                ColumnNumber = top.Column
+                FunctionName = function.Value,
+                ScriptId = fileName,
+                Url = fileName,
+                LineNumber = line,
+                ColumnNumber = column
             });
-
-            top = top.Caller;
         }
 
         CallFrames = cflist;

@@ -226,7 +226,9 @@ public partial class JSGenerator : JSObject, IJSGenerator
     public bool MoveNext(JSValue replaceOld, out JSValue item)
     {
         var c = JSEngine.Current as IJSExecutionContext;
-        var top = c?.Top;
+        // Depth rather than a frame reference: restoring a depth can only unwind, so it cannot
+        // resurrect a frame the body has already left (see CallFrameStack.RestoreDepth).
+        var savedDepth = c?.Frames.Depth ?? 0;
         // new.target is always undefined inside a generator body. Clear any ambient
         // new target (e.g. the constructor being run while this generator is iterated
         // as a `new TypedArray(gen)` source) so a `new` inside the body resolves its
@@ -244,7 +246,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
         try
         {
             executing = true;
-            // c.Top = cg.StackItem;
+
             if (c != null) c.CurrentNewTarget = null;
             cg.Next(replaceOld, out item, out done);
             value = item;
@@ -266,7 +268,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
         finally
         {
             executing = false;
-            if (c != null) { c.Top = top; c.CurrentNewTarget = savedNewTarget; }
+            if (c != null) { c.Frames.RestoreDepth(savedDepth); c.CurrentNewTarget = savedNewTarget; }
         }
     }
 
@@ -295,7 +297,9 @@ public partial class JSGenerator : JSObject, IJSGenerator
         }
 
         var c = JSEngine.Current as IJSExecutionContext;
-        var top = c?.Top;
+        // Depth rather than a frame reference: restoring a depth can only unwind, so it cannot
+        // resurrect a frame the body has already left (see CallFrameStack.RestoreDepth).
+        var savedDepth = c?.Frames.Depth ?? 0;
         // new.target is always undefined inside a generator body; clear any ambient
         // new target so a `new` inside the body is unaffected by an outer construction
         // that happens to be iterating this generator.
@@ -323,7 +327,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
         finally
         {
             executing = false;
-            if (c != null) { c.Top = top; c.CurrentNewTarget = savedNewTarget; }
+            if (c != null) { c.Frames.RestoreDepth(savedDepth); c.CurrentNewTarget = savedNewTarget; }
         }
     }
 

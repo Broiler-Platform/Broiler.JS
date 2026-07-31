@@ -1321,7 +1321,7 @@ an exact-`JSObject` test and overridden by `JSArray` — so integer-indexed exot
 
 ---
 
-## 7. P3 — call-path structure — **premise disproved; the real cost was the activation record, now removed**
+## 7. P3 — call-path structure — **premise disproved; the activation record was the cost, and is now a shadow stack**
 
 The original item read:
 
@@ -1413,7 +1413,7 @@ capturing a trace, a direct eval, a generator suspending). That is a redesign of
 activation record, with its own test pass, and it should be filed as its own item rather than
 carried under "call-path structure".
 
-### The activation record — **implemented, by recycling rather than by redesign**
+### The activation record — **first attempt: recycling rather than redesign**
 
 The paragraph above proposed materializing frames lazily. That was not necessary. Frames are
 now **rented from a free list** and returned by the `Pop` their own call already emitted, which
@@ -1503,6 +1503,80 @@ The lazy-materialization redesign is no longer needed for allocation. It would s
 to remove the frame's remaining *work* (the push/pop bookkeeping itself), which this does not
 touch — but there is no measured cost there to remove.
 
+### The activation record, again — **redesigned as a shadow stack; the bookkeeping was worth 11%**
+
+The paragraph above was wrong, and measurably so. I expected the redesign to be neutral because
+allocation was already zero and the remaining bookkeeping had measured as noise. It is not
+noise: replacing the per-call object with an array slot is worth **3–15% of wall clock on
+call-heavy code**, median ≈ 11%.
+
+A frame now lives in `CallFrameStack` — a growable `CallFrame[]` owned by the context — and a
+running call holds a `FrameToken` struct, which is an ordinary CLR local. Push is a bounds check
+and some field writes; pop is `depth = slot`.
+
+Interleaved ABBA at process granularity, two independent builds, ten runs each, medians:
+
+| | pooled | shadow stack | |
+|---|---:|---:|---:|
+| `f()` empty, 1M | 144.1 ms | 125.5 ms | **−12.9%** |
+| `f(a)`, 1M | 159.8 | 147.3 | −7.8% |
+| `o.m(a)`, 1M | 172.1 | 153.1 | −11.1% |
+| `p.m(a)` inherited, 1M | 197.9 | 182.6 | −7.7% |
+| arrow, 1M | 136.1 | 115.1 | **−15.5%** |
+| `fib(27)` | 97.0 | 84.6 | −12.8% |
+| `map` callback, 300k | 166.7 | 161.4 | −3.2% |
+| `new C()`, 500k | 278.3 | 264.6 | −4.9% |
+| recursion depth 200 | 61.6 | 52.9 | −14.2% |
+
+Allocation is unchanged at **0 B for an argument-less call** and 56 B for `f(a)` — the pool had
+already taken that to zero, and this keeps it there without a pool.
+
+Why it is faster, having predicted it would not be: the pooled path did two thread-local lookups
+per call and wrote ten fields of a heap object, five of them references and so each behind a GC
+write barrier, plus the free-list link. The array path writes a slot and bumps an integer.
+Thread-local access and write barriers are individually small and collectively not noise. The
+earlier "no measured cost" reading came from comparing pooling against *allocating*, which is the
+wrong pair: it showed that recycling costs about what allocating costs, not that either is free.
+
+#### What the array removes
+
+Both rules recycling needed are gone, and gone by construction rather than by being enforced:
+
+- A stale link cannot exist, because there are no links. The caller of frame *i* is frame
+  *i−1*; the chain is the array's own order. So no push stamping, and no cycle to hang a walker.
+- A dead frame cannot be handed to a second owner, because a slot has no identity to confuse.
+  `Pop` names the frame to unwind *to*, so a call whose callees were stranded by a suspension
+  still restores its caller's depth exactly, rather than depending on each of them to pop.
+- `JSGenerator.MoveNext` saves and restores a **depth** instead of a frame reference, and
+  restoring is defined to only ever unwind. That is what made the old design's worst bug
+  possible — it restored a `Top` pointing at a frame the body had already popped, which was then
+  reissued and linked under itself.
+
+Generator and async bodies still need a heap frame (`CallStackItem`, now reduced to just that
+role): their slot does not survive a suspension, so their state lives off to the side and the
+slot points at it. One allocation per generator instance, none per ordinary call.
+
+#### A second, separable win
+
+Resolving a name against the context walked the frame chain looking for direct-eval bindings, on
+*every* such lookup. The stack now carries a flag saying whether any live frame has one, and
+skips the walk when none does — which is almost always. Measured on its own it is worth **−8%**
+on a native-builtin loop (`Math.max` in a 300k loop: 30.2 → 27.7 ms) and nothing anywhere else,
+so it is reported separately rather than folded into the 11% above. It is an independent
+optimization that the array made obvious, not a consequence of it.
+
+#### Evidence
+
+- Full suite **7 213 tests, 7 213 passing, 0 failures**, green on the first complete run of the
+  redesign.
+- test262 over generators, async generators, async functions, `eval-code`, `Error`, calls, `try`
+  and the Intl surfaces: **2 412 passing, 51 failing, 0 timed out** — identical to the pooled
+  design, nothing newly failing, nothing newly timing out.
+- The three invariant tests were rewritten, because the two they replaced pinned rules that no
+  longer exist. They now cover what the array can still get wrong: a suspendable frame losing
+  its slot and retaking one under a different caller, unwinding refusing to grow back into
+  abandoned slots, and popping past stranded callees.
+
 ---
 
 ## 8. Sequencing and exit gates
@@ -1514,7 +1588,7 @@ touch — but there is no measured cost there to remove.
 | ~~**C**~~ | ~~P1-1, P1-4~~ | **Done** — cache reaches constructor/class code (0 → ~100% hit rate); constructor-built objects 6 595 → 1 480 bytes | Full `dotnet test` green; `PropertyShapeCacheTests` asserts the hit rates and every staleness path. P1-4's double storage still open |
 | ~~**D**~~ | ~~P1-2~~, ~~P1-3~~ | P1-2 **done** — inherited and class method calls hit the cache. P1-3 **done** — constant-key stores go through a store cache; 2.1× on a monomorphic store, 3.6× when the property name is not a one-character early-interned key. The shape-transition case is written up as not implemented | `PropertyShapeCacheTests` covers `setPrototypeOf`, prototype mutation, own-property shadowing, delete, freeze, accessor redefinition, polymorphic and megamorphic sites; `PropertyStoreCacheTests` covers the write side |
 | ~~**E**~~ | ~~P2-1~~, ~~P2-2~~ | P2-1 **done**, plus the two array defects in §6.5 (729× on repeated `pop`, 9× on array fill). P2-2 **done** — small integers are minted once per thread; 33–80% less allocation on index- and counter-heavy code, and a latent cross-realm `GetMethod` bug fixed on the way. Throughput deliberately unclaimed | `IndexedWriteAndLengthTests` covers integrity levels, foreign receivers, exotics and length-shrink; `SmallNumberCacheTests` covers negative zero, the range boundaries, primitive identity and per-realm prototypes; `test262-arrays` still owed |
-| ~~**F**~~ | ~~P2-3~~, ~~P2-4~~, ~~P3~~ | P2-4 **done** — repeated concatenation is no longer quadratic (150× on the accumulation loop, 10.6× less allocation on `dromaeo-object-string`). P2-3 **done** — a dense element is one reference instead of a 32-byte descriptor; `new Array(1000)` allocates 73% less, and the deferral's feasibility objection turned out not to hold. P3 **done** — the scopes it blamed cost nothing, but the 80-byte per-call `CallStackItem` they hid was the whole fixed cost of an argument-less call; frames are now recycled and that call allocates **nothing** (`f(a)` 136 → 56 bytes, whole-scenario allocation −7% to −65%, throughput unchanged) | `StringConcatenationRopeTests`, `CompactElementStorageTests`, `ElementDescriptorRoundTripTests`, `CallFramePoolTests` (both frame-lifetime rules mutation-tested); P3 additionally gated on a test262 run over generators/async/eval/Error/calls showing no new failure and no new timeout. `test262` string and array coverage and the full matrix per `docs/performance.md` still owed |
+| ~~**F**~~ | ~~P2-3~~, ~~P2-4~~, ~~P3~~ | P2-4 **done** — repeated concatenation is no longer quadratic (150× on the accumulation loop, 10.6× less allocation on `dromaeo-object-string`). P2-3 **done** — a dense element is one reference instead of a 32-byte descriptor; `new Array(1000)` allocates 73% less, and the deferral's feasibility objection turned out not to hold. P3 **done** — the scopes it blamed cost nothing, but the 80-byte per-call `CallStackItem` they hid was the whole fixed cost of an argument-less call; the frame is now a slot in a context-owned array addressed by a struct token, so that call allocates **nothing** (`f(a)` 136 → 56 bytes, whole-scenario allocation −7% to −65%) and call-heavy code runs **3–15% faster** (median ≈ 11%) | `StringConcatenationRopeTests`, `CompactElementStorageTests`, `ElementDescriptorRoundTripTests`, `CallFrameStackTests` (frame-lifetime invariants asserted directly against the frame API); P3 additionally gated on a test262 run over generators/async/eval/Error/calls showing no new failure and no new timeout. `test262` string and array coverage and the full matrix per `docs/performance.md` still owed |
 
 Each phase adds an entry to `eng/performance/ownership.json` with its benchmark and semantic
 owner, and closes only under the acceptance rules in `docs/performance.md` — two runs inside

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using System.Collections.Generic;
 using System.Reflection;
@@ -291,7 +291,7 @@ partial class FastCompiler
             // parameter list resolves its introduced `var` to the shared shadow
             // binding (via TryResolveDirectEvalBinding in JSContext.Register).
             foreach (var evalShadow in cs.EvalShadows)
-                sList.Add(EvalShadowBuilder.Register(stackItem, evalShadow.Variable));
+                sList.Add(EvalShadowBuilder.Register(cs.Context, stackItem, evalShadow.Variable));
 
             // Base class (§10.2.2 [[Construct]]): InitializeInstanceElements runs after
             // OrdinaryCallBindThis but BEFORE OrdinaryCallEvaluateBody, so instance fields

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Broiler.JavaScript.ExpressionCompiler.ClosureSeparator;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
@@ -53,7 +53,7 @@ public class TryBlock
 
 public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, Arguments arguments, bool asyncGenerator = false)
 {
-    public CallStackItem StackItem;
+    public FrameToken StackItem;
 
     private Exception injectedException = null;
 

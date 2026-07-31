@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Broiler.JavaScript.Ast.Patterns;
@@ -241,7 +241,7 @@ partial class FastCompiler
                     // result (UpdateEmpty). Declarations synthesized inside desugared
                     // for-in/for-of bodies are likewise untouched.
 
-                    blockList.Add(CallStackItemBuilder.Step(scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
+                    blockList.Add(CallStackItemBuilder.Step(scope.Context, scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
                     blockList.Add(exp);
                 }
             }

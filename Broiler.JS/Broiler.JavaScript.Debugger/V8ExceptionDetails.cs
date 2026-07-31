@@ -1,4 +1,4 @@
-﻿using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Runtime;
 using System;
 
@@ -30,8 +30,8 @@ public class V8ExceptionDetails
         {
             ExecutionContextId = $"C-{context.ID}";
             StackTrace = new V8StackTrace(context);
-            LineNumber = context.Top?.Line ?? 0;
-            ColumnNumber = context.Top?.Column ?? 0;
+            LineNumber = context.CurrentLine;
+            ColumnNumber = context.CurrentColumn;
         }
 
         Text = ex.ToString();
