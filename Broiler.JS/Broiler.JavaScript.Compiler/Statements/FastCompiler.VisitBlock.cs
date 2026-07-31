@@ -121,7 +121,10 @@ partial class FastCompiler
                     && scope.CanScalarReplaceLocals
                     && scope.Function != null
                     && !v.Equals("arguments")
-                    && !v.Equals("eval");
+                    && !v.Equals("eval")
+                    // A closure captures through a cell, so a name any nested function
+                    // mentions keeps one; the rest of the function's vars need not.
+                    && !scope.CapturedByNestedFunctions.Contains(v.Value);
                 // A name the analysis proved numeric lives in a raw double. Its hoisted value
                 // is 0 rather than undefined, which is only sound because the analysis
                 // rejected any name that can be READ before its initializer runs.

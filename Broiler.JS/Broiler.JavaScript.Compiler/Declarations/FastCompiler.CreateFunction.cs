@@ -64,7 +64,9 @@ partial class FastCompiler
         thisIsUninitialized: thisIsUninitialized,
         previousNewTarget: previousNewTarget));
         {
-            cs.CanScalarReplaceLocals = IsScalarReplacementEligible(functionDeclaration);
+            cs.CanScalarReplaceLocals = TryPlanScalarReplacement(functionDeclaration, out var capturedNames, out var hasNestedFunction);
+            cs.CapturedByNestedFunctions = capturedNames;
+            cs.HasNestedFunctions = hasNestedFunction;
             // Only worth asking when the locals are scalar-replaceable at all: the analysis
             // assumes no closure can capture the binding and no eval/with can rename it.
             if (cs.CanScalarReplaceLocals)
@@ -404,6 +406,7 @@ partial class FastCompiler
                     && !functionDeclaration.IsArrowFunction
                     && !isDirectEvalCompilation
                     && cs.CanScalarReplaceLocals
+                    && !cs.HasNestedFunctions
                     && !cs.HasOuterFunctionCaptures
                     && withBoundaries.Count == 0)
                 {
@@ -622,8 +625,38 @@ partial class FastCompiler
         return [.. bindings];
     }
 
-    private static bool IsScalarReplacementEligible(AstFunctionExpression functionDeclaration)
+    private static readonly IReadOnlySet<string> NoCapturedNames = new HashSet<string>(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Decides whether this function's <c>var</c>s may live in raw locals, and which of its
+    /// names must not because a nested function could capture them.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The first classification disqualified any function containing a nested function, on the
+    /// grounds that a closure needs a cell to capture. That is true but far too broad: it is not
+    /// "this function has a closure" that matters, it is "this closure names this binding". The
+    /// difference is most of the ordinary code there is — a counted loop in a function that also
+    /// defines a helper was paying ~97 bytes an iteration to box its counter, against 0.8 for
+    /// the same loop with the helper deleted, and it made no difference whether the helper was a
+    /// declaration, an expression or an arrow; whether it was ever referenced; or whether it was
+    /// written before the loop or after it (docs/performance-roadmap.md §6.6).
+    /// </para>
+    /// <para>
+    /// So a nested function is scanned rather than treated as a wall, and every name it mentions
+    /// is excluded. That is still conservative — it cannot tell a capture of the outer
+    /// <c>i</c> from its own parameter <c>i</c>, or from a property named <c>i</c> — but it is
+    /// sound in the direction that matters, because capturing a binding requires naming it.
+    /// A nested function that could reach a name it does not mention — one containing a direct
+    /// eval, a <c>with</c>, or a <c>debugger</c> — disqualifies the whole function as before.
+    /// </para>
+    /// </remarks>
+    private static bool TryPlanScalarReplacement(AstFunctionExpression functionDeclaration,
+        out IReadOnlySet<string> capturedNames, out bool hasNestedFunction)
     {
+        capturedNames = NoCapturedNames;
+        hasNestedFunction = false;
+
         if (functionDeclaration.Async
             || functionDeclaration.Generator
             || ParametersContainDirectEval(functionDeclaration)
@@ -634,15 +667,24 @@ partial class FastCompiler
 
         var detector = new ScalarReplacementHazardDetector();
         detector.Visit(functionDeclaration.Body);
-        return !detector.Found;
+        hasNestedFunction = detector.HasNestedFunction;
+        if (detector.Found)
+            return false;
+
+        capturedNames = detector.Captured;
+        return true;
     }
 
-    // A first deliberately conservative classification: functions with nested closures,
-    // with-environments, or debugger visibility keep JSVariable cells. This guarantees
-    // every scalarized var is noncaptured and not dynamically observable.
+    // Hazards that poison the whole function: a with-environment, debugger visibility, or a
+    // nested function that can reach names it does not mention. Names a nested function merely
+    // mentions are collected instead, and excluded one at a time.
     private sealed class ScalarReplacementHazardDetector : Broiler.JavaScript.Ast.AstReduce
     {
         public bool Found { get; private set; }
+
+        public bool HasNestedFunction { get; private set; }
+
+        public readonly HashSet<string> Captured = new(StringComparer.Ordinal);
 
         // AstReduce deliberately treats these compact structs as leaves because most
         // rewriting visitors handle them explicitly. Scalar eligibility must inspect
@@ -679,7 +721,15 @@ partial class FastCompiler
 
         protected override AstNode VisitFunctionExpression(AstFunctionExpression functionExpression)
         {
-            Found = true;
+            HasNestedFunction = true;
+
+            // Scanned, not refused. Everything it names is off limits; if it can reach a name
+            // it does not name, the enclosing function is disqualified outright.
+            var scanner = new NestedFunctionScanner(Captured);
+            scanner.Visit(functionExpression);
+            if (scanner.Dynamic)
+                Found = true;
+
             return functionExpression;
         }
 
@@ -692,6 +742,79 @@ partial class FastCompiler
         protected override AstNode VisitDebuggerStatement(AstDebuggerStatement debuggerStatement)
         {
             Found = true;
+            return debuggerStatement;
+        }
+    }
+
+    /// <summary>
+    /// Collects every name mentioned inside a nested function — including inside functions
+    /// nested within it, whose captures reach through — and reports whether it can resolve a
+    /// name that does not appear in its text.
+    /// </summary>
+    private sealed class NestedFunctionScanner(HashSet<string> captured) : Broiler.JavaScript.Ast.AstReduce
+    {
+        /// <summary>
+        /// The nested function can reach a binding it never names: a direct eval resolves
+        /// arbitrary identifiers at run time, a <c>with</c> resolves them against an object, and
+        /// <c>debugger</c> exposes the whole scope chain.
+        /// </summary>
+        public bool Dynamic { get; private set; }
+
+        // Same containers AstReduce leaves to specialized rewriters. Missing one here is not a
+        // missed optimization but a miscompile: a capture hidden in a variable initializer, a
+        // destructuring default or a switch clause would leave the captured local scalarized.
+        protected override VariableDeclarator VisitVariableDeclarator(VariableDeclarator declarator)
+        {
+            Visit(declarator.Identifier);
+            if (declarator.Init != null)
+                Visit(declarator.Init);
+            return declarator;
+        }
+
+        protected override ObjectProperty VisitObjectProperty(ObjectProperty property)
+        {
+            if (property.Key != null)
+                Visit(property.Key);
+            if (property.Value != null)
+                Visit(property.Value);
+            if (property.Init != null)
+                Visit(property.Init);
+            return property;
+        }
+
+        protected override Case VisitCase(Case @case)
+        {
+            if (@case.Test != null)
+                Visit(@case.Test);
+            var statements = @case.Statements.GetFastEnumerator();
+            while (statements.MoveNext(out var statement))
+                Visit(statement);
+            return @case;
+        }
+
+        protected override AstNode VisitIdentifier(AstIdentifier identifier)
+        {
+            captured.Add(identifier.Name.Value);
+            return identifier;
+        }
+
+        protected override AstNode VisitCallExpression(AstCallExpression callExpression)
+        {
+            if (callExpression.Callee is AstIdentifier callee && callee.Name.Equals("eval"))
+                Dynamic = true;
+
+            return base.VisitCallExpression(callExpression);
+        }
+
+        protected override AstNode VisitWithStatement(AstWithStatement withStatement)
+        {
+            Dynamic = true;
+            return base.VisitWithStatement(withStatement);
+        }
+
+        protected override AstNode VisitDebuggerStatement(AstDebuggerStatement debuggerStatement)
+        {
+            Dynamic = true;
             return debuggerStatement;
         }
     }

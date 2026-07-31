@@ -259,6 +259,17 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     public bool CanScalarReplaceLocals { get; internal set; }
 
     /// <summary>
+    /// Names some nested function mentions, and which therefore may not live in a raw local:
+    /// capturing a binding requires naming it. Empty when the function has no nested functions.
+    /// </summary>
+    public IReadOnlySet<string> CapturedByNestedFunctions { get; internal set; } = NoCapturedNames;
+
+    /// <summary>Whether the function contains any nested function at all.</summary>
+    public bool HasNestedFunctions { get; internal set; }
+
+    private static readonly IReadOnlySet<string> NoCapturedNames = new HashSet<string>(StringComparer.Ordinal);
+
+    /// <summary>
     /// Names this function's analysis proved only ever hold a number, so they can live in a
     /// CLR <c>double</c> (docs/performance-roadmap.md P2-2 item 3). Never null.
     /// </summary>
@@ -534,6 +545,8 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         ReturnLabel = p.ReturnLabel;
         NewTargetExpression = p.NewTargetExpression;
         CanScalarReplaceLocals = p.CanScalarReplaceLocals;
+        CapturedByNestedFunctions = p.CapturedByNestedFunctions;
+        HasNestedFunctions = p.HasNestedFunctions;
         NumericLocals = p.NumericLocals;
     }
 

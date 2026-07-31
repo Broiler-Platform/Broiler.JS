@@ -231,4 +231,88 @@ public class NumericLocalTests
     [Fact]
     public void RecursionAcrossFunctionBoundariesIsUnaffected()
         => Assert.Equal("610", Fn("function f(n) { return n < 2 ? n : f(n - 1) + f(n - 2); } return f(15);"));
+
+    // ── which locals a nested function costs ──────────────────────────────────────────
+    //
+    // Eligibility used to be refused outright to any function containing a nested function,
+    // on the grounds that a closure captures through a cell. The relevant question is not
+    // whether the function has a closure but whether that closure names the binding, and the
+    // difference is most of the ordinary code there is: a counted loop in a function that also
+    // defines a helper was boxing its counter every iteration (docs/performance-roadmap.md
+    // §6.6). These assert the counts rather than results, because the counts are what the
+    // rule changes — a behavioural test passes either way.
+
+    [Theory]
+    // The helper mentions neither local, so neither pays for it.
+    [InlineData("function h() { return 1; } var s = 0; for (var i = 0; i < 10; i++) s += i; return s;")]
+    [InlineData("var h = function () { return 1; }; var s = 0; for (var i = 0; i < 10; i++) s += i; return s;")]
+    [InlineData("var h = () => 1; var s = 0; for (var i = 0; i < 10; i++) s += i; return s;")]
+    // Never referenced, and declared after the loop: neither changes the answer.
+    [InlineData("var s = 0; for (var i = 0; i < 10; i++) s += i; function h() { return 1; } return s;")]
+    // A helper that names something else entirely.
+    [InlineData("var q = 1; function h() { return q; } var s = 0; for (var i = 0; i < 10; i++) s += i; return s;")]
+    public void ANestedFunctionThatNamesNeitherLocalCostsNeither(string body)
+    {
+        var (result, numericLocals) = Compile(body);
+        Assert.Equal("45", result);
+        Assert.Equal(2, numericLocals);
+    }
+
+    [Fact]
+    public void OnlyTheNamesANestedFunctionMentionsAreRefused()
+    {
+        // `s` is named by the helper and keeps a cell; `i` is not and stays a double.
+        var (result, numericLocals) = Compile("function h() { return s; } var s = 0; for (var i = 0; i < 10; i++) s += i; return s;");
+        Assert.Equal("45", result);
+        Assert.Equal(1, numericLocals);
+    }
+
+    [Theory]
+    // A nested function that can resolve a name it never mentions gives nothing away safely,
+    // so the enclosing function is refused entirely, exactly as before.
+    [InlineData("function h() { return eval('1'); } var s = 0; for (var i = 0; i < 10; i++) s += i; return s;")]
+    [InlineData("function h() { var o = {}; with (o) { return 1; } } var s = 0; for (var i = 0; i < 10; i++) s += i; return s;")]
+    [InlineData("function h() { debugger; } var s = 0; for (var i = 0; i < 10; i++) s += i; return s;")]
+    public void ANestedFunctionWithDynamicScopeAccessStillRefusesEverything(string body)
+    {
+        var (result, numericLocals) = Compile(body);
+        Assert.Equal("45", result);
+        Assert.Equal(0, numericLocals);
+    }
+
+    // The scanner has to see through the same containers the rest of the analysis does.
+    // Missing one is not a lost optimization but a miscompile, so each is checked to leave the
+    // named binding un-specialized.
+    [Theory]
+    [InlineData("var h = function () { var q = s; return q; };")]              // variable initializer
+    [InlineData("var h = { m: function () { return s; } };")]                  // object literal value
+    [InlineData("var h = { get m() { return s; } };")]                         // accessor
+    [InlineData("var h = function (a) { switch (a) { case 1: return s; } };")] // switch clause
+    [InlineData("var h = function (a) { try { return s; } catch (e) {} };")]   // try block
+    [InlineData("var h = function (a) { try { a(); } catch (e) { return s; } };")] // catch block
+    [InlineData("var h = function (a = s) { return a; };")]                    // default parameter
+    [InlineData("var h = function ({ a = s }) { return a; };")]                // destructuring default
+    [InlineData("var h = function () { return `${s}`; };")]                    // template literal
+    [InlineData("var h = function () { return () => s; };")]                   // through a further nesting
+    [InlineData("class H { m() { return s; } }")]                              // class method
+    [InlineData("class H { f = s; }")]                                         // class field initializer
+    public void ANameReachedThroughAnyContainerIsRefused(string helper)
+    {
+        var (result, numericLocals) = Compile(helper + " var s = 0; for (var i = 0; i < 10; i++) s += i; return s;");
+        Assert.Equal("45", result);
+        // `i` still specializes; `s` must not.
+        Assert.Equal(1, numericLocals);
+    }
+
+    // ...and the values stay right whichever side of the line a binding falls on.
+    [Theory]
+    [InlineData("var s = 0; for (var i = 0; i < 10; i++) s = i; var g = function () { return s; }; return g();", "9")]
+    [InlineData("var s = 0; for (var i = 0; i < 10; i++) s = i; var g = function () { s = 42; }; g(); return s;", "42")]
+    [InlineData("var s = 0; for (var i = 0; i < 10; i++) s = i; var g = function () { s = 'x'; }; g(); return typeof s;", "string")]
+    [InlineData("var s = 0; for (var i = 0; i < 10; i++) s = i; var g = function () { s++; }; g(); return s;", "10")]
+    [InlineData("var s = 0; var r = function () { return s; }; var w = function (v) { s = v; }; w(7); return r();", "7")]
+    [InlineData("var s = 0; var fs = []; for (var i = 0; i < 3; i++) { fs.push(function () { return s; }); s = i; } return fs[0]() + ',' + fs[2]();", "2,2")]
+    [InlineData("function h() { return 1; } var s = 0; for (var i = 0; i < 10; i++) s += i; return s + ',' + h();", "45,1")]
+    public void CaptureStillObservesTheLiveValue(string body, string expected)
+        => Assert.Equal(expected, Fn(body));
 }

@@ -1036,28 +1036,94 @@ but it is now visible often enough to be worth hunting down on its own.
 **Still open.** A `var` declared inside a block or loop body is not eligible, which is the
 gap `mandelbrot-ish` sits in and would need definite-assignment analysis to close. Parameters
 are never specialized, so a numeric function argument stays boxed. And `let`/`const` are
-excluded to avoid reasoning about TDZ.
+excluded to avoid reasoning about TDZ. (The nested-function gate was the fourth item on this
+list; it is closed below.)
 
-**And one gate that is far coarser than it looks — measured while benchmarking P3.** The
-eligibility test (`IsScalarReplacementEligible`) rejects a function that contains *any* nested
-function, and "any" is literal: a declaration, a function expression or an arrow; referenced or
-never referenced; written before the loop or after it. All six shapes measure the same.
+### The eligibility gate — **narrowed from "has a closure" to "that closure names this binding"**
 
-| enclosing function contains | per loop iteration |
+Measured while benchmarking P3: `IsScalarReplacementEligible` rejected a function containing
+*any* nested function, and "any" was literal — a declaration, a function expression or an arrow;
+referenced or never referenced; written before the loop or after it. All six shapes measured the
+same, and none of them can capture a counter they never mention.
+
+| enclosing function contains | per loop iteration, before |
 |---|---:|
-| nothing else | **0.8 B** |
+| nothing else | 0.8 B |
 | `function f(){}` | 96.9 B |
 | `var f = function(){}` | 97.0 B |
 | `var f = () => 1` | 96.9 B |
 | `function f(){ return 1; }`, never referenced | 97.0 B |
 | `function f(){}` written *after* the loop | 96.9 B |
 
-So `for (var i = 0; i < n; i++)` boxes its counter in any function that also happens to define a
-helper — which is most real code, and is why the P3 floors in §7 sit at ~96 B/iteration rather
-than at zero. The gate is conservative rather than necessary: an unreferenced `function f(){}`
-cannot capture `i`, and the analysis already tracks which names a closure reads. Narrowing it
-from "contains a nested function" to "a nested function references this binding" is the largest
-single allocation win left in the document, and it is a change to one predicate, not a redesign.
+That is most real code: a counted loop in a function that also defines a helper boxed its
+counter every iteration, which is why the P3 floors in §7 sit at ~96 B/iteration rather than
+zero.
+
+**Status: implemented.** A nested function is now scanned rather than treated as a wall. Every
+name it mentions is excluded from scalar replacement; the rest of the function's `var`s are
+unaffected. A nested function that can reach a name it does *not* mention — one containing a
+direct eval, a `with`, or a `debugger` — still disqualifies the enclosing function outright, as
+does everything else the original gate refused.
+
+The scan is deliberately cruder than a real free-variable analysis: it cannot tell a capture of
+the outer `i` from the nested function's own parameter `i`, or from a property named `i`. That
+costs a little specialization and buys the property that matters, which is that capturing a
+binding requires naming it — so collecting every name is sound by construction, and it stays
+sound as the AST grows node types.
+
+Interleaved ABBA, **one scenario per process**, eight runs per arm, medians:
+
+| | before | after | | allocation |
+|---|---:|---:|---:|---|
+| `s += i` ×1M | 85.7 ms | 2.8 ms | **−96.8%** | 127.9 MB → 6.0 KB |
+| `s += i*i/3-i*2+1` ×1M | 213.4 | 2.8 | **−98.7%** | 287.9 MB → 6.0 KB |
+| nbody-ish ×300k | 49.6 | 6.9 | −86.1% | 67.1 MB → 6.0 KB |
+| `s += i%256` ×200k | 26.2 | 3.1 | −88.4% | 25.5 MB → 6.0 KB |
+| `a[i%256] = i%256` ×200k | 40.9 | 18.4 | −55.1% | 19.1 MB → 10.5 KB |
+| `charCodeAt` ×200k | 55.7 | 36.1 | −35.2% | 25.5 MB → 6.4 MB |
+| `a[i&255] = 1` ×200k | 31.0 | 21.5 | −30.5% | |
+| `h(i)` ×500k | 118.5 | 87.3 | −26.3% | 75.9 MB → 44.0 MB |
+| `s += a[j]` ×205k | 18.8 | 14.9 | −20.7% | |
+| `a.push(1)` ×200k | 172.5 | 157.8 | −8.5% | |
+
+Every scenario improves; the arithmetic loops stop allocating altogether.
+
+**One scenario per process is load-bearing, not fussiness.** Measured the ordinary way — several
+scenarios in one process, each with its own `JSContext` — the same build reported `s += a[j]` as
+**+122% slower** and `a[i&255]` as **+98% slower**, stably, across repeated interleaved runs.
+Both are artifacts: earlier scenarios leave the process warmed in ways that flatter whichever
+build runs them, and no amount of ABBA within one process removes it, because the contamination
+is in the process rather than in the order. I had those numbers written up as real regressions
+before splitting the harness. This is the same failure that made P2-2's first three measurements
+wrong, in a new disguise.
+
+#### Tests
+
+The behavioural half is worthless here — a capture that gets scalarized still computes the right
+answer, because the lambda rewriter boxes captured locals and the numeric analysis independently
+rejects any name a nested function writes a non-number to. Removing the exclusion entirely leaves
+every behavioural test green. So the tests assert the **counts** (`CompilerSpecializationDiagnostics`),
+which is what the rule actually changes:
+
+- a nested function naming neither local leaves both specialized (fails if the old gate is restored);
+- a nested function naming one local leaves exactly the other specialized;
+- a nested function containing eval/`with`/`debugger` still refuses everything;
+- a name reached through any of twelve containers — variable initializer, object literal, accessor,
+  switch clause, try block, catch block, default parameter, destructuring default, template
+  literal, a further nesting, class method, class field — is refused.
+
+Both directions are mutation-tested: restoring the old gate fails five tests, and disabling the
+exclusion fails two.
+
+Full suite **7 241 tests, 7 241 passing, 0 failures**. test262 was extended for this change to
+the areas it actually touches — `statements/function`, `expressions/function`,
+`arrow-function`, `statements/for`, `statements/variable`, `statements/class` and
+`expressions/assignment` — on top of the generator/async/eval/Error/call set: **7 324 passing,
+42 failing**, and the 42 are the same 42 as before the change, cluster for cluster. The seven
+added directories contributed 5 434 passing tests and no failures at all. One further test
+(`statements/try/tco-catch.js`) timed out in the parallel run and passes three times out of
+three on its own — a CPU-bound tail-call test hitting the 30-second limit under four workers,
+not a regression.
 
 ---
 
@@ -1608,7 +1674,7 @@ optimization that the array made obvious, not a consequence of it.
 | ~~**B**~~ | ~~P0-2~~ | **Done** — folded into the same change | `StrictModeFlowTests` covers every transition shape; test262 manifests still owed |
 | ~~**C**~~ | ~~P1-1, P1-4~~ | **Done** — cache reaches constructor/class code (0 → ~100% hit rate); constructor-built objects 6 595 → 1 480 bytes | Full `dotnet test` green; `PropertyShapeCacheTests` asserts the hit rates and every staleness path. P1-4's double storage still open |
 | ~~**D**~~ | ~~P1-2~~, ~~P1-3~~ | P1-2 **done** — inherited and class method calls hit the cache. P1-3 **done** — constant-key stores go through a store cache; 2.1× on a monomorphic store, 3.6× when the property name is not a one-character early-interned key. The shape-transition case is written up as not implemented | `PropertyShapeCacheTests` covers `setPrototypeOf`, prototype mutation, own-property shadowing, delete, freeze, accessor redefinition, polymorphic and megamorphic sites; `PropertyStoreCacheTests` covers the write side |
-| ~~**E**~~ | ~~P2-1~~, ~~P2-2~~ | P2-1 **done**, plus the two array defects in §6.5 (729× on repeated `pop`, 9× on array fill). P2-2 **done** — small integers are minted once per thread; 33–80% less allocation on index- and counter-heavy code, and a latent cross-realm `GetMethod` bug fixed on the way. Throughput deliberately unclaimed | `IndexedWriteAndLengthTests` covers integrity levels, foreign receivers, exotics and length-shrink; `SmallNumberCacheTests` covers negative zero, the range boundaries, primitive identity and per-realm prototypes; `test262-arrays` still owed |
+| ~~**E**~~ | ~~P2-1~~, ~~P2-2~~ | P2-1 **done**, plus the two array defects in §6.5 (729× on repeated `pop`, 9× on array fill). P2-2 **done** — small integers are minted once per thread; 33–80% less allocation on index- and counter-heavy code, and a latent cross-realm `GetMethod` bug fixed on the way. Throughput deliberately unclaimed. Its item-3 eligibility gate was later narrowed from "contains a nested function" to "a nested function names this binding" (§6.6), which is where the throughput turned up: counted loops in functions that also define a helper — most real code — went **−9% to −99%**, the arithmetic ones stopping allocation entirely | `IndexedWriteAndLengthTests` covers integrity levels, foreign receivers, exotics and length-shrink; `SmallNumberCacheTests` covers negative zero, the range boundaries, primitive identity and per-realm prototypes; `test262-arrays` still owed |
 | ~~**F**~~ | ~~P2-3~~, ~~P2-4~~, ~~P3~~ | P2-4 **done** — repeated concatenation is no longer quadratic (150× on the accumulation loop, 10.6× less allocation on `dromaeo-object-string`). P2-3 **done** — a dense element is one reference instead of a 32-byte descriptor; `new Array(1000)` allocates 73% less, and the deferral's feasibility objection turned out not to hold. P3 **done** — the scopes it blamed cost nothing, but the 80-byte per-call `CallStackItem` they hid was the whole fixed cost of an argument-less call; the frame is now a slot in a context-owned array addressed by a struct token, so that call allocates **nothing** (`f(a)` 136 → 56 bytes, whole-scenario allocation −7% to −65%) and call-heavy code runs **3–15% faster** (median ≈ 11%) | `StringConcatenationRopeTests`, `CompactElementStorageTests`, `ElementDescriptorRoundTripTests`, `CallFrameStackTests` (frame-lifetime invariants asserted directly against the frame API); P3 additionally gated on a test262 run over generators/async/eval/Error/calls showing no new failure and no new timeout. `test262` string and array coverage and the full matrix per `docs/performance.md` still owed |
 
 Each phase adds an entry to `eng/performance/ownership.json` with its benchmark and semantic
