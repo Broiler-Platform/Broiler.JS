@@ -102,13 +102,33 @@ public class JSException : Exception
         }
     }
 
+    /// <summary>
+    /// In a Debug build, dump every JavaScript throw — and every property read on
+    /// <c>null</c>/<c>undefined</c> — to standard error with a full CLR stack.
+    /// Off unless <c>BROILER_LOG_THROWS=1</c>.
+    /// </summary>
+    /// <remarks>
+    /// It has to be opt-in because these are not failures. A throw caught by a <c>try</c>,
+    /// and a TypeError from <c>x.y</c> on undefined, are ordinary JavaScript control flow —
+    /// feature detection does the latter constantly — so a Debug build was writing a stack
+    /// trace per throw to a stream callers use for real diagnostics. That is misleading
+    /// (output on stderr reads as failure, and it hid the actual result of anything piped
+    /// through <c>head</c>), and expensive: <see cref="System.Diagnostics.StackTrace"/> with
+    /// file info reads the PDBs on every single throw.
+    /// </remarks>
+    public static bool LogThrows =
+        string.Equals(Environment.GetEnvironmentVariable("BROILER_LOG_THROWS"), "1", StringComparison.Ordinal);
+
     internal static void Throw(JSValue value, [CallerMemberName] string function = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int line = 0)
     {
 #if DEBUG
-        var st = new System.Diagnostics.StackTrace(true);
-        Console.Error.WriteLine($"[JSException.Throw] {value}");
-        Console.Error.WriteLine($"  Function: {function}, File: {filePath}, Line: {line}");
-        Console.Error.WriteLine(st.ToString());
+        if (LogThrows)
+        {
+            var st = new System.Diagnostics.StackTrace(true);
+            Console.Error.WriteLine($"[JSException.Throw] {value}");
+            Console.Error.WriteLine($"  Function: {function}, File: {filePath}, Line: {line}");
+            Console.Error.WriteLine(st.ToString());
+        }
 #endif
         if (value is IJSError error && TryGetJSException(error.Exception, out var jsException))
             throw jsException.With(value);

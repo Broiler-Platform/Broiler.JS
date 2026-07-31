@@ -1728,6 +1728,29 @@ defect `StringMap.Empty` already carries a fix for (issue #1428, the `body-:0,0`
 second copy of the pattern had been missed. Now thread-local and reset at every `GetNode`
 entry, matching the existing fix.
 
+### A Debug build wrote a CLR stack trace to stderr on every JavaScript `throw`
+
+Three places captured `new System.Diagnostics.StackTrace(true)` and dumped it to `Console.Error`
+under `#if DEBUG`, unconditionally: `JSException.Throw`, and the `this[KeyString]` getters on
+`JSNull` and `JSUndefined`. Nothing in the repository reads that output.
+
+All three sit on *ordinary control flow*, not on failures. A `throw` caught by a `try` is how
+JavaScript reports expected conditions; `x.y` on `undefined` is how feature detection asks
+whether something exists. A script doing either in a loop paid, per occurrence, a stack walk
+with `fNeedFileInfo: true` — which reads the PDBs — plus the formatting and the write.
+
+The output was also actively misleading. It goes to stderr, where a tool or a human reasonably
+reads any output as a failure signal, and it is large enough to push the real result out of
+anything piped through `head`. Diagnosing an unrelated problem, I twice concluded from it that
+`try`/`catch` was broken in Debug builds. It is not: with stderr separated, the same probe
+prints `caught 1` / `caught 2` / `tf` and exits 0. Two rounds of bisection went into a defect
+that did not exist.
+
+It is now behind `JSException.LogThrows`, defaulted from `BROILER_LOG_THROWS=1`, still inside
+`#if DEBUG` — the diagnostic is genuinely useful when you are asking *where did this throw come
+from*, which is why it stays reachable rather than being deleted. Release builds are unchanged;
+they never compiled it.
+
 ### The six pre-existing failures — resolved; the suite is green
 
 Every phase above reports "0 new failures" against a standing baseline of **6 pre-existing

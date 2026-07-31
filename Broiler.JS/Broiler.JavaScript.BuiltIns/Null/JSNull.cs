@@ -40,9 +40,12 @@ public sealed class JSNull : JSValue
         get
         {
 #if DEBUG
-            var st = new System.Diagnostics.StackTrace(true);
-            Console.Error.WriteLine($"[JSNull] Cannot get property {name} of null");
-            Console.Error.WriteLine(st.ToString());
+            if (JSException.LogThrows)
+            {
+                var st = new System.Diagnostics.StackTrace(true);
+                Console.Error.WriteLine($"[JSNull] Cannot get property {name} of null");
+                Console.Error.WriteLine(st.ToString());
+            }
 #endif
             throw JSEngine.NewTypeError($"Cannot get property {name} of null");
         }
