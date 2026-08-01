@@ -92,7 +92,13 @@ public static class RuntimeAssembly
         ExpressionCompilationOptions options)
     {
         options ??= ExpressionCompilationOptions.Default;
-        return ExpressionCompilationBackends.Get(options.Backend).Compile(expression, options);
+
+        // The emitter recurses over the tree, so it needs the same stack the front end that
+        // built the tree got. This overload is the one point every other overload and every
+        // ICodeCache implementation reaches, which is why the boundary is here and not in
+        // each caller.
+        return CompilationStack.Run(
+            () => ExpressionCompilationBackends.Get(options.Backend).Compile(expression, options));
     }
 
     public static T CompileWithNestedLambdas<T>(

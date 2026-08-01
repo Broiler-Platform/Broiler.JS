@@ -120,24 +120,37 @@ public class DictionaryCodeCache : ICodeCache
         var sourceBytes = checked((long)(code.Code.Source?.Length ?? 0) * sizeof(char));
         var estimatedBytes = Math.Max(256L, checked((long)code.Code.Length * 4));
 
+        var sourceLength = code.Code.Length;
+
         return new CacheEntry(
             new Lazy<JSFunctionDelegate>(
-                () => Compile(compiler, compilationOptions),
+                () => Compile(compiler, compilationOptions, sourceLength),
                 LazyThreadSafetyMode.ExecutionAndPublication),
             sourceBytes,
             estimatedBytes);
     }
 
-    private JSFunctionDelegate Compile(JSCodeCompiler compiler, JSCompilationOptions compilationOptions)
+    private JSFunctionDelegate Compile(
+        JSCodeCompiler compiler,
+        JSCompilationOptions compilationOptions,
+        int sourceLength)
     {
         var started = Stopwatch.GetTimestamp();
         try
         {
-            return compiler().CompileWithNestedLambdas(new ExpressionCompilationOptions
-            {
-                Backend = compilationOptions.Backend,
-                EnableJavaScriptTailCalls = compilationOptions.ScriptHostMode
-            }).Value;
+            // One compilation is a front end followed by an emitter, and both need the stack
+            // CompilationStack provides. Each guards itself, so this is not what makes them
+            // safe — it is what makes them share one handoff instead of taking two, since a
+            // nested request runs inline. Worth doing here because this is the cache every
+            // script, module and Function constructor goes through, and the handoff is the
+            // whole cost of the mechanism.
+            return ExpressionCompiler.CompilationStack.Run(
+                () => compiler().CompileWithNestedLambdas(new ExpressionCompilationOptions
+                {
+                    Backend = compilationOptions.Backend,
+                    EnableJavaScriptTailCalls = compilationOptions.ScriptHostMode
+                }).Value,
+                sourceLength);
         }
         finally
         {

@@ -102,11 +102,16 @@ public class CoreScript
             codeCache ??= current.codeCache ?? GetDefaultCodeCache();
             var script = code;
             var compiler = Compiler;
+            // Wrapped here rather than only in each ICodeCache: the factory is the one point
+            // every implementation reaches, including a host's own, and it is where the front
+            // end starts recursing over the source. A cache *hit* never crosses the boundary.
             var jsc = new JSCode(
                 location,
                 code,
                 args,
-                () => compiler.Compile(script, location, args, codeCache),
+                () => ExpressionCompiler.CompilationStack.Run(
+                    () => compiler.Compile(script, location, args, codeCache),
+                    script.Length),
                 compilationOptions ?? current.compilationOptions);
             return codeCache.GetOrCreate(in jsc);
         }

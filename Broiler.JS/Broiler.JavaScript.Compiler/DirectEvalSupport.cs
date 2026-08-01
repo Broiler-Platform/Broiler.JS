@@ -17,7 +17,16 @@ public static class DirectEvalSupport
 {
     private sealed class TransientCodeCache : ICodeCache
     {
-        public JSFunctionDelegate GetOrCreate(in JSCode code) => code.Compiler().CompileWithNestedLambdas();
+        // Front end and emitter under one boundary, so an eval body deep enough to need the
+        // stack takes a single handoff and one short enough not to takes none. See
+        // CompilationStack: without this the two guard themselves separately.
+        public JSFunctionDelegate GetOrCreate(in JSCode code)
+        {
+            var compiler = code.Compiler;
+            return ExpressionCompiler.CompilationStack.Run(
+                () => compiler().CompileWithNestedLambdas(),
+                code.Code.Length);
+        }
     }
 
     private sealed class DeclaredBindingSnapshot(JSContext context, string[] names, string[] excludedNames) : IDisposable
