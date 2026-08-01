@@ -1056,11 +1056,27 @@ positions where the value is provably discarded (an `ExpressionStatement`, or a 
 clause, whose expression *is* the assignment). There the store stays an unboxed double, so the
 hot path is byte-identical to the numbers above.
 
-**Still open.** A `var` declared inside a block or loop body is not eligible, which is the
-gap `mandelbrot-ish` sits in and would need definite-assignment analysis to close. Parameters
-are never specialized, so a numeric function argument stays boxed. And `let`/`const` are
-excluded to avoid reasoning about TDZ. (The nested-function gate was the fourth item on this
-list; it is closed below.)
+**Still open — now tracked in its own document.** The remaining gaps here turned out to be a
+sequence of independent changes rather than one, so they moved to
+[`docs/numeric-locals-roadmap.md`](numeric-locals-roadmap.md), which carries the design,
+sizing and sequencing. In summary:
+
+- **Nested declarations: closed.** A `var` declared inside a block or loop body is now
+  eligible, which is the gap `mandelbrot-ish` sat in — 121 → 25 ms (4.8×) on that shape, and
+  1.8× on a plain loop-body local. It did **not** need definite-assignment analysis: a block
+  cannot be entered anywhere but at its top, so "every reference is textually after the
+  declaration and inside the declaring block" already proves the initializer ran. A `switch`
+  case clause is deliberately not a block, since entering at a later `case` skips the earlier
+  ones.
+- **`let`/`const`: still excluded**, worth 2.4× on an otherwise identical loop. TDZ is the
+  reason, but the rule above happens to prove exactly what TDZ needs, so this is the cheaper
+  of the two remaining items.
+- **Parameters: still excluded**, and this is the big one — 33×, because `IsNumeric` requires
+  a name to be a candidate, so *every local derived from a parameter is refused too*. Copying
+  a parameter into a local does not rescue it. It also cannot be done as an extension of this
+  proof: a parameter's type is a property of the callers, which the compiler does not see.
+
+(The nested-function gate was the fourth item on this list; it is closed below.)
 
 ### The eligibility gate — **narrowed from "has a closure" to "that closure names this binding"**
 
@@ -1770,7 +1786,7 @@ countable in one place.
 | **P1-3** | `o.x++`, `o.x += 1`, computed keys, `super`, optional chains and private names keep the old lowering. `o.x++` was measured the most expensive of them and is the obvious next item | §5 P1-3 |
 | **P1-4** | The double storage. `TrackShapeDataProperty` still writes each value into `shapeSlots` *as well as* the `PropertySequence` entry, so a tracked object stores every value twice and has to keep the two in sync | `JSObject.cs:97`, `:188` |
 | **P1-4** | Shape eligibility is still `GetType() == typeof(JSObject)`, so `JSArray`, `JSFunction` and every built-in exotic are excluded | `JSObject.cs:203` |
-| **P2-2 item 3** | A `var` declared inside a block or loop body (needs definite-assignment analysis), function parameters, and `let`/`const` (TDZ) are all ineligible | §6 |
+| **P2-2 item 3** | Nested block/loop declarations are **done** (4.8× on the shape that gap was named for). Parameters (33×, and it poisons every local derived from one) and `let`/`const` (2.4×) remain — designed and sized in [`numeric-locals-roadmap.md`](numeric-locals-roadmap.md) | that doc §4 |
 | **P3** | Lazy frame materialization. The shadow stack removed the *allocation*; the push/pop bookkeeping itself is untouched. There is no measured cost there, so this is a candidate rather than a task | §7 |
 
 #### Two gaps — **filed, but not where P0-2 and P1-1 said to file them**
