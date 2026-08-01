@@ -18,8 +18,39 @@ samples):
 python scripts/performance/collect_phase0.py --profile smoke
 ```
 
+## The execution-roadmap probe corpus
+
+`HotPathProbeBenchmarks` is the permanent home of the Appendix A probes from
+`docs/performance-roadmap.md` — the scenarios every P0/P1/P2/P3 figure in that document
+was measured on. They lived in an ad-hoc harness outside the repository, which is why
+none of those numbers is acceptance evidence; run these to reproduce or re-check them.
+
+```bash
+$env:BROILER_BENCHMARK_PROFILE = "baseline"
+dotnet run -c Release --project Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks -- --filter *HotPathProbeBenchmarks*
+```
+
+Iteration counts are Appendix A's and are load-bearing: a probe run at a different count
+is not comparable to the figure it is being checked against. `LoopEmpty` is the floor the
+other per-iteration numbers are quoted against, so it is the benchmark baseline.
+
+Phase P1 is measured by cache **hit rate** rather than wall clock, so it has its own
+emitter rather than a benchmark. It reports every site in the roadmap's phase C table as
+JSON, each run cold in a fresh context:
+
+```bash
+dotnet run -c Release --project Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks -- --cache-metrics
+```
+
+A monomorphic site should report one miss per 200 000 reads. A site reporting 200 000
+misses is the pre-P1 defect, and dictionary fallbacks above single digits is the pre-P0-3
+one.
+
 Useful filters:
 
+- `*HotPathProbeBenchmarks*` for the Appendix A corpus above: loop floor, arithmetic,
+  own/class property read and write, sloppy/strict/closure/prototype/built-in calls,
+  array read-write, object allocation, push, and string concatenation.
 - `*ContextStartupBenchmarks*` for `JSContext` creation.
 - `*ScriptEvaluationBenchmarks*` and `*CodeCacheBenchmarks*` for production structural
   cache hits, legacy key materialization, misses, and no-cache evaluation.
@@ -41,4 +72,5 @@ Useful filters:
   reference-backed `JSValue` scalar reads with the isolated eight-byte prototype.
 
 Run `--sparse-metrics` against the built benchmark DLL to emit the Phase 2
-construction-time and bytes-per-entry comparison as JSON.
+construction-time and bytes-per-entry comparison as JSON, and `--cache-metrics` for the
+property inline-cache hit rates described above.

@@ -32,10 +32,17 @@ public static class Program
             return;
         }
 
+        if (args.Length == 1 && args[0] == "--cache-metrics")
+        {
+            InlineCacheMetrics.Write();
+            return;
+        }
+
         BenchmarkSwitcher
             .FromTypes([
                 typeof(ContextStartupBenchmarks),
                 typeof(ScriptEvaluationBenchmarks),
+                typeof(HotPathProbeBenchmarks),
                 typeof(CodeCacheBenchmarks),
                 typeof(FunctionCallBenchmarks),
                 typeof(PropertyOperationBenchmarks),
