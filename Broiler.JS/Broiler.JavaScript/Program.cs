@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Broiler.JavaScript.Engine;
@@ -67,26 +68,7 @@ namespace BroilerJS
             
             if (scriptHostMode)
             {
-                using var sc = CreateSynchronizationContext();
-                using var context = new JSContext(
-                    SynchronizationContext.Current,
-                    experimentalFeatures: JavaScriptFeatureFlags.AllExperimentalEs2026,
-                    options: new JSContextOptions { ScriptHostMode = true });
-                DefineScriptHostGlobals(context);
-                var code = await File.ReadAllTextAsync(file.FullName);
-                // Pass the global context explicitly so top-level `this` resolves to
-                // the same host object that owns the evaluated script. Prefer the
-                // synchronous evaluator for ordinary fixtures and fall back to the
-                // top-level-await path only when the parser rejects the script for
-                // using await at the top level.
-                try
-                {
-                    context.Eval(code, file.FullName, context);
-                }
-                catch (Exception ex) when (ex.Message.Contains("Unexpected await", StringComparison.Ordinal))
-                {
-                    await context.EvalWithTopLevelAwaitAsync(code, file.FullName, context);
-                }
+                RunScriptHostOnOwnThread(file);
                 return;
             }
 
@@ -100,6 +82,75 @@ namespace BroilerJS
                 });
             if (!r.IsUndefined)
                 Console.WriteLine(r);
+        }
+
+        // The shell runs JavaScript on a thread whose stack size it chooses, rather than on
+        // whatever the runtime handed `Main` — 1 MiB on Windows, 8 MiB on a typical Linux, and
+        // not knowable from managed code. Owning the number is what makes a reserve possible:
+        // MaxStackUsageBytes trips "Maximum call stack size exceeded" once JavaScript has
+        // consumed the budget, leaving the rest for the `catch` that handles it (see
+        // CallFrameStack.StackUsageLimit). The split gives roughly 10k frames of recursion
+        // before the throw — the same order as a browser — and a quarter of the stack after it.
+        private const int ScriptHostStackBytes = 16 * 1024 * 1024;
+        private const int ScriptHostStackReserveBytes = 4 * 1024 * 1024;
+
+        private static void RunScriptHostOnOwnThread(FileInfo file)
+        {
+            ExceptionDispatchInfo failure = null;
+            var thread = new Thread(
+                () =>
+                {
+                    try
+                    {
+                        RunScriptHost(file);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Rethrown on the caller's thread below so an uncaught JavaScript error
+                        // still reaches the runtime's unhandled-exception path with its original
+                        // stack trace — the shell's exit code and stderr are unchanged.
+                        failure = ExceptionDispatchInfo.Capture(ex);
+                    }
+                },
+                ScriptHostStackBytes);
+
+            thread.Start();
+            thread.Join();
+            failure?.Throw();
+        }
+
+        private static void RunScriptHost(FileInfo file)
+        {
+            using var sc = CreateSynchronizationContext();
+            using var context = new JSContext(
+                SynchronizationContext.Current,
+                experimentalFeatures: JavaScriptFeatureFlags.AllExperimentalEs2026,
+                options: new JSContextOptions
+                {
+                    ScriptHostMode = true,
+                    MaxStackUsageBytes = ScriptHostStackBytes - ScriptHostStackReserveBytes,
+                });
+            DefineScriptHostGlobals(context);
+            // Read synchronously: an `await` here could resume the rest of this method on a
+            // thread-pool thread, whose stack is neither this size nor under our control, and
+            // the budget would then be measured against the wrong stack.
+            var code = File.ReadAllText(file.FullName);
+            // Pass the global context explicitly so top-level `this` resolves to
+            // the same host object that owns the evaluated script. Prefer the
+            // synchronous evaluator for ordinary fixtures and fall back to the
+            // top-level-await path only when the parser rejects the script for
+            // using await at the top level.
+            try
+            {
+                context.Eval(code, file.FullName, context);
+            }
+            catch (Exception ex) when (ex.Message.Contains("Unexpected await", StringComparison.Ordinal))
+            {
+                // Blocking is safe here: CreateSynchronizationContext installs the default
+                // SynchronizationContext, whose Post goes to the thread pool rather than back
+                // to this thread, so the continuation never waits on the thread awaiting it.
+                context.EvalWithTopLevelAwaitAsync(code, file.FullName, context).GetAwaiter().GetResult();
+            }
         }
 
         // Host functions provided by JavaScript shells (SpiderMonkey's `js`, V8's `d8`)

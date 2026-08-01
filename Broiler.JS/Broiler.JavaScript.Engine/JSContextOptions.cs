@@ -29,6 +29,23 @@ public sealed class JSContextOptions
     /// <summary>Optional per-realm registry, avoiding process-wide bootstrap state.</summary>
     public IBuiltInRegistry BuiltInRegistry { get; init; }
 
+    /// <summary>
+    /// Native stack, in bytes, one JavaScript execution may consume before
+    /// "Maximum call stack size exceeded" is raised. 0 (the default) leaves the CLR's own
+    /// probe as the only limit, which is the historical behaviour.
+    /// </summary>
+    /// <remarks>
+    /// Set this BELOW the real stack size of the thread that runs JavaScript: the difference
+    /// is a reserve that survives the throw, so a `catch` can call functions, build a message
+    /// and report the error the way it can in a browser. Without it the RangeError arrives with
+    /// the stack already spent — and because .NET runs catch handlers as funclets on the
+    /// still-live stack, the handler's first call throws again and escapes the same `try`. A
+    /// host that does not control its JavaScript thread's stack size should leave this at 0
+    /// rather than guess: too high is merely inert, but too low turns legitimate deep recursion
+    /// into a spurious RangeError.
+    /// </remarks>
+    public long MaxStackUsageBytes { get; init; }
+
     public JSContextOptions WithBootstrapProfile(JavaScriptBootstrapProfile profile) => new()
     {
         ScriptHostMode = ScriptHostMode,
@@ -38,6 +55,7 @@ public sealed class JSContextOptions
         CompilationBackend = CompilationBackend,
         BootstrapProfile = profile ?? throw new System.ArgumentNullException(nameof(profile)),
         BuiltInRegistry = BuiltInRegistry,
+        MaxStackUsageBytes = MaxStackUsageBytes,
     };
 
     public JSContextOptions WithBuiltInRegistry(IBuiltInRegistry registry) => new()
@@ -49,6 +67,7 @@ public sealed class JSContextOptions
         CompilationBackend = CompilationBackend,
         BootstrapProfile = BootstrapProfile,
         BuiltInRegistry = registry ?? throw new System.ArgumentNullException(nameof(registry)),
+        MaxStackUsageBytes = MaxStackUsageBytes,
     };
 
     public JSContextOptions WithFunctionTiering(FunctionTieringOptions functionTiering) => new()
@@ -60,5 +79,6 @@ public sealed class JSContextOptions
         CompilationBackend = CompilationBackend,
         BootstrapProfile = BootstrapProfile,
         BuiltInRegistry = BuiltInRegistry,
+        MaxStackUsageBytes = MaxStackUsageBytes,
     };
 }

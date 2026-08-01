@@ -1553,6 +1553,7 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         this.synchronizationContext = synchronizationContext ?? SynchronizationContext.Current;
         ExperimentalFeatures = experimentalFeatures;
         Options = options ?? JSContextOptions.Default;
+        Frames.StackUsageLimit = Options.MaxStackUsageBytes;
         FunctionTiering = new FunctionTieringController(Options.FunctionTiering);
         if (Options.BuiltInRegistry == null && !JSEngine.HasExplicitBuiltInRegistry)
             JSEngine.EnsureBuiltInsAssemblyLoaded();

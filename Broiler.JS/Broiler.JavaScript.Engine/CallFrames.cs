@@ -110,13 +110,110 @@ public sealed class CallFrameStack
     /// </summary>
     internal bool AnyDirectEvalBindings;
 
+    /// <summary>
+    /// Native stack, in bytes, that one JavaScript execution may consume before
+    /// "Maximum call stack size exceeded" is raised. 0 (the default) disables the check and
+    /// leaves <see cref="JSContextExtensions.EnsureSufficientExecutionStack"/>'s CLR probe as
+    /// the only limit.
+    /// </summary>
+    /// <remarks>
+    /// The CLR probe only fires once the stack is all but gone, and .NET runs a catch handler
+    /// as a funclet on the still-live stack — so a JavaScript `catch` for the resulting
+    /// RangeError has no room left and re-throws on its first call, which escapes the same
+    /// `try` and kills the process. (This is .NET behaviour, not an engine defect: a plain C#
+    /// program that recurses until <c>TryEnsureSufficientExecutionStack</c> fails can manage a
+    /// recursion depth of 1 inside its own handler.) Every real JavaScript engine can run
+    /// arbitrary code in that handler because its limit trips with a deliberate reserve still
+    /// free; this budget is how a host asks for the same. Set it below the thread's real stack
+    /// size and the difference IS the reserve.
+    /// </remarks>
+    public long StackUsageLimit { get; set; }
+
+    /// <summary>
+    /// Approximate stack address where JavaScript entered on THIS thread, against which the
+    /// budget is measured.
+    /// </summary>
+    /// <remarks>
+    /// Thread-static, and that is load-bearing rather than tidiness: a context's JavaScript does
+    /// not stay on one stack. A `setTimeout` callback runs on a thread-pool thread, as do async
+    /// continuations and resumed generators. An anchor shared between them would be compared
+    /// against an unrelated thread's stack, and the difference between two unrelated stacks is a
+    /// meaningless number that can exceed any budget — which showed up as timer callbacks
+    /// silently failing with a RangeError that <c>ReportError</c> swallowed.
+    /// </remarks>
+    [ThreadStatic]
+    private static nint stackBase;
+
+    /// <summary>
+    /// Stack address at which the budget was last exceeded, or 0 when no overflow is being
+    /// handled on this thread.
+    /// </summary>
+    /// <remarks>
+    /// This is what turns the budget into a usable reserve under .NET's exception model. A catch
+    /// handler runs as a funclet on top of the frames it is handling — the stack is not
+    /// reclaimed until the handler finishes — so a JavaScript `catch` for this RangeError is
+    /// still, physically, as deep as the throw was. Measured against the original anchor it is
+    /// over budget on its very first call, and the second throw escapes the `try` that was
+    /// supposed to handle it. So once the budget trips, calls at or below that point spend the
+    /// reserve instead: the stack beyond the budget is exactly what it was set aside for, and
+    /// <see cref="JSContextExtensions.EnsureSufficientExecutionStack"/>'s CLR probe still stands
+    /// behind it as the hard floor. Cleared as soon as execution climbs back above the mark,
+    /// which is the point at which the handler has genuinely returned.
+    /// </remarks>
+    [ThreadStatic]
+    private static nint stackOverflowMark;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private ref CallFrame Reserve()
     {
+        if (StackUsageLimit != 0)
+            EnsureWithinStackBudget();
+
         if (depth == frames.Length)
             Grow();
 
         return ref frames[depth++];
+    }
+
+    // NoInlining so the marker's offset from this frame is the same on every call, which is
+    // what makes the difference between two samples a usable measure of stack consumed.
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private unsafe void EnsureWithinStackBudget()
+    {
+        byte marker = 0;
+        var current = (nint)(&marker);
+        var anchor = stackBase;
+
+        // Stacks grow downwards on every platform this runs on, so the outermost JavaScript
+        // frame sits at the highest address. Re-anchor when this thread has none yet (0), and
+        // whenever we are ABOVE the one it has — which means the recorded anchor is stale: the
+        // call that set it has returned and JavaScript has re-entered nearer the top of the
+        // stack. Both together mean each thread measures only against its own stack, and a
+        // thread that finishes one execution starts the next from scratch rather than inheriting
+        // a deep anchor and tripping early.
+        if (anchor == 0 || current > anchor)
+        {
+            stackBase = current;
+            stackOverflowMark = 0;
+            return;
+        }
+
+        var mark = stackOverflowMark;
+        if (mark != 0)
+        {
+            // Below the mark we are inside the handler for an overflow already reported, running
+            // on the reserve. Above it that handler has returned, so budgeting resumes.
+            if (current <= mark)
+                return;
+
+            stackOverflowMark = 0;
+        }
+
+        if (anchor - current >= StackUsageLimit)
+        {
+            stackOverflowMark = current;
+            throw JSEngine.NewRangeError("Maximum call stack size exceeded");
+        }
     }
 
     private void Grow()
