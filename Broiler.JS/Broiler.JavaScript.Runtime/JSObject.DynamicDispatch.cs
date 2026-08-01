@@ -77,6 +77,16 @@ public partial class JSObject
         if (value.IsObject)
             return false;
 
+        // IsLooselyEqual (7.2.14) coerces the object side ONLY against a String,
+        // Number, BigInt or Symbol (steps 9-10). An Object compared with null or
+        // undefined falls through to step 11 — `false`, with no ToPrimitive at all.
+        // Coercing here made the ubiquitous `x == null` null-check call user code:
+        // Octane's Crypto does `if (r == null)` on a BigInteger, whose ToPrimitive
+        // reaches BigInteger.prototype.toString → toRadix → divRemTo → back to the
+        // same test, recursing until the stack was exhausted.
+        if (value.IsNullOrUndefined)
+            return false;
+
         return ToPrimitiveDefault().Equals(value);
     }
 

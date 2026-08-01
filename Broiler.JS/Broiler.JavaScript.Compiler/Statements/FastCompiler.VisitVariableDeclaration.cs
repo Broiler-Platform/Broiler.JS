@@ -30,7 +30,17 @@ partial class FastCompiler
             {
                 case FastNodeType.Identifier:
                     var id = d.Identifier as AstIdentifier;
-                    var v = isDirectEvalCompilation && !IsStrictMode && !newScope && !usesDirectEvalLocalVarEnvironment
+                    // Only the eval program's OWN top-level `var` belongs to the eval
+                    // var environment. A `var` inside a function the eval code declares
+                    // is an ordinary function local, and routing it to the eval root
+                    // binding broke it twice over: the hoisted local (VisitBlock) is what
+                    // reads resolve to, so the initializer store went to a *different*
+                    // binding — leaving `eval("(function(){ var x = 42; return x; })()")`
+                    // 0 (numeric local) or undefined — and that binding is indexed off the
+                    // global object, so the value leaked out as a global `x`. Every other
+                    // direct-eval root-hoisting site guards on the same `Function == null`
+                    // (VisitBlock, VisitSwitchStatement, VisitProgram); this one did not.
+                    var v = isDirectEvalCompilation && top.Function == null && !IsStrictMode && !newScope && !usesDirectEvalLocalVarEnvironment
                         ? GetOrCreateDirectEvalRootVariable(id.Name)
                         : top.CreateVariable(id.Name, JSVariableBuilder.New(id.Name.Value), newScope);
                     if (d.Init == null)

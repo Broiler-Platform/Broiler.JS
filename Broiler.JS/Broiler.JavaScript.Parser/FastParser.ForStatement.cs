@@ -575,7 +575,18 @@ partial class FastParser
                     break;
 
                 if (stream.CheckAndConsume(TokenTypes.SemiColon))
+                {
+                    // The expression before the head's `;` closes a comma list, so it
+                    // belongs in `list` like every earlier one. Leaving it only in `node`
+                    // dropped it: the AstSequenceExpression built below REPLACES `node`,
+                    // so `for (i = 0, len = a.length; …)` compiled to just `i = 0` and
+                    // never assigned `len` (Octane's Typescript suite walks a stale index
+                    // and dies on `type.implementsTypeLinks[i].ast`). Only when a comma was
+                    // actually seen — a lone head expression stays an ordinary expression.
+                    if (list.Any())
+                        list.Add(node);
                     break;
+                }
 
                 if (stream.CheckAndConsume(TokenTypes.Comma))
                 {

@@ -122,6 +122,45 @@ namespace BroilerJS
                 },
                 "print",
                 length: 1);
+
+            // `read(path)` returns the file's contents as a string; `read(path, "binary")`
+            // returns them as a Uint8Array. The companion to `print` in both d8 and
+            // SpiderMonkey's `js`, and referenced unconditionally by Emscripten's shell
+            // preamble — `Module.read = read` — which is how Octane's zlib benchmark loads
+            // under a JS shell. Without the binding that bare reference was a ReferenceError
+            // before the benchmark ran a single line, even though it never reads a file
+            // (its corpus is embedded in zlib-data.js).
+            context[Broiler.JavaScript.Storage.KeyStrings.GetOrCreate("read")] = JSValue.CreateFunction(
+                (in Arguments a) =>
+                {
+                    var (pathValue, modeValue) = a.Get2();
+                    if (pathValue.IsUndefined)
+                        throw Broiler.JavaScript.Engine.Core.JSEngine.NewTypeError("read requires a file path");
+
+                    var path = pathValue.ToString();
+                    var binary = !modeValue.IsUndefined
+                        && string.Equals(modeValue.ToString(), "binary", StringComparison.Ordinal);
+
+                    try
+                    {
+                        if (!binary)
+                            return new Broiler.JavaScript.BuiltIns.String.JSString(File.ReadAllText(path));
+
+                        var buffer = new Broiler.JavaScript.BuiltIns.Array.Typed.JSArrayBuffer(File.ReadAllBytes(path));
+                        var uint8Array = context[Broiler.JavaScript.Storage.KeyStrings.GetOrCreate("Uint8Array")];
+                        return uint8Array.CreateInstance(new Arguments(JSUndefined.Value, buffer));
+                    }
+                    catch (IOException ex)
+                    {
+                        throw Broiler.JavaScript.Engine.Core.JSEngine.NewError($"Cannot read file {path}: {ex.Message}");
+                    }
+                    catch (UnauthorizedAccessException ex)
+                    {
+                        throw Broiler.JavaScript.Engine.Core.JSEngine.NewError($"Cannot read file {path}: {ex.Message}");
+                    }
+                },
+                "read",
+                length: 1);
         }
     }
 

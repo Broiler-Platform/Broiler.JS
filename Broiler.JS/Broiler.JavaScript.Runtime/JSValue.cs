@@ -587,6 +587,23 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         return !ReferenceEquals(self, this) ? self.Modulo(value) : CreateNumber(DoubleValue % value.DoubleValue);
     }
 
+    /// <summary>
+    /// Whether <paramref name="value"/> takes the numeric branch of <c>+</c>.
+    /// </summary>
+    /// <remarks>
+    /// §13.15 ApplyStringOrNumericBinaryOperator concatenates only when one side is a String
+    /// after ToPrimitive; every other primitive adds via ToNumeric. <c>undefined</c> is one of
+    /// those — ToNumber(undefined) is NaN — but <see cref="CanBeNumber"/> excludes it (the
+    /// relational operators rely on that), so <c>+</c> widens the test here instead. Without
+    /// this, <c>undefined + undefined</c> concatenated to <c>"undefinedundefined"</c>: Octane's
+    /// PdfJS computes <c>this.end = (start + length) || this.bytes.length</c> with both
+    /// arguments omitted, and that truthy string made every stream report a NaN length.
+    /// Symbol and BigInt stay out: they must reach the TypeError paths below.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool AddsNumerically(JSValue value) => value.CanBeNumber || value.IsUndefined;
+
+    /// <summary>
     /// Speed improvements for string contact operations
     /// </summary>
     /// <param name="value"></param>
@@ -599,7 +616,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         if (!ReferenceEquals(self, this))
             return self.AddValue(value);
 
-        if (self.CanBeNumber && value.CanBeNumber)
+        if (AddsNumerically(self) && AddsNumerically(value))
             return CreateNumber(self.DoubleValue + value.DoubleValue);
 
         // §13.15 ApplyStringOrNumericBinaryOperator for `+`: once neither operand (after
@@ -629,7 +646,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         if (!ReferenceEquals(self, this))
             return self.AddValue(value);
 
-        if (self.CanBeNumber)
+        if (AddsNumerically(self))
             return CreateNumber(self.DoubleValue + value);
 
         return CreateString(self.StringValue + NumberToECMAString(value));

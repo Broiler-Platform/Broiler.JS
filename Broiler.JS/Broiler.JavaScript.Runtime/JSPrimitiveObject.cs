@@ -325,6 +325,12 @@ public class JSPrimitiveObject : JSObject
         if (value is JSPrimitiveObject)
             return false;
 
+        // Same step-11 rule as JSObject.Equals: a wrapper compared with null or
+        // undefined is `false` outright, so the null-check idiom `x == null` must
+        // not run this object's valueOf/toString overrides.
+        if (value.IsNullOrUndefined)
+            return false;
+
         return CoerceOwnOverrides(preferString: false).Equals(value);
     }
 
