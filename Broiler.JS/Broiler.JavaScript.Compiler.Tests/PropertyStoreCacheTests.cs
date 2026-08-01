@@ -390,6 +390,137 @@ public class PropertyStoreCacheTests
             n;
             """));
 
+    // ── update expressions go through both caches (item 2-4) ──────────────────────────
+    //
+    // `obj.name++` reads and writes the same property, and both halves used one assignable
+    // index reference that reached NEITHER cache — measured at 0 hits and 0 misses, so the
+    // counters never saw it at all, against 199 999 hits for the plain assignment beside it.
+    // The read now goes through the read cache and the write-back through the store cache.
+    // What must not change is the order and the count of the observable steps: the base once,
+    // ToNumeric once, the getter once, the setter once, and the same value out.
+
+    [Fact]
+    public void AnIncrementOnAMemberGoesThroughBothCaches()
+    {
+        var (result, stats) = Measure("""
+            var o = { x: 0 };
+            for (var i = 0; i < 500; i++) o.x++;
+            o.x;
+            """);
+
+        Assert.Equal("500", result);
+        Assert.True(stats.CacheHits >= 499, $"expected read hits, got {stats.CacheHits}/{stats.CacheMisses}");
+        Assert.True(stats.StoreCacheHits >= 499, $"expected store hits, got {stats.StoreCacheHits}/{stats.StoreCacheMisses}");
+    }
+
+    [Theory]
+    [InlineData("var o = { x: 5 }; var r = o.x++; r + '|' + o.x;", "5|6")]
+    [InlineData("var o = { x: 5 }; var r = ++o.x; r + '|' + o.x;", "6|6")]
+    [InlineData("var o = { x: 5 }; var r = o.x--; r + '|' + o.x;", "5|4")]
+    [InlineData("var o = { x: 5 }; var r = --o.x; r + '|' + o.x;", "4|4")]
+    // ToNumeric coerces once, so a postfix update on a string yields the NUMBER.
+    [InlineData("var o = { x: '1' }; var r = o.x++; (typeof r) + '|' + r + '|' + o.x;", "number|1|2")]
+    [InlineData("var o = { x: 5n }; var r = o.x++; (typeof r) + '|' + r + '|' + o.x;", "bigint|5|6")]
+    [InlineData("var o = { x: undefined }; var r = o.x++; r + '|' + o.x;", "NaN|NaN")]
+    public void AnUpdateExpressionStillYieldsTheRightValues(string source, string expected)
+        => Assert.Equal(expected, Eval(source));
+
+    [Fact]
+    public void AnUpdateThroughAWarmedSiteStillRunsTheAccessorsOnce()
+        => Assert.Equal("400|400|400", Eval("""
+            var gets = 0, sets = 0, last = 0;
+            var proto = {
+                get x() { gets++; return 1; },
+                set x(v) { sets++; last = v; }
+            };
+            var o = Object.create(proto);
+            o.own = 1;
+            for (var i = 0; i < 400; i++) o.x++;
+            [gets, sets, last === 2 ? 400 : last].join('|');
+            """));
+
+    [Fact]
+    public void AnUpdateOnANonWritablePropertyIsRefused()
+        => Assert.Equal("1|false", Eval("""
+            var o = {};
+            Object.defineProperty(o, 'x', { value: 1, writable: false, configurable: true });
+            for (var i = 0; i < 300; i++) o.x++;
+            o.x + '|' + Object.getOwnPropertyDescriptor(o, 'x').writable;
+            """));
+
+    [Fact]
+    public void AnUpdateOnANonWritablePropertyThrowsInStrictMode()
+        => Assert.Equal("200|200", Eval("""
+            function bump(o) { 'use strict'; o.x++; }
+            var made = 0, thrown = 0;
+            for (var i = 0; i < 400; i++) {
+                var o = { x: 1 };
+                if (i >= 200) Object.freeze(o);
+                try { bump(o); made++; } catch (e) { if (e instanceof TypeError) thrown++; }
+            }
+            made + '|' + thrown;
+            """));
+
+    [Fact]
+    public void TheBaseOfAnUpdateIsEvaluatedExactlyOnce()
+        => Assert.Equal("300|300", Eval("""
+            var n = 0;
+            var o = { x: 0 };
+            function base() { n++; return o; }
+            for (var i = 0; i < 300; i++) base().x++;
+            n + '|' + o.x;
+            """));
+
+    [Fact]
+    public void ExcludedUpdateFormsStillWork()
+        => Assert.Equal("300|7,8,7|300|300", Eval("""
+            // A computed key, a private field and a super member all keep the ordinary
+            // reference; only their correctness is asserted here.
+            var k = 'x';
+            var computed = { x: 0 };
+            for (var i = 0; i < 300; i++) computed[k]++;
+
+            // `super.v++` reads from the home object's prototype and writes to the RECEIVER,
+            // so every iteration reads 7 and rewrites an own 8 - the prototype never moves and
+            // the read never sees what the write created.
+            class P {}
+            P.prototype.v = 7;
+            class C extends P { bumpSuper() { return super.v++; } }
+            var c = new C();
+            var superLast = 0;
+            for (var i = 0; i < 300; i++) superLast = c.bumpSuper();
+
+            class Priv { #n = 0; bump() { return ++this.#n; } get n() { return this.#n; } }
+            var p = new Priv();
+            for (var i = 0; i < 300; i++) p.bump();
+
+            var arr = []; arr.tag = 0;
+            for (var i = 0; i < 300; i++) arr.tag++;
+
+            [computed.x, superLast + ',' + c.v + ',' + P.prototype.v, p.n, arr.tag].join('|');
+            """));
+
+    [Fact]
+    public void AnUpdateOnAProxyStillFiresBothTraps()
+        => Assert.Equal("300|300|300", Eval("""
+            var gets = 0, sets = 0;
+            var target = { x: 0 };
+            var p = new Proxy(target, {
+                get: function (t, k, r) { gets++; return Reflect.get(t, k); },
+                set: function (t, k, v, r) { sets++; return Reflect.set(t, k, v); }
+            });
+            for (var i = 0; i < 300; i++) p.x++;
+            [gets, sets, target.x].join('|');
+            """));
+
+    [Fact]
+    public void AnUpdateAndAPlainStoreOnTheSamePropertyAgree()
+        => Assert.Equal("900", Eval("""
+            var o = { x: 0 };
+            for (var i = 0; i < 300; i++) { o.x++; o.x = o.x + 1; o.x++; }
+            o.x;
+            """));
+
     // ── the transition form: a store that CREATES its property (item 2-1) ─────────────
     //
     // The entries above all describe overwriting a slot that exists. A store that adds one

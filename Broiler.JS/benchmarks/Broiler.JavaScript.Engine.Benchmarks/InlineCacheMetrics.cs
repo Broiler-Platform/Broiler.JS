@@ -156,6 +156,34 @@ internal static class InlineCacheMetrics
             200_000,
             "item 2-2: a class static, which is always strict"),
 
+        // Item 2-4's premise. The store cache is installed for a constant-key ASSIGNMENT; the
+        // item says compound assignment, increment, computed keys and optional chains all keep
+        // an older lowering that never reaches it. Each of these performs the same work as
+        // `monomorphic-store` above, which hits 199 999 times.
+        new(
+            "compound-assign-store",
+            "(function () { var o = { x: 0 }; for (var i = 0; i < 200000; i++) { o.x += 1; } return o.x; })",
+            200_000,
+            "item 2-4: `o.x += 1` - one read and one write, both on a constant key"),
+
+        new(
+            "increment-store",
+            "(function () { var o = { x: 0 }; for (var i = 0; i < 200000; i++) { o.x++; } return o.x; })",
+            200_000,
+            "item 2-4: `o.x++`, which the item calls the most expensive of the group"),
+
+        new(
+            "computed-key-read",
+            "(function () { var o = { x: 1 }; var k = 'x'; var s = 0; for (var i = 0; i < 200000; i++) { s = s + o[k]; } return s; })",
+            200_000,
+            "item 2-4: a computed key is not a constant key, so no site is allocated for it"),
+
+        new(
+            "optional-chain-read",
+            "(function () { var o = { x: 1 }; var s = 0; for (var i = 0; i < 200000; i++) { s = s + o?.x; } return s; })",
+            200_000,
+            "item 2-4: `o?.x` - a constant key reached through a different lowering"),
+
         new(
             "typed-array-length-read",
             "(function () { var a = new Float64Array(4); var s = 0; for (var i = 0; i < 200000; i++) { s = s + a.length; } return s; })",

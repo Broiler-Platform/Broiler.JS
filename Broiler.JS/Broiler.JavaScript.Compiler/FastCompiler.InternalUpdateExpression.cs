@@ -28,6 +28,41 @@ partial class FastCompiler
     /// update clause. It lets a numeric local's `i++` compile to a bare double add with no
     /// boxing at all, which is the whole point of holding the counter unboxed.
     /// </param>
+    /// <summary>
+    /// The constant <see cref="KeyString"/> for an <c>obj.name++</c> whose read and write-back
+    /// may go through the property inline caches, or <c>null</c> when they may not.
+    /// </summary>
+    /// <remarks>
+    /// Item 2-4 of <c>docs/performance-roadmap.md</c>. An update expression reads and writes the
+    /// same property, and both halves used one assignable index reference, which reaches neither
+    /// cache — measured at 0 hits AND 0 misses, so the counters never even saw it, against
+    /// 199 999 hits for the plain <c>obj.name = value</c> beside it.
+    /// <para>
+    /// Eligible on exactly the terms <see cref="TryCreateCachedMemberStore"/> uses, and for the
+    /// same reasons: a constant key, an ordinary base, no <c>super</c> and no optional chain. A
+    /// private name is a brand check rather than an ordinary [[Get]]/[[Set]], and a computed key
+    /// would drive one site through every key the expression produces. The caller has already
+    /// evaluated the base into a temp, so the key is the only thing left to decide.
+    /// </para>
+    /// </remarks>
+    private BExpression TryCreateCachedUpdateKey(AstMemberExpression member)
+    {
+        if (member.Computed
+            || member.Coalesce
+            || member.InOptionalChain
+            || member.Object == null
+            || member.Object.Type == FastNodeType.Super)
+        {
+            return null;
+        }
+
+        if (member.Property is AstIdentifier { Name.Length: > 0 } id && id.Name.Value[0] == '#')
+            return null;
+
+        var key = CreatePropertyKeyExpression(member.Property, false);
+        return key.Type == typeof(KeyString) ? key : null;
+    }
+
     private BExpression InternalVisitUpdateExpression(AstUnaryExpression updateExpression, bool discardResult = false)
     {
         // added support for a++, a--
@@ -198,6 +233,12 @@ partial class FastCompiler
         FastFunctionScope.VariableScope key = null;
         FastFunctionScope.VariableScope superBase = null;
         FastFunctionScope.VariableScope @return = null;
+
+        // Set for `obj.name++` and `obj.name--` on a constant key, where the read and the
+        // write-back can each go through their inline cache instead of an assignable index
+        // reference. See TryCreateCachedUpdateKey; null means the ordinary reference is used.
+        BExpression cachedKey = null;
+
         var right = VisitExpression(updateExpression.Argument);
 
         if (updateExpression.Argument is AstMemberExpression memberExpression)
@@ -246,7 +287,10 @@ partial class FastCompiler
             }
             else
             {
-                right = CreateMemberExpression(target.Expression, memberExpression.Property, false);
+                cachedKey = TryCreateCachedUpdateKey(memberExpression);
+                right = cachedKey != null
+                    ? JSValueBuilder.CachedIndex(target.Expression, cachedKey)
+                    : CreateMemberExpression(target.Expression, memberExpression.Property, false);
             }
         }
 
@@ -274,6 +318,14 @@ partial class FastCompiler
             ? JSValueBuilder.Increment(coerced.Expression)
             : JSValueBuilder.Decrement(coerced.Expression);
 
+        // The write-back, through the store cache when the read went through the read cache.
+        // Both forms end in the same JSValue indexer on a miss, so strict-mode reporting and
+        // the silent-failure behaviour below are unchanged; a hit skips it.
+        BExpression WriteBack(BExpression value)
+            => cachedKey != null
+                ? JSValueBuilder.CachedStore(target.Expression, cachedKey, value)
+                : BExpression.Assign(right, value);
+
         if (updateExpression.Prefix)
         {
             // For prefix update on member expressions, save the computed new value
@@ -281,12 +333,12 @@ partial class FastCompiler
             // property in sloppy mode), but the expression must return the new value.
             @return = scope.Top.GetTempVariable(typeof(JSValue));
             list.Add(BExpression.Assign(@return.Variable, newValue));
-            list.Add(BExpression.Assign(right, @return.Variable));
+            list.Add(WriteBack(@return.Variable));
         }
         else
         {
             // Postfix: the coerced old value is the result; write the new value back.
-            list.Add(BExpression.Assign(right, newValue));
+            list.Add(WriteBack(newValue));
             @return = coerced;
         }
 
