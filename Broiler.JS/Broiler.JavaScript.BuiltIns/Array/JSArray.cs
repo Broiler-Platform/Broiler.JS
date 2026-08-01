@@ -14,6 +14,28 @@ namespace Broiler.JavaScript.BuiltIns.Array;
 
 public partial class JSArray : JSObject
 {
+    /// <summary>
+    /// Arrays track their NAMED properties by shape, so an inline cache can reach them
+    /// (roadmap item 2-2). Elements are untouched by this and remain outside the shape.
+    /// </summary>
+    /// <remarks>
+    /// Earned by not writing any named property of its own with a bare <c>ownProperties.Put</c>:
+    /// an array's only exotic named property is <c>length</c>, which is served from
+    /// <see cref="_length"/> by <see cref="HasOwnProperty"/> and the indexer below rather than
+    /// stored, and which therefore never appears in a shape and never needs to. That is the
+    /// invariant <c>SupportsShapeTracking</c> requires — the shape's keys are the object's
+    /// complete set of own named properties — and it is also the reason this buys nothing for
+    /// <c>a.length</c>: a computed exotic property cannot live in a slot, so a cache cannot
+    /// reach it however wide eligibility gets. What it does reach is a named property script
+    /// puts on an array, which was a 100% cache miss before.
+    /// <para>
+    /// Exact-type rather than <c>true</c>, matching the base: nothing derives from
+    /// <see cref="JSArray"/> today, and a subclass that did would have to make this claim for
+    /// itself rather than inherit it.
+    /// </para>
+    /// </remarks>
+    internal override bool SupportsShapeTracking => GetType() == typeof(JSArray);
+
     internal protected override bool HasOwnProperty(in PropertyKey key)
         => key.Type == KeyType.String && key.KeyString.Key == KeyStrings.length.Key
             || base.HasOwnProperty(in key);

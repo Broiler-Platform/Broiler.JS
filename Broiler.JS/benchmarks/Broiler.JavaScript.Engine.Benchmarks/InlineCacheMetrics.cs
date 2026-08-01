@@ -97,6 +97,70 @@ internal static class InlineCacheMetrics
             "(function () { function P(v) { this.v = v; } P.prototype.get = function () { return this.v; }; var p = new P(1); var s = 0; var last = null; for (var i = 0; i < 200000; i++) { s = s + p.get(); last = new P(i); } return s; })",
             200_000,
             "compare with inherited-method-call: identical read site, allocation added to the loop"),
+
+        // Item 2-2's premise. Shape eligibility is GetType() == typeof(JSObject), so a JSArray,
+        // a JSFunction and every built-in exotic are excluded wholesale — no shape, so no
+        // inline-cache entry, so every named property access on one resolves generically. These
+        // six sites say which of those accesses a hot loop actually performs, because the item
+        // is worth doing only for the ones that do.
+        new(
+            "array-length-read",
+            "(function () { var a = [1, 2, 3]; var s = 0; for (var i = 0; i < 200000; i++) { s = s + a.length; } return s; })",
+            200_000,
+            "item 2-2: `a.length` in a loop condition, the array access a hot loop really makes"),
+
+        new(
+            "array-named-read",
+            "(function () { var a = []; a.tag = 7; var s = 0; for (var i = 0; i < 200000; i++) { s = s + a.tag; } return s; })",
+            200_000,
+            "item 2-2: an expando named property on an array"),
+
+        new(
+            "array-named-store",
+            "(function () { var a = []; a.tag = 0; for (var i = 0; i < 200000; i++) { a.tag = i; } return a.tag; })",
+            200_000,
+            "item 2-2: the write side of the same"),
+
+        new(
+            "array-element-read",
+            "(function () { var a = [1, 2, 3]; var s = 0; for (var i = 0; i < 200000; i++) { s = s + a[1]; } return s; })",
+            200_000,
+            "control: an ELEMENT is not a named property and is never shape-tracked by design"),
+
+        new(
+            "function-named-read",
+            "(function () { function f() {} f.tag = 7; var s = 0; for (var i = 0; i < 200000; i++) { s = s + f.tag; } return s; })",
+            200_000,
+            "item 2-2: a named property on a JSFunction"),
+
+        // DeltaBlue's `Strength.stronger(...)` and `Strength.REQUIRED` are named reads on a
+        // FUNCTION object, in the hot path of the worst throughput score in the suite. Sloppy
+        // and strict are separate rows because an ordinary non-strict function carries two
+        // deferred own properties from birth — the Annex B `caller` and `arguments` (P0-3) — and
+        // a deferred cell is not shape-trackable.
+        new(
+            "sloppy-function-static-read",
+            "(function () { function S() {} S.REQUIRED = 7; var s = 0; for (var i = 0; i < 200000; i++) { s = s + S.REQUIRED; } return s; })",
+            200_000,
+            "item 2-2: DeltaBlue's shape exactly; sloppy, so the function has legacy caller/arguments"),
+
+        new(
+            "strict-function-static-read",
+            "(function () { 'use strict'; function S() {} S.REQUIRED = 7; var s = 0; for (var i = 0; i < 200000; i++) { s = s + S.REQUIRED; } return s; })",
+            200_000,
+            "item 2-2: the same read on a function with no legacy caller/arguments"),
+
+        new(
+            "class-static-read",
+            "(function () { class S { static REQUIRED = 7; } var s = 0; for (var i = 0; i < 200000; i++) { s = s + S.REQUIRED; } return s; })",
+            200_000,
+            "item 2-2: a class static, which is always strict"),
+
+        new(
+            "typed-array-length-read",
+            "(function () { var a = new Float64Array(4); var s = 0; for (var i = 0; i < 200000; i++) { s = s + a.length; } return s; })",
+            200_000,
+            "item 2-2: the same question for a typed array, which Crypto/NavierStokes/zlib use"),
     ];
 
     internal static void Write()

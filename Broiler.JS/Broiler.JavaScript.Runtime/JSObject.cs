@@ -141,6 +141,31 @@ public partial class JSObject : JSValue
     }
 
     /// <summary>
+    /// Whether this object's named data properties may be tracked by an
+    /// <see cref="ObjectShape"/>, and so reached by an inline cache.
+    /// </summary>
+    /// <remarks>
+    /// Virtual rather than an exact-type test so a subclass can opt in, which is what item 2-2
+    /// of <c>docs/performance-roadmap.md</c> asks for. It is an opt-IN and the default is still
+    /// "only an exact <see cref="JSObject"/>", because a subclass has to earn it by keeping one
+    /// invariant: **while an object is in shape mode, the shape's tracked keys must be its
+    /// complete set of own named properties.** Everything built on shapes relies on it —
+    /// <see cref="GetPrototypeLookupShapeId"/> reads "key absent from the shape" as "no own
+    /// property shadows the prototype's", and <see cref="TryCreateShapeSlot"/> reads it as
+    /// "creating this key is safe".
+    /// <para>
+    /// The ordinary paths uphold it by construction: every addition that cannot be tracked
+    /// routes through <see cref="AbandonObjectShape"/> first. A subclass that writes its own
+    /// named properties straight into the property map — <c>ownProperties.Put</c> without the
+    /// matching <see cref="TrackShapeDataProperty"/> — does not, and must not override this.
+    /// <c>JSFunction</c> is exactly that case and is deliberately NOT opted in: it installs
+    /// <c>length</c>, <c>name</c> and <c>prototype</c> with direct puts, so its shape would
+    /// claim a key set that is missing three keys every function has.
+    /// </para>
+    /// </remarks>
+    internal virtual bool SupportsShapeTracking => GetType() == typeof(JSObject);
+
+    /// <summary>
     /// Whether a property with these attributes can occupy a shape slot.
     /// </summary>
     /// <remarks>
@@ -160,7 +185,7 @@ public partial class JSObject : JSValue
 
     internal void TrackShapeDataProperty(in KeyString key, JSValue value, JSPropertyAttributes attributes)
     {
-        if (GetType() != typeof(JSObject))
+        if (!SupportsShapeTracking)
             return;
 
         if (objectShape.IsDictionary
@@ -191,7 +216,7 @@ public partial class JSObject : JSValue
 
     internal void AbandonObjectShape()
     {
-        if (GetType() != typeof(JSObject) || objectShape.IsDictionary)
+        if (!SupportsShapeTracking || objectShape.IsDictionary)
             return;
         objectShape = ObjectShape.Dictionary;
         shapeSlots = Array.Empty<JSValue>();
@@ -200,7 +225,7 @@ public partial class JSObject : JSValue
 
     internal bool TryGetShapeSlot(in KeyString key, out int shapeId, out int slot)
     {
-        if (GetType() == typeof(JSObject)
+        if (SupportsShapeTracking
             && !objectShape.IsDictionary
             && objectShape.TryGetSlot(key.Key, out slot))
         {
@@ -249,7 +274,7 @@ public partial class JSObject : JSValue
     internal int GetPrototypeLookupShapeId(in KeyString key)
     {
         var shape = objectShape;
-        if (GetType() != typeof(JSObject)
+        if (!SupportsShapeTracking
             || shape.IsDictionary
             || ReferenceEquals(shape, ObjectShape.Empty)
             || shape.TryGetSlot(key.Key, out _))
@@ -356,7 +381,7 @@ public partial class JSObject : JSValue
     /// because there the shared id would have to stand in for the receiver's identity.
     /// </remarks>
     internal ObjectShape TransitionShape
-        => GetType() == typeof(JSObject) && !objectShape.IsDictionary ? objectShape : null;
+        => SupportsShapeTracking && !objectShape.IsDictionary ? objectShape : null;
 
     /// <summary>
     /// Creates the key as a fresh own data property, in a slot and a successor shape a store
@@ -387,7 +412,7 @@ public partial class JSObject : JSValue
         JSValue value)
     {
         if (value == null
-            || GetType() != typeof(JSObject)
+            || !SupportsShapeTracking
             || !ReferenceEquals(objectShape, from)
             || (status & ObjectStatus.NonExtensible) != 0)
         {

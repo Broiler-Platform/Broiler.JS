@@ -434,6 +434,166 @@ public class PropertyShapeCacheTests
             """));
     }
 
+    // ── arrays track their NAMED properties by shape (item 2-2) ───────────────────────
+    //
+    // Shape eligibility used to be an exact `GetType() == typeof(JSObject)` test, so every
+    // named property on an array was a 100% cache miss — measured 0 hits against 200 000.
+    // Arrays now opt in. What must not change is everything an array does that is NOT a named
+    // data property: its elements, its exotic `length`, and the interaction between the two.
+
+    [Fact]
+    public void ANamedPropertyOnAnArray_IsCached()
+    {
+        var (result, stats) = Measure("""
+            var a = [1, 2, 3];
+            a.tag = 7;
+            var s = 0;
+            for (var i = 0; i < 500; i++) s += a.tag;
+            s;
+            """);
+
+        Assert.Equal("3500", result);
+        Assert.True(stats.CacheHits >= 499, $"expected hits, got {stats.CacheHits}/{stats.CacheMisses}");
+    }
+
+    [Fact]
+    public void GrowingAnArrayThroughABuiltInAbandonsItsNamedShape()
+    {
+        // `length` is computed from the element store rather than held as a data property, so
+        // it can never occupy a slot however wide eligibility gets, and it must keep tracking
+        // the elements — which it does.
+        //
+        // The dictionary fallback is the part worth pinning, because it bounds what item 2-2
+        // buys. `push` reaches the property store through GetOwnProperties(create: true), and
+        // that abandons the shape by design: a mutable ref handed to another assembly could add
+        // a named property without telling the tracker, so the fast layout is dropped rather
+        // than trusted. Exactly one fallback for five pushes — the first drops the shape and the
+        // rest find it already gone. Correctness is unaffected; the named-property cache is, so
+        // an array that grows through the built-ins stops hitting. Contrast
+        // ANamedPropertyOnAnArray_IsCached, which does not grow and keeps its shape.
+        var (result, stats) = Measure("""
+            var a = [];
+            a.tag = 1;
+            var seen = '';
+            for (var i = 0; i < 5; i++) { a.push(i); seen += a.length; }
+            seen;
+            """);
+
+        Assert.Equal("12345", result);
+        Assert.Equal(1, stats.DictionaryFallbacks);
+    }
+
+    [Fact]
+    public void ElementsAndNamedPropertiesOnAnArrayStayDistinct()
+        => Assert.Equal("10|9|2|tag,other", Eval("""
+            var a = [];
+            a.tag = 9;
+            a.other = 1;
+            for (var i = 0; i < 10; i++) a[i] = i;
+            var named = [];
+            for (var k in a) { if (!/^[0-9]+$/.test(k)) named.push(k); }
+            [a.length, a.tag, Object.keys(a).length - a.length, named.join(',')].join('|');
+            """));
+
+    [Fact]
+    public void MaterializingLengthDoesNotConfuseTheShape()
+        => Assert.Equal("3|false|7|3", Eval("""
+            var a = [1, 2, 3];
+            a.tag = 7;
+            for (var i = 0; i < 300; i++) a.tag = 7;
+            Object.defineProperty(a, 'length', { value: 3, writable: false });
+            var threw = false;
+            try { a.push(4); } catch (e) { threw = true; }
+            [a.length, Object.getOwnPropertyDescriptor(a, 'length').writable, a.tag, a[2]].join('|');
+            """));
+
+    [Fact]
+    public void DeletingANamedPropertyOnAnArray_RevealsTheInheritedOne()
+        => Assert.Equal("1200", Eval("""
+            Array.prototype.tag = 5;
+            var a = [];
+            a.tag = 1;
+            var s = 0;
+            for (var i = 0; i < 400; i++) { if (i === 200) delete a.tag; s += a.tag; }
+            s;
+            """));
+
+    [Fact]
+    public void AnArrayPrototypePropertyMutatedMidLoop_IsObserved()
+        => Assert.Equal("800", Eval("""
+            Array.prototype.tag = 1;
+            var a = [];
+            a.own = 1;
+            var s = 0;
+            for (var i = 0; i < 400; i++) { if (i === 200) Array.prototype.tag = 3; s += a.tag; }
+            s;
+            """));
+
+    [Fact]
+    public void ArrayMethodsStillWorkAfterNamedPropertiesAreTracked()
+        => Assert.Equal("1,2,3|6|3,2,1|[1,2,3]|2", Eval("""
+            var a = [1, 2, 3];
+            a.tag = 9;
+            for (var i = 0; i < 300; i++) a.tag = i;
+            var sum = 0;
+            a.forEach(function (v) { sum += v; });
+            [a.join(','), sum, a.slice().reverse().join(','), JSON.stringify(a), a.indexOf(3)].join('|');
+            """));
+
+    [Fact]
+    public void AFrozenArrayRefusesBothKinds()
+        => Assert.Equal("1|7|false|false", Eval("""
+            var a = [1];
+            a.tag = 7;
+            for (var i = 0; i < 300; i++) a.tag = 7;
+            Object.freeze(a);
+            a.tag = 99;
+            a[0] = 99;
+            [a[0], a.tag, Object.isExtensible(a), Object.getOwnPropertyDescriptor(a, 'tag').writable].join('|');
+            """));
+
+    [Fact]
+    public void ASparseArrayWithNamedPropertiesKeepsItsHoles()
+        => Assert.Equal("5|false|true|7", Eval("""
+            var a = [];
+            a[4] = 1;
+            a.tag = 7;
+            for (var i = 0; i < 300; i++) a.tag = 7;
+            [a.length, 2 in a, 4 in a, a.tag].join('|');
+            """));
+
+    [Fact]
+    public void AnArraySubclassInstanceIsStillAnArray()
+        => Assert.Equal("3|9|true|4", Eval("""
+            class MyArray extends Array {}
+            var a = new MyArray();
+            a.push(1, 2, 3);
+            a.tag = 9;
+            var s = 0;
+            for (var i = 0; i < 300; i++) s = a.tag;
+            [a.length, s, Array.isArray(a), (a.push(4), a.length)].join('|');
+            """));
+
+    [Fact]
+    public void ATypedArrayIsStillNotShapeTracked()
+        => Assert.Equal("4|9|0", Eval("""
+            var a = new Float64Array(4);
+            a.tag = 9;
+            var s = 0;
+            for (var i = 0; i < 300; i++) s = a.tag;
+            [a.length, s, a[0]].join('|');
+            """));
+
+    [Fact]
+    public void TwoArraysReachingTheSameShapeStayDistinct()
+        => Assert.Equal("1,2|3,4", Eval("""
+            var x = []; x.tag = 1; x.other = 2;
+            var y = []; y.tag = 3; y.other = 4;
+            var rx = '', ry = '';
+            for (var i = 0; i < 300; i++) { rx = x.tag + ',' + x.other; ry = y.tag + ',' + y.other; }
+            rx + '|' + ry;
+            """));
+
     [Fact]
     public void AProxyInThePrototypeChainStillTraps()
     {
