@@ -310,10 +310,15 @@ class Test262Repository:
                     f"Path not found: {path} (resolved to {local_path})"
                 )
 
+            # _FIXTURE.js files are not tests (test262 INTERPRETING.md) — they are modules
+            # other tests import, and some are deliberately un-runnable alone (a bare syntax
+            # error). list_paths already drops them via include_fixtures=False; directory
+            # expansion for --path-file manifests did not, so every manifest naming a
+            # directory that contains one reported it as a failure.
             return sorted(
                 child.relative_to(self.suite_root).as_posix()
                 for child in local_path.rglob("*.js")
-                if child.is_file()
+                if child.is_file() and not child.name.endswith(TEST_FIXTURE_SUFFIX)
             )
 
         if path.endswith(".js"):
@@ -332,7 +337,11 @@ class Test262Repository:
         for entry in entries:
             entry_path = str(entry["path"])
             entry_type = str(entry["type"])
-            if entry_type == "file" and entry_path.endswith(".js"):
+            if (
+                entry_type == "file"
+                and entry_path.endswith(".js")
+                and not entry_path.endswith(TEST_FIXTURE_SUFFIX)
+            ):
                 files.append(entry_path)
             elif entry_type == "dir":
                 files.extend(self._expand_path(entry_path))
@@ -820,12 +829,18 @@ const __broilerDonePromise = new Promise((resolve, reject) => {
         parts.append("__broilerDonePromise")
 
     TEMP_DIRECTORY.mkdir(parents=True, exist_ok=True)
+    # newline="" for the same reason read_text uses it: the assembled script must reach the
+    # host with the test's original line terminators. Without it Python translates every
+    # "\n" to os.linesep on write, which on Windows turns an LF test into CRLF and a CRLF
+    # test into CR-CRLF — failing the Function.prototype.toString line-terminator tests
+    # (and only those; a CR-only test has no "\n" to translate, so it passed either way).
     with tempfile.NamedTemporaryFile(
         "w",
         suffix=".js",
         delete=False,
         dir=TEMP_DIRECTORY,
         encoding="utf-8",
+        newline="",
     ) as handle:
         handle.write("\n".join(parts))
         script_path = handle.name

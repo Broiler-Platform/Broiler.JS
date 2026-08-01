@@ -20,9 +20,12 @@ the phase 0–5 optimization campaign referenced in [`docs/roadmap.md`](roadmap.
   filed as "longer term" and turned out to be the largest win here (20–25× on a counted
   loop, which now allocates nothing), plus two larger defects found along the way
   ([§6.5](#65--found-while-implementing-p2)); P2-2 landed only after the reasons it had been
-  declined were re-examined and both found wrong (§6). **P3 investigated: its premise was
-  disproved by measurement** and the real per-call cost identified instead (§7) — no code
-  change.
+  declined were re-examined and both found wrong (§6). **P3's premise was disproved by
+  measurement** — the scopes it blamed cost nothing — and the per-call activation record they
+  were hiding was replaced with a shadow stack instead (§7).
+  **No phase is *closed*.** Every one of them still owes acceptance evidence that has not been
+  collected, and the engineering each deliberately left behind is collected in
+  [§8.1](#81--open-items).
 
 ---
 
@@ -1033,6 +1036,26 @@ the interning maps recorded in §6.5 — one instance of which was fixed there �
 of that pattern is likely still in the tree. It is pre-existing and unrelated to this change,
 but it is now visible often enough to be worth hunting down on its own.
 
+**Found after it landed: an assignment's value was a raw double.** A scalar-replaced local
+lives in a CLR `double`, so assigning to it produces a double-typed expression. In statement
+position that is the whole point; everywhere else it is wrong, because an assignment is an
+expression and its value is the assigned value. Every consumer of it got handed a raw double
+where a `JSValue` was required, and the CLR rejected the resulting method outright —
+`var r = (n = 5)` threw `InvalidProgramException`, and `f(n = 5)`, `return (n = 5)` and
+`if ((n = 5))` failed the same way, the last two surfacing as a `NullReferenceException` where
+the mismatch reached a null local first. Compound assignment had it too: `var r = (n += 1)`,
+`n *= 2`, `f(n -= 4)`.
+
+The 102 tests above did not catch it because they exercise the specialized shapes in statement
+position, which is exactly where the lowering is correct. `var r = (n++)` always worked —
+`InternalVisitUpdateExpression` already boxed its result — and that asymmetry is what should
+have been the tell.
+
+Fixed in `8228b0da` by boxing the result and only the result, with a one-shot hint marking the
+positions where the value is provably discarded (an `ExpressionStatement`, or a `for` update
+clause, whose expression *is* the assignment). There the store stays an unboxed double, so the
+hot path is byte-identical to the numbers above.
+
 **Still open.** A `var` declared inside a block or loop body is not eligible, which is the
 gap `mandelbrot-ish` sits in and would need definite-assignment analysis to close. Parameters
 are never specialized, so a numeric function argument stays boxed. And `let`/`const` are
@@ -1707,15 +1730,171 @@ owner, and closes only under the acceptance rules in `docs/performance.md` — t
 the configured band, on the release RID matrix, with allocation, latency and working set
 reported together.
 
-**Phases A–C and most of D are implemented and covered by repository tests, but none are
-*closed*.** Closing them still requires the pinned test262 run over `test262-arrays`,
-`test262-properties-proxy`, `test262-strict-mode` and `test262-realm-isolation` (plus the
-Annex B forbidden-extension paths), a
-`PropertyOperationBenchmarks`/`FunctionCallBenchmarks` comparison, and the two-run
-repeatability evidence on the release RID matrix. The numbers in this document come from an
-ad-hoc in-process harness on a shared container and are not acceptance evidence. P1-1 in
-particular touches `OrdinarySetWithOwnDescriptor`, the single most spec-sensitive path in the
-engine, and the local suite is not a substitute for test262 there.
+**Every phase A–F is implemented and covered by repository tests. None of them is *closed*.**
+The numbers in this document come from an ad-hoc in-process harness on a shared container and
+are not acceptance evidence. P1-1 in particular touches `OrdinarySetWithOwnDescriptor`, the
+single most spec-sensitive path in the engine, and the local suite is not a substitute for
+test262 there.
+
+---
+
+### 8.1 · Open items
+
+Verified against the tree at `cdb2fd41` on 2026-08-01. Every row was checked against the
+repository rather than inferred from the write-ups above. Rows marked **Done** were closed on
+2026-08-01 as part of working through this list; the rest are still absent or unfinished.
+
+#### Acceptance evidence
+
+| Owed | State in the tree |
+|---|---|
+| Pinned test262 over `test262-arrays`, `test262-properties-proxy`, `test262-strict-mode`, `test262-realm-isolation` | **Done** — 8 313 tests, **zero engine failures**. Getting there took three tooling fixes; see [§8.2](#82--the-pinned-test262-run). The Annex B forbidden-extension paths P0-3 names are still not in any manifest |
+| A `PropertyOperationBenchmarks` / `FunctionCallBenchmarks` comparison | Not run. Every file under `BenchmarkDotNet.Artifacts/results/` dates from 2026-07-16 and belongs to the phase 4–5 campaign |
+| Two runs inside the configured band on the release RID matrix (win-x64, linux-x64, linux-arm64), reporting time, allocation and working set together, per [`docs/performance.md`](performance.md) | Not collected. Everything above is one container, one machine, an ad-hoc harness |
+| An `eng/performance/ownership.json` entry per phase, naming its benchmark and semantic owner — which the paragraph above this section requires | **Done.** Fifteen entries added, one per item rather than one per phase, since the file is item-scoped: `prototype-invalidation-on-allocation`, `ambient-strict-mode-writes`, `deferred-legacy-caller-arguments`, `shape-preserving-property-writes`, `prototype-lookup-inline-cache`, `property-store-inline-cache`, `shape-slot-direct-read`, `descriptor-free-array-push`, `indexed-write-fast-path`, `array-length-shrink`, `small-integer-cache`, `numeric-local-doubles`, `compact-dense-elements`, `string-concatenation-rope`, `call-frame-shadow-stack`. The pre-existing `tiered-unboxed-locals` (P3) is the same work as `numeric-local-doubles` and should be retired when the phase 0–5 evidence is next revisited — it was left alone rather than silently retargeted |
+| Appendix A's permanent home for the probes under `Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks`, wired into `eng/performance/phase0.json` | Not created. Phase C's shape-hit-rate result is still exactly the one-off observation Appendix A warned against leaving it as |
+
+Until the benchmark and RID-matrix rows exist, no phase can close, and nothing in this document
+may be *claimed* under `docs/performance.md`. The test262 row is the semantic half and it is
+now green.
+
+#### Engineering deliberately left behind
+
+Each of these is argued where it was decided; they are collected here so the remaining work is
+countable in one place.
+
+| Item | What remains | Verified |
+|---|---|---|
+| **P0-2** | Strictness is still ambient. The scope writes only on a transition, but `JSValue`'s set accessors still resolve it through an `AsyncLocal<bool>`. The preferred fix — threading the compiler's static knowledge into the property-set helpers it emits, so the hot path reads nothing — is not started | `JSEngine.cs:223` |
+| **P1-3** | The shape-transition cache. Creating a property still misses every time; there is no `oldShapeId → (newShape, slot)` entry anywhere in `Runtime` | no match in `Broiler.JavaScript.Runtime` |
+| **P1-3** | `o.x++`, `o.x += 1`, computed keys, `super`, optional chains and private names keep the old lowering. `o.x++` was measured the most expensive of them and is the obvious next item | §5 P1-3 |
+| **P1-4** | The double storage. `TrackShapeDataProperty` still writes each value into `shapeSlots` *as well as* the `PropertySequence` entry, so a tracked object stores every value twice and has to keep the two in sync | `JSObject.cs:97`, `:188` |
+| **P1-4** | Shape eligibility is still `GetType() == typeof(JSObject)`, so `JSArray`, `JSFunction` and every built-in exotic are excluded | `JSObject.cs:203` |
+| **P2-2 item 3** | A `var` declared inside a block or loop body (needs definite-assignment analysis), function parameters, and `let`/`const` (TDZ) are all ineligible | §6 |
+| **P3** | Lazy frame materialization. The shadow stack removed the *allocation*; the push/pop bookkeeping itself is untouched. There is no measured cost there, so this is a candidate rather than a task | §7 |
+
+#### Two gaps — **filed, but not where P0-2 and P1-1 said to file them**
+
+P0-2 says the async/generator strict-mode gap "belongs in the compliance failure manifest
+rather than here", and P1-1 says the same of `Reflect.set` giving a receiver's new property the
+*base's* attributes instead of the all-true set `CreateDataProperty` mandates. Both are still
+live at `cdb2fd41` — a probe through the script host reproduces each in a few lines — but the
+instruction cannot be followed as written, for two separate reasons.
+
+`scripts/compliance/test262-failures.txt` is **generated** by `.github/workflows/test262.yml`
+from a run's own results. A hand-written entry would be overwritten by the next run, and an
+entry only appears there if some test262 file actually fails.
+
+For the strict-mode gap none does: the four gating manifests do not reach generator or async
+bodies at all. For `Reflect.set` the reason is sharper — **no test262 file at the pinned ref
+reaches the case.** `Reflect/set/creates-a-data-descriptor.js` does exercise the receiver path,
+but with an *empty* target, where step 4.d of OrdinarySet supplies the default all-true
+`ownDesc` and the engine is correct; the deviation needs a target that already has an own data
+property with non-default attributes, so that step 5.f runs with a real `ownDesc` to copy from.
+`Reflect/set/different-property-descriptors.js` covers only an accessor on the receiver. The
+engine passes every file in `Reflect/set/`.
+
+So both are pinned by repository tests instead, which is what "cannot change silently" actually
+requires here:
+
+- `StrictModeFlowTests.KnownGap_AsyncAndGeneratorBodiesDoNotEnterRuntimeStrictMode` (already
+  existed);
+- `ReflectSetReceiverAttributesTests` (new, three tests): the gap itself, the value half that
+  is already correct, and the empty-target case test262 does cover — the contrast that
+  localizes the defect to attribute propagation rather than to `CreateDataProperty`.
+
+Each asserts today's wrong answer deliberately, and names what the expectation becomes when it
+is fixed. Neither is a performance item; they are recorded here only because this document is
+where they were found.
+
+#### Reproducing the green suite
+
+The subsection below reports 7 199 tests, all passing. The tree has grown since; a full
+`dotnet test Broiler.JS.slnx -c Release` on 2026-08-01 runs **7 284 tests across 13 projects,
+7 281 passing**, three of which are the `ReflectSetReceiverAttributesTests` added above. The
+three failures are host-environment rather than engine defects, and none is in a path this
+document touches:
+
+- `ReproTests.Repro` — a debugging leftover that appends to a hardcoded `D:\Broiler.JS\`
+  path and asserts nothing;
+- `Issue838Tests.EpochToStringStillRendersInUtcContainer` and
+  `…ToStringSerializesNegativeYearWithSignedFourDigitYear` — both assume a UTC host.
+
+Worth knowing before attributing either to a change here. Note also that
+`Broiler.JS/BroilerJS.sln` cannot restore — it references `Broiler.Regex` and
+`Broiler.Regex.Tests` at paths that do not exist — so `Broiler.JS.slnx` at the repository root
+is the solution to run.
+
+---
+
+### 8.2 · The pinned test262 run
+
+Run on 2026-08-01 at `cdb2fd41`, suite ref `ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e`,
+`Release` script host, 8 workers, 30 s per-test timeout:
+
+```sh
+python scripts/compliance/run_test262.py --path-file scripts/compliance/test262-<name>.txt \
+  --suite-root <pinned checkout> \
+  --broiler-dll Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll \
+  --max-workers 8
+```
+
+| Manifest | Executed | Passed | Failed | Skipped | Timed out | Engine failures |
+|---|---:|---:|---:|---:|---:|---:|
+| `test262-arrays` | 3 160 | 3 134 | 17 | 0 | 9 | **0** |
+| `test262-properties-proxy` | 3 988 | 3 950 | 38 | 13 | 0 | **0** |
+| `test262-strict-mode` | 1 066 | 1 040 | 26 | 27 | 0 | **0** |
+| `test262-realm-isolation` | 99 | 96 | 3 | 4 | 0 | **0** |
+| | **8 313** | **8 220** | **84** | **44** | **9** | **0** |
+
+**Every one of the 84 failures needs `$262`** — `createRealm`, `detachArrayBuffer`, or a
+harness include that uses one (`detachArrayBuffer.js`). The raw script host does not provide
+that object, and the runner already computes `isScriptHostVerifiable` for exactly this reason;
+it just does not *filter* on it outside `--all-script-host-verifiable`, so with an explicit
+manifest they run and fail. **All 9 timeouts are already tracked** — they are lines 7–15 of
+`scripts/compliance/test262-failures.txt`, nine for nine, the integer-limit `slice`/`unshift`/
+`reduceRight`/`toReversed` cases CI has carried for a while. Nothing here is attributable to
+any change in this document.
+
+That is the semantic gate P1-1 asked for. `test262-properties-proxy` is the one that matters
+most: it covers `OrdinarySetWithOwnDescriptor`, receiver mismatch, and the Proxy trap ordering
+that P1-1 warned "the local suite is not a substitute for", and all 3 988 of its tests pass.
+
+#### Three tooling defects, all of which had to be fixed before any of this could run
+
+None of these are engine defects, and finding them is most of what the run cost.
+
+1. **Two manifests could not run at all.** `test262-strict-mode.txt` named
+   `test/built-ins/FunctionPrototype` and `test262-realm-isolation.txt` named
+   `test/built-ins/globalThis`. Neither directory has ever existed in test262 — the real paths
+   are `Function/prototype` (already covered by the `Function` entry, so the line was simply
+   deleted) and `global`. `_expand_path` raises `FileNotFoundError` on the first missing path,
+   so **both manifests aborted before running a single test.** This is the concrete reason no
+   run against them was ever recorded, and it means these two have never gated anything.
+2. **`_FIXTURE.js` files were executed as tests.** test262's INTERPRETING.md says files ending
+   in `_FIXTURE.js` are not tests — they are modules other tests import, and some are
+   deliberately un-runnable alone. `list_paths` already excluded them via
+   `include_fixtures=False`, but directory expansion for `--path-file` did not, so
+   `test262-realm-isolation` reported three phantom failures under `ShadowRealm/…/importValue/`.
+   CI uses `--path-file` too, so this affected it as well.
+3. **The assembled script was written with newline translation.** `read_text` opens test
+   sources with `newline=""` and a comment explaining that the
+   `Function.prototype.toString` line-terminator tests assert on exact source bytes — but the
+   `NamedTemporaryFile` that writes the assembled script back out used the default, so on
+   Windows every `\n` became `\r\n`. That turned an LF test into CRLF and a CRLF test into
+   CR-CRLF, failing both; the CR-only test has no `\n` to translate and passed, which is what
+   made the pattern legible. Invisible on the Linux CI, where `os.linesep` is already `\n`.
+
+Defects 2 and 3 are why the first pass of this run reported five failures that looked like
+engine defects and were not. The lesson is the one §8 already states in the other direction: a
+failing test is a claim, and here the claim was about the harness.
+
+**Still not covered.** P0-3 gates on "the Annex B forbidden-extension tests" and no manifest
+names them; `test/annexB/built-ins/Function` and the `forbidden-ext/b2` paths would need
+adding to `test262-strict-mode.txt`. That is left as an open item rather than done silently,
+because widening a gating manifest changes what CI enforces.
+
+---
 
 ### Fixed along the way, unrelated to any phase
 

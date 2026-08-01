@@ -2,4 +2,6 @@
 # files remain visible in audit output even when the raw script host excludes them.
 test/built-ins/ShadowRealm
 test/built-ins/eval
-test/built-ins/globalThis
+# The globalThis tests live under "global"; there is no test/built-ins/globalThis
+# directory in test262, and naming one made the whole manifest unrunnable.
+test/built-ins/global
