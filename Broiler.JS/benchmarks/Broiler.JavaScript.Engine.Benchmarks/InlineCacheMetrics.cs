@@ -67,6 +67,36 @@ internal static class InlineCacheMetrics
             "(function () { var o = { x: 0 }; for (var i = 0; i < 200000; i++) { o.x = i; } return o.x; })",
             200_000,
             "store-cache hits ~= iterations - 1; P1-3 added the write side"),
+
+        // Item 2-1's premise, as a measurement rather than an assertion. Each iteration
+        // builds a fresh three-field object, so every one of the 600 000 stores CREATES the
+        // property it writes. The store cache only describes overwriting a slot that already
+        // exists, so the shape it records after the write never matches the shape the next
+        // object presents before it: expect ~0 hits and 3 misses per iteration, forever.
+        new(
+            "constructor-field-creation",
+            "(function () { function T(a, b, c) { this.a = a; this.b = b; this.c = c; } var last = null; for (var i = 0; i < 200000; i++) { last = new T(i, i + 1, i + 2); } return last.c; })",
+            600_000,
+            "item 2-1: store-cache hits ~= 0, misses ~= 3x iterations - a property-creating store can never hit"),
+
+        // The control for the row above. Same three fields created per iteration, same count
+        // of property-creating stores, but built by a literal instead of a constructor. If the
+        // prototype-invalidation counts differ, what advances the prototype version is `new`,
+        // not property creation.
+        new(
+            "literal-field-creation",
+            "(function () { var last = null; for (var i = 0; i < 200000; i++) { last = { a: i, b: i + 1, c: i + 2 }; } return last.c; })",
+            200_000,
+            "control for constructor-field-creation: same creations, no `new`"),
+
+        // The consequence, if `new` is what invalidates: a warm inherited-method site should
+        // go cold as soon as the same loop also allocates. inherited-method-call above hoists
+        // the allocation out of the loop and reports ~400 000 hits; this one does not.
+        new(
+            "inherited-method-call-while-allocating",
+            "(function () { function P(v) { this.v = v; } P.prototype.get = function () { return this.v; }; var p = new P(1); var s = 0; var last = null; for (var i = 0; i < 200000; i++) { s = s + p.get(); last = new P(i); } return s; })",
+            200_000,
+            "compare with inherited-method-call: identical read site, allocation added to the loop"),
     ];
 
     internal static void Write()

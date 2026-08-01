@@ -141,7 +141,14 @@ public class JSClass : JSFunction
             ? ResolveInstancePrototype(previousNewTarget)
             : prototype;
 
-        var @object = new JSObject() { BasePrototypeObject = instancePrototype };
+        // Installed by the constructor, not by an initializer overwriting it — see the same
+        // change in JSFunction's OrdinaryCreateFromConstructor for why the second write cost
+        // a process-wide prototype-cache invalidation per `new`. The null branch is kept
+        // verbatim: assigning null through the setter clears the chain, whereas passing null
+        // to the constructor would substitute %Object.prototype%.
+        var @object = instancePrototype != null
+            ? new JSObject(instancePrototype)
+            : new JSObject() { BasePrototypeObject = instancePrototype };
         var ao = a.OverrideThis(@object);
 
         // For a body-less default derived constructor, super() targets the class's

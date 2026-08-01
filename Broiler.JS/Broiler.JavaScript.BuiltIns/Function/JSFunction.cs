@@ -694,8 +694,18 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         // object (the function's `prototype` property was overwritten with a
         // primitive), the new instance falls back to %Object.prototype% — which a
         // default `new JSObject()` already adopts.
+        //
+        // Installed by the constructor rather than by an initializer that overwrites what
+        // the constructor just set. The end state is identical, but the second write looked
+        // like a [[SetPrototypeOf]] on a live object — prototypeChain was no longer null —
+        // so it published a global prototype-mutation notice and retired every
+        // prototype-keyed inline-cache entry in the process. Once per `new`. That is the
+        // defect P1-2's guard was written to prevent (see JSObject.BasePrototypeObject),
+        // reached by a path that stepped around it: measured at 200 001 invalidations for
+        // 200 000 allocations, against 0 for the same objects built as literals, halving the
+        // hit rate at an inherited-method site in any loop that also allocates.
         JSValue obj = instancePrototype != null
-            ? new JSObject { BasePrototypeObject = instancePrototype }
+            ? new JSObject(instancePrototype)
             : new JSObject();
         var a1 = a.OverrideThis(obj);
         if (ec != null)

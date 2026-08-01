@@ -314,6 +314,126 @@ public class PropertyShapeCacheTests
             """));
     }
 
+    // ── allocation in the loop no longer retires the cache, so it must not mask anything ──
+    //
+    // `new C()` used to publish a global prototype-mutation notice per allocation, because
+    // OrdinaryCreateFromConstructor installed the instance prototype by overwriting the one
+    // the JSObject constructor had just set — a second write, which the guard could only read
+    // as a [[SetPrototypeOf]] on a live object. Every prototype-keyed entry in the process was
+    // therefore retired on every allocation, which is a correctness-preserving accident: it
+    // made all of the staleness tests above pass for a reason unrelated to what they check.
+    // Now that a construct installs the prototype once, the same paths have to be re-checked
+    // with an allocation in the loop, where before there was nothing left to invalidate.
+
+    [Fact]
+    public void InheritedReadInAnAllocatingLoop_IsCached()
+    {
+        // The fix itself. Identical to InheritedMethodCall_IsCached with one allocation added
+        // per iteration: that used to halve the hit rate (measured 199 999 hits / 200 002
+        // misses against 399 998 / 3 for the same site with the allocation hoisted out).
+        var (result, stats) = Measure("""
+            function P(v) { this.v = v; }
+            P.prototype.get = function () { return this.v; };
+            var p = new P(7);
+            var s = 0;
+            var last = null;
+            for (var i = 0; i < 500; i++) { s += p.get(); last = new P(i); }
+            s + '|' + last.v;
+            """);
+
+        Assert.Equal("3500|499", result);
+        Assert.True(stats.CacheHits >= 999, $"expected hits, got {stats.CacheHits}/{stats.CacheMisses}");
+        // One notice for P.prototype becoming a prototype, not one per allocation.
+        Assert.True(
+            stats.PrototypeInvalidations <= 4,
+            $"expected allocation to stop invalidating, got {stats.PrototypeInvalidations}");
+    }
+
+    [Fact]
+    public void PrototypePropertyMutatedMidLoop_IsObserved_WhileAllocating()
+    {
+        Assert.Equal("800", Eval("""
+            function C() { this.own = 1; }
+            var proto = { k: 1 };
+            var o = Object.create(proto);
+            o.own = 1;
+            var s = 0;
+            for (var i = 0; i < 400; i++) { if (i === 200) proto.k = 3; s += o.k; new C(); }
+            s;
+            """));
+    }
+
+    [Fact]
+    public void SetPrototypeOfMidLoop_IsObserved_WhileAllocating()
+    {
+        Assert.Equal("800", Eval("""
+            function C() { this.own = 1; }
+            var a = { k: 1 };
+            var b = { k: 3 };
+            var o = Object.create(a);
+            o.own = 1;
+            var s = 0;
+            for (var i = 0; i < 400; i++) { if (i === 200) Object.setPrototypeOf(o, b); s += o.k; new C(); }
+            s;
+            """));
+    }
+
+    [Fact]
+    public void OwnPropertyAddedMidLoop_ShadowsTheInheritedOne_WhileAllocating()
+    {
+        Assert.Equal("800", Eval("""
+            function C() { this.own = 1; }
+            var proto = { k: 1 };
+            var o = Object.create(proto);
+            o.own = 1;
+            var s = 0;
+            for (var i = 0; i < 400; i++) { if (i === 200) o.k = 3; s += o.k; new C(); }
+            s;
+            """));
+    }
+
+    [Fact]
+    public void RedefiningAsAnAccessorMidLoop_IsObserved_WhileAllocating()
+    {
+        Assert.Equal("800", Eval("""
+            function C() { this.own = 1; }
+            var proto = { k: 1 };
+            var o = Object.create(proto);
+            o.own = 1;
+            var s = 0;
+            for (var i = 0; i < 400; i++) {
+                if (i === 200) Object.defineProperty(proto, 'k', { get: function () { return 3; } });
+                s += o.k;
+                new C();
+            }
+            s;
+            """));
+    }
+
+    [Fact]
+    public void AClassInstanceStillGetsItsNewTargetPrototype()
+    {
+        // The construct paths changed to install the prototype by construction rather than by
+        // overwriting it, so pin that the prototype they install is unchanged - including the
+        // subclass and Reflect.construct forms, where it comes from newTarget rather than from
+        // the callee, and the primitive-`prototype` fallback to %Object.prototype%.
+        Assert.Equal("true|true|true|true|true", Eval("""
+            class A {}
+            class B extends A {}
+            function F() {}
+            function G() {}
+            G.prototype = 1;
+            var r = [
+                Object.getPrototypeOf(new B()) === B.prototype,
+                Object.getPrototypeOf(new B()) instanceof Object === false || A.prototype.isPrototypeOf(new B()),
+                Object.getPrototypeOf(Reflect.construct(F, [], B)) === B.prototype,
+                Object.getPrototypeOf(new F()) === F.prototype,
+                Object.getPrototypeOf(new G()) === Object.prototype
+            ];
+            r.join('|');
+            """));
+    }
+
     [Fact]
     public void AProxyInThePrototypeChainStillTraps()
     {
