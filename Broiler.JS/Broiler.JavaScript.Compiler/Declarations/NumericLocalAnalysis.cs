@@ -26,13 +26,32 @@ namespace Broiler.JavaScript.Compiler;
 /// <para>
 /// The awkward part is not the type, it is <c>var</c> hoisting: a <c>var</c> is observably
 /// <c>undefined</c> from function entry until its initializer runs, and <c>undefined</c> is
-/// not a double. Rather than a definite-assignment dataflow, this requires the declaration
-/// to be a direct statement of the function body (or the init of a top-level <c>for</c>) and
-/// requires no reference to the name to appear textually before it. Together those mean the
-/// initializer has always run before any read: a preceding top-level statement either
-/// completes — and none of them mentions the name — or leaves the function, in which case
-/// nothing after it runs. A declaration nested inside an <c>if</c> or a loop is not eligible,
-/// because control can reach code after it without having executed it.
+/// not a double — the compiler hoists a specialized local to <c>0d</c>, so the analysis owes
+/// it the guarantee that no read can happen before the initializer runs.
+/// </para>
+/// <para>
+/// That guarantee comes from two structural rules rather than a definite-assignment dataflow,
+/// and it rests on one property of JavaScript: <b>to reach statement N of a block you must
+/// first have executed statements 1..N-1 of that same block</b>, each of which either completed
+/// or transferred control out of the block entirely. There is no way to jump into the middle of
+/// a block. So:
+/// </para>
+/// <list type="number">
+/// <item>the declaration must be a direct statement of some <see cref="AstBlock"/> (or the init
+/// of a <c>for</c> that is, since reaching the <c>for</c> always runs its init), and no
+/// reference to the name may appear textually before it; and</item>
+/// <item>every reference must lie inside that same block. Leaving the block <em>closes</em> the
+/// name, and any later reference disqualifies it — because control can leave a block without
+/// having entered it (<c>if (c) { var x = 1; } return x;</c> reads <c>undefined</c> when
+/// <c>c</c> is falsy).</item>
+/// </list>
+/// <para>
+/// Rule 2 is what admits a <c>var</c> declared inside a loop or an <c>if</c>, which is most
+/// real code: each iteration re-runs the declaration before any read in the body, and a read
+/// after the loop is refused. A <c>switch</c> case clause is deliberately not a block here —
+/// its statements live directly on the clause, and entering at a later <c>case</c> skips the
+/// earlier ones, so rule 1's premise does not hold. A braced block <em>inside</em> a case is
+/// fine, because it is still only ever entered at its top.
 /// </para>
 /// </remarks>
 internal sealed class NumericLocalAnalysis
@@ -66,30 +85,42 @@ internal sealed class NumericLocalAnalysis
         if (function.Body is not AstBlock body)
             return;
 
-        var collector = new Collector(this);
+        // Every block offers its own direct declarations as the walk enters it, and closes
+        // them as the walk leaves — see Collector.VisitBlock.
+        new Collector(this).Visit(body);
+    }
 
-        // Only the function body's own statement list can declare an eligible name. The
-        // walk below still descends into everything, but for USES and WRITES — a
-        // declaration found deeper is recorded as a rejection instead.
-        var statements = body.Statements.GetFastEnumerator();
+    /// <summary>
+    /// Offers the declarations made directly by <paramref name="block"/>'s own statement list
+    /// as candidates, and returns their names so the caller can close them when the block ends.
+    /// Returns <c>null</c> when the block declares nothing.
+    /// </summary>
+    private List<string> OfferBlockDeclarations(AstBlock block)
+    {
+        List<string> declaredHere = null;
+
+        var statements = block.Statements.GetFastEnumerator();
         while (statements.MoveNext(out var statement))
         {
             switch (statement)
             {
                 case AstVariableDeclaration { Kind: FastVariableKind.Var } declaration:
-                    OfferDeclaration(declaration);
+                    OfferDeclaration(declaration, ref declaredHere);
                     break;
 
+                // Reaching a `for` always evaluates its init, so an init-declared name is
+                // assigned from that statement onward — its scope for rule 2 is the block
+                // containing the `for`, not the loop.
                 case AstForStatement { Init: AstVariableDeclaration { Kind: FastVariableKind.Var } forInit }:
-                    OfferDeclaration(forInit);
+                    OfferDeclaration(forInit, ref declaredHere);
                     break;
             }
         }
 
-        collector.Visit(body);
+        return declaredHere;
     }
 
-    private void OfferDeclaration(AstVariableDeclaration declaration)
+    private void OfferDeclaration(AstVariableDeclaration declaration, ref List<string> declaredHere)
     {
         var declarators = declaration.Declarators.GetFastEnumerator();
         while (declarators.MoveNext(out var declarator))
@@ -111,10 +142,13 @@ internal sealed class NumericLocalAnalysis
             }
 
             // Declared twice: the second declaration may sit somewhere the first does not
-            // dominate, so give up rather than reason about which one wins.
+            // dominate, so give up rather than reason about which one wins. With nested
+            // blocks eligible this now also covers the same name declared in two different
+            // branches, where neither declaration dominates the other's reads.
             if (!candidates.Add(name))
                 rejected.Add(name);
 
+            (declaredHere ??= []).Add(name);
             assignments.Add((name, declarator.Init));
         }
     }
@@ -273,12 +307,36 @@ internal sealed class NumericLocalAnalysis
         // initializer runs, so a read that can precede it disqualifies the name.
         private readonly HashSet<string> declared = new(System.StringComparer.Ordinal);
 
+        // Names whose declaring block the walk has already left. Control can leave a block
+        // without having entered it, so a reference out here can observe `undefined`.
+        private readonly HashSet<string> closed = new(System.StringComparer.Ordinal);
+
         public Collector(NumericLocalAnalysis owner) => this.owner = owner;
+
+        /// <summary>
+        /// Whether a reference at the current point in the walk is guaranteed to happen after
+        /// the name's initializer ran: declared already, and still inside the declaring block.
+        /// </summary>
+        private bool IsReadable(string name) => declared.Contains(name) && !closed.Contains(name);
+
+        protected override AstNode VisitBlock(AstBlock block)
+        {
+            var declaredHere = owner.OfferBlockDeclarations(block);
+            var result = base.VisitBlock(block);
+
+            // Leaving the block closes everything it declared: statements after this point
+            // are reachable without the block having run.
+            if (declaredHere != null)
+                foreach (var name in declaredHere)
+                    closed.Add(name);
+
+            return result;
+        }
 
         protected override AstNode VisitIdentifier(AstIdentifier identifier)
         {
             var name = identifier.Name.Value;
-            if (!declared.Contains(name))
+            if (!IsReadable(name))
                 owner.rejected.Add(name);
             return identifier;
         }
@@ -309,7 +367,10 @@ internal sealed class NumericLocalAnalysis
                 // old value except in a compound form, which reads it through the operator
                 // and is covered by IsNumericBinary.
                 owner.assignments.Add((target.Name.Value, binary));
-                if (binary.Operator != TokenTypes.Assign && !declared.Contains(target.Name.Value))
+                // A compound form reads the old value, so it needs the same guarantee a
+                // plain read does. A simple `=` does not read, and so is allowed even where
+                // the name is closed — any later READ is what disqualifies it.
+                if (binary.Operator != TokenTypes.Assign && !IsReadable(target.Name.Value))
                     owner.rejected.Add(target.Name.Value);
                 Visit(binary.Right);
                 return binary;
@@ -325,9 +386,10 @@ internal sealed class NumericLocalAnalysis
             if (unary.Operator is UnaryOperator.Increment or UnaryOperator.Decrement
                 && unary.Argument is AstIdentifier target)
             {
-                // `x++` stores ToNumeric(x), which is numeric exactly when x already is.
+                // `x++` stores ToNumeric(x), which is numeric exactly when x already is —
+                // so like a compound assignment it reads, and needs the same guarantee.
                 owner.assignments.Add((target.Name.Value, unary));
-                if (!declared.Contains(target.Name.Value))
+                if (!IsReadable(target.Name.Value))
                     owner.rejected.Add(target.Name.Value);
                 return unary;
             }

@@ -151,6 +151,106 @@ public class NumericLocalTests
     public void ASpecializedLocalIsIndistinguishableFromAnOrdinaryNumber(string body, string expected)
         => Assert.Equal(expected, Fn(body));
 
+    // ── declarations nested in a block ────────────────────────────────────────────────
+    //
+    // Eligibility used to require the declaration to be a direct statement of the FUNCTION
+    // BODY. A `var` in a loop or `if` body — most real code — was refused, which is the gap
+    // docs/performance-roadmap.md P2-2 item 3 recorded as still open. It is now eligible
+    // whenever every reference stays inside the declaring block, which is sound because a
+    // block cannot be entered anywhere but at its top: to reach statement N you executed
+    // 1..N-1 of that same block.
+
+    [Fact]
+    public void AVarDeclaredInALoopBodyIsSpecialized()
+    {
+        var (result, numericLocals) = Compile(
+            "var s = 0; for (var i = 0; i < 5; i++) { var t = i * 2; s = s + t; } return s;");
+
+        Assert.Equal("20", result);
+        // s, i and t — t is the one the old rule refused.
+        Assert.True(numericLocals >= 3, $"expected the loop-body local to specialize too, got {numericLocals}");
+    }
+
+    [Fact]
+    public void AVarDeclaredInAnIfBlockIsSpecialized()
+    {
+        var (result, numericLocals) = Compile(
+            "var s = 0; for (var i = 0; i < 4; i++) { if (i > 1) { var t = i; s = s + t; } } return s;");
+
+        Assert.Equal("5", result);
+        Assert.True(numericLocals >= 3, $"expected the if-body local to specialize too, got {numericLocals}");
+    }
+
+    [Fact]
+    public void EveryWorkingLocalOfANestedLoopNestIsSpecialized()
+    {
+        // The mandelbrot-ish shape the roadmap named: nothing is declared at body level
+        // except the accumulator.
+        var (result, numericLocals) = Compile("""
+            var total = 0;
+            for (var y = 0; y < 3; y++) {
+                for (var x = 0; x < 3; x++) {
+                    var a = x * 2;
+                    var b = y * 3;
+                    var n = 0;
+                    while (n < a + b) { n = n + 1; }
+                    total = total + n;
+                }
+            }
+            return total;
+            """);
+
+        Assert.Equal("45", result);
+        Assert.True(numericLocals >= 6, $"expected every working local to specialize, got {numericLocals}");
+    }
+
+    [Theory]
+    [InlineData("var s = 0; var i = 0; while (i < 4) { var t = i; s = s + t; i = i + 1; } return s;", "6")]
+    [InlineData("var s = 0; for (var i = 0; i < 3; i++) { { var t = i; s = s + t; } } return s;", "3")]
+    [InlineData("var s = 0; do { var t = s; s = t + 1; } while (s < 3); return s;", "3")]
+    [InlineData("var s = 0; for (var i = 0; i < 2; i++) { try { var t = i; s = s + t; } finally { } } return s;", "1")]
+    public void NestedDeclarationsStillComputeTheRightValue(string body, string expected)
+        => Assert.Equal(expected, Fn(body));
+
+    [Theory]
+    // Leaving the declaring block closes the name: control can reach here without the block
+    // having run, so the read can observe undefined and a raw double cannot represent it.
+    [InlineData("var c = 0; if (c) { var x = 5; } return String(x);", "undefined")]
+    [InlineData("var c = 0; if (c) { var x = 5; } else { return String(x); } return 'taken';", "undefined")]
+    [InlineData("for (var i = 0; i < 0; i++) { var t = i + 1; } return String(t);", "undefined")]
+    [InlineData("var c = false; while (c) { var w = 5; } return String(w);", "undefined")]
+    // A compound assignment and an update both READ the old value, so they need the same
+    // guarantee a plain read does — NaN here, not 1, because x is undefined.
+    [InlineData("var c = 0; if (c) { var x = 5; } x += 1; return String(x);", "NaN")]
+    [InlineData("var c = 0; if (c) { var x = 5; } x++; return String(x);", "NaN")]
+    // Declared in try, read in catch: the initializer may not have run.
+    [InlineData("try { throw 1; var v = 2; } catch (e) { return String(v); }", "undefined")]
+    // Two branches declare it and neither dominates the other's read.
+    [InlineData("var c = 0; if (c) { var d = 1; } else { var d = 2; } return String(d);", "2")]
+    public void AReferenceOutsideTheDeclaringBlockIsNotSpecialized(string body, string expected)
+        => Assert.Equal(expected, Fn(body));
+
+    [Theory]
+    // A `switch` case clause is not a block: entering at a later case skips the earlier
+    // clauses' statements, so a declaration in one is never offered.
+    [InlineData("switch (2) { case 1: var s = 10; case 2: return String(s); } return 'none';", "undefined")]
+    [InlineData("switch (1) { case 1: var s = 10; case 2: return String(s); } return 'none';", "10")]
+    // A braced block inside a case IS only ever entered at its top, so it stays eligible.
+    [InlineData("switch (1) { case 1: { var b = 7; return String(b); } case 2: return 'two'; }", "7")]
+    [InlineData("switch (2) { case 1: { var b = 7; return String(b); } case 2: return 'two'; }", "two")]
+    public void ASwitchCaseClauseIsNotABlock(string body, string expected)
+        => Assert.Equal(expected, Fn(body));
+
+    [Fact]
+    public void AReadBeforeTheDeclarationInsideTheSameBlockIsRefused()
+    {
+        // Observed on the first iteration only: by the second, n already holds 3, which
+        // would hide a wrongly-hoisted 0.
+        Assert.Equal(
+            "undefined",
+            Fn("var first = 'unset'; for (var i = 0; i < 2; i++) { if (i === 0) first = n; var n = 3; } return String(first);"));
+    }
+
     // ── everything the analysis has to refuse ─────────────────────────────────────────
 
     [Theory]
