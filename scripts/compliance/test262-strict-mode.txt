@@ -3,5 +3,7 @@ test/language/directive-prologue
 test/language/arguments-object
 test/language/function-code
 test/language/global-code
+# Covers test/built-ins/Function/prototype too — the runner expands a directory
+# recursively. (This line used to read "test/built-ins/FunctionPrototype", a
+# directory test262 has never had, which made the whole manifest unrunnable.)
 test/built-ins/Function
-test/built-ins/FunctionPrototype
