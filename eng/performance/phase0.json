@@ -12,6 +12,7 @@
         "noiseBandPercent": 20.0,
         "filters": [
           "*ContextStartupBenchmarks*",
+          "*HotPathProbeBenchmarks.LoopEmpty*",
           "*CodeCacheBenchmarks.ProductionStructuralHit*",
           "*FunctionCallBenchmarks.ScriptSloppy*",
           "*PropertyOperationBenchmarks.OwnGet*",
@@ -28,6 +29,7 @@
         "filters": [
           "*ContextStartupBenchmarks*",
           "*ScriptEvaluationBenchmarks*",
+          "*HotPathProbeBenchmarks*",
           "*CodeCacheBenchmarks*",
           "*FunctionCallBenchmarks*",
           "*PropertyOperationBenchmarks*",
@@ -49,6 +51,8 @@
         "filters": [
           "*FunctionCallBenchmarks.ScriptSloppy*",
           "*PropertyOperationBenchmarks.OwnGet*",
+          "*HotPathProbeBenchmarks.ArithAdd*",
+          "*HotPathProbeBenchmarks.FunctionCall*",
           "*ArrayPrimitiveBenchmarks.DenseRead*",
           "*BinaryDataBenchmarks.DataViewFloat64Write*"
         ]
