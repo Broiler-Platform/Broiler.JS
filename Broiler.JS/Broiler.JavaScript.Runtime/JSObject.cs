@@ -339,6 +339,81 @@ public partial class JSObject : JSValue
         return true;
     }
 
+    /// <summary>
+    /// The shape a store cache may record a transition out of, or <c>null</c> when this
+    /// receiver cannot be keyed by one.
+    /// </summary>
+    /// <remarks>
+    /// A concrete shape is by itself proof that a key it does not carry is absent from the
+    /// object: while an object is in shape mode its tracked keys ARE its complete set of own
+    /// named properties, because every addition that cannot be tracked — a private name, an
+    /// accessor, a non-default attribute set, a deferred cell — calls
+    /// <see cref="AbandonObjectShape"/> first. Dictionary mode carries no such guarantee and is
+    /// excluded. <see cref="ObjectShape.Empty"/> is deliberately NOT excluded even though every
+    /// fresh object shares it: it is exactly the state a constructor's first field assignment
+    /// starts from, and sharing is harmless because a transition is determined by the shape and
+    /// the key alone — unlike <see cref="GetPrototypeLookupShapeId"/>, which must reject it
+    /// because there the shared id would have to stand in for the receiver's identity.
+    /// </remarks>
+    internal ObjectShape TransitionShape
+        => GetType() == typeof(JSObject) && !objectShape.IsDictionary ? objectShape : null;
+
+    /// <summary>
+    /// Creates the key as a fresh own data property, in a slot and a successor shape a store
+    /// inline cache has already resolved. Returns false when this receiver cannot take the
+    /// creation, leaving the caller to run the ordinary [[Set]].
+    /// </summary>
+    /// <remarks>
+    /// The write twin of <see cref="TryWriteShapeSlot"/> for the case that one cannot serve:
+    /// a store that does not overwrite an existing slot but adds one. That is
+    /// CreateDataProperty, the last step of OrdinarySetWithOwnDescriptor, so three things must
+    /// hold and only two of them are checked here — the shape must be exactly the one the
+    /// transition was recorded from, the object must still be extensible, and nothing on the
+    /// prototype chain may supply the key. The third belongs to the caller, which is where the
+    /// chain was walked and where the guards that detect it changing live.
+    /// <para>
+    /// Extensibility is checked, unlike in <see cref="TryWriteShapeSlot"/>, precisely because
+    /// this call ADDS a property: <c>Object.preventExtensions</c>, <c>seal</c> and
+    /// <c>freeze</c> all set <see cref="ObjectStatus.NonExtensible"/>, so one test covers all
+    /// three. A rejected creation is not reported here either — returning false runs the
+    /// generic path, which throws or returns false exactly as it did before.
+    /// </para>
+    /// </remarks>
+    internal bool TryCreateShapeSlot(
+        ObjectShape from,
+        ObjectShape to,
+        int slot,
+        in KeyString key,
+        JSValue value)
+    {
+        if (value == null
+            || GetType() != typeof(JSObject)
+            || !ReferenceEquals(objectShape, from)
+            || (status & ObjectStatus.NonExtensible) != 0)
+        {
+            return false;
+        }
+
+        if (shapeSlots.Length <= slot)
+        {
+            var replacement = new JSValue[Math.Max(4, Math.Max(to.SlotCount, shapeSlots.Length * 2))];
+            Array.Copy(shapeSlots, replacement, shapeSlots.Length);
+            shapeSlots = replacement;
+        }
+
+        // The same three steps DefineReceiverDataProperty performs for an ordinary target,
+        // with the shape advanced to the recorded successor instead of being re-derived:
+        // TrackShapeDataProperty would look the key up in the current shape, miss, and then
+        // look it up again in that shape's transition table to find the very shape and slot
+        // this entry already holds.
+        ownProperties.Put(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
+        objectShape = to;
+        shapeSlots[slot] = value;
+        NotifyNamedPropertyMutation();
+        PropertyChanged?.Invoke(this, (key.Key, uint.MaxValue, null));
+        return true;
+    }
+
     internal bool HasIndexedPropertiesOnPrototypeChain()
     {
         for (var current = prototypeChain?.Object as JSObject; current != null; current = current.prototypeChain?.Object as JSObject)

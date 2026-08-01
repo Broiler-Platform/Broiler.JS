@@ -294,13 +294,28 @@ public static class PropertyInlineCacheSite
                 for (var i = 0; i < count; i++)
                 {
                     ref readonly var entry = ref entries[i];
-                    if (receiver.TryWriteShapeSlot(entry.ShapeId, entry.Slot, in property, value))
+                    if (entry.FromShape == null)
+                    {
+                        if (receiver.TryWriteShapeSlot(entry.ShapeId, entry.Slot, in property, value))
+                        {
+                            PropertyOptimizationDiagnostics.RecordStoreCacheHit();
+                            return;
+                        }
+                    }
+                    else if (ReferenceEquals(receiver.PrototypeChainObject, entry.ReceiverPrototype)
+                        && entry.PrototypeVersion == JSObject.PrototypeMutationVersion
+                        && receiver.TryCreateShapeSlot(entry.FromShape, entry.ToShape, entry.Slot, in property, value))
                     {
                         PropertyOptimizationDiagnostics.RecordStoreCacheHit();
                         return;
                     }
                 }
             }
+
+            // The shape the receiver presents BEFORE the store, so a store that turns out to
+            // have created a property can be recorded as the transition it performed. Read
+            // here because after the store it is gone.
+            var shapeBeforeStore = (target as JSObject)?.TransitionShape;
 
             PropertyOptimizationDiagnostics.RecordStoreCacheMiss();
             target[property] = value;
@@ -332,8 +347,13 @@ public static class PropertyInlineCacheSite
                 return;
             }
 
+            var overwriteForm = new Entry(shapeId, slot);
+            var entryToAdd = shapeBeforeStore != null && !ReferenceEquals(shapeBeforeStore, ordinary.TransitionShape)
+                ? DescribeTransition(ordinary, shapeBeforeStore, in property, slot, overwriteForm)
+                : overwriteForm;
+
             for (var i = 0; i < count; i++)
-                if (entries[i].ShapeId == shapeId)
+                if (entries[i].ShapeId == entryToAdd.ShapeId && entries[i].FromShape == entryToAdd.FromShape)
                     return;
 
             if (count == MaxEntries)
@@ -342,9 +362,72 @@ public static class PropertyInlineCacheSite
                 return;
             }
 
-            entries[count++] = new Entry(shapeId, slot);
+            entries[count++] = entryToAdd;
             if (count == 2)
                 PropertyOptimizationDiagnostics.RecordPolymorphicPromotion();
+        }
+
+        /// <summary>
+        /// Describes a store that CREATED its property as the shape transition it performed,
+        /// falling back to the plain overwrite form when the creation cannot be replayed safely.
+        /// </summary>
+        /// <remarks>
+        /// The shape changing across the store is what identifies a creation — a shape is
+        /// immutable, so a receiver reporting a different one has gained a tracked property, and
+        /// the only one it can have gained at this site is this key.
+        /// <para>
+        /// Replaying it means performing CreateDataProperty directly, which is only the right
+        /// answer while OrdinarySetWithOwnDescriptor would still reach it. It would not if the
+        /// prototype chain supplied the key: a setter there has to run, and an inherited
+        /// non-writable data property has to reject the write. So the chain is walked once here
+        /// and required to be free of the key, and two guards keep that answer true at every
+        /// later hit — the receiver still pointing at the same prototype, by reference, and the
+        /// global prototype-mutation version, which any addition to any object used as a
+        /// prototype publishes. Those are the same two the read cache's prototype form uses, and
+        /// they are only affordable because 2-0 stopped `new` from advancing the version once
+        /// per allocation; before that a transition entry retired on the next object built.
+        /// </para>
+        /// </remarks>
+        private static Entry DescribeTransition(
+            JSObject receiver,
+            ObjectShape fromShape,
+            in KeyString property,
+            int slot,
+            Entry overwriteForm)
+        {
+            // Not the shape the transition landed on — the receiver left shape mode during the
+            // store, so there is no transition to record. Unreachable as things stand, because
+            // the caller has already resolved a writable tracked slot on this receiver, which
+            // dictionary mode cannot supply; kept because that is the caller's invariant to
+            // hold, not this method's to assume.
+            var toShape = receiver.TransitionShape;
+            if (toShape == null || !toShape.TryGetSlot(property.Key, out var toSlot) || toSlot != slot)
+                return overwriteForm;
+
+            // Walked through the raw chain link rather than GetPrototypeOf, which would fire a
+            // Proxy's getPrototypeOf trap — a visible side effect that must not happen just
+            // because a cache is warming up.
+            for (var holder = receiver.PrototypeChainObject; holder != null; holder = holder.PrototypeChainObject)
+            {
+                // An exotic or proxied holder has its own [[GetOwnProperty]] and [[Set]], so
+                // stop rather than reason about what a creation past it would mean.
+                if (holder.GetType() != typeof(JSObject))
+                    return overwriteForm;
+
+                // Present anywhere on the chain, in any form: a setter, a read-only data
+                // property, or a plain writable one. Only the first two change the outcome, but
+                // tested by presence because the cheap test is the conservative one.
+                if (!holder.GetInternalProperty(property, inherited: false).IsEmpty)
+                    return overwriteForm;
+            }
+
+            return new Entry(
+                toShape.Id,
+                slot,
+                fromShape,
+                toShape,
+                receiver.PrototypeChainObject,
+                JSObject.PrototypeMutationVersion);
         }
 
         private void BecomeMegamorphic()
@@ -359,8 +442,23 @@ public static class PropertyInlineCacheSite
         /// Where the key's value lives on a receiver of shape <see cref="ShapeId"/>. Unlike a
         /// read entry there is no prototype form: a write that resolves on the chain either
         /// runs a setter or creates an own property, and neither is a slot write on a holder.
+        /// <para>
+        /// Two forms, discriminated by <see cref="FromShape"/>. An <em>overwrite</em> entry
+        /// (null) writes <see cref="Slot"/> on a receiver already of shape
+        /// <see cref="ShapeId"/>. A <em>transition</em> entry creates it instead: the receiver
+        /// presents <see cref="FromShape"/>, which does not carry the key, and the write moves
+        /// it to <see cref="ToShape"/> — guarded additionally by
+        /// <see cref="ReceiverPrototype"/> identity and <see cref="PrototypeVersion"/>, since a
+        /// creation is only correct while the chain supplies nothing for the key.
+        /// </para>
         /// </summary>
-        private readonly record struct Entry(int ShapeId, int Slot);
+        private readonly record struct Entry(
+            int ShapeId,
+            int Slot,
+            ObjectShape FromShape = null,
+            ObjectShape ToShape = null,
+            JSObject ReceiverPrototype = null,
+            long PrototypeVersion = 0);
     }
 
     private sealed class PropertyInlineCache

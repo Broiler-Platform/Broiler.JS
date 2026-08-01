@@ -389,4 +389,263 @@ public class PropertyStoreCacheTests
             for (var i = 0; i <= 9; i++) base().x = i;
             n;
             """));
+
+    // ── the transition form: a store that CREATES its property (item 2-1) ─────────────
+    //
+    // The entries above all describe overwriting a slot that exists. A store that adds one
+    // could not hit at all — the shape recorded after the write never matches the shape the
+    // next object presents before it — so a constructor assigning fields missed on every
+    // field of every object it ever built (measured 0 hits against 600 000 misses). A second
+    // entry form keyed on the shape BEFORE the write fixes that, and it is the more dangerous
+    // of the two: replaying a creation means performing CreateDataProperty directly, which is
+    // only what OrdinarySetWithOwnDescriptor would do while the receiver is extensible AND the
+    // prototype chain supplies nothing for the key. Every way either can stop being true is
+    // below, each after the site has been warmed on the fast path.
+
+    [Fact]
+    public void CreatingAPropertyInAConstructor_IsCached()
+    {
+        var (result, stats) = MeasureFirstRun("""
+            function T(a, b, c) { this.a = a; this.b = b; this.c = c; }
+            var last = null;
+            for (var i = 0; i < 300; i++) last = new T(i, i + 1, i + 2);
+            last.a + ',' + last.b + ',' + last.c;
+            """);
+
+        Assert.Equal("299,300,301", result);
+        // Three creating sites, one cold miss each; everything after is a transition hit.
+        Assert.True(
+            stats.StoreCacheHits >= 3 * 300 - 6,
+            $"expected creating stores to hit, got {stats.StoreCacheHits}/{stats.StoreCacheMisses}");
+    }
+
+    [Fact]
+    public void ACreatedPropertyGetsTheDefaultAttributesAndOrder()
+    {
+        // CreateDataProperty means writable, enumerable and configurable — all true — and the
+        // insertion order the generic path would have produced.
+        Assert.Equal("true|true|true|1|a,b,c", Eval("""
+            function T() { this.a = 1; this.b = 2; this.c = 3; }
+            var last = null;
+            for (var i = 0; i < 400; i++) last = new T();
+            var d = Object.getOwnPropertyDescriptor(last, 'a');
+            [d.writable, d.enumerable, d.configurable, d.value, Object.keys(last).join(',')].join('|');
+            """));
+    }
+
+    [Fact]
+    public void APrototypeSetterTakesTheCreationInsteadOfAnOwnProperty()
+    {
+        // Present from the start, so the site never installs a transition entry at all.
+        Assert.Equal("400|false|99", Eval("""
+            var taken = 0;
+            function T() { this.x = 1; }
+            Object.defineProperty(T.prototype, 'x', {
+                set: function (v) { taken++; },
+                get: function () { return 99; }
+            });
+            var last = null;
+            for (var i = 0; i < 400; i++) last = new T();
+            [taken, last.hasOwnProperty('x'), last.x].join('|');
+            """));
+    }
+
+    [Fact]
+    public void APrototypeSetterAddedAfterWarmUp_TakesTheCreation()
+    {
+        // The invalidation path that matters most: 200 objects get their own property, then a
+        // setter appears on the chain and the remaining 200 must run it instead.
+        Assert.Equal("true|true|false|false|200", Eval("""
+            var taken = 0;
+            function T() { this.x = 1; }
+            var own = [];
+            for (var i = 0; i < 400; i++) {
+                if (i === 200)
+                    Object.defineProperty(T.prototype, 'x', { set: function (v) { taken++; } });
+                own.push(new T().hasOwnProperty('x'));
+            }
+            [own[0], own[199], own[200], own[399], taken].join('|');
+            """));
+    }
+
+    [Fact]
+    public void AnInheritedReadOnlyDataProperty_RefusesTheCreation()
+    {
+        Assert.Equal("false|5", Eval("""
+            function T() { this.x = 1; }
+            Object.defineProperty(T.prototype, 'x', { value: 5, writable: false });
+            var last = null;
+            for (var i = 0; i < 400; i++) last = new T();
+            [last.hasOwnProperty('x'), last.x].join('|');
+            """));
+    }
+
+    [Fact]
+    public void AnInheritedReadOnlyDataPropertyAddedAfterWarmUp_ThrowsInStrictMode()
+    {
+        Assert.Equal("200|200", Eval("""
+            function T() { 'use strict'; this.x = 1; }
+            var made = 0, thrown = 0;
+            for (var i = 0; i < 400; i++) {
+                if (i === 200)
+                    Object.defineProperty(T.prototype, 'x', { value: 5, writable: false });
+                try { new T(); made++; } catch (e) { if (e instanceof TypeError) thrown++; }
+            }
+            made + '|' + thrown;
+            """));
+    }
+
+    [Fact]
+    public void ANonExtensibleReceiverRefusesTheCreation()
+    {
+        Assert.Equal("true|true|false|false", Eval("""
+            function add(o) { o.x = 1; return o.hasOwnProperty('x'); }
+            var own = [];
+            for (var i = 0; i < 400; i++) {
+                var o = {};
+                if (i >= 200) Object.preventExtensions(o);
+                own.push(add(o));
+            }
+            [own[0], own[199], own[200], own[399]].join('|');
+            """));
+    }
+
+    [Fact]
+    public void ANonExtensibleReceiverThrowsInStrictMode()
+    {
+        Assert.Equal("200|200", Eval("""
+            function add(o) { 'use strict'; o.x = 1; }
+            var made = 0, thrown = 0;
+            for (var i = 0; i < 400; i++) {
+                var o = {};
+                if (i >= 200) Object.preventExtensions(o);
+                try { add(o); made++; } catch (e) { if (e instanceof TypeError) thrown++; }
+            }
+            made + '|' + thrown;
+            """));
+    }
+
+    [Fact]
+    public void AFrozenReceiverRefusesTheCreation()
+        => Assert.Equal("true|false", Eval("""
+            function add(o) { o.x = 1; return o.hasOwnProperty('x'); }
+            for (var i = 0; i < 400; i++) add({});
+            var open = {}, frozen = Object.freeze({});
+            add(open) + '|' + add(frozen);
+            """));
+
+    [Fact]
+    public void TwoReceiversSharingAShapeButNotAPrototype_DoNotShareATransition()
+    {
+        // Both receivers are empty objects, so they present the same shape; only their
+        // prototypes differ, and one of those prototypes has a setter for the key. An entry
+        // guarded by the shape alone would create an own property on both.
+        Assert.Equal("400|400|0", Eval("""
+            var taken = 0;
+            var plain = {};
+            var trapped = {};
+            Object.defineProperty(trapped, 'x', { set: function (v) { taken++; } });
+            function add(o) { o.x = 1; return o.hasOwnProperty('x') ? 1 : 0; }
+            var ownOnPlain = 0, ownOnTrapped = 0;
+            for (var i = 0; i < 400; i++) {
+                ownOnPlain += add(Object.create(plain));
+                ownOnTrapped += add(Object.create(trapped));
+            }
+            [taken, ownOnPlain, ownOnTrapped].join('|');
+            """));
+    }
+
+    [Fact]
+    public void SwappingTheReceiversPrototypeAfterWarmUp_IsObserved()
+        => Assert.Equal("true|false|200", Eval("""
+            var taken = 0;
+            var plain = {};
+            var trapped = {};
+            Object.defineProperty(trapped, 'x', { set: function (v) { taken++; } });
+            function add(o) { o.x = 1; return o.hasOwnProperty('x'); }
+            var own = [];
+            for (var i = 0; i < 400; i++) {
+                var o = {};
+                if (i >= 200) Object.setPrototypeOf(o, trapped);
+                own.push(add(o));
+            }
+            [own[0], own[399], taken].join('|');
+            """));
+
+    [Fact]
+    public void ADunderProtoAssignmentStillRunsTheInheritedAccessor()
+        => Assert.Equal("false|true|true", Eval("""
+            // `__proto__` is an accessor on %Object.prototype%, so the chain is never free of
+            // the key and no transition entry may be installed for it.
+            var a = { marker: 1 };
+            function setProto(o, v) { o.__proto__ = v; }
+            var ownAny = false, allLinked = true, allMarked = true;
+            for (var i = 0; i < 400; i++) {
+                var o = {};
+                setProto(o, a);
+                if (o.hasOwnProperty('__proto__')) ownAny = true;
+                if (Object.getPrototypeOf(o) !== a) allLinked = false;
+                if (o.marker !== 1) allMarked = false;
+            }
+            [ownAny, allLinked, allMarked].join('|');
+            """));
+
+    [Fact]
+    public void ADictionaryModeReceiverStillCreatesCorrectly()
+        => Assert.Equal("400|400", Eval("""
+            function add(o) { o.x = 1; return o.x; }
+            var ok = 0, dict = 0;
+            for (var i = 0; i < 400; i++) {
+                ok += add({});
+                var d = {};
+                Object.defineProperty(d, 'k', { get: function () { return 1; } });
+                dict += add(d);
+            }
+            ok + '|' + dict;
+            """));
+
+    [Fact]
+    public void ACreatedPropertyIsVisibleToReadsEnumerationAndJson()
+        => Assert.Equal("1|a|{\"a\":1}|true", Eval("""
+            function T() { this.a = 1; }
+            var last = null;
+            for (var i = 0; i < 400; i++) last = new T();
+            [last.a, Object.keys(last).join(','), JSON.stringify(last), 'a' in last].join('|');
+            """));
+
+    [Fact]
+    public void DeletingACreatedPropertyAndRecreatingIt_Works()
+        => Assert.Equal("1|false|1", Eval("""
+            function add(o) { o.x = 1; }
+            var o = null;
+            for (var i = 0; i < 400; i++) { o = {}; add(o); }
+            var before = o.x;
+            delete o.x;
+            var gone = o.hasOwnProperty('x');
+            add(o);
+            [before, gone, o.x].join('|');
+            """));
+
+    [Fact]
+    public void AProxyReceiverStillFiresItsSetTrapForACreation()
+        => Assert.Equal("400|1", Eval("""
+            var traps = 0;
+            function add(o) { o.x = 1; }
+            for (var i = 0; i < 400; i++) add({});
+            var target = {};
+            var p = new Proxy(target, { set: function (t, k, v, r) { traps++; return Reflect.set(t, k, v); } });
+            for (var i = 0; i < 400; i++) add(p);
+            traps + '|' + target.x;
+            """));
+
+    [Fact]
+    public void AProxyInThePrototypeChainStillFiresItsSetTrapForACreation()
+        => Assert.Equal("400|false", Eval("""
+            var traps = 0;
+            var p = new Proxy({}, { set: function (t, k, v, r) { traps++; return true; } });
+            function add(o) { o.x = 1; return o.hasOwnProperty('x'); }
+            var own = false;
+            for (var i = 0; i < 400; i++) { if (add(Object.create(p))) own = true; }
+            traps + '|' + own;
+            """));
 }
