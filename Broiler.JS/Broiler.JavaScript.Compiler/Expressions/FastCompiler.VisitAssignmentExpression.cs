@@ -55,8 +55,39 @@ partial class FastCompiler
         }
     }
 
+    /// <summary>
+    /// One-shot hint set by a statement position (an ExpressionStatement, or a `for` update
+    /// clause) whose expression IS this assignment: its value is thrown away, so a numeric
+    /// local's store can stay an unboxed double. Read and cleared at the top of
+    /// <see cref="VisitAssignmentExpression"/>, before any subexpression is visited, so a
+    /// nested assignment (`a = (b = 1)`) never inherits it.
+    /// </summary>
+    private bool discardAssignmentResult;
+
+    /// <summary>
+    /// Gives a numeric local's store the type its consumer expects.
+    /// </summary>
+    /// <remarks>
+    /// A scalar-replaced numeric local lives in a raw <c>double</c>, so assigning to it
+    /// produces a <c>double</c>-typed expression. In statement position that is the whole
+    /// point — no boxing on the hot path. But an assignment is an expression, and its value
+    /// is the assigned value: `var r = (n = 5)`, `f(n = 5)`, `return (n = 5)` and
+    /// `if ((n = 5))` all consume it. Handing those a raw double produced a method the CLR
+    /// rejected outright — `System.InvalidProgramException` at the first call, or a
+    /// NullReferenceException where the mismatch reached a null local instead. Box the
+    /// result, and only the result, exactly as InternalVisitUpdateExpression does for
+    /// `++`/`--`. Non-numeric bindings already yield a JSValue and pass through untouched.
+    /// </remarks>
+    private static BExpression NumericStoreResult(BExpression store, bool discardResult)
+        => discardResult || store.Type != typeof(double) ? store : JSNumberBuilder.New(store);
+
     private BExpression VisitAssignmentExpression(AstExpression left, TokenTypes assignmentOperator, AstExpression right)
     {
+        // Consume the statement-position hint first: everything below may visit a
+        // subexpression, and a nested assignment must see it cleared.
+        var discardResult = discardAssignmentResult;
+        discardAssignmentResult = false;
+
         // A function call (or other invalid reference) used as an assignment
         // target is a runtime ReferenceError. The target is still evaluated for
         // its side effects, but the right-hand side is not, matching the
@@ -200,7 +231,7 @@ partial class FastCompiler
                 {
                     var (_, isNativeNumber, nativeRight) = ToNativeExpression(right);
                     if (isNativeNumber)
-                        return BExpression.Assign(variable.NumericStorage, nativeRight);
+                        return NumericStoreResult(BExpression.Assign(variable.NumericStorage, nativeRight), discardResult);
                 }
 
                 var initExpr = Visit(right);
@@ -213,7 +244,7 @@ partial class FastCompiler
                     initExpr = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, BExpression.Constant(identifier.Name.Value), BExpression.Constant(true));
                 if (IsDestructuringAssignmentExpression(right))
                     return AssignMaterializedValue(variable.Expression, initExpr);
-                return AssignToVariable(variable, initExpr);
+                return NumericStoreResult(AssignToVariable(variable, initExpr), discardResult);
             }
 
             // A parenthesized assignment target is not an IdentifierReference, so a
@@ -233,7 +264,8 @@ partial class FastCompiler
             // `x op= v` on a numeric local: the store targets the raw double.
             // BinaryOperation.Assign would write through the binding's boxing read.
             if (variable.NumericStorage != null)
-                return CreateNumericCompoundAssignment(variable, right, assignmentOperator);
+                return NumericStoreResult(
+                    CreateNumericCompoundAssignment(variable, right, assignmentOperator), discardResult);
 
             return Assign(variable.Expression, right, assignmentOperator);
         }

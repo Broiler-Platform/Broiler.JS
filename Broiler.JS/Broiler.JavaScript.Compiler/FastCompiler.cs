@@ -417,7 +417,16 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         // typeof g` is "undefined"). The block binding is mutable and distinct from the var
         // binding, so a self-reassignment (`function f(){ f = 1; }`) stays block-local. This
         // also hoists the value so a call BEFORE the textual declaration resolves (#912).
+        // `n = 5;` as a statement throws its value away, so a numeric local's store stays an
+        // unboxed double (see NumericStoreResult). The hint is set only when the statement's
+        // expression IS the assignment — never for one nested inside a call or operand, where
+        // the value really is consumed — and VisitAssignmentExpression clears it on entry.
+        var assignmentInStatementPosition = expressionStatement.Expression is AstBinaryExpression assignment
+            && assignment.Operator > TokenTypes.BeginAssignTokens
+            && assignment.Operator < TokenTypes.EndAssignTokens;
+        discardAssignmentResult = assignmentInStatementPosition;
         var visited = Visit(expressionStatement.Expression);
+        discardAssignmentResult = false;
         var result = producesEmptyCompletion ? visited : TrackCompletion(visited);
 
         if (IsStrictMode

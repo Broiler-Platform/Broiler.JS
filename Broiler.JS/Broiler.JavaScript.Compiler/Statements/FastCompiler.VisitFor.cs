@@ -361,10 +361,17 @@ partial class FastCompiler
 
         // The update clause's value is discarded, so an `i++` on a numeric local needs no
         // boxed result (docs/performance-roadmap.md P2-2 item 3).
+        // The same holds for an assignment update (`for (…; …; i = i + 1)` / `i += 1`): its
+        // value is discarded, so a numeric local's store need not be boxed either.
+        var updateIsAssignment = forStatement.Update is AstBinaryExpression updateAssignment
+            && updateAssignment.Operator > TokenTypes.BeginAssignTokens
+            && updateAssignment.Operator < TokenTypes.EndAssignTokens;
+        discardAssignmentResult = updateIsAssignment;
         var update = forStatement.Update is AstUnaryExpression
             { Operator: UnaryOperator.Increment or UnaryOperator.Decrement } counterUpdate
             ? InternalVisitUpdateExpression(counterUpdate, discardResult: true)
             : Visit(forStatement.Update);
+        discardAssignmentResult = false;
         var test = Visit(forStatement.Test);
 
         if (test != null)
