@@ -98,12 +98,23 @@ public partial class JSString
             throw JSEngine.NewRangeError($"Invalid count value");
 
         var c = (int)n;
-        var result = new StringBuilder(c * @this.Length);
-        for (var i = 0; i < c; i++)
-            result.Append(@this);
 
-        return new JSString(result.ToString());
+        // Write the repetitions straight into the result. Accumulating them in a
+        // StringBuilder and materialising that afterwards keeps two full-size buffers
+        // alive at once, so the peak cost was twice the string actually produced — and
+        // for a single-character unit it also appended one character at a time. A legal
+        // but enormous count makes that the difference between a gigabyte and two: WPT's
+        // editing/crashtests/insertparagraph-in-listitem-in-svg-followed-by-collapsible-spaces
+        // evaluates `" ".repeat(336860180)`, a 642 MiB result.
+        if (@this.Length == 1)
+            return new JSString(new string(@this[0], c));
 
+        return new JSString(string.Create(c * @this.Length, (@this, c), static (destination, state) =>
+        {
+            var (unit, count) = state;
+            for (var i = 0; i < count; i++)
+                unit.CopyTo(destination[(i * unit.Length)..]);
+        }));
     }
 
     [JSPrototypeMethod]
