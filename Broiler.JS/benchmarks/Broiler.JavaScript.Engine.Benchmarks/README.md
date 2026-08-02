@@ -74,3 +74,20 @@ Useful filters:
 Run `--sparse-metrics` against the built benchmark DLL to emit the Phase 2
 construction-time and bytes-per-entry comparison as JSON, and `--cache-metrics` for the
 property inline-cache hit rates described above.
+
+The other standing emitters report a quantity no wall-clock benchmark does, each in the
+same JSON shape — allocated bytes measured after a forced gen2 collection, warmed first,
+and reported net of a control that carries the same loop without the thing under test:
+
+| Emitter | Reports | Sized which roadmap item |
+|---|---|---|
+| `--object-alloc` | bytes per object, by shape | 2-3, 2-7, 2-9 |
+| `--element-alloc` | bytes per array element, write and read separately | 3-0, 3-1 |
+| `--local-alloc` | bytes per iteration for each place a value can live — a top-level `var`, a parameter, a `let`, a `const`, a block `var` — plus the compiler's own count of how many bindings it kept scalar | 3-3 |
+| `--property-map-distribution <octane-dir>` | the final node-group count of every property map over an Octane run | 2-7, 2-9 |
+
+`--local-alloc`'s two columns answer different questions and both are needed: the counter
+is exact and says whether a shape is *eligible*, the bytes say what that eligibility is
+*worth*. A site reporting zero scalar bindings and the same bytes as an eligible one is an
+item with no prize; the pair is the only way to tell that from a probe that never reached
+the change.
