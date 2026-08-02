@@ -65,11 +65,48 @@ public struct SAUint32Map<T>
         public VirtualArray Children;
     }
 
+    /// <summary>
+    /// Bytes one trie node occupies — a descriptor plus a key, a state byte and two link ints.
+    /// Public so a memory model of this map can be built from the real layout instead of from
+    /// a hand-added field list (docs/performance-roadmap.md item 2-7).
+    /// </summary>
+    public static int NodeSizeBytes => Unsafe.SizeOf<Node>();
+
+    /// <summary>
+    /// This instantiation's slot in <see cref="PropertyStorageMetrics"/>, resolved once per
+    /// closed generic type so the recording path is a static field read rather than a
+    /// dictionary lookup. Allocated whether or not recording is ever enabled; it is one small
+    /// array per instantiation, and there are single digits of them.
+    /// </summary>
+    private static readonly long[] groupCountHistogram = PropertyStorageMetrics.HistogramFor(typeof(T));
+
     private VirtualMemory<Node> nodes;
     private int liveCount;
 
     // first set of roots
     private VirtualArray roots;
+
+    /// <summary>
+    /// Hands out one four-node group, recording the map's new group count when
+    /// <see cref="PropertyStorageMetrics.Enabled"/>. The flag is tested before anything else is
+    /// read, so a normal run does not pay for the two counters the measurement needs.
+    /// </summary>
+    private VirtualArray AllocateNodeBlock()
+    {
+        if (!PropertyStorageMetrics.Enabled)
+            return nodes.Allocate(NodeBlock);
+
+        var countBefore = nodes.Count;
+        var capacityBefore = nodes.Capacity;
+        var allocated = nodes.Allocate(NodeBlock);
+
+        PropertyStorageMetrics.RecordGroupAllocation(
+            groupCountHistogram,
+            nodes.Count / NodeBlock,
+            nodes.Capacity != capacityBefore ? countBefore : 0);
+
+        return allocated;
+    }
 
     public T this[uint index]
     {
@@ -245,7 +282,7 @@ public struct SAUint32Map<T>
                 return ref Empty;
 
             // extend...
-            roots = nodes.Allocate(4);
+            roots = AllocateNodeBlock();
             nodes[roots, 0].State = NodeState.Filled;
         }
 
@@ -317,7 +354,7 @@ public struct SAUint32Map<T>
                 node.State |= NodeState.Filled;
                 if (node.Children.IsEmpty)
                 {
-                    var c = nodes.Allocate(4);
+                    var c = AllocateNodeBlock();
                     // allocation may have moved node
                     node = ref nodes[leaves, index];
                     node.Children = c;

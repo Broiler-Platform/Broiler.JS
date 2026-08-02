@@ -1,0 +1,176 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading;
+
+namespace Broiler.JavaScript.Storage;
+
+/// <summary>
+/// How many node groups each <see cref="SAUint32Map{T}"/> ends up allocating, bucketed per
+/// value type.
+/// </summary>
+/// <remarks>
+/// <para>
+/// Written for docs/performance-roadmap.md item 2-7, which cannot be decided without it. A
+/// property map's memory is dominated by a fixed block rather than by per-field storage —
+/// <see cref="VirtualMemory{T}.Allocate"/> rounds its first request up to 16 nodes, so one
+/// property reserves sixteen descriptors' worth and uses one — and the choice of floor is a
+/// trade: a smaller one halves a one-field object and makes an eight-field object worse by
+/// paying repeated resize-and-copy. Which side wins is a question about the *distribution* of
+/// real objects, and no synthetic probe can answer it.
+/// </para>
+/// <para>
+/// So the shape recorded here is the final group count per map, not a running total. Each
+/// allocation moves its map out of the previous bucket and into the next, which leaves
+/// <c>histogram[k]</c> holding the number of maps whose life ended at <c>k</c> groups. A map
+/// that never allocates — an object with no named properties — appears nowhere, which is
+/// correct: it never pays the floor.
+/// </para>
+/// <para>
+/// Disabled by default, and while <see cref="Enabled"/> is <c>false</c> the recording path is
+/// not reached at all: <see cref="SAUint32Map{T}"/> tests the flag before reading the counters
+/// an allocation would need. Process-wide statics with interlocked updates, so a snapshot taken
+/// while other threads are running is a smear rather than a tear.
+/// </para>
+/// </remarks>
+public static class PropertyStorageMetrics
+{
+    /// <summary>
+    /// Group counts above this land in one overflow bucket. 64 groups is 256 nodes; a map that
+    /// large is a dictionary-shaped object whose floor is rounding error either way.
+    /// </summary>
+    public const int MaxTrackedGroups = 64;
+
+    private const int OverflowBucket = MaxTrackedGroups + 1;
+
+    private static readonly ConcurrentDictionary<string, long[]> histograms = new();
+
+    private static long groupAllocations;
+    private static long backingArrayResizes;
+    private static long nodesCopiedByResizes;
+
+    /// <summary>
+    /// Whether the histogram below is recorded. Defaults to <c>false</c>.
+    /// <see cref="Reset"/> does not change it.
+    /// </summary>
+    public static bool Enabled;
+
+    /// <summary>
+    /// Enables recording until the returned scope is disposed, restoring the previous setting.
+    /// Does not reset the histogram — call <see cref="Reset"/> for that.
+    /// </summary>
+    public static RecordingScope Enable() => new(true);
+
+    /// <summary>Restores <see cref="Enabled"/> when disposed.</summary>
+    public readonly struct RecordingScope : IDisposable
+    {
+        private readonly bool previous;
+
+        internal RecordingScope(bool enabled)
+        {
+            previous = Enabled;
+            Enabled = enabled;
+        }
+
+        public void Dispose() => Enabled = previous;
+    }
+
+    /// <summary>
+    /// The histogram array for one value type, created on first use. Held by
+    /// <see cref="SAUint32Map{T}"/> in a per-instantiation static so the recording path costs a
+    /// field read rather than a dictionary lookup.
+    /// </summary>
+    public static long[] HistogramFor(Type valueType)
+        => histograms.GetOrAdd(Describe(valueType), static _ => new long[OverflowBucket + 1]);
+
+    /// <summary>
+    /// Moves one map from the bucket for <paramref name="groupsAfter"/> - 1 into the bucket for
+    /// <paramref name="groupsAfter"/>. Called only while <see cref="Enabled"/>.
+    /// </summary>
+    /// <param name="nodesCopiedByResize">
+    /// Nodes copied because this allocation had to grow the backing array, or 0 if it fitted.
+    /// This is the cost a smaller floor trades *for*, so it is measured rather than assumed.
+    /// </param>
+    public static void RecordGroupAllocation(long[] histogram, int groupsAfter, int nodesCopiedByResize)
+    {
+        Interlocked.Increment(ref groupAllocations);
+
+        if (nodesCopiedByResize > 0)
+        {
+            Interlocked.Increment(ref backingArrayResizes);
+            Interlocked.Add(ref nodesCopiedByResizes, nodesCopiedByResize);
+        }
+
+        if (histogram == null || groupsAfter < 1)
+            return;
+
+        Interlocked.Increment(ref histogram[Math.Min(groupsAfter, OverflowBucket)]);
+
+        if (groupsAfter > 1)
+        {
+            // Clamping both ends means a map already in the overflow bucket increments and
+            // decrements the same slot — it stays counted exactly once, however far it grows.
+            Interlocked.Decrement(ref histogram[Math.Min(groupsAfter - 1, OverflowBucket)]);
+        }
+    }
+
+    /// <summary>Zeroes the histogram and the totals. Does not change <see cref="Enabled"/>.</summary>
+    public static void Reset()
+    {
+        foreach (var histogram in histograms.Values)
+            Array.Clear(histogram);
+
+        Interlocked.Exchange(ref groupAllocations, 0);
+        Interlocked.Exchange(ref backingArrayResizes, 0);
+        Interlocked.Exchange(ref nodesCopiedByResizes, 0);
+    }
+
+    public static PropertyStorageSnapshot Snapshot()
+    {
+        var perType = new Dictionary<string, long[]>(histograms.Count);
+        foreach (var (valueType, histogram) in histograms)
+            perType[valueType] = (long[])histogram.Clone();
+
+        return new PropertyStorageSnapshot(
+            Interlocked.Read(ref groupAllocations),
+            Interlocked.Read(ref backingArrayResizes),
+            Interlocked.Read(ref nodesCopiedByResizes),
+            perType);
+    }
+
+    /// <summary>
+    /// A short name for a generic value type, so `SAUint32Map&lt;JSObjectProperty&gt;` — the one
+    /// item 2-7 is about — is distinguishable in the output from the symbol, prototype, global
+    /// and event-handler maps that share the implementation.
+    /// </summary>
+    private static string Describe(Type valueType)
+    {
+        if (!valueType.IsGenericType)
+            return valueType.Name;
+
+        var arguments = valueType.GetGenericArguments();
+        var name = valueType.Name;
+        var tick = name.IndexOf('`');
+        if (tick > 0)
+            name = name[..tick];
+
+        return $"{name}<{string.Join(",", Array.ConvertAll(arguments, Describe))}>";
+    }
+}
+
+/// <param name="GroupAllocations">Total four-node groups handed out while recording.</param>
+/// <param name="BackingArrayResizes">
+/// Allocations that had to grow the backing array. Under the current 16-node floor the first
+/// four groups of a map are free of this; a smaller floor trades memory for more of it.
+/// </param>
+/// <param name="NodesCopiedByResizes">Nodes copied by those resizes — the trade, in nodes.</param>
+/// <param name="FinalGroupCountsByValueType">
+/// Per value type, <c>histogram[k]</c> = maps whose life ended at <c>k</c> node groups. Index 0
+/// is unused (a map with no allocation is not a map that paid anything) and the last index is
+/// the overflow bucket for counts above <see cref="PropertyStorageMetrics.MaxTrackedGroups"/>.
+/// </param>
+public readonly record struct PropertyStorageSnapshot(
+    long GroupAllocations,
+    long BackingArrayResizes,
+    long NodesCopiedByResizes,
+    IReadOnlyDictionary<string, long[]> FinalGroupCountsByValueType);
