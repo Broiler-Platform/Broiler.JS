@@ -2,6 +2,7 @@
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Statements;
+using Broiler.JavaScript.ExpressionCompiler;
 using System.Runtime.CompilerServices;
 
 namespace Broiler.JavaScript.Parser;
@@ -82,7 +83,68 @@ partial class FastParser
         throw stream.Unexpected();
     }
 
-    bool Expression(out AstExpression node)
+    // Item 1-2's third and last recursing pass. The parser's own descent is the one that
+    // overflows FIRST, before the syntax validator or the IL emitter ever see the tree.
+    // Measured on the DEFAULT configuration, not with a diagnostic switch flipped: a
+    // right-nested conditional returned its answer at 20 000 levels and ABORTED THE PROCESS at
+    // 25 000, ~2.7 KB of stack a level against the 64 MiB compilation worker. Nothing catches
+    // it — a CLR stack overflow is not an exception — so a syntactically valid script took the
+    // host down. Guarded, 25 000, 40 000 and 90 000 all complete.
+    //
+    // Guarded here rather than at each recursive site because every nested construct funnels
+    // through this method: the abort trace's repeating cycle is Expression ->
+    // SinglePrefixPostfixExpression -> SingleMemberExpression -> SingleExpression ->
+    // BracketExpression -> ExpressionList -> Expression, and this entry appears in it twice.
+    //
+    // Same rules as the other two passes, from the same StackSegment, deliberately not a copy:
+    // a copy is exactly what StackGuard got wrong three separate ways.
+    unsafe bool Expression(out AstExpression node)
+    {
+        int self;
+        var current = (nint)(&self);
+        var top = expressionDepth == 0;
+        expressionDepth++;
+
+        try
+        {
+            if (!expressionSegment.ShouldSegment(current))
+                return ExpressionCore(out node);
+
+            // `out` cannot be captured, so the continuation writes a local the closure owns and
+            // the result is copied back once the worker has finished with it.
+            AstExpression parsed = null;
+            var parsedExpression = expressionSegment.Continue(() => ExpressionCore(out parsed));
+            node = parsed;
+            return parsedExpression;
+        }
+        finally
+        {
+            expressionDepth--;
+            if (top)
+                expressionSegment.Release();
+        }
+    }
+
+    // Whether this call is the outermost expression cannot be inferred from "the segment is not
+    // anchored yet", which is the obvious reading and is wrong. Continue() deliberately clears
+    // the anchor so the continuation measures against its fresh stack — so the FIRST call on a
+    // segmented continuation looks unanchored, calls itself outermost, and releases the anchor
+    // again the moment that one sub-expression finishes. The accounting then restarts from
+    // whatever depth the next call happens to sit at, which makes the guard fire on an interval
+    // it did not choose.
+    //
+    // Stated as a structural defect and not as a measured regression: it was found while chasing
+    // a failure that turned out to have a different cause (SegmentAtBytes is 4 MiB and the
+    // mitigation-disabled stack is ~1 MiB, so no threshold can fire there), and the two were not
+    // separated. The fix is cheap and obviously right, so it stayed.
+    //
+    // A depth counter says what the anchor cannot: this is the top of the recursion, not the top
+    // of the current stack. StackGuard<T,TIn> makes the same inference for the other two passes.
+    private int expressionDepth;
+
+    private StackSegment expressionSegment;
+
+    private bool ExpressionCore(out AstExpression node)
     {
         SkipNewLines();
         PreventStackoverFlow(ref lastExpressionIndex);

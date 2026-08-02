@@ -267,6 +267,15 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     /// <summary>Whether the function contains any nested function at all.</summary>
     public bool HasNestedFunctions { get; internal set; }
 
+    /// <summary>
+    /// Whether <c>arguments</c> is named anywhere in this function or in a function nested in
+    /// it. A mapped <c>arguments</c> object aliases the parameters through their
+    /// <see cref="JSVariable"/> cells, so a function that may build one keeps them
+    /// (docs/performance-roadmap.md item 3-3). Defaults to <c>true</c>: a scope nobody scanned
+    /// must not be treated as one that was found clean.
+    /// </summary>
+    public bool MentionsArguments { get; internal set; } = true;
+
     private static readonly IReadOnlySet<string> NoCapturedNames = new HashSet<string>(StringComparer.Ordinal);
 
     /// <summary>

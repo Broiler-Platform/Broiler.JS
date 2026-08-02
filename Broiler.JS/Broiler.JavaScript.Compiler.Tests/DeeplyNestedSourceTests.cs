@@ -51,6 +51,30 @@ public class DeeplyNestedSourceTests
     }
 
     [Fact]
+    public void DeepConditionalExpressionNesting_PastTheCompilationStack_Compiles()
+    {
+        // The fixture above at 15 000 levels passed before the PARSER was guarded, because a
+        // 64 MiB compilation worker absorbs it. This one does not: measured on this engine the
+        // parser's descent costs ~2.7 KB a level, so 25 000 levels wants ~67 MiB and the
+        // process ABORTED here — 20 000 completed, 25 000 did not, with no exception to catch
+        // because a CLR stack overflow is not one.
+        //
+        // Sized just past that edge rather than far past it, so it stays a fixture rather than
+        // a soak: it is the smallest depth that was fatal, and it is decisive without touching
+        // CompilationStack.SizeBytes — a process-wide static xUnit's parallel classes would
+        // race on, which is why item 1-2's guard-alone row is a manual result and this is not.
+        const int levels = 25_000;
+
+        var source = new StringBuilder("function t(x) { return ", levels * 24 + 64);
+        for (var i = 0; i < levels; i++)
+            source.Append("x === ").Append(i).Append(" ? ").Append(i).Append(" : (");
+        source.Append('0').Append(new string(')', levels)).Append("; } t(7);");
+
+        using var ctx = new JSContext();
+        Assert.Equal(7, ctx.Eval(source.ToString()).DoubleValue);
+    }
+
+    [Fact]
     public void LongFlatStatementList_Compiles()
     {
         // The size case, kept deliberately: it already passed before nesting was addressed,

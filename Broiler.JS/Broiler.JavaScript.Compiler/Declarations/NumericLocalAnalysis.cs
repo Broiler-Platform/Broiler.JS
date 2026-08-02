@@ -76,6 +76,15 @@ internal sealed class NumericLocalAnalysis
         {
             switch (statement)
             {
+                // `let` and `const` are NOT offered, and the reason is not the temporal dead
+                // zone — the dominance argument above discharges that, since a name with any
+                // reference before its declaration is rejected, so the TDZ throw is
+                // unreachable rather than removed. Admitting them was tried under item 3-3 and
+                // withdrawn: it works in a single compilation and miscompiles after any
+                // earlier one in the same process, including for nested-block bindings the
+                // gate never admits. See docs/performance-roadmap.md item 3-3 for the
+                // reproduction; the storage of a lexical binding is evidently decided
+                // somewhere other than that gate, and that has to be found first.
                 case AstVariableDeclaration { Kind: FastVariableKind.Var } declaration:
                     OfferDeclaration(declaration);
                     break;
@@ -250,6 +259,21 @@ internal sealed class NumericLocalAnalysis
     }
 
     /// <summary>Every identifier name appearing anywhere under a node.</summary>
+    /// <remarks>
+    /// The overrides below are not optional. <see cref="AstReduce"/> treats these compact
+    /// structs as leaves because most rewriting visitors handle them explicitly, so without
+    /// them this collector walks straight past the properties of an object pattern — and every
+    /// caller of <see cref="RejectEveryNameIn"/> is a place where a missed name is a
+    /// <em>miscompilation</em> rather than a lost optimization. <c>var { a: s } = o</c> and
+    /// <c>({ a: s } = o)</c> both bind <c>s</c> through an object pattern, and while they were
+    /// invisible here the analysis went on believing <c>s</c> held a number: a string assigned
+    /// through one of them silently became NaN.
+    /// <para>
+    /// <c>ScalarReplacementHazardDetector</c> and <c>NestedFunctionScanner</c> in
+    /// <c>FastCompiler.CreateFunction</c> carry the same three overrides for the same reason.
+    /// This class is the one that was missed.
+    /// </para>
+    /// </remarks>
     private sealed class NameCollector : AstReduce
     {
         public readonly List<string> Names = [];
@@ -258,6 +282,35 @@ internal sealed class NumericLocalAnalysis
         {
             Names.Add(identifier.Name.Value);
             return identifier;
+        }
+
+        protected override ObjectProperty VisitObjectProperty(ObjectProperty property)
+        {
+            if (property.Key != null)
+                Visit(property.Key);
+            if (property.Value != null)
+                Visit(property.Value);
+            if (property.Init != null)
+                Visit(property.Init);
+            return property;
+        }
+
+        protected override VariableDeclarator VisitVariableDeclarator(VariableDeclarator declarator)
+        {
+            Visit(declarator.Identifier);
+            if (declarator.Init != null)
+                Visit(declarator.Init);
+            return declarator;
+        }
+
+        protected override Case VisitCase(Case @case)
+        {
+            if (@case.Test != null)
+                Visit(@case.Test);
+            var statements = @case.Statements.GetFastEnumerator();
+            while (statements.MoveNext(out var statement))
+                Visit(statement);
+            return @case;
         }
     }
 
@@ -291,9 +344,29 @@ internal sealed class NumericLocalAnalysis
                 Visit(declarator.Init);
 
             if (declarator.Identifier is AstIdentifier identifier)
+            {
+                // A DECLARATION is a store, and this walk reaches the ones OfferDeclaration
+                // cannot: a `var` re-declared inside a block, an `if`, a loop, a `try` or a
+                // `switch` names the same function-scoped binding, so `var s = 0; { var s =
+                // 'x'; }` really does put a string where the analysis proved a number. Only
+                // the top-level declarations were recorded before, and the value silently
+                // became NaN.
+                //
+                // Recording it here double-counts the top-level ones OfferDeclaration
+                // already has, which costs one extra IsNumeric call each and changes no
+                // answer — the fixed point asks the same question of the same expression.
+                //
+                // A declarator with NO initializer is deliberately not recorded: a second
+                // `var s;` does not reset an initialized binding, so it stores nothing.
+                if (declarator.Init != null)
+                    owner.assignments.Add((identifier.Name.Value, declarator.Init));
+
                 declared.Add(identifier.Name.Value);
+            }
             else
+            {
                 owner.RejectEveryNameIn(declarator.Identifier);
+            }
 
             return declarator;
         }
@@ -301,18 +374,35 @@ internal sealed class NumericLocalAnalysis
         protected override AstNode VisitBinaryExpression(AstBinaryExpression binary)
         {
             if (binary.Operator > TokenTypes.BeginAssignTokens
-                && binary.Operator < TokenTypes.EndAssignTokens
-                && binary.Left is AstIdentifier target)
+                && binary.Operator < TokenTypes.EndAssignTokens)
             {
-                // Record the store, then visit the operands. The target identifier is
-                // deliberately NOT visited as a read: an assignment does not observe the
-                // old value except in a compound form, which reads it through the operator
-                // and is covered by IsNumericBinary.
-                owner.assignments.Add((target.Name.Value, binary));
-                if (binary.Operator != TokenTypes.Assign && !declared.Contains(target.Name.Value))
-                    owner.rejected.Add(target.Name.Value);
-                Visit(binary.Right);
-                return binary;
+                if (binary.Left is AstIdentifier target)
+                {
+                    // Record the store, then visit the operands. The target identifier is
+                    // deliberately NOT visited as a read: an assignment does not observe the
+                    // old value except in a compound form, which reads it through the operator
+                    // and is covered by IsNumericBinary.
+                    owner.assignments.Add((target.Name.Value, binary));
+                    if (binary.Operator != TokenTypes.Assign && !declared.Contains(target.Name.Value))
+                        owner.rejected.Add(target.Name.Value);
+                    Visit(binary.Right);
+                    return binary;
+                }
+
+                // A destructuring assignment writes names without an identifier in target
+                // position: `({ a: s } = o)` and `[s] = a` both store into `s`, and neither
+                // reaches the branch above. Nothing here can say what the pattern will yield,
+                // so every name it mentions is rejected rather than typed.
+                //
+                // A MEMBER expression is excluded from that and visited normally, because it
+                // is not a binding target at all — the names in `a[i] = v` are reads, and
+                // rejecting them would undo 3-0's unboxed numeric index.
+                if (binary.Left is not AstMemberExpression)
+                {
+                    owner.RejectEveryNameIn(binary.Left);
+                    Visit(binary.Right);
+                    return binary;
+                }
             }
 
             Visit(binary.Left);
