@@ -136,12 +136,14 @@ public partial class JSString
                 CreateString(substr), CreateNumber(start), CreateString(@this))).StringValue
             : GetSubstitution(substr, @this, start, replacementTemplate);
 
-        // Replace only the first match.
-        var result = new StringBuilder(@this.Length + (replaceText.Length - substr.Length));
-        result.Append(@this, 0, start);
-        result.Append(replaceText);
-        result.Append(@this, end, @this.Length - end);
-        return new JSString(result.ToString());
+        // Replace only the first match — so the answer is exactly prefix + replacement + suffix,
+        // and string.Concat writes those three spans into ONE allocation of the final length.
+        // A StringBuilder here cost two full copies of the subject (into its chunk list, then
+        // back out through ToString()) even though it was pre-sized: .NET's StringBuilder is a
+        // chunk list rather than a doubling array, so pre-sizing never removed the second copy.
+        // Same change, and same reason, as RegExp.prototype[@@replace]'s single-match path.
+        return new JSString(string.Concat(
+            @this.AsSpan(0, start), replaceText.AsSpan(), @this.AsSpan(end)));
     }
 
     [JSPrototypeMethod]

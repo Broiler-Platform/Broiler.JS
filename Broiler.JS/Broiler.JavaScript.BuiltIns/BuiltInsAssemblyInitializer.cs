@@ -1650,9 +1650,12 @@ internal static class BuiltInsAssemblyInitializer
             if (results.Count == 0)
                 return JSValue.CreateString(input);
 
-            var accumulatedResult = new StringBuilder();
-            var nextSourcePosition = 0;
-            foreach (var result in results)
+            // §22.2.6.11 step 16 for one result. Extracted so the single-match fast path
+            // below and the accumulating loop read the result's properties in exactly the
+            // same observable order — the order test262 sm/RegExp/replace-trace pins. It is
+            // called directly and never as a delegate, so the capture is a struct closure
+            // and costs no allocation.
+            (int Position, string Matched, string Replacement) OneReplacement(JSValue result)
             {
                 // §22.2.6.11 step 16 evaluates the result properties in this exact order:
                 // LengthOfArrayLike ("length") → Get "0" → Get "index" → captures loop
@@ -1709,6 +1712,29 @@ internal static class BuiltInsAssemblyInitializer
 
                     replacement = GetSubstitution(matched, input, position, captures, normalizedNamedCaptures, replacementText);
                 }
+
+                return (position, matched, replacement);
+            }
+
+            // A single match needs no builder. The result is exactly prefix + replacement +
+            // suffix, and string.Concat writes those three spans into one allocation of the
+            // final length; the builder path costs two full copies of the subject — its
+            // chunks, then ToString() — which measured ~4 bytes per subject character. The
+            // step 16.p guard below cannot apply here: nextSourcePosition is still 0 on the
+            // first result and position is clamped to [0, lengthS], so position >= 0 holds.
+            if (results.Count == 1)
+            {
+                var (position, matched, replacement) = OneReplacement(results[0]);
+                var sourceTail = Math.Min(position + matched.Length, input.Length);
+                return JSValue.CreateString(string.Concat(
+                    input.AsSpan(0, position), replacement.AsSpan(), input.AsSpan(sourceTail)));
+            }
+
+            var accumulatedResult = new StringBuilder();
+            var nextSourcePosition = 0;
+            foreach (var result in results)
+            {
+                var (position, matched, replacement) = OneReplacement(result);
 
                 // §22.2.6.11 step 16.p: only accumulate the replacement when position has
                 // not moved backwards. An ill-behaving subclass whose exec returns a result

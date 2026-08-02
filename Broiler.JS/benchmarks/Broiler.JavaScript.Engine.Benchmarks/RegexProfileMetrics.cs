@@ -183,6 +183,10 @@ internal static class RegexProfileMetrics
                 ("test-hit", "var re = /zqx/;", "sink = re.test(subject);"),
                 ("exec-hit", "var re = /zqx/;", "sink = re.exec(subject) !== null;"),
                 ("replace-one", "var re = /zqx/;", "sink = subject.replace(re, 'y').length;"),
+                // The same single replacement reached through a STRING searchValue, which is a
+                // different builtin (String.prototype.replace's own path, not @@replace) that had
+                // the same two-copy assembly. Kept alongside so the two cannot drift apart.
+                ("replace-one-string", "", "sink = subject.replace('zqx', 'y').length;"),
             })
             {
                 rows.Add(MeasureCalls($"{name}@{length}", length, setup, body));
