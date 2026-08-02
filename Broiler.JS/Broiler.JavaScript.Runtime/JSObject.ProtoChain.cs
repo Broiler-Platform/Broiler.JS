@@ -112,6 +112,20 @@ public partial class JSObject
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal JSProperty GetInternalProperty(in KeyString key, bool inherited = true)
     {
+        // Shape-only (item 2-9): this is the own-property half of every prototype-chain
+        // walk, so it answers from the shape rather than materializing.
+        if (IsShapeOnlyStorage)
+        {
+            if (TryGetShapeOnlyProperty(key.Key, out var shapeOnly))
+                return shapeOnly;
+
+            var inheritedOnly = JSProperty.Empty;
+            if (inherited && prototypeChain != null)
+                inheritedOnly = prototypeChain.GetInternalProperty(key);
+
+            return inheritedOnly;
+        }
+
         var r = ownProperties.GetValue(key.Key);
         if (!r.IsEmpty)
             return r;
@@ -146,7 +160,21 @@ public partial class JSObject
     }
     internal override JSFunctionDelegate GetMethod(in KeyString key)
     {
-        if (!ownProperties.IsEmpty)
+        if (IsShapeOnlyStorage)
+        {
+            if (TryGetShapeOnlyProperty(key.Key, out var shapeOnly))
+            {
+                var shapeOnlyValue = GetValue(shapeOnly);
+                if (shapeOnlyValue.IsUndefined || shapeOnlyValue.IsNull)
+                    return null;
+
+                if (shapeOnlyValue is IJSFunction shapeOnlyFunction)
+                    return shapeOnlyFunction.Delegate;
+
+                throw NewTypeError($"{key} is not a function");
+            }
+        }
+        else if (!ownProperties.IsEmpty)
         {
             ref var p = ref ownProperties.GetValue(key.Key);
             if (!p.IsEmpty)

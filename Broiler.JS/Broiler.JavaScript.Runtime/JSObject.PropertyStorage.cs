@@ -13,10 +13,27 @@ public partial class JSObject
     internal protected virtual bool HasOwnProperty(in PropertyKey key) => key.Type switch
     {
         KeyType.UInt => elements.HasKey(key.Index),
-        KeyType.String => !IsPrivateName(in key.KeyString) && ownProperties.HasKey(key.KeyString.Key),
+        KeyType.String => !IsPrivateName(in key.KeyString) && HasOwnNamedProperty(key.KeyString.Key),
         KeyType.Symbol => symbols.HasKey(key.Symbol.Key),
         _ => false
     };
+
+    /// <summary>
+    /// Whether this object owns <paramref name="key"/> as a named property, answered from
+    /// whichever storage currently holds the truth (item 2-9).
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool HasOwnNamedProperty(uint key)
+        => IsShapeOnlyStorage ? ShapeOnlyHasKey(key) : ownProperties.HasKey(key);
+
+    /// <summary>
+    /// The descriptor for a named property, from whichever storage holds the truth (item 2-9).
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private bool TryGetOwnNamedProperty(uint key, out JSProperty property)
+        => IsShapeOnlyStorage
+            ? TryGetShapeOnlyProperty(key, out property)
+            : ownProperties.TryGetValue(key, out property);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool TryGetOrdinaryOwnProperty(in PropertyKey key, out JSProperty property)
@@ -26,7 +43,9 @@ public partial class JSObject
             case KeyType.UInt:
                 return elements.TryGetValue(key.Index, out property);
             case KeyType.String when !IsPrivateName(in key.KeyString):
-                return ownProperties.TryGetValue(key.KeyString.Key, out property);
+                return IsShapeOnlyStorage
+                    ? TryGetShapeOnlyProperty(key.KeyString.Key, out property)
+                    : ownProperties.TryGetValue(key.KeyString.Key, out property);
             case KeyType.Symbol:
                 return symbols.TryGetValue(key.Symbol.Key, out property);
             default:
@@ -42,9 +61,13 @@ public partial class JSObject
         // shape tracker. Conservatively abandon the fast layout for exact ordinary
         // objects whenever mutable access is requested; read-only enumeration passes
         // create:false and retains its shape.
+        //
+        // Either way the caller is about to read the trie, so this is also item 2-9's
+        // materialization boundary: a shape-only object writes its named properties back
+        // here, and from this point on behaves exactly as it did before that item.
         if (create)
             AbandonObjectShape();
-        return ref ownProperties;
+        return ref OwnProperties();
     }
 
     /// <summary>
@@ -186,7 +209,7 @@ public partial class JSObject
         if (!IsExtensible())
             throw NewTypeError($"Cannot add private member {PrivateDisplayName(in key)} to a non-extensible object");
 
-        if (!ownProperties.GetValue(key.Key).IsEmpty)
+        if (!OwnProperties().GetValue(key.Key).IsEmpty)
             throw NewTypeError($"Cannot add private member {PrivateDisplayName(in key)}: it is already present on the object");
     }
 
@@ -234,8 +257,12 @@ public partial class JSObject
                 if (IsPrivateName(in key.KeyString))
                     return UndefinedValue;
 
-                if (ownProperties.TryGetValue(key.KeyString.Key, out var p))
+                if (IsShapeOnlyStorage
+                    ? TryGetShapeOnlyProperty(key.KeyString.Key, out var p)
+                    : ownProperties.TryGetValue(key.KeyString.Key, out p))
+                {
                     return JSObjectCoreExtensions.PropertyToJSValue(in p);
+                }
                 return UndefinedValue;
 
             case KeyType.UInt:
@@ -254,6 +281,13 @@ public partial class JSObject
 
     public override JSValue GetOwnProperty(in KeyString name)
     {
+        if (IsShapeOnlyStorage)
+        {
+            return TryGetShapeOnlyProperty(name.Key, out var shapeOnly)
+                ? GetValue(shapeOnly)
+                : GetValue(JSProperty.Empty);
+        }
+
         ref var p = ref ownProperties.GetValue(name.Key);
         return GetValue(p);
     }
@@ -302,8 +336,16 @@ public partial class JSObject
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void FastAddValue(KeyString key, JSValue value, JSPropertyAttributes attributes)
     {
-        CancelLazyDataProperty(in ownProperties.GetValue(key.Key));
-        ownProperties.Put(key.Key) = new JSProperty(key.Key, value, attributes);
+        // Item 2-9's principal saving. This is the property-creating write every constructor
+        // and object literal ends in, so keeping it out of the radix trie is what takes a
+        // tracked property from ~150 bytes of node to a slot and a byte. A shape-only object
+        // can hold no lazy cell, so there is nothing to cancel on this path either.
+        if (TryShapeOnlySetDataProperty(in key, value, attributes))
+            return;
+
+        ref var own = ref OwnProperties();
+        CancelLazyDataProperty(in own.GetValue(key.Key));
+        own.Put(key.Key) = new JSProperty(key.Key, value, attributes);
         TrackShapeDataProperty(in key, value, attributes);
     }
 
@@ -318,8 +360,9 @@ public partial class JSObject
         BuiltInFeatureId feature,
         JSPropertyAttributes attributes)
     {
-        CancelLazyDataProperty(in ownProperties.GetValue(key.Key));
-        ownProperties.Put(key.Key) = new JSProperty(
+        ref var lazyOwn = ref OwnProperties();
+        CancelLazyDataProperty(in lazyOwn.GetValue(key.Key));
+        lazyOwn.Put(key.Key) = new JSProperty(
             key,
             null,
             null,
@@ -339,8 +382,9 @@ public partial class JSObject
         IDeferredPropertyValue deferred,
         JSPropertyAttributes attributes)
     {
-        CancelLazyDataProperty(in ownProperties.GetValue(key.Key));
-        ownProperties.Put(key.Key) = new JSProperty(key, null, null, deferred, attributes);
+        ref var deferredOwn = ref OwnProperties();
+        CancelLazyDataProperty(in deferredOwn.GetValue(key.Key));
+        deferredOwn.Put(key.Key) = new JSProperty(key, null, null, deferred, attributes);
 
         // Recorded in the shape with no slot value rather than abandoning it. A deferred cell
         // has to be realized by the generic path, and a null slot is exactly how the shape says
@@ -361,7 +405,7 @@ public partial class JSObject
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void FastAddProperty(KeyString key, JSValue getter, JSValue setter, JSPropertyAttributes attributes)
     {
-        ownProperties.Put(key.Key) = new JSProperty(key, getter, setter, attributes);
+        OwnProperties().Put(key.Key) = new JSProperty(key, getter, setter, attributes);
         AbandonObjectShape();
         NotifyNamedPropertyMutation();
     }
@@ -459,7 +503,7 @@ public partial class JSObject
         foreach (var (index, _) in target.elements.AllValues())
             keys.Add(new OrdinaryOwnKey(KeyType.UInt, index, KeyString.Empty));
 
-        var properties = target.ownProperties.GetEnumerator(showEnumerableOnly: false);
+        var properties = target.OwnProperties().GetEnumerator(showEnumerableOnly: false);
         while (properties.MoveNext(out var name, out _))
             keys.Add(new OrdinaryOwnKey(KeyType.String, 0, name));
 
@@ -509,8 +553,8 @@ public partial class JSObject
                         continue;
                     break;
                 case KeyType.String:
-                    if ((excludedKeys != null && excludedKeys.ownProperties.HasKey(key.Name.Key))
-                        || !target.ownProperties.TryGetValue(key.Name.Key, out property))
+                    if ((excludedKeys != null && excludedKeys.HasOwnNamedProperty(key.Name.Key))
+                        || !target.TryGetOwnNamedProperty(key.Name.Key, out property))
                         continue;
                     break;
                 case KeyType.Symbol:
@@ -536,8 +580,11 @@ public partial class JSObject
                     elements.Set(key.Index, JSProperty.Property(key.Index, value));
                     break;
                 case KeyType.String:
-                    ownProperties.Put(key.Name.Key) = JSProperty.Property(key.Name, value);
-                    TrackShapeDataProperty(in key.Name, value as JSValue, JSPropertyAttributes.EnumerableConfigurableValue);
+                    if (!TryShapeOnlySetDataProperty(in key.Name, value as JSValue, JSPropertyAttributes.EnumerableConfigurableValue))
+                    {
+                        OwnProperties().Put(key.Name.Key) = JSProperty.Property(key.Name, value);
+                        TrackShapeDataProperty(in key.Name, value as JSValue, JSPropertyAttributes.EnumerableConfigurableValue);
+                    }
                     break;
                 case KeyType.Symbol:
                     symbols.Put(key.Index) = JSProperty.Property(key.Index, value);
@@ -613,7 +660,7 @@ public partial class JSObject
     private bool IsExcludedOwnKey(in PropertyKey key) => key.Type switch
     {
         KeyType.UInt => elements.HasKey(key.Index),
-        KeyType.String => ownProperties.HasKey(key.KeyString.Key),
+        KeyType.String => HasOwnNamedProperty(key.KeyString.Key),
         KeyType.Symbol => symbols.HasKey(key.Symbol.Key),
         _ => false,
     };
@@ -670,19 +717,31 @@ public partial class JSObject
         // cell still goes the long way round and gets cancelled properly.
         if (ReferenceEquals(receiver, this) && GetType() == typeof(JSObject))
         {
-            ref var existingOwn = ref ownProperties.GetValue(name.Key);
-            if (existingOwn.IsValue
-                && !existingOwn.IsReadOnly
-                && existingOwn.value is JSValue)
+            // Shape-only (item 2-9): the same overwrite, with the attributes read from the
+            // parallel array and the value written to the slot. No descriptor exists to
+            // rewrite, and none needs to — an overwrite moves the value and nothing else.
+            if (IsShapeOnlyStorage)
             {
-                var existingAttributes = existingOwn.Attributes;
-                // Written through the ref the lookup above already produced. Re-entering the
-                // map through Put walked it a second time to reach a node known to exist, and
-                // the property map is a radix trie, so that walk is proportional to the key.
-                existingOwn = new JSProperty(name, value, existingAttributes);
-                TrackShapeDataProperty(in name, value, existingAttributes);
-                PropertyChanged?.Invoke(this, (name.Key, uint.MaxValue, null));
-                return true;
+                if (TryShapeOnlyOverwrite(in name, value))
+                    return true;
+            }
+            else
+            {
+                ref var existingOwn = ref ownProperties.GetValue(name.Key);
+                if (existingOwn.IsValue
+                    && !existingOwn.IsReadOnly
+                    && existingOwn.value is JSValue)
+                {
+                    var existingAttributes = existingOwn.Attributes;
+                    // Written through the ref the lookup above already produced. Re-entering
+                    // the map through Put walked it a second time to reach a node known to
+                    // exist, and the property map is a radix trie, so that walk is
+                    // proportional to the key.
+                    existingOwn = new JSProperty(name, value, existingAttributes);
+                    TrackShapeDataProperty(in name, value, existingAttributes);
+                    PropertyChanged?.Invoke(this, (name.Key, uint.MaxValue, null));
+                    return true;
+                }
             }
         }
 
@@ -1131,7 +1190,40 @@ public partial class JSObject
         if (metadata.IsArrayIndex || metadata.IsCanonicalNumericIndex || metadata.IsPrivateName)
             return false;
 
-        ref var own = ref target.ownProperties.GetValue(name.Key);
+        // Shape-only (item 2-9): the descriptor this path reads exists only as a slot plus an
+        // attribute byte, and the Put it ends in is exactly the trie write the item removes.
+        // Reconstructing the descriptor keeps the decision logic below identical rather than
+        // duplicating it — a shape-only object can hold no accessor and no lazy cell, so the
+        // two branches that test for them simply never fire.
+        if (target.IsShapeOnlyStorage)
+        {
+            target.TryGetShapeOnlyProperty(name.Key, out var shapeOnly);
+            if (shapeOnly.IsEmpty && !target.IsExtensible())
+            {
+                if (throwError)
+                    throw NewTypeError($"Cannot modify property {name} of {target}");
+
+                return true;
+            }
+
+            if (!shapeOnly.IsEmpty && shapeOnly.IsReadOnly)
+            {
+                if (throwError)
+                    throw NewTypeError($"Cannot modify property {name} of {target}");
+
+                return true;
+            }
+
+            var shapeOnlyAttributes = shapeOnly.IsEmpty ? defaultAttributes : shapeOnly.Attributes;
+            if (target.TryShapeOnlySetDataProperty(in name, value, shapeOnlyAttributes))
+            {
+                target.PropertyChanged?.Invoke(target, (name.Key, uint.MaxValue, null));
+                result = true;
+                return true;
+            }
+        }
+
+        ref var own = ref target.OwnProperties().GetValue(name.Key);
         JSPropertyAttributes attributes;
 
         if (own.IsEmpty)
@@ -1325,8 +1417,11 @@ public partial class JSObject
     {
         if (ReferenceEquals(target, this))
         {
-            target.ownProperties.Put(name, value, attributes);
-            target.TrackShapeDataProperty(in name, value, attributes);
+            if (!target.TryShapeOnlySetDataProperty(in name, value, attributes))
+            {
+                target.OwnProperties().Put(name, value, attributes);
+                target.TrackShapeDataProperty(in name, value, attributes);
+            }
             target.PropertyChanged?.Invoke(target, (name.Key, uint.MaxValue, null));
             return true;
         }
@@ -1392,7 +1487,7 @@ public partial class JSObject
     // defineProperty trap observes the field initialization.
     public virtual void CreateDataProperty(KeyString key, JSValue value)
     {
-        if (!IsExtensible() && ownProperties.GetValue(key.Key).IsEmpty)
+        if (!IsExtensible() && !HasOwnNamedProperty(key.Key))
             throw NewTypeError($"Cannot define property {key}, object is not extensible");
         FastAddValue(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
     }
@@ -1455,17 +1550,30 @@ public partial class JSObject
         if (IsPrivateName(in key))
             ThrowIfMissingPrivateMember(in key, reading: true);
 
-        ref var p = ref ownProperties.GetValue(key.Key);
-        if (!p.IsEmpty)
+        // Shape-only (item 2-9): the uncached read of an own named property. Materializing
+        // here would hand the trie back to every object whose properties are ever read
+        // without a warm inline cache, which is most of them, so this reconstructs the
+        // descriptor from the slot instead. A shape-only object owns no private name and no
+        // accessor, so the two tests below are answered `false` by construction.
+        if (IsShapeOnlyStorage)
         {
-            // A private accessor declared with only a setter has no [[Get]]: reading
-            // it is a TypeError (PrivateGet, sec-privateget), not the `undefined` an
-            // ordinary getterless accessor yields. Public accessors keep the undefined
-            // result; this stricter behaviour is gated on the private-name marker.
-            if (IsPrivateName(in key) && p.IsProperty && p.get is not IJSFunction)
-                throw NewTypeError($"Cannot read private member {PrivateDisplayName(in key)}: it was defined without a getter");
+            if (TryGetShapeOnlyProperty(key.Key, out var shapeOnly))
+                return (receiver ?? this).GetValue(shapeOnly);
+        }
+        else
+        {
+            ref var p = ref ownProperties.GetValue(key.Key);
+            if (!p.IsEmpty)
+            {
+                // A private accessor declared with only a setter has no [[Get]]: reading
+                // it is a TypeError (PrivateGet, sec-privateget), not the `undefined` an
+                // ordinary getterless accessor yields. Public accessors keep the undefined
+                // result; this stricter behaviour is gated on the private-name marker.
+                if (IsPrivateName(in key) && p.IsProperty && p.get is not IJSFunction)
+                    throw NewTypeError($"Cannot read private member {PrivateDisplayName(in key)}: it was defined without a getter");
 
-            return (receiver ?? this).GetValue(p);
+                return (receiver ?? this).GetValue(p);
+            }
         }
 
         // A canonical array-index string key (e.g. "1") names the same property as
@@ -1565,7 +1673,7 @@ public partial class JSObject
         // field, permanently dropped the object into dictionary mode. See
         // docs/performance-roadmap.md P1-1.
         var key = name.Key;
-        ref var old = ref ownProperties.GetValue(name.Key);
+        ref var old = ref OwnProperties().GetValue(name.Key);
         var preserveCurrentValue = false;
         if (old.IsEmpty && !IsExtensible())
             return BooleanFalse;
@@ -1812,11 +1920,12 @@ public partial class JSObject
 
     public override JSValue Delete(in KeyString key)
     {
-        var property = ownProperties.GetValue(key.Key);
+        ref var deleteOwn = ref OwnProperties();
+        var property = deleteOwn.GetValue(key.Key);
         if (!property.IsEmpty && !property.IsConfigurable)
             return BooleanFalse;
 
-        if (ownProperties.RemoveAt(key.Key))
+        if (deleteOwn.RemoveAt(key.Key))
         {
             CancelLazyDataProperty(in property);
             AbandonObjectShape();

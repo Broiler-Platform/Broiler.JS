@@ -217,21 +217,24 @@ public partial class JSObject : JSValue
             return;
         }
 
+        // A null-slot key's descriptor can only live in the trie, so it breaks the shape-only
+        // invariant (item 2-9) that every shape key has a value and a data attribute set.
+        // Materialize before recording one. The sole caller already writes the descriptor
+        // first, which materializes anyway; this keeps the rule with the code that needs it.
+        if (!namedPropertiesMaterialized)
+            MaterializeNamedProperties();
+
         if (!objectShape.TryGetSlot(key.Key, out var slot))
         {
             objectShape = objectShape.Add(key.Key);
             slot = objectShape.SlotCount - 1;
-            if (shapeSlots.Length <= slot)
-            {
-                var replacement = new JSValue[Math.Max(4, Math.Max(objectShape.SlotCount, shapeSlots.Length * 2))];
-                Array.Copy(shapeSlots, replacement, shapeSlots.Length);
-                shapeSlots = replacement;
-            }
+            EnsureShapeSlotCapacity(objectShape.SlotCount);
         }
 
         // Cleared, not left alone: if this key previously held a fast value, the descriptor it
         // now has is the truth and the slot must stop answering for it.
         shapeSlots[slot] = null;
+        shapeAttributes[slot] = JSPropertyAttributes.Empty;
         NotifyNamedPropertyMutation();
     }
 
@@ -254,15 +257,11 @@ public partial class JSObject : JSValue
         {
             objectShape = objectShape.Add(key.Key);
             slot = objectShape.SlotCount - 1;
-            if (shapeSlots.Length <= slot)
-            {
-                var replacement = new JSValue[Math.Max(4, Math.Max(objectShape.SlotCount, shapeSlots.Length * 2))];
-                Array.Copy(shapeSlots, replacement, shapeSlots.Length);
-                shapeSlots = replacement;
-            }
+            EnsureShapeSlotCapacity(objectShape.SlotCount);
         }
 
         shapeSlots[slot] = value;
+        shapeAttributes[slot] = attributes;
         NotifyNamedPropertyMutation();
     }
 
@@ -270,8 +269,17 @@ public partial class JSObject : JSValue
     {
         if (!SupportsShapeTracking || objectShape.IsDictionary)
             return;
+
+        // While an object is shape-only (item 2-9) the shape is the ONLY copy of its named
+        // properties, so it has to be written back to the trie before it is dropped. Doing it
+        // here rather than at each caller is what makes the rule hold for all of them: every
+        // route into dictionary mode goes through this method.
+        if (!namedPropertiesMaterialized)
+            MaterializeNamedProperties();
+
         objectShape = ObjectShape.Dictionary;
         shapeSlots = Array.Empty<JSValue>();
+        shapeAttributes = Array.Empty<JSPropertyAttributes>();
         PropertyOptimizationDiagnostics.RecordDictionaryFallback();
     }
 
@@ -329,6 +337,18 @@ public partial class JSObject : JSValue
     {
         if (!TryGetShapeSlot(in key, out shapeId, out slot) || !AllowsDirectShapeWrite(key.Key))
             return false;
+
+        // Shape-only (item 2-9): the attributes are the parallel array's, and the "is a stored
+        // JSValue" test is the slot being non-null — the two facts the trie was consulted for.
+        if (IsShapeOnlyStorage)
+        {
+            if ((uint)slot >= (uint)shapeSlots.Length || shapeSlots[slot] == null)
+                return false;
+
+            var attributes = shapeAttributes[slot];
+            return (attributes & JSPropertyAttributes.Value) != 0
+                && (attributes & JSPropertyAttributes.Readonly) == 0;
+        }
 
         ref var own = ref ownProperties.GetValue(key.Key);
         return own.IsValue && !own.IsReadOnly && own.value is JSValue;
@@ -429,6 +449,27 @@ public partial class JSObject : JSValue
             return false;
         }
 
+        // Shape-only (item 2-9): no descriptor exists to read or rewrite. The attributes stay
+        // exactly as they were — this overwrites a value, which is the one thing a store may
+        // do without touching them — so only the slot moves.
+        if (IsShapeOnlyStorage)
+        {
+            if (shapeSlots[slot] == null)
+                return false;
+
+            var attributes = shapeAttributes[slot];
+            if ((attributes & JSPropertyAttributes.Value) == 0
+                || (attributes & JSPropertyAttributes.Readonly) != 0)
+            {
+                return false;
+            }
+
+            shapeSlots[slot] = value;
+            NotifyNamedPropertyMutation();
+            PropertyChanged?.Invoke(this, (key.Key, uint.MaxValue, null));
+            return true;
+        }
+
         ref var own = ref ownProperties.GetValue(key.Key);
         if (!own.IsValue || own.IsReadOnly || own.value is not JSValue)
             return false;
@@ -498,21 +539,22 @@ public partial class JSObject : JSValue
             return false;
         }
 
-        if (shapeSlots.Length <= slot)
-        {
-            var replacement = new JSValue[Math.Max(4, Math.Max(to.SlotCount, shapeSlots.Length * 2))];
-            Array.Copy(shapeSlots, replacement, shapeSlots.Length);
-            shapeSlots = replacement;
-        }
+        EnsureShapeSlotCapacity(Math.Max(to.SlotCount, slot + 1));
 
         // The same three steps DefineReceiverDataProperty performs for an ordinary target,
         // with the shape advanced to the recorded successor instead of being re-derived:
         // TrackShapeDataProperty would look the key up in the current shape, miss, and then
         // look it up again in that shape's transition table to find the very shape and slot
         // this entry already holds.
-        ownProperties.Put(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
+        //
+        // Shape-only (item 2-9) drops the first of those steps as well: a creation that stays
+        // out of the trie allocates no radix-trie nodes at all, which is the whole prize.
+        if (!IsShapeOnlyStorage)
+            ownProperties.Put(key, value, JSPropertyAttributes.EnumerableConfigurableValue);
+
         objectShape = to;
         shapeSlots[slot] = value;
+        shapeAttributes[slot] = JSPropertyAttributes.EnumerableConfigurableValue;
         NotifyNamedPropertyMutation();
         PropertyChanged?.Invoke(this, (key.Key, uint.MaxValue, null));
         return true;
@@ -563,8 +605,9 @@ public partial class JSObject : JSValue
     public JSObject(IEnumerable<JSProperty> entries) : this(GetCurrentObjectPrototype())
     {
         AbandonObjectShape();
+        ref var own = ref OwnProperties();
         foreach (var p in entries)
-            ownProperties.Put(p.key) = p;
+            own.Put(p.key) = p;
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -624,6 +667,18 @@ public partial class JSObject : JSValue
         {
             try
             {
+                // Shape-only (item 2-9): the trie is empty and would report no `length` at
+                // all, so the answer comes from the shape. Deliberately not a materialize —
+                // this runs on ordinary objects used as array-likes, and materializing here
+                // would give the trie back to exactly the objects the item is about.
+                if (IsShapeOnlyStorage)
+                {
+                    if (!TryGetShapeOnlyProperty(KeyStrings.length.Key, out var lp))
+                        return -1;
+
+                    return (int)(((uint)GetValue(lp).DoubleValue) >> 0);
+                }
+
                 ref var ownp = ref ownProperties;
                 if (ownp.IsEmpty)
                     return -1;

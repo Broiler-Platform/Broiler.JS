@@ -16,6 +16,7 @@ internal sealed class ObjectShape
     private static int nextId;
     private readonly Dictionary<uint, int> slots;
     private readonly ConcurrentDictionary<uint, ObjectShape> transitions = new();
+    private uint[] keysInSlotOrder;
 
     public static readonly ObjectShape Empty = new(new Dictionary<uint, int>(), false);
     public static readonly ObjectShape Dictionary = new(new Dictionary<uint, int>(), true);
@@ -32,6 +33,39 @@ internal sealed class ObjectShape
     public bool IsDictionary { get; }
 
     public bool TryGetSlot(uint key, out int slot) => slots.TryGetValue(key, out slot);
+
+    /// <summary>
+    /// This shape's keys indexed by slot, which is also their insertion order.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Add"/> assigns <c>slots[key] = slots.Count</c>, so slot order IS the order
+    /// the properties were created in — which is the order OrdinaryOwnPropertyKeys has to
+    /// report. That is what lets an object keep its named properties in the shape alone and
+    /// rebuild the descriptor map on demand (roadmap item 2-9): the shape supplies the keys
+    /// and their order, the object supplies the values and attributes.
+    /// <para>
+    /// Built once and cached, because a shape is immutable and shared by every object that
+    /// reaches it — so the cost is per shape, not per object. Two threads racing here compute
+    /// identical arrays and the reference assignment is atomic, so the race is benign and
+    /// costs at most one duplicate array.
+    /// </para>
+    /// </remarks>
+    public ReadOnlySpan<uint> KeysInSlotOrder
+    {
+        get
+        {
+            var cached = Volatile.Read(ref keysInSlotOrder);
+            if (cached != null)
+                return cached;
+
+            var keys = new uint[slots.Count];
+            foreach (var pair in slots)
+                keys[pair.Value] = pair.Key;
+
+            Volatile.Write(ref keysInSlotOrder, keys);
+            return keys;
+        }
+    }
 
     public ObjectShape Add(uint key)
     {
