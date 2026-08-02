@@ -151,6 +151,15 @@ internal static class RegexProfileMetrics
         ("char-set", "[+, ]", "one+two, three four+five, six seven"),
         ("cookie-pair", "TNQP=([^;]*)", "a=1; b=2; TNQP=deadbeefcafe; c=3; d=4"),
         ("angle-brackets", "[<>]", "<div class='x'>text</div><span>more</span>"),
+
+        // Anomaly probe. `trim` above is the one pattern Compiled makes DRAMATICALLY worse
+        // (~4.3x, stable across runs), and a per-pattern policy has to be able to say why.
+        // These decompose it: anchor alone, each branch alone, alternation without anchors,
+        // and alternation of anchored branches.
+        ("probe-anchor-start", @"^[\s\xa0]+", "        padded on both sides, and then some       "),
+        ("probe-anchor-end", @"[\s\xa0]+$", "        padded on both sides, and then some       "),
+        ("probe-alt-plain", @"[\s\xa0]+|zzz", "        padded on both sides, and then some       "),
+        ("probe-alt-anchored", @"^a+|b+$", "aaa padded on both sides, and then some       bbb"),
     ];
 
     internal static void Write()
