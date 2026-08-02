@@ -64,9 +64,10 @@ partial class FastCompiler
         thisIsUninitialized: thisIsUninitialized,
         previousNewTarget: previousNewTarget));
         {
-            cs.CanScalarReplaceLocals = TryPlanScalarReplacement(functionDeclaration, out var capturedNames, out var hasNestedFunction);
+            cs.CanScalarReplaceLocals = TryPlanScalarReplacement(functionDeclaration, out var capturedNames, out var hasNestedFunction, out var mentionsArguments);
             cs.CapturedByNestedFunctions = capturedNames;
             cs.HasNestedFunctions = hasNestedFunction;
+            cs.MentionsArguments = mentionsArguments;
             // Only worth asking when the locals are scalar-replaceable at all: the analysis
             // assumes no closure can capture the binding and no eval/with can rename it.
             if (cs.CanScalarReplaceLocals)
@@ -149,8 +150,17 @@ partial class FastCompiler
 
             var parameterNames = new List<StringSpan>();
             CollectParameterNames(functionDeclaration.Params, parameterNames);
+            var scalarParameterNames = CollectScalarParameterNames(functionDeclaration, cs, parameterNames);
             foreach (var parameterName in parameterNames)
-                cs.CreateVariable(parameterName, null, true, initialize: false);
+            {
+                // A parameter that nothing can reach through a cell is a plain JSValue local,
+                // exactly as a scalar-replaced var is. It starts as `undefined` rather than a
+                // CLR null because the binding is declared before the argument is bound.
+                if (scalarParameterNames.Contains(parameterName.Value))
+                    cs.CreateVariable(parameterName, null, true, typeof(JSValue), initialize: true);
+                else
+                    cs.CreateVariable(parameterName, null, true, initialize: false);
+            }
 
             var directEvalParameterBindings = CollectDirectEvalParameterBindings(functionDeclaration, parameterNames);
 
@@ -628,6 +638,75 @@ partial class FastCompiler
     private static readonly IReadOnlySet<string> NoCapturedNames = new HashSet<string>(StringComparer.Ordinal);
 
     /// <summary>
+    /// The parameters of <paramref name="functionDeclaration"/> that can be held in a plain
+    /// <c>JSValue</c> local instead of a per-call <see cref="JSVariable"/> cell
+    /// (docs/performance-roadmap.md item 3-3).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Every parameter allocated a cell, unconditionally, while a <c>var</c> in the same
+    /// function has been scalar-replaced since P2-2. That is the whole gap: a cell exists so
+    /// something else can reach the binding — a closure, a mapped <c>arguments</c> object, a
+    /// direct <c>eval</c> — and a parameter no more always needs one than a <c>var</c> does.
+    /// Measured at 56 bytes per parameter per call: a three-parameter helper called in a loop
+    /// went from 230.2 to 62.2 bytes a call, so the cells were 168 of the 230.
+    /// </para>
+    /// <para>
+    /// This is the SCALAR tier of the eligibility gate, not the numeric one, and the difference
+    /// is not a matter of effort: a <c>var</c> can be proved to hold only numbers by reading the
+    /// function, while a parameter's value is the caller's choice and no analysis of the callee
+    /// can constrain it. Holding a parameter in a raw <c>double</c> needs an entry guard and a
+    /// generic fallback, which is speculation — phase 4, not this item.
+    /// </para>
+    /// <para>
+    /// Four conditions, and the simple-parameter-list one is doing more work than it looks.
+    /// It rules out defaults, rest and destructuring, and with them every expression in the
+    /// parameter list — so the only closures that can capture a parameter are in the body,
+    /// which is exactly the set <see cref="FastFunctionScope.CapturedByNestedFunctions"/>
+    /// already collects. Without it a closure in a default (<c>function f(a, b = () =&gt; a)</c>)
+    /// would capture a scalarized parameter, because the hazard detector scans the body and
+    /// never the parameter list. That is a bound, not a heuristic, and it is what lets this
+    /// reuse the existing analysis rather than extend it.
+    /// </para>
+    /// </remarks>
+    private static IReadOnlySet<string> CollectScalarParameterNames(
+        AstFunctionExpression functionDeclaration,
+        FastFunctionScope cs,
+        List<StringSpan> parameterNames)
+    {
+        // The same hazards that stop a var being scalar-replaced stop a parameter: a direct
+        // eval or a `with` can name a binding no scan can predict.
+        if (!cs.CanScalarReplaceLocals)
+            return NoCapturedNames;
+
+        // A sloppy function with a simple parameter list gets a MAPPED arguments object, and
+        // the mapping is built out of the parameters' JSVariable cells
+        // (MaterializeArgumentsBinding). Any mention at all is refused rather than only the
+        // mapped case, because `arguments` is materialized lazily on first reference — long
+        // after the parameters have been created here.
+        if (cs.MentionsArguments)
+            return NoCapturedNames;
+
+        if (!HasSimpleParameterList(functionDeclaration.Params))
+            return NoCapturedNames;
+
+        var names = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var parameterName in parameterNames)
+        {
+            var name = parameterName.Value;
+
+            // Capturing a binding requires naming it, so a name any nested function mentions
+            // keeps its cell — the same rule, and the same set, that VisitBlock applies to vars.
+            if (name is "arguments" or "eval" || cs.CapturedByNestedFunctions.Contains(name))
+                continue;
+
+            names.Add(name);
+        }
+
+        return names;
+    }
+
+    /// <summary>
     /// Decides whether this function's <c>var</c>s may live in raw locals, and which of its
     /// names must not because a nested function could capture them.
     /// </summary>
@@ -652,10 +731,13 @@ partial class FastCompiler
     /// </para>
     /// </remarks>
     private static bool TryPlanScalarReplacement(AstFunctionExpression functionDeclaration,
-        out IReadOnlySet<string> capturedNames, out bool hasNestedFunction)
+        out IReadOnlySet<string> capturedNames, out bool hasNestedFunction, out bool mentionsArguments)
     {
         capturedNames = NoCapturedNames;
         hasNestedFunction = false;
+        // Conservative default: the paths below that return without running the detector have
+        // not looked, and "did not look" must read as "may mention it".
+        mentionsArguments = true;
 
         if (functionDeclaration.Async
             || functionDeclaration.Generator
@@ -672,6 +754,9 @@ partial class FastCompiler
             return false;
 
         capturedNames = detector.Captured;
+        // A nested function's mention lands in Captured rather than here, because the detector
+        // scans nested functions instead of descending into them.
+        mentionsArguments = detector.MentionsArguments || detector.Captured.Contains("arguments");
         return true;
     }
 
@@ -684,7 +769,21 @@ partial class FastCompiler
 
         public bool HasNestedFunction { get; private set; }
 
+        /// <summary>
+        /// Whether this function's own body names <c>arguments</c>. A parameter that an
+        /// <c>arguments</c> object may map has to keep its cell — see
+        /// <see cref="CollectScalarParameterNames"/>.
+        /// </summary>
+        public bool MentionsArguments { get; private set; }
+
         public readonly HashSet<string> Captured = new(StringComparer.Ordinal);
+
+        protected override AstNode VisitIdentifier(AstIdentifier identifier)
+        {
+            if (identifier.Name.Equals("arguments"))
+                MentionsArguments = true;
+            return identifier;
+        }
 
         // AstReduce deliberately treats these compact structs as leaves because most
         // rewriting visitors handle them explicitly. Scalar eligibility must inspect
