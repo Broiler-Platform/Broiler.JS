@@ -50,6 +50,12 @@ public static class Program
             return;
         }
 
+        if (args.Length == 1 && args[0] == "--regex-profile")
+        {
+            RegexProfileMetrics.Write();
+            return;
+        }
+
         if (args.Length == 1 && args[0] == "--local-alloc")
         {
             LocalAllocationMetrics.Write();
