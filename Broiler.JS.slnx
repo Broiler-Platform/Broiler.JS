@@ -42,5 +42,6 @@
   <Project Path="Broiler.JS/Broiler.JavaScript.Portable/Broiler.JavaScript.Portable.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj" />
   <Project Path="Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj" />
+  <Project Path="Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj" />
   <Project Path="Broiler.Regex/Broiler.Regex/Broiler.Regex.csproj" />
 </Solution>
