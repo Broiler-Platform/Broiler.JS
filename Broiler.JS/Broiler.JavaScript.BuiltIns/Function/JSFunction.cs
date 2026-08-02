@@ -16,6 +16,28 @@ namespace Broiler.JavaScript.BuiltIns.Function;
 [JSFunctionGenerator("Function", Register = false)]
 public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 {
+    /// <summary>
+    /// An ordinary function tracks its named properties by shape, so statics on a constructor
+    /// reach an inline cache (roadmap item 2-8).
+    /// </summary>
+    /// <remarks>
+    /// Earned by two things, both of which had to be fixed first. Every named property this
+    /// class installs — <c>length</c>, <c>name</c>, <c>prototype</c> — now goes through
+    /// <c>FastAddValue</c> rather than a bare <c>ownProperties.Put</c>, so the shape's key set is
+    /// the object's complete set of own named properties; and the Annex B <c>caller</c> and
+    /// <c>arguments</c> cells are recorded as keys with no slot value rather than abandoning the
+    /// layout, so a non-strict function keeps its shape (see
+    /// <c>JSObject.TrackShapeKeyWithoutSlotValue</c>). Without the second, this would help only
+    /// strict functions and classes, and the idiom that motivates it — statics on a constructor,
+    /// which is how DeltaBlue reads <c>Strength.REQUIRED</c> in its hot path — is sloppy.
+    /// <para>
+    /// Exact-type, like every other override of this: a subclass reaching the property store
+    /// another way must make the claim for itself. <c>JSClass</c> does, having had the same two
+    /// fixes; the async, generator and bound-function forms deliberately do not.
+    /// </para>
+    /// </remarks>
+    internal override bool SupportsShapeTracking => GetType() == typeof(JSFunction);
+
     internal static JSFunctionDelegate empty = (in Arguments a) => a.This;
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -45,6 +67,34 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
         prototype = value as JSObject;
     }
+
+    /// <summary>
+    /// Keeps <c>prototype</c> off the shape write fast paths, because writing it has an effect
+    /// beyond the property store: it re-caches the <see cref="prototype"/> field above, which is
+    /// what <c>[[Construct]]</c> reads.
+    /// </summary>
+    /// <remarks>
+    /// Every observable write path on this type — the indexer, <see cref="SetValue"/>,
+    /// <see cref="DefineProperty"/> — calls <see cref="AssignPrototypeField"/>. A shape fast path
+    /// is none of them: it writes <c>ownProperties</c> and <c>shapeSlots</c> and returns. So a
+    /// cached store to <c>f.prototype</c> updated the observable property and left
+    /// <c>[[Construct]]</c> reading the previous object, and `new f()` produced instances on a
+    /// stale prototype.
+    /// <para>
+    /// That is not hypothetical and it is not obscure: it is DeltaBlue. Its `inheritsFrom` helper
+    /// does `this.prototype = new Inheriter()` from one emitted site, called once per class, so
+    /// the first call missed and was correct and every call after it hit and was not — leaving
+    /// the second level of every inheritance chain unlinked and `this.addConstraint` undefined.
+    /// Item 2-8 admitted functions to shape tracking and this is the hole that opened; the
+    /// synthetic loop that measured 2-8's win could not see it, because it never wrote a
+    /// prototype.
+    /// </para>
+    /// <para>
+    /// Only this one key is withheld. <c>length</c>, <c>name</c> and every static a constructor
+    /// carries keep their slots, which is where 2-8's win actually is.
+    /// </para>
+    /// </remarks>
+    internal override bool AllowsDirectShapeWrite(uint key) => key != KeyStrings.prototype.Key;
 
     private StringSpan source;
 
@@ -330,7 +380,6 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public JSFunction(JSFunctionDelegate clrDelegate, JSFunction type) : this()
     {
         CaptureRealm();
-        ref var ownProperties = ref GetOwnProperties();
 
         f = clrDelegate;
         name = "clr-native";
@@ -338,7 +387,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         prototype = type.prototype;
 
         prototype.FastAddValue(KeyStrings.constructor, type, JSPropertyAttributes.EnumerableConfigurableValue);
-        ownProperties.Put(KeyStrings.prototype.Key) = JSProperty.Property(KeyStrings.prototype, (IPropertyValue)prototype, JSPropertyAttributes.Value);
+        FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.Value);
 
         FastAddValue(KeyStrings.name, name.IsEmpty ? CreateString("native") : CreateString(name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);
         FastAddValue(KeyStrings.length, CreateNumber(0), JSPropertyAttributes.ConfigurableReadonlyValue);
@@ -359,7 +408,6 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     protected JSFunction(StringSpan name, StringSpan source, JSObject _prototype) : this()
     {
         CaptureRealm();
-        ref var ownProperties = ref GetOwnProperties();
         f = empty;
         this.name = name.IsEmpty ? "native" : name;
         this.source = source.IsEmpty ? $"function {this.name}() {{ [native code] }}" : source;
@@ -367,9 +415,9 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         prototype = _prototype;
         prototype.GetOwnProperties(true).Put(KeyStrings.constructor, this);
 
-            ownProperties.Put(KeyStrings.prototype, prototype, JSPropertyAttributes.Value);
-        ownProperties.Put(KeyStrings.length, NumberZero, JSPropertyAttributes.ConfigurableReadonlyValue);
-        ownProperties.Put(KeyStrings.name, name.IsEmpty ? CreateString("native") : CreateString(name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);
+            FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.Value);
+        FastAddValue(KeyStrings.length, NumberZero, JSPropertyAttributes.ConfigurableReadonlyValue);
+        FastAddValue(KeyStrings.name, name.IsEmpty ? CreateString("native") : CreateString(name.Value), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         constructor = this;
     }
@@ -383,7 +431,6 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
     public JSFunction(JSObject basePrototype, JSFunctionDelegate f, in StringSpan name, in StringSpan source, int length = 0, bool createPrototype = true) : base(basePrototype)
     {
-        ref var ownProperties = ref GetOwnProperties();
         this.f = f;
         // A user-compiled function carries its source span; per ES2026 §10.2.9 SetFunctionName
         // an anonymous user function's `name` defaults to "" (and the contextual NamedEvaluation
@@ -404,14 +451,14 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         // Own-key order per spec: a function's "length" and "name" are installed
         // before its "prototype" (SetFunctionName/SetFunctionLength then
         // MakeConstructor), so getOwnPropertyNames yields [length, name, prototype].
-        ownProperties.Put(KeyStrings.length, CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
-        ownProperties.Put(KeyStrings.name, CreateString(publicName), JSPropertyAttributes.ConfigurableReadonlyValue);
+        FastAddValue(KeyStrings.length, CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
+        FastAddValue(KeyStrings.name, CreateString(publicName), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         if (createPrototype)
         {
             prototype = new JSObject();
             prototype.FastAddValue(KeyStrings.constructor, this, JSPropertyAttributes.ConfigurableValue);
-            ownProperties.Put(KeyStrings.prototype, prototype, JSPropertyAttributes.Value);
+            FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.Value);
         }
 
         constructor = this;
@@ -420,7 +467,6 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public JSFunction(JSFunctionDelegate f, in StringSpan name, in StringSpan source, int length = 0, bool createPrototype = true) : base((JSEngine.Current as IJSExecutionContext)?.FunctionPrototype)
     {
         CaptureRealm();
-        ref var ownProperties = ref GetOwnProperties();
         this.f = f;
         // See the other constructor above: anonymous user functions report name "" per
         // SetFunctionName, while native functions keep the "native" placeholder so
@@ -436,14 +482,14 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         IsAnonymousNamePending = name.IsEmpty && !source.IsEmpty;
 
         // Own-key order per spec: [length, name, prototype] (see above).
-        ownProperties.Put(KeyStrings.length, CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
-        ownProperties.Put(KeyStrings.name, CreateString(publicName), JSPropertyAttributes.ConfigurableReadonlyValue);
+        FastAddValue(KeyStrings.length, CreateNumber(length), JSPropertyAttributes.ConfigurableReadonlyValue);
+        FastAddValue(KeyStrings.name, CreateString(publicName), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         if (createPrototype)
         {
             prototype = new JSObject();
             prototype.FastAddValue(KeyStrings.constructor, this, JSPropertyAttributes.ConfigurableValue);
-            ownProperties.Put(KeyStrings.prototype, prototype, JSPropertyAttributes.Value);
+            FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.Value);
         }
 
         constructor = this;
@@ -480,16 +526,15 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             length: 0,
             createPrototype: false);
 
-        ref var ownProperties = ref throwTypeError.GetOwnProperties();
-        ownProperties.Put(KeyStrings.length, NumberZero, JSPropertyAttributes.ReadonlyValue);
-        ownProperties.Put(KeyStrings.name, CreateString(string.Empty), JSPropertyAttributes.ReadonlyValue);
+        throwTypeError.FastAddValue(KeyStrings.length, NumberZero, JSPropertyAttributes.ReadonlyValue);
+        throwTypeError.FastAddValue(KeyStrings.name, CreateString(string.Empty), JSPropertyAttributes.ReadonlyValue);
         throwTypeError.f = (in Arguments a) => throw JSEngine.NewTypeError(message);
         throwTypeError.PreventExtensions();
         return throwTypeError;
     }
 
     internal void SetNameProperty(string name, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableReadonlyValue)
-        => GetOwnProperties().Put(KeyStrings.name, CreateString(name), attributes);
+        => FastAddValue(KeyStrings.name, CreateString(name), attributes);
 
     // Override the source text reported by Function.prototype.toString. Used by the
     // dynamic Function constructor, which builds the function from an *anonymous*
@@ -974,9 +1019,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         };
         if (originalFunction != null)
             fx.prototypeChain = originalFunction.prototypeChain;
-        ref var ownProperties = ref fx.GetOwnProperties();
-        ownProperties.Put(KeyStrings.name, CreateString(boundName), JSPropertyAttributes.ConfigurableReadonlyValue);
-        ownProperties.Put(KeyStrings.length, CreateNumber(boundLength), JSPropertyAttributes.ConfigurableReadonlyValue);
+        fx.FastAddValue(KeyStrings.name, CreateString(boundName), JSPropertyAttributes.ConfigurableReadonlyValue);
+        fx.FastAddValue(KeyStrings.length, CreateNumber(boundLength), JSPropertyAttributes.ConfigurableReadonlyValue);
 
         // Function.prototype.toString of a bound function is the implementation-defined
         // NativeFunction form with NO name: the bound "name" property ("bound …") is not a

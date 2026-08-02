@@ -341,7 +341,13 @@ public partial class JSObject
     {
         CancelLazyDataProperty(in ownProperties.GetValue(key.Key));
         ownProperties.Put(key.Key) = new JSProperty(key, null, null, deferred, attributes);
-        AbandonObjectShape();
+
+        // Recorded in the shape with no slot value rather than abandoning it. A deferred cell
+        // has to be realized by the generic path, and a null slot is exactly how the shape says
+        // so while still admitting the key exists — see TrackShapeKeyWithoutSlotValue. Dropping
+        // the whole layout instead meant an ordinary non-strict function, which gets two of
+        // these at birth, could never be shape-tracked (roadmap item 2-8).
+        TrackShapeKeyWithoutSlotValue(in key);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

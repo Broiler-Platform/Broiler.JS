@@ -215,11 +215,14 @@ public class PropertyShapeCacheTests
     [Fact]
     public void AnInheritedAccessorIsNotSlotCached()
     {
+        // The prototype is linked by `__proto__` in the literal rather than by
+        // Object.create, so the script performs no other cacheable read. `Object.create` is a
+        // named read on a FUNCTION object, which item 2-8 made cacheable, and it was quietly
+        // supplying the one hit this exact assertion is here to rule out.
         var (result, stats) = Measure("""
             var calls = 0;
             var proto = { get k() { calls++; return 5; } };
-            var o = Object.create(proto);
-            o.own = 1;
+            var o = { __proto__: proto, own: 1 };
             var s = 0;
             for (var i = 0; i < 400; i++) s += o.k;
             s + '|' + calls;
@@ -594,6 +597,149 @@ public class PropertyShapeCacheTests
             rx + '|' + ry;
             """));
 
+    // ── functions track their named properties by shape (item 2-8) ────────────────────
+    //
+    // Statics on a constructor function were a 100% cache miss — 0 hits out of 200 000 — and
+    // that is how DeltaBlue reads `Strength.REQUIRED` and `Strength.stronger` in its hot path,
+    // at 601× off. Two things blocked it. The function's own `length`, `name` and `prototype`
+    // went in through a bare property-store put that never told the shape, so its key set would
+    // have been missing three keys every function has. And every ordinary NON-strict function
+    // carries the Annex B `caller`/`arguments` as deferred cells from birth, which abandoned the
+    // shape outright — so what is pinned below is mostly that those two still behave.
+
+    [Theory]
+    [InlineData("function S() {}")]
+    [InlineData("'use strict'; function S() {}")]
+    [InlineData("var S = function () {};")]
+    [InlineData("class S {}")]
+    public void AStaticOnAFunction_IsCached(string declaration)
+    {
+        var (result, stats) = Measure(declaration + """
+
+            S.REQUIRED = 7;
+            var s = 0;
+            for (var i = 0; i < 500; i++) s += S.REQUIRED;
+            s;
+            """);
+
+        Assert.Equal("3500", result);
+        Assert.True(stats.CacheHits >= 499, $"expected hits, got {stats.CacheHits}/{stats.CacheMisses}");
+        Assert.Equal(0, stats.DictionaryFallbacks);
+    }
+
+    [Fact]
+    public void AFunctionsOwnPropertiesAreUnchangedAndComplete()
+        // length, name and prototype now go through the shape tracker. Their values, their
+        // attributes and their enumeration order are what must not have moved.
+        => Assert.Equal("2|f|true|false,false,true|true,false,false|length,name,prototype", Eval("""
+            function f(a, b) {}
+            var d = Object.getOwnPropertyDescriptor(f, 'length');
+            var p = Object.getOwnPropertyDescriptor(f, 'prototype');
+            [
+                f.length,
+                f.name,
+                f.prototype.constructor === f,
+                [d.writable, d.enumerable, d.configurable].join(','),
+                [p.writable, p.enumerable, p.configurable].join(','),
+                Object.getOwnPropertyNames(f).filter(function (k) { return k !== 'caller' && k !== 'arguments'; }).join(',')
+            ].join('|');
+            """));
+
+    [Fact]
+    public void TheAnnexBCallerAndArgumentsKeepTheirDescriptorShape()
+        // A deferred cell is now recorded in the shape with no slot value instead of abandoning
+        // it. The cell still has to be the thing that answers, with the Annex B descriptor P0-3
+        // preserved: a non-writable, non-enumerable, non-configurable DATA property.
+        => Assert.Equal("true|||false,false,false|false,false,false", Eval("""
+            function f() {}
+            var c = Object.getOwnPropertyDescriptor(f, 'caller');
+            var a = Object.getOwnPropertyDescriptor(f, 'arguments');
+            [
+                ('value' in c) && ('value' in a) && !('get' in c) && !('get' in a),
+                f.caller,
+                f.arguments,
+                [c.writable, c.enumerable, c.configurable].join(','),
+                [a.writable, a.enumerable, a.configurable].join(',')
+            ].join('|');
+            """));
+
+    [Fact]
+    public void ANullSlotKeyStillReadsThroughTheGenericPath()
+        // The read site for `caller` is warmed against a key the shape carries with no slot
+        // value, so every read must decline the fast path and realize the cell.
+        => Assert.Equal("300|null", Eval("""
+            function f() {}
+            f.tag = 1;
+            var n = 0, last = 'x';
+            for (var i = 0; i < 300; i++) { last = f.caller; n++; }
+            n + '|' + last;
+            """));
+
+    [Fact]
+    public void ReadingCallerWhileTheFunctionIsOnTheStackStillWorks()
+        => Assert.Equal("true|true", Eval("""
+            function inner() { return inner.caller === outer; }
+            function outer() { return inner(); }
+            var first = outer();
+            var second = outer();
+            first + '|' + second;
+            """));
+
+    [Fact]
+    public void AStaticRedefinedAsAnAccessorMidLoop_IsObserved()
+        => Assert.Equal("800", Eval("""
+            function S() {}
+            S.k = 1;
+            var s = 0;
+            for (var i = 0; i < 400; i++) {
+                if (i === 200) Object.defineProperty(S, 'k', { get: function () { return 3; } });
+                s += S.k;
+            }
+            s;
+            """));
+
+    [Fact]
+    public void OverwritingAFunctionsOwnLengthAndNameStillWorks()
+        => Assert.Equal("9|renamed|7", Eval("""
+            function f(a, b) {}
+            f.tag = 7;
+            for (var i = 0; i < 300; i++) f.tag = 7;
+            Object.defineProperty(f, 'length', { value: 9 });
+            Object.defineProperty(f, 'name', { value: 'renamed' });
+            [f.length, f.name, f.tag].join('|');
+            """));
+
+    [Fact]
+    public void ABoundFunctionKeepsItsNameAndLength()
+        => Assert.Equal("bound f|1|3", Eval("""
+            function f(a, b) { return a + b; }
+            var b = f.bind(null, 1);
+            [b.name, b.length, b(2)].join('|');
+            """));
+
+    [Fact]
+    public void ThePoisonPillThrowTypeErrorStillThrows()
+        => Assert.Equal("TypeError|TypeError", Eval("""
+            'use strict';
+            function f() {}
+            var d = Object.getOwnPropertyDescriptor(Function.prototype, 'caller');
+            var r = [];
+            try { d.get.call(f); } catch (e) { r.push(e.constructor.name); }
+            try { d.set.call(f, 1); } catch (e) { r.push(e.constructor.name); }
+            r.join('|');
+            """));
+
+    [Fact]
+    public void DeletingAStaticRevealsTheInheritedOne()
+        => Assert.Equal("1200", Eval("""
+            function S() {}
+            Object.setPrototypeOf(S, { k: 5 });
+            S.k = 1;
+            var s = 0;
+            for (var i = 0; i < 400; i++) { if (i === 200) delete S.k; s += S.k; }
+            s;
+            """));
+
     [Fact]
     public void AProxyInThePrototypeChainStillTraps()
     {
@@ -606,5 +752,155 @@ public class PropertyShapeCacheTests
             for (var i = 0; i < 400; i++) last = o.k;
             traps + '|' + last;
             """));
+    }
+
+    // ── a function's `prototype` is withheld from the shape WRITE paths ───────────────
+    //
+    // Item 2-8 admitted functions to shape tracking, and that opened a hole these cover.
+    // JSFunction keeps a cached `prototype` FIELD — the one [[Construct]] reads — and syncs it
+    // by overriding every observable write path. A shape fast path is none of them: it writes
+    // ownProperties and shapeSlots and returns. So a *cached* store to `f.prototype` updated the
+    // observable property and left construction building instances on the previous object.
+    //
+    // The shape it broke is DeltaBlue's. `inheritsFrom` does `this.prototype = new Inheriter()`
+    // from one emitted site, called once per class: the first call missed and was right, every
+    // call after it hit and was wrong, and the second level of every inheritance chain came out
+    // unlinked. The loop that measured 2-8's win never wrote a prototype, so it saw none of it.
+
+    [Fact]
+    public void AWarmedPrototypeWriteSiteStillRelinksTheWholeChain()
+        => Assert.Equal("true|true|function|function|true", Eval("""
+            // DeltaBlue's exact idiom, three levels deep. One store site, many functions.
+            Object.defineProperty(Object.prototype, 'inheritsFrom', {
+                value: function (shuper) {
+                    function Inheriter() { }
+                    Inheriter.prototype = shuper.prototype;
+                    this.prototype = new Inheriter();
+                    this.superConstructor = shuper;
+                }
+            });
+
+            function Constraint(s) { this.strength = s; }
+            Constraint.prototype.addConstraint = function () { this.added = true; };
+            function BinaryConstraint() { this.addConstraint(); }
+            BinaryConstraint.inheritsFrom(Constraint);
+            function EqualityConstraint() { EqualityConstraint.superConstructor.call(this); }
+            EqualityConstraint.inheritsFrom(BinaryConstraint);
+
+            var e = new EqualityConstraint();
+            [
+                Object.getPrototypeOf(BinaryConstraint.prototype) === Constraint.prototype,
+                Object.getPrototypeOf(EqualityConstraint.prototype) === BinaryConstraint.prototype,
+                typeof EqualityConstraint.prototype.addConstraint,
+                typeof e.addConstraint,
+                e.added === true
+            ].join('|');
+            """));
+
+    [Fact]
+    public void OneWarmedSiteWritingManyFunctionsPrototypes_EveryNewGetsItsOwn()
+        => Assert.Equal("300|300", Eval("""
+            // The store site is warm from the second iteration on; every instance after that
+            // must still land on the prototype its own constructor was given.
+            function install(f, proto) { f.prototype = proto; }
+            var right = 0, wrong = 0;
+            for (var i = 0; i < 300; i++) {
+                var ctor = new Function('return function C() {};')();
+                var proto = { tag: i };
+                install(ctor, proto);
+                var instance = new ctor();
+                if (Object.getPrototypeOf(instance) === proto && instance.tag === i) right++; else wrong++;
+            }
+            right + '|' + (300 - wrong);
+            """));
+
+    [Fact]
+    public void APrototypeWriteThroughAWarmedSiteAgreesWithTheObservableProperty()
+        => Assert.Equal("400|400", Eval("""
+            // The property and [[Construct]] must never disagree — that disagreement WAS the bug.
+            function F() {}
+            var agreed = 0, constructed = 0;
+            for (var i = 0; i < 400; i++) {
+                var proto = { n: i };
+                F.prototype = proto;
+                if (F.prototype === proto) agreed++;
+                if (Object.getPrototypeOf(new F()) === proto) constructed++;
+            }
+            agreed + '|' + constructed;
+            """));
+
+    [Fact]
+    public void AClassPrototypeWriteThroughAWarmedSiteIsStillRefused()
+        => Assert.Equal("300|true|true", Eval("""
+            // JSClass derives from JSFunction, so it inherits the same cached field and the same
+            // exclusion. A class's `prototype` is non-writable and non-configurable, so every one
+            // of these writes must be refused — including the ones after the site is warm, which
+            // is the case a cached store could have got wrong.
+            //
+            // Scoped deliberately to the observable PROPERTY. What `new C()` produces after a
+            // refused write is wrong on this engine at the pinned pointer too — the indexer syncs
+            // JSFunction's cached prototype field before the write, so a refusal still redirects
+            // [[Construct]] — and asserting it here would either encode that defect as correct or
+            // fail for a reason this item does not own. It is reported separately in
+            // docs/performance-roadmap.md item 2-8.
+            class C {}
+            var original = C.prototype;
+            var kept = 0;
+            for (var i = 0; i < 300; i++) {
+                try { C.prototype = { n: i }; } catch (e) { /* sloppy: silently refused */ }
+                if (C.prototype === original) kept++;
+            }
+            var d = Object.getOwnPropertyDescriptor(C, 'prototype');
+            kept + '|' + (d.writable === false) + '|' + (d.configurable === false);
+            """));
+
+    [Fact]
+    public void AssigningANonObjectPrototypeThroughAWarmedSiteKeepsConstructability()
+        => Assert.Equal("300|300", Eval("""
+            // AssignPrototypeField's other half: a function that HAS had a prototype object is a
+            // constructor for good, even after `prototype` is set to a primitive. Reflect.construct
+            // consults that, so a warmed site must not lose it either.
+            function F() { this.ok = 1; }
+            var constructed = 0, accepted = 0;
+            for (var i = 0; i < 300; i++) {
+                F.prototype = 7;
+                if (new F().ok === 1) constructed++;
+                try { Reflect.construct(Object, [], F); accepted++; } catch (e) { /* would be the bug */ }
+            }
+            constructed + '|' + accepted;
+            """));
+
+    [Fact]
+    public void AFunctionsOtherNamedPropertiesStillTakeTheStoreCache()
+    {
+        // The exclusion is one key wide. Statics are where item 2-8's win is, so they must
+        // still hit — this is the assertion that stops the fix from quietly undoing it.
+        var (result, stats) = Measure("""
+            function S() {}
+            S.count = 0;
+            for (var i = 0; i < 500; i++) S.count = i;
+            S.count;
+            """);
+
+        Assert.Equal("499", result);
+        Assert.True(stats.StoreCacheHits >= 499,
+            $"a function's statics must still hit, got {stats.StoreCacheHits}/{stats.StoreCacheMisses}");
+    }
+
+    [Fact]
+    public void ReadingAFunctionsPrototypeIsStillCached()
+    {
+        // Only the WRITE paths are gated: a read has no field to keep in sync, and gating it
+        // would give up cache coverage for nothing.
+        var (result, stats) = Measure("""
+            function F() {}
+            var p = null;
+            for (var i = 0; i < 500; i++) p = F.prototype;
+            (p === F.prototype).toString();
+            """);
+
+        Assert.Equal("true", result);
+        Assert.True(stats.CacheHits >= 499,
+            $"reading `prototype` should still hit, got {stats.CacheHits}/{stats.CacheMisses}");
     }
 }

@@ -10,6 +10,14 @@ namespace Broiler.JavaScript.BuiltIns.Class;
 
 public class JSClass : JSFunction
 {
+    /// <summary>
+    /// A class constructor tracks its named properties by shape, so its statics reach an inline
+    /// cache. See <see cref="JSFunction.SupportsShapeTracking"/> — earned the same way, by this
+    /// class installing <c>prototype</c> and <c>length</c> through <c>FastAddValue</c> instead of
+    /// a mutable ref to the property store, which abandoned the layout on the spot.
+    /// </summary>
+    internal override bool SupportsShapeTracking => GetType() == typeof(JSClass);
+
     internal readonly JSValue super;
 
     // True for a body-less class with no own constructor (no explicit constructor and
@@ -72,7 +80,7 @@ public class JSClass : JSFunction
         // "prototype" is a non-writable, non-enumerable, non-configurable data
         // property (ECMA-262 ClassDefinitionEvaluation / MakeClassConstructor). The
         // base JSFunction constructor installed it as writable, so tighten it here.
-        GetOwnProperties().Put(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
+        FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
@@ -84,7 +92,7 @@ public class JSClass : JSFunction
         // leaving the placeholder length (0) the base JSFunction ctor installed, so e.g.
         // `class C { constructor(a, b) {} }` reported `C.length === 0`. Copy the constructor
         // function's own "length" (configurable, non-writable, non-enumerable).
-        GetOwnProperties().Put(KeyStrings.length, fx[KeyStrings.length], JSPropertyAttributes.ConfigurableReadonlyValue);
+        FastAddValue(KeyStrings.length, fx[KeyStrings.length], JSPropertyAttributes.ConfigurableReadonlyValue);
 
         // The class now has its own constructor body, so it is no longer the default
         // derived constructor; its super references are already compiled dynamically.

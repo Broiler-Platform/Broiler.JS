@@ -183,6 +183,58 @@ public partial class JSObject : JSValue
         => (attributes & JSPropertyAttributes.Value) != 0
             && (attributes & JSPropertyAttributes.Property) == 0;
 
+    /// <summary>
+    /// Records that this object owns <paramref name="key"/> as a named property whose value no
+    /// slot can hold, keeping the shape rather than abandoning it.
+    /// </summary>
+    /// <remarks>
+    /// The shape's job is two claims, and only one of them needs the value. *Presence* — "key K
+    /// is at slot N" — is what <see cref="TryReadShapeSlot"/> and <see cref="TryWriteShapeSlot"/>
+    /// use. *Absence* — "the shape does not carry K, so this object does not own K" — is what
+    /// <see cref="GetPrototypeLookupShapeId"/> and <see cref="TryCreateShapeSlot"/> use. A key
+    /// present in the shape with a <c>null</c> slot keeps both claims true: absence reasoning
+    /// sees the key and declines, and all three fast paths already reject a null slot or a
+    /// descriptor whose value is not a <see cref="JSValue"/>, so a read or a write falls through
+    /// to the generic path that knows how to realize it.
+    /// <para>
+    /// That is what lets an ordinary non-strict function be shape-tracked at all. Every one
+    /// carries the Annex B <c>caller</c> and <c>arguments</c> as deferred cells from birth
+    /// (P0-3), and abandoning the shape for them meant no function could keep one — which is
+    /// roadmap item 2-8, and why DeltaBlue's `Strength.REQUIRED` was a 100% cache miss.
+    /// </para>
+    /// </remarks>
+    internal void TrackShapeKeyWithoutSlotValue(in KeyString key)
+    {
+        if (!SupportsShapeTracking || objectShape.IsDictionary)
+            return;
+
+        if (key.Metadata.IsPrivateName)
+        {
+            // A private name is per-class-evaluation, so admitting one would mint a shape per
+            // class instantiation rather than share a chain. Not worth a slot it cannot use.
+            AbandonObjectShape();
+            NotifyNamedPropertyMutation();
+            return;
+        }
+
+        if (!objectShape.TryGetSlot(key.Key, out var slot))
+        {
+            objectShape = objectShape.Add(key.Key);
+            slot = objectShape.SlotCount - 1;
+            if (shapeSlots.Length <= slot)
+            {
+                var replacement = new JSValue[Math.Max(4, Math.Max(objectShape.SlotCount, shapeSlots.Length * 2))];
+                Array.Copy(shapeSlots, replacement, shapeSlots.Length);
+                shapeSlots = replacement;
+            }
+        }
+
+        // Cleared, not left alone: if this key previously held a fast value, the descriptor it
+        // now has is the truth and the slot must stop answering for it.
+        shapeSlots[slot] = null;
+        NotifyNamedPropertyMutation();
+    }
+
     internal void TrackShapeDataProperty(in KeyString key, JSValue value, JSPropertyAttributes attributes)
     {
         if (!SupportsShapeTracking)
@@ -223,6 +275,31 @@ public partial class JSObject : JSValue
         PropertyOptimizationDiagnostics.RecordDictionaryFallback();
     }
 
+    /// <summary>
+    /// Whether a shape fast path may write this key's slot directly, bypassing this type's
+    /// <c>[[Set]]</c> and <c>DefineProperty</c> overrides.
+    /// </summary>
+    /// <remarks>
+    /// The shape fast paths write <c>ownProperties</c> and <c>shapeSlots</c> and nothing else.
+    /// That is the whole point of them, and it is correct for a plain object — but a derived
+    /// type may keep state <em>derived</em> from a property, synced by overriding every
+    /// observable write path. <see cref="TryWriteShapeSlot"/> is not one of those paths, so for
+    /// such a key the fast path would leave the object internally inconsistent.
+    /// <para>
+    /// Checked on the write and on the install, not just the install: shapes are interned by key
+    /// set, so a <c>JSFunction</c> and a plain object that happen to carry the same keys share
+    /// one shape <em>and one id</em>. An entry installed against the plain object would otherwise
+    /// hit the function.
+    /// </para>
+    /// <para>
+    /// This is not the same guard as the null slot <see cref="TrackShapeKeyWithoutSlotValue"/>
+    /// installs. That one works because a deferred cell's stored value is not a
+    /// <see cref="JSValue"/>, which the write paths already reject; a key like a function's
+    /// <c>prototype</c> holds an ordinary JSValue and would sail through every existing check.
+    /// </para>
+    /// </remarks>
+    internal virtual bool AllowsDirectShapeWrite(uint key) => true;
+
     internal bool TryGetShapeSlot(in KeyString key, out int shapeId, out int slot)
     {
         if (SupportsShapeTracking
@@ -250,7 +327,7 @@ public partial class JSObject : JSValue
     /// </remarks>
     internal bool TryGetWritableShapeSlot(in KeyString key, out int shapeId, out int slot)
     {
-        if (!TryGetShapeSlot(in key, out shapeId, out slot))
+        if (!TryGetShapeSlot(in key, out shapeId, out slot) || !AllowsDirectShapeWrite(key.Key))
             return false;
 
         ref var own = ref ownProperties.GetValue(key.Key);
@@ -346,7 +423,8 @@ public partial class JSObject : JSValue
     {
         if (value == null
             || objectShape.Id != shapeId
-            || (uint)slot >= (uint)shapeSlots.Length)
+            || (uint)slot >= (uint)shapeSlots.Length
+            || !AllowsDirectShapeWrite(key.Key))
         {
             return false;
         }
@@ -414,7 +492,8 @@ public partial class JSObject : JSValue
         if (value == null
             || !SupportsShapeTracking
             || !ReferenceEquals(objectShape, from)
-            || (status & ObjectStatus.NonExtensible) != 0)
+            || (status & ObjectStatus.NonExtensible) != 0
+            || !AllowsDirectShapeWrite(key.Key))
         {
             return false;
         }
