@@ -521,6 +521,293 @@ public class PropertyStoreCacheTests
             o.x;
             """));
 
+    // ── compound assignment on a member: `obj.name op= rhs` (item 2-4) ────────────────
+    //
+    // The same read-modify-write as `++`, spelled with an operator and an arbitrary
+    // right-hand side, and it reached neither cache for the same reason. It takes both caches
+    // on exactly the twelve operators CompoundAssignmentToBinaryOperator maps; `&&=`, `||=`
+    // and `??=` keep the ordinary reference, because for them the write is conditional and a
+    // cached store would perform it unconditionally.
+    //
+    // §13.15.2 fixes the order: the old value is read BEFORE the right-hand side is
+    // evaluated, so an RHS that writes the same property must not be visible to the read.
+
+    [Fact]
+    public void ACompoundAssignmentOnAMemberGoesThroughBothCaches()
+    {
+        var (result, stats) = Measure("""
+            var o = { x: 0 };
+            for (var i = 0; i < 500; i++) o.x += 2;
+            o.x;
+            """);
+
+        Assert.Equal("1000", result);
+        Assert.True(stats.CacheHits >= 499, $"expected read hits, got {stats.CacheHits}/{stats.CacheMisses}");
+        Assert.True(stats.StoreCacheHits >= 499, $"expected store hits, got {stats.StoreCacheHits}/{stats.StoreCacheMisses}");
+    }
+
+    [Fact]
+    public void AWarmedCompoundSiteKeepsTheSameArithmetic()
+        => Assert.Equal("400", Eval("""
+            var o = { x: 0 };
+            for (var i = 0; i < 400; i++) { o.x += 2; o.x -= 1; }
+            o.x;
+            """));
+
+    [Theory]
+    [InlineData("var o = { x: 12 }; o.x += 3; o.x;", "15")]
+    [InlineData("var o = { x: 12 }; o.x -= 3; o.x;", "9")]
+    [InlineData("var o = { x: 12 }; o.x *= 3; o.x;", "36")]
+    [InlineData("var o = { x: 12 }; o.x /= 3; o.x;", "4")]
+    [InlineData("var o = { x: 12 }; o.x %= 5; o.x;", "2")]
+    [InlineData("var o = { x: 12 }; o.x **= 2; o.x;", "144")]
+    [InlineData("var o = { x: 12 }; o.x &= 10; o.x;", "8")]
+    [InlineData("var o = { x: 12 }; o.x |= 3; o.x;", "15")]
+    [InlineData("var o = { x: 12 }; o.x ^= 10; o.x;", "6")]
+    [InlineData("var o = { x: 12 }; o.x <<= 2; o.x;", "48")]
+    [InlineData("var o = { x: 12 }; o.x >>= 2; o.x;", "3")]
+    [InlineData("var o = { x: -8 }; o.x >>>= 1; o.x;", "2147483644")]
+    // The `+= <literal>` shapes keep the specialized helpers the uncached path used, so the
+    // string/number asymmetry of `+` has to come out the same way it did before.
+    [InlineData("var o = { x: 'a' }; o.x += 'b'; o.x;", "ab")]
+    [InlineData("var o = { x: 'a' }; o.x += 1; o.x;", "a1")]
+    [InlineData("var o = { x: 1 }; o.x += '2'; o.x;", "12")]
+    [InlineData("var o = { x: 1 }; var v = 2; o.x += v; o.x;", "3")]
+    [InlineData("var o = { x: 5n }; o.x *= 2n; (typeof o.x) + '|' + o.x;", "bigint|10")]
+    [InlineData("var o = {}; o.x += 1; o.x;", "NaN")]
+    // The assignment expression's value is the computed value.
+    [InlineData("var o = { x: 5 }; var r = (o.x += 3); r + '|' + o.x;", "8|8")]
+    public void ACompoundAssignmentStillYieldsTheRightValues(string source, string expected)
+        => Assert.Equal(expected, Eval(source));
+
+    [Fact]
+    public void TheOldValueIsReadBeforeTheRightHandSide()
+        => Assert.Equal("11|300", Eval("""
+            // The RHS overwrites the very property being compounded. Reading first means the
+            // write lands on 1 + 10; reading after it would land on 100 + 10.
+            var o = { x: 1 };
+            var n = 0;
+            function rhs() { o.x = 100; n++; return 10; }
+            for (var i = 0; i < 300; i++) { o.x = 1; o.x += rhs(); }
+            o.x + '|' + n;
+            """));
+
+    [Fact]
+    public void ARightHandSideThatMovesTheReceiversShapeStillWritesTheRightSlot()
+        => Assert.Equal("11", Eval("""
+            // Every iteration adds a new key, so the shape the store cache recorded on the way
+            // in is never the shape it finds on the way out.
+            var o = { x: 1 };
+            var k = 0;
+            function rhs() { o['f' + (k++)] = 1; return 10; }
+            for (var i = 0; i < 300; i++) { o.x = 1; o.x += rhs(); }
+            o.x;
+            """));
+
+    [Fact]
+    public void ACompoundAssignmentThroughAWarmedSiteStillRunsTheAccessorsOnce()
+        => Assert.Equal("400|400|400", Eval("""
+            var gets = 0, sets = 0, last = 0;
+            var proto = {
+                get x() { gets++; return 1; },
+                set x(v) { sets++; last = v; }
+            };
+            var o = Object.create(proto);
+            o.own = 1;
+            for (var i = 0; i < 400; i++) o.x += 2;
+            [gets, sets, last === 3 ? 400 : last].join('|');
+            """));
+
+    [Fact]
+    public void ACompoundAssignmentOnANonWritablePropertyIsRefused()
+        => Assert.Equal("1|false", Eval("""
+            var o = {};
+            Object.defineProperty(o, 'x', { value: 1, writable: false, configurable: true });
+            for (var i = 0; i < 300; i++) o.x += 5;
+            o.x + '|' + Object.getOwnPropertyDescriptor(o, 'x').writable;
+            """));
+
+    [Fact]
+    public void ARefusedCompoundAssignmentStillEvaluatesToTheComputedValue()
+        => Assert.Equal("6|1", Eval("""
+            var o = {};
+            Object.defineProperty(o, 'x', { value: 1, writable: false, configurable: true });
+            var r = 0;
+            for (var i = 0; i < 300; i++) r = (o.x += 5);
+            r + '|' + o.x;
+            """));
+
+    [Fact]
+    public void ACompoundAssignmentOnANonWritablePropertyThrowsInStrictMode()
+        => Assert.Equal("200|200", Eval("""
+            function add(o) { 'use strict'; o.x += 1; }
+            var made = 0, thrown = 0;
+            for (var i = 0; i < 400; i++) {
+                var o = { x: 1 };
+                if (i >= 200) Object.freeze(o);
+                try { add(o); made++; } catch (e) { if (e instanceof TypeError) thrown++; }
+            }
+            made + '|' + thrown;
+            """));
+
+    [Fact]
+    public void TheBaseOfACompoundAssignmentIsEvaluatedExactlyOnce()
+        => Assert.Equal("300|300", Eval("""
+            var n = 0;
+            var o = { x: 0 };
+            function base() { n++; return o; }
+            for (var i = 0; i < 300; i++) base().x += 1;
+            n + '|' + o.x;
+            """));
+
+    [Fact]
+    public void TheShortCircuitingCompoundFormsStillSkipTheWrite()
+        => Assert.Equal("300|0|300|300", Eval("""
+            // This is why `&&=`, `||=` and `??=` are excluded: whether the setter runs at all
+            // depends on the value read. A cached store would run it every time.
+            var g1 = 0, s1 = 0, g2 = 0, s2 = 0;
+            var o = {
+                get a() { g1++; return 0; }, set a(v) { s1++; },
+                get b() { g2++; return 0; }, set b(v) { s2++; }
+            };
+            for (var i = 0; i < 300; i++) { o.a &&= 1; o.b ||= 1; }
+            [g1, s1, g2, s2].join('|');
+            """));
+
+    [Fact]
+    public void TheShortCircuitingCompoundFormsStillYieldTheRightValues()
+        => Assert.Equal("2|7|5", Eval("""
+            var o = { a: 1, b: 0, c: null };
+            for (var i = 0; i < 300; i++) { o.a &&= 2; o.b &&= 99; }
+            for (var i = 0; i < 300; i++) { o.a ||= 99; o.b ||= 7; }
+            for (var i = 0; i < 300; i++) { o.c ??= 5; }
+            [o.a, o.b, o.c].join('|');
+            """));
+
+    [Fact]
+    public void ACompoundAssignmentOnAProxyStillFiresBothTraps()
+        => Assert.Equal("300|300|300", Eval("""
+            var gets = 0, sets = 0;
+            var target = { x: 0 };
+            var p = new Proxy(target, {
+                get: function (t, k, r) { gets++; return Reflect.get(t, k); },
+                set: function (t, k, v, r) { sets++; return Reflect.set(t, k, v); }
+            });
+            for (var i = 0; i < 300; i++) p.x += 1;
+            [gets, sets, target.x].join('|');
+            """));
+
+    [Fact]
+    public void ACompoundAssignmentShadowingAnInheritedDataPropertyReadsTheProtoOnlyOnce()
+        => Assert.Equal("310|10", Eval("""
+            // The first iteration reads the prototype's 10 and creates an own 11; every one
+            // after that reads the own property it just made.
+            function P() {}
+            P.prototype.x = 10;
+            var q = new P();
+            for (var i = 0; i < 300; i++) q.x += 1;
+            q.x + '|' + P.prototype.x;
+            """));
+
+    [Fact]
+    public void ExcludedCompoundFormsStillWork()
+        => Assert.Equal("300|8,8,7|300|300", Eval("""
+            // A computed key, a private field and a super member keep the ordinary reference;
+            // only their correctness is asserted here.
+            var k = 'x';
+            var computed = { x: 0 };
+            for (var i = 0; i < 300; i++) computed[k] += 1;
+
+            // As with `super.v++`: the read comes from the home object's prototype and the
+            // write goes to the RECEIVER, so it reads 7 and rewrites an own 8 forever.
+            class P {}
+            P.prototype.v = 7;
+            class C extends P { addSuper() { return super.v += 1; } }
+            var c = new C();
+            var superLast = 0;
+            for (var i = 0; i < 300; i++) superLast = c.addSuper();
+
+            class Priv { #n = 0; add() { return this.#n += 1; } get n() { return this.#n; } }
+            var pv = new Priv();
+            for (var i = 0; i < 300; i++) pv.add();
+
+            var arr = []; arr.tag = 0;
+            for (var i = 0; i < 300; i++) arr.tag += 1;
+
+            [computed.x, superLast + ',' + c.v + ',' + P.prototype.v, pv.n, arr.tag].join('|');
+            """));
+
+    [Fact]
+    public void ACompoundAssignmentOnANullishBaseThrowsBeforeTheRightHandSideRuns()
+        => Assert.Equal("300|300|0", Eval("""
+            // The read comes first, so a base that cannot be coerced fails before the RHS is
+            // evaluated at all - the same order the assignable reference produced.
+            var rhs = 0;
+            function side() { rhs++; return 1; }
+            var nulls = 0, undefineds = 0;
+            for (var i = 0; i < 300; i++) {
+                try { null.x += side(); } catch (e) { if (e instanceof TypeError) nulls++; }
+                try { undefined.x += side(); } catch (e) { if (e instanceof TypeError) undefineds++; }
+            }
+            [nulls, undefineds, rhs].join('|');
+            """));
+
+    [Fact]
+    public void ACompoundAssignmentOnAPrimitiveBaseIsRefusedThenThrowsInStrictMode()
+        => Assert.Equal("2|NaN|300", Eval("""
+            // The base is boxed per access, so the write lands on a wrapper nobody keeps -
+            // silent in sloppy mode, a TypeError in strict.
+            var s = 'ab';
+            for (var i = 0; i < 300; i++) s.length += 1;
+
+            var n = 5;
+            var last = 0;
+            for (var i = 0; i < 300; i++) last = (n.foo += 1);
+
+            function add(v) { 'use strict'; v.foo += 1; }
+            var thrown = 0;
+            for (var i = 0; i < 300; i++) {
+                try { add(5); } catch (e) { if (e instanceof TypeError) thrown++; }
+            }
+            [s.length, last, thrown].join('|');
+            """));
+
+    [Fact]
+    public void ACompoundAssignmentOnAGetterOnlyPropertyIsRefusedThenThrowsInStrictMode()
+        => Assert.Equal("300|0|300", Eval("""
+            var gets = 0;
+            var proto = { get x() { gets++; return 1; } };
+            var o = Object.create(proto);
+            for (var i = 0; i < 300; i++) o.x += 1;
+            var own = Object.getOwnPropertyNames(o).length;
+
+            function add(t) { 'use strict'; t.x += 1; }
+            var thrown = 0;
+            for (var i = 0; i < 300; i++) {
+                try { add(Object.create(proto)); } catch (e) { if (e instanceof TypeError) thrown++; }
+            }
+            [gets - thrown, own, thrown].join('|');
+            """));
+
+    [Fact]
+    public void NestedCompoundAssignmentsDoNotShareTheirBaseTemporary()
+        => Assert.Equal("600|300|300", Eval("""
+            // Two compound assignments in one expression, each with its own base temp; the
+            // inner one is the outer one's right-hand side.
+            var o = { x: 0, y: 0 };
+            var p = { z: 0 };
+            for (var i = 0; i < 300; i++) o.x += (o.y += 1) - (p.z += 1);
+            [o.y + p.z, o.y, p.z].join('|');
+            """));
+
+    [Fact]
+    public void ACompoundAssignmentAnUpdateAndAPlainStoreOnTheSamePropertyAgree()
+        => Assert.Equal("900", Eval("""
+            var o = { x: 0 };
+            for (var i = 0; i < 300; i++) { o.x += 1; o.x = o.x + 1; o.x++; }
+            o.x;
+            """));
+
     // ── the transition form: a store that CREATES its property (item 2-1) ─────────────
     //
     // The entries above all describe overwriting a slot that exists. A store that adds one

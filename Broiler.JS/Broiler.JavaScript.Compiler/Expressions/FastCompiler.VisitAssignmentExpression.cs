@@ -167,6 +167,19 @@ partial class FastCompiler
                     Assign(leftExp, right, assignmentOperator));
             }
 
+            // `obj.name op= rhs` on a constant key takes both inline caches, the same way
+            // `obj.name++` does (item 2-4). The base is already evaluated once into objectTemp
+            // above, which is the only thing the read and the write have to agree on.
+            var cachedKey = IsArithmeticCompoundAssignment(assignmentOperator)
+                ? TryCreateCachedUpdateKey(mem)
+                : null;
+            if (cachedKey != null)
+            {
+                return BExpression.Block(
+                    BExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
+                    CachedCompoundAssign(objectTemp.Expression, cachedKey, right, assignmentOperator));
+            }
+
             var memberExp = CreateMemberExpression(objectTemp.Expression, mem.Property, false);
             return BExpression.Block(
                 BExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
@@ -377,6 +390,70 @@ partial class FastCompiler
             EvalShadowBuilder.SetCaptured(target, referenceTemp.Expression, computed));
         referenceTemp.Dispose();
         return result;
+    }
+
+    /// <summary>
+    /// Whether this compound assignment always reads, computes and writes — as opposed to the
+    /// three logical forms, which short-circuit and may not write at all.
+    /// </summary>
+    /// <remarks>
+    /// Exactly the set <see cref="CompoundAssignmentToBinaryOperator"/> maps; it throws for
+    /// `&amp;&amp;=`, `||=` and `??=`, whose semantics are a conditional around the write rather
+    /// than an operator applied to it. Those keep the ordinary assignable reference: they are
+    /// rare in a hot loop, and the part a cache would have to preserve is the part that makes
+    /// them different.
+    /// </remarks>
+    private static bool IsArithmeticCompoundAssignment(TokenTypes assignmentOperator) => assignmentOperator
+        is TokenTypes.AssignAdd
+        or TokenTypes.AssignSubtract
+        or TokenTypes.AssignMultiply
+        or TokenTypes.AssignDivide
+        or TokenTypes.AssignMod
+        or TokenTypes.AssignBitwideAnd
+        or TokenTypes.AssignBitwideOr
+        or TokenTypes.AssignXor
+        or TokenTypes.AssignLeftShift
+        or TokenTypes.AssignRightShift
+        or TokenTypes.AssignUnsignedRightShift
+        or TokenTypes.AssignPower;
+
+    /// <summary>
+    /// Emits `target[key] op= rhs` as a cached read, the operator, and a cached write.
+    /// </summary>
+    /// <remarks>
+    /// The order §13.15.2 requires is the order this builds: the base is already in a temp, the
+    /// old value is read, then the right-hand side is evaluated, then the operator is applied,
+    /// then the result is written. `CachedStore` takes the computed value as its last argument,
+    /// so the read stays inside it and cannot float past the right-hand side.
+    /// <para>
+    /// The `+= &lt;literal&gt;` shapes keep the specialized helpers <see cref="Assign"/> uses for
+    /// them; the only difference here is which expression supplies the old value and which
+    /// performs the write.
+    /// </para>
+    /// </remarks>
+    private BExpression CachedCompoundAssign(
+        BExpression target,
+        BExpression key,
+        AstExpression right,
+        TokenTypes assignmentOperator)
+    {
+        var read = JSValueBuilder.CachedIndex(target, key);
+
+        BExpression computed = null;
+        if (assignmentOperator == TokenTypes.AssignAdd && right.Type == FastNodeType.Literal && right is AstLiteral literal)
+        {
+            if (literal.TokenType == TokenTypes.String)
+                computed = JSValueBuilder.AddString(read, BExpression.Constant(literal.StringValue));
+            else if (literal.TokenType == TokenTypes.Number)
+                computed = JSValueBuilder.AddDouble(read, BExpression.Constant(literal.NumericValue));
+        }
+
+        computed ??= BinaryOperation.Operation(
+            read,
+            Visit(right),
+            CompoundAssignmentToBinaryOperator(assignmentOperator));
+
+        return JSValueBuilder.CachedStore(target, key, computed);
     }
 
     private static TokenTypes CompoundAssignmentToBinaryOperator(TokenTypes assignmentOperator) => assignmentOperator switch

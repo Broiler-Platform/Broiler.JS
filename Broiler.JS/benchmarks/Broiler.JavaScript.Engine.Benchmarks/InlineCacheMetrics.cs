@@ -156,10 +156,12 @@ internal static class InlineCacheMetrics
             200_000,
             "item 2-2: a class static, which is always strict"),
 
-        // Item 2-4's premise. The store cache is installed for a constant-key ASSIGNMENT; the
-        // item says compound assignment, increment, computed keys and optional chains all keep
-        // an older lowering that never reaches it. Each of these performs the same work as
-        // `monomorphic-store` above, which hits 199 999 times.
+        // Item 2-4's premise. The store cache was installed for a constant-key ASSIGNMENT only;
+        // compound assignment, increment, computed keys and optional chains all kept an older
+        // lowering that reached neither cache - measured 0 hits AND 0 misses, against
+        // `monomorphic-store` above at 199 999. The first two now take both caches and read
+        // 199 999 / 199 999; the last two stay at 0 / 0 on purpose, and these rows are what
+        // would notice if either fact stopped being true.
         new(
             "compound-assign-store",
             "(function () { var o = { x: 0 }; for (var i = 0; i < 200000; i++) { o.x += 1; } return o.x; })",
