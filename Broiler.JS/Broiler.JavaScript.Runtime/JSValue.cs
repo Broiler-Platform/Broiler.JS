@@ -1055,6 +1055,95 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         }
     }
 
+    /// <summary>
+    /// Reads an indexed property whose key is a raw <see cref="double"/> — <c>a[i]</c> where the
+    /// compiler holds <c>i</c> unboxed — without materializing a <see cref="JSNumber"/> for the
+    /// key (roadmap item 3-0).
+    /// </summary>
+    /// <remarks>
+    /// A numeric local's readable expression boxes its storage so that every consumer expecting
+    /// a <see cref="JSValue"/> keeps working, and an index expression was one of those consumers.
+    /// Measured, that box is **~32 bytes on every indexed read** and, since the element itself is
+    /// already a heap object, it is the *entire* allocation of one — a constant-index read
+    /// (<c>a[0]</c>, which lowers to a <c>uint</c> key) allocates nothing at all.
+    /// <para>
+    /// The guard is what makes it legal rather than merely fast. Only a non-negative integral
+    /// double below 2^32-1 names an array index; everything else is an ordinary string-keyed
+    /// property, and <c>a[1.5]</c>, <c>a[-1]</c> and <c>a[1e30]</c> all have to keep resolving
+    /// the key through <c>ToPropertyKey</c>. Each rejection falls back to exactly the boxed path
+    /// that ran before, so a guard that is too strict costs a box and never a wrong answer.
+    /// </para>
+    /// <para>
+    /// <c>-0</c> is deliberately admitted: it passes <c>index >= 0</c>, converts to <c>0</c>, and
+    /// <c>ToString(-0)</c> is <c>"0"</c> — so slot 0 is the key the spec asks for. NaN fails the
+    /// first comparison and every infinity fails the second.
+    /// </para>
+    /// </remarks>
+    public JSValue GetElementByNumber(double index)
+    {
+        // 2^32-1 is NOT an array index (it is the one canonical numeric string above the range),
+        // so the bound is 2^32-2 and the comparison is inclusive.
+        if (index >= 0 && index <= 4294967294d)
+        {
+            var element = (uint)index;
+            if (element == index)
+                return GetValue(element, this);
+        }
+
+        return GetValue(CreateNumber(index), this);
+    }
+
+    /// <summary>
+    /// Writes an indexed property whose key is a raw <see cref="double"/> — <c>a[i] = v</c> where
+    /// the compiler holds <c>i</c> unboxed — without materializing a <see cref="JSNumber"/> for
+    /// the key (roadmap item 3-0). Returns the assigned value, which is what the assignment
+    /// expression evaluates to.
+    /// </summary>
+    /// <remarks>
+    /// The write twin of <see cref="GetElementByNumber"/> and guarded on exactly the same terms;
+    /// see there for why the bound is 2^32-2 and why <c>-0</c> is admitted.
+    /// <para>
+    /// Both arms go through <see cref="SetValue(uint, JSValue, JSValue, bool)"/> and its JSValue
+    /// twin rather than through the indexers, and the failure handling below is the
+    /// <c>this[JSValue]</c> setter's, copied deliberately. That is the setter a variable index
+    /// used before this item, so keeping it keeps the messages: a null or undefined receiver
+    /// still reports "Cannot set properties of …" rather than the <c>this[uint]</c> override's
+    /// "Cannot set property 0 of …", which is what a *constant* index has always reported. This
+    /// item is not the place to reconcile those two.
+    /// </para>
+    /// </remarks>
+    public JSValue SetElementByNumber(double index, JSValue value)
+    {
+        var strict = IsStrictModeEnabled?.Invoke() == true;
+
+        if (index >= 0 && index <= 4294967294d)
+        {
+            var element = (uint)index;
+            if (element == index)
+            {
+                if (!SetValue(element, value, this, strict))
+                    ThrowOnFailedElementAssignment(element);
+
+                return value;
+            }
+        }
+
+        var key = CreateNumber(index);
+        if (!SetValue(key, value, this, strict))
+            ThrowOnFailedElementAssignment(key);
+
+        return value;
+    }
+
+    private void ThrowOnFailedElementAssignment(object key)
+    {
+        if (IsNullOrUndefined)
+            throw NewTypeError?.Invoke($"Cannot set properties of {this}")
+                ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
+
+        ThrowOnStrictPrimitiveAssignment(key);
+    }
+
     public virtual JSValue this[IJSSymbol symbol]
     {
         get => GetValue(symbol, this);

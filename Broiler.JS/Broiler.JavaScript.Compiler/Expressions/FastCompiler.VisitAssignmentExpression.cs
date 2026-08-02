@@ -316,6 +316,15 @@ partial class FastCompiler
             return cachedStore;
         }
 
+        // Item 3-0's write half: `a[i] = v` with `i` held unboxed writes through the raw double
+        // instead of boxing a JSNumber to name the slot. A plain assignment only — a compound
+        // one has to keep an assignable target because it is read as well as written.
+        if (assignmentOperator == TokenTypes.Assign
+            && TryCreateNumericIndexStore(simpleMember, () => Visit(right)) is { } numericStore)
+        {
+            return numericStore;
+        }
+
         return Assign(CreateMemberAssignmentTarget(simpleMember), right, assignmentOperator);
     }
 
