@@ -216,25 +216,33 @@ internal static class PropertyMapDistributionMetrics
         long[] histogram;
         PropertyStorageSnapshot snapshot;
 
-        // Load OUTSIDE the recording window: a suite's top-level code builds the engine's own
-        // maps for its globals and prototypes, and those are one-time rather than per-object.
-        // The window opens once the workload starts allocating.
-        try
-        {
-            for (var i = 0; i < sources.Count; i++)
-                context.Eval(sources[i], suite.Files.Length > 0 && i > 0 ? suite.Files[i - 1] : "base.js");
-
-            context.Eval($"var __runs = {RunsPerBenchmark};", "runs.js");
-        }
-        catch (Exception e)
-        {
-            Console.Error.WriteLine($"{suite.Name}: failed to load — {e.GetType().Name}: {e.Message}");
-            return new { suite = suite.Name, loaded = false, error = $"{e.GetType().Name}: {e.Message}" };
-        }
-
+        // The window covers the LOAD as well as the run, and it has to. The histogram records
+        // each map's *final* size by moving it out of one bucket and into the next, so a reset
+        // part-way through a map's life decrements a bucket the map was never counted in — which
+        // is exactly what an earlier version of this did, and it produced negative buckets.
+        // Counting the load is also the more honest denominator: the maps a suite's top-level
+        // code builds are maps the workload allocates.
         using (PropertyStorageMetrics.Enable())
         {
             PropertyStorageMetrics.Reset();
+            try
+            {
+                // Octane's zlib writes progress with `print`, which a bare JSContext has no
+                // more than a browser page does. A no-op keeps the suite running; nothing here
+                // reads its output.
+                context.Eval("if (typeof print === 'undefined') { var print = function () { }; }", "shim.js");
+
+                for (var i = 0; i < sources.Count; i++)
+                    context.Eval(sources[i], i == 0 ? "base.js" : suite.Files[i - 1]);
+
+                context.Eval($"var __runs = {RunsPerBenchmark};", "runs.js");
+            }
+            catch (Exception e)
+            {
+                Console.Error.WriteLine($"{suite.Name}: failed to load — {e.GetType().Name}: {e.Message}");
+                return new { suite = suite.Name, loaded = false, error = $"{e.GetType().Name}: {e.Message}" };
+            }
+
             try
             {
                 outcome = context.Eval(Driver, "driver.js").ToString();
@@ -289,6 +297,13 @@ internal static class PropertyMapDistributionMetrics
 
         // The share at one group is the whole question: it is the population a smaller floor
         // helps, and the population a larger floor is charging for growth it never uses.
+        // A negative bucket can only mean a map's life straddled a Reset, which would make the
+        // whole table untrustworthy. Surface it rather than let it average away.
+        var negatives = 0L;
+        foreach (var count in histogram)
+            if (count < 0)
+                negatives += -count;
+
         var oneGroup = histogram.Length > 1 ? histogram[1] : 0;
         var upToFour = 0L;
         for (var groups = 1; groups <= 4 && groups < histogram.Length; groups++)
@@ -300,6 +315,7 @@ internal static class PropertyMapDistributionMetrics
             byGroupCount = buckets,
             shareAtOneGroup = total == 0 ? 0 : Math.Round((double)oneGroup / total, 4),
             shareWithinTheCurrentFloor = total == 0 ? 0 : Math.Round((double)upToFour / total, 4),
+            negativeBucketCounts = negatives,
         };
     }
 

@@ -40,6 +40,99 @@ public class StorageTests
         Assert.Equal(5, arr.Length);
     }
 
+    // Growth policy (docs/performance-roadmap.md item 2-7). The old rule reserved 16 slots for
+    // the first request of any size, which at 56 bytes a node made the first property of any
+    // object cost 920 B of trie it did not use — and, because the rounding only applied while
+    // `last * 2 <= max`, grew a large map linearly rather than geometrically. These pin both
+    // halves of the replacement: exact at the bottom, doubling above it.
+
+    [Fact]
+    public void VirtualMemory_FirstAllocation_ReservesOnlyWhatWasAsked()
+    {
+        var vm = new VirtualMemory<int>();
+        vm.Allocate(4);
+
+        // Was 16. 43.9% of real property maps never need a second group.
+        Assert.Equal(4, vm.Capacity);
+    }
+
+    [Fact]
+    public void VirtualMemory_FirstAllocation_NeverReservesBelowOneNodeGroup()
+    {
+        // A sub-group request still gets a group: the trie asks in fours, and rounding a 1 down
+        // to 1 would make the very next request copy.
+        var vm = new VirtualMemory<int>();
+        vm.Allocate(1);
+
+        Assert.Equal(4, vm.Capacity);
+    }
+
+    [Fact]
+    public void VirtualMemory_GrowsGeometrically_NotByAFixedIncrement()
+    {
+        // Twenty four-slot requests. Doubling reaches 80 slots in a handful of allocations; the
+        // old fixed-increment rule needed one per group once past the first block, which is what
+        // made a large map quadratic in copies.
+        var vm = new VirtualMemory<int>();
+        var capacities = new List<int>();
+        var previous = 0;
+
+        for (var i = 0; i < 20; i++)
+        {
+            vm.Allocate(4);
+            if (vm.Capacity != previous)
+            {
+                capacities.Add(vm.Capacity);
+                previous = vm.Capacity;
+            }
+        }
+
+        Assert.Equal(80, vm.Count);
+        Assert.True(vm.Capacity >= vm.Count);
+        // 20 groups under a doubling policy is far fewer than 20 reallocations.
+        Assert.True(capacities.Count <= 8,
+            $"expected geometric growth, got {capacities.Count} reallocations: {string.Join(",", capacities)}");
+    }
+
+    [Fact]
+    public void VirtualMemory_ContentsSurviveEveryGrowth()
+    {
+        // The whole policy is only safe if a resize copies. Write a distinguishable value into
+        // every slot as it is handed out, then read them all back after many growths.
+        var vm = new VirtualMemory<int>();
+        var arrays = new List<VirtualArray>();
+
+        for (var i = 0; i < 50; i++)
+        {
+            var slots = vm.Allocate(4);
+            arrays.Add(slots);
+            for (var j = 0; j < 4; j++)
+                vm[slots, j] = (i * 4) + j;
+        }
+
+        for (var i = 0; i < arrays.Count; i++)
+            for (var j = 0; j < 4; j++)
+                Assert.Equal((i * 4) + j, vm[arrays[i], j]);
+    }
+
+    [Fact]
+    public void SAUint32Map_KeepsEveryEntryAcrossTheNewGrowthPolicy()
+    {
+        // The policy change is in the layer beneath the trie, so the trie's own invariant — every
+        // key put is a key found — is what has to survive it. Enough keys to force many resizes.
+        var map = new SAUint32Map<int>();
+        for (var key = 1u; key <= 2000u; key++)
+            map.Save(key, (int)(key * 3));
+
+        for (var key = 1u; key <= 2000u; key++)
+        {
+            Assert.True(map.TryGetValue(key, out var value), $"key {key} was lost");
+            Assert.Equal((int)(key * 3), value);
+        }
+
+        Assert.Equal(2000, map.Count);
+    }
+
     [Fact]
     public void VirtualMemory_Count_GrowsWithAllocations()
     {
