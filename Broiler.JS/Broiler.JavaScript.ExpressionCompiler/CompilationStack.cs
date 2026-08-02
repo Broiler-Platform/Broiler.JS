@@ -133,6 +133,54 @@ public static class CompilationStack
     public static T Run<T>(Func<T> compile) => Run(compile, sourceLength: -1);
 
     /// <summary>
+    /// Runs <paramref name="work"/> on a worker stack <em>even when a compilation boundary is
+    /// already established on this thread</em>, which is what a recursion segmenter needs and
+    /// <see cref="Run{T}(Func{T})"/> deliberately will not do.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Run{T}(Func{T}, int)"/> returns inline while <see cref="IsInCompilation"/> is
+    /// true, because a nested compilation is already inside a boundary and a second thread would
+    /// deepen nothing. <see cref="StackGuard{T, TIn}"/> wants the opposite: it fires precisely
+    /// *because* the current stack is running out, and it is always inside a compilation when it
+    /// does, so routing it through <c>Run</c> would inline it and segment nothing. This is that
+    /// one exception, kept as its own entry point so the ordinary rule stays a rule.
+    /// <para>
+    /// A worker's stack is a fresh mapping each time it is created, and a parked one is reused,
+    /// so repeated segmentation costs a pair of semaphore handoffs rather than a thread per hop.
+    /// </para>
+    /// </remarks>
+    public static T RunOnFreshStack<T>(Func<T> work)
+    {
+        ArgumentNullException.ThrowIfNull(work);
+
+        // Deliberately independent of the boundary's own opt-out. Setting
+        // BROILER_JS_COMPILE_STACK_BYTES to 0 turns off the *mitigation* — compiling on a thread
+        // the engine sizes — and item 1-2 is explicit that the segmenter is the *real fix*, not
+        // part of it. A segmenter with nowhere to go is not a segmenter, so it falls back to the
+        // default size; disabling it is BROILER_JS_VISITOR_SEGMENT_BYTES's job. Keeping the two
+        // separate is also what lets the deeply-nested fixtures prove which mechanism saved them.
+        var size = sizeBytes != 0 ? sizeBytes : DefaultSizeBytes;
+
+        if (!idle.TryTake(out var worker) || worker.StackSize != size)
+        {
+            worker?.Retire();
+            worker = new Worker(size);
+        }
+
+        try
+        {
+            return worker.Run(work);
+        }
+        finally
+        {
+            if (worker.StackSize == size)
+                idle.Add(worker);
+            else
+                worker.Retire();
+        }
+    }
+
+    /// <summary>
     /// Runs <paramref name="compile"/> on a thread sized by <see cref="SizeBytes"/>, unless
     /// <paramref name="sourceLength"/> is short enough to be safe where it is. Pass -1 when
     /// the source length is not known at the call site.

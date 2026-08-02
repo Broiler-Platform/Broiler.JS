@@ -282,6 +282,38 @@ public class JSValueBuilder
 
     public static Expression Index(Expression target, uint i, bool coalesce = false) => Expression.MakeIndex(target, _IndexUInt, [Expression.Constant(i)]);
 
+    private static MethodInfo _GetElementByNumber = type.PublicMethod(nameof(JSValue.GetElementByNumber), typeof(double));
+
+    /// <summary>
+    /// Reads <c>target[index]</c> where <paramref name="index"/> is a raw <c>double</c>, without
+    /// boxing it into a key (roadmap item 3-0).
+    /// </summary>
+    /// <remarks>
+    /// Deliberately a call rather than an inline conditional over two indexers. A conditional
+    /// would have to evaluate the target into a temp and duplicate the access into both arms,
+    /// and — the reason it is not merely a style choice — the result would no longer be an
+    /// assignable index expression, which is what the write path needs. Keeping the guard behind
+    /// one call leaves the emitted tree a single node and puts the range rules in one testable
+    /// place.
+    /// </remarks>
+    public static Expression IndexByNumber(Expression target, Expression index)
+        => Expression.Call(target, _GetElementByNumber, index);
+
+    private static MethodInfo _SetElementByNumber = type.PublicMethod(nameof(JSValue.SetElementByNumber), typeof(double), typeof(JSValue));
+
+    /// <summary>
+    /// Writes <c>target[index] = value</c> where <paramref name="index"/> is a raw <c>double</c>,
+    /// without boxing it into a key (roadmap item 3-0). Evaluates to the assigned value.
+    /// </summary>
+    /// <remarks>
+    /// A call rather than an <c>Expression.Assign</c> onto an index node, which is what makes
+    /// this a separate lowering rather than a change to the assignable member reference: the
+    /// guard needs two arms and an assignment target cannot have them. Argument order is the
+    /// evaluation order the spec asks for — receiver, then key, then the right-hand side.
+    /// </remarks>
+    public static Expression SetIndexByNumber(Expression target, Expression index, Expression value)
+        => Expression.Call(target, _SetElementByNumber, index, value);
+
     public static Expression Index(Expression target, Expression super, Expression property, bool coalesce = false)
     {
         if (super == null)

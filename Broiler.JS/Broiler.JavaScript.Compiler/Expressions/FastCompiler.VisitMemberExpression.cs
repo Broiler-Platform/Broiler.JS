@@ -120,6 +120,22 @@ partial class FastCompiler
                     return Access(key, allowCache: !isPrivate);
                 }
 
+                // Item 3-0: `a[i]` where the compiler holds `i` in a raw double reads the element
+                // from that double, instead of boxing a JSNumber purely to name a slot. Measured
+                // at ~32 B per indexed read, which — the element already being a heap object — is
+                // the entire allocation of one.
+                //
+                // Restricted to the plain read. A super access takes the three-argument indexer,
+                // and inside an optional chain the key evaluation has to stay lifted into the
+                // gated branch below; neither is worth a second fast path, and the numeric local
+                // this fires on cannot throw or short-circuit anyway.
+                if (super == null && !memberExpression.InOptionalChain && !memberExpression.Coalesce)
+                {
+                    var numericKey = TryGetNumericKeyStorage(mp, computed: true);
+                    if (numericKey != null)
+                        return JSValueBuilder.IndexByNumber(target, numericKey);
+                }
+
                 // Computed identifier key (`a?.[b]` where b parsed as an Identifier reference).
                 // Reading `b` can have side effects (a TDZ ReferenceError, a get-trap on the
                 // global, …) and per spec must not fire when the optional chain short-circuits.
