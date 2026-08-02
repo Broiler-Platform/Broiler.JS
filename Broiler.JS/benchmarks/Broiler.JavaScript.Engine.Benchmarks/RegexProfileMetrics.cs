@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Json;
@@ -162,6 +163,66 @@ internal static class RegexProfileMetrics
         ("probe-alt-anchored", @"^a+|b+$", "aaa padded on both sides, and then some       bbb"),
     ];
 
+    /// <summary>
+    /// The same operation at three subject lengths, reported per CALL rather than per character.
+    /// </summary>
+    /// <remarks>
+    /// A per-character figure cannot tell a fixed per-call cost from one that scales with the
+    /// subject — 4 400 bytes on a 20 000-character subject reads as 0.22 B/char either way. This
+    /// is the discriminator: a flat bytes-per-call column means O(1) and the per-character
+    /// framing is misleading; a column that triples with the subject means something still walks
+    /// or copies it.
+    /// </remarks>
+    private static Row[] MeasureScaling()
+    {
+        var rows = new List<Row>();
+        foreach (var length in new[] { 5_000, 20_000, 80_000 })
+        {
+            foreach (var (name, setup, body) in new[]
+            {
+                ("test-hit", "var re = /zqx/;", "sink = re.test(subject);"),
+                ("exec-hit", "var re = /zqx/;", "sink = re.exec(subject) !== null;"),
+                ("replace-one", "var re = /zqx/;", "sink = subject.replace(re, 'y').length;"),
+            })
+            {
+                rows.Add(MeasureCalls($"{name}@{length}", length, setup, body));
+            }
+        }
+
+        return [.. rows];
+    }
+
+    private static Row MeasureCalls(string name, int length, string setup, string body)
+    {
+        using var context = BenchmarkContext.Create();
+        const int Calls = 200;
+
+        var source = $$"""
+            (function (n) {
+                var subject = 'zqx' + 'a'.repeat({{length}});
+                {{setup}}
+                var sink = 0;
+                for (var i = 0; i < n; i++) { {{body}} }
+                return sink;
+            })
+            """;
+
+        var function = context.Eval(source, $"{name}.js");
+        var arguments = new Arguments(JSUndefined.Value, new JSNumber(Calls));
+        function.InvokeFunction(in arguments);
+
+        GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        function.InvokeFunction(in arguments);
+        var bytes = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        return new Row(name, "bytes per CALL, subject length in the name", 0, 0, null,
+            Math.Round((double)bytes / Calls, 1), 0, bytes);
+    }
+
     internal static void Write()
     {
         var control = Measure(LoopControl);
@@ -187,6 +248,7 @@ internal static class RegexProfileMetrics
                     + "separately because Compiled pays it once per pattern and Octane builds "
                     + "its patterns once.",
                 netEngine = netRows,
+                scaling = MeasureScaling(),
             },
             new JsonSerializerOptions { WriteIndented = true }));
     }
