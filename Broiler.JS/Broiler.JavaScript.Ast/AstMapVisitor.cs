@@ -2,6 +2,7 @@
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Patterns;
 using Broiler.JavaScript.Ast.Statements;
+using Broiler.JavaScript.ExpressionCompiler;
 using System;
 
 namespace Broiler.JavaScript.Ast;
@@ -13,10 +14,40 @@ public abstract class AstMapVisitor<T>
 
     public bool Debug { get; set; } = true;
 
-    public T Visit(AstNode node) {
-        
+    // Roadmap item 1-2. This walk recurses once per level of source NESTING, so a deeply nested
+    // expression consumes the compiling thread's stack in proportion to its depth — and it is
+    // this pass, not the IL emitter, that overflows first on a chain of ~19 400 operators:
+    // AstReduce.VisitBinaryExpression under SyntaxValidation.StrictModeValidator. StackGuard
+    // covered the emitter's visitors and never this one, which is why repairing StackGuard alone
+    // did not move the repro.
+    private StackSegment segment;
+
+    public unsafe T Visit(AstNode node) {
+
         if (node == null)
             return default;
+
+        int self;
+        var current = (nint)(&self);
+        var outermost = !segment.IsAnchored;
+
+        if (segment.ShouldSegment(current))
+            return segment.Continue(() => VisitCore(node));
+
+        if (!outermost)
+            return VisitCore(node);
+
+        try
+        {
+            return VisitCore(node);
+        }
+        finally
+        {
+            segment.Release();
+        }
+    }
+
+    private T VisitCore(AstNode node) {
 
         return node.Type switch
         {
