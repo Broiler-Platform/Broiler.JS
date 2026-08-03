@@ -102,6 +102,18 @@ internal static class ElementAllocationMetrics
             "a[0] = t;",
             "v = a[0];",
             "the same store and read at a CONSTANT index: the difference from write-reference is "
+                + "what boxing the index costs, which is charged to every element access whatever "
+                + "the element store holds"),
+        new(
+            "constant-index-number",
+            "a[0] = i + 0.5;",
+            "v = a[0];",
+            "constant index, fresh number: isolates the value boxing from the index boxing"),
+        new(
+            "constant-index-reference",
+            "a[0] = t;",
+            "v = a[0];",
+            "the same store and read at a CONSTANT index: the difference from write-reference is "
                 + "what boxing the index costs, and that is charged to every element access "
                 + "whatever the element store holds"),
         new(
