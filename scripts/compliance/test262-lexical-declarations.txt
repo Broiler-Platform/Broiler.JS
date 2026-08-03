@@ -1,0 +1,4 @@
+test/language/statements/let
+test/language/statements/const
+test/language/statements/variable
+test/language/block-scope

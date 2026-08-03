@@ -42,6 +42,14 @@ internal sealed class NumericLocalAnalysis
     private readonly List<(string Name, AstExpression Value)> assignments = [];
 
     /// <summary>
+    /// Names this function declares with <c>const</c> at body top level. A write to one is a
+    /// TypeError raised by the binding's <c>JSVariable</c> cell, and a raw double has no cell
+    /// to raise it, so any such name that is written anywhere is rejected rather than
+    /// specialized into a store that would silently succeed.
+    /// </summary>
+    private readonly HashSet<string> constants = new(System.StringComparer.Ordinal);
+
+    /// <summary>
     /// The names of the function's <c>var</c> locals that can be held as a CLR
     /// <c>double</c>, or an empty set when none qualify.
     /// </summary>
@@ -76,19 +84,25 @@ internal sealed class NumericLocalAnalysis
         {
             switch (statement)
             {
-                // `let` and `const` are NOT offered, and the reason is not the temporal dead
-                // zone — the dominance argument above discharges that, since a name with any
-                // reference before its declaration is rejected, so the TDZ throw is
-                // unreachable rather than removed. Admitting them was tried under item 3-3 and
-                // withdrawn: it works in a single compilation and miscompiles after any
-                // earlier one in the same process, including for nested-block bindings the
-                // gate never admits. See docs/performance-roadmap.md item 3-3 for the
-                // reproduction; the storage of a lexical binding is evidently decided
-                // somewhere other than that gate, and that has to be found first.
-                case AstVariableDeclaration { Kind: FastVariableKind.Var } declaration:
+                // `let` and `const` are offered on the same terms as `var`. The temporal dead
+                // zone is discharged by the dominance argument above rather than removed: a
+                // name with any reference before its declaration is rejected, so the TDZ throw
+                // is unreachable on exactly the names that qualify. Const-ness needs one
+                // addition, in VisitBinaryExpression/VisitUnaryExpression below — a write to a
+                // const is a TypeError raised by the binding's cell, so a const written
+                // anywhere is rejected outright rather than specialized into a silent store.
+                case AstVariableDeclaration
+                {
+                    Kind: FastVariableKind.Var or FastVariableKind.Let or FastVariableKind.Const
+                } declaration:
+                    if (declaration.Kind == FastVariableKind.Const)
+                        NoteConstDeclaration(declaration);
                     OfferDeclaration(declaration);
                     break;
 
+                // A `for` head declares into the loop's own scope for let/const (a fresh
+                // binding per iteration, which a single raw double cannot represent), so only
+                // `var` is offered from there.
                 case AstForStatement { Init: AstVariableDeclaration { Kind: FastVariableKind.Var } forInit }:
                     OfferDeclaration(forInit);
                     break;
@@ -96,6 +110,27 @@ internal sealed class NumericLocalAnalysis
         }
 
         collector.Visit(body);
+    }
+
+    private void NoteConstDeclaration(AstVariableDeclaration declaration)
+    {
+        var declarators = declaration.Declarators.GetFastEnumerator();
+        while (declarators.MoveNext(out var declarator))
+        {
+            if (declarator.Identifier is AstIdentifier identifier)
+                constants.Add(identifier.Name.Value);
+        }
+    }
+
+    /// <summary>
+    /// Records a write to <paramref name="name"/>. A const declared at body top level cannot
+    /// be assigned, so a write to one means the program is relying on the cell's TypeError and
+    /// the name must keep its cell.
+    /// </summary>
+    private void NoteWrite(string name)
+    {
+        if (constants.Contains(name))
+            rejected.Add(name);
     }
 
     private void OfferDeclaration(AstVariableDeclaration declaration)
@@ -383,6 +418,7 @@ internal sealed class NumericLocalAnalysis
                     // old value except in a compound form, which reads it through the operator
                     // and is covered by IsNumericBinary.
                     owner.assignments.Add((target.Name.Value, binary));
+                    owner.NoteWrite(target.Name.Value);
                     if (binary.Operator != TokenTypes.Assign && !declared.Contains(target.Name.Value))
                         owner.rejected.Add(target.Name.Value);
                     Visit(binary.Right);
@@ -417,6 +453,7 @@ internal sealed class NumericLocalAnalysis
             {
                 // `x++` stores ToNumeric(x), which is numeric exactly when x already is.
                 owner.assignments.Add((target.Name.Value, unary));
+                owner.NoteWrite(target.Name.Value);
                 if (!declared.Contains(target.Name.Value))
                     owner.rejected.Add(target.Name.Value);
                 return unary;

@@ -116,8 +116,10 @@ partial class FastCompiler
                 }
 
                 var hoistToDirectEvalRoot = isEvalRootHoist;
-                var useScalarLocal = !hoistToDirectEvalRoot
-                    && !isLexical
+                // The preconditions both raw-local tiers share: the function's locals must be
+                // scalar-replaceable at all, and a name a closure, `arguments` or `eval` can
+                // reach keeps its cell.
+                var canUseRawLocal = !hoistToDirectEvalRoot
                     && scope.CanScalarReplaceLocals
                     && scope.Function != null
                     && !v.Equals("arguments")
@@ -125,10 +127,28 @@ partial class FastCompiler
                     // A closure captures through a cell, so a name any nested function
                     // mentions keeps one; the rest of the function's vars need not.
                     && !scope.CapturedByNestedFunctions.Contains(v.Value);
+                // The JSValue tier stays closed to lexical names: a `let`'s temporal dead zone
+                // and a `const`'s read-only-ness are properties of its JSVariable cell, and
+                // nothing here proves either is unobservable. The numeric tier below is
+                // different — its gate proves both.
+                var useScalarLocal = canUseRawLocal && !isLexical;
                 // A name the analysis proved numeric lives in a raw double. Its hoisted value
                 // is 0 rather than undefined, which is only sound because the analysis
-                // rejected any name that can be READ before its initializer runs.
-                var useNumericLocal = useScalarLocal && scope.NumericLocals.Contains(v.Value);
+                // rejected any name that can be READ before its initializer runs — which is
+                // also what discharges a lexical name's temporal dead zone, so `let`/`const`
+                // reach this tier even though they do not reach the JSValue one above (their
+                // TDZ and const-ness are properties of the cell, and the numeric tier's gate
+                // proves the TDZ unreachable and rejects any const that is written).
+                //
+                // A lexical name qualifies only in the function's OWN body block: `let` in a
+                // nested block is a distinct binding per entry, while NumericLocals — which
+                // every nested block scope inherits from the function — names only
+                // body-top-level declarations. Without this test a nested `{ let v = … }`
+                // would take the function's slot (docs/performance-roadmap.md item 3-3).
+                var isFunctionBodyBlock = ReferenceEquals(block, scope.Function?.Body);
+                var useNumericLocal = canUseRawLocal
+                    && (!isLexical || isFunctionBodyBlock)
+                    && scope.NumericLocals.Contains(v.Value);
                 var variable = hoistToDirectEvalRoot
                     ? GetOrCreateDirectEvalRootVariable(v)
                     : useNumericLocal

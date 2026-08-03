@@ -50,7 +50,9 @@ partial class FastCompiler
                         // value, so its read is NOT evaluated here: for a direct-eval var whose
                         // name is an existing global accessor that read would fire the getter
                         // (test262 staging/sm/global/bug-320887).
-                        if (newScope)
+                        // A numeric local never reaches here: the analysis rejects a declarator
+                        // with no initializer, since the binding would be observably undefined.
+                        if (newScope && v.NumericStorage == null)
                             list.Add(BExpression.Assign(v.Expression, JSUndefinedBuilder.Value));
                     }
                     else
@@ -63,7 +65,19 @@ partial class FastCompiler
                         var initExpr = Visit(d.Init);
                         if (!IsAnonymousFunctionDefinition(d.Init))
                             initExpr = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, BExpression.Constant(""), BExpression.Constant(false));
-                        if (newScope)
+                        if (v.NumericStorage != null)
+                        {
+                            // Tested BEFORE the lexical branch below, not after. A numeric
+                            // local's Expression is a BOXING READ of its raw double, so
+                            // assigning through it is an assignment to a method call — which
+                            // the IL backend rejects with a NotImplementedException that kills
+                            // compilation of the whole script. A numeric local also exists only
+                            // in a function with no `with` and no direct eval, so neither the
+                            // lexical spill nor the with-object resolution below can apply to
+                            // it (docs/performance-roadmap.md item 3-3).
+                            list.Add(AssignToVariable(v, initExpr));
+                        }
+                        else if (newScope)
                         {
                             // The initializer may lower to a value-producing try/finally —
                             // e.g. an array-destructuring assignment `let z = [a] = [5]`,
@@ -77,14 +91,6 @@ partial class FastCompiler
                                 new Sequence<BParameterExpression> { lexicalInitTemp.Variable },
                                 BExpression.Assign(lexicalInitTemp.Expression, initExpr),
                                 BExpression.Assign(v.Expression, lexicalInitTemp.Expression)));
-                        }
-                        else if (v.NumericStorage != null)
-                        {
-                            // A numeric local only exists in a function with no `with` and no
-                            // direct eval, so none of the with-object resolution below can
-                            // apply to it — and its binding is a raw double, not an
-                            // assignable JSValue.
-                            list.Add(AssignToVariable(v, initExpr));
                         }
                         else if (withBoundaries.Count > 0
                             && TryGetStaticIdentifierVariable(id, out var staticVar) && staticVar != null)
@@ -129,7 +135,11 @@ partial class FastCompiler
                         }
                     }
 
-                    if (readOnlyAfterAssign)
+                    // Read-only is a property of the JSVariable cell, and a numeric local has
+                    // none. It needs none either: NumericLocalAnalysis rejects a const that is
+                    // written anywhere, so a name that reached a raw double has no assignment
+                    // whose TypeError could go missing.
+                    if (readOnlyAfterAssign && v.NumericStorage == null)
                         list.Add(JSVariableBuilder.SetReadOnly(v.Variable, true));
 
                     if (dispose)
