@@ -78,28 +78,175 @@ public class ClosureRepository
 
 public class LambdaRewriter: BExpressionMapVisitor
 {
+    /// <summary>
+    /// The variables in scope at the current point of one lambda, as a reference-keyed
+    /// multiset.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This was a <see cref="List{T}"/>, and the two operations performed on it are the two a
+    /// list is worst at: <c>Contains</c>, which <see cref="CheckForClosure"/> runs for
+    /// <em>every parameter reference in the tree</em>, and <c>Remove</c>, which runs once per
+    /// variable as each block scope ends. Both are linear scans, so emission cost grew as the
+    /// square of the number of bindings in a lambda — and a script's top level is one lambda,
+    /// which makes the count of top-level declarations the term that squares.
+    /// </para>
+    /// <para>
+    /// Measured on synthetic top-level declarations, emitting N of them at N = 500 / 1 000 /
+    /// 2 000 took 797 / 2 981 / 13 865 ms — a little under 4x per doubling, against parse and
+    /// tree construction that stayed flat at a few milliseconds and tens of milliseconds. That
+    /// is the whole of Mandreel's front-end cost: its 5 MB is 1 364 top-level function
+    /// declarations plus a matching <c>var</c> apiece, and compiling it went 21 307 -> 7 015 ms.
+    /// Note what that does <em>not</em> buy: neither Mandreel nor MandreelLatency moves, because
+    /// Octane compiles the file at script load and times only the benchmark's run function. The
+    /// saving is real and shows up in the suite's wall clock (358.2 -> 350.0 s, non-overlapping
+    /// over four runs an arm); it is simply not what those two scores measure.
+    /// </para>
+    /// <para>
+    /// A multiset rather than a set, because the list held duplicates and both operations
+    /// depended on it: a variable registered by two nested block scopes was added twice, and
+    /// the inner scope's exit had to leave the outer scope's registration behind. A
+    /// <see cref="HashSet{T}"/> would have collapsed the pair and let the inner exit take the
+    /// binding out of scope early. Reference identity is the comparison the list already used —
+    /// <c>BParameterExpression</c> does not override <c>Equals</c> — and is what
+    /// <c>ClosureRepository</c> keys on for the same expressions.
+    /// </para>
+    /// <para>
+    /// The list is <em>kept</em> for small scopes rather than replaced outright, because the
+    /// dictionary is not free and most scopes are small: hashing a reference costs a runtime
+    /// call, while scanning a handful of them is a few compares against warm memory. Measured
+    /// on the real corpora, going dictionary-only bought Mandreel 3.6x and cost jQuery — one
+    /// large IIFE full of small function scopes — about 20%. Promoting on size takes both:
+    /// under the threshold nothing changed, over it the scan is gone. The list is abandoned
+    /// once the dictionary exists, so nothing is maintained twice.
+    /// </para>
+    /// </remarks>
     public class Scope
     {
+        /// <summary>
+        /// Scope size at which the linear scan stops being the cheaper answer. Chosen an order
+        /// of magnitude above an ordinary function's binding count and an order of magnitude
+        /// below the widths where the scan showed up at all, so neither end is near it.
+        /// </summary>
+        public const int DefaultIndexThreshold = 32;
+
+        /// <summary>
+        /// Environment override for <see cref="IndexThreshold"/>, read once. Present for the
+        /// same reason <c>BROILER_JS_COMPILE_STACK_BYTES</c> is: setting it above any real
+        /// scope size restores the pure linear scan, so the promotion can be measured against a
+        /// build that is otherwise identical rather than against a second build that differs in
+        /// unknown other ways.
+        /// </summary>
+        public const string IndexThresholdEnvironmentVariable = "BROILER_JS_REWRITER_INDEX_THRESHOLD";
+
+        private static readonly int IndexThreshold =
+            int.TryParse(
+                Environment.GetEnvironmentVariable(IndexThresholdEnvironmentVariable),
+                out var configured) && configured > 0
+                ? configured
+                : DefaultIndexThreshold;
+
         public readonly BLambdaExpression Root;
-        public readonly List<BParameterExpression> Variables = [];
+
+        // Exactly one of these is live: `variables` until the scope outgrows the threshold,
+        // `index` from then on. Reference identity in both, matching the List.Contains this
+        // replaced.
+        private readonly List<BParameterExpression> variables = [];
+        private Dictionary<BParameterExpression, int> index;
 
         public Scope(BLambdaExpression exp)
         {
             Root = exp;
-            Variables.AddRange(exp.Parameters);
+            AddRange(exp.Parameters.AsSequence());
         }
 
         public static implicit operator Scope(BLambdaExpression e) => new(e);
 
-        internal IDisposable Register(IFastEnumerable<BParameterExpression> variables)
+        public bool Contains(BParameterExpression variable)
         {
-            Variables.AddRange(variables);
-            return new DisposableAction(() => {
-                var ve = variables.GetFastEnumerator();
-                while(ve.MoveNext(out var v))
+            if (index != null)
+                return index.ContainsKey(variable);
+
+            // Spelled out rather than List.Contains so the comparison cannot become a virtual
+            // Equals call if BParameterExpression ever gains one — the closure rewrite is about
+            // binding identity, and two distinct bindings that compared equal would be merged.
+            for (var i = 0; i < variables.Count; i++)
+            {
+                if (ReferenceEquals(variables[i], variable))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private void AddRange(IFastEnumerable<BParameterExpression> added)
+        {
+            var e = added.GetFastEnumerator();
+            while (e.MoveNext(out var variable))
+                Add(variable);
+        }
+
+        private void Add(BParameterExpression variable)
+        {
+            if (index != null)
+            {
+                index.TryGetValue(variable, out var existing);
+                index[variable] = existing + 1;
+                return;
+            }
+
+            variables.Add(variable);
+            if (variables.Count <= IndexThreshold)
+                return;
+
+            index = new Dictionary<BParameterExpression, int>(
+                variables.Count * 2,
+                Core.ReferenceEqualityComparer.Instance);
+            foreach (var registered in variables)
+            {
+                index.TryGetValue(registered, out var count);
+                index[registered] = count + 1;
+            }
+
+            variables.Clear();
+        }
+
+        private void Remove(BParameterExpression variable)
+        {
+            if (index == null)
+            {
+                // First occurrence only, exactly as List.Remove did: a variable registered by
+                // two nested scopes must survive the inner one's exit.
+                for (var i = 0; i < variables.Count; i++)
                 {
-                    Variables.Remove(v);
+                    if (!ReferenceEquals(variables[i], variable))
+                        continue;
+
+                    variables.RemoveAt(i);
+                    return;
                 }
+
+                return;
+            }
+
+            // A variable that is not registered is left alone rather than driving the count
+            // negative — again what List.Remove did, which returns false and changes nothing.
+            if (!index.TryGetValue(variable, out var registered))
+                return;
+
+            if (registered <= 1)
+                index.Remove(variable);
+            else
+                index[variable] = registered - 1;
+        }
+
+        internal IDisposable Register(IFastEnumerable<BParameterExpression> added)
+        {
+            AddRange(added);
+            return new DisposableAction(() => {
+                var ve = added.GetFastEnumerator();
+                while(ve.MoveNext(out var v))
+                    Remove(v);
             });
         }
     }
@@ -224,7 +371,7 @@ public class LambdaRewriter: BExpressionMapVisitor
 
     private BParameterExpression CheckForClosure(ScopedStack<Scope>.ScopedItem current, BParameterExpression pe, bool setup = false)
     {
-        if (current.Item.Variables.Contains(pe))
+        if (current.Item.Contains(pe))
         {
             if (setup)
             {

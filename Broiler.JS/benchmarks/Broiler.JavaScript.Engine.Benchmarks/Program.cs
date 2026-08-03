@@ -80,6 +80,18 @@ public static class Program
             return;
         }
 
+        if (args.Length == 1 && args[0] == "--compile-scaling")
+        {
+            CompileScalingMetrics.Write();
+            return;
+        }
+
+        if (args.Length >= 2 && args[0] == "--compile-profile")
+        {
+            CompileProfileMetrics.Write(args[1], args.Length >= 3 ? int.Parse(args[2]) : 3);
+            return;
+        }
+
         BenchmarkSwitcher
             .FromTypes([
                 typeof(ContextStartupBenchmarks),
