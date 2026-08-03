@@ -460,30 +460,35 @@ public class PropertyShapeCacheTests
     }
 
     [Fact]
-    public void GrowingAnArrayThroughABuiltInAbandonsItsNamedShape()
+    public void GrowingAnArrayThroughABuiltInKeepsItsNamedShape()
     {
         // `length` is computed from the element store rather than held as a data property, so
         // it can never occupy a slot however wide eligibility gets, and it must keep tracking
         // the elements — which it does.
         //
-        // The dictionary fallback is the part worth pinning, because it bounds what item 2-2
-        // buys. `push` reaches the property store through GetOwnProperties(create: true), and
-        // that abandons the shape by design: a mutable ref handed to another assembly could add
-        // a named property without telling the tracker, so the fast layout is dropped rather
-        // than trusted. Exactly one fallback for five pushes — the first drops the shape and the
-        // rest find it already gone. Correctness is unaffected; the named-property cache is, so
-        // an array that grows through the built-ins stops hitting. Contrast
-        // ANamedPropertyOnAnArray_IsCached, which does not grow and keeps its shape.
+        // This used to pin the OPPOSITE, and the old comment was right that the fallback bounded
+        // what item 2-2 buys: push reached the property store through GetOwnProperties(create:
+        // true), which abandons the shape, so an array that grew through the built-ins stopped
+        // hitting the named-property cache for good. That bound is gone. SetLengthWritable no
+        // longer records a descriptor for a WRITABLE length, because an absent entry already
+        // means writable and the stored value was never read back — so push, pop and concat
+        // no longer cost an array its shape.
+        //
+        // The hit assertion is the point, not the fallback count: the fallback was only ever
+        // interesting because of what it did to the cache.
         var (result, stats) = Measure("""
             var a = [];
             a.tag = 1;
             var seen = '';
             for (var i = 0; i < 5; i++) { a.push(i); seen += a.length; }
-            seen;
+            var s = 0;
+            for (var i = 0; i < 500; i++) s += a.tag;
+            seen + '|' + s;
             """);
 
-        Assert.Equal("12345", result);
-        Assert.Equal(1, stats.DictionaryFallbacks);
+        Assert.Equal("12345|500", result);
+        Assert.Equal(0, stats.DictionaryFallbacks);
+        Assert.True(stats.CacheHits >= 499, $"expected the named read to keep hitting after growth, got {stats.CacheHits}/{stats.CacheMisses}");
     }
 
     [Fact]

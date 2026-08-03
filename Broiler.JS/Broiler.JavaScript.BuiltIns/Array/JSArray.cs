@@ -742,10 +742,45 @@ public partial class JSArray : JSObject
         }
     }
 
+    /// <summary>
+    /// Records the <c>length</c> descriptor, but only when it has something to say.
+    /// </summary>
+    /// <remarks>
+    /// A writable <c>length</c> needs no descriptor at all. <see cref="IsLengthReadOnly"/> reads
+    /// an <em>absent</em> entry as writable — the default — and the stored value is never read
+    /// back, because <see cref="GetOwnPropertyDescriptor"/> builds it from <c>_length</c>. So for
+    /// the overwhelmingly common case the entry was pure write-only bookkeeping.
+    /// <para>
+    /// Writing it anyway was expensive out of all proportion. <c>GetOwnProperties()</c> hands out
+    /// a mutable trie ref, which <em>abandons the object's shape</em> — permanently, into
+    /// dictionary mode — and this method is on the grow path, so <c>push</c>, <c>pop</c> and
+    /// <c>concat</c> each cost an array its shape on first use. Measured on Octane, DeltaBlue
+    /// took 2 507 dictionary fallbacks this way against Richards's 1, and its read cache hit
+    /// rate sat at 66% against Richards's 87%. It is also the exact invariant this class's
+    /// <c>SupportsShapeTracking</c> says it earns by <em>not</em> writing a named property of its
+    /// own with a bare <c>Put</c> — <c>length</c> was the one place that did.
+    /// </para>
+    /// <para>
+    /// The non-writable case still writes, and so does a re-write of an entry that already
+    /// exists, so nothing that ever recorded a descriptor stops maintaining it. See
+    /// docs/performance-roadmap.md item 2-2 and phase 2's exit criterion.
+    /// </para>
+    /// </remarks>
     private void SetLengthWritable(bool writable)
     {
+        if (writable && !HasStoredLengthDescriptor())
+            return;
+
         var attributes = writable ? JSPropertyAttributes.Value : JSPropertyAttributes.ReadonlyValue;
         GetOwnProperties().Put(KeyStrings.length.Key) = new JSProperty(KeyStrings.length, CreateNumber(_length), attributes);
+    }
+
+    /// <summary>Whether a <c>length</c> descriptor has ever been recorded in the trie.</summary>
+    /// <remarks>Read-only access (<c>create: false</c>), so asking does not abandon the shape.</remarks>
+    private bool HasStoredLengthDescriptor()
+    {
+        ref var ownProperties = ref GetOwnProperties(false);
+        return !ownProperties.IsEmpty && !ownProperties.GetValue(KeyStrings.length.Key).IsEmpty;
     }
 }
 
