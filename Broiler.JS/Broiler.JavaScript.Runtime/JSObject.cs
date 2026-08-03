@@ -68,9 +68,20 @@ public partial class JSObject : JSValue
             // version itself. Bumping unconditionally made the prototype version advance once
             // per object allocation, which would leave any prototype-keyed cache permanently
             // invalid in a loop that allocates. See docs/performance-roadmap.md P1-2.
-            var replacingExistingPrototype = prototypeChain != null;
+            var previousChain = prototypeChain;
             prototypeChain = prototype?.PrototypeObject;
-            if (replacingExistingPrototype || isUsedAsPrototype)
+
+            // A write that does not CHANGE the chain invalidates nothing. Every cached
+            // assumption guarded by the prototype version is about which chain this object
+            // has, and after a redundant write it still has the same one. Without this test a
+            // re-assignment of the prototype an object already had — which class construction
+            // does once per `new`, re-applying the newTarget-derived prototype the constructor
+            // had already installed — retired every prototype-keyed inline-cache entry in the
+            // process. That is item 2-0's defect surviving on the class path: 2-0 removed the
+            // second write in JSFunction's OrdinaryCreateFromConstructor and JSClass removed
+            // its own at construction, but the later re-apply still read as a mutation.
+            var chainChanged = !ReferenceEquals(previousChain, prototypeChain);
+            if (chainChanged && (previousChain != null || isUsedAsPrototype))
                 NotifyPrototypeChainMutation();
 
             PropertyChanged?.Invoke(this, (uint.MaxValue, uint.MaxValue, null));
