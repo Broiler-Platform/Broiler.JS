@@ -62,6 +62,12 @@ public static class Program
             return;
         }
 
+        if (args.Length == 1 && args[0] == "--deferred-cell-cost")
+        {
+            DeferredCellCostMetrics.Write();
+            return;
+        }
+
         if (args.Length == 2 && args[0] == "--property-map-distribution")
         {
             PropertyMapDistributionMetrics.Write(args[1]);

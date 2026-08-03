@@ -109,6 +109,7 @@ public partial class JSObject
     private void MaterializeNamedProperties()
     {
         status |= ObjectStatus.NamedPropertiesMaterialized;
+        PropertyOptimizationDiagnostics.RecordNamedPropertiesMaterialized();
 
         var shape = objectShape;
         if (!SupportsShapeTracking || shape.IsDictionary)

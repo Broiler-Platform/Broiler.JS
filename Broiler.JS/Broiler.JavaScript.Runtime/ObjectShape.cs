@@ -95,7 +95,8 @@ public readonly record struct PropertyOptimizationSnapshot(
     long PrototypeVersion,
     long StoreCacheHits,
     long StoreCacheMisses,
-    long StoreMegamorphicSites);
+    long StoreMegamorphicSites,
+    long NamedPropertiesMaterializations);
 
 /// <summary>
 /// Counters for validating shape/cache invalidation behavior.
@@ -119,6 +120,7 @@ public static class PropertyOptimizationDiagnostics
     private static long storeCacheHits;
     private static long storeCacheMisses;
     private static long storeMegamorphicSites;
+    private static long namedPropertiesMaterializations;
 
     /// <summary>
     /// Whether the counters below are recorded. Defaults to <c>false</c>; while it is
@@ -158,6 +160,11 @@ public static class PropertyOptimizationDiagnostics
     internal static void RecordStoreCacheHit() { if (Enabled) Interlocked.Increment(ref storeCacheHits); }
     internal static void RecordStoreCacheMiss() { if (Enabled) Interlocked.Increment(ref storeCacheMisses); }
     internal static void RecordStoreMegamorphic() { if (Enabled) Interlocked.Increment(ref storeMegamorphicSites); }
+    // Item 2-9's losing-side hypothesis is that a deferred cell forces the trie to be
+    // rebuilt; counting the rebuilds is what turns that from a reading of the code into a
+    // measurement, and a strict function is the control that says whether the Annex B
+    // cells are what causes them.
+    internal static void RecordNamedPropertiesMaterialized() { if (Enabled) Interlocked.Increment(ref namedPropertiesMaterializations); }
 
     public static PropertyOptimizationSnapshot Snapshot() => new(
         Interlocked.Read(ref shapeTransitions),
@@ -170,7 +177,8 @@ public static class PropertyOptimizationDiagnostics
         JSObject.PrototypeMutationVersion,
         Interlocked.Read(ref storeCacheHits),
         Interlocked.Read(ref storeCacheMisses),
-        Interlocked.Read(ref storeMegamorphicSites));
+        Interlocked.Read(ref storeMegamorphicSites),
+        Interlocked.Read(ref namedPropertiesMaterializations));
 
     public static void Reset()
     {
@@ -184,6 +192,7 @@ public static class PropertyOptimizationDiagnostics
         Interlocked.Exchange(ref storeCacheHits, 0);
         Interlocked.Exchange(ref storeCacheMisses, 0);
         Interlocked.Exchange(ref storeMegamorphicSites, 0);
+        Interlocked.Exchange(ref namedPropertiesMaterializations, 0);
     }
 }
 
