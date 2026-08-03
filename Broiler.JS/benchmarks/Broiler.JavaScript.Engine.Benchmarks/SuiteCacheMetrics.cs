@@ -175,6 +175,17 @@ internal static class SuiteCacheMetrics
             readHitRatePercent = reads == 0 ? 0 : Math.Round(100.0 * snapshot.CacheHits / reads, 2),
             readMegamorphicSites = snapshot.MegamorphicSites,
 
+            // Why the misses missed. Cold is one per site per key and is a floor, not a defect;
+            // shape is the interesting one — the site had room and the receiver's shape was not
+            // among the entries it held.
+            missCold = snapshot.MissCold,
+            missShape = snapshot.MissShape,
+            missNotDescribable = snapshot.MissNotDescribable,
+            missEntryAlreadyPresent = snapshot.MissEntryAlreadyPresent,
+            missKeyMismatch = snapshot.MissKeyMismatch,
+            missMegamorphic = snapshot.MissMegamorphic,
+            missNonObject = snapshot.MissNonObject,
+
             storeCacheHits = snapshot.StoreCacheHits,
             storeCacheMisses = snapshot.StoreCacheMisses,
             storeHitRatePercent = writes == 0 ? 0 : Math.Round(100.0 * snapshot.StoreCacheHits / writes, 2),

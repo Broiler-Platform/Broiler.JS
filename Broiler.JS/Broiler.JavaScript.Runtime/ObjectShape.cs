@@ -96,7 +96,14 @@ public readonly record struct PropertyOptimizationSnapshot(
     long StoreCacheHits,
     long StoreCacheMisses,
     long StoreMegamorphicSites,
-    long NamedPropertiesMaterializations);
+    long NamedPropertiesMaterializations,
+    long MissMegamorphic,
+    long MissNonObject,
+    long MissCold,
+    long MissKeyMismatch,
+    long MissShape,
+    long MissNotDescribable,
+    long MissEntryAlreadyPresent);
 
 /// <summary>
 /// Counters for validating shape/cache invalidation behavior.
@@ -121,6 +128,13 @@ public static class PropertyOptimizationDiagnostics
     private static long storeCacheMisses;
     private static long storeMegamorphicSites;
     private static long namedPropertiesMaterializations;
+    private static long missMegamorphic;
+    private static long missNonObject;
+    private static long missCold;
+    private static long missKeyMismatch;
+    private static long missShape;
+    private static long missNotDescribable;
+    private static long missEntryAlreadyPresent;
 
     /// <summary>
     /// Whether the counters below are recorded. Defaults to <c>false</c>; while it is
@@ -165,6 +179,21 @@ public static class PropertyOptimizationDiagnostics
     // measurement, and a strict function is the control that says whether the Annex B
     // cells are what causes them.
     internal static void RecordNamedPropertiesMaterialized() { if (Enabled) Interlocked.Increment(ref namedPropertiesMaterializations); }
+    // Why a read MISSED, which the bare miss counter cannot say. DeltaBlue sits at a 69%
+    // read hit rate against Richards's 99.97%, with megamorphism, dictionary mode and
+    // prototype invalidation all ruled out, so the remaining question is which of the
+    // lookup's own exits it takes. Recorded only while Enabled, like every counter here.
+    internal static void RecordMissMegamorphic() { if (Enabled) Interlocked.Increment(ref missMegamorphic); }
+    internal static void RecordMissNonObject() { if (Enabled) Interlocked.Increment(ref missNonObject); }
+    internal static void RecordMissCold() { if (Enabled) Interlocked.Increment(ref missCold); }
+    internal static void RecordMissKeyMismatch() { if (Enabled) Interlocked.Increment(ref missKeyMismatch); }
+    internal static void RecordMissShape() { if (Enabled) Interlocked.Increment(ref missShape); }
+    // A miss whose entry could NOT be built: TryDescribe found the key neither in an own
+    // shape slot nor on a shape-tracked prototype, so nothing is cached and the same read
+    // misses again forever. That is the difference between a site warming up and a site that
+    // never can.
+    internal static void RecordMissNotDescribable() { if (Enabled) Interlocked.Increment(ref missNotDescribable); }
+    internal static void RecordMissEntryAlreadyPresent() { if (Enabled) Interlocked.Increment(ref missEntryAlreadyPresent); }
 
     public static PropertyOptimizationSnapshot Snapshot() => new(
         Interlocked.Read(ref shapeTransitions),
@@ -178,7 +207,14 @@ public static class PropertyOptimizationDiagnostics
         Interlocked.Read(ref storeCacheHits),
         Interlocked.Read(ref storeCacheMisses),
         Interlocked.Read(ref storeMegamorphicSites),
-        Interlocked.Read(ref namedPropertiesMaterializations));
+        Interlocked.Read(ref namedPropertiesMaterializations),
+        Interlocked.Read(ref missMegamorphic),
+        Interlocked.Read(ref missNonObject),
+        Interlocked.Read(ref missCold),
+        Interlocked.Read(ref missKeyMismatch),
+        Interlocked.Read(ref missShape),
+        Interlocked.Read(ref missNotDescribable),
+        Interlocked.Read(ref missEntryAlreadyPresent));
 
     public static void Reset()
     {
@@ -193,6 +229,13 @@ public static class PropertyOptimizationDiagnostics
         Interlocked.Exchange(ref storeCacheMisses, 0);
         Interlocked.Exchange(ref storeMegamorphicSites, 0);
         Interlocked.Exchange(ref namedPropertiesMaterializations, 0);
+        Interlocked.Exchange(ref missMegamorphic, 0);
+        Interlocked.Exchange(ref missNonObject, 0);
+        Interlocked.Exchange(ref missCold, 0);
+        Interlocked.Exchange(ref missKeyMismatch, 0);
+        Interlocked.Exchange(ref missShape, 0);
+        Interlocked.Exchange(ref missNotDescribable, 0);
+        Interlocked.Exchange(ref missEntryAlreadyPresent, 0);
     }
 }
 
@@ -539,6 +582,19 @@ public static class PropertyInlineCacheSite
             }
 
             PropertyOptimizationDiagnostics.RecordCacheMiss();
+            if (PropertyOptimizationDiagnostics.Enabled)
+            {
+                if (megamorphic)
+                    PropertyOptimizationDiagnostics.RecordMissMegamorphic();
+                else if (target is not JSObject)
+                    PropertyOptimizationDiagnostics.RecordMissNonObject();
+                else if (key == 0)
+                    PropertyOptimizationDiagnostics.RecordMissCold();
+                else if (key != property.Key)
+                    PropertyOptimizationDiagnostics.RecordMissKeyMismatch();
+                else
+                    PropertyOptimizationDiagnostics.RecordMissShape();
+            }
             var result = target[property];
 
             if (megamorphic || target is not JSObject ordinary || property.Metadata.IsPrivateName)
@@ -558,11 +614,27 @@ public static class PropertyInlineCacheSite
             }
 
             if (!TryDescribe(ordinary, in property, out var entryToAdd))
+            {
+                PropertyOptimizationDiagnostics.RecordMissNotDescribable();
                 return result;
+            }
 
             for (var i = 0; i < count; i++)
                 if (entries[i].ShapeId == entryToAdd.ShapeId && entries[i].Holder == entryToAdd.Holder)
+                {
+                    PropertyOptimizationDiagnostics.RecordMissEntryAlreadyPresent();
+
+                    // REFRESH, do not decline. ShapeId and Holder identify the entry, but
+                    // they are not what a hit checks: the prototype version, the receiver's
+                    // prototype identity, and the holder's shape and slot are all guards too,
+                    // and any of them can go stale while these two stay equal. Returning here
+                    // left the stale entry in place with no way back — the site could never
+                    // re-describe it, so it missed on this receiver for the rest of the
+                    // process. entryToAdd was just built from the live receiver, so it is by
+                    // construction the correct replacement.
+                    entries[i] = entryToAdd;
                     return result;
+                }
 
             if (count == MaxEntries)
             {
