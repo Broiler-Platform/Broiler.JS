@@ -97,6 +97,13 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     // functions, dynamic import, .then results, Promise.resolve/reject) must use this
     // genuine prototype even after the global `Promise` binding is reassigned.
     public JSObject IntrinsicPromisePrototype { get; private set; }
+    // %RegExp.prototype.exec% captured at realm init, before any user code can run.
+    // RegExp.prototype[@@replace] compares the receiver's resolved "exec" against this to
+    // decide whether a match result is observable at all: when it is the genuine builtin,
+    // nothing can see the per-match result object, so a global replace can stream instead
+    // of retaining one array per match. Identity against a pristine capture is the only
+    // sound form of that test — a value read later could already have been replaced.
+    public JSValue IntrinsicRegExpExec { get; private set; } = JSUndefined.Value;
     public event LogEventHandler Log;
     public event ErrorEventHandler Error;
     public event ConsoleEvent ConsoleEvent;
@@ -1615,6 +1622,14 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
             && promiseCtor.Prototype is JSObject promiseProto)
         {
             IntrinsicPromisePrototype = promiseProto;
+        }
+        // Capture %RegExp.prototype.exec% for the streaming guard described on the property.
+        if (this[KeyStrings.RegExp] is IJSFunction regExpCtor
+            && regExpCtor.Prototype is JSObject regExpProto)
+        {
+            var exec = regExpProto[KeyStrings.GetOrCreate("exec")];
+            if (exec.IsFunction)
+                IntrinsicRegExpExec = exec;
         }
         // globalThis is { writable, enumerable: false, configurable } per spec.
         FastAddValue(KeyStrings.globalThis, this, JSPropertyAttributes.ConfigurableValue);

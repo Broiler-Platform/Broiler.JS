@@ -196,6 +196,67 @@ internal static class RegexProfileMetrics
         return [.. rows];
     }
 
+    /// <summary>
+    /// A GLOBAL replace at a fixed subject length and a varying MATCH COUNT, per call.
+    /// </summary>
+    /// <remarks>
+    /// The scaling section above varies the subject and holds the match count at one, which is
+    /// the right discriminator for a cost that copies the subject. It is the wrong one for the
+    /// cost that is left: §22.2.6.11 collects every match in step 14 before reading any of their
+    /// properties in step 16, so what should drive the remaining bytes is the number of RESULTS
+    /// held live, not how long the subject is. Holding the subject fixed and varying only the
+    /// match count is what separates those two — a flat row would mean the retained list is not
+    /// the cost, and a linear one gives its slope in bytes per match directly.
+    /// </remarks>
+    private static Row[] MeasureMatchScaling()
+    {
+        var rows = new List<Row>();
+        foreach (var matches in new[] { 500, 2_500, 5_000 })
+        {
+            rows.Add(MeasureGlobalReplaceCalls(matches));
+        }
+
+        return [.. rows];
+    }
+
+    /// <summary>Subject length held fixed across every match count in <see cref="MeasureMatchScaling"/>.</summary>
+    private const int GlobalReplaceSubjectLength = 40_000;
+
+    private static Row MeasureGlobalReplaceCalls(int matches)
+    {
+        using var context = BenchmarkContext.Create();
+        const int Calls = 20;
+
+        // One 'x' every (40 000 / matches) characters, so the subject is the same length for
+        // every row and only the number of matches changes.
+        var stride = GlobalReplaceSubjectLength / matches;
+        var source = $$"""
+            (function (n) {
+                var subject = ('x' + 'a'.repeat({{stride - 1}})).repeat({{matches}});
+                var re = /x/g;
+                var sink = 0;
+                for (var i = 0; i < n; i++) { sink = subject.replace(re, 'y').length; }
+                return sink;
+            })
+            """;
+
+        var function = context.Eval(source, $"global-replace-{matches}.js");
+        var arguments = new Arguments(JSUndefined.Value, new JSNumber(Calls));
+        function.InvokeFunction(in arguments);
+
+        GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+
+        var before = GC.GetAllocatedBytesForCurrentThread();
+        function.InvokeFunction(in arguments);
+        var bytes = GC.GetAllocatedBytesForCurrentThread() - before;
+
+        return new Row($"global-replace@{matches}-matches", "bytes per CALL, subject fixed at "
+            + GlobalReplaceSubjectLength + " chars, match count in the name",
+            0, 0, null, Math.Round((double)bytes / Calls, 1), 0, bytes);
+    }
+
     private static Row MeasureCalls(string name, int length, string setup, string body)
     {
         using var context = BenchmarkContext.Create();
@@ -253,6 +314,11 @@ internal static class RegexProfileMetrics
                     + "its patterns once.",
                 netEngine = netRows,
                 scaling = MeasureScaling(),
+                matchScalingNote = "A GLOBAL replace with the SUBJECT held fixed and only the "
+                    + "match count varying, which is the discriminator the section above cannot "
+                    + "be: it says whether what is left scales with the retained result list or "
+                    + "with the subject.",
+                matchScaling = MeasureMatchScaling(),
             },
             new JsonSerializerOptions { WriteIndented = true }));
     }

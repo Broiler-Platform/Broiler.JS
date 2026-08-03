@@ -133,7 +133,24 @@ public partial class JSRegExp
     public JSValue Exec(in Arguments a)
     {
         var input = a.Get1().StringValue;
+        var matched = ExecMatch(input);
+        return matched == null ? NullValue : BuildExecResult(input, matched);
+    }
 
+    /// <summary>
+    /// Everything <see cref="Exec"/> does EXCEPT building the result object: the `lastIndex`
+    /// read and write, the match itself, the sticky re-check, and the Annex B legacy statics.
+    /// Returns null for no match.
+    /// </summary>
+    /// <remarks>
+    /// Split out so <c>RegExp.prototype[@@replace]</c>'s streaming path can drive matching
+    /// without materializing one result array per match, while remaining incapable of drifting
+    /// from <see cref="Exec"/> — both call this, so `lastIndex` progression, sticky handling,
+    /// the Broiler/.NET engine routing and the statics update are the same code, not the same
+    /// intention written twice.
+    /// </remarks>
+    internal RegexMatchData ExecMatch(string input)
+    {
         // RegExpBuiltinExec reads `lastIndex` exactly once (via ToLength), even when
         // the regex is neither global nor sticky; the value is only consulted in the
         // global/sticky case (steps 8 and 12).
@@ -148,7 +165,7 @@ public partial class JSRegExp
         if (useLastIndex && observableLastIndex > input.Length)
         {
             SetObservableLastIndex(0);
-            return NullValue;
+            return null;
         }
 
         // Perform the regular expression matching. RunMatch dispatches to the
@@ -168,7 +185,7 @@ public partial class JSRegExp
             if (globalSearch || sticky)
                 SetObservableLastIndex(0);
 
-            return NullValue;
+            return null;
         }
 
         if (globalSearch || sticky)
@@ -196,6 +213,15 @@ public partial class JSRegExp
 
             legacyContext.LegacyRegExp.Update(input, match.Index, match.Index + match.Length, capturedValues);
         }
+
+        return match;
+    }
+
+    /// <summary>Builds the §22.2.7.2 result array for a match produced by <see cref="ExecMatch"/>.</summary>
+    private JSValue BuildExecResult(string input, RegexMatchData match)
+    {
+        var groups = match.Groups;
+        var c = captureMap != null ? captureMap.Count + 1 : groups.Length;
 
         var result = CreateArray((uint)c);
         var resultObject = (JSObject)result;
