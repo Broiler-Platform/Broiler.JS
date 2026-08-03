@@ -58,9 +58,18 @@ namespace Broiler.JavaScript.Engine.Benchmarks;
 /// </remarks>
 internal static class CompileProfileMetrics
 {
-    public static void Write(string octaneDirectory, int repetitions)
+    public static void Write(string octaneDirectory, int repetitions, string only = null)
     {
         var corpora = LoadCorpora(octaneDirectory);
+        // One corpus per process is how a comparison of two *compilers* is run, because the
+        // corpora share a heap: item 1-1's deferred generation keeps an un-generated lambda's
+        // tree alive, so a corpus measured after Mandreel's 5 MB pays for it in collection time
+        // that has nothing to do with its own compile. Measured together, the last two corpora
+        // read 1.6x and 2.6x SLOWER under deferral while the first three read 0.56-0.65x
+        // faster, and the ratios were bimodal — the tell that it was ordering, not the change.
+        if (!string.IsNullOrEmpty(only))
+            corpora = corpora.Where(c => c.Name == only).ToList();
+
         var rows = new List<object>(corpora.Count);
 
         foreach (var corpus in corpora)

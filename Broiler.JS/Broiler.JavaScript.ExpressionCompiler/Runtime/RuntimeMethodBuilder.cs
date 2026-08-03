@@ -19,13 +19,28 @@ public class RuntimeMethodBuilder(
 
     public BExpression Relay(BExpression @this, IFastEnumerable<BExpression> closures, BLambdaExpression innerLambda)
     {
+        // Stays eager, and must: it decides which variables this lambda captures and boxes
+        // them, and the boxes are referenced by the creation-site expression built below. Only
+        // what comes after it — generating the machine code — is deferrable (item 1-1).
         LambdaRewriter.Rewrite(innerLambda);
+
+        var repository = BExpression.Field(@this, Closures.repositoryField);
+        var id = methods is MethodRepository runtimeMethods
+            && DeferredMethod.CanDefer(innerLambda, captureDiagnostics)
+            ? runtimeMethods.RegisterDeferred(
+                new DeferredMethod(innerLambda, this, enableJavaScriptTailCalls),
+                innerLambda.Type)
+            : RegisterGenerated(innerLambda);
+
+        return BExpression.Call(repository, create, closures == null ? BExpression.Null : BExpression.NewArray(typeof(Box), closures), BExpression.Constant(id));
+    }
+
+    private ulong RegisterGenerated(BLambdaExpression innerLambda)
+    {
         var (method, il, exp) = innerLambda.CompileToBoundDynamicMethod(
             methodBuilder: this,
             captureDiagnostics: captureDiagnostics,
             enableJavaScriptTailCalls: enableJavaScriptTailCalls);
-        var repository = BExpression.Field(@this, Closures.repositoryField);
-        var id = methods.RegisterNew(method, il, exp, innerLambda.Type);
-        return BExpression.Call(repository, create, closures == null ? BExpression.Null : BExpression.NewArray(typeof(Box), closures), BExpression.Constant(id));
+        return methods.RegisterNew(method, il, exp, innerLambda.Type);
     }
 }

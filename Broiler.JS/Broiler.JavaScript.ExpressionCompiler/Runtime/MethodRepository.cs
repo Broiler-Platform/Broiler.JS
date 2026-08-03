@@ -20,11 +20,17 @@ public class MethodRepository : IMethodRepository
         public string IL;
         public string Exp;
         public Type Type;
+
+        /// <summary>
+        /// Set instead of <see cref="Method"/> when this site's IL generation was deferred to
+        /// first invocation (roadmap item 1-1). Exactly one of the two is ever non-null.
+        /// </summary>
+        internal DeferredMethod Deferred;
     }
 
     public ulong RegisterNew(DynamicMethod d, string il, string exp, Type type)
     {
-        var x = GCHandle.Alloc(new RuntimeMethod { 
+        var x = GCHandle.Alloc(new RuntimeMethod {
             Method = d,
             IL = il,
             Exp = exp,
@@ -33,9 +39,32 @@ public class MethodRepository : IMethodRepository
         return (ulong)(IntPtr)x;
     }
 
+    /// <summary>
+    /// Registers a site whose IL has not been generated, returning the same kind of handle
+    /// <see cref="RegisterNew"/> does so the creation site emitted for it is unchanged.
+    /// </summary>
+    internal ulong RegisterDeferred(DeferredMethod deferred, Type type)
+    {
+        var x = GCHandle.Alloc(new RuntimeMethod
+        {
+            Deferred = deferred,
+            IL = string.Empty,
+            Exp = string.Empty,
+            Type = type
+        });
+        return (ulong)(IntPtr)x;
+    }
+
     public object Create(Box[] boxes, ulong id)
     {
         var rm = GCHandle.FromIntPtr((IntPtr)id).Target as RuntimeMethod;
+        // A deferred site hands back a thunk over this instance's boxes; the boxes are captured
+        // here, at closure creation, exactly as they are for a generated one. What is postponed
+        // is the machine code, which is shared by every instance of the site and belongs to
+        // none of them.
+        if (rm.Deferred != null)
+            return rm.Deferred.CreateThunk(this, boxes);
+
         var c = new Closures(this, boxes, rm.IL, rm.Exp);
         return rm.Method.CreateDelegate(rm.Type, c);
     }

@@ -88,7 +88,10 @@ public static class Program
 
         if (args.Length >= 2 && args[0] == "--compile-profile")
         {
-            CompileProfileMetrics.Write(args[1], args.Length >= 3 ? int.Parse(args[2]) : 3);
+            CompileProfileMetrics.Write(
+                args[1],
+                args.Length >= 3 ? int.Parse(args[2]) : 3,
+                args.Length >= 4 ? args[3] : null);
             return;
         }
 
