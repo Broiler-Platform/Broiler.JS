@@ -31,8 +31,21 @@ namespace Broiler.JavaScript.Compiler;
 /// requires no reference to the name to appear textually before it. Together those mean the
 /// initializer has always run before any read: a preceding top-level statement either
 /// completes — and none of them mentions the name — or leaves the function, in which case
-/// nothing after it runs. A declaration nested inside an <c>if</c> or a loop is not eligible,
-/// because control can reach code after it without having executed it.
+/// nothing after it runs.
+/// </para>
+/// <para>
+/// A <c>var</c> declared inside a nested block gets the <em>same</em> argument, scoped to that
+/// block instead of to the function body (docs/performance-roadmap.md item 3-3): the
+/// declaration must be a direct statement of the block, and every reference to the name must
+/// be inside that block and textually after it. Then any read is preceded by the initializer
+/// for exactly the reason above — one level down. The containment half is what the function
+/// body gets for free and a nested block does not: control can reach code *after* the block
+/// without having entered it, so a reference outside the block could observe the binding
+/// still <c>undefined</c>. This is a structural sufficient condition, not a full
+/// definite-assignment dataflow; it admits the common case (a temporary declared and consumed
+/// inside a loop body) and refuses everything it cannot see, including
+/// <c>if (c) var x = 1;</c> with no block of its own, whose enclosing block does not dominate
+/// it.
 /// </para>
 /// </remarks>
 internal sealed class NumericLocalAnalysis
@@ -48,6 +61,35 @@ internal sealed class NumericLocalAnalysis
     /// specialized into a store that would silently succeed.
     /// </summary>
     private readonly HashSet<string> constants = new(System.StringComparer.Ordinal);
+
+    /// <summary>
+    /// For a <c>var</c> declared inside a nested block, the block whose entry proves its
+    /// initializer has run. Every reference to such a name must be inside that block; one
+    /// outside it could observe the binding still <c>undefined</c>, which a raw double hoisted
+    /// to 0 cannot represent. Names declared at function-body top level are absent here — the
+    /// function body dominates everything, so they carry no containment condition.
+    /// </summary>
+    private readonly Dictionary<string, AstBlock> confinedTo = new(System.StringComparer.Ordinal);
+
+    /// <summary>
+    /// Names whose definite assignment rests on a declaration the function body dominates, and
+    /// the initializer expressions of those declarations.
+    /// </summary>
+    /// <remarks>
+    /// Such a name becomes readable at ITS declaration, not at any other declaration of the
+    /// same name. Without that distinction a non-dominating declaration textually earlier —
+    /// <c>if (c) { var t = 1; } s = t; { var t = 2; }</c> — marks the name as declared and
+    /// masks the read between the two, which can observe <c>undefined</c>. The initializer
+    /// node is the identity because a declarator is a compact struct with no reference of its
+    /// own; every offered declarator has a non-null one.
+    /// </remarks>
+    private readonly HashSet<string> dominatingNames = new(System.StringComparer.Ordinal);
+    private readonly HashSet<AstExpression> dominatingInits =
+        new(System.Collections.Generic.ReferenceEqualityComparer.Instance);
+
+    private bool HasDominatingDeclaration(string name) => dominatingNames.Contains(name);
+
+    private bool IsDominatingInit(AstExpression init) => init != null && dominatingInits.Contains(init);
 
     /// <summary>
     /// The names of the function's <c>var</c> locals that can be held as a CLR
@@ -74,42 +116,140 @@ internal sealed class NumericLocalAnalysis
         if (function.Body is not AstBlock body)
             return;
 
-        var collector = new Collector(this);
+        var collector = new Collector(this, body);
+        OfferDominatedDeclarations(body, isFunctionBody: true);
+        collector.Visit(body);
+    }
 
-        // Only the function body's own statement list can declare an eligible name. The
-        // walk below still descends into everything, but for USES and WRITES — a
-        // declaration found deeper is recorded as a rejection instead.
-        var statements = body.Statements.GetFastEnumerator();
+    /// <summary>
+    /// Offers the declarations in <paramref name="block"/>'s own statement list that the
+    /// function body dominates, and recurses through any plain nested block, which it also
+    /// dominates.
+    /// </summary>
+    /// <remarks>
+    /// An unlabelled <c>{ … }</c> that is a direct statement of a dominated block is entered
+    /// whenever control reaches it, and the only ways out of it are <c>return</c> and
+    /// <c>throw</c>, both of which leave the function — so nothing after it runs either. That
+    /// makes it transparent to the dominance argument, and a <c>var</c> inside one needs no
+    /// containment condition. A block reached through anything else — a label (which
+    /// <c>break</c> can jump out of, skipping the declaration), an <c>if</c>, a loop, a
+    /// <c>try</c>, a <c>switch</c> — is not transparent, and its declarations are handled by
+    /// the confined path instead.
+    /// </remarks>
+    private void OfferDominatedDeclarations(AstBlock block, bool isFunctionBody)
+    {
+        var statements = block.Statements.GetFastEnumerator();
         while (statements.MoveNext(out var statement))
         {
             switch (statement)
             {
-                // `let` and `const` are offered on the same terms as `var`. The temporal dead
-                // zone is discharged by the dominance argument above rather than removed: a
-                // name with any reference before its declaration is rejected, so the TDZ throw
-                // is unreachable on exactly the names that qualify. Const-ness needs one
-                // addition, in VisitBinaryExpression/VisitUnaryExpression below — a write to a
-                // const is a TypeError raised by the binding's cell, so a const written
-                // anywhere is rejected outright rather than specialized into a silent store.
+                // `let` and `const` are offered on the same terms as `var`, but only in the
+                // function body itself: a lexical binding in a nested block is a fresh binding
+                // per entry, which a single raw double cannot represent. The temporal dead
+                // zone is discharged by the dominance argument rather than removed — a name
+                // with any reference before its declaration is rejected, so the TDZ throw is
+                // unreachable on exactly the names that qualify. Const-ness needs one addition,
+                // in VisitBinaryExpression/VisitUnaryExpression below — a write to a const is a
+                // TypeError raised by the binding's cell, so a const written anywhere is
+                // rejected outright rather than specialized into a silent store.
                 case AstVariableDeclaration
                 {
-                    Kind: FastVariableKind.Var or FastVariableKind.Let or FastVariableKind.Const
-                } declaration:
-                    if (declaration.Kind == FastVariableKind.Const)
-                        NoteConstDeclaration(declaration);
+                    Kind: FastVariableKind.Let or FastVariableKind.Const
+                } lexical when isFunctionBody:
+                    if (lexical.Kind == FastVariableKind.Const)
+                        NoteConstDeclaration(lexical);
+                    OfferDeclaration(lexical);
+                    break;
+
+                case AstVariableDeclaration { Kind: FastVariableKind.Var } declaration:
                     OfferDeclaration(declaration);
                     break;
 
                 // A `for` head declares into the loop's own scope for let/const (a fresh
-                // binding per iteration, which a single raw double cannot represent), so only
-                // `var` is offered from there.
+                // binding per iteration), so only `var` is offered from there.
                 case AstForStatement { Init: AstVariableDeclaration { Kind: FastVariableKind.Var } forInit }:
                     OfferDeclaration(forInit);
                     break;
+
+                // Transparent: see the remarks above.
+                case AstBlock nested:
+                    OfferDominatedDeclarations(nested, isFunctionBody: false);
+                    break;
             }
         }
+    }
 
-        collector.Visit(body);
+    /// <summary>
+    /// Offers the <c>var</c> declarations that are DIRECT statements of <paramref name="block"/>,
+    /// each confined to it. Called on entry to every block but the function body's own, so the
+    /// offer is in place before the walk reaches any reference.
+    /// </summary>
+    /// <remarks>
+    /// Only a direct statement qualifies. A declaration one level further down — in an
+    /// <c>if</c> with no braces of its own, a <c>case</c>, a nested loop header — is not
+    /// dominated by the block's entry, so it is passed over here and stays ineligible.
+    /// </remarks>
+    private void OfferBlockConfinedDeclarations(AstBlock block)
+    {
+        var statements = block.Statements.GetFastEnumerator();
+        while (statements.MoveNext(out var statement))
+        {
+            switch (statement)
+            {
+                // `let`/`const` are absent on purpose: a lexical binding declared in a nested
+                // block is a fresh binding per entry, which a single raw double cannot
+                // represent. Only the function body's own lexical declarations are offered
+                // (in Collect), where there is exactly one entry per call.
+                case AstVariableDeclaration { Kind: FastVariableKind.Var } declaration:
+                    OfferConfinedDeclaration(declaration, block);
+                    break;
+
+                // The init of a `for` that is itself a direct statement of the block: it runs
+                // whenever the loop is reached, so the block's entry dominates it too.
+                case AstForStatement { Init: AstVariableDeclaration { Kind: FastVariableKind.Var } forInit }:
+                    OfferConfinedDeclaration(forInit, block);
+                    break;
+            }
+        }
+    }
+
+    private void OfferConfinedDeclaration(AstVariableDeclaration declaration, AstBlock block)
+    {
+        var declarators = declaration.Declarators.GetFastEnumerator();
+        while (declarators.MoveNext(out var declarator))
+        {
+            if (declarator.Identifier is not AstIdentifier identifier)
+            {
+                RejectEveryNameIn(declarator.Identifier);
+                continue;
+            }
+
+            var name = identifier.Name.Value;
+            if (declarator.Init == null)
+            {
+                // `var x;` leaves x as undefined, which a double cannot represent.
+                rejected.Add(name);
+                continue;
+            }
+
+            // Already confined to some other block: two nested declarations, and neither
+            // block dominates the other. Give up rather than reason about which one wins.
+            if (confinedTo.ContainsKey(name))
+            {
+                rejected.Add(name);
+                continue;
+            }
+
+            // Already offered at function-body top level, which dominates this block. Leave it
+            // unconfined — Collector.VisitVariableDeclarator still records this declaration's
+            // value, so a non-numeric one here still drops the name.
+            if (candidates.Contains(name))
+                continue;
+
+            candidates.Add(name);
+            confinedTo[name] = block;
+            assignments.Add((name, declarator.Init));
+        }
     }
 
     private void NoteConstDeclaration(AstVariableDeclaration declaration)
@@ -154,11 +294,19 @@ internal sealed class NumericLocalAnalysis
                 continue;
             }
 
-            // Declared twice: the second declaration may sit somewhere the first does not
-            // dominate, so give up rather than reason about which one wins.
-            if (!candidates.Add(name))
-                rejected.Add(name);
-
+            // Declared twice at DOMINATING positions — `var s = 0; { var s = 5; }`, or two
+            // body-level declarations. That is not the hazard the old wording feared ("the
+            // second may sit somewhere the first does not dominate"): every declaration offered
+            // here dominates everything after itself, and `declared` opens at whichever comes
+            // first in source order, so a read before all of them is still rejected and a read
+            // after `declared` opens is after some initializer has run. The collector records
+            // each declaration's value, so a non-numeric one still drops the name. Rejecting
+            // here instead would undo the re-declaration case
+            // `NumericLocalWriteVisibilityTests.ANumericReDeclarationKeepsTheLocalSpecialized`
+            // pins — which is what caught it.
+            candidates.Add(name);
+            dominatingNames.Add(name);
+            dominatingInits.Add(declarator.Init);
             assignments.Add((name, declarator.Init));
         }
     }
@@ -361,13 +509,59 @@ internal sealed class NumericLocalAnalysis
         // initializer runs, so a read that can precede it disqualifies the name.
         private readonly HashSet<string> declared = new(System.StringComparer.Ordinal);
 
-        public Collector(NumericLocalAnalysis owner) => this.owner = owner;
+        // The function's own body block, which is offered in Collect and needs no containment
+        // condition — everything in the function is inside it.
+        private readonly AstBlock functionBody;
+
+        // The blocks currently open, outermost first. A confined name is only legal while its
+        // owning block is on this stack.
+        private readonly List<AstBlock> openBlocks = [];
+
+        public Collector(NumericLocalAnalysis owner, AstBlock functionBody)
+        {
+            this.owner = owner;
+            this.functionBody = functionBody;
+        }
+
+        protected override AstNode VisitBlock(AstBlock block)
+        {
+            openBlocks.Add(block);
+            // Offer this block's own direct `var` statements BEFORE descending, so the offer is
+            // in place by the time the walk reaches a reference to one of them.
+            if (!ReferenceEquals(block, functionBody))
+                owner.OfferBlockConfinedDeclarations(block);
+
+            var result = base.VisitBlock(block);
+            openBlocks.RemoveAt(openBlocks.Count - 1);
+            return result;
+        }
+
+        /// <summary>
+        /// Rejects <paramref name="name"/> if it is confined to a block this reference is not
+        /// inside. Applied to reads and writes alike: a plain write from outside would be
+        /// harmless on its own, but distinguishing it costs more than it saves and being wrong
+        /// about it is a miscompilation.
+        /// </summary>
+        private void NoteReference(string name)
+        {
+            if (!owner.confinedTo.TryGetValue(name, out var owningBlock))
+                return;
+
+            for (var i = openBlocks.Count - 1; i >= 0; i--)
+            {
+                if (ReferenceEquals(openBlocks[i], owningBlock))
+                    return;
+            }
+
+            owner.rejected.Add(name);
+        }
 
         protected override AstNode VisitIdentifier(AstIdentifier identifier)
         {
             var name = identifier.Name.Value;
             if (!declared.Contains(name))
                 owner.rejected.Add(name);
+            NoteReference(name);
             return identifier;
         }
 
@@ -396,7 +590,20 @@ internal sealed class NumericLocalAnalysis
                 if (declarator.Init != null)
                     owner.assignments.Add((identifier.Name.Value, declarator.Init));
 
-                declared.Add(identifier.Name.Value);
+                // A second declaration of a confined name from outside its block — one the
+                // offer path never saw, because it is not a direct statement of any block
+                // (`if (c) var t = 2;`). It re-binds the name where the confining block does
+                // not dominate, so the name loses its raw double.
+                NoteReference(identifier.Name.Value);
+
+                // A name that rests on a dominating declaration becomes readable at THAT
+                // declaration only. Marking it declared at some other one would mask a read
+                // sitting between the two, which can still observe `undefined`.
+                if (!owner.HasDominatingDeclaration(identifier.Name.Value)
+                    || owner.IsDominatingInit(declarator.Init))
+                {
+                    declared.Add(identifier.Name.Value);
+                }
             }
             else
             {
@@ -419,6 +626,9 @@ internal sealed class NumericLocalAnalysis
                     // and is covered by IsNumericBinary.
                     owner.assignments.Add((target.Name.Value, binary));
                     owner.NoteWrite(target.Name.Value);
+                    // The target identifier is deliberately not visited, so the containment
+                    // check has to be made here rather than in VisitIdentifier.
+                    NoteReference(target.Name.Value);
                     if (binary.Operator != TokenTypes.Assign && !declared.Contains(target.Name.Value))
                         owner.rejected.Add(target.Name.Value);
                     Visit(binary.Right);
@@ -454,6 +664,7 @@ internal sealed class NumericLocalAnalysis
                 // `x++` stores ToNumeric(x), which is numeric exactly when x already is.
                 owner.assignments.Add((target.Name.Value, unary));
                 owner.NoteWrite(target.Name.Value);
+                NoteReference(target.Name.Value);
                 if (!declared.Contains(target.Name.Value))
                     owner.rejected.Add(target.Name.Value);
                 return unary;
