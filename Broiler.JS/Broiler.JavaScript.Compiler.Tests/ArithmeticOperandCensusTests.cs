@@ -19,8 +19,14 @@ public sealed class ArithmeticOperandCensusTests
 {
     private readonly record struct Census(long Generic, long BothNumbers, long RawDouble);
 
-    private static Census Count(string source)
+    private static Census Count(string source, bool speculate = false)
     {
+        // Speculation OFF by default here, and that is the point of the parameter rather than an
+        // oversight: this census counts what reaches the GENERIC path, and item 3-1's guarded tree
+        // exists to take shapes off it. Measuring the population with the thing that consumes the
+        // population switched on would report the remainder, not the population.
+        var previousSpeculation = NumericSpeculation.Enabled;
+        NumericSpeculation.Enabled = speculate;
         var previous = ArithmeticOperandDiagnostics.Enabled;
         using var context = new JSContext();
         // Built after the reset would still be counted, so the context is created first: creating
@@ -38,6 +44,7 @@ public sealed class ArithmeticOperandCensusTests
         finally
         {
             ArithmeticOperandDiagnostics.Enabled = previous;
+            NumericSpeculation.Enabled = previousSpeculation;
         }
     }
 
@@ -55,6 +62,19 @@ public sealed class ArithmeticOperandCensusTests
 
         Assert.True(census.Generic >= 200, $"expected at least 200 generic operations, got {census.Generic}");
         Assert.Equal(census.Generic, census.BothNumbers);
+
+        // And the same shape with item 3-1's guarded tree ON reaches the generic path not at all.
+        // This is the census and the specialization checking each other: the first measured a
+        // population of 73.8 M invocations whose operands are always Numbers, the second was built
+        // to consume it, and one assertion says the second reaches what the first counted.
+        var specialized = Count("""
+            var a = [1.5, 2.5];
+            var s = 0;
+            for (var i = 0; i < 100; i++) s = s + a[0] * a[1];
+            s;
+            """, speculate: true);
+
+        Assert.Equal(0, specialized.Generic);
     }
 
     [Fact]

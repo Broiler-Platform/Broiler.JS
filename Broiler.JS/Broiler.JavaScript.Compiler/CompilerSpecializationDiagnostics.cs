@@ -13,7 +13,9 @@ public readonly record struct CompilerSpecializationSnapshot(
     long NumericCandidatesRejected,
     long NumericCandidatesDropped,
     long NumericCandidatesSurviving,
-    long[] NumericDropCauses);
+    long[] NumericDropCauses,
+    long SpeculativeNumericTrees,
+    long SpeculativeNumericGuards);
 
 /// <summary>
 /// Why a hoisted name did not become a raw <c>double</c> local, in the order the gate asks
@@ -109,6 +111,8 @@ public static class CompilerSpecializationDiagnostics
     private static long numericCandidatesDropped;
     private static long numericCandidatesSurviving;
     private static readonly long[] numericDropCauses = new long[9];
+    private static long speculativeNumericTrees;
+    private static long speculativeNumericGuards;
 
     internal static void RecordScalarLocal() => Interlocked.Increment(ref scalarLocals);
 
@@ -153,6 +157,17 @@ public static class CompilerSpecializationDiagnostics
     internal static void RecordNumericDropCause(NumericDropCause cause)
         => Interlocked.Increment(ref numericDropCauses[(int)cause]);
 
+    /// <summary>
+    /// One arithmetic tree emitted in item 3-1's guarded form, and how many of its leaves the
+    /// guard has to test — the second number is what says whether the sites reached are the
+    /// two-leaf kind or long chains.
+    /// </summary>
+    internal static void RecordSpeculativeNumericTree(int guardedLeaves)
+    {
+        Interlocked.Increment(ref speculativeNumericTrees);
+        Interlocked.Add(ref speculativeNumericGuards, guardedLeaves);
+    }
+
     /// <summary>Records why one hoisted name did or did not reach the numeric tier.</summary>
     internal static void RecordNumericLocalDecision(NumericLocalRejection reason)
     {
@@ -172,7 +187,9 @@ public static class CompilerSpecializationDiagnostics
             Interlocked.Read(ref numericCandidatesRejected),
             Interlocked.Read(ref numericCandidatesDropped),
             Interlocked.Read(ref numericCandidatesSurviving),
-            ReadDropCauses());
+            ReadDropCauses(),
+            Interlocked.Read(ref speculativeNumericTrees),
+            Interlocked.Read(ref speculativeNumericGuards));
 
     private static long[] ReadDropCauses()
     {
@@ -195,6 +212,8 @@ public static class CompilerSpecializationDiagnostics
         Interlocked.Exchange(ref scalarLocals, 0);
         Interlocked.Exchange(ref numericLocals, 0);
         Interlocked.Exchange(ref mixedNumericComparisons, 0);
+        Interlocked.Exchange(ref speculativeNumericTrees, 0);
+        Interlocked.Exchange(ref speculativeNumericGuards, 0);
         Interlocked.Exchange(ref boxedNumericComparisons, 0);
         Interlocked.Exchange(ref hoistedNames, 0);
         Interlocked.Exchange(ref numericCandidatesOffered, 0);

@@ -32,6 +32,13 @@ partial class FastCompiler
                 ToJSValueExpression(Visit(binaryExpression.Right)));
         }
 
+        // Item 3-1's guarded numeric tree, asked BEFORE either operand is visited: the decision is
+        // made on the syntax, and a speculative compile whose result was discarded would leak what
+        // the visit allocated. It answers null unless the whole tree is arithmetic over operands
+        // the compiler cannot prove numeric — which is 99.25% of the arithmetic this engine runs.
+        if (TryCreateSpeculativeNumericTree(binaryExpression) is { } speculative)
+            return speculative;
+
         var (isLeftString, isLeftNumber, left) = ToNativeExpression(binaryExpression.Left);
         var (isRightString, isRightNumber, right) = ToNativeExpression(binaryExpression.Right);
 

@@ -458,12 +458,18 @@ internal static class SpecializingTierMetrics
         // here exactly, whether or not it is visible in the time.
         // Item 3-8: how much of this run's allocation is number boxing at all — the ceiling on
         // every raw-double item in phase 3, counted rather than inferred from a per-shape figure.
+        //
+        // Gated on `counters` for the same reason the inline-cache ones above are, and here it is
+        // not merely noise: the arithmetic census increments once per generic invocation, and the
+        // two arms of item 3-1's switch differ by 20.5 M invocations. Leaving it on for a timing
+        // pass would charge the slower arm for 20.5 M interlocked increments it does not otherwise
+        // pay — a bias pointing the same way as the result, which is the worst kind.
         Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Reset();
-        Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Enabled = true;
+        Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Enabled = counters;
         // Item 3-1's shared half: of the operators that mint those boxes, how many are handed two
         // values that ARE Numbers — i.e. how many a native form guarded on that test could reach.
         ArithmeticOperandDiagnostics.Reset();
-        ArithmeticOperandDiagnostics.Enabled = true;
+        ArithmeticOperandDiagnostics.Enabled = counters;
         var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
         stopwatch.Start();
         try
@@ -484,6 +490,7 @@ internal static class SpecializingTierMetrics
         var arithmeticRawDouble = ArithmeticOperandDiagnostics.RawDoubleOperand;
         var arithmeticRawDoubleOtherNumber = ArithmeticOperandDiagnostics.RawDoubleOtherNumber;
         ArithmeticOperandDiagnostics.Enabled = false;
+
         var compiler = Broiler.JavaScript.Compiler.CompilerSpecializationDiagnostics.Snapshot();
         var tiering = context.FunctionTiering.Snapshot();
         var speculation = Speculation.Snapshot();
@@ -507,6 +514,13 @@ internal static class SpecializingTierMetrics
             numericLocals = compiler.NumericLocals,
             mixedComparisons = compiler.MixedNumericComparisons,
             boxedComparisons = compiler.BoxedNumericComparisons,
+
+            // Item 3-1's guarded numeric tree: how many arithmetic trees took the speculative
+            // form, and how many leaf type tests that cost in total. Read against
+            // arithmeticGeneric below — the trees are compile-time sites, the invocations are
+            // run-time, and it is the second that has to collapse for this to have worked.
+            speculativeNumericTrees = compiler.SpeculativeNumericTrees,
+            speculativeNumericGuards = compiler.SpeculativeNumericGuards,
 
             // Item 3-6: the waterfall. Every hoisted name attributed to the first conjunct of
             // the numeric-local gate it fails, which is what says WHICH condition costs the
