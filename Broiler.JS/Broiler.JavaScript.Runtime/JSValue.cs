@@ -512,6 +512,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual JSValue Subtract(JSValue value)
     {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordGeneric(IsNumber, value.IsNumber);
         var self = ToNumericPrimitive(this);
         value = ToNumericPrimitive(value);
         return !ReferenceEquals(self, this) ? self.Subtract(value) : CreateNumber(DoubleValue - value.DoubleValue);
@@ -519,6 +521,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual JSValue Multiply(JSValue value)
     {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordGeneric(IsNumber, value.IsNumber);
         var self = ToNumericPrimitive(this);
         value = ToNumericPrimitive(value);
         return !ReferenceEquals(self, this) ? self.Multiply(value) : CreateNumber(DoubleValue * value.DoubleValue);
@@ -527,6 +531,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// <summary>
     public virtual JSValue Divide(JSValue value)
     {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordGeneric(IsNumber, value.IsNumber);
         var self = ToNumericPrimitive(this);
         value = ToNumericPrimitive(value);
         return !ReferenceEquals(self, this) ? self.Divide(value) : CreateNumber(DoubleValue / value.DoubleValue);
@@ -534,6 +540,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual JSValue BitwiseAnd(JSValue value)
     {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordGeneric(IsNumber, value.IsNumber);
         var self = ToNumericPrimitive(this);
         value = ToNumericPrimitive(value);
         return !ReferenceEquals(self, this) ? self.BitwiseAnd(value) : CreateNumber(IntValue & value.IntValue);
@@ -541,6 +549,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual JSValue BitwiseOr(JSValue value)
     {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordGeneric(IsNumber, value.IsNumber);
         var self = ToNumericPrimitive(this);
         value = ToNumericPrimitive(value);
         return !ReferenceEquals(self, this) ? self.BitwiseOr(value) : CreateNumber(IntValue | value.IntValue);
@@ -561,6 +571,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual JSValue LeftShift(JSValue value)
     {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordGeneric(IsNumber, value.IsNumber);
         var self = ToNumericPrimitive(this);
         value = ToNumericPrimitive(value);
         return !ReferenceEquals(self, this) ? self.LeftShift(value) : CreateNumber(IntValue << value.IntValue);
@@ -568,6 +580,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual JSValue RightShift(JSValue value)
     {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordGeneric(IsNumber, value.IsNumber);
         var self = ToNumericPrimitive(this);
         value = ToNumericPrimitive(value);
         return !ReferenceEquals(self, this) ? self.RightShift(value) : CreateNumber(IntValue >> (value.IntValue & 0x1F));
@@ -575,6 +589,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual JSValue UnsignedRightShift(JSValue value)
     {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordGeneric(IsNumber, value.IsNumber);
         var self = ToNumericPrimitive(this);
         value = ToNumericPrimitive(value);
         return !ReferenceEquals(self, this) ? self.UnsignedRightShift(value) : CreateNumber(UIntValue >> value.IntValue);
@@ -582,6 +598,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual JSValue Modulo(JSValue value)
     {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordGeneric(IsNumber, value.IsNumber);
         var self = ToNumericPrimitive(this);
         value = ToNumericPrimitive(value);
         return !ReferenceEquals(self, this) ? self.Modulo(value) : CreateNumber(DoubleValue % value.DoubleValue);
@@ -610,6 +628,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// <returns></returns>
     public virtual JSValue AddValue(JSValue value)
     {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordGeneric(IsNumber, value.IsNumber);
         var self = this is JSObject selfObject ? selfObject.ToDefaultPrimitive() : ValueOf();
         value = value is JSObject valueObject ? valueObject.ToDefaultPrimitive() : value;
 
@@ -638,6 +658,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// <returns></returns>
     public virtual JSValue AddValue(double value)
     {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordRawDoubleOperand(IsNumber);
         // §13.15 ApplyStringOrNumericBinaryOperator: the left operand is first
         // coerced with ToPrimitive (default hint). Going through ToDefaultPrimitive
         // — rather than the raw CLR ValueOf() — lets a wrapper observe an overridden
@@ -1540,6 +1562,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual JSValue Power(JSValue a)
     {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordGeneric(IsNumber, a.IsNumber);
         var self = ToNumericPrimitive(this);
         a = ToNumericPrimitive(a);
         if (!ReferenceEquals(self, this))

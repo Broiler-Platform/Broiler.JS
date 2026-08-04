@@ -146,12 +146,24 @@ public partial class JSString : JSPrimitive
     // loop builds a rope instead of copying the accumulated string every iteration. The
     // emptiness tests use Length rather than the characters, so they no longer force a
     // pending concatenation to materialize just to find out whether it is empty.
-    public override JSValue AddValue(double value) => Concat(NumberToECMAString(value));
+    public override JSValue AddValue(double value)
+    {
+        if (Runtime.ArithmeticOperandDiagnostics.Enabled)
+            Runtime.ArithmeticOperandDiagnostics.RecordRawDoubleOperand(false);
+
+        return Concat(NumberToECMAString(value));
+    }
 
     public override JSValue AddValue(string value) => Concat(value);
 
     public override JSValue AddValue(JSValue value)
     {
+        // Counted here as well as on the base, because a String receiver never reaches it
+        // (item 3-1). A String operand can never be both-Numbers, so leaving this out would
+        // shrink the census's denominator and overstate the share a native form could reach.
+        if (Runtime.ArithmeticOperandDiagnostics.Enabled)
+            Runtime.ArithmeticOperandDiagnostics.RecordGeneric(false, value.IsNumber);
+
         if (value is JSString vString)
         {
             if (Length == 0)

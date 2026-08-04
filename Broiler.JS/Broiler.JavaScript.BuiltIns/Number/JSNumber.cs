@@ -387,6 +387,12 @@ public sealed partial class JSNumber : JSPrimitive
 
     public override JSValue AddValue(JSValue value)
     {
+        // Counted here as well as on the base, because a Number receiver never reaches the base
+        // (item 3-1). The receiver is a Number by construction, so the question the census asks
+        // reduces to whether the other operand is one.
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordGeneric(true, value.IsNumber);
+
         value = value is JSObject obj ? obj.ToDefaultPrimitive() : value;
 
         if (value is JSPrimitiveObject po)
@@ -401,7 +407,13 @@ public sealed partial class JSNumber : JSPrimitive
         return Create(this.value + value.DoubleValue);
     }
 
-    public override JSValue AddValue(double value) => Create(this.value + value);
+    public override JSValue AddValue(double value)
+    {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordRawDoubleOperand(true);
+
+        return Create(this.value + value);
+    }
 
     public override JSValue AddValue(string value) => new JSString(ToECMAString(this.value) + value);
 

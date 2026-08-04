@@ -234,11 +234,7 @@ internal static class SpecializingTierMetrics
                 // control loop's locals are raw doubles (item 3-3). So this says how much of a
                 // call's cost is the value representation rather than the prologue — which is a
                 // question about phase 3, and one no timing arm can answer on its own.
-                // Item 3-8: how much of this run's allocation is number boxing at all — the ceiling on
-        // every raw-double item in phase 3, counted rather than inferred from a per-shape figure.
-        Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Reset();
-        Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Enabled = true;
-        var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
+                var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
                 var stopwatch = Stopwatch.StartNew();
                 var answer = context.Eval($"hot({iterations});", "run.js").ToString();
                 stopwatch.Stop();
@@ -464,6 +460,10 @@ internal static class SpecializingTierMetrics
         // every raw-double item in phase 3, counted rather than inferred from a per-shape figure.
         Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Reset();
         Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Enabled = true;
+        // Item 3-1's shared half: of the operators that mint those boxes, how many are handed two
+        // values that ARE Numbers — i.e. how many a native form guarded on that test could reach.
+        ArithmeticOperandDiagnostics.Reset();
+        ArithmeticOperandDiagnostics.Enabled = true;
         var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
         stopwatch.Start();
         try
@@ -479,6 +479,11 @@ internal static class SpecializingTierMetrics
         var allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
         var boxing = Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Snapshot();
         Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Enabled = false;
+        var arithmeticGeneric = ArithmeticOperandDiagnostics.Generic;
+        var arithmeticBothNumbers = ArithmeticOperandDiagnostics.BothNumbers;
+        var arithmeticRawDouble = ArithmeticOperandDiagnostics.RawDoubleOperand;
+        var arithmeticRawDoubleOtherNumber = ArithmeticOperandDiagnostics.RawDoubleOtherNumber;
+        ArithmeticOperandDiagnostics.Enabled = false;
         var compiler = Broiler.JavaScript.Compiler.CompilerSpecializationDiagnostics.Snapshot();
         var tiering = context.FunctionTiering.Snapshot();
         var speculation = Speculation.Snapshot();
@@ -526,6 +531,17 @@ internal static class SpecializingTierMetrics
             boxesAllocatedTotal = boxing.Allocations,
             boxesAllocatedDirect = boxing.DirectAllocations,
             boxingLiteralRequests = boxing.LiteralRequests,
+
+            // Item 3-1's shared half, counted on the far side of the boundary: not what the
+            // compiler could prove, but what the operators were actually handed. arithmeticGeneric
+            // is every invocation of a two-JSValue arithmetic or bitwise operator;
+            // arithmeticBothNumbers is the subset a native form guarded on "both are Numbers"
+            // could answer. arithmeticRawDouble is the shape item 3-5 specialized for < and > and
+            // no arithmetic operator has — one side already an unboxed double, the other a JSValue.
+            arithmeticGeneric,
+            arithmeticBothNumbers,
+            arithmeticRawDouble,
+            arithmeticRawDoubleOtherNumber,
 
             candidates = tiering.Candidates,
             invocations = tiering.Invocations,
