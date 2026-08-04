@@ -156,10 +156,14 @@ public sealed partial class JSNumber : JSPrimitive
             if (index + CacheMinimum == value && (index != ZeroIndex || !IsNegativeZero(value)))
             {
                 var table = smallNumbers ??= new JSNumber[CacheSize];
+                if (NumberBoxingDiagnostics.Enabled)
+                    NumberBoxingDiagnostics.RecordCached();
                 return table[index] ??= new JSNumber(value);
             }
         }
 
+        if (NumberBoxingDiagnostics.Enabled)
+            NumberBoxingDiagnostics.RecordAllocated();
         return new JSNumber(value);
     }
 

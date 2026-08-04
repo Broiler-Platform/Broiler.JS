@@ -147,6 +147,60 @@ internal static class LocalAllocationMetrics
                 + "so reaching the loop without running the initializer is what has to be ruled "
                 + "out"),
 
+        // ── item 3-8: the same value, not PROVABLY numeric ────────────────────────────────
+        //
+        // Three spellings of top-level-var differing only in where the value came from — a
+        // property read, a call, a parameter — which are the three causes that account for 79%
+        // of every candidate the analysis's fixed point drops. The value is hoisted out of the
+        // loop in each, so the loop body is identical to top-level-var's and the delta is the
+        // cost of the local not being PROVABLE rather than the cost of the read itself. That
+        // makes each row the ceiling on what a perfect runtime guard could win on that shape,
+        // measured before building one.
+
+        new(
+            "property-sourced-var",
+            "provability",
+            $$"""
+            (function (arg) {
+                var o = { x: 3.5 };
+                var v = o.x;
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = s + v * 2; }
+                return s;
+            })
+            """,
+            "the largest cause, 46.7% of dropped candidates: the value arrives from a named "
+                + "property read. Identical loop to top-level-var, so the delta is the whole "
+                + "prize a guard on this shape could take"),
+
+        new(
+            "call-sourced-var",
+            "provability",
+            $$"""
+            (function (arg) {
+                function get() { return 3.5; }
+                var v = get();
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = s + v * 2; }
+                return s;
+            })
+            """,
+            "the second cause, 29.7%: the value is a call's return. Same loop again"),
+
+        new(
+            "parameter-sourced-var",
+            "provability",
+            $$"""
+            (function (v0) {
+                var v = v0;
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = s + v * 2; }
+                return s;
+            })
+            """,
+            "the cause item 3-3 named as phase 4's job and the count puts at 2.5%: the value is "
+                + "copied out of a parameter"),
+
         // ── item 3-7: the same value, captured ────────────────────────────────────────────
         //
         // Four spellings of top-level-var with a closure added, differing only in HOW the

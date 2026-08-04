@@ -234,7 +234,11 @@ internal static class SpecializingTierMetrics
                 // control loop's locals are raw doubles (item 3-3). So this says how much of a
                 // call's cost is the value representation rather than the prologue — which is a
                 // question about phase 3, and one no timing arm can answer on its own.
-                var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
+                // Item 3-8: how much of this run's allocation is number boxing at all — the ceiling on
+        // every raw-double item in phase 3, counted rather than inferred from a per-shape figure.
+        Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Reset();
+        Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Enabled = true;
+        var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
                 var stopwatch = Stopwatch.StartNew();
                 var answer = context.Eval($"hot({iterations});", "run.js").ToString();
                 stopwatch.Stop();
@@ -268,6 +272,15 @@ internal static class SpecializingTierMetrics
     }
 
     /// <summary>Names the waterfall's buckets so the JSON is readable without the enum.</summary>
+    private static object DescribeDropCauses(long[] counts)
+    {
+        var names = System.Enum.GetNames(typeof(Broiler.JavaScript.Compiler.NumericDropCause));
+        var described = new Dictionary<string, long>(names.Length);
+        for (var i = 0; i < names.Length && i < counts.Length; i++)
+            described[names[i]] = counts[i];
+        return described;
+    }
+
     private static object DescribeRejections(long[] counts)
     {
         var names = System.Enum.GetNames(typeof(Broiler.JavaScript.Compiler.NumericLocalRejection));
@@ -447,6 +460,10 @@ internal static class SpecializingTierMetrics
         // Allocation over the whole driver run. Deterministic where the wall clock is not, and
         // the direct corpus-level reading of item 3-5: a box per loop iteration removed shows up
         // here exactly, whether or not it is visible in the time.
+        // Item 3-8: how much of this run's allocation is number boxing at all — the ceiling on
+        // every raw-double item in phase 3, counted rather than inferred from a per-shape figure.
+        Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Reset();
+        Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Enabled = true;
         var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
         stopwatch.Start();
         try
@@ -460,6 +477,8 @@ internal static class SpecializingTierMetrics
 
         stopwatch.Stop();
         var allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
+        var boxing = Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Snapshot();
+        Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Enabled = false;
         var compiler = Broiler.JavaScript.Compiler.CompilerSpecializationDiagnostics.Snapshot();
         var tiering = context.FunctionTiering.Snapshot();
         var speculation = Speculation.Snapshot();
@@ -493,6 +512,17 @@ internal static class SpecializingTierMetrics
             numericCandidatesRejected = compiler.NumericCandidatesRejected,
             numericCandidatesDropped = compiler.NumericCandidatesDropped,
             numericCandidatesSurviving = compiler.NumericCandidatesSurviving,
+
+            // Item 3-8: what defeated the proof for each name the fixed point dropped. The
+            // premise it was specified from reads all 1 916 as one population wanting one
+            // runtime guard; these counts are what says whether that is true.
+            numericDropCauses = DescribeDropCauses(compiler.NumericDropCauses),
+
+            // The ceiling on all of phase 3: a raw double can only ever remove a box, so
+            // boxesAllocated x 24 B is every byte the whole family could take.
+            boxingRequests = boxing.Requests,
+            boxesCached = boxing.Cached,
+            boxesAllocated = boxing.Allocated,
 
             candidates = tiering.Candidates,
             invocations = tiering.Invocations,

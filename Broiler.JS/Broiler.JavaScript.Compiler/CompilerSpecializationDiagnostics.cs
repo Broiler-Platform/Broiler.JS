@@ -12,7 +12,8 @@ public readonly record struct CompilerSpecializationSnapshot(
     long NumericCandidatesOffered,
     long NumericCandidatesRejected,
     long NumericCandidatesDropped,
-    long NumericCandidatesSurviving);
+    long NumericCandidatesSurviving,
+    long[] NumericDropCauses);
 
 /// <summary>
 /// Why a hoisted name did not become a raw <c>double</c> local, in the order the gate asks
@@ -52,6 +53,48 @@ public enum NumericLocalRejection
     NotProvenNumeric,
 }
 
+/// <summary>
+/// What defeated the numeric proof for one local the optimistic fixed point had to drop
+/// (docs/performance-roadmap.md item 3-8).
+/// </summary>
+/// <remarks>
+/// <para>
+/// Item 3-6 counted <em>how many</em> candidates the fixed point drops (1 916 of 2 521 offered on
+/// the Octane corpus) and read them all as one population — "dropped for want of a type, not for
+/// want of a rule" — which is the sentence item 3-8 was specified from. They are not one
+/// population, and the difference decides what a runtime guard would have to be: a value arriving
+/// from a property read wants a guard at the read, a parameter wants one at entry, and a name
+/// dropped because <em>another dropped candidate</em> appears in its right-hand side wants
+/// nothing at all — fixing its root fixes it for free.
+/// </para>
+/// <para>
+/// A drop is attributed to the FIRST leaf of the assigned expression that the analysis will not
+/// type, so `s = a.x * 2 + 1` is a property read rather than an operator. First drop wins: the
+/// fixed point can revisit a name, and the cause that mattered is the one that removed it.
+/// </para>
+/// </remarks>
+public enum NumericDropCause
+{
+    /// <summary>A name that was itself offered as a numeric candidate and has been dropped — a cascade.</summary>
+    DroppedCandidate,
+    /// <summary>A parameter of the enclosing function: the caller picks the type.</summary>
+    Parameter,
+    /// <summary>A named property read, `o.x`.</summary>
+    PropertyRead,
+    /// <summary>A computed element read, `a[i]`.</summary>
+    ElementRead,
+    /// <summary>The return value of a call or a `new`.</summary>
+    CallResult,
+    /// <summary>Any other name — a global, an outer-scope binding, a catch parameter, a function.</summary>
+    OtherName,
+    /// <summary>A literal that is not a number, or an object / array / function / template literal.</summary>
+    NonNumericLiteral,
+    /// <summary>An operator whose result the analysis does not type (`typeof`, `&amp;&amp;`, `instanceof`, …).</summary>
+    UnhandledOperator,
+    /// <summary>Anything else.</summary>
+    Other,
+}
+
 /// <summary>Compilation counters used by Phase 3 tests and benchmark reports.</summary>
 public static class CompilerSpecializationDiagnostics
 {
@@ -65,6 +108,7 @@ public static class CompilerSpecializationDiagnostics
     private static long numericCandidatesRejected;
     private static long numericCandidatesDropped;
     private static long numericCandidatesSurviving;
+    private static readonly long[] numericDropCauses = new long[9];
 
     internal static void RecordScalarLocal() => Interlocked.Increment(ref scalarLocals);
 
@@ -105,6 +149,10 @@ public static class CompilerSpecializationDiagnostics
     internal static void RecordNumericCandidatesSurviving(int count)
         => Interlocked.Add(ref numericCandidatesSurviving, count);
 
+    /// <summary>Records what defeated the numeric proof for one dropped candidate (item 3-8).</summary>
+    internal static void RecordNumericDropCause(NumericDropCause cause)
+        => Interlocked.Increment(ref numericDropCauses[(int)cause]);
+
     /// <summary>Records why one hoisted name did or did not reach the numeric tier.</summary>
     internal static void RecordNumericLocalDecision(NumericLocalRejection reason)
     {
@@ -123,7 +171,16 @@ public static class CompilerSpecializationDiagnostics
             Interlocked.Read(ref numericCandidatesOffered),
             Interlocked.Read(ref numericCandidatesRejected),
             Interlocked.Read(ref numericCandidatesDropped),
-            Interlocked.Read(ref numericCandidatesSurviving));
+            Interlocked.Read(ref numericCandidatesSurviving),
+            ReadDropCauses());
+
+    private static long[] ReadDropCauses()
+    {
+        var copy = new long[numericDropCauses.Length];
+        for (var i = 0; i < copy.Length; i++)
+            copy[i] = Interlocked.Read(ref numericDropCauses[i]);
+        return copy;
+    }
 
     private static long[] ReadRejections()
     {
@@ -146,5 +203,7 @@ public static class CompilerSpecializationDiagnostics
         Interlocked.Exchange(ref numericCandidatesSurviving, 0);
         for (var i = 0; i < numericRejections.Length; i++)
             Interlocked.Exchange(ref numericRejections[i], 0);
+        for (var i = 0; i < numericDropCauses.Length; i++)
+            Interlocked.Exchange(ref numericDropCauses[i], 0);
     }
 }

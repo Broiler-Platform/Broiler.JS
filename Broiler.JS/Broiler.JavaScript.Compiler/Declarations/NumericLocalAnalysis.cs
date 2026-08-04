@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
@@ -102,6 +102,19 @@ internal sealed class NumericLocalAnalysis
         return analysis.Resolve();
     }
 
+    /// <summary>
+    /// This function's parameter names, so a drop caused by reading one is attributed to the
+    /// parameter rather than lumped in with globals (docs/performance-roadmap.md item 3-8).
+    /// </summary>
+    private readonly HashSet<string> parameterNames = new(System.StringComparer.Ordinal);
+
+    /// <summary>
+    /// Every name that was ever offered as a numeric candidate. A drop caused by reading one of
+    /// these is a CASCADE — the name is dropped because its source was — and wants no guard of
+    /// its own, which is the distinction item 3-8's premise does not make.
+    /// </summary>
+    private readonly HashSet<string> everOffered = new(System.StringComparer.Ordinal);
+
     private void Collect(AstFunctionExpression function)
     {
         // A parameter shares its name with no eligible var: the value arrives as a JSValue
@@ -109,6 +122,7 @@ internal sealed class NumericLocalAnalysis
         var parameters = function.Params.GetFastEnumerator();
         while (parameters.MoveNext(out var parameter))
         {
+            CollectParameterNames(parameter.Identifier);
             RejectEveryNameIn(parameter.Identifier);
             RejectEveryNameIn(parameter.Init);
         }
@@ -322,6 +336,123 @@ internal sealed class NumericLocalAnalysis
             rejected.Add(name);
     }
 
+    private void CollectParameterNames(AstExpression identifier)
+    {
+        if (identifier == null)
+            return;
+
+        var names = new NameCollector();
+        names.Visit(identifier);
+        foreach (var name in names.Names)
+            parameterNames.Add(name);
+    }
+
+    /// <summary>
+    /// What defeated <paramref name="expression"/>'s numeric proof, attributed to the first leaf
+    /// the analysis will not type (docs/performance-roadmap.md item 3-8).
+    /// </summary>
+    /// <remarks>
+    /// Mirrors <see cref="IsNumeric"/> branch for branch — it descends exactly where that method
+    /// recurses and stops exactly where it returns false — so the two cannot disagree about which
+    /// sub-expression is responsible. For a binary or a conditional the LEFT/consequent side is
+    /// checked first, matching evaluation order, so `a.x + f()` is charged to the property read.
+    /// </remarks>
+    private NumericDropCause Classify(AstExpression expression)
+    {
+        switch (expression)
+        {
+            case null:
+                return NumericDropCause.Other;
+
+            case AstLiteral { TokenType: TokenTypes.Number }:
+                return NumericDropCause.Other;
+
+            case AstLiteral:
+                return NumericDropCause.NonNumericLiteral;
+
+            case AstIdentifier identifier:
+                var name = identifier.Name.Value;
+                return everOffered.Contains(name) ? NumericDropCause.DroppedCandidate
+                    : parameterNames.Contains(name) ? NumericDropCause.Parameter
+                    : NumericDropCause.OtherName;
+
+            case AstMemberExpression member:
+                return member.Computed ? NumericDropCause.ElementRead : NumericDropCause.PropertyRead;
+
+            case AstCallExpression:
+            case AstNewExpression:
+                return NumericDropCause.CallResult;
+
+            case AstObjectLiteral:
+            case AstArrayExpression:
+            case AstFunctionExpression:
+            case AstTemplateExpression:
+                return NumericDropCause.NonNumericLiteral;
+
+            case AstSequenceExpression sequence:
+                return Classify(Last(sequence));
+
+            case AstUnaryExpression unary
+                when unary.Operator is UnaryOperator.Negate or UnaryOperator.BitwiseNot
+                    or UnaryOperator.Increment or UnaryOperator.Decrement:
+                return Classify(unary.Argument);
+
+            case AstUnaryExpression:
+                return NumericDropCause.UnhandledOperator;
+
+            case AstBinaryExpression binary:
+                return ClassifyBinary(binary);
+
+            case AstConditionalExpression conditional:
+                return !IsNumeric(conditional.True)
+                    ? Classify(conditional.True)
+                    : Classify(conditional.False);
+
+            default:
+                return NumericDropCause.Other;
+        }
+    }
+
+    private NumericDropCause ClassifyBinary(AstBinaryExpression binary)
+    {
+        switch (binary.Operator)
+        {
+            // The operators IsNumericBinary types from both operands.
+            case TokenTypes.Plus:
+            case TokenTypes.Minus:
+            case TokenTypes.Multiply:
+            case TokenTypes.Divide:
+            case TokenTypes.Mod:
+            case TokenTypes.Power:
+            case TokenTypes.BitwiseAnd:
+            case TokenTypes.BitwiseOr:
+            case TokenTypes.Xor:
+            case TokenTypes.LeftShift:
+            case TokenTypes.RightShift:
+            case TokenTypes.UnsignedRightShift:
+            case TokenTypes.AssignAdd:
+            case TokenTypes.AssignSubtract:
+            case TokenTypes.AssignMultiply:
+            case TokenTypes.AssignDivide:
+            case TokenTypes.AssignMod:
+            case TokenTypes.AssignPower:
+            case TokenTypes.AssignBitwideAnd:
+            case TokenTypes.AssignBitwideOr:
+            case TokenTypes.AssignXor:
+            case TokenTypes.AssignLeftShift:
+            case TokenTypes.AssignRightShift:
+            case TokenTypes.AssignUnsignedRightShift:
+                return !IsNumeric(binary.Left) ? Classify(binary.Left) : Classify(binary.Right);
+
+            // A plain assignment's value is its right-hand side alone.
+            case TokenTypes.Assign:
+                return Classify(binary.Right);
+
+            default:
+                return NumericDropCause.UnhandledOperator;
+        }
+    }
+
     private IReadOnlySet<string> Resolve()
     {
         // Item 3-6 splits "not proven numeric" in two, because the halves call for opposite
@@ -348,6 +479,10 @@ internal sealed class NumericLocalAnalysis
         }
 
         var beforeFixedPoint = candidates.Count;
+        // Item 3-8 needs to tell a name dropped because a PROPERTY READ reached it from one
+        // dropped because another dropped candidate did. Snapshot the survivors of the rejection
+        // pass, so an identifier met during classification can be told apart from a global.
+        everOffered.UnionWith(candidates);
 
         // Optimistic fixed point: drop any candidate whose assigned value is not numeric
         // under the current assumption, and repeat, because dropping one can invalidate
@@ -364,6 +499,9 @@ internal sealed class NumericLocalAnalysis
                 if (!IsNumeric(value))
                 {
                     candidates.Remove(name);
+                    // Classified at the moment of the drop, because this is the assignment that
+                    // removed the name — a later sweep would find a different one.
+                    CompilerSpecializationDiagnostics.RecordNumericDropCause(Classify(value));
                     changed = true;
                 }
             }
@@ -583,7 +721,16 @@ internal sealed class NumericLocalAnalysis
             openBlocks.Add(block);
             // Offer this block's own direct `var` statements BEFORE descending, so the offer is
             // in place by the time the walk reaches a reference to one of them.
-            if (!ReferenceEquals(block, functionBody))
+            //
+            // Only while inside THIS function. The walk descends into nested functions on purpose
+            // — that is what lets a closure's `s = 'x'` drop an outer numeric `s` — but a block
+            // inside a nested function belongs to a different function's variable environment, and
+            // offering its `var`s here made every such name a candidate of the enclosing function
+            // as well as of its own. Harmless to the answer, since the enclosing function's
+            // hoisting scope never contains the name and so never reaches the hoist site with it,
+            // and pure inflation in the counts: a name three functions deep was offered, dropped
+            // and counted three times over (docs/performance-roadmap.md item 3-8).
+            if (functionDepth == 0 && !ReferenceEquals(block, functionBody))
                 owner.OfferBlockConfinedDeclarations(block);
 
             var result = base.VisitBlock(block);

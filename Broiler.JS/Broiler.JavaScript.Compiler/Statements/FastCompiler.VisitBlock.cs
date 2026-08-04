@@ -162,7 +162,8 @@ partial class FastCompiler
                 var capturedRejectsNumeric = isCaptured
                     && (!CapturedNumericLocals.Enabled
                         || scope.CapturedByHoistedFunctions.Contains(v.Value));
-                var useNumericLocal = canUseRawLocal
+                var useNumericLocal = NumericLocalSpecialization.Enabled
+                    && canUseRawLocal
                     && !capturedRejectsNumeric
                     && (!isLexical || isFunctionBodyBlock)
                     && scope.NumericLocals.Contains(v.Value);
