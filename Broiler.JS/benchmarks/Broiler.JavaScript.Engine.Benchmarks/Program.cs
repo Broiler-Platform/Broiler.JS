@@ -80,6 +80,14 @@ public static class Program
             return;
         }
 
+        if (args.Length >= 1 && args[0] == "--inlining-call-probe")
+        {
+            SpecializingTierMetrics.WriteCallProbe(
+                args.Length >= 2 ? int.Parse(args[1]) : 20_000_000,
+                args.Length >= 3 ? int.Parse(args[2]) : 6);
+            return;
+        }
+
         if (args.Length >= 1 && args[0] == "--specializing-read-probe")
         {
             SpecializingTierMetrics.WriteReadProbe(

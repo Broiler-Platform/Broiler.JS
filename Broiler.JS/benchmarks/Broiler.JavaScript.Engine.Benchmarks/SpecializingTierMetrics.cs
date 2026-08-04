@@ -116,6 +116,123 @@ internal static class SpecializingTierMetrics
             new JsonSerializerOptions { WriteIndented = true }));
     }
 
+    /// <summary>
+    /// What a call costs and what perfect inlining of it would save — item 4-4's premise, measured
+    /// in this engine rather than carried over from item 2-6's older probe.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Inlining removes the call's prologue and epilogue: the five <c>using</c> scopes, the
+    /// <c>Arguments</c> construction, the frame, the delegate dispatch, and the boxing of the
+    /// argument and the return — 2-6 established that the cost is there and <em>not</em> in
+    /// resolving the callee. The upper bound on what inlining can buy is therefore the difference
+    /// between calling a small callee and writing its body out by hand, with the callee's own work
+    /// held identical across the two.
+    /// </para>
+    /// <para>
+    /// The hand-inlined arm is a <em>control</em>, not a proposal: it is what a perfect inliner
+    /// would produce, so the gap is the whole prize before any of it is lost to guards, to callees
+    /// too large to inline, or to sites a tier-2 recompile never reaches.
+    /// </para>
+    /// </remarks>
+    internal static void WriteCallProbe(int iterations, int repetitions)
+    {
+        var shapes = new (string Name, string Source)[]
+        {
+            // A plain call to a one-expression global function.
+            ("plain-call",
+                "function callee(x) { return x + 1; }\n" +
+                "function hot(n) { var s = 0; for (var i = 0; i < n; i++) { s = s + callee(i); } return s; }"),
+            ("plain-inlined",
+                "function hot(n) { var s = 0; for (var i = 0; i < n; i++) { s = s + (i + 1); } return s; }"),
+
+            // A method on a prototype, which is the shape Richards and DeltaBlue are built from.
+            ("method-call",
+                "function Box(k) { this.k = k; }\nBox.prototype.add = function (x) { return x + this.k; };\n" +
+                "var box = new Box(1);\n" +
+                "function hot(n) { var s = 0; for (var i = 0; i < n; i++) { s = s + box.add(i); } return s; }"),
+            ("method-inlined",
+                "function Box(k) { this.k = k; }\nvar box = new Box(1);\n" +
+                "function hot(n) { var s = 0; for (var i = 0; i < n; i++) { s = s + (i + box.k); } return s; }"),
+
+            // The floor: the same loop with neither a call nor a property read.
+            ("no-call-control",
+                "function hot(n) { var s = 0; for (var i = 0; i < n; i++) { s = s + (i + 1); } return s; }"),
+
+            // A cached property read in the SAME loop and the same run set, so the read path and
+            // the call path can be compared against one control instead of across two probes.
+            // This is what turns "where does Octane's time go" from two separate upper bounds into
+            // one arithmetic statement.
+            ("property-read",
+                "var o = { x: 1 };\n" +
+                "function hot(n) { var s = 0; for (var i = 0; i < n; i++) { s = s + o.x; } return s; }"),
+
+            // Where inside the prologue the cost is. Item 2-6 ruled out the five `using` scopes
+            // (removing all of them moved a call loop by a single-digit percentage) and named
+            // `Arguments`, the frame, the dispatch and the boxing as the remainder — but did not
+            // separate them. Argument count is the one knob that moves `Arguments` and the
+            // per-argument boxing while leaving the frame, the scopes and the dispatch fixed, so
+            // the slope across these four IS the per-argument cost and the intercept is
+            // everything a zero-argument call still pays.
+            ("call-0-args",
+                "function callee() { return 1; }\n" +
+                "function hot(n) { var s = 0; for (var i = 0; i < n; i++) { s = s + callee(); } return s; }"),
+            ("call-1-arg",
+                "function callee(a) { return 1; }\n" +
+                "function hot(n) { var s = 0; for (var i = 0; i < n; i++) { s = s + callee(i); } return s; }"),
+            ("call-2-args",
+                "function callee(a, b) { return 1; }\n" +
+                "function hot(n) { var s = 0; for (var i = 0; i < n; i++) { s = s + callee(i, i); } return s; }"),
+            ("call-3-args",
+                "function callee(a, b, c) { return 1; }\n" +
+                "function hot(n) { var s = 0; for (var i = 0; i < n; i++) { s = s + callee(i, i, i); } return s; }"),
+        };
+
+        var rows = new List<object>();
+        for (var repetition = 0; repetition < repetitions; repetition++)
+        {
+            // Rotate the order so a drift in the machine does not land on one shape.
+            for (var offset = 0; offset < shapes.Length; offset++)
+            {
+                var shape = shapes[(offset + repetition) % shapes.Length];
+
+                TypeFeedback.Enabled = false;
+                PropertyOptimizationDiagnostics.Enabled = false;
+                CallPathDiagnostics.Enabled = false;
+
+                using var context = BenchmarkContext.Create();
+                context.Eval(shape.Source + "\nhot(1000); hot(1000); hot(1000);", "probe.js");
+
+                var stopwatch = Stopwatch.StartNew();
+                var answer = context.Eval($"hot({iterations});", "run.js").ToString();
+                stopwatch.Stop();
+
+                rows.Add(new
+                {
+                    shape = shape.Name,
+                    repetition,
+                    elapsedMs = stopwatch.Elapsed.TotalMilliseconds,
+                    nsPerIteration = stopwatch.Elapsed.TotalMilliseconds * 1_000_000 / iterations,
+                    answer,
+                });
+            }
+        }
+
+        Console.WriteLine(JsonSerializer.Serialize(
+            new
+            {
+                schema = "broiler.inlining-call-probe/1",
+                iterations,
+                note = "What a call costs and what perfect inlining would save. Each '-inlined' arm "
+                    + "writes the callee's body out by hand with its work held identical, so the "
+                    + "difference from the matching call arm is the entire prize inlining could "
+                    + "win — before guards, callee size limits, or the share of calls a tier-2 "
+                    + "recompile can reach.",
+                runs = rows,
+            },
+            new JsonSerializerOptions { WriteIndented = true }));
+    }
+
     private sealed record Suite(string Name, string[] Files);
 
     private static readonly Suite[] Suites =
@@ -249,6 +366,8 @@ internal static class SpecializingTierMetrics
         // on the very path being measured. Counts and wall clock therefore come from separate
         // passes, which is the only honest way to have both.
         PropertyOptimizationDiagnostics.Enabled = counters;
+        CallPathDiagnostics.Enabled = counters;
+        CallPathDiagnostics.Reset();
 
         using var context = new JavaScriptContextBuilder()
             .UseFunctionTiering(arm == Arm.None
@@ -294,6 +413,7 @@ internal static class SpecializingTierMetrics
         var tiering = context.FunctionTiering.Snapshot();
         var speculation = Speculation.Snapshot();
         var properties = PropertyOptimizationDiagnostics.Snapshot();
+        var callPath = CallPathDiagnostics.Snapshot();
         var split = outcome.Split('|', 2);
 
         return new
@@ -323,6 +443,13 @@ internal static class SpecializingTierMetrics
 
             cacheHits = properties.CacheHits,
             cacheMisses = properties.CacheMisses,
+
+            // Item 4-4's surface: every JavaScript call, and the share of them made FROM a
+            // promoted function — the only calls a tier-2 recompile could ever inline.
+            calls = callPath.Calls,
+            callbackCalls = callPath.CallbackCalls,
+            userCalls = callPath.UserCalls,
+            userCallsFromPromoted = callPath.UserCallsFromPromoted,
         };
     }
 }

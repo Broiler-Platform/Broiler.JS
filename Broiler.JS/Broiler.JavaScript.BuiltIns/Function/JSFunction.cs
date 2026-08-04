@@ -908,6 +908,17 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public override JSValue InvokeFunction(in Arguments a)
     {
         var previousExecutingFunction = JSEngine.ExecutingFunction;
+        // Item 4-4's denominator. Counted here rather than taken from item 4-1's call feedback,
+        // which is compile-time gated and so counts instrumented calls rather than calls; and the
+        // caller is already in hand, which is what makes "calls made FROM a promoted function" —
+        // the only surface inlining can address — answerable at all.
+        if (CallPathDiagnostics.Enabled)
+        {
+            CallPathDiagnostics.RecordCall(
+                IsOrdinaryUserFunction,
+                previousExecutingFunction is JSFunction caller && caller.tieringState?.IsPromoted == true);
+        }
+
         var current = this;
         var currentArguments = a;
         try
@@ -982,6 +993,13 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     /// </summary>
     internal JSValue InvokeCallback(in Arguments a)
     {
+        // Counted apart from InvokeFunction (item 4-4). The two are not the same operation — this
+        // one takes one `using` scope where that takes five, and skips the executing-function and
+        // legacy-caller bookkeeping entirely — so a total that merged them would price a call at
+        // an average of two paths that differ by most of their cost.
+        if (CallPathDiagnostics.Enabled)
+            CallPathDiagnostics.RecordCallbackCall();
+
         using var realmScope = EnterRealm();
         var invocationDelegate = SelectInvocationDelegate();
         return JSTailCall.Resolve((CoerceThisOnInvoke ? invocationDelegate(a.OverrideThis(CoerceNonStrictThis(a.This))) : invocationDelegate(in a)) ?? JSUndefined.Value);
