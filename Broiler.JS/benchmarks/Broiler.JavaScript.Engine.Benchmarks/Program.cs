@@ -80,6 +80,15 @@ public static class Program
             return;
         }
 
+        if (args.Length >= 1 && args[0] == "--call-prologue-probe")
+        {
+            CallPrologueMetrics.Poke(false);
+            CallPrologueMetrics.Write(
+                args.Length >= 2 ? long.Parse(args[1]) : 200_000_000,
+                args.Length >= 3 ? int.Parse(args[2]) : 6);
+            return;
+        }
+
         if (args.Length >= 1 && args[0] == "--inlining-call-probe")
         {
             SpecializingTierMetrics.WriteCallProbe(

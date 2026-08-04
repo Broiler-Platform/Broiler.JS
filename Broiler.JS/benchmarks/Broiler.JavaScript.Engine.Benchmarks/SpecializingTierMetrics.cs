@@ -159,6 +159,15 @@ internal static class SpecializingTierMetrics
             ("no-call-control",
                 "function hot(n) { var s = 0; for (var i = 0; i < n; i++) { s = s + (i + 1); } return s; }"),
 
+            // The same loop with the bound a LITERAL, so every local in it is provably numeric
+            // (item 3-3) and nothing in the body touches a JSValue. A parameter is the one
+            // category that cannot reach the numeric tier, so `i < n` in the control compares a
+            // raw double against a JSValue — and copying the parameter into a local does not
+            // help, because the local inherits its unknown type. This is what says whether the
+            // control's per-iteration allocation is the bound or the arithmetic itself.
+            ("no-call-literal-bound",
+                "function hot(n) { var s = 0; for (var i = 0; i < {ITER}; i++) { s = s + (i + 1); } return s; }"),
+
             // A cached property read in the SAME loop and the same run set, so the read path and
             // the call path can be compared against one control instead of across two probes.
             // This is what turns "where does Octane's time go" from two separate upper bounds into
@@ -186,6 +195,22 @@ internal static class SpecializingTierMetrics
             ("call-3-args",
                 "function callee(a, b, c) { return 1; }\n" +
                 "function hot(n) { var s = 0; for (var i = 0; i < n; i++) { s = s + callee(i, i, i); } return s; }"),
+
+            // WHICH prologue. A call to a NATIVE builtin takes the same JSFunction.InvokeFunction
+            // entry as a call to a JavaScript function — the same five `using` scopes, the same
+            // executing-function bookkeeping, the same dispatch — but its delegate is a C# method,
+            // so it pays none of the prologue a COMPILED JAVASCRIPT BODY emits for itself: the
+            // context capture and the CallStackItem frame push. The difference between these and
+            // the matching `call-N-args` shape is therefore the compiled-body half, and what is
+            // left is the InvokeFunction half. Item 4-5 has to know which half it is fixing, and
+            // this is the only split that needs no engine change to measure.
+            //
+            // Each native does a little work of its own, so the InvokeFunction half comes out
+            // slightly high and the compiled-body half slightly low. Stated rather than corrected.
+            ("native-call-1-arg",
+                "function hot(n) { var s = 0; for (var i = 0; i < n; i++) { s = s + Math.abs(i); } return s; }"),
+            ("native-call-2-args",
+                "function hot(n) { var s = 0; for (var i = 0; i < n; i++) { s = s + Math.max(i, 0); } return s; }"),
         };
 
         var rows = new List<object>();
@@ -201,11 +226,19 @@ internal static class SpecializingTierMetrics
                 CallPathDiagnostics.Enabled = false;
 
                 using var context = BenchmarkContext.Create();
-                context.Eval(shape.Source + "\nhot(1000); hot(1000); hot(1000);", "probe.js");
+                var source = shape.Source.Replace("{ITER}", iterations.ToString());
+                context.Eval(source + "\nhot(1000); hot(1000); hot(1000);", "probe.js");
 
+                // Bytes are deterministic where the wall clock is not, and a call boundary boxes:
+                // an argument goes in as a JSValue and a result comes back as one, while the
+                // control loop's locals are raw doubles (item 3-3). So this says how much of a
+                // call's cost is the value representation rather than the prologue — which is a
+                // question about phase 3, and one no timing arm can answer on its own.
+                var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
                 var stopwatch = Stopwatch.StartNew();
                 var answer = context.Eval($"hot({iterations});", "run.js").ToString();
                 stopwatch.Stop();
+                var allocated = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
 
                 rows.Add(new
                 {
@@ -213,6 +246,7 @@ internal static class SpecializingTierMetrics
                     repetition,
                     elapsedMs = stopwatch.Elapsed.TotalMilliseconds,
                     nsPerIteration = stopwatch.Elapsed.TotalMilliseconds * 1_000_000 / iterations,
+                    bytesPerIteration = (double)allocated / iterations,
                     answer,
                 });
             }

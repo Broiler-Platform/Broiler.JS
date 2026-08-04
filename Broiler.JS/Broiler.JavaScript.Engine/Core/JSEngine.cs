@@ -217,12 +217,27 @@ public static class JSEngine
     //
     // An AsyncLocal SET is expensive though — it boxes, copies the value map, and allocates a
     // fresh ExecutionContext — and InvokeFunction enters a scope around every single call, so
-    // a naive save/restore paid for two of those per JS call. Reads are cheap, so the scope
-    // below only writes on an actual strict/sloppy TRANSITION, which real code performs rarely
-    // (calls within one strictness level are the norm). See docs/performance-roadmap.md P0-2.
-    private static readonly AsyncLocal<bool> _strictMode = new();
+    // a naive save/restore paid for two of those per JS call. So the scope below only writes on
+    // an actual strict/sloppy TRANSITION, which real code performs rarely (calls within one
+    // strictness level are the norm). See docs/performance-roadmap.md P0-2.
+    //
+    // P0-2 also said "reads are cheap", and that half was asserted rather than measured. It is
+    // wrong (item 4-5): `--call-prologue-probe` prices an AsyncLocal<bool> read at **7.0 ns**
+    // against **0.3 ns** for a [ThreadStatic] bool — 24x — and this one is read on every single
+    // call, entered or not, because the scope has to save the previous value before it can decide
+    // whether anything changed.
+    //
+    // The fix is the pattern `Current` above already uses: the AsyncLocal stays as the mechanism
+    // that carries the value across a suspension, and a [ThreadStatic] MIRROR answers the reads.
+    // The change handler keeps them in step — it fires both on a direct set and on an execution
+    // context switch, which is exactly the two ways the value can move.
+    private static readonly AsyncLocal<bool> _strictMode =
+        new(static e => strictMode = e.CurrentValue);
 
-    internal static bool IsStrictMode => _strictMode.Value;
+    [ThreadStatic]
+    private static bool strictMode;
+
+    internal static bool IsStrictMode => strictMode;
 
     internal static StrictModeScope EnterStrictMode(bool enabled) => new(enabled);
 
@@ -249,7 +264,11 @@ public static class JSEngine
             // Dispose it is the saved one. Storing the boolean directly is therefore
             // behaviour-preserving, and it is what makes the no-transition case a no-op —
             // with a counter, strict-calls-strict still moved 1 -> 2 and had to write.
-            previous = _strictMode.Value;
+            // Read from the mirror, written through the AsyncLocal. The read is what happens on
+            // every call and the write only on a transition, so this is where item 4-5's saving
+            // is: the common case is now a ThreadStatic read and a compare, with no AsyncLocal
+            // touched at all.
+            previous = strictMode;
             changed = previous != enabled;
             if (changed)
                 _strictMode.Value = enabled;
