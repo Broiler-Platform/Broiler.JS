@@ -12,10 +12,35 @@ namespace Broiler.JavaScript.Compiler;
 /// Recognizes one deliberately narrow counted-reduction shape for the Phase 5
 /// speculative numeric tier. Any uncertainty leaves the ordinary compiler path intact.
 /// </summary>
+/// <remarks>
+/// This is the compile-time half of the <b>restart contract</b>
+/// (docs/performance-roadmap.md item 4-3a). A plan produced here is consumed by
+/// <see cref="NumericLoopPlan.Compile"/>, whose bailout is <em>restart</em> — re-enter the
+/// unoptimized function with the original arguments — and restart is only sound under three
+/// conditions. The third one is this class's to enforce; see <c>RejectsSuspendableBodies</c>
+/// below.
+/// </remarks>
 internal static class NumericLoopPlanner
 {
     public static NumericLoopPlan TryCreate(AstFunctionExpression function)
     {
+        // RESTART CONTRACT, condition 3: never speculate on a suspendable body.
+        //
+        // The bailout re-enters the function from the top. A generator or async body may
+        // already have yielded, so re-entering it would re-run every effect before the
+        // suspension point — and unlike the other two conditions, that is not something the
+        // guard placement can fix. It is a property of the function, so it is refused here.
+        //
+        // This was already true before 4-3a, but only INCIDENTALLY: the EnableTiering call in
+        // FastCompiler.CreateFunction sits inside the ordinary-function `else` branch, while
+        // generators and async functions take earlier branches. Nothing said so, and hoisting
+        // that call out of the branch — an ordinary-looking refactor — would have silently
+        // started tiering them, replacing a delegate that returns a generator object with one
+        // that returns a number. Stated and enforced at the decision point instead, so the
+        // property survives the branch structure changing.
+        if (function.Generator || function.Async)
+            return null;
+
         if (function.Body is not AstBlock body)
             return null;
 

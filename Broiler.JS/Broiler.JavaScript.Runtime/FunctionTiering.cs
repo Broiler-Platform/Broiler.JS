@@ -241,6 +241,43 @@ public sealed class NumericLoopPlan
     public double TermScale { get; }
     public double TermOffset { get; }
 
+    /// <summary>
+    /// Builds the specialized delegate, with <paramref name="baseline"/> as the bailout target.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>The restart contract</b> (docs/performance-roadmap.md item 4-3a). This bailout is
+    /// <em>restart</em>, not resume: a failed guard re-enters the unoptimized function from the
+    /// top with the original arguments. There is nothing to resume <em>into</em> — this engine
+    /// compiles to IL and a JavaScript local is a CLR local of that method, so V8's
+    /// reconstruct-an-interpreter-frame model has no counterpart here (4-3's design spike).
+    /// Restart is sound only under three conditions, and every one of them is a rule about the
+    /// code above rather than something the runtime can check for itself:
+    /// </para>
+    /// <list type="number">
+    /// <item><b>Every guard fires before any observable effect.</b> Restart re-runs the function
+    /// from the top, so anything the specialized path did first would happen twice. The three
+    /// guards below are placed accordingly — argument count, argument type, and an unrecognized
+    /// comparison — and the specialized body between them touches nothing but its own locals.
+    /// A future plan that writes to a property, calls out, or throws before a guard breaks this
+    /// and must use an in-method branch (4-3b) instead of restart.</item>
+    /// <item><b>The bailout leaves no frame behind.</b> Satisfied by construction here: this
+    /// delegate never pushes a <c>CallFrameStack</c> slot — the push lives inside the compiled
+    /// baseline body — so on the bailout path <paramref name="baseline"/> pushes exactly once,
+    /// as it would have without tiering. There is no frame transition, which is what keeps
+    /// clear of <c>RestoreDepth</c> deliberately refusing to grow back into an abandoned slot.
+    /// A future plan that pushes its own frame must pop it before restarting.</item>
+    /// <item><b>The body is not suspendable.</b> A generator or async body may already have
+    /// yielded, so re-entering it re-runs the effects before the suspension point. Enforced at
+    /// the decision point, in <c>NumericLoopPlanner.TryCreate</c>, rather than left to the
+    /// shape of the branch that happens to call <c>EnableTiering</c>.</item>
+    /// </list>
+    /// <para>
+    /// The first two are properties of the plan and hold for this one; the third is a property
+    /// of the function and is refused rather than assumed. All three are pinned by
+    /// <c>RestartContractTests</c>.
+    /// </para>
+    /// </remarks>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public JSFunctionDelegate Compile(JSFunctionDelegate baseline, Action deoptimize)
     {
