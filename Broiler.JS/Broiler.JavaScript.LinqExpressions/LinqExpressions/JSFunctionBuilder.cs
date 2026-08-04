@@ -28,6 +28,29 @@ public class JSFunctionBuilder
     private static MethodInfo _normalizeConstructorReturn;
 
     private static MethodInfo _resolveTailCall;
+
+    /// <summary>
+    /// <c>TypeFeedback.RecordCallee(site, callee)</c>, which returns the callee so the recording
+    /// can wrap the target expression in place (docs/performance-roadmap.md item 4-1).
+    /// </summary>
+    private static readonly MethodInfo RecordCalleeMethod = typeof(TypeFeedback).GetMethod(
+        nameof(TypeFeedback.RecordCallee), [typeof(int), typeof(JSValue)])
+        ?? throw new InvalidOperationException("TypeFeedback.RecordCallee(int, JSValue) not found");
+
+    /// <summary>
+    /// Wraps a call's target so the site records which callee it saw — but ONLY while feedback
+    /// is enabled at COMPILE time. With it clear this returns the target untouched, so the
+    /// emitted call is byte-for-byte the one emitted before item 4-1 existed: no extra hop, no
+    /// extra branch, no extra argument on the engine's hottest path. The cost of that choice is
+    /// that enabling the flag later does not retrofit already-compiled code; the harness sets it
+    /// before compiling the corpus, and <see cref="TypeFeedback"/> says so.
+    /// </summary>
+    private static Expression WithCalleeFeedback(Expression target)
+        => TypeFeedback.Enabled
+            ? Expression.Call(null, RecordCalleeMethod,
+                Expression.Constant(TypeFeedback.AllocateCallSite()), target)
+            : target;
+
     private static readonly MethodInfo NumericLoopPlanFactory = typeof(NumericLoopPlan).GetMethod(
         nameof(NumericLoopPlan.Create),
         [typeof(int), typeof(double), typeof(double), typeof(double), typeof(int), typeof(double), typeof(double)])
@@ -125,6 +148,10 @@ public class JSFunctionBuilder
 
     public static Expression InvokeFunction(Expression target, Expression args, bool coalesce = false, bool inChain = false)
     {
+        // Item 4-1: records the callee identity this site sees. A no-op unless feedback was
+        // enabled before this function was compiled.
+        target = WithCalleeFeedback(target);
+
         // Inside an optional chain a short-circuit yields the skip sentinel (the chain
         // root unwraps it), and an already-short-circuited callee (skip) propagates
         // without being called. `fn?.(x)` short-circuits on a nullish callee; a trailing

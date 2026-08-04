@@ -252,6 +252,14 @@ public static class PropertyInlineCacheSite
 
     public static JSValue Get(int site, JSValue target, KeyString key)
     {
+        // Item 4-1. The cache below observes shapes to answer THIS read and forgets them —
+        // entries are replaced when stale and dropped entirely at megamorphic — so a
+        // specializing tier cannot ask it what a site saw over a whole run. Recorded here,
+        // where the site index is in hand, behind the same predictable branch the cache-hit
+        // counter on the line below already pays.
+        if (TypeFeedback.Enabled)
+            TypeFeedback.RecordPropertyShape(site, target is JSObject shaped ? shaped.CurrentShapeId : 0);
+
         if ((uint)site >= MaxSites)
             return target[key];
 
