@@ -117,6 +117,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     internal JSFunctionDelegate f;
     private FunctionTieringController tieringController;
     private FunctionTieringState tieringState;
+    private (int First, int End) tieringReadSites;
     private string tieringLocation;
     private JSContext realm;
     public bool CoerceThisOnInvoke { get; set; }
@@ -304,8 +305,13 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     }
 
     /// <summary>Enables the compiler-proven, opt-in tiering site for this function.</summary>
+    /// <param name="firstReadSite">
+    /// The half-open range of property-read inline-cache sites the tier-1 compile allocated for
+    /// this body, replayed by the tier-2 recompile (item 4-2b).
+    /// </param>
+    /// <param name="endReadSite"><inheritdoc cref="firstReadSite" path="/node()" /></param>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public void EnableTiering(NumericLoopPlan numericPlan, string location)
+    public void EnableTiering(NumericLoopPlan numericPlan, string location, int firstReadSite, int endReadSite)
     {
         CaptureRealm();
         tieringController = realm?.FunctionTiering;
@@ -313,6 +319,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             return;
 
         tieringLocation = string.IsNullOrWhiteSpace(location) ? "tiered-function.js" : location;
+        tieringReadSites = (firstReadSite, endReadSite);
         tieringState = tieringController.CreateState(
             checked(Math.Max(256, source.Length * 6L)),
             () => RecompileForTiering(numericPlan));
@@ -351,6 +358,22 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         // condition the recompile can reproduce; the identity conditions it cannot reproduce are
         // refused instead, in TieringRecompileContract.
         var wrappedSource = IsStrictMode ? $"'use strict';({source.Value})" : $"({source.Value})";
+
+        // The specializing half (item 4-2b). Inside this scope every property read the recompile
+        // emits takes the tier-1 site index it had before, in order — so the warm inline caches
+        // carry over rather than the promoted function starting cold, and item 4-1's feedback for
+        // each site becomes addressable. A site whose whole history is one shape and one own slot
+        // is emitted as a shape guard plus a direct slot load, with the cached get as the
+        // fallback arm; everything else is emitted exactly as tier-1 emitted it.
+        //
+        // The code cache is deliberately NOT shared across promotions: two functions with
+        // identical source have different site ranges, so a cached tree would carry the first
+        // one's specializations into the second. MaxEntries = 1 already gives one entry per
+        // recompile, and the entry is scoped to this call.
+        using var specializing = SpecializingTier.Recompiling(
+            tieringReadSites.First,
+            tieringReadSites.End,
+            tieringController.SpecializeFromTypeFeedback);
         var factory = CoreScript.Compile(
             wrappedSource,
             tieringLocation + "#tier1",

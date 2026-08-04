@@ -250,6 +250,19 @@ public static class PropertyInlineCacheSite
 
     public static int Allocate() => SiteTable<PropertyInlineCache>.Allocate();
 
+    /// <summary>
+    /// The index <see cref="Allocate"/> would hand out next. Read either side of one function's
+    /// body compilation to bound the read sites it emitted, which is how a tier-2 recompile finds
+    /// the tier-1 sites whose feedback it consumes (item 4-2b).
+    /// </summary>
+    /// <remarks>
+    /// A bound, not an inventory: the counter is process-wide, so another thread compiling at the
+    /// same time interleaves its own sites into the range. That is why the emitted guard compares
+    /// the key it was built for against the key actually read — a range that picked up a foreign
+    /// site costs a poisoned speculation, never an answer.
+    /// </remarks>
+    public static int NextReadSite => SiteTable<PropertyInlineCache>.Next;
+
     public static JSValue Get(int site, JSValue target, KeyString key)
     {
         // Item 4-1. The cache below observes shapes to answer THIS read and forgets them —
@@ -258,7 +271,7 @@ public static class PropertyInlineCacheSite
         // where the site index is in hand, behind the same predictable branch the cache-hit
         // counter on the line below already pays.
         if (TypeFeedback.Enabled)
-            TypeFeedback.RecordPropertyShape(site, target is JSObject shaped ? shaped.CurrentShapeId : 0);
+            TypeFeedback.RecordPropertyRead(site, target, in key);
 
         if ((uint)site >= MaxSites)
             return target[key];
@@ -296,6 +309,8 @@ public static class PropertyInlineCacheSite
         private static readonly object allocationLock = new();
         private static TCache[] sites = new TCache[64];
         private static int nextSite;
+
+        public static int Next => Volatile.Read(ref nextSite);
 
         public static int Allocate()
         {

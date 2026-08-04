@@ -73,8 +73,8 @@ public class JSFunctionBuilder
             ?? throw new InvalidOperationException($"IsStrictMode property not found on {type.FullName}");
         _isOrdinaryUserFunction = type.GetProperty("IsOrdinaryUserFunction")
             ?? throw new InvalidOperationException($"IsOrdinaryUserFunction property not found on {type.FullName}");
-        _enableTiering = type.PublicMethod("EnableTiering", typeof(NumericLoopPlan), typeof(string))
-            ?? throw new InvalidOperationException($"EnableTiering(NumericLoopPlan, string) not found on {type.FullName}");
+        _enableTiering = type.PublicMethod("EnableTiering", typeof(NumericLoopPlan), typeof(string), typeof(int), typeof(int))
+            ?? throw new InvalidOperationException($"EnableTiering(NumericLoopPlan, string, int, int) not found on {type.FullName}");
         _captureWithScopes = type.PublicMethod("CaptureWithScopes", typeof(JSValue))
             ?? throw new InvalidOperationException($"CaptureWithScopes(JSValue) not found on {type.FullName}");
         _addLegacyCallerAndArguments = type.PublicMethod("AddLegacyCallerAndArguments")
@@ -222,7 +222,15 @@ public class JSFunctionBuilder
             temp);
     }
 
-    public static Expression EnableTiering(Expression target, NumericLoopPlan numericPlan, string location)
+    /// <param name="firstReadSite">
+    /// The half-open range of property-read inline-cache sites this function's body compile
+    /// allocated. A tier-2 recompile re-emits exactly these indices instead of fresh ones, which
+    /// is what carries the warm caches across promotion and makes item 4-1's per-site feedback
+    /// addressable from the recompile (item 4-2b).
+    /// </param>
+    /// <param name="endReadSite"><inheritdoc cref="firstReadSite" path="/node()" /></param>
+    public static Expression EnableTiering(
+        Expression target, NumericLoopPlan numericPlan, string location, int firstReadSite, int endReadSite)
     {
         var temp = Expression.Parameter(type, "#tieredFunction");
         var planExpression = numericPlan == null
@@ -244,7 +252,9 @@ public class JSFunctionBuilder
                 temp,
                 _enableTiering,
                 planExpression,
-                Expression.Constant(location)),
+                Expression.Constant(location),
+                Expression.Constant(firstReadSite),
+                Expression.Constant(endReadSite)),
             temp);
     }
 

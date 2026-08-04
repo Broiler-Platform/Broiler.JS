@@ -418,6 +418,26 @@ public partial class JSObject : JSValue
     /// the id. The remaining bounds and null checks are cheap and keep a stale or
     /// partially-initialized cache entry from reading out of range.
     /// </remarks>
+    /// <summary>
+    /// The <see cref="TryReadShapeSlot"/> guard on its own, for a caller that reads the slot in a
+    /// separate step (item 4-2b's specialized property read).
+    /// </summary>
+    /// <remarks>
+    /// Split in two because the two halves are emitted into different arms of one conditional:
+    /// the guard decides, and only the taken arm reads. Nothing runs between them — they are the
+    /// test and the consequent of the same branch — so the read needs no re-validation, and the
+    /// duplicated slot load is a second hit on the line the guard just touched.
+    /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal bool HasShapeSlotValue(int shapeId, int slot)
+        => objectShape.Id == shapeId
+            && (uint)slot < (uint)shapeSlots.Length
+            && shapeSlots[slot] != null;
+
+    /// <summary>Reads a slot <see cref="HasShapeSlotValue"/> has just validated.</summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal JSValue ReadShapeSlotUnchecked(int slot) => shapeSlots[slot];
+
     internal bool TryReadShapeSlot(int shapeId, int slot, out JSValue value)
     {
         if (objectShape.Id == shapeId

@@ -14,6 +14,21 @@ public sealed class FunctionTieringOptions
     public int MaxRecompilations { get; init; } = 32;
     public long MaxRetainedCodeBytes { get; init; } = 4L * 1024 * 1024;
 
+    /// <summary>
+    /// Whether a promoted function's monomorphic property reads are emitted as a shape guard plus
+    /// a direct slot load, using item 4-1's per-site type feedback (item 4-2b).
+    /// </summary>
+    /// <remarks>
+    /// <b>Off by default, and it turns feedback on process-wide when set.</b> The specialization
+    /// consumes what 4-1 recorded, and 4-1's collection is a static switch rather than a per-realm
+    /// one — deliberately, since a site index is process-wide too. So enabling this on one realm
+    /// starts recording property feedback for every realm in the process, and the recording is not
+    /// turned back off when the realm goes away. That is stated rather than hidden: a host that
+    /// wants tiering without the recording leaves this clear, and gets exactly the tier-2 recompile
+    /// item 4-2a left behind.
+    /// </remarks>
+    public bool SpecializeFromTypeFeedback { get; init; }
+
     internal void Validate()
     {
         if (!Enabled)
@@ -61,6 +76,9 @@ public sealed class FunctionTieringController
     }
 
     public bool Enabled => options.Enabled;
+
+    /// <inheritdoc cref="FunctionTieringOptions.SpecializeFromTypeFeedback"/>
+    public bool SpecializeFromTypeFeedback => options.SpecializeFromTypeFeedback;
 
     public FunctionTieringSnapshot Snapshot() => new(
         Interlocked.Read(ref candidates),

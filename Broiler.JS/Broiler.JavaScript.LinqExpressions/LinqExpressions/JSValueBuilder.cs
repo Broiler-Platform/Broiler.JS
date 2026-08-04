@@ -179,11 +179,63 @@ public class JSValueBuilder
     public static Expression UnwrapOptionalChain(Expression chainResult)
         => Expression.Call(chainResult, _UnwrapOptionalChain);
 
+    private static readonly MethodInfo _SpecializedMatches = typeof(SpecializedPropertyRead)
+        .GetMethod(nameof(SpecializedPropertyRead.Matches),
+            [typeof(JSValue), typeof(KeyString), typeof(uint), typeof(int), typeof(int)])
+        ?? throw new InvalidOperationException("SpecializedPropertyRead.Matches not found");
+    private static readonly MethodInfo _SpecializedRead = typeof(SpecializedPropertyRead)
+        .GetMethod(nameof(SpecializedPropertyRead.Read), [typeof(JSValue), typeof(int)])
+        ?? throw new InvalidOperationException("SpecializedPropertyRead.Read not found");
+
     /// <summary>Creates one bounded inline-cache side-table entry for an emitted constant-key read.</summary>
+    /// <remarks>
+    /// Inside a tier-2 recompile the site index is the tier-1 site's rather than a fresh one, so
+    /// the warm cache carries over instead of the promoted function starting cold — and item
+    /// 4-1's feedback for that site becomes addressable, which is what item 4-2b specializes on.
+    /// Outside one this is unchanged.
+    /// </remarks>
     public static Expression CachedIndex(Expression target, Expression property)
     {
-        var site = PropertyInlineCacheSite.Allocate();
-        return Expression.Call(null, _CachedPropertyGet, Expression.Constant(site), target, property);
+        var site = SpecializingTier.NextReadSite();
+        var generic = Expression.Call(null, _CachedPropertyGet, Expression.Constant(site), target, property);
+
+        if (!SpecializingTier.MaySpecialize
+            || !TypeFeedback.TryGetMonomorphicOwnSlot(site, out var key, out var shapeId, out var slot))
+        {
+            return generic;
+        }
+
+        return SpecializedRead(site, target, property, key, shapeId, slot);
+    }
+
+    /// <summary>
+    /// <c>shape matches ? slot load : cached get</c>, over a single evaluation of the receiver
+    /// (docs/performance-roadmap.md item 4-2b).
+    /// </summary>
+    /// <remarks>
+    /// Built through <c>SpeculationBuilder.Guarded</c> rather than as a hand-rolled conditional,
+    /// for the reason that facility exists: the receiver is evaluated <b>exactly once</b>. Spelled
+    /// by hand it would be evaluated in the guard and again in whichever arm ran, so a receiver
+    /// with an effect — <c>f().x</c> — would run <c>f()</c> twice. That is item 4-3b's guarantee,
+    /// and this is its first JavaScript-level consumer; 4-3b recorded that it had none, and that
+    /// the reason was structural rather than scope-trimming, because a guard needs an observation
+    /// to speculate on and only a tier-2 recompile has one.
+    /// </remarks>
+    private static Expression SpecializedRead(
+        int site, Expression target, Expression property, uint key, int shapeId, int slot)
+    {
+        var keyConstant = Expression.Constant(key);
+        var shapeConstant = Expression.Constant(shapeId);
+        var slotConstant = Expression.Constant(slot);
+
+        return SpeculationBuilder.Guarded(
+            Speculation.Allocate(),
+            target,
+            receiver => Expression.Call(
+                null, _SpecializedMatches, receiver, property, keyConstant, shapeConstant, slotConstant),
+            receiver => Expression.Call(null, _SpecializedRead, receiver, slotConstant),
+            receiver => Expression.Call(null, _CachedPropertyGet, Expression.Constant(site), receiver, property),
+            typeof(JSValue));
     }
 
     /// <summary>

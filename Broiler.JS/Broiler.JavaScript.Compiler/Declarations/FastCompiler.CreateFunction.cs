@@ -64,6 +64,14 @@ partial class FastCompiler
         thisIsUninitialized: thisIsUninitialized,
         previousNewTarget: previousNewTarget));
         {
+            // The first property-read inline-cache site this function's body may allocate. Read
+            // again just before the tiering gate below, the pair bounds the sites this body
+            // emitted — which is how a tier-2 recompile re-emits the SAME site indices instead of
+            // fresh cold ones, and so can ask item 4-1's feedback what each of them saw
+            // (item 4-2b). A bound rather than an inventory: the counter is process-wide, so a
+            // concurrent compilation can interleave into the range, and the emitted guard's key
+            // compare is what makes that cost a poisoned speculation instead of an answer.
+            var firstReadSite = PropertyInlineCacheSite.NextReadSite;
             cs.CanScalarReplaceLocals = TryPlanScalarReplacement(functionDeclaration, out var capturedNames, out var hasNestedFunction, out var mentionsArguments);
             cs.CapturedByNestedFunctions = capturedNames;
             cs.HasNestedFunctions = hasNestedFunction;
@@ -428,7 +436,9 @@ partial class FastCompiler
                     jsf = JSFunctionBuilder.EnableTiering(
                         jsf,
                         NumericLoopPlanner.TryCreate(functionDeclaration),
-                        location);
+                        location,
+                        firstReadSite,
+                        PropertyInlineCacheSite.NextReadSite);
                 }
             }
 

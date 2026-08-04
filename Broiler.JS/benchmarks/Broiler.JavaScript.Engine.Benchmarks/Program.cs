@@ -80,9 +80,22 @@ public static class Program
             return;
         }
 
+        if (args.Length >= 1 && args[0] == "--specializing-read-probe")
+        {
+            SpecializingTierMetrics.WriteReadProbe(
+                args.Length >= 2 ? int.Parse(args[1]) : 20_000_000,
+                args.Length >= 3 ? int.Parse(args[2]) : 6);
+            return;
+        }
+
         if (args.Length >= 2 && args[0] == "--specializing-tier")
         {
-            SpecializingTierMetrics.Write(args[1], args.Length < 3 || args[2] != "off");
+            SpecializingTierMetrics.Write(
+                args[1],
+                args.Length >= 3 && Enum.TryParse<SpecializingTierMetrics.Arm>(args[2], true, out var arm)
+                    ? arm
+                    : SpecializingTierMetrics.Arm.Specializing,
+                counters: args.Length < 4 || args[3] != "timing");
             return;
         }
 

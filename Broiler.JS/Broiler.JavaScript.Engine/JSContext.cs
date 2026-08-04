@@ -1562,6 +1562,11 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         Options = options ?? JSContextOptions.Default;
         Frames.StackUsageLimit = Options.MaxStackUsageBytes;
         FunctionTiering = new FunctionTieringController(Options.FunctionTiering);
+        // Item 4-2b: the specializing tier consumes item 4-1's feedback, so opting into it opts
+        // into the collection. Process-wide and one-way, for the reason FunctionTieringOptions
+        // records — a site index is process-wide, so its feedback table is too.
+        if (Options.FunctionTiering.Enabled && Options.FunctionTiering.SpecializeFromTypeFeedback)
+            TypeFeedback.Enabled = true;
         if (Options.BuiltInRegistry == null && !JSEngine.HasExplicitBuiltInRegistry)
             JSEngine.EnsureBuiltInsAssemblyLoaded();
         builtInRegistry = Options.BuiltInRegistry ?? JSEngine.BuiltInRegistry;
