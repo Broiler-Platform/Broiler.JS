@@ -493,12 +493,26 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     public virtual JSValue Negate()
     {
         var self = ToNumericPrimitive(this);
+        // Counted on the minting branch only: the other one delegates to the coerced primitive,
+        // which counts there (JSNumber.Negate, or this method re-entered).
+        if (ReferenceEquals(self, this) && ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordUnaryNegate();
         return !ReferenceEquals(self, this) ? self.Negate() : CreateNumber(-DoubleValue);
     }
 
-    public virtual JSValue Increment() => CreateNumber(DoubleValue + 1);
+    public virtual JSValue Increment()
+    {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordUnaryUpdate();
+        return CreateNumber(DoubleValue + 1);
+    }
 
-    public virtual JSValue Decrement() => CreateNumber(DoubleValue - 1);
+    public virtual JSValue Decrement()
+    {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordUnaryUpdate();
+        return CreateNumber(DoubleValue - 1);
+    }
 
     // ToNumeric (ECMA-262 § 7.1.4 / § 7.1.3): coerce to a Number or BigInt primitive.
     // Used by the update operators (`++`/`--`), whose result is the coerced numeric
@@ -507,6 +521,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     public JSValue ToNumeric()
     {
         var primitive = ToNumericPrimitive(this);
+        if (!primitive.IsBigInt && ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordUnaryToNumeric();
         return primitive.IsBigInt ? primitive : CreateNumber(primitive.DoubleValue);
     }
 
@@ -558,6 +574,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual JSValue BitwiseXor(JSValue value)
     {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordGeneric(IsNumber, value.IsNumber);
         var self = ToNumericPrimitive(this);
         value = ToNumericPrimitive(value);
         return !ReferenceEquals(self, this) ? self.BitwiseXor(value) : CreateNumber(IntValue ^ value.IntValue);
@@ -566,6 +584,8 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     public virtual JSValue BitwiseNot()
     {
         var self = ToNumericPrimitive(this);
+        if (ReferenceEquals(self, this) && ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordUnaryNegate();
         return !ReferenceEquals(self, this) ? self.BitwiseNot() : CreateNumber(~IntValue);
     }
 

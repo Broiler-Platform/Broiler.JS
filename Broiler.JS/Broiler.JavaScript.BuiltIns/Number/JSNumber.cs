@@ -195,6 +195,27 @@ public sealed partial class JSNumber : JSPrimitive
         return Create(value);
     }
 
+    /// <summary>
+    /// The <see cref="JSNumber"/> for a raw <c>double</c> the COMPILER is boxing to hand to
+    /// something that takes a <see cref="JSValue"/> — the root of an arithmetic tree on its way
+    /// into a local, a slot or an element, a return value, an argument
+    /// (docs/performance-roadmap.md item 3-1).
+    /// </summary>
+    /// <remarks>
+    /// Identical to <see cref="Create"/> but the counter, for the reason
+    /// <see cref="CreateLiteral"/> is: item 3-1's guarded tree removed 12.2% of the corpus's
+    /// boxes and left NavierStokes, the single biggest boxer in it, down only 1.8% — so the
+    /// question is where the rest are minted, and the sharpest division is between a box an
+    /// <em>operator</em> produced and a box the compiler minted to cross a representation
+    /// boundary. Only the second is what a typed backing store could remove.
+    /// </remarks>
+    public static JSValue CreateConversion(double value)
+    {
+        if (NumberBoxingDiagnostics.Enabled)
+            NumberBoxingDiagnostics.RecordConversionRequest();
+        return Create(value);
+    }
+
     public override double DoubleValue => value;
 
     public override bool BooleanValue => !double.IsNaN(value) && value != 0;
@@ -383,7 +404,14 @@ public sealed partial class JSNumber : JSPrimitive
 
     public static bool IsNaN(JSValue n) => double.IsNaN(n.DoubleValue);
 
-    public override JSValue Negate() => Create(-value);
+    // Counted here as well as on the base, for the reason AddValue is: a Number receiver never
+    // reaches the base (item 3-1).
+    public override JSValue Negate()
+    {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordUnaryNegate();
+        return Create(-value);
+    }
 
     public override JSValue AddValue(JSValue value)
     {

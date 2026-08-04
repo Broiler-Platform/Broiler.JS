@@ -17,7 +17,13 @@ namespace Broiler.JavaScript.Compiler.Tests;
 [Collection(Phase3DiagnosticsCollection.Name)]
 public sealed class ArithmeticOperandCensusTests
 {
-    private readonly record struct Census(long Generic, long BothNumbers, long RawDouble);
+    private readonly record struct Census(
+        long Generic,
+        long BothNumbers,
+        long RawDouble,
+        long UnaryNegate,
+        long UnaryUpdate,
+        long UnaryToNumeric);
 
     private static Census Count(string source, bool speculate = false)
     {
@@ -39,7 +45,10 @@ public sealed class ArithmeticOperandCensusTests
             return new Census(
                 ArithmeticOperandDiagnostics.Generic,
                 ArithmeticOperandDiagnostics.BothNumbers,
-                ArithmeticOperandDiagnostics.RawDoubleOperand);
+                ArithmeticOperandDiagnostics.RawDoubleOperand,
+                ArithmeticOperandDiagnostics.UnaryNegate,
+                ArithmeticOperandDiagnostics.UnaryUpdate,
+                ArithmeticOperandDiagnostics.UnaryToNumeric);
         }
         finally
         {
@@ -136,6 +145,83 @@ public sealed class ArithmeticOperandCensusTests
             """);
 
         Assert.Equal(0, census.Generic);
+    }
+
+    [Fact]
+    public void ExclusiveOrIsCounted()
+    {
+        // This one is here because it was MISSING. The census's first version hooked every generic
+        // binary operator except `^`, so Crypto's exclusive-ors were minting boxes the census
+        // reported as coming from nowhere. Nothing failed — an unhooked operator is silent, which
+        // is exactly why the residue has to be checked against the counters rather than trusted.
+        var census = Count("""
+            var a = [3], b = [5];
+            var s = 0;
+            for (var i = 0; i < 10; i++) s = a[0] ^ b[0];
+            s;
+            """);
+
+        Assert.True(census.Generic >= 10, $"expected at least 10 generic operations, got {census.Generic}");
+        Assert.Equal(census.Generic, census.BothNumbers);
+    }
+
+    // The three unary fixtures below are deliberately loop-free, and the reason is the finding in
+    // miniature: written with the `for (var i = 0; i < 10; i++)` the rest of this file uses, all
+    // three failed, because the loop counter's OWN `i++` lands in the columns they assert on — a
+    // top-level `++` costs one ToNumeric box and one step box, ten iterations of it being exactly
+    // the 10 and 20 that showed up. Exact counts on a straight-line body say what the counter
+    // attributes without an incidental second source of the same operation.
+
+    [Fact]
+    public void UnaryNegationIsCountedExactlyOncePerOperation()
+    {
+        // `-x` mints a box, and the count must not double: JSValue.Negate coerces and then
+        // delegates to the coerced primitive, which for a Number lands on JSNumber.Negate. Both
+        // sites are hooked, so the base counts only the branch that mints.
+        var census = Count("""
+            var a = [1.5];
+            var s = -a[0];
+            s;
+            """);
+
+        Assert.Equal(1, census.UnaryNegate);
+        Assert.Equal(0, census.UnaryUpdate);
+        Assert.Equal(0, census.UnaryToNumeric);
+    }
+
+    [Fact]
+    public void AnUpdateOnAPropertyCostsTwoBoxesNotOne()
+    {
+        // The finding the counter was added for: `o.x++` boxes twice — once in ToNumeric, which
+        // re-boxes an operand that is already a Number to hand back the old value, and once in the
+        // step itself. Splitting the two is the difference between "++ is expensive" and knowing
+        // which half of it to remove.
+        var census = Count("""
+            var o = { x: 1 };
+            o.x++;
+            o.x;
+            """);
+
+        Assert.Equal(1, census.UnaryToNumeric);
+        Assert.Equal(1, census.UnaryUpdate);
+        Assert.Equal(0, census.UnaryNegate);
+    }
+
+    [Fact]
+    public void TheUnaryCountersStayStillOnBinaryArithmetic()
+    {
+        // The discriminating control for the pair above: binary arithmetic must not leak into the
+        // unary columns, or the attribution the residue is computed from is circular.
+        var census = Count("""
+            var a = [1.5, 2.5];
+            var s = a[0] * a[1];
+            s;
+            """);
+
+        Assert.True(census.Generic >= 1, $"expected at least one generic operation, got {census.Generic}");
+        Assert.Equal(0, census.UnaryNegate);
+        Assert.Equal(0, census.UnaryUpdate);
+        Assert.Equal(0, census.UnaryToNumeric);
     }
 
     [Fact]

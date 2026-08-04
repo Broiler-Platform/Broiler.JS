@@ -10,6 +10,7 @@ public class JSNumberBuilder
     private static Type type;
     private static MethodInfo _create;
     private static MethodInfo _createLiteral;
+    private static MethodInfo _createConversion;
 
     public static Expression NaN;
     public static Expression Zero;
@@ -26,6 +27,8 @@ public class JSNumberBuilder
         type = numberType;
         _create = type.GetMethod("Create", [typeof(double)])
             ?? throw new InvalidOperationException("JSNumber.Create(double) not found");
+        _createConversion = type.GetMethod("CreateConversion", [typeof(double)])
+            ?? throw new NotSupportedException();
         _createLiteral = type.GetMethod("CreateLiteral", [typeof(double)])
             ?? throw new InvalidOperationException("JSNumber.CreateLiteral(double) not found");
 
@@ -46,7 +49,7 @@ public class JSNumberBuilder
         if (exp.Type != typeof(double))
             exp = Expression.Convert(exp, typeof(double));
 
-        return Expression.Call(null, _create, exp);
+        return Expression.Call(null, _createConversion, exp);
     }
 
     /// <summary>

@@ -489,6 +489,9 @@ internal static class SpecializingTierMetrics
         var arithmeticBothNumbers = ArithmeticOperandDiagnostics.BothNumbers;
         var arithmeticRawDouble = ArithmeticOperandDiagnostics.RawDoubleOperand;
         var arithmeticRawDoubleOtherNumber = ArithmeticOperandDiagnostics.RawDoubleOtherNumber;
+        var arithmeticUnaryNegate = ArithmeticOperandDiagnostics.UnaryNegate;
+        var arithmeticUnaryUpdate = ArithmeticOperandDiagnostics.UnaryUpdate;
+        var arithmeticUnaryToNumeric = ArithmeticOperandDiagnostics.UnaryToNumeric;
         ArithmeticOperandDiagnostics.Enabled = false;
 
         var compiler = Broiler.JavaScript.Compiler.CompilerSpecializationDiagnostics.Snapshot();
@@ -545,6 +548,11 @@ internal static class SpecializingTierMetrics
             boxesAllocatedTotal = boxing.Allocations,
             boxesAllocatedDirect = boxing.DirectAllocations,
             boxingLiteralRequests = boxing.LiteralRequests,
+            // Item 3-1: of the boxes that remain after the guarded tree, how many the COMPILER
+            // mints to carry a raw double across into a JSValue — the root of a tree on its way
+            // into a local, a slot or an element. Only these are what a typed backing store could
+            // remove; the rest an operator or a builtin produced.
+            boxingConversionRequests = boxing.ConversionRequests,
 
             // Item 3-1's shared half, counted on the far side of the boundary: not what the
             // compiler could prove, but what the operators were actually handed. arithmeticGeneric
@@ -556,6 +564,13 @@ internal static class SpecializingTierMetrics
             arithmeticBothNumbers,
             arithmeticRawDouble,
             arithmeticRawDoubleOtherNumber,
+            // The unary operators, which the binary census above cannot see and which mint through
+            // the same factory: -x and ~x, the ++/-- step, and the ToNumeric that re-boxes the
+            // operand of ++/-- to hand back the old value. Together with the binary count these
+            // name every operator box; what is left over a builtin minted directly.
+            arithmeticUnaryNegate,
+            arithmeticUnaryUpdate,
+            arithmeticUnaryToNumeric,
 
             candidates = tiering.Candidates,
             invocations = tiering.Invocations,

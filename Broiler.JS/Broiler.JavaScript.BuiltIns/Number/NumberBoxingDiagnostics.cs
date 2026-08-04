@@ -43,6 +43,7 @@ public static class NumberBoxingDiagnostics
     private static long factoryAllocations;
     private static long allocations;
     private static long literalRequests;
+    private static long conversionRequests;
 
     /// <summary>Whether boxing is counted. Off by default.</summary>
     public static bool Enabled;
@@ -56,6 +57,13 @@ public static class NumberBoxingDiagnostics
     /// representation at all — the value is known at compile time.
     /// </summary>
     internal static void RecordLiteralRequest() => Interlocked.Increment(ref literalRequests);
+
+    /// <summary>
+    /// A request from the compiler's boxing CONVERSION — a raw double crossing into a
+    /// <c>JSValue</c>. Disjoint from the literal count and from every operator result, so
+    /// `Requests - conversion - literal` is what the operators and builtins mint.
+    /// </summary>
+    internal static void RecordConversionRequest() => Interlocked.Increment(ref conversionRequests);
 
     /// <summary>A request the small-integer table answered without allocating.</summary>
     internal static void RecordCacheHit() => Interlocked.Increment(ref cacheHits);
@@ -75,7 +83,8 @@ public static class NumberBoxingDiagnostics
             Interlocked.Read(ref cacheHits),
             Interlocked.Read(ref factoryAllocations),
             Interlocked.Read(ref allocations),
-            Interlocked.Read(ref literalRequests));
+            Interlocked.Read(ref literalRequests),
+            Interlocked.Read(ref conversionRequests));
 
     public static void Reset()
     {
@@ -84,6 +93,7 @@ public static class NumberBoxingDiagnostics
         Interlocked.Exchange(ref factoryAllocations, 0);
         Interlocked.Exchange(ref allocations, 0);
         Interlocked.Exchange(ref literalRequests, 0);
+        Interlocked.Exchange(ref conversionRequests, 0);
     }
 }
 
@@ -92,12 +102,14 @@ public static class NumberBoxingDiagnostics
 /// <param name="FactoryAllocations">Those the factory allocated for — the population an unboxed representation reaches.</param>
 /// <param name="Allocations">Every <see cref="JSNumber"/> constructed, factory or not.</param>
 /// <param name="LiteralRequests">Factory calls made by a compile-time numeric literal.</param>
+/// <param name="ConversionRequests">Factory calls made by the compiler boxing a raw double to cross into a <c>JSValue</c>.</param>
 public readonly record struct NumberBoxingSnapshot(
     long Requests,
     long CacheHits,
     long FactoryAllocations,
     long Allocations,
-    long LiteralRequests)
+    long LiteralRequests,
+    long ConversionRequests)
 {
     /// <summary>
     /// Boxes minted by a builtin writing <c>new JSNumber(x)</c> instead of going through the

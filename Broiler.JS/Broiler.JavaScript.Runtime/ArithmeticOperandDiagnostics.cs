@@ -43,6 +43,9 @@ public static class ArithmeticOperandDiagnostics
     private static long bothNumbers;
     private static long rawDoubleOperand;
     private static long rawDoubleOtherNumber;
+    private static long unaryNegate;
+    private static long unaryUpdate;
+    private static long unaryToNumeric;
 
     /// <summary>Whether operand kinds are counted. Off by default.</summary>
     public static bool Enabled;
@@ -61,6 +64,19 @@ public static class ArithmeticOperandDiagnostics
 
     /// <summary>Those of <see cref="RawDoubleOperand"/> whose other operand was a Number too.</summary>
     public static long RawDoubleOtherNumber => Interlocked.Read(ref rawDoubleOtherNumber);
+
+    /// <summary>Boxes minted by unary <c>-</c> and <c>~</c>.</summary>
+    public static long UnaryNegate => Interlocked.Read(ref unaryNegate);
+
+    /// <summary>Boxes minted by the <c>++</c>/<c>--</c> step itself.</summary>
+    public static long UnaryUpdate => Interlocked.Read(ref unaryUpdate);
+
+    /// <summary>
+    /// Boxes minted re-coercing the operand of <c>++</c>/<c>--</c>. <c>ToNumeric</c> mints
+    /// unconditionally, so a Number that is already a Number is boxed a second time to be handed
+    /// back as the old value — <c>x++</c> on a property costs two boxes, not one.
+    /// </summary>
+    public static long UnaryToNumeric => Interlocked.Read(ref unaryToNumeric);
 
     /// <summary>
     /// Records one generic invocation and whether a native form guarded on "both are Numbers"
@@ -81,11 +97,23 @@ public static class ArithmeticOperandDiagnostics
             Interlocked.Increment(ref rawDoubleOtherNumber);
     }
 
+    /// <summary>Records a box minted by unary <c>-</c> or <c>~</c>.</summary>
+    internal static void RecordUnaryNegate() => Interlocked.Increment(ref unaryNegate);
+
+    /// <summary>Records a box minted by the <c>++</c>/<c>--</c> step.</summary>
+    internal static void RecordUnaryUpdate() => Interlocked.Increment(ref unaryUpdate);
+
+    /// <summary>Records a box minted coercing the operand of <c>++</c>/<c>--</c>.</summary>
+    internal static void RecordUnaryToNumeric() => Interlocked.Increment(ref unaryToNumeric);
+
     public static void Reset()
     {
         Interlocked.Exchange(ref generic, 0);
         Interlocked.Exchange(ref bothNumbers, 0);
         Interlocked.Exchange(ref rawDoubleOperand, 0);
         Interlocked.Exchange(ref rawDoubleOtherNumber, 0);
+        Interlocked.Exchange(ref unaryNegate, 0);
+        Interlocked.Exchange(ref unaryUpdate, 0);
+        Interlocked.Exchange(ref unaryToNumeric, 0);
     }
 }
