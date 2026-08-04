@@ -147,6 +147,76 @@ internal static class LocalAllocationMetrics
                 + "so reaching the loop without running the initializer is what has to be ruled "
                 + "out"),
 
+        // ── item 3-7: the same value, captured ────────────────────────────────────────────
+        //
+        // Four spellings of top-level-var with a closure added, differing only in HOW the
+        // closure names the value. They are the item's whole surface: the first says what
+        // capture costs today, the second what the soundness condition costs, and the last two
+        // are the losing side — a raw double is cheaper to write and dearer to read through a
+        // closure, and only a measurement says which way a given shape falls.
+
+        new(
+            "captured-var",
+            "capture",
+            $$"""
+            (function (arg) {
+                var v = 3.5;
+                var s = 0;
+                var h = function () { return v; };
+                for (var i = 0; i < {{Iterations}}; i++) { s = s + v * 2; }
+                return s;
+            })
+            """,
+            "top-level-var with one closure naming the value and never called. Identical "
+                + "arithmetic, so the delta from top-level-var is exactly what capture costs"),
+
+        new(
+            "captured-var-hoisted-fn",
+            "capture",
+            $$"""
+            (function (arg) {
+                var v = 3.5;
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = s + v * 2; }
+                function h() { return v; }
+                return s;
+            })
+            """,
+            "the same closure written as a function DECLARATION. Its object exists from function "
+                + "entry, so it can read the binding before the initializer runs and the name has "
+                + "to keep its cell — this row is what that correctness condition costs"),
+
+        new(
+            "captured-var-read-in-closure",
+            "capture",
+            $$"""
+            (function (arg) {
+                var v = 3.5;
+                var s = 0;
+                var h = function () { return v; };
+                for (var i = 0; i < {{Iterations}}; i++) { s = s + h(); }
+                return s;
+            })
+            """,
+            "the losing side: the value is read THROUGH the closure every iteration. A "
+                + "JSVariable hands back the JSValue it already holds; a raw double has to box "
+                + "one. If capture is worth widening this row is what pays for it"),
+
+        new(
+            "captured-var-written-in-closure",
+            "capture",
+            $$"""
+            (function (arg) {
+                var v = 3.5;
+                var s = 0;
+                var h = function () { v = v + 1; };
+                for (var i = 0; i < {{Iterations}}; i++) { h(); s = s + v * 2; }
+                return s;
+            })
+            """,
+            "the winning side of the same pair: the value is WRITTEN through the closure every "
+                + "iteration, where a JSVariable boxes the result and a raw double stores it"),
+
         new(
             "call-parameter-read",
             "call",
@@ -255,6 +325,22 @@ internal static class LocalAllocationMetrics
                 + "the row above, differing only in how many bindings carry them. The delta is "
                 + "the per-parameter cost, and it is what says whether a parameter's price is "
                 + "paid once per call or once per binding"),
+
+        new(
+            "call-captured-var",
+            "call",
+            $$"""
+            (function (arg) {
+                function h() { var b = 3.5; var g = function () { return b; }; return b * 2 + 1; }
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = s + h(3.5); }
+                return s;
+            })
+            """,
+            "call-no-parameter with a closure naming the helper's local. Measured per CALL rather "
+                + "than per loop iteration, so it prices what a captured binding costs to CREATE: "
+                + "a captured JSVariable is two allocations, the cell and the box a closure reads "
+                + "it through, where a captured raw double is the box alone"),
 
         new(
             "call-no-parameter",

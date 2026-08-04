@@ -1,4 +1,4 @@
-using System.Threading;
+﻿using System.Threading;
 
 namespace Broiler.JavaScript.Compiler;
 
@@ -10,7 +10,9 @@ public readonly record struct CompilerSpecializationSnapshot(
     long HoistedNames,
     long[] NumericRejections,
     long NumericCandidatesOffered,
-    long NumericCandidatesDropped);
+    long NumericCandidatesRejected,
+    long NumericCandidatesDropped,
+    long NumericCandidatesSurviving);
 
 /// <summary>
 /// Why a hoisted name did not become a raw <c>double</c> local, in the order the gate asks
@@ -37,6 +39,13 @@ public enum NumericLocalRejection
     ArgumentsOrEval,
     /// <summary>A nested function mentions the name, so it needs a cell to capture.</summary>
     CapturedByNestedFunction,
+    /// <summary>
+    /// A function declaration at body top level mentions the name. Its function object exists
+    /// from function entry, so it can read the binding before the initializer runs even though
+    /// its text is after the declaration — the one place a raw double hoisted to 0 would be
+    /// observed where <c>undefined</c> belongs (docs/performance-roadmap.md item 3-7).
+    /// </summary>
+    CapturedByHoistedFunction,
     /// <summary>A <c>let</c>/<c>const</c> in a nested block, which is a distinct binding per entry.</summary>
     LexicalOutsideFunctionBody,
     /// <summary>The analysis could not prove the name only ever holds a number.</summary>
@@ -51,9 +60,11 @@ public static class CompilerSpecializationDiagnostics
     private static long mixedNumericComparisons;
     private static long boxedNumericComparisons;
     private static long hoistedNames;
-    private static readonly long[] numericRejections = new long[8];
+    private static readonly long[] numericRejections = new long[9];
     private static long numericCandidatesOffered;
+    private static long numericCandidatesRejected;
     private static long numericCandidatesDropped;
+    private static long numericCandidatesSurviving;
 
     internal static void RecordScalarLocal() => Interlocked.Increment(ref scalarLocals);
 
@@ -76,9 +87,23 @@ public static class CompilerSpecializationDiagnostics
     internal static void RecordNumericCandidatesOffered(int count)
         => Interlocked.Add(ref numericCandidatesOffered, count);
 
+    /// <summary>
+    /// How many of those a rejection path removed before the fixed point ever ran — the step
+    /// between offered and dropped that had no counter (docs/performance-roadmap.md item 3-7).
+    /// </summary>
+    internal static void RecordNumericCandidatesRejected(int count)
+        => Interlocked.Add(ref numericCandidatesRejected, count);
+
     /// <summary>How many of those the optimistic fixed point then had to drop.</summary>
     internal static void RecordNumericCandidatesDropped(int count)
         => Interlocked.Add(ref numericCandidatesDropped, count);
+
+    /// <summary>
+    /// How many names came out of the analysis proved numeric. Counted rather than inferred:
+    /// offered = rejected + dropped + surviving.
+    /// </summary>
+    internal static void RecordNumericCandidatesSurviving(int count)
+        => Interlocked.Add(ref numericCandidatesSurviving, count);
 
     /// <summary>Records why one hoisted name did or did not reach the numeric tier.</summary>
     internal static void RecordNumericLocalDecision(NumericLocalRejection reason)
@@ -96,7 +121,9 @@ public static class CompilerSpecializationDiagnostics
             Interlocked.Read(ref hoistedNames),
             ReadRejections(),
             Interlocked.Read(ref numericCandidatesOffered),
-            Interlocked.Read(ref numericCandidatesDropped));
+            Interlocked.Read(ref numericCandidatesRejected),
+            Interlocked.Read(ref numericCandidatesDropped),
+            Interlocked.Read(ref numericCandidatesSurviving));
 
     private static long[] ReadRejections()
     {
@@ -114,7 +141,9 @@ public static class CompilerSpecializationDiagnostics
         Interlocked.Exchange(ref boxedNumericComparisons, 0);
         Interlocked.Exchange(ref hoistedNames, 0);
         Interlocked.Exchange(ref numericCandidatesOffered, 0);
+        Interlocked.Exchange(ref numericCandidatesRejected, 0);
         Interlocked.Exchange(ref numericCandidatesDropped, 0);
+        Interlocked.Exchange(ref numericCandidatesSurviving, 0);
         for (var i = 0; i < numericRejections.Length; i++)
             Interlocked.Exchange(ref numericRejections[i], 0);
     }

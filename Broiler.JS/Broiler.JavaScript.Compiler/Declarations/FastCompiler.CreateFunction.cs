@@ -72,8 +72,9 @@ partial class FastCompiler
             // concurrent compilation can interleave into the range, and the emitted guard's key
             // compare is what makes that cost a poisoned speculation instead of an answer.
             var firstReadSite = PropertyInlineCacheSite.NextReadSite;
-            cs.CanScalarReplaceLocals = TryPlanScalarReplacement(functionDeclaration, out var capturedNames, out var hasNestedFunction, out var mentionsArguments);
+            cs.CanScalarReplaceLocals = TryPlanScalarReplacement(functionDeclaration, out var capturedNames, out var hoistedCapturedNames, out var hasNestedFunction, out var mentionsArguments);
             cs.CapturedByNestedFunctions = capturedNames;
+            cs.CapturedByHoistedFunctions = hoistedCapturedNames;
             cs.HasNestedFunctions = hasNestedFunction;
             cs.MentionsArguments = mentionsArguments;
             // Only worth asking when the locals are scalar-replaceable at all: the analysis
@@ -746,9 +747,11 @@ partial class FastCompiler
     /// </para>
     /// </remarks>
     private static bool TryPlanScalarReplacement(AstFunctionExpression functionDeclaration,
-        out IReadOnlySet<string> capturedNames, out bool hasNestedFunction, out bool mentionsArguments)
+        out IReadOnlySet<string> capturedNames, out IReadOnlySet<string> hoistedCapturedNames,
+        out bool hasNestedFunction, out bool mentionsArguments)
     {
         capturedNames = NoCapturedNames;
+        hoistedCapturedNames = NoCapturedNames;
         hasNestedFunction = false;
         // Conservative default: the paths below that return without running the detector have
         // not looked, and "did not look" must read as "may mention it".
@@ -769,10 +772,66 @@ partial class FastCompiler
             return false;
 
         capturedNames = detector.Captured;
+        hoistedCapturedNames = CollectHoistedFunctionCaptures(functionDeclaration.Body);
         // A nested function's mention lands in Captured rather than here, because the detector
         // scans nested functions instead of descending into them.
         mentionsArguments = detector.MentionsArguments || detector.Captured.Contains("arguments");
         return true;
+    }
+
+    /// <summary>
+    /// The names mentioned by a function declaration at <paramref name="body"/>'s own top level,
+    /// whose function object therefore exists from function entry
+    /// (docs/performance-roadmap.md item 3-7).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Only the body's own statement list is examined, and that is the whole of the hazard rather
+    /// than a first approximation. A declaration one level down — in a block, an <c>if</c>, a
+    /// loop, a <c>try</c>, a <c>switch</c> — has its BINDING hoisted (Annex B B.3.3.1 in sloppy
+    /// mode) but not its VALUE: the function object is created when the block's declaration is
+    /// reached, so calling the name earlier is a TypeError on <c>undefined</c> and not a read of
+    /// the captured binding. A declaration at body top level is the only one
+    /// FunctionDeclarationInstantiation initializes before the body runs.
+    /// </para>
+    /// <para>
+    /// A declaration textually BEFORE the numeric declaration is already refused by the
+    /// analysis — its mention of the name precedes the name's own declaration, which
+    /// <c>NumericLocalAnalysis</c> rejects outright — so collecting both directions costs
+    /// nothing and needs no position comparison here.
+    /// </para>
+    /// <para>
+    /// Labels are unwrapped for the same reason
+    /// <see cref="CollectBlockFunctionDeclarationNames"/> unwraps them: <c>l: function g(){}</c>
+    /// is an Annex B labelled function declaration and hoists exactly like an unlabelled one.
+    /// </para>
+    /// </remarks>
+    private static IReadOnlySet<string> CollectHoistedFunctionCaptures(AstNode body)
+    {
+        if (body is not AstBlock block)
+            return NoCapturedNames;
+
+        HashSet<string> captured = null;
+        var statements = block.Statements.GetFastEnumerator();
+        while (statements.MoveNext(out var statement))
+        {
+            var current = statement;
+            while (current is AstLabeledStatement labeled)
+                current = labeled.Body;
+
+            if (current is not AstExpressionStatement
+                {
+                    Expression: AstFunctionExpression { IsStatement: true } declaration
+                })
+            {
+                continue;
+            }
+
+            captured ??= new HashSet<string>(StringComparer.Ordinal);
+            new NestedFunctionScanner(captured).Visit(declaration);
+        }
+
+        return (IReadOnlySet<string>)captured ?? NoCapturedNames;
     }
 
     // Hazards that poison the whole function: a with-environment, debugger visibility, or a

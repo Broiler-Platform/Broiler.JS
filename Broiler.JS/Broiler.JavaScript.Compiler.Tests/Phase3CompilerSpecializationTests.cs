@@ -29,14 +29,27 @@ public sealed class Phase3CompilerSpecializationTests
         CompilerSpecializationDiagnostics.Reset();
         var guarded = context.Eval("""
             var a = (function () { var x = 1; eval('x = 2'); return x; })();
-            var b = (function () { var x = 3; return function () { return x; }; })()();
             var c = (function () { var x = 4; with ({}) { x = x; } return x; })();
             var d = (function () { var x = 1; var ignored = eval('x = 2'); return x; })();
-            [a, b, c, d].join('|');
+            [a, c, d].join('|');
             """);
 
-        Assert.Equal("2|3|4|2", guarded.ToString());
+        Assert.Equal("2|4|2", guarded.ToString());
         Assert.Equal(0, CompilerSpecializationDiagnostics.Snapshot().ScalarLocals);
+
+        // A closure was the fourth case here, and item 3-7 moved it: a captured CLR local
+        // becomes the `Box<double>` every closure over it reads through, so the box IS the
+        // shared cell and capture is no longer a reason to refuse. It reaches the NUMERIC tier
+        // only — the JSValue tier still declines it, because that tier has no cell at all and a
+        // cell is what an eval-introduced `delete` and a TDZ need. The value is the assertion
+        // that matters and it holds either way.
+        CompilerSpecializationDiagnostics.Reset();
+        var captured = context.Eval("(function () { var x = 3; return function () { return x; }; })()();");
+
+        Assert.Equal("3", captured.ToString());
+        var capturedCounts = CompilerSpecializationDiagnostics.Snapshot();
+        Assert.Equal(CapturedNumericLocals.Enabled ? 1 : 0, capturedCounts.NumericLocals);
+        Assert.Equal(capturedCounts.NumericLocals, capturedCounts.ScalarLocals);
     }
 
     [Fact]

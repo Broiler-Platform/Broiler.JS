@@ -331,10 +331,19 @@ internal sealed class NumericLocalAnalysis
         // stronger analysis could reach.
         CompilerSpecializationDiagnostics.RecordNumericCandidatesOffered(candidates.Count);
 
+        // The step between "offered" and "dropped" that had no counter, and it is the larger of
+        // the two: a name any rejection path named — read before its initializer, bound through
+        // a pattern, `delete`d, a written `const`, a for-in head — leaves here rather than in
+        // the fixed point. Item 3-6 read survivors as offered MINUS dropped and so counted this
+        // removal as nothing; with it counted, offered = rejected + dropped + surviving exactly
+        // (docs/performance-roadmap.md item 3-7).
+        var beforeRejection = candidates.Count;
         candidates.ExceptWith(rejected);
+        CompilerSpecializationDiagnostics.RecordNumericCandidatesRejected(beforeRejection - candidates.Count);
         if (candidates.Count == 0)
         {
             CompilerSpecializationDiagnostics.RecordNumericCandidatesDropped(0);
+            CompilerSpecializationDiagnostics.RecordNumericCandidatesSurviving(0);
             return System.Collections.Immutable.ImmutableHashSet<string>.Empty;
         }
 
@@ -362,6 +371,7 @@ internal sealed class NumericLocalAnalysis
         while (changed && candidates.Count > 0);
 
         CompilerSpecializationDiagnostics.RecordNumericCandidatesDropped(beforeFixedPoint - candidates.Count);
+        CompilerSpecializationDiagnostics.RecordNumericCandidatesSurviving(candidates.Count);
         return candidates;
     }
 
@@ -530,10 +540,42 @@ internal sealed class NumericLocalAnalysis
         // owning block is on this stack.
         private readonly List<AstBlock> openBlocks = [];
 
+        // How many nested functions the walk is currently inside. Writes are still recorded at
+        // any depth — the walk conflates names, so a nested `s = 'x'` correctly drops an outer
+        // numeric `s` — but a DECLARATION at depth > 0 must not open `declared` for the outer
+        // name (docs/performance-roadmap.md item 3-7).
+        private int functionDepth;
+
         public Collector(NumericLocalAnalysis owner, AstBlock functionBody)
         {
             this.owner = owner;
             this.functionBody = functionBody;
+        }
+
+        /// <summary>
+        /// Descends into a nested function — the walk deliberately conflates names, so a write
+        /// there drops the outer candidate — while recording that declarations inside it belong
+        /// to a different binding, and rejecting the name a function DECLARATION binds.
+        /// </summary>
+        /// <remarks>
+        /// A function declaration stores a function object into the very binding the analysis is
+        /// typing: at body top level `var f = 1; function f() {}` leaves `f` holding the
+        /// function, and `let f = 5; { function f() {} }` reaches the same binding through Annex
+        /// B's copy-out. Neither is a write this walk can see — a declaration is not an
+        /// assignment expression — and while every such name was refused for being *mentioned*
+        /// by the declaration (its own identifier), the gap was covered by accident. Item 3-7
+        /// lifts that refusal, so the store is rejected explicitly. A named function EXPRESSION
+        /// is left alone: its name binds inside its own body, not out here.
+        /// </remarks>
+        protected override AstNode VisitFunctionExpression(AstFunctionExpression functionExpression)
+        {
+            if (functionExpression is { IsStatement: true, Id: AstIdentifier declaredName })
+                owner.rejected.Add(declaredName.Name.Value);
+
+            functionDepth++;
+            var result = base.VisitFunctionExpression(functionExpression);
+            functionDepth--;
+            return result;
         }
 
         protected override AstNode VisitBlock(AstBlock block)
@@ -612,8 +654,16 @@ internal sealed class NumericLocalAnalysis
                 // A name that rests on a dominating declaration becomes readable at THAT
                 // declaration only. Marking it declared at some other one would mask a read
                 // sitting between the two, which can still observe `undefined`.
-                if (!owner.HasDominatingDeclaration(identifier.Name.Value)
-                    || owner.IsDominatingInit(declarator.Init))
+                //
+                // A declaration inside a NESTED function never initializes the outer binding, so
+                // it may not open `declared` either — a nested function's own parameter or var
+                // sharing the name would otherwise mask a read of the outer one that really does
+                // see `undefined`. That was unreachable while every name a nested function
+                // mentions kept its cell; item 3-7 removes exactly that refusal, so the rule has
+                // to be stated rather than inherited.
+                if (functionDepth == 0
+                    && (!owner.HasDominatingDeclaration(identifier.Name.Value)
+                        || owner.IsDominatingInit(declarator.Init)))
                 {
                     declared.Add(identifier.Name.Value);
                 }

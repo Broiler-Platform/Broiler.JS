@@ -117,21 +117,25 @@ partial class FastCompiler
 
                 var hoistToDirectEvalRoot = isEvalRootHoist;
                 // The preconditions both raw-local tiers share: the function's locals must be
-                // scalar-replaceable at all, and a name a closure, `arguments` or `eval` can
-                // reach keeps its cell.
+                // scalar-replaceable at all, and `arguments` / `eval` keep their cell.
                 var canUseRawLocal = !hoistToDirectEvalRoot
                     && scope.CanScalarReplaceLocals
                     && scope.Function != null
                     && !v.Equals("arguments")
-                    && !v.Equals("eval")
-                    // A closure captures through a cell, so a name any nested function
-                    // mentions keeps one; the rest of the function's vars need not.
-                    && !scope.CapturedByNestedFunctions.Contains(v.Value);
+                    && !v.Equals("eval");
+                var isCaptured = scope.CapturedByNestedFunctions.Contains(v.Value);
                 // The JSValue tier stays closed to lexical names: a `let`'s temporal dead zone
                 // and a `const`'s read-only-ness are properties of its JSVariable cell, and
                 // nothing here proves either is unobservable. The numeric tier below is
                 // different — its gate proves both.
-                var useScalarLocal = canUseRawLocal && !isLexical;
+                //
+                // It also stays closed to a captured name. The sharing itself would survive —
+                // a captured CLR local becomes a `Box<T>` that every closure over it reads
+                // through — but a JSValue tier local carries no cell, and a cell is what a
+                // direct `delete` of an eval-introduced binding, an EvalShadowVariable and a
+                // JSVariable's own TDZ state are. Item 3-7 widens the NUMERIC tier only,
+                // where the analysis has already proved each of those unreachable.
+                var useScalarLocal = canUseRawLocal && !isCaptured && !isLexical;
                 // A name the analysis proved numeric lives in a raw double. Its hoisted value
                 // is 0 rather than undefined, which is only sound because the analysis
                 // rejected any name that can be READ before its initializer runs — which is
@@ -146,7 +150,20 @@ partial class FastCompiler
                 // body-top-level declarations. Without this test a nested `{ let v = … }`
                 // would take the function's slot (docs/performance-roadmap.md item 3-3).
                 var isFunctionBodyBlock = ReferenceEquals(block, scope.Function?.Body);
+                // Item 3-7: a captured name may take the numeric tier, because a captured raw
+                // local is a `Box<double>` and that IS the shared cell a closure needs — one
+                // allocation instead of the `Box<JSVariable>` plus `JSVariable` pair, and no box
+                // per write. What it may not do is inherit the hoisting argument: a function
+                // declaration at body top level exists before the body runs, so its mention of
+                // the name can execute before the name's initializer even though it is textually
+                // after it, and a raw double hoisted to 0 would answer 0 where `undefined` is
+                // the right answer. That conjunct is a correctness rule, so it holds on both
+                // settings of the switch.
+                var capturedRejectsNumeric = isCaptured
+                    && (!CapturedNumericLocals.Enabled
+                        || scope.CapturedByHoistedFunctions.Contains(v.Value));
                 var useNumericLocal = canUseRawLocal
+                    && !capturedRejectsNumeric
                     && (!isLexical || isFunctionBodyBlock)
                     && scope.NumericLocals.Contains(v.Value);
                 // Item 3-6: why this name did or did not reach the numeric tier, attributed to
@@ -159,7 +176,13 @@ partial class FastCompiler
                     : !scope.CanScalarReplaceLocals ? NumericLocalRejection.FunctionNotScalarReplaceable
                     : scope.Function == null ? NumericLocalRejection.NotInAFunction
                     : v.Equals("arguments") || v.Equals("eval") ? NumericLocalRejection.ArgumentsOrEval
-                    : scope.CapturedByNestedFunctions.Contains(v.Value) ? NumericLocalRejection.CapturedByNestedFunction
+                    // Split so the OFF arm reports which half of the captured names a widening
+                    // could ever reach — the hoisted half can never be reached, because that
+                    // conjunct is correctness. In the ON arm capture alone stops rejecting, so
+                    // `capturedRejectsNumeric` is false for the other half and it falls through
+                    // to whatever really refuses it.
+                    : isCaptured && scope.CapturedByHoistedFunctions.Contains(v.Value) ? NumericLocalRejection.CapturedByHoistedFunction
+                    : capturedRejectsNumeric ? NumericLocalRejection.CapturedByNestedFunction
                     : isLexical && !isFunctionBodyBlock ? NumericLocalRejection.LexicalOutsideFunctionBody
                     : NumericLocalRejection.NotProvenNumeric);
 

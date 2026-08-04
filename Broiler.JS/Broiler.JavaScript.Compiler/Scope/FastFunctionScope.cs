@@ -264,6 +264,24 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     /// </summary>
     public IReadOnlySet<string> CapturedByNestedFunctions { get; internal set; } = NoCapturedNames;
 
+    /// <summary>
+    /// The subset of <see cref="CapturedByNestedFunctions"/> named by a function declaration at
+    /// this function's body top level — one whose function object exists from function entry.
+    /// Such a name may not become a raw <c>double</c> even when the analysis proves it numeric
+    /// (docs/performance-roadmap.md item 3-7).
+    /// </summary>
+    /// <remarks>
+    /// Every other numeric-local condition rests on a textual argument: a name with a reference
+    /// before its declaration is refused, so the initializer has always run by the time anything
+    /// reads it, and a raw double hoisted to 0 is never observed where <c>undefined</c> belongs.
+    /// A hoisted function declaration is the one construct that breaks the link between text
+    /// order and execution order — its body is textually after the declaration and its value
+    /// exists before it — so <c>var r = g(); var s = 0; function g() { return s; }</c> reads
+    /// <c>s</c> before its initializer runs from a body position the walk accepts. Empty when the
+    /// function has no such declaration.
+    /// </remarks>
+    public IReadOnlySet<string> CapturedByHoistedFunctions { get; internal set; } = NoCapturedNames;
+
     /// <summary>Whether the function contains any nested function at all.</summary>
     public bool HasNestedFunctions { get; internal set; }
 
@@ -555,6 +573,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         NewTargetExpression = p.NewTargetExpression;
         CanScalarReplaceLocals = p.CanScalarReplaceLocals;
         CapturedByNestedFunctions = p.CapturedByNestedFunctions;
+        CapturedByHoistedFunctions = p.CapturedByHoistedFunctions;
         HasNestedFunctions = p.HasNestedFunctions;
         NumericLocals = p.NumericLocals;
     }

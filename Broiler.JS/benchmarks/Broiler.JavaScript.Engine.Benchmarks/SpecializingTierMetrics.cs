@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -490,7 +490,9 @@ internal static class SpecializingTierMetrics
             hoistedNames = compiler.HoistedNames,
             numericRejections = DescribeRejections(compiler.NumericRejections),
             numericCandidatesOffered = compiler.NumericCandidatesOffered,
+            numericCandidatesRejected = compiler.NumericCandidatesRejected,
             numericCandidatesDropped = compiler.NumericCandidatesDropped,
+            numericCandidatesSurviving = compiler.NumericCandidatesSurviving,
 
             candidates = tiering.Candidates,
             invocations = tiering.Invocations,
