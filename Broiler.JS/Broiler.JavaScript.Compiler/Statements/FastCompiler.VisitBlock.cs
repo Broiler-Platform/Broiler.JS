@@ -149,6 +149,20 @@ partial class FastCompiler
                 var useNumericLocal = canUseRawLocal
                     && (!isLexical || isFunctionBodyBlock)
                     && scope.NumericLocals.Contains(v.Value);
+                // Item 3-6: why this name did or did not reach the numeric tier, attributed to
+                // the FIRST conjunct it fails. Item 3-5 measured the coverage at 5.0% of scalar
+                // locals and could not say which condition costs it; this is that count, and
+                // 3-6's own instruction is to take it before designing anything.
+                CompilerSpecializationDiagnostics.RecordNumericLocalDecision(
+                    useNumericLocal ? NumericLocalRejection.Accepted
+                    : hoistToDirectEvalRoot ? NumericLocalRejection.DirectEvalRoot
+                    : !scope.CanScalarReplaceLocals ? NumericLocalRejection.FunctionNotScalarReplaceable
+                    : scope.Function == null ? NumericLocalRejection.NotInAFunction
+                    : v.Equals("arguments") || v.Equals("eval") ? NumericLocalRejection.ArgumentsOrEval
+                    : scope.CapturedByNestedFunctions.Contains(v.Value) ? NumericLocalRejection.CapturedByNestedFunction
+                    : isLexical && !isFunctionBodyBlock ? NumericLocalRejection.LexicalOutsideFunctionBody
+                    : NumericLocalRejection.NotProvenNumeric);
+
                 var variable = hoistToDirectEvalRoot
                     ? GetOrCreateDirectEvalRootVariable(v)
                     : useNumericLocal

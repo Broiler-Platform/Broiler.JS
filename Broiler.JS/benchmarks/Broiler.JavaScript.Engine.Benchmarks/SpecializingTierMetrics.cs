@@ -267,6 +267,16 @@ internal static class SpecializingTierMetrics
             new JsonSerializerOptions { WriteIndented = true }));
     }
 
+    /// <summary>Names the waterfall's buckets so the JSON is readable without the enum.</summary>
+    private static object DescribeRejections(long[] counts)
+    {
+        var names = System.Enum.GetNames(typeof(Broiler.JavaScript.Compiler.NumericLocalRejection));
+        var described = new Dictionary<string, long>(names.Length);
+        for (var i = 0; i < names.Length && i < counts.Length; i++)
+            described[names[i]] = counts[i];
+        return described;
+    }
+
     private sealed record Suite(string Name, string[] Files);
 
     private static readonly Suite[] Suites =
@@ -473,6 +483,14 @@ internal static class SpecializingTierMetrics
             numericLocals = compiler.NumericLocals,
             mixedComparisons = compiler.MixedNumericComparisons,
             boxedComparisons = compiler.BoxedNumericComparisons,
+
+            // Item 3-6: the waterfall. Every hoisted name attributed to the first conjunct of
+            // the numeric-local gate it fails, which is what says WHICH condition costs the
+            // coverage item 3-5 measured at 5.0%.
+            hoistedNames = compiler.HoistedNames,
+            numericRejections = DescribeRejections(compiler.NumericRejections),
+            numericCandidatesOffered = compiler.NumericCandidatesOffered,
+            numericCandidatesDropped = compiler.NumericCandidatesDropped,
 
             candidates = tiering.Candidates,
             invocations = tiering.Invocations,

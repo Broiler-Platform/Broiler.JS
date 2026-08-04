@@ -324,9 +324,21 @@ internal sealed class NumericLocalAnalysis
 
     private IReadOnlySet<string> Resolve()
     {
+        // Item 3-6 splits "not proven numeric" in two, because the halves call for opposite
+        // responses. A name never OFFERED is one whose declaration is not numeric at all —
+        // `var a = []`, `var s = ''` — and no analysis makes a string a double. A name offered
+        // and then DROPPED is one the fixed point could not keep, and that is the only part a
+        // stronger analysis could reach.
+        CompilerSpecializationDiagnostics.RecordNumericCandidatesOffered(candidates.Count);
+
         candidates.ExceptWith(rejected);
         if (candidates.Count == 0)
+        {
+            CompilerSpecializationDiagnostics.RecordNumericCandidatesDropped(0);
             return System.Collections.Immutable.ImmutableHashSet<string>.Empty;
+        }
+
+        var beforeFixedPoint = candidates.Count;
 
         // Optimistic fixed point: drop any candidate whose assigned value is not numeric
         // under the current assumption, and repeat, because dropping one can invalidate
@@ -349,6 +361,7 @@ internal sealed class NumericLocalAnalysis
         }
         while (changed && candidates.Count > 0);
 
+        CompilerSpecializationDiagnostics.RecordNumericCandidatesDropped(beforeFixedPoint - candidates.Count);
         return candidates;
     }
 
