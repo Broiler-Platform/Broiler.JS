@@ -1,6 +1,7 @@
 ﻿using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using System;
+using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
@@ -42,6 +43,27 @@ partial class FastCompiler
             && TryCreateNativeNumericOperation(@operator, left, right) is { } nativeNumeric)
         {
             return nativeNumeric;
+        }
+
+        // ONE side native, the other a JSValue (docs/performance-roadmap.md item 3-5). Without
+        // this the native side is boxed to meet the JSValue operator, which is a whole allocation
+        // to answer a question about a number the engine already has unboxed — and
+        // `for (var i = 0; i < n; i++)` is the shape it happens in, so it happens per iteration.
+        // Unboxing the other side behind a type test instead costs a branch and allocates nothing.
+        if (@operator is TokenTypes.Less or TokenTypes.Greater)
+        {
+            if (isLeftNumber != isRightNumber
+                && TryCreateMixedNumericComparison(@operator, isLeftNumber, left, right) is { } mixedNumeric)
+            {
+                CompilerSpecializationDiagnostics.RecordMixedNumericComparison();
+                return mixedNumeric;
+            }
+
+            // Neither operand is an unboxed double, so nothing here can help it — counted as the
+            // denominator, because "3-5 is a 3.4x win on its shape" only means something next to
+            // how often the shape occurs.
+            if (!isLeftNumber && !isRightNumber)
+                CompilerSpecializationDiagnostics.RecordBoxedNumericComparison();
         }
 
         switch (@operator)
@@ -186,6 +208,96 @@ partial class FastCompiler
             _ => null,
         };
     }
+
+    /// <summary>
+    /// <c>&lt;</c> or <c>&gt;</c> where one operand is already an unboxed double and the other is
+    /// a <see cref="JSValue"/>: tests the value side and compares two doubles when it is a number,
+    /// falling back to the ordinary operator when it is not (item 3-5).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Why this is the shape worth fixing.</b> Item 3-3 gave <c>var</c>, <c>let</c>/<c>const</c>
+    /// and block-scoped <c>var</c> raw doubles, and left one gap: a parameter cannot reach the
+    /// numeric tier, because what a caller passed is not knowable. The gap was recorded as a
+    /// limitation and never priced. It costs <b>a box per iteration</b> — measured at
+    /// <b>33.77 ns and 32 B</b> against <b>8.36 ns and 0 B</b> for the same loop with a literal
+    /// bound — because <c>i &lt; n</c> boxes the raw <c>i</c> to meet the <c>JSValue</c> operator.
+    /// </para>
+    /// <para>
+    /// <b>And the fix is not the one the gap suggests.</b> Making a parameter a numeric local needs
+    /// an entry guard and a second body; unboxing the <em>other side</em> of the comparison needs
+    /// neither, and it covers strictly more — <c>i &lt; a.length</c> is a property read, not a
+    /// parameter, and boxed for the same reason.
+    /// </para>
+    /// <para>
+    /// <b>Only <c>&lt;</c> and <c>&gt;</c></b>, for the reason
+    /// <see cref="TryCreateNativeNumericValue"/> already records: the backend emits an ORDERED
+    /// compare for <c>&lt;=</c> and <c>&gt;=</c>, which answers true when either side is NaN, and
+    /// every relational comparison involving NaN is false in JavaScript.
+    /// </para>
+    /// <para>
+    /// <b>Nothing is skipped when the guard holds.</b> Relational comparison runs ToPrimitive on
+    /// both operands first, and ToPrimitive of a Number is that Number — no <c>valueOf</c>, no
+    /// <c>toString</c>, no observable effect. So a receiver that is already a number takes the
+    /// same path with the same answer; anything else takes the operator it took before.
+    /// </para>
+    /// <para>
+    /// Both operands go into temporaries, in source order, because the value side is read twice
+    /// (the test and the unboxing) and the native side is read in both arms. Evaluating in place
+    /// would run the left operand after the right, or run one of them twice.
+    /// </para>
+    /// </remarks>
+    private BExpression TryCreateMixedNumericComparison(
+        TokenTypes @operator, bool leftIsNative, BExpression left, BExpression right)
+    {
+        if (@operator is not (TokenTypes.Less or TokenTypes.Greater))
+            return null;
+
+        var nativeSide = leftIsNative ? left : right;
+        var valueSide = leftIsNative ? right : left;
+        if (nativeSide.Type != typeof(double) || !typeof(JSValue).IsAssignableFrom(valueSide.Type))
+            return null;
+
+        // Block-declared locals rather than pooled temporaries, and the difference is
+        // correctness. A pooled temp is acquired here — AFTER both operands were compiled — so a
+        // temp one of them released while being built could be handed straight back, and the
+        // second assignment would then clobber the first operand's saved value. `i < obj.m()` is
+        // enough to reach it. Declaring locals in the block cannot collide with anything.
+        var nativeLocal = BExpression.Parameter(typeof(double), "#cmpnum");
+        var valueLocal = BExpression.Parameter(typeof(JSValue), "#cmpval");
+
+        var comparison = leftIsNative
+            ? BExpression.Binary(nativeLocal, ToBinaryOperator(@operator), JSValueBuilder.DoubleValue(valueLocal))
+            : BExpression.Binary(JSValueBuilder.DoubleValue(valueLocal), ToBinaryOperator(@operator), nativeLocal);
+
+        var generic = leftIsNative
+            ? BinaryOperation.Operation(JSNumberBuilder.New(nativeLocal), valueLocal, @operator)
+            : BinaryOperation.Operation(valueLocal, JSNumberBuilder.New(nativeLocal), @operator);
+
+        if (generic == null)
+            return null;
+
+        // Source order: the left operand is evaluated first whichever side is the native one.
+        var first = leftIsNative
+            ? BExpression.Assign(nativeLocal, nativeSide)
+            : BExpression.Assign(valueLocal, valueSide);
+        var second = leftIsNative
+            ? BExpression.Assign(valueLocal, valueSide)
+            : BExpression.Assign(nativeLocal, nativeSide);
+
+        return BExpression.Block(
+            new Sequence<BParameterExpression> { nativeLocal, valueLocal },
+            first,
+            second,
+            BExpression.Condition(
+                JSValueBuilder.IsNumber(valueLocal),
+                JSBooleanBuilder.NewFromCLRBoolean(comparison),
+                generic,
+                typeof(JSValue)));
+    }
+
+    private static BOperator ToBinaryOperator(TokenTypes @operator)
+        => @operator == TokenTypes.Less ? BOperator.Less : BOperator.Greater;
 
     public (bool isString, bool isNumber, BExpression exp) ToNativeExpression(AstExpression ast)
     {

@@ -389,6 +389,7 @@ internal static class SpecializingTierMetrics
         TypeFeedback.Reset();
         Speculation.Reset();
         PropertyOptimizationDiagnostics.Reset();
+        Broiler.JavaScript.Compiler.CompilerSpecializationDiagnostics.Reset();
 
         // Cache hits are what makes the addressable surface COUNTABLE rather than argued. A read
         // that takes the specialized path never calls PropertyInlineCacheSite.Get, so it records
@@ -433,6 +434,10 @@ internal static class SpecializingTierMetrics
             return new { suite = suite.Name, loaded = false, error = $"{e.GetType().Name}: {e.Message}" };
         }
 
+        // Allocation over the whole driver run. Deterministic where the wall clock is not, and
+        // the direct corpus-level reading of item 3-5: a box per loop iteration removed shows up
+        // here exactly, whether or not it is visible in the time.
+        var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
         stopwatch.Start();
         try
         {
@@ -444,6 +449,8 @@ internal static class SpecializingTierMetrics
         }
 
         stopwatch.Stop();
+        var allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
+        var compiler = Broiler.JavaScript.Compiler.CompilerSpecializationDiagnostics.Snapshot();
         var tiering = context.FunctionTiering.Snapshot();
         var speculation = Speculation.Snapshot();
         var properties = PropertyOptimizationDiagnostics.Snapshot();
@@ -457,6 +464,15 @@ internal static class SpecializingTierMetrics
             benchmarksRun = int.TryParse(split[0], out var ran) ? ran : 0,
             failures = split.Length > 1 && split[1].Length > 0 ? split[1] : null,
             elapsedMs = stopwatch.ElapsedMilliseconds,
+            allocatedBytes,
+
+            // Item 3-5's shape, counted at compile time: how many relational comparisons had one
+            // operand already unboxed, against how many had neither — and how few locals reach the
+            // numeric tier at all, which is what bounds the first number.
+            scalarLocals = compiler.ScalarLocals,
+            numericLocals = compiler.NumericLocals,
+            mixedComparisons = compiler.MixedNumericComparisons,
+            boxedComparisons = compiler.BoxedNumericComparisons,
 
             candidates = tiering.Candidates,
             invocations = tiering.Invocations,
