@@ -192,8 +192,38 @@ partial class FastCompiler
             TokenTypes.Divide => BExpression.Divide(left, right),
             TokenTypes.Mod => BExpression.Modulo(left, right),
             TokenTypes.Power => BExpression.Power(left, right),
+
+            // The bitwise and shift family, through JSNumericOperators rather than as
+            // BExpression nodes: their operands are ToInt32/ToUint32 of the double and not the
+            // double, and that reduction is not a CLR cast. Sending them to one static method
+            // apiece makes them identical to the JSValue operators by construction.
+            TokenTypes.BitwiseAnd when NativeBitwiseOperators.Enabled => NumericOperator(nameof(JSNumericOperators.BitwiseAnd), left, right),
+            TokenTypes.BitwiseOr when NativeBitwiseOperators.Enabled => NumericOperator(nameof(JSNumericOperators.BitwiseOr), left, right),
+            TokenTypes.Xor when NativeBitwiseOperators.Enabled => NumericOperator(nameof(JSNumericOperators.BitwiseXor), left, right),
+            TokenTypes.LeftShift when NativeBitwiseOperators.Enabled => NumericOperator(nameof(JSNumericOperators.LeftShift), left, right),
+            TokenTypes.RightShift when NativeBitwiseOperators.Enabled => NumericOperator(nameof(JSNumericOperators.RightShift), left, right),
+            TokenTypes.UnsignedRightShift when NativeBitwiseOperators.Enabled => NumericOperator(nameof(JSNumericOperators.UnsignedRightShift), left, right),
+
             _ => null,
         };
+
+    private static readonly System.Collections.Generic.Dictionary<string, System.Reflection.MethodInfo> numericOperators = new();
+
+    /// <summary>A call to one of <see cref="JSNumericOperators"/>'s two-double operators.</summary>
+    private static BExpression NumericOperator(string name, BExpression left, BExpression right)
+    {
+        System.Reflection.MethodInfo method;
+        lock (numericOperators)
+        {
+            if (!numericOperators.TryGetValue(name, out method))
+            {
+                method = typeof(JSNumericOperators).GetMethod(name, [typeof(double), typeof(double)]);
+                numericOperators[name] = method;
+            }
+        }
+
+        return BExpression.Call(null, method, left, right);
+    }
 
     /// <summary>The boxed result of a native numeric operation or comparison, or null.</summary>
     private static BExpression TryCreateNativeNumericOperation(TokenTypes @operator, BExpression left, BExpression right)
@@ -351,7 +381,10 @@ partial class FastCompiler
 
     private static bool IsNativeNumericOperator(TokenTypes @operator) => @operator
         is TokenTypes.Plus or TokenTypes.Minus or TokenTypes.Multiply
-        or TokenTypes.Divide or TokenTypes.Mod or TokenTypes.Power;
+        or TokenTypes.Divide or TokenTypes.Mod or TokenTypes.Power
+        || (NativeBitwiseOperators.Enabled && @operator
+            is TokenTypes.BitwiseAnd or TokenTypes.BitwiseOr or TokenTypes.Xor
+            or TokenTypes.LeftShift or TokenTypes.RightShift or TokenTypes.UnsignedRightShift);
 
     /// <summary>The raw double storage behind <paramref name="ast"/>, if it is a numeric local.</summary>
     private bool TryGetNumericLocalStorage(AstExpression ast, out BExpression storage)

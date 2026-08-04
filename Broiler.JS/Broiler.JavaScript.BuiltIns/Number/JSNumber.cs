@@ -105,7 +105,14 @@ public sealed partial class JSNumber : JSPrimitive
         return KeyStrings.GetOrCreate(text);
     }
 
-    public JSNumber(double value) : base() => this.value = value;
+    public JSNumber(double value) : base()
+    {
+        // Counted here rather than in Create, so a builtin that writes `new JSNumber(x)` directly
+        // — JSMath alone has 57 — is included (docs/performance-roadmap.md item 3-1).
+        if (NumberBoxingDiagnostics.Enabled)
+            NumberBoxingDiagnostics.RecordAllocation();
+        this.value = value;
+    }
 
     // ── small-number cache ───────────────────────────────────────────────────────────
 
@@ -146,6 +153,9 @@ public sealed partial class JSNumber : JSPrimitive
         // Range-tested on the double first: two compares reject a large magnitude, a NaN and
         // an infinity, and a loop counting to a million misses on all but its first thousand
         // iterations — so the miss path is the one that has to stay cheap.
+        if (NumberBoxingDiagnostics.Enabled)
+            NumberBoxingDiagnostics.RecordRequest();
+
         if (value >= CacheMinimum && value <= CacheMaximum)
         {
             // The int round trip only survives for a double that is exactly the integer the
@@ -157,14 +167,32 @@ public sealed partial class JSNumber : JSPrimitive
             {
                 var table = smallNumbers ??= new JSNumber[CacheSize];
                 if (NumberBoxingDiagnostics.Enabled)
-                    NumberBoxingDiagnostics.RecordCached();
+                    NumberBoxingDiagnostics.RecordCacheHit();
                 return table[index] ??= new JSNumber(value);
             }
         }
 
         if (NumberBoxingDiagnostics.Enabled)
-            NumberBoxingDiagnostics.RecordAllocated();
+            NumberBoxingDiagnostics.RecordFactoryAllocation();
         return new JSNumber(value);
+    }
+
+    /// <summary>
+    /// The <see cref="JSNumber"/> for a numeric LITERAL — a compile-time constant the emitted
+    /// code evaluates afresh every time control reaches it (docs/performance-roadmap.md item 3-1).
+    /// </summary>
+    /// <remarks>
+    /// Identical to <see cref="Create"/> in every respect but the counter. It exists because
+    /// `VisitLiteral` has shared statics for NaN, 0, 1 and 2 only, so every other literal is a
+    /// factory call per evaluation — and whether that matters is a question about how many of a
+    /// real run's boxes are literals, which nothing could answer while both paths were the same
+    /// method.
+    /// </remarks>
+    public static JSValue CreateLiteral(double value)
+    {
+        if (NumberBoxingDiagnostics.Enabled)
+            NumberBoxingDiagnostics.RecordLiteralRequest();
+        return Create(value);
     }
 
     public override double DoubleValue => value;

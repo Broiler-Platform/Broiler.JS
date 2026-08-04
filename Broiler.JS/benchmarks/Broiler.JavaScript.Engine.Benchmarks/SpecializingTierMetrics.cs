@@ -521,8 +521,11 @@ internal static class SpecializingTierMetrics
             // The ceiling on all of phase 3: a raw double can only ever remove a box, so
             // boxesAllocated x 24 B is every byte the whole family could take.
             boxingRequests = boxing.Requests,
-            boxesCached = boxing.Cached,
-            boxesAllocated = boxing.Allocated,
+            boxesCached = boxing.CacheHits,
+            boxesAllocated = boxing.FactoryAllocations,
+            boxesAllocatedTotal = boxing.Allocations,
+            boxesAllocatedDirect = boxing.DirectAllocations,
+            boxingLiteralRequests = boxing.LiteralRequests,
 
             candidates = tiering.Candidates,
             invocations = tiering.Invocations,

@@ -48,7 +48,7 @@ partial class FastCompiler
                 if (n == 0 && n != -0)
                     return JSNumberBuilder.Zero;
 
-                return JSNumberBuilder.New(BExpression.Constant(n));
+                return JSNumberBuilder.NewLiteral(n);
         }
 
         throw new NotImplementedException();

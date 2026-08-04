@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.Text.Json;
 using Broiler.JavaScript.BuiltIns.Number;
@@ -146,6 +146,183 @@ internal static class LocalAllocationMetrics
             "3-3's third category: a var hoisted to the function but declared inside a block, "
                 + "so reaching the loop without running the initializer is what has to be ruled "
                 + "out"),
+
+        new(
+            "top-level-var-fractional",
+            "element",
+            $$"""
+            (function (arg) {
+                var v = 3.5;
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = s + v * 1.5; }
+                return s;
+            })
+            """,
+            "top-level-var with a multiplier whose results are never small integers, so the "
+                + "small-number cache cannot answer them. It is the control for the element rows "
+                + "below: a raw double still reaches 0.00, which is what says those rows measure "
+                + "the element and not the arithmetic"),
+
+        new(
+            "native-arithmetic-on-numeric-locals",
+            "element",
+            $$"""
+            (function (arg) {
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = i + 1023; }
+                return s;
+            })
+            """,
+            "`+` on two proven-numeric operands. TryCreateNativeNumericValue has a native form "
+                + "for it, so this is the floor"),
+
+        new(
+            "bitwise-on-numeric-locals",
+            "element",
+            $$"""
+            (function (arg) {
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = i & 1023; }
+                return s;
+            })
+            """,
+            "the identical shape with `&` instead of `+`. NumericLocalAnalysis TYPES the bitwise "
+                + "operators — IsNumericBinary lists them — but TryCreateNativeNumericValue has no "
+                + "native form for them, because ToInt32's modulo-2^32 wrapping is not a plain "
+                + "cast. So both operands are proven numeric, the result is proven numeric, and "
+                + "the value still goes out through the generic operator and back"),
+
+        // ── item 3-1: the same arithmetic, with the value living in an ARRAY ──────────────
+        //
+        // 3-1's own measurement priced the element STORE and concluded the item is a wash: a
+        // typed `double[]` saves a box on write and costs one on read, because the read has to
+        // hand back an `IPropertyValue`. That is true of 3-1 alone. These rows price the other
+        // half — what the arithmetic AROUND the element costs today — because that is what an
+        // unboxed element could feed, and it is where item 3-8's census found the corpus's boxes.
+        // Measured against `top-level-var`, which runs the identical arithmetic on a raw double
+        // and reaches 0.00, so each row is the ceiling on unboxing that whole chain.
+
+        new(
+            "element-read-only",
+            "element",
+            $$"""
+            (function (arg) {
+                var a = [3.5];
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = s + a[0]; }
+                return s;
+            })
+            """,
+            "the same accumulation with NO multiply, so the row isolates what an element read "
+                + "costs the expression it feeds. Against local-read-only below, the difference is "
+                + "the element; against element-read-constant-index, the difference is one "
+                + "operator"),
+
+        new(
+            "local-read-only",
+            "element",
+            $$"""
+            (function (arg) {
+                var v = 3.5;
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = s + v; }
+                return s;
+            })
+            """,
+            "the pair for the row above with the value in a raw double instead of an array"),
+
+        new(
+            "element-multiply-only",
+            "element",
+            $$"""
+            (function (arg) {
+                var a = [3.5];
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = a[0] * 1.5; }
+                return s;
+            })
+            """,
+            "ONE generic multiply an iteration and nothing else — no accumulation. Against "
+                + "element-read-only, which is one generic ADD, this says what a single boxed "
+                + "operator costs, and the two rows together decompose the 95.99 above"),
+
+        new(
+            "literal-static-operand",
+            "element",
+            $$"""
+            (function (arg) {
+                var a = [1234.5];
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = a[0] * 2; }
+                return s;
+            })
+            """,
+            "one generic multiply whose right operand is the literal `2`, which VisitLiteral "
+                + "emits as a shared static. The product 2469 is above the small-number cache, so "
+                + "the result box is real and this row should be exactly one box"),
+
+        new(
+            "literal-fresh-operand",
+            "element",
+            $$"""
+            (function (arg) {
+                var a = [1234.5];
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = a[0] * 1.5; }
+                return s;
+            })
+            """,
+            "the identical multiply with the literal `1.5` instead of `2`. VisitLiteral has "
+                + "shared statics for NaN, 0, 1 and 2 only, so every other literal is emitted as "
+                + "a JSNumber.Create of a compile-time constant — re-boxed on every evaluation. "
+                + "If that is what it does, this row is one box dearer than the one above"),
+
+        new(
+            "element-read-constant-index",
+            "element",
+            $$"""
+            (function (arg) {
+                var a = [3.5];
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = s + a[0] * 1.5; }
+                return s;
+            })
+            """,
+            "the same `s = s + v * 2` as top-level-var with the value in an array at a constant "
+                + "index. The read itself allocates nothing today — the element IS a JSValue — so "
+                + "everything here is the arithmetic that a raw element could have fed"),
+
+        new(
+            "element-read-variable-index",
+            "element",
+            $$"""
+            (function (arg) {
+                var a = [];
+                for (var k = 0; k < 1024; k++) { a[k] = k + 0.5; }
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = s + a[i & 1023] * 1.5; }
+                return s;
+            })
+            """,
+            "the same read at a variable index over a real dense array — NavierStokes' and "
+                + "Crypto's shape. Item 3-0 already unboxed the index, so the difference from the "
+                + "constant-index row is what remains of the access itself"),
+
+        new(
+            "element-read-write-chain",
+            "element",
+            $$"""
+            (function (arg) {
+                var a = [];
+                for (var k = 0; k < 1024; k++) { a[k] = k + 0.5; }
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { a[i & 1023] = a[i & 1023] * 0.5 + 0.25; s = s + 1.5; }
+                return s;
+            })
+            """,
+            "read, arithmetic and store back into the array — the NavierStokes kernel in "
+                + "miniature, and the shape a typed backing store plus an unboxed read would "
+                + "cover end to end"),
 
         // ── item 3-8: the same value, not PROVABLY numeric ────────────────────────────────
         //

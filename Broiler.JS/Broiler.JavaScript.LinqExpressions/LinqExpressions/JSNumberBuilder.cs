@@ -9,6 +9,7 @@ public class JSNumberBuilder
 {
     private static Type type;
     private static MethodInfo _create;
+    private static MethodInfo _createLiteral;
 
     public static Expression NaN;
     public static Expression Zero;
@@ -25,6 +26,8 @@ public class JSNumberBuilder
         type = numberType;
         _create = type.GetMethod("Create", [typeof(double)])
             ?? throw new InvalidOperationException("JSNumber.Create(double) not found");
+        _createLiteral = type.GetMethod("CreateLiteral", [typeof(double)])
+            ?? throw new InvalidOperationException("JSNumber.CreateLiteral(double) not found");
 
         NaN = Expression.Field(null, type.GetField("NaN"));
         Zero = Expression.Field(null, type.GetField("Zero"));
@@ -45,4 +48,12 @@ public class JSNumberBuilder
 
         return Expression.Call(null, _create, exp);
     }
+
+    /// <summary>
+    /// Emits the creation of a number for a compile-time LITERAL. Same factory, separate entry,
+    /// so a run can be asked how much of its boxing is literals (docs/performance-roadmap.md
+    /// item 3-1).
+    /// </summary>
+    public static Expression NewLiteral(double value)
+        => Expression.Call(null, _createLiteral, Expression.Constant(value));
 }
