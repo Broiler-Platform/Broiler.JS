@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
@@ -103,7 +103,8 @@ public readonly record struct PropertyOptimizationSnapshot(
     long MissKeyMismatch,
     long MissShape,
     long MissNotDescribable,
-    long MissEntryAlreadyPresent);
+    long MissEntryAlreadyPresent,
+    long CacheHitsNumeric);
 
 /// <summary>
 /// Counters for validating shape/cache invalidation behavior.
@@ -135,6 +136,7 @@ public static class PropertyOptimizationDiagnostics
     private static long missShape;
     private static long missNotDescribable;
     private static long missEntryAlreadyPresent;
+    private static long cacheHitsNumeric;
 
     /// <summary>
     /// Whether the counters below are recorded. Defaults to <c>false</c>; while it is
@@ -167,6 +169,28 @@ public static class PropertyOptimizationDiagnostics
     internal static void RecordShapeTransition() { if (Enabled) Interlocked.Increment(ref shapeTransitions); }
     internal static void RecordDictionaryFallback() { if (Enabled) Interlocked.Increment(ref dictionaryFallbacks); }
     internal static void RecordCacheHit() { if (Enabled) Interlocked.Increment(ref cacheHits); }
+
+    /// <summary>
+    /// A cache-answered read, together with whether the value it returned was a number
+    /// (docs/performance-roadmap.md item 3-2).
+    /// </summary>
+    /// <remarks>
+    /// The signal item 4-1 deliberately left uncollected — "numeric-vs-generic per site" — and
+    /// which item 3-8 then named as the thing nobody could answer. It is the population item 3-2
+    /// exists for: a shape slot that held a raw <c>double</c> would serve exactly these reads
+    /// without a box, and every other read unchanged. Counted at the two hit returns only, so it
+    /// describes the reads the inline cache answers rather than every read; over the Octane corpus
+    /// the hit rate runs 93–99.97% per suite, so the two populations are close but not identical.
+    /// </remarks>
+    internal static void RecordCacheHit(JSValue value)
+    {
+        if (!Enabled)
+            return;
+
+        Interlocked.Increment(ref cacheHits);
+        if (value is not null && value.IsNumber)
+            Interlocked.Increment(ref cacheHitsNumeric);
+    }
     internal static void RecordCacheMiss() { if (Enabled) Interlocked.Increment(ref cacheMisses); }
     internal static void RecordPolymorphicPromotion() { if (Enabled) Interlocked.Increment(ref polymorphicPromotions); }
     internal static void RecordMegamorphic() { if (Enabled) Interlocked.Increment(ref megamorphicSites); }
@@ -214,7 +238,8 @@ public static class PropertyOptimizationDiagnostics
         Interlocked.Read(ref missKeyMismatch),
         Interlocked.Read(ref missShape),
         Interlocked.Read(ref missNotDescribable),
-        Interlocked.Read(ref missEntryAlreadyPresent));
+        Interlocked.Read(ref missEntryAlreadyPresent),
+        Interlocked.Read(ref cacheHitsNumeric));
 
     public static void Reset()
     {
@@ -236,6 +261,7 @@ public static class PropertyOptimizationDiagnostics
         Interlocked.Exchange(ref missShape, 0);
         Interlocked.Exchange(ref missNotDescribable, 0);
         Interlocked.Exchange(ref missEntryAlreadyPresent, 0);
+        Interlocked.Exchange(ref cacheHitsNumeric, 0);
     }
 }
 
@@ -589,7 +615,7 @@ public static class PropertyInlineCacheSite
                     {
                         if (receiver.TryReadShapeSlot(entry.ShapeId, entry.Slot, out var own))
                         {
-                            PropertyOptimizationDiagnostics.RecordCacheHit();
+                            PropertyOptimizationDiagnostics.RecordCacheHit(own);
                             return own;
                         }
                     }
@@ -598,7 +624,7 @@ public static class PropertyInlineCacheSite
                         && entry.PrototypeVersion == JSObject.PrototypeMutationVersion
                         && entry.Holder.TryReadShapeSlot(entry.HolderShapeId, entry.Slot, out var inherited))
                     {
-                        PropertyOptimizationDiagnostics.RecordCacheHit();
+                        PropertyOptimizationDiagnostics.RecordCacheHit(inherited);
                         return inherited;
                     }
                 }

@@ -547,6 +547,10 @@ internal static class SpecializingTierMetrics
             cacheHits = properties.CacheHits,
             cacheMisses = properties.CacheMisses,
 
+            // Item 3-2's population: of the reads the inline cache answers, how many hand back a
+            // number. A shape slot holding a raw double would serve exactly these without a box.
+            cacheHitsNumeric = properties.CacheHitsNumeric,
+
             // Item 4-4's surface: every JavaScript call, and the share of them made FROM a
             // promoted function — the only calls a tier-2 recompile could ever inline.
             calls = callPath.Calls,

@@ -324,6 +324,101 @@ internal static class LocalAllocationMetrics
                 + "miniature, and the shape a typed backing store plus an unboxed read would "
                 + "cover end to end"),
 
+        // ── item 3-2: the same value, living in an object FIELD ──────────────────────────
+        //
+        // 3-2's whole premise is one sentence: "shapeSlots holds JSValue references, so
+        // `vector.x = 1.5` allocates". These rows take that example literally and then vary the
+        // one thing it does not mention — where the stored value came from — because item 3-1
+        // found that the boxes on the array path are minted by the OPERATORS and never by the
+        // store, and the object path should answer the same way if the two items are twins.
+
+        new(
+            "field-write-static-literal",
+            "field",
+            $$"""
+            (function (arg) {
+                var o = { x: 0 };
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { o.x = 2; s = s + 1.5; }
+                return s;
+            })
+            """,
+            "the item's own example with a literal VisitLiteral has a shared static for. If the "
+                + "slot is what allocates, this row still pays"),
+
+        new(
+            "field-write-fresh-literal",
+            "field",
+            $$"""
+            (function (arg) {
+                var o = { x: 0 };
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { o.x = 1.5; s = s + 1.5; }
+                return s;
+            })
+            """,
+            "`vector.x = 1.5` exactly as item 3-2 writes it. The difference from the row above is "
+                + "the literal's own box, not the slot's"),
+
+        new(
+            "field-write-from-numeric-local",
+            "field",
+            $$"""
+            (function (arg) {
+                var o = { x: 0 };
+                var v = 3.5;
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { o.x = v * 1.5; s = s + 1.5; }
+                return s;
+            })
+            """,
+            "the store 3-2 is actually for: a value that IS a raw double at the point of the "
+                + "store, which the slot cannot hold and so must box. This is the object twin of "
+                + "3-1's write side"),
+
+        new(
+            "field-read-only",
+            "field",
+            $$"""
+            (function (arg) {
+                var o = { x: 3.5 };
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { s = s + o.x; }
+                return s;
+            })
+            """,
+            "the read into an addition, to pair with element-read-only"),
+
+        new(
+            "field-read-write-chain",
+            "field",
+            $$"""
+            (function (arg) {
+                var o = { x: 3.5 };
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { o.x = o.x * 0.5 + 0.25; s = s + 1.5; }
+                return s;
+            })
+            """,
+            "read, arithmetic and store back into the field — Box2D's shape, and the object twin "
+                + "of element-read-write-chain"),
+
+        new(
+            "local-write-control",
+            "field",
+            $$"""
+            (function (arg) {
+                var o = 0;
+                var v = 3.5;
+                var s = 0;
+                for (var i = 0; i < {{Iterations}}; i++) { o = v * 1.5; s = s + 1.5; }
+                return s + o;
+            })
+            """,
+            "the control for the rows above: the identical arithmetic stored into a raw-double "
+                + "LOCAL instead of a field, so every field row is read net of the loop that "
+                + "carries it"),
+
         // ── item 3-8: the same value, not PROVABLY numeric ────────────────────────────────
         //
         // Three spellings of top-level-var differing only in where the value came from — a
