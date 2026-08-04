@@ -521,9 +521,25 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     public JSValue ToNumeric()
     {
         var primitive = ToNumericPrimitive(this);
-        if (!primitive.IsBigInt && ArithmeticOperandDiagnostics.Enabled)
+        if (primitive.IsBigInt)
+            return primitive;
+
+        // Already the answer. ToNumeric minted unconditionally, so `n++` on a Number copied the
+        // Number into a second, equal JSNumber to hand back as the old value -- and a JavaScript
+        // Number has no observable identity (it compares by value and cannot carry properties),
+        // which is the argument the small-integer cache already rests on. Item 3-1's boxing-source
+        // census priced the copy at 15.4% of everything the corpus boxes
+        // (docs/performance-roadmap.md item 3-1).
+        if (primitive.IsNumber && NumericUpdateReuse.Enabled)
+        {
+            if (ArithmeticOperandDiagnostics.Enabled)
+                ArithmeticOperandDiagnostics.RecordUnaryToNumericReused();
+            return primitive;
+        }
+
+        if (ArithmeticOperandDiagnostics.Enabled)
             ArithmeticOperandDiagnostics.RecordUnaryToNumeric();
-        return primitive.IsBigInt ? primitive : CreateNumber(primitive.DoubleValue);
+        return CreateNumber(primitive.DoubleValue);
     }
 
     public virtual JSValue Subtract(JSValue value)

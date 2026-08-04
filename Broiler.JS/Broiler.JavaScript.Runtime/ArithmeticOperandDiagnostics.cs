@@ -46,6 +46,7 @@ public static class ArithmeticOperandDiagnostics
     private static long unaryNegate;
     private static long unaryUpdate;
     private static long unaryToNumeric;
+    private static long unaryToNumericReused;
 
     /// <summary>Whether operand kinds are counted. Off by default.</summary>
     public static bool Enabled;
@@ -79,6 +80,14 @@ public static class ArithmeticOperandDiagnostics
     public static long UnaryToNumeric => Interlocked.Read(ref unaryToNumeric);
 
     /// <summary>
+    /// Coercions that handed the operand back instead of copying it, under
+    /// <see cref="NumericUpdateReuse"/>. <c>UnaryToNumeric + UnaryToNumericReused</c> is the
+    /// coercion count, which is the same on both arms — so the split is a measurement of the
+    /// switch rather than of the workload.
+    /// </summary>
+    public static long UnaryToNumericReused => Interlocked.Read(ref unaryToNumericReused);
+
+    /// <summary>
     /// Records one generic invocation and whether a native form guarded on "both are Numbers"
     /// could have answered it.
     /// </summary>
@@ -106,6 +115,9 @@ public static class ArithmeticOperandDiagnostics
     /// <summary>Records a box minted coercing the operand of <c>++</c>/<c>--</c>.</summary>
     internal static void RecordUnaryToNumeric() => Interlocked.Increment(ref unaryToNumeric);
 
+    /// <summary>Records a coercion that reused an already-Number operand instead of copying it.</summary>
+    internal static void RecordUnaryToNumericReused() => Interlocked.Increment(ref unaryToNumericReused);
+
     public static void Reset()
     {
         Interlocked.Exchange(ref generic, 0);
@@ -115,5 +127,6 @@ public static class ArithmeticOperandDiagnostics
         Interlocked.Exchange(ref unaryNegate, 0);
         Interlocked.Exchange(ref unaryUpdate, 0);
         Interlocked.Exchange(ref unaryToNumeric, 0);
+        Interlocked.Exchange(ref unaryToNumericReused, 0);
     }
 }

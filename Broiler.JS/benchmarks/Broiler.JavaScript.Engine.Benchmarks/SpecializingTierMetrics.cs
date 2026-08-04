@@ -492,6 +492,7 @@ internal static class SpecializingTierMetrics
         var arithmeticUnaryNegate = ArithmeticOperandDiagnostics.UnaryNegate;
         var arithmeticUnaryUpdate = ArithmeticOperandDiagnostics.UnaryUpdate;
         var arithmeticUnaryToNumeric = ArithmeticOperandDiagnostics.UnaryToNumeric;
+        var arithmeticUnaryToNumericReused = ArithmeticOperandDiagnostics.UnaryToNumericReused;
         ArithmeticOperandDiagnostics.Enabled = false;
 
         var compiler = Broiler.JavaScript.Compiler.CompilerSpecializationDiagnostics.Snapshot();
@@ -571,6 +572,10 @@ internal static class SpecializingTierMetrics
             arithmeticUnaryNegate,
             arithmeticUnaryUpdate,
             arithmeticUnaryToNumeric,
+            // The coercions handed back instead of copied. This plus arithmeticUnaryToNumeric is
+            // the coercion count and is invariant across the two settings of
+            // BROILER_JS_NUMERIC_UPDATE_REUSE, so the split measures the switch and not the run.
+            arithmeticUnaryToNumericReused,
 
             candidates = tiering.Candidates,
             invocations = tiering.Invocations,

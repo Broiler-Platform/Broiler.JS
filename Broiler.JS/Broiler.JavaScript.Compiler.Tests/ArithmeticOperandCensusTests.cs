@@ -23,10 +23,16 @@ public sealed class ArithmeticOperandCensusTests
         long RawDouble,
         long UnaryNegate,
         long UnaryUpdate,
-        long UnaryToNumeric);
+        long UnaryToNumeric,
+        long UnaryToNumericReused);
 
-    private static Census Count(string source, bool speculate = false)
+    private static Census Count(string source, bool speculate = false, bool reuse = true)
     {
+        // Pinned rather than inherited, for every fixture in the file: these counters are
+        // process-wide statics and so is the switch, so a fixture that left the switch flipped
+        // would otherwise show up as a census that moved on its own.
+        var previousReuse = NumericUpdateReuse.Enabled;
+        NumericUpdateReuse.Enabled = reuse;
         // Speculation OFF by default here, and that is the point of the parameter rather than an
         // oversight: this census counts what reaches the GENERIC path, and item 3-1's guarded tree
         // exists to take shapes off it. Measuring the population with the thing that consumes the
@@ -48,12 +54,14 @@ public sealed class ArithmeticOperandCensusTests
                 ArithmeticOperandDiagnostics.RawDoubleOperand,
                 ArithmeticOperandDiagnostics.UnaryNegate,
                 ArithmeticOperandDiagnostics.UnaryUpdate,
-                ArithmeticOperandDiagnostics.UnaryToNumeric);
+                ArithmeticOperandDiagnostics.UnaryToNumeric,
+                ArithmeticOperandDiagnostics.UnaryToNumericReused);
         }
         finally
         {
             ArithmeticOperandDiagnostics.Enabled = previous;
             NumericSpeculation.Enabled = previousSpeculation;
+            NumericUpdateReuse.Enabled = previousReuse;
         }
     }
 
@@ -189,22 +197,44 @@ public sealed class ArithmeticOperandCensusTests
         Assert.Equal(0, census.UnaryToNumeric);
     }
 
-    [Fact]
-    public void AnUpdateOnAPropertyCostsTwoBoxesNotOne()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AnUpdateOnAPropertyCostsTwoBoxesUntilOneOfThemIsRemoved(bool reuse)
     {
-        // The finding the counter was added for: `o.x++` boxes twice — once in ToNumeric, which
-        // re-boxes an operand that is already a Number to hand back the old value, and once in the
-        // step itself. Splitting the two is the difference between "++ is expensive" and knowing
-        // which half of it to remove.
-        var census = Count("""
+        // The finding the counter was added for, and then the removal it led to. `o.x++` boxed
+        // twice — once in ToNumeric, which re-boxed an operand that is already a Number to hand
+        // back the old value, and once in the step itself. Splitting the two was the difference
+        // between "++ is expensive" and knowing which half of it to remove, and the half that came
+        // out is the ToNumeric copy.
+        //
+        // This fixture is why it is asserted on both settings rather than simply updated: written
+        // against the old behaviour it FAILED the moment the reuse landed, in all three suite runs,
+        // which is exactly what a census fixture is for. What must not change is the number of
+        // coercions — only which side of the split they fall on.
+        const string Source = """
             var o = { x: 1 };
             o.x++;
             o.x;
-            """);
+            """;
 
-        Assert.Equal(1, census.UnaryToNumeric);
+        var census = Count(Source, reuse: reuse);
+
         Assert.Equal(1, census.UnaryUpdate);
         Assert.Equal(0, census.UnaryNegate);
+        Assert.Equal(1, census.UnaryToNumeric + census.UnaryToNumericReused);
+
+        if (reuse)
+        {
+            // One box, not two: the coercion happened and minted nothing.
+            Assert.Equal(0, census.UnaryToNumeric);
+            Assert.Equal(1, census.UnaryToNumericReused);
+        }
+        else
+        {
+            Assert.Equal(1, census.UnaryToNumeric);
+            Assert.Equal(0, census.UnaryToNumericReused);
+        }
     }
 
     [Fact]
