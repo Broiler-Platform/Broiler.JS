@@ -411,6 +411,10 @@ partial class FastCompiler
                 if (withBoundaries.Count > 0)
                     jsf = JSFunctionBuilder.CaptureWithScopes(jsf);
 
+                // RECOMPILE CONTRACT (item 4-2a): a promoted function is recompiled from its
+                // source text into a SECOND function object, so a body that can observe its own
+                // function object observes the copy. Asked here, at the decision point, rather
+                // than left to the conjunction below — see TieringRecompileContract.
                 if (createPrototype
                     && !createClass
                     && !functionDeclaration.IsArrowFunction
@@ -418,7 +422,8 @@ partial class FastCompiler
                     && cs.CanScalarReplaceLocals
                     && !cs.HasNestedFunctions
                     && !cs.HasOuterFunctionCaptures
-                    && withBoundaries.Count == 0)
+                    && withBoundaries.Count == 0
+                    && TieringRecompileContract.Admits(functionDeclaration, mentionsArguments))
                 {
                     jsf = JSFunctionBuilder.EnableTiering(
                         jsf,

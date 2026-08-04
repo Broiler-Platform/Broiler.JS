@@ -80,6 +80,12 @@ public static class Program
             return;
         }
 
+        if (args.Length >= 2 && args[0] == "--specializing-tier")
+        {
+            SpecializingTierMetrics.Write(args[1], args.Length < 3 || args[2] != "off");
+            return;
+        }
+
         if (args.Length == 2 && args[0] == "--property-map-distribution")
         {
             PropertyMapDistributionMetrics.Write(args[1]);

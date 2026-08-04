@@ -342,7 +342,15 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             MaxRetainedSourceBytes = Math.Max(1_024, source.Length * 4L),
             MaxEstimatedCodeBytes = Math.Max(1_024, source.Length * 8L),
         });
-        var wrappedSource = $"({source.Value})";
+        // RECOMPILE CONTRACT (docs/performance-roadmap.md item 4-2a), the half that is repaired
+        // rather than refused. Strictness is INHERITED from the enclosing script or function, so
+        // a function written inside a `'use strict'` script carries no directive of its own — and
+        // re-parsing its text as a fresh top-level script makes the copy sloppy. The observable
+        // difference is not subtle: `undeclaredGlobal = t` throws a ReferenceError before
+        // promotion and silently creates a global after it. Re-stated here because it is the one
+        // condition the recompile can reproduce; the identity conditions it cannot reproduce are
+        // refused instead, in TieringRecompileContract.
+        var wrappedSource = IsStrictMode ? $"'use strict';({source.Value})" : $"({source.Value})";
         var factory = CoreScript.Compile(
             wrappedSource,
             tieringLocation + "#tier1",
