@@ -64,6 +64,18 @@ public class BLambdaExpression: BExpression
         Body.Print(writer);
     }
 
+    /// <summary>
+    /// Whether a <see cref="LambdaRewriter"/> walk has already descended through this lambda and
+    /// set up its captures.
+    /// </summary>
+    /// <remarks>
+    /// Set only by a walk that rewrites nested lambdas, so a <c>RewriteRootOnly</c> pass — which
+    /// stops at each nested lambda by design — leaves this false and the lambda is still rewritten
+    /// when its enclosing scope exists. A tree is built once per compilation and never shared
+    /// between them, so this is a fact about this tree and not cached state.
+    /// </remarks>
+    internal bool ClosureRewritten { get; set; }
+
     internal void SetupAsClosure()
     {
         This ??= Parameter(typeof(Closures), "this");

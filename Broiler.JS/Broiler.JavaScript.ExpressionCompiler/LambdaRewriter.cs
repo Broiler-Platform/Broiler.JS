@@ -51,6 +51,7 @@ public class ClosureRepository
     {
         if (Closures.TryGetValue(pe, out var value))
             return value.local;
+        Runtime.ClosureRewriteDiagnostics.CaptureCreated();
         var s = source();
         bool isBox = typeof(Box).IsAssignableFrom(pe.Type);
         var boxType = isBox ? pe.Type : BoxHelper.For(pe.Type).BoxType;
@@ -65,6 +66,7 @@ public class ClosureRepository
     {
         if (Closures.TryGetValue(pe, out var value))
             return value.local;
+        Runtime.ClosureRewriteDiagnostics.CaptureCreated();
         bool isBox = typeof(Box).IsAssignableFrom(pe.Type);
         var boxType = isBox ? pe.Type : BoxHelper.For(pe.Type).BoxType;
         var converted = BExpression.Parameter(boxType, pe.Name + "`");
@@ -294,6 +296,10 @@ public class LambdaRewriter: BExpressionMapVisitor
             Root.Register(node.This.AsSequence());
         }
         Root.Register(node.Parameters.AsSequence());
+        // Recorded only on a walk that descends through nested lambdas, so a RewriteRootOnly
+        // pass — which stops at each of them on purpose — does not claim to have set them up.
+        // RuntimeMethodBuilder.Relay reads this to avoid walking a subtree a second time.
+        node.ClosureRewritten |= rewriteNestedLambdas;
         return base.VisitLambda(node);
     }
 

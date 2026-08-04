@@ -70,6 +70,7 @@ internal sealed class DeferredMethod
         this.delegateType = lambda.Type;
         this.methodBuilder = methodBuilder;
         this.enableJavaScriptTailCalls = enableJavaScriptTailCalls;
+        DeferredMethodDiagnostics.Registered();
     }
 
     /// <summary>
@@ -105,6 +106,7 @@ internal sealed class DeferredMethod
             // consumed stack and segments onto a fresh one only when a tree is actually deep
             // enough to need it. That is the mechanism 1-2 built for exactly this, and it costs
             // nothing on the shallow trees that are almost all of them.
+            DeferredMethodDiagnostics.Forced();
             var (emitted, _, _) = lambda.CompileToBoundDynamicMethod(
                 methodBuilder: methodBuilder,
                 captureDiagnostics: false,
@@ -268,6 +270,47 @@ internal sealed class DeferredMethod
             && !Generator.ILCodeGenerator.GenerateLogs
             && DeferredMethodCompilation.Enabled
             && ThunkFactory.CanForward(lambda?.Type);
+}
+
+/// <summary>
+/// Counts deferred sites and the subset of them that is ever invoked.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The population item 1-1's remaining half is sized by. Its emission half is already lazy
+/// <em>transitively</em> — emitting a lambda relays its immediate children, and generation of a
+/// child relays its own — so the sites that are never forced are exactly the functions a
+/// deferral of the <em>front end</em> would also never have to parse, build a tree for, or
+/// rewrite. Any ceiling on that work is bounded by this ratio, and nothing in the engine could
+/// report it before.
+/// </para>
+/// <para>
+/// Both counters are touched once per <em>site</em>, never per call: registration happens while
+/// the enclosing lambda is emitted, and <see cref="DeferredMethod.Force"/> runs once per site
+/// under its own lock. So the counting is off the call path by construction and needs no
+/// enable switch — the same argument item 4-1 makes for its collection, one layer down.
+/// </para>
+/// </remarks>
+public static class DeferredMethodDiagnostics
+{
+    private static long registered;
+    private static long forced;
+
+    /// <summary>Deferred sites created since the last <see cref="Reset"/>.</summary>
+    public static long RegisteredSites => Interlocked.Read(ref registered);
+
+    /// <summary>Deferred sites whose IL has been generated, i.e. that were invoked.</summary>
+    public static long ForcedSites => Interlocked.Read(ref forced);
+
+    internal static void Registered() => Interlocked.Increment(ref registered);
+
+    internal static void Forced() => Interlocked.Increment(ref forced);
+
+    public static void Reset()
+    {
+        Interlocked.Exchange(ref registered, 0);
+        Interlocked.Exchange(ref forced, 0);
+    }
 }
 
 /// <summary>

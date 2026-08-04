@@ -128,6 +128,21 @@ public static class Program
             return;
         }
 
+        if (args.Length >= 2 && args[0] == "--defer-population")
+        {
+            DeferPopulationMetrics.Write(args[1], args.Length >= 3 ? args[2] : null);
+            return;
+        }
+
+        if (args.Length >= 2 && args[0] == "--compile-phases")
+        {
+            CompilePhaseMetrics.Write(
+                args[1],
+                args.Length >= 3 ? int.Parse(args[2]) : 3,
+                args.Length >= 4 ? args[3] : null);
+            return;
+        }
+
         if (args.Length >= 2 && args[0] == "--compile-profile")
         {
             CompileProfileMetrics.Write(

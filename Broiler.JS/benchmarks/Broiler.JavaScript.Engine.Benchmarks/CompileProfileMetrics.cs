@@ -143,7 +143,10 @@ internal static class CompileProfileMetrics
 
     private static double Round(double value) => Math.Round(value, 2);
 
-    private sealed record Corpus(string Name, string Note, string Source);
+    // Shared with CompilePhaseMetrics, which asks a different question of the same six corpora
+    // and the same body-free control. Duplicating either would duplicate the three container
+    // overrides on the collector below, which are the part that is easy to get wrong.
+    internal sealed record Corpus(string Name, string Note, string Source);
 
     private readonly record struct Sample(double Milliseconds, long AllocatedBytes);
 
@@ -188,7 +191,7 @@ internal static class CompileProfileMetrics
         return new Sample(times[times.Length / 2], bytes[bytes.Length / 2]);
     }
 
-    private static List<Corpus> LoadCorpora(string octaneDirectory)
+    internal static List<Corpus> LoadCorpora(string octaneDirectory)
     {
         var corpora = new List<Corpus>();
 
@@ -247,7 +250,7 @@ internal static class CompileProfileMetrics
     /// Only the outermost bodies are rewritten, because removing one removes everything nested
     /// in it; the spans therefore never overlap and can be spliced right-to-left.
     /// </remarks>
-    private static string StubFunctionBodies(string source, out int outermost, out int total, out long bodyBytes, out int skipped)
+    internal static string StubFunctionBodies(string source, out int outermost, out int total, out long bodyBytes, out int skipped)
     {
         skipped = 0;
         var program = Parse(source);
