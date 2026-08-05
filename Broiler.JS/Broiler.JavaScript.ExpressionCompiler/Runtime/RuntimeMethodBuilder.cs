@@ -64,6 +64,13 @@ public class RuntimeMethodBuilder(
             }
         }
 
+        // Item 1-1's remaining half: the rewrite above has just decided this lambda's Box[]
+        // layout FROM THE TREE. If the front end recorded what it predicted from source alone,
+        // this is the only place the two can be compared — before it the truth does not exist,
+        // and after it the tree is gone.
+        if (DeferredCaptureLayout.Checking)
+            DeferredCaptureLayout.Check(innerLambda, ClosureRepository.For(innerLambda));
+
         var repository = BExpression.Field(@this, Closures.repositoryField);
         var id = methods is MethodRepository runtimeMethods
             && DeferredMethod.CanDefer(innerLambda, captureDiagnostics)

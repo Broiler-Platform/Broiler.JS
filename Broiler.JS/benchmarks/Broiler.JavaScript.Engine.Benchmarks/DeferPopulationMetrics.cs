@@ -90,6 +90,9 @@ internal static class DeferPopulationMetrics
         // has to be on before anything is compiled — a compile-time counter enabled among the
         // run-time censuses reads zero, which phase 3 paid for twice.
         Compiler.DeferrableFunctions.Counting = true;
+        // Item 1-1's remaining half: check the source-derived capture layout against the one the
+        // rewrite derives from the tree, on the same corpora and in the same run.
+        ExpressionCompiler.DeferredCaptureLayout.Checking = true;
 
         foreach (var corpus in corpora)
         {
@@ -101,6 +104,7 @@ internal static class DeferPopulationMetrics
             DeferredMethodDiagnostics.Reset();
             ClosureRewriteDiagnostics.Reset();
             Compiler.CompilerSpecializationDiagnostics.Reset();
+            ExpressionCompiler.DeferredCaptureLayout.Reset();
 
             string failure = null;
             try
@@ -177,6 +181,27 @@ internal static class DeferPopulationMetrics
 
                 // Non-null means evaluation stopped early, so `forced` is a floor and the share
                 // above is a ceiling.
+                // Item 1-1's capture layout, predicted from source against the rewrite's own
+                // answer. missedSites is the go/no-go: over-approximating costs a box, missing is
+                // a miscompile.
+                layoutSites = ExpressionCompiler.DeferredCaptureLayout.Sites,
+                layoutExact = ExpressionCompiler.DeferredCaptureLayout.ExactSites,
+                layoutOver = ExpressionCompiler.DeferredCaptureLayout.OverApproximatedSites,
+                layoutMissed = ExpressionCompiler.DeferredCaptureLayout.MissedSites,
+                layoutPredictedNames = ExpressionCompiler.DeferredCaptureLayout.PredictedNames,
+                layoutActualNames = ExpressionCompiler.DeferredCaptureLayout.ActualNames,
+                layoutMissedNames = ExpressionCompiler.DeferredCaptureLayout.MissedNames,
+                layoutOverNames = ExpressionCompiler.DeferredCaptureLayout.OverApproximatedNames,
+                layoutSynthetic = ExpressionCompiler.DeferredCaptureLayout.SyntheticNames,
+                // Checks against sites: a site relayed more than once is recognised rather than
+                // counted again, and whether the repeats AGREE is what says the repeat is pure
+                // duplication instead of the rewrite deciding differently on a later relay.
+                layoutExcluded = ExpressionCompiler.DeferredCaptureLayout.ExcludedSites,
+                layoutChecks = ExpressionCompiler.DeferredCaptureLayout.Checks,
+                layoutRepeatChecks = ExpressionCompiler.DeferredCaptureLayout.RepeatChecks,
+                layoutRepeatDisagreements = ExpressionCompiler.DeferredCaptureLayout.RepeatDisagreements,
+                layoutMissedSamples = ExpressionCompiler.DeferredCaptureLayout.MissedNameSamples,
+
                 evaluationFailure = failure,
             });
 
@@ -196,6 +221,7 @@ internal static class DeferPopulationMetrics
         }
 
         Compiler.DeferrableFunctions.Counting = false;
+        ExpressionCompiler.DeferredCaptureLayout.Checking = false;
 
         Console.WriteLine(JsonSerializer.Serialize(
             new

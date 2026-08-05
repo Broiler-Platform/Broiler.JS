@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using System.Collections.Generic;
 using System.Reflection;
@@ -441,6 +441,23 @@ partial class FastCompiler
             else
             {
                 lambda = BExpression.Lambda(typeof(JSFunctionDelegate), block, in scriptFunctionName, [cs.Arguments]);
+                // Item 1-1's remaining half. Record what this body captures, derived from source
+                // alone the way a DEFERRED body would have to derive it — before the rewrite that
+                // decides the real Box[] layout from the tree has run. RuntimeMethodBuilder.Relay
+                // compares the two.
+                if (ExpressionCompiler.DeferredCaptureLayout.Checking)
+                {
+                    // A body that can reach bindings its text never names has no layout to be
+                    // right about, and the mechanism refuses to defer it — so it is EXCLUDED
+                    // rather than given an empty prediction, which would report every one of its
+                    // captures as a miss.
+                    if (FreeNameScan.Of(functionDeclaration).Dynamic)
+                        ExpressionCompiler.DeferredCaptureLayout.Undeferrable(lambda);
+                    else
+                        ExpressionCompiler.DeferredCaptureLayout.Predict(
+                            lambda,
+                            PredictCaptures(functionDeclaration, previousScope, cs));
+                }
                 jsf = JSFunctionBuilder.New(ToDelegate(lambda), fxName, code, functionLength, createPrototype: createPrototype && !functionDeclaration.IsArrowFunction);
                 if (!isStrictFunction)
                     jsf = JSFunctionBuilder.EnableNonStrictThis(jsf);
@@ -623,6 +640,87 @@ partial class FastCompiler
             bound,
             functionOwned,
             cellBacked);
+    }
+
+    /// <summary>
+    /// The bindings a deferred body would have to be handed boxes for, computed from source alone
+    /// (docs/performance-roadmap.md item 1-1's remaining half).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>The same two steps the deferral itself would run</b>, and no others:
+    /// <see cref="FreeNameScan"/> for the names the body references and does not bind, then the
+    /// enclosing scope for where each resolves. A name that resolves to nothing this compilation
+    /// holds is looked up dynamically at run time and needs no box; a name whose binding has no CLR
+    /// local of its own has no box to point at. What is left is exactly the set an addressable
+    /// <c>Box[]</c> has to cover.
+    /// </para>
+    /// <para>
+    /// <b>A <see cref="FreeNameScan.Dynamic"/> body predicts nothing and is not counted</b>, because
+    /// the mechanism refuses to defer it — a direct <c>eval</c>, a <c>with</c> or a <c>debugger</c>
+    /// can reach a binding the text never names, so there is no set to be right about.
+    /// </para>
+    /// </remarks>
+    private static HashSet<BParameterExpression> PredictCaptures(
+        AstFunctionExpression function,
+        FastFunctionScope enclosing,
+        FastFunctionScope own)
+    {
+        var captures = new HashSet<BParameterExpression>(ExpressionCompiler.Core.ReferenceEqualityComparer.Instance);
+        if (enclosing == null)
+            return captures;
+
+        var scan = FreeNameScan.Of(function);
+        if (scan.Dynamic)
+            return captures;
+
+        foreach (var name in scan.Free)
+        {
+            if (!enclosing.TryResolveBinding(name, out var binding))
+            {
+                ExpressionCompiler.DeferredCaptureLayout.NoteUnresolved(name);
+                continue;
+            }
+
+            // Variable OR EvalCaptureExpression, which is the same disjunction VariableScope's
+            // own CaptureExpression makes. A binding can be captured without being a local of the
+            // scope that holds it — a named function expression's self-name is the case that
+            // matters, and testing Variable alone silently drops it.
+            var cell = binding.Variable ?? binding.EvalCaptureExpression as BParameterExpression;
+            if (cell == null)
+            {
+                ExpressionCompiler.DeferredCaptureLayout.NoteNoCell(name);
+                continue;
+            }
+
+            captures.Add(cell);
+        }
+
+        // **A named function EXPRESSION's own name, which is not free and is still handed in.**
+        // The specification binds it inside the function, so FreeNameScan is right to leave it out
+        // of the free set — and this engine gives it a JSVariable parameter in the ENCLOSING scope
+        // that the body captures, so the layout has to carry it anyway. The binding is registered
+        // on this function's own scope with a deliberately null Variable, exposed through
+        // EvalCaptureExpression alone, which is what the first attempt at this missed.
+        //
+        // Gated on SelfNameReferenced rather than on "has a name", because adding it
+        // unconditionally over-approximated 126 sites — a named function expression that never
+        // mentions its own name is handed no cell for it. FreeNameScan gives the self-name its own
+        // scope precisely so that a reference reaching it can be told from one reaching a
+        // parameter of the same spelling.
+        //
+        // Item 0097's rule, deciding a mechanism rather than a measurement for the first time:
+        // ask what the compiler BUILT, not what the analysis PROVED.
+        if (own != null
+            && scan.SelfNameReferenced
+            && function.Id != null
+            && own.TryGetOwnVariable(function.Id.Name.Value, out var self)
+            && (self.Variable ?? self.EvalCaptureExpression as BParameterExpression) is { } selfCell)
+        {
+            captures.Add(selfCell);
+        }
+
+        return captures;
     }
 
     private static int GetExpectedArgumentCount(IFastEnumerable<VariableDeclarator> parameters)

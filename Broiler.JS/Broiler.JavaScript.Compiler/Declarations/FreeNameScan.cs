@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Broiler.JavaScript.Ast;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
@@ -55,6 +55,19 @@ public sealed class FreeNameScan
     /// <c>debugger</c>. No free-name set describes it, so the function cannot be deferred.
     /// </summary>
     public bool Dynamic { get; internal set; }
+
+    /// <summary>
+    /// The function is a named function <em>expression</em> whose body references its own name.
+    /// </summary>
+    /// <remarks>
+    /// <b>Not a free name, and still a capture.</b> The specification binds a named function
+    /// expression's own name inside the function, so it is correctly absent from
+    /// <see cref="Free"/> — and this engine materialises that binding as a <c>JSVariable</c>
+    /// parameter in the ENCLOSING scope which the body captures, so item 1-1's layout has to carry
+    /// it. Reported separately rather than folded into <see cref="Free"/>, because the two answer
+    /// different questions and only one of them is about scoping.
+    /// </remarks>
+    public bool SelfNameReferenced { get; internal set; }
 
     /// <summary>
     /// Every function in <paramref name="root"/> with its own free-name set, computed in ONE
@@ -125,17 +138,41 @@ public sealed class FreeNameScan
         /// </summary>
         private readonly List<int> functionScopeBase = [];
 
+        /// <summary>Index in <see cref="scopes"/> of each function's self-name scope, or -1.</summary>
+        private readonly List<int> selfScopes = [];
+
         public void EnterFunction(AstFunctionExpression function)
         {
             var own = All == null ? scan : new FreeNameScan();
             functionScans.Add(own);
             functionScopeBase.Add(scopes.Count);
+
+            // A named function EXPRESSION's own name goes in a scope of its OWN, below the
+            // function scope, which is where the specification puts it too. Two things follow
+            // that a single scope cannot give: a parameter or a body binding of the same spelling
+            // shadows it correctly, and a reference that reaches it can be TOLD APART from one
+            // that reaches a parameter — which is what makes SelfNameReferenced exact instead of
+            // "the function has a name". It is not a function scope, so BindHoisted still finds
+            // the real one below it.
+            var selfScope = -1;
+            if (function.Id != null && !function.IsStatement)
+            {
+                selfScope = scopes.Count;
+                scopes.Add(new Scope(isFunctionScope: false));
+                scopes[^1].Bound.Add(function.Id.Name.Value);
+            }
+
+            selfScopes.Add(selfScope);
             scopes.Add(new Scope(isFunctionScope: true));
 
-            // A named function expression binds its own name inside itself, which is how
-            // `var f = function g () { return g; }` captures nothing.
-            if (function.Id != null)
-                Bind(function.Id.Name.Value);
+            // The self-name is bound above, in its own scope. A function DECLARATION's name is
+            // NOT bound here at all: it belongs to the ENCLOSING scope (bound there by
+            // VisitFunctionExpression and by Hoister, both of which test IsStatement), so
+            // `function F () { return F; }` reads F through that binding and a deferred body must
+            // be handed a box for it. Binding it here as well made every self-referential
+            // declaration in the corpus report as capturing nothing — 138 sites across five
+            // corpora, and every remaining miss the capture-layout checker had
+            // (docs/performance-roadmap.md item 1-1).
 
             var parameters = function.Params.GetFastEnumerator();
             while (parameters.MoveNext(out var parameter))
@@ -158,6 +195,9 @@ public sealed class FreeNameScan
 
             Visit(function.Body);
             scopes.RemoveAt(scopes.Count - 1);
+            if (selfScopes[^1] >= 0)
+                scopes.RemoveAt(scopes.Count - 1);
+            selfScopes.RemoveAt(selfScopes.Count - 1);
             functionScans.RemoveAt(functionScans.Count - 1);
             functionScopeBase.RemoveAt(functionScopeBase.Count - 1);
 
@@ -250,15 +290,21 @@ public sealed class FreeNameScan
             }
         }
 
-        private bool IsBound(string name)
+        private bool IsBound(string name) => TryFindBinder(name, out _);
+
+        private bool TryFindBinder(string name, out int scopeIndex)
         {
             var floor = functionScopeBase.Count == 0 ? 0 : functionScopeBase[^1];
             for (var i = scopes.Count - 1; i >= floor; i--)
             {
                 if (scopes[i].Bound.Contains(name))
+                {
+                    scopeIndex = i;
                     return true;
+                }
             }
 
+            scopeIndex = -1;
             return false;
         }
 
@@ -267,8 +313,10 @@ public sealed class FreeNameScan
         protected override AstNode VisitIdentifier(AstIdentifier identifier)
         {
             var name = identifier.Name.Value;
-            if (!IsBound(name))
+            if (!TryFindBinder(name, out var binder))
                 Current.Free.Add(name);
+            else if (selfScopes.Count != 0 && binder == selfScopes[^1])
+                Current.SelfNameReferenced = true;
 
             return identifier;
         }
