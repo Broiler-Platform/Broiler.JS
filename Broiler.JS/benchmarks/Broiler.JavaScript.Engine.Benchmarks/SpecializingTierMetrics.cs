@@ -307,15 +307,43 @@ internal static class SpecializingTierMetrics
 
     private sealed record Suite(string Name, string[] Files);
 
+    /// <summary>
+    /// **Every Octane suite, not the seven this census used to run** — the same widening
+    /// `TypeFeedbackMetrics` took, for the same reason and with more at stake.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is where phase 3's headline numbers come from: <em>"85 249 783 boxes"</em>,
+    /// <em>"41.89% of everything the corpus allocates"</em>, <em>"54.0% of the corpus's
+    /// allocation"</em>, <em>"the corpus goes 0.366×"</em>, and the GC-pause denominator that
+    /// prices the whole remaining phase. Every one of those said <em>"the corpus"</em> and meant
+    /// **7 of Octane's 15 suites** — excluding Typescript, which the widened read census found is
+    /// **67% of the corpus's property reads on its own**, and Gameboy, the most polymorphic suite
+    /// in the set.
+    /// </para>
+    /// <para>
+    /// The seven were not chosen: Mandreel aborted the census host with an uncatchable .NET stack
+    /// overflow, because item 0-2's stack reserve is a property of the shell and no benchmark host
+    /// had it. See <see cref="BenchmarkContext.RunOnScriptHostStack"/>.
+    /// </para>
+    /// </remarks>
     private static readonly Suite[] Suites =
     [
         new("Richards", ["richards.js"]),
         new("DeltaBlue", ["deltablue.js"]),
-        new("RayTrace", ["raytrace.js"]),
-        new("Box2D", ["box2d.js"]),
-        new("EarleyBoyer", ["earley-boyer.js"]),
         new("Crypto", ["crypto.js"]),
+        new("RayTrace", ["raytrace.js"]),
+        new("EarleyBoyer", ["earley-boyer.js"]),
+        new("RegExp", ["regexp.js"]),
+        new("Splay", ["splay.js"]),
         new("NavierStokes", ["navier-stokes.js"]),
+        new("PdfJS", ["pdfjs.js"]),
+        new("Mandreel", ["mandreel.js"]),
+        new("Gameboy", ["gbemu-part1.js", "gbemu-part2.js"]),
+        new("CodeLoad", ["code-load.js"]),
+        new("Box2D", ["box2d.js"]),
+        new("zlib", ["zlib.js", "zlib-data.js"]),
+        new("Typescript", ["typescript.js", "typescript-input.js", "typescript-compiler.js"]),
     ];
 
     private const int RunsPerBenchmark = 3;
@@ -378,15 +406,33 @@ internal static class SpecializingTierMetrics
 
         var baseSource = File.ReadAllText(basePath);
         var rows = new List<object>();
-        foreach (var suite in Suites)
-        {
-            Console.Error.WriteLine($"{suite.Name}: running ...");
-            var row = RunSuite(octaneDirectory, baseSource, suite, arm, counters);
-            if (row != null)
-                rows.Add(row);
-        }
 
-        Console.WriteLine(JsonSerializer.Serialize(
+        // On the shell's stack, and checkpointed after every suite. Mandreel's global_init takes
+        // the default stack down with an UNCATCHABLE overflow, and a census that serializes only
+        // at the end loses every suite before the one that aborts.
+        BenchmarkContext.RunOnScriptHostStack(() =>
+        {
+            foreach (var suite in Suites)
+            {
+                Console.Error.WriteLine($"{suite.Name}: running ...");
+                var row = RunSuite(octaneDirectory, baseSource, suite, arm, counters);
+                if (row != null)
+                    rows.Add(row);
+
+                File.WriteAllText(PartialPath, Report(rows, arm, counters));
+            }
+        });
+
+        Console.WriteLine(Report(rows, arm, counters));
+    }
+
+    /// <summary>Where an in-progress census parks its rows so an abort cannot discard them.</summary>
+    internal static string PartialPath { get; } =
+        Path.Combine(Path.GetTempPath(), "broiler-specializing-tier-partial.json");
+
+    private static string Report(List<object> rows, Arm arm, bool counters)
+    {
+        return JsonSerializer.Serialize(
             new
             {
                 schema = "broiler.specializing-tier-metrics/1",
@@ -399,9 +445,11 @@ internal static class SpecializingTierMetrics
                     + "share of EXECUTED property reads that happen at a site owned by a promoted "
                     + "function — the specializing tier's entire addressable surface, and the "
                     + "number the item rests on.",
+                suiteCount = rows.Count,
+                expectedSuiteCount = Suites.Length,
                 suites = rows,
             },
-            new JsonSerializerOptions { WriteIndented = true }));
+            new JsonSerializerOptions { WriteIndented = true });
     }
 
     private static object RunSuite(string octaneDirectory, string baseSource, Suite suite, Arm arm, bool counters)
@@ -443,6 +491,15 @@ internal static class SpecializingTierMetrics
         CallPathDiagnostics.Reset();
 
         using var context = new JavaScriptContextBuilder()
+            // The shell's stack budget, so deep recursion raises a catchable "Maximum call stack
+            // size exceeded" rather than aborting the process. Paired with the sized thread in
+            // Write(): the budget is measured against the stack the code stands on, so a budget
+            // without the thread is a guard that cannot fire (§3.5).
+            .UseOptions(new JSContextOptions
+            {
+                MaxStackUsageBytes = BenchmarkContext.ScriptHostStackBytes
+                    - BenchmarkContext.ScriptHostStackReserveBytes,
+            })
             .UseFunctionTiering(arm == Arm.None
                 ? FunctionTieringOptions.Disabled
                 : new FunctionTieringOptions

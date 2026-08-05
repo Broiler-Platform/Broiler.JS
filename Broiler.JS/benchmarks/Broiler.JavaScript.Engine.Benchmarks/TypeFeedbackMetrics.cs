@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
@@ -39,20 +39,48 @@ internal static class TypeFeedbackMetrics
     private sealed record Suite(string Name, string[] Files);
 
     /// <summary>
-    /// The call-heavy cluster phase 4 exists for, plus two controls. Richards and DeltaBlue are
-    /// built out of one-line methods and have the worst throughput ratios in the suite (§4.3
-    /// B2); Crypto and NavierStokes are arithmetic-heavy rather than call-heavy, so they say
-    /// whether a high monomorphic share is a property of this corpus or of those two suites.
+    /// **Every Octane suite, not the seven this census used to run.**
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The original seven were the call-heavy cluster phase 4 exists for plus two arithmetic
+    /// controls, and that was a defensible corpus for the question 4-1 asked. It stopped being
+    /// one the moment its output started being quoted as <em>"the corpus"</em> — the phrase every
+    /// phase-3 and phase-4 headline uses, over a denominator that was **7 of 15 suites** and
+    /// never said so.
+    /// </para>
+    /// <para>
+    /// <b>What the seven leave out is not a tail.</b> zlib is the suite on which this engine is
+    /// furthest behind a plain managed interpreter — 12.0x behind Jint relative to Chromium,
+    /// against 0.77x on DeltaBlue — and it was in no census at all. Nor were Mandreel, Gameboy,
+    /// PdfJS, Typescript, CodeLoad, Splay or RegExp. A number computed over the seven describes
+    /// the suites this campaign was already looking at, which is the one thing a corpus figure
+    /// must not do.
+    /// </para>
+    /// <para>
+    /// <b>Cost is why it was seven, and it is worth paying once.</b> zlib evaluates a 185 KB
+    /// asm.js blob through <c>eval</c> inside its own timed function and one run takes ~35 s here,
+    /// so a widened census is minutes rather than seconds. It runs off a switch nobody ships and
+    /// answers a question no cheaper instrument can.
+    /// </para>
+    /// </remarks>
     private static readonly Suite[] Suites =
     [
         new("Richards", ["richards.js"]),
         new("DeltaBlue", ["deltablue.js"]),
-        new("RayTrace", ["raytrace.js"]),
-        new("Box2D", ["box2d.js"]),
-        new("EarleyBoyer", ["earley-boyer.js"]),
         new("Crypto", ["crypto.js"]),
+        new("RayTrace", ["raytrace.js"]),
+        new("EarleyBoyer", ["earley-boyer.js"]),
+        new("RegExp", ["regexp.js"]),
+        new("Splay", ["splay.js"]),
         new("NavierStokes", ["navier-stokes.js"]),
+        new("PdfJS", ["pdfjs.js"]),
+        new("Mandreel", ["mandreel.js"]),
+        new("Gameboy", ["gbemu-part1.js", "gbemu-part2.js"]),
+        new("CodeLoad", ["code-load.js"]),
+        new("Box2D", ["box2d.js"]),
+        new("zlib", ["zlib.js", "zlib-data.js"]),
+        new("Typescript", ["typescript.js", "typescript-input.js", "typescript-compiler.js"]),
     ];
 
     private const int RunsPerBenchmark = 3;
@@ -98,15 +126,35 @@ internal static class TypeFeedbackMetrics
 
         var baseSource = File.ReadAllText(basePath);
         var rows = new List<object>();
-        foreach (var suite in Suites)
-        {
-            Console.Error.WriteLine($"{suite.Name}: running ...");
-            var row = RunSuite(octaneDirectory, baseSource, suite);
-            if (row != null)
-                rows.Add(row);
-        }
+        var totals = new Totals();
 
-        Console.WriteLine(JsonSerializer.Serialize(
+        // On the shell's stack, with the shell's budget. Mandreel's global_init recurses deep
+        // enough to take the default one down with an UNCATCHABLE .NET stack overflow, and an
+        // uncatchable abort in the ninth of fifteen suites is what a partial corpus looks like
+        // from the inside.
+        BenchmarkContext.RunOnScriptHostStack(() =>
+        {
+            foreach (var suite in Suites)
+            {
+                Console.Error.WriteLine($"{suite.Name}: running ...");
+                var row = RunSuite(octaneDirectory, baseSource, suite, totals);
+                if (row != null)
+                    rows.Add(row);
+
+                // Written after EVERY suite, not once at the end. A stack overflow cannot be
+                // caught, so the only defence against one discarding the fourteen suites that did
+                // work is to have already emitted them — which the first widened run of this
+                // census learned by losing nine.
+                WriteReport(rows, totals, partial: true);
+            }
+        });
+
+        WriteReport(rows, totals, partial: false);
+    }
+
+    private static void WriteReport(List<object> rows, Totals totals, bool partial)
+    {
+        var json = JsonSerializer.Serialize(
             new
             {
                 schema = "broiler.type-feedback-metrics/1",
@@ -121,11 +169,36 @@ internal static class TypeFeedbackMetrics
                     + "the same threshold the inline cache uses. Counts are deterministic; no "
                     + "wall clock is reported, and collection is off in any timing run.",
                 suites = rows,
+
+                // The corpus aggregate, EMITTED rather than left to be totalled by hand. The
+                // roadmap's "93.54% of 37.9 M reads and 96.70% of 4.24 M calls" was added up
+                // outside the instrument, over the seven suites this census used to run, and then
+                // quoted as "the corpus" — so the denominator was invisible at the point of use.
+                // Reporting suiteCount beside the shares is what makes a partial corpus say so.
+                corpus = new
+                {
+                    suiteCount = totals.Suites,
+                    expectedSuiteCount = Suites.Length,
+                    complete = totals.Suites == Suites.Length,
+                    propertyReads = totals.DescribeReads(),
+                    calls = totals.DescribeCalls(),
+                },
             },
-            new JsonSerializerOptions { WriteIndented = true }));
+            new JsonSerializerOptions { WriteIndented = true });
+
+        if (partial)
+            File.WriteAllText(PartialPath, json);
+        else
+            Console.WriteLine(json);
     }
 
-    private static object RunSuite(string octaneDirectory, string baseSource, Suite suite)
+    /// <summary>
+    /// Where an in-progress census parks its rows so an abort cannot discard them.
+    /// </summary>
+    internal static string PartialPath { get; } =
+        Path.Combine(Path.GetTempPath(), "broiler-type-feedback-partial.json");
+
+    private static object RunSuite(string octaneDirectory, string baseSource, Suite suite, Totals totals)
     {
         var sources = new List<string> { baseSource };
         foreach (var file in suite.Files)
@@ -140,7 +213,7 @@ internal static class TypeFeedbackMetrics
             sources.Add(File.ReadAllText(path));
         }
 
-        using var context = BenchmarkContext.Create();
+        using var context = BenchmarkContext.Create(scriptHostStackBudget: true);
 
         string outcome;
         TypeFeedback.Distribution properties, calls;
@@ -179,6 +252,7 @@ internal static class TypeFeedbackMetrics
         }
 
         var split = outcome.Split('|', 2);
+        totals.Add(properties, calls);
 
         return new
         {
@@ -210,4 +284,50 @@ internal static class TypeFeedbackMetrics
         // speculate on a single shape or a single callee.
         monomorphicObservationPercent = Math.Round(100 * d.MonomorphicObservationShare, 2),
     };
+
+    /// <summary>
+    /// Corpus-wide sums, so the headline share is emitted by the instrument rather than added up
+    /// by whoever quotes it.
+    /// </summary>
+    /// <remarks>
+    /// A hand-totalled aggregate carries no record of what it was totalled over, which is how
+    /// "93.54% of the corpus's reads" came to describe seven suites of fifteen in a document that
+    /// uses "the corpus" for both. <see cref="Suites"/> is the denominator and
+    /// <c>suiteCount</c> ships beside the shares.
+    /// </remarks>
+    private sealed class Totals
+    {
+        public int Suites { get; private set; }
+
+        private long readObservations, readMonomorphic, readPolymorphic, readMegamorphic;
+        private long callObservations, callMonomorphic, callPolymorphic, callMegamorphic;
+
+        public void Add(TypeFeedback.Distribution reads, TypeFeedback.Distribution calls)
+        {
+            Suites++;
+            readObservations += reads.Observations;
+            readMonomorphic += reads.MonomorphicObservations;
+            readPolymorphic += reads.PolymorphicObservations;
+            readMegamorphic += reads.MegamorphicObservations;
+            callObservations += calls.Observations;
+            callMonomorphic += calls.MonomorphicObservations;
+            callPolymorphic += calls.PolymorphicObservations;
+            callMegamorphic += calls.MegamorphicObservations;
+        }
+
+        public object DescribeReads() => Describe(
+            readObservations, readMonomorphic, readPolymorphic, readMegamorphic);
+
+        public object DescribeCalls() => Describe(
+            callObservations, callMonomorphic, callPolymorphic, callMegamorphic);
+
+        private static object Describe(long total, long mono, long poly, long mega) => new
+        {
+            observations = total,
+            monomorphicObservations = mono,
+            polymorphicObservations = poly,
+            megamorphicObservations = mega,
+            monomorphicObservationPercent = total == 0 ? 0d : Math.Round(100.0 * mono / total, 2),
+        };
+    }
 }

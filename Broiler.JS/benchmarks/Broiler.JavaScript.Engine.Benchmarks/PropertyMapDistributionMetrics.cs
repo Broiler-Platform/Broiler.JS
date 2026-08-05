@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -162,21 +162,43 @@ internal static class PropertyMapDistributionMetrics
         var aggregate = new long[PropertyStorageMetrics.MaxTrackedGroups + 2];
         var skipped = Skipped;
 
-        foreach (var suite in Suites)
+        // On the shell's stack, and checkpointed after every suite.
+        //
+        // **This census lists all fifteen suites and reached nine.** Mandreel's global_init took it
+        // down with an uncatchable .NET stack overflow — item 0-2's reserve is a property of the
+        // shell, not of any benchmark host — and because the report was serialized once at the end,
+        // an aborted run produced NOTHING AT ALL. So items 2-7 and 2-9's map figures were not
+        // reproducible from a clean tree: the only way to get output was BROILER_MAP_DISTRIBUTION_SKIP,
+        // and the recorded numbers do not say what was skipped. Listing a suite is not measuring it.
+        BenchmarkContext.RunOnScriptHostStack(() =>
         {
-            if (Array.Exists(skipped, name => string.Equals(name, suite.Name, StringComparison.OrdinalIgnoreCase)))
+            foreach (var suite in Suites)
             {
-                Console.Error.WriteLine($"{suite.Name}: skipped by BROILER_MAP_DISTRIBUTION_SKIP");
-                continue;
+                if (Array.Exists(skipped, name => string.Equals(name, suite.Name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    Console.Error.WriteLine($"{suite.Name}: skipped by BROILER_MAP_DISTRIBUTION_SKIP");
+                    continue;
+                }
+
+                Console.Error.WriteLine($"{suite.Name}: running ...");
+                var row = RunSuite(octaneDirectory, baseSource, suite, aggregate);
+                if (row != null)
+                    suiteRows.Add(row);
+
+                File.WriteAllText(PartialPath, Report(suiteRows, aggregate, skipped));
             }
+        });
 
-            Console.Error.WriteLine($"{suite.Name}: running ...");
-            var row = RunSuite(octaneDirectory, baseSource, suite, aggregate);
-            if (row != null)
-                suiteRows.Add(row);
-        }
+        Console.WriteLine(Report(suiteRows, aggregate, skipped));
+    }
 
-        Console.WriteLine(JsonSerializer.Serialize(
+    /// <summary>Where an in-progress census parks its rows so an abort cannot discard them.</summary>
+    internal static string PartialPath { get; } =
+        Path.Combine(Path.GetTempPath(), "broiler-property-map-partial.json");
+
+    private static string Report(List<object> suiteRows, long[] aggregate, string[] skipped)
+    {
+        return JsonSerializer.Serialize(
             new
             {
                 schema = "broiler.property-map-distribution/1",
@@ -188,11 +210,13 @@ internal static class PropertyMapDistributionMetrics
                     + "histogram[k] = maps whose life ended at k four-node groups; a map that never "
                     + "allocated is an object with no named properties and is not counted. "
                     + "See docs/performance-roadmap.md item 2-7.",
+                suiteCount = suiteRows.Count,
+                expectedSuiteCount = Suites.Length,
                 suites = suiteRows,
                 aggregate = Describe(aggregate),
                 policies = SimulatePolicies(aggregate),
             },
-            new JsonSerializerOptions { WriteIndented = true }));
+            new JsonSerializerOptions { WriteIndented = true });
     }
 
     private static object RunSuite(string octaneDirectory, string baseSource, Suite suite, long[] aggregate)
@@ -210,7 +234,7 @@ internal static class PropertyMapDistributionMetrics
             sources.Add(File.ReadAllText(path));
         }
 
-        using var context = BenchmarkContext.Create();
+        using var context = BenchmarkContext.Create(scriptHostStackBudget: true);
 
         string outcome;
         long[] histogram;
