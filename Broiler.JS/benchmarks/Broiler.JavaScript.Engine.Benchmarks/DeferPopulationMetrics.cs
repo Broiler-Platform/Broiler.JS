@@ -208,11 +208,24 @@ internal static class DeferPopulationMetrics
                 layoutMissedSamples = ExpressionCompiler.DeferredCaptureLayout.MissedNameSamples,
 
                 // Re-entry: bodies compiled a SECOND time from the retained enclosing scope,
-                // after this corpus's compilation finished, compared against the eager tree up to
-                // alpha-renaming of compiler-generated temporaries.
+                // after this corpus's compilation finished, compared against the eager tree TWO
+                // ways. `reproduced` is equality up to an order-preserving renaming of the
+                // compiler's monotonic counters; `structural` erases those numbers instead of
+                // mapping them, so it asks whether the trees agree in every token a counter did
+                // not produce. The gap between them is numbering, and only what is outside
+                // `structural` is a candidate difference in the tree itself.
                 reentryTotal = reentry.Total,
                 reentryReproduced = reentry.Reproduced,
+                reentryStructural = reentry.Structural,
+                reentryThrew = reentry.Threw,
                 reentryFirstDifference = reentry.FirstDifference,
+                reentryFirstStructuralDifference = reentry.FirstStructuralDifference,
+                reentryFirstOrdinalDivergence = reentry.FirstOrdinalDivergence,
+                reentryExhausted = reentry.Exhausted,
+                reentryEagerReusedASite = reentry.EagerReusedASite,
+                reentryOtherDivergence = reentry.OtherDivergence,
+                reentrySitesBefore = reentry.SitesBefore,
+                reentrySitesAfter = reentry.SitesAfter,
 
                 evaluationFailure = failure,
             });

@@ -21,7 +21,7 @@ namespace Broiler.JavaScript.Compiler.Tests;
 [Collection(Phase3DiagnosticsCollection.Name)]
 public sealed class DeferredBodyReentryTests
 {
-    private static (int Total, int Reproduced, string FirstDifference) Reenter(string source)
+    private static DeferredTreeCompilation.Comparison Reenter(string source)
     {
         var previous = DeferredTreeCompilation.Retaining;
         DeferredTreeCompilation.Retaining = true;
@@ -41,11 +41,16 @@ public sealed class DeferredBodyReentryTests
 
     private static void AssertReproduced(string source, int atLeast = 1)
     {
-        var (total, reproduced, difference) = Reenter(source);
-        Assert.True(total >= atLeast, $"expected at least {atLeast} retained context(s), got {total}");
+        var c = Reenter(source);
+        Assert.True(c.Total >= atLeast, $"expected at least {atLeast} retained context(s), got {c.Total}");
+        Assert.Equal(0, c.Threw);
         Assert.True(
-            total == reproduced,
-            $"{total - reproduced} of {total} did not reproduce.\n{difference}");
+            c.Total == c.Reproduced,
+            $"{c.Total - c.Reproduced} of {c.Total} did not reproduce.\n{c.FirstDifference}");
+
+        // Structural equality is the weaker of the two and must hold wherever the stronger does,
+        // or the partition the corpus is read through is not a partition.
+        Assert.Equal(c.Total, c.Structural);
     }
 
     [Fact]
@@ -157,9 +162,9 @@ public sealed class DeferredBodyReentryTests
         try
         {
             context.Eval("function a() { var q = 1; return (function () { return q; })(); } a();");
-            var (total, reproduced, _) = DeferredTreeCompilation.Recompile();
-            Assert.True(total >= 1);
-            Assert.Equal(total, reproduced);
+            var c = DeferredTreeCompilation.Recompile();
+            Assert.True(c.Total >= 1);
+            Assert.Equal(c.Total, c.Reproduced);
 
             // The compilation that has nothing to do with the re-entry.
             Assert.Equal("7", context.Eval("function b(x) { return x + 4; } String(b(3));").ToString());
@@ -169,6 +174,55 @@ public sealed class DeferredBodyReentryTests
             DeferredTreeCompilation.Retaining = previous;
             DeferredTreeCompilation.Reset();
         }
+    }
+
+    [Fact]
+    public void BothEqualitiesAreShownToReportADifferenceBeforeTheirZerosAreTrusted()
+    {
+        // **The fixture that makes `structural = 100%` mean something**, and §3.5's rule from 0096
+        // applied to the second checker this item has needed: a comparison that has never reported
+        // a failure is a claim about the comparison. Neither equality can be made to fail from
+        // JavaScript — if it could, that would be the defect they exist to find — so both are
+        // driven directly.
+        const string eager = "x = PropertyInlineCacheSite.Get(7, Context3, k); LABEL_4: y = #TempJSValue9;";
+
+        // A counter renaming, which is what a second compilation necessarily produces. Both
+        // equalities must accept it or the corpus figures are measuring the counters.
+        const string renamed = "x = PropertyInlineCacheSite.Get(90, Context11, k); LABEL_12: y = #TempJSValue40;";
+        Assert.True(DeferredTreeCompilation.SameUpToCounters(eager, renamed));
+        Assert.True(DeferredTreeCompilation.SameStructurally(eager, renamed));
+
+        // A token no counter produced — a different property being read. Both must reject it,
+        // including the weaker one, or `structural` is not a statement about the tree at all.
+        const string different = "x = PropertyInlineCacheSite.Get(7, Context3, OTHER); LABEL_4: y = #TempJSValue9;";
+        Assert.False(DeferredTreeCompilation.SameUpToCounters(eager, different));
+        Assert.False(DeferredTreeCompilation.SameStructurally(eager, different));
+
+        // **And the exact gap between the two, asserted rather than described.** Here one side
+        // reads the SAME site twice where the other reads two distinct ones. The strong equality
+        // reports it, because ordinals are assigned by first appearance; the weak one cannot,
+        // because it erases the numbers. That is the whole of what `structural` buys over
+        // `reproduced` being unreliable — and it is why the corpus's 471 non-reproducing functions
+        // are classified by the raw sequences rather than left inside the weaker number.
+        const string reused = "x = PropertyInlineCacheSite.Get(7, Context3, k); LABEL_4: y = #TempJSValue9; z = PropertyInlineCacheSite.Get(7, Context3, k);";
+        const string fresh = "x = PropertyInlineCacheSite.Get(7, Context3, k); LABEL_4: y = #TempJSValue9; z = PropertyInlineCacheSite.Get(8, Context3, k);";
+        Assert.False(DeferredTreeCompilation.SameUpToCounters(reused, fresh));
+        Assert.True(DeferredTreeCompilation.SameStructurally(reused, fresh));
+    }
+
+    [Fact]
+    public void EachGensymFamilyIsCanonicalisedAgainstItsOwnTable()
+    {
+        // **The defect the corpus run found in this comparison itself.** The families were
+        // canonicalised in one pass whose ordinal table was keyed on the bare NUMBER, so
+        // `Context3` and `#TempJSValue3` shared an entry. Two families drawing the same number on
+        // one side and not the other then desynchronised every ordinal after it, reporting a
+        // difference that was an artifact of the comparison — worth 5 of 6 corpora going from
+        // 96.6-99.9% to 100.0% once the tables were separated. The families do not share a
+        // counter; the table must not either.
+        const string eager = "Context3 -> #TempJSValue3 -> Context4";
+        const string reentered = "Context7 -> #TempJSValue9 -> Context8";
+        Assert.True(DeferredTreeCompilation.SameUpToCounters(eager, reentered));
     }
 
     [Fact]
