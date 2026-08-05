@@ -84,6 +84,8 @@ internal static class CompilePhaseMetrics
             var full = Repeat(repetitions, () => Phases(corpus.Source, corpus.Name));
             var control = Repeat(repetitions, () => Phases(stub, corpus.Name + "-stub"));
             var scan = Repeat(repetitions, () => new Split(0, 0, 0, 0, 0, ScanNames(corpus.Source), 0)).Scan;
+            // The same charge-back taken with the real resolver rather than an identifier count.
+            var freeScan = Repeat(repetitions, () => new Split(0, 0, 0, 0, 0, ScanFreeNames(corpus.Source), 0)).Scan;
 
             var bodyTree = full.Tree - control.Tree;
             var bodyRewrite = full.Rewrite - control.Rewrite;
@@ -123,6 +125,11 @@ internal static class CompilePhaseMetrics
                 bodyTreeMs = Round(bodyTree),
                 bodyRewriteMs = Round(bodyRewrite),
                 scanMs = Round(scan),
+                // Item 1-1's remaining half, priced with the walk it actually needs: FreeNameScan
+                // per function, resolving each name against the enclosing scopes. scanMs is the
+                // identifier-count lower bound; this is the thing.
+                freeScanMs = Round(freeScan),
+                freeScanShareOfBodyTree = Share(freeScan, bodyTree),
                 // The charge-back applied: a deferred body still needs its names collected.
                 captureCeilingMs = Round(bodyTree + bodyRewrite - scan),
                 captureCeilingShare = Share(bodyTree + bodyRewrite - scan, todayTotal),
@@ -318,6 +325,71 @@ internal static class CompilePhaseMetrics
             throw new InvalidOperationException("Name scan collected nothing.");
 
         return stopwatch.Elapsed.TotalMilliseconds;
+    }
+
+    /// <summary>
+    /// The REAL scan: every function in the program walked for the names it references and does
+    /// not bind, which is what item 1-1's remaining half actually has to run eagerly.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <see cref="ScanNames"/> is the lower bound and says so — it counts identifiers and resolves
+    /// nothing. This runs <see cref="FreeNameScan"/> once per function, which is the unit the
+    /// deferral works in: each deferred site needs its own free-name set, so the cost is the sum
+    /// over functions and not one walk of the program. **That distinction is most of the gap
+    /// between the two numbers**, because a name inside three nested functions is walked by all
+    /// three.
+    /// </para>
+    /// <para>
+    /// Reported beside the bare walk rather than instead of it, so the difference between "a walk"
+    /// and "the walk this needs" is visible rather than asserted.
+    /// </para>
+    /// </remarks>
+    private static double ScanFreeNames(string source)
+    {
+        var span = new StringSpan(source);
+        var program = new Broiler.JavaScript.Parser.FastParser(new FastTokenStream(in span)).ParseProgram();
+
+        GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+        var stopwatch = Stopwatch.StartNew();
+        var all = Broiler.JavaScript.Compiler.FreeNameScan.ForProgram(program);
+        stopwatch.Stop();
+
+        // A scan that resolved everything to bound would be fast and useless, so the reading is
+        // guarded the same way the bare walk's is.
+        if (all.Count == 0 && source.Length > 1024)
+            throw new InvalidOperationException("No functions found to scan.");
+
+        GC.KeepAlive(all);
+        return stopwatch.Elapsed.TotalMilliseconds;
+    }
+
+    /// <summary>Every function in the program, including nested ones.</summary>
+    private sealed class FunctionCollector(List<Broiler.JavaScript.Ast.Expressions.AstFunctionExpression> functions) : AstReduce
+    {
+        protected override AstNode VisitFunctionExpression(Broiler.JavaScript.Ast.Expressions.AstFunctionExpression function)
+        {
+            functions.Add(function);
+            return base.VisitFunctionExpression(function);
+        }
+
+        protected override VariableDeclarator VisitVariableDeclarator(VariableDeclarator declarator)
+        {
+            Visit(declarator.Identifier);
+            if (declarator.Init != null)
+                Visit(declarator.Init);
+            return declarator;
+        }
+
+        protected override Case VisitCase(Case @case)
+        {
+            if (@case.Test != null)
+                Visit(@case.Test);
+            var statements = @case.Statements.GetFastEnumerator();
+            while (statements.MoveNext(out var statement))
+                Visit(statement);
+            return @case;
+        }
     }
 
     /// <summary>
