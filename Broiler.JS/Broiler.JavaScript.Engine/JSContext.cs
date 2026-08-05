@@ -1840,6 +1840,80 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     /// </remarks>
     public static (long Peak, long Overlaps) ExecutionConcurrency => JSMicrotaskQueue.Concurrency;
 
+    /// <summary>
+    /// Waits for <paramref name="task"/> from inside JavaScript without holding the context while
+    /// it blocks — the supported way for a host function called from a script to wait on
+    /// asynchronous work.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Use this instead of <c>task.Wait()</c> or <c>task.Result</c>.</b> Those deadlock, in two
+    /// independent ways, and both were measured rather than argued. A host function called from a
+    /// script is inside an execution, so a promise reaction it is waiting for is <em>queued</em> and
+    /// cannot run until that execution ends — which it never does. And the execution lock it holds
+    /// keeps out any host work that would have to enter the context to complete the task. This
+    /// drains the queue and then releases the context, which answers one shape each.
+    /// </para>
+    /// <para>
+    /// <b>The hazard it trades for is real, and is why the API is explicit rather than automatic:</b>
+    /// while the context is released, other JavaScript can run on it — queued jobs, another host
+    /// thread — so state this frame read before the wait may differ after it. That is inherent in
+    /// blocking a single-threaded agent. The alternative is not "safe", it is "hangs".
+    /// </para>
+    /// <para>
+    /// Outside an execution this is an ordinary wait: there is no context held to release.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// context["readFile"] = JSValue.CreateFunction((in Arguments a) =>
+    ///     (JSValue)context.WaitFor(File.ReadAllTextAsync(a.Get1().ToString())));
+    /// </code>
+    /// </example>
+    public void WaitFor(Task task)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+        if (!task.IsCompleted)
+            WaitWhileSuspended(task);
+
+        // Observed outside the suspension, so an exception surfaces with the context held again and
+        // the host function that called this can turn it into a JavaScript throw — and as the
+        // exception the task actually faulted with, rather than the AggregateException `Wait` wraps
+        // it in.
+        task.GetAwaiter().GetResult();
+    }
+
+    /// <summary>The value-producing twin of <see cref="WaitFor(Task)"/>.</summary>
+    public T WaitFor<T>(Task<T> task)
+    {
+        ArgumentNullException.ThrowIfNull(task);
+        if (!task.IsCompleted)
+            WaitWhileSuspended(task);
+
+        return task.GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Blocks until <paramref name="task"/> settles with the context released, swallowing the
+    /// outcome — the caller observes it afterwards, with the context held again.
+    /// </summary>
+    private void WaitWhileSuspended(Task task)
+    {
+        using (microtasks.SuspendExecution())
+        {
+            try
+            {
+                task.Wait();
+            }
+            catch (AggregateException)
+            {
+                // Deliberately dropped here. Faulting is a normal outcome of waiting and the caller
+                // re-observes it through the awaiter, which unwraps to the exception the task
+                // actually carried.
+            }
+        }
+    }
+
     /// <summary>Resets <see cref="ExecutionConcurrency"/>. Process-wide, like the counter.</summary>
     public static void ResetExecutionConcurrency() => JSMicrotaskQueue.ResetConcurrency();
 

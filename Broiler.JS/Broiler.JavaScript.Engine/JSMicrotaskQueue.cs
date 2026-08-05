@@ -162,6 +162,83 @@ internal sealed class JSMicrotaskQueue
         public void Dispose() => owner.Exit();
     }
 
+    /// <summary>
+    /// Gives the context up while the caller blocks on something that is not JavaScript, and takes
+    /// it back afterwards. Queued jobs are run first, so nothing is left owed.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>This exists because "one thread at a time" and "a host may block" are in direct
+    /// conflict, and the conflict has two shapes.</b> A host function called from JavaScript that
+    /// waits on a <c>Task</c> is inside an execution, so a promise reaction it is waiting for is
+    /// QUEUED and cannot run until that execution ends — which it never does. And with the
+    /// execution lock held, host work that has to enter the context to complete the task cannot get
+    /// in either. Draining answers the first, releasing answers the second, and both are needed:
+    /// measured, the two shapes deadlock independently.
+    /// </para>
+    /// <para>
+    /// <b>The drain happens before the release, not after</b>, so a job queued by the execution
+    /// being suspended runs on the thread that queued it and in the order it was queued, rather than
+    /// being handed to whichever thread takes the context next.
+    /// </para>
+    /// <para>
+    /// The depth is released in full and restored in full: it is also the number of
+    /// <see cref="Monitor"/> entries this thread holds, since only one thread can be inside.
+    /// </para>
+    /// </remarks>
+    public SuspendScope SuspendExecution()
+    {
+        int released;
+        while (true)
+        {
+            Action job;
+            lock (gate)
+            {
+                if (jobs.Count == 0)
+                {
+                    released = executionDepth;
+                    executionDepth = 0;
+                    owningThread = 0;
+                    break;
+                }
+
+                job = jobs.Dequeue();
+            }
+
+            try
+            {
+                job();
+            }
+            catch (Exception ex)
+            {
+                (JSEngine.Current as JSContext)?.ReportError(ex);
+            }
+        }
+
+        for (var i = 0; i < released; i++)
+            Monitor.Exit(executionLock);
+
+        return new SuspendScope(this, released);
+    }
+
+    internal readonly struct SuspendScope(JSMicrotaskQueue owner, int depth) : IDisposable
+    {
+        public void Dispose()
+        {
+            for (var i = 0; i < depth; i++)
+                Monitor.Enter(owner.executionLock);
+
+            if (depth == 0)
+                return;
+
+            lock (owner.gate)
+            {
+                owner.NoteEntryUnderGate();
+                owner.executionDepth = depth;
+            }
+        }
+    }
+
     private void Exit()
     {
         try
