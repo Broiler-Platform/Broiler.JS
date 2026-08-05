@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using Broiler.JavaScript.BuiltIns.Function;
+using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Engine.Benchmarks;
@@ -87,7 +88,27 @@ internal static class CallEntryCostMetrics
         if (!string.Equals(longAnswer, shortAnswer, StringComparison.Ordinal))
             throw new InvalidOperationException($"entries disagree: {longAnswer} vs {shortAnswer}");
 
-        var arms = Measure(callee, arguments, callback);
+        // The STRICT control, which needs no engine change and which item 2-9 already established
+        // as the right one: AddLegacyCallerAndArguments runs for non-strict functions only, so a
+        // strict callee has HasLegacyCallerArguments false and InvokeFunction skips the legacy
+        // frame entirely. The difference between the two callees through the SAME entry is
+        // therefore that one piece of the bookkeeping, isolated without touching the engine.
+        var strictCallee = (JSFunction)context.Eval(
+            "(function () { 'use strict'; return function (x) { return x + 1; }; })()",
+            "strict-callee.js");
+
+        // Two more sloppy shapes. AddLegacyCallerAndArguments is emitted for ordinary non-strict
+        // function declarations and expressions; an arrow and a shorthand method are neither, so
+        // if the legacy frame is what the long entry is paying for, these separate from `callee`
+        // without dragging in the strict-mode transition the strict arm turned out to be dominated
+        // by. Two shapes rather than one, because a single one that separated could be separating
+        // for a reason particular to arrows.
+        var arrowCallee = (JSFunction)context.Eval("((x) => x + 1)", "arrow-callee.js");
+        var methodCallee = (JSFunction)context.Eval(
+            "({ m(x) { return x + 1; } }).m",
+            "method-callee.js");
+
+        var arms = Measure(callee, strictCallee, arrowCallee, methodCallee, arguments, callback);
         var longArm = arms[0];
         var shortArm = arms[1];
 
@@ -125,17 +146,78 @@ internal static class CallEntryCostMetrics
             + $"({shortArm.NanosecondsPerCall / longArm.NanosecondsPerCall:F3}x)");
     }
 
-    private static Arm[] Measure(JSFunction callee, Arguments arguments, CallbackEntry callback)
+    private sealed record Plan(string Name, string Note, Func<double> Body);
+
+    private static Arm[] Measure(
+        JSFunction callee,
+        JSFunction strictCallee,
+        JSFunction arrowCallee,
+        JSFunction methodCallee,
+        Arguments arguments,
+        CallbackEntry callback)
     {
+        // The component arms call the ENGINE's own accessors, not local replicas of the
+        // mechanisms — which is the whole correction 0108 rests on. Only the pieces that are
+        // publicly reachable are here; the two that are not (`HasLegacyCallerArguments` and the
+        // legacy frame it gates) are isolated instead by the strict/sloppy pair above, and the
+        // strict-mode scope is left to its own already-measured figure rather than reached by
+        // reflection, because binding a delegate to it would box the scope struct and price an
+        // allocation the real path does not make.
+        var context = (JSContext)JSEngine.Current;
+        var localArguments = arguments;
+        var plan = new[]
+        {
+            new Plan("InvokeFunction", "every emitted JavaScript call site: five `using` scopes, "
+                + "the executing-function save/set/restore, the legacy-caller check and frame, the "
+                + "strict-mode scope, the with-scope pushes, two try/finally regions and the "
+                + "tail-call loop",
+                () => RunLong(callee, in localArguments)),
+            new Plan("InvokeCallback", "the engine's own short path, used by every native builtin "
+                + "running a JavaScript callback: one `using` scope, the same delegate selection "
+                + "and `this` coercion, and none of the bookkeeping above",
+                () => RunShort(callback, callee, in localArguments)),
+            new Plan("InvokeFunction-strict", "the same long entry on a STRICT callee, which has no "
+                + "legacy caller/arguments — so the legacy frame is skipped and this arm's distance "
+                + "from InvokeFunction is that piece alone",
+                () => RunLong(strictCallee, in localArguments)),
+            new Plan("InvokeCallback-strict", "the short entry on the strict callee, as the control "
+                + "for the pair above: it never pushes a legacy frame either way, so the two "
+                + "callback arms should NOT separate — and if they do, the strict pair is measuring "
+                + "something other than the frame",
+                () => RunShort(callback, strictCallee, in localArguments)),
+
+            new Plan("InvokeFunction-arrow", "a SLOPPY arrow callee through the long entry. An "
+                + "arrow gets no legacy caller/arguments, so this isolates the legacy frame from "
+                + "the strict-mode transition the strict arm turned out to be dominated by",
+                () => RunLong(arrowCallee, in localArguments)),
+            new Plan("InvokeFunction-method", "a sloppy object METHOD through the long entry, as a "
+                + "second shape with the same property",
+                () => RunLong(methodCallee, in localArguments)),
+
+            new Plan("component-empty", "the loop itself, subtracted from the component arms below",
+                RunEmpty),
+            new Plan("component-executing-function", "JSEngine.ExecutingFunction saved, set and "
+                + "restored — three accesses to the [ThreadStatic] the long entry keeps in step",
+                RunExecutingFunction),
+            new Plan("component-current-and-options", "`JSEngine.Current as JSContext` and the "
+                + "`Options.ScriptHostMode` read the long entry makes on every call to decide "
+                + "whether to suspend with-scopes",
+                RunCurrentAndOptions),
+            new Plan("component-with-scope-pushes", "the two with-scope pushes under `using`. Both "
+                + "return null early here (nothing captured), so this prices the calls and the null "
+                + "disposes rather than the scopes",
+                () => RunWithScopePushes(context)),
+        };
+
         for (var warmUp = 0; warmUp < WarmUpPasses; warmUp++)
         {
-            RunLong(callee, in arguments);
-            RunShort(callback, callee, in arguments);
+            foreach (var arm in plan)
+                arm.Body();
         }
 
-        var samples = new double[2][];
-        var bytes = new double[2][];
-        for (var i = 0; i < 2; i++)
+        var samples = new double[plan.Length][];
+        var bytes = new double[plan.Length][];
+        for (var i = 0; i < plan.Length; i++)
         {
             samples[i] = new double[Rounds];
             bytes[i] = new double[Rounds];
@@ -143,19 +225,16 @@ internal static class CallEntryCostMetrics
 
         for (var round = 0; round < Rounds; round++)
         {
-            for (var step = 0; step < 2; step++)
+            for (var step = 0; step < plan.Length; step++)
             {
-                var i = round % 2 == 0 ? step : 1 - step;
+                var i = round % 2 == 0 ? step : plan.Length - 1 - step;
 
                 GC.Collect(2, GCCollectionMode.Forced, blocking: true);
                 GC.WaitForPendingFinalizers();
 
                 var before = GC.GetAllocatedBytesForCurrentThread();
                 var watch = Stopwatch.StartNew();
-                if (i == 0)
-                    RunLong(callee, in arguments);
-                else
-                    RunShort(callback, callee, in arguments);
+                plan[i].Body();
                 watch.Stop();
                 var after = GC.GetAllocatedBytesForCurrentThread();
 
@@ -164,17 +243,59 @@ internal static class CallEntryCostMetrics
             }
         }
 
-        return
-        [
-            Build("InvokeFunction", samples[0], bytes[0],
-                "every emitted JavaScript call site: five `using` scopes, the executing-function "
-                    + "save/set/restore, the legacy-caller check, the strict-mode scope, the "
-                    + "with-scope pushes, two try/finally regions and the tail-call loop"),
-            Build("InvokeCallback", samples[1], bytes[1],
-                "the engine's own short path, used by every native builtin running a JavaScript "
-                    + "callback: one `using` scope, the same delegate selection and `this` coercion, "
-                    + "and none of the bookkeeping above"),
-        ];
+        var arms = new Arm[plan.Length];
+        for (var i = 0; i < plan.Length; i++)
+            arms[i] = Build(plan[i].Name, samples[i], bytes[i], plan[i].Note);
+
+        return arms;
+    }
+
+    private static double RunEmpty()
+    {
+        var accumulator = 0.0;
+        for (var i = 0; i < Iterations; i++)
+            accumulator += i & 1;
+
+        return accumulator;
+    }
+
+    private static double RunExecutingFunction()
+    {
+        var accumulator = 0.0;
+        for (var i = 0; i < Iterations; i++)
+        {
+            var previous = JSEngine.ExecutingFunction;
+            JSEngine.ExecutingFunction = null;
+            accumulator += previous == null ? 1 : 0;
+            JSEngine.ExecutingFunction = previous;
+        }
+
+        return accumulator;
+    }
+
+    private static double RunCurrentAndOptions()
+    {
+        var accumulator = 0.0;
+        for (var i = 0; i < Iterations; i++)
+        {
+            var context = JSEngine.Current as JSContext;
+            accumulator += context?.Options.ScriptHostMode == true ? 1 : 0;
+        }
+
+        return accumulator;
+    }
+
+    private static double RunWithScopePushes(JSContext context)
+    {
+        var accumulator = 0.0;
+        for (var i = 0; i < Iterations; i++)
+        {
+            using var fallback = context?.PushWithFallbackScopes(null);
+            using var scope = context?.PushWithScopes(null);
+            accumulator += fallback == null && scope == null ? 1 : 0;
+        }
+
+        return accumulator;
     }
 
     private static Arm Build(string name, double[] samples, double[] bytes, string note)

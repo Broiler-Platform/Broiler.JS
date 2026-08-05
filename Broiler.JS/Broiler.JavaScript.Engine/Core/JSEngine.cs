@@ -271,7 +271,15 @@ public static class JSEngine
             previous = strictMode;
             changed = previous != enabled;
             if (changed)
+            {
+                // Counted here rather than at the call site, because this is where the claim lives:
+                // the write happens only on a transition, and how often that is has never been
+                // measured. Behind the same off-by-default flag the call counting already uses.
+                if (Runtime.CallPathDiagnostics.Enabled)
+                    Runtime.CallPathDiagnostics.RecordStrictTransition();
+
                 _strictMode.Value = enabled;
+            }
         }
 
         public void Dispose()

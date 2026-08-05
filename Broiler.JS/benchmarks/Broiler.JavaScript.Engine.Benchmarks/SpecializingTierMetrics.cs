@@ -761,6 +761,7 @@ internal static class SpecializingTierMetrics
             callbackCalls = callPath.CallbackCalls,
             userCalls = callPath.UserCalls,
             userCallsFromPromoted = callPath.UserCallsFromPromoted,
+            strictTransitions = callPath.StrictTransitions,
         };
     }
 }

@@ -15,11 +15,16 @@ namespace Broiler.JavaScript.Runtime;
 /// item 4-4's addressable surface, since inlining needs both a body to inline and a call site
 /// inside a tier-2 recompile to inline it at.
 /// </param>
+/// <param name="StrictTransitions">
+/// Entries to a call whose callee's strictness differs from the currently executing code's, each
+/// of which writes the strict-mode <c>AsyncLocal</c> twice — once on entry and once on exit.
+/// </param>
 public readonly record struct CallPathSnapshot(
     long Calls,
     long CallbackCalls,
     long UserCalls,
-    long UserCallsFromPromoted);
+    long UserCallsFromPromoted,
+    long StrictTransitions);
 
 /// <summary>
 /// How many JavaScript calls actually happen, and how many of them are made from a function the
@@ -59,6 +64,7 @@ public static class CallPathDiagnostics
     private static long callbackCalls;
     private static long userCalls;
     private static long userCallsFromPromoted;
+    private static long strictTransitions;
 
     /// <summary>
     /// Records one invocation through the emitted-call entry.
@@ -96,12 +102,33 @@ public static class CallPathDiagnostics
         Interlocked.Increment(ref callbackCalls);
     }
 
+    /// <summary>
+    /// Records one call that crosses a strictness boundary, and therefore writes the strict-mode
+    /// <c>AsyncLocal</c> on the way in and again on the way out.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Item 4-5 fixed the READ side and left the write side unmeasured, on the strength of an
+    /// argument about how often a transition happens.</b> <c>StrictModeScope</c>'s own comment says
+    /// *"the write only on a transition, so … the common case is now a ThreadStatic read and a
+    /// compare, with no AsyncLocal touched at all"*, which is true of a uniformly strict or
+    /// uniformly sloppy call graph and false at every boundary between them — where the cost is
+    /// **95.70 ns and 224 bytes per call**, measured, most of a whole call.
+    /// </para>
+    /// <para>
+    /// Whether that matters is a question about the corpus rather than about the mechanism, and
+    /// nothing could answer it. This counts the crossings so it can be.
+    /// </para>
+    /// </remarks>
+    public static void RecordStrictTransition() => Interlocked.Increment(ref strictTransitions);
+
     public static CallPathSnapshot Snapshot()
         => new(
             Interlocked.Read(ref calls),
             Interlocked.Read(ref callbackCalls),
             Interlocked.Read(ref userCalls),
-            Interlocked.Read(ref userCallsFromPromoted));
+            Interlocked.Read(ref userCallsFromPromoted),
+            Interlocked.Read(ref strictTransitions));
 
     public static void Reset()
     {
@@ -109,5 +136,6 @@ public static class CallPathDiagnostics
         Interlocked.Exchange(ref callbackCalls, 0);
         Interlocked.Exchange(ref userCalls, 0);
         Interlocked.Exchange(ref userCallsFromPromoted, 0);
+        Interlocked.Exchange(ref strictTransitions, 0);
     }
 }
