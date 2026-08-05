@@ -17,7 +17,65 @@ partial class FastCompiler
 {
     private int parameterInitializerDepth;
 
+    /// <summary>
+    /// Item 1-1's remaining half: retains the enclosing scope for each function compiled, so its
+    /// body can be re-compiled after this compilation has finished.
+    /// </summary>
+    /// <remarks>
+    /// A wrapper rather than an edit inside <see cref="CreateFunctionCore"/>, which has several
+    /// return points — the retention has to see the value each of them produced, and threading a
+    /// capture through all of them is how one gets missed. Off by default; with the switch off
+    /// this is one boolean test per compiled function.
+    /// </remarks>
     private BExpression CreateFunction(AstFunctionExpression functionDeclaration, BExpression super = null, bool createClass = false, string className = null,
+        IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false, bool hoistStatementDeclaration = true, string inferredFunctionName = null,
+        bool createPrototype = true, string[] directEvalPrivateNames = null, IReadOnlyDictionary<AstClassProperty, BExpression> computedMemberNames = null,
+        bool thisIsUninitialized = false, BExpression superConstructor = null, IReadOnlyList<PrivateInstanceElement> privateInstanceElements = null,
+        IReadOnlyDictionary<AstClassProperty, BExpression> autoAccessorBackingKeys = null)
+    {
+        if (!DeferredTreeCompilation.Retaining)
+        {
+            return CreateFunctionCore(functionDeclaration, super, createClass, className, memberInits, forceStrictMode,
+                hoistStatementDeclaration, inferredFunctionName, createPrototype, directEvalPrivateNames,
+                computedMemberNames, thisIsUninitialized, superConstructor, privateInstanceElements,
+                autoAccessorBackingKeys);
+        }
+
+        // Taken BEFORE the core runs, because the core pushes this function's own scope and the
+        // context has to name the scope the body was written in, not the one it creates.
+        var enclosing = scope.Top;
+        var eager = CreateFunctionCore(functionDeclaration, super, createClass, className, memberInits, forceStrictMode,
+            hoistStatementDeclaration, inferredFunctionName, createPrototype, directEvalPrivateNames,
+            computedMemberNames, thisIsUninitialized, superConstructor, privateInstanceElements,
+            autoAccessorBackingKeys);
+
+        // Only the plain shape is retained. Everything else — a class member, a derived
+        // constructor, a direct-eval compilation, a body with private names or computed member
+        // keys — carries context through CreateFunction's own parameters, which a re-entry from a
+        // scope alone cannot reproduce. Refusing them is the honest half of "keep the scope
+        // alive": the scope is what is kept, so only what the scope determines may be replayed.
+        if (super == null
+            && !createClass
+            && className == null
+            && memberInits == null
+            && !forceStrictMode
+            && hoistStatementDeclaration
+            && inferredFunctionName == null
+            && createPrototype
+            && directEvalPrivateNames == null
+            && computedMemberNames == null
+            && !thisIsUninitialized
+            && superConstructor == null
+            && privateInstanceElements == null
+            && autoAccessorBackingKeys == null)
+        {
+            RetainDeferredBody(functionDeclaration, enclosing, eager);
+        }
+
+        return eager;
+    }
+
+    private BExpression CreateFunctionCore(AstFunctionExpression functionDeclaration, BExpression super = null, bool createClass = false, string className = null,
         IFastEnumerable<AstClassProperty> memberInits = null, bool forceStrictMode = false, bool hoistStatementDeclaration = true, string inferredFunctionName = null,
         bool createPrototype = true, string[] directEvalPrivateNames = null, IReadOnlyDictionary<AstClassProperty, BExpression> computedMemberNames = null,
         bool thisIsUninitialized = false, BExpression superConstructor = null, IReadOnlyList<PrivateInstanceElement> privateInstanceElements = null,

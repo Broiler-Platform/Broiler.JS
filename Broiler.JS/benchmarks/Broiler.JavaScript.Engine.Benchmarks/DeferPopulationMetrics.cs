@@ -93,6 +93,9 @@ internal static class DeferPopulationMetrics
         // Item 1-1's remaining half: check the source-derived capture layout against the one the
         // rewrite derives from the tree, on the same corpora and in the same run.
         ExpressionCompiler.DeferredCaptureLayout.Checking = true;
+        // Item 1-1's remaining half, the mechanism: retain an enclosing scope per function and
+        // re-compile every body from it afterwards, checking each against the eager tree.
+        Compiler.DeferredTreeCompilation.Retaining = true;
 
         foreach (var corpus in corpora)
         {
@@ -105,6 +108,7 @@ internal static class DeferPopulationMetrics
             ClosureRewriteDiagnostics.Reset();
             Compiler.CompilerSpecializationDiagnostics.Reset();
             ExpressionCompiler.DeferredCaptureLayout.Reset();
+            Compiler.DeferredTreeCompilation.Reset();
 
             string failure = null;
             try
@@ -128,6 +132,7 @@ internal static class DeferPopulationMetrics
             var relaysSkipped = ClosureRewriteDiagnostics.SkippedRelays;
             var capturesInRepeat = ClosureRewriteDiagnostics.CapturesCreatedInRepeatWalk;
 
+            var reentry = Compiler.DeferredTreeCompilation.Recompile();
             var specialization = Compiler.CompilerSpecializationDiagnostics.Snapshot();
             var captureFree = specialization.DeferralRefusals[(int)Compiler.DeferralRefusal.CaptureFree];
             var dynamicSites = specialization.DeferralRefusals[(int)Compiler.DeferralRefusal.Dynamic];
@@ -202,6 +207,13 @@ internal static class DeferPopulationMetrics
                 layoutRepeatDisagreements = ExpressionCompiler.DeferredCaptureLayout.RepeatDisagreements,
                 layoutMissedSamples = ExpressionCompiler.DeferredCaptureLayout.MissedNameSamples,
 
+                // Re-entry: bodies compiled a SECOND time from the retained enclosing scope,
+                // after this corpus's compilation finished, compared against the eager tree up to
+                // alpha-renaming of compiler-generated temporaries.
+                reentryTotal = reentry.Total,
+                reentryReproduced = reentry.Reproduced,
+                reentryFirstDifference = reentry.FirstDifference,
+
                 evaluationFailure = failure,
             });
 
@@ -222,6 +234,7 @@ internal static class DeferPopulationMetrics
 
         Compiler.DeferrableFunctions.Counting = false;
         ExpressionCompiler.DeferredCaptureLayout.Checking = false;
+        Compiler.DeferredTreeCompilation.Retaining = false;
 
         Console.WriteLine(JsonSerializer.Serialize(
             new
