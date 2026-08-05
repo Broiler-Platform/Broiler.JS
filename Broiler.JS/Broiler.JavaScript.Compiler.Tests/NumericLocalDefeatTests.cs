@@ -210,7 +210,9 @@ public sealed class NumericLocalDefeatTests
         Assert.Equal(0, Dropped(d, NumericDropCause.OtherName));
     }
 
-    [Theory]    [InlineData(false)]    [InlineData(true)]
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public void TheEnclosingNameIsTheBindingConstraintAndOneCharacterProvesIt(bool speculate)
     {
         // The A/B item 3-8a's population rests on, reduced to a single difference. Two programs

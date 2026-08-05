@@ -11,6 +11,7 @@ public class JSNumberBuilder
     private static MethodInfo _create;
     private static MethodInfo _createLiteral;
     private static MethodInfo _createConversion;
+    private static MethodInfo _createSpeculativeRead;
 
     public static Expression NaN;
     public static Expression Zero;
@@ -31,6 +32,8 @@ public class JSNumberBuilder
             ?? throw new NotSupportedException();
         _createLiteral = type.GetMethod("CreateLiteral", [typeof(double)])
             ?? throw new InvalidOperationException("JSNumber.CreateLiteral(double) not found");
+        _createSpeculativeRead = type.GetMethod("CreateSpeculativeRead", [typeof(double)])
+            ?? throw new InvalidOperationException("JSNumber.CreateSpeculativeRead(double) not found");
 
         NaN = Expression.Field(null, type.GetField("NaN"));
         Zero = Expression.Field(null, type.GetField("Zero"));
@@ -59,4 +62,12 @@ public class JSNumberBuilder
     /// </summary>
     public static Expression NewLiteral(double value)
         => Expression.Call(null, _createLiteral, Expression.Constant(value));
+
+    /// <summary>
+    /// Emits the creation of a number for a READ of item 3-8a's speculative local. Same factory,
+    /// separate entry, so a run can be asked how much of its boxing the dual representation is
+    /// still paying (docs/performance-roadmap.md item 3-8a).
+    /// </summary>
+    public static Expression NewSpeculativeRead(Expression exp)
+        => Expression.Call(null, _createSpeculativeRead, exp);
 }

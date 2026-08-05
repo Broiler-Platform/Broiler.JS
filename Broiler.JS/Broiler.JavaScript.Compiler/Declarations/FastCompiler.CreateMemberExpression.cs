@@ -40,6 +40,32 @@ partial class FastCompiler
     }
 
     /// <summary>
+    /// The three halves of item 3-8a's speculative local when it is used as a computed key, or
+    /// <c>null</c> when the key is not one.
+    /// </summary>
+    /// <remarks>
+    /// Separate from <see cref="TryGetNumericKeyStorage"/> and deliberately so: that one answers
+    /// "this key IS a raw double", which lets its caller emit one unconditional read. A
+    /// speculative key is a raw double only while its flag holds, so its caller has to emit both
+    /// arms — and a site that confused the two would read a dead double whenever the speculation
+    /// was not live.
+    /// </remarks>
+    private (BExpression Raw, BExpression Flag, BExpression Slot)? TryGetSpeculativeKeyStorage(
+        AstExpression property)
+    {
+        if (property.Type != FastNodeType.Identifier)
+            return null;
+
+        if (!TryGetStaticIdentifierVariable((AstIdentifier)property, out var variable)
+            || variable?.SpeculativeNumericFlag == null)
+        {
+            return null;
+        }
+
+        return (variable.SpeculativeNumericStorage, variable.SpeculativeNumericFlag, variable.SpeculativeSlot);
+    }
+
+    /// <summary>
     /// Lowers `a[i] = value` to a write that keeps its index unboxed, or returns null when this
     /// member is not a plain numeric-local element write (roadmap item 3-0, write half).
     /// </summary>
@@ -71,11 +97,42 @@ partial class FastCompiler
         }
 
         var index = TryGetNumericKeyStorage(member.Property, member.Computed);
-        if (index == null)
+        if (index != null)
+        {
+            var numericTarget = VisitExpression(member.Object);
+            return JSValueBuilder.SetIndexByNumber(numericTarget, index, compileValue());
+        }
+
+        // Item 3-8a: the same write keyed by a SPECULATIVE local. The read half of the item was
+        // measured without this and came out a regression on NavierStokes, whose inner loop is
+        //
+        //     lastX = x[currentRow] = (x0[currentRow] + a * (...)) * invC;
+        //
+        // — the local is read four ways and WRITTEN through once, and the one write was boxing an
+        // index the three reads no longer box.
+        if (!member.Computed)
             return null;
 
-        var target = VisitExpression(member.Object);
-        return JSValueBuilder.SetIndexByNumber(target, index, compileValue());
+        if (TryGetSpeculativeKeyStorage(member.Property) is not { } speculative)
+            return null;
+
+        // Receiver, then value, then the store — the order §13.15.2 asks for, given that the key
+        // "evaluation" here is a pair of register reads that cannot be observed. Both are bound to
+        // temps because both arms need them and `compileValue` may be called only once: it is a
+        // compilation, not a value, and running it twice would emit the right-hand side twice and
+        // mint a second inline-cache site for it.
+        using var receiver = scope.Top.GetTempVariable(typeof(JSValue));
+        using var stored = scope.Top.GetTempVariable(typeof(JSValue));
+        return BExpression.Block(
+            BExpression.Assign(receiver.Expression, VisitExpression(member.Object)),
+            BExpression.Assign(stored.Expression, ToJSValueExpression(compileValue())),
+            BExpression.Condition(
+                speculative.Flag,
+                JSValueBuilder.SetIndexByNumber(receiver.Expression, speculative.Raw, stored.Expression),
+                BExpression.Assign(
+                    JSValueBuilder.Index(receiver.Expression, speculative.Slot),
+                    stored.Expression),
+                typeof(JSValue)));
     }
 
     private BExpression CreatePropertyKeyExpression(AstExpression property, bool computed)

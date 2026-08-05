@@ -874,7 +874,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             : variableType == typeof(double)
                 ? JSNumberBuilder.New(pe)
                 : speculativeFlag != null
-                    ? BExpression.Condition(speculativeFlag, JSNumberBuilder.New(speculativeDouble), pe, typeof(JSValue))
+                    ? BExpression.Condition(speculativeFlag, JSNumberBuilder.NewSpeculativeRead(speculativeDouble), pe, typeof(JSValue))
                     : pe;
         
         v = new VariableScope

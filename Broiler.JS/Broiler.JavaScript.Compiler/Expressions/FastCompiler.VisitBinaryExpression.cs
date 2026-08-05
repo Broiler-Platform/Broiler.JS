@@ -427,24 +427,6 @@ partial class FastCompiler
                 : BExpression.Assign(variable.Expression, value);
 
     /// <summary>
-    /// A store into item 3-8a's dual-representation local: land the value in the slot, decide the
-    /// flag from it, and mirror the raw double when it holds.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Branch-free on purpose. The obvious spelling is <c>if (flag) num = slot.DoubleValue;</c>,
-    /// but the assignment is an EXPRESSION whose value the caller may use, and a conditional with
-    /// a void arm is not one — so the raw half is written unconditionally from a conditional
-    /// source instead. When the flag does not hold, the double is garbage that nothing reads:
-    /// every consumer goes through <c>Expression</c>, which selects the slot.
-    /// </para>
-    /// <para>
-    /// <b>The value is evaluated exactly once</b>, into the slot, and the flag and the double are
-    /// then read back OFF the slot rather than off the expression — so a value with a side effect
-    /// cannot run twice, which is the failure this shape most invites.
-    /// </para>
-    /// </remarks>
-    /// <summary>
     /// Brings item 3-8a's <c>JSValue</c> slot back up to date, so a path that treats the binding
     /// as an ordinary assignable <c>JSValue</c> can go on doing so.
     /// </summary>
@@ -481,6 +463,26 @@ partial class FastCompiler
             inPlace(variable.SpeculativeSlot),
             ResyncSpeculative(variable),
             variable.SpeculativeSlot);
+
+    /// <summary>
+    /// A store into item 3-8a's dual-representation local: land the value in the slot, decide the
+    /// flag from it, and mirror the raw double when it holds.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Branch-free on purpose. The obvious spelling is <c>if (flag) num = slot.DoubleValue;</c>,
+    /// but the assignment is an EXPRESSION whose value the caller may use, and a conditional with
+    /// a void arm is not one — so the raw half is written unconditionally from a conditional
+    /// source instead. When the flag does not hold the double is <b>0</b>, and it is 0 rather than
+    /// left alone so that a consumer which reads it out of order reads a wrong answer loudly
+    /// instead of a plausible stale one.
+    /// </para>
+    /// <para>
+    /// <b>The value is evaluated exactly once</b>, into the slot, and the flag and the double are
+    /// then read back OFF the slot rather than off the expression — so a value with a side effect
+    /// cannot run twice, which is the failure this shape most invites.
+    /// </para>
+    /// </remarks>
     private static BExpression AssignToSpeculativeVariable(
         FastFunctionScope.VariableScope variable, BExpression value)
     {

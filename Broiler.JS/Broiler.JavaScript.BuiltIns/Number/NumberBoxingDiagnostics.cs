@@ -44,6 +44,7 @@ public static class NumberBoxingDiagnostics
     private static long allocations;
     private static long literalRequests;
     private static long conversionRequests;
+    private static long speculativeReadRequests;
 
     /// <summary>Whether boxing is counted. Off by default.</summary>
     public static bool Enabled;
@@ -65,6 +66,21 @@ public static class NumberBoxingDiagnostics
     /// </summary>
     internal static void RecordConversionRequest() => Interlocked.Increment(ref conversionRequests);
 
+    /// <summary>
+    /// A request made READING item 3-8a's speculative local — the box its dual representation
+    /// costs whenever a consumer cannot take the raw <c>double</c>
+    /// (docs/performance-roadmap.md item 3-8a).
+    /// </summary>
+    /// <remarks>
+    /// This is the counter that decides the item, and it exists because three guarded consumers
+    /// were built without it. The storage half alone measured a 2.1% regression, the guarded tree
+    /// leaf and the element index took it to 1.7%, the element write to 1.2% — each step a guess
+    /// at where the remaining boxes were, checked only after the fact by whether the total moved.
+    /// A count attributed at the read says directly how much is left to win, and therefore whether
+    /// a fourth consumer is worth building at all.
+    /// </remarks>
+    internal static void RecordSpeculativeReadRequest() => Interlocked.Increment(ref speculativeReadRequests);
+
     /// <summary>A request the small-integer table answered without allocating.</summary>
     internal static void RecordCacheHit() => Interlocked.Increment(ref cacheHits);
 
@@ -84,7 +100,8 @@ public static class NumberBoxingDiagnostics
             Interlocked.Read(ref factoryAllocations),
             Interlocked.Read(ref allocations),
             Interlocked.Read(ref literalRequests),
-            Interlocked.Read(ref conversionRequests));
+            Interlocked.Read(ref conversionRequests),
+            Interlocked.Read(ref speculativeReadRequests));
 
     public static void Reset()
     {
@@ -103,13 +120,15 @@ public static class NumberBoxingDiagnostics
 /// <param name="Allocations">Every <see cref="JSNumber"/> constructed, factory or not.</param>
 /// <param name="LiteralRequests">Factory calls made by a compile-time numeric literal.</param>
 /// <param name="ConversionRequests">Factory calls made by the compiler boxing a raw double to cross into a <c>JSValue</c>.</param>
+/// <param name="SpeculativeReadRequests">Factory calls made reading item 3-8a's speculative local.</param>
 public readonly record struct NumberBoxingSnapshot(
     long Requests,
     long CacheHits,
     long FactoryAllocations,
     long Allocations,
     long LiteralRequests,
-    long ConversionRequests)
+    long ConversionRequests,
+    long SpeculativeReadRequests)
 {
     /// <summary>
     /// Boxes minted by a builtin writing <c>new JSNumber(x)</c> instead of going through the

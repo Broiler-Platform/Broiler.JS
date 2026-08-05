@@ -102,7 +102,7 @@ partial class FastCompiler
         // the result. Measured, requiring two operators took the corpus from 10.4 M boxes removed
         // to 5.6 M — Crypto alone lost 4.7 M — which is what says the single-node-with-a-literal
         // case is most of the prize rather than a rounding error.
-        if (CountOperators(root) - 1 + CountNativeLeaves(root) < 1)
+        if (CountOperators(root) - 1 + CountNativeLeaves(root) + CountSpeculativeLeaves(root) < 1)
             return Refuse(NumericTreeRefusal.NoSavingToMake);
 
         // The hoisting form's order gate. Under the order-preserving emission nothing is hoisted,
@@ -280,7 +280,10 @@ partial class FastCompiler
     /// </param>
     /// <param name="IsLeaf">
     /// A guarded leaf's <see cref="Value"/> is the operand itself and is correct whether or not
-    /// the test holds, so it needs no conditional to read; an internal node's does.
+    /// the test holds, so it needs no conditional to read; an internal node's does. Read as a
+    /// property of the VALUE rather than of the syntax — item 3-8a's speculative leaf is a leaf
+    /// and sets this <c>false</c>, because the slot it carries is stale exactly while its test
+    /// holds.
     /// </param>
     private readonly record struct OrderedNode(
         BExpression Native,
@@ -351,6 +354,44 @@ partial class FastCompiler
                 typeof(bool))));
 
             return new OrderedNode(value, ok, boxed, IsLeaf: false);
+        }
+
+        // Item 3-8a: a speculative local is ALREADY the shape this tree wants — a raw double, a
+        // flag saying it is live, and a JSValue to fall back on. Offering it directly is what
+        // makes the dual representation pay: without this the leaf goes through `Expression`,
+        // which boxes on the very arm the item exists to keep unboxed.
+        //
+        // It is still SNAPSHOTTED rather than read in place, and that is not caution. A later
+        // leaf can assign to the same local — `c + f()` where `f` writes `c` — and the reference
+        // emission reads `c` before `f` runs. Copying two CLR locals and a reference preserves
+        // that for nothing; reading the storage at the node instead would answer with the value
+        // the side effect left. The flag is snapshotted for the same reason and it is the half
+        // easiest to leave out: a side effect that turns the local into a String changes which
+        // ARM is correct, not just what the double is worth.
+        //
+        // NOT a leaf for AsJSValue's purposes, and this is the one place the two representations
+        // are not interchangeable. `IsLeaf` means "the saved operand is the value whichever way
+        // the test went" — true of a guarded leaf, which saved the JSValue it was handed, and
+        // false of this one, whose slot is DELIBERATELY STALE while the flag is up. So the
+        // generic arm has to re-materialize from the flag, which costs a box on exactly the arm
+        // that was going to box anyway.
+        if (NumericTreeOrdering.Enabled
+            && node is AstIdentifier speculativeName
+            && TryGetStaticIdentifierVariable(speculativeName, out var speculativeVariable)
+            && speculativeVariable?.SpeculativeNumericFlag != null)
+        {
+            var rawCopy = BExpression.Parameter(typeof(double), "#specnum" + guarded);
+            var flagCopy = BExpression.Parameter(typeof(bool), "#specok" + guarded);
+            var slotCopy = BExpression.Parameter(typeof(JSValue), "#specval" + guarded);
+            locals.Add(rawCopy);
+            locals.Add(flagCopy);
+            locals.Add(slotCopy);
+            body.Add(BExpression.Assign(flagCopy, speculativeVariable.SpeculativeNumericFlag));
+            body.Add(BExpression.Assign(rawCopy, speculativeVariable.SpeculativeNumericStorage));
+            body.Add(BExpression.Assign(slotCopy, speculativeVariable.SpeculativeSlot));
+            guarded++;
+
+            return new OrderedNode(rawCopy, flagCopy, slotCopy, IsLeaf: false);
         }
 
         // A leaf. Visited exactly once, here, at its own position in the reference order.
@@ -438,6 +479,40 @@ partial class FastCompiler
             return CountNativeLeaves(binary.Left) + CountNativeLeaves(binary.Right);
 
         return IsNativeNumericAst(node) ? 1 : 0;
+    }
+
+    /// <summary>
+    /// Leaves that are item 3-8a's speculative locals — each one a box the ordinary emission mints
+    /// <em>conditionally</em>, because the variable's readable expression boxes the raw half back
+    /// up whenever the flag is live.
+    /// </summary>
+    /// <remarks>
+    /// Counted alongside <see cref="CountNativeLeaves"/> rather than inside it, because it is not
+    /// the same kind of saving: a proven-numeric leaf is one box removed, and this is one box
+    /// removed on the arm the speculation wins and nothing changed on the arm it loses.
+    /// <para>
+    /// It is nevertheless the difference between a tree being built and refused. <c>c + p.v</c> has
+    /// one operator and no native leaf, so <c>CountOperators - 1 + CountNativeLeaves</c> is zero and
+    /// the tree is turned down for having no saving to make — which is <b>the shape item 3-8a's
+    /// population is mostly made of</b>. Without this term the speculative leaf below is reachable
+    /// only from trees that were already eligible for some other reason, i.e. it is very nearly
+    /// dead code, and the read half of the item does not happen.
+    /// </para>
+    /// <para>
+    /// Self-gating: with <c>BROILER_JS_SPECULATIVE_NUMERIC_LOCALS</c> off no variable carries a
+    /// flag, so this is zero and the eligibility rule is byte-for-byte the one the control arm had.
+    /// </para>
+    /// </remarks>
+    private int CountSpeculativeLeaves(AstExpression node)
+    {
+        if (node is AstBinaryExpression binary && IsNativeNumericOperator(binary.Operator))
+            return CountSpeculativeLeaves(binary.Left) + CountSpeculativeLeaves(binary.Right);
+
+        return node is AstIdentifier name
+            && TryGetStaticIdentifierVariable(name, out var variable)
+            && variable?.SpeculativeNumericFlag != null
+            ? 1
+            : 0;
     }
 
     private void CollectLeaves(AstExpression node, List<AstExpression> leaves)

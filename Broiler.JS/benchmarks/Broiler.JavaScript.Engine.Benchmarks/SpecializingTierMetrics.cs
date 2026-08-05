@@ -622,6 +622,11 @@ internal static class SpecializingTierMetrics
             // into a local, a slot or an element. Only these are what a typed backing store could
             // remove; the rest an operator or a builtin produced.
             boxingConversionRequests = boxing.ConversionRequests,
+            // Item 3-8a: of those, the ones minted READING a speculative local, i.e. what the dual
+            // representation still costs. Read it against the fall in arithmeticUpdateTargets'
+            // LocalSlot row, which is what the representation buys: the item pays exactly while
+            // the second number exceeds the first.
+            boxingSpeculativeReadRequests = boxing.SpeculativeReadRequests,
 
             // Item 3-1's shared half, counted on the far side of the boundary: not what the
             // compiler could prove, but what the operators were actually handed. arithmeticGeneric

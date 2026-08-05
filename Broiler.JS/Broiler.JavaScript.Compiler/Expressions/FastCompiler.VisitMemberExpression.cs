@@ -134,6 +134,30 @@ partial class FastCompiler
                     var numericKey = TryGetNumericKeyStorage(mp, computed: true);
                     if (numericKey != null)
                         return JSValueBuilder.IndexByNumber(target, numericKey);
+
+                    // Item 3-8a: the same read where the index is a SPECULATIVE local — a raw
+                    // double only while its flag holds, so unlike the path above this one has to
+                    // emit both arms.
+                    //
+                    // The receiver is bound to a temp so the COMPILED receiver appears once. Not
+                    // an ordering rule: only one arm of a conditional runs, and the order between
+                    // evaluating the receiver and reading the key cannot be observed here anyway
+                    // — a receiver could only disturb the key by closing over it, and a captured
+                    // binding is a JSVariable cell, which is not a candidate for either numeric
+                    // tier. What the temp buys is that `target` is not duplicated into two arms,
+                    // where it would be emitted twice and would put one inline-cache site behind
+                    // two call sites.
+                    if (TryGetSpeculativeKeyStorage(mp) is { } speculativeKey)
+                    {
+                        using var receiver = scope.Top.GetTempVariable(typeof(JSValue));
+                        return BExpression.Block(
+                            BExpression.Assign(receiver.Expression, target),
+                            BExpression.Condition(
+                                speculativeKey.Flag,
+                                JSValueBuilder.IndexByNumber(receiver.Expression, speculativeKey.Raw),
+                                JSValueBuilder.Index(receiver.Expression, speculativeKey.Slot),
+                                typeof(JSValue)));
+                    }
                 }
 
                 // Computed identifier key (`a?.[b]` where b parsed as an Identifier reference).
