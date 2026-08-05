@@ -192,6 +192,31 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         /// </remarks>
         public BParameterExpression NumericStorage { get; internal set; }
 
+        /// <summary>
+        /// Item 3-8a: the raw <c>double</c> half of a speculative local, live exactly while
+        /// <see cref="SpeculativeNumericFlag"/> holds.
+        /// </summary>
+        /// <remarks>
+        /// <b>Deliberately NOT <see cref="NumericStorage"/>.</b> That field means "this binding IS a
+        /// raw double", and five separate fast paths read it on exactly that understanding — the
+        /// numeric element index, the mixed comparison, the raw store, the native update step and
+        /// <c>ToNativeExpression</c>. A speculative local is a double only *sometimes*, so giving it
+        /// that field would have each of those read a dead value and answer wrongly. It gets its own
+        /// field instead, and a site opts in by naming it.
+        /// </remarks>
+        public BParameterExpression SpeculativeNumericStorage { get; internal set; }
+
+        /// <summary>Whether <see cref="SpeculativeNumericStorage"/> currently holds the binding's value.</summary>
+        public BParameterExpression SpeculativeNumericFlag { get; internal set; }
+
+        /// <summary>
+        /// The <c>JSValue</c> half, live while the flag does not hold. This is the binding's
+        /// ordinary storage; <see cref="Expression"/> becomes a conditional over the two, so every
+        /// existing READ site stays correct without being touched and a write through it is an
+        /// assignment to a conditional, which the backend rejects rather than miscompiling.
+        /// </summary>
+        public BParameterExpression SpeculativeSlot { get; internal set; }
+
         public void Dispose() => InUse = false;
 
         public void SetPostInit(BExpression exp)
@@ -302,6 +327,15 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     /// </summary>
     public System.Collections.Generic.IReadOnlySet<string> NumericLocals { get; internal set; }
         = System.Collections.Immutable.ImmutableHashSet<string>.Empty;
+
+    /// <summary>
+    /// Names item 3-8a speculates on: the analysis proves them numeric only if a value arriving
+    /// from outside the function holds a number, so they are held in BOTH representations at once
+    /// — a raw <c>double</c> and the <c>JSValue</c> slot — with a flag saying which is live
+    /// (docs/performance-roadmap.md item 3-8a). Never null.
+    /// </summary>
+    public System.Collections.Generic.IReadOnlySet<string> SpeculativeNumericLocals { get; internal set; }
+        = System.Collections.Immutable.ImmutableHashSet<string>.Empty;
     public bool HasOuterFunctionCaptures { get; private set; }
 
     // True when this function scope is an eval-shadow boundary: a sloppy function whose
@@ -393,6 +427,15 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             {
                 if (s.Value.Variable != null)
                     yield return s.Value.Variable;
+
+                // Item 3-8a: a speculative local needs its raw double and its flag declared as
+                // method locals too. They are yielded here rather than tracked separately so a
+                // scope cannot emit the binding without them.
+                if (s.Value.SpeculativeNumericStorage != null)
+                {
+                    yield return s.Value.SpeculativeNumericStorage;
+                    yield return s.Value.SpeculativeNumericFlag;
+                }
             }
         }
     }
@@ -576,6 +619,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         CapturedByHoistedFunctions = p.CapturedByHoistedFunctions;
         HasNestedFunctions = p.HasNestedFunctions;
         NumericLocals = p.NumericLocals;
+        SpeculativeNumericLocals = p.SpeculativeNumericLocals;
     }
 
     public BExpression this[string name] => GetVariable(name).Expression;
@@ -809,13 +853,29 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         // we need to move variable in top scope...
         var variableType = type ?? typeof(JSVariable);
         var pe = BExpression.Parameter(variableType, name.Value);
+
+        // Item 3-8a: a name the analysis proves numeric only under an assumption about a value
+        // from outside the function is held in BOTH representations. The flag decides which is
+        // live; Expression below reads through it, so nothing that consumes the binding as a
+        // JSValue has to know, and a write through Expression fails loudly.
+        BParameterExpression speculativeDouble = null;
+        BParameterExpression speculativeFlag = null;
+        if (variableType == typeof(JSValue)
+            && SpeculativeNumericLocals.Contains(name.Value)
+            && SpeculativeNumericLocals2.Enabled)
+        {
+            speculativeDouble = BExpression.Parameter(typeof(double), name.Value + "#num");
+            speculativeFlag = BExpression.Parameter(typeof(bool), name.Value + "#isnum");
+        }
         // A numeric local's readable Expression BOXES its storage, so every consumer that
         // expects a JSValue keeps working; writes go through NumericStorage instead.
         var ve = variableType == typeof(JSVariable)
             ? JSVariable.ValueExpression(pe)
             : variableType == typeof(double)
                 ? JSNumberBuilder.New(pe)
-                : pe;
+                : speculativeFlag != null
+                    ? BExpression.Condition(speculativeFlag, JSNumberBuilder.New(speculativeDouble), pe, typeof(JSValue))
+                    : pe;
         
         v = new VariableScope
         {
@@ -829,6 +889,14 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         
         if (variableType == typeof(double))
             v.NumericStorage = pe;
+
+        if (speculativeFlag != null)
+        {
+            v.SpeculativeNumericStorage = speculativeDouble;
+            v.SpeculativeNumericFlag = speculativeFlag;
+            v.SpeculativeSlot = pe;
+            CompilerSpecializationDiagnostics.RecordSpeculativeNumericLocal();
+        }
         v.SetInit(init, initialize);
         variableScopeList[name] = v;
         if (variableType == typeof(JSValue) || variableType == typeof(double))

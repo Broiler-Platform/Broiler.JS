@@ -160,6 +160,68 @@ partial class FastCompiler
                     JSNumberBuilder.New(previousValue.Expression));
             }
 
+            // Item 3-8a: the step is the whole reason the dual representation exists. While the
+            // raw half is live the increment is a native double add that writes NOTHING back to
+            // the slot — which is the box that item 3-1's update-target census priced at 98.1% of
+            // the corpus's steps. When it is not live the ordinary generic step runs and the two
+            // halves are resynchronized from the slot afterwards.
+            if (variable.SpeculativeNumericFlag != null)
+            {
+                var flag = variable.SpeculativeNumericFlag;
+                var raw = variable.SpeculativeNumericStorage;
+                var slot = variable.SpeculativeSlot;
+                var step = BExpression.Constant(
+                    updateExpression.Operator == UnaryOperator.Increment ? 1d : -1d);
+
+                // The generic arm, written against the slot: coerce once, keep the coerced OLD
+                // value for a postfix result, step, store back, and re-derive the halves.
+                using var previous = scope.Top.GetTempVariable(typeof(JSValue));
+                var genericArm = BExpression.Block(
+                    BExpression.Assign(slot, JSValueBuilder.ToNumeric(slot)),
+                    BExpression.Assign(previous.Variable, slot),
+                    BExpression.Assign(
+                        slot,
+                        updateExpression.Operator == UnaryOperator.Increment
+                            ? JSValueBuilder.Increment(slot, ArithmeticOperandDiagnostics.UpdateTarget.LocalSlot)
+                            : JSValueBuilder.Decrement(slot, ArithmeticOperandDiagnostics.UpdateTarget.LocalSlot)),
+                    ResyncSpeculative(variable),
+                    updateExpression.Prefix ? slot : previous.Expression);
+
+                if (discardResult)
+                {
+                    // A `for` update clause throws the value away, so the winning arm is a bare
+                    // double add and allocates nothing at all.
+                    return BExpression.Block(
+                        previous.Variable.AsSequence(),
+                        BExpression.Condition(
+                            flag,
+                            BExpression.Block(
+                                BExpression.Assign(raw, BExpression.Add(raw, step)),
+                                JSUndefinedBuilder.Value),
+                            genericArm,
+                            typeof(JSValue)));
+                }
+
+                // The value is used, so the winning arm still has to hand back a JSValue — but
+                // only the RESULT is boxed, and the binding itself stays unboxed.
+                using var before = updateExpression.Prefix ? null : scope.Top.GetTempVariable(typeof(double));
+                var locals = new Sequence<BParameterExpression> { previous.Variable };
+                if (before != null)
+                    locals.Add(before.Variable);
+
+                var nativeArm = updateExpression.Prefix
+                    ? BExpression.Block(
+                        BExpression.Assign(raw, BExpression.Add(raw, step)),
+                        JSNumberBuilder.New(raw))
+                    : BExpression.Block(
+                        BExpression.Assign(before.Variable, raw),
+                        BExpression.Assign(raw, BExpression.Add(raw, step)),
+                        JSNumberBuilder.New(before.Expression));
+
+                return BExpression.Block(
+                    locals,
+                    BExpression.Condition(flag, nativeArm, genericArm, typeof(JSValue)));
+            }
             if (variable.Variable?.Type == typeof(JSVariable) && !variable.IsDeletable)
             {
                 using var current = scope.Top.GetTempVariable(typeof(JSValue));

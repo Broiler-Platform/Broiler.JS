@@ -86,6 +86,12 @@ partial class FastCompiler
             // second analysis pass per compiled function, which is compile time nothing else
             // needs to pay — and it is a COMPILE-time counter, so whoever turns it on has to do
             // so before the corpus is compiled rather than beside the run-time censuses.
+            // Item 3-8a: the names held in two representations. Same gate as the numeric tier —
+            // the analysis assumes no closure can capture the binding and no eval/with can rename
+            // it — and the switch is read here so the OFF arm allocates nothing extra at all.
+            if (cs.CanScalarReplaceLocals && SpeculativeNumericLocals2.Enabled)
+                cs.SpeculativeNumericLocals = NumericLocalAnalysis.AnalyzeSpeculative(functionDeclaration);
+
             if (SpeculativeNumericLocals.Counting && cs.CanScalarReplaceLocals)
                 CompilerSpecializationDiagnostics.RecordSpeculativeNumericCandidates(
                     NumericLocalAnalysis.AnalyzeSpeculative(functionDeclaration).Count);

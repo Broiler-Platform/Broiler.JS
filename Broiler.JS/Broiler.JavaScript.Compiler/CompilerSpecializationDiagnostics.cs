@@ -18,7 +18,8 @@ public readonly record struct CompilerSpecializationSnapshot(
     long SpeculativeNumericGuards,
     long[] NumericTreeRefusals,
     long[] NumericTreeOrderBlockers,
-    long SpeculativeNumericCandidates);
+    long SpeculativeNumericCandidates,
+    long SpeculativeNumericLocalsEmitted);
 
 /// <summary>
 /// Why a hoisted name did not become a raw <c>double</c> local, in the order the gate asks
@@ -180,6 +181,7 @@ public static class CompilerSpecializationDiagnostics
     private static readonly long[] numericTreeRefusals = new long[9];
     private static readonly long[] numericTreeOrderBlockers = new long[5];
     private static long speculativeNumericCandidates;
+    private static long speculativeNumericLocalsEmitted;
 
     internal static void RecordScalarLocal() => Interlocked.Increment(ref scalarLocals);
 
@@ -255,6 +257,10 @@ public static class CompilerSpecializationDiagnostics
     /// since the drop-cause counters beside it aggregate over every function in the program and
     /// that is what made the first reading of this number unreadable.
     /// </summary>
+    /// <summary>One local emitted in item 3-8a's dual representation.</summary>
+    internal static void RecordSpeculativeNumericLocal()
+        => Interlocked.Increment(ref speculativeNumericLocalsEmitted);
+
     internal static void RecordSpeculativeNumericCandidates(int count)
         => Interlocked.Add(ref speculativeNumericCandidates, count);
 
@@ -282,7 +288,8 @@ public static class CompilerSpecializationDiagnostics
             Interlocked.Read(ref speculativeNumericGuards),
             Read(numericTreeRefusals),
             Read(numericTreeOrderBlockers),
-            Interlocked.Read(ref speculativeNumericCandidates));
+            Interlocked.Read(ref speculativeNumericCandidates),
+            Interlocked.Read(ref speculativeNumericLocalsEmitted));
 
     private static long[] Read(long[] counters)
     {
@@ -330,5 +337,6 @@ public static class CompilerSpecializationDiagnostics
         for (var i = 0; i < numericTreeOrderBlockers.Length; i++)
             Interlocked.Exchange(ref numericTreeOrderBlockers[i], 0);
         Interlocked.Exchange(ref speculativeNumericCandidates, 0);
+        Interlocked.Exchange(ref speculativeNumericLocalsEmitted, 0);
     }
 }

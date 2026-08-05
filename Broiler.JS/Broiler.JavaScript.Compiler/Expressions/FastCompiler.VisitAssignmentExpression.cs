@@ -271,6 +271,12 @@ partial class FastCompiler
             {
                 var suppressedRight = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod,
                     Visit(right), BExpression.Constant(""), BExpression.Constant(false));
+                // Item 3-8a: the binding is not an assignable JSValue while its raw half is live,
+                // so the slot is materialized, written in place, and the halves resynchronized.
+                if (variable.SpeculativeNumericFlag != null)
+                    return ThroughSpeculativeSlot(variable,
+                        slot => BinaryOperation.Assign(slot, suppressedRight, assignmentOperator));
+
                 return BinaryOperation.Assign(variable.Expression, suppressedRight, assignmentOperator);
             }
 
@@ -279,6 +285,9 @@ partial class FastCompiler
             if (variable.NumericStorage != null)
                 return NumericStoreResult(
                     CreateNumericCompoundAssignment(variable, right, assignmentOperator), discardResult);
+
+            if (variable.SpeculativeNumericFlag != null)
+                return ThroughSpeculativeSlot(variable, slot => Assign(slot, right, assignmentOperator));
 
             return Assign(variable.Expression, right, assignmentOperator);
         }

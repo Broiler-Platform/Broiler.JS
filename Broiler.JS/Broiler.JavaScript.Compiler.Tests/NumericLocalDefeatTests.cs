@@ -27,8 +27,10 @@ public sealed class NumericLocalDefeatTests
         long[] Rejections,
         long[] DropCauses);
 
-    private static Defeat Analyse(string source)
+    private static Defeat Analyse(string source, bool speculate = false)
     {
+        var previousSpeculation = SpeculativeNumericLocals2.Enabled;
+        SpeculativeNumericLocals2.Enabled = speculate;
         var previous = ArithmeticOperandDiagnostics.Enabled;
         using var context = new JSContext();
         ArithmeticOperandDiagnostics.Reset();
@@ -48,6 +50,7 @@ public sealed class NumericLocalDefeatTests
         finally
         {
             ArithmeticOperandDiagnostics.Enabled = previous;
+            SpeculativeNumericLocals2.Enabled = previousSpeculation;
         }
     }
 
@@ -94,13 +97,15 @@ public sealed class NumericLocalDefeatTests
         Assert.True(Rejected(d, NumericLocalRejection.CapturedByHoistedFunction) > 0);
     }
 
-    [Fact]
-    public void ALocalInitializedFromAnEnclosingScopeNameIsDroppedAsOtherName()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ALocalInitializedFromAnEnclosingScopeNameIsDroppedAsOtherName(bool speculate)
     {
         // THE shape. `var currentRow = j * rowSize` inside a function nested in the one that
         // declares `rowSize`. The local lands in LocalSlot and the cause is OtherName — the
         // analysis is per-function and will not type a name from outside it.
-        var d = Analyse("""
+        var d = Analyse(speculate: speculate, source: """
             function o(){
               var rowSize = 10;
               function f(){ var c = 2 * rowSize; c++; return c; }
@@ -109,17 +114,19 @@ public sealed class NumericLocalDefeatTests
             o();
             """);
 
-        Assert.Equal(1, Target(d, ArithmeticOperandDiagnostics.UpdateTarget.LocalSlot));
+        Assert.Equal(speculate ? 0 : 1, Target(d, ArithmeticOperandDiagnostics.UpdateTarget.LocalSlot));
         Assert.Equal(1, Dropped(d, NumericDropCause.OtherName));
     }
 
-    [Fact]
-    public void ItIsStillDroppedWhenTheEnclosingNameIsWrittenFromASiblingClosure()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ItIsStillDroppedWhenTheEnclosingNameIsWrittenFromASiblingClosure(bool speculate)
     {
         // NavierStokes exactly: `rowSize` is a FluidField-scope var assigned inside `reset()`.
         // Same answer, and the enclosing name is additionally held by the hoisting rule, which is
         // what makes the cascade permanent — see TheEnclosingNameIsHeldByACorrectnessRule below.
-        var d = Analyse("""
+        var d = Analyse(speculate: speculate, source: """
             function o(){
               var rowSize;
               function reset(){ rowSize = 12; }
@@ -130,7 +137,7 @@ public sealed class NumericLocalDefeatTests
             o();
             """);
 
-        Assert.Equal(1, Target(d, ArithmeticOperandDiagnostics.UpdateTarget.LocalSlot));
+        Assert.Equal(speculate ? 0 : 1, Target(d, ArithmeticOperandDiagnostics.UpdateTarget.LocalSlot));
         Assert.Equal(1, Dropped(d, NumericDropCause.OtherName));
     }
 
@@ -154,8 +161,10 @@ public sealed class NumericLocalDefeatTests
         Assert.Equal(0, Rejected(d, NumericLocalRejection.Accepted));
     }
 
-    [Fact]
-    public void AProvenNumericEnclosingNameIsStillNotImportedAcrossTheClosure()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AProvenNumericEnclosingNameIsStillNotImportedAcrossTheClosure(bool speculate)
     {
         // The gap that is NOT a correctness rule, and the one worth its own item. Here `rowSize`
         // is captured only by a function EXPRESSION, so item 3-7's mechanism types it — the
@@ -165,7 +174,7 @@ public sealed class NumericLocalDefeatTests
         //
         // So a name can be proven numeric in one scope and unusable as a numeric input one level
         // down. That is pure analysis reach, no soundness argument attached to it.
-        var d = Analyse("""
+        var d = Analyse(speculate: speculate, source: """
             function o(){
               var rowSize = 10;
               var f = function(){ var c = 2 * rowSize; c++; return c; };
@@ -176,7 +185,7 @@ public sealed class NumericLocalDefeatTests
 
         Assert.Equal(1, d.NumericLocals);
         Assert.True(Rejected(d, NumericLocalRejection.Accepted) > 0);
-        Assert.Equal(1, Target(d, ArithmeticOperandDiagnostics.UpdateTarget.LocalSlot));
+        Assert.Equal(speculate ? 0 : 1, Target(d, ArithmeticOperandDiagnostics.UpdateTarget.LocalSlot));
         Assert.Equal(1, Dropped(d, NumericDropCause.OtherName));
     }
 
@@ -201,8 +210,8 @@ public sealed class NumericLocalDefeatTests
         Assert.Equal(0, Dropped(d, NumericDropCause.OtherName));
     }
 
-    [Fact]
-    public void TheEnclosingNameIsTheBindingConstraintAndOneCharacterProvesIt()
+    [Theory]    [InlineData(false)]    [InlineData(true)]
+    public void TheEnclosingNameIsTheBindingConstraintAndOneCharacterProvesIt(bool speculate)
     {
         // The A/B item 3-8a's population rests on, reduced to a single difference. Two programs
         // whose inner function is identical except that the initializer reads a name from the
@@ -219,7 +228,7 @@ public sealed class NumericLocalDefeatTests
         // a fixture that only showed the slot would be consistent with the local being refused for
         // any of the six other conjuncts, which is exactly the ambiguity the rest of this file
         // exists to remove.
-        var viaEnclosingName = Analyse("""
+        var viaEnclosingName = Analyse(speculate: speculate, source: """
             function o(){
               var rowSize = 10;
               function f(){ var c = 2 * rowSize; c++; return c; }
@@ -228,9 +237,9 @@ public sealed class NumericLocalDefeatTests
             o();
             """);
 
-        Assert.Equal(1, Target(viaEnclosingName, ArithmeticOperandDiagnostics.UpdateTarget.LocalSlot));
+        Assert.Equal(speculate ? 0 : 1, Target(viaEnclosingName, ArithmeticOperandDiagnostics.UpdateTarget.LocalSlot));
 
-        var viaLiteral = Analyse("""
+        var viaLiteral = Analyse(speculate: speculate, source: """
             function o(){
               function f(){ var c = 2 * 10; c++; return c; }
               return f();

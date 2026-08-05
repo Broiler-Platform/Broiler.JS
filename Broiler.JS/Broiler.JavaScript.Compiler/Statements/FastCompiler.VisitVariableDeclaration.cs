@@ -53,7 +53,7 @@ partial class FastCompiler
                         // A numeric local never reaches here: the analysis rejects a declarator
                         // with no initializer, since the binding would be observably undefined.
                         if (newScope && v.NumericStorage == null)
-                            list.Add(BExpression.Assign(v.Expression, JSUndefinedBuilder.Value));
+                            list.Add(AssignToVariable(v, JSUndefinedBuilder.Value));
                     }
                     else
                     {
@@ -90,7 +90,7 @@ partial class FastCompiler
                             list.Add(BExpression.Block(
                                 new Sequence<BParameterExpression> { lexicalInitTemp.Variable },
                                 BExpression.Assign(lexicalInitTemp.Expression, initExpr),
-                                BExpression.Assign(v.Expression, lexicalInitTemp.Expression)));
+                                AssignToVariable(v, lexicalInitTemp.Expression)));
                         }
                         else if (withBoundaries.Count > 0
                             && TryGetStaticIdentifierVariable(id, out var staticVar) && staticVar != null)
@@ -130,7 +130,7 @@ partial class FastCompiler
                                     BExpression.Condition(
                                         BExpression.NotEqual(withObjectTemp.Expression, BExpression.Constant(null, typeof(JSObject))),
                                         JSContextBuilder.AssignWithObjectIdentifier(withObjectTemp.Expression, key, initTemp.Expression, IsStrictMode),
-                                        BExpression.Assign(v.Expression, initTemp.Expression),
+                                        AssignToVariable(v, initTemp.Expression),
                                         typeof(JSValue))));
                         }
                     }

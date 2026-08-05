@@ -607,6 +607,7 @@ internal static class SpecializingTierMetrics
             // were known to hold one. Read against numericLocals — it is what the one conjunct
             // NumericLocalDefeatTests isolated is costing.
             speculativeNumericCandidates = compiler.SpeculativeNumericCandidates,
+            speculativeNumericLocalsEmitted = compiler.SpeculativeNumericLocalsEmitted,
 
             // The ceiling on all of phase 3: a raw double can only ever remove a box, so
             // boxesAllocated x 24 B is every byte the whole family could take.
