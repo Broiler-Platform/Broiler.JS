@@ -1728,6 +1728,91 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     static readonly ConcurrentUInt32Map<JSValue> cache = ConcurrentUInt32Map<JSValue>.Create();
     internal readonly SynchronizationContext synchronizationContext;
 
+    /// <summary>
+    /// The job queue used when <see cref="synchronizationContext"/> is null. Promise reactions and
+    /// <c>await</c> resumptions post here and run on the JavaScript thread when the outermost
+    /// execution finishes, instead of on a thread-pool thread beside it.
+    /// </summary>
+    internal readonly JSMicrotaskQueue microtasks = new();
+
+    /// <summary>
+    /// Queues one JavaScript job — a promise reaction or an <c>await</c> resumption — so that it
+    /// runs on the thread executing JavaScript rather than beside it.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The order of the four cases is the whole rule, and each one is there because the case above
+    /// it does not cover it.
+    /// </para>
+    /// <para>
+    /// <b>1. The engine's own pump</b>, when <c>Execute</c>/<c>ExecuteAsync</c> are running one on
+    /// this thread. It is single-threaded and someone is draining it, so a job posted there is
+    /// correctly ordered and cannot be stranded. This case has to come first: routing it to the
+    /// queue instead would strand continuations the awaiting task is waiting for.
+    /// </para>
+    /// <para>
+    /// <b>2. This context's own queue</b>, while it is executing JavaScript. This replaces what
+    /// used to be two separate wrong answers — <c>ThreadPool.QueueUserWorkItem</c> when no context
+    /// was present, and <c>SynchronizationContext.Current.Post</c> when an arbitrary one was. Both
+    /// ran user JavaScript on another thread while this one was still running JavaScript in the
+    /// same context; the second is the one that reached xUnit, whose <c>AsyncTestSyncContext</c>
+    /// dispatches through the pool and is not a JavaScript thread at all.
+    /// </para>
+    /// <para>
+    /// <b>3. A host context</b>, when nothing is executing. There is no queue to drain the job and
+    /// no JavaScript for it to race, and a host that supplied a context wants its thread used.
+    /// </para>
+    /// <para>
+    /// <b>4. The thread pool</b>, when there is neither. Unchanged from before, and reachable only
+    /// with nothing running — which is the case that was always safe.
+    /// </para>
+    /// </remarks>
+    internal static void PostJob(Action job, SynchronizationContext captured = null)
+    {
+        // 1. We are ON the engine's pump, so posting to it is both correctly ordered and drained.
+        if (SynchronizationContext.Current is IJSJobPump current)
+        {
+            ((SynchronizationContext)current).Post(_ => job(), null);
+            return;
+        }
+
+        // 2. The pump this work belongs to, captured when the promise or the await was created.
+        // **This case is load-bearing and dropping it deadlocks `Execute`.** A promise created on
+        // the pump thread can be settled from a thread-pool thread — a host Task completing — where
+        // `SynchronizationContext.Current` is null and case 1 cannot see the pump. Without this the
+        // job would take the queue or the host context, the task `AsyncPump.Run` is blocking on
+        // would never complete, and the pump would spin forever waiting for work that went
+        // somewhere else. Only a pump is trusted: an arbitrary captured context is no more the
+        // JavaScript thread than an arbitrary current one.
+        if (captured is IJSJobPump capturedPump)
+        {
+            ((SynchronizationContext)capturedPump).Post(_ => job(), null);
+            return;
+        }
+
+        var context = JSEngine.Current as JSContext;
+
+        // 3. This context's own queue, while it is executing JavaScript. Replaces what used to be
+        // two separate wrong answers — the thread pool when no context was present, and
+        // `SynchronizationContext.Current.Post` when an arbitrary one was. Both ran user JavaScript
+        // on another thread while this one was still running JavaScript in the same context; the
+        // second is the one that reached xUnit, whose AsyncTestSyncContext dispatches through the
+        // pool and is not a JavaScript thread at all.
+        if (context?.microtasks.TryPost(job) == true)
+            return;
+
+        // 4. A host context, with nothing executing: no queue will drain the job and no JavaScript
+        // is running for it to race, and a host that supplied a context wants its thread used.
+        if (context?.synchronizationContext is { } hostContext)
+        {
+            hostContext.Post(_ => job(), null);
+            return;
+        }
+
+        // 5. Neither. Reachable only with nothing running, which is the case that was always safe.
+        ThreadPool.QueueUserWorkItem(_ => job());
+    }
+
     private static long nextTimeout = 1;
     private static long nextInterval = 1;
 
@@ -1949,6 +2034,10 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     public JSValue Eval(string code, string codeFilePath = null, JSValue @this = null)
     {
         using var realmScope = JSEngine.EnterContext(this);
+        // Marks this as a JavaScript execution, so jobs queued by anything it runs are drained on
+        // the way out of the OUTERMOST one rather than part-way through it. A nested Eval — a host
+        // callback that evaluates more source while JavaScript is on the stack — must not drain.
+        using var executionScope = microtasks.EnterExecution();
         @this ??= this;
         if (Debugger == null)
         {
@@ -1979,7 +2068,12 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         @this ??= this;
         JSValue result;
 
+        // Same execution marker as Eval, for the same reason: while the synchronous part runs, a
+        // job it queues must not be handed to a pool thread beside it. The drain at the end of the
+        // block returns the depth to zero, so anything settling later — a host Task-backed promise
+        // this method then awaits — takes the pool exactly as it did before.
         using (CoreScript.AllowTopLevelAwaitScope())
+        using (microtasks.EnterExecution())
         {
             var fx = CoreScript.Compile(code, codeFilePath, codeCache: CodeCache);
             result = JSTailCall.Resolve(fx(new Arguments(@this)));

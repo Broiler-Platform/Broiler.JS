@@ -367,12 +367,10 @@ public partial class JSPromise : JSObject, IJSPromise
         }
     });
 
+    // A reaction runs user JavaScript, so where it is dispatched decides whether two threads can
+    // execute JavaScript in one context at once. JSContext.PostJob owns that decision; the captured
+    // `sc` is no longer consulted here, because "a context is present" was never the same claim as
+    // "that context is the JavaScript thread" — see IJSJobPump.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void Post(Action action)
-    {
-        if (sc != null)
-            sc.Post(action, (x) => x());
-        else
-            ThreadPool.QueueUserWorkItem(_ => action());
-    }
+    private void Post(Action action) => JSContext.PostJob(action, sc);
 }

@@ -66,7 +66,7 @@ public static class AsyncPump
     }
 
     /// <summary>Provides a SynchronizationContext that's single-threaded.</summary>
-    private sealed class SingleThreadSynchronizationContext : SynchronizationContext
+    private sealed class SingleThreadSynchronizationContext : SynchronizationContext, IJSJobPump
     {
         /// <summary>The queue of work items.</summary>
         private readonly BlockingCollection<KeyValuePair<SendOrPostCallback, object>> m_queue = [];

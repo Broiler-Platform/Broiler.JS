@@ -134,23 +134,24 @@ public class JSAsyncFunction
             var then = r.IsObject ? r[KeyStrings.then] : JSUndefined.Value;
             var isThenable = then.IsFunction;
 
-            // Resume on the synchronization context currently being pumped (matching how
-            // JSPromise captures its context), falling back to the context captured at
-            // JSContext construction. Posting to the construction-time context directly would
-            // bypass a caller-installed pump (Execute/ExecuteAsync via AsyncPump) and strand
-            // continuations on a context nobody is draining, deadlocking the awaiting task.
+            // The pump being run on this thread, if any — see JSContext.PostJob case 2. Captured at
+            // the await rather than read at the post, because a thenable resumes from wherever its
+            // `then` decides to call back.
             var continuationContext = SynchronizationContext.Current
                 ?? (JSEngine.Current as JSContext)?.synchronizationContext;
 
             return (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) =>
             {
-                void Queue(Action action)
-                {
-                    if (continuationContext != null)
-                        continuationContext.Post(_ => action(), null);
-                    else
-                        ThreadPool.QueueUserWorkItem(_ => action());
-                }
+                // Resuming runs the rest of the async body, which is user JavaScript, so this is
+                // the same dispatch decision a promise reaction makes and it is made in one place.
+                // It used to prefer whatever SynchronizationContext happened to be current, on the
+                // reasoning that a context being pumped is the JavaScript thread — true of the
+                // engine's own pump, false of an arbitrary host's. See JSContext.PostJob.
+                //
+                // `continuationContext` is captured HERE rather than read inside Queue because the
+                // thenable path calls Queue from a `then` callback, which can run later and on
+                // another thread; by then the pump this await belongs to is no longer current.
+                void Queue(Action action) => JSContext.PostJob(action, continuationContext);
 
                 if (!isThenable)
                 {
