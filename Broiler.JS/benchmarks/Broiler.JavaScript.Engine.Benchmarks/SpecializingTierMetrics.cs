@@ -487,6 +487,18 @@ internal static class SpecializingTierMetrics
         ArithmeticOperandDiagnostics.Reset();
         ArithmeticOperandDiagnostics.Enabled = counters;
         var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
+
+        // The denominator phase 3 has never had. Every item in it is priced in boxes removed, and
+        // the exchange rate into wall clock has come out at roughly a sixth of that share three
+        // times running with no explanation. GC.GetTotalPauseDuration is exact rather than sampled
+        // — it is the runtime's own accounting of how long execution was suspended for collection
+        // — so it says directly what share of a suite an allocation item is even bidding for.
+        // Collection counts are taken with it because pause time alone cannot distinguish "many
+        // cheap gen0s" from "a few expensive gen2s", and those want opposite follow-ups.
+        var pauseBefore = GC.GetTotalPauseDuration();
+        var gen0Before = GC.CollectionCount(0);
+        var gen1Before = GC.CollectionCount(1);
+        var gen2Before = GC.CollectionCount(2);
         stopwatch.Start();
         try
         {
@@ -498,6 +510,10 @@ internal static class SpecializingTierMetrics
         }
 
         stopwatch.Stop();
+        var gcPauseMs = (GC.GetTotalPauseDuration() - pauseBefore).TotalMilliseconds;
+        var gen0Collections = GC.CollectionCount(0) - gen0Before;
+        var gen1Collections = GC.CollectionCount(1) - gen1Before;
+        var gen2Collections = GC.CollectionCount(2) - gen2Before;
         var allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
         var boxing = Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Snapshot();
         Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Enabled = false;
@@ -526,6 +542,16 @@ internal static class SpecializingTierMetrics
             failures = split.Length > 1 && split[1].Length > 0 ? split[1] : null,
             elapsedMs = stopwatch.ElapsedMilliseconds,
             allocatedBytes,
+
+            // How much of elapsedMs the runtime spent with execution suspended for collection,
+            // from its own accounting rather than from a sampled profile. This is the ceiling on
+            // every allocation item in phase 3 at once: a change that removed EVERY box could not
+            // buy back more than this from the collector, and three items have now measured an
+            // exchange rate into wall clock that this is the missing half of the explanation for.
+            gcPauseMs,
+            gen0Collections,
+            gen1Collections,
+            gen2Collections,
 
             // Item 3-5's shape, counted at compile time: how many relational comparisons had one
             // operand already unboxed, against how many had neither — and how few locals reach the
