@@ -932,6 +932,34 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     public bool TryGetOwnVariable(in StringSpan name, out VariableScope variable)
         => variableScopeList.TryGetValue(name, out variable);
 
+    /// <summary>
+    /// Whether <paramref name="name"/> resolves to a binding this scope chain holds, and which
+    /// function owns it (null for a program/root-level one). False means the name is not bound
+    /// anywhere here and resolves dynamically — a global, or undeclared.
+    /// </summary>
+    /// <remarks>
+    /// <b>Deliberately not <see cref="GetVariable"/>, and the difference is not stylistic.</b>
+    /// <c>GetVariable</c> sets <c>RootScope.HasOuterFunctionCaptures</c> as a side effect of
+    /// answering, and that flag is a conjunct of the tiering gate (item 4-2a) — so a probe written
+    /// on top of it would turn tiering OFF for functions it merely asked about, which is an
+    /// instrument changing the thing it measures. This is the same walk with the side effect
+    /// removed, and it exists for measurement only (item 1-1's remaining half).
+    /// </remarks>
+    internal bool TryResolveBinding(in StringSpan name, out VariableScope binding)
+    {
+        var start = this;
+        while (start != null)
+        {
+            if (start.variableScopeList.TryGetValue(name, out binding))
+                return true;
+
+            start = start.Parent;
+        }
+
+        binding = null;
+        return false;
+    }
+
     // Parameter-environment shadow bindings created in this function scope (see
     // EvalShadowVariable). Registered into the function's CallStackItem at entry so
     // a direct eval in the parameter list writes the eval-introduced var into the

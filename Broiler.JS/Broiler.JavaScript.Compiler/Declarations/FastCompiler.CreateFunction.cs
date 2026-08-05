@@ -104,6 +104,14 @@ partial class FastCompiler
             // item's own prediction: item 3-7 leaves a name captured by a hoisted function
             // DECLARATION in a JSVariable cell however numeric its analysis found it, which is why
             // 3-9 is not expected to reach NavierStokes.
+            // Item 1-1's remaining half: how many function sites could have their body tree built
+            // on first call with NO capture mechanism. Asked of the ENCLOSING scope — previousScope
+            // rather than cs — because the question is what this body reaches outside itself, and
+            // asked before anything of this function is emitted so the answer describes the site
+            // rather than the compilation. Compile-time counter, off by default.
+            if (DeferrableFunctions.Counting)
+                RecordDeferrability(functionDeclaration, previousScope);
+
             if (ImportedOuterNumerics.Counting && cs.CanScalarReplaceLocals)
                 CompilerSpecializationDiagnostics.RecordImportedOuterNumericCandidates(
                     NumericLocalAnalysis.AnalyzeImportedOuter(
@@ -553,6 +561,68 @@ partial class FastCompiler
 
             return jsf;
         }
+    }
+
+    /// <summary>
+    /// Classifies one function site for item 1-1's remaining half: could its body's expression
+    /// tree be built on first invocation instead of now, with no capture mechanism?
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>The whole content of this is the resolution step</b>, and it is why the existing scanners
+    /// cannot answer the question. <see cref="FreeNameScan"/> gives the names the body references
+    /// and does not bind; whether each of them <em>costs</em> anything depends on where it
+    /// resolves, and only the enclosing compiler scope knows that. A name that resolves to nothing
+    /// this compilation holds is looked up dynamically at run time, from a body compiled whenever
+    /// — so <c>function () { return jQuery; }</c> at program top level is free, and the identical
+    /// text inside an IIFE that declares <c>jQuery</c> needs a box whose index only
+    /// <c>LambdaRewriter</c> knows.
+    /// </para>
+    /// <para>
+    /// <b>Over-counting the refusals is the safe direction and is what this does.</b> A name is
+    /// charged as a capture the moment the chain holds a binding for it, including a program-level
+    /// one — which may or may not turn out to need a box — so <see cref="DeferralRefusal.CaptureFree"/>
+    /// is a lower bound on the population and never an over-claim. The
+    /// <c>functionOwned</c> count is carried separately precisely so the two can be told apart
+    /// afterwards rather than argued about now.
+    /// </para>
+    /// </remarks>
+    private static void RecordDeferrability(AstFunctionExpression function, FastFunctionScope enclosing)
+    {
+        var scan = FreeNameScan.Of(function);
+        if (scan.Dynamic)
+        {
+            CompilerSpecializationDiagnostics.RecordDeferralDecision(DeferralRefusal.Dynamic, scan.Free.Count, 0, 0, 0);
+            return;
+        }
+
+        var bound = 0;
+        var functionOwned = 0;
+        var cellBacked = 0;
+        foreach (var name in scan.Free)
+        {
+            if (enclosing == null || !enclosing.TryResolveBinding(name, out var binding))
+                continue;
+
+            bound++;
+            if (binding.OwnerFunction != null)
+                functionOwned++;
+
+            // The count the item actually turns on. A binding with no CLR local of its own is not
+            // held in an enclosing lambda's frame, so no Box[] entry can refer to it and the body
+            // resolves it the same way whenever it is compiled — a script's top-level `var` and
+            // function declarations are properties of the global object, which is what makes
+            // Mandreel's 1 364 top-level declarations a different case from jQuery's IIFE.
+            if (binding.Variable != null)
+                cellBacked++;
+        }
+
+        CompilerSpecializationDiagnostics.RecordDeferralDecision(
+            cellBacked == 0 ? DeferralRefusal.CaptureFree : DeferralRefusal.CapturesEnclosingBinding,
+            scan.Free.Count,
+            bound,
+            functionOwned,
+            cellBacked);
     }
 
     private static int GetExpectedArgumentCount(IFastEnumerable<VariableDeclarator> parameters)

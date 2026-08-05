@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
@@ -86,6 +86,11 @@ internal static class DeferPopulationMetrics
 
         var rows = new List<object>(corpora.Count);
 
+        // Item 1-1's remaining half needs a second number beside the never-invoked share, and it
+        // has to be on before anything is compiled — a compile-time counter enabled among the
+        // run-time censuses reads zero, which phase 3 paid for twice.
+        Compiler.DeferrableFunctions.Counting = true;
+
         foreach (var corpus in corpora)
         {
             // One context per corpus, and the counters reset after it is built: creating a
@@ -95,6 +100,7 @@ internal static class DeferPopulationMetrics
             context.Eval(Prologue, "defer-population-prologue.js", context);
             DeferredMethodDiagnostics.Reset();
             ClosureRewriteDiagnostics.Reset();
+            Compiler.CompilerSpecializationDiagnostics.Reset();
 
             string failure = null;
             try
@@ -118,6 +124,13 @@ internal static class DeferPopulationMetrics
             var relaysSkipped = ClosureRewriteDiagnostics.SkippedRelays;
             var capturesInRepeat = ClosureRewriteDiagnostics.CapturesCreatedInRepeatWalk;
 
+            var specialization = Compiler.CompilerSpecializationDiagnostics.Snapshot();
+            var captureFree = specialization.DeferralRefusals[(int)Compiler.DeferralRefusal.CaptureFree];
+            var dynamicSites = specialization.DeferralRefusals[(int)Compiler.DeferralRefusal.Dynamic];
+            var capturingSites = specialization
+                .DeferralRefusals[(int)Compiler.DeferralRefusal.CapturesEnclosingBinding];
+            var classified = captureFree + dynamicSites + capturingSites;
+
             rows.Add(new
             {
                 corpus = corpus.Name,
@@ -136,6 +149,32 @@ internal static class DeferPopulationMetrics
                 // runs the repeat: how many captures the repeat created that the first walk had
                 // not. Zero is what makes the skip a removal of repeated work.
                 capturesInRepeat,
+
+                // Item 1-1's remaining half, classified. A waterfall over every function site the
+                // corpus compiles: captureFree needs no Box[] and so no capture mechanism,
+                // dynamicSites can reach bindings their text never names and no mechanism reaches
+                // them, and capturingSites are exactly what the mechanism is for. The three sum to
+                // classifiedSites.
+                classifiedSites = classified,
+                captureFreeSites = captureFree,
+                dynamicSites,
+                capturingSites,
+                captureFreeShare = classified > 0
+                    ? Math.Round(captureFree / (double)classified, 4)
+                    : 0d,
+                // The density behind the verdict: how many names a capturing site actually
+                // captures, and how many of those belong to a function rather than the program
+                // top level. A refusal count alone cannot tell "captures one name of forty" from
+                // "captures everything", and the mechanism is worth different amounts in the two.
+                freeNames = specialization.DeferralFreeNames,
+                boundFreeNames = specialization.DeferralBoundFreeNames,
+                functionOwnedFreeNames = specialization.DeferralFunctionOwnedFreeNames,
+                // The one that decides the item: bound names held in a CLR local of an enclosing
+                // lambda, and so needing a Box[] entry whose index only LambdaRewriter knows. A
+                // bound name WITHOUT one — a script's top-level var or function declaration, which
+                // is a property of the global object — costs a deferral nothing.
+                cellBackedFreeNames = specialization.DeferralCellBackedFreeNames,
+
                 // Non-null means evaluation stopped early, so `forced` is a floor and the share
                 // above is a ceiling.
                 evaluationFailure = failure,
@@ -145,9 +184,18 @@ internal static class DeferPopulationMetrics
                 $"{corpus.Name,-18} registered={registered,6} forced={forced,6} "
                 + $"never={registered - forced,6} ({(registered > 0 ? (registered - forced) * 100.0 / registered : 0):F1}%) "
                 + $"relayRewrote={relaysRewritten,6} relaySkipped={relaysSkipped,6} "
-                + $"capturesInRepeat={capturesInRepeat,6}"
+                + $"capturesInRepeat={capturesInRepeat,6}");
+            Console.Error.WriteLine(
+                $"{string.Empty,-18} sites={classified,6} captureFree={captureFree,6} "
+                + $"({(classified > 0 ? captureFree * 100.0 / classified : 0):F1}%) "
+                + $"capturing={capturingSites,6} dynamic={dynamicSites,6} "
+                + $"free={specialization.DeferralFreeNames,6} bound={specialization.DeferralBoundFreeNames,6} "
+                + $"fnOwned={specialization.DeferralFunctionOwnedFreeNames,6} "
+                + $"cellBacked={specialization.DeferralCellBackedFreeNames,6}"
                 + (failure == null ? string.Empty : $"  [{failure}]"));
         }
+
+        Compiler.DeferrableFunctions.Counting = false;
 
         Console.WriteLine(JsonSerializer.Serialize(
             new

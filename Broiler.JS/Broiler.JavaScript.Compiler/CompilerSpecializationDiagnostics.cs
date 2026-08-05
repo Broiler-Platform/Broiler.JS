@@ -21,7 +21,12 @@ public readonly record struct CompilerSpecializationSnapshot(
     long SpeculativeNumericCandidates,
     long SpeculativeNumericLocalsEmitted,
     long ImportedOuterNumericCandidates,
-    long ImportedOuterNumericOffers);
+    long ImportedOuterNumericOffers,
+    long[] DeferralRefusals,
+    long DeferralFreeNames,
+    long DeferralBoundFreeNames,
+    long DeferralFunctionOwnedFreeNames,
+    long DeferralCellBackedFreeNames);
 
 /// <summary>
 /// Why a hoisted name did not become a raw <c>double</c> local, in the order the gate asks
@@ -186,6 +191,11 @@ public static class CompilerSpecializationDiagnostics
     private static long speculativeNumericLocalsEmitted;
     private static long importedOuterNumericCandidates;
     private static long importedOuterNumericOffers;
+    private static readonly long[] deferralRefusals = new long[3];
+    private static long deferralFreeNames;
+    private static long deferralBoundFreeNames;
+    private static long deferralFunctionOwnedFreeNames;
+    private static long deferralCellBackedFreeNames;
 
     internal static void RecordScalarLocal() => Interlocked.Increment(ref scalarLocals);
 
@@ -296,6 +306,39 @@ public static class CompilerSpecializationDiagnostics
     internal static void RecordImportedOuterNumericOffer()
         => Interlocked.Increment(ref importedOuterNumericOffers);
 
+    /// <summary>
+    /// Records one function site's deferrability, and the free names behind the verdict
+    /// (docs/performance-roadmap.md item 1-1's remaining half).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>The three name counts are what make the verdict readable</b>, and a single refusal tally
+    /// is not — item 3-9 paid for that lesson: a site attributed to
+    /// <see cref="DeferralRefusal.CapturesEnclosingBinding"/> is consistent with "captures one name
+    /// out of forty" and with "captures everything it touches", and the capture mechanism is worth
+    /// completely different amounts in the two worlds. <c>bound / free</c> is the density and
+    /// <c>functionOwned / bound</c> separates a capture from a program-top-level binding, which is
+    /// the distinction the mechanism's cost actually turns on.
+    /// </para>
+    /// <para>
+    /// Occurrence-weighted rather than distinct across sites, because the question is how much
+    /// boxing a real deferral would have to arrange, not how many spellings the corpus uses.
+    /// </para>
+    /// </remarks>
+    internal static void RecordDeferralDecision(
+        DeferralRefusal refusal,
+        int freeNames,
+        int boundFreeNames,
+        int functionOwnedFreeNames,
+        int cellBackedFreeNames)
+    {
+        Interlocked.Increment(ref deferralRefusals[(int)refusal]);
+        Interlocked.Add(ref deferralFreeNames, freeNames);
+        Interlocked.Add(ref deferralBoundFreeNames, boundFreeNames);
+        Interlocked.Add(ref deferralFunctionOwnedFreeNames, functionOwnedFreeNames);
+        Interlocked.Add(ref deferralCellBackedFreeNames, cellBackedFreeNames);
+    }
+
     /// <summary>Records why one hoisted name did or did not reach the numeric tier.</summary>
     internal static void RecordNumericLocalDecision(NumericLocalRejection reason)
     {
@@ -323,7 +366,12 @@ public static class CompilerSpecializationDiagnostics
             Interlocked.Read(ref speculativeNumericCandidates),
             Interlocked.Read(ref speculativeNumericLocalsEmitted),
             Interlocked.Read(ref importedOuterNumericCandidates),
-            Interlocked.Read(ref importedOuterNumericOffers));
+            Interlocked.Read(ref importedOuterNumericOffers),
+            Read(deferralRefusals),
+            Interlocked.Read(ref deferralFreeNames),
+            Interlocked.Read(ref deferralBoundFreeNames),
+            Interlocked.Read(ref deferralFunctionOwnedFreeNames),
+            Interlocked.Read(ref deferralCellBackedFreeNames));
 
     private static long[] Read(long[] counters)
     {
@@ -374,5 +422,11 @@ public static class CompilerSpecializationDiagnostics
         Interlocked.Exchange(ref importedOuterNumericCandidates, 0);
         Interlocked.Exchange(ref importedOuterNumericOffers, 0);
         Interlocked.Exchange(ref speculativeNumericLocalsEmitted, 0);
+        for (var i = 0; i < deferralRefusals.Length; i++)
+            Interlocked.Exchange(ref deferralRefusals[i], 0);
+        Interlocked.Exchange(ref deferralFreeNames, 0);
+        Interlocked.Exchange(ref deferralBoundFreeNames, 0);
+        Interlocked.Exchange(ref deferralFunctionOwnedFreeNames, 0);
+        Interlocked.Exchange(ref deferralCellBackedFreeNames, 0);
     }
 }
