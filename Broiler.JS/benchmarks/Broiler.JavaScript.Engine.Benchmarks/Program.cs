@@ -116,6 +116,12 @@ public static class Program
             return;
         }
 
+        if (args.Length == 1 && args[0] == "--call-entry-cost")
+        {
+            CallEntryCostMetrics.Write();
+            return;
+        }
+
         if (args.Length == 1 && args[0] == "--generic-arithmetic-cost")
         {
             GenericArithmeticCostMetrics.Write();
