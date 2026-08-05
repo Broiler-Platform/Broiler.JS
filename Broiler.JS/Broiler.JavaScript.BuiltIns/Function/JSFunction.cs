@@ -929,6 +929,8 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
                 JSEngine.ExecutingFunction = current;
 
                 var trackLegacyCaller = current.HasLegacyCallerArguments;
+                if (CallPathDiagnostics.Enabled)
+                    CallPathDiagnostics.RecordEntryShape(trackLegacyCaller, current.CoerceThisOnInvoke);
                 var savedLegacyFrame = default(LegacyFrame);
                 if (trackLegacyCaller)
                     savedLegacyFrame = current.PushLegacyFrame(previousExecutingFunction, in currentArguments);

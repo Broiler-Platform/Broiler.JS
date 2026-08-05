@@ -108,6 +108,41 @@ internal static class CallEntryCostMetrics
             "({ m(x) { return x + 1; } }).m",
             "method-callee.js");
 
+        // **Which shape pays what, asked of the engine rather than inferred from the timings.**
+        // The arms below differ in more than one thing at a time — an arrow has no legacy frame AND
+        // does not coerce `this` — so attributing their difference to one of those needs the engine
+        // to say which of them each shape actually performs. One call each, counters on.
+        var shapes = new[]
+        {
+            ("ordinary-sloppy-function", callee),
+            ("strict-function", strictCallee),
+            ("arrow", arrowCallee),
+            ("object-method", methodCallee),
+        }
+        .Select(pair =>
+        {
+            CallPathDiagnostics.Reset();
+            CallPathDiagnostics.Enabled = true;
+            try
+            {
+                pair.Item2.InvokeFunction(in arguments);
+                var snapshot = CallPathDiagnostics.Snapshot();
+                return new
+                {
+                    shape = pair.Item1,
+                    pushesLegacyFrame = snapshot.LegacyFrames == 1,
+                    coercesThis = snapshot.ThisCoercions == 1,
+                    strictTransition = snapshot.StrictTransitions > 0,
+                };
+            }
+            finally
+            {
+                CallPathDiagnostics.Enabled = false;
+                CallPathDiagnostics.Reset();
+            }
+        })
+        .ToArray();
+
         var arms = Measure(callee, strictCallee, arrowCallee, methodCallee, arguments, callback);
         var longArm = arms[0];
         var shortArm = arms[1];
@@ -127,6 +162,7 @@ internal static class CallEntryCostMetrics
                     + "bookkeeping as the engine performs it, rather than as a local replica of the "
                     + "mechanisms performs it — which is what item 4-5's component pass measured and "
                     + "why it could only account for ~10 ns of a ~147 ns call.",
+                shapes,
                 arms,
                 differenceNs = longArm.NanosecondsPerCall - shortArm.NanosecondsPerCall,
                 differenceBytes = longArm.BytesPerCall - shortArm.BytesPerCall,
@@ -134,6 +170,14 @@ internal static class CallEntryCostMetrics
             },
             new JsonSerializerOptions { WriteIndented = true }));
 
+        foreach (var shape in shapes)
+        {
+            Console.Error.WriteLine(
+                $"{shape.shape,-26} legacyFrame={shape.pushesLegacyFrame,-6} "
+                + $"coercesThis={shape.coercesThis,-6} strictTransition={shape.strictTransition}");
+        }
+
+        Console.Error.WriteLine();
         foreach (var arm in arms)
         {
             Console.Error.WriteLine(

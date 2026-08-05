@@ -15,6 +15,13 @@ namespace Broiler.JavaScript.Runtime;
 /// item 4-4's addressable surface, since inlining needs both a body to inline and a call site
 /// inside a tier-2 recompile to inline it at.
 /// </param>
+/// <param name="LegacyFrames">
+/// Calls whose callee carries the Annex B <c>caller</c>/<c>arguments</c> pair, and which therefore
+/// push and pop a legacy frame — item 4-5's largest attributed cost, at ~40 ns each.
+/// </param>
+/// <param name="ThisCoercions">
+/// Calls that coerce a sloppy <c>this</c>, which copies the <c>Arguments</c> struct.
+/// </param>
 /// <param name="StrictTransitions">
 /// Entries to a call whose callee's strictness differs from the currently executing code's, each
 /// of which writes the strict-mode <c>AsyncLocal</c> twice — once on entry and once on exit.
@@ -24,7 +31,9 @@ public readonly record struct CallPathSnapshot(
     long CallbackCalls,
     long UserCalls,
     long UserCallsFromPromoted,
-    long StrictTransitions);
+    long StrictTransitions,
+    long LegacyFrames,
+    long ThisCoercions);
 
 /// <summary>
 /// How many JavaScript calls actually happen, and how many of them are made from a function the
@@ -65,6 +74,8 @@ public static class CallPathDiagnostics
     private static long userCalls;
     private static long userCallsFromPromoted;
     private static long strictTransitions;
+    private static long legacyFrames;
+    private static long thisCoercions;
 
     /// <summary>
     /// Records one invocation through the emitted-call entry.
@@ -122,13 +133,32 @@ public static class CallPathDiagnostics
     /// </remarks>
     public static void RecordStrictTransition() => Interlocked.Increment(ref strictTransitions);
 
+    /// <summary>
+    /// Records one call that pushes an Annex B legacy frame, and whether it also coerced a sloppy
+    /// <c>this</c>.
+    /// </summary>
+    /// <remarks>
+    /// `0109` bounded the legacy frame at <b>≤1.65% of the corpus</b> by charging it to every call
+    /// with a JavaScript callee, because nothing said how many of those callees actually carry the
+    /// pair. This is that count, and it turns a ceiling into a measurement.
+    /// </remarks>
+    public static void RecordEntryShape(bool pushesLegacyFrame, bool coercesThis)
+    {
+        if (pushesLegacyFrame)
+            Interlocked.Increment(ref legacyFrames);
+        if (coercesThis)
+            Interlocked.Increment(ref thisCoercions);
+    }
+
     public static CallPathSnapshot Snapshot()
         => new(
             Interlocked.Read(ref calls),
             Interlocked.Read(ref callbackCalls),
             Interlocked.Read(ref userCalls),
             Interlocked.Read(ref userCallsFromPromoted),
-            Interlocked.Read(ref strictTransitions));
+            Interlocked.Read(ref strictTransitions),
+            Interlocked.Read(ref legacyFrames),
+            Interlocked.Read(ref thisCoercions));
 
     public static void Reset()
     {
@@ -137,5 +167,7 @@ public static class CallPathDiagnostics
         Interlocked.Exchange(ref userCalls, 0);
         Interlocked.Exchange(ref userCallsFromPromoted, 0);
         Interlocked.Exchange(ref strictTransitions, 0);
+        Interlocked.Exchange(ref legacyFrames, 0);
+        Interlocked.Exchange(ref thisCoercions, 0);
     }
 }

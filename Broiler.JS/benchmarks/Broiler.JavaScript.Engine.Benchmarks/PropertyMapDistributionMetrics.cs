@@ -126,10 +126,10 @@ internal static class PropertyMapDistributionMetrics
 
     private static readonly Policy[] Policies =
     [
-        new("round-up-16", "current: VirtualMemory.Allocate as written", static (last, needed) => RoundUp(last, needed, 16)),
+        new("round-up-16", "the PRE-2-7 rule and no longer what the engine runs — kept as the baseline every other row is ratioed against", static (last, needed) => RoundUp(last, needed, 16)),
         new("round-up-8", "halve the floor, keep the shape of the formula", static (last, needed) => RoundUp(last, needed, 8)),
         new("round-up-4", "floor = one node group, the smallest the trie can use", static (last, needed) => RoundUp(last, needed, 4)),
-        new("min-4-then-double", "no over-allocation at the bottom, geometric after", static (last, needed) => Math.Max(Math.Max(last * 2, needed), 4)),
+        new("min-4-then-double", "CURRENT: what VirtualMemory.Allocate does today — geometric from SAUint32Map.NodeBlock, which item 2-7 shipped in place of round-up-16", static (last, needed) => Math.Max(Math.Max(last * 2, needed), 4)),
     ];
 
     /// <summary>`((max / round) + 1) * round`, guarded by the doubling branch, exactly as written.</summary>
@@ -340,6 +340,7 @@ internal static class PropertyMapDistributionMetrics
             shareAtOneGroup = total == 0 ? 0 : Math.Round((double)oneGroup / total, 4),
             shareWithinTheCurrentFloor = total == 0 ? 0 : Math.Round((double)upToFour / total, 4),
             negativeBucketCounts = negatives,
+            resetStraddlingMaps = PropertyStorageMetrics.ResetStraddlingMaps,
         };
     }
 

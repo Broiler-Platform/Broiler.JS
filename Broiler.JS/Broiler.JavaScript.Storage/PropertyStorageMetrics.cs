@@ -110,9 +110,40 @@ public static class PropertyStorageMetrics
         {
             // Clamping both ends means a map already in the overflow bucket increments and
             // decrements the same slot — it stays counted exactly once, however far it grows.
-            Interlocked.Decrement(ref histogram[Math.Min(groupsAfter - 1, OverflowBucket)]);
+            //
+            // **Clamped at zero, and the clamps counted.** This histogram counts each map once, in
+            // the bucket its life ended at, by moving it out of the previous bucket as it grows —
+            // which assumes the map's arrival in that bucket was itself counted. A map that was
+            // already at `groupsAfter - 1` when `Reset` zeroed the table breaks the assumption: the
+            // decrement has nothing to cancel and the bucket goes negative. That was surfaced as
+            // `negativeBucketCounts` and left, and it is small (15 against 47 M maps) — but a
+            // negative count is not a distribution, and every share computed from the table is
+            // divided by a total that includes it. Clamping keeps the table a valid distribution,
+            // and ResetStraddlingMaps says exactly how much was dropped doing so — the same bargain
+            // the negative count was making, made correctly.
+            var slot = Math.Min(groupsAfter - 1, OverflowBucket);
+            while (true)
+            {
+                var current = Interlocked.Read(ref histogram[slot]);
+                if (current <= 0)
+                {
+                    Interlocked.Increment(ref resetStraddlingMaps);
+                    break;
+                }
+
+                if (Interlocked.CompareExchange(ref histogram[slot], current - 1, current) == current)
+                    break;
+            }
         }
     }
+
+    private static long resetStraddlingMaps;
+
+    /// <summary>
+    /// Decrements refused because the bucket was already empty — maps whose life straddled a
+    /// <see cref="Reset"/>, and the exact amount by which this histogram under-counts.
+    /// </summary>
+    public static long ResetStraddlingMaps => Interlocked.Read(ref resetStraddlingMaps);
 
     /// <summary>Zeroes the histogram and the totals. Does not change <see cref="Enabled"/>.</summary>
     public static void Reset()
@@ -123,6 +154,7 @@ public static class PropertyStorageMetrics
         Interlocked.Exchange(ref groupAllocations, 0);
         Interlocked.Exchange(ref backingArrayResizes, 0);
         Interlocked.Exchange(ref nodesCopiedByResizes, 0);
+        Interlocked.Exchange(ref resetStraddlingMaps, 0);
     }
 
     public static PropertyStorageSnapshot Snapshot()

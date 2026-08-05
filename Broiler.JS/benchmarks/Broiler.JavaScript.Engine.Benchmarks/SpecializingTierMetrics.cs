@@ -762,6 +762,8 @@ internal static class SpecializingTierMetrics
             userCalls = callPath.UserCalls,
             userCallsFromPromoted = callPath.UserCallsFromPromoted,
             strictTransitions = callPath.StrictTransitions,
+            legacyFrames = callPath.LegacyFrames,
+            thisCoercions = callPath.ThisCoercions,
         };
     }
 }
