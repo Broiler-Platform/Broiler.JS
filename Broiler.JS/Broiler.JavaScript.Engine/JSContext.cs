@@ -1767,12 +1767,90 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     /// with nothing running — which is the case that was always safe.
     /// </para>
     /// </remarks>
+    /// <summary>
+    /// Takes this context for the calling thread, blocking while another thread is inside it, and
+    /// releases it — running any jobs queued in the meantime — when the returned handle is
+    /// disposed.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>This is the embedding contract, and it exists because the engine cannot enforce it
+    /// alone.</b> ECMAScript's agent is single-threaded and this engine is written throughout on
+    /// that assumption. The engine serializes what it owns — <see cref="Eval"/>,
+    /// <see cref="Execute"/>, <see cref="ExecuteAsync"/>, and every promise job wherever it is
+    /// dispatched. What it cannot see is a host reaching into JavaScript by another route:
+    /// invoking a <c>JSValue</c>, reading a property whose getter is a JavaScript function, or
+    /// calling back in from a thread of its own. Those are ordinary calls on ordinary objects and
+    /// guarding each one would put a lock on the engine's hottest path.
+    /// </para>
+    /// <para>
+    /// So the rule is stated instead of guessed: <b>wrap host-initiated entry into JavaScript in
+    /// this scope, unless it is already inside one.</b> A call made from within an engine-owned
+    /// execution — a host function the engine invoked, a callback from a running script — is
+    /// already covered and needs nothing.
+    /// </para>
+    /// <para>
+    /// Re-entrant on one thread, so wrapping something that turns out to be nested is harmless.
+    /// Jobs queued while the scope is held run when the outermost one is disposed, which is where
+    /// the specification puts them.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// using (context.EnterExecution())
+    ///     callback.InvokeFunction(new Arguments(JSUndefined.Value, value));
+    /// </code>
+    /// </example>
+    public IDisposable EnterExecution() => new HostExecutionScope(this);
+
+    private sealed class HostExecutionScope : IDisposable
+    {
+        private readonly JSEngine.CurrentContextScope realmScope;
+        private JSMicrotaskQueue.ExecutionScope executionScope;
+        private bool disposed;
+
+        public HostExecutionScope(JSContext context)
+        {
+            realmScope = JSEngine.EnterContext(context);
+            executionScope = context.microtasks.EnterExecution();
+        }
+
+        public void Dispose()
+        {
+            if (disposed)
+                return;
+
+            disposed = true;
+            executionScope.Dispose();
+            realmScope.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// How many JavaScript executions this process has had in flight at once, and how many times a
+    /// second one began while another was still running.
+    /// </summary>
+    /// <remarks>
+    /// <b>The invariant is one.</b> ECMAScript's agent is single-threaded and this engine is
+    /// written throughout on that assumption, so a peak above one is not a slow program, it is a
+    /// heap modified from two threads. It is public because it is the only way to test the property
+    /// directly: asserting a value catches an overlap only when the overlap happens to change that
+    /// value, which is how the defect this counter was added for stayed invisible at a 0.6% hit
+    /// rate across a whole phase of full-suite runs.
+    /// </remarks>
+    public static (long Peak, long Overlaps) ExecutionConcurrency => JSMicrotaskQueue.Concurrency;
+
+    /// <summary>Resets <see cref="ExecutionConcurrency"/>. Process-wide, like the counter.</summary>
+    public static void ResetExecutionConcurrency() => JSMicrotaskQueue.ResetConcurrency();
+
     internal static void PostJob(Action job, SynchronizationContext captured = null)
     {
+        var context = JSEngine.Current as JSContext;
+
         // 1. We are ON the engine's pump, so posting to it is both correctly ordered and drained.
         if (SynchronizationContext.Current is IJSJobPump current)
         {
-            ((SynchronizationContext)current).Post(_ => job(), null);
+            ((SynchronizationContext)current).Post(_ => RunJob(job, context), null);
             return;
         }
 
@@ -1786,11 +1864,9 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         // JavaScript thread than an arbitrary current one.
         if (captured is IJSJobPump capturedPump)
         {
-            ((SynchronizationContext)capturedPump).Post(_ => job(), null);
+            ((SynchronizationContext)capturedPump).Post(_ => RunJob(job, context), null);
             return;
         }
-
-        var context = JSEngine.Current as JSContext;
 
         // 3. This context's own queue, while it is executing JavaScript. Replaces what used to be
         // two separate wrong answers — the thread pool when no context was present, and
@@ -1805,12 +1881,38 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         // is running for it to race, and a host that supplied a context wants its thread used.
         if (context?.synchronizationContext is { } hostContext)
         {
-            hostContext.Post(_ => job(), null);
+            hostContext.Post(_ => RunJob(job, context), null);
             return;
         }
 
         // 5. Neither. Reachable only with nothing running, which is the case that was always safe.
-        ThreadPool.QueueUserWorkItem(_ => job());
+        ThreadPool.QueueUserWorkItem(_ => RunJob(job, context));
+    }
+
+    /// <summary>
+    /// Runs a job that was dispatched somewhere other than a context's own queue — a pump, a host
+    /// context, or the thread pool — holding that context's execution lock while it does.
+    /// </summary>
+    /// <remarks>
+    /// <b>This is the half the queue could not reach.</b> A job only takes the queue while an
+    /// execution is already in progress, so one posted with nothing running is dispatched here
+    /// instead — and running it unguarded is how JavaScript ended up executing beside a later
+    /// <c>Eval</c>. Taking the same lock an evaluation takes makes the two mutually exclusive
+    /// wherever the job happens to run, at the cost of a bounded wait.
+    /// </remarks>
+    private static void RunJob(Action job, JSContext context)
+    {
+        if (context == null)
+        {
+            job();
+            return;
+        }
+
+        // The struct scopes rather than the public EnterExecution handle: this runs once per job,
+        // and that handle is a class, so using it here would put an allocation on every microtask.
+        using var realmScope = JSEngine.EnterContext(context);
+        using var executionScope = context.microtasks.EnterExecution();
+        job();
     }
 
     private static long nextTimeout = 1;
@@ -2108,7 +2210,13 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
 
     private async Task<JSValue> ExecuteScriptAsync(string code, string codeFilePath = null)
     {
-        var r = CoreScript.Evaluate(code, codeFilePath, codeCache: CodeCache);
+        JSValue r;
+
+        // The same execution marker Eval takes, around the synchronous part only: the awaits below
+        // are not JavaScript and holding a lock across them would be both wrong and impossible.
+        using (microtasks.EnterExecution())
+            r = CoreScript.Evaluate(code, codeFilePath, codeCache: CodeCache);
+
         var wt = WaitTask;
         if (wt != null)
             await wt;
