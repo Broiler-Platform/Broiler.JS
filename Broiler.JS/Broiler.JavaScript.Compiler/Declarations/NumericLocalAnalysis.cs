@@ -103,10 +103,64 @@ internal sealed class NumericLocalAnalysis
     }
 
     /// <summary>
+    /// The names item 3-8a would speculate on: the ones this function's own fixed point keeps
+    /// <em>only</em> when a name from outside the function is assumed to hold a number.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Computed by difference against the real fixed point rather than by a new rule, so the set
+    /// cannot drift from what the analysis actually does: run the same resolution a second time
+    /// with <see cref="IsNumeric"/> treating an identifier this function neither declares nor
+    /// takes as a parameter — a global, or a binding from an enclosing scope — as numeric, and
+    /// subtract the real survivors. A name dropped for a parameter, a property read, an element
+    /// read or a call's return survives neither pass and is therefore absent; those want a guard
+    /// at the value's own source and are a different item.
+    /// </para>
+    /// <para>
+    /// <b>The transitive case is included for free</b>, because the second pass is a fixed point
+    /// like the first: <c>var r = rowSize; var c = 2 * r;</c> keeps both, and the cascade the
+    /// drop-cause counter reports as <c>DroppedCandidate</c> resolves rather than being counted
+    /// separately.
+    /// </para>
+    /// </remarks>
+    public static IReadOnlySet<string> AnalyzeSpeculative(AstFunctionExpression function)
+    {
+        var real = new NumericLocalAnalysis();
+        real.Collect(function);
+        var proven = real.Resolve(count: false);
+
+        var optimistic = new NumericLocalAnalysis { assumeOuterNamesAreNumeric = true };
+        optimistic.Collect(function);
+        var withOuter = optimistic.Resolve(count: false);
+
+        if (withOuter.Count == 0)
+            return System.Collections.Immutable.ImmutableHashSet<string>.Empty;
+
+        var speculative = new HashSet<string>(withOuter, System.StringComparer.Ordinal);
+        speculative.ExceptWith(proven);
+        return speculative;
+    }
+
+    /// <summary>
+    /// Whether an identifier this function neither declares nor takes as a parameter is assumed
+    /// to hold a number. Set only for <see cref="AnalyzeSpeculative"/>'s second pass.
+    /// </summary>
+    private bool assumeOuterNamesAreNumeric;
+
+    /// <summary>
     /// This function's parameter names, so a drop caused by reading one is attributed to the
     /// parameter rather than lumped in with globals (docs/performance-roadmap.md item 3-8).
     /// </summary>
     private readonly HashSet<string> parameterNames = new(System.StringComparer.Ordinal);
+
+    /// <summary>
+    /// Every name this function declares at any depth, whether or not it was ever offered as a
+    /// numeric candidate. Item 3-8a's optimistic pass needs it to tell a name from OUTSIDE the
+    /// function — the thing it assumes numeric — from one inside it that simply never qualified
+    /// (<c>var a = []</c>). Without the distinction the pass would assume the second numeric too
+    /// and report a population that no run-time test on an enclosing value could ever reach.
+    /// </summary>
+    private readonly HashSet<string> declaredNames = new(System.StringComparer.Ordinal);
 
     /// <summary>
     /// Every name that was ever offered as a numeric candidate. A drop caused by reading one of
@@ -453,14 +507,15 @@ internal sealed class NumericLocalAnalysis
         }
     }
 
-    private IReadOnlySet<string> Resolve()
+    private IReadOnlySet<string> Resolve(bool count = true)
     {
         // Item 3-6 splits "not proven numeric" in two, because the halves call for opposite
         // responses. A name never OFFERED is one whose declaration is not numeric at all —
         // `var a = []`, `var s = ''` — and no analysis makes a string a double. A name offered
         // and then DROPPED is one the fixed point could not keep, and that is the only part a
         // stronger analysis could reach.
-        CompilerSpecializationDiagnostics.RecordNumericCandidatesOffered(candidates.Count);
+        if (count)
+            CompilerSpecializationDiagnostics.RecordNumericCandidatesOffered(candidates.Count);
 
         // The step between "offered" and "dropped" that had no counter, and it is the larger of
         // the two: a name any rejection path named — read before its initializer, bound through
@@ -470,11 +525,15 @@ internal sealed class NumericLocalAnalysis
         // (docs/performance-roadmap.md item 3-7).
         var beforeRejection = candidates.Count;
         candidates.ExceptWith(rejected);
-        CompilerSpecializationDiagnostics.RecordNumericCandidatesRejected(beforeRejection - candidates.Count);
+        if (count)
+            CompilerSpecializationDiagnostics.RecordNumericCandidatesRejected(beforeRejection - candidates.Count);
         if (candidates.Count == 0)
         {
-            CompilerSpecializationDiagnostics.RecordNumericCandidatesDropped(0);
-            CompilerSpecializationDiagnostics.RecordNumericCandidatesSurviving(0);
+            if (count)
+            {
+                CompilerSpecializationDiagnostics.RecordNumericCandidatesDropped(0);
+                CompilerSpecializationDiagnostics.RecordNumericCandidatesSurviving(0);
+            }
             return System.Collections.Immutable.ImmutableHashSet<string>.Empty;
         }
 
@@ -501,15 +560,19 @@ internal sealed class NumericLocalAnalysis
                     candidates.Remove(name);
                     // Classified at the moment of the drop, because this is the assignment that
                     // removed the name — a later sweep would find a different one.
-                    CompilerSpecializationDiagnostics.RecordNumericDropCause(Classify(value));
+                    if (count)
+                        CompilerSpecializationDiagnostics.RecordNumericDropCause(Classify(value));
                     changed = true;
                 }
             }
         }
         while (changed && candidates.Count > 0);
 
-        CompilerSpecializationDiagnostics.RecordNumericCandidatesDropped(beforeFixedPoint - candidates.Count);
-        CompilerSpecializationDiagnostics.RecordNumericCandidatesSurviving(candidates.Count);
+        if (count)
+        {
+            CompilerSpecializationDiagnostics.RecordNumericCandidatesDropped(beforeFixedPoint - candidates.Count);
+            CompilerSpecializationDiagnostics.RecordNumericCandidatesSurviving(candidates.Count);
+        }
         return candidates;
     }
 
@@ -521,7 +584,16 @@ internal sealed class NumericLocalAnalysis
     {
         AstLiteral { TokenType: TokenTypes.Number } => true,
 
-        AstIdentifier identifier => candidates.Contains(identifier.Name.Value),
+        AstIdentifier identifier => candidates.Contains(identifier.Name.Value)
+            // Item 3-8a's optimistic pass. A name this function neither declares nor takes as a
+            // parameter comes from an enclosing scope or from the global object, and the whole
+            // question the item asks is what happens if it holds a number. Parameters are
+            // deliberately excluded: they are item 3-3's one acknowledged gap and want a guard at
+            // entry rather than at an initializer, so counting them here would inflate the set
+            // with a population this item does not serve.
+            || (assumeOuterNamesAreNumeric
+                && !parameterNames.Contains(identifier.Name.Value)
+                && !declaredNames.Contains(identifier.Name.Value)),
 
         // Parenthesised / sequence: the value is the last element.
         AstSequenceExpression sequence => IsNumeric(Last(sequence)),
@@ -808,6 +880,7 @@ internal sealed class NumericLocalAnalysis
                 // see `undefined`. That was unreachable while every name a nested function
                 // mentions kept its cell; item 3-7 removes exactly that refusal, so the rule has
                 // to be stated rather than inherited.
+                owner.declaredNames.Add(identifier.Name.Value);
                 if (functionDepth == 0
                     && (!owner.HasDominatingDeclaration(identifier.Name.Value)
                         || owner.IsDominatingInit(declarator.Init)))

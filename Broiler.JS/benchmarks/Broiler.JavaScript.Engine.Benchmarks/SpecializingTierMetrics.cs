@@ -456,6 +456,11 @@ internal static class SpecializingTierMetrics
                 })
             .Build();
 
+        // A COMPILE-time counter, so it goes on before the corpus is compiled below rather than
+        // beside the run-time censuses further down — which is where it went first, and why it
+        // read zero on all seven suites (item 3-1's `0083` failure mode, a second time).
+        Broiler.JavaScript.Compiler.SpeculativeNumericLocals.Counting = counters;
+
         string outcome;
         var stopwatch = new Stopwatch();
         try
@@ -597,6 +602,11 @@ internal static class SpecializingTierMetrics
             // premise it was specified from reads all 1 916 as one population wanting one
             // runtime guard; these counts are what says whether that is true.
             numericDropCauses = DescribeDropCauses(compiler.NumericDropCauses),
+
+            // Item 3-8a: how many locals would be numeric if a name from outside their function
+            // were known to hold one. Read against numericLocals — it is what the one conjunct
+            // NumericLocalDefeatTests isolated is costing.
+            speculativeNumericCandidates = compiler.SpeculativeNumericCandidates,
 
             // The ceiling on all of phase 3: a raw double can only ever remove a box, so
             // boxesAllocated x 24 B is every byte the whole family could take.

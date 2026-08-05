@@ -81,6 +81,14 @@ partial class FastCompiler
             // assumes no closure can capture the binding and no eval/with can rename it.
             if (cs.CanScalarReplaceLocals)
                 cs.NumericLocals = NumericLocalAnalysis.Analyze(functionDeclaration);
+
+            // Item 3-8a's population, counted rather than estimated. Gated because it costs a
+            // second analysis pass per compiled function, which is compile time nothing else
+            // needs to pay — and it is a COMPILE-time counter, so whoever turns it on has to do
+            // so before the corpus is compiled rather than beside the run-time censuses.
+            if (SpeculativeNumericLocals.Counting && cs.CanScalarReplaceLocals)
+                CompilerSpecializationDiagnostics.RecordSpeculativeNumericCandidates(
+                    NumericLocalAnalysis.AnalyzeSpeculative(functionDeclaration).Count);
             // super() in a derived constructor (or an arrow nested in it) targets the
             // superclass constructor, which differs from the home-object prototype.
             cs.SuperConstructor = superConstructor ?? (functionDeclaration.IsArrowFunction ? previousScope.SuperConstructor : null);
