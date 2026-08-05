@@ -588,6 +588,9 @@ internal static class SpecializingTierMetrics
         var arithmeticBothNumbers = ArithmeticOperandDiagnostics.BothNumbers;
         var arithmeticRawDouble = ArithmeticOperandDiagnostics.RawDoubleOperand;
         var arithmeticRawDoubleOtherNumber = ArithmeticOperandDiagnostics.RawDoubleOtherNumber;
+        var arithmeticRelational = ArithmeticOperandDiagnostics.Relational;
+        var arithmeticRelationalBothNumbers = ArithmeticOperandDiagnostics.RelationalBothNumbers;
+        var arithmeticRelationalNeitherNumber = ArithmeticOperandDiagnostics.RelationalNeitherNumber;
         var arithmeticUnaryNegate = ArithmeticOperandDiagnostics.UnaryNegate;
         var arithmeticUnaryUpdate = ArithmeticOperandDiagnostics.UnaryUpdate;
         var arithmeticUpdateTargets = ArithmeticOperandDiagnostics.UpdateTargets;
@@ -705,6 +708,9 @@ internal static class SpecializingTierMetrics
             arithmeticBothNumbers,
             arithmeticRawDouble,
             arithmeticRawDoubleOtherNumber,
+            arithmeticRelational,
+            arithmeticRelationalBothNumbers,
+            arithmeticRelationalNeitherNumber,
             // The unary operators, which the binary census above cannot see and which mint through
             // the same factory: -x and ~x, the ++/-- step, and the ToNumeric that re-boxes the
             // operand of ++/-- to hand back the old value. Together with the binary count these

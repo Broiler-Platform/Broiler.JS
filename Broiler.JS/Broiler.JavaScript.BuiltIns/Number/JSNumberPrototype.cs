@@ -38,6 +38,9 @@ partial class JSNumber
 {
     public override bool Less(JSValue value)
     {
+        using var counted = Runtime.ArithmeticOperandDiagnostics.Enabled
+            ? Runtime.ArithmeticOperandDiagnostics.Relate(true, value.IsNumber)
+            : default;
         value = value.UnwrapPrimitive();
 
         if (value is JSBigInt bigint)
@@ -53,6 +56,9 @@ partial class JSNumber
 
     public override bool LessOrEqual(JSValue value)
     {
+        using var counted = Runtime.ArithmeticOperandDiagnostics.Enabled
+            ? Runtime.ArithmeticOperandDiagnostics.Relate(true, value.IsNumber)
+            : default;
         value = value.UnwrapPrimitive();
 
         if (value is JSBigInt bigint)
@@ -68,6 +74,9 @@ partial class JSNumber
 
     public override bool Greater(JSValue value)
     {
+        using var counted = Runtime.ArithmeticOperandDiagnostics.Enabled
+            ? Runtime.ArithmeticOperandDiagnostics.Relate(true, value.IsNumber)
+            : default;
         value = value.UnwrapPrimitive();
 
         if (value is JSBigInt bigint)
@@ -83,6 +92,9 @@ partial class JSNumber
 
     public override bool GreaterOrEqual(JSValue value)
     {
+        using var counted = Runtime.ArithmeticOperandDiagnostics.Enabled
+            ? Runtime.ArithmeticOperandDiagnostics.Relate(true, value.IsNumber)
+            : default;
         value = value.UnwrapPrimitive();
 
         if (value is JSBigInt bigint)

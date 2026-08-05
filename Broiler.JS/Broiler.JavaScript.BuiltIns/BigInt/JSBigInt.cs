@@ -357,16 +357,44 @@ public partial class JSBigInt : JSPrimitive
     private static bool IsValidComparison(int comparison) => comparison != JSBigIntExtensions.NaNComparison;
 
     public override bool Less(JSValue value)
-        => TryCompare(value, out var comparison) ? IsValidComparison(comparison) && comparison < 0 : base.Less(value);
+    {
+        using var counted = Runtime.ArithmeticOperandDiagnostics.Enabled
+            ? Runtime.ArithmeticOperandDiagnostics.Relate(false, value.IsNumber)
+            : default;
+        return TryCompare(value, out var comparison)
+            ? IsValidComparison(comparison) && comparison < 0
+            : base.Less(value);
+    }
 
     public override bool LessOrEqual(JSValue value)
-        => TryCompare(value, out var comparison) ? IsValidComparison(comparison) && comparison <= 0 : base.LessOrEqual(value);
+    {
+        using var counted = Runtime.ArithmeticOperandDiagnostics.Enabled
+            ? Runtime.ArithmeticOperandDiagnostics.Relate(false, value.IsNumber)
+            : default;
+        return TryCompare(value, out var comparison)
+            ? IsValidComparison(comparison) && comparison <= 0
+            : base.LessOrEqual(value);
+    }
 
     public override bool Greater(JSValue value)
-        => TryCompare(value, out var comparison) ? IsValidComparison(comparison) && comparison > 0 : base.Greater(value);
+    {
+        using var counted = Runtime.ArithmeticOperandDiagnostics.Enabled
+            ? Runtime.ArithmeticOperandDiagnostics.Relate(false, value.IsNumber)
+            : default;
+        return TryCompare(value, out var comparison)
+            ? IsValidComparison(comparison) && comparison > 0
+            : base.Greater(value);
+    }
 
     public override bool GreaterOrEqual(JSValue value)
-        => TryCompare(value, out var comparison) ? IsValidComparison(comparison) && comparison >= 0 : base.GreaterOrEqual(value);
+    {
+        using var counted = Runtime.ArithmeticOperandDiagnostics.Enabled
+            ? Runtime.ArithmeticOperandDiagnostics.Relate(false, value.IsNumber)
+            : default;
+        return TryCompare(value, out var comparison)
+            ? IsValidComparison(comparison) && comparison >= 0
+            : base.GreaterOrEqual(value);
+    }
 
     // BigInt == String literal uses StringToBigInt, not a textual comparison: an
     // empty/whitespace string is 0n (so `0n == ""` is true) and a non-integer string

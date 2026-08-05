@@ -390,6 +390,9 @@ public partial class JSString : JSPrimitive
     // pick toString and force a string comparison (e.g. "-1" < {valueOf:()=>-2}).
     public override bool Less(JSValue value)
     {
+        using var counted = Runtime.ArithmeticOperandDiagnostics.Enabled
+            ? Runtime.ArithmeticOperandDiagnostics.Relate(false, value.IsNumber)
+            : default;
         var py = value is JSObject o ? o.ToNumberPrimitive() : value;
 
         if (py.IsUndefined)
@@ -406,6 +409,9 @@ public partial class JSString : JSPrimitive
 
     public override bool LessOrEqual(JSValue value)
     {
+        using var counted = Runtime.ArithmeticOperandDiagnostics.Enabled
+            ? Runtime.ArithmeticOperandDiagnostics.Relate(false, value.IsNumber)
+            : default;
         var py = value is JSObject o ? o.ToNumberPrimitive() : value;
 
         if (py.IsUndefined)
@@ -422,6 +428,9 @@ public partial class JSString : JSPrimitive
 
     public override bool Greater(JSValue value)
     {
+        using var counted = Runtime.ArithmeticOperandDiagnostics.Enabled
+            ? Runtime.ArithmeticOperandDiagnostics.Relate(false, value.IsNumber)
+            : default;
         var py = value is JSObject o ? o.ToNumberPrimitive() : value;
 
         if (py.IsUndefined)
@@ -438,6 +447,9 @@ public partial class JSString : JSPrimitive
 
     public override bool GreaterOrEqual(JSValue value)
     {
+        using var counted = Runtime.ArithmeticOperandDiagnostics.Enabled
+            ? Runtime.ArithmeticOperandDiagnostics.Relate(false, value.IsNumber)
+            : default;
         var py = value is JSObject o ? o.ToNumberPrimitive() : value;
 
         if (py.IsUndefined)

@@ -101,16 +101,48 @@ public partial class JSObject
     // Relational operators coerce with the Number hint (not the "default" hint used by
     // ==): for a Date `<`/`>` compares timestamps, while `==` compares strings.
     public override bool Less(JSValue value)
-        => ToNumberPrimitive().Less(value);
+    {
+        // Counted HERE rather than after the coercion, because the operand kind the question is
+        // about is the one the source wrote — an object on the left is a miss for the guard even
+        // though ToNumberPrimitive hands a Number to the inner call.
+        using var counted = ArithmeticOperandDiagnostics.Enabled
+            ? ArithmeticOperandDiagnostics.Relate(false, value.IsNumber)
+            : default;
+        return ToNumberPrimitive().Less(value);
+    }
 
     public override bool LessOrEqual(JSValue value)
-        => ToNumberPrimitive().LessOrEqual(value);
+    {
+        // Counted HERE rather than after the coercion, because the operand kind the question is
+        // about is the one the source wrote — an object on the left is a miss for the guard even
+        // though ToNumberPrimitive hands a Number to the inner call.
+        using var counted = ArithmeticOperandDiagnostics.Enabled
+            ? ArithmeticOperandDiagnostics.Relate(false, value.IsNumber)
+            : default;
+        return ToNumberPrimitive().LessOrEqual(value);
+    }
 
     public override bool Greater(JSValue value)
-        => ToNumberPrimitive().Greater(value);
+    {
+        // Counted HERE rather than after the coercion, because the operand kind the question is
+        // about is the one the source wrote — an object on the left is a miss for the guard even
+        // though ToNumberPrimitive hands a Number to the inner call.
+        using var counted = ArithmeticOperandDiagnostics.Enabled
+            ? ArithmeticOperandDiagnostics.Relate(false, value.IsNumber)
+            : default;
+        return ToNumberPrimitive().Greater(value);
+    }
 
     public override bool GreaterOrEqual(JSValue value)
-        => ToNumberPrimitive().GreaterOrEqual(value);
+    {
+        // Counted HERE rather than after the coercion, because the operand kind the question is
+        // about is the one the source wrote — an object on the left is a miss for the guard even
+        // though ToNumberPrimitive hands a Number to the inner call.
+        using var counted = ArithmeticOperandDiagnostics.Enabled
+            ? ArithmeticOperandDiagnostics.Relate(false, value.IsNumber)
+            : default;
+        return ToNumberPrimitive().GreaterOrEqual(value);
+    }
     public override bool ConvertTo(Type type, out object value)
     {
         if (TryGetClrEnumeratorFunc?.Invoke(this, type, out value) ?? false)

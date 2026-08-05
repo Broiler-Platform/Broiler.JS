@@ -261,4 +261,113 @@ public sealed class ArithmeticOperandCensusTests
         // rather than assuming.
         Assert.False(ArithmeticOperandDiagnostics.Enabled);
     }
+
+    private readonly record struct Relational(long Total, long BothNumbers, long NeitherNumber);
+
+    private static Relational CountRelational(string source)
+    {
+        var previousSpeculation = NumericSpeculation.Enabled;
+        NumericSpeculation.Enabled = false;
+        var previous = ArithmeticOperandDiagnostics.Enabled;
+        using var context = new JSContext();
+        ArithmeticOperandDiagnostics.Reset();
+        ArithmeticOperandDiagnostics.Enabled = true;
+        try
+        {
+            context.Eval(source);
+            return new Relational(
+                ArithmeticOperandDiagnostics.Relational,
+                ArithmeticOperandDiagnostics.RelationalBothNumbers,
+                ArithmeticOperandDiagnostics.RelationalNeitherNumber);
+        }
+        finally
+        {
+            ArithmeticOperandDiagnostics.Enabled = previous;
+            ArithmeticOperandDiagnostics.Reset();
+            NumericSpeculation.Enabled = previousSpeculation;
+        }
+    }
+
+    [Fact]
+    public void EachRelationalComparisonIsCountedExactlyOnce()
+    {
+        // **The load-bearing fixture for the relational census, and the reason it is a re-entrancy
+        // guard rather than a case analysis.** The relational operators re-dispatch: JSObject
+        // coerces and calls the primitive's, JSNumber unwraps and calls the base's, and the base
+        // hands a BigInt comparison to the other operand's mirror. Hooking only "the ones that
+        // answer directly" means enumerating which paths delegate — the same analysis that left
+        // BitwiseXor unhooked and silent about it, which the 3-1 census records as how the gap was
+        // eventually found.
+        //
+        // So the property asserted is exact rather than directional: N comparisons in the source
+        // must be N in the counter. A double count is as wrong as a miss, and only an exact
+        // assertion can see it.
+        const int comparisons = 100;
+        var census = CountRelational($$"""
+            var a = 1.5, b = 2.5, n = 0;
+            for (var i = 0; i < {{comparisons}}; i++) { if (a < b) { n = n + 1; } }
+            n;
+            """);
+
+        // The loop's own `i < 100` is a comparison too, and it is the shape item 3-5 specialized —
+        // one side an unboxed double — so it does not reach the generic operator. Asserting the
+        // body's comparisons exactly, with the loop head's contribution named rather than absorbed
+        // into a `>=`, is what makes this a count instead of a bound.
+        Assert.Equal(comparisons, census.Total);
+        Assert.Equal(comparisons, census.BothNumbers);
+        Assert.Equal(0, census.NeitherNumber);
+    }
+
+    [Fact]
+    public void AComparisonThroughAnObjectIsStillCountedOnce()
+    {
+        // The re-dispatching path, which is where a naive hook double counts: JSObject.Less
+        // coerces its receiver and calls the primitive's Less, so two entries run for one
+        // source-level comparison.
+        const int comparisons = 50;
+        var census = CountRelational($$"""
+            var o = { valueOf: function () { return 1.5; } }, b = 2.5, n = 0;
+            for (var i = 0; i < {{comparisons}}; i++) { if (o < b) { n = n + 1; } }
+            n;
+            """);
+
+        Assert.Equal(comparisons, census.Total);
+
+        // And it is charged as a MISS, because the operand the source wrote is an object — which
+        // is the fact a guard would have to test and fail on, whatever the coercion produces.
+        Assert.Equal(0, census.BothNumbers);
+    }
+
+    [Fact]
+    public void AStringComparisonSeparatesFromANumericOne()
+    {
+        // The discriminating half. A census whose both-Numbers share is 100% on everything it is
+        // pointed at is indistinguishable from one that cannot tell the two apart, and the corpus
+        // reading rests on the difference: 100.00% on Box2D against 0.46% on Splay.
+        var strings = CountRelational("""
+            var a = "abc", b = "abd", n = 0;
+            for (var i = 0; i < 40; i++) { if (a < b) { n = n + 1; } }
+            n;
+            """);
+
+        Assert.Equal(40, strings.Total);
+        Assert.Equal(0, strings.BothNumbers);
+        Assert.Equal(40, strings.NeitherNumber);
+    }
+
+    [Fact]
+    public void AllFourRelationalOperatorsAreHooked()
+    {
+        // BitwiseXor's lesson as a fixture rather than as a note: an unhooked operator reports a
+        // smaller number and says nothing about it. Four operators, one iteration each, four
+        // records — an operator missing its hook shows as three.
+        var census = CountRelational("""
+            var a = 1.5, b = 2.5;
+            var r = (a < b) + (a <= b) + (a > b) + (a >= b);
+            r;
+            """);
+
+        Assert.Equal(4, census.Total);
+        Assert.Equal(4, census.BothNumbers);
+    }
 }

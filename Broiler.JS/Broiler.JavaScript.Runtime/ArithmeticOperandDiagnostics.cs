@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 
 namespace Broiler.JavaScript.Runtime;
@@ -43,6 +44,12 @@ public static class ArithmeticOperandDiagnostics
     private static long bothNumbers;
     private static long rawDoubleOperand;
     private static long rawDoubleOtherNumber;
+    private static long relational;
+    private static long relationalBothNumbers;
+    private static long relationalNeitherNumber;
+
+    [ThreadStatic]
+    private static bool inRelational;
     private static long unaryNegate;
     private static long unaryUpdate;
     private static long unaryToNumeric;
@@ -65,6 +72,74 @@ public static class ArithmeticOperandDiagnostics
 
     /// <summary>Those of <see cref="RawDoubleOperand"/> whose other operand was a Number too.</summary>
     public static long RawDoubleOtherNumber => Interlocked.Read(ref rawDoubleOtherNumber);
+
+    /// <summary>
+    /// Invocations of a generic relational operator — <c>&lt;</c>, <c>&lt;=</c>, <c>&gt;</c>,
+    /// <c>&gt;=</c> — counted once per source-level comparison.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>The one operator class nothing in this engine specializes and nothing counted.</b> Item
+    /// 3-1's speculation is gated on <c>IsNativeNumericOperator</c>, which is the six arithmetic
+    /// operators plus the bitwise ones; the relational operators are excluded, and item 3-5 helps
+    /// only when one side is <em>already</em> an unboxed double — its own compile-time counter
+    /// (<c>boxedNumericComparisons</c>) records how many sites it could not reach and stops there.
+    /// So a comparison over two boxed Numbers is reached by no fast path at all, and until this
+    /// counter nobody knew how many of them run.
+    /// </para>
+    /// <para>
+    /// <b>Counted once per source-level comparison, which needs a re-entrancy guard rather than a
+    /// case analysis.</b> The relational operators re-dispatch: <c>JSObject</c> coerces and calls
+    /// the primitive's, <c>JSNumber</c> unwraps and calls the base's, <c>JSValue</c> hands a
+    /// BigInt comparison to the other operand's mirror. Hooking "the ones that answer directly"
+    /// means enumerating which paths delegate, which is the analysis that left <c>BitwiseXor</c>
+    /// unhooked and silent about it. The flag makes only the outermost entry record, so a path
+    /// added later is counted once by construction.
+    /// </para>
+    /// </remarks>
+    public static long Relational => Interlocked.Read(ref relational);
+
+    /// <summary>
+    /// Those whose operands were both plain Numbers on entry — what a guarded native comparison
+    /// would answer, and the reason the guard is worth pricing.
+    /// </summary>
+    public static long RelationalBothNumbers => Interlocked.Read(ref relationalBothNumbers);
+
+    /// <summary>Those where NEITHER operand was a Number, the clearest miss.</summary>
+    public static long RelationalNeitherNumber => Interlocked.Read(ref relationalNeitherNumber);
+
+    /// <summary>
+    /// Opens a counting scope for one relational operator invocation, recording only if no
+    /// enclosing invocation is already counting.
+    /// </summary>
+    internal static RelationalScope Relate(bool leftIsNumber, bool rightIsNumber)
+        => new(leftIsNumber, rightIsNumber);
+
+    /// <summary>The outermost-only guard. See <see cref="Relational"/>.</summary>
+    internal readonly ref struct RelationalScope
+    {
+        private readonly bool outermost;
+
+        internal RelationalScope(bool leftIsNumber, bool rightIsNumber)
+        {
+            outermost = !inRelational;
+            if (!outermost)
+                return;
+
+            inRelational = true;
+            Interlocked.Increment(ref relational);
+            if (leftIsNumber && rightIsNumber)
+                Interlocked.Increment(ref relationalBothNumbers);
+            else if (!leftIsNumber && !rightIsNumber)
+                Interlocked.Increment(ref relationalNeitherNumber);
+        }
+
+        public void Dispose()
+        {
+            if (outermost)
+                inRelational = false;
+        }
+    }
 
     /// <summary>Boxes minted by unary <c>-</c> and <c>~</c>.</summary>
     public static long UnaryNegate => Interlocked.Read(ref unaryNegate);
@@ -189,6 +264,10 @@ public static class ArithmeticOperandDiagnostics
         Interlocked.Exchange(ref bothNumbers, 0);
         Interlocked.Exchange(ref rawDoubleOperand, 0);
         Interlocked.Exchange(ref rawDoubleOtherNumber, 0);
+        Interlocked.Exchange(ref relational, 0);
+        Interlocked.Exchange(ref relationalBothNumbers, 0);
+        Interlocked.Exchange(ref relationalNeitherNumber, 0);
+        inRelational = false;
         Interlocked.Exchange(ref unaryNegate, 0);
         Interlocked.Exchange(ref unaryUpdate, 0);
         Interlocked.Exchange(ref unaryToNumeric, 0);

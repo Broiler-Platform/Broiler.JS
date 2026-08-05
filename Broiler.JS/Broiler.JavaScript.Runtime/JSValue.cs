@@ -1458,6 +1458,9 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual bool Less(JSValue value)
     {
+        using var counted = ArithmeticOperandDiagnostics.Enabled
+            ? ArithmeticOperandDiagnostics.Relate(IsNumber, value.IsNumber)
+            : default;
         ThrowIfSymbolRelationalOperand(this, value);
 
         if (IsUndefined || value.IsUndefined)
@@ -1485,6 +1488,9 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual bool LessOrEqual(JSValue value)
     {
+        using var counted = ArithmeticOperandDiagnostics.Enabled
+            ? ArithmeticOperandDiagnostics.Relate(IsNumber, value.IsNumber)
+            : default;
         ThrowIfSymbolRelationalOperand(this, value);
 
         if (IsUndefined || value.IsUndefined)
@@ -1509,6 +1515,9 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual bool Greater(JSValue value)
     {
+        using var counted = ArithmeticOperandDiagnostics.Enabled
+            ? ArithmeticOperandDiagnostics.Relate(IsNumber, value.IsNumber)
+            : default;
         ThrowIfSymbolRelationalOperand(this, value);
 
         if (IsUndefined || value.IsUndefined)
@@ -1533,6 +1542,9 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual bool GreaterOrEqual(JSValue value)
     {
+        using var counted = ArithmeticOperandDiagnostics.Enabled
+            ? ArithmeticOperandDiagnostics.Relate(IsNumber, value.IsNumber)
+            : default;
         ThrowIfSymbolRelationalOperand(this, value);
 
         if (IsUndefined || value.IsUndefined)
