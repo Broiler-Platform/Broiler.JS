@@ -15,7 +15,9 @@ public readonly record struct CompilerSpecializationSnapshot(
     long NumericCandidatesSurviving,
     long[] NumericDropCauses,
     long SpeculativeNumericTrees,
-    long SpeculativeNumericGuards);
+    long SpeculativeNumericGuards,
+    long[] NumericTreeRefusals,
+    long[] NumericTreeOrderBlockers);
 
 /// <summary>
 /// Why a hoisted name did not become a raw <c>double</c> local, in the order the gate asks
@@ -97,6 +99,67 @@ public enum NumericDropCause
     Other,
 }
 
+/// <summary>
+/// Why an arithmetic tree did not take item 3-1's guarded form, in the order the gate asks
+/// (docs/performance-roadmap.md item 3-1).
+/// </summary>
+/// <remarks>
+/// <para>
+/// A waterfall on the same terms as <see cref="NumericLocalRejection"/>: a candidate is attributed
+/// to the FIRST condition it fails, so the counts add up and each one reads as "widen this and
+/// that many sites become eligible". Only a binary node whose operator is one the native forms
+/// cover is counted at all — everything else is not a candidate, and counting it would put the
+/// whole program in the denominator.
+/// </para>
+/// <para>
+/// A refused root offers its children in turn, because <c>VisitBinaryExpression</c> falls through
+/// to visiting the operands. So a refused three-node tree can contribute a refusal AND a
+/// specialization, and the counts are of <em>candidate nodes</em> rather than of source
+/// expressions. That is the useful denominator here: the question is how much arithmetic reaches
+/// the guarded form, not how many statements a programmer wrote.
+/// </para>
+/// </remarks>
+public enum NumericTreeRefusal
+{
+    /// <summary>Took the guarded form. Not a refusal; the head of the waterfall.</summary>
+    Specialized,
+    /// <summary>Every operand was already provably native, so the unguarded path has it.</summary>
+    AlreadyNative,
+    /// <summary>Inside a <c>with</c> block or a direct <c>eval</c>'s shadow.</summary>
+    WithOrEvalShadow,
+    /// <summary>No intermediate and no already-native leaf, so the guard would buy a type test and nothing else.</summary>
+    NoSavingToMake,
+    /// <summary>A leaf evaluated after the first coercion could observe or cause an effect.</summary>
+    OrderUnsafe,
+    /// <summary>More leaves than the type-test chain is worth.</summary>
+    TooManyLeaves,
+    /// <summary>A leaf the compiler already knows is a String, which makes the guard unsatisfiable.</summary>
+    StringLeaf,
+    /// <summary>Every leaf was already native — the all-native path, reached by a different route.</summary>
+    NothingToGuard,
+    /// <summary>An operator with no native form after all, so neither arm could be built.</summary>
+    Unbuildable,
+}
+
+/// <summary>
+/// What kind of leaf defeated <see cref="NumericTreeRefusal.OrderUnsafe"/> — the sub-census that
+/// says whether widening that conjunct is a matter of admitting one more leaf kind or of
+/// preserving evaluation order in general.
+/// </summary>
+public enum NumericTreeOrderBlocker
+{
+    /// <summary>A computed element read, `a[i]`.</summary>
+    ElementRead,
+    /// <summary>A named property read, `o.x`.</summary>
+    PropertyRead,
+    /// <summary>A call or a `new`.</summary>
+    CallResult,
+    /// <summary>An identifier that is not a proven-numeric local — a global, an outer binding, a parameter.</summary>
+    OtherName,
+    /// <summary>Anything else: a nested assignment, a conditional, a template, a non-numeric literal.</summary>
+    Other,
+}
+
 /// <summary>Compilation counters used by Phase 3 tests and benchmark reports.</summary>
 public static class CompilerSpecializationDiagnostics
 {
@@ -113,6 +176,8 @@ public static class CompilerSpecializationDiagnostics
     private static readonly long[] numericDropCauses = new long[9];
     private static long speculativeNumericTrees;
     private static long speculativeNumericGuards;
+    private static readonly long[] numericTreeRefusals = new long[9];
+    private static readonly long[] numericTreeOrderBlockers = new long[5];
 
     internal static void RecordScalarLocal() => Interlocked.Increment(ref scalarLocals);
 
@@ -168,6 +233,19 @@ public static class CompilerSpecializationDiagnostics
         Interlocked.Add(ref speculativeNumericGuards, guardedLeaves);
     }
 
+    /// <summary>
+    /// Records why one candidate arithmetic tree did or did not take the guarded form (item 3-1).
+    /// </summary>
+    internal static void RecordNumericTreeDecision(NumericTreeRefusal reason)
+        => Interlocked.Increment(ref numericTreeRefusals[(int)reason]);
+
+    /// <summary>
+    /// Records the kind of leaf that made a candidate order-unsafe — read only against the
+    /// <see cref="NumericTreeRefusal.OrderUnsafe"/> row, which is its total.
+    /// </summary>
+    internal static void RecordNumericTreeOrderBlocker(NumericTreeOrderBlocker blocker)
+        => Interlocked.Increment(ref numericTreeOrderBlockers[(int)blocker]);
+
     /// <summary>Records why one hoisted name did or did not reach the numeric tier.</summary>
     internal static void RecordNumericLocalDecision(NumericLocalRejection reason)
     {
@@ -189,7 +267,17 @@ public static class CompilerSpecializationDiagnostics
             Interlocked.Read(ref numericCandidatesSurviving),
             ReadDropCauses(),
             Interlocked.Read(ref speculativeNumericTrees),
-            Interlocked.Read(ref speculativeNumericGuards));
+            Interlocked.Read(ref speculativeNumericGuards),
+            Read(numericTreeRefusals),
+            Read(numericTreeOrderBlockers));
+
+    private static long[] Read(long[] counters)
+    {
+        var copy = new long[counters.Length];
+        for (var i = 0; i < copy.Length; i++)
+            copy[i] = Interlocked.Read(ref counters[i]);
+        return copy;
+    }
 
     private static long[] ReadDropCauses()
     {
@@ -224,5 +312,9 @@ public static class CompilerSpecializationDiagnostics
             Interlocked.Exchange(ref numericRejections[i], 0);
         for (var i = 0; i < numericDropCauses.Length; i++)
             Interlocked.Exchange(ref numericDropCauses[i], 0);
+        for (var i = 0; i < numericTreeRefusals.Length; i++)
+            Interlocked.Exchange(ref numericTreeRefusals[i], 0);
+        for (var i = 0; i < numericTreeOrderBlockers.Length; i++)
+            Interlocked.Exchange(ref numericTreeOrderBlockers[i], 0);
     }
 }

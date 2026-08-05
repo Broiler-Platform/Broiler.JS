@@ -299,20 +299,28 @@ public sealed class NumericSpeculationTests
         Assert.Equal(0, Trees(source, false));
     }
 
-    [Fact]
-    public void ATreeWhoseOrderCannotBePreservedIsRefused()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ATreeWhoseOrderTheHOISTINGFormCannotPreserveIsRefusedByIt(bool ordered)
     {
-        // The eligibility rule, asserted as a count rather than only as an answer. In
-        // `(a[0] * 2) + p.v` the multiply's coercion runs before `p.v` is read, so the WHOLE tree
-        // must be refused — and the assertion has to distinguish that from the tree specializing
-        // anyway, because the inner multiply is separately eligible on its own (a single binary
-        // node reorders nothing) and does specialize when the outer one is turned down.
+        // The hoisting form's eligibility rule, asserted as a count rather than only as an answer.
+        // In `(a[0] * 2 * 3) + p.v` the multiply's coercion runs before `p.v` is read, so hoisting
+        // p.v ahead of the test would move it in front of that coercion and the WHOLE tree has to
+        // be refused. The assertion has to distinguish that from the tree specializing anyway,
+        // because the inner multiply is separately eligible on its own and does specialize when
+        // the outer one is turned down. The guard count is what separates them: refusing the root
+        // leaves one tree with ONE guarded leaf, `a[0]`.
         //
-        // The guard count is what separates them: refusing the root leaves one tree with one
-        // guarded leaf, `a[0]`. Specializing the root would have hoisted `p.v` as well and read
-        // two. The value fixture above proves the answer is right; this proves it is right for
-        // the stated reason rather than because the guard happened to fail.
+        // This fixture asserted that refusal unconditionally, and so it FAILED the moment item
+        // 3-1's order-preserving half landed — which is the fixture working rather than a cost, on
+        // the same terms as `AnUpdateOnAPropertyCostsTwoBoxesNotOne` when the ToNumeric reuse
+        // landed under it. What it pins now is the invariant rather than the total: the answer is
+        // 25 either way, and only WHICH form computes it moves. The ordered arm's own counts are
+        // owned by NumericTreeOrderTests.
+        var previousOrdering = NumericTreeOrdering.Enabled;
         var previous = NumericSpeculation.Enabled;
+        NumericTreeOrdering.Enabled = ordered;
         NumericSpeculation.Enabled = true;
         using var context = new JSContext();
         CompilerSpecializationDiagnostics.Reset();
@@ -321,14 +329,17 @@ public sealed class NumericSpeculationTests
             // Two operators inside the parentheses, so the inner tree clears the "at least one
             // intermediate" bar on its own and the counts below distinguish "root refused" from
             // "nothing was eligible".
-            context.Eval("var p = { v: 1 }; var a = [4]; var r = (a[0] * 2 * 3) + p.v; r;");
+            var answer = context.Eval("var p = { v: 1 }; var a = [4]; var r = (a[0] * 2 * 3) + p.v; r;");
             var snapshot = CompilerSpecializationDiagnostics.Snapshot();
+
+            Assert.Equal("25", answer.ToString());
             Assert.Equal(1, snapshot.SpeculativeNumericTrees);
-            Assert.Equal(1, snapshot.SpeculativeNumericGuards);
+            Assert.Equal(ordered ? 2 : 1, snapshot.SpeculativeNumericGuards);
         }
         finally
         {
             NumericSpeculation.Enabled = previous;
+            NumericTreeOrdering.Enabled = previousOrdering;
         }
     }
 }

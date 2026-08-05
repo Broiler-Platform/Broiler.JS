@@ -277,6 +277,22 @@ internal static class SpecializingTierMetrics
         return described;
     }
 
+    private static object DescribeNumericTreeRefusals(long[] counts)
+        => Describe<Broiler.JavaScript.Compiler.NumericTreeRefusal>(counts);
+
+    private static object DescribeNumericTreeOrderBlockers(long[] counts)
+        => Describe<Broiler.JavaScript.Compiler.NumericTreeOrderBlocker>(counts);
+
+    private static Dictionary<string, long> Describe<TEnum>(long[] counts)
+        where TEnum : struct, System.Enum
+    {
+        var names = System.Enum.GetNames(typeof(TEnum));
+        var described = new Dictionary<string, long>(names.Length);
+        for (var i = 0; i < names.Length && i < counts.Length; i++)
+            described[names[i]] = counts[i];
+        return described;
+    }
+
     private static object DescribeRejections(long[] counts)
     {
         var names = System.Enum.GetNames(typeof(Broiler.JavaScript.Compiler.NumericLocalRejection));
@@ -525,6 +541,17 @@ internal static class SpecializingTierMetrics
             // run-time, and it is the second that has to collapse for this to have worked.
             speculativeNumericTrees = compiler.SpeculativeNumericTrees,
             speculativeNumericGuards = compiler.SpeculativeNumericGuards,
+
+            // Item 3-1's refusal waterfall: every candidate arithmetic node attributed to the
+            // first eligibility condition it fails. speculativeNumericTrees says how many sites
+            // took the guarded form; this says what the OTHER ones ran into, which is the number
+            // that decides whether the gap to the census's 86.6% ceiling is one rule or five.
+            numericTreeRefusals = DescribeNumericTreeRefusals(compiler.NumericTreeRefusals),
+
+            // Read only against the OrderUnsafe row above, which is its total: what kind of leaf
+            // sat after the first coercion. An element read says the rule is refusing array-
+            // resident arithmetic, which is exactly the population phase 3 keeps failing to reach.
+            numericTreeOrderBlockers = DescribeNumericTreeOrderBlockers(compiler.NumericTreeOrderBlockers),
 
             // Item 3-6: the waterfall. Every hoisted name attributed to the first conjunct of
             // the numeric-local gate it fails, which is what says WHICH condition costs the

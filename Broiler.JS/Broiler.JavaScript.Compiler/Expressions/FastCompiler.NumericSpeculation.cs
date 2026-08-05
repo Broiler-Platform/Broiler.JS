@@ -34,16 +34,22 @@ namespace Broiler.JavaScript.Compiler;
 /// 99.25%.
 /// </para>
 /// <para>
-/// <b>Evaluation order is the whole correctness argument, and it is why this bails more often
-/// than it needs to.</b> The reference emission evaluates a node's two operands and then coerces
-/// them, so in a nested tree a coercion happens <em>between</em> two leaf evaluations. Hoisting
-/// every leaf into a temporary ahead of the test moves later leaves in front of that coercion —
-/// and a coercion is observable, because <c>ToPrimitive</c> on an object runs <c>valueOf</c>. So a
-/// tree is eligible only when every leaf evaluated <em>after</em> the first internal node in
-/// postorder is one that cannot observe or cause anything: a numeric literal or a proven-numeric
-/// local. Leaves before the first coercion are unrestricted, and that is not a narrow case —
-/// JavaScript's precedence makes <c>s + a[0] * 1.5</c> parse right-leaning, so all three of its
-/// leaves precede the multiply's coercion.
+/// <b>Evaluation order is the whole correctness argument, and there are two emitters here because
+/// of it.</b> The reference emission evaluates a node's two operands and then coerces them, so in
+/// a nested tree a coercion happens <em>between</em> two leaf evaluations. <b>Hoisting</b> every
+/// leaf into a temporary ahead of one combined test moves later leaves in front of that coercion —
+/// and a coercion is observable, because <c>ToPrimitive</c> on an object runs <c>valueOf</c> — so
+/// that form is eligible only when every leaf evaluated <em>after</em> the first internal node in
+/// postorder is a numeric literal or a proven-numeric local.
+/// </para>
+/// <para>
+/// Measured, that rule is most of the item: of 5 396 candidate arithmetic nodes on the Octane
+/// corpus it refuses <b>1 762</b> outright, and it manufactures most of the <b>2 718</b> refused
+/// for having no saving to make, because <c>+</c> is left-associative and a refused root re-offers
+/// its children until only a lone operator is left. So <see cref="CreateOrderedNumericTree"/>
+/// emits each leaf at its own postorder position and puts the test <b>where the coercion it stands
+/// in for would have run</b>, which moves nothing and needs no purity rule at all. That is the
+/// default; <c>BROILER_JS_NUMERIC_TREE_ORDER=0</c> restores the hoisting form for A/B.
 /// </para>
 /// <para>
 /// <b>When the guard holds nothing is skipped.</b> Every operator here applies ToNumeric (or, for
@@ -70,14 +76,19 @@ partial class FastCompiler
         if (!NumericSpeculation.Enabled)
             return null;
 
-        // Not a numeric tree at all, or already one the all-native path handles without a guard.
-        if (!IsNativeNumericOperator(root.Operator) || IsNativeNumericAst(root))
+        // Not a numeric tree at all: not a candidate, and counting it would put every `===`,
+        // `&&` and `instanceof` in the denominator of the refusal census below.
+        if (!IsNativeNumericOperator(root.Operator))
             return null;
+
+        // Already one the all-native path handles without a guard.
+        if (IsNativeNumericAst(root))
+            return Refuse(NumericTreeRefusal.AlreadyNative);
 
         // A `with` or an eval shadow can turn any identifier into a property read, which is
         // exactly the "leaf that can observe something" this argument depends on not happening.
         if (withBoundaries.Count != 0 || evalShadowBoundary != null)
-            return null;
+            return Refuse(NumericTreeRefusal.WithOrEvalShadow);
 
         // What the guard buys, counted on the syntax before anything is visited. Two things pay:
         // every operator BUT the root produces an intermediate the guarded form never boxes, and
@@ -92,20 +103,27 @@ partial class FastCompiler
         // to 5.6 M — Crypto alone lost 4.7 M — which is what says the single-node-with-a-literal
         // case is most of the prize rather than a rounding error.
         if (CountOperators(root) - 1 + CountNativeLeaves(root) < 1)
-            return null;
+            return Refuse(NumericTreeRefusal.NoSavingToMake);
 
-        var seenCoercion = false;
-        if (!HoistingIsOrderSafe(root, ref seenCoercion))
-            return null;
+        // The hoisting form's order gate. Under the order-preserving emission nothing is hoisted,
+        // so there is nothing for it to protect — see BuildOrderedTree.
+        if (!NumericTreeOrdering.Enabled)
+        {
+            var seenCoercion = false;
+            if (!HoistingIsOrderSafe(root, ref seenCoercion))
+                return Refuse(NumericTreeRefusal.OrderUnsafe);
+        }
 
         var leaves = new List<AstExpression>();
         CollectLeaves(root, leaves);
 
-        // One binary node has two leaves; the ceiling is arbitrary but a tree with dozens of
-        // guarded leaves is a long chain of tests to reach one saved box, and the shapes this is
-        // for have three or four.
+        // A code-size bound, not a correctness one — and one the order-preserving form made bite,
+        // because the trees it accepts are whole chains rather than their right-hand ends.
         if (leaves.Count > MaximumSpeculativeLeaves)
-            return null;
+            return Refuse(NumericTreeRefusal.TooManyLeaves);
+
+        if (NumericTreeOrdering.Enabled)
+            return CreateOrderedNumericTree(root);
 
         var compiled = new Dictionary<AstExpression, SpeculativeLeaf>(leaves.Count);
         var locals = new Sequence<BParameterExpression>();
@@ -121,7 +139,7 @@ partial class FastCompiler
             // A string literal makes the guard unsatisfiable, and for `+` it makes the answer a
             // concatenation. Nothing to win; leave the tree to the ordinary emission.
             if (isString)
-                return null;
+                return Refuse(NumericTreeRefusal.StringLeaf);
 
             if (isNumber)
             {
@@ -143,15 +161,15 @@ partial class FastCompiler
 
         // Nothing to test means the all-native path already had it.
         if (guarded == 0)
-            return null;
+            return Refuse(NumericTreeRefusal.NothingToGuard);
 
         var nativeTree = BuildNativeTree(root, compiled);
         if (nativeTree == null)
-            return null;
+            return Refuse(NumericTreeRefusal.Unbuildable);
 
         var genericTree = BuildGenericTree(root, compiled);
         if (genericTree == null)
-            return null;
+            return Refuse(NumericTreeRefusal.Unbuildable);
 
         BExpression guard = null;
         foreach (var leaf in leaves)
@@ -170,14 +188,233 @@ partial class FastCompiler
             typeof(JSValue)));
 
         CompilerSpecializationDiagnostics.RecordSpeculativeNumericTree(guarded);
+        CompilerSpecializationDiagnostics.RecordNumericTreeDecision(NumericTreeRefusal.Specialized);
         return BExpression.Block(locals, body);
+    }
+
+    /// <summary>
+    /// Records a refusal and answers <c>null</c>, so the caller reads as one line per condition.
+    /// </summary>
+    /// <remarks>
+    /// The counter is touched once per compiled site rather than per evaluation, so it is
+    /// unconditional — there is no <c>Enabled</c> flag to read, as there is on the run-time
+    /// censuses. It exists because item 3-1's own measurement left a question its numbers could
+    /// not answer: the guarded form reached 0.583x of Crypto's generic invocations and 0.899x of
+    /// NavierStokes', and nothing said whether the difference was one eligibility rule or five.
+    /// </remarks>
+    private BExpression Refuse(NumericTreeRefusal reason)
+    {
+        CompilerSpecializationDiagnostics.RecordNumericTreeDecision(reason);
+        return null;
+    }
+
+    /// <summary>
+    /// The guarded form of <paramref name="root"/> with each test placed where the coercion it
+    /// stands in for would have run, or <c>null</c> when it cannot be built.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Why this exists.</b> The hoisting form is bounded by evaluation order rather than by
+    /// what the guard can predict, and the refusal census says that bound is most of the item:
+    /// of 5 396 candidate arithmetic nodes across the Octane corpus, <b>1 762 are refused as
+    /// order-unsafe and 2 718 more for having no saving to make</b> — and the second number is
+    /// largely a consequence of the first, because a refused root re-offers its children and the
+    /// bottom node of a chain is a single operator with nothing left to save. Only 862 specialize.
+    /// </para>
+    /// <para>
+    /// <b>Why it is sound, and it is the same argument the hoisting form makes — from the other
+    /// end.</b> The reference emission evaluates a node's two operands and then coerces them, so
+    /// the coercion of the left operand runs <em>after</em> the right operand is evaluated and
+    /// <em>before</em> anything above the node is. Hoisting moves later leaves in front of that
+    /// coercion, which is why it needs them pure. This emits each leaf at its own postorder
+    /// position — so no evaluation moves at all — and puts the type test exactly where the
+    /// coercion was. When the test holds, the coercion it replaces was the identity (ToNumeric of
+    /// a Number is that Number), so nothing observable is skipped. When it fails, the same generic
+    /// operator runs at the same point, over the values already in hand.
+    /// </para>
+    /// <para>
+    /// <b>What that costs is a two-armed node rather than a two-armed tree.</b> Each internal node
+    /// carries three temporaries — a <c>bool</c> saying the subtree stayed numeric, a raw
+    /// <c>double</c> holding its value when it did, and a <c>JSValue</c> holding it when it did
+    /// not — and one branch. So a failure part-way up no longer discards the native work below it:
+    /// the accumulated double is boxed once, at the node that failed, and the rest of the tree
+    /// proceeds generically. The hoisting form has to fall back to the whole generic tree.
+    /// </para>
+    /// <para>
+    /// <b>It admits no leaf the hoisting form refused for a reason that still applies.</b> A
+    /// getter, a call, an element read and a plain identifier are all evaluated exactly where they
+    /// were; what changes is only that the test no longer has to precede them.
+    /// </para>
+    /// </remarks>
+    private BExpression CreateOrderedNumericTree(AstBinaryExpression root)
+    {
+        var locals = new Sequence<BParameterExpression>();
+        var body = new Sequence<BExpression>();
+        var guarded = 0;
+
+        var built = BuildOrderedTree(root, locals, body, ref guarded, out var refusal);
+        if (built is not { } node)
+            return Refuse(refusal);
+
+        // Nothing to test means the all-native path already had it, by a route IsNativeNumericAst
+        // did not recognize.
+        if (guarded == 0)
+            return Refuse(NumericTreeRefusal.NothingToGuard);
+
+        body.Add(AsJSValue(node));
+
+        CompilerSpecializationDiagnostics.RecordSpeculativeNumericTree(guarded);
+        CompilerSpecializationDiagnostics.RecordNumericTreeDecision(NumericTreeRefusal.Specialized);
+        return BExpression.Block(locals, body);
+    }
+
+    /// <summary>
+    /// One subtree of an order-preserving guarded tree: its value as a raw double while the
+    /// speculation holds, the test that says whether it does, and its value as a
+    /// <c>JSValue</c> when it does not.
+    /// </summary>
+    /// <param name="Ok">
+    /// <c>null</c> when the subtree is statically native — a numeric literal, a proven-numeric
+    /// local, or an operator over two of them — in which case there is no test and no
+    /// <see cref="Value"/>.
+    /// </param>
+    /// <param name="IsLeaf">
+    /// A guarded leaf's <see cref="Value"/> is the operand itself and is correct whether or not
+    /// the test holds, so it needs no conditional to read; an internal node's does.
+    /// </param>
+    private readonly record struct OrderedNode(
+        BExpression Native,
+        BExpression Ok,
+        BExpression Value,
+        bool IsLeaf);
+
+    private OrderedNode? BuildOrderedTree(
+        AstExpression node,
+        Sequence<BParameterExpression> locals,
+        Sequence<BExpression> body,
+        ref int guarded,
+        out NumericTreeRefusal refusal)
+    {
+        refusal = NumericTreeRefusal.Specialized;
+
+        if (node is AstBinaryExpression binary && IsNativeNumericOperator(binary.Operator))
+        {
+            // Postorder, and it is the whole correctness argument: the left subtree's leaves are
+            // emitted before the right subtree's, exactly as the reference emission evaluates them.
+            var left = BuildOrderedTree(binary.Left, locals, body, ref guarded, out refusal);
+            if (left is not { } l)
+                return null;
+
+            var right = BuildOrderedTree(binary.Right, locals, body, ref guarded, out refusal);
+            if (right is not { } r)
+                return null;
+
+            var native = TryCreateNativeNumericValue(binary.Operator, l.Native, r.Native);
+            if (native == null)
+            {
+                refusal = NumericTreeRefusal.Unbuildable;
+                return null;
+            }
+
+            // Both sides statically native: no test, no branch, and the value stays a raw double
+            // all the way up. This is the all-native path, reached one node at a time.
+            if (l.Ok == null && r.Ok == null)
+                return new OrderedNode(native, null, null, IsLeaf: false);
+
+            // Named off the local count, which is strictly increasing, rather than off the guarded
+            // count, which is not: two nodes above the same leaf would otherwise share a name.
+            var index = locals.Count;
+            var ok = BExpression.Parameter(typeof(bool), "#ok" + index);
+            var value = BExpression.Parameter(typeof(double), "#num" + index);
+            var boxed = BExpression.Parameter(typeof(JSValue), "#gen" + index);
+            locals.Add(ok);
+            locals.Add(value);
+            locals.Add(boxed);
+
+            var test = l.Ok == null
+                ? r.Ok
+                : r.Ok == null
+                    ? l.Ok
+                    : BExpression.Binary(l.Ok, BOperator.BooleanAnd, r.Ok);
+
+            // `ok = test ? (num = <native>, true) : (gen = <generic>, false)`. Written as one
+            // assignment rather than as a statement-level branch so both arms have a type: the
+            // block's type is its last expression's.
+            body.Add(BExpression.Assign(ok, BExpression.Conditional(
+                test,
+                BExpression.Block(
+                    BExpression.Assign(value, native),
+                    BExpression.Constant(true)),
+                BExpression.Block(
+                    BExpression.Assign(boxed, BinaryOperation.Operation(AsJSValue(l), AsJSValue(r), binary.Operator)),
+                    BExpression.Constant(false)),
+                typeof(bool))));
+
+            return new OrderedNode(value, ok, boxed, IsLeaf: false);
+        }
+
+        // A leaf. Visited exactly once, here, at its own position in the reference order.
+        var (isString, isNumber, expression) = ToNativeExpression(node);
+
+        // A leaf the compiler already knows is a String makes the test unsatisfiable, and under
+        // `+` it makes the answer a concatenation. Nothing to win.
+        if (isString)
+        {
+            refusal = NumericTreeRefusal.StringLeaf;
+            return null;
+        }
+
+        if (isNumber)
+            return new OrderedNode(expression, null, null, IsLeaf: true);
+
+        // Block-declared rather than pooled, for the reason item 3-5 records: a pooled temp
+        // acquired after the operands were compiled can be one that compiling them released, and
+        // the next assignment would clobber a value already saved.
+        var temp = BExpression.Parameter(typeof(JSValue), "#spec" + guarded);
+        locals.Add(temp);
+        body.Add(BExpression.Assign(temp, expression));
+        guarded++;
+
+        return new OrderedNode(
+            JSValueBuilder.DoubleValue(temp),
+            JSValueBuilder.IsNumber(temp),
+            temp,
+            IsLeaf: true);
+    }
+
+    /// <summary>The subtree's value as a <c>JSValue</c>, which is what the generic arm needs.</summary>
+    private static BExpression AsJSValue(OrderedNode node)
+    {
+        if (node.Ok == null)
+            return JSNumberBuilder.New(node.Native);
+
+        // A guarded leaf's saved operand is already the value, whichever way its test went — so
+        // reading it costs nothing and, more to the point, does not re-test it.
+        if (node.IsLeaf)
+            return node.Value;
+
+        return BExpression.Condition(
+            node.Ok,
+            JSNumberBuilder.New(node.Native),
+            node.Value,
+            typeof(JSValue));
     }
 
     /// <summary>
     /// Leaves above which a chain of type tests stops being worth one saved box. Not a
     /// correctness bound.
     /// </summary>
-    private const int MaximumSpeculativeLeaves = 8;
+    /// <remarks>
+    /// <b>Measured rather than reasoned, because the last invented threshold in this file cost
+    /// half the prize.</b> It was 8 while the hoisting form was the only emitter, where it never
+    /// fired at all on the Octane corpus — the order rule refused those trees first. The
+    /// order-preserving form accepts whole chains, and at 8 it turned down 85 of them (80 of them
+    /// Box2D's). At 16 that is 8, and the corpus loses a further <b>664 338 boxes, 2.1% of what
+    /// the ordered form leaves</b> — Box2D 0.954x, NavierStokes 0.983x, Crypto 0.985x — while the
+    /// tree count goes DOWN (Box2D 1 109 to 1 090), because a longer chain absorbs sub-trees that
+    /// were separately specialized. The 8 that remain above 16 are a bounded, named residue.
+    /// </remarks>
+    private const int MaximumSpeculativeLeaves = 16;
 
     /// <summary>One leaf of a speculative tree: either already a raw double, or a saved value.</summary>
     private readonly record struct SpeculativeLeaf(BExpression Native, BParameterExpression Local);
@@ -239,8 +476,24 @@ partial class FastCompiler
             return true;
         }
 
-        return !seenCoercion || IsPureLeaf(node);
+        if (!seenCoercion || IsPureLeaf(node))
+            return true;
+
+        // The sub-census: which kind of leaf this conjunct is actually refusing. Recorded at the
+        // FIRST blocking leaf, so it reads against the OrderUnsafe row one-for-one.
+        CompilerSpecializationDiagnostics.RecordNumericTreeOrderBlocker(ClassifyOrderBlocker(node));
+        return false;
     }
+
+    private static NumericTreeOrderBlocker ClassifyOrderBlocker(AstExpression node)
+        => node switch
+        {
+            AstMemberExpression { Computed: true } => NumericTreeOrderBlocker.ElementRead,
+            AstMemberExpression => NumericTreeOrderBlocker.PropertyRead,
+            AstCallExpression or AstNewExpression => NumericTreeOrderBlocker.CallResult,
+            AstIdentifier => NumericTreeOrderBlocker.OtherName,
+            _ => NumericTreeOrderBlocker.Other,
+        };
 
     /// <summary>
     /// Whether evaluating <paramref name="node"/> can be moved earlier without anything being able
