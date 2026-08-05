@@ -460,6 +460,8 @@ internal static class SpecializingTierMetrics
         // beside the run-time censuses further down — which is where it went first, and why it
         // read zero on all seven suites (item 3-1's `0083` failure mode, a second time).
         Broiler.JavaScript.Compiler.SpeculativeNumericLocals.Counting = counters;
+        // Item 3-9's population, on the same terms and for the same reason.
+        Broiler.JavaScript.Compiler.ImportedOuterNumerics.Counting = counters;
 
         string outcome;
         var stopwatch = new Stopwatch();
@@ -608,6 +610,14 @@ internal static class SpecializingTierMetrics
             // NumericLocalDefeatTests isolated is costing.
             speculativeNumericCandidates = compiler.SpeculativeNumericCandidates,
             speculativeNumericLocalsEmitted = compiler.SpeculativeNumericLocalsEmitted,
+
+            // Item 3-9: of those, the ones an ENCLOSING scope has already PROVED numeric, so no
+            // run-time test is needed and the local becomes an ordinary raw double. Bounded above
+            // by speculativeNumericCandidates by construction — a reading above it is a defect in
+            // the counter, not a discovery — and the gap between the two is what only a run-time
+            // guard could ever reach.
+            importedOuterNumericCandidates = compiler.ImportedOuterNumericCandidates,
+            importedOuterNumericOffers = compiler.ImportedOuterNumericOffers,
 
             // The ceiling on all of phase 3: a raw double can only ever remove a box, so
             // boxesAllocated x 24 B is every byte the whole family could take.

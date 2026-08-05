@@ -19,7 +19,9 @@ public readonly record struct CompilerSpecializationSnapshot(
     long[] NumericTreeRefusals,
     long[] NumericTreeOrderBlockers,
     long SpeculativeNumericCandidates,
-    long SpeculativeNumericLocalsEmitted);
+    long SpeculativeNumericLocalsEmitted,
+    long ImportedOuterNumericCandidates,
+    long ImportedOuterNumericOffers);
 
 /// <summary>
 /// Why a hoisted name did not become a raw <c>double</c> local, in the order the gate asks
@@ -182,6 +184,8 @@ public static class CompilerSpecializationDiagnostics
     private static readonly long[] numericTreeOrderBlockers = new long[5];
     private static long speculativeNumericCandidates;
     private static long speculativeNumericLocalsEmitted;
+    private static long importedOuterNumericCandidates;
+    private static long importedOuterNumericOffers;
 
     internal static void RecordScalarLocal() => Interlocked.Increment(ref scalarLocals);
 
@@ -264,6 +268,34 @@ public static class CompilerSpecializationDiagnostics
     internal static void RecordSpeculativeNumericCandidates(int count)
         => Interlocked.Add(ref speculativeNumericCandidates, count);
 
+    /// <summary>
+    /// Locals item 3-9 would type by importing an enclosing function's proven-numeric conclusion
+    /// (docs/performance-roadmap.md item 3-9).
+    /// </summary>
+    /// <remarks>
+    /// <b>Bounded above by <c>SpeculativeNumericCandidates</c> by construction</b>, which is what
+    /// makes it checkable rather than merely reported: everything an enclosing scope has PROVED
+    /// numeric is also something 3-8a's pass would have ASSUMED numeric, so a reading above 26 on
+    /// the Octane corpus is a defect in this counter and not a discovery.
+    /// </remarks>
+    internal static void RecordImportedOuterNumericCandidates(int count)
+        => Interlocked.Add(ref importedOuterNumericCandidates, count);
+
+    /// <summary>
+    /// Times the enclosing scope chain answered "yes, that name is already a raw <c>double</c>"
+    /// while item 3-9's pass was resolving a function (docs/performance-roadmap.md item 3-9).
+    /// </summary>
+    /// <remarks>
+    /// <b>This is the counter that makes a zero population readable.</b> A zero candidate count on
+    /// its own is consistent with two very different worlds — nested functions never read an
+    /// enclosing numeric local at all, or they read them constantly and never in a position that
+    /// could be typed — and the follow-up work differs completely between them. Occurrence-weighted
+    /// rather than distinct, because the only question it has to answer is whether the number is
+    /// zero.
+    /// </remarks>
+    internal static void RecordImportedOuterNumericOffer()
+        => Interlocked.Increment(ref importedOuterNumericOffers);
+
     /// <summary>Records why one hoisted name did or did not reach the numeric tier.</summary>
     internal static void RecordNumericLocalDecision(NumericLocalRejection reason)
     {
@@ -289,7 +321,9 @@ public static class CompilerSpecializationDiagnostics
             Read(numericTreeRefusals),
             Read(numericTreeOrderBlockers),
             Interlocked.Read(ref speculativeNumericCandidates),
-            Interlocked.Read(ref speculativeNumericLocalsEmitted));
+            Interlocked.Read(ref speculativeNumericLocalsEmitted),
+            Interlocked.Read(ref importedOuterNumericCandidates),
+            Interlocked.Read(ref importedOuterNumericOffers));
 
     private static long[] Read(long[] counters)
     {
@@ -337,6 +371,8 @@ public static class CompilerSpecializationDiagnostics
         for (var i = 0; i < numericTreeOrderBlockers.Length; i++)
             Interlocked.Exchange(ref numericTreeOrderBlockers[i], 0);
         Interlocked.Exchange(ref speculativeNumericCandidates, 0);
+        Interlocked.Exchange(ref importedOuterNumericCandidates, 0);
+        Interlocked.Exchange(ref importedOuterNumericOffers, 0);
         Interlocked.Exchange(ref speculativeNumericLocalsEmitted, 0);
     }
 }

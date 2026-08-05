@@ -123,6 +123,58 @@ internal sealed class NumericLocalAnalysis
     /// separately.
     /// </para>
     /// </remarks>
+    /// <summary>
+    /// The names item 3-9 would type STATICALLY: the ones this function's own fixed point keeps
+    /// only when an identifier resolving to a numeric local of an ENCLOSING function is treated as
+    /// the double it already is.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The difference from <see cref="AnalyzeSpeculative"/> is the whole item, and it is the
+    /// difference between assuming and knowing. 3-8a assumes any name from outside the function
+    /// holds a number and pays for a run-time test; this one accepts only a name the enclosing
+    /// scope has <em>already proved</em> is a raw <c>double</c>, so there is no test, no flag, no
+    /// fallback representation — the local it types is an ordinary numeric local, and every fast
+    /// path that reads <c>NumericStorage</c> works on it unchanged. **That is why 3-8a's failure
+    /// mode cannot happen here**: 3-8a lost because its reads had to box the raw half back up, and
+    /// a 3-9 name has no raw half to box.
+    /// </para>
+    /// <para>
+    /// <b>Therefore 3-9's population is a strict subset of 3-8a's</b>, which is a bound the count
+    /// can be checked against rather than a claim about it: everything the enclosing scope has
+    /// proved numeric is also something an optimistic pass would have assumed numeric. A global is
+    /// in 3-8a's set and not in this one — it has no enclosing binding to have proved anything —
+    /// and so is an outer name the enclosing analysis dropped.
+    /// </para>
+    /// <para>
+    /// <paramref name="outerNumeric"/> answers for the ENCLOSING scope chain, and it is asked about
+    /// the binding rather than the spelling: a name this function declares or takes as a parameter
+    /// shadows the outer one and is excluded before the probe is consulted, exactly as 3-8a's pass
+    /// excludes them.
+    /// </para>
+    /// </remarks>
+    public static IReadOnlySet<string> AnalyzeImportedOuter(
+        AstFunctionExpression function, System.Func<string, bool> outerNumeric)
+    {
+        if (outerNumeric == null)
+            return System.Collections.Immutable.ImmutableHashSet<string>.Empty;
+
+        var real = new NumericLocalAnalysis();
+        real.Collect(function);
+        var proven = real.Resolve(count: false);
+
+        var imported = new NumericLocalAnalysis { outerNumericNames = outerNumeric };
+        imported.Collect(function);
+        var withOuter = imported.Resolve(count: false);
+
+        if (withOuter.Count == 0)
+            return System.Collections.Immutable.ImmutableHashSet<string>.Empty;
+
+        var gained = new HashSet<string>(withOuter, System.StringComparer.Ordinal);
+        gained.ExceptWith(proven);
+        return gained;
+    }
+
     public static IReadOnlySet<string> AnalyzeSpeculative(AstFunctionExpression function)
     {
         var real = new NumericLocalAnalysis();
@@ -161,6 +213,13 @@ internal sealed class NumericLocalAnalysis
     /// and report a population that no run-time test on an enclosing value could ever reach.
     /// </summary>
     private readonly HashSet<string> declaredNames = new(System.StringComparer.Ordinal);
+
+    /// <summary>
+    /// Item 3-9: asks the ENCLOSING scope chain whether a name is already a raw <c>double</c>
+    /// there. <c>null</c> on every pass but the imported one, so the analysis is unchanged for
+    /// every other caller.
+    /// </summary>
+    private System.Func<string, bool> outerNumericNames;
 
     /// <summary>
     /// Every name that was ever offered as a numeric candidate. A drop caused by reading one of
@@ -593,7 +652,16 @@ internal sealed class NumericLocalAnalysis
             // with a population this item does not serve.
             || (assumeOuterNamesAreNumeric
                 && !parameterNames.Contains(identifier.Name.Value)
-                && !declaredNames.Contains(identifier.Name.Value)),
+                && !declaredNames.Contains(identifier.Name.Value))
+            // Item 3-9's static pass. Same exclusions for the same reason — a name this function
+            // declares or takes as a parameter is a DIFFERENT binding that merely shares a
+            // spelling, and typing it from the outer one would be a wrong answer rather than a
+            // missed opportunity — but the outer name has to have been PROVED numeric rather than
+            // assumed, so this needs no run-time test and produces an ordinary numeric local.
+            || (outerNumericNames != null
+                && !parameterNames.Contains(identifier.Name.Value)
+                && !declaredNames.Contains(identifier.Name.Value)
+                && outerNumericNames(identifier.Name.Value)),
 
         // Parenthesised / sequence: the value is the last element.
         AstSequenceExpression sequence => IsNumeric(Last(sequence)),

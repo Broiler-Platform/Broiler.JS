@@ -95,6 +95,27 @@ partial class FastCompiler
             if (SpeculativeNumericLocals.Counting && cs.CanScalarReplaceLocals)
                 CompilerSpecializationDiagnostics.RecordSpeculativeNumericCandidates(
                     NumericLocalAnalysis.AnalyzeSpeculative(functionDeclaration).Count);
+
+            // Item 3-9's population. The probe answers for the ENCLOSING scope chain and asks
+            // about the binding rather than the spelling: `previousScope.GetVariable` resolves the
+            // name the way a reference to it would, and `NumericStorage != null` is the question
+            // "is this already a raw double" asked of what the compiler actually built — not of
+            // what the enclosing analysis merely proved. The two differ, and the difference is the
+            // item's own prediction: item 3-7 leaves a name captured by a hoisted function
+            // DECLARATION in a JSVariable cell however numeric its analysis found it, which is why
+            // 3-9 is not expected to reach NavierStokes.
+            if (ImportedOuterNumerics.Counting && cs.CanScalarReplaceLocals)
+                CompilerSpecializationDiagnostics.RecordImportedOuterNumericCandidates(
+                    NumericLocalAnalysis.AnalyzeImportedOuter(
+                        functionDeclaration,
+                        name =>
+                        {
+                            if (previousScope?.GetVariable(name, true)?.NumericStorage == null)
+                                return false;
+
+                            CompilerSpecializationDiagnostics.RecordImportedOuterNumericOffer();
+                            return true;
+                        }).Count);
             // super() in a derived constructor (or an arrow nested in it) targets the
             // superclass constructor, which differs from the home-object prototype.
             cs.SuperConstructor = superConstructor ?? (functionDeclaration.IsArrowFunction ? previousScope.SuperConstructor : null);
