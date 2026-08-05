@@ -200,4 +200,44 @@ public sealed class NumericLocalDefeatTests
         Assert.Equal(1, Dropped(d, NumericDropCause.Parameter));
         Assert.Equal(0, Dropped(d, NumericDropCause.OtherName));
     }
+
+    [Fact]
+    public void TheEnclosingNameIsTheBindingConstraintAndOneCharacterProvesIt()
+    {
+        // The A/B item 3-8a's population rests on, reduced to a single difference. Two programs
+        // whose inner function is identical except that the initializer reads a name from the
+        // enclosing scope in one and a literal in the other:
+        //
+        //     var c = 2 * rowSize;   ->  LocalSlot, and every c++ boxes
+        //     var c = 2 * 10;        ->  numeric, and c++ costs nothing
+        //
+        // Everything else about the two is the same — same nesting, same enclosing declaration,
+        // same body, same update. So the enclosing-scope read is not one defeat among several on
+        // this shape, it is THE defeat, and it is what 3-8a proposes to test at run time.
+        //
+        // Kept as a pair rather than as one assertion because the interesting half is the control:
+        // a fixture that only showed the slot would be consistent with the local being refused for
+        // any of the six other conjuncts, which is exactly the ambiguity the rest of this file
+        // exists to remove.
+        var viaEnclosingName = Analyse("""
+            function o(){
+              var rowSize = 10;
+              function f(){ var c = 2 * rowSize; c++; return c; }
+              return f();
+            }
+            o();
+            """);
+
+        Assert.Equal(1, Target(viaEnclosingName, ArithmeticOperandDiagnostics.UpdateTarget.LocalSlot));
+
+        var viaLiteral = Analyse("""
+            function o(){
+              function f(){ var c = 2 * 10; c++; return c; }
+              return f();
+            }
+            o();
+            """);
+
+        Assert.Equal(0, viaLiteral.Steps);
+    }
 }
