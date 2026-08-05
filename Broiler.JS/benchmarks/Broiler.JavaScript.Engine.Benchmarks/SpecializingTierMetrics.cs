@@ -277,6 +277,9 @@ internal static class SpecializingTierMetrics
         return described;
     }
 
+    private static object DescribeUpdateTargets(long[] counts)
+        => Describe<ArithmeticOperandDiagnostics.UpdateTarget>(counts);
+
     private static object DescribeNumericTreeRefusals(long[] counts)
         => Describe<Broiler.JavaScript.Compiler.NumericTreeRefusal>(counts);
 
@@ -523,6 +526,7 @@ internal static class SpecializingTierMetrics
         var arithmeticRawDoubleOtherNumber = ArithmeticOperandDiagnostics.RawDoubleOtherNumber;
         var arithmeticUnaryNegate = ArithmeticOperandDiagnostics.UnaryNegate;
         var arithmeticUnaryUpdate = ArithmeticOperandDiagnostics.UnaryUpdate;
+        var arithmeticUpdateTargets = ArithmeticOperandDiagnostics.UpdateTargets;
         var arithmeticUnaryToNumeric = ArithmeticOperandDiagnostics.UnaryToNumeric;
         var arithmeticUnaryToNumericReused = ArithmeticOperandDiagnostics.UnaryToNumericReused;
         ArithmeticOperandDiagnostics.Enabled = false;
@@ -624,6 +628,14 @@ internal static class SpecializingTierMetrics
             // name every operator box; what is left over a builtin minted directly.
             arithmeticUnaryNegate,
             arithmeticUnaryUpdate,
+
+            // Item 3-1: where each of those steps' operands lived. The rows sum to
+            // arithmeticUnaryUpdate by construction — the total is recorded by Increment itself
+            // and the rows by the overload the compiler calls — so a call site the emitter forgot
+            // shows up as a shortfall rather than disappearing. These are REQUESTS: multiply by
+            // the suite's own request-to-allocation ratio before reading them as memory, since the
+            // small-integer cache answers Crypto's updates for free and NavierStokes' barely at all.
+            arithmeticUpdateTargets = DescribeUpdateTargets(arithmeticUpdateTargets),
             arithmeticUnaryToNumeric,
             // The coercions handed back instead of copied. This plus arithmeticUnaryToNumeric is
             // the coercion count and is invariant across the two settings of

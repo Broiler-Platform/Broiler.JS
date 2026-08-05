@@ -514,6 +514,32 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         return CreateNumber(DoubleValue - 1);
     }
 
+    /// <summary>
+    /// <see cref="Increment"/>, told by the compiler where the operand it is stepping lives
+    /// (docs/performance-roadmap.md item 3-1).
+    /// </summary>
+    /// <remarks>
+    /// Deliberately a non-virtual overload rather than a parameter on the virtual method: the
+    /// override that exists (<c>JSBigInt</c>) is untouched, and the total the census already
+    /// reports keeps being recorded by <see cref="Increment"/> itself — so the target rows sum to
+    /// <c>UnaryUpdate</c> by construction rather than by inspection, which is what makes a missing
+    /// call site visible instead of silent.
+    /// </remarks>
+    public JSValue Increment(ArithmeticOperandDiagnostics.UpdateTarget target)
+    {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordUpdateTarget(target);
+        return Increment();
+    }
+
+    /// <summary><see cref="Decrement"/>, told where the operand it is stepping lives.</summary>
+    public JSValue Decrement(ArithmeticOperandDiagnostics.UpdateTarget target)
+    {
+        if (ArithmeticOperandDiagnostics.Enabled)
+            ArithmeticOperandDiagnostics.RecordUpdateTarget(target);
+        return Decrement();
+    }
+
     // ToNumeric (ECMA-262 § 7.1.4 / § 7.1.3): coerce to a Number or BigInt primitive.
     // Used by the update operators (`++`/`--`), whose result is the coerced numeric
     // old value — `var y = "1"++` yields the Number 1, not the String "1" — and whose

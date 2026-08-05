@@ -80,6 +80,22 @@ public class JSValueBuilder
     public static Expression BitwiseNot(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.BitwiseNot());
     public static Expression Increment(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.Increment());
     public static Expression Decrement(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.Decrement());
+
+    /// <summary>
+    /// The <c>++</c>/<c>--</c> step, carrying where the compiler knows its operand lives
+    /// (docs/performance-roadmap.md item 3-1's update-target census). The kind is a compile-time
+    /// constant, so the cost at run time is the same <c>Enabled</c> test the step already paid.
+    /// </summary>
+    public static Expression Increment(Expression exp, ArithmeticOperandDiagnostics.UpdateTarget target)
+        => exp.CallExpression<JSValue, ArithmeticOperandDiagnostics.UpdateTarget, JSValue>(
+            () => (x, t) => x.Increment(t),
+            Expression.Constant(target));
+
+    /// <inheritdoc cref="Increment(Expression, ArithmeticOperandDiagnostics.UpdateTarget)"/>
+    public static Expression Decrement(Expression exp, ArithmeticOperandDiagnostics.UpdateTarget target)
+        => exp.CallExpression<JSValue, ArithmeticOperandDiagnostics.UpdateTarget, JSValue>(
+            () => (x, t) => x.Decrement(t),
+            Expression.Constant(target));
     public static Expression ToNumeric(Expression exp) => exp.CallExpression<JSValue, JSValue>(() => (x) => x.ToNumeric());
     public static Expression Subtract(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.Subtract(a), value);
     public static Expression Multiply(Expression target, Expression value) => target.CallExpression<JSValue, JSValue, JSValue>(() => (x, a) => x.Multiply(a), value);

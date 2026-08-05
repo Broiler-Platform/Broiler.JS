@@ -102,8 +102,8 @@ partial class FastCompiler
                 dynamicStatements.Add(BExpression.Assign(
                     current.Variable,
                     updateExpression.Operator == UnaryOperator.Increment
-                        ? JSValueBuilder.Increment(current.Expression)
-                        : JSValueBuilder.Decrement(current.Expression)));
+                        ? JSValueBuilder.Increment(current.Expression, ArithmeticOperandDiagnostics.UpdateTarget.GlobalOrWith)
+                        : JSValueBuilder.Decrement(current.Expression, ArithmeticOperandDiagnostics.UpdateTarget.GlobalOrWith)));
                 dynamicStatements.Add(JSContextBuilder.AssignIdentifier(globalKey, current.Expression));
                 dynamicStatements.Add(previous?.Expression ?? current.Expression);
 
@@ -120,8 +120,8 @@ partial class FastCompiler
                 withStatements.Add(BExpression.Assign(
                     current.Variable,
                     updateExpression.Operator == UnaryOperator.Increment
-                        ? JSValueBuilder.Increment(current.Expression)
-                        : JSValueBuilder.Decrement(current.Expression)));
+                        ? JSValueBuilder.Increment(current.Expression, ArithmeticOperandDiagnostics.UpdateTarget.GlobalOrWith)
+                        : JSValueBuilder.Decrement(current.Expression, ArithmeticOperandDiagnostics.UpdateTarget.GlobalOrWith)));
                 withStatements.Add(JSContextBuilder.AssignWithObjectIdentifier(withObject.Expression, globalKey, current.Expression, IsStrictMode));
                 withStatements.Add(previous?.Expression ?? current.Expression);
 
@@ -182,8 +182,8 @@ partial class FastCompiler
                 statements.Add(BExpression.Assign(
                     current.Variable,
                     updateExpression.Operator == UnaryOperator.Increment
-                        ? JSValueBuilder.Increment(current.Expression)
-                        : JSValueBuilder.Decrement(current.Expression)));
+                        ? JSValueBuilder.Increment(current.Expression, ArithmeticOperandDiagnostics.UpdateTarget.LocalCell)
+                        : JSValueBuilder.Decrement(current.Expression, ArithmeticOperandDiagnostics.UpdateTarget.LocalCell)));
                 statements.Add(BExpression.Assign(variable.Expression, current.Expression));
                 statements.Add(previous?.Expression ?? current.Expression);
 
@@ -218,8 +218,8 @@ partial class FastCompiler
                 statements.Add(BExpression.Assign(
                     current.Variable,
                     updateExpression.Operator == UnaryOperator.Increment
-                        ? JSValueBuilder.Increment(current.Expression)
-                        : JSValueBuilder.Decrement(current.Expression)));
+                        ? JSValueBuilder.Increment(current.Expression, ArithmeticOperandDiagnostics.UpdateTarget.GlobalOrWith)
+                        : JSValueBuilder.Decrement(current.Expression, ArithmeticOperandDiagnostics.UpdateTarget.GlobalOrWith)));
                 statements.Add(BExpression.Assign(variable.Expression, current.Expression));
                 statements.Add(previous?.Expression ?? current.Expression);
 
@@ -239,11 +239,36 @@ partial class FastCompiler
         // reference. See TryCreateCachedUpdateKey; null means the ordinary reference is used.
         BExpression cachedKey = null;
 
+        // Where the operand lives, for item 3-1's update-target census. Decided here because the
+        // step itself is emitted once for every member shape, and the shared tail can no longer
+        // tell them apart. `Other` is the honest default: anything reaching the tail that this
+        // census has not named lands there, and a non-zero Other row is a signal to come back
+        // rather than a rounding error.
+        //
+        // An identifier reaching here has already passed TryGetStaticIdentifierVariable — the
+        // dynamic, numeric-local, cell and deletable-global cases each returned above — so what is
+        // left is a statically-resolved local or parameter in a plain assignable slot: a name the
+        // numeric analysis did not prove numeric. That turns out to be the largest row on this
+        // corpus, and the first version of this census put all of it in `Other`, which is what
+        // said the census was wrong rather than the engine being surprising.
+        var updateTarget = updateExpression.Argument is AstIdentifier
+            ? ArithmeticOperandDiagnostics.UpdateTarget.LocalSlot
+            : ArithmeticOperandDiagnostics.UpdateTarget.Other;
+
         var right = VisitExpression(updateExpression.Argument);
 
         if (updateExpression.Argument is AstMemberExpression memberExpression)
         {
             var isSuper = memberExpression.Object?.Type == FastNodeType.Super;
+
+            // Computed against named, which is the same split the numeric tree's order-blocker
+            // sub-census uses. It is syntactic rather than semantic — `a["x"]++` counts as an
+            // element and reaches a named property — but the shapes that matter here (`a[i]++`
+            // against `o.x++`) fall on the right sides of it, and a syntactic rule is the only
+            // one available before the key is evaluated.
+            updateTarget = memberExpression.Computed
+                ? ArithmeticOperandDiagnostics.UpdateTarget.Element
+                : ArithmeticOperandDiagnostics.UpdateTarget.Property;
 
             target = scope.Top.GetTempVariable(typeof(JSValue));
             list.Add(BExpression.Assign(target.Variable, VisitExpression(memberExpression.Object)));
@@ -315,8 +340,8 @@ partial class FastCompiler
         list.Add(BExpression.Assign(coerced.Variable, JSValueBuilder.ToNumeric(right)));
 
         var newValue = updateExpression.Operator == UnaryOperator.Increment
-            ? JSValueBuilder.Increment(coerced.Expression)
-            : JSValueBuilder.Decrement(coerced.Expression);
+            ? JSValueBuilder.Increment(coerced.Expression, updateTarget)
+            : JSValueBuilder.Decrement(coerced.Expression, updateTarget);
 
         // The write-back, through the store cache when the read went through the read cache.
         // Both forms end in the same JSValue indexer on a miss, so strict-mode reporting and

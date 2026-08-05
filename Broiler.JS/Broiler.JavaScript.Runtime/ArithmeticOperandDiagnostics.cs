@@ -112,6 +112,71 @@ public static class ArithmeticOperandDiagnostics
     /// <summary>Records a box minted by the <c>++</c>/<c>--</c> step.</summary>
     internal static void RecordUnaryUpdate() => Interlocked.Increment(ref unaryUpdate);
 
+    /// <summary>
+    /// Where the operand of one <c>++</c>/<c>--</c> step lives, decided by the compiler and read
+    /// back per invocation (docs/performance-roadmap.md item 3-1).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The step is the largest single source of boxing left on the corpus after the guarded tree
+    /// and the <c>ToNumeric</c> reuse — 33.2% of remaining requests — and the item's
+    /// re-specification named this count as the thing to take before a typed backing store is
+    /// built: <b>if the operand is an element or a field the step shares that mechanism, and if it
+    /// is a local the analysis merely failed to type, it is a much smaller change.</b>
+    /// </para>
+    /// <para>
+    /// These are <em>requests</em>, not allocations. The small-integer cache answers a large share
+    /// of them for free — the reuse measurement put Crypto at 0.1% real and NavierStokes at 71.4% —
+    /// so a row here is a claim about where the traffic is, and it has to be multiplied by the
+    /// suite's own request-to-allocation ratio before it is a claim about memory.
+    /// </para>
+    /// <para>
+    /// A numeric local appears in <b>none</b> of these rows, and that is the point rather than a
+    /// gap: <c>i++</c> on a raw <c>double</c> local compiles to a native add and never reaches
+    /// <c>Increment</c> at all, so this census counts exactly the population that still boxes.
+    /// </para>
+    /// </remarks>
+    public enum UpdateTarget
+    {
+        /// <summary>A computed member, <c>a[i]++</c>.</summary>
+        Element,
+        /// <summary>A named member, <c>o.x++</c>.</summary>
+        Property,
+        /// <summary>A local or captured binding held in a <c>JSVariable</c> cell.</summary>
+        LocalCell,
+        /// <summary>
+        /// A statically-resolved local or parameter held in a plain assignable slot — a name the
+        /// numeric analysis did not prove numeric, so it is a <c>JSValue</c> rather than a raw
+        /// <c>double</c>.
+        /// </summary>
+        LocalSlot,
+        /// <summary>A global, a <c>with</c> binding, or a deletable <c>eval</c>-introduced <c>var</c>.</summary>
+        GlobalOrWith,
+        /// <summary>Anything else that reaches the shared member-update tail.</summary>
+        Other,
+    }
+
+    private static readonly long[] updateTargets = new long[6];
+
+    /// <summary>
+    /// Where each <c>++</c>/<c>--</c> step's operand lived. Sums to <see cref="UnaryUpdate"/>,
+    /// which is the invariant that says the census covers the operator rather than a subset of it.
+    /// </summary>
+    public static long[] UpdateTargets
+    {
+        get
+        {
+            var copy = new long[updateTargets.Length];
+            for (var i = 0; i < copy.Length; i++)
+                copy[i] = Interlocked.Read(ref updateTargets[i]);
+            return copy;
+        }
+    }
+
+    /// <summary>Records where one <c>++</c>/<c>--</c> step's operand lived.</summary>
+    internal static void RecordUpdateTarget(UpdateTarget target)
+        => Interlocked.Increment(ref updateTargets[(int)target]);
+
     /// <summary>Records a box minted coercing the operand of <c>++</c>/<c>--</c>.</summary>
     internal static void RecordUnaryToNumeric() => Interlocked.Increment(ref unaryToNumeric);
 
@@ -128,5 +193,7 @@ public static class ArithmeticOperandDiagnostics
         Interlocked.Exchange(ref unaryUpdate, 0);
         Interlocked.Exchange(ref unaryToNumeric, 0);
         Interlocked.Exchange(ref unaryToNumericReused, 0);
+        for (var i = 0; i < updateTargets.Length; i++)
+            Interlocked.Exchange(ref updateTargets[i], 0);
     }
 }
