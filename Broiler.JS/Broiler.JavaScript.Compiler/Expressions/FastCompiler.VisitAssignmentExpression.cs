@@ -247,7 +247,7 @@ partial class FastCompiler
                         return NumericStoreResult(BExpression.Assign(variable.NumericStorage, nativeRight), discardResult);
                 }
 
-                var initExpr = Visit(right);
+                var initExpr = VisitConsumedBy(right, NumberBoxingConversionSite.GuardedTreeRootIntoLocal);
                 if (!IsAnonymousFunctionDefinition(right) || shouldSuppressAnonymousFunctionName)
                     initExpr = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, BExpression.Constant(""), BExpression.Constant(false));
                 else if (!IsDestructuringAssignmentExpression(right))
@@ -289,7 +289,7 @@ partial class FastCompiler
             if (variable.SpeculativeNumericFlag != null)
                 return ThroughSpeculativeSlot(variable, slot => Assign(slot, right, assignmentOperator));
 
-            return Assign(variable.Expression, right, assignmentOperator);
+            return Assign(variable.Expression, right, assignmentOperator, NumberBoxingConversionSite.GuardedTreeRootIntoLocal);
         }
 
         // A `super[key]` assignment target must be an assignable super-index expression.
@@ -320,7 +320,7 @@ partial class FastCompiler
         // above, where the target has to stay assignable because it is read as well as written.
         var simpleMember = (AstMemberExpression)left;
         if (assignmentOperator == TokenTypes.Assign
-            && TryCreateCachedMemberStore(simpleMember, () => Visit(right)) is { } cachedStore)
+            && TryCreateCachedMemberStore(simpleMember, () => VisitConsumedBy(right, NumberBoxingConversionSite.GuardedTreeRootIntoProperty)) is { } cachedStore)
         {
             return cachedStore;
         }
@@ -329,12 +329,18 @@ partial class FastCompiler
         // instead of boxing a JSNumber to name the slot. A plain assignment only — a compound
         // one has to keep an assignable target because it is read as well as written.
         if (assignmentOperator == TokenTypes.Assign
-            && TryCreateNumericIndexStore(simpleMember, () => Visit(right)) is { } numericStore)
+            && TryCreateNumericIndexStore(simpleMember, () => VisitConsumedBy(right, NumberBoxingConversionSite.GuardedTreeRootIntoElement)) is { } numericStore)
         {
             return numericStore;
         }
 
-        return Assign(CreateMemberAssignmentTarget(simpleMember), right, assignmentOperator);
+        return Assign(
+            CreateMemberAssignmentTarget(simpleMember),
+            right,
+            assignmentOperator,
+            simpleMember.Computed
+                ? NumberBoxingConversionSite.GuardedTreeRootIntoElement
+                : NumberBoxingConversionSite.GuardedTreeRootIntoProperty);
     }
 
     // Compiles an assignment whose target is an EvalShadowVariable. Reads/writes use
@@ -603,7 +609,14 @@ partial class FastCompiler
         return BExpression.Assign(storage, ToDoubleExpression(combined));
     }
 
-    private BExpression Assign(BExpression exp, AstExpression right, TokenTypes assignmentOperator)
+    /// <param name="consumer">
+    /// What will consume a guarded arithmetic tree at the root of <paramref name="right"/>, for a
+    /// PLAIN assignment only (docs/performance-roadmap.md item 3-1, `0105`). Under a compound
+    /// operator the right-hand side is an operand of that operator rather than the value stored,
+    /// so the store is not its consumer and the default residual is the honest answer.
+    /// </param>
+    private BExpression Assign(BExpression exp, AstExpression right, TokenTypes assignmentOperator,
+        NumberBoxingConversionSite consumer = NumberBoxingConversionSite.GuardedTreeRoot)
     {
         if (assignmentOperator == TokenTypes.AssignAdd && right.Type == FastNodeType.Literal && right is AstLiteral literal)
         {
@@ -614,7 +627,10 @@ partial class FastCompiler
                 return BExpression.Assign(exp, JSValueBuilder.AddDouble(exp, BExpression.Constant(literal.NumericValue)));
         }
 
-        return BinaryOperation.Assign(exp, Visit(right), assignmentOperator);
+        return BinaryOperation.Assign(
+            exp,
+            assignmentOperator == TokenTypes.Assign ? VisitConsumedBy(right, consumer) : Visit(right),
+            assignmentOperator);
     }
 
     private BExpression CreateAssignment(AstExpression pattern, BExpression init, bool createVariable = false, bool newScope = false,

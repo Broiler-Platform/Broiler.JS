@@ -56,6 +56,15 @@ public sealed class NumberBoxingConversionSiteTests
     private static long At(NumberBoxingSnapshot boxing, NumberBoxingConversionSite site)
         => boxing.ConversionsAt(site);
 
+    /// <summary>Every guarded-tree root, whatever consumes it.</summary>
+    private static long Roots(NumberBoxingSnapshot boxing)
+        => At(boxing, NumberBoxingConversionSite.GuardedTreeRoot)
+            + At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoElement)
+            + At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoProperty)
+            + At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoLocal)
+            + At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoReturn)
+            + At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoArgument);
+
     [Fact]
     public void The_eight_sites_partition_the_conversion_total()
     {
@@ -106,7 +115,9 @@ public sealed class NumberBoxingConversionSiteTests
             f(1, 2, 3, 4);
             """);
 
-        var root = At(boxing, NumberBoxingConversionSite.GuardedTreeRoot);
+        // Summed over consumers: since `0105` a root is attributed to whatever consumes it, and
+        // this shape's root is consumed by the local `s`.
+        var root = Roots(boxing);
         Assert.True(root > 0, "a guarded tree must box its root");
 
         // Three operators over 100 iterations would be ~300 if the tree boxed per node.
@@ -167,6 +178,138 @@ public sealed class NumberBoxingConversionSiteTests
 
         foreach (NumberBoxingConversionSite site in Enum.GetValues<NumberBoxingConversionSite>())
             Assert.Equal(0, At(cleared, site));
+    }
+
+    // ── the root box's consumer (item 3-1, `0105`) ────────────────────────────────────────
+    //
+    // `0103` found 61.79% of the corpus's conversions are the guarded tree's root, and the root is
+    // boxed only because its consumer takes a JSValue. Splitting it by consumer is a compile-time
+    // attribution, and a compile-time attribution that leaks reads as a finding about the corpus.
+    // The leak case below is therefore the load-bearing one: it is the shape that would make the
+    // instrument agree with whatever it was pointed at.
+
+    [Fact]
+    public void A_root_stored_into_an_element_is_attributed_to_the_element()
+    {
+        var (_, boxing) = Count(
+            """
+            function f(a, b, c) { for (var i = 0; i < 100; i++) { a[0] = b * c + i; } return a[0]; }
+            f([0], 2, 3);
+            """);
+
+        Assert.True(At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoElement) > 0);
+        Assert.Equal(0, At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoProperty));
+    }
+
+    [Fact]
+    public void A_root_stored_into_a_property_is_attributed_to_the_property()
+    {
+        var (_, boxing) = Count(
+            """
+            function f(o, b, c) { for (var i = 0; i < 100; i++) { o.x = b * c + i; } return o.x; }
+            f({ x: 0 }, 2, 3);
+            """);
+
+        Assert.True(At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoProperty) > 0);
+        Assert.Equal(0, At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoElement));
+    }
+
+    [Fact]
+    public void A_root_returned_is_attributed_to_the_return()
+    {
+        var (_, boxing) = Count(
+            """
+            function g(b, c, i) { return b * c + i; }
+            function f(b, c) { var s = 0; for (var i = 0; i < 100; i++) { s = g(b, c, i); } return s; }
+            f(2, 3);
+            """);
+
+        Assert.True(At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoReturn) > 0);
+    }
+
+    [Fact]
+    public void A_root_passed_as_an_argument_is_attributed_to_the_argument()
+    {
+        var (_, boxing) = Count(
+            """
+            function sink(x) { return x; }
+            function f(b, c) { var s = 0; for (var i = 0; i < 100; i++) { s = sink(b * c + i); } return s; }
+            f(2, 3);
+            """);
+
+        Assert.True(At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoArgument) > 0);
+    }
+
+    [Fact]
+    public void A_consumer_does_not_leak_into_a_tree_nested_inside_its_own_right_hand_side()
+    {
+        // THE case this instrument can fail silently on. The element store's right-hand side
+        // contains a SECOND tree, inside a call argument. If the pending consumer survived into
+        // that nested visit, the inner tree would be counted as an element store and the element
+        // row would be inflated by exactly the shapes the typed-store question is about. The inner
+        // tree is an argument, and the outer one is the element.
+        //
+        // Both trees need two operators to specialize at all: with one operator and no provable
+        // leaf the tree is refused for having no saving to make, and a refused outer tree would
+        // make this pass for the wrong reason.
+        var (_, boxing) = Count(
+            """
+            function sink(x) { return x; }
+            function f(a, b, c, d) { for (var i = 0; i < 100; i++) { a[0] = b * c + sink(d * 2 + i); } return a[0]; }
+            f([0], 2, 3, 4);
+            """);
+
+        var element = At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoElement);
+        var argument = At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoArgument);
+
+        Assert.True(argument > 0, "the nested tree is consumed by the call argument");
+        Assert.True(element > 0, "the outer tree is consumed by the element store");
+
+        // 100 iterations, one outer tree each. If the consumer leaked, the element row would carry
+        // the inner tree's boxes too and roughly double.
+        Assert.True(element <= 150, $"the element consumer leaked into the nested tree ({element})");
+    }
+
+    [Fact]
+    public void A_compound_assignment_does_not_claim_its_right_hand_side()
+    {
+        // Under `a[0] += <tree>` the tree is an operand of `+=`, not the value stored, so the
+        // element store is not its consumer. Attributing it to the element would overstate exactly
+        // the row the typed-store question turns on.
+        var (_, boxing) = Count(
+            """
+            function f(a, b, c) { for (var i = 0; i < 100; i++) { a[0] += b * c + i; } return a[0]; }
+            f([0], 2, 3);
+            """);
+
+        Assert.Equal(0, At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoElement));
+    }
+
+    [Fact]
+    public void The_root_consumers_still_partition_the_conversion_total()
+    {
+        // The partition has to survive the split, or one of the six root rows is double-counting.
+        var (_, boxing) = Count(
+            """
+            function sink(x) { return x; }
+            function g(b, c) { return b * c + 1; }
+            function f(a, o, b, c) {
+              var s = 0;
+              for (var i = 0; i < 100; i++) {
+                a[0] = b * c + i; o.x = b + c * i; s = b * i + c;
+                s = sink(b * c + i) + g(b, c);
+              }
+              return s;
+            }
+            f([0], { x: 0 }, 2, 3);
+            """);
+
+        var summed = 0L;
+        foreach (NumberBoxingConversionSite site in Enum.GetValues<NumberBoxingConversionSite>())
+            summed += At(boxing, site);
+
+        Assert.Equal(boxing.ConversionRequests, summed);
+        Assert.Equal(0, At(boxing, NumberBoxingConversionSite.Unclassified));
     }
 
     [Fact]

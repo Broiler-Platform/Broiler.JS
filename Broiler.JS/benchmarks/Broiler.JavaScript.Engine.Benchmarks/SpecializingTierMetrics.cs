@@ -772,6 +772,21 @@ internal static class SpecializingTierMetrics
             boxingConversionUnclassified =
                 boxing.ConversionsAt(NumberBoxingConversionSite.Unclassified),
 
+            // `0103` counted the tree's root at 61.79% of the corpus's conversions and left one
+            // question: the root is boxed because its CONSUMER takes a JSValue, so the only thing
+            // that removes it is a consumer able to take the raw double the tree already holds.
+            // These five plus the unattributed residual above sum to every root box.
+            boxingConversionRootIntoElement =
+                boxing.ConversionsAt(NumberBoxingConversionSite.GuardedTreeRootIntoElement),
+            boxingConversionRootIntoProperty =
+                boxing.ConversionsAt(NumberBoxingConversionSite.GuardedTreeRootIntoProperty),
+            boxingConversionRootIntoLocal =
+                boxing.ConversionsAt(NumberBoxingConversionSite.GuardedTreeRootIntoLocal),
+            boxingConversionRootIntoReturn =
+                boxing.ConversionsAt(NumberBoxingConversionSite.GuardedTreeRootIntoReturn),
+            boxingConversionRootIntoArgument =
+                boxing.ConversionsAt(NumberBoxingConversionSite.GuardedTreeRootIntoArgument),
+
             // Item 3-1's shared half, counted on the far side of the boundary: not what the
             // compiler could prove, but what the operators were actually handed. arithmeticGeneric
             // is every invocation of a two-JSValue arithmetic or bitwise operator;

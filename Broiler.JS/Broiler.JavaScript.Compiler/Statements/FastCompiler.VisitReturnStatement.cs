@@ -8,5 +8,7 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     protected override BExpression VisitReturnStatement(AstReturnStatement returnStatement) =>
-        BExpression.Return(scope.Top.ReturnLabel, returnStatement.Argument != null ? VisitExpression(returnStatement.Argument) : JSUndefinedBuilder.Value);
+        BExpression.Return(scope.Top.ReturnLabel, returnStatement.Argument != null
+            ? VisitConsumedBy(returnStatement.Argument, Runtime.NumberBoxingConversionSite.GuardedTreeRootIntoReturn)
+            : JSUndefinedBuilder.Value);
 }

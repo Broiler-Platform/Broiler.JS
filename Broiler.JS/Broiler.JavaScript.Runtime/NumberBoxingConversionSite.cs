@@ -44,7 +44,11 @@ public enum NumberBoxingConversionSite
 
     /// <summary>
     /// The root of item 3-1's guarded arithmetic tree — the one box a specialized tree is
-    /// supposed to keep, its whole point being that the interior nodes no longer mint any.
+    /// supposed to keep, its whole point being that the interior nodes no longer mint any —
+    /// whose CONSUMER the compiler could not attribute. The residual of the five
+    /// <c>GuardedTreeRootInto*</c> sites below, and deliberately visible rather than folded away:
+    /// an attribution that silently defaulted would read as a finding about the corpus when it is
+    /// a finding about the instrument.
     /// </summary>
     GuardedTreeRoot = 2,
 
@@ -77,4 +81,42 @@ public enum NumberBoxingConversionSite
     /// of the list.
     /// </summary>
     ConstantOperand = 8,
+
+    // ── the guarded tree's root, split by what consumes the box ──────────────────────────
+    //
+    // `0103` counted the root at 61.79% of the corpus's conversions and left the phase with one
+    // question: the root is boxed because its CONSUMER takes a JSValue, so the only way to remove
+    // it is a consumer that can take the raw double the tree already has in hand. Which consumers
+    // those are is a fact about the corpus that no run-time counter can produce — the box is
+    // minted at the tree, and what receives it is known only to the compiler. So the consumer is
+    // attached where the compiler knows it, and travels to the tree with the node being visited.
+
+    /// <summary>
+    /// The root box is stored into an ELEMENT — <c>a[i] = &lt;tree&gt;</c>. The population a typed
+    /// backing store reaches, and the one item 3-1 was originally written around.
+    /// </summary>
+    GuardedTreeRootIntoElement = 9,
+
+    /// <summary>
+    /// The root box is stored into a named PROPERTY — <c>o.x = &lt;tree&gt;</c>. Item 3-2's
+    /// population: an unboxed shape slot, not an unboxed array.
+    /// </summary>
+    GuardedTreeRootIntoProperty = 10,
+
+    /// <summary>
+    /// The root box is stored into a LOCAL or a declared binding. Reachable without touching any
+    /// storage representation at all, because a proven-numeric local already has a raw
+    /// <c>double</c> home (item 3-3) — so a root landing here is one the existing numeric tier
+    /// failed to type, not one that needs a new representation.
+    /// </summary>
+    GuardedTreeRootIntoLocal = 11,
+
+    /// <summary>The root box is a function's RETURN value.</summary>
+    GuardedTreeRootIntoReturn = 12,
+
+    /// <summary>
+    /// The root box is a call ARGUMENT. Item 4-5 priced these at 32 bytes each on the call path
+    /// and attributed them to the caller; this says how many of them an arithmetic tree mints.
+    /// </summary>
+    GuardedTreeRootIntoArgument = 13,
 }

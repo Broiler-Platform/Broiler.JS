@@ -71,6 +71,48 @@ partial class FastCompiler
     /// the way, an inline-cache site among it. That is the rule <c>ToNativeExpression</c>'s own
     /// recursion already follows.
     /// </remarks>
+    /// <summary>
+    /// What will consume the guarded tree about to be compiled, when the visitor that is about to
+    /// consume it said so (docs/performance-roadmap.md item 3-1, `0105`).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Only ever set by <see cref="VisitConsumedBy"/>, and only for a node that <em>is</em> an
+    /// <c>AstBinaryExpression</c> — the one shape that can reach the tree builder directly. That
+    /// restriction is the whole safety argument: the field cannot survive into a nested visit,
+    /// because it is never set for a node whose compilation would perform one. Without it,
+    /// <c>a[i] = b + f(c * 2)</c> would attribute the inner tree inside the call argument to the
+    /// element store, which is precisely the mis-attribution that would make this instrument agree
+    /// with whatever it was pointed at.
+    /// </para>
+    /// <para>
+    /// The tree builder clears it for the duration of its own construction for the same reason:
+    /// its leaves are visited, and a leaf may itself contain a tree.
+    /// </para>
+    /// </remarks>
+    private NumberBoxingConversionSite pendingTreeConsumer = NumberBoxingConversionSite.GuardedTreeRoot;
+
+    /// <summary>
+    /// Visits <paramref name="node"/>, telling a guarded tree at its root what will consume its
+    /// box.
+    /// </summary>
+    private BExpression VisitConsumedBy(AstExpression node, NumberBoxingConversionSite consumer)
+    {
+        if (node is not AstBinaryExpression)
+            return Visit(node);
+
+        var previous = pendingTreeConsumer;
+        pendingTreeConsumer = consumer;
+        try
+        {
+            return Visit(node);
+        }
+        finally
+        {
+            pendingTreeConsumer = previous;
+        }
+    }
+
     private BExpression TryCreateSpeculativeNumericTree(AstBinaryExpression root)
     {
         if (!NumericSpeculation.Enabled)
@@ -252,6 +294,28 @@ partial class FastCompiler
         var body = new Sequence<BExpression>();
         var guarded = 0;
 
+        // Take the consumer before any leaf is visited, and clear it for the duration: a leaf may
+        // contain a tree of its own, and that one's box is consumed by this tree's operator rather
+        // than by whatever consumes this tree's root.
+        var consumer = pendingTreeConsumer;
+        pendingTreeConsumer = NumberBoxingConversionSite.GuardedTreeRoot;
+        try
+        {
+            return BuildOrderedNumericTree(root, locals, body, ref guarded, consumer);
+        }
+        finally
+        {
+            pendingTreeConsumer = consumer;
+        }
+    }
+
+    private BExpression BuildOrderedNumericTree(
+        AstBinaryExpression root,
+        Sequence<BParameterExpression> locals,
+        Sequence<BExpression> body,
+        ref int guarded,
+        NumberBoxingConversionSite consumer)
+    {
         var built = BuildOrderedTree(root, locals, body, ref guarded, out var refusal);
         if (built is not { } node)
             return Refuse(refusal);
@@ -261,7 +325,7 @@ partial class FastCompiler
         if (guarded == 0)
             return Refuse(NumericTreeRefusal.NothingToGuard);
 
-        body.Add(AsJSValue(node, NumberBoxingConversionSite.GuardedTreeRoot));
+        body.Add(AsJSValue(node, consumer));
 
         CompilerSpecializationDiagnostics.RecordSpeculativeNumericTree(guarded);
         CompilerSpecializationDiagnostics.RecordNumericTreeDecision(NumericTreeRefusal.Specialized);

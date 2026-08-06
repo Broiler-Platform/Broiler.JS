@@ -58,7 +58,7 @@ public static class NumberBoxingDiagnostics
     /// is folded into <see cref="NumberBoxingConversionSite.Unclassified"/> rather than throwing —
     /// a diagnostic counter must never be able to fail a run it is only observing.
     /// </summary>
-    private const int ConversionSiteCount = (int)NumberBoxingConversionSite.ConstantOperand + 1;
+    private const int ConversionSiteCount = (int)NumberBoxingConversionSite.GuardedTreeRootIntoArgument + 1;
 
     /// <summary>Whether boxing is counted. Off by default.</summary>
     public static bool Enabled;

@@ -33,7 +33,7 @@ partial class FastCompiler
         {
             if (ae.Type != FastNodeType.SpreadElement)
             {
-                args.Add(Visit(ae));
+                args.Add(VisitConsumedBy(ae, NumberBoxingConversionSite.GuardedTreeRootIntoArgument));
                 continue;
             }
 
@@ -57,7 +57,7 @@ partial class FastCompiler
         {
             if (ae.Type != FastNodeType.SpreadElement)
             {
-                args.Add(Visit(ae));
+                args.Add(VisitConsumedBy(ae, NumberBoxingConversionSite.GuardedTreeRootIntoArgument));
                 continue;
             }
 
