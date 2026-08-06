@@ -207,6 +207,15 @@ internal static class DeferPopulationMetrics
                 layoutRepeatDisagreements = ExpressionCompiler.DeferredCaptureLayout.RepeatDisagreements,
                 layoutMissedSamples = ExpressionCompiler.DeferredCaptureLayout.MissedNameSamples,
 
+                // Item 1-1's obstacle is an INDEX, and the check above compares a SET. These
+                // compare the predicted order against the slot order the rewrite assigned, which
+                // is the question the item actually asks.
+                layoutOrderedSites = ExpressionCompiler.DeferredCaptureLayout.OrderedSites,
+                layoutOrderExact = ExpressionCompiler.DeferredCaptureLayout.OrderExact,
+                layoutOrderMismatched = ExpressionCompiler.DeferredCaptureLayout.OrderMismatched,
+                layoutOrderSetDiffers = ExpressionCompiler.DeferredCaptureLayout.OrderSetDiffers,
+                layoutOrderSamples = ExpressionCompiler.DeferredCaptureLayout.OrderSamples,
+
                 // Re-entry: bodies compiled a SECOND time from the retained enclosing scope,
                 // after this corpus's compilation finished, compared against the eager tree TWO
                 // ways. `reproduced` is equality up to an order-preserving renaming of the

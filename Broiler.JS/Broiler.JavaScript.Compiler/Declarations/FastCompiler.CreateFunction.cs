@@ -719,12 +719,18 @@ partial class FastCompiler
     /// can reach a binding the text never names, so there is no set to be right about.
     /// </para>
     /// </remarks>
-    private static HashSet<BParameterExpression> PredictCaptures(
+    private static List<BParameterExpression> PredictCaptures(
         AstFunctionExpression function,
         FastFunctionScope enclosing,
         FastFunctionScope own)
     {
-        var captures = new HashSet<BParameterExpression>(ExpressionCompiler.Core.ReferenceEqualityComparer.Instance);
+        // **Ordered, because the thing being predicted is an index.** `0104` predicted a set and
+        // checked membership; a captured name's Box[] slot is the order the closure rewrite's walk
+        // first encounters it, so a set cannot answer the item's actual obstacle. First-mention
+        // order is the only order source alone offers, and whether it is the walk's order is what
+        // the checker now asks rather than what this assumes.
+        var captures = new List<BParameterExpression>();
+        var seen = new HashSet<BParameterExpression>(ExpressionCompiler.Core.ReferenceEqualityComparer.Instance);
         if (enclosing == null)
             return captures;
 
@@ -732,7 +738,7 @@ partial class FastCompiler
         if (scan.Dynamic)
             return captures;
 
-        foreach (var name in scan.Free)
+        foreach (var name in scan.FreeInOrder)
         {
             if (!enclosing.TryResolveBinding(name, out var binding))
             {
@@ -751,7 +757,8 @@ partial class FastCompiler
                 continue;
             }
 
-            captures.Add(cell);
+            if (seen.Add(cell))
+                captures.Add(cell);
         }
 
         // **A named function EXPRESSION's own name, which is not free and is still handed in.**
@@ -775,7 +782,8 @@ partial class FastCompiler
             && own.TryGetOwnVariable(function.Id.Name.Value, out var self)
             && (self.Variable ?? self.EvalCaptureExpression as BParameterExpression) is { } selfCell)
         {
-            captures.Add(selfCell);
+            if (seen.Add(selfCell))
+                captures.Add(selfCell);
         }
 
         return captures;

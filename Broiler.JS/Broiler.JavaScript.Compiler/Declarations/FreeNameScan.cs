@@ -51,6 +51,28 @@ public sealed class FreeNameScan
     public readonly HashSet<string> Free = new(System.StringComparer.Ordinal);
 
     /// <summary>
+    /// The same names as <see cref="Free"/>, in the order they were first encountered.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Item 1-1's obstacle is stated as an INDEX and the prediction that was validated against
+    /// it was a set.</b> A captured name's slot in the enclosing lambda's <c>Box[]</c> is
+    /// <c>Inputs.Count</c> at the moment <c>ClosureRepository.Setup</c> first sees it — that is,
+    /// the order the closure rewrite's descending walk encounters the name in the body. `0104`
+    /// compared the predicted names against the actual ones and found zero missed, which settles
+    /// <em>which</em> bindings are handed in and says nothing about <em>which slot each lands in</em>
+    /// — and the creation site the enclosing lambda emits fixes that order for the deferred body
+    /// to agree with.
+    /// </para>
+    /// <para>
+    /// So the order is recorded here beside the set rather than derived from it later, because it
+    /// cannot be: a <c>HashSet</c> has none. Whether this order is the one the walk produces is a
+    /// question for the checker, not an assumption of this class.
+    /// </para>
+    /// </remarks>
+    public readonly List<string> FreeInOrder = [];
+
+    /// <summary>
     /// The body can reach a binding it never names — a direct <c>eval</c>, a <c>with</c>, or
     /// <c>debugger</c>. No free-name set describes it, so the function cannot be deferred.
     /// </summary>
@@ -210,10 +232,15 @@ public sealed class FreeNameScan
             // them itself, in which case they stop here, or pass them further up. Routing them
             // through the ordinary reference path is what makes capture transitive for free.
             var parent = functionScans.Count == 0 ? scan : functionScans[^1];
-            foreach (var name in own.Free)
+            // Iterated in ORDER, not over the set. A parent's free order is the order it first
+            // meets each name, and a child's names are met where the child appears — so passing
+            // them up in the child's own first-mention order is what makes the composed order a
+            // source order rather than a hash order. Iterating `own.Free` here would scramble
+            // exactly the property the order check exists to measure.
+            foreach (var name in own.FreeInOrder)
             {
-                if (!IsBound(name))
-                    parent.Free.Add(name);
+                if (!IsBound(name) && parent.Free.Add(name))
+                    parent.FreeInOrder.Add(name);
             }
 
             if (own.Dynamic)
@@ -314,9 +341,19 @@ public sealed class FreeNameScan
         {
             var name = identifier.Name.Value;
             if (!TryFindBinder(name, out var binder))
-                Current.Free.Add(name);
+            {
+                // Braced deliberately. Without them the `else` below binds to this inner `if`
+                // instead of the outer one — the dangling-else — and SelfNameReferenced stops
+                // being set at all. The named-function-expression fixture caught it immediately,
+                // which is the whole reason that fixture is a paired assertion rather than a
+                // one-sided "did not miss".
+                if (Current.Free.Add(name))
+                    Current.FreeInOrder.Add(name);
+            }
             else if (selfScopes.Count != 0 && binder == selfScopes[^1])
+            {
                 Current.SelfNameReferenced = true;
+            }
 
             return identifier;
         }

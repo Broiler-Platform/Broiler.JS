@@ -193,9 +193,10 @@ public static class DeferredCaptureLayout
     public static long SyntheticNames => Interlocked.Read(ref syntheticNames);
 
     /// <summary>Records what the front end predicts this lambda captures, from source alone.</summary>
-    public static void Predict(BLambdaExpression lambda, HashSet<BParameterExpression> captures)
+    public static void Predict(BLambdaExpression lambda, List<BParameterExpression> captures)
     {
-        predicted.AddOrUpdate(lambda, captures);
+        predictedOrder.AddOrUpdate(lambda, captures);
+        predicted.AddOrUpdate(lambda, new HashSet<BParameterExpression>(captures, Core.ReferenceEqualityComparer.Instance));
         var spellings = new HashSet<string>(System.StringComparer.Ordinal);
         foreach (var c in captures)
             if (!string.IsNullOrEmpty(c.Name))
@@ -231,8 +232,131 @@ public static class DeferredCaptureLayout
             if (entry.Value.index >= 0)
                 actual.Add(entry.Key);
 
+        CheckOrder(lambda, repository);
         Check(lambda, actual);
     }
+
+    /// <summary>
+    /// Compares the predicted <em>order</em> against the slot order the rewrite assigned — the
+    /// question item 1-1 actually asks.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>`0104` validated membership and this document recorded it as having settled the layout.
+    /// It had not.</b> The item states its obstacle as *"a captured name's INDEX in the enclosing
+    /// lambda's <c>Box[]</c>"*, and that index is <c>Inputs.Count</c> at the moment
+    /// <c>ClosureRepository.Setup</c> first sees the binding — the order the descending walk meets
+    /// it in the body. The prediction was a <c>HashSet</c> built from <c>FreeNameScan.Free</c>,
+    /// itself a <c>HashSet</c>: it has no order, so it could not have answered the question even
+    /// in principle. Zero missed names means the deferred body would be handed the right bindings;
+    /// it says nothing about whether it would find each one in the slot the creation site put it.
+    /// </para>
+    /// <para>
+    /// <b>Compared against <c>Inputs</c> rather than against <c>Closures</c>.</b> <c>Inputs</c> is
+    /// the array the creation site emits, in index order, which is the thing a deferred body has
+    /// to agree with. <c>Closures</c> is a dictionary and its enumeration order is an
+    /// implementation detail of the hash table.
+    /// </para>
+    /// <para>
+    /// Synthetic bindings are skipped on both sides, on the same rule the membership check uses:
+    /// a compiler-introduced capture is not an identifier a free-name walk can see, so charging
+    /// the prediction for its position would report a defect in the exclusion rather than in the
+    /// order.
+    /// </para>
+    /// </remarks>
+    private static void CheckOrder(BLambdaExpression lambda, ClosureRepository repository)
+    {
+        if (undeferrable.TryGetValue(lambda, out _))
+            return;
+
+        if (!predictedOrder.TryGetValue(lambda, out var expected))
+            return;
+
+        if (orderVerdicts.TryGetValue(lambda, out _))
+            return;
+
+        orderVerdicts.AddOrUpdate(lambda, true);
+
+        var actual = new List<BParameterExpression>();
+        foreach (var entry in repository.Inputs)
+            if (entry != null && !IsSynthetic(entry))
+                actual.Add(entry);
+
+        var predictedReal = new List<BParameterExpression>();
+        foreach (var capture in expected)
+            if (!IsSynthetic(capture))
+                predictedReal.Add(capture);
+
+        Interlocked.Increment(ref orderedSites);
+        if (predictedReal.Count == 0 && actual.Count == 0)
+        {
+            Interlocked.Increment(ref orderExact);
+            return;
+        }
+
+        // A prediction that names a different SET cannot have a meaningful order, and the
+        // membership check already counts it. Separated so the order figure is about order.
+        var sameSet = predictedReal.Count == actual.Count;
+        if (sameSet)
+        {
+            var seen = new HashSet<BParameterExpression>(actual, Core.ReferenceEqualityComparer.Instance);
+            foreach (var p in predictedReal)
+                if (!seen.Contains(p))
+                {
+                    sameSet = false;
+                    break;
+                }
+        }
+
+        if (!sameSet)
+        {
+            Interlocked.Increment(ref orderSetDiffers);
+            return;
+        }
+
+        for (var i = 0; i < predictedReal.Count; i++)
+        {
+            if (!ReferenceEquals(predictedReal[i], actual[i]))
+            {
+                Interlocked.Increment(ref orderMismatched);
+                if (orderSamples.Count < 20)
+                {
+                    lock (orderSamples)
+                        if (orderSamples.Count < 20)
+                            orderSamples.Add(
+                                $"slot {i}: predicted {predictedReal[i].Name}, actual {actual[i].Name} "
+                                + $"(of {predictedReal.Count})");
+                }
+
+                return;
+            }
+        }
+
+        Interlocked.Increment(ref orderExact);
+    }
+
+    /// <summary>Sites whose predicted ORDER was compared against the assigned slot order.</summary>
+    public static long OrderedSites => Interlocked.Read(ref orderedSites);
+
+    /// <summary>Those whose predicted order matched the slot order exactly.</summary>
+    public static long OrderExact => Interlocked.Read(ref orderExact);
+
+    /// <summary>Those that named the same bindings in a DIFFERENT order — a wrong Box[] index.</summary>
+    public static long OrderMismatched => Interlocked.Read(ref orderMismatched);
+
+    /// <summary>Those whose sets differ, so the order question does not arise. Counted apart.</summary>
+    public static long OrderSetDiffers => Interlocked.Read(ref orderSetDiffers);
+
+    /// <summary>Up to twenty examples of a slot the prediction would have put a different binding in.</summary>
+    public static IReadOnlyList<string> OrderSamples => orderSamples;
+
+    private static readonly ConditionalWeakTable<BLambdaExpression, List<BParameterExpression>> predictedOrder = [];
+    private static readonly ConditionalWeakTable<BLambdaExpression, object> orderVerdicts = [];
+    private static readonly List<string> orderSamples = [];
+    private static long orderedSites;
+    private static long orderExact;
+    private static long orderMismatched;
+    private static long orderSetDiffers;
 
     public static void Check(BLambdaExpression lambda, ICollection<BParameterExpression> actual)
     {
