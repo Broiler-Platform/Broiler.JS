@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -387,7 +388,22 @@ internal static class SpecializingTierMetrics
         Specializing,
     }
 
-    internal static void Write(string octaneDirectory, Arm arm, bool counters)
+    /// <param name="only">
+    /// Comma-separated suite names to run, or <c>null</c> for all of them. Matched
+    /// case-insensitively against <see cref="Suites"/>.
+    /// </param>
+    /// <remarks>
+    /// <b>Checkpointing saved the rows before an abort; it does not get the rows AFTER one.</b>
+    /// §4.2a fixed the census losing eight suites when the ninth took the process down, and the
+    /// per-suite checkpoint it added is why the run above has any rows at all. But the suites are
+    /// run in a fixed order in one process, so a suite that still aborts — Mandreel, which is
+    /// where the widened census dies, now by exhausting memory rather than by overflowing the
+    /// stack — silently costs every suite listed after it. That is the same defect one level up:
+    /// *a corpus that cannot be resumed past its worst member is a corpus that is never
+    /// completed*, and it is the reason Gameboy, Typescript, Box2D, zlib and CodeLoad had no rows
+    /// in the first widened run either.
+    /// </remarks>
+    internal static void Write(string octaneDirectory, Arm arm, bool counters, string only = null)
     {
         if (!Directory.Exists(octaneDirectory))
         {
@@ -407,12 +423,41 @@ internal static class SpecializingTierMetrics
         var baseSource = File.ReadAllText(basePath);
         var rows = new List<object>();
 
+        var selected = Suites;
+        if (!string.IsNullOrWhiteSpace(only))
+        {
+            var wanted = new HashSet<string>(
+                only.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                StringComparer.OrdinalIgnoreCase);
+
+            var unknown = wanted.Where(name => !Suites.Any(s => s.Name.Equals(name, StringComparison.OrdinalIgnoreCase))).ToArray();
+            if (unknown.Length > 0)
+            {
+                // Named and not run is the failure mode this flag exists to prevent, so it is an
+                // error rather than an empty selection.
+                Console.Error.WriteLine($"unknown suite(s): {string.Join(", ", unknown)}");
+                Environment.ExitCode = 2;
+                return;
+            }
+
+            selected = Suites.Where(s => wanted.Contains(s.Name)).ToArray();
+        }
+
+        // A partial corpus has to say so in its own output; the report's `suites` count is what a
+        // reader compares against, and a filtered run that looked complete would be worse than no
+        // run at all.
+        PartialPath = only == null
+            ? DefaultPartialPath
+            : Path.Combine(
+                Path.GetTempPath(),
+                $"broiler-specializing-tier-partial-{string.Join("-", selected.Select(s => s.Name))}.json");
+
         // On the shell's stack, and checkpointed after every suite. Mandreel's global_init takes
         // the default stack down with an UNCATCHABLE overflow, and a census that serializes only
         // at the end loses every suite before the one that aborts.
         BenchmarkContext.RunOnScriptHostStack(() =>
         {
-            foreach (var suite in Suites)
+            foreach (var suite in selected)
             {
                 Console.Error.WriteLine($"{suite.Name}: running ...");
                 var row = RunSuite(octaneDirectory, baseSource, suite, arm, counters);
@@ -427,7 +472,13 @@ internal static class SpecializingTierMetrics
     }
 
     /// <summary>Where an in-progress census parks its rows so an abort cannot discard them.</summary>
-    internal static string PartialPath { get; } =
+    /// <remarks>
+    /// A filtered run writes to its own path, so a partial corpus can never overwrite the full
+    /// one's checkpoint and be read later as if it were complete.
+    /// </remarks>
+    internal static string PartialPath { get; private set; } = DefaultPartialPath;
+
+    private static string DefaultPartialPath { get; } =
         Path.Combine(Path.GetTempPath(), "broiler-specializing-tier-partial.json");
 
     private static string Report(List<object> rows, Arm arm, bool counters)
@@ -697,6 +748,29 @@ internal static class SpecializingTierMetrics
             // LocalSlot row, which is what the representation buys: the item pays exactly while
             // the second number exceeds the first.
             boxingSpeculativeReadRequests = boxing.SpeculativeReadRequests,
+
+            // Item 3-1's re-opened storage half (§4.2a). The conversion count above says a raw
+            // double crossed into a JSValue; it cannot say which emission site did it, and a typed
+            // backing store only reaches the ones an element read or an element write mints. These
+            // eight sum to boxingConversionRequests and are what decides the item.
+            boxingConversionNumericLocalRead =
+                boxing.ConversionsAt(NumberBoxingConversionSite.NumericLocalRead),
+            boxingConversionGuardedTreeRoot =
+                boxing.ConversionsAt(NumberBoxingConversionSite.GuardedTreeRoot),
+            boxingConversionGuardedTreeOperand =
+                boxing.ConversionsAt(NumberBoxingConversionSite.GuardedTreeOperand),
+            boxingConversionUnaryOperator =
+                boxing.ConversionsAt(NumberBoxingConversionSite.UnaryOperator),
+            boxingConversionBinaryOperator =
+                boxing.ConversionsAt(NumberBoxingConversionSite.BinaryOperator),
+            boxingConversionAssignmentResult =
+                boxing.ConversionsAt(NumberBoxingConversionSite.AssignmentResult),
+            boxingConversionUpdateStep =
+                boxing.ConversionsAt(NumberBoxingConversionSite.UpdateStep),
+            boxingConversionConstantOperand =
+                boxing.ConversionsAt(NumberBoxingConversionSite.ConstantOperand),
+            boxingConversionUnclassified =
+                boxing.ConversionsAt(NumberBoxingConversionSite.Unclassified),
 
             // Item 3-1's shared half, counted on the far side of the boundary: not what the
             // compiler could prove, but what the operators were actually handed. arithmeticGeneric

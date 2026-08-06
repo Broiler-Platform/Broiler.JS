@@ -11,6 +11,7 @@ public class JSNumberBuilder
     private static MethodInfo _create;
     private static MethodInfo _createLiteral;
     private static MethodInfo _createConversion;
+    private static MethodInfo _createConversionAtSite;
     private static MethodInfo _createSpeculativeRead;
 
     public static Expression NaN;
@@ -30,6 +31,8 @@ public class JSNumberBuilder
             ?? throw new InvalidOperationException("JSNumber.Create(double) not found");
         _createConversion = type.GetMethod("CreateConversion", [typeof(double)])
             ?? throw new NotSupportedException();
+        _createConversionAtSite = type.GetMethod("CreateConversion", [typeof(double), typeof(int)])
+            ?? throw new InvalidOperationException("JSNumber.CreateConversion(double, int) not found");
         _createLiteral = type.GetMethod("CreateLiteral", [typeof(double)])
             ?? throw new InvalidOperationException("JSNumber.CreateLiteral(double) not found");
         _createSpeculativeRead = type.GetMethod("CreateSpeculativeRead", [typeof(double)])
@@ -53,6 +56,25 @@ public class JSNumberBuilder
             exp = Expression.Convert(exp, typeof(double));
 
         return Expression.Call(null, _createConversion, exp);
+    }
+
+    /// <summary>
+    /// Emits the creation of a number for a boxing conversion, naming the emission site so the
+    /// census can attribute it (docs/performance-roadmap.md item 3-1, §4.2a).
+    /// </summary>
+    /// <remarks>
+    /// The site is an ordinary constant argument on the one code path the engine ships, rather
+    /// than a factory entry per site or an argument gated behind the counter flag. Nine entries
+    /// would be nine near-identical methods, and a gated argument would leave the arm that is
+    /// measured and the arm that ships running different code — which is the defect §3.5 keeps
+    /// finding in this campaign's own instruments.
+    /// </remarks>
+    public static Expression New(Expression exp, NumberBoxingConversionSite site)
+    {
+        if (exp.Type != typeof(double))
+            exp = Expression.Convert(exp, typeof(double));
+
+        return Expression.Call(null, _createConversionAtSite, exp, Expression.Constant((int)site));
     }
 
     /// <summary>

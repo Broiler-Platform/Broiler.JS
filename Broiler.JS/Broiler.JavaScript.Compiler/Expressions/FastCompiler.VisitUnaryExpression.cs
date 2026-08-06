@@ -22,7 +22,7 @@ partial class FastCompiler
         switch (unaryExpression.Operator)
         {
             case UnaryOperator.Plus:
-                return JSNumberBuilder.New(BExpression.UnaryPlus(DoubleValue(target)));
+                return JSNumberBuilder.New(BExpression.UnaryPlus(DoubleValue(target)), NumberBoxingConversionSite.UnaryOperator);
 
             case UnaryOperator.Minus:
                 if (target.Type == FastNodeType.Literal)
@@ -30,13 +30,13 @@ partial class FastCompiler
                     AstLiteral l = unaryExpression.Argument as AstLiteral;
 
                     if (l.TokenType == TokenTypes.Number)
-                        return JSNumberBuilder.New(BExpression.Constant(-l.NumericValue));
+                        return JSNumberBuilder.New(BExpression.Constant(-l.NumericValue), NumberBoxingConversionSite.UnaryOperator);
 
                     if (l.TokenType == TokenTypes.BigInt)
                         return JSBigIntBuilder.New("-" + l.StringValue);
 
                     if (l.TokenType == TokenTypes.String)
-                        return JSNumberBuilder.New(BExpression.Negate(DoubleValue(target)));
+                        return JSNumberBuilder.New(BExpression.Negate(DoubleValue(target)), NumberBoxingConversionSite.UnaryOperator);
                 }
 
                 return JSValueBuilder.Negate(Visit(target));

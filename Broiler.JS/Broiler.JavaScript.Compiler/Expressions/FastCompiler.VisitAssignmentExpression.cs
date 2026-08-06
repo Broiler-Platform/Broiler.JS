@@ -79,7 +79,7 @@ partial class FastCompiler
     /// `++`/`--`. Non-numeric bindings already yield a JSValue and pass through untouched.
     /// </remarks>
     private static BExpression NumericStoreResult(BExpression store, bool discardResult)
-        => discardResult || store.Type != typeof(double) ? store : JSNumberBuilder.New(store);
+        => discardResult || store.Type != typeof(double) ? store : JSNumberBuilder.New(store, NumberBoxingConversionSite.AssignmentResult);
 
     private BExpression VisitAssignmentExpression(AstExpression left, TokenTypes assignmentOperator, AstExpression right)
     {

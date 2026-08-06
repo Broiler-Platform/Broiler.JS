@@ -112,7 +112,8 @@ public static class Program
                 args.Length >= 3 && Enum.TryParse<SpecializingTierMetrics.Arm>(args[2], true, out var arm)
                     ? arm
                     : SpecializingTierMetrics.Arm.Specializing,
-                counters: args.Length < 4 || args[3] != "timing");
+                counters: args.Length < 4 || args[3] != "timing",
+                only: args.Length >= 5 ? args[4] : null);
             return;
         }
 

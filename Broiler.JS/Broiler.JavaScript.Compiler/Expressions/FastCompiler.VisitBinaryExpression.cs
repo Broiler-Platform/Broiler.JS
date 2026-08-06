@@ -77,7 +77,7 @@ partial class FastCompiler
         {
             case TokenTypes.Plus:
                 if (isLeftNumber && isRightNumber)
-                    return JSNumberBuilder.New(BExpression.Add(left, right));
+                    return JSNumberBuilder.New(BExpression.Add(left, right), NumberBoxingConversionSite.BinaryOperator);
 
                 if (isLeftString && isRightString)
                     return JSStringBuilder.New(ClrStringBuilder.Concat(left, right));
@@ -172,7 +172,7 @@ partial class FastCompiler
             return JSStringBuilder.New(exp);
 
         if (exp.Type == typeof(double))
-            return JSNumberBuilder.New(exp);
+            return JSNumberBuilder.New(exp, NumberBoxingConversionSite.BinaryOperator);
 
         throw new NotImplementedException();
     }
@@ -236,7 +236,7 @@ partial class FastCompiler
     private static BExpression TryCreateNativeNumericOperation(TokenTypes @operator, BExpression left, BExpression right)
     {
         if (TryCreateNativeNumericValue(@operator, left, right) is { } value)
-            return JSNumberBuilder.New(value);
+            return JSNumberBuilder.New(value, NumberBoxingConversionSite.BinaryOperator);
 
         return @operator switch
         {
@@ -308,8 +308,8 @@ partial class FastCompiler
             : BExpression.Binary(JSValueBuilder.DoubleValue(valueLocal), ToBinaryOperator(@operator), nativeLocal);
 
         var generic = leftIsNative
-            ? BinaryOperation.Operation(JSNumberBuilder.New(nativeLocal), valueLocal, @operator)
-            : BinaryOperation.Operation(valueLocal, JSNumberBuilder.New(nativeLocal), @operator);
+            ? BinaryOperation.Operation(JSNumberBuilder.New(nativeLocal, NumberBoxingConversionSite.BinaryOperator), valueLocal, @operator)
+            : BinaryOperation.Operation(valueLocal, JSNumberBuilder.New(nativeLocal, NumberBoxingConversionSite.BinaryOperator), @operator);
 
         if (generic == null)
             return null;

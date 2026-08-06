@@ -1,4 +1,5 @@
 using System.Threading;
+using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.BuiltIns.Number;
 
@@ -46,6 +47,19 @@ public static class NumberBoxingDiagnostics
     private static long conversionRequests;
     private static long speculativeReadRequests;
 
+    /// <summary>
+    /// Conversion requests attributed to the emission site that made them, indexed by
+    /// <see cref="NumberBoxingConversionSite"/>. Sums to <c>conversionRequests</c>.
+    /// </summary>
+    private static readonly long[] conversionSites = new long[ConversionSiteCount];
+
+    /// <summary>
+    /// One past the largest <see cref="NumberBoxingConversionSite"/>. A site id outside the array
+    /// is folded into <see cref="NumberBoxingConversionSite.Unclassified"/> rather than throwing —
+    /// a diagnostic counter must never be able to fail a run it is only observing.
+    /// </summary>
+    private const int ConversionSiteCount = (int)NumberBoxingConversionSite.ConstantOperand + 1;
+
     /// <summary>Whether boxing is counted. Off by default.</summary>
     public static bool Enabled;
 
@@ -65,6 +79,17 @@ public static class NumberBoxingDiagnostics
     /// `Requests - conversion - literal` is what the operators and builtins mint.
     /// </summary>
     internal static void RecordConversionRequest() => Interlocked.Increment(ref conversionRequests);
+
+    /// <summary>
+    /// A conversion request, attributed to the compiler emission site that made it — the split
+    /// item 3-1's re-opened storage half is decided on (docs/performance-roadmap.md §4.2a).
+    /// </summary>
+    internal static void RecordConversionRequest(int site)
+    {
+        Interlocked.Increment(ref conversionRequests);
+        Interlocked.Increment(
+            ref conversionSites[(uint)site < ConversionSiteCount ? site : 0]);
+    }
 
     /// <summary>
     /// A request made READING item 3-8a's speculative local — the box its dual representation
@@ -94,14 +119,21 @@ public static class NumberBoxingDiagnostics
     internal static void RecordAllocation() => Interlocked.Increment(ref allocations);
 
     public static NumberBoxingSnapshot Snapshot()
-        => new(
+    {
+        var sites = new long[ConversionSiteCount];
+        for (var i = 0; i < ConversionSiteCount; i++)
+            sites[i] = Interlocked.Read(ref conversionSites[i]);
+
+        return new(
             Interlocked.Read(ref requests),
             Interlocked.Read(ref cacheHits),
             Interlocked.Read(ref factoryAllocations),
             Interlocked.Read(ref allocations),
             Interlocked.Read(ref literalRequests),
             Interlocked.Read(ref conversionRequests),
-            Interlocked.Read(ref speculativeReadRequests));
+            Interlocked.Read(ref speculativeReadRequests),
+            sites);
+    }
 
     public static void Reset()
     {
@@ -111,6 +143,14 @@ public static class NumberBoxingDiagnostics
         Interlocked.Exchange(ref allocations, 0);
         Interlocked.Exchange(ref literalRequests, 0);
         Interlocked.Exchange(ref conversionRequests, 0);
+
+        // Item 3-8a's counter was added to the snapshot and not to the reset, so a host that
+        // resets between suites carried it forward and every suite but the first read high. The
+        // census reports per suite, which is exactly the shape that defect corrupts.
+        Interlocked.Exchange(ref speculativeReadRequests, 0);
+
+        for (var i = 0; i < ConversionSiteCount; i++)
+            Interlocked.Exchange(ref conversionSites[i], 0);
     }
 }
 
@@ -121,6 +161,10 @@ public static class NumberBoxingDiagnostics
 /// <param name="LiteralRequests">Factory calls made by a compile-time numeric literal.</param>
 /// <param name="ConversionRequests">Factory calls made by the compiler boxing a raw double to cross into a <c>JSValue</c>.</param>
 /// <param name="SpeculativeReadRequests">Factory calls made reading item 3-8a's speculative local.</param>
+/// <param name="ConversionSites">
+/// <see cref="ConversionRequests"/> split by the compiler emission site that made each, indexed by
+/// <see cref="NumberBoxingConversionSite"/>.
+/// </param>
 public readonly record struct NumberBoxingSnapshot(
     long Requests,
     long CacheHits,
@@ -128,8 +172,18 @@ public readonly record struct NumberBoxingSnapshot(
     long Allocations,
     long LiteralRequests,
     long ConversionRequests,
-    long SpeculativeReadRequests)
+    long SpeculativeReadRequests,
+    long[] ConversionSites)
 {
+    /// <summary>Conversion requests attributed to one emission site.</summary>
+    public long ConversionsAt(NumberBoxingConversionSite site)
+    {
+        var index = (int)site;
+        return ConversionSites != null && (uint)index < ConversionSites.Length
+            ? ConversionSites[index]
+            : 0;
+    }
+
     /// <summary>
     /// Boxes minted by a builtin writing <c>new JSNumber(x)</c> instead of going through the
     /// factory — the population no change to the compiler's representation can reach.

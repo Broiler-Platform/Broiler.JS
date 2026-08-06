@@ -189,7 +189,7 @@ public static class ListOfExpressionsExtensions
                     continue;
 
                 case BExpressionType.DoubleConstant:
-                    result.Add(JSNumberBuilder.New(exp as BDoubleConstantExpression));
+                    result.Add(JSNumberBuilder.New(exp as BDoubleConstantExpression, NumberBoxingConversionSite.ConstantOperand));
                     continue;
             }
 
@@ -202,7 +202,7 @@ public static class ListOfExpressionsExtensions
             Expression item = ce.Value switch
             {
                 string @string => JSStringBuilder.New(ce),
-                double @double => JSNumberBuilder.New(ce),
+                double @double => JSNumberBuilder.New(ce, NumberBoxingConversionSite.ConstantOperand),
                 _ => throw new NotImplementedException(),
             };
 
@@ -254,7 +254,7 @@ public static class ListOfExpressionsExtensions
                     break;
 
                 case double @double:
-                    item = JSNumberBuilder.New(ce);
+                    item = JSNumberBuilder.New(ce, NumberBoxingConversionSite.ConstantOperand);
                     break;
 
                 default:

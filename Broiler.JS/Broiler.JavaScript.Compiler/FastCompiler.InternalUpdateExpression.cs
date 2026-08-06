@@ -150,14 +150,14 @@ partial class FastCompiler
                 // Outside a statement position the expression still has to produce a
                 // JSValue, so the result — and only the result — is boxed.
                 if (updateExpression.Prefix)
-                    return JSNumberBuilder.New(advance);
+                    return JSNumberBuilder.New(advance, NumberBoxingConversionSite.UpdateStep);
 
                 using var previousValue = scope.Top.GetTempVariable(typeof(double));
                 return BExpression.Block(
                     previousValue.Variable.AsSequence(),
                     BExpression.Assign(previousValue.Variable, storage),
                     advance,
-                    JSNumberBuilder.New(previousValue.Expression));
+                    JSNumberBuilder.New(previousValue.Expression, NumberBoxingConversionSite.UpdateStep));
             }
 
             // Item 3-8a: the step is the whole reason the dual representation exists. While the
@@ -212,11 +212,11 @@ partial class FastCompiler
                 var nativeArm = updateExpression.Prefix
                     ? BExpression.Block(
                         BExpression.Assign(raw, BExpression.Add(raw, step)),
-                        JSNumberBuilder.New(raw))
+                        JSNumberBuilder.New(raw, NumberBoxingConversionSite.UpdateStep))
                     : BExpression.Block(
                         BExpression.Assign(before.Variable, raw),
                         BExpression.Assign(raw, BExpression.Add(raw, step)),
-                        JSNumberBuilder.New(before.Expression));
+                        JSNumberBuilder.New(before.Expression, NumberBoxingConversionSite.UpdateStep));
 
                 return BExpression.Block(
                     locals,

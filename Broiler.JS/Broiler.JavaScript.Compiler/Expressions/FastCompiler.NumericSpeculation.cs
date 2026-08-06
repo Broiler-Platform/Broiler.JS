@@ -183,7 +183,7 @@ partial class FastCompiler
 
         body.Add(BExpression.Condition(
             guard,
-            JSNumberBuilder.New(nativeTree),
+            JSNumberBuilder.New(nativeTree, NumberBoxingConversionSite.GuardedTreeRoot),
             genericTree,
             typeof(JSValue)));
 
@@ -261,7 +261,7 @@ partial class FastCompiler
         if (guarded == 0)
             return Refuse(NumericTreeRefusal.NothingToGuard);
 
-        body.Add(AsJSValue(node));
+        body.Add(AsJSValue(node, NumberBoxingConversionSite.GuardedTreeRoot));
 
         CompilerSpecializationDiagnostics.RecordSpeculativeNumericTree(guarded);
         CompilerSpecializationDiagnostics.RecordNumericTreeDecision(NumericTreeRefusal.Specialized);
@@ -349,7 +349,10 @@ partial class FastCompiler
                     BExpression.Assign(value, native),
                     BExpression.Constant(true)),
                 BExpression.Block(
-                    BExpression.Assign(boxed, BinaryOperation.Operation(AsJSValue(l), AsJSValue(r), binary.Operator)),
+                    BExpression.Assign(boxed, BinaryOperation.Operation(
+                        AsJSValue(l, NumberBoxingConversionSite.GuardedTreeOperand),
+                        AsJSValue(r, NumberBoxingConversionSite.GuardedTreeOperand),
+                        binary.Operator)),
                     BExpression.Constant(false)),
                 typeof(bool))));
 
@@ -424,10 +427,17 @@ partial class FastCompiler
     }
 
     /// <summary>The subtree's value as a <c>JSValue</c>, which is what the generic arm needs.</summary>
-    private static BExpression AsJSValue(OrderedNode node)
+    /// <param name="site">
+    /// Which boxing the caller is asking for. The same helper serves the tree's ROOT — the one box
+    /// a specialized tree is meant to keep — and the OPERANDS an interior node hands to its generic
+    /// arm, and item 3-1's remaining prize depends entirely on which of the two a run is paying
+    /// for. A root box is the design working; an operand box is a leaf the speculation could not
+    /// keep native.
+    /// </param>
+    private static BExpression AsJSValue(OrderedNode node, NumberBoxingConversionSite site)
     {
         if (node.Ok == null)
-            return JSNumberBuilder.New(node.Native);
+            return JSNumberBuilder.New(node.Native, site);
 
         // A guarded leaf's saved operand is already the value, whichever way its test went — so
         // reading it costs nothing and, more to the point, does not re-test it.
@@ -436,7 +446,7 @@ partial class FastCompiler
 
         return BExpression.Condition(
             node.Ok,
-            JSNumberBuilder.New(node.Native),
+            JSNumberBuilder.New(node.Native, site),
             node.Value,
             typeof(JSValue));
     }
@@ -620,6 +630,6 @@ partial class FastCompiler
         }
 
         var leaf = compiled[node];
-        return leaf.Local is { } local ? local : JSNumberBuilder.New(leaf.Native);
+        return leaf.Local is { } local ? local : JSNumberBuilder.New(leaf.Native, NumberBoxingConversionSite.GuardedTreeOperand);
     }
 }

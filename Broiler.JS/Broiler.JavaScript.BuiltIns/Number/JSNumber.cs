@@ -217,6 +217,29 @@ public sealed partial class JSNumber : JSPrimitive
     }
 
     /// <summary>
+    /// A boxing conversion that names the compiler emission site that made it, so the conversion
+    /// count can be attributed rather than only totalled
+    /// (docs/performance-roadmap.md item 3-1, §4.2a).
+    /// </summary>
+    /// <param name="value">The raw <c>double</c> being boxed.</param>
+    /// <param name="site">
+    /// A <see cref="NumberBoxingConversionSite"/>, passed as its underlying <c>int</c> because the
+    /// compiler emits it as a constant and does not reference this assembly.
+    /// </param>
+    /// <remarks>
+    /// §4.2a re-opened item 3-1's typed backing store on a conversion count that had tripled and
+    /// changed its dominant producer — Gameboy at 26.9 M, more than the whole previously-measured
+    /// corpus. Whether a typed store removes any of them depends on which emission site mints
+    /// them, and the factory-level counter cannot say. This entry is that split.
+    /// </remarks>
+    public static JSValue CreateConversion(double value, int site)
+    {
+        if (NumberBoxingDiagnostics.Enabled)
+            NumberBoxingDiagnostics.RecordConversionRequest(site);
+        return Create(value);
+    }
+
+    /// <summary>
     /// The <see cref="JSNumber"/> for the raw half of item 3-8a's speculative local, boxed because
     /// the consumer of this read cannot take a raw <c>double</c>
     /// (docs/performance-roadmap.md item 3-8a).
