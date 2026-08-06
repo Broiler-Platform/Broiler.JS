@@ -116,6 +116,12 @@ public static class Program
             return;
         }
 
+        if (args.Length == 1 && args[0] == "--legacy-frame-shape")
+        {
+            LegacyFrameShapeMetrics.Write();
+            return;
+        }
+
         if (args.Length == 1 && args[0] == "--call-entry-cost")
         {
             CallEntryCostMetrics.Write();
