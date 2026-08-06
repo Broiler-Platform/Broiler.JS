@@ -329,6 +329,13 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         = System.Collections.Immutable.ImmutableHashSet<string>.Empty;
 
     /// <summary>
+    /// Why each name the numeric-local analysis refused was refused, so a boxing site can name the
+    /// refusal it is paying for (docs/performance-roadmap.md item 3-1, `0106`).
+    /// </summary>
+    public System.Collections.Generic.IReadOnlyDictionary<string, Broiler.JavaScript.Runtime.NumericLocalMiss> NumericLocalMisses { get; internal set; }
+        = System.Collections.Immutable.ImmutableDictionary<string, Broiler.JavaScript.Runtime.NumericLocalMiss>.Empty;
+
+    /// <summary>
     /// Names item 3-8a speculates on: the analysis proves them numeric only if a value arriving
     /// from outside the function holds a number, so they are held in BOTH representations at once
     /// — a raw <c>double</c> and the <c>JSValue</c> slot — with a flag saying which is live
@@ -619,6 +626,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         CapturedByHoistedFunctions = p.CapturedByHoistedFunctions;
         HasNestedFunctions = p.HasNestedFunctions;
         NumericLocals = p.NumericLocals;
+        NumericLocalMisses = p.NumericLocalMisses;
         SpeculativeNumericLocals = p.SpeculativeNumericLocals;
     }
 

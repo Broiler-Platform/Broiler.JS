@@ -93,25 +93,43 @@ partial class FastCompiler
     private NumberBoxingConversionSite pendingTreeConsumer = NumberBoxingConversionSite.GuardedTreeRoot;
 
     /// <summary>
+    /// When <see cref="pendingTreeConsumer"/> is a refused local, which refusal it is
+    /// (docs/performance-roadmap.md item 3-1, `0106`).
+    /// </summary>
+    private NumericLocalMiss pendingLocalMiss = NumericLocalMiss.Unknown;
+
+    /// <summary>
     /// Visits <paramref name="node"/>, telling a guarded tree at its root what will consume its
     /// box.
     /// </summary>
-    private BExpression VisitConsumedBy(AstExpression node, NumberBoxingConversionSite consumer)
+    private BExpression VisitConsumedBy(
+        AstExpression node,
+        NumberBoxingConversionSite consumer,
+        NumericLocalMiss miss = NumericLocalMiss.Unknown)
     {
         if (node is not AstBinaryExpression)
             return Visit(node);
 
-        var previous = pendingTreeConsumer;
+        var previousConsumer = pendingTreeConsumer;
+        var previousMiss = pendingLocalMiss;
         pendingTreeConsumer = consumer;
+        pendingLocalMiss = miss;
         try
         {
             return Visit(node);
         }
         finally
         {
-            pendingTreeConsumer = previous;
+            pendingTreeConsumer = previousConsumer;
+            pendingLocalMiss = previousMiss;
         }
     }
+
+    /// <summary>Why the numeric tier refused <paramref name="name"/>, if it did.</summary>
+    private NumericLocalMiss MissFor(string name)
+        => scope.Top?.NumericLocalMisses is { } m && m.TryGetValue(name, out var miss)
+            ? miss
+            : NumericLocalMiss.Unknown;
 
     private BExpression TryCreateSpeculativeNumericTree(AstBinaryExpression root)
     {
@@ -298,14 +316,17 @@ partial class FastCompiler
         // contain a tree of its own, and that one's box is consumed by this tree's operator rather
         // than by whatever consumes this tree's root.
         var consumer = pendingTreeConsumer;
+        var miss = pendingLocalMiss;
         pendingTreeConsumer = NumberBoxingConversionSite.GuardedTreeRoot;
+        pendingLocalMiss = NumericLocalMiss.Unknown;
         try
         {
-            return BuildOrderedNumericTree(root, locals, body, ref guarded, consumer);
+            return BuildOrderedNumericTree(root, locals, body, ref guarded, consumer, miss);
         }
         finally
         {
             pendingTreeConsumer = consumer;
+            pendingLocalMiss = miss;
         }
     }
 
@@ -314,7 +335,8 @@ partial class FastCompiler
         Sequence<BParameterExpression> locals,
         Sequence<BExpression> body,
         ref int guarded,
-        NumberBoxingConversionSite consumer)
+        NumberBoxingConversionSite consumer,
+        NumericLocalMiss miss)
     {
         var built = BuildOrderedTree(root, locals, body, ref guarded, out var refusal);
         if (built is not { } node)
@@ -325,7 +347,7 @@ partial class FastCompiler
         if (guarded == 0)
             return Refuse(NumericTreeRefusal.NothingToGuard);
 
-        body.Add(AsJSValue(node, consumer));
+        body.Add(AsJSValue(node, consumer, miss));
 
         CompilerSpecializationDiagnostics.RecordSpeculativeNumericTree(guarded);
         CompilerSpecializationDiagnostics.RecordNumericTreeDecision(NumericTreeRefusal.Specialized);
@@ -498,10 +520,13 @@ partial class FastCompiler
     /// for. A root box is the design working; an operand box is a leaf the speculation could not
     /// keep native.
     /// </param>
-    private static BExpression AsJSValue(OrderedNode node, NumberBoxingConversionSite site)
+    private static BExpression AsJSValue(
+        OrderedNode node,
+        NumberBoxingConversionSite site,
+        NumericLocalMiss miss = NumericLocalMiss.Unknown)
     {
         if (node.Ok == null)
-            return JSNumberBuilder.New(node.Native, site);
+            return Box(node.Native, site, miss);
 
         // A guarded leaf's saved operand is already the value, whichever way its test went — so
         // reading it costs nothing and, more to the point, does not re-test it.
@@ -510,10 +535,19 @@ partial class FastCompiler
 
         return BExpression.Condition(
             node.Ok,
-            JSNumberBuilder.New(node.Native, site),
+            Box(node.Native, site, miss),
             node.Value,
             typeof(JSValue));
     }
+
+    /// <summary>
+    /// The root's box, routed through the entry that names the numeric-tier refusal when the
+    /// consumer is a local the tier turned down (docs/performance-roadmap.md item 3-1, `0106`).
+    /// </summary>
+    private static BExpression Box(BExpression native, NumberBoxingConversionSite site, NumericLocalMiss miss)
+        => site == NumberBoxingConversionSite.GuardedTreeRootIntoLocal
+            ? JSNumberBuilder.NewIntoRefusedLocal(native, miss)
+            : JSNumberBuilder.New(native, site);
 
     /// <summary>
     /// Leaves above which a chain of type tests stops being worth one saved box. Not a

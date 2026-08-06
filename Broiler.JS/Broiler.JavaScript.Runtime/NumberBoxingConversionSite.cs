@@ -119,4 +119,29 @@ public enum NumberBoxingConversionSite
     /// and attributed them to the caller; this says how many of them an arithmetic tree mints.
     /// </summary>
     GuardedTreeRootIntoArgument = 13,
+
+    /// <summary>
+    /// The root box is stored into a local that <em>already has raw <c>double</c> storage</em> —
+    /// so the box is minted by the tree and thrown away by the very next instruction.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>A seam between two mechanisms, not a missing one.</b> Item 3-3's numeric local keeps its
+    /// value in a raw <c>double</c>, and <c>AssignToVariable</c> stores into it through
+    /// <c>ToDoubleExpression</c>. Item 3-1's guarded tree computes on raw doubles and boxes its
+    /// root. When the second feeds the first, the emitted code boxes a double and immediately
+    /// unboxes it — because the assignment path asks for the right-hand side as a <c>JSValue</c>
+    /// whenever the <em>static</em> prover (<c>ToNativeExpression</c>) cannot type it, even though
+    /// the <em>whole-function</em> prover already did, which is the only reason the destination is
+    /// a numeric local at all.
+    /// </para>
+    /// <para>
+    /// Counted apart from <see cref="GuardedTreeRootIntoLocal"/> because the two call for opposite
+    /// responses. A root landing in an ordinary <c>JSValue</c> local is one the numeric tier
+    /// <em>refused</em>, and reaching it means widening the tier — an analysis change with real
+    /// correctness surface. A root landing here is one the tier already <em>accepted</em>, and
+    /// reaching it means only not boxing on the way in.
+    /// </para>
+    /// </remarks>
+    GuardedTreeRootIntoNumericLocal = 14,
 }

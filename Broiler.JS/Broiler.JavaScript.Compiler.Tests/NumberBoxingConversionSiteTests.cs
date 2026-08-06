@@ -312,6 +312,97 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.Equal(0, At(boxing, NumberBoxingConversionSite.Unclassified));
     }
 
+    // ── why the consuming local was refused (item 3-1, `0106`) ───────────────────────────
+    //
+    // `0105` put 44.36% of the corpus's root boxes into a local, and the seam hypothesis — that
+    // they land in locals the tier had ALREADY accepted and are boxed then immediately unboxed —
+    // was measured and refuted at 36 boxes of 18.6 M. So each is a local the tier refused, and
+    // which refusal carries the weight is the question. Item 3-6 counted these causes per NAME;
+    // these are per EXECUTION, and the two rank differently by construction.
+
+    private static long Miss(NumberBoxingSnapshot boxing, NumericLocalMiss miss)
+        => boxing.LocalMissAt(miss);
+
+    [Fact]
+    public void A_local_refused_for_an_element_read_is_attributed_to_the_element_read()
+    {
+        // `t` would be numeric but for `a[i]`, which the analysis will not type. The guarded tree
+        // then computes it on raw doubles behind a run-time test and boxes the root anyway,
+        // because the STATIC prover and the tree's RUN-TIME test do not share a conclusion.
+        var (_, boxing) = Count(
+            """
+            function f(a, b) { var s = 0; for (var i = 0; i < 100; i++) { var t = a[0] * b + i; s = t; } return s; }
+            f([2], 3);
+            """);
+
+        Assert.True(Miss(boxing, NumericLocalMiss.ElementRead) > 0);
+    }
+
+    [Fact]
+    public void A_local_refused_for_a_property_read_is_attributed_to_the_property_read()
+    {
+        var (_, boxing) = Count(
+            """
+            function f(o, b) { var s = 0; for (var i = 0; i < 100; i++) { var t = o.x * b + i; s = t; } return s; }
+            f({ x: 2 }, 3);
+            """);
+
+        Assert.True(Miss(boxing, NumericLocalMiss.PropertyRead) > 0);
+    }
+
+    [Fact]
+    public void A_cascade_is_attributed_to_the_dropped_candidate_rather_than_to_its_root_cause()
+    {
+        // `t` is refused for the property read; `u` is refused only BECAUSE `t` was. The roadmap's
+        // own note on this cause is that such a name "wants nothing at all — fixing its root fixes
+        // it for free", so a census that folded cascades into their root causes would overstate
+        // how many independent refusals there are to fix.
+        var (_, boxing) = Count(
+            """
+            function f(o, b) {
+              var s = 0;
+              // Both right-hand sides need two operators, or the one-operator tree is refused for
+              // having no saving to make and mints no root box for its refusal to be charged to.
+              for (var i = 0; i < 100; i++) { var t = o.x * b + i; var u = t * b + i; s = u; }
+              return s;
+            }
+            f({ x: 2 }, 3);
+            """);
+
+        Assert.True(Miss(boxing, NumericLocalMiss.DroppedCandidate) > 0, "the downstream name is a cascade");
+        Assert.True(Miss(boxing, NumericLocalMiss.PropertyRead) > 0, "its root is still charged to the property read");
+    }
+
+    [Fact]
+    public void The_refusals_partition_the_roots_consumed_by_a_refused_local()
+    {
+        // The load-bearing check: every box counted at the IntoLocal site carries exactly one
+        // refusal, so a cause that double-counts or one never reached shows up as a broken sum
+        // rather than as a plausible row.
+        var (_, boxing) = Count(
+            """
+            function sink(x) { return x; }
+            function f(a, o, b) {
+              var s = 0;
+              for (var i = 0; i < 100; i++) {
+                var t = a[0] * b + i; var u = o.x * b + i; var v = sink(b) * b + i; var w = t * u + v;
+                s = w;
+              }
+              return s;
+            }
+            f([2], { x: 3 }, 4);
+            """);
+
+        var summed = 0L;
+        foreach (NumericLocalMiss miss in Enum.GetValues<NumericLocalMiss>())
+            summed += Miss(boxing, miss);
+
+        Assert.Equal(
+            boxing.ConversionsAt(NumberBoxingConversionSite.GuardedTreeRootIntoLocal),
+            summed);
+        Assert.True(summed > 0, "the shape must reach the site for the partition to mean anything");
+    }
+
     [Fact]
     public void Counting_is_off_by_default()
     {

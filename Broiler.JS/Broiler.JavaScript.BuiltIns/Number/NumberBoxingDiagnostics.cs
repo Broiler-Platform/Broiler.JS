@@ -58,10 +58,28 @@ public static class NumberBoxingDiagnostics
     /// is folded into <see cref="NumberBoxingConversionSite.Unclassified"/> rather than throwing —
     /// a diagnostic counter must never be able to fail a run it is only observing.
     /// </summary>
-    private const int ConversionSiteCount = (int)NumberBoxingConversionSite.GuardedTreeRootIntoArgument + 1;
+    private const int ConversionSiteCount = (int)NumberBoxingConversionSite.GuardedTreeRootIntoNumericLocal + 1;
 
     /// <summary>Whether boxing is counted. Off by default.</summary>
     public static bool Enabled;
+
+    /// <summary>
+    /// Boxes minted for a guarded tree root whose consuming LOCAL the numeric tier refused,
+    /// indexed by <see cref="NumericLocalMiss"/> (docs/performance-roadmap.md item 3-1, `0106`).
+    /// </summary>
+    private static readonly long[] localMisses = new long[LocalMissCount];
+
+    private const int LocalMissCount = (int)NumericLocalMiss.NeverOffered + 1;
+
+    /// <summary>
+    /// A conversion for a guarded tree root consumed by a local the numeric tier refused, counted
+    /// both as its site and against the refusal that cost it.
+    /// </summary>
+    internal static void RecordLocalRootMiss(int miss)
+    {
+        Interlocked.Increment(
+            ref localMisses[(uint)miss < LocalMissCount ? miss : 0]);
+    }
 
     /// <summary>One call to the boxing factory, whatever it goes on to do.</summary>
     internal static void RecordRequest() => Interlocked.Increment(ref requests);
@@ -118,11 +136,22 @@ public static class NumberBoxingDiagnostics
     /// </summary>
     internal static void RecordAllocation() => Interlocked.Increment(ref allocations);
 
+    /// <summary>Boxes attributed to one numeric-local refusal.</summary>
+    public static long LocalMissesAt(NumericLocalMiss miss)
+    {
+        var index = (int)miss;
+        return (uint)index < LocalMissCount ? Interlocked.Read(ref localMisses[index]) : 0;
+    }
+
     public static NumberBoxingSnapshot Snapshot()
     {
         var sites = new long[ConversionSiteCount];
         for (var i = 0; i < ConversionSiteCount; i++)
             sites[i] = Interlocked.Read(ref conversionSites[i]);
+
+        var misses = new long[LocalMissCount];
+        for (var i = 0; i < LocalMissCount; i++)
+            misses[i] = Interlocked.Read(ref localMisses[i]);
 
         return new(
             Interlocked.Read(ref requests),
@@ -132,7 +161,8 @@ public static class NumberBoxingDiagnostics
             Interlocked.Read(ref literalRequests),
             Interlocked.Read(ref conversionRequests),
             Interlocked.Read(ref speculativeReadRequests),
-            sites);
+            sites,
+            misses);
     }
 
     public static void Reset()
@@ -151,6 +181,9 @@ public static class NumberBoxingDiagnostics
 
         for (var i = 0; i < ConversionSiteCount; i++)
             Interlocked.Exchange(ref conversionSites[i], 0);
+
+        for (var i = 0; i < LocalMissCount; i++)
+            Interlocked.Exchange(ref localMisses[i], 0);
     }
 }
 
@@ -173,8 +206,19 @@ public readonly record struct NumberBoxingSnapshot(
     long LiteralRequests,
     long ConversionRequests,
     long SpeculativeReadRequests,
-    long[] ConversionSites)
+    long[] ConversionSites,
+    long[] LocalMisses)
 {
+    /// <summary>
+    /// Boxes minted for a guarded tree root consumed by a local the numeric tier refused,
+    /// attributed to the refusal (docs/performance-roadmap.md item 3-1, `0106`).
+    /// </summary>
+    public long LocalMissAt(NumericLocalMiss miss)
+    {
+        var index = (int)miss;
+        return LocalMisses != null && (uint)index < LocalMisses.Length ? LocalMisses[index] : 0;
+    }
+
     /// <summary>Conversion requests attributed to one emission site.</summary>
     public long ConversionsAt(NumberBoxingConversionSite site)
     {

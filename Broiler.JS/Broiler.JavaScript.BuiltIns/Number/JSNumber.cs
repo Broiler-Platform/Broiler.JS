@@ -240,6 +240,23 @@ public sealed partial class JSNumber : JSPrimitive
     }
 
     /// <summary>
+    /// A guarded tree's root box whose consuming LOCAL the numeric tier refused, naming the
+    /// refusal so it can be ranked by the boxes it costs rather than by the names it refuses
+    /// (docs/performance-roadmap.md item 3-1, `0106`).
+    /// </summary>
+    public static JSValue CreateConversionIntoRefusedLocal(double value, int miss)
+    {
+        if (NumberBoxingDiagnostics.Enabled)
+        {
+            NumberBoxingDiagnostics.RecordConversionRequest(
+                (int)NumberBoxingConversionSite.GuardedTreeRootIntoLocal);
+            NumberBoxingDiagnostics.RecordLocalRootMiss(miss);
+        }
+
+        return Create(value);
+    }
+
+    /// <summary>
     /// The <see cref="JSNumber"/> for the raw half of item 3-8a's speculative local, boxed because
     /// the consumer of this read cannot take a raw <c>double</c>
     /// (docs/performance-roadmap.md item 3-8a).

@@ -138,7 +138,10 @@ partial class FastCompiler
             // Only worth asking when the locals are scalar-replaceable at all: the analysis
             // assumes no closure can capture the binding and no eval/with can rename it.
             if (cs.CanScalarReplaceLocals)
-                cs.NumericLocals = NumericLocalAnalysis.Analyze(functionDeclaration);
+            {
+                cs.NumericLocals = NumericLocalAnalysis.Analyze(functionDeclaration, out var numericMisses);
+                cs.NumericLocalMisses = numericMisses;
+            }
 
             // Item 3-8a's population, counted rather than estimated. Gated because it costs a
             // second analysis pass per compiled function, which is compile time nothing else

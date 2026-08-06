@@ -247,7 +247,18 @@ partial class FastCompiler
                         return NumericStoreResult(BExpression.Assign(variable.NumericStorage, nativeRight), discardResult);
                 }
 
-                var initExpr = VisitConsumedBy(right, NumberBoxingConversionSite.GuardedTreeRootIntoLocal);
+                // The destination may ALREADY have raw double storage: the numeric tier admitted
+                // it on the whole-function proof, and we are here only because the static prover
+                // above could not type this particular right-hand side. AssignToVariable then
+                // unboxes whatever it is handed, so a guarded tree's root box is minted and
+                // discarded in consecutive instructions — counted apart, because that is a seam
+                // to close rather than a tier to widen (item 3-1, `0106`).
+                var initExpr = VisitConsumedBy(
+                    right,
+                    variable.NumericStorage != null
+                        ? NumberBoxingConversionSite.GuardedTreeRootIntoNumericLocal
+                        : NumberBoxingConversionSite.GuardedTreeRootIntoLocal,
+                    MissFor(identifier.Name.Value));
                 if (!IsAnonymousFunctionDefinition(right) || shouldSuppressAnonymousFunctionName)
                     initExpr = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, BExpression.Constant(""), BExpression.Constant(false));
                 else if (!IsDestructuringAssignmentExpression(right))
@@ -289,7 +300,7 @@ partial class FastCompiler
             if (variable.SpeculativeNumericFlag != null)
                 return ThroughSpeculativeSlot(variable, slot => Assign(slot, right, assignmentOperator));
 
-            return Assign(variable.Expression, right, assignmentOperator, NumberBoxingConversionSite.GuardedTreeRootIntoLocal);
+            return Assign(variable.Expression, right, assignmentOperator, NumberBoxingConversionSite.GuardedTreeRootIntoLocal, MissFor(identifier.Name.Value));
         }
 
         // A `super[key]` assignment target must be an assignable super-index expression.
@@ -616,7 +627,8 @@ partial class FastCompiler
     /// so the store is not its consumer and the default residual is the honest answer.
     /// </param>
     private BExpression Assign(BExpression exp, AstExpression right, TokenTypes assignmentOperator,
-        NumberBoxingConversionSite consumer = NumberBoxingConversionSite.GuardedTreeRoot)
+        NumberBoxingConversionSite consumer = NumberBoxingConversionSite.GuardedTreeRoot,
+        NumericLocalMiss miss = NumericLocalMiss.Unknown)
     {
         if (assignmentOperator == TokenTypes.AssignAdd && right.Type == FastNodeType.Literal && right is AstLiteral literal)
         {
@@ -629,7 +641,7 @@ partial class FastCompiler
 
         return BinaryOperation.Assign(
             exp,
-            assignmentOperator == TokenTypes.Assign ? VisitConsumedBy(right, consumer) : Visit(right),
+            assignmentOperator == TokenTypes.Assign ? VisitConsumedBy(right, consumer, miss) : Visit(right),
             assignmentOperator);
     }
 

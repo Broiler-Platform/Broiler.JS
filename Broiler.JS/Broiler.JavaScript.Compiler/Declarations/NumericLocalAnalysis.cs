@@ -4,6 +4,7 @@ using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.ExpressionCompiler.Core;
+using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Compiler;
 
@@ -96,10 +97,22 @@ internal sealed class NumericLocalAnalysis
     /// <c>double</c>, or an empty set when none qualify.
     /// </summary>
     public static IReadOnlySet<string> Analyze(AstFunctionExpression function)
+        => Analyze(function, out _);
+
+    /// <param name="misses">
+    /// Why each name the analysis did not admit was refused (docs/performance-roadmap.md item 3-1,
+    /// `0106`). Handed back rather than only counted, so a boxing site can name the refusal that
+    /// costs it and the refusals can be ranked by execution weight instead of by declaration count.
+    /// </param>
+    public static IReadOnlySet<string> Analyze(
+        AstFunctionExpression function,
+        out IReadOnlyDictionary<string, NumericLocalMiss> misses)
     {
         var analysis = new NumericLocalAnalysis();
         analysis.Collect(function);
-        return analysis.Resolve();
+        var survivors = analysis.Resolve();
+        misses = analysis.Misses(survivors);
+        return survivors;
     }
 
     /// <summary>
@@ -227,6 +240,19 @@ internal sealed class NumericLocalAnalysis
     /// its own, which is the distinction item 3-8's premise does not make.
     /// </summary>
     private readonly HashSet<string> everOffered = new(System.StringComparer.Ordinal);
+
+    /// <summary>
+    /// Why each name the analysis did not admit was refused, kept per NAME so the refusal can be
+    /// weighted by the boxes it costs at run time (docs/performance-roadmap.md item 3-1, `0106`).
+    /// </summary>
+    /// <remarks>
+    /// The existing counters answer "how many names does each cause refuse", which is what item
+    /// 3-6 asked. This answers "which refusal is on the hot path", which is what `0105` made the
+    /// question: 44.36% of the corpus's root boxes are consumed by a local, and a per-name census
+    /// weights a name refused in initialization code the same as one refused inside a ten-million
+    /// iteration loop.
+    /// </remarks>
+    private readonly Dictionary<string, NumericLocalMiss> misses = new(System.StringComparer.Ordinal);
 
     private void Collect(AstFunctionExpression function)
     {
@@ -566,6 +592,34 @@ internal sealed class NumericLocalAnalysis
         }
     }
 
+    private static NumericLocalMiss ToMiss(NumericDropCause cause) => cause switch
+    {
+        NumericDropCause.DroppedCandidate => NumericLocalMiss.DroppedCandidate,
+        NumericDropCause.Parameter => NumericLocalMiss.Parameter,
+        NumericDropCause.PropertyRead => NumericLocalMiss.PropertyRead,
+        NumericDropCause.ElementRead => NumericLocalMiss.ElementRead,
+        NumericDropCause.CallResult => NumericLocalMiss.CallResult,
+        NumericDropCause.OtherName => NumericLocalMiss.OtherName,
+        NumericDropCause.NonNumericLiteral => NumericLocalMiss.NonNumericLiteral,
+        NumericDropCause.UnhandledOperator => NumericLocalMiss.UnhandledOperator,
+        _ => NumericLocalMiss.OtherDrop,
+    };
+
+    /// <summary>
+    /// Every name this analysis refused, and why. A name it declared and never offered as a
+    /// candidate reads <see cref="NumericLocalMiss.NeverOffered"/>; a survivor is absent.
+    /// </summary>
+    private IReadOnlyDictionary<string, NumericLocalMiss> Misses(IReadOnlySet<string> survivors)
+    {
+        foreach (var name in declaredNames)
+        {
+            if (!survivors.Contains(name) && !misses.ContainsKey(name))
+                misses[name] = NumericLocalMiss.NeverOffered;
+        }
+
+        return misses;
+    }
+
     private IReadOnlySet<string> Resolve(bool count = true)
     {
         // Item 3-6 splits "not proven numeric" in two, because the halves call for opposite
@@ -583,6 +637,12 @@ internal sealed class NumericLocalAnalysis
         // removal as nothing; with it counted, offered = rejected + dropped + surviving exactly
         // (docs/performance-roadmap.md item 3-7).
         var beforeRejection = candidates.Count;
+        foreach (var name in rejected)
+        {
+            if (candidates.Contains(name))
+                misses[name] = NumericLocalMiss.Rejected;
+        }
+
         candidates.ExceptWith(rejected);
         if (count)
             CompilerSpecializationDiagnostics.RecordNumericCandidatesRejected(beforeRejection - candidates.Count);
@@ -619,8 +679,10 @@ internal sealed class NumericLocalAnalysis
                     candidates.Remove(name);
                     // Classified at the moment of the drop, because this is the assignment that
                     // removed the name — a later sweep would find a different one.
+                    var cause = Classify(value);
+                    misses[name] = ToMiss(cause);
                     if (count)
-                        CompilerSpecializationDiagnostics.RecordNumericDropCause(Classify(value));
+                        CompilerSpecializationDiagnostics.RecordNumericDropCause(cause);
                     changed = true;
                 }
             }

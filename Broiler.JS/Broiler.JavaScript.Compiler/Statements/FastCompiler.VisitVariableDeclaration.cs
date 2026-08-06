@@ -62,7 +62,12 @@ partial class FastCompiler
                         // run), so thread the name in via the hint consumed by CreateClass.
                         if (d.Init is AstClassExpression { Identifier: null })
                             anonymousClassNameHint = id.Name.Value;
-                        var initExpr = VisitConsumedBy(d.Init, NumberBoxingConversionSite.GuardedTreeRootIntoLocal);
+                        var initExpr = VisitConsumedBy(
+                            d.Init,
+                            v.NumericStorage != null
+                                ? NumberBoxingConversionSite.GuardedTreeRootIntoNumericLocal
+                                : NumberBoxingConversionSite.GuardedTreeRootIntoLocal,
+                            MissFor(id.Name.Value));
                         if (!IsAnonymousFunctionDefinition(d.Init))
                             initExpr = BExpression.Call(null, PrepareAnonymousFunctionNameForDestructuringMethod, initExpr, BExpression.Constant(""), BExpression.Constant(false));
                         if (v.NumericStorage != null)

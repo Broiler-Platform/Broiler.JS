@@ -634,6 +634,7 @@ internal static class SpecializingTierMetrics
         var gen2Collections = GC.CollectionCount(2) - gen2Before;
         var allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
         var boxing = Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Snapshot();
+        long LocalMiss(NumericLocalMiss miss) => boxing.LocalMissAt(miss);
         Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Enabled = false;
         var arithmeticGeneric = ArithmeticOperandDiagnostics.Generic;
         var arithmeticBothNumbers = ArithmeticOperandDiagnostics.BothNumbers;
@@ -786,6 +787,26 @@ internal static class SpecializingTierMetrics
                 boxing.ConversionsAt(NumberBoxingConversionSite.GuardedTreeRootIntoReturn),
             boxingConversionRootIntoArgument =
                 boxing.ConversionsAt(NumberBoxingConversionSite.GuardedTreeRootIntoArgument),
+            // The seam: a destination that already has raw double storage, so the box the tree
+            // mints is unboxed by the very next instruction (`0106`).
+            boxingConversionRootIntoNumericLocal =
+                boxing.ConversionsAt(NumberBoxingConversionSite.GuardedTreeRootIntoNumericLocal),
+
+            // `0106`: of the roots consumed by a local the numeric tier REFUSED, which refusal is
+            // carrying the boxes. Item 3-6 counted these causes per name; this counts them per
+            // execution, which is the only weighting that says what widening the tier is worth.
+            localMissDroppedCandidate = LocalMiss(NumericLocalMiss.DroppedCandidate),
+            localMissParameter = LocalMiss(NumericLocalMiss.Parameter),
+            localMissPropertyRead = LocalMiss(NumericLocalMiss.PropertyRead),
+            localMissElementRead = LocalMiss(NumericLocalMiss.ElementRead),
+            localMissCallResult = LocalMiss(NumericLocalMiss.CallResult),
+            localMissOtherName = LocalMiss(NumericLocalMiss.OtherName),
+            localMissNonNumericLiteral = LocalMiss(NumericLocalMiss.NonNumericLiteral),
+            localMissUnhandledOperator = LocalMiss(NumericLocalMiss.UnhandledOperator),
+            localMissOtherDrop = LocalMiss(NumericLocalMiss.OtherDrop),
+            localMissRejected = LocalMiss(NumericLocalMiss.Rejected),
+            localMissNeverOffered = LocalMiss(NumericLocalMiss.NeverOffered),
+            localMissUnknown = LocalMiss(NumericLocalMiss.Unknown),
 
             // Item 3-1's shared half, counted on the far side of the boundary: not what the
             // compiler could prove, but what the operators were actually handed. arithmeticGeneric

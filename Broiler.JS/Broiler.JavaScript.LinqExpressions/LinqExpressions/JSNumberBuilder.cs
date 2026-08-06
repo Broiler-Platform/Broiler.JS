@@ -12,6 +12,7 @@ public class JSNumberBuilder
     private static MethodInfo _createLiteral;
     private static MethodInfo _createConversion;
     private static MethodInfo _createConversionAtSite;
+    private static MethodInfo _createConversionIntoRefusedLocal;
     private static MethodInfo _createSpeculativeRead;
 
     public static Expression NaN;
@@ -33,6 +34,8 @@ public class JSNumberBuilder
             ?? throw new NotSupportedException();
         _createConversionAtSite = type.GetMethod("CreateConversion", [typeof(double), typeof(int)])
             ?? throw new InvalidOperationException("JSNumber.CreateConversion(double, int) not found");
+        _createConversionIntoRefusedLocal = type.GetMethod("CreateConversionIntoRefusedLocal", [typeof(double), typeof(int)])
+            ?? throw new InvalidOperationException("JSNumber.CreateConversionIntoRefusedLocal(double, int) not found");
         _createLiteral = type.GetMethod("CreateLiteral", [typeof(double)])
             ?? throw new InvalidOperationException("JSNumber.CreateLiteral(double) not found");
         _createSpeculativeRead = type.GetMethod("CreateSpeculativeRead", [typeof(double)])
@@ -92,4 +95,16 @@ public class JSNumberBuilder
     /// </summary>
     public static Expression NewSpeculativeRead(Expression exp)
         => Expression.Call(null, _createSpeculativeRead, exp);
+
+    /// <summary>
+    /// Emits a guarded tree root's box whose consuming LOCAL the numeric tier refused, naming the
+    /// refusal (docs/performance-roadmap.md item 3-1, `0106`).
+    /// </summary>
+    public static Expression NewIntoRefusedLocal(Expression exp, NumericLocalMiss miss)
+    {
+        if (exp.Type != typeof(double))
+            exp = Expression.Convert(exp, typeof(double));
+
+        return Expression.Call(null, _createConversionIntoRefusedLocal, exp, Expression.Constant((int)miss));
+    }
 }
