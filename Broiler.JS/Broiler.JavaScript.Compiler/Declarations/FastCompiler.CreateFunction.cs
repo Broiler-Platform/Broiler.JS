@@ -150,7 +150,7 @@ partial class FastCompiler
             // Item 3-8a: the names held in two representations. Same gate as the numeric tier —
             // the analysis assumes no closure can capture the binding and no eval/with can rename
             // it — and the switch is read here so the OFF arm allocates nothing extra at all.
-            if (cs.CanScalarReplaceLocals && (SpeculativeNumericLocals2.Enabled || ElementReadNumericLocals.Enabled || ParameterNumericLocals.Enabled))
+            if (cs.CanScalarReplaceLocals && (SpeculativeNumericLocals2.Enabled || ElementReadNumericLocals.Enabled || ParameterNumericLocals.Enabled || PropertyReadNumericLocals.Enabled || CallResultNumericLocals.Enabled))
                 cs.SpeculativeNumericLocals = NumericLocalAnalysis.AnalyzeSpeculative(functionDeclaration);
 
             if (SpeculativeNumericLocals.Counting && cs.CanScalarReplaceLocals)

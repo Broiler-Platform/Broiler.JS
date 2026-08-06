@@ -41,6 +41,10 @@ public sealed class NumericLocalDefeatTests
         ElementReadNumericLocals.Enabled = false;
         var previousParameters = ParameterNumericLocals.Enabled;
         ParameterNumericLocals.Enabled = false;
+        var previousProperties = PropertyReadNumericLocals.Enabled;
+        PropertyReadNumericLocals.Enabled = false;
+        var previousCalls = CallResultNumericLocals.Enabled;
+        CallResultNumericLocals.Enabled = false;
         var previous = ArithmeticOperandDiagnostics.Enabled;
         using var context = new JSContext();
         ArithmeticOperandDiagnostics.Reset();
@@ -63,6 +67,8 @@ public sealed class NumericLocalDefeatTests
             SpeculativeNumericLocals2.Enabled = previousSpeculation;
             ElementReadNumericLocals.Enabled = previousWidening;
             ParameterNumericLocals.Enabled = previousParameters;
+            PropertyReadNumericLocals.Enabled = previousProperties;
+            CallResultNumericLocals.Enabled = previousCalls;
         }
     }
 

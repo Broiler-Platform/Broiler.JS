@@ -1,6 +1,7 @@
 using Broiler.JavaScript.BuiltIns;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Engine;
+using System.Linq;
 using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Compiler.Tests;
@@ -50,10 +51,14 @@ public sealed class NumberBoxingConversionSiteTests
         var previously = NumberBoxingDiagnostics.Enabled;
         var previousWidening = ElementReadNumericLocals.Enabled;
         var previousParameters = ParameterNumericLocals.Enabled;
+        var previousProperties = PropertyReadNumericLocals.Enabled;
+        var previousCalls = CallResultNumericLocals.Enabled;
         try
         {
             ElementReadNumericLocals.Enabled = elementReadWidening;
             ParameterNumericLocals.Enabled = parameterWidening;
+            PropertyReadNumericLocals.Enabled = false;
+            CallResultNumericLocals.Enabled = false;
             NumberBoxingDiagnostics.Reset();
             NumberBoxingDiagnostics.Enabled = true;
             using var context = Context();
@@ -66,6 +71,8 @@ public sealed class NumberBoxingConversionSiteTests
             NumberBoxingDiagnostics.Reset();
             ElementReadNumericLocals.Enabled = previousWidening;
             ParameterNumericLocals.Enabled = previousParameters;
+            PropertyReadNumericLocals.Enabled = previousProperties;
+            CallResultNumericLocals.Enabled = previousCalls;
         }
     }
 
@@ -609,6 +616,33 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.NotEqual(
             ParameterNumericLocals.EnvironmentVariable,
             ElementReadNumericLocals.EnvironmentVariable);
+    }
+
+    [Fact]
+    public void All_four_candidate_populations_are_off_and_have_distinct_switches()
+    {
+        // Every population item 3-1 has tried is off in the shipped engine: each was measured by
+        // 0110's method and each costs more in speculative-read boxes than it saves in root boxes.
+        // The switches are distinct because the read cost is a property of ONE population and a run
+        // with two of them on cannot attribute it.
+        var switches = new[]
+        {
+            ElementReadNumericLocals.EnvironmentVariable,
+            ParameterNumericLocals.EnvironmentVariable,
+            PropertyReadNumericLocals.EnvironmentVariable,
+            CallResultNumericLocals.EnvironmentVariable,
+        };
+
+        Assert.Equal(switches.Length, switches.Distinct().Count());
+
+        foreach (var (asked, actual) in new[]
+        {
+            (Environment.GetEnvironmentVariable(PropertyReadNumericLocals.EnvironmentVariable) == "1", PropertyReadNumericLocals.Enabled),
+            (Environment.GetEnvironmentVariable(CallResultNumericLocals.EnvironmentVariable) == "1", CallResultNumericLocals.Enabled),
+        })
+        {
+            Assert.Equal(asked, actual);
+        }
     }
 
     [Fact]

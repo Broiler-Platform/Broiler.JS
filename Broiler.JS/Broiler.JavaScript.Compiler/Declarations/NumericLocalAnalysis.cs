@@ -180,13 +180,20 @@ internal sealed class NumericLocalAnalysis
         imported.Collect(function);
         var withOuter = imported.Resolve(count: false);
 
-        if (withOuter.Count == 0 && !ElementReadNumericLocals.Enabled && !ParameterNumericLocals.Enabled)
+        if (withOuter.Count == 0 && !AnyPopulationEnabled)
             return System.Collections.Immutable.ImmutableHashSet<string>.Empty;
 
         var gained = new HashSet<string>(withOuter, System.StringComparer.Ordinal);
         gained.ExceptWith(proven);
         return gained;
     }
+
+    /// <summary>Whether any of item 3-1's candidate populations is switched on.</summary>
+    private static bool AnyPopulationEnabled
+        => ElementReadNumericLocals.Enabled
+            || ParameterNumericLocals.Enabled
+            || PropertyReadNumericLocals.Enabled
+            || CallResultNumericLocals.Enabled;
 
     public static IReadOnlySet<string> AnalyzeSpeculative(AstFunctionExpression function)
     {
@@ -221,23 +228,38 @@ internal sealed class NumericLocalAnalysis
             }
         }
 
-        // Item 3-1's fourth candidate population, measured apart from the others for the same
-        // reason they are measured apart from each other: the read cost is a property of the
-        // population, and a run that mixes two cannot attribute it.
-        if (ParameterNumericLocals.Enabled)
-        {
-            var byParameter = new NumericLocalAnalysis { assumeParametersAreNumeric = true };
-            byParameter.Collect(function);
-            var withParameters = byParameter.Resolve(count: false);
-
-            foreach (var name in withParameters)
-            {
-                if (!proven.Contains(name))
-                    speculative.Add(name);
-            }
-        }
+        // Item 3-1's remaining candidate populations, each measured apart from the others for the
+        // same reason: the read cost is a property of a population, and a run that mixes two
+        // cannot attribute it.
+        AddPopulation(function, proven, speculative, ParameterNumericLocals.Enabled, p => p.assumeParametersAreNumeric = true);
+        AddPopulation(function, proven, speculative, PropertyReadNumericLocals.Enabled, p => p.assumePropertyReadsAreNumeric = true);
+        AddPopulation(function, proven, speculative, CallResultNumericLocals.Enabled, p => p.assumeCallResultsAreNumeric = true);
 
         return speculative;
+    }
+
+    /// <summary>
+    /// Runs one optimistic pass and unions the names it keeps that the sound analysis does not.
+    /// </summary>
+    private static void AddPopulation(
+        AstFunctionExpression function,
+        IReadOnlySet<string> proven,
+        HashSet<string> speculative,
+        bool enabled,
+        System.Action<NumericLocalAnalysis> assume)
+    {
+        if (!enabled)
+            return;
+
+        var pass = new NumericLocalAnalysis();
+        assume(pass);
+        pass.Collect(function);
+
+        foreach (var name in pass.Resolve(count: false))
+        {
+            if (!proven.Contains(name))
+                speculative.Add(name);
+        }
     }
 
     /// <summary>
@@ -272,6 +294,18 @@ internal sealed class NumericLocalAnalysis
     /// worth reaching them is the read cost, which is what this pass exists to measure.
     /// </remarks>
     private bool assumeParametersAreNumeric;
+
+    /// <summary>
+    /// Whether a NAMED property read is assumed to hold a number — the population `0108` refused
+    /// on a bound `0110` voided (docs/performance-roadmap.md item 3-1).
+    /// </summary>
+    private bool assumePropertyReadsAreNumeric;
+
+    /// <summary>
+    /// Whether a CALL's or <c>new</c>'s return value is assumed to hold a number — same provenance
+    /// (docs/performance-roadmap.md item 3-1).
+    /// </summary>
+    private bool assumeCallResultsAreNumeric;
 
     /// <summary>
     /// This function's parameter names, so a drop caused by reading one is attributed to the
@@ -805,6 +839,14 @@ internal sealed class NumericLocalAnalysis
         // tier and the cheapest to serve. Assumed here, tested at run time by the dual
         // representation, and never admitted to the sound tier.
         AstMemberExpression { Computed: true } when assumeElementReadsAreNumeric => true,
+
+        // The two causes `0108` refused on a bound `0110` voided. Assumptions, tested at run time
+        // by the dual representation, never admitted to the sound tier.
+        AstMemberExpression { Computed: false } when assumePropertyReadsAreNumeric => true,
+
+        AstCallExpression when assumeCallResultsAreNumeric => true,
+
+        AstNewExpression when assumeCallResultsAreNumeric => true,
 
         _ => false,
     };
