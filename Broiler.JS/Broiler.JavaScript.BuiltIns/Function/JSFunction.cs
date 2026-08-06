@@ -239,9 +239,18 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     /// applied here, on entry, rather than at read time, because it depends on the
     /// calling function, which is only known now.
     /// </remarks>
-    private LegacyFrame PushLegacyFrame(JSValue callerFunction, in Arguments arguments)
+    /// <param name="saved">
+    /// The displaced frame, written straight into the caller's local. An <c>out</c> parameter
+    /// rather than a return value because <c>LegacyFrame</c> is 72 bytes and this runs on 60.16%
+    /// of the corpus's calls (docs/performance-roadmap.md item 4-5, `0110`): returning it by value
+    /// and assigning the result is two copies of that struct where <c>out</c> is none. `0111`
+    /// measured one 56-byte <c>Arguments</c> copy at 8.19 ns and concluded *"the cost is the
+    /// copying, and relocating where the copying lands does not remove it"* — this removes copies
+    /// instead of relocating them, which is the lever that finding pointed at.
+    /// </param>
+    private void PushLegacyFrame(JSValue callerFunction, in Arguments arguments, out LegacyFrame saved)
     {
-        var saved = new LegacyFrame(legacyCallerValue, legacyFrameArguments, legacyFrameActive);
+        saved = new LegacyFrame(legacyCallerValue, legacyFrameArguments, legacyFrameActive);
 
         legacyCallerValue = callerFunction is JSFunction ordinary
             && ordinary.IsOrdinaryUserFunction
@@ -250,8 +259,6 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             : NullValue;
         legacyFrameArguments = arguments;
         legacyFrameActive = true;
-
-        return saved;
     }
 
     private void PopLegacyFrame(in LegacyFrame saved)
@@ -803,7 +810,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         var trackLegacyCaller = HasLegacyCallerArguments;
         var savedLegacyFrame = default(LegacyFrame);
         if (trackLegacyCaller)
-            savedLegacyFrame = PushLegacyFrame(previousExecutingFunction, in a1);
+            PushLegacyFrame(previousExecutingFunction, in a1, out savedLegacyFrame);
         try
         {
             // [[Construct]] must run the body under its own strict-mode setting,
@@ -933,7 +940,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
                     CallPathDiagnostics.RecordEntryShape(trackLegacyCaller, current.CoerceThisOnInvoke);
                 var savedLegacyFrame = default(LegacyFrame);
                 if (trackLegacyCaller)
-                    savedLegacyFrame = current.PushLegacyFrame(previousExecutingFunction, in currentArguments);
+                    current.PushLegacyFrame(previousExecutingFunction, in currentArguments, out savedLegacyFrame);
 
                 using (current.EnterRealm())
                 using (JSEngine.EnterStrictMode(current.IsStrictMode))
