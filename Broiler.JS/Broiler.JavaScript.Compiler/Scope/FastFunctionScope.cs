@@ -870,7 +870,7 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         BParameterExpression speculativeFlag = null;
         if (variableType == typeof(JSValue)
             && SpeculativeNumericLocals.Contains(name.Value)
-            && SpeculativeNumericLocals2.Enabled)
+            && (SpeculativeNumericLocals2.Enabled || ElementReadNumericLocals.Enabled))
         {
             speculativeDouble = BExpression.Parameter(typeof(double), name.Value + "#num");
             speculativeFlag = BExpression.Parameter(typeof(bool), name.Value + "#isnum");

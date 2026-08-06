@@ -31,6 +31,14 @@ public sealed class NumericLocalDefeatTests
     {
         var previousSpeculation = SpeculativeNumericLocals2.Enabled;
         SpeculativeNumericLocals2.Enabled = speculate;
+
+        // Item 3-1's widening is a SECOND speculation path into the same representation, so the
+        // `speculate: false` arm has to pin it too or it is not a control. Left off here because
+        // these cases are about the enclosing-name conjunct, which is item 3-8a's population and
+        // not the element-read one — a run with the widening's environment variable set would
+        // otherwise turn every control arm into a second treatment arm.
+        var previousWidening = ElementReadNumericLocals.Enabled;
+        ElementReadNumericLocals.Enabled = false;
         var previous = ArithmeticOperandDiagnostics.Enabled;
         using var context = new JSContext();
         ArithmeticOperandDiagnostics.Reset();
@@ -51,6 +59,7 @@ public sealed class NumericLocalDefeatTests
         {
             ArithmeticOperandDiagnostics.Enabled = previous;
             SpeculativeNumericLocals2.Enabled = previousSpeculation;
+            ElementReadNumericLocals.Enabled = previousWidening;
         }
     }
 

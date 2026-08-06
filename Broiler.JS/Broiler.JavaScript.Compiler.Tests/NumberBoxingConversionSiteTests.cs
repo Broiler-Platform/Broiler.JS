@@ -537,6 +537,48 @@ public sealed class NumberBoxingConversionSiteTests
     }
 
     [Fact]
+    public void The_widening_is_off_by_default()
+    {
+        // It is a measured regression (item 3-1): it mints 7 692 133 speculative-read boxes and
+        // removes 868 of the 18.7 M writes it was selected to remove.
+        Assert.False(ElementReadNumericLocals.Enabled);
+    }
+
+    [Fact]
+    public void A_widened_local_still_takes_a_boxed_root_because_the_store_path_has_no_raw_arm()
+    {
+        // THE diagnosis, pinned so it cannot be rediscovered. `0108` selected this population on a
+        // cost/saving of 0.04, where the saving is the boxed write at the tree's root. Admitting
+        // the name to item 3-8a's dual representation does not collect that saving: the assignment
+        // path tests `NumericStorage`, which a SPECULATIVE local does not have, so it still asks
+        // for the right-hand side as a JSValue, the tree still boxes its root, and
+        // AssignToSpeculativeVariable unboxes it again. The representation has a raw arm for the
+        // tree's LEAF, the element read and the element write, and none for the tree's ROOT.
+        var previous = ElementReadNumericLocals.Enabled;
+        try
+        {
+            ElementReadNumericLocals.Enabled = true;
+            var (_, boxing) = Count(
+                """
+                function f(a, b) {
+                  var s = 0;
+                  for (var i = 0; i < 100; i++) { var t = a[0] * b + i; s = t * b + i; }
+                  return s;
+                }
+                f([2], 3);
+                """);
+
+            Assert.True(
+                At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoLocal) > 0,
+                "the widened local still receives a boxed tree root — the saving is not collected");
+        }
+        finally
+        {
+            ElementReadNumericLocals.Enabled = previous;
+        }
+    }
+
+    [Fact]
     public void Leaf_counting_is_off_by_default()
     {
         // It emits a call per guarded leaf over a refused local, so a run that leaves it on is a

@@ -180,7 +180,7 @@ internal sealed class NumericLocalAnalysis
         imported.Collect(function);
         var withOuter = imported.Resolve(count: false);
 
-        if (withOuter.Count == 0)
+        if (withOuter.Count == 0 && !ElementReadNumericLocals.Enabled)
             return System.Collections.Immutable.ImmutableHashSet<string>.Empty;
 
         var gained = new HashSet<string>(withOuter, System.StringComparer.Ordinal);
@@ -203,6 +203,24 @@ internal sealed class NumericLocalAnalysis
 
         var speculative = new HashSet<string>(withOuter, System.StringComparer.Ordinal);
         speculative.ExceptWith(proven);
+
+        // Item 3-1's widening, unioned in rather than replacing: the two populations are refused
+        // for different conjuncts and are measured apart, so a run can have either, both or
+        // neither. `0108` refutes CallResult, NeverOffered and PropertyRead at the bound, so no
+        // pass here offers them.
+        if (ElementReadNumericLocals.Enabled)
+        {
+            var widened = new NumericLocalAnalysis { assumeElementReadsAreNumeric = true };
+            widened.Collect(function);
+            var withElements = widened.Resolve(count: false);
+
+            foreach (var name in withElements)
+            {
+                if (!proven.Contains(name))
+                    speculative.Add(name);
+            }
+        }
+
         return speculative;
     }
 
@@ -211,6 +229,19 @@ internal sealed class NumericLocalAnalysis
     /// to hold a number. Set only for <see cref="AnalyzeSpeculative"/>'s second pass.
     /// </summary>
     private bool assumeOuterNamesAreNumeric;
+
+    /// <summary>
+    /// Whether a computed ELEMENT read is assumed to hold a number — item 3-1's widening
+    /// (docs/performance-roadmap.md item 3-1). Set only for
+    /// <see cref="AnalyzeSpeculative"/>'s element-read pass.
+    /// </summary>
+    /// <remarks>
+    /// It is an assumption and not a proof: <c>a[i]</c> can hold anything, which is exactly why the
+    /// names it keeps go to the SPECULATIVE representation and never to the sound tier. The cascade
+    /// needs no rule of its own — the pass is a fixed point, so a name kept only because a widened
+    /// one was kept is kept with it, which is the same freeness item 3-8a's pass already relies on.
+    /// </remarks>
+    private bool assumeElementReadsAreNumeric;
 
     /// <summary>
     /// This function's parameter names, so a drop caused by reading one is attributed to the
@@ -735,6 +766,12 @@ internal sealed class NumericLocalAnalysis
         // A conditional is numeric only if both arms are.
         AstConditionalExpression conditional =>
             IsNumeric(conditional.True) && IsNumeric(conditional.False),
+
+        // Item 3-1's widening. A computed element read is the refusal `0108` measured at a
+        // cost/saving of 0.04 over 6 908 985 boxed writes — the largest independent cause in the
+        // tier and the cheapest to serve. Assumed here, tested at run time by the dual
+        // representation, and never admitted to the sound tier.
+        AstMemberExpression { Computed: true } when assumeElementReadsAreNumeric => true,
 
         _ => false,
     };
