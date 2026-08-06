@@ -39,6 +39,8 @@ public sealed class NumericLocalDefeatTests
         // otherwise turn every control arm into a second treatment arm.
         var previousWidening = ElementReadNumericLocals.Enabled;
         ElementReadNumericLocals.Enabled = false;
+        var previousParameters = ParameterNumericLocals.Enabled;
+        ParameterNumericLocals.Enabled = false;
         var previous = ArithmeticOperandDiagnostics.Enabled;
         using var context = new JSContext();
         ArithmeticOperandDiagnostics.Reset();
@@ -60,6 +62,7 @@ public sealed class NumericLocalDefeatTests
             ArithmeticOperandDiagnostics.Enabled = previous;
             SpeculativeNumericLocals2.Enabled = previousSpeculation;
             ElementReadNumericLocals.Enabled = previousWidening;
+            ParameterNumericLocals.Enabled = previousParameters;
         }
     }
 

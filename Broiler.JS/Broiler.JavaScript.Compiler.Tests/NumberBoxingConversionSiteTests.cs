@@ -35,11 +35,25 @@ public sealed class NumberBoxingConversionSiteTests
             .Build();
 
     /// <summary>Runs <paramref name="source"/> with boxing counted and returns the totals.</summary>
-    private static (string Answer, NumberBoxingSnapshot Boxing) Count(string source)
+    /// <remarks>
+    /// <b>Both candidate populations are pinned, not inherited.</b> Item 3-1 now has three switches
+    /// into the same representation, each initialised from an environment variable, and a
+    /// measurement run sets one of them — so a test that read whatever the process happened to have
+    /// would be measuring a different engine depending on who ran it. Every case states its own
+    /// configuration and the default for both is off, which is what ships.
+    /// </remarks>
+    private static (string Answer, NumberBoxingSnapshot Boxing) Count(
+        string source,
+        bool elementReadWidening = false,
+        bool parameterWidening = false)
     {
         var previously = NumberBoxingDiagnostics.Enabled;
+        var previousWidening = ElementReadNumericLocals.Enabled;
+        var previousParameters = ParameterNumericLocals.Enabled;
         try
         {
+            ElementReadNumericLocals.Enabled = elementReadWidening;
+            ParameterNumericLocals.Enabled = parameterWidening;
             NumberBoxingDiagnostics.Reset();
             NumberBoxingDiagnostics.Enabled = true;
             using var context = Context();
@@ -50,6 +64,8 @@ public sealed class NumberBoxingConversionSiteTests
         {
             NumberBoxingDiagnostics.Enabled = previously;
             NumberBoxingDiagnostics.Reset();
+            ElementReadNumericLocals.Enabled = previousWidening;
+            ParameterNumericLocals.Enabled = previousParameters;
         }
     }
 
@@ -569,25 +585,30 @@ public sealed class NumberBoxingConversionSiteTests
             f([2]);
             """;
 
-        var previous = ElementReadNumericLocals.Enabled;
-        try
-        {
-            ElementReadNumericLocals.Enabled = false;
-            var (answerOff, boxingOff) = Count(Source);
+        var (answerOff, boxingOff) = Count(Source);
+        var (answerOn, boxingOn) = Count(Source, elementReadWidening: true);
 
-            ElementReadNumericLocals.Enabled = true;
-            var (answerOn, boxingOn) = Count(Source);
+        Assert.Equal(answerOff, answerOn);
+        Assert.True(
+            At(boxingOn, NumberBoxingConversionSite.GuardedTreeRootIntoLocal)
+                < At(boxingOff, NumberBoxingConversionSite.GuardedTreeRootIntoLocal),
+            "the raw arm must remove root boxes the ordinary store path pays");
+    }
 
-            Assert.Equal(answerOff, answerOn);
-            Assert.True(
-                At(boxingOn, NumberBoxingConversionSite.GuardedTreeRootIntoLocal)
-                    < At(boxingOff, NumberBoxingConversionSite.GuardedTreeRootIntoLocal),
-                "the raw arm must remove root boxes the ordinary store path pays");
-        }
-        finally
-        {
-            ElementReadNumericLocals.Enabled = previous;
-        }
+    [Fact]
+    public void The_parameter_population_is_off_and_is_measured_apart_from_the_others()
+    {
+        // Item 3-1's fourth candidate population. It ships off — the read cost was counted first,
+        // as `0110` prescribed, and it is 417 582 boxes for no saving at all. It is kept because
+        // the counting method is the deliverable, not the population.
+        //
+        // Measured APART from the element-read widening on purpose: the read cost is a property of
+        // a population, and a run with both switches on cannot attribute it to either.
+        var asked = Environment.GetEnvironmentVariable(ParameterNumericLocals.EnvironmentVariable) == "1";
+        Assert.Equal(asked, ParameterNumericLocals.Enabled);
+        Assert.NotEqual(
+            ParameterNumericLocals.EnvironmentVariable,
+            ElementReadNumericLocals.EnvironmentVariable);
     }
 
     [Fact]

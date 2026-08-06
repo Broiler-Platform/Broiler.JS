@@ -180,7 +180,7 @@ internal sealed class NumericLocalAnalysis
         imported.Collect(function);
         var withOuter = imported.Resolve(count: false);
 
-        if (withOuter.Count == 0 && !ElementReadNumericLocals.Enabled)
+        if (withOuter.Count == 0 && !ElementReadNumericLocals.Enabled && !ParameterNumericLocals.Enabled)
             return System.Collections.Immutable.ImmutableHashSet<string>.Empty;
 
         var gained = new HashSet<string>(withOuter, System.StringComparer.Ordinal);
@@ -221,6 +221,22 @@ internal sealed class NumericLocalAnalysis
             }
         }
 
+        // Item 3-1's fourth candidate population, measured apart from the others for the same
+        // reason they are measured apart from each other: the read cost is a property of the
+        // population, and a run that mixes two cannot attribute it.
+        if (ParameterNumericLocals.Enabled)
+        {
+            var byParameter = new NumericLocalAnalysis { assumeParametersAreNumeric = true };
+            byParameter.Collect(function);
+            var withParameters = byParameter.Resolve(count: false);
+
+            foreach (var name in withParameters)
+            {
+                if (!proven.Contains(name))
+                    speculative.Add(name);
+            }
+        }
+
         return speculative;
     }
 
@@ -242,6 +258,20 @@ internal sealed class NumericLocalAnalysis
     /// one was kept is kept with it, which is the same freeness item 3-8a's pass already relies on.
     /// </remarks>
     private bool assumeElementReadsAreNumeric;
+
+    /// <summary>
+    /// Whether a PARAMETER of this function is assumed to hold a number — item 3-1's fourth
+    /// candidate population (docs/performance-roadmap.md item 3-1). Set only for
+    /// <see cref="AnalyzeSpeculative"/>'s parameter pass.
+    /// </summary>
+    /// <remarks>
+    /// Item 3-8a excluded parameters from its own optimistic pass on the grounds that they want a
+    /// guard at entry rather than at an initializer. That is a statement about where the ideal
+    /// guard goes, not about whether the dual representation reaches them — and the dual
+    /// representation tests the value wherever it enters, so it does reach them. Whether it is
+    /// worth reaching them is the read cost, which is what this pass exists to measure.
+    /// </remarks>
+    private bool assumeParametersAreNumeric;
 
     /// <summary>
     /// This function's parameter names, so a drop caused by reading one is attributed to the
@@ -743,6 +773,9 @@ internal sealed class NumericLocalAnalysis
             // deliberately excluded: they are item 3-3's one acknowledged gap and want a guard at
             // entry rather than at an initializer, so counting them here would inflate the set
             // with a population this item does not serve.
+            // Item 3-1's fourth population: the caller picks a parameter's type, so this is an
+            // assumption tested at run time by the dual representation and never a proof.
+            || (assumeParametersAreNumeric && parameterNames.Contains(identifier.Name.Value))
             || (assumeOuterNamesAreNumeric
                 && !parameterNames.Contains(identifier.Name.Value)
                 && !declaredNames.Contains(identifier.Name.Value))
