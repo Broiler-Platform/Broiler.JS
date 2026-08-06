@@ -247,6 +247,17 @@ partial class FastCompiler
                         return NumericStoreResult(BExpression.Assign(variable.NumericStorage, nativeRight), discardResult);
                 }
 
+                // Item 3-1's raw arm: a guarded tree storing into a speculative local writes the
+                // raw half and the flag itself, so no root box is minted for the very store the
+                // widening was selected to remove. Statement position only — in expression
+                // position the assignment's value is consumed and there is no JSValue to hand
+                // back, which is the same line NumericStoreResult draws.
+                if (discardResult
+                    && TryCreateSpeculativeTreeStore(variable, right) is { } speculativeTreeStore)
+                {
+                    return speculativeTreeStore;
+                }
+
                 // The destination may ALREADY have raw double storage: the numeric tier admitted
                 // it on the whole-function proof, and we are here only because the static prover
                 // above could not type this particular right-hand side. AssignToVariable then

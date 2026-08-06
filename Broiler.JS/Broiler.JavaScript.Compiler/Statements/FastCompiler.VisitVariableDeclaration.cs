@@ -62,6 +62,15 @@ partial class FastCompiler
                         // run), so thread the name in via the hint consumed by CreateClass.
                         if (d.Init is AstClassExpression { Identifier: null })
                             anonymousClassNameHint = id.Name.Value;
+                        // Item 3-1's raw arm, on the declarator that produces most of the
+                        // population: `var t = a[0] * b + i` inside a loop. The initializer's
+                        // value is never consumed here, so the tree can store directly.
+                        if (TryCreateSpeculativeTreeStore(v, d.Init) is { } speculativeTreeStore)
+                        {
+                            list.Add(speculativeTreeStore);
+                            break;
+                        }
+
                         var initExpr = VisitConsumedBy(
                             d.Init,
                             v.NumericStorage != null

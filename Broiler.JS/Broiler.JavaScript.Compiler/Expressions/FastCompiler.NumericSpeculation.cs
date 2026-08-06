@@ -99,6 +99,60 @@ partial class FastCompiler
     private NumericLocalMiss pendingLocalMiss = NumericLocalMiss.Unknown;
 
     /// <summary>
+    /// The speculative local a guarded tree should store into DIRECTLY, writing its raw half and
+    /// its flag instead of boxing a root (docs/performance-roadmap.md item 3-1).
+    /// </summary>
+    /// <remarks>
+    /// <c>0109</c> built the widening and it regressed, and the counters said why: the saving lives
+    /// at the tree's ROOT store, and item 3-8a's representation had raw arms for the tree's leaf,
+    /// the element read and the element write and none for the root. So the assignment path asked
+    /// for a <c>JSValue</c>, the tree boxed, and <c>AssignToSpeculativeVariable</c> unboxed again —
+    /// 868 of 18.7 M boxes removed. This is that missing arm.
+    /// </remarks>
+    private FastFunctionScope.VariableScope speculativeStoreTarget;
+
+    /// <summary>Whether the tree actually took <see cref="speculativeStoreTarget"/>'s store.</summary>
+    /// <remarks>
+    /// The caller cannot assume it did: the tree can still refuse on any of its own conditions, in
+    /// which case the operands are visited generically and the ordinary store must run. Emitting
+    /// both would store twice.
+    /// </remarks>
+    private bool speculativeStoreEmitted;
+
+    /// <summary>
+    /// The complete store of <paramref name="right"/> into a speculative local, when the right-hand
+    /// side is a guarded arithmetic tree that can write the raw half directly — or <c>null</c> when
+    /// it is not, leaving the ordinary path to run (docs/performance-roadmap.md item 3-1).
+    /// </summary>
+    /// <remarks>
+    /// Restricted to STATEMENT position. In expression position the assignment's own value is
+    /// consumed, and the whole point here is that no <c>JSValue</c> is produced; item 3-3's
+    /// <c>NumericStoreResult</c> draws the same line for the same reason.
+    /// </remarks>
+    private BExpression TryCreateSpeculativeTreeStore(
+        FastFunctionScope.VariableScope variable,
+        AstExpression right)
+    {
+        if (variable?.SpeculativeNumericFlag == null || right is not AstBinaryExpression)
+            return null;
+
+        var previousTarget = speculativeStoreTarget;
+        var previousEmitted = speculativeStoreEmitted;
+        speculativeStoreTarget = variable;
+        speculativeStoreEmitted = false;
+        try
+        {
+            var compiled = Visit(right);
+            return speculativeStoreEmitted ? compiled : null;
+        }
+        finally
+        {
+            speculativeStoreTarget = previousTarget;
+            speculativeStoreEmitted = previousEmitted;
+        }
+    }
+
+    /// <summary>
     /// Visits <paramref name="node"/>, telling a guarded tree at its root what will consume its
     /// box.
     /// </summary>
@@ -324,16 +378,21 @@ partial class FastCompiler
         // than by whatever consumes this tree's root.
         var consumer = pendingTreeConsumer;
         var miss = pendingLocalMiss;
+        // Taken by the OUTERMOST tree only: a leaf may contain a tree of its own, and that one's
+        // value is an operand rather than the stored value.
+        var storeTarget = speculativeStoreTarget;
         pendingTreeConsumer = NumberBoxingConversionSite.GuardedTreeRoot;
         pendingLocalMiss = NumericLocalMiss.Unknown;
+        speculativeStoreTarget = null;
         try
         {
-            return BuildOrderedNumericTree(root, locals, body, ref guarded, consumer, miss);
+            return BuildOrderedNumericTree(root, locals, body, ref guarded, consumer, miss, storeTarget);
         }
         finally
         {
             pendingTreeConsumer = consumer;
             pendingLocalMiss = miss;
+            speculativeStoreTarget = storeTarget;
         }
     }
 
@@ -343,7 +402,8 @@ partial class FastCompiler
         Sequence<BExpression> body,
         ref int guarded,
         NumberBoxingConversionSite consumer,
-        NumericLocalMiss miss)
+        NumericLocalMiss miss,
+        FastFunctionScope.VariableScope storeTarget)
     {
         var built = BuildOrderedTree(root, locals, body, ref guarded, out var refusal);
         if (built is not { } node)
@@ -354,7 +414,36 @@ partial class FastCompiler
         if (guarded == 0)
             return Refuse(NumericTreeRefusal.NothingToGuard);
 
-        body.Add(AsJSValue(node, consumer, miss));
+        if (storeTarget != null)
+        {
+            // The raw arm `0109` found missing. Write the raw half and raise the flag on the
+            // guarded arm; write the slot and lower it on the other. No box on either.
+            //
+            // The flag assignment is the block's value, written as one conditional rather than as
+            // a statement-level branch so both arms have a type — the same shape BuildOrderedTree
+            // already uses for an internal node.
+            body.Add(BExpression.Assign(
+                storeTarget.SpeculativeNumericFlag,
+                node.Ok == null
+                    ? BExpression.Block(
+                        BExpression.Assign(storeTarget.SpeculativeNumericStorage, node.Native),
+                        BExpression.Constant(true))
+                    : BExpression.Conditional(
+                        node.Ok,
+                        BExpression.Block(
+                            BExpression.Assign(storeTarget.SpeculativeNumericStorage, node.Native),
+                            BExpression.Constant(true)),
+                        BExpression.Block(
+                            BExpression.Assign(storeTarget.SpeculativeSlot, node.Value),
+                            BExpression.Constant(false)),
+                        typeof(bool))));
+
+            speculativeStoreEmitted = true;
+        }
+        else
+        {
+            body.Add(AsJSValue(node, consumer, miss));
+        }
 
         CompilerSpecializationDiagnostics.RecordSpeculativeNumericTree(guarded);
         CompilerSpecializationDiagnostics.RecordNumericTreeDecision(NumericTreeRefusal.Specialized);

@@ -537,40 +537,52 @@ public sealed class NumberBoxingConversionSiteTests
     }
 
     [Fact]
-    public void The_widening_is_off_by_default()
+    public void The_widening_is_off_unless_its_environment_variable_asks_for_it()
     {
-        // It is a measured regression (item 3-1): it mints 7 692 133 speculative-read boxes and
-        // removes 868 of the 18.7 M writes it was selected to remove.
-        Assert.False(ElementReadNumericLocals.Enabled);
+        // It is a measured regression (item 3-1) and ships off. Stated against the environment
+        // rather than as a bare `false`, because the switch initialises from the variable and a
+        // measurement run sets it — a test that cannot survive its own measurement arm is one that
+        // gets deleted the first time somebody takes a measurement.
+        var asked = Environment.GetEnvironmentVariable(ElementReadNumericLocals.EnvironmentVariable) == "1";
+        Assert.Equal(asked, ElementReadNumericLocals.Enabled);
     }
 
     [Fact]
-    public void A_widened_local_still_takes_a_boxed_root_because_the_store_path_has_no_raw_arm()
+    public void The_raw_arm_stores_a_tree_root_into_a_widened_local_without_boxing_it()
     {
-        // THE diagnosis, pinned so it cannot be rediscovered. `0108` selected this population on a
-        // cost/saving of 0.04, where the saving is the boxed write at the tree's root. Admitting
-        // the name to item 3-8a's dual representation does not collect that saving: the assignment
-        // path tests `NumericStorage`, which a SPECULATIVE local does not have, so it still asks
-        // for the right-hand side as a JSValue, the tree still boxes its root, and
-        // AssignToSpeculativeVariable unboxes it again. The representation has a raw arm for the
-        // tree's LEAF, the element read and the element write, and none for the tree's ROOT.
+        // `0109`'s defect and `0110`'s fix in one case. The saving the widening was selected for
+        // lives at the tree's ROOT store, and item 3-8a's representation had raw arms for the
+        // leaf, the element read and the element write and none for the root — so the tree boxed
+        // and AssignToSpeculativeVariable unboxed again. With the raw arm the store writes the raw
+        // half and the flag directly and mints nothing.
+        //
+        // Every operand but the element read is numeric here on purpose. A refusal census
+        // attributes a name to its FIRST cause, and removing that cause admits the name only if it
+        // was the ONLY blocker — which is why the corpus saving is 2.4 M rather than the 14.2 M
+        // the census's ElementRead row suggests.
+        const string Source = """
+            function f(a) {
+              var s = 0;
+              for (var i = 0; i < 100; i++) { var t = a[0] * 2 + i; s = t + i; }
+              return s;
+            }
+            f([2]);
+            """;
+
         var previous = ElementReadNumericLocals.Enabled;
         try
         {
-            ElementReadNumericLocals.Enabled = true;
-            var (_, boxing) = Count(
-                """
-                function f(a, b) {
-                  var s = 0;
-                  for (var i = 0; i < 100; i++) { var t = a[0] * b + i; s = t * b + i; }
-                  return s;
-                }
-                f([2], 3);
-                """);
+            ElementReadNumericLocals.Enabled = false;
+            var (answerOff, boxingOff) = Count(Source);
 
+            ElementReadNumericLocals.Enabled = true;
+            var (answerOn, boxingOn) = Count(Source);
+
+            Assert.Equal(answerOff, answerOn);
             Assert.True(
-                At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoLocal) > 0,
-                "the widened local still receives a boxed tree root — the saving is not collected");
+                At(boxingOn, NumberBoxingConversionSite.GuardedTreeRootIntoLocal)
+                    < At(boxingOff, NumberBoxingConversionSite.GuardedTreeRootIntoLocal),
+                "the raw arm must remove root boxes the ordinary store path pays");
         }
         finally
         {
