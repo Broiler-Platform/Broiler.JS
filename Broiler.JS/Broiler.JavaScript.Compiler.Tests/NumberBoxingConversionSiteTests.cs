@@ -475,6 +475,68 @@ public sealed class NumberBoxingConversionSiteTests
     }
 
     [Fact]
+    public void A_refused_local_handed_straight_to_a_consumer_is_counted_as_a_boxing_read()
+    {
+        // `t` is refused for the element read and then passed straight to a call, which needs a
+        // JSValue — the cost side of the ratio. Counted at the consumer because the read
+        // expression is also the assignment target and cannot carry a counter.
+        var previously = NumericLocalLeafReadCensus.Enabled;
+        try
+        {
+            NumericLocalLeafReadCensus.Reset();
+            NumericLocalLeafReadCensus.Enabled = true;
+            Count(
+                """
+                function sink(x) { return x; }
+                function f(a, b) {
+                  var s = 0;
+                  for (var i = 0; i < 100; i++) { var t = a[0] * b + i; s = sink(t); }
+                  return s;
+                }
+                f([2], 3);
+                """);
+
+            Assert.True(NumericLocalLeafReadCensus.ConsumerAt(NumericLocalMiss.ElementRead) > 0);
+        }
+        finally
+        {
+            NumericLocalLeafReadCensus.Enabled = previously;
+            NumericLocalLeafReadCensus.Reset();
+        }
+    }
+
+    [Fact]
+    public void A_read_inside_a_tree_is_free_and_not_charged_to_the_consumer()
+    {
+        // The two halves must not both claim the same read. `t` here is only ever read as a
+        // guarded leaf, so the free side must be non-zero and the cost side zero — which is
+        // exactly the shape NavierStokes shows on the corpus.
+        var previously = NumericLocalLeafReadCensus.Enabled;
+        try
+        {
+            NumericLocalLeafReadCensus.Reset();
+            NumericLocalLeafReadCensus.Enabled = true;
+            Count(
+                """
+                function f(a, b) {
+                  var s = 0;
+                  for (var i = 0; i < 100; i++) { var t = a[0] * b + i; s = t * b + i; }
+                  return s;
+                }
+                f([2], 3);
+                """);
+
+            Assert.True(NumericLocalLeafReadCensus.At(NumericLocalMiss.ElementRead) > 0);
+            Assert.Equal(0, NumericLocalLeafReadCensus.ConsumerAt(NumericLocalMiss.ElementRead));
+        }
+        finally
+        {
+            NumericLocalLeafReadCensus.Enabled = previously;
+            NumericLocalLeafReadCensus.Reset();
+        }
+    }
+
+    [Fact]
     public void Leaf_counting_is_off_by_default()
     {
         // It emits a call per guarded leaf over a refused local, so a run that leaves it on is a

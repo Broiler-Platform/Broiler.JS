@@ -107,6 +107,13 @@ partial class FastCompiler
         NumberBoxingConversionSite consumer,
         NumericLocalMiss miss = NumericLocalMiss.Unknown)
     {
+        // A refused local handed STRAIGHT to this consumer is a read the consumer needs as a
+        // JSValue — the cost side of item 3-1's ratio, counted here because the read expression
+        // itself is also the assignment target and cannot carry a counter. Only a bare identifier
+        // qualifies: anything else is an expression whose own root is counted at its own site.
+        if (node is AstIdentifier consumed)
+            return CountConsumerRead(consumed, Visit(node));
+
         if (node is not AstBinaryExpression)
             return Visit(node);
 
@@ -524,6 +531,33 @@ partial class FastCompiler
     /// the syntax, so it cannot change which trees specialize. Both are checked by re-running the
     /// census and requiring the roots-into-a-refused-local count to be unchanged.
     /// </remarks>
+    /// <summary>
+    /// Counts a refused local read straight into a consumer that needs a <c>JSValue</c>
+    /// (docs/performance-roadmap.md item 3-1).
+    /// </summary>
+    /// <remarks>
+    /// Safe for the reason the reverted read-side counter was not: the value wrapped here is the
+    /// consumer's operand — an argument, a stored value, a returned value — never the node the
+    /// assignment path writes through.
+    /// </remarks>
+    private BExpression CountConsumerRead(AstIdentifier node, BExpression value)
+    {
+        if (!NumericLocalLeafReadCensus.Enabled || value.Type != typeof(JSValue))
+            return value;
+
+        var miss = MissFor(node.Name.Value);
+        if (miss == NumericLocalMiss.Unknown)
+            return value;
+
+        return BExpression.Call(null, RecordConsumerReadMethod, value, BExpression.Constant((int)miss));
+    }
+
+    private static readonly System.Reflection.MethodInfo RecordConsumerReadMethod =
+        typeof(NumericLocalLeafReadCensus).GetMethod(
+            nameof(NumericLocalLeafReadCensus.RecordConsumer),
+            [typeof(JSValue), typeof(int)])
+        ?? throw new System.InvalidOperationException("NumericLocalLeafReadCensus.RecordConsumer not found");
+
     private BExpression CountLeafRead(AstExpression node, BExpression expression)
     {
         if (!NumericLocalLeafReadCensus.Enabled

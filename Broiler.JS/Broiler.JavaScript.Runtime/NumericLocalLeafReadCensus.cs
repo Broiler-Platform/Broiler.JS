@@ -45,6 +45,13 @@ public static class NumericLocalLeafReadCensus
     private static readonly long[] leafReads = new long[Buckets];
 
     /// <summary>
+    /// Reads of a refused local handed straight to a consumer that needs a <see cref="JSValue"/> —
+    /// the COST side of the ratio, counted at the consumer because the read itself has no safe
+    /// hook (docs/performance-roadmap.md item 3-1).
+    /// </summary>
+    private static readonly long[] consumerReads = new long[Buckets];
+
+    /// <summary>
     /// Whether guarded-leaf reads of a refused local are counted. Read at COMPILE time, so it must
     /// be set before the corpus is compiled. Off by default.
     /// </summary>
@@ -60,6 +67,35 @@ public static class NumericLocalLeafReadCensus
         return value;
     }
 
+    /// <summary>
+    /// Records one read of a refused local consumed by something that needs a
+    /// <see cref="JSValue"/>, and hands the value back so the counter can sit at the consumer's
+    /// operand position.
+    /// </summary>
+    /// <remarks>
+    /// <b>Counted at the consumer rather than at the read, and that is the whole design.</b> The
+    /// read expression is also the assignment target, so a counter there crashes the compiler. A
+    /// consumer's operand is a value and nothing else — an argument, a stored value, a returned
+    /// value — so it can carry one safely.
+    /// <para>
+    /// <b>It is a LOWER BOUND and must be quoted as one.</b> Only the consumer positions the
+    /// compiler already routes through <c>VisitConsumedBy</c> are counted — an assignment's
+    /// right-hand side into an element, a property or a local, a call argument, and a return
+    /// value. Every other JSValue consumer in the language is missing, so the true cost is higher
+    /// than this. That direction is the useful one: a bound that already exceeds the saving
+    /// refutes the representation, while a bound below it settles nothing.
+    /// </para>
+    /// </remarks>
+    public static JSValue RecordConsumer(JSValue value, int miss)
+    {
+        Interlocked.Increment(ref consumerReads[(uint)miss < Buckets ? miss : 0]);
+        return value;
+    }
+
+    /// <summary>Boxing reads attributed to one refusal, at the consumers that were instrumented.</summary>
+    public static long ConsumerAt(NumericLocalMiss miss)
+        => (uint)(int)miss < Buckets ? Interlocked.Read(ref consumerReads[(int)miss]) : 0;
+
     /// <summary>Guarded-leaf reads attributed to one refusal.</summary>
     public static long At(NumericLocalMiss miss)
         => (uint)(int)miss < Buckets ? Interlocked.Read(ref leafReads[(int)miss]) : 0;
@@ -67,6 +103,9 @@ public static class NumericLocalLeafReadCensus
     public static void Reset()
     {
         for (var i = 0; i < Buckets; i++)
+        {
             Interlocked.Exchange(ref leafReads[i], 0);
+            Interlocked.Exchange(ref consumerReads[i], 0);
+        }
     }
 }

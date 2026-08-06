@@ -825,6 +825,15 @@ internal static class SpecializingTierMetrics
             leafReadsCallResult = NumericLocalLeafReadCensus.At(NumericLocalMiss.CallResult),
             leafReadsNeverOffered = NumericLocalLeafReadCensus.At(NumericLocalMiss.NeverOffered),
 
+            // The COST side, counted at the consumers rather than at the read. A LOWER BOUND: only
+            // the consumer positions VisitConsumedBy routes are instrumented.
+            consumerReadsElementRead = NumericLocalLeafReadCensus.ConsumerAt(NumericLocalMiss.ElementRead),
+            consumerReadsDroppedCandidate = NumericLocalLeafReadCensus.ConsumerAt(NumericLocalMiss.DroppedCandidate),
+            consumerReadsPropertyRead = NumericLocalLeafReadCensus.ConsumerAt(NumericLocalMiss.PropertyRead),
+            consumerReadsParameter = NumericLocalLeafReadCensus.ConsumerAt(NumericLocalMiss.Parameter),
+            consumerReadsCallResult = NumericLocalLeafReadCensus.ConsumerAt(NumericLocalMiss.CallResult),
+            consumerReadsNeverOffered = NumericLocalLeafReadCensus.ConsumerAt(NumericLocalMiss.NeverOffered),
+
             // Item 3-1's shared half, counted on the far side of the boundary: not what the
             // compiler could prove, but what the operators were actually handed. arithmeticGeneric
             // is every invocation of a two-JSValue arithmetic or bitwise operator;
