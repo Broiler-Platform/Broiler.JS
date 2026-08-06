@@ -403,6 +403,85 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.True(summed > 0, "the shape must reach the site for the partition to mean anything");
     }
 
+    // ── the free half of the read side (item 3-1) ─────────────────────────────────────────
+    //
+    // A guarded tree's leaf is the one read a raw `double` representation would serve without
+    // boxing: the tree already tests the operand for IsNumber and calls DoubleValue on it. It is
+    // also the one read position that can carry a counter safely — the value is the right-hand side
+    // of an assignment into a fresh temporary, never an assignment target, which is what made the
+    // reverted whole-read counter emit `x++` as a store onto a method call.
+
+    private static (string Answer, NumberBoxingSnapshot Boxing, long LeafReads) CountLeaves(
+        string source,
+        NumericLocalMiss miss)
+    {
+        var previously = NumericLocalLeafReadCensus.Enabled;
+        try
+        {
+            NumericLocalLeafReadCensus.Reset();
+            NumericLocalLeafReadCensus.Enabled = true;
+            var (answer, boxing) = Count(source);
+            return (answer, boxing, NumericLocalLeafReadCensus.At(miss));
+        }
+        finally
+        {
+            NumericLocalLeafReadCensus.Enabled = previously;
+            NumericLocalLeafReadCensus.Reset();
+        }
+    }
+
+    [Fact]
+    public void A_guarded_leaf_reading_a_refused_local_is_counted_against_its_refusal()
+    {
+        // `t` is refused for the element read; `t * b + i` then reads it as a guarded leaf.
+        var (_, _, leafReads) = CountLeaves(
+            """
+            function f(a, b) {
+              var s = 0;
+              for (var i = 0; i < 100; i++) { var t = a[0] * b + i; s = t * b + i; }
+              return s;
+            }
+            f([2], 3);
+            """,
+            NumericLocalMiss.ElementRead);
+
+        Assert.True(leafReads > 0, "a guarded leaf over a refused local must be counted");
+    }
+
+    [Fact]
+    public void The_leaf_counter_does_not_change_what_the_tree_does()
+    {
+        // The check the reverted counter failed, as a test rather than as a census comparison: the
+        // counter is emitted inside BuildOrderedTree, which runs only after every refusal has been
+        // decided on the syntax, so the roots a run produces must not depend on it being on.
+        const string Source =
+            """
+            function f(a, b) {
+              var s = 0;
+              for (var i = 0; i < 100; i++) { var t = a[0] * b + i; s = t * b + i; }
+              return s;
+            }
+            f([2], 3);
+            """;
+
+        var (answerOff, boxingOff) = Count(Source);
+        var (answerOn, boxingOn, _) = CountLeaves(Source, NumericLocalMiss.ElementRead);
+
+        Assert.Equal(answerOff, answerOn);
+        Assert.Equal(
+            At(boxingOff, NumberBoxingConversionSite.GuardedTreeRootIntoLocal),
+            At(boxingOn, NumberBoxingConversionSite.GuardedTreeRootIntoLocal));
+        Assert.Equal(boxingOff.ConversionRequests, boxingOn.ConversionRequests);
+    }
+
+    [Fact]
+    public void Leaf_counting_is_off_by_default()
+    {
+        // It emits a call per guarded leaf over a refused local, so a run that leaves it on is a
+        // run whose wall clock means nothing.
+        Assert.False(NumericLocalLeafReadCensus.Enabled);
+    }
+
     [Fact]
     public void Counting_is_off_by_default()
     {

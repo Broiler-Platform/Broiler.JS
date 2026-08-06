@@ -600,6 +600,12 @@ internal static class SpecializingTierMetrics
         // pay — a bias pointing the same way as the result, which is the worst kind.
         Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Reset();
         Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Enabled = counters;
+
+        // Item 3-1's free read half. A COMPILE-time switch, so it is set before the suite compiles;
+        // with it on every guarded leaf over a refused local carries a call and the wall clock of
+        // this run means nothing.
+        NumericLocalLeafReadCensus.Reset();
+        NumericLocalLeafReadCensus.Enabled = counters;
         // Item 3-1's shared half: of the operators that mint those boxes, how many are handed two
         // values that ARE Numbers — i.e. how many a native form guarded on that test could reach.
         ArithmeticOperandDiagnostics.Reset();
@@ -636,6 +642,7 @@ internal static class SpecializingTierMetrics
         var boxing = Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Snapshot();
         long LocalMiss(NumericLocalMiss miss) => boxing.LocalMissAt(miss);
         Broiler.JavaScript.BuiltIns.Number.NumberBoxingDiagnostics.Enabled = false;
+        NumericLocalLeafReadCensus.Enabled = false;
         var arithmeticGeneric = ArithmeticOperandDiagnostics.Generic;
         var arithmeticBothNumbers = ArithmeticOperandDiagnostics.BothNumbers;
         var arithmeticRawDouble = ArithmeticOperandDiagnostics.RawDoubleOperand;
@@ -807,6 +814,16 @@ internal static class SpecializingTierMetrics
             localMissRejected = LocalMiss(NumericLocalMiss.Rejected),
             localMissNeverOffered = LocalMiss(NumericLocalMiss.NeverOffered),
             localMissUnknown = LocalMiss(NumericLocalMiss.Unknown),
+
+            // The free half of the read side: guarded-tree leaves reading a refused local, which a
+            // raw double would serve without boxing. NOT the ratio — the cost half is every other
+            // read, which has no safe hook.
+            leafReadsElementRead = NumericLocalLeafReadCensus.At(NumericLocalMiss.ElementRead),
+            leafReadsDroppedCandidate = NumericLocalLeafReadCensus.At(NumericLocalMiss.DroppedCandidate),
+            leafReadsPropertyRead = NumericLocalLeafReadCensus.At(NumericLocalMiss.PropertyRead),
+            leafReadsParameter = NumericLocalLeafReadCensus.At(NumericLocalMiss.Parameter),
+            leafReadsCallResult = NumericLocalLeafReadCensus.At(NumericLocalMiss.CallResult),
+            leafReadsNeverOffered = NumericLocalLeafReadCensus.At(NumericLocalMiss.NeverOffered),
 
             // Item 3-1's shared half, counted on the far side of the boundary: not what the
             // compiler could prove, but what the operators were actually handed. arithmeticGeneric

@@ -502,7 +502,7 @@ partial class FastCompiler
         // the next assignment would clobber a value already saved.
         var temp = BExpression.Parameter(typeof(JSValue), "#spec" + guarded);
         locals.Add(temp);
-        body.Add(BExpression.Assign(temp, expression));
+        body.Add(BExpression.Assign(temp, CountLeafRead(node, expression)));
         guarded++;
 
         return new OrderedNode(
@@ -511,6 +511,40 @@ partial class FastCompiler
             temp,
             IsLeaf: true);
     }
+
+    /// <summary>
+    /// Counts a guarded leaf that reads a local the numeric tier REFUSED — the read a raw
+    /// <c>double</c> representation would serve for free (docs/performance-roadmap.md item 3-1).
+    /// </summary>
+    /// <remarks>
+    /// Safe in both the ways the reverted read-side counter was not. The value returned here is the
+    /// right-hand side of an assignment into a fresh temporary, so it is never an assignment target
+    /// — which is what made wrapping <c>variable.Expression</c> emit `x++` as a store onto a method
+    /// call. And this runs inside <c>BuildOrderedTree</c>, after every refusal has been decided on
+    /// the syntax, so it cannot change which trees specialize. Both are checked by re-running the
+    /// census and requiring the roots-into-a-refused-local count to be unchanged.
+    /// </remarks>
+    private BExpression CountLeafRead(AstExpression node, BExpression expression)
+    {
+        if (!NumericLocalLeafReadCensus.Enabled
+            || node is not AstIdentifier name
+            || expression.Type != typeof(JSValue))
+        {
+            return expression;
+        }
+
+        var miss = MissFor(name.Name.Value);
+        if (miss == NumericLocalMiss.Unknown)
+            return expression;
+
+        return BExpression.Call(null, RecordLeafReadMethod, expression, BExpression.Constant((int)miss));
+    }
+
+    private static readonly System.Reflection.MethodInfo RecordLeafReadMethod =
+        typeof(NumericLocalLeafReadCensus).GetMethod(
+            nameof(NumericLocalLeafReadCensus.Record),
+            [typeof(JSValue), typeof(int)])
+        ?? throw new System.InvalidOperationException("NumericLocalLeafReadCensus.Record not found");
 
     /// <summary>The subtree's value as a <c>JSValue</c>, which is what the generic arm needs.</summary>
     /// <param name="site">
