@@ -246,6 +246,11 @@ internal static class PropertyMapDistributionMetrics
         // is exactly what an earlier version of this did, and it produced negative buckets.
         // Counting the load is also the more honest denominator: the maps a suite's top-level
         // code builds are maps the workload allocates.
+        // Set here rather than wired into the engine: the Storage assembly has no idea what a
+        // JavaScript number is — IPropertyValue is an empty marker — and a census host is the
+        // right place to say so, since it is the only caller that needs the split.
+        PropertyStorageMetrics.IsNumericValue = static v => v is Broiler.JavaScript.BuiltIns.Number.JSNumber;
+
         using (PropertyStorageMetrics.Enable())
         {
             PropertyStorageMetrics.Reset();
@@ -341,6 +346,14 @@ internal static class PropertyMapDistributionMetrics
             shareWithinTheCurrentFloor = total == 0 ? 0 : Math.Round((double)upToFour / total, 4),
             negativeBucketCounts = negatives,
             resetStraddlingMaps = PropertyStorageMetrics.ResetStraddlingMaps,
+
+            // Item 3-1's verdict turns on this ratio and it had only ever been asserted. The
+            // dense path is the population a typed backing store would serve, and the numeric
+            // split is what it could actually hold unboxed.
+            denseWrites = PropertyStorageMetrics.DenseWrites,
+            denseNumericWrites = PropertyStorageMetrics.DenseNumericWrites,
+            denseReads = PropertyStorageMetrics.DenseReads,
+            denseNumericReads = PropertyStorageMetrics.DenseNumericReads,
         };
     }
 

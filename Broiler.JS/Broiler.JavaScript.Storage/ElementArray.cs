@@ -89,6 +89,8 @@ public struct ElementArray
                 Length = index + 1;
             kind = liveCount == Length ? ElementKind.Packed : ElementKind.Holey;
             dense[index] = property.value;
+            if (PropertyStorageMetrics.Enabled)
+                PropertyStorageMetrics.RecordDenseWrite(property.value);
             return;
         }
 
@@ -136,6 +138,8 @@ public struct ElementArray
             var stored = dense[index];
             if (stored != null)
             {
+                if (PropertyStorageMetrics.Enabled)
+                    PropertyStorageMetrics.RecordDenseRead(stored);
                 value = Rebuild(index, stored);
                 return true;
             }

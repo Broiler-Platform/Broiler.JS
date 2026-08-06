@@ -145,6 +145,63 @@ public static class PropertyStorageMetrics
     /// </summary>
     public static long ResetStraddlingMaps => Interlocked.Read(ref resetStraddlingMaps);
 
+    private static long denseWrites;
+    private static long denseNumericWrites;
+    private static long denseReads;
+    private static long denseNumericReads;
+
+    /// <summary>
+    /// Classifies a stored element as a JavaScript number. Set by whoever knows what one is —
+    /// this assembly does not, since <c>IPropertyValue</c> is an empty marker.
+    /// </summary>
+    /// <remarks>
+    /// A delegate rather than a type test so the Storage assembly keeps no dependency on the
+    /// Runtime one, and it is invoked only while <see cref="Enabled"/>.
+    /// </remarks>
+    public static Func<object, bool> IsNumericValue;
+
+    /// <summary>Writes that landed on the dense backing array.</summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Item 3-1's verdict turns on a ratio nobody had measured.</b> The item trades a write
+    /// allocation for a read allocation — a typed <c>double[]</c> stores a number without boxing
+    /// and cannot hand one back without boxing — so it is *"a wash at a 1:1 read/write ratio, a
+    /// win only when writes dominate, and a loss on read-heavy code"*. The section then asserts
+    /// that its named targets *"read each element many times per write, which is the unfavourable
+    /// direction"*, which is a claim about the corpus and was never counted.
+    /// </para>
+    /// <para>
+    /// Counted here, on the dense path only, because that is the population a typed store would
+    /// serve — a dictionary-kind array is outside the item entirely — and split by whether the
+    /// value is a number, because an array of strings or objects would make a corpus-wide ratio
+    /// describe arrays the item cannot help.
+    /// </para>
+    /// </remarks>
+    public static long DenseWrites => Interlocked.Read(ref denseWrites);
+
+    /// <summary>Those whose stored value was a number — what a typed store would hold unboxed.</summary>
+    public static long DenseNumericWrites => Interlocked.Read(ref denseNumericWrites);
+
+    /// <summary>Reads answered from the dense backing array.</summary>
+    public static long DenseReads => Interlocked.Read(ref denseReads);
+
+    /// <summary>Those that handed back a number — what a typed store would have to box.</summary>
+    public static long DenseNumericReads => Interlocked.Read(ref denseNumericReads);
+
+    internal static void RecordDenseWrite(object value)
+    {
+        Interlocked.Increment(ref denseWrites);
+        if (IsNumericValue != null && IsNumericValue(value))
+            Interlocked.Increment(ref denseNumericWrites);
+    }
+
+    internal static void RecordDenseRead(object value)
+    {
+        Interlocked.Increment(ref denseReads);
+        if (IsNumericValue != null && IsNumericValue(value))
+            Interlocked.Increment(ref denseNumericReads);
+    }
+
     /// <summary>Zeroes the histogram and the totals. Does not change <see cref="Enabled"/>.</summary>
     public static void Reset()
     {
@@ -155,6 +212,10 @@ public static class PropertyStorageMetrics
         Interlocked.Exchange(ref backingArrayResizes, 0);
         Interlocked.Exchange(ref nodesCopiedByResizes, 0);
         Interlocked.Exchange(ref resetStraddlingMaps, 0);
+        Interlocked.Exchange(ref denseWrites, 0);
+        Interlocked.Exchange(ref denseNumericWrites, 0);
+        Interlocked.Exchange(ref denseReads, 0);
+        Interlocked.Exchange(ref denseNumericReads, 0);
     }
 
     public static PropertyStorageSnapshot Snapshot()
