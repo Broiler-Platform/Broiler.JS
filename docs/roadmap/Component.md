@@ -1,17 +1,25 @@
-# Broiler.JS roadmap
+# Broiler.JS component roadmap
 
-This file is the current, unfinished-work roadmap. Completed compliance campaigns,
-performance phases, issue triage notes, and rename logs are represented by Git history
-and regression tests rather than retained as active plans.
+This file is the current, unfinished-work roadmap for everything **except** execution
+speed. Completed compliance campaigns, performance phases, issue triage notes, and rename
+logs are represented by Git history and regression tests rather than retained as active
+plans.
+
+> One of the four documents in [`docs/roadmap/`](README.md). **Execution speed is
+> [`Roadmap.md`](Roadmap.md)**, which is a plan in its own right and considerably
+> larger than this one; §4 below is the seam between them and carries only the deployment
+> evidence that is not part of it.
+>
+> This file was `docs/roadmap.md` until the 2026-08-07 consolidation.
 
 ## Sources of truth
 
 - `scripts/compliance/test262-failures.txt` is the current tracked-failure manifest.
-- `docs/compliance/dashboard.md` records publishable compliance evidence.
-- `docs/compliance/known-gaps.md` groups active semantic and host-coverage gaps.
+- `../compliance/dashboard.md` records publishable compliance evidence.
+- `../compliance/known-gaps.md` groups active semantic and host-coverage gaps.
 - `eng/performance/phase0.json` and `eng/performance/ownership.json` define performance
   jobs and semantic owners.
-- `docs/performance.md` explains how to collect comparable evidence.
+- `Measurement.md` explains how to collect comparable evidence.
 
 Do not duplicate a changing test count here. A roadmap item closes only after a local
 regression, the relevant pinned public-suite run, and an updated dashboard agree.
@@ -60,7 +68,7 @@ Broiler.Regex is routed only for a conservative set of semantic gaps; the .NET
 translator still handles the rest and still owns `Split`/`Replace`.
 
 The component-owned work is tracked in
-[`Broiler.Regex/docs/roadmap.md`](../Broiler.Regex/docs/roadmap.md).
+[`Broiler.Regex/docs/roadmap.md`](../../Broiler.Regex/docs/roadmap.md).
 Broiler.JS owns the integration gate:
 
 - route only features the native engine implements and tests;
@@ -74,8 +82,11 @@ The phase 0-5 optimization campaign is complete for the work it scoped (storage 
 startup, packaging, SIMD, tiering experiments). It did not leave the engine's steady-state
 execution paths finished: a subsequent investigation found that the object-shape layout and
 property inline cache those phases delivered are inert for most real JavaScript, and that
-three pieces of always-on bookkeeping dominate the call path. That work is planned in
-[Execution-performance roadmap](performance-roadmap.md) and is not tracked here.
+three pieces of always-on bookkeeping dominate the call path. That investigation became the
+[performance and benchmark roadmap](Roadmap.md) — phases 0–5, judged on Octane and the
+engine probes — and **none of it is tracked here.** The investigation itself is
+[`Archive.md`](Archive.md), which is an archive and carries
+diagnoses the plan has since corrected.
 
 The deployment evidence and product decisions still outstanding are:
 
@@ -89,12 +100,29 @@ The deployment evidence and product decisions still outstanding are:
 - keep function tiering, tagged-value experiments, and the portable Native AOT subset
   opt-in until their supported semantics and fallback behavior are release-tested.
 
+**Four of those are now owned by [`Assemblies.md`](Assemblies.md)** rather than tracked here,
+because they turn out to be one piece of work: resolving linker warnings before claiming
+trimmed support, removing legacy magic-name assembly probing, deciding whether feature
+satellites beyond the sample improve startup and working set, and making the portable subset
+a real capability rather than a numeric island. **The magic-name probing in particular is
+promoted from hygiene to blocker** — reflective discovery defeats Native AOT, so item A-7's
+gate cannot pass while it exists.
+
 No performance change closes on a one-machine smoke result. Use the repeatability and
-semantic gates in `docs/performance.md`.
+semantic gates in `Measurement.md`.
 
 ## 5. API, package, and preview readiness
 
-- Keep `docs/public-api.md` aligned with shipped assemblies and bootstrap profiles.
+> **The assembly layout this section governs is being re-laid.** Its first executable piece
+> is [`AssemblySplit.md`](AssemblySplit.md) — splitting `ExpressionCompiler` into model and
+> emitter, analyzed in full and behaviour-preserving.
+> [`Assemblies.md`](Assemblies.md) plans the rest: `Broiler.JS.Base` / `.Core` / `.IL` / `.Bytecode`
+> and their satellites, so that an application may reference either back end or both, and a
+> bytecode-only application publishes as Native AOT. It is not started. Its item **A-9** is
+> the `Broiler.JavaScript.*` → `Broiler.JS.*` rename, which is a **breaking change to every
+> assembly name and package id** and closes under the rules below.
+
+- Keep `../public-api.md` aligned with shipped assemblies and bootstrap profiles.
 - Add pristine-consumer tests for every package intended for external use.
 - Document breaking changes to assembly or bootstrap behavior before release.
 - Run the complete repository, compliance, packaging, trim, and benchmark gates.

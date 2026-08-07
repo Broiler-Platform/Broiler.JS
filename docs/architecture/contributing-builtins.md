@@ -7,7 +7,10 @@ feature it implements and follow the neighboring namespace and partial-class lay
 ## Choose the owning assembly
 
 Use `Broiler.JavaScript.BuiltIns` for ECMAScript objects, constructors, prototypes, and
-their algorithms. Do not place parser grammar, generic runtime storage, compiler
+their algorithms. A new built-in derives from `JSObject` (or `JSPrimitive`) and
+**wraps** whatever BCL type does its data — it never derives from one. Why that is a rule
+rather than a habit, and why `class JSArray : System.Array` does not even compile, is
+[Why the built-ins are not .NET types](builtins-vs-clr-types.md). Do not place parser grammar, generic runtime storage, compiler
 lowering, host globals, CLR interop, or module loading there merely because a built-in
 uses it.
 

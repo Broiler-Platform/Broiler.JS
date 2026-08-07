@@ -34,7 +34,7 @@ The public API follows assembly boundaries: lower-level projects (`Storage`, `As
 `FullEager` is a comparison/compatibility mode, and `Minimal` intentionally omits
 features. `Broiler.JavaScript.Portable` is not the full engine and must not be presented
 as Native AOT support for general JavaScript. See
-[Performance measurement and execution modes](performance.md).
+[Performance measurement and execution modes](roadmap/measurement.md).
 
 ## Documentation updates for new APIs
 

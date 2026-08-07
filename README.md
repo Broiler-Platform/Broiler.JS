@@ -68,7 +68,7 @@ aims to pass nearly the full suite, and conformance is tracked continuously in C
 |---|---|
 | [Compliance dashboard](docs/compliance/dashboard.md) | Current pass/fail status by feature area |
 | [Known gaps](docs/compliance/known-gaps.md) | Features not yet implemented |
-| [Current roadmap](docs/roadmap.md) | Active compliance, integration, performance, and release work |
+| [Roadmap](docs/roadmap/) | Every open plan for the engine: the component roadmap, the performance campaign, the acceptance gate, and the optimization catalogue |
 | [Compliance process](docs/compliance/process.md) | How test262 runs are managed in CI |
 
 ---
@@ -80,8 +80,8 @@ aims to pass nearly the full suite, and conformance is tracked continuously in C
 | [Public API reference](docs/public-api.md) | Supported packages, entry points, module boundaries |
 | [Architecture overview](docs/architecture/overview.md) | Engine layers and satellite assemblies |
 | [Assembly boundaries](docs/architecture/dependencies.md) | Dependency direction and supported cross-assembly seams |
-| [Performance measurement](docs/performance.md) | Repeatable baselines, bootstrap profiles, and execution-mode boundaries |
-| [Execution-performance roadmap](docs/performance-roadmap.md) | Measured hot-path findings and the plan to close them |
+| [Performance measurement](docs/roadmap/Measurement.md) | Repeatable baselines, bootstrap profiles, and execution-mode boundaries — the gate every performance claim passes |
+| [Performance and benchmark roadmap](docs/roadmap/Roadmap.md) | JavaScript execution speed: phases 0–5, the Octane and probe metrics they are judged on, and the evidence each still owes |
 | [Contributing built-ins](docs/architecture/contributing-builtins.md) | How to implement new built-in objects |
 | [LogParser usage](logs/README.md) | Shard log summarizer and JSON export |
 | [Contributing](CONTRIBUTING.md) | CI pipeline, test262 workflow, running tests locally |

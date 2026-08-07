@@ -2,7 +2,7 @@
 
 BenchmarkDotNet baseline for the Broiler.JS engine performance roadmap. Shared jobs,
 repeatability thresholds, EventPipe workloads, and the machine-readable result format
-are documented in `docs/performance.md`.
+are documented in `docs/roadmap/Measurement.md`.
 
 Run a focused smoke check:
 
@@ -21,8 +21,9 @@ python scripts/performance/collect_phase0.py --profile smoke
 ## The execution-roadmap probe corpus
 
 `HotPathProbeBenchmarks` is the permanent home of the Appendix A probes from
-`docs/performance-roadmap.md` — the scenarios every P0/P1/P2/P3 figure in that document
-was measured on. They lived in an ad-hoc harness outside the repository, which is why
+`docs/roadmap/Archive.md` — the scenarios every P0/P1/P2/P3 figure in that
+document was measured on. The current campaign's probes and their command lines are
+`docs/roadmap/Measurement.md`. They lived in an ad-hoc harness outside the repository, which is why
 none of those numbers is acceptance evidence; run these to reproduce or re-check them.
 
 ```bash

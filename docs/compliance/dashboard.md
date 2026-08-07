@@ -18,7 +18,7 @@ suite revision.
 
 The active failure clusters and host gaps are summarized in
 [Known compliance gaps](known-gaps.md). The completion order and exit gates are in the
-[repository roadmap](../roadmap.md).
+[repository roadmap](../roadmap/component.md).
 
 ## Running evidence
 

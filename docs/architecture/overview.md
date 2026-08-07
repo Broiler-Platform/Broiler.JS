@@ -19,9 +19,12 @@ Broiler.JS uses a layered architecture derived from earlier YantraJS concepts bu
 - Use the [extraction pattern](extraction-pattern.md) and
   [module-initializer/bootstrap guide](module-initializers.md) when changing an assembly
   boundary.
+- Why the built-ins are `JSArray`/`JSString` rather than `System.Array`/`System.String`,
+  and why they cannot derive from them:
+  [Why the built-ins are not .NET types](builtins-vs-clr-types.md).
 - Active performance, compliance, packaging, and release work is tracked in the
-  [repository roadmap](../roadmap.md). Repeatable measurement guidance lives in
-  [performance.md](../performance.md).
+  [repository roadmap](../roadmap/). Repeatable measurement guidance lives in
+  [acceptance.md](../roadmap/measurement.md).
 
 ## YantraJS migration status
 
