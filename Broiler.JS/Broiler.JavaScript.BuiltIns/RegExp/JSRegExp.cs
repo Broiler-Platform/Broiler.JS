@@ -279,6 +279,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
     internal Regex value;
 
+    // Matches this instance still has to perform before its pattern is worth a tiering
+    // decision (phase 5, item 2). Zero means "never ask": either the mechanism is switched
+    // off, or the decision has already been made for this instance. Counted down in RunMatch,
+    // which is the single entry every .NET-engine match goes through.
+    private int tierCountdown;
+
     // Non-null when the pattern contains at least one named capturing group: it
     // records the ECMAScript capture ordering and name→index mapping that .NET's
     // group renaming (see RewriteCaptureGroups) would otherwise lose. Null for
@@ -365,6 +371,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
         this.pattern = pattern;
 
         (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, this.flags) = CreateRegex(pattern, flags, out captureMap, out broiler);
+        ArmTiering();
 
         // Initialize lastIndex as an own data property (writable, non-configurable, non-enumerable)
         ref var ownProperties = ref GetOwnProperties();
@@ -376,11 +383,28 @@ public partial class JSRegExp : JSObject, IJSRegExp
         this.pattern = pattern;
 
         (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, this.flags) = CreateRegex(pattern, flags, out captureMap, out broiler);
+        ArmTiering();
 
         // Initialize lastIndex as an own data property (writable, non-configurable, non-enumerable)
         ref var ownProps = ref GetOwnProperties();
         ownProps.Put(KeyStrings.lastIndex, NumberZero, JSPropertyAttributes.Value);
     }
+
+    /// <summary>
+    /// Starts this instance's countdown to a tiering decision (phase 5, item 2), or leaves it at
+    /// zero when there is nothing to decide.
+    /// </summary>
+    /// <remarks>
+    /// Called after every assignment to <c>value</c> — both constructors and
+    /// <c>RegExp.prototype.compile</c>, which replaces the matcher on a live object and so must
+    /// re-arm rather than inherit the previous pattern's countdown. A pattern routed to
+    /// <c>Broiler.Regex</c> is left at zero: that engine has no compiled form to race against,
+    /// and <c>value</c> may not even exist for it.
+    /// </remarks>
+    private void ArmTiering()
+        => tierCountdown = RegexTiering.Enabled && broiler == null && value != null
+            ? RegexTiering.PromotionThreshold
+            : 0;
 
     /// <summary>
     /// Finds all regular expression matches within the given string.
@@ -995,6 +1019,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             pattern = RewriteCaptureGroups(pattern, unicode || unicodeSets, out captureMap);
 
             var compiled = new Regex(pattern, options);
+            RegexTieringDiagnostics.RecordPatternBuilt();
 
             // For a Broiler-routed pattern the capture layout that drives exec result
             // construction comes from Broiler (ECMAScript source order, native named

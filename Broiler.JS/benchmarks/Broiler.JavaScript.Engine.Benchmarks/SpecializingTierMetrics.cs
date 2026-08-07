@@ -610,6 +610,13 @@ internal static class SpecializingTierMetrics
         // values that ARE Numbers — i.e. how many a native form guarded on that test could reach.
         ArithmeticOperandDiagnostics.Reset();
         ArithmeticOperandDiagnostics.Enabled = counters;
+
+        // Phase 5, item 2: what the per-pattern Compiled decision actually did on this suite.
+        // Gated on `counters` like the rest — the pattern-build counter sits on JSRegExp
+        // construction, which a regex literal in a loop reaches once per evaluation, so leaving
+        // it on for a timing pass would charge exactly the suites this item is about.
+        Broiler.JavaScript.BuiltIns.RegExp.RegexTieringDiagnostics.Reset();
+        Broiler.JavaScript.BuiltIns.RegExp.RegexTieringDiagnostics.Enabled = counters;
         var allocatedBefore = GC.GetAllocatedBytesForCurrentThread();
 
         // The denominator phase 3 has never had. Every item in it is priced in boxes removed, and
@@ -662,6 +669,26 @@ internal static class SpecializingTierMetrics
         var speculation = Speculation.Snapshot();
         var properties = PropertyOptimizationDiagnostics.Snapshot();
         var callPath = CallPathDiagnostics.Snapshot();
+        var regexTiering = (
+            PatternsBuilt: Broiler.JavaScript.BuiltIns.RegExp.RegexTieringDiagnostics.PatternsRebuilt,
+            Races: Broiler.JavaScript.BuiltIns.RegExp.RegexTieringDiagnostics.RacesRun,
+            RacesPromoted: Broiler.JavaScript.BuiltIns.RegExp.RegexTieringDiagnostics.RacesPromoted,
+            VerdictsReused: Broiler.JavaScript.BuiltIns.RegExp.RegexTieringDiagnostics.VerdictsReused,
+            VerdictsReusedPromoted: Broiler.JavaScript.BuiltIns.RegExp.RegexTieringDiagnostics.VerdictsReusedPromoted,
+            RaceRounds: Broiler.JavaScript.BuiltIns.RegExp.RegexTieringDiagnostics.RaceRounds,
+            Detail: Broiler.JavaScript.BuiltIns.RegExp.RegexTieringDiagnostics.Races
+                .Select(r => new
+                {
+                    pattern = r.Pattern,
+                    subjectLength = r.SubjectLength,
+                    interpretedMs = Math.Round(r.InterpretedMs, 4),
+                    compiledMs = Math.Round(r.CompiledMs, 4),
+                    speedup = Math.Round(r.CompiledMs <= 0 ? 0 : r.InterpretedMs / r.CompiledMs, 3),
+                    promoted = r.Promoted,
+                    rounds = r.Rounds,
+                })
+                .ToArray());
+        Broiler.JavaScript.BuiltIns.RegExp.RegexTieringDiagnostics.Enabled = false;
         var split = outcome.Split('|', 2);
 
         return new
@@ -900,6 +927,25 @@ internal static class SpecializingTierMetrics
             strictTransitions = callPath.StrictTransitions,
             legacyFrames = callPath.LegacyFrames,
             thisCoercions = callPath.ThisCoercions,
+
+            // Phase 5, item 2. `regexPatternsBuilt` is every JSRegExp construction that
+            // translated a pattern and built a matcher — the engine caches nothing between
+            // them, so a regex literal inside a loop appears here once per evaluation. The
+            // other four say what the tiering policy did: how many patterns got hot enough
+            // to be worth a decision, which way each went, and how many instances inherited
+            // a decision rather than racing again. Read `regexRaces` first — on a corpus
+            // where it is zero the mechanism cannot have moved anything, and a wall-clock
+            // difference between the two arms is noise by construction.
+            regexPatternsBuilt = regexTiering.PatternsBuilt,
+            regexRaces = regexTiering.Races,
+            regexRacesPromoted = regexTiering.RacesPromoted,
+            regexVerdictsReused = regexTiering.VerdictsReused,
+            regexVerdictsReusedPromoted = regexTiering.VerdictsReusedPromoted,
+            regexRaceRounds = regexTiering.RaceRounds,
+
+            // Which patterns raced and on what numbers. The aggregate above cannot say whether
+            // "6 of 6 promoted" is the race working or the race being wrong; these rows can.
+            regexRaceDetail = regexTiering.Detail,
         };
     }
 }

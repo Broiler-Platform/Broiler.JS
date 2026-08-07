@@ -256,9 +256,20 @@ public partial class JSRegExp
 
     /// <summary>Runs a single match at <paramref name="start"/> via the active engine.</summary>
     internal RegexMatchData RunMatch(string input, int start)
-        => broiler != null
-            ? FromBroiler(broiler.Match(input, start))
-            : FromNet(value.Match(input, start));
+    {
+        if (broiler != null)
+            return FromBroiler(broiler.Match(input, start));
+
+        // Phase 5, item 2: the pattern's thousandth match is where it becomes worth asking
+        // whether `RegexOptions.Compiled` would serve it better, and the only honest way to ask
+        // is to run both on the subject in hand. The countdown is a plain field decrement on a
+        // path that already costs hundreds of nanoseconds, and it is zero — never taken — unless
+        // RegexTiering is switched on. See RegexTiering for why there is no predicate.
+        if (tierCountdown > 0 && --tierCountdown == 0)
+            value = RegexTiering.Decide(value, input, start);
+
+        return FromNet(value.Match(input, start));
+    }
 
     private static RegexMatchData FromBroiler(RegexMatch m)
     {

@@ -79,6 +79,7 @@ public partial class JSRegExp
         captureMap = nextCaptureMap;
         broiler = nextBroiler;
         (value, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, flags) = compiled;
+        ArmTiering();
         SetObservableLastIndex(0);
         return this;
     }

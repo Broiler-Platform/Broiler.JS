@@ -39,6 +39,7 @@
     { "id": "string-concatenation-rope", "priority": "P2", "benchmark": "JIntSmokeBenchmarks", "semanticOwner": "Broiler.JavaScript.BuiltIns.Tests", "manifest": "scripts/compliance/test262-language-basics.txt" },
     { "id": "call-frame-shadow-stack", "priority": "P3", "benchmark": "FunctionCallBenchmarks", "semanticOwner": "Broiler.JavaScript.Integration.Tests", "manifest": "scripts/compliance/test262-strict-mode.txt" },
     { "id": "shape-only-property-storage", "priority": "P2", "benchmark": "PropertyOperationBenchmarks", "semanticOwner": "Broiler.JavaScript.Compiler.Tests", "manifest": "scripts/compliance/test262-properties-proxy.txt" },
-    { "id": "scalar-parameter-bindings", "priority": "P3", "benchmark": "FunctionCallBenchmarks", "semanticOwner": "Broiler.JavaScript.Compiler.Tests", "manifest": "scripts/compliance/test262-strict-mode.txt" }
+    { "id": "scalar-parameter-bindings", "priority": "P3", "benchmark": "FunctionCallBenchmarks", "semanticOwner": "Broiler.JavaScript.Compiler.Tests", "manifest": "scripts/compliance/test262-strict-mode.txt" },
+    { "id": "per-pattern-regex-compilation", "priority": "P3", "benchmark": "BuiltInHeavyBenchmarks", "semanticOwner": "Broiler.JavaScript.BuiltIns.Tests", "manifest": "scripts/compliance/test262-properties-proxy.txt" }
   ]
 }

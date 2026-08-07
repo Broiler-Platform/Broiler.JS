@@ -85,6 +85,8 @@ and reported net of a control that carries the same loop without the thing under
 | `--element-alloc` | bytes per array element, write and read separately | 3-0, 3-1 |
 | `--local-alloc` | bytes per iteration for each place a value can live — a top-level `var`, a parameter, a `let`, a `const`, a block `var` — plus the compiler's own count of how many bindings it kept scalar | 3-3 |
 | `--regex-profile` | nanoseconds and bytes per subject character for nine regex shapes, plus real Octane patterns through `System.Text.RegularExpressions` with and without `RegexOptions.Compiled` | phase 5 |
+| `--regex-tiering` | the same eleven patterns through the ENGINE on both settings of `BROILER_JS_REGEX_TIERING`, with the race's verdict per pattern | phase 5, item 2 |
+| `--regex-call-envelope` | the same pattern and subject through `re.test` / `re.exec` / `String.prototype.search` and through `Regex.IsMatch` directly, at the same iteration count — so the difference is everything the engine does around a match | phase 5 |
 | `--property-map-distribution <octane-dir>` | the final node-group count of every property map over an Octane run | 2-7, 2-9 |
 
 `--local-alloc`'s two columns answer different questions and both are needed: the counter
