@@ -16,7 +16,10 @@ public class MethodRepository : IMethodRepository
 
     public class RuntimeMethod
     {
-        public DynamicMethod Method;
+        // MethodInfo, not DynamicMethod, to match IMethodRepository.RegisterNew — which is typed
+        // that way so the model assembly holding IMethodRepository stays free of Reflection.Emit.
+        // Every value stored here is still a DynamicMethod.
+        public MethodInfo Method;
         public string IL;
         public string Exp;
         public Type Type;
@@ -28,7 +31,7 @@ public class MethodRepository : IMethodRepository
         internal DeferredMethod Deferred;
     }
 
-    public ulong RegisterNew(DynamicMethod d, string il, string exp, Type type)
+    public ulong RegisterNew(MethodInfo d, string il, string exp, Type type)
     {
         var x = GCHandle.Alloc(new RuntimeMethod {
             Method = d,

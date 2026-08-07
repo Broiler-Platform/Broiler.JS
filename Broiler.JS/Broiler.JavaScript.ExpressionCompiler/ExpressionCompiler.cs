@@ -10,12 +10,6 @@ using Broiler.JavaScript.ExpressionCompiler.Generator;
 
 namespace Broiler.JavaScript.ExpressionCompiler;
 
-public interface IMethodRepository
-{
-    object Create(Box[] boxes, ulong id);
-    ulong RegisterNew(DynamicMethod d, string il, string exp, Type type);
-}
-
 public static class ExpressionCompiler
 {
 

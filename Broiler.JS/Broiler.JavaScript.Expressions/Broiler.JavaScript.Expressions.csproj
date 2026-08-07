@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -13,8 +13,12 @@
 	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Broiler.JavaScript.Expressions\Broiler.JavaScript.Expressions.csproj" />
-  </ItemGroup>
+  <!-- The point of this assembly: it must stay free of System.Reflection.Emit, so the
+       trim and AOT analyzers can be pointed at it. The warning count they report is the
+       evidence Assemblies.md item A-0 is waiting on. -->
+  <PropertyGroup>
+    <IsTrimmable>true</IsTrimmable>
+    <IsAotCompatible>true</IsAotCompatible>
+  </PropertyGroup>
 
 </Project>

@@ -296,7 +296,7 @@ public class M7ValidationTests
             "Broiler.JavaScript.Storage",
             "Broiler.JavaScript.Parser",
             "Broiler.JavaScript.Ast",
-            "Broiler.JavaScript.ExpressionCompiler",
+            "Broiler.JavaScript.Expressions",
         };
 
         var disallowed = coreRefs.Except(allowedRefs).ToList();

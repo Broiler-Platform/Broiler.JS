@@ -144,12 +144,23 @@ public class DictionaryCodeCache : ICodeCache
             // nested request runs inline. Worth doing here because this is the cache every
             // script, module and Function constructor goes through, and the handoff is the
             // whole cost of the mechanism.
+            // Resolved through the back-end contract rather than the emitter's own entry point:
+            // the runtime states which back end it wants and gets whichever assembly implements
+            // it, which is what lets this layer sit below the emitter instead of on top of it.
             return ExpressionCompiler.CompilationStack.Run(
-                () => compiler().CompileWithNestedLambdas(new ExpressionCompilationOptions
+                () =>
                 {
-                    Backend = compilationOptions.Backend,
-                    EnableJavaScriptTailCalls = compilationOptions.ScriptHostMode
-                }).Value,
+                    var options = new ExpressionCompilationOptions
+                    {
+                        Backend = compilationOptions.Backend,
+                        EnableJavaScriptTailCalls = compilationOptions.ScriptHostMode
+                    };
+
+                    return ExpressionCompilationBackends
+                        .Get(options.Backend)
+                        .Compile(compiler(), options)
+                        .Value;
+                },
                 sourceLength);
         }
         finally

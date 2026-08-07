@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using System;
 using System.CodeDom.Compiler;
@@ -297,7 +297,7 @@ public abstract class BExpression(BExpressionType nodeType, Type type)
     public static BBinaryExpression Equal(BExpression left, BExpression right)
          => Binary(left, BOperator.Equal, right);
 
-    internal static BNewExpression CallNew(
+    public static BNewExpression CallNew(
         ConstructorInfo constructor, params BExpression[] args) => new(constructor, args.AsSequence(), true);
 
     public static BBinaryExpression Or(BExpression left, BExpression right)

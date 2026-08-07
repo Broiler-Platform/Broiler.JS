@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ public class BLambdaExpression: BExpression
     [AllowNull]
     public BParameterExpression This { get; private set; }
 
-    internal BExpression<T> As<T>() => new(Name, Body, This, Parameters, ReturnType);
+    public BExpression<T> As<T>() => new(Name, Body, This, Parameters, ReturnType);
 
 
     public readonly Type[] ParameterTypes;
@@ -74,14 +74,14 @@ public class BLambdaExpression: BExpression
     /// when its enclosing scope exists. A tree is built once per compilation and never shared
     /// between them, so this is a fact about this tree and not cached state.
     /// </remarks>
-    internal bool ClosureRewritten { get; set; }
+    public bool ClosureRewritten { get; set; }
 
-    internal void SetupAsClosure()
+    public void SetupAsClosure()
     {
         This ??= Parameter(typeof(Closures), "this");
     }
 
-    internal BLambdaExpression WithThis(Type type)
+    public BLambdaExpression WithThis(Type type)
     {
         if (This != null)
             throw new ArgumentOutOfRangeException();

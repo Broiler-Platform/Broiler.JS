@@ -13,13 +13,13 @@ public static class ILSpecializationDiagnostics
     private static long stringHashSwitches;
     private static long switchTableSlots;
 
-    internal static void RecordDenseIntegerSwitch(int slots)
+    public static void RecordDenseIntegerSwitch(int slots)
     {
         Interlocked.Increment(ref denseIntegerSwitches);
         Interlocked.Add(ref switchTableSlots, slots);
     }
 
-    internal static void RecordStringHashSwitch(int slots)
+    public static void RecordStringHashSwitch(int slots)
     {
         Interlocked.Increment(ref stringHashSwitches);
         Interlocked.Add(ref switchTableSlots, slots);
