@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using Broiler.JavaScript.BuiltIns;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
@@ -214,41 +215,59 @@ public class Phase2ValidationTests
     }
 
     // ── M13: ExpressionCompiler Assessment ─────────────────────────────
+    //
+    // M13 concluded no-go on decomposition and these tests asserted the monolith.
+    // docs/roadmap/AssemblySplit.md supersedes that conclusion: the model and the emitter are
+    // now two assemblies, and what is worth asserting is that they stayed apart. The invariant
+    // itself lives in AssemblySplitValidationTests; these two keep M13's original questions —
+    // where the functional groups are, and what the bottom of the graph references.
 
     [Fact]
-    public void M13_ExpressionCompiler_RemainsMonolithic()
+    public void M13_ExpressionCompiler_SplitsIntoModelAndEmitter()
     {
-        // M13 concluded no-go on decomposition. Verify the assembly exists as one unit.
-        var ecAssembly = typeof(ExpressionCompiler.Expressions.BExpression).Assembly;
-        Assert.Equal("Broiler.JavaScript.ExpressionCompiler", ecAssembly.GetName().Name);
+        var modelAssembly = typeof(ExpressionCompiler.Expressions.BExpression).Assembly;
+        Assert.Equal("Broiler.JavaScript.Expressions", modelAssembly.GetName().Name);
 
-        // Verify key functional groups coexist in same assembly:
-        var types = ecAssembly.GetTypes().Select(t => t.Name).ToList();
+        var emitterAssembly = typeof(ExpressionCompiler.Runtime.RuntimeAssembly).Assembly;
+        Assert.Equal("Broiler.JavaScript.ExpressionCompiler", emitterAssembly.GetName().Name);
 
-        // Y-expression types:
-        Assert.Contains("BExpression", types);
-        Assert.Contains("BBinaryExpression", types);
-        Assert.Contains("BConstantExpression", types);
+        var modelTypes = modelAssembly.GetTypes().Select(t => t.Name).ToList();
+        var emitterTypes = emitterAssembly.GetTypes().Select(t => t.Name).ToList();
 
-        // IL Code Generator:
-        Assert.Contains("ILCodeGenerator", types);
+        // Y-expression types — the model.
+        Assert.Contains("BExpression", modelTypes);
+        Assert.Contains("BBinaryExpression", modelTypes);
+        Assert.Contains("BConstantExpression", modelTypes);
 
-        // Runtime support:
-        Assert.Contains("RuntimeAssembly", types);
+        // IL code generation and runtime support — the emitter.
+        Assert.Contains("ILCodeGenerator", emitterTypes);
+        Assert.Contains("RuntimeAssembly", emitterTypes);
+
+        // And they are not in both.
+        Assert.DoesNotContain("ILCodeGenerator", modelTypes);
+        Assert.DoesNotContain("BBinaryExpression", emitterTypes);
     }
 
     [Fact]
-    public void M13_ExpressionCompiler_IsLeafDependency()
+    public void M13_ExpressionModel_IsLeafDependency()
     {
-        // ExpressionCompiler should not reference any other Broiler assemblies.
-        var ecAssembly = typeof(ExpressionCompiler.Expressions.BExpression).Assembly;
-        var refs = ecAssembly.GetReferencedAssemblies()
+        // The model is the bottom of the graph: it references no other Broiler assembly.
+        // The emitter sits directly above it and references exactly one — the model.
+        var modelAssembly = typeof(ExpressionCompiler.Expressions.BExpression).Assembly;
+        Assert.Empty(BroilerReferencesOf(modelAssembly));
+
+        var emitterAssembly = typeof(ExpressionCompiler.Runtime.RuntimeAssembly).Assembly;
+        Assert.Equal(
+            ["Broiler.JavaScript.Expressions"],
+            BroilerReferencesOf(emitterAssembly));
+    }
+
+    private static List<string> BroilerReferencesOf(Assembly assembly)
+        => assembly.GetReferencedAssemblies()
             .Select(a => a.Name)
             .Where(n => n != null && n.StartsWith("Broiler."))
-            .ToList();
-
-        Assert.Empty(refs);
-    }
+            .OrderBy(n => n, StringComparer.Ordinal)
+            .ToList()!;
 
     // ── M14: Cross-Cutting Validation ──────────────────────────────────
 

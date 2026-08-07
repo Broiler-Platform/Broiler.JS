@@ -7,7 +7,10 @@ using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
 namespace Broiler.JavaScript.ExpressionCompiler;
 
-internal static class TypeExtensions
+// Public rather than internal because the emitter assembly's ILWriter uses Quoted() and
+// GetFriendlyName() for its diagnostic output. The alternative — InternalsVisibleTo — is the
+// trapdoor AssemblySplit.md's S-0 warns about: it would compile while preserving the coupling.
+public static class TypeExtensions
 {
 
     public static string Quoted(this string text)
@@ -77,31 +80,5 @@ internal static class TypeExtensions
             return $"{type.Name}<>";
         }
         return type.Name;
-    }
-
-    public static System.Reflection.Emit.MethodBuilder CreateMethod(
-        this System.Reflection.Emit.TypeBuilder type,
-        BLambdaExpression exp,
-        string name, bool hasThis)
-    {
-        var dt = exp.Type;// this is delegate type...
-        MethodInfo invoke = dt.GetMethod("Invoke");
-        var pa = invoke.GetParameters();
-        var pat = pa.Select(x => x.ParameterType).ToArray();
-        var m = type.DefineMethod(
-            name, 
-            MethodAttributes.Public, 
-            hasThis ? CallingConventions.HasThis : CallingConventions.Standard,
-            invoke.ReturnType,
-            pat);
-
-        for (int i = 0; i < pa.Length; i++)
-        {
-            var p = pa[i];
-            var pd = m.DefineParameter(i + 1, ParameterAttributes.None, p.Name);
-        }
-
-
-        return m;
     }
 }

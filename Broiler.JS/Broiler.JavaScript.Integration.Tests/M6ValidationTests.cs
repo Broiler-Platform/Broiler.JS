@@ -281,7 +281,9 @@ public class M6ValidationTests
         // Engine must reference Foundation assemblies.
         Assert.Contains("Broiler.JavaScript.Runtime", engineRefs);
         Assert.Contains("Broiler.JavaScript.Storage", engineRefs);
-        Assert.Contains("Broiler.JavaScript.ExpressionCompiler", engineRefs);
+        // The expression model, not the IL emitter: Engine was re-pointed at it by S-4 of
+        // docs/roadmap/AssemblySplit.md and no longer references the emitter directly.
+        Assert.Contains("Broiler.JavaScript.Expressions", engineRefs);
     }
 
     // ── 6.6: Performance Baseline ──────────────────────────────────────

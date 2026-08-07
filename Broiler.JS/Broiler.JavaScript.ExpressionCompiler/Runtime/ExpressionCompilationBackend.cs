@@ -1,66 +1,22 @@
 #nullable enable
 using System;
+using System.Runtime.CompilerServices;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 
 namespace Broiler.JavaScript.ExpressionCompiler.Runtime;
 
-public enum ExpressionCompilationBackend
+// The IL half of what used to be one file. The contract, the options and the result stayed on
+// the model side; everything here emits, and everything here is internal, so splitting the file
+// is not an API change. The two implementations register themselves rather than being reached
+// by a switch in the model — see ExpressionCompilationBackends.
+internal static class ILExpressionCompilationBackends
 {
-    DynamicMethod,
-    CollectibleAssembly
-}
-
-public sealed class ExpressionCompilationOptions
-{
-    public static ExpressionCompilationOptions Default { get; } = new();
-
-    public ExpressionCompilationBackend Backend { get; init; } = ExpressionCompilationBackend.DynamicMethod;
-
-    public bool CaptureDiagnostics { get; init; }
-
-    public bool EnableJavaScriptTailCalls { get; init; }
-}
-
-public sealed class ExpressionCompilationResult<T>
-{
-    public ExpressionCompilationResult(
-        T value,
-        ExpressionCompilationBackend backend,
-        string? il = null,
-        string? expression = null)
+    [ModuleInitializer]
+    internal static void Register()
     {
-        Value = value;
-        Backend = backend;
-        IL = il ?? string.Empty;
-        Expression = expression ?? string.Empty;
+        ExpressionCompilationBackends.Register(DynamicMethodExpressionCompilationBackend.Instance);
+        ExpressionCompilationBackends.Register(CollectibleAssemblyExpressionCompilationBackend.Instance);
     }
-
-    public T Value { get; }
-
-    public ExpressionCompilationBackend Backend { get; }
-
-    public string IL { get; }
-
-    public string Expression { get; }
-
-    public bool HasDiagnostics => IL.Length != 0 || Expression.Length != 0;
-}
-
-public interface IExpressionCompilationBackend
-{
-    ExpressionCompilationBackend Backend { get; }
-
-    ExpressionCompilationResult<T> Compile<T>(BExpression<T> expression, ExpressionCompilationOptions options);
-}
-
-internal static class ExpressionCompilationBackends
-{
-    public static IExpressionCompilationBackend Get(ExpressionCompilationBackend backend) => backend switch
-    {
-        ExpressionCompilationBackend.DynamicMethod => DynamicMethodExpressionCompilationBackend.Instance,
-        ExpressionCompilationBackend.CollectibleAssembly => CollectibleAssemblyExpressionCompilationBackend.Instance,
-        _ => throw new ArgumentOutOfRangeException(nameof(backend), backend, null)
-    };
 }
 
 internal sealed class DynamicMethodExpressionCompilationBackend : IExpressionCompilationBackend

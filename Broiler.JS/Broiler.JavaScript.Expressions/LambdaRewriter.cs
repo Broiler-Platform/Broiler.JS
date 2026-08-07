@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -36,7 +36,7 @@ public class ClosureRepository
         return value;
     }
 
-    internal bool TryGet(BParameterExpression pe, out BExpression exp)
+    public bool TryGet(BParameterExpression pe, out BExpression exp)
     {
         if (Closures.TryGetValue(pe, out var ve))
         {

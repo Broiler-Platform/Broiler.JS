@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Broiler.JavaScript.Ast\Broiler.JavaScript.Ast.csproj" />
-    <ProjectReference Include="..\Broiler.JavaScript.ExpressionCompiler\Broiler.JavaScript.ExpressionCompiler.csproj" />
+    <ProjectReference Include="..\Broiler.JavaScript.Expressions\Broiler.JavaScript.Expressions.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Runtime\Broiler.JavaScript.Runtime.csproj" />
   </ItemGroup>
 </Project>

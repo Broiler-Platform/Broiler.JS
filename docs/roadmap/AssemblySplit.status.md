@@ -1,17 +1,18 @@
 # Assembly split — status
 
-**Not started.** What follows is the analysis [`AssemblySplit.md`](AssemblySplit.md) is
-designed against: a symbol-level study of `Broiler.JavaScript.ExpressionCompiler`, run
-2026-08-07.
+**S-0 through S-6 done; S-7 in progress.** `Broiler.JavaScript.Expressions` exists, contains
+no `System.Reflection.Emit`, and the six dependents are re-pointed at it. Sections 0 and 7
+below are the build's findings; sections 1–6 are the symbol analysis
+[`AssemblySplit.md`](AssemblySplit.md) was designed against, run 2026-08-07, **left as
+written so the two can be compared** — §0 lists the four places it was wrong.
 
 > The evidence half of [`AssemblySplit.md`](AssemblySplit.md). **The plan document is the
 > one to act from.**
 >
-> **This is symbol analysis, not a build.** It establishes that no *reference* crosses the
-> proposed split. It does **not** establish that the two projects compile — `internal`
-> visibility, `partial` types spanning both sides, and source-generator output are invisible
-> to it, and each can turn an S into an L. **Step S-0 is what finds out**, and its result
-> belongs in this file.
+> **Sections 1–6 are symbol analysis, not a build.** They establish that no *reference*
+> crosses the proposed split. They do **not** establish that the two projects compile —
+> `internal` visibility, `partial` types spanning both sides, and source-generator output are
+> invisible to them. **Step S-0 is what found out; §0 is its result.**
 
 ---
 
@@ -19,10 +20,124 @@ designed against: a symbol-level study of `Broiler.JavaScript.ExpressionCompiler
 
 | | |
 |---|---|
-| Steps started | **0** |
-| Steps landed | **0** |
-| Blocked on | **S-0 · Confirm by building** |
-| Analysis | **complete, and it says the split is clean** |
+| Steps started | **8 of 8** |
+| Steps landed | **7** — S-0 … S-6 |
+| Blocked on | **S-7 · test262 counts** (running) |
+| Analysis | **complete; four corrections in §0, none fatal** |
+| Decision 1 | taken as written — namespaces preserved, no consumer `using` changed |
+| Decision 2 | **taken as written** — the emitter keeps `Broiler.JavaScript.ExpressionCompiler`; the model is the new `Broiler.JavaScript.Expressions` |
+
+---
+
+## 0 · What S-0 found
+
+**Both projects compile, and the split is real at the binary level.** Scanning the built
+assemblies for references to the three `System.Reflection.Emit` facades:
+
+| Assembly | References |
+|---|---|
+| `Broiler.JavaScript.ExpressionCompiler` | `System.Reflection.Emit`, `.ILGeneration`, `.Lightweight` |
+| `Broiler.JavaScript.Expressions` | **none** |
+
+`Ast`, `Storage` and `Parser` likewise reference none, and none of the four reaches the
+emitter transitively. S-6's architecture tests assert exactly this
+(`AssemblySplitValidationTests`), and they are not vacuous — the emitter's three references
+are what makes the negative meaningful.
+
+### The four corrections to the analysis below
+
+1. **§1's "no model→emitter back-edge behind a convenience method" is wrong.**
+   `LinqExtensions.cs` — assigned model-side in §3 — calls `CompileInAssembly()`,
+   `Compile()` and `CompileWithNestedLambdas()` on `BExpression<T>`, all three of which are
+   emitter-side extension methods. It is emitter-side. So is `DynamicHelper.cs`, which wraps
+   it. (`DynamicHelper` turns out to have no callers at all; it was moved rather than
+   deleted, because deleting is not a move.)
+2. **There were four file cuts, not two.** §3 and §4 name `TypeExtensions.cs` and
+   `Runtime/ExpressionCompilationBackend.cs`. Two more were forced by the build:
+   - `ExpressionCompiler.cs` declares `IMethodRepository`, and `Closures` — model-side, and
+     used by four other model files — holds one. Its only Emit-typed member was
+     `RegisterNew(DynamicMethod, …)`; **`DynamicMethod` derives from `MethodInfo`, which is
+     `System.Reflection`, not `System.Reflection.Emit`**, so the interface moved to the model
+     with that one parameter widened. `MethodRepository.RuntimeMethod.Method` widened to
+     match. Every value stored is still a `DynamicMethod`.
+   - `Runtime/RuntimeMethodBuilder.cs` also declares `ClosureRewriteDiagnostics`, which
+     counts `LambdaRewriter`'s walk. Both sides report into it, so it was extracted to a
+     model-side file of its own beside the walk it counts.
+3. **The directory counts in §2 and §6 are stale.** `Generator/` holds 53 files, not 33;
+   `Expressions/` holds 56. The assignment is unaffected — all 53 are emitter-side.
+4. **S-3's premise is narrower than stated.** `ExpressionCompilationBackends.Get()`'s only
+   caller was `RuntimeAssembly.CompileWithNestedLambdas`, which is *itself* emitter-side — so
+   the `switch` **could** have stayed put, emitter-side, and compiled. Registration was
+   implemented anyway, as directed, and it earned its keep: it is what let
+   `Broiler.JavaScript.Runtime` drop its emitter reference entirely rather than keep it for
+   the one call in `DictionaryCodeCache`. S-4 asked for that; without S-3 it was not
+   available.
+
+### `internal` visibility — every member the split made inaccessible
+
+**No `InternalsVisibleTo` was added.** The one that already existed
+(`InternalsVisibleTo("Broiler.JavaScript.BuiltIns")`, for `JSClassBuilder.Initialize`) moved
+to the model with `AssemblyInfo.cs`, because the type it exists for moved; the emitter now
+grants none at all. Everything else became `public`:
+
+| Member | Side that lost access | Why it cannot be one side's |
+|---|---|---|
+| `TypeExtensions` (the class) | emitter | `ILWriter` needs `Quoted`/`GetFriendlyName`; twelve `Expressions/` files need `GetFriendlyName` |
+| `Closures.repositoryField`, `.boxesField`, `.constructor` | emitter | the emitter emits access *through* these handles |
+| `BExpression.CallNew` | emitter | `ExpressionCompiler.cs` and `LambdaMethodBuilder.cs` build closure-construction trees |
+| `BExpression<T>.WithThis<T1>`, `BLambdaExpression.WithThis` | emitter | `RuntimeAssembly` rebinds `this` before emitting |
+| `BLambdaExpression.As<T>`, `.SetupAsClosure`, `.ClosureRewritten` | emitter | the emitter drives closure setup |
+| `ClosureRepository.TryGet` | emitter | `ILCodeGenerator` resolves parameters through it |
+| `ILSpecializationDiagnostics.RecordDenseIntegerSwitch`, `.RecordStringHashSwitch` | emitter | the counters describe IL the emitter chose |
+| `ClosureRewriteDiagnostics.Rewrote`, `.Skipped`, `.BeginRepeatWalk`, `.EndRepeatWalk`, `.CaptureCreated` | both | the model reports one counter, the emitter the other four |
+| `ExpressionCompilationBackends` (the class) | emitter | it is the registry the emitter registers into |
+
+These are engine-internal by convention, not by accessibility. That is a real widening of the
+public surface and the honest price of the split; the alternative was the trapdoor.
+
+### Partial types and the source generator
+
+- **No `partial` type spans the split.** `LinqConverter`/`LinqConverters` are wholly within
+  `Converters/` (model); `ILCodeGenerator`'s 30-odd parts are wholly within `Generator/`
+  (emitter).
+- **`JSClassGenerator` emits nothing into either project.** It is referenced as an analyzer by
+  `Runtime`, `Engine` and `BuiltIns`; neither `ExpressionCompiler` nor `Expressions`
+  references it, and neither has generated output.
+
+### What it unblocked, measured rather than asserted
+
+**Every `System.Reflection.Emit` reference in the engine is now in one assembly.** Scanning
+the built output of `Broiler.JavaScript.Portable.Compiler`'s entire reference closure — the
+bytecode compiler, which is what [`Phase-6.md`](Phase-6.md) is waiting on:
+
+| Assembly in the closure | `System.Reflection.Emit` |
+|---|---|
+| `Portable.Compiler`, `Portable`, `Parser`, `Ast`, `Storage`, `Runtime`, `Expressions` | **none, all seven** |
+
+Before this change, `Portable.Compiler` → `Parser` → `ExpressionCompiler` put the emitter in
+that closure, which is why `Broiler.JavaScript.Portable` had to exist as an island with no
+references at all. **That edge is gone**, and
+`Broiler.JavaScript.Portable.Tests.BytecodeClosureIsEmitFreeTests` fails if it returns.
+
+This is not a working AOT configuration — that is [`Assemblies.md`](Assemblies.md)'s A-7 —
+but it is the precondition A-7 could not previously be attempted without.
+
+### Where the emitter reference survives, and why
+
+`Ast`, `Storage`, `Parser`, `Runtime` and `Engine` reference the model only.
+**`LinqExpressions` legitimately needs both** — `LinqExpressionsAssemblyInitializer` compiles
+the trees it builds — exactly as S-4 anticipated. The remaining references are the composition
+root (`Broiler.JavaScript`), `ModuleExtensions`, the benchmarks and two test projects.
+
+**On registration and load order.** The IL back ends register from a `[ModuleInitializer]`,
+which the CLR runs when the emitter assembly is first touched — not at process start. Nothing
+forces that to happen before `DictionaryCodeCache` asks for a back end, so the guarantee is
+compositional rather than static: every configuration that can compile JavaScript reaches the
+emitter through `LinqExpressions`, whose own module initializer compiles. If some future
+configuration does not, `Get()` throws naming the missing back end rather than falling back
+silently — which is the intended behaviour, since a bytecode-only configuration registers a
+bytecode back end instead. The 4 584 integration tests and 2 118 built-in tests all compile
+through `DictionaryCodeCache`, so the path is exercised, not merely argued.
 
 ---
 
@@ -171,14 +286,65 @@ The remainder is `obj/`, generated output, and the two cut files' unassigned hal
 
 ---
 
-## What S-0 must add to this file
+## 7 · The AOT and trim warning count
 
-1. **Whether the two projects compile** — the whole point of S-0.
-2. **Every `internal` type the split would make inaccessible**, and for each: whose side it
-   is, or whether it becomes `public`. **Record any `InternalsVisibleTo` added, and why** —
-   each one preserves a coupling the split exists to remove.
-3. **Any `partial` type spanning both sides.**
-4. **Whether `JSClassGenerator` emits into `ExpressionCompiler`.**
-5. **The AOT and trim warning count for the new model project** (step S-6), including zero.
-   This is the number [`Assemblies.md`](Assemblies.md)'s item A-0 most wants, and the first
-   real evidence about whether the rest of the restructure is cheap or expensive.
+`Broiler.JavaScript.Expressions` was created with `IsTrimmable` and `IsAotCompatible` set from
+the start, so this number is what the analyzers say about the model **as it stands**, with
+nothing annotated and nothing suppressed.
+
+**18 warnings, at 15 sites.** (A 19th, `CS0419`, is a pre-existing ambiguous `cref` in a doc
+comment on `DeferredCaptureLayout.cs` and has nothing to do with trimming.)
+
+| Code | Count | What it is |
+|---:|---:|---|
+| `IL2070` | 6 | `Type.GetMethod`/`GetConstructor` on a `Type` with no `DynamicallyAccessedMembers` annotation |
+| `IL3050` | 4 | `MakeGenericType`, `MakeArrayType`, `MakeGenericMethod` — `RequiresDynamicCode` |
+| `IL2080` | 3 | the same, reached through a field rather than a parameter |
+| `IL2075` | 3 | `GetField`/`GetProperty` on an unannotated `Type` |
+| `IL2060` | 1 | `MakeGenericMethod` that cannot be statically analyzed |
+
+| Site | Warnings |
+|---|---:|
+| `Expressions/BExpression.cs` | 6 |
+| `Expressions/JSClassBuilder.cs` | 4 |
+| `ClosureSeparator/Box.cs` | 3 |
+| `GenericHelper.cs` | 2 |
+| `Expressions/BNewArrayExpression.cs`, `BNewArrayBoundsExpression.cs`, `TypeExtensions.cs` | 1 each |
+
+**What this is evidence of, for [`Assemblies.md`](Assemblies.md)'s item A-0.** The count is
+small and it is concentrated: two thirds of it is in three files, and every one of the 18 is
+reflection over a `Type` the model already holds — not assembly probing, not
+`Assembly.Load`, not anything that needs a rooting descriptor. The `IL2xxx` group is the
+annotation-shaped kind: adding `DynamicallyAccessedMembers` to the `Type`-carrying members of
+`BExpression` would retire most of it without changing behaviour.
+
+**The four `IL3050`s are the ones that are not free.** `MakeGenericType`, `MakeArrayType` and
+`MakeGenericMethod` are `RequiresDynamicCode`: they are warnings about Native AOT, not about
+trimming, and no annotation removes them — the construction has to be avoided or the call
+sites have to be reachable from concrete instantiations. That is the real question A-0 was
+asking, and the answer is **four sites, all in generic/array type construction, none in the
+expression walk itself.**
+
+So: **cheap on the trim side, and bounded rather than open-ended on the AOT side.** This does
+not settle whether a bytecode-only Native AOT configuration works — it settles that the
+expression model is not what would stop it.
+
+---
+
+## 8 · Deviations from "the diff is `.csproj` files and file moves"
+
+Exit gate 4 asks for these to be named. Beyond the four file cuts in §0:
+
+| Change | Why it is not a move |
+|---|---|
+| `IMethodRepository.RegisterNew` and `MethodRepository.RuntimeMethod.Method` widened from `DynamicMethod` to `MethodInfo` | required to get the interface out of the emitter; source-compatible for callers, and every stored value is still a `DynamicMethod` |
+| `ExpressionCompilationBackends.Get` resolves from a registry instead of a `switch` | S-3, as directed. Registration is an explicit call from a `[ModuleInitializer]` in the assembly that owns the implementations — no reflection, no assembly-name probing |
+| `DictionaryCodeCache.Compile` calls `ExpressionCompilationBackends.Get(…).Compile(…)` instead of `CompileWithNestedLambdas(…)` | S-5. Drops one nested `CompilationStack.Run`, which ran inline and is immediately re-entered by the enclosing one |
+| ~20 members widened to `public` | tabulated in §0; the alternative was `InternalsVisibleTo` |
+| `M13_ExpressionCompiler_RemainsMonolithic` rewritten | it asserted the monolith this change removes. M13's "no-go on decomposition" is superseded by [`AssemblySplit.md`](AssemblySplit.md); the test now asserts the split, and `M6`/`M7`'s allowed-reference lists name the model |
+
+**One unrelated repair.** The tree did not build at the commit this branch started from:
+`cece6f2c` ("Update docs") removed `Broiler.JavaScript.Ast`'s only `ProjectReference` while
+leaving `Ast` using `ExpressionCompiler.Core` types, so `Ast` and everything above it failed
+with 76 `CS0246`s. S-4 supplies the reference `Ast` needs — to `Expressions` — so the repair
+and the step are the same edit. The baseline for S-7 was taken with the removed line restored.
