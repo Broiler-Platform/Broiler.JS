@@ -417,9 +417,21 @@ public partial class JSGenerator : JSObject, IJSGenerator
         }
     }
 
-    // Awaits a thenable on the pumped synchronization context (see
-    // JSAsyncFunction.ToPromise for the rationale), invoking onFulfilled/onRejected
-    // with the settled value/reason; the returned promise resolves to their result.
+    // Awaits a thenable and resumes the async generator with the settled value/reason; the returned
+    // promise resolves to onFulfilled/onRejected's result.
+    //
+    // Resuming an async generator runs the rest of its body, which is user JavaScript, so where the
+    // resumption is dispatched is the same decision a promise reaction makes — and JSContext.PostJob
+    // owns that decision for the whole engine. This used to make its own: prefer whatever
+    // SynchronizationContext happened to be current, and fall back to ThreadPool.QueueUserWorkItem
+    // when there was none. Those are exactly the two answers JSMicrotaskQueue's remarks record as
+    // wrong, both of which let a second thread into the context; JSPromise.Post and
+    // JSAsyncFunction.ToPromise were moved off them and this was the one site left behind.
+    //
+    // `continuationContext` is captured HERE rather than read inside Queue, matching
+    // JSAsyncFunction: a thenable calls back from wherever its `then` decides, which can be later
+    // and on another thread, and by then the pump this await belongs to is no longer current. It is
+    // passed to PostJob as the `captured` argument, where only an IJSJobPump is trusted.
     private static JSValue AwaitThenable(JSValue thenable, Func<JSValue, JSValue> onFulfilled, Func<JSValue, JSValue> onRejected)
     {
         var continuationContext = SynchronizationContext.Current
@@ -427,13 +439,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
 
         return (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) =>
         {
-            void Queue(Action action)
-            {
-                if (continuationContext != null)
-                    continuationContext.Post(_ => action(), null);
-                else
-                    ThreadPool.QueueUserWorkItem(_ => action());
-            }
+            void Queue(Action action) => JSContext.PostJob(action, continuationContext);
 
             thenable.InvokeMethod(in KeyStrings.then,
                 CreateFunction((in Arguments a) =>
