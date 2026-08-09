@@ -4,7 +4,9 @@ Every open plan for this engine, and the rules that decide when one of them may 
 
 ## The convention: `X.md` is the plan, `X.status.md` is the evidence
 
-Every plan in this directory is split in two, and the split is the point:
+Every evidence-owning delivery plan in this directory is split in two, and the split is
+the point. Cross-track orchestration and reference documents are listed separately below;
+they own no implementation state:
 
 - **`X.md` — the plan.** What each item *is*, why it is worth doing, what to do next, how
   big it is, which assemblies own it, and the gate it closes against. A state is one line
@@ -43,9 +45,9 @@ that may cancel it:
 
 **Why track two exists at all:** Broiler.JS has **no general JavaScript execution path on a
 platform that forbids `System.Reflection.Emit`**. The compiler back end is an IL writer;
-the AOT-safe path is 301 lines and 20 `double`-only opcodes. That is a *capability* gap, not
-a performance one — and separately, phase 6 would create the interpreter frame that phase
-4's item 4-3 could not find and had to design around. The full argument is
+the current portable path is a deliberately limited numeric subset. That is a *capability*
+gap, not a performance one — and separately, phase 6 would create the interpreter frame
+that phase 4's item 4-3 could not find and had to design around. The full argument is
 [`Roadmap.md` § Track two](Roadmap.md#track-two--the-vm-tier-phases-69).
 
 **It is not a speed-up.** Wherever `Reflection.Emit` works, an interpreter is slower than
@@ -56,19 +58,21 @@ time:
 
 | Subject | Plan | Evidence |
 |---|---|---|
-| **The assembly restructure** — `Broiler.JS.Base` / `.Core` / `.IL` / `.Bytecode` | [`Assemblies.md`](Assemblies.md) | [`Assemblies.status.md`](Assemblies.status.md) — a census, nothing started |
-| **The `ExpressionCompiler` split** — the restructure's first executable piece | [`AssemblySplit.md`](AssemblySplit.md) | [`AssemblySplit.status.md`](AssemblySplit.status.md) — analyzed in full, not started |
+| **The assembly restructure** — backend-neutral foundations / `.IL` / `.Bytecode` / optional packages | [`Assemblies.md`](Assemblies.md) | [`Assemblies.status.md`](Assemblies.status.md) — initial graph work implemented; target-graph and validation work remains |
+| **The `ExpressionCompiler` split** — the restructure's first executable piece | [`AssemblySplit.md`](AssemblySplit.md) | [`AssemblySplit.status.md`](AssemblySplit.status.md) — implementation landed; final validation remains open |
 
-**Why it exists:** `Broiler.JavaScript.ExpressionCompiler` — the IL emitter — has **no
-project references**, and the AST, property storage, the parser and the runtime all depend
-on it. **No subset of the graph runs JavaScript without dynamic code.** The restructure
-removes that edge so an application can reference the IL back end, the bytecode back end, or
-both — and a bytecode-only application publishes as Native AOT.
+**Why it exists:** the model/emitter split removed the front-end consumers' direct dependency
+on the IL emitter. The remaining restructure must prove an acyclic backend-neutral semantic
+front end, isolate every runtime Emit dependency in the IL profile, preserve consumers, and
+make a bytecode-only Native AOT profile a publish-and-run property.
 
-Three documents are not part of either track and are not split:
+Cross-cutting and reference documents sit above or beside the two tracks and are not split.
+`Modernization.md` is an orchestration overlay rather than an independent evidence ledger;
+its work records evidence in the owning plan/status pair:
 
 | | |
 |---|---|
+| [`Modernization.md`](Modernization.md) | **The cross-track execution roadmap.** It orders the audit cleanup, trustworthy baselines, an achievable assembly graph, IL/AOT isolation, package decomposition, bounded compile-ahead, independent-context safety, Workers, profile-led optimization, and the bytecode-VM decision. It owns dependencies and program gates; changing evidence remains in the linked `*.status.md` records. |
 | [`Measurement.md`](Measurement.md) | **The gate, and §3 of the campaign.** What may be *claimed* — repeatability bands, the RID matrix, bootstrap profiles, the boundary around the experimental execution modes — plus the protocol, the conformance gates, the standing measurement lessons (§3.5) and every probe's command line (Appendix A). **It governs everything above.** It is not split because it is *all* rules: it has no status. |
 | [`Component.md`](Component.md) | The engine's non-performance roadmap: closing the supported test262 failure set, expanding host-mode coverage, finishing RegExp backend adoption, and API/package/preview readiness. |
 | [`Archive.md`](Archive.md) | **Both** superseded plans — the engine campaign (P0–P3, phases A–F) and the Octane roadmap (phases 0–5) — merged into `Roadmap.md` on 2026-08-01 and **not back-ported**. Kept for their measurements, their defect narratives, and the scope exclusions later overturned. Where an archive and `Roadmap.md` disagree, `Roadmap.md` is current. |
@@ -77,6 +81,7 @@ Three documents are not part of either track and are not split:
 
 | If you are… | Read |
 |---|---|
+| **planning work that crosses performance, assemblies, AOT, or concurrency** | [`Modernization.md`](Modernization.md) for ordering and stop/go gates, then the linked owning plan and its status record. |
 | **picking up performance work** | [`Roadmap.md`](Roadmap.md) for the sequencing, then the phase's plan document, then [`Measurement.md` §3.5](Measurement.md#35-standing-measurement-lessons) *before* designing a probe. Those lessons exist because the campaign has repeatedly measured the wrong thing in an instructive way. |
 | **deciding whether a number may be published** | [`Measurement.md`](Measurement.md), and the answer is usually *not yet*. |
 | **checking a claim** | the matching `*.status.md`. Every figure is attached to the run that produced it. |
@@ -84,31 +89,23 @@ Three documents are not part of either track and are not split:
 | **doing conformance, host-mode or packaging work** | [`Component.md`](Component.md). |
 | **wondering why a technique is not on the plan** | [the optimization catalogue](Roadmap.md#the-optimization-catalogue--the-design-space-this-plan-was-chosen-out-of), which marks twelve as never scoped and nine as inapplicable to an engine that compiles to IL rather than bytecode. |
 
-## What is actually open
+## Where open work is recorded
 
-Four things, and only one of them is large:
-
-1. **Phase 1's item 1-1**, the deferral half — the front end, and page-load time. **L.**
-2. **Phase 3's item 3-1**, the storage half — re-opened as unmeasured against the eight
-   suites the census never ran. **XL, bidding for under 2%.**
-3. **Phase 4's item 4-5**, the fixed cost of a call — the phase's largest measured target,
-   and blocked on a soundness question rather than on effort.
-4. **Phase 5's item 7**, the per-call regex envelope — ~2.4 µs and 2 431 B before any
-   matching happens, unstarted.
-
-Plus **phase 0's items 0-7 and 0-8**, which are not engineering: they need an idle physical
-machine on three RIDs, and until they land nothing above may be *claimed*.
-
-**Track two — phases 6–9 — is open in a different sense: not started, not scheduled, and
-several XL.** Two things there are worth doing now, and neither is large:
-
-- **[`AssemblySplit.md`](AssemblySplit.md)** — the `ExpressionCompiler` model/emitter split,
-  planned end to end and **fully analyzed**. It is the precondition for everything in track
-  two, it is where four items `Component.md` owes get settled, and it changes no behaviour:
-  the diff is `.csproj` files, file moves, and two file cuts. Afterwards an AOT gate can go
-  green on the *existing* 20 opcodes, proving the packaging before any VM work starts.
-- **Item 6-0**, an S that asks whether a bytecode VM is needed at all — it may cancel the
-  whole track, and its answer changes how item 1-1 should be finished.
+- **Start cross-track audit follow-up at
+  [`Modernization.md` M0](Modernization.md).**
+  It reconciles the current graph and item state before structural or concurrency work.
+- **For the existing IL performance campaign**, read the relevant Phase 0–5 plan and then
+  its linked status record. M0 owns the known plan/status drift; until it closes, the status
+  record is the evidence and the plan's stale next action is not an instruction to repeat
+  completed work.
+- **For assembly and packaging work**, read [`Assemblies.md`](Assemblies.md),
+  [`AssemblySplit.md`](AssemblySplit.md), and their status records. Treat the split as
+  implemented with validation remaining, not as unstarted.
+- **Track two — phases 6–9 — remains a capability proposal.** Item 6-0 and modernization
+  phase M9 must produce a terminal go, narrow-go, or no-go before production VM work starts.
+- **For conformance and host capability**, use [`Component.md`](Component.md); M0 assigns a
+  dedicated plan/status pair before JavaScript-local concurrency or Worker implementation
+  begins.
 
 ## Conventions
 
@@ -118,10 +115,11 @@ several XL.** Two things there are worth doing now, and neither is large:
 - **Section numbering is stable across the split.** §0 and §4 are in `Roadmap.status.md`;
   §1 and §2 are in `Roadmap.md`; §3, §3.5 and Appendix A are in `Measurement.md`;
   Appendix B is in `Roadmap.md`. An existing reference to §3.5 or §4.2a still resolves.
-- **A roadmap item stays only while its outcome is open**, and closes only against the gate
-  in [`Measurement.md`](Measurement.md): an owner, current evidence, a next action, and an
-  objective exit criterion. A checked historical task is not release or conformance
-  evidence.
+- **A roadmap item stays only while its outcome is open**, and closes only against the
+  objective gate in its owning plan. A performance or resource claim additionally passes
+  [`Measurement.md`](Measurement.md). Every item has an owner, current evidence, a next
+  action, and an objective exit criterion; a checked historical task is not release or
+  conformance evidence.
 - **Do not duplicate a changing count in a plan document** — a test262 total, a benchmark
   score, a submodule pointer. Name the command that reads it. `Roadmap.md`'s provenance
   bullet is what happens when this rule is not followed: nine consecutive readings found its
