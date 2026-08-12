@@ -220,12 +220,27 @@ Headline before/after on the probes:
 | `script:stopwatch` (real script) | 976 ms | 669 ms | **1.5×** | 736 MB | **264 MB** |
 
 Repository suite at `cdb2fd41`: **7 284 tests across 13 projects, 7 281 passing.** The
-three failures are host-environment, not engine — `ReproTests.Repro` (a debugging
+three failures were host-environment, not engine — `ReproTests.Repro` (a debugging
 leftover writing to a hardcoded `D:\Broiler.JS\` path, asserting nothing) and two
-`Issue838Tests` date cases that assume a UTC host. Baseline before attributing either
-to a change. Note also that `Broiler.JS/BroilerJS.sln` **cannot restore** — it
-references `Broiler.Regex` paths that do not exist — so `Broiler.JS.slnx` at the
-repository root is the solution to run.
+`Issue838Tests` date cases that assume a UTC host. `ReproTests` and its `ReproT`
+sibling have since been retired: neither asserted anything, and on Linux the `D:\`
+string was treated as a relative filename, so `Repro` passed there and the count read
+7 282 of 7 280 depending on the host. Its `super`-in-class-field-initializer probes now
+assert, as `ClassFieldInitializerEvalSuperTests`. Expect two failures on a non-UTC host
+and none of them from `Repro`. Baseline before attributing either to a change.
+`Broiler.JS/BroilerJS.sln` has been deleted — it could not restore, referencing
+`Broiler.Regex` paths that moved — so `Broiler.JS.slnx` at the repository root is the
+solution to run.
+
+Deleting that solution left `Broiler.JavaScript.Network` and
+`Broiler.JavaScript.NodePollyfill` in no solution at all. They were deliberately not
+added to `Broiler.JS.slnx`: neither compiles. Both still open `Broiler.JavaScript.Core`,
+a namespace removed by the engine refactor, so every source file in them fails with
+CS0234 — 23 errors and 3 errors respectively. They were only ever reachable through a
+solution that itself could not restore, so nothing regressed when it went. Whoever
+intends to revive the `fetch`/`Blob`/`AbortController` and Node polyfill surfaces should
+repair the namespace first and register them then; deleting the sources is a separate
+decision and is not made here.
 
 ### 4.2 The current Octane profile
 

@@ -11,7 +11,7 @@ selection, command, environment, totals, and raw artifact.
 | `dotnet test Broiler.JS.slnx` | Repository unit, architecture, integration, and regression tests |
 | test262 at a commit SHA | ECMAScript and ECMA-402 conformance |
 | `scripts/compliance/engine-scenarios.json` | Small Broiler/Node/engine262 semantic cross-check |
-| `OtherTests/JIntPerfTests` | Repository compatibility and legacy performance scenarios |
+| `benchmarks/Broiler.JavaScript.Engine.Benchmarks` | Repository compatibility and legacy performance scenarios, over the `OtherTests/JIntPerfTests/Scripts` corpus |
 
 test262 is the release conformance source. The other suites are useful cross-checks and
 must not be added together into a synthetic “percent compliant” figure.
