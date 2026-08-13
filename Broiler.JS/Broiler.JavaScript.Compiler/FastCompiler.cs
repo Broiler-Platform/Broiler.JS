@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Collections.Generic;
 using System.Reflection;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
@@ -76,11 +77,22 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
 
     public BExpression<JSFunctionDelegate> Method { get; }
 
+    // Numbers the anonymous programs above. Static and interlocked because compilation is not
+    // confined to one thread, and a repeated name would defeat the point of numbering at all.
+    private static int anonymousProgramSequence;
+
     public FastCompiler(in StringSpan code, string location = null, IList<string> argsList = null, ICodeCache codeCache = null)
     {
         pool = new FastPool();
 
-        location = location ?? "vm.js";
+        // Code with no script of its own — eval, and the Function constructor's body — was named
+        // "vm.js" without distinction, so every such program shared one name. A stack trace
+        // spanning several of them then could not be read: frames reading `vm.js:1,14` and
+        // `vm.js:5060,25473` give no way to tell whether that is one program or two, which is
+        // exactly what a trace through a module loader looks like. Number them, the way a
+        // browser's devtools does with VM123, so each compiled program is identifiable and its
+        // frames can be attributed to it.
+        location = location ?? "vm" + Interlocked.Increment(ref anonymousProgramSequence).ToString() + ".js";
         this.location = location;
         var context = JSEngine.Current as JSContext;
         isDirectEvalCompilation = context?.IsCompilingDirectEval ?? false;
