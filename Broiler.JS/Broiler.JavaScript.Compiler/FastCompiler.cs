@@ -92,7 +92,14 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         // exactly what a trace through a module loader looks like. Number them, the way a
         // browser's devtools does with VM123, so each compiled program is identifiable and its
         // frames can be attributed to it.
+        var wasAnonymous = location == null;
         location = location ?? "vm" + Interlocked.Increment(ref anonymousProgramSequence).ToString() + ".js";
+
+        // A frame naming vm16.js still does not say what vm16.js *is*, and a payload a loader
+        // evaluated exists nowhere on disk to go and look at. Opt-in, via
+        // BROILER_JS_DUMP_PROGRAMS - see AnonymousProgramDump for why it is not on by default.
+        if (wasAnonymous && AnonymousProgramDump.Enabled)
+            AnonymousProgramDump.Write(location, code.Value);
         this.location = location;
         var context = JSEngine.Current as JSContext;
         isDirectEvalCompilation = context?.IsCompilingDirectEval ?? false;
