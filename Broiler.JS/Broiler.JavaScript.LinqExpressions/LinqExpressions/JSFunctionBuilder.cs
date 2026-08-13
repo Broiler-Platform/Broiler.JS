@@ -17,6 +17,7 @@ public class JSFunctionBuilder
     private static PropertyInfo _coerceThisOnInvoke;
     private static PropertyInfo _isStrictMode;
     private static MethodInfo _captureWithScopes;
+    private static MethodInfo _captureDirectEvalBindings;
     private static MethodInfo _addLegacyCallerAndArguments;
     private static PropertyInfo _isOrdinaryUserFunction;
     private static MethodInfo _enableTiering;
@@ -77,6 +78,8 @@ public class JSFunctionBuilder
             ?? throw new InvalidOperationException($"EnableTiering(NumericLoopPlan, string, int, int) not found on {type.FullName}");
         _captureWithScopes = type.PublicMethod("CaptureWithScopes", typeof(JSValue))
             ?? throw new InvalidOperationException($"CaptureWithScopes(JSValue) not found on {type.FullName}");
+        _captureDirectEvalBindings = type.PublicMethod("CaptureDirectEvalBindings", typeof(JSValue))
+            ?? throw new InvalidOperationException($"CaptureDirectEvalBindings(JSValue) not found on {type.FullName}");
         _addLegacyCallerAndArguments = type.PublicMethod("AddLegacyCallerAndArguments")
             ?? throw new InvalidOperationException($"AddLegacyCallerAndArguments() not found on {type.FullName}");
         invokeFunction = typeof(JSValue).InternalMethod("InvokeFunction", ArgumentsBuilder.refType)
@@ -260,4 +263,7 @@ public class JSFunctionBuilder
 
     public static Expression CaptureWithScopes(Expression target)
         => Expression.Convert(Expression.Call(null, _captureWithScopes, Expression.Convert(target, typeof(JSValue))), type);
+
+    public static Expression CaptureDirectEvalBindings(Expression target)
+        => Expression.Convert(Expression.Call(null, _captureDirectEvalBindings, Expression.Convert(target, typeof(JSValue))), type);
 }

@@ -290,6 +290,18 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
             context.directEvalBindingNameScopes.Add(ExtractBindingNames(variables));
         }
 
+        // The overlay bindings this scope published, for a function created by the eval to carry.
+        // Handed out as the live JSVariable objects, so the closure reads and writes the caller's
+        // binding rather than a copy of its value.
+        public void CollectOverlayBindings(Dictionary<uint, JSVariable> into)
+        {
+            foreach (var entry in entries)
+            {
+                if (entry.OverlayVariable != null)
+                    into[entry.Name.Key] = entry.OverlayVariable;
+            }
+        }
+
         private static string[] ExtractBindingNames(JSVariable[] bindings)
         {
             if (bindings == null || bindings.Length == 0)
@@ -675,6 +687,81 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
 
         variable = null;
         return false;
+    }
+
+    private bool TryResolveCapturedDirectEvalBinding(in KeyString name, out JSVariable variable)
+    {
+        var captured = capturedDirectEvalScope;
+        if (captured != null)
+        {
+            for (var i = captured.Length - 1; i >= 0; i--)
+            {
+                if (captured[i]?.TryGetValue(name.Key, out variable) == true
+                    && variable is not EvalShadowVariable { IsInitialized: false })
+                {
+                    return true;
+                }
+            }
+        }
+
+        variable = null;
+        return false;
+    }
+
+    // The captured direct-eval scope of the function currently executing, if it carries one.
+    private Dictionary<uint, JSVariable>[] capturedDirectEvalScope;
+
+    /// <summary>Snapshots the direct-eval bindings in scope, for a function to carry.</summary>
+    public Dictionary<uint, JSVariable>[] CaptureDirectEvalBindings()
+    {
+        // The caller's bindings reach a direct eval as an overlay on globalVars, installed for the
+        // duration of the eval and withdrawn when it returns. That is why a closure the eval
+        // creates loses them: nothing is wrong while the eval runs, and the names simply cease to
+        // resolve afterwards. Capture the overlay's live JSVariables so the closure keeps them.
+        if (activeDirectEvalScopes.Count == 0)
+        {
+            var fromFrames = Frames.CaptureDirectEvalBindings();
+            return fromFrames;
+        }
+
+        var bindings = new Dictionary<uint, JSVariable>();
+        // Outermost first, so an inner scope's binding overwrites an outer one of the same name.
+        for (var i = 0; i < activeDirectEvalScopes.Count; i++)
+            activeDirectEvalScopes[i].CollectOverlayBindings(bindings);
+
+        var framesToo = Frames.CaptureDirectEvalBindings();
+        if (framesToo != null)
+        {
+            foreach (var map in framesToo)
+            {
+                foreach (var pair in map)
+                    bindings[pair.Key] = pair.Value;
+            }
+        }
+
+        return bindings.Count == 0 ? null : [bindings];
+    }
+
+    /// <summary>
+    /// Re-establishes a captured direct-eval scope for the duration of a call, the way
+    /// <see cref="PushWithScopes"/> re-establishes a captured `with` chain.
+    /// </summary>
+    public IDisposable PushDirectEvalBindings(Dictionary<uint, JSVariable>[] captured)
+        => captured == null ? null : new CapturedDirectEvalScope(this, captured);
+
+    private sealed class CapturedDirectEvalScope : IDisposable
+    {
+        private readonly JSContext context;
+        private readonly Dictionary<uint, JSVariable>[] previous;
+
+        public CapturedDirectEvalScope(JSContext context, Dictionary<uint, JSVariable>[] captured)
+        {
+            this.context = context;
+            previous = context.capturedDirectEvalScope;
+            context.capturedDirectEvalScope = captured;
+        }
+
+        public void Dispose() => context.capturedDirectEvalScope = previous;
     }
 
     /// <summary>
@@ -1302,6 +1389,23 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         if (HasProperty(name.ToJSValue()).BooleanValue)
             return this[name];
 
+        // Last resort: the bindings this function captured when a direct eval created it.
+        //
+        // A direct eval's scope is LEXICAL. The caller's bindings reach the eval as an overlay
+        // installed for the duration of the call and withdrawn when it returns, so
+        // `eval("(function(){ return b; })")` resolves `b` while the eval runs and stops
+        // resolving it the moment the eval returns — exactly when the closure it produced is
+        // called. Google's module loader is built on that shape
+        // (`function(e){return eval(e)}("0,function(){b(2,57,1,w)}")`, the result stored and
+        // invoked later), which is what made it a "b is not defined" on google.com.
+        //
+        // Consulted HERE, after every ordinary scope has failed, rather than alongside the
+        // eval-binding walk: a name that resolves today must keep resolving to what it resolves
+        // to now. In particular an Annex B block-level function declared by the eval owns its
+        // name through globalVars, and letting a captured snapshot shadow that broke it.
+        if (TryResolveCapturedDirectEvalBinding(name, out var capturedBinding))
+            return capturedBinding.GetValue();
+
         throw JSEngine.NewReferenceError($"{name} is not defined");
     }
 
@@ -1449,6 +1553,16 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
 
         if (!hasVariable && !hasProperty)
         {
+            // The read path's last resort, mirrored: a closure a direct eval created writes
+            // THROUGH to the eval site's binding, not to a fresh global that shares its name.
+            // Placed here, where nothing else resolved, so no assignment that lands somewhere
+            // today is redirected.
+            if (TryResolveCapturedDirectEvalBinding(name, out var capturedTarget))
+            {
+                capturedTarget.SetValue(value);
+                return value;
+            }
+
             if (strictMode)
                 throw JSEngine.NewReferenceError($"{name} is not defined");
 

@@ -144,6 +144,12 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
 
     public JSObject[] CapturedWithObjects { get; set; }
 
+    // The direct-eval bindings captured when this function was created by directly-evalled code,
+    // re-established on invocation. A direct eval's scope is lexical, so a closure it creates
+    // keeps the eval site's bindings after that call has returned; resolving them against the
+    // live stack alone works only while the eval site is still on it.
+    public Dictionary<uint, JSVariable>[] CapturedDirectEvalBindings { get; set; }
+
     // The `with`-fallback lexical overlays captured when this function was created inside a `with`
     // block, re-established on invocation so a name the with-object lacks (or @@unscopables blocks)
     // still falls through to the enclosing lexical binding (test262 sm/.../unscopables-closures).
@@ -168,6 +174,19 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     {
         CaptureRealm();
         return JSEngine.EnterContext(realm);
+    }
+
+    /// <summary>
+    /// Captures the direct-eval bindings in scope onto a function being created by directly-
+    /// evalled code, so they resolve when it is invoked later. The eval-side counterpart of
+    /// <see cref="CaptureWithScopes(JSValue)"/>.
+    /// </summary>
+    public static JSValue CaptureDirectEvalBindings(JSValue functionValue)
+    {
+        if (functionValue is JSFunction function)
+            function.CapturedDirectEvalBindings = (JSEngine.Current as JSContext)?.CaptureDirectEvalBindings();
+
+        return functionValue;
     }
 
     public static JSValue CaptureWithScopes(JSValue functionValue)
@@ -800,6 +819,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
         using var withFallback = context?.PushWithFallbackScopes(CapturedWithFallbackScopes);
         using var withScope = context?.PushWithScopes(CapturedWithObjects);
+        using var capturedEvalScope = context?.PushDirectEvalBindings(CapturedDirectEvalBindings);
 
         // Track the executing function across [[Construct]] just as [[Call]] does,
         // so a function invoked from within this constructor's body observes this
@@ -897,6 +917,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
         using var withFallback = context?.PushWithFallbackScopes(CapturedWithFallbackScopes);
         using var withScope = context?.PushWithScopes(CapturedWithObjects);
+        using var capturedEvalScope = context?.PushDirectEvalBindings(CapturedDirectEvalBindings);
         JSValue r;
         try
         {
@@ -950,6 +971,7 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
                     using var suspendedWithScope = scriptHostMode ? context?.SuspendWithScopes() : null;
                     using var withFallback = context?.PushWithFallbackScopes(current.CapturedWithFallbackScopes);
                     using var withScope = context?.PushWithScopes(current.CapturedWithObjects);
+                    using var capturedEvalScope = context?.PushDirectEvalBindings(current.CapturedDirectEvalBindings);
                     try
                     {
                         var invocationDelegate = current.SelectInvocationDelegate();

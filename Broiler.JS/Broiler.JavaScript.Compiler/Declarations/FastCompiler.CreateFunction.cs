@@ -541,6 +541,16 @@ partial class FastCompiler
                 if (withBoundaries.Count > 0)
                     jsf = JSFunctionBuilder.CaptureWithScopes(jsf);
 
+                // A function created by directly-evalled code must capture the eval site's
+                // bindings for the same reason: a direct eval's scope is lexical, so
+                // `eval("(function(){ return b; })")` is a closure over the caller's `b` and
+                // has to find it when invoked later. Those bindings are otherwise resolved
+                // against the live call stack, which answers correctly only while the eval
+                // site is still executing — the moment it returns the frame is gone and the
+                // name reads as undefined.
+                if (isDirectEvalCompilation)
+                    jsf = JSFunctionBuilder.CaptureDirectEvalBindings(jsf);
+
                 // RECOMPILE CONTRACT (item 4-2a): a promoted function is recompiled from its
                 // source text into a SECOND function object, so a body that can observe its own
                 // function object observes the copy. Asked here, at the decision point, rather

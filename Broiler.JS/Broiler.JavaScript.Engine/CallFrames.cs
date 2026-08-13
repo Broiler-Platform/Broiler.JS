@@ -420,6 +420,35 @@ public sealed class CallFrameStack
         return false;
     }
 
+    /// <summary>
+    /// Snapshots the direct-eval binding maps currently on the stack, outermost first, for a
+    /// function being created by directly-evalled code to carry.
+    /// </summary>
+    /// <remarks>
+    /// The maps are handed out by reference, not copied: a binding introduced by the eval after
+    /// the function was created is still in scope for it, exactly as it would be for a closure
+    /// created anywhere else in that scope. An escaped frame keeps its map alive after the frame
+    /// itself is gone, which is what lets the captured reference outlive the call.
+    /// </remarks>
+    internal Dictionary<uint, JSVariable>[] CaptureDirectEvalBindings()
+    {
+        if (!AnyDirectEvalBindings)
+            return null;
+
+        List<Dictionary<uint, JSVariable>> captured = null;
+        for (var i = 0; i < depth; i++)
+        {
+            ref var frame = ref frames[i];
+            var bindings = frame.Escaped != null ? frame.Escaped.DirectEvalBindings : frame.DirectEvalBindings;
+            if (bindings == null || bindings.Count == 0)
+                continue;
+
+            (captured ??= []).Add(bindings);
+        }
+
+        return captured?.ToArray();
+    }
+
     internal bool DeleteDirectEvalBinding(int index, in KeyString name)
     {
         ref var frame = ref frames[index];
