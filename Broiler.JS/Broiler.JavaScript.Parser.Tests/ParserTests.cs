@@ -621,4 +621,83 @@ public class ParserTests
 
         Assert.IsType<AstLiteral>(returnStatement.Argument);
     }
+
+    /// <summary>
+    /// A postfix <c>++</c>/<c>--</c> after a prefix-unary operand, followed by anything.
+    /// <para>
+    /// The postfix belongs to the operand — <c>!c++</c> is <c>!(c++)</c>, because the grammar
+    /// reaches it through <c>UpdateExpression : LeftHandSideExpression ++</c>, below
+    /// <c>UnaryExpression : ! UnaryExpression</c>. The parser used to take the postfix only when
+    /// there was no prefix operator, so the <c>++</c> of <c>!c++</c> was left unconsumed. That is
+    /// invisible when the expression ends there, and fatal the moment an operator follows: the
+    /// stray token made it unexpected, and one syntax error rejects the whole script. Minified code
+    /// hits this constantly — <c>!c++ &amp;&amp; …</c> is the ordinary run-once guard — and it kept
+    /// google.com's main bundle from parsing at all.
+    /// </para>
+    /// </summary>
+    [Theory]
+    // The reported shape, then the same operand under every other prefix operator.
+    [InlineData("var x = !c++ && 1;")]
+    [InlineData("var x = !c-- && 1;")]
+    [InlineData("var x = -c++ && 1;")]
+    [InlineData("var x = +c++ && 1;")]
+    [InlineData("var x = ~c++ && 1;")]
+    [InlineData("var x = typeof c++ && 1;")]
+    [InlineData("var x = void c++ && 1;")]
+    [InlineData("var x = !!c++ && 1;")]
+    // Every operator class that can follow, since the failure was "the next token is unexpected"
+    // rather than anything specific to `&&`.
+    [InlineData("var x = !c++ || 1;")]
+    [InlineData("var x = !c++ + 1;")]
+    [InlineData("var x = !c++ === false;")]
+    [InlineData("var x = !c++ ? 1 : 2;")]
+    [InlineData("var x = (!c++, 1);")]
+    // Operands that are member expressions rather than a bare identifier.
+    [InlineData("var x = !o.n++ && 1;")]
+    [InlineData("var x = !o[0]++ && 1;")]
+    // The shape as it appears in the wild, nested inside a larger expression.
+    [InlineData("(h = f(h)) && !c++ && (b[k] &= -9);")]
+    public void ParseProgram_PostfixAfterPrefixUnary_ContinuesTheExpression(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+
+        Assert.NotNull(parser.ParseProgram());
+    }
+
+    /// <summary>
+    /// The postfix binds to the operand, not to the result of the prefix operator: the parse of
+    /// <c>!c++</c> is a Negate whose operand is the Increment, never the reverse. Asserting the
+    /// shape rather than only that it parses is what distinguishes the fix from a parser that
+    /// merely swallows the token.
+    /// </summary>
+    [Fact]
+    public void ParseProgram_PostfixAfterPrefixUnary_BindsToTheOperand()
+    {
+        var stream = new FastTokenStream(new StringSpan("!c++;"));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        var statement = Assert.IsType<AstExpressionStatement>(Assert.Single(program.Statements.ToArray()));
+        var outer = Assert.IsType<AstUnaryExpression>(statement.Expression);
+        Assert.Equal(UnaryOperator.Negate, outer.Operator);
+
+        var inner = Assert.IsType<AstUnaryExpression>(outer.Argument);
+        Assert.Equal(UnaryOperator.Increment, inner.Operator);
+        Assert.False(inner.Prefix);
+    }
+
+    /// <summary>
+    /// A postfix still may not cross a line terminator (ASI puts the <c>++</c> on the next
+    /// statement), and taking the postfix earlier must not have changed that.
+    /// </summary>
+    [Fact]
+    public void ParseProgram_PostfixAfterPrefixUnary_StillRespectsAsi()
+    {
+        var stream = new FastTokenStream(new StringSpan("!c\n++d;"));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        Assert.Equal(2, program.Statements.ToArray().Length);
+    }
 }

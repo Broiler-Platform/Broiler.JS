@@ -97,20 +97,32 @@ partial class FastParser
             inAsyncFunctionBody = previousInAsyncFunctionBody;
         }
 
-        if (previous != UnaryOperator.None)
-        {
-            if (previous != UnaryOperator.@new)
-                node = new AstUnaryExpression(previousToken, node, previous);
-
-            return true;
-        }
-
+        // A postfix `++`/`--` binds to the operand, not to the result of a prefix operator:
+        // `!c++` is `!(c++)`, because the grammar reaches the postfix through
+        // UpdateExpression : LeftHandSideExpression ++ *below* UnaryExpression : ! UnaryExpression.
+        // So the postfix has to be taken here, before the operand is wrapped — and equally when
+        // there is no prefix operator at all, which is the plain `c++` case.
+        //
+        // Running it only in the second case (the shape this had) left the `++` of `!c++`
+        // unconsumed for whatever production came next. That is why `!c++` parsed alone yet
+        // `!c++ && 1` did not: the stray token made every following binary or ternary operator a
+        // syntax error, and one such error rejects the entire script. Minified code reaches this
+        // constantly — `!c++ && …` is the ordinary spelling of a run-once guard — and it is what
+        // stopped google.com's main bundle from parsing at all.
         while (true)
         {
             if (HasUnaryOperator(out var postfix, out var postFixToken, false))
                 node = new AstUnaryExpression(postFixToken, node, postfix, false);
             else
                 break;
+        }
+
+        if (previous != UnaryOperator.None)
+        {
+            if (previous != UnaryOperator.@new)
+                node = new AstUnaryExpression(previousToken, node, previous);
+
+            return true;
         }
 
         if (node.Type == FastNodeType.FunctionExpression)
