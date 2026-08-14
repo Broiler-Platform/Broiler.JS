@@ -40,6 +40,12 @@ public partial class JSPromise : JSObject, IJSPromise
 
     internal PromiseState state = PromiseState.Pending;
 
+    /// <summary>
+    /// The spec's [[PromiseIsHandled]]: set once any reaction is attached, and the difference
+    /// between a rejection nobody is listening for and one that is somebody's job.
+    /// </summary>
+    private bool isHandled;
+
     private Sequence<Reaction> thenList;
     private Sequence<Reaction> rejectList;
     JSFunction resolveFunction;
@@ -86,6 +92,12 @@ public partial class JSPromise : JSObject, IJSPromise
         InitPromise();
         this.state = state;
         result = value;
+
+        // Born rejected, which never passes through Reject: this is how Promise.reject and an async
+        // function that throws before its first await both produce their promise. Tracking only
+        // Reject would miss the two commonest unhandled rejections a page produces.
+        if (state == PromiseState.Rejected)
+            JSPromiseRejectionTracker.Rejected(this, value);
     }
 
     /// <summary>
@@ -251,6 +263,12 @@ public partial class JSPromise : JSObject, IJSPromise
 
         pending.TryRemove(promiseID, out var __);
 
+        // Nothing is waiting on this one: collect it as a candidate "Uncaught (in promise)". It is
+        // only a candidate, because a handler may still arrive in this turn — see
+        // JSPromiseRejectionTracker for why the report cannot be raised here.
+        if (!isHandled)
+            JSPromiseRejectionTracker.Rejected(this, value);
+
         var rejectList = this.rejectList;
         if (rejectList != null)
         {
@@ -320,6 +338,13 @@ public partial class JSPromise : JSObject, IJSPromise
             @return = new JSPromise();
             @return.InitPromise();
         }
+
+        // PerformPromiseThen sets [[PromiseIsHandled]] whether or not an onRejected was supplied:
+        // with none, the rejection is forwarded to @return, and it is @return that is then the
+        // unhandled one. That is what makes `p.then(f)` on a rejecting p report against the derived
+        // promise, exactly as a browser does.
+        isHandled = true;
+        JSPromiseRejectionTracker.Handled(this);
 
         var resolved = new Reaction { Promise = @return, Type = ReactionType.Resolve, Handler = resolve };
         var rejected = new Reaction { Promise = @return, Type = ReactionType.Reject, Handler = fail };
