@@ -1290,12 +1290,40 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         return UndefinedValue;
     }
 
+    /// <summary>
+    /// Names the property in a "Cannot read properties of undefined" message, as a browser does
+    /// ("... (reading 'foo')"). Without it the message says only that *something* was read off
+    /// nothing, which on minified code is not enough to find the line, let alone the cause.
+    /// </summary>
+    /// <remarks>
+    /// Only a key that is already a primitive is named. Converting one is what the caller must
+    /// NOT do here — GetValue throws before ToPropertyKey precisely because ToObject(base)
+    /// comes first (6.2.5.5), and an object key's toString/@@toPrimitive is user code that would
+    /// then run in an order the spec forbids. So an object key is left undescribed rather than
+    /// coerced for a diagnostic.
+    /// </remarks>
+    private static string DescribeKeyForDiagnostic(JSValue key)
+    {
+        if (key == null || !(key.IsString || key.IsNumber || key.IsSymbol))
+            return string.Empty;
+
+        try
+        {
+            return $" (reading '{key}')";
+        }
+        catch (Exception)
+        {
+            // A description must never replace the error it is describing.
+            return string.Empty;
+        }
+    }
+
     internal JSValue GetValue(JSValue key, JSValue receiver, bool throwError = true)
     {
         // Per spec (6.2.5.5 GetValue), ToObject(base) must precede ToPropertyKey(key).
         // For null/undefined, ToObject throws TypeError before the key is converted.
         if (IsNullOrUndefined)
-            throw NewTypeError?.Invoke($"Cannot read properties of {this}")
+            throw NewTypeError?.Invoke($"Cannot read properties of {this}{DescribeKeyForDiagnostic(key)}")
                 ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
 
         var k = key.ToKey(false);
