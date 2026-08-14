@@ -19,9 +19,9 @@ public class JSException : Exception
     // ── Delegates for engine-level functionality (wired by Core's initializer) ──
     // These replace the direct JSEngine references that existed when JSException
     // lived inside the Core assembly.
-    internal static Func<string, JSException> NewSyntaxErrorFactory;
-    internal static Func<string, JSException> NewTypeErrorFactory;
-    internal static Func<string, JSException> NewReferenceErrorFactory;
+    internal static JSExceptionFactory NewSyntaxErrorFactory;
+    internal static JSExceptionFactory NewTypeErrorFactory;
+    internal static JSExceptionFactory NewReferenceErrorFactory;
     internal static Action<StringBuilder, List<(StringSpan target, string file, int line, int column)>> AppendStackTraceHelper;
 
     // Error message constants (moved from JSError for Core accessibility)

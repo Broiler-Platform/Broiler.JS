@@ -14,7 +14,11 @@ internal static class JSValueCoreExtensions
     {
         JSValue.UndefinedValue = JSUndefined.Value;
 
-        JSValue.NewTypeError = msg => JSEngine.NewTypeError(msg);
+        // Forward the caller info the throw site captured. Dropping it here — the
+        // shape this had while the field was a Func<string, Exception> — made this
+        // line the recorded origin of every TypeError the engine raises.
+        JSValue.NewTypeError = static (msg, function, filePath, line) =>
+            JSEngine.NewTypeError(msg, function, filePath, line);
         JSValue.ForceConvertHelper = (jsValue, type, _) =>
         {
             var protoObj = (jsValue.prototypeChain as IJSPrototype)?.Object as JSObject;

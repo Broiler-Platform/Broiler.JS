@@ -20,6 +20,7 @@ public static class PropertySequenceCoreExtensions
     [ModuleInitializer]
     internal static void InitializeTypeErrorFactory()
     {
-        PropertySequence.TypeErrorFactory = msg => JSEngine.NewTypeError(msg);
+        PropertySequence.TypeErrorFactory = static (msg, function, filePath, line) =>
+            JSEngine.NewTypeError(msg, function, filePath, line);
     }
 }

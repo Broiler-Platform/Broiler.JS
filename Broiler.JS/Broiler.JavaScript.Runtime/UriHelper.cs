@@ -5,7 +5,7 @@ namespace Broiler.JavaScript.Runtime;
 
 internal static class UriHelper
 {
-    internal static Func<string, JSException> NewURIError = _ =>
+    internal static JSExceptionFactory NewURIError = static (_, _, _, _) =>
         throw new InvalidOperationException("UriHelper.NewURIError delegate is not initialized.");
 
     // Strict UTF-8 decoder: rejects overlong forms, values above U+10FFFF, and

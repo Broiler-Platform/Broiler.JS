@@ -123,7 +123,7 @@ public struct PropertySequence
     /// Core assembly during initialization to produce the correct JavaScript
     /// TypeError exception. If not set, falls back to InvalidOperationException.
     /// </summary>
-    public static Func<string, Exception>? TypeErrorFactory { get; set; }
+    public static JSErrorFactory? TypeErrorFactory { get; set; }
 
     private SAUint32Map<JSObjectProperty> map;
     private uint head;

@@ -22,8 +22,13 @@ internal static class EngineAssemblyInitializer
         JSEngine.CreateObjectClass = ObjectClassFactory.CreateObjectClass;
 
         // ── JSObject factory delegates ──────────────────────────────
-        JSObject.NewTypeError = static msg => JSEngine.NewTypeError(msg);
-        JSObject.NewRangeError = static msg => JSEngine.NewRangeError(msg);
+        // Each of these forwards the caller info its throw site captured, so the
+        // JavaScript stack names the engine method that raised the error rather
+        // than the line below that installed the factory.
+        JSObject.NewTypeError = static (msg, function, filePath, line) =>
+            JSEngine.NewTypeError(msg, function, filePath, line);
+        JSObject.NewRangeError = static (msg, function, filePath, line) =>
+            JSEngine.NewRangeError(msg, function, filePath, line);
         JSObject.CoerceToNumber = static str => NumberParser.CoerceToNumber(str);
         JSObject.CreatePrimitiveObject ??= static p => p is JSPrimitive primitive
             ? new JSPrimitiveObject(primitive)
@@ -32,18 +37,23 @@ internal static class EngineAssemblyInitializer
         JSObject.TryUnmarshalObject = CoreInternalHelpers.TryUnmarshal;
 
         // ── JSException delegates ───────────────────────────────────
-        JSException.NewSyntaxErrorFactory = static msg => JSEngine.NewSyntaxError(msg);
-        JSException.NewTypeErrorFactory = static msg => JSEngine.NewTypeError(msg);
-        JSException.NewReferenceErrorFactory = static msg => JSEngine.NewReferenceError(msg);
+        JSException.NewSyntaxErrorFactory = static (msg, function, filePath, line) =>
+            JSEngine.NewSyntaxError(msg, function, filePath, line);
+        JSException.NewTypeErrorFactory = static (msg, function, filePath, line) =>
+            JSEngine.NewTypeError(msg, function, filePath, line);
+        JSException.NewReferenceErrorFactory = static (msg, function, filePath, line) =>
+            JSEngine.NewReferenceError(msg, function, filePath, line);
         JSException.AppendStackTraceHelper = static (sb, trace) => JSEngine.AppendStackTrace?.Invoke(sb, trace);
 
         // ── JSVariable delegate ─────────────────────────────────────
         JSVariable.GetCurrentContext = static () => JSEngine.Current;
         JSVariable.IsStrictMode = static () => JSEngine.IsStrictMode;
-        JSVariable.NewReferenceErrorFactory = static msg => JSEngine.NewReferenceError(msg);
+        JSVariable.NewReferenceErrorFactory = static (msg, function, filePath, line) =>
+            JSEngine.NewReferenceError(msg, function, filePath, line);
 
         // ── UriHelper delegate ──────────────────────────────────────
-        UriHelper.NewURIError = static message => JSEngine.NewURIError(message);
+        UriHelper.NewURIError = static (message, function, filePath, line) =>
+            JSEngine.NewURIError(message, function, filePath, line);
 
         // ── JSValue.MarshalObject delegate ──────────────────────────
         JSValue.IsStrictModeEnabled = static () => JSEngine.IsStrictMode;

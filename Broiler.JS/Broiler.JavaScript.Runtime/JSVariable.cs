@@ -273,7 +273,7 @@ public class JSVariable
     /// </summary>
     internal static Func<object> GetCurrentContext;
     internal static Func<bool> IsStrictMode;
-    internal static Func<string, JSException> NewReferenceErrorFactory;
+    internal static JSExceptionFactory NewReferenceErrorFactory;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public JSVariable(JSValue v, string name)

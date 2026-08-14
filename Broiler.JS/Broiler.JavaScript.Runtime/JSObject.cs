@@ -34,8 +34,8 @@ public partial class JSObject : JSValue
     // ── Factory delegates for abstracting Core dependencies ──
     // These are wired by CoreAssemblyInitializer so that JSObject
     // (in Runtime) can access Core functionality without a direct reference.
-    internal new static Func<string, Exception> NewTypeError;
-    internal static Func<string, Exception> NewRangeError;
+    internal new static JSErrorFactory NewTypeError;
+    internal static JSErrorFactory NewRangeError;
     internal static Func<JSObject> GetCurrentObjectPrototype;
     internal static Func<string, double> CoerceToNumber;
     internal static Func<JSValue, JSValue> CreatePrimitiveObject;

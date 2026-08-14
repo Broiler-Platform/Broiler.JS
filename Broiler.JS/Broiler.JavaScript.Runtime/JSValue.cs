@@ -50,7 +50,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// </summary>
     internal static Func<string, KeyString, JSValue> CreateStringWithKey;
 
-    internal static Func<string, Exception> NewTypeError;
+    internal static JSErrorFactory NewTypeError;
     internal static Func<bool> IsStrictModeEnabled;
     internal static Func<object, JSValue> MarshalObject;
     internal static Func<JSObject, int, bool> IsFeatureEnabledFactory;
