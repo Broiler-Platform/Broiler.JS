@@ -79,7 +79,9 @@ public sealed class JSNull : JSValue
 
     public override bool StrictEquals(JSValue value) => ReferenceEquals(this, value);
 
-    public override JSValue CreateInstance(in Arguments a) => throw JSEngine.NewTypeError("cannot create instance of null");
+    // Worded as its JSUndefined sibling is, and as the engine's other construct sites are: browsers
+    // report "null is not a constructor" for `new null()`.
+    public override JSValue CreateInstance(in Arguments a) => throw JSEngine.NewTypeError("null is not a constructor");
 
     public override JSValue InvokeFunction(in Arguments a) => throw JSEngine.NewTypeError("null is not a function");
 

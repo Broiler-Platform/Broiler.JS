@@ -59,7 +59,13 @@ public sealed class JSUndefined : JSValue
 
     public override bool StrictEquals(JSValue value) => ReferenceEquals(this, value);
 
-    public override JSValue CreateInstance(in Arguments a) => throw NewTypeError("cannot create instance of undefined");
+    // "X is not a constructor" is what every browser reports for `new undefined()`, and what this
+    // engine already reports at each of its other construct sites (JSFunction, JSSymbol, JSGenerator,
+    // JSReflect). "cannot create instance of undefined" was the odd one out, and it is the message a
+    // reader meets in a feature-probe trace — `new (window.RTCPeerConnection || ...)()` against an
+    // engine with no WebRTC — where a non-standard wording reads as an engine fault rather than as the
+    // expected answer.
+    public override JSValue CreateInstance(in Arguments a) => throw NewTypeError("undefined is not a constructor");
 
     public override JSValue InvokeFunction(in Arguments a) => throw NewTypeError("undefined is not a function");
 
