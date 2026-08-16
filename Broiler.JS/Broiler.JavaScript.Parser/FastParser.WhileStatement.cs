@@ -29,20 +29,44 @@ partial class FastParser
     /// throwing a SyntaxError.
     /// </returns>
     bool ExpressionSequence(out AstExpression expressions, TokenTypes endWith = TokenTypes.BracketEnd, bool allowEmpty = false)
+        => ExpressionSequence(out expressions, out _, endWith, allowEmpty);
+
+    /// <param name="terminator">
+    /// The token the sequence was actually closed by — the <paramref name="endWith"/>, EOF or
+    /// <c>;</c> token that was consumed to end it — or <see cref="TokenTypes.Empty"/> when the
+    /// loop stopped without consuming any terminator at all (it ran into a <c>}</c>, a line
+    /// terminator, or a token it simply cannot continue past).
+    /// <para>
+    /// A <c>for</c> head needs this to tell an <em>omitted</em> clause from a <em>missing</em>
+    /// one: with <paramref name="allowEmpty"/> both produce an <see cref="AstEmptyExpression"/>
+    /// and are otherwise indistinguishable. See <c>ForStatement</c>.
+    /// </para>
+    /// </param>
+    bool ExpressionSequence(out AstExpression expressions, out TokenTypes terminator, TokenTypes endWith, bool allowEmpty)
     {
         var begin = stream.Current;
         var nodes = new Sequence<AstExpression>();
         // The loop clears `allowEmpty` after the first element (only the first may be
         // omitted), so the caller's request is captured before it is consumed.
         var emptyAllowed = allowEmpty;
+        terminator = TokenTypes.Empty;
 
         do
         {
             if (allowEmpty && stream.Current.Type == TokenTypes.CurlyBracketEnd)
                 break;
 
+            // Same reason as below: a wholly omitted clause may still be written across lines
+            // (`for (\n;\n;\n)`), so the newlines before its terminator are skipped first.
+            if (emptyAllowed)
+                stream.SkipNewLines();
+
+            var emptyCandidate = stream.Current.Type;
             if (allowEmpty && stream.CheckAndConsumeAny(endWith, TokenTypes.EOF, TokenTypes.SemiColon))
+            {
+                terminator = emptyCandidate;
                 break;
+            }
 
             allowEmpty = false;
 
@@ -52,8 +76,21 @@ partial class FastParser
             if (stream.CheckAndConsume(TokenTypes.Comma))
                 continue;
 
+            // Inside a `for` head — the only caller that permits an omitted clause — a line
+            // terminator is insignificant. The head's semicolons are never supplied by ASI, so
+            // a clause may be written on its own line, and `for (i = 0\n; i < 5\n; i++)` must
+            // reach the `;` that follows the newline rather than stopping at the newline with
+            // the `;` still unread. (Everywhere else the LineTerminator check below still ends
+            // the sequence, which is what makes ASI work for an ordinary statement.)
+            if (emptyAllowed)
+                stream.SkipNewLines();
+
+            var candidate = stream.Current.Type;
             if (stream.CheckAndConsumeAny(endWith, TokenTypes.EOF, TokenTypes.SemiColon))
+            {
+                terminator = candidate;
                 break;
+            }
 
             if (stream.Current.Type == TokenTypes.CurlyBracketEnd)
                 break;

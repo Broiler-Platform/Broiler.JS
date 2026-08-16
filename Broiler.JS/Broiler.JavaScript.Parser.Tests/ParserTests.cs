@@ -599,12 +599,49 @@ public class ParserTests
     [InlineData("for(var i=0;;i++){}")]
     [InlineData("for(;i<3;i++){}")]
     [InlineData("for(var i=0;i<3;i++){}")]
+    // A line terminator inside the head is insignificant — the head's semicolons are never
+    // supplied by ASI — so a clause may sit on its own line, before its `;` as well as after.
+    [InlineData("for(var i=0\n;i<3\n;i++){}")]
+    [InlineData("for(i=0\n;i<3\n;i++){}")]
+    [InlineData("for(var i=0;\ni<3;\ni++){}")]
+    [InlineData("for(\n;\n;\n)break;")]
+    [InlineData("for(;\ni<3\n;){}")]
     public void ParseProgram_ForHead_KeepsEveryClauseOptional(string source)
     {
         var stream = new FastTokenStream(new StringSpan(source));
         var parser = new FastParser(stream);
 
         Assert.NotNull(parser.ParseProgram());
+    }
+
+    // …but optional is not the same as absent: `for ( Init_opt ; Test_opt ; Update_opt )` still
+    // requires BOTH semicolons. A head carrying only one used to parse as if the update clause
+    // had merely been omitted — so `for(;) {}` became `for(;;) {}`, an infinite loop, instead of
+    // the SyntaxError it is. That is not a quiet mis-parse: WPT's window.onerror compile-error
+    // tests (html/webappapis/scripting/processing-model-2) are literally `for(;) {}` and every
+    // one of them hung the WPT runner until its per-test timeout.
+    [Theory]
+    [InlineData("for(;){}")]
+    [InlineData("for (;) {}")]
+    [InlineData("for(a;){}")]
+    [InlineData("for(;a){}")]
+    [InlineData("for(a;b){}")]
+    [InlineData("for(i=0, j=1;){}")]
+    [InlineData("for(var i=0;){}")]
+    [InlineData("for(let i=0;){}")]
+    [InlineData("for(const i=0;){}")]
+    [InlineData("for(var i=0){}")]
+    [InlineData("for(let i=0){}")]
+    [InlineData("for(;;;){}")]
+    // Spreading the head over several lines does not conjure the missing `;` either.
+    [InlineData("for(\n;\n){}")]
+    [InlineData("for(\na\n;\nb\n){}")]
+    public void ParseProgram_ForHead_RequiresBothSemicolons(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+
+        Assert.Throws<FastParseException>(() => parser.ParseProgram());
     }
 
     [Fact]

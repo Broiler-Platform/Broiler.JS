@@ -183,8 +183,21 @@ partial class FastParser
 
                 stream.Expect(TokenTypes.BracketEnd);
             }
-            else if (ExpressionSequence(out test, TokenTypes.SemiColon, true))
+            else if (ExpressionSequence(out test, out var testTerminator, TokenTypes.SemiColon, true))
             {
+                // `for ( Init_opt ; Test_opt ; Update_opt )` — the head has exactly two `;`,
+                // and each omitted clause is omitted, not absent. ExpressionSequence reports an
+                // omitted clause and a missing one alike as an AstEmptyExpression, so the
+                // terminator it actually consumed is the only thing that separates them: a head
+                // carrying a single `;` (`for (;)`, `for (a;)`, `for (;a)`) used to parse as
+                // though the update clause had simply been left out — i.e. as `for (;;)`, an
+                // infinite loop — instead of raising the SyntaxError it is. WPT's
+                // window.onerror compile-error tests (html/webappapis/scripting/processing-model-2)
+                // are literally `for(;) {}`, and every one of them hung the WPT runner until it
+                // hit the per-test timeout rather than failing to compile.
+                if (testTerminator != TokenTypes.SemiColon)
+                    throw stream.Unexpected();
+
                 // A C-style for-head declaration (`for (const x = 0; …)`) is an
                 // ordinary LexicalDeclaration/VariableDeclaration: a `const` binding
                 // or a destructuring pattern must carry an initializer. (for-in/of
@@ -200,13 +213,21 @@ partial class FastParser
                 if (test.Type == FastNodeType.EmptyExpression)
                     test = null;
 
-                if (!ExpressionSequence(out update, TokenTypes.BracketEnd, true))
+                if (!ExpressionSequence(out update, out var updateTerminator, TokenTypes.BracketEnd, true))
+                    throw stream.Unexpected();
+
+                // The update clause closes the head, so it must end on the `)` — not on a third
+                // `;` (`for (;;;)`) and not by running out of tokens (`for (;;`).
+                if (updateTerminator != TokenTypes.BracketEnd)
                     throw stream.Unexpected();
 
                 if (update.Type == FastNodeType.EmptyExpression)
                     update = null;
             }
-            else stream.Unexpected();
+            // `stream.Unexpected()` builds the exception, it does not raise it; leaving the
+            // `throw` off let a head no branch above could parse fall through into the body
+            // parse with a null init/test/update.
+            else throw stream.Unexpected();
 
             // `for await` is only valid with a for-of head. A for-in head with `await` is
             // rejected above; a C-style `for await (;;)` / `for await (init; test; update)`
