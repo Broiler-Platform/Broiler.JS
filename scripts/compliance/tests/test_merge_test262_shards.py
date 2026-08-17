@@ -48,6 +48,11 @@ class MergeTest262ShardsTests(unittest.TestCase):
         *,
         suite_ref: str = "abc123",
         selected_before_sharding: int | None = None,
+        minifier: str | None = None,
+        minifier_version: str = "5.31.0",
+        minifier_profile: str = "test262-safe-mangle-v1",
+        minifier_timeout_seconds: float = 15.0,
+        variants: list[str] | None = None,
     ) -> dict[str, object]:
         counts = {
             "passed": sum(result["status"] == "passed" for result in results),
@@ -56,12 +61,19 @@ class MergeTest262ShardsTests(unittest.TestCase):
             "timedOut": sum(
                 result["status"] == "timedOut" for result in results
             ),
+            "notApplicable": sum(
+                result.get("notApplicable") is True for result in results
+            ),
         }
+        expanded_paths = list(
+            dict.fromkeys(str(result["path"]) for result in results)
+        )
         payload: dict[str, object] = {
             "suiteRef": suite_ref,
             "shardIndex": index,
             "shardCount": 8,
-            "expandedPaths": [result["path"] for result in results],
+            "expandedPaths": expanded_paths,
+            "total": len(results),
             "executed": (
                 counts["passed"] + counts["failed"] + counts["timedOut"]
             ),
@@ -70,6 +82,93 @@ class MergeTest262ShardsTests(unittest.TestCase):
         }
         if selected_before_sharding is not None:
             payload["selectedCountBeforeSharding"] = selected_before_sharding
+        if minifier is not None:
+            configured_variants = variants or (
+                ["original", "terser"]
+                if minifier == "terser"
+                else ["original"]
+            )
+            payload["minifier"] = minifier
+            payload["minifierVersion"] = (
+                minifier_version if minifier == "terser" else ""
+            )
+            payload["minifierProfile"] = (
+                minifier_profile if minifier == "terser" else ""
+            )
+            payload["minifierTimeoutSeconds"] = (
+                minifier_timeout_seconds if minifier == "terser" else 0
+            )
+            payload["minifierOptions"] = (
+                {
+                    "compress": False,
+                    "mangle": True,
+                    "mangleProperties": False,
+                    "mangleEval": False,
+                    "toplevel": False,
+                    "module": False,
+                    "keepFunctionNames": True,
+                    "keepClassNames": True,
+                    "asciiOnly": False,
+                    "comments": False,
+                    "semicolons": True,
+                }
+                if minifier == "terser"
+                else {}
+            )
+            payload["variants"] = configured_variants
+            payload["expectedVariantCountPerPath"] = len(configured_variants)
+
+            variant_summary: dict[str, dict[str, int]] = {}
+            for variant in configured_variants:
+                variant_results = [
+                    result
+                    for result in results
+                    if str(result.get("variant", "original")) == variant
+                ]
+                variant_counts = {
+                    status: sum(
+                        result["status"] == status for result in variant_results
+                    )
+                    for status in ("passed", "failed", "skipped", "timedOut")
+                }
+                variant_summary[variant] = {
+                    "total": len(variant_results),
+                    "executed": (
+                        variant_counts["passed"]
+                        + variant_counts["failed"]
+                        + variant_counts["timedOut"]
+                    ),
+                    **variant_counts,
+                    "notApplicable": sum(
+                        result.get("notApplicable") is True
+                        for result in variant_results
+                    ),
+                }
+            payload["variantSummary"] = variant_summary
+
+            statuses_by_path: dict[str, set[str]] = {}
+            for result in results:
+                statuses_by_path.setdefault(str(result["path"]), set()).add(
+                    str(result["status"])
+                )
+            aggregate_statuses: list[str] = []
+            for statuses in statuses_by_path.values():
+                if "timedOut" in statuses:
+                    aggregate_statuses.append("timedOut")
+                elif "failed" in statuses:
+                    aggregate_statuses.append("failed")
+                elif "passed" in statuses:
+                    aggregate_statuses.append("passed")
+                else:
+                    aggregate_statuses.append("skipped")
+            payload["pathSummary"] = {
+                "total": len(aggregate_statuses),
+                "executed": sum(status != "skipped" for status in aggregate_statuses),
+                "passed": aggregate_statuses.count("passed"),
+                "failed": aggregate_statuses.count("failed"),
+                "skipped": aggregate_statuses.count("skipped"),
+                "timedOut": aggregate_statuses.count("timedOut"),
+            }
         return payload
 
     def write_report(
@@ -82,6 +181,11 @@ class MergeTest262ShardsTests(unittest.TestCase):
         directory: str = "",
         selected_before_sharding: int | None = None,
         suite_ref: str = "abc123",
+        minifier: str | None = None,
+        minifier_version: str = "5.31.0",
+        minifier_profile: str = "test262-safe-mangle-v1",
+        minifier_timeout_seconds: float = 15.0,
+        variants: list[str] | None = None,
     ) -> Path:
         suffix = "-retry" if retry else ""
         return self.write_json(
@@ -91,6 +195,11 @@ class MergeTest262ShardsTests(unittest.TestCase):
                 results,
                 suite_ref=suite_ref,
                 selected_before_sharding=selected_before_sharding,
+                minifier=minifier,
+                minifier_version=minifier_version,
+                minifier_profile=minifier_profile,
+                minifier_timeout_seconds=minifier_timeout_seconds,
+                variants=variants,
             ),
             directory,
         )
@@ -435,9 +544,387 @@ class MergeTest262ShardsTests(unittest.TestCase):
                 "failed": 1,
                 "skipped": 1,
                 "timedOut": 0,
+                "notApplicable": 0,
+                "uniquePaths": 3,
             },
             merged["summary"],
         )
+
+    def test_result_identity_preserves_original_and_terser_cases(self) -> None:
+        path = "test/language/variant.js"
+        self.write_report(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {
+                    "path": path,
+                    "variant": "terser",
+                    "status": "failed",
+                    "reason": "minified source changed behavior",
+                },
+            ],
+            minifier="terser",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual(
+            [(path, "original"), (path, "terser")],
+            [(result["path"], result["variant"]) for result in merged["results"]],
+        )
+        self.assertEqual(2, merged["summary"]["total"])
+        self.assertEqual(1, merged["summary"]["uniquePaths"])
+        self.assertEqual([], merged["passedPaths"])
+        self.assertEqual([path], merged["failedPaths"])
+        self.assertEqual(
+            [{"path": path, "variant": "terser"}],
+            merged["failedCases"],
+        )
+        self.assertEqual(1, merged["variantSummary"]["original"]["passed"])
+        self.assertEqual(1, merged["variantSummary"]["terser"]["failed"])
+        self.assertEqual([], merged["executedPaths"])
+
+    def test_legacy_result_without_variant_defaults_to_original(self) -> None:
+        path = "test/language/legacy.js"
+        self.write_report(0, [{"path": path, "status": "passed"}])
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual("original", merged["results"][0]["variant"])
+        self.assertEqual(["original"], merged["observedVariants"])
+        self.assertEqual([path], merged["executedPaths"])
+
+    def test_minified_report_missing_terser_case_is_incomplete(self) -> None:
+        path = "test/language/partial.js"
+        self.write_report(
+            0,
+            [{"path": path, "variant": "original", "status": "passed"}],
+            minifier="terser",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual([], merged["results"])
+        self.assertEqual("MalformedReport", merged["incompleteShards"][0]["failureReason"])
+        self.assertIn("missing terser", merged["incompleteShards"][0]["failureDetail"])
+
+    def test_duplicate_path_variant_identity_is_malformed(self) -> None:
+        path = "test/language/duplicate.js"
+        self.write_report(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {"path": path, "variant": "original", "status": "failed"},
+            ],
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual("MalformedReport", merged["incompleteShards"][0]["failureReason"])
+        self.assertIn("duplicate result", merged["incompleteShards"][0]["failureDetail"])
+
+    def test_explicit_variant_must_use_the_exact_schema_value(self) -> None:
+        self.write_report(
+            0,
+            [
+                {
+                    "path": "test/language/bad-variant.js",
+                    "variant": "Original",
+                    "status": "passed",
+                }
+            ],
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual("MalformedReport", merged["incompleteShards"][0]["failureReason"])
+        self.assertIn("unknown variant", merged["incompleteShards"][0]["failureDetail"])
+
+    def test_not_applicable_terser_case_is_a_conclusive_manifest_exemption(self) -> None:
+        path = "test/language/source-sensitive.js"
+        manifest = self.write_text("failures.txt", f"{path}\n")
+        self.write_report(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {
+                    "path": path,
+                    "variant": "terser",
+                    "status": "skipped",
+                    "notApplicable": True,
+                    "skipKind": "minifier-not-applicable",
+                    "reason": "source-text-sensitive test",
+                },
+            ],
+            minifier="terser",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+        persisted = merger.merge_into_manifest(merged, manifest)
+
+        self.assertEqual(1, merged["summary"]["skipped"])
+        self.assertEqual(1, merged["summary"]["notApplicable"])
+        self.assertEqual([path], merged["passedPaths"])
+        self.assertEqual([path], merged["notApplicablePaths"])
+        self.assertEqual([path], merged["executedPaths"])
+        self.assertEqual(1, merged["pathSummary"]["executed"])
+        self.assertEqual(1, merged["pathSummary"]["refreshable"])
+        self.assertEqual(
+            [{"path": path, "variant": "terser"}],
+            merged["notApplicableCases"],
+        )
+        self.assertEqual([], persisted["manifestPaths"])
+
+    def test_not_applicable_marker_requires_terser_skip_contract(self) -> None:
+        path = "test/language/bad-marker.js"
+        self.write_report(
+            0,
+            [
+                {
+                    "path": path,
+                    "variant": "original",
+                    "status": "passed",
+                    "notApplicable": True,
+                    "skipKind": "minifier-not-applicable",
+                }
+            ],
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual("MalformedReport", merged["incompleteShards"][0]["failureReason"])
+        self.assertIn("non-skipped", merged["incompleteShards"][0]["failureDetail"])
+
+    def test_all_requested_variants_passing_clear_base_manifest_path(self) -> None:
+        path = "test/language/fixed.js"
+        manifest = self.write_text("failures.txt", f"{path}\n")
+        self.write_report(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {"path": path, "variant": "terser", "status": "passed"},
+            ],
+            minifier="terser",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+        persisted = merger.merge_into_manifest(merged, manifest)
+
+        self.assertEqual([path], merged["executedPaths"])
+        self.assertEqual([], persisted["manifestPaths"])
+
+    def test_one_variant_failure_retains_base_manifest_path_once(self) -> None:
+        path = "test/language/still-broken.js"
+        manifest = self.write_text("failures.txt", "")
+        self.write_report(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {
+                    "path": path,
+                    "variant": "terser",
+                    "status": "failed",
+                    "infrastructure": True,
+                    "failureType": "MinifierError",
+                    "reason": "Terser rejected the input",
+                },
+            ],
+            minifier="terser",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+        persisted = merger.merge_into_manifest(merged, manifest)
+
+        self.assertEqual([], merged["executedPaths"])
+        self.assertEqual(1, merged["pathSummary"]["executed"])
+        self.assertEqual(0, merged["pathSummary"]["refreshable"])
+        self.assertEqual([path], persisted["manifestPaths"])
+        self.assertEqual(1, merged["summary"]["failed"])
+        self.assertEqual(0, merged["timeoutCount"])
+        minifier_group = merged["problemGroups"][0]
+        self.assertEqual("MinifierFailure", minifier_group["kind"])
+        self.assertIn("MinifierError", minifier_group["label"])
+
+    def test_ordinary_terser_skip_does_not_clear_base_manifest_path(self) -> None:
+        path = "test/language/ordinary-skip.js"
+        manifest = self.write_text("failures.txt", f"{path}\n")
+        self.write_report(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {
+                    "path": path,
+                    "variant": "terser",
+                    "status": "skipped",
+                    "reason": "worker chose not to run this case",
+                },
+            ],
+            minifier="terser",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+        persisted = merger.merge_into_manifest(merged, manifest)
+
+        self.assertEqual([], merged["executedPaths"])
+        self.assertEqual(1, merged["pathSummary"]["executed"])
+        self.assertEqual(0, merged["pathSummary"]["refreshable"])
+        self.assertEqual([path], persisted["manifestPaths"])
+
+    def test_minifier_timeout_failure_is_not_an_engine_timeout(self) -> None:
+        path = "test/language/minifier-timeout.js"
+        self.write_report(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {
+                    "path": path,
+                    "variant": "terser",
+                    "status": "failed",
+                    "infrastructure": True,
+                    "failureType": "MinifierTimeout",
+                    "reason": "Terser exceeded 15 seconds",
+                },
+            ],
+            minifier="terser",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual(0, merged["timeoutCount"])
+        self.assertEqual([], merged["timeouts"])
+        self.assertEqual("MinifierFailure", merged["problemGroups"][0]["kind"])
+        self.assertEqual("MinifierFailure", merged["biggestProblems"][0]["kind"])
+
+    def test_base_path_status_uses_variant_severity_precedence(self) -> None:
+        path = "test/language/mixed-outcome.js"
+        self.write_report(
+            0,
+            [
+                {
+                    "path": path,
+                    "variant": "original",
+                    "status": "failed",
+                    "reason": "original assertion failed",
+                },
+                {
+                    "path": path,
+                    "variant": "terser",
+                    "status": "timedOut",
+                },
+            ],
+            minifier="terser",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual([], merged["failedPaths"])
+        self.assertEqual([path], merged["timedOutPaths"])
+        self.assertEqual(1, len(merged["failedCases"]))
+        self.assertEqual(1, len(merged["timedOutCases"]))
+        self.assertEqual(1, merged["pathSummary"]["timedOut"])
+        self.assertEqual([], merged["executedPaths"])
+
+    def test_same_path_variant_timeouts_remain_distinct_and_ordered(self) -> None:
+        path = "test/language/both-timeout.js"
+        self.write_report(
+            0,
+            [
+                {
+                    "path": path,
+                    "variant": "terser",
+                    "status": "timedOut",
+                    "sourceSizeBytes": 64,
+                    "features": ["Promise"],
+                },
+                {
+                    "path": path,
+                    "variant": "original",
+                    "status": "timedOut",
+                    "sourceSizeBytes": 64,
+                    "features": ["Promise"],
+                },
+            ],
+            minifier="terser",
+        )
+
+        merged = merger.merge(
+            self.root, expected_shard_indexes={0}, timeout_limit=5
+        )
+
+        self.assertEqual(2, merged["timeoutCount"])
+        self.assertEqual(
+            ["original", "terser"],
+            [timeout["variant"] for timeout in merged["timeouts"]],
+        )
+        self.assertEqual(2, merged["timeoutFeatureGroups"][0]["count"])
+        self.assertEqual([path], merged["timedOutPaths"])
+        markdown = merger.render_timeout_issue_markdown(merged)
+        self.assertIn(f"{path} [original]", markdown)
+        self.assertIn(f"{path} [terser]", markdown)
+
+    def test_variant_retry_supersedes_both_initial_cases(self) -> None:
+        path = "test/language/retried-variants.js"
+        self.write_report(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "failed"},
+                {"path": path, "variant": "terser", "status": "failed"},
+            ],
+            minifier="terser",
+            directory="initial",
+        )
+        self.write_report(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {"path": path, "variant": "terser", "status": "passed"},
+            ],
+            minifier="terser",
+            retry=True,
+            directory="retry",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual([0], merged["retriedShards"])
+        self.assertEqual(2, merged["summary"]["total"])
+        self.assertEqual(2, merged["summary"]["passed"])
+        self.assertEqual(0, merged["summary"]["failed"])
+        self.assertEqual([path], merged["executedPaths"])
+
+    def test_problem_groups_separate_variants_and_show_case_samples(self) -> None:
+        path = "test/language/both-fail.js"
+        self.write_report(
+            0,
+            [
+                {
+                    "path": path,
+                    "variant": "original",
+                    "status": "failed",
+                    "reason": "same diagnostic",
+                },
+                {
+                    "path": path,
+                    "variant": "terser",
+                    "status": "failed",
+                    "reason": "same diagnostic",
+                },
+            ],
+            minifier="terser",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+        groups = merged["problemGroups"]
+
+        self.assertEqual(2, len(groups))
+        self.assertEqual(
+            ["original", "terser"],
+            sorted(group["variants"][0]["variant"] for group in groups),
+        )
+        self.assertTrue(all(group["caseSamples"] for group in groups))
+        markdown = merger.render_issue_markdown(merged)
+        self.assertIn(f"{path} [original]", markdown)
+        self.assertIn(f"{path} [terser]", markdown)
 
     def test_totals_and_path_sets_are_sorted(self) -> None:
         self.write_report(
@@ -457,7 +944,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
         self.assertEqual(["test/s.js"], merged["skippedPaths"])
         self.assertEqual(["test/z.js"], merged["timedOutPaths"])
         self.assertEqual(
-            ["test/a.js", "test/b.js", "test/z.js"],
+            ["test/a.js"],
             merged["executedPaths"],
         )
 
@@ -751,6 +1238,150 @@ class MergeTest262ShardsTests(unittest.TestCase):
             "IncompleteSelectionCoverage",
             merged["configurationFailures"][0]["kind"],
         )
+
+    def test_full_minified_shard_space_counts_unique_paths_not_variant_cases(self) -> None:
+        for index, path in enumerate(("test/a.js", "test/b.js")):
+            payload = self.report_payload(
+                index,
+                [
+                    {"path": path, "variant": "original", "status": "passed"},
+                    {"path": path, "variant": "terser", "status": "passed"},
+                ],
+                selected_before_sharding=2,
+                minifier="terser",
+            )
+            payload["shardCount"] = 2
+            self.write_json(f"test262-full-shard-{index}.json", payload)
+
+        merged = merger.merge(self.root, expected_shard_indexes={0, 1})
+
+        self.assertEqual([], merged["configurationFailures"])
+        self.assertEqual(4, merged["summary"]["total"])
+        self.assertEqual(2, merged["summary"]["uniquePaths"])
+        self.assertEqual(2, merged["pathSummary"]["total"])
+        self.assertEqual(2, merged["variantSummary"]["original"]["total"])
+        self.assertEqual(2, merged["variantSummary"]["terser"]["total"])
+
+    def test_inconsistent_minifier_provenance_blocks_manifest_clearance(self) -> None:
+        paths = ["test/a.js", "test/b.js"]
+        manifest = self.write_text("failures.txt", "\n".join(paths) + "\n")
+        for index, path in enumerate(paths):
+            payload = self.report_payload(
+                index,
+                [
+                    {"path": path, "variant": "original", "status": "passed"},
+                    {"path": path, "variant": "terser", "status": "passed"},
+                ],
+                minifier="terser",
+                minifier_version=f"5.3{index}.0",
+            )
+            self.write_json(f"test262-full-shard-{index}.json", payload)
+
+        merged = merger.merge(self.root, expected_shard_indexes={0, 1})
+        persisted = merger.merge_into_manifest(merged, manifest)
+
+        self.assertTrue(
+            any(
+                failure["kind"] == "InconsistentShardConfiguration"
+                and failure.get("field") == "minifierVersion"
+                for failure in merged["configurationFailures"]
+            )
+        )
+        self.assertEqual([], merged["executedPaths"])
+        self.assertEqual(paths, persisted["manifestPaths"])
+
+    def test_invalid_minifier_profile_and_options_fail_configuration(self) -> None:
+        path = "test/language/bad-profile.js"
+        payload = self.report_payload(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {"path": path, "variant": "terser", "status": "passed"},
+            ],
+            minifier="terser",
+        )
+        payload["minifierProfile"] = "unsafe-profile"
+        payload["minifierOptions"] = {
+            **payload["minifierOptions"],  # type: ignore[arg-type]
+            "compress": True,
+        }
+        self.write_json("test262-full-shard-0.json", payload)
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        messages = "\n".join(
+            failure["message"] for failure in merged["configurationFailures"]
+        )
+        self.assertIn("minifierProfile=test262-safe-mangle-v1", messages)
+        self.assertIn("exact test262-safe-mangle-v1 minifierOptions", messages)
+        self.assertEqual([], merged["executedPaths"])
+
+    def test_wrong_expected_variant_count_makes_report_incomplete(self) -> None:
+        path = "test/language/wrong-expected-count.js"
+        payload = self.report_payload(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {"path": path, "variant": "terser", "status": "passed"},
+            ],
+            minifier="terser",
+        )
+        payload["expectedVariantCountPerPath"] = 1
+        self.write_json("test262-full-shard-0.json", payload)
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual([], merged["results"])
+        self.assertEqual("MalformedReport", merged["incompleteShards"][0]["failureReason"])
+        self.assertIn(
+            "expectedVariantCountPerPath",
+            merged["incompleteShards"][0]["failureDetail"],
+        )
+
+    def test_mismatched_variant_summary_makes_report_incomplete(self) -> None:
+        path = "test/language/wrong-variant-summary.js"
+        payload = self.report_payload(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {"path": path, "variant": "terser", "status": "passed"},
+            ],
+            minifier="terser",
+        )
+        payload["variantSummary"]["terser"]["passed"] = 0  # type: ignore[index]
+        self.write_json("test262-full-shard-0.json", payload)
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual("MalformedReport", merged["incompleteShards"][0]["failureReason"])
+        self.assertIn(
+            "variantSummary.terser.passed",
+            merged["incompleteShards"][0]["failureDetail"],
+        )
+
+    def test_absolute_terser_module_path_is_not_persisted(self) -> None:
+        path = "test/language/no-secret-path.js"
+        module_path = "C:/private/node_modules/terser/index.js"
+        payload = self.report_payload(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {
+                    "path": path,
+                    "variant": "terser",
+                    "status": "passed",
+                    "terserModule": module_path,
+                },
+            ],
+            minifier="terser",
+        )
+        payload["terserModule"] = module_path
+        self.write_json("test262-full-shard-0.json", payload)
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertNotIn("terserModule", merged["runConfiguration"])
+        self.assertNotIn(module_path, json.dumps(merged, sort_keys=True))
 
     def test_biggest_report_includes_incomplete_and_multiple_crashes_up_to_limit(self) -> None:
         self.write_report(
@@ -1053,6 +1684,36 @@ class MergeTest262ShardsTests(unittest.TestCase):
         self.assertIn("create_biggest_issue=false", outputs)
         self.assertIn("create_timeout_issue=false", outputs)
         self.assertIn("has_incomplete_shards=false", outputs)
+        self.assertIn("suite_passed=true", outputs)
+
+    def test_variant_case_and_unique_path_counts_are_github_outputs(self) -> None:
+        path = "test/language/source-sensitive-output.js"
+        self.write_report(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {
+                    "path": path,
+                    "variant": "terser",
+                    "status": "skipped",
+                    "notApplicable": True,
+                    "skipKind": "minifier-not-applicable",
+                    "reason": "source-text-sensitive test",
+                },
+            ],
+            minifier="terser",
+        )
+        github_output = self.root / "github-output.txt"
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+        merger._write_github_outputs(github_output, merged)
+
+        outputs = github_output.read_text(encoding="utf-8")
+        self.assertIn("total_count=2", outputs)
+        self.assertIn("unique_path_count=1", outputs)
+        self.assertIn("original_case_count=1", outputs)
+        self.assertIn("terser_case_count=1", outputs)
+        self.assertIn("not_applicable_count=1", outputs)
         self.assertIn("suite_passed=true", outputs)
 
     def test_timeout_only_run_uses_timeout_issue_not_biggest_issue(self) -> None:

@@ -1,0 +1,10 @@
+{
+  "name": "broiler-js-test262-terser-tool",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pinned Terser runtime for the Broiler.JS test262 CI action.",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "terser": "5.50.0"
+  }
+}

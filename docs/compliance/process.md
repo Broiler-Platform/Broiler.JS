@@ -52,6 +52,11 @@ Use `--shard-index -1` to run every shard locally. The runner supports async and
 Test262 metadata filters through `--features` and `--feature-match`, per-test timeout,
 optional POSIX memory limits, `--max-workers`, `--shuffle-seed`,
 `--prioritize-fragile`, and expected-error handling through `--include-negative`.
+`--minifier terser --terser-module <package-directory>` adds a Terser-transformed
+variant for each eligible script-host test; `--minifier-timeout-seconds` bounds each
+transformation independently. The fixed `test262-safe-mangle-v1` profile applies
+syntax minification and identifier mangling with compression disabled. The original
+variant always runs.
 
 Tests requiring `$262` host hooks remain host-harness exclusions. The `module` and `raw`
 flags require separate host modes and are not validated by the ordinary script host.
@@ -62,15 +67,17 @@ Do not count excluded files as passes.
 `.github/workflows/test262.yml` is the unified manual workflow. It can scope work through
 `scripts/compliance/test262-assemblies.json`, path/glob subsets, and Test262 feature
 metadata; shard the runnable selection; rerun saved failures first; retry an abnormal
-shard once; and publish per-shard plus merged JSON/Markdown artifacts. It does not run
-automatically after a merge or for a pull request.
+shard once; execute original plus lockfile-pinned Terser variants by default; and
+publish per-shard plus merged JSON/Markdown artifacts. It does not run automatically
+after a merge or for a pull request.
 
 The canonical merged JSON records the exact Broiler and test262 commits, workflow URL,
 selection filters/scope, resource options, worker/shuffle settings, and runner
-OS/architecture/.NET version. Cross-shard configuration drift and selections that run
-no tests are configuration failures rather than green results. A terminal verdict uses
-this authoritative merge, so a recovered retry can heal an initial job failure while a
-missing full phase cannot pass accidentally.
+OS/architecture/.NET version, plus the selected minifier profile, pinned Terser
+version, and transformation timeout. Cross-shard configuration drift and selections
+that run no tests are configuration failures rather than green results. A terminal
+verdict uses this authoritative merge, so a recovered retry can heal an initial job
+failure while a missing full phase cannot pass accidentally.
 
 `scripts/compliance/test262-failures.txt` is generated from tracked failures and
 timeouts. CI refreshes only paths conclusively executed by the authoritative phase;
@@ -83,8 +90,10 @@ may be removed only after:
 4. the dashboard is updated with the new evidence.
 
 Manifest persistence consumes the canonical merged artifact, is serialized per branch,
-and uses a compare-and-swap push. If source files changed after the tested commit, the
-workflow leaves the newer branch untouched instead of applying stale measurements.
+and uses a compare-and-swap push. Only the canonical Terser-enabled profile may clear
+the path-only manifest: an original-only pass cannot erase a Terser-only failure. If
+source files changed after the tested commit, the workflow leaves the newer branch
+untouched instead of applying stale measurements.
 
 Treat a newly failing previously-passing test as a regression unless a pinned suite
 update intentionally changed the expectation.

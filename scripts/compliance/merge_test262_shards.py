@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import re
 from collections import Counter, defaultdict
@@ -46,6 +47,13 @@ _RUN_CONFIGURATION_FIELDS = (
     "shuffleSeed",
     "includeNegative",
     "prioritizeFragile",
+    "minifier",
+    "minifierVersion",
+    "minifierProfile",
+    "minifierTimeoutSeconds",
+    "minifierOptions",
+    "variants",
+    "expectedVariantCountPerPath",
     "runnerOs",
     "runnerArch",
     "dotnetVersion",
@@ -88,9 +96,27 @@ _STATUS_RANK = {
     "failed": 2,
     "timedOut": 3,
 }
+_VARIANTS = ("original", "terser")
+_VARIANT_RANK = {variant: index for index, variant in enumerate(_VARIANTS)}
+_MINIFIER_PROFILE = "test262-safe-mangle-v1"
+_MINIFIER_NOT_APPLICABLE = "minifier-not-applicable"
+_MINIFIER_OPTIONS = {
+    "compress": False,
+    "mangle": True,
+    "mangleProperties": False,
+    "mangleEval": False,
+    "toplevel": False,
+    "module": False,
+    "keepFunctionNames": True,
+    "keepClassNames": True,
+    "asciiOnly": False,
+    "comments": False,
+    "semicolons": True,
+}
 _BIGGEST_KIND_RANK = {
     "IncompleteShards": 5,
     "Crash": 4,
+    "MinifierFailure": 3,
     "NoOutput": 2,
     "Failure": 1,
 }
@@ -116,6 +142,67 @@ def _normalise_path(value: object) -> str:
 
 def _canonical_status(value: object) -> str | None:
     return _STATUS_ALIASES.get(str(value or "").strip().lower())
+
+
+def _canonical_variant(value: object) -> str | None:
+    return value if isinstance(value, str) and value in _VARIANTS else None
+
+
+def _result_identity(result: dict[str, Any]) -> tuple[str, str]:
+    return str(result["path"]), str(result["variant"])
+
+
+def _case_reference(result: dict[str, Any]) -> dict[str, str]:
+    path, variant = _result_identity(result)
+    return {"path": path, "variant": variant}
+
+
+def _is_not_applicable(result: dict[str, Any]) -> bool:
+    return result.get("notApplicable") is True
+
+
+def _expected_report_variants(
+    payload: dict[str, Any], observed: set[str]
+) -> tuple[tuple[str, ...] | None, str | None]:
+    raw_minifier = payload.get("minifier")
+    minifier: str | None = None
+    if raw_minifier is not None:
+        minifier = str(raw_minifier).strip().lower()
+        if minifier not in ("none", "terser"):
+            return None, "report minifier must be 'none' or 'terser'"
+
+    declared: tuple[str, ...] | None = None
+    if "variants" in payload:
+        raw_variants = payload["variants"]
+        if not isinstance(raw_variants, list) or not raw_variants:
+            return None, "report variants is not a non-empty array"
+        canonical = [_canonical_variant(value) for value in raw_variants]
+        if any(value is None for value in canonical):
+            return None, "report variants contains an unknown variant"
+        declared = tuple(str(value) for value in canonical)
+        if len(set(declared)) != len(declared):
+            return None, "report variants contains duplicate entries"
+        if declared not in (("original",), ("original", "terser")):
+            return None, "report variants must be ['original'] or ['original', 'terser']"
+
+    configured = (
+        ("original", "terser")
+        if minifier == "terser"
+        else (("original",) if minifier == "none" else None)
+    )
+    if configured is not None and declared is not None and configured != declared:
+        return None, "report minifier and variants settings disagree"
+
+    expected = configured or declared
+    if expected is None:
+        # Legacy reports omit both fields. Infer their shape, while still
+        # requiring consistent variant coverage for every base path.
+        expected = tuple(
+            sorted(observed or {"original"}, key=lambda value: _VARIANT_RANK[value])
+        )
+    if "original" not in expected:
+        return None, "report variants does not include the required original case"
+    return expected, None
 
 
 def _read_artifact(path: Path, match: re.Match[str]) -> Artifact:
@@ -196,7 +283,11 @@ def _validate_report(artifact: Artifact) -> str | None:
             )
 
     result_paths: list[str] = []
+    identities: set[tuple[str, str]] = set()
+    variants_by_path: dict[str, set[str]] = defaultdict(set)
+    observed_variants: set[str] = set()
     status_counts: Counter[str] = Counter()
+    not_applicable_count = 0
     for position, result in enumerate(results):
         if not isinstance(result, dict):
             return f"result {position} is not a JSON object"
@@ -206,8 +297,72 @@ def _validate_report(artifact: Artifact) -> str | None:
         status = _canonical_status(result.get("status"))
         if status is None:
             return f"result {position} has unknown status {result.get('status')!r}"
+        # Pre-minifier reports have no variant field. They are original-source
+        # evidence and remain valid inputs after the schema extension. An
+        # explicitly empty/null/unknown variant is still malformed.
+        variant = (
+            "original"
+            if "variant" not in result
+            else _canonical_variant(result.get("variant"))
+        )
+        if variant is None:
+            return f"result {position} has unknown variant {result.get('variant')!r}"
+        identity = (path, variant)
+        if identity in identities:
+            return (
+                f"report contains duplicate result for {path!r} "
+                f"variant {variant!r}"
+            )
+        identities.add(identity)
         result_paths.append(path)
+        variants_by_path[path].add(variant)
+        observed_variants.add(variant)
         status_counts[status] += 1
+
+        if "infrastructure" in result and not isinstance(
+            result["infrastructure"], bool
+        ):
+            return f"result {position} infrastructure is not a boolean"
+        if result.get("infrastructure") is True and status != "failed":
+            return f"result {position} marks a non-failed case as infrastructure"
+
+        failure_type = str(result.get("failureType") or "").strip()
+        if failure_type in ("MinifierError", "MinifierTimeout") and (
+            variant != "terser"
+            or status != "failed"
+            or result.get("infrastructure") is not True
+        ):
+            return (
+                f"result {position} {failure_type} must be an infrastructure "
+                "failure for the Terser variant"
+            )
+
+        if "notApplicable" in result and not isinstance(
+            result["notApplicable"], bool
+        ):
+            return f"result {position} notApplicable is not a boolean"
+        not_applicable = result.get("notApplicable") is True
+        has_not_applicable_kind = (
+            result.get("skipKind") == _MINIFIER_NOT_APPLICABLE
+        )
+        if not_applicable:
+            if status != "skipped":
+                return f"result {position} marks a non-skipped case notApplicable"
+            if variant != "terser":
+                return f"result {position} marks a non-Terser case notApplicable"
+            if not has_not_applicable_kind:
+                return (
+                    f"result {position} notApplicable case has no "
+                    f"{_MINIFIER_NOT_APPLICABLE!r} skipKind"
+                )
+            if not str(result.get("reason") or "").strip():
+                return f"result {position} notApplicable case has no reason"
+            not_applicable_count += 1
+        elif has_not_applicable_kind:
+            return (
+                f"result {position} has {_MINIFIER_NOT_APPLICABLE!r} skipKind "
+                "without notApplicable=true"
+            )
 
     expanded_paths = payload.get("expandedPaths")
     if expanded_paths is not None:
@@ -216,8 +371,45 @@ def _validate_report(artifact: Artifact) -> str | None:
         ):
             return "expandedPaths is not an array of paths"
         expected_paths = sorted({_normalise_path(path) for path in expanded_paths})
+        if len(expected_paths) != len(expanded_paths):
+            return "expandedPaths contains duplicate base paths"
         if sorted(set(result_paths)) != expected_paths:
             return "results do not cover every expanded path"
+
+    expected_variants, variant_error = _expected_report_variants(
+        payload, observed_variants
+    )
+    if variant_error:
+        return variant_error
+    assert expected_variants is not None
+    expected_variant_set = set(expected_variants)
+
+    if "expectedVariantCountPerPath" in payload:
+        raw_expected_count = payload["expectedVariantCountPerPath"]
+        if isinstance(raw_expected_count, bool) or not isinstance(
+            raw_expected_count, int
+        ):
+            return "report expectedVariantCountPerPath is not an integer"
+        if raw_expected_count != len(expected_variants):
+            return (
+                "report expectedVariantCountPerPath does not match its "
+                "configured variants"
+            )
+
+    for path in sorted(variants_by_path):
+        actual = variants_by_path[path]
+        if actual != expected_variant_set:
+            missing = sorted(expected_variant_set - actual)
+            unexpected = sorted(actual - expected_variant_set)
+            details: list[str] = []
+            if missing:
+                details.append("missing " + ", ".join(missing))
+            if unexpected:
+                details.append("unexpected " + ", ".join(unexpected))
+            return (
+                f"result variants for {path!r} are incomplete "
+                f"({'; '.join(details)})"
+            )
 
     if "selectedCountBeforeSharding" in payload:
         try:
@@ -237,6 +429,8 @@ def _validate_report(artifact: Artifact) -> str | None:
             + status_counts["failed"]
             + status_counts["timedOut"]
         ),
+        "notApplicable": not_applicable_count,
+        "total": len(results),
     }
     for key, actual in declared_keys.items():
         if key not in payload:
@@ -247,6 +441,102 @@ def _validate_report(artifact: Artifact) -> str | None:
             return f"report {key} count is not an integer"
         if declared != actual:
             return f"report {key} count {declared} does not match results ({actual})"
+
+    variant_summary = payload.get("variantSummary")
+    if variant_summary is not None:
+        if not isinstance(variant_summary, dict):
+            return "report variantSummary is not an object"
+        if set(variant_summary) != expected_variant_set:
+            return "report variantSummary does not match configured variants"
+        for variant in expected_variants:
+            declared_summary = variant_summary.get(variant)
+            if not isinstance(declared_summary, dict):
+                return f"report variantSummary.{variant} is not an object"
+            variant_results = [
+                result
+                for result in results
+                if _canonical_variant(result.get("variant", "original")) == variant
+            ]
+            variant_counts = Counter(
+                _canonical_status(result.get("status"))
+                for result in variant_results
+            )
+            actual_summary = {
+                "total": len(variant_results),
+                "executed": (
+                    variant_counts["passed"]
+                    + variant_counts["failed"]
+                    + variant_counts["timedOut"]
+                ),
+                "passed": variant_counts["passed"],
+                "failed": variant_counts["failed"],
+                "skipped": variant_counts["skipped"],
+                "timedOut": variant_counts["timedOut"],
+                "notApplicable": sum(
+                    result.get("notApplicable") is True
+                    for result in variant_results
+                ),
+            }
+            for key, actual in actual_summary.items():
+                raw_declared = declared_summary.get(key)
+                if isinstance(raw_declared, bool) or not isinstance(
+                    raw_declared, int
+                ):
+                    return (
+                        f"report variantSummary.{variant}.{key} is not an integer"
+                    )
+                if raw_declared != actual:
+                    return (
+                        f"report variantSummary.{variant}.{key} count "
+                        f"{raw_declared} does not match results ({actual})"
+                    )
+
+    path_summary = payload.get("pathSummary")
+    if path_summary is not None:
+        if not isinstance(path_summary, dict):
+            return "report pathSummary is not an object"
+        path_statuses: dict[str, str] = {}
+        for path in variants_by_path:
+            case_statuses = {
+                _canonical_status(result.get("status"))
+                for result in results
+                if _normalise_path(result.get("path")) == path
+            }
+            if "timedOut" in case_statuses:
+                path_statuses[path] = "timedOut"
+            elif "failed" in case_statuses:
+                path_statuses[path] = "failed"
+            elif "passed" in case_statuses:
+                path_statuses[path] = "passed"
+            else:
+                path_statuses[path] = "skipped"
+        actual_path_summary = {
+            "total": len(path_statuses),
+            "executed": sum(
+                status != "skipped" for status in path_statuses.values()
+            ),
+            "passed": sum(
+                status == "passed" for status in path_statuses.values()
+            ),
+            "failed": sum(
+                status == "failed" for status in path_statuses.values()
+            ),
+            "skipped": sum(
+                status == "skipped" for status in path_statuses.values()
+            ),
+            "timedOut": sum(
+                status == "timedOut" for status in path_statuses.values()
+            ),
+        }
+        for key, actual in actual_path_summary.items():
+            raw_declared = path_summary.get(key)
+            if isinstance(raw_declared, bool) or not isinstance(raw_declared, int):
+                return f"report pathSummary.{key} is not an integer"
+            if raw_declared != actual:
+                return (
+                    f"report pathSummary.{key} count {raw_declared} does not "
+                    f"match results ({actual})"
+                )
 
     return None
 
@@ -404,8 +694,12 @@ def _selected_attempts(
 
 def _normalise_result(result: dict[str, Any]) -> dict[str, Any]:
     normalised = {str(key): value for key, value in sorted(result.items())}
+    # The runner module is machine-local provenance, not portable run data.
+    # Drop it defensively even if an older producer wrote it on a case row.
+    normalised.pop("terserModule", None)
     normalised["path"] = _normalise_path(result.get("path"))
     normalised["status"] = _canonical_status(result.get("status"))
+    normalised["variant"] = _canonical_variant(result.get("variant", "original"))
     features = _features(normalised)
     if features:
         normalised["features"] = features
@@ -422,15 +716,21 @@ def _result_preference(result: dict[str, Any]) -> tuple[int, int, str]:
 
 
 def _deduplicate_results(reports: Iterable[Artifact]) -> list[dict[str, Any]]:
-    by_path: dict[str, dict[str, Any]] = {}
+    by_identity: dict[tuple[str, str], dict[str, Any]] = {}
     for artifact in reports:
         for raw_result in artifact.payload["results"]:
             result = _normalise_result(raw_result)
-            path = str(result["path"])
-            previous = by_path.get(path)
+            identity = _result_identity(result)
+            previous = by_identity.get(identity)
             if previous is None or _result_preference(result) > _result_preference(previous):
-                by_path[path] = result
-    return [by_path[path] for path in sorted(by_path)]
+                by_identity[identity] = result
+    return [
+        by_identity[identity]
+        for identity in sorted(
+            by_identity,
+            key=lambda item: (item[0], _VARIANT_RANK[item[1]]),
+        )
+    ]
 
 
 def _aggregate_run_configuration(
@@ -456,6 +756,7 @@ def _aggregate_run_configuration(
             failures.append(
                 {
                     "kind": "InconsistentShardConfiguration",
+                    "field": field,
                     "message": (
                         f"Shard reports disagree about {field}, or omit it in "
                         "only part of the run."
@@ -474,6 +775,186 @@ def _aggregate_run_configuration(
             }
         )
     return configuration, failures
+
+
+def _validate_minifier_configuration(
+    configuration: dict[str, Any],
+    reports: list[Artifact],
+    results: list[dict[str, Any]],
+) -> list[dict[str, str]]:
+    """Validate merged minifier provenance without exposing module paths."""
+    if not reports:
+        return []
+
+    failures: list[dict[str, str]] = []
+    minifier = configuration.get("minifier")
+    variants = configuration.get("variants")
+    observed_variants = sorted(
+        {str(result["variant"]) for result in results},
+        key=lambda value: _VARIANT_RANK[value],
+    )
+
+    # Reports from before minifier support intentionally omit this metadata.
+    # Once any minifier metadata is present, require the complete contract.
+    has_minifier_metadata = any(
+        field in configuration
+        for field in (
+            "minifier",
+            "minifierVersion",
+            "minifierProfile",
+            "minifierTimeoutSeconds",
+            "minifierOptions",
+            "variants",
+            "expectedVariantCountPerPath",
+        )
+    )
+    if not has_minifier_metadata:
+        if "terser" in observed_variants:
+            failures.append(
+                {
+                    "kind": "MissingMinifierConfiguration",
+                    "message": (
+                        "Terser result cases were emitted without the required "
+                        "minifier provenance fields."
+                    ),
+                }
+            )
+        return failures
+
+    if minifier not in ("none", "terser"):
+        failures.append(
+            {
+                "kind": "InvalidMinifierConfiguration",
+                "message": "Run configuration minifier must be 'none' or 'terser'.",
+            }
+        )
+        return failures
+
+    expected_variants = ["original", "terser"] if minifier == "terser" else ["original"]
+    if variants != expected_variants:
+        failures.append(
+            {
+                "kind": "InvalidMinifierConfiguration",
+                "message": (
+                    f"Run configuration variants must be {expected_variants!r} "
+                    f"when minifier={minifier}."
+                ),
+            }
+        )
+    if observed_variants and observed_variants != expected_variants:
+        failures.append(
+            {
+                "kind": "IncompleteVariantCoverage",
+                "message": (
+                    f"Observed variants {observed_variants!r} do not match the "
+                    f"configured variants {expected_variants!r}."
+                ),
+            }
+        )
+
+    expected_variant_count = configuration.get("expectedVariantCountPerPath")
+    if (
+        isinstance(expected_variant_count, bool)
+        or not isinstance(expected_variant_count, int)
+        or expected_variant_count != len(expected_variants)
+    ):
+        failures.append(
+            {
+                "kind": "InvalidMinifierConfiguration",
+                "message": (
+                    "Run configuration expectedVariantCountPerPath must match "
+                    "the configured variants."
+                ),
+            }
+        )
+
+    timeout = configuration.get("minifierTimeoutSeconds")
+    minifier_options = configuration.get("minifierOptions")
+    if minifier == "terser":
+        version = configuration.get("minifierVersion")
+        if not isinstance(version, str) or not version.strip():
+            failures.append(
+                {
+                    "kind": "InvalidMinifierConfiguration",
+                    "message": "Terser runs must record a non-empty minifierVersion.",
+                }
+            )
+        if configuration.get("minifierProfile") != _MINIFIER_PROFILE:
+            failures.append(
+                {
+                    "kind": "InvalidMinifierConfiguration",
+                    "message": (
+                        "Terser runs must record minifierProfile="
+                        f"{_MINIFIER_PROFILE}."
+                    ),
+                }
+            )
+        options_are_exact = (
+            isinstance(minifier_options, dict)
+            and set(minifier_options) == set(_MINIFIER_OPTIONS)
+            and all(
+                type(minifier_options[key]) is bool
+                and minifier_options[key] is expected
+                for key, expected in _MINIFIER_OPTIONS.items()
+            )
+        )
+        if not options_are_exact:
+            failures.append(
+                {
+                    "kind": "InvalidMinifierConfiguration",
+                    "message": (
+                        "Terser runs must record the exact "
+                        f"{_MINIFIER_PROFILE} minifierOptions."
+                    ),
+                }
+            )
+        if (
+            isinstance(timeout, bool)
+            or not isinstance(timeout, (int, float))
+            or not math.isfinite(float(timeout))
+            or float(timeout) <= 0
+        ):
+            failures.append(
+                {
+                    "kind": "InvalidMinifierConfiguration",
+                    "message": (
+                        "Terser runs must record a positive finite "
+                        "minifierTimeoutSeconds value."
+                    ),
+                }
+            )
+    else:
+        if not isinstance(configuration.get("minifierVersion"), str):
+            failures.append(
+                {
+                    "kind": "InvalidMinifierConfiguration",
+                    "message": "Non-minified runs must record minifierVersion as a string.",
+                }
+            )
+        if configuration.get("minifierProfile") not in (None, ""):
+            failures.append(
+                {
+                    "kind": "InvalidMinifierConfiguration",
+                    "message": "Non-minified runs must not record a minifier profile.",
+                }
+            )
+        if minifier_options != {}:
+            failures.append(
+                {
+                    "kind": "InvalidMinifierConfiguration",
+                    "message": "Non-minified runs must record empty minifierOptions.",
+                }
+            )
+        if timeout not in (None, 0, 0.0):
+            failures.append(
+                {
+                    "kind": "InvalidMinifierConfiguration",
+                    "message": (
+                        "Non-minified runs must record minifierTimeoutSeconds as 0 or null."
+                    ),
+                }
+            )
+    return failures
 
 
 def _features(result: dict[str, Any]) -> list[str]:
@@ -562,6 +1043,15 @@ def _exception_signature(result: dict[str, Any]) -> tuple[str, str, str] | None:
 
 def _failure_descriptor(result: dict[str, Any]) -> tuple[str, str, str]:
     reason = _clean_line(result.get("reason"))
+    failure_type = str(result.get("failureType") or "").strip()
+    if failure_type in ("MinifierError", "MinifierTimeout"):
+        detail = reason or "requested Terser evidence was not produced"
+        label = f"Minifier failure ({failure_type}): {detail}"
+        return (
+            "MinifierFailure",
+            f"minifier-failure|{failure_type.lower()}|{detail.lower()}",
+            label,
+        )
     explicit_kind = " ".join(
         str(result.get(key) or "")
         for key in ("category", "failureType", "kind")
@@ -663,6 +1153,7 @@ def _materialise_problem_groups(
         kind: str,
         label: str,
         path: str | None = None,
+        variant: str | None = None,
         features: Iterable[str] = (),
         shard_index: int | None = None,
     ) -> None:
@@ -674,6 +1165,8 @@ def _materialise_problem_groups(
                 "label": label,
                 "count": 0,
                 "_paths": set(),
+                "_cases": set(),
+                "_variants": Counter(),
                 "_features": Counter(),
                 "_shards": set(),
             },
@@ -681,21 +1174,34 @@ def _materialise_problem_groups(
         group["count"] += 1
         if path:
             group["_paths"].add(path)
+            if variant:
+                group["_cases"].add((path, variant))
+        if variant:
+            group["_variants"][variant] += 1
         group["_features"].update(features)
         if shard_index is not None:
             group["_shards"].add(shard_index)
 
     for result in results:
         status = result["status"]
+        variant = str(result["variant"])
         if status == "failed":
             kind, key, label = _failure_descriptor(result)
-            add(key, kind, label, str(result["path"]), _features(result))
+            add(
+                f"{key}|variant={variant}",
+                kind,
+                f"[{variant}] {label}",
+                str(result["path"]),
+                variant,
+                _features(result),
+            )
         elif status == "timedOut":
             add(
-                "timeout",
+                f"timeout|variant={variant}",
                 "Timeout",
-                "Timed out",
+                f"[{variant}] Timed out",
                 str(result["path"]),
+                variant,
                 _features(result),
             )
 
@@ -715,10 +1221,24 @@ def _materialise_problem_groups(
     materialised: list[dict[str, Any]] = []
     for group in groups.values():
         paths = sorted(group.pop("_paths"))
+        cases = sorted(
+            group.pop("_cases"),
+            key=lambda item: (item[0], _VARIANT_RANK[item[1]]),
+        )
+        variant_counter: Counter[str] = group.pop("_variants")
         feature_counter: Counter[str] = group.pop("_features")
         shards = sorted(group.pop("_shards"))
         group["paths"] = paths
         group["pathSamples"] = paths[:PATH_SAMPLE_LIMIT]
+        group["caseSamples"] = [
+            {"path": path, "variant": variant}
+            for path, variant in cases[:PATH_SAMPLE_LIMIT]
+        ]
+        group["variants"] = [
+            {"variant": variant, "count": variant_counter[variant]}
+            for variant in _VARIANTS
+            if variant_counter[variant]
+        ]
         group["features"] = [
             {"feature": feature, "count": count}
             for feature, count in sorted(
@@ -732,9 +1252,10 @@ def _materialise_problem_groups(
     kind_tiebreak = {
         "IncompleteShard": 0,
         "Crash": 1,
-        "Timeout": 2,
-        "NoOutput": 3,
-        "Failure": 4,
+        "MinifierFailure": 2,
+        "Timeout": 3,
+        "NoOutput": 4,
+        "Failure": 5,
     }
     return sorted(
         materialised,
@@ -766,6 +1287,8 @@ def _rank_biggest_problems(
                 "impactScore": float(len(indexes)),
                 "paths": [],
                 "pathSamples": [],
+                "caseSamples": [],
+                "variants": [],
                 "features": [],
                 "shardIndexes": indexes,
                 "details": [str(status["reason"]) for status in incomplete],
@@ -790,6 +1313,8 @@ def _rank_biggest_problems(
                 "impactScore": round(impact, 2),
                 "paths": paths,
                 "pathSamples": list(group["pathSamples"]),
+                "caseSamples": list(group["caseSamples"]),
+                "variants": list(group["variants"]),
                 "features": list(group["features"]),
                 "shardIndexes": [],
                 "details": [],
@@ -811,18 +1336,20 @@ def _rank_timeouts(
     results: list[dict[str, Any]], limit: int
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     timeouts: list[dict[str, Any]] = []
-    feature_paths: dict[str, set[str]] = defaultdict(set)
+    feature_cases: dict[str, set[tuple[str, str]]] = defaultdict(set)
     for result in results:
         if result["status"] != "timedOut":
             continue
         path = str(result["path"])
+        variant = str(result["variant"])
         features = _features(result)
         for feature in features:
-            feature_paths[feature].add(path)
+            feature_cases[feature].add((path, variant))
         timeouts.append(
             {
                 "path": path,
                 "relativeTestPath": path,
+                "variant": variant,
                 "sourceSizeBytes": _source_size(result),
                 "features": features,
                 "reason": str(result.get("reason") or ""),
@@ -836,16 +1363,26 @@ def _rank_timeouts(
             if timeout["sourceSizeBytes"] is not None
             else 0,
             timeout["path"],
+            _VARIANT_RANK[str(timeout["variant"])],
         )
     )
     feature_groups = [
         {
             "feature": feature,
-            "count": len(paths),
-            "pathSamples": sorted(paths)[:PATH_SAMPLE_LIMIT],
+            "count": len(cases),
+            "pathSamples": sorted({path for path, _variant in cases})[
+                :PATH_SAMPLE_LIMIT
+            ],
+            "caseSamples": [
+                {"path": path, "variant": variant}
+                for path, variant in sorted(
+                    cases,
+                    key=lambda item: (item[0], _VARIANT_RANK[item[1]]),
+                )[:PATH_SAMPLE_LIMIT]
+            ],
         }
-        for feature, paths in sorted(
-            feature_paths.items(),
+        for feature, cases in sorted(
+            feature_cases.items(),
             key=lambda item: (-len(item[1]), item[0].lower(), item[0]),
         )
     ]
@@ -876,24 +1413,6 @@ def merge(
     )
     results = _deduplicate_results(reports)
 
-    status_paths: dict[str, list[str]] = {
-        status: [
-            str(result["path"]) for result in results if result["status"] == status
-        ]
-        for status in ("passed", "failed", "skipped", "timedOut")
-    }
-    executed_paths = sorted(
-        status_paths["passed"] + status_paths["failed"] + status_paths["timedOut"]
-    )
-    summary = {
-        "total": len(results),
-        "executed": len(executed_paths),
-        "passed": len(status_paths["passed"]),
-        "failed": len(status_paths["failed"]),
-        "skipped": len(status_paths["skipped"]),
-        "timedOut": len(status_paths["timedOut"]),
-    }
-
     declared_selection_counts: list[int] = []
     every_report_declares_selection = bool(reports)
     for report in reports:
@@ -906,6 +1425,115 @@ def merge(
     run_configuration, configuration_failures = _aggregate_run_configuration(
         reports
     )
+    configuration_failures.extend(
+        _validate_minifier_configuration(run_configuration, reports, results)
+    )
+
+    statuses = ("passed", "failed", "skipped", "timedOut")
+    status_cases: dict[str, list[dict[str, str]]] = {
+        status: [
+            _case_reference(result)
+            for result in results
+            if result["status"] == status
+        ]
+        for status in statuses
+    }
+    not_applicable_cases = [
+        _case_reference(result) for result in results if _is_not_applicable(result)
+    ]
+    cases_by_path: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for result in results:
+        cases_by_path[str(result["path"])].append(result)
+
+    # Existing path arrays stay base-path-only. Their aggregate outcome uses a
+    # deterministic severity order while case arrays retain every variant.
+    path_outcomes: dict[str, str] = {}
+    for path, cases in sorted(cases_by_path.items()):
+        case_statuses = {str(case["status"]) for case in cases}
+        if "timedOut" in case_statuses:
+            path_outcomes[path] = "timedOut"
+        elif "failed" in case_statuses:
+            path_outcomes[path] = "failed"
+        elif "passed" in case_statuses:
+            path_outcomes[path] = "passed"
+        else:
+            path_outcomes[path] = "skipped"
+    status_paths: dict[str, list[str]] = {
+        status: [
+            path for path in sorted(path_outcomes) if path_outcomes[path] == status
+        ]
+        for status in statuses
+    }
+    not_applicable_paths = sorted(
+        {case["path"] for case in not_applicable_cases}
+    )
+
+    observed_variants = sorted(
+        {str(result["variant"]) for result in results},
+        key=lambda value: _VARIANT_RANK[value],
+    )
+    configured_variants = run_configuration.get("variants")
+    expected_variants = (
+        list(configured_variants)
+        if configured_variants in (["original"], ["original", "terser"])
+        else (observed_variants or ["original"])
+    )
+    expected_variant_set = set(expected_variants)
+    partial_variant_paths = [
+        path
+        for path, cases in sorted(cases_by_path.items())
+        if {str(case["variant"]) for case in cases} != expected_variant_set
+    ]
+    if partial_variant_paths:
+        configuration_failures.append(
+            {
+                "kind": "IncompleteVariantCoverage",
+                "message": (
+                    f"{len(partial_variant_paths)} base path(s) did not emit every "
+                    f"configured variant: {', '.join(partial_variant_paths[:5])}."
+                ),
+            }
+        )
+
+    candidate_executed_paths: list[str] = []
+    for path, cases in sorted(cases_by_path.items()):
+        cases_by_variant = {str(case["variant"]): case for case in cases}
+        if set(cases_by_variant) != expected_variant_set:
+            continue
+        original = cases_by_variant.get("original")
+        if (
+            original is None
+            or original["status"] != "passed"
+            or original.get("infrastructure") is True
+        ):
+            continue
+        if all(
+            case.get("infrastructure") is not True
+            and (
+                case["status"] == "passed"
+                or (
+                    variant != "original"
+                    and _is_not_applicable(case)
+                )
+            )
+            for variant, case in cases_by_variant.items()
+        ):
+            candidate_executed_paths.append(path)
+    case_executed_count = sum(
+        len(status_cases[status]) for status in ("passed", "failed", "timedOut")
+    )
+    unique_path_count = len(cases_by_path)
+    summary = {
+        "total": len(results),
+        "executed": case_executed_count,
+        "passed": len(status_cases["passed"]),
+        "failed": len(status_cases["failed"]),
+        "skipped": len(status_cases["skipped"]),
+        "timedOut": len(status_cases["timedOut"]),
+        "notApplicable": len(not_applicable_cases),
+        "uniquePaths": unique_path_count,
+    }
+
     if every_report_declares_selection and max(declared_selection_counts) == 0:
         configuration_failures.append(
             {
@@ -941,18 +1569,65 @@ def merge(
         and covers_full_shard_space
         and isinstance(configured_selection_count, int)
         and configured_selection_count > 0
-        and summary["total"] != configured_selection_count
+        and unique_path_count != configured_selection_count
     ):
         configuration_failures.append(
             {
                 "kind": "IncompleteSelectionCoverage",
                 "message": (
                     f"All {configured_shard_count} shards reported, but their "
-                    f"{summary['total']} unique results do not cover the "
-                    f"{configured_selection_count} paths selected before sharding."
+                    f"{unique_path_count} unique base paths do not cover the "
+                    f"{configured_selection_count} paths selected before sharding; "
+                    f"the {summary['total']} variant cases are counted separately."
                 ),
             }
         )
+
+    # A configuration/coverage failure makes pass evidence unsafe to use for
+    # clearing a path-only rerun manifest. Current failures are still added
+    # below, so this conservative rule can only retain extra rerun coverage.
+    executed_paths = (
+        candidate_executed_paths if not configuration_failures else []
+    )
+
+    variant_summary: dict[str, dict[str, int]] = {}
+    for variant in expected_variants:
+        variant_results = [
+            result for result in results if result["variant"] == variant
+        ]
+        variant_summary[variant] = {
+            "total": len(variant_results),
+            "executed": sum(
+                result["status"] in ("passed", "failed", "timedOut")
+                for result in variant_results
+            ),
+            "passed": sum(result["status"] == "passed" for result in variant_results),
+            "failed": sum(result["status"] == "failed" for result in variant_results),
+            "skipped": sum(result["status"] == "skipped" for result in variant_results),
+            "timedOut": sum(
+                result["status"] == "timedOut" for result in variant_results
+            ),
+            "notApplicable": sum(
+                _is_not_applicable(result) for result in variant_results
+            ),
+            "uniquePaths": len(
+                {str(result["path"]) for result in variant_results}
+            ),
+        }
+
+    path_summary = {
+        "total": unique_path_count,
+        "executed": sum(
+            len(status_paths[status])
+            for status in ("passed", "failed", "timedOut")
+        ),
+        "refreshable": len(executed_paths),
+        "passed": len(status_paths["passed"]),
+        "failed": len(status_paths["failed"]),
+        "skipped": len(status_paths["skipped"]),
+        "timedOut": len(status_paths["timedOut"]),
+        "notApplicable": len(not_applicable_paths),
+    }
 
     all_groups = _materialise_problem_groups(results, incomplete)
     biggest = _rank_biggest_problems(
@@ -992,10 +1667,20 @@ def merge(
             max(declared_selection_counts) if declared_selection_counts else None
         ),
         "summary": summary,
+        "pathSummary": path_summary,
+        "variantSummary": variant_summary,
+        "observedVariants": observed_variants,
+        "uniquePathCount": unique_path_count,
         "passedPaths": status_paths["passed"],
         "failedPaths": status_paths["failed"],
         "skippedPaths": status_paths["skipped"],
         "timedOutPaths": status_paths["timedOut"],
+        "notApplicablePaths": not_applicable_paths,
+        "passedCases": status_cases["passed"],
+        "failedCases": status_cases["failed"],
+        "skippedCases": status_cases["skipped"],
+        "timedOutCases": status_cases["timedOut"],
+        "notApplicableCases": not_applicable_cases,
         "executedPaths": executed_paths,
         "results": results,
         "problemLimit": problem_limit,
@@ -1061,7 +1746,7 @@ def _read_text_manifest(path: Path) -> tuple[list[str], set[str]]:
 def merge_into_manifest(
     merged: dict[str, Any], manifest_path: Path
 ) -> dict[str, Any]:
-    """Update a text failure manifest using only conclusively executed paths."""
+    """Update a text failure manifest using only safely refreshable paths."""
     manifest_path = Path(manifest_path)
     comments, old_paths = _read_text_manifest(manifest_path)
     executed = set(merged.get("executedPaths") or [])
@@ -1110,14 +1795,37 @@ def render_issue_markdown(
     lines = [
         f"## test262 {merged['phase']} run — most common problems",
         "",
-        f"- Total results: {summary['total']}",
-        f"- Passed: {summary['passed']}",
-        f"- Failed: {summary['failed']}",
-        f"- Timed out: {summary['timedOut']}",
-        f"- Skipped: {summary['skipped']}",
+        f"- Total variant cases: {summary['total']}",
+        f"- Unique base paths: {summary.get('uniquePaths', summary['total'])}",
+        f"- Passed cases: {summary['passed']}",
+        f"- Failed cases: {summary['failed']}",
+        f"- Timed-out cases: {summary['timedOut']}",
+        f"- Skipped cases: {summary['skipped']}",
+        f"- Terser not-applicable cases: {summary.get('notApplicable', 0)}",
+        (
+            "- Configured variants: "
+            + ", ".join(
+                str(value)
+                for value in (
+                    merged.get("runConfiguration", {}).get("variants")
+                    or merged.get("observedVariants")
+                    or ["original"]
+                )
+            )
+        ),
         f"- Incomplete shards: {len(merged['incompleteShards'])}",
         "",
     ]
+    if merged.get("variantSummary"):
+        lines.extend(["### Variant breakdown", ""])
+        for variant, counts in merged["variantSummary"].items():
+            lines.append(
+                f"- **{_inline(variant)}** — {counts['passed']} passed, "
+                f"{counts['failed']} failed, {counts['timedOut']} timed out, "
+                f"{counts['skipped']} skipped "
+                f"({counts.get('notApplicable', 0)} not applicable)"
+            )
+        lines.append("")
     if merged.get("configurationFailures"):
         lines.extend(["### Configuration failures", ""])
         for failure in merged["configurationFailures"]:
@@ -1139,7 +1847,13 @@ def render_issue_markdown(
             f"{index}. **{_inline(group['label'])}** — "
             f"{group['count']} occurrence(s)"
         )
-        if group["pathSamples"]:
+        if group.get("caseSamples"):
+            samples = ", ".join(
+                f"{_inline(case['path'])} [{_inline(case['variant'])}]"
+                for case in group["caseSamples"]
+            )
+            lines.append(f"   - Variant-case samples: {samples}")
+        elif group["pathSamples"]:
             samples = ", ".join(_inline(path) for path in group["pathSamples"])
             lines.append(f"   - Path samples: {samples}")
         if group["features"]:
@@ -1189,7 +1903,13 @@ def render_biggest_problems_markdown(
         if problem["details"]:
             for detail in problem["details"][:PATH_SAMPLE_LIMIT]:
                 lines.append(f"   - {_inline(detail)}")
-        if problem["pathSamples"]:
+        if problem.get("caseSamples"):
+            samples = ", ".join(
+                f"{_inline(case['path'])} [{_inline(case['variant'])}]"
+                for case in problem["caseSamples"]
+            )
+            lines.append(f"   - Variant-case samples: {samples}")
+        elif problem["pathSamples"]:
             samples = ", ".join(
                 _inline(path) for path in problem["pathSamples"]
             )
@@ -1232,7 +1952,7 @@ def render_timeout_issue_markdown(
         features = ", ".join(timeout["features"]) or "(none reported)"
         lines.append(
             f"{index}. **{_format_size(timeout['sourceSizeBytes'])}** — "
-            f"{_inline(timeout['path'])}"
+            f"{_inline(timeout['path'])} [{_inline(timeout['variant'])}]"
         )
         lines.append(f"   - Features: {_inline(features)}")
 
@@ -1240,10 +1960,13 @@ def render_timeout_issue_markdown(
     if feature_groups:
         lines.extend(["", "### Timeout feature clusters", ""])
         for group in feature_groups:
-            samples = ", ".join(_inline(path) for path in group["pathSamples"])
+            samples = ", ".join(
+                f"{_inline(case['path'])} [{_inline(case['variant'])}]"
+                for case in group.get("caseSamples", [])
+            )
             lines.append(
                 f"- **{_inline(group['feature'])}** — "
-                f"{group['count']} timeout(s); path samples: {samples}"
+                f"{group['count']} timeout case(s); variant-case samples: {samples}"
             )
     lines.extend(_metadata_lines(run_url, artifact_name))
     return "\n".join(lines) + "\n"
@@ -1293,7 +2016,15 @@ def _write_github_outputs(path: Path, merged: dict[str, Any]) -> None:
         "passed_count": summary["passed"],
         "skipped_count": summary["skipped"],
         "timed_out_count": summary["timedOut"],
+        "not_applicable_count": summary.get("notApplicable", 0),
         "total_count": summary["total"],
+        "unique_path_count": summary.get("uniquePaths", summary["total"]),
+        "original_case_count": (
+            merged.get("variantSummary", {}).get("original", {}).get("total", 0)
+        ),
+        "terser_case_count": (
+            merged.get("variantSummary", {}).get("terser", {}).get("total", 0)
+        ),
         "incomplete_shard_count": len(incomplete_indexes),
         "create_issue": "true" if has_failures else "false",
         "biggest_problem_count": biggest_count,
@@ -1426,8 +2157,10 @@ def main(argv: list[str] | None = None) -> int:
     summary = merged["summary"]
     print(
         f"Merged {merged['shardCount']} test262 {merged['phase']} shard(s): "
-        f"{summary['passed']} passed, {summary['failed']} failed, "
-        f"{summary['timedOut']} timed out, {summary['skipped']} skipped; "
+        f"{summary['passed']} variant case(s) passed, "
+        f"{summary['failed']} failed, {summary['timedOut']} timed out, "
+        f"{summary['skipped']} skipped across "
+        f"{summary.get('uniquePaths', summary['total'])} base path(s); "
         f"{len(merged['incompleteShards'])} incomplete shard(s)."
     )
     return 0

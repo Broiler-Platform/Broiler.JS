@@ -40,6 +40,14 @@ on:
         options:
           - any
           - all
+      minifier:
+        description: Run eligible tests as both original and Terser-minified variants, or original only.
+        required: false
+        default: terser
+        type: choice
+        options:
+          - terser
+          - none
       suite_ref:
         description: test262 branch, tag, ref, or commit; resolved to an immutable commit before sharding.
         required: false
@@ -57,6 +65,11 @@ on:
         type: number
       test_timeout_seconds:
         description: Per-test wall-clock timeout in seconds.
+        required: false
+        default: 30
+        type: number
+      minifier_timeout_seconds:
+        description: Per-test Terser transformation timeout in seconds.
         required: false
         default: 30
         type: number
@@ -122,6 +135,73 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v5
+        if: ${{ (github.event.inputs.minifier || 'terser') == 'terser' }}
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: .github/actions/run-test262-shard/terser/package-lock.json
+      - name: Validate pinned Terser worker
+        if: ${{ (github.event.inputs.minifier || 'terser') == 'terser' }}
+        shell: bash
+        env:
+          TERSER_PREFIX: ${{ github.workspace }}/.github/actions/run-test262-shard/terser
+        run: |
+          set -euo pipefail
+          npm ci --prefix "$TERSER_PREFIX" --ignore-scripts --no-audit --no-fund
+          module="$(node -e 'const path=require("node:path"); process.stdout.write(path.dirname(require.resolve("terser/package.json", {paths:[process.argv[1]]})))' "$TERSER_PREFIX")"
+          python - "$module" <<'PY'
+          import json
+          from pathlib import Path
+          import subprocess
+          import sys
+
+          module = sys.argv[1]
+          worker = Path("scripts/compliance/terser_worker.cjs").resolve()
+          requests = [
+              {"id": 1, "operation": "hello"},
+              {
+                  "id": 2,
+                  "operation": "minify",
+                  "path": "validation.js",
+                  "source": (
+                      "function preservedName(longArgument) { "
+                      "return longArgument + 1; } preservedName(2);"
+                  ),
+              },
+          ]
+          try:
+              completed = subprocess.run(
+                  ["node", str(worker), module],
+                  input="\n".join(json.dumps(request) for request in requests) + "\n",
+                  text=True,
+                  capture_output=True,
+                  check=False,
+                  timeout=30,
+              )
+          except subprocess.TimeoutExpired:
+              sys.exit("Terser worker validation timed out after 30 seconds")
+          if completed.returncode != 0:
+              sys.exit(
+                  f"Terser worker exited {completed.returncode}: {completed.stderr.strip()}"
+              )
+          try:
+              hello, transformed = [
+                  json.loads(line) for line in completed.stdout.splitlines() if line.strip()
+              ]
+          except (ValueError, json.JSONDecodeError) as exc:
+              sys.exit(f"Terser worker returned an invalid response: {exc}")
+          if hello != {
+              "id": 1,
+              "ok": True,
+              "profile": "test262-safe-mangle-v1",
+              "version": "5.50.0",
+          }:
+              sys.exit(f"Unexpected Terser worker handshake: {hello!r}")
+          code = transformed.get("code") if transformed.get("ok") is True else None
+          if not isinstance(code, str) or "longArgument" in code or "preservedName" not in code:
+              sys.exit(f"Unexpected Terser transformation response: {transformed!r}")
+          PY
       - name: Install compliance-test dependency
         shell: bash
         run: python -m pip install --disable-pip-version-check PyYAML==6.0.2
@@ -157,7 +237,9 @@ jobs:
           FEATURES: ${{ github.event.inputs.features || '' }}
           REQUESTED_SUITE_REF: ${{ github.event.inputs.suite_ref || 'ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e' }}
           INCLUDE_NEGATIVE: ${{ github.event.inputs.include_negative || 'false' }}
+          MINIFIER: ${{ github.event.inputs.minifier || 'terser' }}
           TEST_TIMEOUT_SECONDS: ${{ github.event.inputs.test_timeout_seconds || '30' }}
+          MINIFIER_TIMEOUT_SECONDS: ${{ github.event.inputs.minifier_timeout_seconds || '30' }}
           MEMORY_LIMIT_MB: ${{ github.event.inputs.memory_limit_mb || '0' }}
           MAX_WORKERS: ${{ github.event.inputs.max_workers || '1' }}
           SHUFFLE_SEED: ${{ github.event.inputs.shuffle_seed || '' }}
@@ -194,6 +276,17 @@ jobs:
               sys.exit("test_timeout_seconds must be a number")
           if not math.isfinite(timeout) or timeout <= 0:
               sys.exit("test_timeout_seconds must be finite and positive")
+
+          try:
+              minifier_timeout = float(os.environ["MINIFIER_TIMEOUT_SECONDS"])
+          except ValueError:
+              sys.exit("minifier_timeout_seconds must be a number")
+          if not math.isfinite(minifier_timeout) or minifier_timeout <= 0:
+              sys.exit("minifier_timeout_seconds must be finite and positive")
+
+          minifier = os.environ["MINIFIER"].strip().lower()
+          if minifier not in {"none", "terser"}:
+              sys.exit("minifier must be either 'terser' or 'none'")
 
           def checked_integer(name, minimum, maximum=None):
               raw = os.environ[name]
@@ -384,6 +477,8 @@ jobs:
           rerun-failed: 'true'
           failed-tests-file: ${{ env.FAILED_TESTS_FILE }}
           test-timeout-seconds: ${{ github.event.inputs.test_timeout_seconds || '30' }}
+          minifier: ${{ github.event.inputs.minifier || 'terser' }}
+          minifier-timeout-seconds: ${{ github.event.inputs.minifier_timeout_seconds || '30' }}
           memory-limit-mb: ${{ github.event.inputs.memory_limit_mb || '0' }}
           max-workers: ${{ github.event.inputs.max_workers || '1' }}
           shuffle-seed: ${{ github.event.inputs.shuffle_seed || '' }}
@@ -447,6 +542,8 @@ jobs:
           rerun-failed: 'true'
           failed-tests-file: ${{ env.FAILED_TESTS_FILE }}
           test-timeout-seconds: ${{ github.event.inputs.test_timeout_seconds || '30' }}
+          minifier: ${{ github.event.inputs.minifier || 'terser' }}
+          minifier-timeout-seconds: ${{ github.event.inputs.minifier_timeout_seconds || '30' }}
           memory-limit-mb: ${{ github.event.inputs.memory_limit_mb || '0' }}
           max-workers: ${{ github.event.inputs.max_workers || '1' }}
           shuffle-seed: ${{ github.event.inputs.shuffle_seed || '' }}
@@ -534,6 +631,8 @@ jobs:
           rerun-failed: 'false'
           failed-tests-file: ${{ env.FAILED_TESTS_FILE }}
           test-timeout-seconds: ${{ github.event.inputs.test_timeout_seconds || '30' }}
+          minifier: ${{ github.event.inputs.minifier || 'terser' }}
+          minifier-timeout-seconds: ${{ github.event.inputs.minifier_timeout_seconds || '30' }}
           memory-limit-mb: ${{ github.event.inputs.memory_limit_mb || '0' }}
           max-workers: ${{ github.event.inputs.max_workers || '1' }}
           shuffle-seed: ${{ github.event.inputs.shuffle_seed || '' }}
@@ -601,6 +700,8 @@ jobs:
           rerun-failed: 'false'
           failed-tests-file: ${{ env.FAILED_TESTS_FILE }}
           test-timeout-seconds: ${{ github.event.inputs.test_timeout_seconds || '30' }}
+          minifier: ${{ github.event.inputs.minifier || 'terser' }}
+          minifier-timeout-seconds: ${{ github.event.inputs.minifier_timeout_seconds || '30' }}
           memory-limit-mb: ${{ github.event.inputs.memory_limit_mb || '0' }}
           max-workers: ${{ github.event.inputs.max_workers || '1' }}
           shuffle-seed: ${{ github.event.inputs.shuffle_seed || '' }}
@@ -716,11 +817,11 @@ jobs:
             const parts = [];
             if (failed > 0) {
               const timeoutDetail = timedOut > 0 ? ` (${timedOut} timed out)` : '';
-              parts.push(`${failed} non-passing test(s)${timeoutDetail}`);
+              parts.push(`${failed} non-passing variant case(s)${timeoutDetail}`);
             } else if (timedOut > 0) {
               // Keep the title informative if an older merger reports timeout
               // totals separately from its failed-count output.
-              parts.push(`${timedOut} timed-out test(s)`);
+              parts.push(`${timedOut} timed-out variant case(s)`);
             }
             if (incomplete > 0) parts.push(`${incomplete} incomplete shard(s)`);
             if (configuration > 0) parts.push(`${configuration} configuration problem(s)`);
@@ -770,15 +871,15 @@ jobs:
             const issue = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `test262 run: ${count} timed-out test(s) (${today})`,
+              title: `test262 run: ${count} timed-out variant case(s) (${today})`,
               body,
             });
             core.info(`Created timeouts issue #${issue.data.number}: ${issue.data.html_url}`);
 
   # Refresh only paths conclusively exercised by the authoritative phase. The
   # merger preserves failures outside a selected assembly/subset/shard and any
-  # shard still incomplete after its retry. Alternate suites and negative-test
-  # runs never modify the canonical baseline.
+  # shard still incomplete after its retry. Alternate suites, negative-test
+  # runs, and original-only runs never modify the canonical dual-variant baseline.
   persist-failed:
     needs: [prepare, report]
     if: >-
@@ -789,6 +890,7 @@ jobs:
         && needs.report.outputs.configuration-failure-count == '0'
         && needs.prepare.outputs.suite-commit == 'ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e'
         && github.event.inputs.include_negative != 'true'
+        && (github.event.inputs.minifier || 'terser') == 'terser'
         && github.ref_type == 'branch'
       }}
     runs-on: ubuntu-latest

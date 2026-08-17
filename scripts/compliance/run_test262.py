@@ -9,6 +9,7 @@ import json
 import math
 import os
 import platform
+import queue
 import random
 import re
 import shutil
@@ -82,8 +83,266 @@ HOST_HARNESS_INCLUDE_BLOCKERS = {"doneprintHandle.js"}
 HOST_HARNESS_REFERENCE_PATTERN = re.compile(r"\$262(?:\b|\.)")
 HOST_HARNESS_BLOCKER_NAME = "$262"
 DEFAULT_TEST_TIMEOUT_SECONDS = 30.0
+DEFAULT_MINIFIER_TIMEOUT_SECONDS = 30.0
+TERSER_PROFILE = "test262-safe-mangle-v1"
+TERSER_VARIANT = "terser"
+ORIGINAL_VARIANT = "original"
+TERSER_WORKER = Path(__file__).with_name("terser_worker.cjs")
+TERSER_SOURCE_SENSITIVE_PREFIXES = (
+    "test/built-ins/Function/prototype/toString/",
+)
+FUNCTION_TOSTRING_REFERENCE = re.compile(
+    r"\bFunction\s*\.\s*prototype\s*\.\s*toString\b"
+)
 POST_TERMINATION_TIMEOUT_SECONDS = 5.0
 INTERNAL_EXEC_WITH_LIMITS = "--_exec-with-test262-limits"
+
+
+class MinifierError(RuntimeError):
+    """Raised when the configured JavaScript minifier cannot produce output."""
+
+
+class MinifierTimeoutError(MinifierError):
+    """Raised when the minifier does not answer within its per-source timeout."""
+
+
+class TerserSession:
+    """A persistent JSON-lines bridge to Terser for one Python worker thread."""
+
+    def __init__(
+        self,
+        module_root: Path,
+        timeout_seconds: float,
+        worker_path: Path = TERSER_WORKER,
+    ) -> None:
+        node = shutil.which("node")
+        if node is None:
+            raise MinifierError("Node.js is required for the Terser variant")
+        if not worker_path.is_file():
+            raise MinifierError(f"Terser worker was not found: {worker_path}")
+
+        self.timeout_seconds = timeout_seconds
+        self._next_request_id = 1
+        self._responses: queue.Queue[str | None] = queue.Queue()
+        self._stderr_lines: list[str] = []
+        self._stderr_lock = threading.Lock()
+        try:
+            self._process = subprocess.Popen(
+                [node, str(worker_path), str(module_root)],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                bufsize=1,
+            )
+        except OSError as exc:
+            raise MinifierError(f"Could not start the Terser worker: {exc}") from exc
+
+        assert self._process.stdout is not None
+        assert self._process.stderr is not None
+        self._stdout_thread = threading.Thread(
+            target=self._read_stdout,
+            args=(self._process.stdout,),
+            daemon=True,
+        )
+        self._stderr_thread = threading.Thread(
+            target=self._read_stderr,
+            args=(self._process.stderr,),
+            daemon=True,
+        )
+        self._stdout_thread.start()
+        self._stderr_thread.start()
+
+        hello = self._request({"operation": "hello"})
+        if hello.get("profile") != TERSER_PROFILE:
+            self.close()
+            raise MinifierError(
+                "Terser worker profile mismatch: "
+                f"expected {TERSER_PROFILE}, got {hello.get('profile')!r}"
+            )
+        self.version = str(hello.get("version") or "")
+        if not self.version:
+            self.close()
+            raise MinifierError("Terser worker did not report its package version")
+
+    def _read_stdout(self, stream: object) -> None:
+        try:
+            for line in stream:  # type: ignore[union-attr]
+                self._responses.put(line)
+        finally:
+            self._responses.put(None)
+
+    def _read_stderr(self, stream: object) -> None:
+        for line in stream:  # type: ignore[union-attr]
+            with self._stderr_lock:
+                self._stderr_lines.append(line.rstrip())
+                if len(self._stderr_lines) > 20:
+                    del self._stderr_lines[:-20]
+
+    def _stderr_tail(self) -> str:
+        with self._stderr_lock:
+            return "\n".join(self._stderr_lines).strip()
+
+    def _request(self, payload: dict[str, object]) -> dict[str, object]:
+        if self._process.poll() is not None:
+            detail = self._stderr_tail()
+            suffix = f": {detail}" if detail else ""
+            raise MinifierError(
+                f"Terser worker exited with code {self._process.returncode}{suffix}"
+            )
+
+        request_id = self._next_request_id
+        self._next_request_id += 1
+        request = dict(payload)
+        request["id"] = request_id
+        try:
+            assert self._process.stdin is not None
+            self._process.stdin.write(
+                json.dumps(request, ensure_ascii=True, separators=(",", ":")) + "\n"
+            )
+            self._process.stdin.flush()
+        except (BrokenPipeError, OSError) as exc:
+            detail = self._stderr_tail()
+            suffix = f": {detail}" if detail else ""
+            raise MinifierError(f"Could not write to Terser worker{suffix}") from exc
+
+        try:
+            line = self._responses.get(timeout=self.timeout_seconds)
+        except queue.Empty as exc:
+            self.close()
+            raise MinifierTimeoutError(
+                f"Terser exceeded {self.timeout_seconds:g}s"
+            ) from exc
+        if line is None:
+            detail = self._stderr_tail()
+            suffix = f": {detail}" if detail else ""
+            raise MinifierError(f"Terser worker closed its output unexpectedly{suffix}")
+        try:
+            response = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise MinifierError("Terser worker returned malformed JSON") from exc
+        if not isinstance(response, dict) or response.get("id") != request_id:
+            raise MinifierError("Terser worker returned an out-of-sequence response")
+        if not response.get("ok"):
+            error_name = str(response.get("errorName") or "Error")
+            error_message = str(response.get("errorMessage") or "unknown minifier error")
+            location = ""
+            if response.get("line") is not None:
+                location = f" at line {response['line']}"
+                if response.get("column") is not None:
+                    location += f", column {response['column']}"
+            raise MinifierError(f"Terser {error_name}{location}: {error_message}")
+        return response
+
+    def minify(self, source: str, path: str) -> dict[str, object]:
+        response = self._request(
+            {"operation": "minify", "source": source, "path": path}
+        )
+        code = response.get("code")
+        if not isinstance(code, str):
+            raise MinifierError("Terser worker returned no JavaScript output")
+        return {
+            "code": code,
+            "originalBytes": len(source.encode("utf-8")),
+            "minifiedBytes": len(code.encode("utf-8")),
+        }
+
+    @property
+    def is_alive(self) -> bool:
+        return self._process.poll() is None
+
+    def close(self) -> None:
+        process = getattr(self, "_process", None)
+        if process is None or process.poll() is not None:
+            return
+        try:
+            if process.stdin is not None:
+                process.stdin.close()
+            process.terminate()
+            process.wait(timeout=2)
+        except (OSError, subprocess.TimeoutExpired):
+            process.kill()
+            try:
+                process.wait(timeout=2)
+            except subprocess.TimeoutExpired:
+                pass
+
+
+class TerserMinifier:
+    """Thread-local persistent Terser sessions shared by one shard run."""
+
+    name = TERSER_VARIANT
+    profile = TERSER_PROFILE
+
+    def __init__(self, module_root: str, timeout_seconds: float) -> None:
+        if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
+            raise ValueError("minifier timeout must be finite and positive")
+        self.module_root = Path(module_root).resolve()
+        package_json = self.module_root / "package.json"
+        if not package_json.is_file():
+            raise MinifierError(
+                f"--terser-module must name the installed Terser package directory: "
+                f"{self.module_root}"
+            )
+        try:
+            package = json.loads(package_json.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise MinifierError(f"Could not read {package_json}: {exc}") from exc
+        self.version = str(package.get("version") or "")
+        if not self.version:
+            raise MinifierError(f"Terser package has no version: {package_json}")
+        self.timeout_seconds = timeout_seconds
+        self._local = threading.local()
+        self._sessions: list[TerserSession] = []
+        self._lock = threading.Lock()
+
+    def _session(self) -> TerserSession:
+        session = getattr(self._local, "session", None)
+        if session is None:
+            session = TerserSession(self.module_root, self.timeout_seconds)
+            if session.version != self.version:
+                session.close()
+                raise MinifierError(
+                    f"Terser package version changed during the run "
+                    f"({self.version} -> {session.version})"
+                )
+            self._local.session = session
+            with self._lock:
+                self._sessions.append(session)
+        return session
+
+    def probe(self) -> None:
+        """Fail once, before shard execution, when Node/Terser is unusable."""
+        session = TerserSession(self.module_root, self.timeout_seconds)
+        try:
+            if session.version != self.version:
+                raise MinifierError(
+                    f"Terser package version mismatch "
+                    f"({self.version} metadata, {session.version} runtime)"
+                )
+        finally:
+            session.close()
+
+    def minify(self, source: str, path: str) -> dict[str, object]:
+        session = self._session()
+        try:
+            return session.minify(source, path)
+        except MinifierError:
+            # A source-level Terser diagnostic leaves the worker usable. A
+            # timeout/broken process is replaced for the next independent test
+            # so one bad transformation cannot poison the rest of the shard.
+            if not session.is_alive:
+                self._local.session = None
+            raise
+
+    def close(self) -> None:
+        with self._lock:
+            sessions = self._sessions[:]
+            self._sessions.clear()
+        for session in sessions:
+            session.close()
 
 
 class Test262Repository:
@@ -957,13 +1216,26 @@ def run_test(
     timeout_seconds: float,
     memory_limit_mb: int,
     include_negative: bool = False,
+    *,
+    variant: str | None = None,
+    body_override: str | None = None,
+    body_override_includes_strict: bool = False,
 ) -> dict[str, object]:
-    if path in KNOWN_INCORRECT_TESTS:
-        return {
+    def outcome(status: str, **details: object) -> dict[str, object]:
+        result: dict[str, object] = {
             "path": path,
-            "status": "skipped",
-            "reason": f"known-incorrect upstream test: {KNOWN_INCORRECT_TESTS[path]}",
+            "status": status,
+            **details,
         }
+        if variant is not None:
+            result["variant"] = variant
+        return result
+
+    if path in KNOWN_INCORRECT_TESTS:
+        return outcome(
+            "skipped",
+            reason=f"known-incorrect upstream test: {KNOWN_INCORRECT_TESTS[path]}",
+        )
 
     source = repo.read_text(path)
     metadata, body = parse_metadata(source)
@@ -978,19 +1250,14 @@ def run_test(
             reasons.append(
                 f"unsupported features: {', '.join(unsupported_features)}"
             )
-        return {
-            "path": path,
-            "status": "skipped",
-            "reason": "; ".join(reasons),
-        }
+        return outcome("skipped", reason="; ".join(reasons))
 
     negative = parse_negative_metadata(source)
     if negative is not None and not include_negative:
-        return {
-            "path": path,
-            "status": "skipped",
-            "reason": "negative metadata test (use --include-negative to run)",
-        }
+        return outcome(
+            "skipped",
+            reason="negative metadata test (use --include-negative to run)",
+        )
 
     is_async = "async" in metadata["flags"]
     is_only_strict = "onlyStrict" in metadata["flags"]
@@ -1001,7 +1268,7 @@ def run_test(
         return harness_cache[name]
 
     parts = []
-    if is_only_strict:
+    if is_only_strict and not body_override_includes_strict:
         parts.append('"use strict";')
     parts.extend([harness_text("assert.js"), harness_text("sta.js")])
     for include in metadata["includes"]:
@@ -1026,9 +1293,11 @@ const __broilerDonePromise = new Promise((resolve, reject) => {
 });
 """.strip()
         )
-    parts.append(body)
+    parts.append(body if body_override is None else body_override)
     if is_async:
-        parts.append("__broilerDonePromise")
+        # The leading semicolon is an explicit token boundary for a minified
+        # body, independent of its final token and automatic-semicolon rules.
+        parts.append(";__broilerDonePromise")
 
     TEMP_DIRECTORY.mkdir(parents=True, exist_ok=True)
     # newline="" for the same reason read_text uses it: the assembled script must reach the
@@ -1071,13 +1340,12 @@ const __broilerDonePromise = new Promise((resolve, reject) => {
             except subprocess.TimeoutExpired:
                 process.kill()
                 stdout, stderr = process.communicate()
-            return {
-                "path": path,
-                "status": "timedOut",
-                "reason": f"timed out after {timeout_seconds:g}s",
-                "stdout": stdout or "",
-                "stderr": stderr or "",
-            }
+            return outcome(
+                "timedOut",
+                reason=f"timed out after {timeout_seconds:g}s",
+                stdout=stdout or "",
+                stderr=stderr or "",
+            )
     finally:
         os.unlink(script_path)
 
@@ -1087,32 +1355,25 @@ const __broilerDonePromise = new Promise((resolve, reject) => {
         # error type; if it does, the test passes.
         expected_type = negative.get("type", "")
         if process.returncode != 0 and expected_type and expected_type in (stderr or ""):
-            return {"path": path, "status": "passed", "negative": True}
+            return outcome("passed", negative=True)
         if process.returncode == 0:
-            return {
-                "path": path,
-                "status": "failed",
-                "reason": f"negative test expected {expected_type} but succeeded",
-                "stdout": stdout,
-                "stderr": stderr,
-            }
-        return {
-            "path": path,
-            "status": "failed",
-            "reason": f"negative test expected {expected_type} but got different error",
-            "stdout": stdout,
-            "stderr": stderr,
-        }
+            return outcome(
+                "failed",
+                reason=f"negative test expected {expected_type} but succeeded",
+                stdout=stdout,
+                stderr=stderr,
+            )
+        return outcome(
+            "failed",
+            reason=f"negative test expected {expected_type} but got different error",
+            stdout=stdout,
+            stderr=stderr,
+        )
 
     if process.returncode == 0:
-        return {"path": path, "status": "passed"}
+        return outcome("passed")
 
-    return {
-        "path": path,
-        "status": "failed",
-        "stdout": stdout,
-        "stderr": stderr,
-    }
+    return outcome("failed", stdout=stdout, stderr=stderr)
 
 
 def build_summary(
@@ -1132,14 +1393,86 @@ def build_summary(
     runner_os: str = "",
     runner_arch: str = "",
     dotnet_version: str = "",
+    minifier: str = "none",
+    minifier_version: str = "",
+    minifier_profile: str = "",
+    minifier_timeout_seconds: float = 0.0,
 ) -> dict[str, object]:
     passed = sum(1 for result in results if result["status"] == "passed")
     failed = sum(1 for result in results if result["status"] == "failed")
     skipped = sum(1 for result in results if result["status"] == "skipped")
     timed_out = sum(1 for result in results if result["status"] == "timedOut")
-    failed_paths = [result["path"] for result in results if result["status"] == "failed"]
-    timed_out_paths = [result["path"] for result in results if result["status"] == "timedOut"]
+    failed_paths = sorted(
+        {str(result["path"]) for result in results if result["status"] == "failed"}
+    )
+    timed_out_paths = sorted(
+        {
+            str(result["path"])
+            for result in results
+            if result["status"] == "timedOut"
+        }
+    )
     executed = passed + failed + timed_out
+    variants = [ORIGINAL_VARIANT]
+    if minifier != "none":
+        variants.append(minifier)
+    variant_summary: dict[str, dict[str, int]] = {}
+    for variant in variants:
+        variant_results = [
+            result
+            for result in results
+            if str(result.get("variant", ORIGINAL_VARIANT)) == variant
+        ]
+        variant_passed = sum(
+            1 for result in variant_results if result["status"] == "passed"
+        )
+        variant_failed = sum(
+            1 for result in variant_results if result["status"] == "failed"
+        )
+        variant_skipped = sum(
+            1 for result in variant_results if result["status"] == "skipped"
+        )
+        variant_timed_out = sum(
+            1 for result in variant_results if result["status"] == "timedOut"
+        )
+        variant_summary[variant] = {
+            "total": len(variant_results),
+            "executed": variant_passed + variant_failed + variant_timed_out,
+            "passed": variant_passed,
+            "failed": variant_failed,
+            "skipped": variant_skipped,
+            "timedOut": variant_timed_out,
+            "notApplicable": sum(
+                1 for result in variant_results if result.get("notApplicable") is True
+            ),
+        }
+
+    path_results: dict[str, list[dict[str, object]]] = {}
+    for result in results:
+        path_results.setdefault(str(result["path"]), []).append(result)
+
+    def aggregate_path_status(path_cases: list[dict[str, object]]) -> str:
+        statuses = {str(result["status"]) for result in path_cases}
+        if "timedOut" in statuses:
+            return "timedOut"
+        if "failed" in statuses:
+            return "failed"
+        if "passed" in statuses:
+            return "passed"
+        return "skipped"
+
+    path_statuses = {
+        path: aggregate_path_status(path_cases)
+        for path, path_cases in path_results.items()
+    }
+    path_summary = {
+        "total": len(path_statuses),
+        "executed": sum(status != "skipped" for status in path_statuses.values()),
+        "passed": sum(status == "passed" for status in path_statuses.values()),
+        "failed": sum(status == "failed" for status in path_statuses.values()),
+        "skipped": sum(status == "skipped" for status in path_statuses.values()),
+        "timedOut": sum(status == "timedOut" for status in path_statuses.values()),
+    }
     return {
         "suiteRef": suite_ref,
         "broilerDll": broiler_dll,
@@ -1157,6 +1490,31 @@ def build_summary(
         "runnerOs": runner_os,
         "runnerArch": runner_arch,
         "dotnetVersion": dotnet_version,
+        "minifier": minifier,
+        "minifierVersion": minifier_version,
+        "minifierProfile": minifier_profile,
+        "minifierTimeoutSeconds": minifier_timeout_seconds,
+        "minifierOptions": (
+            {
+                "compress": False,
+                "mangle": True,
+                "mangleProperties": False,
+                "mangleEval": False,
+                "toplevel": False,
+                "keepFunctionNames": True,
+                "keepClassNames": True,
+                "module": False,
+                "asciiOnly": False,
+                "comments": False,
+                "semicolons": True,
+            }
+            if minifier == TERSER_VARIANT
+            else {}
+        ),
+        "variants": variants,
+        "expectedVariantCountPerPath": len(variants),
+        "variantSummary": variant_summary,
+        "pathSummary": path_summary,
         "candidateCount": selection["candidateCount"],
         "selectedCountBeforeSharding": selection["selectedCountBeforeSharding"],
         "shardCount": selection["shardCount"],
@@ -1164,6 +1522,7 @@ def build_summary(
         "subsetPatterns": selection.get("subsetPatterns", []),
         "featurePatterns": selection.get("featurePatterns", []),
         "featureMatch": selection.get("featureMatch", "any"),
+        "total": len(results),
         "executed": executed,
         "passed": passed,
         "failed": failed,
@@ -1171,17 +1530,58 @@ def build_summary(
         "skipped": skipped,
         "timedOut": timed_out,
         "timedOutPaths": timed_out_paths,
+        "notApplicable": sum(
+            1 for result in results if result.get("notApplicable") is True
+        ),
         "results": results,
     }
 
 
-def _infrastructure_failure_result(path: str, exc: Exception) -> dict[str, object]:
+def _infrastructure_failure_result(
+    path: str,
+    exc: Exception,
+    variant: str = ORIGINAL_VARIANT,
+    failure_type: str = "RunnerInfrastructure",
+    failure_stage: str = "runner",
+) -> dict[str, object]:
     return {
         "path": path,
+        "variant": variant,
         "status": "failed",
         "reason": f"infrastructure error ({type(exc).__name__}): {exc}",
         "infrastructure": True,
         "exceptionType": type(exc).__name__,
+        "failureType": failure_type,
+        "failureStage": failure_stage,
+    }
+
+
+def _enrich_result(
+    result: dict[str, object],
+    source_size_bytes: int | None,
+    features: list[str],
+    flags: list[str],
+    duration_seconds: float,
+) -> dict[str, object]:
+    enriched = dict(result)
+    enriched["sourceSizeBytes"] = source_size_bytes
+    enriched["features"] = features
+    enriched["flags"] = flags
+    enriched["durationMs"] = round(max(0.0, duration_seconds * 1000.0), 3)
+    return enriched
+
+
+def _not_applicable_minified_result(
+    path: str,
+    reason: str,
+) -> dict[str, object]:
+    return {
+        "path": path,
+        "variant": TERSER_VARIANT,
+        "status": "skipped",
+        "reason": reason,
+        "notApplicable": True,
+        "skipKind": "minifier-not-applicable",
     }
 
 
@@ -1201,17 +1601,44 @@ def run_test_with_metadata(
     is reported as an infrastructure failure instead of discarding the shard's
     whole machine-readable summary.
     """
-    started = time.perf_counter()
+    return run_test_variants_with_metadata(
+        repo,
+        broiler_dll,
+        path,
+        harness_cache,
+        timeout_seconds,
+        memory_limit_mb,
+        include_negative,
+        minifier=None,
+    )[0]
+
+
+def run_test_variants_with_metadata(
+    repo: Test262Repository,
+    broiler_dll: str,
+    path: str,
+    harness_cache: dict[str, str],
+    timeout_seconds: float,
+    memory_limit_mb: int,
+    include_negative: bool = False,
+    minifier: object | None = None,
+) -> list[dict[str, object]]:
+    """Run the original source and, when configured, its minified body."""
+    original_started = time.perf_counter()
     source_size_bytes: int | None = None
     features: list[str] = []
     flags: list[str] = []
+    source = ""
+    body = ""
+    negative: dict[str, str] | None = None
     try:
         source = repo.read_text(path)
         source_size_bytes = len(source.encode("utf-8"))
-        metadata, _ = parse_metadata(source)
+        metadata, body = parse_metadata(source)
         features = list(metadata["features"])
         flags = list(metadata["flags"])
-        result = run_test(
+        negative = parse_negative_metadata(source)
+        original = run_test(
             repo,
             broiler_dll,
             path,
@@ -1220,18 +1647,134 @@ def run_test_with_metadata(
             memory_limit_mb,
             include_negative,
         )
+        original.setdefault("variant", ORIGINAL_VARIANT)
     except Exception as exc:
-        result = _infrastructure_failure_result(path, exc)
+        original = _infrastructure_failure_result(path, exc)
 
-    enriched = dict(result)
-    enriched["sourceSizeBytes"] = source_size_bytes
-    enriched["features"] = features
-    enriched["flags"] = flags
-    enriched["durationMs"] = round(
-        max(0.0, (time.perf_counter() - started) * 1000.0),
-        3,
+    results = [
+        _enrich_result(
+            original,
+            source_size_bytes,
+            features,
+            flags,
+            time.perf_counter() - original_started,
+        )
+    ]
+    if minifier is None:
+        return results
+
+    if original.get("status") == "skipped":
+        skipped = _not_applicable_minified_result(
+            path,
+            f"original variant is not runnable: {original.get('reason', 'skipped')}",
+        )
+        results.append(
+            _enrich_result(skipped, source_size_bytes, features, flags, 0.0)
+        )
+        return results
+
+    negative_phase = (
+        negative.get("phase", "").strip().strip("'\"").lower()
+        if negative is not None
+        else ""
     )
-    return enriched
+    if negative is not None and negative_phase != "runtime":
+        skipped = _not_applicable_minified_result(
+            path,
+            "parse, early, and resolution negative tests cannot be minified before execution",
+        )
+        results.append(
+            _enrich_result(skipped, source_size_bytes, features, flags, 0.0)
+        )
+        return results
+
+    if path.startswith(TERSER_SOURCE_SENSITIVE_PREFIXES) or FUNCTION_TOSTRING_REFERENCE.search(
+        body
+    ):
+        skipped = _not_applicable_minified_result(
+            path,
+            "test observes Function.prototype.toString source text changed by minification",
+        )
+        results.append(
+            _enrich_result(skipped, source_size_bytes, features, flags, 0.0)
+        )
+        return results
+
+    minifier_started = time.perf_counter()
+    minifier_input = body
+    includes_strict = "onlyStrict" in flags
+    if includes_strict:
+        minifier_input = f'"use strict";\n{body}'
+    try:
+        minified = minifier.minify(minifier_input, path)  # type: ignore[attr-defined]
+        minification_duration = time.perf_counter() - minifier_started
+        code = minified.get("code")
+        if not isinstance(code, str):
+            raise MinifierError("minifier returned no JavaScript output")
+
+        minified_result = run_test(
+            repo,
+            broiler_dll,
+            path,
+            harness_cache,
+            timeout_seconds,
+            memory_limit_mb,
+            include_negative,
+            variant=TERSER_VARIANT,
+            body_override=code,
+            # Keep run_test's strict directive at byte zero. Terser also saw
+            # the directive so it parsed the body under the same semantics.
+            body_override_includes_strict=False,
+        )
+    except Exception as exc:
+        minification_duration = time.perf_counter() - minifier_started
+        failure_type = (
+            "MinifierTimeout"
+            if isinstance(exc, MinifierTimeoutError)
+            else "MinifierError"
+        )
+        minified_result = _infrastructure_failure_result(
+            path,
+            exc,
+            variant=TERSER_VARIANT,
+            failure_type=failure_type,
+            failure_stage="minifier",
+        )
+
+    minified_result["minifier"] = str(getattr(minifier, "name", TERSER_VARIANT))
+    minified_result["minifierVersion"] = str(getattr(minifier, "version", ""))
+    minified_result["minifierProfile"] = str(
+        getattr(minifier, "profile", TERSER_PROFILE)
+    )
+    minified_result["minificationDurationMs"] = round(
+        max(0.0, minification_duration * 1000.0), 3
+    )
+    if "minified" in locals() and isinstance(minified, dict):
+        original_bytes = minified.get("originalBytes")
+        minified_bytes = minified.get("minifiedBytes")
+        if isinstance(original_bytes, int) and original_bytes >= 0:
+            minified_result["minifierInputBytes"] = original_bytes
+        if isinstance(minified_bytes, int) and minified_bytes >= 0:
+            minified_result["minifiedSourceSizeBytes"] = minified_bytes
+        if (
+            isinstance(original_bytes, int)
+            and original_bytes > 0
+            and isinstance(minified_bytes, int)
+            and minified_bytes >= 0
+        ):
+            minified_result["minificationRatio"] = round(
+                minified_bytes / original_bytes, 6
+            )
+    results.append(
+        _enrich_result(
+            minified_result,
+            source_size_bytes,
+            features,
+            flags,
+            time.perf_counter() - minifier_started,
+        )
+    )
+    return results
 
 
 def run_selected_tests(
@@ -1243,6 +1786,7 @@ def run_selected_tests(
     memory_limit_mb: int,
     max_workers: int = 1,
     include_negative: bool = False,
+    minifier: object | None = None,
 ) -> list[dict[str, object]]:
     if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
         raise ValueError(f"timeout_seconds must be finite and positive, got {timeout_seconds}")
@@ -1263,6 +1807,12 @@ def run_selected_tests(
     log_progress(
         f"Per-test timeout is {timeout_seconds:g}s; POSIX memory cap is {memory_limit_label}."
     )
+    if minifier is not None:
+        log_progress(
+            f"Each path will run as original and {getattr(minifier, 'name', TERSER_VARIANT)} "
+            f"variants ({getattr(minifier, 'profile', TERSER_PROFILE)}, "
+            f"version {getattr(minifier, 'version', 'unknown')})."
+        )
     if max_workers > 1:
         log_progress(f"Using {max_workers} parallel worker(s).")
 
@@ -1271,11 +1821,11 @@ def run_selected_tests(
     if max_workers <= 1:
         return _run_tests_serial(
             repo, broiler_dll, expanded_paths, timeout_seconds,
-            memory_limit_mb, interval, total, include_negative,
+            memory_limit_mb, interval, total, include_negative, minifier,
         )
     return _run_tests_parallel(
         repo, broiler_dll, expanded_paths, timeout_seconds,
-        memory_limit_mb, interval, total, max_workers, include_negative,
+        memory_limit_mb, interval, total, max_workers, include_negative, minifier,
     )
 
 
@@ -1288,6 +1838,7 @@ def _run_tests_serial(
     interval: int | None,
     total: int,
     include_negative: bool,
+    minifier: object | None,
 ) -> list[dict[str, object]]:
     harness_cache: dict[str, str] = {}
     results: list[dict[str, object]] = []
@@ -1297,7 +1848,7 @@ def _run_tests_serial(
     timed_out = 0
 
     for index, path in enumerate(expanded_paths, start=1):
-        result = run_test_with_metadata(
+        path_results = run_test_variants_with_metadata(
             repo,
             broiler_dll,
             path,
@@ -1305,24 +1856,29 @@ def _run_tests_serial(
             timeout_seconds,
             memory_limit_mb,
             include_negative,
+            minifier,
         )
-        results.append(result)
+        results.extend(path_results)
 
-        status = str(result["status"])
-        if status == "passed":
-            passed += 1
-        elif status == "failed":
-            failed += 1
-            log_progress(f"Failure {failed} at {path}")
-        elif status == "timedOut":
-            timed_out += 1
-            log_progress(f"Timeout {timed_out} at {path} after {timeout_seconds:g}s")
-        else:
-            skipped += 1
+        for result in path_results:
+            status = str(result["status"])
+            variant = str(result.get("variant", ORIGINAL_VARIANT))
+            if status == "passed":
+                passed += 1
+            elif status == "failed":
+                failed += 1
+                log_progress(f"Failure {failed} at {path} [{variant}]")
+            elif status == "timedOut":
+                timed_out += 1
+                log_progress(
+                    f"Timeout {timed_out} at {path} [{variant}] after {timeout_seconds:g}s"
+                )
+            else:
+                skipped += 1
 
         if interval is not None and (index % interval == 0 or index == total):
             log_progress(
-                f"Completed {index}/{total} test(s) "
+                f"Completed {index}/{total} path(s), {len(results)} variant case(s) "
                 f"(passed={passed}, failed={failed}, skipped={skipped}, timedOut={timed_out})."
             )
 
@@ -1339,23 +1895,28 @@ def _run_tests_parallel(
     total: int,
     max_workers: int,
     include_negative: bool,
+    minifier: object | None,
 ) -> list[dict[str, object]]:
     # Each worker gets its own harness cache to avoid contention.
-    results: list[dict[str, object]] = [{}] * total  # type: ignore[arg-type]
+    results_by_path: list[list[dict[str, object]]] = [[] for _ in range(total)]
     lock = threading.Lock()
+    worker_state = threading.local()
     completed = 0
     passed = 0
     failed = 0
     skipped = 0
     timed_out = 0
 
-    def _worker(index: int, path: str) -> tuple[int, dict[str, object]]:
-        harness_cache: dict[str, str] = {}
-        result = run_test_with_metadata(
+    def _worker(index: int, path: str) -> tuple[int, list[dict[str, object]]]:
+        harness_cache = getattr(worker_state, "harness_cache", None)
+        if harness_cache is None:
+            harness_cache = {}
+            worker_state.harness_cache = harness_cache
+        path_results = run_test_variants_with_metadata(
             repo, broiler_dll, path, harness_cache,
-            timeout_seconds, memory_limit_mb, include_negative,
+            timeout_seconds, memory_limit_mb, include_negative, minifier,
         )
-        return index, result
+        return index, path_results
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {
@@ -1365,7 +1926,7 @@ def _run_tests_parallel(
         for future in concurrent.futures.as_completed(futures):
             submitted_index = futures[future]
             try:
-                idx, result = future.result()
+                idx, path_results = future.result()
             except Exception as exc:  # defensive: the wrapper normally contains these
                 idx = submitted_index
                 result = _infrastructure_failure_result(expanded_paths[idx], exc)
@@ -1377,34 +1938,41 @@ def _run_tests_parallel(
                         "durationMs": 0.0,
                     }
                 )
-            results[idx] = result
+                path_results = [result]
+            results_by_path[idx] = path_results
 
             with lock:
                 completed += 1
-                status = str(result["status"])
-                if status == "passed":
-                    passed += 1
-                elif status == "failed":
-                    failed += 1
-                    log_progress(f"Failure {failed} at {result['path']}")
-                elif status == "timedOut":
-                    timed_out += 1
-                    log_progress(
-                        f"Timeout {timed_out} at {result['path']} after {timeout_seconds:g}s"
-                    )
-                else:
-                    skipped += 1
+                for result in path_results:
+                    status = str(result["status"])
+                    variant = str(result.get("variant", ORIGINAL_VARIANT))
+                    if status == "passed":
+                        passed += 1
+                    elif status == "failed":
+                        failed += 1
+                        log_progress(
+                            f"Failure {failed} at {result['path']} [{variant}]"
+                        )
+                    elif status == "timedOut":
+                        timed_out += 1
+                        log_progress(
+                            f"Timeout {timed_out} at {result['path']} [{variant}] "
+                            f"after {timeout_seconds:g}s"
+                        )
+                    else:
+                        skipped += 1
 
                 if interval is not None and (
                     completed % interval == 0 or completed == total
                 ):
                     log_progress(
-                        f"Completed {completed}/{total} test(s) "
+                        f"Completed {completed}/{total} path(s), "
+                        f"{passed + failed + skipped + timed_out} variant case(s) "
                         f"(passed={passed}, failed={failed}, "
                         f"skipped={skipped}, timedOut={timed_out})."
                     )
 
-    return results
+    return [result for path_results in results_by_path for result in path_results]
 
 
 def main() -> int:
@@ -1495,6 +2063,23 @@ def main() -> int:
         help="Per-test wall-clock timeout in seconds",
     )
     parser.add_argument(
+        "--minifier",
+        choices=("none", TERSER_VARIANT),
+        default="none",
+        help="Also execute each selected path after safe Terser minification",
+    )
+    parser.add_argument(
+        "--terser-module",
+        default="",
+        help="Installed Terser package directory (required with --minifier terser)",
+    )
+    parser.add_argument(
+        "--minifier-timeout-seconds",
+        type=positive_float,
+        default=DEFAULT_MINIFIER_TIMEOUT_SECONDS,
+        help="Per-source Terser transformation timeout in seconds",
+    )
+    parser.add_argument(
         "--memory-limit-mb",
         type=non_negative_int,
         default=0,
@@ -1527,6 +2112,19 @@ def main() -> int:
     max_workers = args.max_workers
     subset_patterns = parse_semicolon_patterns(args.subset, normalize_paths=True)
     feature_patterns = parse_semicolon_patterns(args.features)
+
+    minifier: TerserMinifier | None = None
+    if args.minifier == TERSER_VARIANT:
+        if not args.terser_module.strip():
+            parser.error("--terser-module is required with --minifier terser")
+        try:
+            minifier = TerserMinifier(
+                args.terser_module,
+                args.minifier_timeout_seconds,
+            )
+            minifier.probe()
+        except (MinifierError, ValueError) as exc:
+            parser.error(str(exc))
 
     log_progress(
         f"Starting test262 run for suite ref {args.suite_ref}"
@@ -1575,16 +2173,21 @@ def main() -> int:
             "continuing with timeout/process isolation only."
         )
 
-    results = run_selected_tests(
-        repo,
-        args.broiler_dll,
-        expanded_paths,
-        selection,
-        args.test_timeout_seconds,
-        args.memory_limit_mb,
-        max_workers=max_workers,
-        include_negative=args.include_negative,
-    )
+    try:
+        results = run_selected_tests(
+            repo,
+            args.broiler_dll,
+            expanded_paths,
+            selection,
+            args.test_timeout_seconds,
+            args.memory_limit_mb,
+            max_workers=max_workers,
+            include_negative=args.include_negative,
+            minifier=minifier,
+        )
+    finally:
+        if minifier is not None:
+            minifier.close()
     summary = build_summary(
         args.suite_ref,
         args.broiler_dll,
@@ -1602,6 +2205,12 @@ def main() -> int:
         runner_os=args.runner_os,
         runner_arch=args.runner_arch,
         dotnet_version=args.dotnet_version,
+        minifier=args.minifier,
+        minifier_version=minifier.version if minifier is not None else "",
+        minifier_profile=minifier.profile if minifier is not None else "",
+        minifier_timeout_seconds=(
+            args.minifier_timeout_seconds if minifier is not None else 0.0
+        ),
     )
 
     if args.output:
@@ -1611,7 +2220,8 @@ def main() -> int:
         log_progress(f"Wrote machine-readable summary to {output_path}")
 
     log_progress(
-        f"Finished test262 run: executed={summary['executed']}, "
+        f"Finished test262 run: variantCases={summary['total']}, "
+        f"executed={summary['executed']}, "
         f"passed={summary['passed']}, failed={summary['failed']}, "
         f"skipped={summary['skipped']}, timedOut={summary['timedOut']}"
     )

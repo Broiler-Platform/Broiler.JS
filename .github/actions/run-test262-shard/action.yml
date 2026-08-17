@@ -53,6 +53,14 @@ inputs:
   test-timeout-seconds:
     description: Per-test wall-clock timeout.
     required: true
+  minifier:
+    description: Run original tests only (none) or original plus eligible Terser variants.
+    required: false
+    default: terser
+  minifier-timeout-seconds:
+    description: Per-test Terser transformation timeout.
+    required: false
+    default: '30'
   memory-limit-mb:
     description: POSIX per-test memory cap in MiB; zero disables it.
     required: true
@@ -82,6 +90,28 @@ runs:
     - uses: actions/setup-python@v6
       with:
         python-version: '3.12'
+
+    - uses: actions/setup-node@v5
+      if: ${{ inputs.minifier == 'terser' }}
+      with:
+        node-version: '20'
+        cache: npm
+        cache-dependency-path: .github/actions/run-test262-shard/terser/package-lock.json
+
+    - name: Install and resolve pinned Terser
+      id: terser
+      if: ${{ inputs.minifier == 'terser' }}
+      shell: bash
+      env:
+        TERSER_PREFIX: ${{ github.action_path }}/terser
+      run: |
+        set -euo pipefail
+        npm ci --prefix "$TERSER_PREFIX" --ignore-scripts --no-audit --no-fund
+        module="$(node -e 'const path=require("node:path"); process.stdout.write(path.dirname(require.resolve("terser/package.json", {paths:[process.argv[1]]})))' "$TERSER_PREFIX")"
+        version="$(node -e 'process.stdout.write(require(process.argv[1]).version)' "$module/package.json")"
+        test "$version" = "5.50.0"
+        echo "module=$module" >> "$GITHUB_OUTPUT"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
 
     - name: Restore immutable test262 checkout
       id: suite-cache
@@ -145,6 +175,9 @@ runs:
         RERUN_FAILED: ${{ inputs.rerun-failed }}
         FAILED_TESTS_FILE: ${{ inputs.failed-tests-file }}
         TEST_TIMEOUT_SECONDS: ${{ inputs.test-timeout-seconds }}
+        MINIFIER: ${{ inputs.minifier }}
+        MINIFIER_TIMEOUT_SECONDS: ${{ inputs.minifier-timeout-seconds }}
+        TERSER_MODULE: ${{ steps.terser.outputs.module }}
         MEMORY_LIMIT_MB: ${{ inputs.memory-limit-mb }}
         MAX_WORKERS: ${{ inputs.max-workers }}
         SHUFFLE_SEED: ${{ inputs.shuffle-seed }}
@@ -156,6 +189,10 @@ runs:
         case "$PHASE" in
           rerun|full) ;;
           *) echo "Unsupported test262 phase: $PHASE" >&2; exit 2 ;;
+        esac
+        case "$MINIFIER" in
+          none|terser) ;;
+          *) echo "Unsupported test262 minifier: $MINIFIER" >&2; exit 2 ;;
         esac
 
         mkdir -p shard-out .test262-ci
@@ -175,6 +212,8 @@ runs:
           --shard-count "$SHARD_COUNT"
           --shard-index "$SHARD_INDEX"
           --test-timeout-seconds "$TEST_TIMEOUT_SECONDS"
+          --minifier "$MINIFIER"
+          --minifier-timeout-seconds "$MINIFIER_TIMEOUT_SECONDS"
           --memory-limit-mb "$MEMORY_LIMIT_MB"
           --max-workers "$MAX_WORKERS"
           --feature-match "$FEATURE_MATCH"
@@ -185,6 +224,14 @@ runs:
           --output "$OUTPUT_PATH"
           --no-summary-stdout
         )
+
+        if [ "$MINIFIER" = "terser" ]; then
+          if [ -z "$TERSER_MODULE" ]; then
+            echo "Terser was requested but its pinned module was not resolved." >&2
+            exit 2
+          fi
+          ARGS+=(--terser-module "$TERSER_MODULE")
+        fi
 
         if [ "$RERUN_FAILED" = "true" ]; then
           ARGS+=(--path-file "$FAILED_TESTS_FILE")
@@ -304,6 +351,8 @@ runs:
             lines.append(f"- Artifact: `{stem}`")
         else:
             summary = json.loads(result_path.read_text(encoding="utf-8"))
+            variants = summary.get("variants") or ["original"]
+            path_summary = summary.get("pathSummary") or {}
             lines.extend([
                 f"- Suite commit: `{summary.get('suiteRef', 'unknown')}`",
                 f"- Selection mode: `{summary.get('selectionMode', 'unknown')}`",
@@ -315,10 +364,10 @@ runs:
                 f"- Subset patterns: `{';'.join(summary.get('subsetPatterns') or []) or '(all)'}`",
                 f"- Feature patterns: `{';'.join(summary.get('featurePatterns') or []) or '(all)'}`",
                 f"- Feature match: `{summary.get('featureMatch', 'any')}`",
-                f"- Passed: {summary.get('passed', 0)}",
-                f"- Failed: {summary.get('failed', 0)}",
-                f"- Skipped: {summary.get('skipped', 0)}",
-                f"- Timed out: {summary.get('timedOut', 0)}",
+                f"- Minifier: `{summary.get('minifier', 'none')}`; version `{summary.get('minifierVersion') or '(not applicable)'}`; profile `{summary.get('minifierProfile') or '(not applicable)'}`; timeout {summary.get('minifierTimeoutSeconds', 0)}s",
+                f"- Variants: `{', '.join(str(variant) for variant in variants)}`",
+                f"- Variant cases: {summary.get('total', len(summary.get('results') or []))} total; {summary.get('passed', 0)} passed; {summary.get('failed', 0)} failed; {summary.get('skipped', 0)} skipped; {summary.get('timedOut', 0)} timed out",
+                f"- Base-path outcomes: {path_summary.get('total', len(summary.get('expandedPaths') or []))} total; {path_summary.get('passed', 0)} passed; {path_summary.get('failed', 0)} failed; {path_summary.get('skipped', 0)} skipped; {path_summary.get('timedOut', 0)} timed out",
             ])
 
         with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a", encoding="utf-8") as handle:

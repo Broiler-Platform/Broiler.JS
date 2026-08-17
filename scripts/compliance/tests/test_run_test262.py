@@ -19,6 +19,71 @@ TEST_SUITE_REF = "test-suite-ref"
 TEST_ENGINE_PATH = "BroilerJS.test.dll"
 
 
+class FakeMinifier:
+    """In-memory minifier double; no Node.js installation is required."""
+
+    name = run_test262.TERSER_VARIANT
+    version = "5.test"
+    profile = run_test262.TERSER_PROFILE
+
+    def __init__(
+        self,
+        code: str = "MINIFIED_BODY();",
+        error: Exception | None = None,
+    ) -> None:
+        self.code = code
+        self.error = error
+        self.calls: list[tuple[str, str]] = []
+
+    def minify(self, source: str, path: str) -> dict[str, object]:
+        self.calls.append((source, path))
+        if self.error is not None:
+            raise self.error
+        return {
+            "code": self.code,
+            "originalBytes": len(source.encode("utf-8")),
+            "minifiedBytes": len(self.code.encode("utf-8")),
+        }
+
+
+class RecordingPopen:
+    """Successful Broiler process double that records each assembled script."""
+
+    def __init__(self) -> None:
+        self.scripts: list[str] = []
+
+    def __call__(self, args: list[str], **kwargs: object) -> object:
+        self.scripts.append(Path(args[-1]).read_text(encoding="utf-8"))
+
+        class SuccessfulProcess:
+            pid = 1234
+            returncode = 0
+
+            @staticmethod
+            def communicate(*, timeout: float) -> tuple[str, str]:
+                return "", ""
+
+        return SuccessfulProcess()
+
+
+def passing_run_test(
+    repo: object,
+    dll: str,
+    path: str,
+    cache: dict[str, str],
+    timeout: float,
+    memory_limit: int,
+    include_negative: bool = False,
+    *,
+    variant: str | None = None,
+    **kwargs: object,
+) -> dict[str, object]:
+    result: dict[str, object] = {"path": path, "status": "passed"}
+    if variant is not None:
+        result["variant"] = variant
+    return result
+
+
 class RunTest262Tests(unittest.TestCase):
     def setUp(self) -> None:
         self.temp_directory = tempfile.TemporaryDirectory()
@@ -559,12 +624,14 @@ includes: [assert.js, sta.js]
         self.assertIn("Running 1 test(s) for shard 1/1", log_output)
         self.assertIn("Per-test timeout is 12.5s; POSIX memory cap is 512 MiB.", log_output)
         self.assertIn(
-            "Completed 1/1 test(s) (passed=1, failed=0, skipped=0, timedOut=0).",
+            "Completed 1/1 path(s), 1 variant case(s) "
+            "(passed=1, failed=0, skipped=0, timedOut=0).",
             log_output,
         )
         self.assertIn(f"Wrote machine-readable summary to {output_path}", log_output)
         self.assertIn(
-            "Finished test262 run: executed=1, passed=1, failed=0, skipped=0, timedOut=0",
+            "Finished test262 run: variantCases=1, executed=1, "
+            "passed=1, failed=0, skipped=0, timedOut=0",
             log_output,
         )
 
@@ -768,6 +835,302 @@ includes: [assert.js, sta.js]
 
         self.assertEqual("skipped", result["status"])
 
+    def test_minifier_receives_only_metadata_stripped_test_body(self) -> None:
+        (self.suite_root / "harness" / "custom.js").write_text(
+            "// custom harness\nCUSTOM_HARNESS();\n",
+            encoding="utf-8",
+        )
+        path = self.write_test(
+            "test/language/minifier-boundary.js",
+            "/*---\nincludes: [custom.js]\nfeatures: [example]\n---*/\n"
+            "ORIGINAL_BODY();\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        minifier = FakeMinifier("MINIFIED_BODY();")
+        engine = RecordingPopen()
+
+        with mock.patch.object(run_test262.subprocess, "Popen", side_effect=engine):
+            results = run_test262.run_test_variants_with_metadata(
+                repo,
+                TEST_ENGINE_PATH,
+                path,
+                {},
+                30.0,
+                0,
+                minifier=minifier,
+            )
+
+        self.assertEqual(
+            [(path, "original"), (path, "terser")],
+            [(result["path"], result["variant"]) for result in results],
+        )
+        self.assertEqual(1, len(minifier.calls))
+        minifier_input, minifier_path = minifier.calls[0]
+        self.assertEqual(path, minifier_path)
+        self.assertIn("ORIGINAL_BODY();", minifier_input)
+        self.assertNotIn("/*---", minifier_input)
+        self.assertNotIn("assert harness", minifier_input)
+        self.assertNotIn("sta harness", minifier_input)
+        self.assertNotIn("CUSTOM_HARNESS", minifier_input)
+        self.assertNotIn("__broilerDonePromise", minifier_input)
+
+        self.assertEqual(2, len(engine.scripts))
+        minified_script = engine.scripts[1]
+        self.assertIn("// assert harness", minified_script)
+        self.assertIn("// sta harness", minified_script)
+        self.assertIn("CUSTOM_HARNESS();", minified_script)
+        self.assertIn("MINIFIED_BODY();", minified_script)
+        self.assertNotIn("ORIGINAL_BODY();", minified_script)
+
+    def test_async_minified_body_is_separated_from_unchanged_completion_tail(self) -> None:
+        path = self.write_test(
+            "test/language/minified-async.js",
+            "/*---\nflags: [async]\n---*/\nORIGINAL_ASYNC_BODY()\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        minifier = FakeMinifier("MINIFIED_ASYNC_BODY()")
+        engine = RecordingPopen()
+
+        with mock.patch.object(run_test262.subprocess, "Popen", side_effect=engine):
+            results = run_test262.run_test_variants_with_metadata(
+                repo,
+                TEST_ENGINE_PATH,
+                path,
+                {},
+                30.0,
+                0,
+                minifier=minifier,
+            )
+
+        self.assertEqual(["original", "terser"], [r["variant"] for r in results])
+        minifier_input = minifier.calls[0][0]
+        self.assertIn("ORIGINAL_ASYNC_BODY()", minifier_input)
+        self.assertNotIn("globalThis.$DONE", minifier_input)
+        self.assertNotIn("__broilerDonePromise", minifier_input)
+
+        minified_script = engine.scripts[1]
+        setup_index = minified_script.index("const __broilerDonePromise")
+        body_index = minified_script.index("MINIFIED_ASYNC_BODY()")
+        tail_index = minified_script.index("\n;__broilerDonePromise")
+        self.assertLess(setup_index, body_index)
+        self.assertLess(body_index, tail_index)
+        self.assertTrue(minified_script.endswith(";__broilerDonePromise"))
+
+    def test_only_strict_variant_minifies_and_executes_under_strict_mode(self) -> None:
+        path = self.write_test(
+            "test/language/minified-only-strict.js",
+            "/*---\nflags: [onlyStrict]\n---*/\nSTRICT_BODY();\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        minifier = FakeMinifier("MINIFIED_STRICT_BODY();")
+        engine = RecordingPopen()
+
+        with mock.patch.object(run_test262.subprocess, "Popen", side_effect=engine):
+            results = run_test262.run_test_variants_with_metadata(
+                repo,
+                TEST_ENGINE_PATH,
+                path,
+                {},
+                30.0,
+                0,
+                minifier=minifier,
+            )
+
+        self.assertEqual(["original", "terser"], [r["variant"] for r in results])
+        self.assertTrue(minifier.calls[0][0].startswith('"use strict";\n'))
+        self.assertIn("STRICT_BODY();", minifier.calls[0][0])
+        self.assertTrue(
+            engine.scripts[1].startswith('"use strict";\n// assert harness')
+        )
+        self.assertIn("MINIFIED_STRICT_BODY();", engine.scripts[1])
+
+    def test_negative_phase_controls_terser_eligibility(self) -> None:
+        cases = (
+            ("runtime", "runtime", True),
+            ("quoted-runtime", "'RUNTIME'", True),
+            ("parse", "parse", False),
+            ("early", "early", False),
+            ("resolution", "resolution", False),
+            ("unknown", "future-phase", False),
+            ("missing", None, False),
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+
+        for name, phase, eligible in cases:
+            with self.subTest(phase=name):
+                phase_line = f"  phase: {phase}\n" if phase is not None else ""
+                path = self.write_test(
+                    f"test/language/negative-{name}.js",
+                    "/*---\nnegative:\n"
+                    f"{phase_line}"
+                    "  type: ReferenceError\n---*/\nmissing;\n",
+                )
+                minifier = FakeMinifier()
+                with mock.patch.object(
+                    run_test262,
+                    "run_test",
+                    side_effect=passing_run_test,
+                ):
+                    results = run_test262.run_test_variants_with_metadata(
+                        repo,
+                        TEST_ENGINE_PATH,
+                        path,
+                        {},
+                        30.0,
+                        0,
+                        include_negative=True,
+                        minifier=minifier,
+                    )
+
+                self.assertEqual(["original", "terser"], [r["variant"] for r in results])
+                self.assertEqual(1 if eligible else 0, len(minifier.calls))
+                if eligible:
+                    self.assertEqual("passed", results[1]["status"])
+                else:
+                    self.assertEqual("skipped", results[1]["status"])
+                    self.assertTrue(results[1]["notApplicable"])
+                    self.assertEqual("minifier-not-applicable", results[1]["skipKind"])
+
+    def test_function_tostring_observers_are_not_minified(self) -> None:
+        cases = (
+            (
+                "test/built-ins/Function/prototype/toString/source.js",
+                "function observed() {}\n",
+            ),
+            (
+                "test/language/direct-function-tostring.js",
+                "Function . prototype . toString.call(function observed() {});\n",
+            ),
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+
+        for path, source in cases:
+            with self.subTest(path=path):
+                self.write_test(path, source)
+                minifier = FakeMinifier()
+                with mock.patch.object(
+                    run_test262,
+                    "run_test",
+                    side_effect=passing_run_test,
+                ):
+                    results = run_test262.run_test_variants_with_metadata(
+                        repo,
+                        TEST_ENGINE_PATH,
+                        path,
+                        {},
+                        30.0,
+                        0,
+                        minifier=minifier,
+                    )
+
+                self.assertEqual([], minifier.calls)
+                self.assertEqual("passed", results[0]["status"])
+                self.assertEqual("skipped", results[1]["status"])
+                self.assertTrue(results[1]["notApplicable"])
+                self.assertIn("Function.prototype.toString", results[1]["reason"])
+
+    def test_skipped_original_produces_not_applicable_terser_case(self) -> None:
+        path = self.write_test("test/language/skipped-original.js", "1;\n")
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        minifier = FakeMinifier()
+
+        def skipped_run_test(*args: object, **kwargs: object) -> dict[str, object]:
+            return {
+                "path": path,
+                "status": "skipped",
+                "reason": "unsupported host requirement",
+            }
+
+        with mock.patch.object(
+            run_test262,
+            "run_test",
+            side_effect=skipped_run_test,
+        ):
+            results = run_test262.run_test_variants_with_metadata(
+                repo,
+                TEST_ENGINE_PATH,
+                path,
+                {},
+                30.0,
+                0,
+                minifier=minifier,
+            )
+
+        self.assertEqual([], minifier.calls)
+        self.assertEqual(["original", "terser"], [r["variant"] for r in results])
+        self.assertEqual(["skipped", "skipped"], [r["status"] for r in results])
+        self.assertTrue(results[1]["notApplicable"])
+        self.assertIn("original variant is not runnable", results[1]["reason"])
+
+    def test_minifier_errors_and_timeouts_do_not_replace_original_result(self) -> None:
+        path = self.write_test("test/language/minifier-failure.js", "1;\n")
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        cases = (
+            (run_test262.MinifierError("transform failed"), "MinifierError"),
+            (run_test262.MinifierTimeoutError("transform hung"), "MinifierTimeout"),
+        )
+
+        for error, failure_type in cases:
+            with self.subTest(failure_type=failure_type):
+                minifier = FakeMinifier(error=error)
+                with mock.patch.object(
+                    run_test262,
+                    "run_test",
+                    side_effect=passing_run_test,
+                ) as run_test_mock:
+                    results = run_test262.run_test_variants_with_metadata(
+                        repo,
+                        TEST_ENGINE_PATH,
+                        path,
+                        {},
+                        30.0,
+                        0,
+                        minifier=minifier,
+                    )
+
+                self.assertEqual(1, run_test_mock.call_count)
+                self.assertEqual("passed", results[0]["status"])
+                self.assertEqual("original", results[0]["variant"])
+                self.assertEqual("failed", results[1]["status"])
+                self.assertEqual("terser", results[1]["variant"])
+                self.assertTrue(results[1]["infrastructure"])
+                self.assertEqual(failure_type, results[1]["failureType"])
+                self.assertIn(str(error), results[1]["reason"])
+
+    def test_terser_engine_timeout_is_kept_as_a_separate_variant_case(self) -> None:
+        path = self.write_test("test/language/terser-engine-timeout.js", "1;\n")
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        minifier = FakeMinifier()
+
+        def variant_result(
+            *args: object,
+            variant: str | None = None,
+            **kwargs: object,
+        ) -> dict[str, object]:
+            if variant == "terser":
+                return {"path": path, "variant": variant, "status": "timedOut"}
+            return {"path": path, "status": "passed"}
+
+        with mock.patch.object(
+            run_test262,
+            "run_test",
+            side_effect=variant_result,
+        ):
+            results = run_test262.run_test_variants_with_metadata(
+                repo,
+                TEST_ENGINE_PATH,
+                path,
+                {},
+                30.0,
+                0,
+                minifier=minifier,
+            )
+
+        self.assertEqual(
+            [("original", "passed"), ("terser", "timedOut")],
+            [(result["variant"], result["status"]) for result in results],
+        )
+
     def test_parse_metadata_handles_non_lf_line_terminators(self) -> None:
         # A test whose source uses CR / CRLF line terminators (e.g. the toString
         # line-terminator-normalisation cases) must still have its metadata recognised, and the
@@ -861,6 +1224,97 @@ includes: [assert.js, sta.js]
         self.assertEqual("Linux", summary["runnerOs"])
         self.assertEqual("X64", summary["runnerArch"])
         self.assertEqual("10.0.100", summary["dotnetVersion"])
+
+    def test_build_summary_counts_variant_cases_and_unique_path_outcomes(self) -> None:
+        paths = [f"test/language/{name}.js" for name in ("a", "b", "c", "d")]
+        results = [
+            {"path": paths[0], "variant": "original", "status": "passed"},
+            {"path": paths[0], "variant": "terser", "status": "passed"},
+            {"path": paths[1], "variant": "original", "status": "passed"},
+            {
+                "path": paths[1],
+                "variant": "terser",
+                "status": "skipped",
+                "notApplicable": True,
+            },
+            {"path": paths[2], "variant": "original", "status": "failed"},
+            {"path": paths[2], "variant": "terser", "status": "passed"},
+            {"path": paths[3], "variant": "original", "status": "passed"},
+            {"path": paths[3], "variant": "terser", "status": "timedOut"},
+        ]
+        summary = run_test262.build_summary(
+            TEST_SUITE_REF,
+            TEST_ENGINE_PATH,
+            ["test/language"],
+            paths,
+            results,
+            {
+                "selectionMode": "requested",
+                "candidateCount": 4,
+                "selectedCountBeforeSharding": 4,
+                "shardCount": 1,
+                "shardIndex": 0,
+            },
+            30.0,
+            0,
+            minifier="terser",
+            minifier_version="5.test",
+            minifier_profile=run_test262.TERSER_PROFILE,
+            minifier_timeout_seconds=12.5,
+        )
+
+        self.assertEqual(8, summary["total"])
+        self.assertEqual(7, summary["executed"])
+        self.assertEqual(5, summary["passed"])
+        self.assertEqual(1, summary["failed"])
+        self.assertEqual(1, summary["skipped"])
+        self.assertEqual(1, summary["timedOut"])
+        self.assertEqual(1, summary["notApplicable"])
+        self.assertEqual([paths[2]], summary["failedPaths"])
+        self.assertEqual([paths[3]], summary["timedOutPaths"])
+        self.assertEqual(
+            {
+                "total": 4,
+                "executed": 4,
+                "passed": 2,
+                "failed": 1,
+                "skipped": 0,
+                "timedOut": 1,
+            },
+            summary["pathSummary"],
+        )
+        self.assertEqual(
+            {
+                "total": 4,
+                "executed": 4,
+                "passed": 3,
+                "failed": 1,
+                "skipped": 0,
+                "timedOut": 0,
+                "notApplicable": 0,
+            },
+            summary["variantSummary"]["original"],
+        )
+        self.assertEqual(
+            {
+                "total": 4,
+                "executed": 3,
+                "passed": 2,
+                "failed": 0,
+                "skipped": 1,
+                "timedOut": 1,
+                "notApplicable": 1,
+            },
+            summary["variantSummary"]["terser"],
+        )
+        self.assertEqual(["original", "terser"], summary["variants"])
+        self.assertEqual(2, summary["expectedVariantCountPerPath"])
+        self.assertEqual("5.test", summary["minifierVersion"])
+        self.assertEqual(run_test262.TERSER_PROFILE, summary["minifierProfile"])
+        self.assertEqual(12.5, summary["minifierTimeoutSeconds"])
+        self.assertEqual(False, summary["minifierOptions"]["compress"])
+        self.assertEqual(True, summary["minifierOptions"]["mangle"])
+        self.assertEqual(False, summary["minifierOptions"]["toplevel"])
 
     def test_run_selected_tests_enriches_results_with_triage_metadata(self) -> None:
         path = self.write_test(
@@ -975,6 +1429,50 @@ includes: [assert.js, sta.js]
         self.assertEqual("", stdout.getvalue())
         summary = run_test262.json.loads(output_path.read_text(encoding="utf-8"))
         self.assertEqual(1, summary["passed"])
+
+    def test_original_and_terser_order_is_stable_in_serial_and_parallel_runs(self) -> None:
+        paths = [
+            self.write_test(f"test/language/variant-{name}.js", "1;\n")
+            for name in ("a", "b", "c")
+        ]
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        selection = {
+            "selectionMode": "requested",
+            "candidateCount": 3,
+            "selectedCountBeforeSharding": 3,
+            "shardCount": 1,
+            "shardIndex": 0,
+        }
+        expected = [
+            (path, variant)
+            for path in paths
+            for variant in ("original", "terser")
+        ]
+
+        for workers in (1, 2):
+            with self.subTest(max_workers=workers):
+                minifier = FakeMinifier()
+                with mock.patch.object(
+                    run_test262,
+                    "run_test",
+                    side_effect=passing_run_test,
+                ):
+                    results = run_test262.run_selected_tests(
+                        repo,
+                        TEST_ENGINE_PATH,
+                        paths,
+                        selection,
+                        30.0,
+                        0,
+                        max_workers=workers,
+                        minifier=minifier,
+                    )
+
+                self.assertEqual(
+                    expected,
+                    [(result["path"], result["variant"]) for result in results],
+                )
+                self.assertEqual(sorted(paths), sorted(path for _, path in minifier.calls))
 
     def test_parallel_run_returns_results_in_path_order(self) -> None:
         paths = [

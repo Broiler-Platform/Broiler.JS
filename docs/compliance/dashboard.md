@@ -9,7 +9,7 @@ suite revision.
 | Area | Current evidence | Source |
 | --- | --- | --- |
 | Repository tests | Required; no result is inferred from documentation | `dotnet test Broiler.JS.slnx` |
-| Full test262 script host | Manual sharded runner with abnormal-shard retry, provenance-rich merged triage, and an authoritative terminal verdict is implemented | `.github/workflows/test262.yml` |
+| Full test262 script host | Manual sharded original-plus-Terser runner with a pinned minifier, abnormal-shard retry, provenance-rich merged triage, and an authoritative terminal verdict is implemented | `.github/workflows/test262.yml` |
 | Tracked failures | The generated path list is the current source of truth; documentation does not duplicate its changing count | `scripts/compliance/test262-failures.txt` |
 | Negative metadata | Expected-error handling is implemented and opt-in with `--include-negative` | `scripts/compliance/run_test262.py` |
 | `$262` host tests | Excluded until the required host hooks exist | runner audit JSON |

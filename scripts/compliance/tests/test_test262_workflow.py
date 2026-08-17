@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import re
 import unittest
@@ -11,6 +12,9 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "test262.yml"
 ACTION_PATH = REPO_ROOT / ".github" / "actions" / "run-test262-shard" / "action.yml"
 COMMIT_HELPER_PATH = REPO_ROOT / "scripts" / "ci-commit-generated-results.sh"
+TERSER_TOOL_ROOT = REPO_ROOT / ".github" / "actions" / "run-test262-shard" / "terser"
+TERSER_PACKAGE_PATH = TERSER_TOOL_ROOT / "package.json"
+TERSER_LOCK_PATH = TERSER_TOOL_ROOT / "package-lock.json"
 
 
 class Test262WorkflowTests(unittest.TestCase):
@@ -70,10 +74,12 @@ class Test262WorkflowTests(unittest.TestCase):
             "subset",
             "features",
             "feature_match",
+            "minifier",
             "suite_ref",
             "rerun_failed_only",
             "shard_index",
             "test_timeout_seconds",
+            "minifier_timeout_seconds",
             "memory_limit_mb",
             "max_workers",
             "shuffle_seed",
@@ -87,6 +93,9 @@ class Test262WorkflowTests(unittest.TestCase):
         self.assertTrue(inputs["rerun_failed_only"]["default"])
         self.assertEqual("any", inputs["feature_match"]["default"])
         self.assertEqual(["any", "all"], inputs["feature_match"]["options"])
+        self.assertEqual("terser", inputs["minifier"]["default"])
+        self.assertEqual(["terser", "none"], inputs["minifier"]["options"])
+        self.assertEqual(30, inputs["minifier_timeout_seconds"]["default"])
         self.assertEqual(-1, inputs["shard_index"]["default"])
         self.assertEqual(10, inputs["most_common_problems_limit"]["default"])
         self.assertEqual(3, inputs["biggest_problems_limit"]["default"])
@@ -110,7 +119,9 @@ class Test262WorkflowTests(unittest.TestCase):
             "${{ steps.merge.outputs.configuration_failure_count }}",
             issue_steps[0]["env"]["CONFIGURATION_FAILURE_COUNT"],
         )
-        self.assertIn("non-passing test(s)", issue_steps[0]["with"]["script"])
+        self.assertIn(
+            "non-passing variant case(s)", issue_steps[0]["with"]["script"]
+        )
         self.assertIn("timed out", issue_steps[0]["with"]["script"])
         for step in issue_steps:
             self.assertTrue(step["continue-on-error"])
@@ -131,6 +142,8 @@ class Test262WorkflowTests(unittest.TestCase):
     def test_plan_validates_resource_and_report_parameters_before_sharding(self) -> None:
         run_text = self._run_text(self.workflow["jobs"]["plan"])
         self.assertIn("math.isfinite(timeout)", run_text)
+        self.assertIn("math.isfinite(minifier_timeout)", run_text)
+        self.assertIn("minifier not in", run_text)
         self.assertIn('checked_integer("MEMORY_LIMIT_MB", 0)', run_text)
         self.assertIn('checked_integer("MAX_WORKERS", 1, 256)', run_text)
         self.assertIn('checked_integer("COMMON_LIMIT", 1, 100)', run_text)
@@ -184,6 +197,8 @@ class Test262WorkflowTests(unittest.TestCase):
             "rerun-failed",
             "failed-tests-file",
             "test-timeout-seconds",
+            "minifier",
+            "minifier-timeout-seconds",
             "memory-limit-mb",
             "max-workers",
             "shuffle-seed",
@@ -203,6 +218,18 @@ class Test262WorkflowTests(unittest.TestCase):
                 "github.event.inputs.feature_match", action_step["with"]["feature-match"]
             )
 
+        for job_name in ("rerun-failed", "retry-rerun", "run-full", "retry-full"):
+            action_step = next(
+                step
+                for step in jobs[job_name]["steps"]
+                if step.get("uses") == "./.github/actions/run-test262-shard"
+            )
+            self.assertIn("github.event.inputs.minifier", action_step["with"]["minifier"])
+            self.assertIn(
+                "github.event.inputs.minifier_timeout_seconds",
+                action_step["with"]["minifier-timeout-seconds"],
+            )
+
     def test_composite_action_wires_filters_without_shell_interpolation(self) -> None:
         expected_inputs = {
             "phase",
@@ -219,6 +246,8 @@ class Test262WorkflowTests(unittest.TestCase):
             "rerun-failed",
             "failed-tests-file",
             "test-timeout-seconds",
+            "minifier",
+            "minifier-timeout-seconds",
             "memory-limit-mb",
             "max-workers",
             "shuffle-seed",
@@ -229,6 +258,13 @@ class Test262WorkflowTests(unittest.TestCase):
         self.assertIn('ARGS+=(--subset "$SUBSET")', self.action_text)
         self.assertIn('ARGS+=(--features "$FEATURES")', self.action_text)
         self.assertIn('--feature-match "$FEATURE_MATCH"', self.action_text)
+        self.assertIn('--minifier "$MINIFIER"', self.action_text)
+        self.assertIn(
+            '--minifier-timeout-seconds "$MINIFIER_TIMEOUT_SECONDS"',
+            self.action_text,
+        )
+        self.assertIn('ARGS+=(--terser-module "$TERSER_MODULE")', self.action_text)
+        self.assertEqual("30", self.action["inputs"]["minifier-timeout-seconds"]["default"])
         self.assertIn('--selection-label "$SELECTION_LABEL"', self.action_text)
         self.assertIn('--runner-os "${RUNNER_OS:-unknown}"', self.action_text)
         self.assertIn('--runner-arch "${RUNNER_ARCH:-unknown}"', self.action_text)
@@ -236,6 +272,42 @@ class Test262WorkflowTests(unittest.TestCase):
         self.assertIn("--no-summary-stdout", self.action_text)
         self.assertIn("> /dev/null", self.action_text)
         self.assertNotIn("${{ inputs.features }}\"", self._runner_script())
+
+    def test_composite_installs_a_locked_pinned_terser_module(self) -> None:
+        package = json.loads(TERSER_PACKAGE_PATH.read_text(encoding="utf-8"))
+        lock = json.loads(TERSER_LOCK_PATH.read_text(encoding="utf-8"))
+        self.assertEqual("5.50.0", package["dependencies"]["terser"])
+        locked_terser = lock["packages"]["node_modules/terser"]
+        self.assertEqual("5.50.0", locked_terser["version"])
+        self.assertEqual(
+            "sha512-CN9BVxWhgS/hRxtUMjtC2uRWSTcSfQFHMDWma6sKKfIivCD91sM+FOPfvwoaRMqCSrUpe1nv3jDamd9eEQ4y+w==",
+            locked_terser["integrity"],
+        )
+        setup_node = next(
+            step
+            for step in self.action["runs"]["steps"]
+            if step.get("uses") == "actions/setup-node@v5"
+        )
+        install = next(
+            step
+            for step in self.action["runs"]["steps"]
+            if step.get("name") == "Install and resolve pinned Terser"
+        )
+        terser_condition = "${{ inputs.minifier == 'terser' }}"
+        self.assertEqual(terser_condition, setup_node["if"])
+        self.assertEqual(terser_condition, install["if"])
+        self.assertIn('npm ci --prefix "$TERSER_PREFIX"', self.action_text)
+        self.assertIn('require.resolve("terser/package.json"', self.action_text)
+        self.assertIn('test "$version" = "5.50.0"', self.action_text)
+        for provenance_field in (
+            "minifier",
+            "minifierVersion",
+            "minifierProfile",
+            "minifierTimeoutSeconds",
+        ):
+            self.assertIn(f"summary.get('{provenance_field}'", self.action_text)
+        self.assertIn('summary.get("variants")', self.action_text)
+        self.assertIn('summary.get("pathSummary")', self.action_text)
 
     def _runner_script(self) -> str:
         return next(
@@ -294,6 +366,29 @@ class Test262WorkflowTests(unittest.TestCase):
         self.assertEqual("validate", jobs["plan"]["needs"])
         self.assertEqual("validate", jobs["prepare"]["needs"])
 
+    def test_validation_smokes_the_pinned_terser_worker_before_fan_out(self) -> None:
+        validate = self.workflow["jobs"]["validate"]
+        setup_node = next(
+            step
+            for step in validate["steps"]
+            if step.get("uses") == "actions/setup-node@v5"
+        )
+        smoke = next(
+            step
+            for step in validate["steps"]
+            if step.get("name") == "Validate pinned Terser worker"
+        )
+        condition = "${{ (github.event.inputs.minifier || 'terser') == 'terser' }}"
+        self.assertEqual(condition, setup_node["if"])
+        self.assertEqual(condition, smoke["if"])
+        self.assertIn('npm ci --prefix "$TERSER_PREFIX"', smoke["run"])
+        self.assertIn('"operation": "hello"', smoke["run"])
+        self.assertIn('"operation": "minify"', smoke["run"])
+        self.assertIn('"profile": "test262-safe-mangle-v1"', smoke["run"])
+        self.assertIn('"version": "5.50.0"', smoke["run"])
+        self.assertIn("timeout=30", smoke["run"])
+        self.assertIn("except subprocess.TimeoutExpired", smoke["run"])
+
     def test_report_selects_one_authoritative_phase_and_emits_three_reports(self) -> None:
         report = self.workflow["jobs"]["report"]
         self.assertIn("authoritative-phase", report["outputs"])
@@ -326,6 +421,7 @@ class Test262WorkflowTests(unittest.TestCase):
         self.assertIn("!cancelled()", condition)
         self.assertIn("ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e", condition)
         self.assertIn("include_negative != 'true'", condition)
+        self.assertIn("(github.event.inputs.minifier || 'terser') == 'terser'", condition)
         self.assertIn("configuration-failure-count == '0'", condition)
         self.assertFalse(persist["concurrency"]["cancel-in-progress"])
         self.assertIn(
@@ -369,6 +465,7 @@ class Test262WorkflowTests(unittest.TestCase):
         for use in (
             "actions/checkout@v5",
             "actions/setup-dotnet@v5",
+            "actions/setup-node@v5",
             "actions/setup-python@v6",
             "actions/cache@v5",
             "actions/download-artifact@v7",
@@ -379,6 +476,7 @@ class Test262WorkflowTests(unittest.TestCase):
         for old in (
             "actions/checkout@v4",
             "actions/setup-dotnet@v4",
+            "actions/setup-node@v4",
             "actions/setup-python@v5",
             "actions/cache@v4",
             "actions/upload-artifact@v4",
