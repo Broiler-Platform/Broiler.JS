@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import fnmatch
 import json
 import math
 import os
+import platform
 import random
 import re
 import shutil
@@ -17,6 +19,7 @@ import sys
 import tarfile
 import tempfile
 import threading
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -80,6 +83,7 @@ HOST_HARNESS_REFERENCE_PATTERN = re.compile(r"\$262(?:\b|\.)")
 HOST_HARNESS_BLOCKER_NAME = "$262"
 DEFAULT_TEST_TIMEOUT_SECONDS = 30.0
 POST_TERMINATION_TIMEOUT_SECONDS = 5.0
+INTERNAL_EXEC_WITH_LIMITS = "--_exec-with-test262-limits"
 
 
 class Test262Repository:
@@ -482,10 +486,98 @@ def collect_requested_paths(paths: list[str], path_files: list[str]) -> list[str
     return requested_paths
 
 
+def normalize_test_path(path: str) -> str:
+    """Return the canonical forward-slash form used by filters and sharding."""
+    normalized = path.strip().replace("\\", "/")
+    while normalized.startswith("./"):
+        normalized = normalized[2:]
+    return normalized.lstrip("/")
+
+
+def parse_semicolon_patterns(
+    value: str | None,
+    *,
+    normalize_paths: bool = False,
+) -> list[str]:
+    """Split a semicolon filter while preserving order and removing duplicates."""
+    patterns: list[str] = []
+    seen: set[str] = set()
+    for raw_pattern in (value or "").split(";"):
+        pattern = raw_pattern.strip()
+        if normalize_paths:
+            pattern = normalize_test_path(pattern)
+        if not pattern or pattern in seen:
+            continue
+        seen.add(pattern)
+        patterns.append(pattern)
+    return patterns
+
+
+def path_matches_subset(path: str, patterns: list[str]) -> bool:
+    """Match a test path with the main WPT runner's prefix-glob semantics.
+
+    ``*`` and ``?`` never cross a path separator. A wildcard pattern matches
+    the path prefix it describes plus descendants of that prefix; a plain
+    pattern is an exact path or recursive directory prefix.
+    """
+    if not patterns:
+        return True
+
+    normalized_path = normalize_test_path(path)
+    for raw_pattern in patterns:
+        pattern = normalize_test_path(raw_pattern).rstrip("/")
+        if not pattern:
+            return True
+        if not any(character in pattern for character in "*?"):
+            if normalized_path.casefold() == pattern.casefold() or (
+                normalized_path.casefold().startswith(pattern.casefold() + "/")
+            ):
+                return True
+            continue
+
+        pieces = ["^"]
+        for character in pattern:
+            if character == "*":
+                pieces.append("[^/]*")
+            elif character == "?":
+                pieces.append("[^/]")
+            else:
+                pieces.append(re.escape(character))
+        pieces.append("(?:/.*)?$")
+        if re.match("".join(pieces), normalized_path, flags=re.IGNORECASE):
+            return True
+    return False
+
+
+def features_match_patterns(
+    features: list[str],
+    patterns: list[str],
+    match_mode: str,
+) -> bool:
+    """Return whether feature metadata satisfies an any/all pattern filter."""
+    if not patterns:
+        return True
+    if match_mode not in {"any", "all"}:
+        raise ValueError(f"feature_match must be 'any' or 'all', got {match_mode!r}")
+
+    pattern_matches = [
+        any(fnmatch.fnmatchcase(feature, pattern) for feature in features)
+        for pattern in patterns
+    ]
+    return any(pattern_matches) if match_mode == "any" else all(pattern_matches)
+
+
 def positive_float(value: str) -> float:
     parsed = float(value)
-    if parsed <= 0:
+    if not math.isfinite(parsed) or parsed <= 0:
         raise argparse.ArgumentTypeError(f"value must be positive, got {value}")
+    return parsed
+
+
+def positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError(f"value must be a positive integer, got {value}")
     return parsed
 
 
@@ -496,8 +588,20 @@ def non_negative_int(value: str) -> int:
     return parsed
 
 
+def shard_index_for_path(path: str, shard_count: int) -> int:
+    """Return the stable 32-bit FNV-1a shard for a normalized UTF-8 path."""
+    if shard_count <= 0:
+        raise ValueError(f"shard_count must be greater than 0, got {shard_count}")
+
+    hash_value = 2166136261
+    for byte in normalize_test_path(path).encode("utf-8"):
+        hash_value ^= byte
+        hash_value = (hash_value * 16777619) & 0xFFFFFFFF
+    return hash_value % shard_count
+
+
 def apply_shard(paths: list[str], shard_count: int, shard_index: int) -> list[str]:
-    """Return one deterministic modulo-based shard from an ordered path list."""
+    """Return one content-independent FNV-1a shard from an ordered path list."""
     if shard_count <= 0:
         raise ValueError(f"shard_count must be greater than 0, got {shard_count}")
     if shard_index == ALL_SHARDS:
@@ -510,7 +614,11 @@ def apply_shard(paths: list[str], shard_count: int, shard_index: int) -> list[st
     if shard_count == 1:
         return list(paths)
 
-    return [path for index, path in enumerate(paths) if index % shard_count == shard_index]
+    return [
+        path
+        for path in paths
+        if shard_index_for_path(path, shard_count) == shard_index
+    ]
 
 
 def log_progress(message: str) -> None:
@@ -561,6 +669,49 @@ def create_process_limit_setup(
                     resource.setrlimit(limit, (memory_limit_bytes, memory_limit_bytes))
 
     return limit_process_resources
+
+
+def build_test_process_command(
+    broiler_dll: str,
+    script_path: str,
+    timeout_seconds: float,
+    memory_limit_mb: int,
+) -> list[str]:
+    """Build a test command without using unsafe ``preexec_fn`` callbacks.
+
+    On POSIX, a fresh single-threaded Python helper applies resource limits and
+    then replaces itself with ``dotnet``. The parent runner may therefore launch
+    tests from worker threads without running Python code between fork and exec.
+    """
+    target = ["dotnet", broiler_dll, "--script-host", script_path]
+    if os.name != "posix" or resource is None:
+        return target
+    return [
+        sys.executable,
+        str(Path(__file__).resolve()),
+        INTERNAL_EXEC_WITH_LIMITS,
+        format(timeout_seconds, ".17g"),
+        str(memory_limit_mb),
+        "--",
+        *target,
+    ]
+
+
+def exec_with_test_process_limits(arguments: list[str]) -> int:
+    """Internal single-threaded launcher used by :func:`run_test` on POSIX."""
+    if len(arguments) < 4 or arguments[2] != "--":
+        raise ValueError(
+            f"{INTERNAL_EXEC_WITH_LIMITS} expects TIMEOUT MEMORY_MB -- COMMAND [ARG ...]"
+        )
+
+    timeout_seconds = positive_float(arguments[0])
+    memory_limit_mb = non_negative_int(arguments[1])
+    command = arguments[3:]
+    limit_setup = create_process_limit_setup(timeout_seconds, memory_limit_mb)
+    if limit_setup is not None:
+        limit_setup()
+    os.execvp(command[0], command)
+    return 127  # pragma: no cover - os.execvp only returns by raising
 
 
 def terminate_process_tree(process: subprocess.Popen[str]) -> None:
@@ -676,29 +827,69 @@ def select_paths(
     shuffle_seed: int | None = None,
     include_negative: bool = False,
     prioritize_fragile: bool = False,
+    subset_patterns: list[str] | str | None = None,
+    feature_patterns: list[str] | str | None = None,
+    feature_match: str = "any",
 ) -> tuple[list[str], dict[str, object]]:
     """Select test paths plus metadata for requested or full script-host runs."""
+    subset_filter_text = (
+        subset_patterns
+        if isinstance(subset_patterns, str)
+        else ";".join(subset_patterns or [])
+    )
+    feature_filter_text = (
+        feature_patterns
+        if isinstance(feature_patterns, str)
+        else ";".join(feature_patterns or [])
+    )
+    subset_patterns = parse_semicolon_patterns(
+        subset_filter_text,
+        normalize_paths=True,
+    )
+    feature_patterns = parse_semicolon_patterns(feature_filter_text)
+    if feature_match not in {"any", "all"}:
+        raise ValueError(
+            f"feature_match must be 'any' or 'all', got {feature_match!r}"
+        )
+
     selection_mode = "requested"
     if all_script_host_verifiable:
         candidate_paths = repo.list_paths(
             prefix="test/", suffix=".js", include_fixtures=False
         )
         harness_dependency_cache: dict[str, bool] = {}
-        expanded_paths = [
-            path
-            for path in candidate_paths
-            if path not in KNOWN_INCORRECT_TESTS
-            and _is_selectable(
-                repo.read_text(path),
+        expanded_paths = []
+        for path in candidate_paths:
+            if path in KNOWN_INCORRECT_TESTS or not path_matches_subset(
+                path, subset_patterns
+            ):
+                continue
+            source = repo.read_text(path)
+            metadata, _ = parse_metadata(source)
+            if not features_match_patterns(
+                metadata["features"], feature_patterns, feature_match
+            ):
+                continue
+            if _is_selectable(
+                source,
                 repo,
                 harness_dependency_cache,
                 include_negative,
-            )
-        ]
+            ):
+                expanded_paths.append(path)
         selection_mode = "all-script-host-verifiable"
     else:
         candidate_paths = repo.expand_paths(requested_paths)
-        expanded_paths = list(candidate_paths)
+        expanded_paths = [
+            path
+            for path in candidate_paths
+            if path_matches_subset(path, subset_patterns)
+            and features_match_patterns(
+                parse_metadata(repo.read_text(path))[0]["features"],
+                feature_patterns,
+                feature_match,
+            )
+        ]
 
     promoted_count = 0
     if prioritize_fragile:
@@ -709,7 +900,15 @@ def select_paths(
         )
 
     if shuffle_seed is not None:
-        random.Random(shuffle_seed).shuffle(expanded_paths)
+        randomizer = random.Random(shuffle_seed)
+        if promoted_count > 0:
+            priority_paths = expanded_paths[:promoted_count]
+            remaining_paths = expanded_paths[promoted_count:]
+            randomizer.shuffle(priority_paths)
+            randomizer.shuffle(remaining_paths)
+            expanded_paths = priority_paths + remaining_paths
+        else:
+            randomizer.shuffle(expanded_paths)
 
     sharded_paths = apply_shard(expanded_paths, shard_count, shard_index)
     selection = {
@@ -722,6 +921,9 @@ def select_paths(
         "includeNegative": include_negative,
         "prioritizeFragile": prioritize_fragile,
         "promotedCount": promoted_count,
+        "subsetPatterns": subset_patterns,
+        "featurePatterns": feature_patterns,
+        "featureMatch": feature_match,
     }
     return sharded_paths, selection
 
@@ -847,12 +1049,16 @@ const __broilerDonePromise = new Promise((resolve, reject) => {
 
     try:
         process = subprocess.Popen(
-            ["dotnet", broiler_dll, "--script-host", script_path],
+            build_test_process_command(
+                broiler_dll,
+                script_path,
+                timeout_seconds,
+                memory_limit_mb,
+            ),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
             start_new_session=os.name == "posix",
-            preexec_fn=create_process_limit_setup(timeout_seconds, memory_limit_mb),
         )
         try:
             stdout, stderr = process.communicate(timeout=timeout_seconds)
@@ -922,6 +1128,10 @@ def build_summary(
     shuffle_seed: int | None = None,
     include_negative: bool = False,
     prioritize_fragile: bool = False,
+    selection_label: str = "",
+    runner_os: str = "",
+    runner_arch: str = "",
+    dotnet_version: str = "",
 ) -> dict[str, object]:
     passed = sum(1 for result in results if result["status"] == "passed")
     failed = sum(1 for result in results if result["status"] == "failed")
@@ -943,10 +1153,17 @@ def build_summary(
         "requestedPaths": requested_paths,
         "expandedPaths": expanded_paths,
         "selectionMode": selection["selectionMode"],
+        "selectionLabel": selection_label,
+        "runnerOs": runner_os,
+        "runnerArch": runner_arch,
+        "dotnetVersion": dotnet_version,
         "candidateCount": selection["candidateCount"],
         "selectedCountBeforeSharding": selection["selectedCountBeforeSharding"],
         "shardCount": selection["shardCount"],
         "shardIndex": selection["shardIndex"],
+        "subsetPatterns": selection.get("subsetPatterns", []),
+        "featurePatterns": selection.get("featurePatterns", []),
+        "featureMatch": selection.get("featureMatch", "any"),
         "executed": executed,
         "passed": passed,
         "failed": failed,
@@ -956,6 +1173,65 @@ def build_summary(
         "timedOutPaths": timed_out_paths,
         "results": results,
     }
+
+
+def _infrastructure_failure_result(path: str, exc: Exception) -> dict[str, object]:
+    return {
+        "path": path,
+        "status": "failed",
+        "reason": f"infrastructure error ({type(exc).__name__}): {exc}",
+        "infrastructure": True,
+        "exceptionType": type(exc).__name__,
+    }
+
+
+def run_test_with_metadata(
+    repo: Test262Repository,
+    broiler_dll: str,
+    path: str,
+    harness_cache: dict[str, str],
+    timeout_seconds: float,
+    memory_limit_mb: int,
+    include_negative: bool = False,
+) -> dict[str, object]:
+    """Run one test and attach bounded triage metadata to its result.
+
+    ``run_test`` intentionally retains its small historical return contract for
+    direct callers. Shard execution uses this wrapper so one per-test exception
+    is reported as an infrastructure failure instead of discarding the shard's
+    whole machine-readable summary.
+    """
+    started = time.perf_counter()
+    source_size_bytes: int | None = None
+    features: list[str] = []
+    flags: list[str] = []
+    try:
+        source = repo.read_text(path)
+        source_size_bytes = len(source.encode("utf-8"))
+        metadata, _ = parse_metadata(source)
+        features = list(metadata["features"])
+        flags = list(metadata["flags"])
+        result = run_test(
+            repo,
+            broiler_dll,
+            path,
+            harness_cache,
+            timeout_seconds,
+            memory_limit_mb,
+            include_negative,
+        )
+    except Exception as exc:
+        result = _infrastructure_failure_result(path, exc)
+
+    enriched = dict(result)
+    enriched["sourceSizeBytes"] = source_size_bytes
+    enriched["features"] = features
+    enriched["flags"] = flags
+    enriched["durationMs"] = round(
+        max(0.0, (time.perf_counter() - started) * 1000.0),
+        3,
+    )
+    return enriched
 
 
 def run_selected_tests(
@@ -968,6 +1244,11 @@ def run_selected_tests(
     max_workers: int = 1,
     include_negative: bool = False,
 ) -> list[dict[str, object]]:
+    if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
+        raise ValueError(f"timeout_seconds must be finite and positive, got {timeout_seconds}")
+    if max_workers <= 0:
+        raise ValueError(f"max_workers must be a positive integer, got {max_workers}")
+
     total = len(expanded_paths)
     if total == 0:
         log_progress("No tests matched the current selection.")
@@ -1016,7 +1297,7 @@ def _run_tests_serial(
     timed_out = 0
 
     for index, path in enumerate(expanded_paths, start=1):
-        result = run_test(
+        result = run_test_with_metadata(
             repo,
             broiler_dll,
             path,
@@ -1070,7 +1351,7 @@ def _run_tests_parallel(
 
     def _worker(index: int, path: str) -> tuple[int, dict[str, object]]:
         harness_cache: dict[str, str] = {}
-        result = run_test(
+        result = run_test_with_metadata(
             repo, broiler_dll, path, harness_cache,
             timeout_seconds, memory_limit_mb, include_negative,
         )
@@ -1082,7 +1363,20 @@ def _run_tests_parallel(
             for idx, path in enumerate(expanded_paths)
         }
         for future in concurrent.futures.as_completed(futures):
-            idx, result = future.result()
+            submitted_index = futures[future]
+            try:
+                idx, result = future.result()
+            except Exception as exc:  # defensive: the wrapper normally contains these
+                idx = submitted_index
+                result = _infrastructure_failure_result(expanded_paths[idx], exc)
+                result.update(
+                    {
+                        "sourceSizeBytes": None,
+                        "features": [],
+                        "flags": [],
+                        "durationMs": 0.0,
+                    }
+                )
             results[idx] = result
 
             with lock:
@@ -1143,10 +1437,45 @@ def main() -> int:
         help="Optional path for machine-readable JSON output",
     )
     parser.add_argument(
+        "--no-summary-stdout",
+        action="store_true",
+        help="Do not print the final JSON summary to stdout (normally paired with --output)",
+    )
+    parser.add_argument(
         "--all-script-host-verifiable",
         action="store_true",
         help="Discover and run every current script-host-verifiable test262 file",
     )
+    parser.add_argument(
+        "--subset",
+        default="",
+        help=(
+            "Semicolon-separated test path, directory-prefix, or glob filters; "
+            "empty runs the base selection unchanged"
+        ),
+    )
+    parser.add_argument(
+        "--features",
+        default="",
+        help=(
+            "Semicolon-separated test262 feature metadata patterns (wildcards allowed); "
+            "empty includes every feature set"
+        ),
+    )
+    parser.add_argument(
+        "--feature-match",
+        choices=("any", "all"),
+        default="any",
+        help="Require any or all --features patterns to match a test's metadata",
+    )
+    parser.add_argument(
+        "--selection-label",
+        default="",
+        help="Optional CI scope label recorded in the machine-readable summary",
+    )
+    parser.add_argument("--runner-os", default=platform.system())
+    parser.add_argument("--runner-arch", default=platform.machine())
+    parser.add_argument("--dotnet-version", default="")
     parser.add_argument(
         "--shard-count",
         type=int,
@@ -1173,7 +1502,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--max-workers",
-        type=int,
+        type=positive_int,
         default=1,
         help="Number of parallel worker threads for running tests (default 1 = serial)",
     )
@@ -1195,7 +1524,9 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    max_workers = max(1, args.max_workers)
+    max_workers = args.max_workers
+    subset_patterns = parse_semicolon_patterns(args.subset, normalize_paths=True)
+    feature_patterns = parse_semicolon_patterns(args.features)
 
     log_progress(
         f"Starting test262 run for suite ref {args.suite_ref}"
@@ -1218,6 +1549,9 @@ def main() -> int:
             shuffle_seed=args.shuffle_seed,
             include_negative=args.include_negative,
             prioritize_fragile=args.prioritize_fragile,
+            subset_patterns=subset_patterns,
+            feature_patterns=feature_patterns,
+            feature_match=args.feature_match,
         )
     except ValueError as exc:
         parser.error(str(exc))
@@ -1264,6 +1598,10 @@ def main() -> int:
         shuffle_seed=args.shuffle_seed,
         include_negative=args.include_negative,
         prioritize_fragile=args.prioritize_fragile,
+        selection_label=args.selection_label,
+        runner_os=args.runner_os,
+        runner_arch=args.runner_arch,
+        dotnet_version=args.dotnet_version,
     )
 
     if args.output:
@@ -1277,10 +1615,13 @@ def main() -> int:
         f"passed={summary['passed']}, failed={summary['failed']}, "
         f"skipped={summary['skipped']}, timedOut={summary['timedOut']}"
     )
-    print(json.dumps(summary, indent=2))
+    if not args.no_summary_stdout:
+        print(json.dumps(summary, indent=2))
     has_failures = summary["failed"] > 0 or summary["timedOut"] > 0
     return 1 if has_failures else 0
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == INTERNAL_EXEC_WITH_LIMITS:
+        sys.exit(exec_with_test_process_limits(sys.argv[2:]))
     sys.exit(main())

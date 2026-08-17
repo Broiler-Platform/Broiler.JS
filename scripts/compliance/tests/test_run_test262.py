@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import argparse
+import os
 import tempfile
 from pathlib import Path
 import subprocess
@@ -65,11 +67,11 @@ class RunTest262Tests(unittest.TestCase):
             stderr: int,
             text: bool,
             start_new_session: bool,
-            preexec_fn,
+            **kwargs,
         ):
             self.assertTrue(text)
-            self.assertIsNotNone(preexec_fn)
-            self.assertTrue(start_new_session)
+            self.assertNotIn("preexec_fn", kwargs)
+            self.assertEqual(os.name == "posix", start_new_session)
             return FakeProcess(args)
 
         with mock.patch.object(run_test262.subprocess, "Popen", side_effect=fake_run):
@@ -96,7 +98,7 @@ class RunTest262Tests(unittest.TestCase):
 
         with (
             mock.patch.object(run_test262.subprocess, "Popen", return_value=process),
-            mock.patch.object(run_test262.os, "killpg") as killpg,
+            mock.patch.object(run_test262, "terminate_process_tree") as terminate,
         ):
             result = run_test262.run_test(repo, TEST_ENGINE_PATH, path, {}, 30.0, 0)
 
@@ -104,7 +106,7 @@ class RunTest262Tests(unittest.TestCase):
         self.assertEqual("timed out after 30s", result["reason"])
         self.assertEqual("partial stdout", result["stdout"])
         self.assertEqual("partial stderr", result["stderr"])
-        killpg.assert_called_once_with(4321, run_test262.signal.SIGKILL)
+        terminate.assert_called_once_with(process)
 
     def test_create_process_limit_setup_applies_posix_limits(self) -> None:
         fake_resource = mock.Mock()
@@ -114,7 +116,10 @@ class RunTest262Tests(unittest.TestCase):
         fake_resource.RLIMIT_DATA = 4
         fake_resource.setrlimit = mock.Mock()
 
-        with mock.patch.object(run_test262, "resource", fake_resource):
+        with (
+            mock.patch.object(run_test262, "resource", fake_resource),
+            mock.patch.object(run_test262.os, "name", "posix"),
+        ):
             limit_setup = run_test262.create_process_limit_setup(30.0, 256)
             self.assertIsNotNone(limit_setup)
             limit_setup()
@@ -126,6 +131,65 @@ class RunTest262Tests(unittest.TestCase):
                 mock.call(fake_resource.RLIMIT_DATA, (268435456, 268435456)),
             ],
             fake_resource.setrlimit.call_args_list,
+        )
+
+    def test_internal_posix_launcher_applies_limits_before_exec(self) -> None:
+        limit_setup = mock.Mock()
+        with (
+            mock.patch.object(
+                run_test262,
+                "create_process_limit_setup",
+                return_value=limit_setup,
+            ) as create_limit_setup,
+            mock.patch.object(run_test262.os, "execvp") as execvp,
+        ):
+            exit_code = run_test262.exec_with_test_process_limits(
+                [
+                    "12.5",
+                    "256",
+                    "--",
+                    "dotnet",
+                    "BroilerJS.dll",
+                    "--script-host",
+                    "test.js",
+                ]
+            )
+
+        self.assertEqual(127, exit_code)
+        create_limit_setup.assert_called_once_with(12.5, 256)
+        limit_setup.assert_called_once_with()
+        execvp.assert_called_once_with(
+            "dotnet",
+            ["dotnet", "BroilerJS.dll", "--script-host", "test.js"],
+        )
+
+    def test_posix_test_command_uses_the_single_threaded_limit_launcher(self) -> None:
+        fake_os = mock.Mock()
+        fake_os.name = "posix"
+        with (
+            mock.patch.object(run_test262, "os", fake_os),
+            mock.patch.object(run_test262, "resource", object()),
+        ):
+            command = run_test262.build_test_process_command(
+                "BroilerJS.dll",
+                "test.js",
+                12.5,
+                256,
+            )
+
+        self.assertEqual(run_test262.sys.executable, command[0])
+        self.assertEqual(run_test262.INTERNAL_EXEC_WITH_LIMITS, command[2])
+        self.assertEqual(
+            [
+                "12.5",
+                "256",
+                "--",
+                "dotnet",
+                "BroilerJS.dll",
+                "--script-host",
+                "test.js",
+            ],
+            command[3:],
         )
 
     def test_list_paths_uses_local_suite_root(self) -> None:
@@ -165,7 +229,7 @@ class RunTest262Tests(unittest.TestCase):
             "/*---\nfeatures: [Temporal]\n---*/\nTemporal.Duration();\n",
         )
         self.write_test("test/language/host-harness.js", "$262.createRealm();\n")
-        self.write_test(
+        async_path = self.write_test(
             "test/language/d-async.js",
             "/*---\nflags: [async]\n---*/\n$DONE();\n",
         )
@@ -184,8 +248,16 @@ class RunTest262Tests(unittest.TestCase):
         )
 
         # Verifiable: a.js, c3-temporal.js, d-async.js (module/negative/host-harness
-        # blocked, fixture excluded). Sorted, shard 1 of 2 (modulo) selects index 1.
-        self.assertEqual([temporal_path], selected_paths)
+        # blocked, fixture excluded). Stable FNV-1a assignment selects shard 1.
+        verifiable = sorted([first_path, temporal_path, async_path])
+        self.assertEqual(
+            [
+                path
+                for path in verifiable
+                if run_test262.shard_index_for_path(path, 2) == 1
+            ],
+            selected_paths,
+        )
         self.assertEqual("all-script-host-verifiable", selection["selectionMode"])
         self.assertEqual(7, selection["candidateCount"])
         self.assertEqual(3, selection["selectedCountBeforeSharding"])
@@ -212,6 +284,94 @@ class RunTest262Tests(unittest.TestCase):
         self.assertEqual(sorted([first_path, feature_path]), selected_paths)
         self.assertEqual(2, selection["candidateCount"])
         self.assertEqual(2, selection["selectedCountBeforeSharding"])
+
+    def test_subset_filters_support_semicolon_prefix_and_glob_patterns(self) -> None:
+        language_a = self.write_test("test/language/a.js", "1;\n")
+        language_b = self.write_test("test/language/nested/b.js", "2;\n")
+        array_test = self.write_test("test/built-ins/Array/c.js", "3;\n")
+        self.write_test("test/built-ins/Array/nested/not-selected.js", "3;\n")
+        self.write_test("test/built-ins/String/d.js", "4;\n")
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        patterns = run_test262.parse_semicolon_patterns(
+            " test\\language ; test/built-ins/Array/*.js ; test/language ",
+            normalize_paths=True,
+        )
+
+        selected, selection = run_test262.select_paths(
+            repo,
+            ["test"],
+            all_script_host_verifiable=False,
+            shard_count=1,
+            shard_index=0,
+            subset_patterns=patterns,
+        )
+
+        self.assertEqual(sorted([language_a, language_b, array_test]), selected)
+        self.assertEqual(
+            ["test/language", "test/built-ins/Array/*.js"],
+            selection["subsetPatterns"],
+        )
+        self.assertEqual(5, selection["candidateCount"])
+        self.assertEqual(3, selection["selectedCountBeforeSharding"])
+
+        self.assertTrue(
+            run_test262.path_matches_subset(
+                "test/Built-Ins/Array/c.js",
+                ["test/built-ins/array/*.js"],
+            )
+        )
+        self.assertFalse(
+            run_test262.path_matches_subset(
+                "test/built-ins/Array/nested/c.js",
+                ["test/built-ins/Array/*.js"],
+            )
+        )
+
+    def test_feature_filters_support_any_all_wildcards_and_deduplication(self) -> None:
+        temporal = self.write_test(
+            "test/language/temporal.js",
+            "/*---\nfeatures: [Temporal]\n---*/\n1;\n",
+        )
+        temporal_intl = self.write_test(
+            "test/language/temporal-intl.js",
+            "/*---\nfeatures: [Temporal, Intl.DateTimeFormat]\n---*/\n2;\n",
+        )
+        self.write_test(
+            "test/language/iterator.js",
+            "/*---\nfeatures: [iterator-helpers]\n---*/\n3;\n",
+        )
+        self.write_test("test/language/untagged.js", "4;\n")
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        patterns = run_test262.parse_semicolon_patterns(
+            "Temporal; Intl.* ;Temporal"
+        )
+
+        any_selected, any_selection = run_test262.select_paths(
+            repo,
+            ["test/language"],
+            False,
+            1,
+            0,
+            feature_patterns=patterns,
+            feature_match="any",
+        )
+        all_selected, all_selection = run_test262.select_paths(
+            repo,
+            ["test/language"],
+            False,
+            8,
+            run_test262.shard_index_for_path(temporal_intl, 8),
+            feature_patterns=patterns,
+            feature_match="all",
+        )
+
+        self.assertEqual(sorted([temporal, temporal_intl]), any_selected)
+        self.assertEqual([temporal_intl], all_selected)
+        self.assertEqual(["Temporal", "Intl.*"], any_selection["featurePatterns"])
+        self.assertEqual("any", any_selection["featureMatch"])
+        self.assertEqual("all", all_selection["featureMatch"])
+        # The feature intersection is counted before the stable shard is applied.
+        self.assertEqual(1, all_selection["selectedCountBeforeSharding"])
 
     def test_parse_metadata_supports_inline_and_block_style_lists(self) -> None:
         metadata, _ = run_test262.parse_metadata(
@@ -249,6 +409,49 @@ includes: [assert.js, sta.js]
 
         with self.assertRaisesRegex(ValueError, "shard_index must be -1 or between 0 and 1"):
             run_test262.apply_shard(["test/language/example.js"], 2, 2)
+
+    def test_fnv_sharding_is_stable_and_normalizes_path_separators(self) -> None:
+        # Published FNV-1a 32-bit test vector for UTF-8/ASCII "hello".
+        self.assertEqual(0x4F9F2CAB, run_test262.shard_index_for_path("hello", 2**32))
+        self.assertEqual(
+            run_test262.shard_index_for_path("test/language/café.js", 8),
+            run_test262.shard_index_for_path("test\\language\\café.js", 8),
+        )
+
+        original = [
+            "test/language/a.js",
+            "test/language/b.js",
+            "test/built-ins/Array/c.js",
+        ]
+        assignments = {
+            path: run_test262.shard_index_for_path(path, 8) for path in original
+        }
+        with_unrelated_insert = ["test/annexB/earlier.js", *original]
+
+        for path, shard_index in assignments.items():
+            self.assertIn(
+                path,
+                run_test262.apply_shard(with_unrelated_insert, 8, shard_index),
+            )
+        self.assertEqual(
+            sorted(original),
+            sorted(
+                path
+                for shard_index in range(8)
+                for path in run_test262.apply_shard(original, 8, shard_index)
+            ),
+        )
+
+    def test_timeout_and_worker_validators_reject_non_positive_or_non_finite_values(self) -> None:
+        for value in ("0", "-1", "nan", "inf", "-inf"):
+            with self.subTest(timeout=value), self.assertRaises(argparse.ArgumentTypeError):
+                run_test262.positive_float(value)
+        for value in ("0", "-1"):
+            with self.subTest(workers=value), self.assertRaises(argparse.ArgumentTypeError):
+                run_test262.positive_int(value)
+
+        self.assertEqual(0.25, run_test262.positive_float("0.25"))
+        self.assertEqual(3, run_test262.positive_int("3"))
 
     def test_main_accepts_shard_index_minus_one_for_all_selected_paths(self) -> None:
         first_path = self.write_test("test/language/a.js", "1 + 1;\n")
@@ -442,6 +645,38 @@ includes: [assert.js, sta.js]
         # All paths present
         self.assertEqual(sorted(paths_no_shuffle), sorted(paths_seed_42a))
 
+    def test_shuffle_preserves_fragile_priority_group(self) -> None:
+        paths = [
+            self.write_test(f"test/language/{name}.js", "1;\n")
+            for name in ("a", "b", "c", "d", "e", "f")
+        ]
+        fragile = {paths[0], paths[2], paths[4]}
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+
+        with (
+            mock.patch.object(run_test262, "_load_fragile_paths", return_value=fragile),
+            mock.patch.object(
+                run_test262,
+                "_detect_recently_changed_directories",
+                return_value=set(),
+            ),
+        ):
+            selected, selection = run_test262.select_paths(
+                repo,
+                ["test/language"],
+                False,
+                1,
+                0,
+                shuffle_seed=42,
+                prioritize_fragile=True,
+            )
+
+        promoted_count = selection["promotedCount"]
+        self.assertEqual(3, promoted_count)
+        self.assertEqual(fragile, set(selected[:promoted_count]))
+        self.assertTrue(all(path not in fragile for path in selected[promoted_count:]))
+        self.assertEqual(sorted(paths), sorted(selected))
+
     def test_select_paths_include_negative_adds_negative_tests(self) -> None:
         positive_path = self.write_test("test/language/a.js", "1 + 1;\n")
         negative_path = self.write_test(
@@ -601,17 +836,145 @@ includes: [assert.js, sta.js]
                 "selectedCountBeforeSharding": 1,
                 "shardCount": 1,
                 "shardIndex": 0,
+                "subsetPatterns": ["test/language"],
+                "featurePatterns": ["Temporal", "Intl.*"],
+                "featureMatch": "all",
             },
             30.0,
             0,
             max_workers=4,
             shuffle_seed=42,
             include_negative=True,
+            selection_label="runtime",
+            runner_os="Linux",
+            runner_arch="X64",
+            dotnet_version="10.0.100",
         )
 
         self.assertEqual(4, summary["maxWorkers"])
         self.assertEqual(42, summary["shuffleSeed"])
         self.assertTrue(summary["includeNegative"])
+        self.assertEqual(["test/language"], summary["subsetPatterns"])
+        self.assertEqual(["Temporal", "Intl.*"], summary["featurePatterns"])
+        self.assertEqual("all", summary["featureMatch"])
+        self.assertEqual("runtime", summary["selectionLabel"])
+        self.assertEqual("Linux", summary["runnerOs"])
+        self.assertEqual("X64", summary["runnerArch"])
+        self.assertEqual("10.0.100", summary["dotnetVersion"])
+
+    def test_run_selected_tests_enriches_results_with_triage_metadata(self) -> None:
+        path = self.write_test(
+            "test/language/metadata.js",
+            "/*---\nfeatures: [Temporal, Intl.DateTimeFormat]\nflags: [onlyStrict]\n---*/\n1;\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        selection = {
+            "selectionMode": "requested",
+            "candidateCount": 1,
+            "selectedCountBeforeSharding": 1,
+            "shardCount": 1,
+            "shardIndex": 0,
+        }
+
+        with (
+            mock.patch.object(
+                run_test262,
+                "run_test",
+                return_value={"path": path, "status": "passed"},
+            ),
+            mock.patch.object(
+                run_test262.time,
+                "perf_counter",
+                side_effect=[100.0, 100.012345],
+            ),
+        ):
+            results = run_test262.run_selected_tests(
+                repo, TEST_ENGINE_PATH, [path], selection, 30.0, 0,
+            )
+
+        self.assertEqual(1, len(results))
+        result = results[0]
+        self.assertEqual(len(repo.read_text(path).encode("utf-8")), result["sourceSizeBytes"])
+        self.assertEqual(["Temporal", "Intl.DateTimeFormat"], result["features"])
+        self.assertEqual(["onlyStrict"], result["flags"])
+        self.assertAlmostEqual(12.345, result["durationMs"], places=3)
+
+    def test_worker_exception_becomes_failed_infrastructure_result(self) -> None:
+        paths = [
+            self.write_test(f"test/language/{name}.js", "1;\n")
+            for name in ("a", "b", "c")
+        ]
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        selection = {
+            "selectionMode": "requested",
+            "candidateCount": 3,
+            "selectedCountBeforeSharding": 3,
+            "shardCount": 1,
+            "shardIndex": 0,
+        }
+
+        def fake_run_test(repo, dll, path, cache, timeout, mem, include_negative=False):
+            if path.endswith("/b.js"):
+                raise OSError("worker exploded")
+            return {"path": path, "status": "passed"}
+
+        with mock.patch.object(run_test262, "run_test", side_effect=fake_run_test):
+            results = run_test262.run_selected_tests(
+                repo,
+                TEST_ENGINE_PATH,
+                paths,
+                selection,
+                30.0,
+                0,
+                max_workers=2,
+            )
+
+        self.assertEqual(paths, [result["path"] for result in results])
+        failed = results[1]
+        self.assertEqual("failed", failed["status"])
+        self.assertTrue(failed["infrastructure"])
+        self.assertEqual("OSError", failed["exceptionType"])
+        self.assertIn("worker exploded", failed["reason"])
+        self.assertIsInstance(failed["sourceSizeBytes"], int)
+        self.assertIn("durationMs", failed)
+
+    def test_no_summary_stdout_writes_only_the_requested_output_file(self) -> None:
+        path = self.write_test("test/language/quiet.js", "1;\n")
+        output_path = Path(self.temp_directory.name) / "quiet-summary.json"
+        stdout = StringIO()
+
+        with (
+            mock.patch.object(
+                sys,
+                "argv",
+                [
+                    "run_test262.py",
+                    "--suite-ref",
+                    TEST_SUITE_REF,
+                    "--suite-root",
+                    str(self.suite_root),
+                    "--broiler-dll",
+                    TEST_ENGINE_PATH,
+                    "--output",
+                    str(output_path),
+                    "--no-summary-stdout",
+                    path,
+                ],
+            ),
+            mock.patch.object(
+                run_test262,
+                "run_test",
+                return_value={"path": path, "status": "passed"},
+            ),
+            redirect_stdout(stdout),
+            redirect_stderr(StringIO()),
+        ):
+            exit_code = run_test262.main()
+
+        self.assertEqual(0, exit_code)
+        self.assertEqual("", stdout.getvalue())
+        summary = run_test262.json.loads(output_path.read_text(encoding="utf-8"))
+        self.assertEqual(1, summary["passed"])
 
     def test_parallel_run_returns_results_in_path_order(self) -> None:
         paths = [

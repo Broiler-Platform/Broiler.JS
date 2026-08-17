@@ -1,0 +1,334 @@
+name: Run test262 shard
+description: >
+  Restore the immutable test262 checkout, build Broiler.JS, run one shard, and
+  upload a conclusive report or an abnormal-exit status marker. Initial and
+  retry jobs share this action so both attempts use identical setup and inputs.
+
+inputs:
+  phase:
+    description: Logical phase name (rerun or full).
+    required: true
+  shard-index:
+    description: Zero-based shard index.
+    required: true
+  shard-count:
+    description: Effective shard count for this phase.
+    required: true
+  attempt-suffix:
+    description: Empty for the first attempt and -retry for the retry attempt.
+    required: false
+    default: ''
+  suite-commit:
+    description: Immutable test262 commit resolved by the prepare job.
+    required: true
+  suite-root:
+    description: Workspace path where the test262 checkout is restored.
+    required: true
+  suite-cache-key:
+    description: Cache key for the immutable test262 checkout.
+    required: true
+  assembly:
+    description: Broiler.JS assembly selection, or all.
+    required: false
+    default: all
+  subset:
+    description: Semicolon-separated test262 path, prefix, or glob patterns.
+    required: false
+    default: ''
+  features:
+    description: Semicolon-separated test262 feature-name patterns.
+    required: false
+    default: ''
+  feature-match:
+    description: Whether every or any requested feature must match.
+    required: false
+    default: any
+  rerun-failed:
+    description: Run the paths in failed-tests-file rather than the normal selection.
+    required: false
+    default: 'false'
+  failed-tests-file:
+    description: Committed manifest of previously failing test262 paths.
+    required: true
+  test-timeout-seconds:
+    description: Per-test wall-clock timeout.
+    required: true
+  memory-limit-mb:
+    description: POSIX per-test memory cap in MiB; zero disables it.
+    required: true
+  max-workers:
+    description: Parallel worker count per shard.
+    required: true
+  shuffle-seed:
+    description: Optional deterministic shuffle seed.
+    required: false
+    default: ''
+  include-negative:
+    description: Include and verify negative-metadata tests.
+    required: false
+    default: 'false'
+  prioritize-fragile:
+    description: Put fragile and recently changed areas first.
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 10.0.x
+
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.12'
+
+    - name: Restore immutable test262 checkout
+      id: suite-cache
+      uses: actions/cache@v5
+      with:
+        path: ${{ inputs.suite-root }}
+        key: ${{ inputs.suite-cache-key }}
+
+    # The prepare job normally populated this exact immutable cache. Falling
+    # back to a fetch keeps a transient cache-service outage from making every
+    # shard look like an engine failure.
+    - name: Ensure immutable test262 checkout
+      shell: bash
+      env:
+        SUITE_COMMIT: ${{ inputs.suite-commit }}
+        SUITE_ROOT: ${{ inputs.suite-root }}
+      run: |
+        set -euo pipefail
+        actual=""
+        if [ -d "$SUITE_ROOT/.git" ]; then
+          actual="$(git -C "$SUITE_ROOT" rev-parse HEAD 2>/dev/null || true)"
+        fi
+        if [ "$actual" != "$SUITE_COMMIT" ]; then
+          rm -rf "$SUITE_ROOT"
+          git init "$SUITE_ROOT"
+          git -C "$SUITE_ROOT" remote add origin https://github.com/tc39/test262.git
+          git -C "$SUITE_ROOT" fetch --depth 1 --filter=blob:none origin "$SUITE_COMMIT"
+          git -C "$SUITE_ROOT" checkout --detach "$SUITE_COMMIT"
+        fi
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v5
+      with:
+        path: ~/.nuget/packages
+        key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+        restore-keys: |
+          nuget-${{ runner.os }}-
+
+    - name: Restore Broiler.JS
+      shell: bash
+      run: dotnet restore Broiler.JS.slnx
+
+    - name: Build Broiler.JS script host
+      shell: bash
+      run: dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release --no-restore
+
+    - name: Run test262 ${{ inputs.phase }} shard ${{ inputs.shard-index }}${{ inputs.attempt-suffix }}
+      id: test262
+      shell: bash
+      env:
+        PHASE: ${{ inputs.phase }}
+        SHARD_INDEX: ${{ inputs.shard-index }}
+        SHARD_COUNT: ${{ inputs.shard-count }}
+        ATTEMPT_SUFFIX: ${{ inputs.attempt-suffix }}
+        SUITE_COMMIT: ${{ inputs.suite-commit }}
+        SUITE_ROOT: ${{ inputs.suite-root }}
+        ASSEMBLY: ${{ inputs.assembly }}
+        SUBSET: ${{ inputs.subset }}
+        FEATURES: ${{ inputs.features }}
+        FEATURE_MATCH: ${{ inputs.feature-match }}
+        RERUN_FAILED: ${{ inputs.rerun-failed }}
+        FAILED_TESTS_FILE: ${{ inputs.failed-tests-file }}
+        TEST_TIMEOUT_SECONDS: ${{ inputs.test-timeout-seconds }}
+        MEMORY_LIMIT_MB: ${{ inputs.memory-limit-mb }}
+        MAX_WORKERS: ${{ inputs.max-workers }}
+        SHUFFLE_SEED: ${{ inputs.shuffle-seed }}
+        INCLUDE_NEGATIVE: ${{ inputs.include-negative }}
+        PRIORITIZE_FRAGILE: ${{ inputs.prioritize-fragile }}
+        BROILER_DLL: ${{ github.workspace }}/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+      run: |
+        set -euo pipefail
+        case "$PHASE" in
+          rerun|full) ;;
+          *) echo "Unsupported test262 phase: $PHASE" >&2; exit 2 ;;
+        esac
+
+        mkdir -p shard-out .test262-ci
+        STEM="test262-${PHASE}-shard-${SHARD_INDEX}${ATTEMPT_SUFFIX}"
+        OUTPUT_PATH="shard-out/${STEM}.json"
+        LOG_PATH="shard-out/${STEM}.log"
+        SELECTION_LABEL="${ASSEMBLY:-all}"
+        if [ "$RERUN_FAILED" = "true" ]; then
+          SELECTION_LABEL="rerun-failed"
+        fi
+        DOTNET_VERSION="$(dotnet --version)"
+
+        ARGS=(
+          --suite-ref "$SUITE_COMMIT"
+          --suite-root "$SUITE_ROOT"
+          --broiler-dll "$BROILER_DLL"
+          --shard-count "$SHARD_COUNT"
+          --shard-index "$SHARD_INDEX"
+          --test-timeout-seconds "$TEST_TIMEOUT_SECONDS"
+          --memory-limit-mb "$MEMORY_LIMIT_MB"
+          --max-workers "$MAX_WORKERS"
+          --feature-match "$FEATURE_MATCH"
+          --selection-label "$SELECTION_LABEL"
+          --runner-os "${RUNNER_OS:-unknown}"
+          --runner-arch "${RUNNER_ARCH:-unknown}"
+          --dotnet-version "$DOTNET_VERSION"
+          --output "$OUTPUT_PATH"
+          --no-summary-stdout
+        )
+
+        if [ "$RERUN_FAILED" = "true" ]; then
+          ARGS+=(--path-file "$FAILED_TESTS_FILE")
+        elif [ -n "$ASSEMBLY" ] && [ "$ASSEMBLY" != "all" ]; then
+          ASSEMBLY_PATHS=".test262-ci/${ASSEMBLY}-paths.txt"
+          python scripts/compliance/list_test262_assemblies.py \
+            --manifest scripts/compliance/test262-assemblies.json \
+            --paths-for "$ASSEMBLY" \
+            --output "$ASSEMBLY_PATHS"
+          ARGS+=(--path-file "$ASSEMBLY_PATHS")
+        else
+          ARGS+=(--all-script-host-verifiable)
+        fi
+
+        if [ -n "$SUBSET" ]; then
+          ARGS+=(--subset "$SUBSET")
+        fi
+        if [ -n "$FEATURES" ]; then
+          ARGS+=(--features "$FEATURES")
+        fi
+        if [ -n "$SHUFFLE_SEED" ]; then
+          ARGS+=(--shuffle-seed "$SHUFFLE_SEED")
+        fi
+        if [ "$INCLUDE_NEGATIVE" = "true" ]; then
+          ARGS+=(--include-negative)
+        fi
+        if [ "$PRIORITIZE_FRAGILE" = "true" ]; then
+          ARGS+=(--prioritize-fragile)
+        fi
+
+        # Progress and diagnostics are stderr. The canonical summary goes only
+        # to OUTPUT_PATH, so the log does not duplicate a potentially huge JSON
+        # document. Process substitution preserves the Python exit status.
+        set +e
+        python scripts/compliance/run_test262.py "${ARGS[@]}" \
+          > /dev/null 2> >(tee "$LOG_PATH" >&2)
+        status=$?
+        set -e
+        echo "exit-code=$status" >> "$GITHUB_OUTPUT"
+        exit "$status"
+
+    - name: Record shard status
+      if: always()
+      shell: bash
+      env:
+        PHASE: ${{ inputs.phase }}
+        SHARD_INDEX: ${{ inputs.shard-index }}
+        ATTEMPT_SUFFIX: ${{ inputs.attempt-suffix }}
+        RUNNER_EXIT_CODE: ${{ steps.test262.outputs.exit-code }}
+      run: |
+        mkdir -p shard-out
+        python - <<'PY'
+        import json
+        import os
+        from pathlib import Path
+
+        phase = os.environ["PHASE"]
+        shard_index = int(os.environ["SHARD_INDEX"])
+        suffix = os.environ["ATTEMPT_SUFFIX"]
+        stem = f"test262-{phase}-shard-{shard_index}{suffix}"
+        report_path = Path("shard-out") / f"{stem}.json"
+        log_path = Path("shard-out") / f"{stem}.log"
+        status_path = Path("shard-out") / f"{stem}-status.json"
+
+        raw_exit = os.environ.get("RUNNER_EXIT_CODE", "")
+        try:
+            exit_code = int(raw_exit)
+        except ValueError:
+            exit_code = 1
+
+        status = {
+            "phase": phase,
+            "shardIndex": shard_index,
+            "exitCode": exit_code,
+        }
+        if not report_path.is_file():
+            status["failureReason"] = "RunnerDidNotProduceReport"
+            detail = "The runner exited without a conclusive JSON report."
+            if log_path.is_file():
+                lines = [line.strip() for line in log_path.read_text(
+                    encoding="utf-8", errors="replace"
+                ).splitlines() if line.strip()]
+                if lines:
+                    detail += f" Last diagnostic: {lines[-1][:1000]}"
+            status["failureDetail"] = detail
+
+        status_path.write_text(json.dumps(status, indent=2) + "\n", encoding="utf-8")
+        PY
+
+    - name: Publish shard summary
+      if: always()
+      shell: bash
+      env:
+        PHASE: ${{ inputs.phase }}
+        SHARD_INDEX: ${{ inputs.shard-index }}
+        SHARD_COUNT: ${{ inputs.shard-count }}
+        ATTEMPT_SUFFIX: ${{ inputs.attempt-suffix }}
+      run: |
+        python - <<'PY'
+        import json
+        import os
+        from pathlib import Path
+
+        phase = os.environ["PHASE"]
+        index = int(os.environ["SHARD_INDEX"])
+        count = int(os.environ["SHARD_COUNT"])
+        suffix = os.environ["ATTEMPT_SUFFIX"]
+        stem = f"test262-{phase}-shard-{index}{suffix}"
+        result_path = Path("shard-out") / f"{stem}.json"
+        label = f"test262 {phase} shard {index + 1}/{count}"
+        if suffix:
+            label += " (retry)"
+
+        lines = [f"## {label}", ""]
+        if not result_path.is_file():
+            lines.append("- Runner did not produce a conclusive JSON summary.")
+            lines.append(f"- Artifact: `{stem}`")
+        else:
+            summary = json.loads(result_path.read_text(encoding="utf-8"))
+            lines.extend([
+                f"- Suite commit: `{summary.get('suiteRef', 'unknown')}`",
+                f"- Selection mode: `{summary.get('selectionMode', 'unknown')}`",
+                f"- Selection scope: `{summary.get('selectionLabel', '(unspecified)')}`",
+                f"- Runner: `{summary.get('runnerOs', 'unknown')}/{summary.get('runnerArch', 'unknown')}`; .NET `{summary.get('dotnetVersion', 'unknown')}`",
+                f"- Candidate paths: {summary.get('candidateCount', 0)}",
+                f"- Runnable paths before sharding: {summary.get('selectedCountBeforeSharding', 0)}",
+                f"- Paths in this shard: {len(summary.get('expandedPaths') or [])}",
+                f"- Subset patterns: `{';'.join(summary.get('subsetPatterns') or []) or '(all)'}`",
+                f"- Feature patterns: `{';'.join(summary.get('featurePatterns') or []) or '(all)'}`",
+                f"- Feature match: `{summary.get('featureMatch', 'any')}`",
+                f"- Passed: {summary.get('passed', 0)}",
+                f"- Failed: {summary.get('failed', 0)}",
+                f"- Skipped: {summary.get('skipped', 0)}",
+                f"- Timed out: {summary.get('timedOut', 0)}",
+            ])
+
+        with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a", encoding="utf-8") as handle:
+            handle.write("\n".join(lines) + "\n")
+        PY
+
+    - name: Upload shard report
+      if: always()
+      uses: actions/upload-artifact@v6
+      with:
+        name: test262-${{ inputs.phase }}-shard-${{ inputs.shard-index }}${{ inputs.attempt-suffix }}
+        path: shard-out
+        if-no-files-found: error

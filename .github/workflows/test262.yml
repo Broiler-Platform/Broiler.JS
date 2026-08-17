@@ -1,32 +1,16 @@
 name: test262
 
-# Unified test262 CI runner.
-#
-# Replaces the older `test262`, `test262-by-assembly`, and
-# `test262-full-script-host` workflows with a single entry point that:
-#   * Lets the dispatcher target a specific Broiler.JS assembly (or the full
-#     script-host-verifiable suite) via the `assembly` input.
-#   * Runs incrementally after a PR is merged into `main`: paths persisted in
-#     `scripts/compliance/test262-failures.txt` are rerun first, and the full
-#     phase only executes once the saved failures (or the targeted assembly)
-#     pass.
-#   * On pull requests, detects which assemblies are affected by the changed
-#     files and runs test262 only for those scopes first.  The full suite
-#     executes only when the incremental job succeeds.
-#   * On completion merges shard logs and uses the LogParser
-#     `--most-common-problems` mode to file a focused GitHub issue listing
-#     up to `most_common_problems_limit` failure categories when
-#     `ISSUE_TOKEN` is configured.
+# Manual, full-suite test262 runner with deterministic sharding, a fast
+# previously-failing preflight, one retry for abnormally aborted shards, merged
+# reporting, three focused GitHub issues, and scope-aware failure persistence.
+# A valid JSON report is conclusive even when tests failed; only a missing or
+# malformed report is retried. The retry artifact supersedes its first attempt.
 
 on:
   workflow_dispatch:
     inputs:
       assembly:
-        description: |
-          Which Broiler.JS assembly (or test262 path subset) to exercise in the
-          full phase. Pick `all` for the entire script-host-verifiable suite;
-          pick a specific assembly to run only the test262 paths mapped to it
-          in `scripts/compliance/test262-assemblies.json`.
+        description: Broiler.JS assembly scope, or all for the full script-host-verifiable suite.
         required: false
         default: all
         type: choice
@@ -38,969 +22,882 @@ on:
           - builtins
           - intl
           - annexb
+      subset:
+        description: Semicolon-separated test262 path, prefix, or glob patterns; empty means all paths in the assembly scope.
+        required: false
+        default: ''
+        type: string
+      features:
+        description: Semicolon-separated test262 feature-name patterns with optional wildcards; empty means all features.
+        required: false
+        default: ''
+        type: string
+      feature_match:
+        description: Match any or all requested feature patterns.
+        required: false
+        default: any
+        type: choice
+        options:
+          - any
+          - all
       suite_ref:
-        description: Optional test262 ref or commit SHA to execute
+        description: test262 branch, tag, ref, or commit; resolved to an immutable commit before sharding.
         required: false
         default: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+        type: string
       rerun_failed_only:
-        description: When true (default), rerun paths from scripts/compliance/test262-failures.txt before falling back to the full suite
-        type: boolean
+        description: Rerun saved failures first, then run the requested full phase only when the preflight passes.
         required: false
         default: true
+        type: boolean
       shard_index:
-        description: Zero-based shard index to execute, or -1 to run all shards
-        type: number
+        description: Zero-based shard index to execute, or -1 for all shards.
         required: false
         default: -1
-      test_timeout_seconds:
-        description: Per-test timeout in seconds
         type: number
+      test_timeout_seconds:
+        description: Per-test wall-clock timeout in seconds.
         required: false
         default: 30
-      memory_limit_mb:
-        description: Per-test POSIX memory cap in MiB (0 disables the cap)
         type: number
+      memory_limit_mb:
+        description: Per-test POSIX memory cap in MiB; 0 disables it.
         required: false
         default: 0
-      max_workers:
-        description: Parallel worker count per shard (1 = serial)
         type: number
+      max_workers:
+        description: Parallel worker count per shard; 1 is serial.
         required: false
         default: 1
-      shuffle_seed:
-        description: Seed for deterministic random test ordering (empty = no shuffle)
-        type: string
-        required: false
-        default: ""
-      include_negative:
-        description: Include negative-metadata tests and verify expected error types
-        type: boolean
-        required: false
-        default: false
-      prioritize_fragile:
-        description: Prioritize historically fragile and recently changed areas to surface regressions earlier
-        type: boolean
-        required: false
-        default: false
-      most_common_problems_limit:
-        description: Maximum number of most-common failure categories to include in the LogParser-generated GitHub issue
         type: number
+      shuffle_seed:
+        description: Deterministic random-order seed; empty keeps the selected order.
+        required: false
+        default: ''
+        type: string
+      include_negative:
+        description: Include negative-metadata tests and verify their expected errors.
+        required: false
+        default: false
+        type: boolean
+      prioritize_fragile:
+        description: Run historically fragile and recently changed areas first.
+        required: false
+        default: false
+        type: boolean
+      most_common_problems_limit:
+        description: Maximum common failure groups in the frequency-focused issue.
         required: false
         default: 10
+        type: number
+      biggest_problems_limit:
+        description: Maximum failure groups in the impact-focused issue.
+        required: false
+        default: 3
+        type: number
+      timeout_problems_limit:
+        description: Maximum timed-out tests in the timeout-focused issue.
+        required: false
+        default: 10
+        type: number
 
 permissions:
   contents: write
+  issues: write
 
 env:
-  TEST262_REF: ${{ inputs.suite_ref || 'ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e' }}
+  CANONICAL_TEST262_REF: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+  SHARD_COUNT: '8'
   TEST262_ROOT: ${{ github.workspace }}/.cache/test262
-  RESULTS_DIR: ${{ github.workspace }}/.artifacts/test262/full-script-host
-  BROILER_DLL: ${{ github.workspace }}/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
-  SHARD_COUNT: 8
-  SELECTED_SHARD_INDEX: ${{ inputs.shard_index || -1 }}
-  TEST_TIMEOUT_SECONDS: ${{ inputs.test_timeout_seconds || 30 }}
-  MEMORY_LIMIT_MB: ${{ inputs.memory_limit_mb || 0 }}
-  MAX_WORKERS: ${{ inputs.max_workers || 1 }}
-  SHUFFLE_SEED: ${{ inputs.shuffle_seed || '' }}
-  INCLUDE_NEGATIVE: ${{ inputs.include_negative || false }}
-  PRIORITIZE_FRAGILE: ${{ inputs.prioritize_fragile || false }}
-  MOST_COMMON_PROBLEMS_LIMIT: ${{ inputs.most_common_problems_limit || 10 }}
-  ASSEMBLY: ${{ inputs.assembly || 'all' }}
-  FAILED_TESTS_FILE: ${{ github.workspace }}/scripts/compliance/test262-failures.txt
+  FAILED_TESTS_FILE: scripts/compliance/test262-failures.txt
+  MOST_COMMON_PROBLEMS_LIMIT: ${{ github.event.inputs.most_common_problems_limit || '10' }}
+  BIGGEST_PROBLEMS_LIMIT: ${{ github.event.inputs.biggest_problems_limit || '3' }}
+  TIMEOUT_PROBLEMS_LIMIT: ${{ github.event.inputs.timeout_problems_limit || '10' }}
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install compliance-test dependency
+        shell: bash
+        run: python -m pip install --disable-pip-version-check PyYAML==6.0.2
+      - name: Run test262 runner and workflow regression tests
+        shell: bash
+        run: python -m unittest discover -s scripts/compliance/tests -v
+
+  # Resolve both phase matrices. A targeted/custom run bypasses the global
+  # saved-failure preflight so unrelated failures cannot block the requested
+  # assembly, subset, feature slice, alternate suite, or negative-test run.
   plan:
+    needs: validate
     runs-on: ubuntu-latest
     outputs:
-      full-shard-matrix: ${{ steps.shards.outputs.full-matrix }}
-      failed-shard-matrix: ${{ steps.shards.outputs.failed-matrix }}
-      failed-shard-count: ${{ steps.shards.outputs.failed-shard-count }}
-      should-rerun-failed: ${{ steps.shards.outputs.should-rerun-failed }}
-      failed-path-count: ${{ steps.shards.outputs.failed-path-count }}
+      full-shard-matrix: ${{ steps.resolve.outputs.full-shard-matrix }}
+      full-expected-shards: ${{ steps.resolve.outputs.full-expected-shards }}
+      failed-shard-matrix: ${{ steps.resolve.outputs.failed-shard-matrix }}
+      failed-shard-count: ${{ steps.resolve.outputs.failed-shard-count }}
+      failed-expected-shards: ${{ steps.resolve.outputs.failed-expected-shards }}
+      should-rerun-failed: ${{ steps.resolve.outputs.should-rerun-failed }}
+      targeted-run: ${{ steps.resolve.outputs.targeted-run }}
     steps:
-      - name: Check out Broiler.JS
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Resolve shard matrix
-        id: shards
+      - name: Resolve test262 run plan
+        id: resolve
         shell: bash
         env:
-          RERUN_FAILED_ONLY: ${{ github.event_name != 'workflow_dispatch' || inputs.rerun_failed_only }}
+          SELECTED_SHARD_INDEX: ${{ github.event.inputs.shard_index || '-1' }}
+          RERUN_FAILED_ONLY: ${{ github.event.inputs.rerun_failed_only || 'true' }}
+          ASSEMBLY: ${{ github.event.inputs.assembly || 'all' }}
+          SUBSET: ${{ github.event.inputs.subset || '' }}
+          FEATURES: ${{ github.event.inputs.features || '' }}
+          REQUESTED_SUITE_REF: ${{ github.event.inputs.suite_ref || 'ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e' }}
+          INCLUDE_NEGATIVE: ${{ github.event.inputs.include_negative || 'false' }}
+          TEST_TIMEOUT_SECONDS: ${{ github.event.inputs.test_timeout_seconds || '30' }}
+          MEMORY_LIMIT_MB: ${{ github.event.inputs.memory_limit_mb || '0' }}
+          MAX_WORKERS: ${{ github.event.inputs.max_workers || '1' }}
+          SHUFFLE_SEED: ${{ github.event.inputs.shuffle_seed || '' }}
+          COMMON_LIMIT: ${{ github.event.inputs.most_common_problems_limit || '10' }}
+          BIGGEST_LIMIT: ${{ github.event.inputs.biggest_problems_limit || '3' }}
+          TIMEOUT_LIMIT: ${{ github.event.inputs.timeout_problems_limit || '10' }}
         run: |
           python <<'PY'
           import json
+          import math
           import os
           import sys
           from pathlib import Path
 
-          max_shard_count = int(os.environ["SHARD_COUNT"])
-          requested_shard_index = os.environ["SELECTED_SHARD_INDEX"]
-          failed_tests_file = Path(os.environ["FAILED_TESTS_FILE"])
-          rerun_failed_only = os.environ["RERUN_FAILED_ONLY"].strip().lower() == "true"
+          shard_count = int(os.environ["SHARD_COUNT"])
+          raw_index = os.environ["SELECTED_SHARD_INDEX"]
+          try:
+              selected = int(raw_index)
+          except ValueError:
+              sys.exit(f"shard_index must be an integer, got {raw_index!r}")
 
-          def resolve_matrix(shard_count: int) -> list[dict[str, int]]:
-              try:
-                  shard_index = int(requested_shard_index)
-              except ValueError:
-                  sys.exit(
-                      f"shard_index must be an integer value: -1 or between 0 and "
-                      f"{shard_count - 1}, got {requested_shard_index!r}"
-                  )
-
-              if shard_index == -1:
-                  return [{"shard-index": index} for index in range(shard_count)]
-              if 0 <= shard_index < shard_count:
-                  return [{"shard-index": shard_index}]
+          if selected == -1:
+              full_matrix = [{"shard-index": index} for index in range(shard_count)]
+          elif 0 <= selected < shard_count:
+              full_matrix = [{"shard-index": selected}]
+          else:
               sys.exit(
-                  f"shard_index must be -1 or between 0 and {shard_count - 1}, got {shard_index}"
+                  f"shard_index must be -1 or between 0 and {shard_count - 1}, got {selected}"
               )
 
+          try:
+              timeout = float(os.environ["TEST_TIMEOUT_SECONDS"])
+          except ValueError:
+              sys.exit("test_timeout_seconds must be a number")
+          if not math.isfinite(timeout) or timeout <= 0:
+              sys.exit("test_timeout_seconds must be finite and positive")
+
+          def checked_integer(name, minimum, maximum=None):
+              raw = os.environ[name]
+              try:
+                  value = int(raw)
+              except ValueError:
+                  sys.exit(f"{name.lower()} must be an integer, got {raw!r}")
+              if value < minimum or (maximum is not None and value > maximum):
+                  bounds = f">= {minimum}"
+                  if maximum is not None:
+                      bounds += f" and <= {maximum}"
+                  sys.exit(f"{name.lower()} must be {bounds}, got {value}")
+              return value
+
+          checked_integer("MEMORY_LIMIT_MB", 0)
+          checked_integer("MAX_WORKERS", 1, 256)
+          checked_integer("COMMON_LIMIT", 1, 100)
+          checked_integer("BIGGEST_LIMIT", 1, 100)
+          checked_integer("TIMEOUT_LIMIT", 1, 100)
+          if os.environ["SHUFFLE_SEED"].strip():
+              checked_integer("SHUFFLE_SEED", -(2**63), 2**63 - 1)
+
+          failed_file = Path(os.environ["FAILED_TESTS_FILE"])
           failed_paths = []
-          if failed_tests_file.exists():
+          if failed_file.is_file():
               failed_paths = [
                   line.strip()
-                  for line in failed_tests_file.read_text(encoding="utf-8").splitlines()
+                  for line in failed_file.read_text(encoding="utf-8").splitlines()
                   if line.strip() and not line.lstrip().startswith("#")
               ]
 
-          should_rerun_failed = rerun_failed_only and bool(failed_paths)
-          failed_shard_count = max_shard_count
-          if should_rerun_failed and requested_shard_index == "-1":
-              failed_shard_count = max(1, min(max_shard_count, len(failed_paths)))
+          targeted = any(
+              (
+                  os.environ["ASSEMBLY"].strip() not in ("", "all"),
+                  bool(os.environ["SUBSET"].strip()),
+                  bool(os.environ["FEATURES"].strip()),
+                  os.environ["REQUESTED_SUITE_REF"].strip().lower()
+                      != os.environ["CANONICAL_TEST262_REF"].lower(),
+                  os.environ["INCLUDE_NEGATIVE"].strip().lower() == "true",
+              )
+          )
+          rerun_requested = os.environ["RERUN_FAILED_ONLY"].strip().lower() == "true"
+          should_rerun = rerun_requested and not targeted and bool(failed_paths)
+
+          # Preserve the existing small-preflight optimization when every shard
+          # was selected. A requested single shard remains indexed in the stable
+          # eight-shard space, including index zero.
+          failed_shard_count = shard_count
+          if should_rerun and selected == -1:
+              failed_shard_count = max(1, min(shard_count, len(failed_paths)))
+
+          if selected == -1:
+              failed_matrix = [
+                  {"shard-index": index} for index in range(failed_shard_count)
+              ]
+          else:
+              failed_matrix = [{"shard-index": selected}]
+
+          def expected(matrix):
+              return ",".join(str(entry["shard-index"]) for entry in matrix)
 
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
-              handle.write(f"full-matrix={json.dumps(resolve_matrix(max_shard_count))}\n")
-              handle.write(f"failed-matrix={json.dumps(resolve_matrix(failed_shard_count))}\n")
+              handle.write(f"full-shard-matrix={json.dumps(full_matrix)}\n")
+              handle.write(f"full-expected-shards={expected(full_matrix)}\n")
+              handle.write(f"failed-shard-matrix={json.dumps(failed_matrix)}\n")
               handle.write(f"failed-shard-count={failed_shard_count}\n")
-              handle.write(
-                  f"should-rerun-failed={'true' if should_rerun_failed else 'false'}\n"
-              )
-              handle.write(f"failed-path-count={len(failed_paths)}\n")
+              handle.write(f"failed-expected-shards={expected(failed_matrix)}\n")
+              handle.write(f"should-rerun-failed={'true' if should_rerun else 'false'}\n")
+              handle.write(f"targeted-run={'true' if targeted else 'false'}\n")
           PY
 
-  # ---------------------------------------------------------------------------
-  # PR-only: detect which assemblies are affected by changed files and run
-  # test262 incrementally before the full suite.
-  # ---------------------------------------------------------------------------
-  detect-changes:
-    if: github.event_name == 'pull_request'
+  # Resolve mutable names before the matrix starts. Every shard and retry uses
+  # this exact commit and cache key, so one run cannot straddle a moving branch.
+  prepare:
+    needs: validate
     runs-on: ubuntu-latest
     outputs:
-      assemblies: ${{ steps.map.outputs.assemblies }}
-      assembly-count: ${{ steps.map.outputs.assembly-count }}
-      run-all: ${{ steps.map.outputs.run-all }}
+      suite-commit: ${{ steps.resolve.outputs.suite-commit }}
+      suite-cache-key: ${{ steps.resolve.outputs.suite-cache-key }}
     steps:
-      - name: Check out Broiler.JS
-        uses: actions/checkout@v4
-
-      - name: Get changed files
-        id: changed
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data: files } = await github.rest.pulls.listFiles({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              per_page: 100,
-            });
-            const filenames = files.map(f => f.filename);
-            core.setOutput('files', JSON.stringify(filenames));
-
-      - name: Map changed files to assemblies
-        id: map
+      - name: Resolve test262 ref to an immutable commit
+        id: resolve
         shell: bash
         env:
-          CHANGED_FILES: ${{ steps.changed.outputs.files }}
+          REQUESTED_SUITE_REF: ${{ github.event.inputs.suite_ref || 'ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e' }}
         run: |
           python <<'PY'
-          import json
           import os
+          import re
+          import subprocess
+          import sys
 
-          changed_files = json.loads(os.environ["CHANGED_FILES"])
+          remote = "https://github.com/tc39/test262.git"
+          requested = os.environ["REQUESTED_SUITE_REF"].strip()
+          if not requested:
+              sys.exit("suite_ref must not be empty")
 
-          # Paths outside any assembly project that should trigger the full
-          # suite when modified (global config, runner scripts, workflow, etc.).
-          global_prefixes = [
-              ".github/workflows/",
-              "scripts/compliance/",
-              "Directory.Build.props",
-              "Broiler.JS.slnx",
-              "Broiler.JS/Directory.Build.props",
-              "Broiler.JS/Broiler.JavaScript/",
-              "Broiler.JS/Broiler.JavaScript.Engine/",
-              "Broiler.JS/Broiler.JavaScript.LinqExpressions/",
-              "Broiler.JS/Broiler.JavaScript.Modules/",
-              "Broiler.JS/Broiler.JavaScript.Globals/",
-          ]
+          if re.fullmatch(r"[0-9a-fA-F]{40}", requested):
+              commit = requested.lower()
+          else:
+              patterns = [requested, f"{requested}^{{}}"]
+              if not requested.startswith("refs/"):
+                  patterns.extend(
+                      [
+                          f"refs/heads/{requested}",
+                          f"refs/tags/{requested}",
+                          f"refs/tags/{requested}^{{}}",
+                      ]
+                  )
+              result = subprocess.run(
+                  ["git", "ls-remote", remote, *patterns],
+                  check=True,
+                  capture_output=True,
+                  text=True,
+              )
+              refs = {}
+              for line in result.stdout.splitlines():
+                  sha, ref = line.split("\t", 1)
+                  refs[ref] = sha.lower()
 
-          # Map from project directory prefix to the assembly names it affects.
-          project_to_assemblies = {
-              "Broiler.JS/Broiler.JavaScript.Parser/": ["parser"],
-              "Broiler.JS/Broiler.JavaScript.Compiler/": ["compiler"],
-              "Broiler.JS/Broiler.JavaScript.Runtime/": ["runtime"],
-              "Broiler.JS/Broiler.JavaScript.BuiltIns/": ["builtins", "intl", "annexb"],
-          }
+              preferred = [
+                  f"refs/tags/{requested}^{{}}",
+                  f"{requested}^{{}}",
+                  f"refs/heads/{requested}",
+                  requested,
+                  f"refs/tags/{requested}",
+              ]
+              commit = next((refs[ref] for ref in preferred if ref in refs), "")
+              if not commit:
+                  sys.exit(f"Unable to resolve test262 suite_ref {requested!r}")
 
-          run_all = False
-          affected: set[str] = set()
-
-          for f in changed_files:
-              # Check for global-scope changes first.
-              if any(f == prefix or f.startswith(prefix) for prefix in global_prefixes):
-                  run_all = True
-                  break
-              # Map to specific assemblies.
-              for prefix, names in project_to_assemblies.items():
-                  if f.startswith(prefix):
-                      affected.update(names)
-
-          if run_all:
-              affected = {"parser", "compiler", "runtime", "builtins", "intl", "annexb"}
-
-          sorted_assemblies = sorted(affected)
-
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-              fh.write(f"assemblies={json.dumps(sorted_assemblies)}\n")
-              fh.write(f"assembly-count={len(sorted_assemblies)}\n")
-              fh.write(f"run-all={'true' if run_all else 'false'}\n")
+          cache_key = f"test262-{os.environ['RUNNER_OS']}-{commit}"
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write(f"suite-commit={commit}\n")
+              handle.write(f"suite-cache-key={cache_key}\n")
           PY
 
-  incremental:
-    needs:
-      - plan
-      - detect-changes
-    if: github.event_name == 'pull_request' && needs.detect-changes.outputs.assembly-count > 0
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        assembly: ${{ fromJson(needs.detect-changes.outputs.assemblies) }}
-    env:
-      RUN_PHASE: incremental
-      RUN_PREFIX: incr-
-
-    steps:
-      - name: Check out Broiler.JS
-        uses: actions/checkout@v4
-        with:
-          # The build references the Broiler.Unicode submodule (emoji string-property
-          # data), so it must be checked out. It is a public repo, so the default
-          # GITHUB_TOKEN suffices — no PAT needed.
-          submodules: recursive
-
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.0.x
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
-          restore-keys: |
-            nuget-${{ runner.os }}-
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Cache test262 checkout
-        id: cache-test262
-        uses: actions/cache@v4
+      - name: Cache immutable test262 checkout
+        id: suite-cache
+        uses: actions/cache@v5
         with:
           path: ${{ env.TEST262_ROOT }}
-          key: test262-${{ runner.os }}-${{ env.TEST262_REF }}
+          key: ${{ steps.resolve.outputs.suite-cache-key }}
 
-      - name: Download selected test262 suite
-        if: steps.cache-test262.outputs.cache-hit != 'true'
+      - name: Fetch immutable test262 checkout
+        if: steps.suite-cache.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          SUITE_COMMIT: ${{ steps.resolve.outputs.suite-commit }}
         run: |
+          set -euo pipefail
           rm -rf "$TEST262_ROOT"
-          git clone --filter=blob:none https://github.com/tc39/test262.git "$TEST262_ROOT"
-          git -C "$TEST262_ROOT" checkout --force "$TEST262_REF"
+          git init "$TEST262_ROOT"
+          git -C "$TEST262_ROOT" remote add origin https://github.com/tc39/test262.git
+          git -C "$TEST262_ROOT" fetch --depth 1 --filter=blob:none origin "$SUITE_COMMIT"
+          git -C "$TEST262_ROOT" checkout --detach "$SUITE_COMMIT"
 
-      - name: Restore Broiler.JS
-        run: dotnet restore Broiler.JS.slnx
-
-      - name: Build Broiler.JS CLI
-        run: dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release
-
-      - name: Resolve assembly paths
-        id: selection
+      - name: Verify immutable checkout
         shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RESULTS_DIR"
-          manifest_path="$RESULTS_DIR/${{ matrix.assembly }}-paths.txt"
-          python scripts/compliance/list_test262_assemblies.py \
-            --manifest scripts/compliance/test262-assemblies.json \
-            --paths-for "${{ matrix.assembly }}" \
-            --output "$manifest_path"
-          echo "selection_args=--path-file $manifest_path" >> "$GITHUB_OUTPUT"
+        env:
+          SUITE_COMMIT: ${{ steps.resolve.outputs.suite-commit }}
+        run: test "$(git -C "$TEST262_ROOT" rev-parse HEAD)" = "$SUITE_COMMIT"
 
-      - name: Run incremental test262 for ${{ matrix.assembly }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RESULTS_DIR"
-          output_path="$RESULTS_DIR/${RUN_PREFIX}${{ matrix.assembly }}.json"
-          log_path="$RESULTS_DIR/${RUN_PREFIX}${{ matrix.assembly }}.log"
-          exit_code_path="$RESULTS_DIR/${RUN_PREFIX}${{ matrix.assembly }}.exit-code.txt"
-          set +e
-          python scripts/compliance/run_test262.py \
-            --suite-ref "$TEST262_REF" \
-            --suite-root "$TEST262_ROOT" \
-            --broiler-dll "$BROILER_DLL" \
-            ${{ steps.selection.outputs.selection_args }} \
-            --shard-count 1 \
-            --shard-index 0 \
-            --test-timeout-seconds "$TEST_TIMEOUT_SECONDS" \
-            --memory-limit-mb "$MEMORY_LIMIT_MB" \
-            --max-workers "$MAX_WORKERS" \
-            ${SHUFFLE_SEED:+--shuffle-seed "$SHUFFLE_SEED"} \
-            $( [ "$INCLUDE_NEGATIVE" = "true" ] && echo "--include-negative" ) \
-            $( [ "$PRIORITIZE_FRAGILE" = "true" ] && echo "--prioritize-fragile" ) \
-            --output "$output_path" 2>&1 | tee "$log_path"
-          status=${PIPESTATUS[0]}
-          set -e
-          printf '%s\n' "$status" > "$exit_code_path"
-          exit "$status"
-
-      - name: Publish incremental summary
-        if: always()
-        shell: bash
-        run: |
-          python <<'PY'
-          import json
-          import os
-          from pathlib import Path
-
-          assembly = "${{ matrix.assembly }}"
-          results_dir = Path(os.environ["RESULTS_DIR"])
-          result_path = results_dir / f"{os.environ['RUN_PREFIX']}{assembly}.json"
-
-          if not result_path.exists():
-              exit_code_path = results_dir / f"{os.environ['RUN_PREFIX']}{assembly}.exit-code.txt"
-              exit_code = exit_code_path.read_text(encoding="utf-8").strip() if exit_code_path.exists() else "unknown"
-              Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
-                  "\n".join(
-                      [
-                          f"## test262 incremental — {assembly}",
-                          "",
-                          "- Runner did not produce a JSON summary.",
-                          f"- Exit code: {exit_code}",
-                      ]
-                  ) + "\n",
-                  encoding="utf-8",
-              )
-              raise SystemExit(0)
-
-          summary = json.loads(result_path.read_text(encoding="utf-8"))
-
-          lines = [
-              f"## test262 incremental — {assembly}",
-              "",
-              f"- Suite ref: `{summary['suiteRef']}`",
-              f"- Selection mode: `{summary['selectionMode']}`",
-              f"- Candidate paths discovered: {summary['candidateCount']}",
-              f"- Paths executed: {len(summary['expandedPaths'])}",
-              f"- Per-test timeout: {summary['testTimeoutSeconds']}s",
-              f"- Passed: {summary['passed']}",
-              f"- Failed: {summary['failed']}",
-              f"- Skipped: {summary['skipped']}",
-              f"- Timed out: {summary['timedOut']}",
-          ]
-
-          Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
-              "\n".join(lines) + "\n",
-              encoding="utf-8",
-          )
-          PY
-
-      - name: Upload incremental logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test262-incr-${{ matrix.assembly }}
-          path: ${{ env.RESULTS_DIR }}
-
+  # ── Previously-failing preflight and its abnormal-abort retry ───────────
   rerun-failed:
-    needs:
-      - plan
-    # On PRs: skip rerun-failed (incremental handles the fast-feedback path).
-    # On push/dispatch: run when the plan says to rerun previously failed paths.
-    if: >-
-      github.event_name != 'pull_request'
-      && needs.plan.outputs.should-rerun-failed == 'true'
+    needs: [plan, prepare]
+    if: ${{ needs.plan.outputs.should-rerun-failed == 'true' }}
     runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
         include: ${{ fromJson(needs.plan.outputs.failed-shard-matrix) }}
-    env:
-      RUN_PHASE: rerun
-      RUN_PREFIX: rerun-
-      EFFECTIVE_SHARD_COUNT: ${{ needs.plan.outputs.failed-shard-count }}
-
     steps:
-      - name: Check out Broiler.JS
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
-          # The build references the Broiler.Unicode submodule (emoji string-property
-          # data), so it must be checked out. It is a public repo, so the default
-          # GITHUB_TOKEN suffices — no PAT needed.
           submodules: recursive
-
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+          fetch-depth: 2
+      - uses: ./.github/actions/run-test262-shard
         with:
-          dotnet-version: 10.0.x
+          phase: rerun
+          shard-index: ${{ matrix.shard-index }}
+          shard-count: ${{ needs.plan.outputs.failed-shard-count }}
+          suite-commit: ${{ needs.prepare.outputs.suite-commit }}
+          suite-root: ${{ env.TEST262_ROOT }}
+          suite-cache-key: ${{ needs.prepare.outputs.suite-cache-key }}
+          rerun-failed: 'true'
+          failed-tests-file: ${{ env.FAILED_TESTS_FILE }}
+          test-timeout-seconds: ${{ github.event.inputs.test_timeout_seconds || '30' }}
+          memory-limit-mb: ${{ github.event.inputs.memory_limit_mb || '0' }}
+          max-workers: ${{ github.event.inputs.max_workers || '1' }}
+          shuffle-seed: ${{ github.event.inputs.shuffle_seed || '' }}
+          include-negative: 'false'
+          prioritize-fragile: ${{ github.event.inputs.prioritize_fragile || 'false' }}
 
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
-          restore-keys: |
-            nuget-${{ runner.os }}-
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Cache test262 checkout
-        id: cache-test262
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.TEST262_ROOT }}
-          key: test262-${{ runner.os }}-${{ env.TEST262_REF }}
-
-      - name: Download selected test262 suite
-        if: steps.cache-test262.outputs.cache-hit != 'true'
-        run: |
-          rm -rf "$TEST262_ROOT"
-          git clone --filter=blob:none https://github.com/tc39/test262.git "$TEST262_ROOT"
-          git -C "$TEST262_ROOT" checkout --force "$TEST262_REF"
-
-      - name: Restore Broiler.JS
-        run: dotnet restore Broiler.JS.slnx
-
-      - name: Build Broiler.JS CLI
-        run: dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release
-
-      - name: Run saved failed testcase shard
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RESULTS_DIR"
-          output_path="$RESULTS_DIR/${RUN_PREFIX}shard-${{ matrix.shard-index }}.json"
-          log_path="$RESULTS_DIR/${RUN_PREFIX}shard-${{ matrix.shard-index }}.log"
-          exit_code_path="$RESULTS_DIR/${RUN_PREFIX}shard-${{ matrix.shard-index }}.exit-code.txt"
-          # Temporarily relax errexit so the shard log is still captured when the runner fails.
-          set +e
-          python scripts/compliance/run_test262.py \
-            --suite-ref "$TEST262_REF" \
-            --suite-root "$TEST262_ROOT" \
-            --broiler-dll "$BROILER_DLL" \
-            --path-file "$FAILED_TESTS_FILE" \
-            --shard-count "$EFFECTIVE_SHARD_COUNT" \
-            --shard-index "${{ matrix.shard-index }}" \
-            --test-timeout-seconds "$TEST_TIMEOUT_SECONDS" \
-            --memory-limit-mb "$MEMORY_LIMIT_MB" \
-            --max-workers "$MAX_WORKERS" \
-            ${SHUFFLE_SEED:+--shuffle-seed "$SHUFFLE_SEED"} \
-            $( [ "$INCLUDE_NEGATIVE" = "true" ] && echo "--include-negative" ) \
-            $( [ "$PRIORITIZE_FRAGILE" = "true" ] && echo "--prioritize-fragile" ) \
-            --output "$output_path" 2>&1 | tee "$log_path"
-          # Preserve the Python exit status rather than tee's exit status.
-          status=${PIPESTATUS[0]}
-          set -e
-          printf '%s\n' "$status" > "$exit_code_path"
-          exit "$status"
-
-      - name: Publish shard summary
-        if: always()
-        shell: bash
-        run: |
-          python <<'PY'
-          import json
-          import os
-          from pathlib import Path
-
-          shard_index = "${{ matrix.shard-index }}"
-          results_dir = Path(os.environ["RESULTS_DIR"])
-          result_path = results_dir / f"{os.environ['RUN_PREFIX']}shard-{shard_index}.json"
-
-          if not result_path.exists():
-              exit_code_path = results_dir / f"{os.environ['RUN_PREFIX']}shard-{shard_index}.exit-code.txt"
-              exit_code = exit_code_path.read_text(encoding="utf-8").strip() if exit_code_path.exists() else "unknown"
-              Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
-                  "\n".join(
-                      [
-                          f"## test262 {os.environ['RUN_PHASE']} shard {int(shard_index) + 1}/{os.environ['EFFECTIVE_SHARD_COUNT']}",
-                          "",
-                          "- Runner did not produce a JSON summary.",
-                          f"- Exit code: {exit_code}",
-                          f"- Captured log: available in the uploaded artifact at `{os.environ['RUN_PREFIX']}shard-{shard_index}.log`",
-                      ]
-                  ) + "\n",
-                  encoding="utf-8",
-              )
-              raise SystemExit(0)
-
-          summary = json.loads(result_path.read_text(encoding="utf-8"))
-
-          lines = [
-              f"## test262 {os.environ['RUN_PHASE']} shard {int(shard_index) + 1}/{summary['shardCount']}",
-              "",
-              f"- Suite ref: `{summary['suiteRef']}`",
-              f"- Selection mode: `{summary['selectionMode']}`",
-              f"- Candidate paths discovered: {summary['candidateCount']}",
-              f"- Runnable paths before sharding: {summary['selectedCountBeforeSharding']}",
-              f"- Paths executed in this shard: {len(summary['expandedPaths'])}",
-              f"- Per-test timeout: {summary['testTimeoutSeconds']}s",
-              (
-                  f"- Per-test memory cap: {summary['memoryLimitMb']} MiB"
-                  if summary['memoryLimitMb']
-                  else "- Per-test memory cap: 0 MiB (disabled)"
-              ),
-              f"- Passed: {summary['passed']}",
-              f"- Failed: {summary['failed']}",
-              f"- Skipped: {summary['skipped']}",
-              f"- Timed out: {summary['timedOut']}",
-          ]
-
-          Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
-              "\n".join(lines) + "\n",
-              encoding="utf-8",
-          )
-          PY
-
-      - name: Upload shard logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test262-rerun-shard-${{ matrix.shard-index }}
-          path: ${{ env.RESULTS_DIR }}
-
-  run-full:
-    needs:
-      - plan
-      - detect-changes
-      - incremental
-      - rerun-failed
-    # On PRs: run only when the incremental job succeeded (or was skipped
-    # because no assembly was affected — unlikely but defensive).
-    # On push/dispatch: preserve original gating on rerun-failed.
-    if: >-
-      always()
-      && (
-        (github.event_name == 'pull_request'
-          && (needs.incremental.result == 'success' || needs.incremental.result == 'skipped'))
-        || (github.event_name != 'pull_request'
-          && (needs.plan.outputs.should-rerun-failed != 'true' || needs.rerun-failed.result == 'success'))
-      )
+  retry-plan-rerun:
+    needs: [plan, rerun-failed]
+    if: ${{ !cancelled() && needs.plan.outputs.should-rerun-failed == 'true' && needs.rerun-failed.result != 'skipped' }}
     runs-on: ubuntu-latest
+    outputs:
+      retry-matrix: ${{ steps.detect.outputs.incomplete_shard_matrix }}
+      has-retries: ${{ steps.detect.outputs.has_incomplete_shards }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Download rerun shard reports
+        continue-on-error: true
+        uses: actions/download-artifact@v7
+        with:
+          pattern: test262-rerun-shard-*
+          path: shard-results
+          merge-multiple: true
+      - name: Detect abnormal rerun shards
+        id: detect
+        shell: bash
+        run: |
+          mkdir -p shard-results
+          python scripts/compliance/merge_test262_shards.py \
+            --shard-dir shard-results \
+            --phase rerun \
+            --expected-shards "${{ needs.plan.outputs.failed-expected-shards }}" \
+            --github-output "$GITHUB_OUTPUT"
+
+  retry-rerun:
+    needs: [plan, prepare, retry-plan-rerun]
+    if: ${{ !cancelled() && needs.retry-plan-rerun.outputs.has-retries == 'true' }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.retry-plan-rerun.outputs.retry-matrix) }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+          fetch-depth: 2
+      - uses: ./.github/actions/run-test262-shard
+        with:
+          phase: rerun
+          shard-index: ${{ matrix.shard-index }}
+          shard-count: ${{ needs.plan.outputs.failed-shard-count }}
+          attempt-suffix: -retry
+          suite-commit: ${{ needs.prepare.outputs.suite-commit }}
+          suite-root: ${{ env.TEST262_ROOT }}
+          suite-cache-key: ${{ needs.prepare.outputs.suite-cache-key }}
+          rerun-failed: 'true'
+          failed-tests-file: ${{ env.FAILED_TESTS_FILE }}
+          test-timeout-seconds: ${{ github.event.inputs.test_timeout_seconds || '30' }}
+          memory-limit-mb: ${{ github.event.inputs.memory_limit_mb || '0' }}
+          max-workers: ${{ github.event.inputs.max_workers || '1' }}
+          shuffle-seed: ${{ github.event.inputs.shuffle_seed || '' }}
+          include-negative: 'false'
+          prioritize-fragile: ${{ github.event.inputs.prioritize_fragile || 'false' }}
+
+  # Merge preflight attempts before deciding whether the expensive full phase
+  # may start. Test failures and a twice-aborted shard both keep suite_passed false.
+  evaluate-rerun:
+    needs: [plan, rerun-failed, retry-rerun]
+    if: ${{ always() && !cancelled() && needs.plan.outputs.should-rerun-failed == 'true' }}
+    runs-on: ubuntu-latest
+    outputs:
+      suite-passed: ${{ steps.merge.outputs.suite_passed }}
+      incomplete-shard-count: ${{ steps.merge.outputs.incomplete_shard_count }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Download all rerun attempts
+        continue-on-error: true
+        uses: actions/download-artifact@v7
+        with:
+          pattern: test262-rerun-shard-*
+          path: shard-results
+          merge-multiple: true
+      - name: Evaluate authoritative rerun result
+        id: merge
+        shell: bash
+        run: |
+          mkdir -p shard-results rerun-evaluation
+          python scripts/compliance/merge_test262_shards.py \
+            --shard-dir shard-results \
+            --phase rerun \
+            --expected-shards "${{ needs.plan.outputs.failed-expected-shards }}" \
+            --merged-json rerun-evaluation/test262-results.json \
+            --github-output "$GITHUB_OUTPUT"
+
+      - name: Enforce the saved-failure preflight decision
+        if: steps.merge.outputs.suite_passed != 'true'
+        shell: bash
+        run: |
+          echo "The authoritative saved-failure preflight did not pass." >&2
+          exit 1
+
+  # ── Requested full/targeted phase and its abnormal-abort retry ──────────
+  run-full:
+    needs: [plan, prepare, evaluate-rerun]
+    if: >-
+      ${{
+        always()
+        && !cancelled()
+        && needs.plan.result == 'success'
+        && needs.prepare.result == 'success'
+        && (
+          needs.plan.outputs.should-rerun-failed != 'true'
+          || needs.evaluate-rerun.outputs.suite-passed == 'true'
+        )
+      }}
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 360
     strategy:
       fail-fast: false
       matrix:
         include: ${{ fromJson(needs.plan.outputs.full-shard-matrix) }}
-    env:
-      RUN_PHASE: full
-      RUN_PREFIX: full-
-
     steps:
-      - name: Check out Broiler.JS
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
-          # The build references the Broiler.Unicode submodule (emoji string-property
-          # data), so it must be checked out. It is a public repo, so the default
-          # GITHUB_TOKEN suffices — no PAT needed.
           submodules: recursive
-
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+          fetch-depth: 2
+      - uses: ./.github/actions/run-test262-shard
         with:
-          dotnet-version: 10.0.x
+          phase: full
+          shard-index: ${{ matrix.shard-index }}
+          shard-count: ${{ env.SHARD_COUNT }}
+          suite-commit: ${{ needs.prepare.outputs.suite-commit }}
+          suite-root: ${{ env.TEST262_ROOT }}
+          suite-cache-key: ${{ needs.prepare.outputs.suite-cache-key }}
+          assembly: ${{ github.event.inputs.assembly || 'all' }}
+          subset: ${{ github.event.inputs.subset || '' }}
+          features: ${{ github.event.inputs.features || '' }}
+          feature-match: ${{ github.event.inputs.feature_match || 'any' }}
+          rerun-failed: 'false'
+          failed-tests-file: ${{ env.FAILED_TESTS_FILE }}
+          test-timeout-seconds: ${{ github.event.inputs.test_timeout_seconds || '30' }}
+          memory-limit-mb: ${{ github.event.inputs.memory_limit_mb || '0' }}
+          max-workers: ${{ github.event.inputs.max_workers || '1' }}
+          shuffle-seed: ${{ github.event.inputs.shuffle_seed || '' }}
+          include-negative: ${{ github.event.inputs.include_negative || 'false' }}
+          prioritize-fragile: ${{ github.event.inputs.prioritize_fragile || 'false' }}
 
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
-          restore-keys: |
-            nuget-${{ runner.os }}-
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Cache test262 checkout
-        id: cache-test262
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.TEST262_ROOT }}
-          key: test262-${{ runner.os }}-${{ env.TEST262_REF }}
-
-      - name: Download selected test262 suite
-        if: steps.cache-test262.outputs.cache-hit != 'true'
-        run: |
-          rm -rf "$TEST262_ROOT"
-          git clone --filter=blob:none https://github.com/tc39/test262.git "$TEST262_ROOT"
-          git -C "$TEST262_ROOT" checkout --force "$TEST262_REF"
-
-      - name: Restore Broiler.JS
-        run: dotnet restore Broiler.JS.slnx
-
-      - name: Build Broiler.JS CLI
-        run: dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release
-
-      - name: Resolve full-phase selection
-        id: selection
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RESULTS_DIR"
-          if [ "$ASSEMBLY" = "all" ] || [ -z "$ASSEMBLY" ]; then
-            echo "selection_args=--all-script-host-verifiable" >> "$GITHUB_OUTPUT"
-            echo "Selection mode: all script-host-verifiable test262 paths"
-          else
-            manifest_path="$RESULTS_DIR/${ASSEMBLY}-paths.txt"
-            python scripts/compliance/list_test262_assemblies.py \
-              --manifest scripts/compliance/test262-assemblies.json \
-              --paths-for "$ASSEMBLY" \
-              --output "$manifest_path"
-            echo "selection_args=--path-file $manifest_path" >> "$GITHUB_OUTPUT"
-            echo "Selection mode: assembly=$ASSEMBLY"
-            echo "Resolved manifest for $ASSEMBLY:"
-            cat "$manifest_path"
-          fi
-
-      - name: Run full script-host-verifiable shard
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p "$RESULTS_DIR"
-          output_path="$RESULTS_DIR/${RUN_PREFIX}shard-${{ matrix.shard-index }}.json"
-          log_path="$RESULTS_DIR/${RUN_PREFIX}shard-${{ matrix.shard-index }}.log"
-          exit_code_path="$RESULTS_DIR/${RUN_PREFIX}shard-${{ matrix.shard-index }}.exit-code.txt"
-          # Temporarily relax errexit so the shard log is still captured when the runner fails.
-          set +e
-          python scripts/compliance/run_test262.py \
-            --suite-ref "$TEST262_REF" \
-            --suite-root "$TEST262_ROOT" \
-            --broiler-dll "$BROILER_DLL" \
-            ${{ steps.selection.outputs.selection_args }} \
-            --shard-count "$SHARD_COUNT" \
-            --shard-index "${{ matrix.shard-index }}" \
-            --test-timeout-seconds "$TEST_TIMEOUT_SECONDS" \
-            --memory-limit-mb "$MEMORY_LIMIT_MB" \
-            --max-workers "$MAX_WORKERS" \
-            ${SHUFFLE_SEED:+--shuffle-seed "$SHUFFLE_SEED"} \
-            $( [ "$INCLUDE_NEGATIVE" = "true" ] && echo "--include-negative" ) \
-            $( [ "$PRIORITIZE_FRAGILE" = "true" ] && echo "--prioritize-fragile" ) \
-            --output "$output_path" 2>&1 | tee "$log_path"
-          # Preserve the Python exit status rather than tee's exit status.
-          status=${PIPESTATUS[0]}
-          set -e
-          printf '%s\n' "$status" > "$exit_code_path"
-          exit "$status"
-
-      - name: Publish shard summary
-        if: always()
-        shell: bash
-        run: |
-          python <<'PY'
-          import json
-          import os
-          from pathlib import Path
-
-          shard_index = "${{ matrix.shard-index }}"
-          results_dir = Path(os.environ["RESULTS_DIR"])
-          result_path = results_dir / f"{os.environ['RUN_PREFIX']}shard-{shard_index}.json"
-
-          if not result_path.exists():
-              exit_code_path = results_dir / f"{os.environ['RUN_PREFIX']}shard-{shard_index}.exit-code.txt"
-              exit_code = exit_code_path.read_text(encoding="utf-8").strip() if exit_code_path.exists() else "unknown"
-              Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
-                  "\n".join(
-                      [
-                          f"## test262 {os.environ['RUN_PHASE']} shard {int(shard_index) + 1}/{os.environ['SHARD_COUNT']}",
-                          "",
-                          "- Runner did not produce a JSON summary.",
-                          f"- Exit code: {exit_code}",
-                          f"- Captured log: available in the uploaded artifact at `{os.environ['RUN_PREFIX']}shard-{shard_index}.log`",
-                      ]
-                  ) + "\n",
-                  encoding="utf-8",
-              )
-              raise SystemExit(0)
-
-          summary = json.loads(result_path.read_text(encoding="utf-8"))
-
-          lines = [
-              f"## test262 {os.environ['RUN_PHASE']} shard {int(shard_index) + 1}/{summary['shardCount']}",
-              "",
-              f"- Suite ref: `{summary['suiteRef']}`",
-              f"- Selection mode: `{summary['selectionMode']}`",
-              f"- Candidate paths discovered: {summary['candidateCount']}",
-              f"- Runnable paths before sharding: {summary['selectedCountBeforeSharding']}",
-              f"- Paths executed in this shard: {len(summary['expandedPaths'])}",
-              f"- Per-test timeout: {summary['testTimeoutSeconds']}s",
-              (
-                  f"- Per-test memory cap: {summary['memoryLimitMb']} MiB"
-                  if summary['memoryLimitMb']
-                  else "- Per-test memory cap: 0 MiB (disabled)"
-              ),
-              f"- Passed: {summary['passed']}",
-              f"- Failed: {summary['failed']}",
-              f"- Skipped: {summary['skipped']}",
-              f"- Timed out: {summary['timedOut']}",
-          ]
-
-          Path(os.environ["GITHUB_STEP_SUMMARY"]).write_text(
-              "\n".join(lines) + "\n",
-              encoding="utf-8",
-          )
-          PY
-
-      - name: Upload shard logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test262-full-shard-${{ matrix.shard-index }}
-          path: ${{ env.RESULTS_DIR }}
-
-  persist-failed-tests:
-    needs:
-      - plan
-      - incremental
-      - rerun-failed
-      - run-full
-    # Only update the canonical failures manifest when the full suite ran on
-    # push/dispatch.  PR runs and targeted assembly runs intentionally cover a
-    # subset of the suite, so persisting their failure list would overwrite the
-    # broader manifest with narrower data.
-    if: >-
-      always()
-      && github.event_name != 'pull_request'
-      && (inputs.assembly == '' || inputs.assembly == 'all')
-      && (needs.rerun-failed.result != 'skipped' || needs.run-full.result != 'skipped')
+  retry-plan-full:
+    needs: [plan, run-full]
+    if: ${{ !cancelled() && needs.run-full.result != 'skipped' }}
     runs-on: ubuntu-latest
+    outputs:
+      retry-matrix: ${{ steps.detect.outputs.incomplete_shard_matrix }}
+      has-retries: ${{ steps.detect.outputs.has_incomplete_shards }}
     steps:
-      - name: Check out Broiler.JS
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
-          ref: ${{ github.ref_name }}
-
-      - name: Download rerun summaries
-        if: needs.rerun-failed.result != 'skipped' && needs.run-full.result == 'skipped'
-        uses: actions/download-artifact@v4.1.3
-        with:
-          pattern: test262-rerun-shard-*
-          path: ${{ github.workspace }}/.artifacts/test262/full-script-host/persist
-          merge-multiple: true
-
-      - name: Download full summaries
-        if: needs.run-full.result != 'skipped'
-        uses: actions/download-artifact@v4.1.3
+          python-version: '3.12'
+      - name: Download full shard reports
+        continue-on-error: true
+        uses: actions/download-artifact@v7
         with:
           pattern: test262-full-shard-*
-          path: ${{ github.workspace }}/.artifacts/test262/full-script-host/persist
+          path: shard-results
           merge-multiple: true
-
-      - name: Write failed testcase list
+      - name: Detect abnormal full shards
+        id: detect
         shell: bash
         run: |
-          python <<'PY'
-          import json
-          import os
-          from pathlib import Path
+          mkdir -p shard-results
+          python scripts/compliance/merge_test262_shards.py \
+            --shard-dir shard-results \
+            --phase full \
+            --expected-shards "${{ needs.plan.outputs.full-expected-shards }}" \
+            --github-output "$GITHUB_OUTPUT"
 
-          summaries_dir = Path(os.environ["GITHUB_WORKSPACE"]) / ".artifacts" / "test262" / "full-script-host" / "persist"
-          failed_tests_file = Path(os.environ["FAILED_TESTS_FILE"])
-          header_lines = [
-              "# Auto-generated by .github/workflows/test262.yml.",
-              "# When workflow_dispatch input rerun_failed_only is enabled (the default),",
-              "# these paths are rerun before the workflow falls back to the full suite.",
-              "",
-          ]
-          failed_paths: set[str] = set()
-
-          for summary_path in sorted(summaries_dir.glob("*.json")):
-              summary = json.loads(summary_path.read_text(encoding="utf-8"))
-              failed_paths.update(summary.get("failedPaths", []))
-              failed_paths.update(summary.get("timedOutPaths", []))
-
-          body_lines = header_lines + sorted(failed_paths)
-          failed_tests_file.parent.mkdir(parents=True, exist_ok=True)
-          failed_tests_file.write_text("\n".join(body_lines) + "\n", encoding="utf-8")
-          PY
-
-      - name: Commit failed testcase list
-        shell: bash
-        env:
-          BRANCH_NAME: ${{ github.ref_name }}
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- "$FAILED_TESTS_FILE"; then
-            echo "No failed testcase list changes to commit."
-            exit 0
-          fi
-          git add "$FAILED_TESTS_FILE"
-          git commit -m "ci: update test262 failed testcase list [skip ci]"
-          git push origin "HEAD:$BRANCH_NAME"
-
-  combine-logs:
-    needs:
-      - incremental
-      - rerun-failed
-      - run-full
-      - persist-failed-tests
-    if: always() && (needs.incremental.result != 'skipped' || needs.rerun-failed.result != 'skipped' || needs.run-full.result != 'skipped')
+  retry-full:
+    needs: [plan, prepare, retry-plan-full]
+    if: ${{ !cancelled() && needs.retry-plan-full.outputs.has-retries == 'true' }}
     runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJson(needs.retry-plan-full.outputs.retry-matrix) }}
     steps:
-      - name: Check out Broiler.JS
-        uses: actions/checkout@v4
-
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v5
         with:
-          dotnet-version: 10.0.x
-
-      - name: Download shard logs into one directory
-        uses: actions/download-artifact@v4.1.3
+          submodules: recursive
+          fetch-depth: 2
+      - uses: ./.github/actions/run-test262-shard
         with:
-          pattern: test262-*
-          path: ${{ github.workspace }}/.artifacts/test262/full-script-host/merged
+          phase: full
+          shard-index: ${{ matrix.shard-index }}
+          shard-count: ${{ env.SHARD_COUNT }}
+          attempt-suffix: -retry
+          suite-commit: ${{ needs.prepare.outputs.suite-commit }}
+          suite-root: ${{ env.TEST262_ROOT }}
+          suite-cache-key: ${{ needs.prepare.outputs.suite-cache-key }}
+          assembly: ${{ github.event.inputs.assembly || 'all' }}
+          subset: ${{ github.event.inputs.subset || '' }}
+          features: ${{ github.event.inputs.features || '' }}
+          feature-match: ${{ github.event.inputs.feature_match || 'any' }}
+          rerun-failed: 'false'
+          failed-tests-file: ${{ env.FAILED_TESTS_FILE }}
+          test-timeout-seconds: ${{ github.event.inputs.test_timeout_seconds || '30' }}
+          memory-limit-mb: ${{ github.event.inputs.memory_limit_mb || '0' }}
+          max-workers: ${{ github.event.inputs.max_workers || '1' }}
+          shuffle-seed: ${{ github.event.inputs.shuffle_seed || '' }}
+          include-negative: ${{ github.event.inputs.include_negative || 'false' }}
+          prioritize-fragile: ${{ github.event.inputs.prioritize_fragile || 'false' }}
+
+  # The full phase is authoritative when it ran. If the saved-failure preflight
+  # did not pass, that rerun phase is authoritative instead. All reports and
+  # persistence consume the same resolved phase, including its retry artifacts.
+  report:
+    needs: [plan, rerun-failed, evaluate-rerun, run-full, retry-full]
+    if: >-
+      ${{
+        always()
+        && !cancelled()
+        && (needs.run-full.result != 'skipped' || needs.rerun-failed.result != 'skipped')
+      }}
+    runs-on: ubuntu-latest
+    outputs:
+      authoritative-phase: ${{ steps.authoritative.outputs.phase }}
+      authoritative-expected-shards: ${{ steps.authoritative.outputs.expected-shards }}
+      incomplete-shard-count: ${{ steps.merge.outputs.incomplete_shard_count }}
+      configuration-failure-count: ${{ steps.merge.outputs.configuration_failure_count }}
+      suite-passed: ${{ steps.merge.outputs.suite_passed }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Resolve authoritative phase
+        id: authoritative
+        shell: bash
+        env:
+          FULL_RESULT: ${{ needs.run-full.result }}
+          FULL_EXPECTED: ${{ needs.plan.outputs.full-expected-shards }}
+          RERUN_EXPECTED: ${{ needs.plan.outputs.failed-expected-shards }}
+        run: |
+          if [ "$FULL_RESULT" != "skipped" ]; then
+            echo "phase=full" >> "$GITHUB_OUTPUT"
+            echo "expected-shards=$FULL_EXPECTED" >> "$GITHUB_OUTPUT"
+          else
+            echo "phase=rerun" >> "$GITHUB_OUTPUT"
+            echo "expected-shards=$RERUN_EXPECTED" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download all shard attempts
+        continue-on-error: true
+        uses: actions/download-artifact@v7
+        with:
+          pattern: test262-*-shard-*
+          path: shard-results
           merge-multiple: true
 
-      - name: Merge shard logs into one artifact
-        uses: actions/upload-artifact/merge@v4
-        with:
-          name: test262-logs
-          pattern: test262-*
-          separate-directories: false
-          delete-merged: true
-
-      - name: Generate LogParser issue content
-        id: logparser
+      - name: Merge authoritative shard reports
+        id: merge
         shell: bash
         env:
-          ISSUE_TOKEN: ${{ secrets.ISSUE_TOKEN }}
-          LOGPARSER_LOGS_DIR: ${{ github.workspace }}/.artifacts/test262/full-script-host/merged
-          LOGPARSER_OUTPUT_DIR: ${{ github.workspace }}/.artifacts/test262/full-script-host/logparser
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          set -euo pipefail
-          mkdir -p "$LOGPARSER_OUTPUT_DIR"
-          issue_body_path="$LOGPARSER_OUTPUT_DIR/issue.md"
-          issue_json_path="$LOGPARSER_OUTPUT_DIR/issue.json"
+          mkdir -p shard-results test262-merged
+          python scripts/compliance/merge_test262_shards.py \
+            --shard-dir shard-results \
+            --phase "${{ steps.authoritative.outputs.phase }}" \
+            --expected-shards "${{ steps.authoritative.outputs.expected-shards }}" \
+            --merged-json test262-merged/test262-results.json \
+            --issue-md test262-merged/issue.md \
+            --biggest-issue-md test262-merged/biggest-issue.md \
+            --timeout-issue-md test262-merged/timeout-issue.md \
+            --problem-limit "$MOST_COMMON_PROBLEMS_LIMIT" \
+            --biggest-problem-limit "$BIGGEST_PROBLEMS_LIMIT" \
+            --timeout-limit "$TIMEOUT_PROBLEMS_LIMIT" \
+            --run-url "$RUN_URL" \
+            --broiler-commit "${{ github.sha }}" \
+            --artifact-name test262-merged \
+            --github-output "$GITHUB_OUTPUT"
 
-          # --most-common-problems narrows the report to the top
-          # --most-common-problems-limit type/context/message combinations so
-          # the emitted markdown can be posted directly as a focused GitHub
-          # issue body.
-          # --no-launch-profile keeps `dotnet run` from emitting the
-          # "Using launch settings from ..." banner to stdout, which would
-          # otherwise corrupt the redirected markdown/JSON output.
-          dotnet run --project logs/LogParser --no-launch-profile -- \
-            "$LOGPARSER_LOGS_DIR" \
-            --most-common-problems \
-            --most-common-problems-limit "$MOST_COMMON_PROBLEMS_LIMIT" > "$issue_body_path"
-
-          dotnet run --project logs/LogParser --no-launch-profile -- \
-            "$LOGPARSER_LOGS_DIR" \
-            --most-common-problems \
-            --most-common-problems-limit "$MOST_COMMON_PROBLEMS_LIMIT" \
-            --output json > "$issue_json_path"
-
-          ISSUE_JSON_PATH="$issue_json_path" python <<'PY'
-          import json
-          import os
-          from pathlib import Path
-
-          MAX_ISSUE_TITLE_LENGTH = 256
-
-          issue_json = json.loads(Path(os.environ["ISSUE_JSON_PATH"]).read_text(encoding="utf-8"))
-          problems = issue_json.get("problems") or []
-          should_create_issue = len(problems) > 0
-          issue_token_available = bool(os.environ.get("ISSUE_TOKEN", "").strip())
-
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
-              handle.write(f"create_issue={'true' if should_create_issue else 'false'}\n")
-              handle.write(f"issue_token_available={'true' if issue_token_available else 'false'}\n")
-
-              if should_create_issue:
-                  problem = problems[0]
-                  problem_type = (problem.get("type") or "unknown type").strip()
-                  context = (problem.get("context") or "unknown context").strip()
-                  message = (problem.get("message") or "").strip()
-                  title = f"test262 full script-host common failures: {problem_type} @ {context}"
-                  if message:
-                      title = f"{title} - {message}"
-
-                  # Keep titles within a conservative 256-character cap by trimming the
-                  # normalized title text on a word boundary when possible.
-                  normalized_title = " ".join(title.split())
-                  if len(normalized_title) > MAX_ISSUE_TITLE_LENGTH:
-                      normalized_title = normalized_title[:MAX_ISSUE_TITLE_LENGTH].rstrip()
-                      last_space = normalized_title.rfind(" ")
-                      if last_space >= 0:
-                          normalized_title = normalized_title[:last_space]
-                  handle.write(f"issue_title={normalized_title}\n")
-          PY
-
-      - name: Report when no common parsed exception was found
-        if: steps.logparser.outputs.create_issue != 'true'
+      - name: Publish merged summary
+        if: always()
         shell: bash
         run: |
-          {
-            echo "### LogParser issue creation"
-            echo "- No parsed exceptions were found in the merged shard logs."
-          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -f test262-merged/issue.md ]; then
+            cat test262-merged/issue.md >> "$GITHUB_STEP_SUMMARY"
+          fi
 
-      - name: Report missing ISSUE_TOKEN secret
-        if: steps.logparser.outputs.create_issue == 'true' && steps.logparser.outputs.issue_token_available != 'true'
-        shell: bash
-        run: |
-          {
-            echo "### LogParser issue creation"
-            echo "- LogParser found a common problem, but \`ISSUE_TOKEN\` is not configured, so no issue was created."
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Create GitHub issue for common problem
-        if: steps.logparser.outputs.create_issue == 'true' && steps.logparser.outputs.issue_token_available == 'true'
-        uses: actions/github-script@v7
-        env:
-          ISSUE_BODY_PATH: ${{ github.workspace }}/.artifacts/test262/full-script-host/logparser/issue.md
-          ISSUE_TITLE: ${{ steps.logparser.outputs.issue_title }}
-          TEST262_REF: ${{ inputs.suite_ref || 'ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e' }}
+      - name: Upload canonical merged report
+        if: always()
+        uses: actions/upload-artifact@v6
         with:
-          github-token: ${{ secrets.ISSUE_TOKEN }}
+          name: test262-merged
+          path: test262-merged
+          if-no-files-found: warn
+
+      - name: Create GitHub issue for the most common failures
+        if: steps.merge.outputs.create_issue == 'true'
+        continue-on-error: true
+        uses: actions/github-script@v8
+        env:
+          FAILED_COUNT: ${{ steps.merge.outputs.failed_count }}
+          TIMEOUT_COUNT: ${{ steps.merge.outputs.timeout_count }}
+          INCOMPLETE_SHARD_COUNT: ${{ steps.merge.outputs.incomplete_shard_count }}
+          CONFIGURATION_FAILURE_COUNT: ${{ steps.merge.outputs.configuration_failure_count }}
+        with:
+          github-token: ${{ secrets.ISSUE_TOKEN || github.token }}
           script: |
             const fs = require('fs');
-            const issueBody = fs.readFileSync(process.env.ISSUE_BODY_PATH, 'utf8').trim();
-            const runUrl = `${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}`;
-            const body = [
-              issueBody,
-              '',
-              '### CI metadata',
-              `- Workflow run: ${runUrl}`,
-              `- Suite ref: \`${process.env.TEST262_REF}\``,
-              '- Artifact: `test262-logs`',
-            ].join('\n');
-
+            const body = fs.readFileSync('test262-merged/issue.md', 'utf8').trim();
+            const today = new Date().toISOString().slice(0, 10);
+            const failed = Number(process.env.FAILED_COUNT || 0);
+            const timedOut = Number(process.env.TIMEOUT_COUNT || 0);
+            const incomplete = Number(process.env.INCOMPLETE_SHARD_COUNT || 0);
+            const configuration = Number(process.env.CONFIGURATION_FAILURE_COUNT || 0);
+            const parts = [];
+            if (failed > 0) {
+              const timeoutDetail = timedOut > 0 ? ` (${timedOut} timed out)` : '';
+              parts.push(`${failed} non-passing test(s)${timeoutDetail}`);
+            } else if (timedOut > 0) {
+              // Keep the title informative if an older merger reports timeout
+              // totals separately from its failed-count output.
+              parts.push(`${timedOut} timed-out test(s)`);
+            }
+            if (incomplete > 0) parts.push(`${incomplete} incomplete shard(s)`);
+            if (configuration > 0) parts.push(`${configuration} configuration problem(s)`);
+            const summary = parts.join(', ') || 'reported problems';
             const issue = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: process.env.ISSUE_TITLE,
+              title: `test262 run: ${summary} (${today})`,
               body,
             });
-
             core.info(`Created issue #${issue.data.number}: ${issue.data.html_url}`);
+
+      - name: Create GitHub issue for the biggest problems
+        if: steps.merge.outputs.create_biggest_issue == 'true'
+        continue-on-error: true
+        uses: actions/github-script@v8
+        env:
+          BIGGEST_PROBLEM_COUNT: ${{ steps.merge.outputs.biggest_problem_count }}
+        with:
+          github-token: ${{ secrets.ISSUE_TOKEN || github.token }}
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('test262-merged/biggest-issue.md', 'utf8').trim();
+            const today = new Date().toISOString().slice(0, 10);
+            const count = Number(process.env.BIGGEST_PROBLEM_COUNT || 0);
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `test262 run: top ${count} biggest problem(s) (${today})`,
+              body,
+            });
+            core.info(`Created biggest-problems issue #${issue.data.number}: ${issue.data.html_url}`);
+
+      - name: Create GitHub issue for the timed-out tests
+        if: steps.merge.outputs.create_timeout_issue == 'true'
+        continue-on-error: true
+        uses: actions/github-script@v8
+        env:
+          TIMEOUT_COUNT: ${{ steps.merge.outputs.timeout_count }}
+        with:
+          github-token: ${{ secrets.ISSUE_TOKEN || github.token }}
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('test262-merged/timeout-issue.md', 'utf8').trim();
+            const today = new Date().toISOString().slice(0, 10);
+            const count = Number(process.env.TIMEOUT_COUNT || 0);
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `test262 run: ${count} timed-out test(s) (${today})`,
+              body,
+            });
+            core.info(`Created timeouts issue #${issue.data.number}: ${issue.data.html_url}`);
+
+  # Refresh only paths conclusively exercised by the authoritative phase. The
+  # merger preserves failures outside a selected assembly/subset/shard and any
+  # shard still incomplete after its retry. Alternate suites and negative-test
+  # runs never modify the canonical baseline.
+  persist-failed:
+    needs: [prepare, report]
+    if: >-
+      ${{
+        always()
+        && !cancelled()
+        && needs.report.result == 'success'
+        && needs.report.outputs.configuration-failure-count == '0'
+        && needs.prepare.outputs.suite-commit == 'ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e'
+        && github.event.inputs.include_negative != 'true'
+        && github.ref_type == 'branch'
+      }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: test262-failure-manifest-${{ github.repository }}-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      # A second scoped run may have committed only this generated manifest
+      # while we waited for the persistence lock; that is safe to merge on top
+      # of. Any source change means these measurements describe an older engine,
+      # so leave the newer branch untouched.
+      - name: Verify the measured Broiler revision is still current
+        id: freshness
+        shell: bash
+        env:
+          DISPATCH_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          current="$(git rev-parse HEAD)"
+          echo "base-sha=$current" >> "$GITHUB_OUTPUT"
+          should_persist=true
+
+          if ! git merge-base --is-ancestor "$DISPATCH_SHA" "$current"; then
+            should_persist=false
+          elif [ "$current" != "$DISPATCH_SHA" ]; then
+            while IFS= read -r changed_path; do
+              if [ -n "$changed_path" ] && [ "$changed_path" != "$FAILED_TESTS_FILE" ]; then
+                should_persist=false
+                break
+              fi
+            done < <(git diff --name-only "$DISPATCH_SHA..$current")
+          fi
+
+          echo "should-persist=$should_persist" >> "$GITHUB_OUTPUT"
+          if [ "$should_persist" != "true" ]; then
+            {
+              echo "### test262 failure manifest"
+              echo
+              echo "Persistence skipped: the branch contains source changes newer than the tested commit \`$DISPATCH_SHA\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Download authoritative merged report
+        if: steps.freshness.outputs.should-persist == 'true'
+        uses: actions/download-artifact@v7
+        with:
+          name: test262-merged
+          path: authoritative-report
+
+      - name: Merge authoritative failures into canonical manifest
+        if: steps.freshness.outputs.should-persist == 'true'
+        shell: bash
+        run: |
+          python scripts/compliance/merge_test262_shards.py \
+            --merged-input authoritative-report/test262-results.json \
+            --merge-into "$FAILED_TESTS_FILE"
+
+      - name: Commit canonical failure manifest
+        if: steps.freshness.outputs.should-persist == 'true'
+        shell: bash
+        run: |
+          bash scripts/ci-commit-generated-results.sh \
+            --branch "${{ github.ref_name }}" \
+            --expected-base "${{ steps.freshness.outputs.base-sha }}" \
+            --message "ci: update test262 failed testcase list [skip ci]" \
+            "$FAILED_TESTS_FILE"
+
+  # Attempt jobs are measurements and are allowed to fail while their artifacts
+  # are retried/merged. This single terminal gate is the workflow's verdict: a
+  # green run means the requested full phase really ran and its authoritative
+  # latest-attempt merge contains no failures, timeouts, configuration errors,
+  # or incomplete shards.
+  conclusion:
+    needs: [plan, report, persist-failed]
+    if: ${{ always() && !cancelled() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enforce authoritative test262 result
+        shell: bash
+        env:
+          REPORT_RESULT: ${{ needs.report.result }}
+          AUTHORITATIVE_PHASE: ${{ needs.report.outputs.authoritative-phase }}
+          SUITE_PASSED: ${{ needs.report.outputs.suite-passed }}
+          PERSIST_RESULT: ${{ needs.persist-failed.result }}
+        run: |
+          set -euo pipefail
+          if [ "$REPORT_RESULT" != "success" ]; then
+            echo "The authoritative test262 report job did not complete successfully." >&2
+            exit 1
+          fi
+          if [ "$AUTHORITATIVE_PHASE" != "full" ]; then
+            echo "The requested full test262 phase never completed; only the saved-failure preflight is available." >&2
+            exit 1
+          fi
+          if [ "$SUITE_PASSED" != "true" ]; then
+            echo "The authoritative test262 merge contains non-passing results." >&2
+            exit 1
+          fi
+          if [ "$PERSIST_RESULT" = "failure" ] || [ "$PERSIST_RESULT" = "cancelled" ]; then
+            echo "The canonical failure manifest could not be persisted safely." >&2
+            exit 1
+          fi
+          echo "The authoritative full test262 run passed."

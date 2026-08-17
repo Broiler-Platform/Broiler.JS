@@ -48,9 +48,10 @@ python scripts/compliance/run_test262.py `
 ```
 
 Use `--shard-index -1` to run every shard locally. The runner supports async and
-`noStrict` files, `onlyStrict`, per-test timeout, optional POSIX memory limits,
-`--max-workers`, `--shuffle-seed`, `--prioritize-fragile`, and expected-error handling
-through `--include-negative`.
+`noStrict` files, `onlyStrict`, semicolon-separated `--subset` path/glob filters,
+Test262 metadata filters through `--features` and `--feature-match`, per-test timeout,
+optional POSIX memory limits, `--max-workers`, `--shuffle-seed`,
+`--prioritize-fragile`, and expected-error handling through `--include-negative`.
 
 Tests requiring `$262` host hooks remain host-harness exclusions. The `module` and `raw`
 flags require separate host modes and are not validated by the ordinary script host.
@@ -58,17 +59,32 @@ Do not count excluded files as passes.
 
 ## CI and failure lifecycle
 
-`.github/workflows/test262.yml` is the unified manual and post-merge workflow. It can
-scope work through `scripts/compliance/test262-assemblies.json`, shard the full runnable
-selection, publish per-shard JSON/logs, and rerun saved failures first.
+`.github/workflows/test262.yml` is the unified manual workflow. It can scope work through
+`scripts/compliance/test262-assemblies.json`, path/glob subsets, and Test262 feature
+metadata; shard the runnable selection; rerun saved failures first; retry an abnormal
+shard once; and publish per-shard plus merged JSON/Markdown artifacts. It does not run
+automatically after a merge or for a pull request.
 
-`scripts/compliance/test262-failures.txt` is generated from the latest tracked failures
-and timeouts. A path may be removed only after:
+The canonical merged JSON records the exact Broiler and test262 commits, workflow URL,
+selection filters/scope, resource options, worker/shuffle settings, and runner
+OS/architecture/.NET version. Cross-shard configuration drift and selections that run
+no tests are configuration failures rather than green results. A terminal verdict uses
+this authoritative merge, so a recovered retry can heal an initial job failure while a
+missing full phase cannot pass accidentally.
+
+`scripts/compliance/test262-failures.txt` is generated from tracked failures and
+timeouts. CI refreshes only paths conclusively executed by the authoritative phase;
+out-of-scope, skipped, cancelled, and incomplete-shard entries are preserved. A path
+may be removed only after:
 
 1. a minimal repository regression exists;
 2. the focused public-suite reproduction passes;
 3. the affected full shard passes; and
 4. the dashboard is updated with the new evidence.
+
+Manifest persistence consumes the canonical merged artifact, is serialized per branch,
+and uses a compare-and-swap push. If source files changed after the tested commit, the
+workflow leaves the newer branch untouched instead of applying stale measurements.
 
 Treat a newly failing previously-passing test as a regression unless a pinned suite
 update intentionally changed the expectation.

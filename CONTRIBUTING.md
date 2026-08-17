@@ -1,60 +1,40 @@
 # Contributing to Broiler.JS
 
 Thank you for considering contributing to Broiler.JS! This document explains
-how the CI pipeline works and what to expect when you open a pull request.
+how to run the repository's conformance workflow and the same checks locally.
 
-## CI workflow — incremental test262 checks
+## CI workflow — test262
 
 The repository uses a unified `test262` workflow
-(`.github/workflows/test262.yml`) that adapts its behaviour depending on the
-trigger:
+(`.github/workflows/test262.yml`). It is intentionally started manually from
+GitHub Actions; it does not run automatically for pull requests or pushes.
 
-### Pull requests
+A dispatch can select the entire supported script-host suite, one assembly,
+semicolon-separated path/glob subsets, Test262 feature metadata, one shard, or
+the saved failures. Timeout, memory, worker, shuffle, negative-test, and
+fragile-first controls are also exposed by the dispatch form.
 
-When a pull request is opened or updated against `main`, the workflow:
-
-1. **Detects changed assemblies** — a `detect-changes` job inspects the files
-   modified by the PR and maps them to the Broiler.JS assembly names defined in
-   `scripts/compliance/test262-assemblies.json`.
-
-   | Project directory                          | Assembly name(s)              |
-   |--------------------------------------------|-------------------------------|
-   | `Broiler.JS/Broiler.JavaScript.Parser/`    | `parser`                      |
-   | `Broiler.JS/Broiler.JavaScript.Compiler/`  | `compiler`                    |
-   | `Broiler.JS/Broiler.JavaScript.Runtime/`    | `runtime`                     |
-   | `Broiler.JS/Broiler.JavaScript.BuiltIns/`  | `builtins`, `intl`, `annexb`  |
-
-2. **Runs incremental test262** — an `incremental` job runs the test262 paths
-   mapped to each affected assembly.  This gives fast feedback for the most
-   common changes.
-
-3. **Runs the full suite** — only if all incremental jobs pass, the `run-full`
-   job executes the complete test262 suite across all shards.
-
-#### Edge cases — global changes
-
-Changes to shared infrastructure files (workflow definitions, compliance
-scripts, root build files, the CLI entry point, engine, linqexpressions,
-modules, or globals projects) are treated as affecting **all** assemblies.  The
-incremental job runs every assembly scope before the full suite proceeds.
-
-### Push to `main` and manual dispatch
-
-After a merge to `main` (or a manual `workflow_dispatch`), the workflow
-follows the original two-phase approach:
+For an untargeted run, the workflow can follow a two-phase approach:
 
 1. **Rerun previously failed paths** — paths recorded in
    `scripts/compliance/test262-failures.txt` are executed first.
-2. **Run full suite** — only proceeds when the rerun phase succeeds.
-3. **Persist failures** — the updated failure list is committed back to the
-   repository for the next run.
+2. **Run the selected suite** — proceeds only when the saved failures pass.
+3. **Retry abnormal shards** — a shard that produces no conclusive report is
+   rerun once; ordinary test failures are not retried.
+4. **Merge and report** — retry-aware JSON and Markdown artifacts are produced,
+   with separate common-failure, highest-impact, and timeout reports.
+5. **Persist failures** — only conclusively executed paths are refreshed in the
+   tracked failure list, so a subset, single shard, or infrastructure failure
+   cannot erase out-of-scope entries. Persistence is serialized and skipped if
+   the branch contains source changes newer than the tested commit.
+6. **Set the verdict** — a terminal job passes only when the requested full
+   phase ran and its authoritative latest-attempt merge is completely green.
 
 ## Assembly manifest
 
 The mapping from assembly names to test262 path prefixes lives in
 `scripts/compliance/test262-assemblies.json`.  When adding a new assembly or
-changing responsibilities, update this file and the `detect-changes` job in
-the workflow.
+changing responsibilities, update this file and the workflow's assembly input.
 
 ## Running tests locally
 
