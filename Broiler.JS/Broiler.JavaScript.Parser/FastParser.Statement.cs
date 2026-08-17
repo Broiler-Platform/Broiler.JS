@@ -529,6 +529,10 @@ partial class FastParser
             if (!EndOfLine())
                 Identitifer(out id);
 
+            // The only place a `continue` statement is produced, so the count is exactly the number
+            // parsed so far. ForStatement compares it across its body parse to learn whether the body
+            // can `continue` — see ParsedContinueCount.
+            ParsedContinueCount++;
             statement = new AstContinueStatement(begin, PreviousToken, id);
             return true;
         }
