@@ -122,7 +122,13 @@ public partial class JSGlobalStatic
         string location = null;
 
         (JSEngine.Current as IJSExecutionContext)?.DispatchEvalEvent(ref text, ref location);
-        DirectEvalSupport.ValidateIndirectEval(text);
+
+        // A body with no statements — empty source, or only comments and whitespace — has
+        // the undefined completion and declares nothing, so it is finished once its early
+        // errors have been checked. Compiling it would emit and JIT a method to do nothing.
+        if (!DirectEvalSupport.ValidateIndirectEval(text))
+            return JSUndefined.Value;
+
         if (JSEngine.Current is JSContext context)
         {
             // This function is only reachable via indirect eval (e.g.
