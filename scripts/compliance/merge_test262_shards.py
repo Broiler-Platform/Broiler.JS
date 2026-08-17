@@ -30,6 +30,7 @@ from typing import Any, Callable, Iterable
 DEFAULT_PROBLEM_LIMIT = 10
 DEFAULT_BIGGEST_PROBLEM_LIMIT = 3
 DEFAULT_TIMEOUT_LIMIT = 10
+DEFAULT_TERSER_ONLY_LIMIT = 10
 PATH_SAMPLE_LIMIT = 5
 _RUN_CONFIGURATION_FIELDS = (
     "suiteRef",
@@ -119,6 +120,14 @@ _BIGGEST_KIND_RANK = {
     "MinifierFailure": 3,
     "NoOutput": 2,
     "Failure": 1,
+}
+_PROBLEM_KIND_TIEBREAK = {
+    "IncompleteShard": 0,
+    "Crash": 1,
+    "MinifierFailure": 2,
+    "Timeout": 3,
+    "NoOutput": 4,
+    "Failure": 5,
 }
 
 
@@ -1249,19 +1258,11 @@ def _materialise_problem_groups(
         group["shardIndexes"] = shards
         materialised.append(group)
 
-    kind_tiebreak = {
-        "IncompleteShard": 0,
-        "Crash": 1,
-        "MinifierFailure": 2,
-        "Timeout": 3,
-        "NoOutput": 4,
-        "Failure": 5,
-    }
     return sorted(
         materialised,
         key=lambda group: (
             -int(group["count"]),
-            kind_tiebreak.get(str(group["kind"]), 99),
+            _PROBLEM_KIND_TIEBREAK.get(str(group["kind"]), 99),
             str(group["label"]).lower(),
             str(group["key"]),
         ),
@@ -1389,6 +1390,129 @@ def _rank_timeouts(
     return timeouts[:limit], feature_groups
 
 
+def _optional_size(result: dict[str, Any], key: str) -> int | None:
+    value = result.get(key)
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        size = int(value)
+    except (TypeError, ValueError):
+        return None
+    return size if size >= 0 else None
+
+
+def _minification_ratio(result: dict[str, Any]) -> float | None:
+    value = result.get("minificationRatio")
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    ratio = float(value)
+    if not math.isfinite(ratio) or ratio < 0:
+        return None
+    return ratio
+
+
+def _rank_terser_only_failures(
+    results: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str]]:
+    """Isolate paths whose original source passes and whose Terser case does not.
+
+    These cases are the only evidence in a run that minification, not the test
+    itself, exposes the defect, so they are reported separately from the
+    frequency, severity, and timeout views that mix both variants.
+    """
+    cases_by_path: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
+    for result in results:
+        cases_by_path[str(result["path"])][str(result["variant"])] = result
+
+    cases: list[dict[str, Any]] = []
+    for path in sorted(cases_by_path):
+        variants = cases_by_path[path]
+        original = variants.get("original")
+        minified = variants.get("terser")
+        if original is None or minified is None:
+            continue
+        # Only an original pass proves the minified case regressed on its own.
+        if original["status"] != "passed" or original.get("infrastructure") is True:
+            continue
+        if minified["status"] not in ("failed", "timedOut"):
+            continue
+        if minified["status"] == "timedOut":
+            kind, key, label = "Timeout", "timeout|variant=terser", "Timed out"
+        else:
+            kind, key, label = _failure_descriptor(minified)
+        cases.append(
+            {
+                "path": path,
+                "relativeTestPath": path,
+                "variant": "terser",
+                "status": str(minified["status"]),
+                "kind": kind,
+                "groupKey": key,
+                "label": label,
+                "reason": str(minified.get("reason") or ""),
+                "failureType": str(minified.get("failureType") or ""),
+                "infrastructure": minified.get("infrastructure") is True,
+                "sourceSizeBytes": _source_size(minified),
+                "minifiedSourceSizeBytes": _optional_size(
+                    minified, "minifiedSourceSizeBytes"
+                ),
+                "minificationRatio": _minification_ratio(minified),
+                "features": _features(minified),
+            }
+        )
+
+    groups: dict[str, dict[str, Any]] = {}
+    for case in cases:
+        group = groups.setdefault(
+            str(case["groupKey"]),
+            {
+                "key": str(case["groupKey"]),
+                "kind": str(case["kind"]),
+                "label": str(case["label"]),
+                "count": 0,
+                "paths": [],
+                "_features": Counter(),
+            },
+        )
+        group["count"] += 1
+        group["paths"].append(str(case["path"]))
+        group["_features"].update(case["features"])
+
+    materialised: list[dict[str, Any]] = []
+    for group in groups.values():
+        feature_counter: Counter[str] = group.pop("_features")
+        group["paths"] = sorted(group["paths"])
+        group["pathSamples"] = group["paths"][:PATH_SAMPLE_LIMIT]
+        group["features"] = [
+            {"feature": feature, "count": count}
+            for feature, count in sorted(
+                feature_counter.items(),
+                key=lambda item: (-item[1], item[0].lower(), item[0]),
+            )
+        ]
+        materialised.append(group)
+    materialised.sort(
+        key=lambda group: (
+            -int(group["count"]),
+            _PROBLEM_KIND_TIEBREAK.get(str(group["kind"]), 99),
+            str(group["label"]).lower(),
+            str(group["key"]),
+        )
+    )
+
+    # The smallest minified body is the cheapest reduction, so it leads the
+    # ranked list exactly like the size-ranked timeout report.
+    def sort_key(case: dict[str, Any]) -> tuple[bool, int, str]:
+        size = case["minifiedSourceSizeBytes"]
+        if size is None:
+            size = case["sourceSizeBytes"]
+        return (size is None, int(size or 0), str(case["path"]))
+
+    ranked = sorted(cases, key=sort_key)
+    paths = sorted({str(case["path"]) for case in cases})
+    return ranked, materialised, paths
+
+
 def merge(
     shard_dir: Path,
     phase: str = "full",
@@ -1396,6 +1520,7 @@ def merge(
     problem_limit: int = DEFAULT_PROBLEM_LIMIT,
     biggest_problem_limit: int = DEFAULT_BIGGEST_PROBLEM_LIMIT,
     timeout_limit: int = DEFAULT_TIMEOUT_LIMIT,
+    terser_only_limit: int = DEFAULT_TERSER_ONLY_LIMIT,
     broiler_commit: str = "",
     run_url: str = "",
     artifact_name: str = "test262-merged",
@@ -1407,6 +1532,8 @@ def merge(
         raise ValueError("biggest_problem_limit must be positive")
     if timeout_limit < 1:
         raise ValueError("timeout_limit must be positive")
+    if terser_only_limit < 1:
+        raise ValueError("terser_only_limit must be positive")
 
     reports, incomplete, retried, reported = _selected_attempts(
         Path(shard_dir), phase, expected_shard_indexes
@@ -1634,6 +1761,14 @@ def merge(
         all_groups, incomplete, biggest_problem_limit
     )
     timeouts, timeout_features = _rank_timeouts(results, timeout_limit)
+    (
+        terser_only_cases,
+        terser_only_groups,
+        terser_only_paths,
+    ) = _rank_terser_only_failures(results)
+    terser_only_minifier_failures = sum(
+        1 for case in terser_only_cases if case["kind"] == "MinifierFailure"
+    )
     suite_refs = sorted(
         {
             str(report.payload.get("suiteRef"))
@@ -1692,6 +1827,16 @@ def merge(
         "timeoutCount": summary["timedOut"],
         "timeouts": timeouts,
         "timeoutFeatureGroups": timeout_features,
+        "terserOnlyLimit": terser_only_limit,
+        "terserOnlyFailureCount": len(terser_only_cases),
+        "terserOnlyMinifierFailureCount": terser_only_minifier_failures,
+        "terserOnlyDivergenceCount": (
+            len(terser_only_cases) - terser_only_minifier_failures
+        ),
+        "terserOnlyPathCount": len(terser_only_paths),
+        "terserOnlyPaths": terser_only_paths,
+        "terserOnlyFailures": terser_only_cases[:terser_only_limit],
+        "terserOnlyGroups": terser_only_groups,
     }
 
 
@@ -1972,6 +2117,101 @@ def render_timeout_issue_markdown(
     return "\n".join(lines) + "\n"
 
 
+def _format_minified_size(case: dict[str, Any]) -> str:
+    minified = case.get("minifiedSourceSizeBytes")
+    original = case.get("sourceSizeBytes")
+    ratio = case.get("minificationRatio")
+    if minified is None:
+        if original is None:
+            return "unknown size"
+        return f"{_format_size(original)} original, unknown minified size"
+    label = f"{_format_size(minified)} minified"
+    if original is not None:
+        label += f" of {_format_size(original)} original"
+    if isinstance(ratio, (int, float)) and not isinstance(ratio, bool):
+        label += f" (ratio {float(ratio):g})"
+    return label
+
+
+def render_terser_only_issue_markdown(
+    merged: dict[str, Any],
+    run_url: str | None = None,
+    artifact_name: str = "test262-merged",
+) -> str:
+    count = int(merged.get("terserOnlyFailureCount") or 0)
+    divergences = int(merged.get("terserOnlyDivergenceCount") or 0)
+    minifier_failures = int(merged.get("terserOnlyMinifierFailureCount") or 0)
+    limit = int(merged.get("terserOnlyLimit") or DEFAULT_TERSER_ONLY_LIMIT)
+    cases = merged.get("terserOnlyFailures") or []
+    groups = merged.get("terserOnlyGroups") or []
+    lines = [
+        f"## test262 {merged['phase']} run — {count} Terser-only failure(s)",
+        "",
+        "_Every case below passes as original source and stops passing only after "
+        f"{_MINIFIER_PROFILE} minification, so minification — not the test itself — "
+        "is the trigger._",
+        "",
+        f"- Terser-only non-passing cases: {count}",
+        f"- Engine divergences after minification: {divergences}",
+        f"- Minifier infrastructure failures: {minifier_failures}",
+        f"- Affected base paths: {int(merged.get('terserOnlyPathCount') or 0)}",
+        "",
+    ]
+    lines.extend(["### Normalized Terser-only failure groups", ""])
+    if not groups:
+        lines.append("- None")
+    for index, group in enumerate(groups, start=1):
+        lines.append(
+            f"{index}. **{_inline(group['label'])}** — "
+            f"{group['count']} case(s) ({group['kind']})"
+        )
+        if group.get("pathSamples"):
+            samples = ", ".join(_inline(path) for path in group["pathSamples"])
+            lines.append(f"   - Path samples: {samples}")
+        if group.get("features"):
+            features = ", ".join(
+                f"{_inline(item['feature'])} ({item['count']})"
+                for item in group["features"][:PATH_SAMPLE_LIMIT]
+            )
+            lines.append(f"   - Features: {features}")
+
+    lines.extend(
+        [
+            "",
+            f"### First {limit} case(s) by minified source size",
+            "",
+        ]
+    )
+    if not cases:
+        lines.append("- None")
+    for index, case in enumerate(cases, start=1):
+        lines.append(
+            f"{index}. **{_format_minified_size(case)}** — "
+            f"{_inline(case['path'])}"
+        )
+        detail = _inline(case.get("reason")) or "(no reason reported)"
+        status = "timed out" if case["status"] == "timedOut" else str(case["status"])
+        lines.append(f"   - Minified case {status}: {detail}")
+        features = ", ".join(_inline(feature) for feature in case.get("features") or [])
+        lines.append(f"   - Features: {features or '(none reported)'}")
+
+    if cases:
+        lines.extend(
+            [
+                "",
+                "### Reproduce",
+                "",
+                "Run one base path as both variants with "
+                "`python scripts/compliance/run_test262.py --suite-ref "
+                f"{_inline(merged.get('suiteRef')) or '<suite-ref>'} --subset "
+                f"{_inline(cases[0]['path'])} --minifier terser --terser-module "
+                "<terser-package-directory>`.",
+            ]
+        )
+    lines.extend(_metadata_lines(run_url, artifact_name))
+    return "\n".join(lines) + "\n"
+
+
 def _parse_expected_shards(
     parser: argparse.ArgumentParser, value: str | None
 ) -> set[int] | None:
@@ -1998,6 +2238,7 @@ def _write_github_outputs(path: Path, merged: dict[str, Any]) -> None:
     ]
     biggest_count = len(merged.get("biggestProblems") or [])
     timeout_count = int(merged.get("timeoutCount") or 0)
+    terser_only_count = int(merged.get("terserOnlyFailureCount") or 0)
     configuration_failure_count = len(merged.get("configurationFailures") or [])
     has_failures = (
         summary["failed"] > 0
@@ -2031,6 +2272,15 @@ def _write_github_outputs(path: Path, merged: dict[str, Any]) -> None:
         "create_biggest_issue": "true" if biggest_count else "false",
         "timeout_count": timeout_count,
         "create_timeout_issue": "true" if timeout_count else "false",
+        "terser_only_failure_count": terser_only_count,
+        "terser_only_divergence_count": int(
+            merged.get("terserOnlyDivergenceCount") or 0
+        ),
+        "terser_only_minifier_failure_count": int(
+            merged.get("terserOnlyMinifierFailureCount") or 0
+        ),
+        "terser_only_path_count": int(merged.get("terserOnlyPathCount") or 0),
+        "create_terser_only_issue": "true" if terser_only_count else "false",
         "configuration_failure_count": configuration_failure_count,
         "incomplete_shard_indexes": ",".join(
             str(index) for index in incomplete_indexes
@@ -2066,6 +2316,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--issue-md", type=Path)
     parser.add_argument("--biggest-issue-md", type=Path)
     parser.add_argument("--timeout-issue-md", type=Path)
+    parser.add_argument("--terser-only-issue-md", type=Path)
     parser.add_argument(
         "--problem-limit", type=int, default=DEFAULT_PROBLEM_LIMIT
     )
@@ -2076,6 +2327,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--timeout-limit", type=int, default=DEFAULT_TIMEOUT_LIMIT
+    )
+    parser.add_argument(
+        "--terser-only-limit", type=int, default=DEFAULT_TERSER_ONLY_LIMIT
     )
     parser.add_argument(
         "--run-url",
@@ -2097,6 +2351,8 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--biggest-problem-limit must be a positive integer")
     if args.timeout_limit < 1:
         parser.error("--timeout-limit must be a positive integer")
+    if args.terser_only_limit < 1:
+        parser.error("--terser-only-limit must be a positive integer")
 
     if args.merged_input:
         if args.expected_shards is not None:
@@ -2114,6 +2370,7 @@ def main(argv: list[str] | None = None) -> int:
             problem_limit=args.problem_limit,
             biggest_problem_limit=args.biggest_problem_limit,
             timeout_limit=args.timeout_limit,
+            terser_only_limit=args.terser_only_limit,
             broiler_commit=args.broiler_commit,
             run_url=args.run_url or "",
             artifact_name=args.artifact_name,
@@ -2144,6 +2401,12 @@ def main(argv: list[str] | None = None) -> int:
                 merged, args.run_url, args.artifact_name
             ),
         ),
+        (
+            args.terser_only_issue_md,
+            render_terser_only_issue_markdown(
+                merged, args.run_url, args.artifact_name
+            ),
+        ),
     )
     for path, content in outputs:
         if path is None:
@@ -2161,7 +2424,8 @@ def main(argv: list[str] | None = None) -> int:
         f"{summary['failed']} failed, {summary['timedOut']} timed out, "
         f"{summary['skipped']} skipped across "
         f"{summary.get('uniquePaths', summary['total'])} base path(s); "
-        f"{len(merged['incompleteShards'])} incomplete shard(s)."
+        f"{len(merged['incompleteShards'])} incomplete shard(s); "
+        f"{int(merged.get('terserOnlyFailureCount') or 0)} Terser-only failure(s)."
     )
     return 0
 
