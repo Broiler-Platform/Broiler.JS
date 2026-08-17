@@ -16,6 +16,17 @@ partial class FastParser
     private static int TempVarID = 1;
 
     /// <summary>
+    /// Number of <c>continue</c> statements parsed so far by this parser instance, incremented in
+    /// exactly one place (FastParser.Statement.cs's <c>Continue</c>). A for-statement snapshots it
+    /// around its body parse: an unchanged count proves the body holds no <c>continue</c> at all, in
+    /// any statement position, which lets the `for (let …)` lowering skip a per-iteration try/finally.
+    /// An AST search would be the obvious alternative, but a single missed <c>continue</c> there turns
+    /// a working loop into an infinite one, and the shared AST walkers do not reach every statement
+    /// position (a <c>switch</c> case's statements, for one).
+    /// </summary>
+    private int ParsedContinueCount;
+
+    /// <summary>
     /// For ( in
     /// For ( of
     /// For await ( // not supported yet...
@@ -247,6 +258,12 @@ partial class FastParser
             // their per-iteration desugaring.)
             var cStyleUsing = declaration is { Using: true } && !@in && !of;
 
+            // Snapshot before the body is parsed; Desugar (called from inside the branches below,
+            // after the body is in hand) compares it to learn whether the body can `continue`. The
+            // head's test/update are already parsed, so a `continue` buried in a closure there cannot
+            // pollute the count — and nested loops each capture their own snapshot.
+            var continuesBeforeBody = ParsedContinueCount;
+
             AstStatement statement;
             if (stream.CheckAndConsume(TokenTypes.CurlyBracketStart))
             {
@@ -255,7 +272,8 @@ partial class FastParser
 
                 if (newScope && declaration != null && !cStyleUsing)
                 {
-                    (beginNode, statement, update, test) = Desugar(declaration, block.Statements, update, test, cStyle: !@in && !of, block);
+                    (beginNode, statement, update, test) = Desugar(declaration, block.Statements, update, test,
+                        cStyle: !@in && !of, bodyContainsContinue: ParsedContinueCount != continuesBeforeBody, block);
                 }
                 else
                 {
@@ -266,7 +284,8 @@ partial class FastParser
             else if (NonDeclarativeStatement(out statement))
             {
                 if (newScope && declaration != null && !cStyleUsing)
-                    (beginNode, statement, update, test) = Desugar(declaration, new Sequence<AstStatement>(1) { statement }, update, test, cStyle: !@in && !of);
+                    (beginNode, statement, update, test) = Desugar(declaration, new Sequence<AstStatement>(1) { statement }, update, test,
+                        cStyle: !@in && !of, bodyContainsContinue: ParsedContinueCount != continuesBeforeBody);
             }
             else throw stream.Unexpected();
 
@@ -699,7 +718,7 @@ partial class FastParser
         }
 
         (AstNode beginNode, AstStatement statement, AstExpression? update, AstExpression? test) Desugar(AstVariableDeclaration declaration, IFastEnumerable<AstStatement> body,
-            AstExpression? update, AstExpression? test, bool cStyle, AstBlock? sourceBlock = null)
+            AstExpression? update, AstExpression? test, bool cStyle, bool bodyContainsContinue, AstBlock? sourceBlock = null)
         {
             var statementList = new Sequence<AstStatement>(body.Count + 1) { null! };
             statementList.AddRange(body);
@@ -796,10 +815,9 @@ partial class FastParser
             // body, then evaluates the increment in that fresh environment, which the next test/body
             // then share. Model this by running the increment at the TOP of the per-iteration body
             // block — guarded by a loop-scoped "started" flag so it is skipped on the first pass — and
-            // copying each per-iteration binding back into its carrier from a `finally` so the copy
-            // happens on `continue`/`break`/`return` too (test262 sm/lexical-environment/for-loop's
-            // "incr" closures). Only a loop-env update that actually contains a closure needs this; the
-            // common case keeps the cheaper direct carrier mutation plus an end-of-body copy-back.
+            // copying each per-iteration binding back into its carrier (see below) before the next
+            // iteration's increment reads it (test262 sm/lexical-environment/for-loop's "incr"
+            // closures). Only a loop-env update that actually contains a closure needs this.
             var incrementAtTop = useLoopEnv && update != null && ContainsClosure(update);
             AstIdentifier startedFlag = null;
             if (incrementAtTop)
@@ -807,23 +825,45 @@ partial class FastParser
                 var flagId = Interlocked.Increment(ref TempVarID).ToString();
                 startedFlag = new AstIdentifier(declaration.Start, flagId);
                 tempDeclarations.Add(new VariableDeclarator(startedFlag, new AstLiteral(TokenTypes.False, declaration.Start)));
+            }
 
-                // Wrap the user body in `try { … } finally { <carrier> = x; … }` so the per-iteration
-                // value is copied back to the carrier on every completion path before the next
-                // iteration's increment reads it. Rebuild statementList ([0] is the scoped-decl slot).
-                var bodyStatements = new Sequence<AstStatement>();
-                for (int bi = 1; bi < statementList.Count; bi++)
-                    bodyStatements.Add(statementList[bi]);
-
-                var finallyStatements = new Sequence<AstStatement>();
+            // ForBodyEvaluation performs CreatePerIterationEnvironment AFTER the body and BEFORE the
+            // increment, seeding the next iteration from the values the body last saw. So a mutation the
+            // BODY makes to a loop binding has to reach the next iteration: copy each per-iteration
+            // binding back into its carrier at the end of the body. Without the copy an empty increment
+            // left nothing to advance the carrier and the loop re-read the seed value forever —
+            // `for (let x = 0; x < 10;) { x++; }` never terminated (test262
+            // language/statements/continue/no-label-continue and its six siblings).
+            //
+            // `continue` jumps past the end of the body straight to the increment, so a body that can
+            // `continue` takes the copy in a `finally`; one that cannot only needs it as a trailing
+            // statement, which keeps the hot `for (let i = 0; i < n; i++)` shape free of a per-iteration
+            // try/finally frame (worth ~25% on a tight counting loop). ParsedContinueCount is what
+            // decides, because it cannot report a false negative — see its documentation. `break` and
+            // `return` need no copy either way: they leave the loop, and the carrier is never read again.
+            if (useLoopEnv && changes.Count > 0)
+            {
+                var copyBackStatements = new Sequence<AstStatement>();
                 foreach (var (id, temp) in changes)
-                    finallyStatements.Add(new AstExpressionStatement(new AstBinaryExpression(
+                    copyBackStatements.Add(new AstExpressionStatement(new AstBinaryExpression(
                         new AstIdentifier(temp.Start, temp.Name.Value), TokenTypes.Assign, new AstIdentifier(temp.Start, id))));
 
-                var tryBody = new AstBlock(declaration.Start, declaration.End, bodyStatements);
-                var finallyBody = new AstBlock(declaration.Start, declaration.End, finallyStatements);
-                var tryStmt = new AstTryStatement(declaration.Start, declaration.End, tryBody, null, null, finallyBody);
-                statementList = [null!, tryStmt];
+                if (incrementAtTop || bodyContainsContinue)
+                {
+                    // Wrap the user body in `try { … } finally { <carrier> = x; … }`. Rebuild
+                    // statementList ([0] is the scoped-decl slot).
+                    var bodyStatements = new Sequence<AstStatement>();
+                    for (int bi = 1; bi < statementList.Count; bi++)
+                        bodyStatements.Add(statementList[bi]);
+
+                    var tryBody = new AstBlock(declaration.Start, declaration.End, bodyStatements);
+                    var finallyBody = new AstBlock(declaration.Start, declaration.End, copyBackStatements);
+                    statementList = [null!, new AstTryStatement(declaration.Start, declaration.End, tryBody, null, null, finallyBody)];
+                }
+                else
+                {
+                    statementList.AddRange(copyBackStatements);
+                }
             }
 
             if (requiresReplacement)
@@ -880,11 +920,9 @@ partial class FastParser
             // NOTE: for a no-closure update the carrier is mutated directly by the (replaced) outer
             // loop update, and the per-iteration body re-binds each name from that carrier — closures
             // in the test/body still capture the correct per-iteration value (test262
-            // let-closure-inside-condition). We deliberately do NOT also copy the per-iteration
-            // binding back into the carrier at the end of the body: that would change the value seen
-            // by the next iteration when the BODY (not the update) mutates the loop variable, which is
-            // a separate pre-existing behaviour and not needed by any of the loop-env fixes here
-            // (P40/P25's increment-position closures use the increment-at-top `finally` path above).
+            // let-closure-inside-condition). The end-of-body copy above runs first, so the update reads
+            // the value the body left behind, matching ForBodyEvaluation's
+            // CreatePerIterationEnvironment-then-increment order.
 
             // The per-iteration scoped declaration carries the original head's
             // `using` / `await using` disposal markers, so a `for (using x of …)`
