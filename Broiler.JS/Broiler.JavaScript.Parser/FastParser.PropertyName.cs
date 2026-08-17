@@ -67,10 +67,10 @@ partial class FastParser
 
         if (stream.CheckAndConsume(TokenTypes.Hash, out var hashToken))
         {
-            if (!Identitifer(out var privateIdentifier))
+            if (!PrivateIdentifierName(out var privateIdentifier))
                 throw stream.Unexpected();
 
-            node = new AstIdentifier(hashToken, $"#{privateIdentifier.Name.Value}");
+            node = new AstIdentifier(hashToken, $"#{privateIdentifier}");
             computed = false;
             isPrivate = true;
 

@@ -560,6 +560,77 @@ partial class FastParser
             return names;
         }
 
+        /// <summary>
+        /// True when a statement at the top level of the loop body declares a name the head
+        /// also binds, so the body must keep its own scope instead of being spliced into the
+        /// per-iteration block (see the call site).
+        /// </summary>
+        /// <remarks>
+        /// Only the body's OWN declarations can collide: anything inside a nested block, loop
+        /// or function already has a scope of its own. A `var` cannot collide either — it is
+        /// hoisted to the enclosing function, and a `var` sharing a name with a lexical head
+        /// binding is an early error the validator reports.
+        /// </remarks>
+        static bool BodyShadowsHeadBinding(AstVariableDeclaration declaration, IFastEnumerable<AstStatement> body)
+        {
+            var headNames = new Sequence<StringSpan>();
+            var headEn = declaration.Declarators.GetFastEnumerator();
+            while (headEn.MoveNext(out var headDeclarator))
+                CollectBindingNames(headDeclarator.Identifier, headNames);
+
+            if (headNames.Count == 0)
+                return false;
+
+            bool IsHeadName(StringSpan name)
+            {
+                foreach (var headName in headNames)
+                {
+                    if (string.Equals(headName.Value, name.Value, StringComparison.Ordinal))
+                        return true;
+                }
+
+                return false;
+            }
+
+            var statements = body.GetFastEnumerator();
+            while (statements.MoveNext(out var statement))
+            {
+                switch (statement)
+                {
+                    case AstVariableDeclaration { Kind: not FastVariableKind.Var } lexical:
+                        var bodyNames = new Sequence<StringSpan>();
+                        var declarators = lexical.Declarators.GetFastEnumerator();
+                        while (declarators.MoveNext(out var declarator))
+                            CollectBindingNames(declarator.Identifier, bodyNames);
+
+                        foreach (var bodyName in bodyNames)
+                        {
+                            if (IsHeadName(bodyName))
+                                return true;
+                        }
+                        break;
+
+                    case AstExpressionStatement
+                    {
+                        Expression: AstClassExpression { IsDeclaration: true, Identifier: { } classIdentifier }
+                    }:
+                        if (IsHeadName(classIdentifier.Name))
+                            return true;
+                        break;
+
+                    case AstExpressionStatement
+                    {
+                        Expression: AstFunctionExpression { IsStatement: true, Id: { } functionIdentifier }
+                    }:
+                        if (IsHeadName(functionIdentifier.Name))
+                            return true;
+                        break;
+                }
+            }
+
+            return false;
+        }
+
         static void CollectBindingNames(AstExpression expression, Sequence<StringSpan> names)
         {
             switch (expression.Type)
@@ -720,8 +791,30 @@ partial class FastParser
         (AstNode beginNode, AstStatement statement, AstExpression? update, AstExpression? test) Desugar(AstVariableDeclaration declaration, IFastEnumerable<AstStatement> body,
             AstExpression? update, AstExpression? test, bool cStyle, bool bodyContainsContinue, AstBlock? sourceBlock = null)
         {
-            var statementList = new Sequence<AstStatement>(body.Count + 1) { null! };
-            statementList.AddRange(body);
+            // The head's bindings and the body's belong to DIFFERENT scopes: the loop's
+            // per-iteration environment holds the head's, and a Block body opens its own
+            // environment nested inside it, so a body-level `let`/`const`/`class`/`function`
+            // may shadow a head binding of the same name. Splicing the body's statements in
+            // beside the synthetic head declaration put both in ONE block, which made the two
+            // declarations collide:
+            //   for (const x of xs) { const x = 5; }   threw "Cannot assign to read only
+            //                                          variable" — the body initializer was
+            //                                          assigning the head's binding
+            //   for (let i = 0; i < 2; i++) { let i = 9; }   ran once instead of twice — the
+            //                                          body's 9 was copied back into the
+            //                                          loop carrier as the next `i`
+            // Source written by hand rarely shadows a loop variable with its own name, but a
+            // minifier renames the head binding and the body binding independently and lands
+            // on one short name for both. Nest only when a name actually collides: the
+            // ordinary loop body keeps its single flat block scope, and with it the shape the
+            // per-iteration lowering below was tuned around.
+            var nestBody = sourceBlock != null && BodyShadowsHeadBinding(declaration, body);
+
+            var statementList = new Sequence<AstStatement>(nestBody ? 2 : body.Count + 1) { null! };
+            if (nestBody)
+                statementList.Add(sourceBlock!);
+            else
+                statementList.AddRange(body);
 
             // for-of and for-in does not require identifier replacement
             // instead they need single identifier as a temp variable
@@ -947,11 +1040,16 @@ partial class FastParser
             // hoisted into this block scope and a closure over the per-iteration
             // loop variable captures an uninitialised slot. Merge those names with
             // the loop's own per-iteration binding names (`hoisted`).
-            var combinedHoisting = CombineHoisting(useLoopEnv || requiresReplacement ? hoisted : null, sourceBlock?.HoistingScope);
+            // When the body was nested rather than spliced it is still its own block, and it
+            // keeps carrying its own hoisting scope and Annex B names — re-hoisting them into
+            // the synthetic outer block would bind them one scope too high.
+            var combinedHoisting = CombineHoisting(
+                useLoopEnv || requiresReplacement ? hoisted : null,
+                nestBody ? null : sourceBlock?.HoistingScope);
             if (combinedHoisting != null)
                 block.HoistingScope = combinedHoisting;
 
-            if (sourceBlock?.AnnexBFunctionNames != null)
+            if (!nestBody && sourceBlock?.AnnexBFunctionNames != null)
                 block.AnnexBFunctionNames = sourceBlock.AnnexBFunctionNames;
 
             return (r, block, update, test);

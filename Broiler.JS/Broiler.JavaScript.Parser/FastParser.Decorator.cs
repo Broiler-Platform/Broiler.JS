@@ -64,7 +64,7 @@ partial class FastParser
             if (stream.CheckAndConsume(TokenTypes.Hash))
             {
                 // . PrivateIdentifier
-                if (!Identitifer(out _))
+                if (!PrivateIdentifierName(out _))
                     throw stream.Unexpected();
 
                 continue;

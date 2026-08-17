@@ -183,9 +183,9 @@ partial class FastParser
                 // private-name namespace; the compiler resolves the brand check
                 // (VisitBinaryExpression).
                 stream.Consume();
-                if (!Identitifer(out var privateName))
+                if (!PrivateIdentifierName(out var privateName))
                     throw stream.Unexpected();
-                node = new AstIdentifier(token, "#" + privateName.Name.Value);
+                node = new AstIdentifier(token, "#" + privateName);
 
                 // `in` must follow immediately (line terminators allowed): every other position —
                 // `!#x`, `#x;`, `#x + 1` — is an early SyntaxError. The remaining precedence case

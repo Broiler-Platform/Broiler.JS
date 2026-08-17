@@ -1097,6 +1097,43 @@ includes: [assert.js, sta.js]
                 self.assertEqual(failure_type, results[1]["failureType"])
                 self.assertIn(str(error), results[1]["reason"])
 
+    def test_minifier_parse_rejection_is_not_applicable_not_a_failure(self) -> None:
+        # Terser refuses valid ECMAScript the engine runs (an escaped keyword used as an
+        # IdentifierName, sloppy-mode `let`, an Annex B assignment target, decorators,
+        # import attributes with a trailing comma). Nothing was minified, so there is no
+        # minified variant whose result could be attributed to the engine.
+        path = self.write_test("test/language/minifier-cannot-parse.js", "1;\n")
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        error = run_test262.MinifierSyntaxError(
+            "Terser SyntaxError at line 8, column 2: "
+            "Escaped characters are not allowed in keywords"
+        )
+        minifier = FakeMinifier(error=error)
+
+        with mock.patch.object(
+            run_test262,
+            "run_test",
+            side_effect=passing_run_test,
+        ) as run_test_mock:
+            results = run_test262.run_test_variants_with_metadata(
+                repo,
+                TEST_ENGINE_PATH,
+                path,
+                {},
+                30.0,
+                0,
+                minifier=minifier,
+            )
+
+        self.assertEqual(1, run_test_mock.call_count)
+        self.assertEqual("passed", results[0]["status"])
+        self.assertEqual("skipped", results[1]["status"])
+        self.assertEqual("terser", results[1]["variant"])
+        self.assertTrue(results[1]["notApplicable"])
+        self.assertEqual("minifier-unsupported-syntax", results[1]["skipKind"])
+        self.assertNotIn("infrastructure", results[1])
+        self.assertIn(str(error), results[1]["reason"])
+
     def test_terser_engine_timeout_is_kept_as_a_separate_variant_case(self) -> None:
         path = self.write_test("test/language/terser-engine-timeout.js", "1;\n")
         repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))

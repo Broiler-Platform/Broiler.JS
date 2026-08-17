@@ -56,10 +56,24 @@ partial class FastCompiler
             if (catchParam is AstIdentifier id)
             {
                 var pe = this.scope.Top.CreateException(id.Name.Value);
-                using var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
-                var v = scope.CreateVariable(id.Name, newScope: true);
-                v.IsSimpleCatchBinding = true;
-                var catchBlock = BExpression.Block(v.Variable.AsSequence(), ResetCompletion(completionVar), BExpression.Assign(v.Variable, JSVariableBuilder.NewFromException(pe.Variable, id.Name.Value)), VisitStatement(cb));
+                BExpression catchBlock;
+
+                // The catch parameter's scope covers the Catch block and nothing else. A
+                // `using var` here popped it at the end of the METHOD, so it was still on
+                // the stack when VisitFinallyBlock ran below, and a name the Finally block
+                // shares with the catch parameter bound to the catch parameter's variable —
+                // a local of the catch handler, not in scope in the finally handler. IL
+                // generation then failed outright ("references the undeclared parameter"),
+                // taking down the whole compilation. Nothing keeps the two names apart in
+                // minified code, where an outer `var` is renamed independently of the catch
+                // parameter: `function(v){var e=0;try{…}catch(e){}finally{return e}}`.
+                using (var catchScope = this.scope.Push(new FastFunctionScope(this.scope.Top)))
+                {
+                    var v = catchScope.CreateVariable(id.Name, newScope: true);
+                    v.IsSimpleCatchBinding = true;
+                    catchBlock = BExpression.Block(v.Variable.AsSequence(), ResetCompletion(completionVar), BExpression.Assign(v.Variable, JSVariableBuilder.NewFromException(pe.Variable, id.Name.Value)), VisitStatement(cb));
+                }
+
                 var cbExp = BExpression.Catch(pe.Variable, catchBlock.ToJSValue());
 
                 if (tryStatement.Finally != null)
@@ -72,30 +86,38 @@ partial class FastCompiler
                 // Use a synthetic identifier for the exception, then destructure inside the catch block
                 var syntheticName = new StringSpan("__catchParam__");
                 var pe = this.scope.Top.CreateException(syntheticName.Value);
-                using var scope = this.scope.Push(new FastFunctionScope(this.scope.Top));
-                var v = this.scope.Top.CreateVariable(syntheticName, newScope: true);
-                var destrList = new Sequence<BExpression>();
-                // Destructure the caught exception into the pattern's bindings. Pass
-                // suppressAnonymousFunctionNameInference so a per-element default that is
-                // not a plain anonymous function definition (e.g. `[x = (0, function(){})]`)
-                // does NOT adopt the binding name — matching the let/var declaration path
-                // (a covered/comma initializer is not an AnonymousFunctionDefinition).
-                CreateAssignment(destrList, catchParam, v.Expression, createVariable: true, newScope: true,
-                    suppressAnonymousFunctionNameInference: true);
-                // Collect all variables created in this scope (including destructured bindings)
-                var vars = new Sequence<BParameterExpression>();
-                var list = new Sequence<BExpression>();
-                foreach (var vp in this.scope.Top.VariableParameters)
-                    vars.Add(vp);
-                list.Add(ResetCompletion(completionVar));
-                // Initialize all variables (including JSVariable constructors for destructured bindings)
-                foreach (var initExpr in this.scope.Top.InitList)
-                    list.Add(initExpr);
-                list.Add(BExpression.Assign(v.Variable, JSVariableBuilder.NewFromException(pe.Variable, syntheticName.Value)));
-                foreach (var d in destrList)
-                    list.Add(d);
-                list.Add(VisitStatement(cb));
-                var catchBlock = BExpression.Block(vars, list);
+                BExpression catchBlock;
+
+                // Popped before the Finally block is visited, for the reason given in the
+                // simple-identifier branch above: a destructured catch binding is in scope
+                // for the Catch block only.
+                using (this.scope.Push(new FastFunctionScope(this.scope.Top)))
+                {
+                    var v = this.scope.Top.CreateVariable(syntheticName, newScope: true);
+                    var destrList = new Sequence<BExpression>();
+                    // Destructure the caught exception into the pattern's bindings. Pass
+                    // suppressAnonymousFunctionNameInference so a per-element default that is
+                    // not a plain anonymous function definition (e.g. `[x = (0, function(){})]`)
+                    // does NOT adopt the binding name — matching the let/var declaration path
+                    // (a covered/comma initializer is not an AnonymousFunctionDefinition).
+                    CreateAssignment(destrList, catchParam, v.Expression, createVariable: true, newScope: true,
+                        suppressAnonymousFunctionNameInference: true);
+                    // Collect all variables created in this scope (including destructured bindings)
+                    var vars = new Sequence<BParameterExpression>();
+                    var list = new Sequence<BExpression>();
+                    foreach (var vp in this.scope.Top.VariableParameters)
+                        vars.Add(vp);
+                    list.Add(ResetCompletion(completionVar));
+                    // Initialize all variables (including JSVariable constructors for destructured bindings)
+                    foreach (var initExpr in this.scope.Top.InitList)
+                        list.Add(initExpr);
+                    list.Add(BExpression.Assign(v.Variable, JSVariableBuilder.NewFromException(pe.Variable, syntheticName.Value)));
+                    foreach (var d in destrList)
+                        list.Add(d);
+                    list.Add(VisitStatement(cb));
+                    catchBlock = BExpression.Block(vars, list);
+                }
+
                 var cbExp = BExpression.Catch(pe.Variable, catchBlock.ToJSValue());
 
                 if (tryStatement.Finally != null)
