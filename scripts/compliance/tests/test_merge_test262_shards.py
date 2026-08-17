@@ -50,7 +50,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
         selected_before_sharding: int | None = None,
         minifier: str | None = None,
         minifier_version: str = "5.31.0",
-        minifier_profile: str = "test262-safe-mangle-v1",
+        minifier_profile: str = "test262-safe-mangle-v2",
         minifier_timeout_seconds: float = 15.0,
         variants: list[str] | None = None,
     ) -> dict[str, object]:
@@ -104,6 +104,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
                     "mangle": True,
                     "mangleProperties": False,
                     "mangleEval": False,
+                    "reserveQuotedNames": True,
                     "toplevel": False,
                     "module": False,
                     "keepFunctionNames": True,
@@ -183,7 +184,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
         suite_ref: str = "abc123",
         minifier: str | None = None,
         minifier_version: str = "5.31.0",
-        minifier_profile: str = "test262-safe-mangle-v1",
+        minifier_profile: str = "test262-safe-mangle-v2",
         minifier_timeout_seconds: float = 15.0,
         variants: list[str] | None = None,
     ) -> Path:
@@ -1396,8 +1397,8 @@ class MergeTest262ShardsTests(unittest.TestCase):
         messages = "\n".join(
             failure["message"] for failure in merged["configurationFailures"]
         )
-        self.assertIn("minifierProfile=test262-safe-mangle-v1", messages)
-        self.assertIn("exact test262-safe-mangle-v1 minifierOptions", messages)
+        self.assertIn("minifierProfile=test262-safe-mangle-v2", messages)
+        self.assertIn("exact test262-safe-mangle-v2 minifierOptions", messages)
         self.assertEqual([], merged["executedPaths"])
 
     def test_wrong_expected_variant_count_makes_report_incomplete(self) -> None:

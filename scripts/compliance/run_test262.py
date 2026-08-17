@@ -84,7 +84,7 @@ HOST_HARNESS_REFERENCE_PATTERN = re.compile(r"\$262(?:\b|\.)")
 HOST_HARNESS_BLOCKER_NAME = "$262"
 DEFAULT_TEST_TIMEOUT_SECONDS = 30.0
 DEFAULT_MINIFIER_TIMEOUT_SECONDS = 30.0
-TERSER_PROFILE = "test262-safe-mangle-v1"
+TERSER_PROFILE = "test262-safe-mangle-v2"
 TERSER_VARIANT = "terser"
 ORIGINAL_VARIANT = "original"
 TERSER_WORKER = Path(__file__).with_name("terser_worker.cjs")
@@ -94,6 +94,20 @@ TERSER_SOURCE_SENSITIVE_PREFIXES = (
 FUNCTION_TOSTRING_REFERENCE = re.compile(
     r"\bFunction\s*\.\s*prototype\s*\.\s*toString\b"
 )
+QUOTED_STRING = re.compile(r"(['\"])((?:\\.|(?!\1)[^\\\r\n])*)\1")
+WHITESPACE_RUN = re.compile(r"\s+")
+# A quoted function or class definition, matched against a literal whose whitespace has
+# been collapsed: `function* g() { … }`, `async function (a, b) { … }`, `class C extends D
+# { … }`. See quoted_source_text.
+QUOTED_DEFINITION = re.compile(r"(?:async)?(?:function\*?|class)[A-Za-z0-9_$]*[({]")
+# The shortest quoted code fragment worth reading as a copy of the source: below this a
+# collapsed literal is common punctuation that says nothing about what the test measures.
+MINIMUM_QUOTED_SOURCE_LENGTH = 8
+# How far either side of such a literal a `toString` still counts as standing next to it:
+# wide enough for the assertion that compares the two — `assert.sameValue(f.toString(),`
+# and a line break — and no wider, so a `toString` in a neighbouring statement does not
+# make an assertion message that happens to quote a definition read as source text.
+QUOTED_SOURCE_NEIGHBOURHOOD = 48
 POST_TERMINATION_TIMEOUT_SECONDS = 5.0
 INTERNAL_EXEC_WITH_LIMITS = "--_exec-with-test262-limits"
 # The engine consulted about a FAILING minified case before it is attributed to Broiler.
@@ -322,11 +336,15 @@ class TerserSession:
         code = response.get("code")
         if not isinstance(code, str):
             raise MinifierError("Terser worker returned no JavaScript output")
-        return {
+        result: dict[str, object] = {
             "code": code,
             "originalBytes": len(source.encode("utf-8")),
             "minifiedBytes": len(code.encode("utf-8")),
         }
+        unsupported_syntax = response.get("unsupportedSyntax")
+        if isinstance(unsupported_syntax, str) and unsupported_syntax:
+            result["unsupportedSyntax"] = unsupported_syntax
+        return result
 
     @property
     def is_alive(self) -> bool:
@@ -765,6 +783,50 @@ def parse_negative_metadata(source: str) -> dict[str, str] | None:
             summary[key] = value_match.group(1)
 
     return summary if summary else None
+
+
+def quoted_source_text(body: str) -> str | None:
+    """The first quoted function or class in the body that the same file also declares.
+
+    `test/staging/sm/generators/runtime.js` asserts
+    `assert.sameValue("function* g() { yield 1; }", g.toString())` about the `function* g`
+    it declares seventy lines earlier: the literal is a transcript of the source text, and
+    rewriting source text is the whole of what a minifier does, so the assertion measures
+    the formatter and not the engine. The test names no `Function.prototype.toString` for
+    a prefix or a pattern to key on — it just calls `.toString()` — but the relationship
+    it depends on is in the file: a quoted definition that reappears as code.
+
+    All three conditions are needed to find those two tests (this one and
+    `staging/sm/async-functions/toString.js`) and nothing else in the suite. The literal
+    has to READ as a definition rather than as an assertion message quoting an expression,
+    which hundreds of tests do; that definition has to occur outside its own quotes —
+    compared with whitespace collapsed, so the match holds however the file is laid out,
+    and against a body whose own string literals are blanked, so a message quoted twice
+    cannot pass for code; and a `toString` has to stand next to it, which is what tells
+    the expected source text of a function apart from a definition the test merely evals.
+    """
+    code_only = QUOTED_STRING.sub(lambda match: match.group(1) * 2, body)
+    if "toString" not in code_only:
+        return None
+    collapsed_code = WHITESPACE_RUN.sub("", code_only)
+    for match in QUOTED_STRING.finditer(body):
+        literal = match.group(2)
+        if "\\" in literal or not WHITESPACE_RUN.search(literal):
+            continue
+        collapsed = WHITESPACE_RUN.sub("", literal)
+        if len(collapsed) < MINIMUM_QUOTED_SOURCE_LENGTH:
+            continue
+        if not QUOTED_DEFINITION.match(collapsed):
+            continue
+        if collapsed not in collapsed_code:
+            continue
+        neighbourhood = body[
+            max(0, match.start() - QUOTED_SOURCE_NEIGHBOURHOOD) :
+            match.end() + QUOTED_SOURCE_NEIGHBOURHOOD
+        ]
+        if "toString" in neighbourhood:
+            return literal
+    return None
 
 
 def classify_test(
@@ -1690,6 +1752,7 @@ def build_summary(
                 "mangle": True,
                 "mangleProperties": False,
                 "mangleEval": False,
+                "reserveQuotedNames": True,
                 "toplevel": False,
                 "keepFunctionNames": True,
                 "keepClassNames": True,
@@ -1802,6 +1865,14 @@ def cross_check_minified_failure(
       implement (Temporal, `using`, decorators) or a fixture it cannot resolve — so it has
       no opinion, and the failure stands as `inconclusive`.
 
+    An engine that cannot RUN a test can still have read it. When its parser accepts the
+    original and rejects the minified body, the minifier turned a program that engine
+    admits into one it does not, whatever the two would have done at run time — the
+    `import((1, 0, "./m.js"))` whose parentheses Terser drops is a three-argument
+    `ImportCall` no grammar has, and Node says so without ever resolving the fixture the
+    test needs. That answer is about syntax alone, so it is read even when the run was
+    inconclusive.
+
     Anything the reference engine itself cannot do (a missing binary, a spawn failure) is
     also inconclusive: this may report an engine failure it cannot explain, never suppress
     one it did not check.
@@ -1829,21 +1900,26 @@ def cross_check_minified_failure(
         if reference_engine.run(minified_program, is_async) == "passed":  # type: ignore[attr-defined]
             return stands("engine-divergence")
 
-        # Whether the reference engine can run the test AS WRITTEN is asked before its
-        # verdict on the minified body is read for anything: a feature it does not
-        # implement fails both variants and says nothing about either.
         original_program = assemble_test_program(
             repo, harness_cache, metadata, body, body_includes_strict=includes_strict
         )
-        if reference_engine.run(original_program, is_async) != "passed":  # type: ignore[attr-defined]
-            return stands("inconclusive")
-
         if not reference_engine.parses(minified_program):  # type: ignore[attr-defined]
+            # Reading the minified body needs no support for what the test does, only for
+            # the grammar it is written in. The original is the control: an engine that
+            # cannot parse THAT either is refusing the test's own syntax and has said
+            # nothing about the minifier.
+            if not reference_engine.parses(original_program):  # type: ignore[attr-defined]
+                return stands("inconclusive")
             outcome = MINIFIER_INVALID_OUTPUT
             reason = (
-                f"{engine_name} runs this test but cannot parse its minified body: the "
+                f"{engine_name} parses this test and cannot parse its minified body: the "
                 "minifier emitted source no engine accepts"
             )
+        # Whether the reference engine can run the test AS WRITTEN is asked before its
+        # RUNTIME verdict on the minified body is read for anything: a feature it does not
+        # implement fails both variants and says nothing about either.
+        elif reference_engine.run(original_program, is_async) != "passed":  # type: ignore[attr-defined]
+            return stands("inconclusive")
         else:
             outcome = MINIFIER_CHANGED_SEMANTICS
             reason = (
@@ -1970,12 +2046,20 @@ def run_test_variants_with_metadata(
         )
         return results
 
-    if path.startswith(TERSER_SOURCE_SENSITIVE_PREFIXES) or FUNCTION_TOSTRING_REFERENCE.search(
-        body
+    quoted_source = quoted_source_text(body)
+    if (
+        path.startswith(TERSER_SOURCE_SENSITIVE_PREFIXES)
+        or FUNCTION_TOSTRING_REFERENCE.search(body)
+        or quoted_source is not None
     ):
+        detail = (
+            f": the test quotes {quoted_source!r}, which it also contains as code"
+            if quoted_source is not None
+            else ""
+        )
         skipped = _not_applicable_minified_result(
             path,
-            "test observes Function.prototype.toString source text changed by minification",
+            "test observes source text changed by minification" + detail,
         )
         results.append(
             _enrich_result(skipped, source_size_bytes, features, flags, 0.0)
@@ -1995,20 +2079,36 @@ def run_test_variants_with_metadata(
         if not isinstance(code, str):
             raise MinifierError("minifier returned no JavaScript output")
 
-        minified_result = run_test(
-            repo,
-            broiler_dll,
-            path,
-            harness_cache,
-            timeout_seconds,
-            memory_limit_mb,
-            include_negative,
-            variant=TERSER_VARIANT,
-            body_override=code,
-            # Keep run_test's strict directive at byte zero. Terser also saw
-            # the directive so it parsed the body under the same semantics.
-            body_override_includes_strict=False,
-        )
+        unsupported_syntax = minified.get("unsupportedSyntax")
+        if isinstance(unsupported_syntax, str) and unsupported_syntax:
+            # Syntax the minifier neither rejects nor preserves. Terser 5 reads
+            # `accessor #x = 1` as two class elements and emits a class carrying a public
+            # `accessor` field and a private field where the test declared an
+            # auto-accessor's getter/setter pair. That output parses and runs, so nothing
+            # raises — but it is a different program, exactly the situation
+            # MinifierSyntaxError covers below, minus the diagnostic that announces it.
+            code = None
+            minified_result = _not_applicable_minified_result(
+                path,
+                f"minifier does not preserve this source: {unsupported_syntax} is "
+                "parsed as something else and silently rewritten",
+                skip_kind="minifier-unsupported-syntax",
+            )
+        else:
+            minified_result = run_test(
+                repo,
+                broiler_dll,
+                path,
+                harness_cache,
+                timeout_seconds,
+                memory_limit_mb,
+                include_negative,
+                variant=TERSER_VARIANT,
+                body_override=code,
+                # Keep run_test's strict directive at byte zero. Terser also saw
+                # the directive so it parsed the body under the same semantics.
+                body_override_includes_strict=False,
+            )
     except MinifierSyntaxError as exc:
         # The minifier's parser declined the source, so no minified variant of this test
         # exists to run. That is a fact about the minifier — see MinifierSyntaxError — and

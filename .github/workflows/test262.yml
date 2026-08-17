@@ -172,7 +172,9 @@ jobs:
                   "path": "validation.js",
                   "source": (
                       "function preservedName(longArgument) { "
-                      "return longArgument + 1; } preservedName(2);"
+                      "var quotedName = 1, mangledName = 2; "
+                      "return longArgument + quotedName + mangledName + 'quotedName'; } "
+                      "preservedName(2);"
                   ),
               },
           ]
@@ -200,13 +202,19 @@ jobs:
           if hello != {
               "id": 1,
               "ok": True,
-              "profile": "test262-safe-mangle-v1",
+              "profile": "test262-safe-mangle-v2",
               "version": "5.50.0",
           }:
               sys.exit(f"Unexpected Terser worker handshake: {hello!r}")
           code = transformed.get("code") if transformed.get("ok") is True else None
           if not isinstance(code, str) or "longArgument" in code or "preservedName" not in code:
               sys.exit(f"Unexpected Terser transformation response: {transformed!r}")
+          # The profile mangles a local the test does not name and holds back the one it
+          # quotes, so a name an assertion compares against still exists in the output.
+          if "mangledName" in code or code.count("quotedName") < 2:
+              sys.exit(f"Terser transformation did not reserve quoted names: {code!r}")
+          if transformed.get("reserved") != ["quotedName"]:
+              sys.exit(f"Unexpected Terser reserved-name report: {transformed!r}")
           PY
       - name: Install compliance-test dependency
         shell: bash

@@ -30,20 +30,25 @@ class FakeMinifier:
         self,
         code: str = "MINIFIED_BODY();",
         error: Exception | None = None,
+        unsupported_syntax: str | None = None,
     ) -> None:
         self.code = code
         self.error = error
+        self.unsupported_syntax = unsupported_syntax
         self.calls: list[tuple[str, str]] = []
 
     def minify(self, source: str, path: str) -> dict[str, object]:
         self.calls.append((source, path))
         if self.error is not None:
             raise self.error
-        return {
+        result: dict[str, object] = {
             "code": self.code,
             "originalBytes": len(source.encode("utf-8")),
             "minifiedBytes": len(self.code.encode("utf-8")),
         }
+        if self.unsupported_syntax is not None:
+            result["unsupportedSyntax"] = self.unsupported_syntax
+        return result
 
 
 class FakeReferenceEngine:
@@ -1040,6 +1045,13 @@ includes: [assert.js, sta.js]
                 "test/language/direct-function-tostring.js",
                 "Function . prototype . toString.call(function observed() {});\n",
             ),
+            # A test that names no Function.prototype.toString and still measures source
+            # text: the literal is a transcript of the generator declared above it.
+            (
+                "test/language/quoted-source-tostring.js",
+                'function* g() { yield 1; }\n'
+                'assert.sameValue("function* g() { yield 1; }", g.toString());\n',
+            ),
         )
         repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
 
@@ -1066,7 +1078,70 @@ includes: [assert.js, sta.js]
                 self.assertEqual("passed", results[0]["status"])
                 self.assertEqual("skipped", results[1]["status"])
                 self.assertTrue(results[1]["notApplicable"])
-                self.assertIn("Function.prototype.toString", results[1]["reason"])
+                self.assertIn("observes source text", results[1]["reason"])
+
+    def test_a_quoted_expression_in_an_assertion_message_is_still_minified(self) -> None:
+        # The suite is full of messages that quote the expression they are about, and one
+        # of those is not a test measuring its own source text: only a quoted DEFINITION
+        # standing next to a toString is.
+        path = self.write_test(
+            "test/language/quoted-assertion-message.js",
+            "var array = [1, 2, 3];\n"
+            "assert(array.indexOf(3, 2) === 2, 'array.indexOf(3, 2) !== 2');\n"
+            "assert.sameValue(array.toString(), '1,2,3', 'array.toString() is wrong');\n"
+            "function helper(value) { return value; }\n"
+            "assert.sameValue(helper(1), 1, 'function helper(value) { return value; }');\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        minifier = FakeMinifier()
+
+        with mock.patch.object(
+            run_test262, "run_test", side_effect=passing_run_test
+        ):
+            results = run_test262.run_test_variants_with_metadata(
+                repo, TEST_ENGINE_PATH, path, {}, 30.0, 0, minifier=minifier,
+            )
+
+        self.assertEqual(1, len(minifier.calls))
+        self.assertEqual(["passed", "passed"], [r["status"] for r in results])
+
+    def test_syntax_the_minifier_silently_rewrites_is_not_applicable(self) -> None:
+        # Terser does not reject `accessor #x = 1`; it reads it as two class elements and
+        # emits a different program. There is no minified variant of this test to run, so
+        # nothing may be attributed to the engine either way.
+        path = self.write_test(
+            "test/language/auto-accessor.js",
+            "class C { accessor #x = 1; }\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        minifier = FakeMinifier(unsupported_syntax="auto-accessor")
+        engine = FakeReferenceEngine()
+
+        def failing_minified(repo, dll, path, cache, timeout, mem,
+                             include_negative=False, *, variant=None,
+                             body_override=None, **kwargs):
+            self.fail("the minified variant must not be executed")
+
+        with mock.patch.object(
+            run_test262,
+            "run_test",
+            side_effect=lambda *args, **kwargs: (
+                failing_minified(*args, **kwargs)
+                if kwargs.get("body_override") is not None
+                else passing_run_test(*args, **kwargs)
+            ),
+        ):
+            results = run_test262.run_test_variants_with_metadata(
+                repo, TEST_ENGINE_PATH, path, {}, 30.0, 0,
+                minifier=minifier, reference_engine=engine,
+            )
+
+        self.assertEqual("passed", results[0]["status"])
+        self.assertEqual("skipped", results[1]["status"])
+        self.assertIs(True, results[1]["notApplicable"])
+        self.assertEqual("minifier-unsupported-syntax", results[1]["skipKind"])
+        self.assertIn("auto-accessor", str(results[1]["reason"]))
+        self.assertEqual([], engine.programs)
 
     def test_skipped_original_produces_not_applicable_terser_case(self) -> None:
         path = self.write_test("test/language/skipped-original.js", "1;\n")
@@ -1665,7 +1740,37 @@ includes: [assert.js, sta.js]
 
         self.assertEqual("failed", result["status"])
         self.assertEqual("inconclusive", result["referenceCrossCheck"])
-        self.assertEqual([], engine.parse_checks)
+        # It was still asked to READ the minified body, which needs no support for what
+        # the test does — only for the grammar it is written in.
+        self.assertEqual(1, len(engine.parse_checks))
+
+    def test_unrunnable_original_still_gets_a_verdict_on_unparsable_output(self) -> None:
+        # `import((1, 0, "./m.js"))`: the second engine cannot RUN the test — it never
+        # resolves the fixture — and still rejects the three-argument call the minifier
+        # printed. That answer is about syntax alone, so it settles the case.
+        engine = FakeReferenceEngine(
+            {"BODY": "failed"}, unparsable=("MINIFIED_BODY",)
+        )
+        result = self._cross_check_case(engine)
+
+        self.assertEqual("skipped", result["status"])
+        self.assertIs(True, result["notApplicable"])
+        self.assertEqual("minifier-invalid-output", result["skipKind"])
+        self.assertIn("parses this test", str(result["reason"]))
+        # Nothing was run to reach that verdict beyond the minified body itself.
+        self.assertEqual(1, len(engine.programs))
+
+    def test_an_original_the_reference_engine_cannot_parse_decides_nothing(self) -> None:
+        # `using` in Node: the second engine refuses the test's own syntax, so its refusal
+        # of the minified body is about the same gap and attributes nothing.
+        engine = FakeReferenceEngine(
+            {"BODY": "failed"}, unparsable=("BODY",)
+        )
+        result = self._cross_check_case(engine)
+
+        self.assertEqual("failed", result["status"])
+        self.assertEqual("inconclusive", result["referenceCrossCheck"])
+        self.assertEqual(2, len(engine.parse_checks))
 
     def test_unusable_reference_engine_leaves_the_failure_reported(self) -> None:
         engine = FakeReferenceEngine(error=run_test262.ReferenceEngineError("no node"))
