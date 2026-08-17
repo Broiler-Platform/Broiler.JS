@@ -730,17 +730,22 @@ public partial class JSArray
     public static JSValue ReduceRight(in Arguments a)
     {
         var @this = ToArrayLikeObject(a.This);
-        var length = GetArrayLikeLength(@this);
+        // §23.1.3.24 step 2 reads the length with LengthOfArrayLike (ToLength, up to 2^53-1). Clamping
+        // it into the 32-bit array-index range started the descending walk four billion indices below
+        // the real end, so an array-like holding its elements near 2^53 iterated over four billion
+        // absent indices instead of the two present ones (test262
+        // Array/prototype/reduceRight/length-near-integer-limit, staging/sm/Array/to-length).
+        var length = GetArrayLikeLengthLong(@this);
         var (callback, initialValue) = a.Get2();
 
         if (callback is not JSFunction fn)
             throw JSEngine.NewTypeError($"{callback} is not a function in Array.prototype.reduce");
 
-        long start = (long)length - 1;
+        long start = length - 1;
 
         if (a.Length == 1)
         {
-            while (start >= 0 && !TryGetArrayLikeElement(@this, (uint)start, out initialValue))
+            while (start >= 0 && !TryGetArrayLikeElement(@this, start, out initialValue))
                 start--;
 
             if (start < 0)
@@ -751,7 +756,7 @@ public partial class JSArray
 
         for (long i = start; i >= 0; i--)
         {
-            if (!TryGetArrayLikeElement(@this, (uint)i, out var item))
+            if (!TryGetArrayLikeElement(@this, i, out var item))
                 continue;
 
             initialValue = fn.InvokeCallback(new Arguments(JSUndefined.Value, initialValue, item, new JSNumber(i), @this));

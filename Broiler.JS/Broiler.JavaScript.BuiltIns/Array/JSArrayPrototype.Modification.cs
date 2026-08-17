@@ -629,32 +629,48 @@ public partial class JSArray
     public static JSValue Unshift(in Arguments a)
     {
         var @this = ToArrayLikeObject(a.This);
-        var argCount = (uint)a.Length;
-        var length = GetArrayLikeLength(@this);
+        long argCount = a.Length;
+        // §23.1.3.35 step 2 reads the length with LengthOfArrayLike, i.e. ToLength, which clamps to
+        // 2^53-1 — not to the 2^32-1 array-index range. Reading it as a uint clamped a large
+        // array-like's length to 4294967295, so the shift loop below walked four billion absent
+        // indices instead of the handful of properties actually near 2^53, and the reported new
+        // length was wrong too (test262 Array/prototype/unshift/length-near-integer-limit,
+        // clamps-to-integer-limit, staging/sm/Array/unshift-01).
+        var length = GetArrayLikeLengthLong(@this);
 
-        if (length + argCount > MaxArrayLikeLength)
-            throw JSEngine.NewRangeError("Invalid array length");
-
-        for (var index = length; index > 0; index--)
+        // Steps 4.a-4.d run only when there is something to insert. With no arguments each shift
+        // would copy an element onto itself (`to` equals `from`), so a zero-argument call on an
+        // array-like whose length is near 2^53-1 must fall straight through to the length update
+        // rather than iterate over the whole range.
+        if (argCount > 0)
         {
-            var fromIndex = index - 1;
-            var toIndex = fromIndex + argCount;
+            // Step 4.a: a resulting length past 2^53-1 is a TypeError, not a RangeError. The old
+            // uint arithmetic could not detect it at all — `4294967295u + 1u` wraps to 0, which is
+            // below the limit — so the overflowing call ran the shift loop instead of throwing.
+            if (length + argCount > MaxArrayLikeLength)
+                throw JSEngine.NewTypeError("Invalid array length");
 
-            // Source presence is tested with HasProperty and read with [[Get]] — both
-            // traverse the prototype chain — so a hole shadowing an inherited indexed
-            // property (e.g. Array.prototype[0]) is copied, not deleted.
-            if (HasIndexedProperty(@this, fromIndex))
+            for (var index = length; index > 0; index--)
             {
-                SetIndexedValue(@this, toIndex, GetIndexedValue(@this, fromIndex));
+                var fromIndex = index - 1;
+                var toIndex = fromIndex + argCount;
+
+                // Source presence is tested with HasProperty and read with [[Get]] — both
+                // traverse the prototype chain — so a hole shadowing an inherited indexed
+                // property (e.g. Array.prototype[0]) is copied, not deleted.
+                if (HasIndexedProperty(@this, fromIndex))
+                {
+                    SetIndexedValue(@this, toIndex, GetIndexedValue(@this, fromIndex));
+                }
+                else
+                {
+                    DeleteIndexedValueOrThrow(@this, toIndex);
+                }
             }
-            else
-            {
-                DeleteIndexedValueOrThrow(@this, toIndex);
-            }
+
+            for (var index = 0; index < argCount; index++)
+                @this.SetValue((uint)index, a.GetAt((int)index), @this);
         }
-
-        for (uint index = 0; index < argCount; index++)
-            @this.SetValue(index, a.GetAt((int)index), @this);
 
         var newLength = new JSNumber(length + argCount);
         @this.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), newLength);

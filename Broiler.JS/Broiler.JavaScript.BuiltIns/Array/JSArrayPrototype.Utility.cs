@@ -118,9 +118,13 @@ public partial class JSArray
             ? Math.Max(length + relativeEnd, 0)
             : Math.Min(relativeEnd, length);
         var count = Math.Max(actualEnd - actualStart, 0);
-        var resultLength = (uint)Math.Min(count, uint.MaxValue);
 
-        var result = CreateArraySpecies(@this, resultLength);
+        // §23.1.3.25 step 8 hands `count` straight to ArraySpeciesCreate, so a count above the
+        // 2^32-1 array-index limit is rejected there with a RangeError (and a custom @@species
+        // constructor sees the true count, up to 2^53-1). Clamping to uint.MaxValue first turned
+        // that RangeError into a four-billion-iteration copy loop (test262
+        // Array/prototype/slice/S15.4.4.10_A3_T1, _A3_T2, create-proxied-array-invalid-len).
+        var result = CreateArraySpecies(@this, count);
         uint resultIndex = 0;
 
         for (long sourceIndex = actualStart; sourceIndex < actualEnd; sourceIndex++)
@@ -185,10 +189,18 @@ public partial class JSArray
     internal static JSValue ToReversed(in Arguments a)
     {
         var source = ToArrayLikeObject(a.This);
-        var length = GetArrayLikeLength(source);
-        var result = new JSArray(length);
-        for (uint i = 0; i < length; i++)
-            CreateDataPropertyOrThrow(result, i, source[length - i - 1]);
+
+        // §23.1.3.33 step 2 reads the length with LengthOfArrayLike (ToLength, up to 2^53-1) and step 3
+        // hands it to ArrayCreate, which rejects anything above 2^32-1 with a RangeError. Clamping the
+        // length into the array-index range instead built a four-billion-element result and copied into
+        // it, so the RangeError never surfaced (test262
+        // Array/prototype/toReversed/length-exceeding-array-length-limit). ToSorted and ToSpliced
+        // already enforce the limit this way.
+        var length = GetArrayLikeLengthLong(source);
+        var result = ArrayCreateChecked(length);
+        var len = (uint)length;
+        for (uint i = 0; i < len; i++)
+            CreateDataPropertyOrThrow(result, i, source[len - i - 1]);
         return result;
     }
 
