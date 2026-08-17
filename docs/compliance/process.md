@@ -54,8 +54,9 @@ optional POSIX memory limits, `--max-workers`, `--shuffle-seed`,
 `--prioritize-fragile`, and expected-error handling through `--include-negative`.
 `--minifier terser --terser-module <package-directory>` adds a Terser-transformed
 variant for each eligible script-host test; `--minifier-timeout-seconds` bounds each
-transformation independently. The fixed `test262-safe-mangle-v1` profile applies
-syntax minification and identifier mangling with compression disabled. The original
+transformation independently. The fixed `test262-safe-mangle-v2` profile applies
+syntax minification and identifier mangling with compression disabled, and reserves
+from mangling every identifier the test itself quotes (see below). The original
 variant always runs.
 
 A source Terser's own parser rejects is recorded as a not-applicable skip
@@ -67,16 +68,39 @@ IdentifierName (`break(){}`), `let` as a sloppy-mode identifier, a redeclared
 with a trailing comma — and the engine passes all of them as written. Transformation
 timeouts and internal minifier errors remain infrastructure failures.
 
+Syntax the minifier neither rejects nor preserves is the same skip. Terser 5 has no
+auto-accessor: it reads `class C { accessor #x = 1; }` as a field named `accessor`
+followed by a private field and prints `class C{accessor;#x=1}`, which parses and runs
+and is not the test. The runner recognises the rewrite — the source declares an
+auto-accessor and the output really did split it into a bare `accessor` element — so the
+case is not applicable, and the day Terser learns the syntax the recognition stops firing
+on its own.
+
 Mangling can also change what a test measures, which is a limit of the variant rather
 than a defect either side. A test whose subject IS binding identity — the separate
 parameter scope in `scope-*-paramsbody-var-open`, the Annex B early-error condition in
-`block-decl-func-skip-early-err-*`, the inferred `Function.prototype.name` in every
-`fn-name-*` case, a private name reached from a direct eval — is measuring a relationship
-between two names that the mangler renames independently. The minified program is then a
-different program, and every engine rejects it. Terser also sometimes emits source that is
-not JavaScript at all: it prints `if (false) let \n {}` as `if(false){let{}}`, unescapes
-`for (async of [7])` into the `for (async of …)` the grammar forbids, and drops the
-parentheses from `import((0, "./m.js"))`.
+`block-decl-func-skip-early-err-*`, a private name reached from a direct eval — is
+measuring a relationship between two names that the mangler renames independently. The
+minified program is then a different program, and every engine rejects it. Terser also
+sometimes emits source that is not JavaScript at all: it prints `if (false) let \n {}` as
+`if(false){let{}}`, unescapes `for (async of [7])` into the `for (async of …)` the
+grammar forbids, and drops the parentheses from `import((1, 0, "./m.js"))`.
+
+**Where the test names the binding, the profile keeps it instead.** Every `fn-name-*`
+case asserts the name an anonymous function inherited from its binding —
+`assert.sameValue(fn.name, 'fn')` — so mangling `fn` to `e` leaves the assertion
+comparing against a name the program no longer contains. Any identifier-shaped quoted
+spelling in a test's own source is therefore held back from mangling, and those cases
+measure what they were written to measure while everything they do not name is still
+mangled. Over-reserving costs one mangling opportunity and nothing else.
+
+A test can also hard-code the source text of code it declares —
+`assert.sameValue("function* g() { yield 1; }", g.toString())` in
+`staging/sm/generators/runtime.js` — without naming `Function.prototype.toString` for the
+path prefix or the pattern to key on. A quoted function or class definition that
+reappears as code in the same file, with a `toString` standing next to it, is that test:
+minification rewrites source text by definition, so there is no minified variant of it
+either.
 
 **The runner settles both automatically, by asking a second engine.** A minified case that
 FAILS is re-run under the reference engine (`--reference-engine-bin`, Node by default —
@@ -84,10 +108,17 @@ already required to run Terser at all) before it is attributed to Broiler:
 
 | Reference engine | Attribution |
 | --- | --- |
-| passes the original, cannot parse the minified body | not applicable, `skipKind: minifier-invalid-output` |
+| parses the original, cannot parse the minified body | not applicable, `skipKind: minifier-invalid-output` |
 | passes the original, fails the minified body | not applicable, `skipKind: minifier-changed-semantics` |
 | passes both | engine failure, `referenceCrossCheck: engine-divergence` |
 | cannot run the original either | engine failure, `referenceCrossCheck: inconclusive` |
+
+Reading the minified body needs no support for what the test *does*, only for the grammar
+it is written in, so the first row asks the parser and not the runtime: Node never
+resolves the fixture `dynamic-import/assignment-expression/cover-parenthesized-expr.js`
+imports, and still rejects the three-argument `ImportCall` Terser printed for
+`import((1, 0, "./m.js"))`. The original is the control — an engine that cannot parse
+THAT either is refusing the test's own syntax and has said nothing about the minifier.
 
 The check can only move a case OUT of the engine's column, never into it, and it never
 runs on a passing case, a negative test (which passes BY failing, which an exit code

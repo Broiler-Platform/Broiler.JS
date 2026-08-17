@@ -403,7 +403,7 @@ class Test262WorkflowTests(unittest.TestCase):
         self.assertIn('npm ci --prefix "$TERSER_PREFIX"', smoke["run"])
         self.assertIn('"operation": "hello"', smoke["run"])
         self.assertIn('"operation": "minify"', smoke["run"])
-        self.assertIn('"profile": "test262-safe-mangle-v1"', smoke["run"])
+        self.assertIn('"profile": "test262-safe-mangle-v2"', smoke["run"])
         self.assertIn('"version": "5.50.0"', smoke["run"])
         self.assertIn("timeout=30", smoke["run"])
         self.assertIn("except subprocess.TimeoutExpired", smoke["run"])

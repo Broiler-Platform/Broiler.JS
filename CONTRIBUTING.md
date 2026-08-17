@@ -14,8 +14,9 @@ semicolon-separated path/glob subsets, Test262 feature metadata, one shard, or
 the saved failures. Timeout, memory, worker, shuffle, negative-test, and
 fragile-first controls are also exposed by the dispatch form. By default each
 eligible test runs twice: once unchanged and once through the workflow's
-lockfile-pinned Terser using the `test262-safe-mangle-v1` syntax-minification and
-identifier-mangling profile (compression is disabled). Select `minifier: none` for an
+lockfile-pinned Terser using the `test262-safe-mangle-v2` syntax-minification and
+identifier-mangling profile (compression is disabled, and an identifier the test itself
+quotes is held back from mangling so a name the test asserts still exists). Select `minifier: none` for an
 original-only diagnostic run; that narrower profile is reported but cannot rewrite the
 canonical failure manifest.
 

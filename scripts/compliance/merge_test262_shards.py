@@ -99,7 +99,7 @@ _STATUS_RANK = {
 }
 _VARIANTS = ("original", "terser")
 _VARIANT_RANK = {variant: index for index, variant in enumerate(_VARIANTS)}
-_MINIFIER_PROFILE = "test262-safe-mangle-v1"
+_MINIFIER_PROFILE = "test262-safe-mangle-v2"
 _MINIFIER_NOT_APPLICABLE = "minifier-not-applicable"
 # The source could not be minified at all because the minifier's own parser rejected it
 # (an escaped keyword used as an IdentifierName, sloppy-mode `let`, an Annex B assignment
@@ -131,6 +131,9 @@ _MINIFIER_OPTIONS = {
     "mangle": True,
     "mangleProperties": False,
     "mangleEval": False,
+    # Identifiers the test itself quotes are held back from mangling: see
+    # run_test262.TERSER_PROFILE.
+    "reserveQuotedNames": True,
     "toplevel": False,
     "module": False,
     "keepFunctionNames": True,
@@ -2195,6 +2198,10 @@ def render_terser_only_issue_markdown(
     ]
     attributed = merged["summary"].get("notApplicableByKind") or {}
     for kind, label in (
+        (
+            _MINIFIER_UNSUPPORTED_SYNTAX,
+            "source the minifier cannot read or does not preserve",
+        ),
         (_MINIFIER_INVALID_OUTPUT, "minified body the reference engine cannot parse"),
         (_MINIFIER_CHANGED_SEMANTICS, "minification changed what the test measures"),
     ):

@@ -6,8 +6,48 @@ const fs = require("node:fs");
 const path = require("node:path");
 const readline = require("node:readline");
 
-const PROFILE = "test262-safe-mangle-v1";
+const PROFILE = "test262-safe-mangle-v2";
 const moduleRoot = path.resolve(process.argv[2] || "");
+
+// A quoted spelling that is also an identifier is a name the test TALKS ABOUT: every
+// `fn-name-*` case asserts the name an anonymous function inherited from its binding
+// (`assert.sameValue(fn.name, 'fn')`), and mangling that binding to `e` makes the
+// assertion compare against a name the program no longer contains. Reserving those
+// spellings keeps the test measuring what it measures while everything it does not name
+// is still mangled. Over-reserving is harmless — a quoted word that happens to look like
+// an identifier only costs one mangling opportunity — so this reads the source text
+// rather than an AST Terser does not expose.
+const STRING_LITERAL = /(['"])((?:\\.|(?!\1)[^\\\r\n])*)\1/g;
+const IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+// Terser 5 has no auto-accessor. It does not reject `accessor #x = 1`; it reads it as a
+// field named `accessor` followed by a field `#x` and prints `accessor;#x=1`, so the
+// class it emits has a public `accessor` property, no getter/setter pair, and a private
+// field where the test declared an auto-accessor. That is a different program, not a
+// minified one. Both halves must hold before the case is called unminifiable: the source
+// declares an auto-accessor — `accessor` and the member name on one line, as the grammar
+// requires, and not one of the operators that may follow the plain identifier `accessor`
+// (`for (let accessor in {})`), which a test is free to use as an ordinary name — and the
+// output really did split it into a bare `accessor` element, so the day Terser learns the
+// syntax this stops firing on its own.
+const AUTO_ACCESSOR_SOURCE =
+  /(?:^|[;{}\s])(?:static[ \t]+)?accessor[ \t]+(?!(?:in|of|instanceof)\b)(?:#|[A-Za-z_$]|\[|"|')/;
+const AUTO_ACCESSOR_SPLIT = /(?:^|[;{}\s])accessor[ \t]*[;}]/;
+
+function quotedSpellings(source) {
+  const spellings = new Set();
+  for (const match of source.matchAll(STRING_LITERAL)) {
+    spellings.add(match[2]);
+  }
+  return spellings;
+}
+
+function reservedNames(source) {
+  return [...quotedSpellings(source)].filter((value) => IDENTIFIER.test(value));
+}
+
+function droppedAutoAccessor(source, code) {
+  return AUTO_ACCESSOR_SOURCE.test(source) && AUTO_ACCESSOR_SPLIT.test(code);
+}
 
 function write(response) {
   process.stdout.write(`${JSON.stringify(response)}\n`);
@@ -31,28 +71,31 @@ try {
   process.exit(2);
 }
 
-const options = Object.freeze({
-  // Test262 deliberately observes edge-case semantics (including redefined
-  // built-ins and completion values). Formatting plus identifier mangling
-  // stresses the compact syntax Broiler sees on the web without letting
-  // compressor assumptions turn valid conformance tests into false failures.
-  compress: false,
-  mangle: {
+function profileOptions(reserved) {
+  return {
+    // Test262 deliberately observes edge-case semantics (including redefined
+    // built-ins and completion values). Formatting plus identifier mangling
+    // stresses the compact syntax Broiler sees on the web without letting
+    // compressor assumptions turn valid conformance tests into false failures.
+    compress: false,
+    mangle: {
+      keep_classnames: true,
+      keep_fnames: true,
+      eval: false,
+      reserved,
+    },
     keep_classnames: true,
     keep_fnames: true,
-    eval: false,
-  },
-  keep_classnames: true,
-  keep_fnames: true,
-  module: false,
-  toplevel: false,
-  format: {
-    // Preserve observable RegExp/string source spelling in conformance tests.
-    ascii_only: false,
-    comments: false,
-    semicolons: true,
-  },
-});
+    module: false,
+    toplevel: false,
+    format: {
+      // Preserve observable RegExp/string source spelling in conformance tests.
+      ascii_only: false,
+      comments: false,
+      semicolons: true,
+    },
+  };
+}
 
 async function handle(request) {
   const id = request && request.id;
@@ -77,14 +120,19 @@ async function handle(request) {
   }
 
   try {
+    const reserved = reservedNames(request.source);
     const result = await terser.minify(
       { [String(request.path || "test262.js")]: request.source },
-      options,
+      profileOptions(reserved),
     );
     if (typeof result.code !== "string") {
       throw new Error("Terser returned no code");
     }
-    return { id, ok: true, code: result.code };
+    const response = { id, ok: true, code: result.code, reserved };
+    if (droppedAutoAccessor(request.source, result.code)) {
+      response.unsupportedSyntax = "auto-accessor";
+    }
+    return response;
   } catch (error) {
     return {
       id,
