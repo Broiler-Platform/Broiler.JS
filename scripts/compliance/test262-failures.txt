@@ -14,18 +14,10 @@ test/built-ins/RegExp/property-escapes/generated/General_Category_-_Unassigned.j
 test/built-ins/RegExp/property-escapes/generated/Script_-_Unknown.js
 test/language/comments/S7.4_A5.js
 test/language/comments/S7.4_A6.js
-test/language/expressions/dynamic-import/assignment-expression/cover-parenthesized-expr.js
 test/language/literals/regexp/S7.8.5_A1.1_T2.js
 test/language/literals/regexp/S7.8.5_A1.4_T2.js
 test/language/literals/regexp/S7.8.5_A2.1_T2.js
 test/language/literals/regexp/S7.8.5_A2.4_T2.js
-test/language/statements/using/fn-name-arrow.js
-test/language/statements/using/fn-name-class.js
-test/language/statements/using/fn-name-cover.js
-test/language/statements/using/fn-name-fn.js
-test/language/statements/using/fn-name-gen.js
-test/staging/decorators/private-auto-accessor.js
-test/staging/decorators/public-auto-accessor.js
 test/staging/sm/Array/to-length.js
 test/staging/sm/Array/toLocaleString-01.js
 test/staging/sm/Proxy/ownkeys-linear.js
@@ -36,7 +28,6 @@ test/staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode.js
 test/staging/sm/eval/exhaustive-global-normalcaller-direct-normalcode.js
 test/staging/sm/eval/exhaustive-global-normalcaller-indirect-normalcode.js
 test/staging/sm/eval/exhaustive-global-strictcaller-indirect-normalcode.js
-test/staging/sm/generators/runtime.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-arguments.js
 test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
 test/staging/sm/lexical-environment/var-in-catch-body-annex-b-eval.js
