@@ -88,6 +88,7 @@ class Test262WorkflowTests(unittest.TestCase):
             "most_common_problems_limit",
             "biggest_problems_limit",
             "timeout_problems_limit",
+            "terser_only_problems_limit",
         }
         self.assertEqual(expected, set(inputs))
         self.assertTrue(inputs["rerun_failed_only"]["default"])
@@ -100,6 +101,7 @@ class Test262WorkflowTests(unittest.TestCase):
         self.assertEqual(10, inputs["most_common_problems_limit"]["default"])
         self.assertEqual(3, inputs["biggest_problems_limit"]["default"])
         self.assertEqual(10, inputs["timeout_problems_limit"]["default"])
+        self.assertEqual(10, inputs["terser_only_problems_limit"]["default"])
 
     def test_issue_permission_and_token_fallback_are_configured(self) -> None:
         self.assertEqual("write", self.workflow["permissions"]["contents"])
@@ -110,7 +112,7 @@ class Test262WorkflowTests(unittest.TestCase):
             for step in self.workflow["jobs"]["report"]["steps"]
             if step.get("uses") == "actions/github-script@v8"
         ]
-        self.assertEqual(3, len(issue_steps))
+        self.assertEqual(4, len(issue_steps))
         self.assertEqual(
             "${{ steps.merge.outputs.timeout_count }}",
             issue_steps[0]["env"]["TIMEOUT_COUNT"],
@@ -123,6 +125,22 @@ class Test262WorkflowTests(unittest.TestCase):
             "non-passing variant case(s)", issue_steps[0]["with"]["script"]
         )
         self.assertIn("timed out", issue_steps[0]["with"]["script"])
+        terser_only_step = issue_steps[-1]
+        self.assertEqual(
+            "steps.merge.outputs.create_terser_only_issue == 'true'",
+            terser_only_step["if"],
+        )
+        self.assertEqual(
+            "${{ steps.merge.outputs.terser_only_failure_count }}",
+            terser_only_step["env"]["TERSER_ONLY_FAILURE_COUNT"],
+        )
+        self.assertIn(
+            "test262-merged/terser-only-issue.md",
+            terser_only_step["with"]["script"],
+        )
+        self.assertIn(
+            "Terser-only failure(s)", terser_only_step["with"]["script"]
+        )
         for step in issue_steps:
             self.assertTrue(step["continue-on-error"])
             self.assertEqual(
@@ -149,6 +167,7 @@ class Test262WorkflowTests(unittest.TestCase):
         self.assertIn('checked_integer("COMMON_LIMIT", 1, 100)', run_text)
         self.assertIn('checked_integer("BIGGEST_LIMIT", 1, 100)', run_text)
         self.assertIn('checked_integer("TIMEOUT_LIMIT", 1, 100)', run_text)
+        self.assertIn('checked_integer("TERSER_ONLY_LIMIT", 1, 100)', run_text)
 
     def test_prepare_resolves_and_caches_an_immutable_suite_commit(self) -> None:
         prepare = self.workflow["jobs"]["prepare"]
@@ -389,7 +408,7 @@ class Test262WorkflowTests(unittest.TestCase):
         self.assertIn("timeout=30", smoke["run"])
         self.assertIn("except subprocess.TimeoutExpired", smoke["run"])
 
-    def test_report_selects_one_authoritative_phase_and_emits_three_reports(self) -> None:
+    def test_report_selects_one_authoritative_phase_and_emits_four_reports(self) -> None:
         report = self.workflow["jobs"]["report"]
         self.assertIn("authoritative-phase", report["outputs"])
         run_text = self._run_text(report)
@@ -398,9 +417,11 @@ class Test262WorkflowTests(unittest.TestCase):
             "--issue-md",
             "--biggest-issue-md",
             "--timeout-issue-md",
+            "--terser-only-issue-md",
             "--problem-limit",
             "--biggest-problem-limit",
             "--timeout-limit",
+            "--terser-only-limit",
             "--run-url",
             "--artifact-name",
             "--broiler-commit",

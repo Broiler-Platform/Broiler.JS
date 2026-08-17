@@ -2,7 +2,7 @@ name: test262
 
 # Manual, full-suite test262 runner with deterministic sharding, a fast
 # previously-failing preflight, one retry for abnormally aborted shards, merged
-# reporting, three focused GitHub issues, and scope-aware failure persistence.
+# reporting, four focused GitHub issues, and scope-aware failure persistence.
 # A valid JSON report is conclusive even when tests failed; only a missing or
 # malformed report is retried. The retry artifact supersedes its first attempt.
 
@@ -113,6 +113,11 @@ on:
         required: false
         default: 10
         type: number
+      terser_only_problems_limit:
+        description: Maximum cases in the Terser-only issue for tests that pass as original source and fail once minified.
+        required: false
+        default: 10
+        type: number
 
 permissions:
   contents: write
@@ -126,6 +131,7 @@ env:
   MOST_COMMON_PROBLEMS_LIMIT: ${{ github.event.inputs.most_common_problems_limit || '10' }}
   BIGGEST_PROBLEMS_LIMIT: ${{ github.event.inputs.biggest_problems_limit || '3' }}
   TIMEOUT_PROBLEMS_LIMIT: ${{ github.event.inputs.timeout_problems_limit || '10' }}
+  TERSER_ONLY_PROBLEMS_LIMIT: ${{ github.event.inputs.terser_only_problems_limit || '10' }}
 
 jobs:
   validate:
@@ -246,6 +252,7 @@ jobs:
           COMMON_LIMIT: ${{ github.event.inputs.most_common_problems_limit || '10' }}
           BIGGEST_LIMIT: ${{ github.event.inputs.biggest_problems_limit || '3' }}
           TIMEOUT_LIMIT: ${{ github.event.inputs.timeout_problems_limit || '10' }}
+          TERSER_ONLY_LIMIT: ${{ github.event.inputs.terser_only_problems_limit || '10' }}
         run: |
           python <<'PY'
           import json
@@ -306,6 +313,7 @@ jobs:
           checked_integer("COMMON_LIMIT", 1, 100)
           checked_integer("BIGGEST_LIMIT", 1, 100)
           checked_integer("TIMEOUT_LIMIT", 1, 100)
+          checked_integer("TERSER_ONLY_LIMIT", 1, 100)
           if os.environ["SHUFFLE_SEED"].strip():
               checked_integer("SHUFFLE_SEED", -(2**63), 2**63 - 1)
 
@@ -771,9 +779,11 @@ jobs:
             --issue-md test262-merged/issue.md \
             --biggest-issue-md test262-merged/biggest-issue.md \
             --timeout-issue-md test262-merged/timeout-issue.md \
+            --terser-only-issue-md test262-merged/terser-only-issue.md \
             --problem-limit "$MOST_COMMON_PROBLEMS_LIMIT" \
             --biggest-problem-limit "$BIGGEST_PROBLEMS_LIMIT" \
             --timeout-limit "$TIMEOUT_PROBLEMS_LIMIT" \
+            --terser-only-limit "$TERSER_ONLY_PROBLEMS_LIMIT" \
             --run-url "$RUN_URL" \
             --broiler-commit "${{ github.sha }}" \
             --artifact-name test262-merged \
@@ -875,6 +885,42 @@ jobs:
               body,
             });
             core.info(`Created timeouts issue #${issue.data.number}: ${issue.data.html_url}`);
+
+      # Minification-only regressions are the one class of failure the other
+      # three issues cannot separate: the original source passes, so the defect
+      # is only visible in the Terser variant of the same base path.
+      - name: Create GitHub issue for the Terser-only failures
+        if: steps.merge.outputs.create_terser_only_issue == 'true'
+        continue-on-error: true
+        uses: actions/github-script@v8
+        env:
+          TERSER_ONLY_FAILURE_COUNT: ${{ steps.merge.outputs.terser_only_failure_count }}
+          TERSER_ONLY_PATH_COUNT: ${{ steps.merge.outputs.terser_only_path_count }}
+          TERSER_ONLY_MINIFIER_FAILURE_COUNT: ${{ steps.merge.outputs.terser_only_minifier_failure_count }}
+        with:
+          github-token: ${{ secrets.ISSUE_TOKEN || github.token }}
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('test262-merged/terser-only-issue.md', 'utf8').trim();
+            const today = new Date().toISOString().slice(0, 10);
+            const count = Number(process.env.TERSER_ONLY_FAILURE_COUNT || 0);
+            const paths = Number(process.env.TERSER_ONLY_PATH_COUNT || 0);
+            const minifierFailures = Number(
+              process.env.TERSER_ONLY_MINIFIER_FAILURE_COUNT || 0,
+            );
+            let scope = `${paths} base path(s)`;
+            if (minifierFailures > 0) {
+              scope += `, including ${minifierFailures} minifier failure(s)`;
+            }
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title:
+                `test262 run: ${count} Terser-only failure(s) in ` +
+                `${scope} (${today})`,
+              body,
+            });
+            core.info(`Created Terser-only issue #${issue.data.number}: ${issue.data.html_url}`);
 
   # Refresh only paths conclusively exercised by the authoritative phase. The
   # merger preserves failures outside a selected assembly/subset/shard and any

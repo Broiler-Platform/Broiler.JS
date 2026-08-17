@@ -1526,6 +1526,206 @@ class MergeTest262ShardsTests(unittest.TestCase):
         # deliberately drawn from the complete timeout set.
         self.assertIn("test/language/unknown.js", markdown)
 
+    def test_terser_only_failures_isolate_minification_regressions(self) -> None:
+        self.write_report(
+            0,
+            [
+                # Original passes, minified body fails: a Terser-only case.
+                {
+                    "path": "test/language/mangled-large.js",
+                    "variant": "original",
+                    "status": "passed",
+                    "sourceSizeBytes": 900,
+                },
+                {
+                    "path": "test/language/mangled-large.js",
+                    "variant": "terser",
+                    "status": "failed",
+                    "reason": "expected 1 but got 2",
+                    "sourceSizeBytes": 900,
+                    "minifiedSourceSizeBytes": 300,
+                    "minificationRatio": 0.333,
+                    "features": ["let"],
+                },
+                # Smaller minified body, so it must be reduced first.
+                {
+                    "path": "test/built-ins/mangled-small.js",
+                    "variant": "original",
+                    "status": "passed",
+                    "sourceSizeBytes": 120,
+                },
+                {
+                    "path": "test/built-ins/mangled-small.js",
+                    "variant": "terser",
+                    "status": "timedOut",
+                    "sourceSizeBytes": 120,
+                    "minifiedSourceSizeBytes": 80,
+                },
+                # Failing as original source too, so not a Terser-only case.
+                {
+                    "path": "test/language/broken-both-ways.js",
+                    "variant": "original",
+                    "status": "failed",
+                    "reason": "expected 1 but got 2",
+                },
+                {
+                    "path": "test/language/broken-both-ways.js",
+                    "variant": "terser",
+                    "status": "failed",
+                    "reason": "expected 1 but got 2",
+                },
+                # Terser itself could not transform the body: reported, but
+                # counted apart from genuine engine divergences.
+                {
+                    "path": "test/built-ins/minifier-broke.js",
+                    "variant": "original",
+                    "status": "passed",
+                },
+                {
+                    "path": "test/built-ins/minifier-broke.js",
+                    "variant": "terser",
+                    "status": "failed",
+                    "infrastructure": True,
+                    "failureType": "MinifierError",
+                    "reason": "Terser rejected the input",
+                },
+            ],
+            minifier="terser",
+        )
+
+        merged = merger.merge(
+            self.root, expected_shard_indexes={0}, terser_only_limit=2
+        )
+
+        self.assertEqual(3, merged["terserOnlyFailureCount"])
+        self.assertEqual(2, merged["terserOnlyDivergenceCount"])
+        self.assertEqual(1, merged["terserOnlyMinifierFailureCount"])
+        self.assertEqual(3, merged["terserOnlyPathCount"])
+        self.assertEqual(
+            [
+                "test/built-ins/mangled-small.js",
+                "test/built-ins/minifier-broke.js",
+                "test/language/mangled-large.js",
+            ],
+            merged["terserOnlyPaths"],
+        )
+        self.assertNotIn(
+            "test/language/broken-both-ways.js", merged["terserOnlyPaths"]
+        )
+        # The ranked list honours its limit and leads with the cheapest
+        # reduction, while the group list keeps every distinct symptom.
+        self.assertEqual(
+            [
+                "test/built-ins/mangled-small.js",
+                "test/language/mangled-large.js",
+            ],
+            [case["path"] for case in merged["terserOnlyFailures"]],
+        )
+        self.assertEqual(
+            ["MinifierFailure", "Timeout", "Failure"],
+            [group["kind"] for group in merged["terserOnlyGroups"]],
+        )
+
+        markdown = merger.render_terser_only_issue_markdown(merged)
+        self.assertIn("3 Terser-only failure(s)", markdown)
+        self.assertIn("Minifier infrastructure failures: 1", markdown)
+        self.assertIn("test/built-ins/minifier-broke.js", markdown)
+        self.assertNotIn("test/language/broken-both-ways.js", markdown)
+        self.assertLess(
+            markdown.index("test/built-ins/mangled-small.js"),
+            markdown.index("test/language/mangled-large.js"),
+        )
+
+    def test_original_only_run_reports_no_terser_only_failures(self) -> None:
+        self.write_report(
+            0,
+            [
+                {
+                    "path": "test/language/fails.js",
+                    "variant": "original",
+                    "status": "failed",
+                    "reason": "expected 1 but got 2",
+                }
+            ],
+            minifier="none",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual(1, merged["summary"]["failed"])
+        self.assertEqual(0, merged["terserOnlyFailureCount"])
+        self.assertEqual([], merged["terserOnlyGroups"])
+        self.assertIn("- None", merger.render_terser_only_issue_markdown(merged))
+
+    def test_terser_only_cases_without_sizes_rank_last(self) -> None:
+        self.write_report(
+            0,
+            [
+                {
+                    "path": "test/language/unknown-size.js",
+                    "variant": "original",
+                    "status": "passed",
+                },
+                {
+                    "path": "test/language/unknown-size.js",
+                    "variant": "terser",
+                    "status": "failed",
+                    "reason": "mangled binding resolved to the wrong value",
+                },
+                {
+                    "path": "test/language/known-size.js",
+                    "variant": "original",
+                    "status": "passed",
+                    "sourceSizeBytes": 4096,
+                },
+                {
+                    "path": "test/language/known-size.js",
+                    "variant": "terser",
+                    "status": "failed",
+                    "reason": "mangled binding resolved to the wrong value",
+                    "sourceSizeBytes": 4096,
+                    "minifiedSourceSizeBytes": 2048,
+                },
+            ],
+            minifier="terser",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual(
+            ["test/language/known-size.js", "test/language/unknown-size.js"],
+            [case["path"] for case in merged["terserOnlyFailures"]],
+        )
+        markdown = merger.render_terser_only_issue_markdown(merged)
+        self.assertIn("2.0 KiB minified of 4.0 KiB original", markdown)
+        self.assertIn("unknown size", markdown)
+        # Both cases share one normalized symptom, so they are one group.
+        self.assertEqual(1, len(merged["terserOnlyGroups"]))
+        self.assertEqual(2, merged["terserOnlyGroups"][0]["count"])
+
+    def test_not_applicable_terser_case_is_not_a_terser_only_failure(self) -> None:
+        path = "test/built-ins/Function/prototype/toString/source.js"
+        self.write_report(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {
+                    "path": path,
+                    "variant": "terser",
+                    "status": "skipped",
+                    "notApplicable": True,
+                    "skipKind": "minifier-not-applicable",
+                    "reason": "source-text-sensitive test",
+                },
+            ],
+            minifier="terser",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual(0, merged["terserOnlyFailureCount"])
+        self.assertEqual([], merged["terserOnlyFailures"])
+
     def test_cli_writes_reports_manifest_and_failure_outputs(self) -> None:
         self.write_report(
             0,
@@ -1550,6 +1750,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
         common_md = self.root / "out" / "common.md"
         biggest_md = self.root / "out" / "biggest.md"
         timeout_md = self.root / "out" / "timeout.md"
+        terser_only_md = self.root / "out" / "terser-only.md"
         github_output = self.root / "out" / "github-output.txt"
 
         stdout = StringIO()
@@ -1572,6 +1773,8 @@ class MergeTest262ShardsTests(unittest.TestCase):
                     str(biggest_md),
                     "--timeout-issue-md",
                     str(timeout_md),
+                    "--terser-only-issue-md",
+                    str(terser_only_md),
                     "--problem-limit",
                     "1",
                     "--biggest-problem-limit",
@@ -1610,11 +1813,15 @@ class MergeTest262ShardsTests(unittest.TestCase):
             "test/language/timeout.js",
             timeout_md.read_text(encoding="utf-8"),
         )
+        # An original-only run cannot produce Terser-only evidence, so the
+        # dedicated report is still written and still says so.
+        self.assertIn("- None", terser_only_md.read_text(encoding="utf-8"))
         outputs = github_output.read_text(encoding="utf-8")
         self.assertIn("failed_count=2", outputs)
         self.assertIn("create_issue=true", outputs)
         self.assertIn("create_biggest_issue=true", outputs)
         self.assertIn("create_timeout_issue=true", outputs)
+        self.assertIn("create_terser_only_issue=false", outputs)
         self.assertIn("incomplete_shard_indexes=1", outputs)
         self.assertIn(
             'incomplete_shard_matrix=[{"shard-index":1}]',
@@ -1683,6 +1890,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
         self.assertIn("create_issue=false", outputs)
         self.assertIn("create_biggest_issue=false", outputs)
         self.assertIn("create_timeout_issue=false", outputs)
+        self.assertIn("create_terser_only_issue=false", outputs)
         self.assertIn("has_incomplete_shards=false", outputs)
         self.assertIn("suite_passed=true", outputs)
 
@@ -1747,11 +1955,66 @@ class MergeTest262ShardsTests(unittest.TestCase):
         self.assertIn("create_timeout_issue=true", outputs)
         self.assertIn("suite_passed=false", outputs)
 
+    def test_terser_only_run_opens_its_own_issue_through_the_cli(self) -> None:
+        path = "test/language/mangled.js"
+        self.write_report(
+            0,
+            [
+                {
+                    "path": path,
+                    "variant": "original",
+                    "status": "passed",
+                    "sourceSizeBytes": 400,
+                },
+                {
+                    "path": path,
+                    "variant": "terser",
+                    "status": "failed",
+                    "reason": "mangled binding resolved to the wrong value",
+                    "sourceSizeBytes": 400,
+                    "minifiedSourceSizeBytes": 150,
+                },
+            ],
+            minifier="terser",
+        )
+        terser_only_md = self.root / "out" / "terser-only.md"
+        github_output = self.root / "out" / "github-output.txt"
+
+        with redirect_stdout(StringIO()):
+            exit_code = merger.main(
+                [
+                    "--shard-dir",
+                    str(self.root),
+                    "--expected-shards",
+                    "0",
+                    "--terser-only-issue-md",
+                    str(terser_only_md),
+                    "--terser-only-limit",
+                    "1",
+                    "--github-output",
+                    str(github_output),
+                ]
+            )
+
+        self.assertEqual(0, exit_code)
+        body = terser_only_md.read_text(encoding="utf-8")
+        self.assertIn("1 Terser-only failure(s)", body)
+        self.assertIn("mangled binding resolved to the wrong value", body)
+        self.assertIn(path, body)
+        outputs = github_output.read_text(encoding="utf-8")
+        self.assertIn("create_terser_only_issue=true", outputs)
+        self.assertIn("terser_only_failure_count=1", outputs)
+        self.assertIn("terser_only_divergence_count=1", outputs)
+        self.assertIn("terser_only_minifier_failure_count=0", outputs)
+        self.assertIn("terser_only_path_count=1", outputs)
+        self.assertIn("suite_passed=false", outputs)
+
     def test_cli_rejects_non_positive_limits(self) -> None:
         for option in (
             "--problem-limit",
             "--biggest-problem-limit",
             "--timeout-limit",
+            "--terser-only-limit",
         ):
             with self.subTest(option=option), redirect_stderr(StringIO()):
                 with self.assertRaises(SystemExit) as raised:

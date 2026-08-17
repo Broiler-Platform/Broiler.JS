@@ -71,6 +71,14 @@ shard once; execute original plus lockfile-pinned Terser variants by default; an
 publish per-shard plus merged JSON/Markdown artifacts. It does not run automatically
 after a merge or for a pull request.
 
+Triage output is split into four focused issues: the most common normalized failure
+groups, the biggest severity/impact groups, the size-ranked timeouts, and the
+Terser-only failures. The last one lists only base paths whose original source passes
+while the minified variant fails, times out, or cannot be transformed, so a
+minification-specific defect is never buried in a mixed-variant report.
+`terser_only_problems_limit` bounds its ranked case list, which leads with the smallest
+minified body because that is the cheapest reduction.
+
 The canonical merged JSON records the exact Broiler and test262 commits, workflow URL,
 selection filters/scope, resource options, worker/shuffle settings, and runner
 OS/architecture/.NET version, plus the selected minifier profile, pinned Terser
