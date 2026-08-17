@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
@@ -31,6 +32,36 @@ public class AstIdentifierReplacer : AstReduce
     {
         var ast = new AstIdentifierReplacer(changes);
         return ast.Visit(node);
+    }
+}
+
+// Collects every identifier NAME appearing in a subtree. A caller asking "could a
+// binding of this name change what that subtree means" gets a yes/no from the set;
+// it deliberately does not distinguish a reference from a property key or a binding
+// position, because the answer is only ever used to keep a name SAFE, and naming one
+// name too many costs a scope rather than a wrong resolution.
+public sealed class IdentifierNameCollector : AstReduce
+{
+    private readonly HashSet<string> names = new(StringComparer.Ordinal);
+
+    protected override AstNode VisitIdentifier(AstIdentifier identifier)
+    {
+        var name = identifier.Name.Value;
+        if (name != null)
+            names.Add(name);
+        return identifier;
+    }
+
+    public static HashSet<string> Collect(params AstNode?[] nodes)
+    {
+        var collector = new IdentifierNameCollector();
+        foreach (var node in nodes)
+        {
+            if (node != null)
+                collector.Visit(node);
+        }
+
+        return collector.names;
     }
 }
 

@@ -30,6 +30,9 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   * `for (const x of xs) { const x = …; }`: the loop body's Block is its own scope
 //     nested inside the per-iteration environment, so a body binding may shadow the head's.
 //     Head and body are renamed independently by a mangler and collide.
+//   * `const n = 3; for (let r = 1; r <= n; ++r) { const n = 1; }`: a `let` head evaluates its
+//     test inside the per-iteration block, which the body shared, so the body's `n` captured
+//     the test's. The two names come from one short alphabet once a mangler has been through.
 public class MinifiedSourceTests
 {
     private static string Eval(string code)
@@ -257,4 +260,54 @@ public class MinifiedSourceTests
         Assert.Equal("function", Eval(
             "var t; for (const g of [1]) { t = typeof g2; function g2() {} } t"));
     }
+
+    // ---- a `let` head reads the enclosing scope, not the body's bindings ----
+
+    [Fact]
+    public void LoopTestReadsTheEnclosingBindingAShadowingBodyHides()
+    {
+        // A `let` head evaluates its test against each iteration's own binding, which the
+        // lowering achieves by moving the test INTO the per-iteration block. The body's
+        // statements share that block, so a body-level `const n` captured the test's `n`
+        // too — and the first evaluation read it one iteration before it exists:
+        // "Cannot access 'n' before initialization", thrown before the body had run once.
+        Assert.Equal("3", Eval(
+            "const n = 3; var c = 0; for (let r = 1; r <= n; ++r) { const n = 1; c++; } c"));
+        Assert.Equal("3", Eval(
+            "const n = 3; var c = 0; for (let r = 1; r <= n; ++r) { let n = 1; c++; } c"));
+        Assert.Equal("3", Eval(
+            "const n = 3; var c = 0; for (let r = 1; r <= n; ++r) { class n {} c++; } c"));
+    }
+
+    [Fact]
+    public void LoopUpdateReadsTheEnclosingBindingAShadowingBodyHides()
+        // The update is moved into the same block when it carries a closure, so it needs the
+        // same separation: `step` here is the outer 1, never the body's 99.
+        => Assert.Equal("3", Eval(
+            "const step = 1; var c = 0, fs = []; "
+            + "for (let r = 0; r < 3; r += step) { const step = 99; fs.push(() => r); c++; } c"));
+
+    [Fact]
+    public void ShadowedBodyKeepsPerIterationBindingsAndControlFlow()
+    {
+        // Giving the body its own scope must not disturb what the per-iteration lowering is
+        // there for: a closure still captures that iteration's binding, `continue` still
+        // reaches the update, and `break` still leaves.
+        Assert.Equal("0,1,2", Eval(
+            "const n = 3; var fs = []; for (let i = 0; i < n; i++) { const n = 9; fs.push(() => i); } "
+            + "fs.map(f => f()).join(\",\")"));
+        Assert.Equal("3", Eval(
+            "const n = 4; var c = 0; for (let r = 0; r < n; ++r) { const n = 1; "
+            + "if (r === 1) continue; c++; } c"));
+        Assert.Equal("2", Eval(
+            "const n = 4; var c = 0; for (let r = 0; r < n; ++r) { const n = 1; "
+            + "if (r === 2) break; c++; } c"));
+    }
+
+    [Fact]
+    public void ShadowedBodyDoesNotHideTheNameFromItself()
+        // The body's own binding is still the one the body sees, for the whole block: reading
+        // it before its declaration is its temporal dead zone, not a peek at the outer value.
+        => Assert.Throws<JSException>(() => Eval(
+            "const n = 3; for (let r = 1; r <= n; ++r) { n; const n = 1; }"));
 }

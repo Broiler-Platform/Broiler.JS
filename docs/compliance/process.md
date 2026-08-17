@@ -70,10 +70,32 @@ timeouts and internal minifier errors remain infrastructure failures.
 Mangling can also change what a test measures, which is a limit of the variant rather
 than a defect either side. A test whose subject IS binding identity — the separate
 parameter scope in `scope-*-paramsbody-var-open`, the Annex B early-error condition in
-`block-decl-func-skip-early-err-*`, a private name reached from a direct eval — is
-measuring a relationship between two names that the mangler renames independently. The
-minified program is then a different program, and every engine rejects it. Confirm
-against a second engine before treating a Terser-only divergence as an engine bug.
+`block-decl-func-skip-early-err-*`, the inferred `Function.prototype.name` in every
+`fn-name-*` case, a private name reached from a direct eval — is measuring a relationship
+between two names that the mangler renames independently. The minified program is then a
+different program, and every engine rejects it. Terser also sometimes emits source that is
+not JavaScript at all: it prints `if (false) let \n {}` as `if(false){let{}}`, unescapes
+`for (async of [7])` into the `for (async of …)` the grammar forbids, and drops the
+parentheses from `import((0, "./m.js"))`.
+
+**The runner settles both automatically, by asking a second engine.** A minified case that
+FAILS is re-run under the reference engine (`--reference-engine-bin`, Node by default —
+already required to run Terser at all) before it is attributed to Broiler:
+
+| Reference engine | Attribution |
+| --- | --- |
+| passes the original, cannot parse the minified body | not applicable, `skipKind: minifier-invalid-output` |
+| passes the original, fails the minified body | not applicable, `skipKind: minifier-changed-semantics` |
+| passes both | engine failure, `referenceCrossCheck: engine-divergence` |
+| cannot run the original either | engine failure, `referenceCrossCheck: inconclusive` |
+
+The check can only move a case OUT of the engine's column, never into it, and it never
+runs on a passing case, a negative test (which passes BY failing, which an exit code
+cannot distinguish), or when the reference engine is unusable — those keep the engine's
+own verdict. `--no-reference-cross-check` turns it off, at the cost of reading minifier
+artefacts as engine failures. The reference engine's own version rides on each
+cross-checked case rather than on the run configuration, because nothing pins a runner's
+Node the way the lockfile pins Terser's version.
 
 Tests requiring `$262` host hooks remain host-harness exclusions. The `module` and `raw`
 flags require separate host modes and are not validated by the ordinary script host.
@@ -92,8 +114,10 @@ Triage output is split into four focused issues: the most common normalized fail
 groups, the biggest severity/impact groups, the size-ranked timeouts, and the
 Terser-only failures. The last one lists only base paths whose original source passes
 while the minified variant fails or times out, so a minification-specific defect is
-never buried in a mixed-variant report. A source the minifier could not parse is a
-not-applicable skip and does not appear there.
+never buried in a mixed-variant report. A source the minifier could not parse, and a
+failure the reference engine attributed to the minifier, are not-applicable skips and do
+not appear there; the issue body reports how many were attributed that way, so the volume
+stays visible without crowding out the engine's own defects.
 `terser_only_problems_limit` bounds its ranked case list, which leads with the smallest
 minified body because that is the cheapest reduction.
 

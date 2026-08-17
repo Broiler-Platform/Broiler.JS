@@ -109,8 +109,22 @@ _MINIFIER_NOT_APPLICABLE = "minifier-not-applicable"
 # still tell "the minifier could not read it" apart from "this test cannot be minified
 # before execution".
 _MINIFIER_UNSUPPORTED_SYNTAX = "minifier-unsupported-syntax"
+# The two verdicts a reference engine can return about a FAILING minified case (see
+# run_test262.ReferenceEngine): it could not parse what the minifier emitted, or it ran the
+# body and failed the same way the engine did. Either way the minified program is not
+# evidence about the engine, so the case is not applicable rather than a failure. Kept
+# apart from each other and from the kinds above because they answer different questions —
+# "the minifier could not read it", "this test cannot be minified at all", "the minifier
+# wrote something invalid", "the minifier changed what the test measures".
+_MINIFIER_INVALID_OUTPUT = "minifier-invalid-output"
+_MINIFIER_CHANGED_SEMANTICS = "minifier-changed-semantics"
 _MINIFIER_SKIP_KINDS = frozenset(
-    {_MINIFIER_NOT_APPLICABLE, _MINIFIER_UNSUPPORTED_SYNTAX}
+    {
+        _MINIFIER_NOT_APPLICABLE,
+        _MINIFIER_UNSUPPORTED_SYNTAX,
+        _MINIFIER_INVALID_OUTPUT,
+        _MINIFIER_CHANGED_SEMANTICS,
+    }
 )
 _MINIFIER_OPTIONS = {
     "compress": False,
@@ -1604,6 +1618,18 @@ def merge(
     not_applicable_paths = sorted(
         {case["path"] for case in not_applicable_cases}
     )
+    # Counted per kind so a not-applicable case stays VISIBLE after it leaves the failure
+    # column: "684 cases the mangler changed out of being the test" is a fact about the
+    # variant that a single skipped total hides.
+    not_applicable_by_kind = dict(
+        sorted(
+            Counter(
+                str(result.get("skipKind") or _MINIFIER_NOT_APPLICABLE)
+                for result in results
+                if _is_not_applicable(result)
+            ).items()
+        )
+    )
 
     observed_variants = sorted(
         {str(result["variant"]) for result in results},
@@ -1668,6 +1694,7 @@ def merge(
         "skipped": len(status_cases["skipped"]),
         "timedOut": len(status_cases["timedOut"]),
         "notApplicable": len(not_applicable_cases),
+        "notApplicableByKind": not_applicable_by_kind,
         "uniquePaths": unique_path_count,
     }
 
@@ -2165,8 +2192,15 @@ def render_terser_only_issue_markdown(
         f"- Engine divergences after minification: {divergences}",
         f"- Minifier infrastructure failures: {minifier_failures}",
         f"- Affected base paths: {int(merged.get('terserOnlyPathCount') or 0)}",
-        "",
     ]
+    attributed = merged["summary"].get("notApplicableByKind") or {}
+    for kind, label in (
+        (_MINIFIER_INVALID_OUTPUT, "minified body the reference engine cannot parse"),
+        (_MINIFIER_CHANGED_SEMANTICS, "minification changed what the test measures"),
+    ):
+        if attributed.get(kind):
+            lines.append(f"- Attributed to the minifier ({label}): {attributed[kind]}")
+    lines.append("")
     lines.extend(["### Normalized Terser-only failure groups", ""])
     if not groups:
         lines.append("- None")

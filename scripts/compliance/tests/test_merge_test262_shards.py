@@ -545,6 +545,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
                 "skipped": 1,
                 "timedOut": 0,
                 "notApplicable": 0,
+                "notApplicableByKind": {},
                 "uniquePaths": 3,
             },
             merged["summary"],
@@ -708,6 +709,55 @@ class MergeTest262ShardsTests(unittest.TestCase):
         self.assertEqual(0, merged["summary"]["failed"])
         self.assertEqual([path], merged["notApplicablePaths"])
         self.assertEqual([], persisted["manifestPaths"])
+
+    def test_cross_checked_skip_kinds_leave_the_terser_only_report(self) -> None:
+        # The two verdicts the reference engine can return. Both are conclusive exemptions:
+        # they clear the manifest, they are counted per kind so they stay visible, and
+        # neither reaches the Terser-only report, which exists to name ENGINE defects.
+        invalid = "test/language/minifier-wrote-invalid-source.js"
+        changed = "test/language/mangler-renamed-what-it-measures.js"
+        manifest = self.write_text("failures.txt", f"{invalid}\n{changed}\n")
+        self.write_report(
+            0,
+            [
+                {"path": invalid, "variant": "original", "status": "passed"},
+                {
+                    "path": invalid,
+                    "variant": "terser",
+                    "status": "skipped",
+                    "notApplicable": True,
+                    "skipKind": "minifier-invalid-output",
+                    "reason": "node runs this test but cannot parse its minified body",
+                },
+                {"path": changed, "variant": "original", "status": "passed"},
+                {
+                    "path": changed,
+                    "variant": "terser",
+                    "status": "skipped",
+                    "notApplicable": True,
+                    "skipKind": "minifier-changed-semantics",
+                    "reason": "node passes this test and fails its minified body",
+                },
+            ],
+            minifier="terser",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+        persisted = merger.merge_into_manifest(merged, manifest)
+
+        self.assertEqual([], merged["incompleteShards"])
+        self.assertEqual(0, merged["summary"]["failed"])
+        self.assertEqual(2, merged["summary"]["notApplicable"])
+        self.assertEqual(
+            {"minifier-changed-semantics": 1, "minifier-invalid-output": 1},
+            merged["summary"]["notApplicableByKind"],
+        )
+        self.assertEqual([changed, invalid], sorted(merged["notApplicablePaths"]))
+        self.assertEqual(0, merged["terserOnlyFailureCount"])
+        self.assertEqual([], persisted["manifestPaths"])
+
+        body = merger.render_terser_only_issue_markdown(merged)
+        self.assertIn("Attributed to the minifier", body)
 
     def test_not_applicable_marker_requires_terser_skip_contract(self) -> None:
         path = "test/language/bad-marker.js"
