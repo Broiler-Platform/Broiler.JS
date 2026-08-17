@@ -22,6 +22,51 @@ public class FastTokenStream
         return new FastParseException(c, $"Unexpected token {c.Type}: {c.Span} at {c.Start}");
     }
 
+    /// <summary>
+    /// Reports a statement that could not be parsed, naming both its first token and the
+    /// point the parse actually reached.
+    /// </summary>
+    /// <remarks>
+    /// A production that gives up by returning false (rather than throwing) rewinds the
+    /// stream to where it started, so the only token left to blame is the one the
+    /// statement began with. On a minified bundle — one statement per file, starting at
+    /// character 1 — that turned every such failure into the same unusable report,
+    /// "Unexpected token Negate: ! at 1, 1", pointing at the `!` of a `!function(){…}()`
+    /// wrapper hundreds of kilobytes away from the actual problem. <see cref="Furthest"/>
+    /// survives the rewind and says where the parser really stopped.
+    /// </remarks>
+    internal Exception UnexpectedStatement()
+    {
+        var c = Current;
+        var stopped = furthest;
+
+        if (stopped == null || ReferenceEquals(stopped, c))
+            return Unexpected();
+
+        // The EOF token is a shared singleton with no source position, so it can only be
+        // named, not located — and naming it is the important case: it is what a truncated
+        // script (a response that ended early) looks like from in here.
+        var where = stopped.Type == TokenTypes.EOF
+            ? "the end of the script"
+            : stopped.Span.Offset > c.Span.Offset
+                ? $"{stopped.Type} at {stopped.Start}"
+                : null;
+
+        if (where == null)
+            return Unexpected();
+
+        return new FastParseException(c,
+            $"Unexpected token {c.Type}: {c.Span} at {c.Start}"
+            + $" — the statement starting here could not be parsed; the parse stopped at {where}");
+    }
+
+    /// <summary>
+    /// The furthest token the parser has advanced to. Backtracking rewinds
+    /// <see cref="Current"/> through the already-scanned token list, so this high-water
+    /// mark is the only surviving record of how far a failed parse got.
+    /// </summary>
+    private FastToken furthest;
+
     public override string ToString() => $"{Current} {Next}";
 
     public readonly FastKeywordMap Keywords;
@@ -337,6 +382,9 @@ public class FastTokenStream
             current = current.Next;
             current ??= scanner.Token;
         }
+
+        if (furthest == null || current.Span.Offset > furthest.Span.Offset)
+            furthest = current;
 
         return current;
     }

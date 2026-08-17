@@ -199,6 +199,10 @@ partial class FastParser
                 functionDepth++;
                 var previousInGeneratorBody = inGeneratorBody;
                 var previousInAsyncFunctionBody = inAsyncFunctionBody;
+                // An arrow's body — a Block or a concise AssignmentExpression[+In] — is
+                // its own [+In] context, so a `for` head's `[~In]` does not reach into it.
+                var previousConsiderIn = considerInOfAsOperators;
+                considerInOfAsOperators = true;
                 inGeneratorBody = isGenerator;
                 inAsyncFunctionBody = isAsync;
                 try
@@ -222,6 +226,7 @@ partial class FastParser
                 {
                     inGeneratorBody = previousInGeneratorBody;
                     inAsyncFunctionBody = previousInAsyncFunctionBody;
+                    considerInOfAsOperators = previousConsiderIn;
                     functionDepth--;
                 }
             }

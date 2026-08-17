@@ -107,6 +107,12 @@ partial class FastParser
         var previousInGeneratorBody = inGeneratorBody;
         var previousInAsyncFunctionBody = inAsyncFunctionBody;
         var previousInFormalParameters = inFormalParameters;
+        // A FormalParameters list and a FunctionBody are [+In] contexts of their own: the
+        // `[~In]` a for-head imposes stops at the function's boundary. `for (var i = 0,
+        // f = function (e) { e in C || define(C, e) }; …; …)` — a shape core-js and
+        // similar libraries emit — was otherwise rejected at the `in` inside the body.
+        var previousConsiderIn = considerInOfAsOperators;
+        considerInOfAsOperators = true;
         try
         {
             functionDepth++;
@@ -142,6 +148,7 @@ partial class FastParser
             inGeneratorBody = previousInGeneratorBody;
             inAsyncFunctionBody = previousInAsyncFunctionBody;
             inFormalParameters = previousInFormalParameters;
+            considerInOfAsOperators = previousConsiderIn;
             functionDepth--;
             scope.Dispose();
             this.isAsync = isRootAsync;

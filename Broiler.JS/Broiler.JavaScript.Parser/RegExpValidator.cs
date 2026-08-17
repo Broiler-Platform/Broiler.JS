@@ -652,15 +652,22 @@ internal static class RegExpValidator
                         sb.Append(pattern[++i]);
                     continue;
                 }
-                else if (!inClass
-                    && !IsRegExpSyntaxCharacter(next)
+                else if (!IsRegExpSyntaxCharacter(next)
                     && !(next >= '0' && next <= '9')
-                    && RecognizedEscapeLetters.IndexOf(next) < 0)
+                    && RecognizedEscapeLetters.IndexOf(next) < 0
+                    // Inside a character class `-` is the range operator, so `\-` has to
+                    // keep its backslash — dropping it turns `[a\-z]` (three literals)
+                    // into the range `[a-z]`.
+                    && !(inClass && next == '-'))
                 {
                     // Annex B IdentityEscape of any character that is not a recognized
                     // escape and not a SyntaxCharacter (`\C`, `\P`, `\_`, an accented
                     // letter, a combining mark, …) → the literal character. .NET rejects
                     // `\` + such a character; escaped or not it matches the same thing.
+                    // ClassEscape reaches CharacterEscape → IdentityEscape too, so this
+                    // holds inside a character class as well: `/[^0-9a-zA-Z\-\_]/` is a
+                    // valid literal, and rejecting it made the scanner re-read the `/`
+                    // as division and fail the whole script.
                     sb.Append(next);
                     i++;
                     continue;

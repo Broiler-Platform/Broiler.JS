@@ -73,9 +73,25 @@ partial class FastParser
                     break;
 
                 bool computed = false;
+                bool keywordName = false;
                 if (Identitifer(out var id))
                 {
                     left = id;
+                }
+                else if (IsKeywordPropertyName(stream.Current.Type))
+                {
+                    // BindingProperty : PropertyName : BindingElement, and a PropertyName
+                    // is an IdentifierName — every reserved word included. The object
+                    // *literal* path already accepts these (PropertyName(acceptKeywords)),
+                    // but `false` / `true` / `null` / `in` / `instanceof` lex to their own
+                    // token types rather than Identifier, so the pattern path rejected
+                    // `const { false: a, true: b } = groupBy(…)` — a shape real code uses.
+                    // A reserved word is never a valid BindingIdentifier, so the `:` form
+                    // is the only one allowed; the shorthand branch below rejects it.
+                    var keywordToken = stream.Current;
+                    stream.Consume();
+                    left = new AstIdentifier(keywordToken.AsString());
+                    keywordName = true;
                 }
                 else if (StringLiteral(out var str))
                 {
@@ -123,7 +139,18 @@ partial class FastParser
 
                 if (renamed)
                 {
-                    if (Identitifer(out var rid))
+                    // `export { x as in }` renames to a ModuleExportName, which is an
+                    // IdentifierName and so may be a reserved word — a bundler emits
+                    // these when it minifies export names down to two letters. Only the
+                    // module form: a binding pattern's target is a BindingIdentifier,
+                    // where `in` stays illegal.
+                    if (modulePattern && IsKeywordPropertyName(stream.Current.Type))
+                    {
+                        var exportName = stream.Current;
+                        stream.Consume();
+                        right = new AstIdentifier(exportName.AsString());
+                    }
+                    else if (Identitifer(out var rid))
                     {
                         if (rid.Start.IsEscapedReservedWord)
                             throw new FastParseException(rid.Start, "Keyword must not contain escaped characters");
@@ -137,8 +164,9 @@ partial class FastParser
                 }
                 else
                 {
-                    // A computed key has no implicit shorthand binding target.
-                    if (computed || left is AstLiteral)
+                    // A computed key has no implicit shorthand binding target, and neither
+                    // has a reserved word — `var { false }` binds nothing nameable.
+                    if (computed || keywordName || left is AstLiteral)
                         throw stream.Unexpected();
                     // A shorthand property's name is also its BindingIdentifier, so it
                     // follows the same rules as a simple binding: contextual keywords

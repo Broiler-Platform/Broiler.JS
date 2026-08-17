@@ -79,6 +79,26 @@ public class FastScanner
 
     private FastToken lastToken = EmptyToken;
 
+    // The last token that was not a LineTerminator. `lastToken` alone cannot answer
+    // "what precedes this `(`" because a head may be written across lines
+    // (`if\n(a)`), and the paren bookkeeping below needs the significant token.
+    private FastToken lastSignificantToken = EmptyToken;
+
+    // One entry per currently-open `(`: whether it opened the head of an
+    // `if` / `for` / `while` / `with` statement. Popped by the matching `)` into
+    // <see cref="lastCloseParenEndedStatementHead"/>, which is what tells a `/`
+    // directly after that `)` apart from division — see ReadCommentsOrRegExOrSymbol.
+    private readonly System.Collections.Generic.Stack<bool> parenIsStatementHead = new();
+    private bool lastCloseParenEndedStatementHead;
+
+    // `if` / `for` / `while` / `with` are the statements whose parenthesised head is
+    // followed by a Statement, so a `/` after the closing `)` begins a regular
+    // expression literal rather than dividing the head's value.
+    private static bool OpensStatementHead(FastToken token)
+        => token.IsKeyword
+            && token.Keyword is FastKeywords.@if or FastKeywords.@for
+                or FastKeywords.@while or FastKeywords.with;
+
     /// <summary>
     /// Whether <c>yield</c> is currently a keyword (set by the parser when it enters
     /// a generator body). This governs the regex-vs-division decision for a <c>/</c>
@@ -238,6 +258,8 @@ public class FastScanner
     private FastToken ReadToken()
     {
         lastToken = _ReadToken();
+        if (lastToken.Type != TokenTypes.LineTerminator)
+            lastSignificantToken = lastToken;
         return lastToken;
     }
 
@@ -324,9 +346,14 @@ public class FastScanner
                 return ReadSymbol(state, TokenTypes.Comma);
 
             case '(':
+                parenIsStatementHead.Push(OpensStatementHead(lastSignificantToken));
                 return ReadSymbol(state, TokenTypes.BracketStart);
 
             case ')':
+                // An unbalanced `)` is a syntax error the parser reports; here it only
+                // has to not corrupt the stack for whatever follows.
+                lastCloseParenEndedStatementHead = parenIsStatementHead.Count > 0
+                    && parenIsStatementHead.Pop();
                 return ReadSymbol(state, TokenTypes.BracketEnd);
 
             case '[':
@@ -1046,6 +1073,15 @@ public class FastScanner
         switch (last.Type)
         {
             case TokenTypes.BracketEnd:
+                // A `/` after `)` divides the parenthesised value — unless that `)`
+                // closed the head of an `if` / `for` / `while` / `with`, whose body is a
+                // Statement and may perfectly well start with a regular-expression
+                // literal. Minifiers emit exactly that shape for a one-statement body:
+                // `for(i=0;i<n;i++)/^ *-+: *$/.test(a[i])?…`. Read as division the regex
+                // then fails to close and the whole script is rejected.
+                scanRegExp = lastCloseParenEndedStatementHead;
+                break;
+
             case TokenTypes.SquareBracketEnd:
             case TokenTypes.Number:
                 // probably not regexp...
@@ -1133,6 +1169,15 @@ public class FastScanner
                     break;
 
                 case TokenTypes.BracketEnd:
+                    // See the BracketEnd case above: only a `)` that closed an
+                    // `if`/`for`/`while`/`with` head can be followed by a regex.
+                    if (!lastCloseParenEndedStatementHead)
+                    {
+                        token = null;
+                        return false;
+                    }
+                    break;
+
                 case TokenTypes.SquareBracketEnd:
                     token = null;
                     return false;

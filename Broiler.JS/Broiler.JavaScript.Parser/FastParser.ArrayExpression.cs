@@ -16,34 +16,49 @@ partial class FastParser
     bool ArrayExpression(out IFastEnumerable<AstExpression> nodes, TokenTypes endsWith = TokenTypes.BracketEnd)
     {
         var list = new Sequence<AstExpression>();
-        do
+
+        // Arguments : ( ArgumentList ) — every argument is an AssignmentExpression[+In],
+        // so `in` is an ordinary binary operator inside the parentheses even when the
+        // enclosing context suppressed it to disambiguate a for-in head. Without this,
+        // `for (var i = 0, f = fn("a" in b); …; …)` was rejected at the `in`.
+        var savedIn = considerInOfAsOperators;
+        considerInOfAsOperators = true;
+
+        try
         {
-            stream.SkipNewLines();
-
-            if (stream.CheckAndConsumeAny(endsWith, TokenTypes.EOF))
-                break;
-
-            var isSpread = stream.CheckAndConsume(TokenTypes.TripleDots, out var token);
-
-            if (Expression(out var node))
+            do
             {
-                if (isSpread)
-                    node = new AstSpreadElement(token, node.End, node);
+                stream.SkipNewLines();
 
-                list.Add(node);
-            }
+                if (stream.CheckAndConsumeAny(endsWith, TokenTypes.EOF))
+                    break;
 
-            if (stream.CheckAndConsumeAny(endsWith, TokenTypes.EOF))
-                break;
+                var isSpread = stream.CheckAndConsume(TokenTypes.TripleDots, out var token);
 
-            if (stream.CheckAndConsume(TokenTypes.Comma))
-                continue;
+                if (Expression(out var node))
+                {
+                    if (isSpread)
+                        node = new AstSpreadElement(token, node.End, node);
 
-            if (stream.LineTerminator())
-                continue;
+                    list.Add(node);
+                }
 
-            throw stream.Unexpected();
-        } while (true);
+                if (stream.CheckAndConsumeAny(endsWith, TokenTypes.EOF))
+                    break;
+
+                if (stream.CheckAndConsume(TokenTypes.Comma))
+                    continue;
+
+                if (stream.LineTerminator())
+                    continue;
+
+                throw stream.Unexpected();
+            } while (true);
+        }
+        finally
+        {
+            considerInOfAsOperators = savedIn;
+        }
 
         nodes = list;
         return true;

@@ -56,7 +56,10 @@ partial class FastParser
                 if (stream.CheckAndConsume(terminator))
                     break;
 
-                throw stream.Unexpected();
+                // Statement() rewound to its first token when it gave up, so that token is
+                // all this frame knows about — and on a minified bundle it is character 1
+                // of the file. UnexpectedStatement adds where the parse actually stopped.
+                throw stream.UnexpectedStatement();
             } while (true);
 
             node = new AstBlock(begin, PreviousToken, list)

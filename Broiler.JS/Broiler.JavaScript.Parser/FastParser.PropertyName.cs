@@ -8,6 +8,19 @@ namespace Broiler.JavaScript.Parser;
 
 partial class FastParser
 {
+    /// <summary>
+    /// Reserved words that the scanner gives a token type of their own rather than
+    /// <see cref="TokenTypes.Identifier"/>. A PropertyName is an IdentifierName, so all
+    /// of them are legal property keys (<c>{ null: 1 }</c>, <c>{ in: 2 }</c>) — in an
+    /// object literal, in a binding pattern, and after a <c>.</c>.
+    /// </summary>
+    internal static bool IsKeywordPropertyName(TokenTypes type)
+        => type is TokenTypes.True
+            or TokenTypes.False
+            or TokenTypes.In
+            or TokenTypes.InstanceOf
+            or TokenTypes.Null;
+
     bool PropertyName(out AstExpression node, out bool computed, out bool isPrivate, bool acceptKeywords = false)
     {
         var begin = BeginUndo();

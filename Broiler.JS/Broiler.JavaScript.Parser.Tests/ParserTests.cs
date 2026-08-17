@@ -737,4 +737,222 @@ public class ParserTests
 
         Assert.Equal(2, program.Statements.ToArray().Length);
     }
+
+    /// <summary>
+    /// TemplateSubstitution is `${ Expression }` — a full Expression, so a comma sequence
+    /// belongs there. Parsing only an AssignmentExpression left the `,` unconsumed and
+    /// rejected the whole script; swiper-bundle.min.js interpolates exactly this shape.
+    /// </summary>
+    [Theory]
+    [InlineData("var x = `${a,b}`;")]
+    [InlineData("var x = `a${b,c}d`;")]
+    [InlineData("var x = `${1,2}${3,4}`;")]
+    [InlineData("function f(n){ return `x${n=16,void 0===n&&(n=16),n}`; }")]
+    [InlineData("var x = tag`${a,b}`;")]
+    public void ParseProgram_TemplateSubstitution_AcceptsCommaSequence(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+
+        Assert.NotNull(parser.ParseProgram());
+    }
+
+    /// <summary>
+    /// BindingProperty is `PropertyName : BindingElement`, and a PropertyName is an
+    /// IdentifierName — reserved words included. The object *literal* path already accepted
+    /// them; the binding-pattern path did not, because `false`/`true`/`null`/`in`/`instanceof`
+    /// lex to token types of their own rather than Identifier. TypeScript's own bundle
+    /// destructures `const { false: decorators, true: metadata } = groupBy(…)`.
+    /// </summary>
+    [Theory]
+    [InlineData("var {false: a} = b;")]
+    [InlineData("const {false: a, true: b} = c;")]
+    [InlineData("let {null: a} = b;")]
+    [InlineData("var {in: a, instanceof: b} = c;")]
+    [InlineData("function f({null: a}) { return a; }")]
+    [InlineData("var {false: {true: a}} = b;")]
+    [InlineData("var {false: a = 1} = b;")]
+    public void ParseProgram_ObjectBindingPattern_AcceptsReservedWordPropertyNames(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+
+        Assert.NotNull(parser.ParseProgram());
+    }
+
+    /// <summary>
+    /// A reserved word is a legal PropertyName but never a legal BindingIdentifier, so the
+    /// shorthand form still has to be rejected — accepting the key must not accept `var { false }`.
+    /// </summary>
+    [Theory]
+    [InlineData("var {false} = b;")]
+    [InlineData("const {null} = b;")]
+    [InlineData("var {in} = b;")]
+    public void ParseProgram_ObjectBindingPattern_RejectsReservedWordShorthand(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+
+        Assert.ThrowsAny<FastParseException>(() => parser.ParseProgram());
+    }
+
+    /// <summary>
+    /// `export { x as in }` renames to a ModuleExportName, which is an IdentifierName and so
+    /// may be a reserved word — a bundler that minifies export names down to two letters emits
+    /// `in`, `if`, `do` and friends.
+    /// </summary>
+    [Theory]
+    [InlineData("export {a as in} from \"m\";")]
+    [InlineData("export {a as b, c as null} from \"m\";")]
+    public void ParseProgram_ExportSpecifier_AcceptsReservedWordExportName(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+
+        Assert.NotNull(parser.ParseProgram());
+    }
+
+    /// <summary>
+    /// The body of an `if`/`for`/`while`/`with` is a Statement, which may begin with a regular
+    /// expression literal. The scanner read every `/` after a `)` as division, so the regex never
+    /// closed and the script was rejected — marked.js (bundled into monaco-editor, and into the
+    /// page bundles of several news sites) opens a table-alignment loop with exactly this.
+    /// </summary>
+    [Theory]
+    [InlineData("for(;;)/a/.test(x);")]
+    [InlineData("for(i=0;i<n;i++)/^ *-+: *$/.test(a[i])?b():c();")]
+    [InlineData("if(a)/b/.test(x);")]
+    [InlineData("while(a)/b/.test(x);")]
+    [InlineData("with(a)/b/.test(x);")]
+    [InlineData("for(x in y)/b/.test(x);")]
+    [InlineData("for(var x of y)/b/.test(x);")]
+    [InlineData("if(a)/b/.test(x);else/c/.test(x);")]
+    public void ParseProgram_RegularExpression_MayFollowAStatementHead(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+
+        Assert.NotNull(parser.ParseProgram());
+    }
+
+    /// <summary>
+    /// The counterpart of the case above: a `/` after any other `)` is still division. This is
+    /// the regression the statement-head tracking has to avoid — a call or a grouping followed
+    /// by a division must not start reading a regular expression.
+    /// </summary>
+    [Theory]
+    [InlineData("var x = (a+b)/2;")]
+    [InlineData("var x = f(a)/2;")]
+    [InlineData("var x = (a)/b/c;")]
+    [InlineData("var x = f(g(a))/h(b);")]
+    [InlineData("function f(){ return (a)/2; }")]
+    [InlineData("for(var i=(a+b)/2;i<n;i++);")]
+    [InlineData("if(a)b=(c)/2;")]
+    public void ParseProgram_SlashAfterOtherParenthesis_IsStillDivision(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+
+        Assert.NotNull(parser.ParseProgram());
+    }
+
+    /// <summary>
+    /// A `for` head suppresses `in` only at its own top level. Every nested context — a call's
+    /// arguments, a template substitution, a function body, an arrow — is `[+In]` again. Leaking
+    /// the suppression into them rejected `for (var i = 0, f = function (e) { e in C || … }; …)`,
+    /// the shape core-js and its many re-bundles use to install a property.
+    /// </summary>
+    [Theory]
+    [InlineData("for(var a=1,E=function(e){return e in C};0;);")]
+    [InlineData("for(var a=1,E=function(e){e in C||g(e)};0;);")]
+    [InlineData("for(var i=0,f=function(){return \"a\" in b};i<1;i++);")]
+    [InlineData("for(var a=f(x in y);0;);")]
+    [InlineData("for(var a=`${x in y}`;0;);")]
+    [InlineData("for(var a=(()=>x in y);0;);")]
+    [InlineData("for(var a=(x in y);0;);")]
+    [InlineData("for(var a=[x in y];0;);")]
+    [InlineData("for(var a={b:x in y};0;);")]
+    public void ParseProgram_In_IsAnOperatorInsideANestedContextOfAForHead(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+
+        Assert.NotNull(parser.ParseProgram());
+    }
+
+    /// <summary>
+    /// `for (x in y)` must keep working: restoring `[+In]` for nested contexts must not restore
+    /// it for the head itself, or a for-in loop parses as a relational expression instead.
+    /// </summary>
+    [Theory]
+    [InlineData("for(x in y);")]
+    [InlineData("for(var x in y);")]
+    [InlineData("for(let x in y);")]
+    [InlineData("for(const [a,b] in y);")]
+    public void ParseProgram_ForInHead_StillSuppressesInAtItsTopLevel(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+        var program = parser.ParseProgram();
+
+        Assert.Single(program.Statements.ToArray());
+    }
+
+    /// <summary>
+    /// ClassEscape reaches IdentityEscape, so an Annex B identity escape is as valid inside a
+    /// character class as outside it. Rejecting `[\_]` made the scanner fall back to reading the
+    /// `/` as division, which fails the whole script — Adobe Launch's bundle sanitises input with
+    /// `String(e).replace(/[^0-9a-zA-Z\-\_]/g,"")`.
+    /// </summary>
+    [Theory]
+    [InlineData("x.replace(/[\\_]/g,\"\");")]
+    [InlineData("x.replace(/[^0-9a-zA-Z\\-\\_]/g,\"\");")]
+    [InlineData("x.replace(/[\\C\\P]/g,\"\");")]
+    // Outside a class these already worked; they are here so the two paths stay in step.
+    [InlineData("x.replace(/\\_/g,\"\");")]
+    [InlineData("x.replace(/\\-/g,\"\");")]
+    // A `-` between two ordinary atoms is still a range, escaped or not: both must parse.
+    [InlineData("x.replace(/[a-z]/g,\"\");")]
+    [InlineData("x.replace(/[a\\-z]/g,\"\");")]
+    public void ParseProgram_RegularExpressionClass_AcceptsAnnexBIdentityEscapes(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+
+        Assert.NotNull(parser.ParseProgram());
+    }
+
+    /// <summary>
+    /// When a statement cannot be parsed the parser has rewound to the statement's first token,
+    /// so that token is all it can name — and in a minified bundle that is character 1 of the
+    /// file, which says nothing at all. The report now also names where the parse actually
+    /// stopped, which for a script that ends early is the end of the script.
+    /// </summary>
+    [Fact]
+    public void ParseProgram_UnparseableStatement_ReportsWhereTheParseStopped()
+    {
+        var stream = new FastTokenStream(new StringSpan("!"));
+        var parser = new FastParser(stream);
+
+        var error = Assert.ThrowsAny<FastParseException>(() => parser.ParseProgram());
+
+        Assert.Contains("Unexpected token Negate: ! at 1, 1", error.Message);
+        Assert.Contains("the end of the script", error.Message);
+    }
+
+    /// <summary>
+    /// And when the parse stopped at a real token, that token is named with its position rather
+    /// than the statement's.
+    /// </summary>
+    [Fact]
+    public void ParseProgram_UnparseableStatement_NamesTheTokenItStoppedAt()
+    {
+        var stream = new FastTokenStream(new StringSpan("!;"));
+        var parser = new FastParser(stream);
+
+        var error = Assert.ThrowsAny<FastParseException>(() => parser.ParseProgram());
+
+        Assert.Contains("Unexpected token Negate: ! at 1, 1", error.Message);
+        Assert.Contains("SemiColon at 1, 2", error.Message);
+    }
 }
