@@ -249,7 +249,11 @@ public partial class JSGlobalStatic
         {
             try
             {
-                f.Delegate(new Arguments(_1 as JSValue));
+                // InvokeFunction, not the raw delegate: a callback ending in a call
+                // (`setImmediate(() => done())`) compiles to a tail-call sentinel that
+                // only the trampoline forces, and setTimeout/setInterval already dispatch
+                // this way.
+                f.InvokeFunction(new Arguments(_1 as JSValue));
             }
             catch (Exception ex)
             {

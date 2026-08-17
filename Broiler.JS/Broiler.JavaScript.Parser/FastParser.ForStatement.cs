@@ -562,8 +562,9 @@ partial class FastParser
 
         /// <summary>
         /// True when a statement at the top level of the loop body declares a name the head
-        /// also binds, so the body must keep its own scope instead of being spliced into the
-        /// per-iteration block (see the call site).
+        /// also binds — or, for a head whose test and update are evaluated in the same block,
+        /// a name one of them reads — so the body must keep its own scope instead of being
+        /// spliced into the per-iteration block (see the call site).
         /// </summary>
         /// <remarks>
         /// Only the body's OWN declarations can collide: anything inside a nested block, loop
@@ -571,14 +572,18 @@ partial class FastParser
         /// hoisted to the enclosing function, and a `var` sharing a name with a lexical head
         /// binding is an early error the validator reports.
         /// </remarks>
-        static bool BodyShadowsHeadBinding(AstVariableDeclaration declaration, IFastEnumerable<AstStatement> body)
+        static bool BodyShadowsHeadBinding(
+            AstVariableDeclaration declaration,
+            IFastEnumerable<AstStatement> body,
+            HashSet<string>? headExpressionNames = null)
         {
             var headNames = new Sequence<StringSpan>();
             var headEn = declaration.Declarators.GetFastEnumerator();
             while (headEn.MoveNext(out var headDeclarator))
                 CollectBindingNames(headDeclarator.Identifier, headNames);
 
-            if (headNames.Count == 0)
+            var hasHeadExpressionNames = headExpressionNames is { Count: > 0 };
+            if (headNames.Count == 0 && !hasHeadExpressionNames)
                 return false;
 
             bool IsHeadName(StringSpan name)
@@ -589,7 +594,9 @@ partial class FastParser
                         return true;
                 }
 
-                return false;
+                return hasHeadExpressionNames
+                    && name.Value != null
+                    && headExpressionNames!.Contains(name.Value);
             }
 
             var statements = body.GetFastEnumerator();
@@ -808,7 +815,20 @@ partial class FastParser
             // on one short name for both. Nest only when a name actually collides: the
             // ordinary loop body keeps its single flat block scope, and with it the shape the
             // per-iteration lowering below was tuned around.
-            var nestBody = sourceBlock != null && BodyShadowsHeadBinding(declaration, body);
+            //
+            // A `let` head also MOVES the test (and a closure-carrying update) into that block —
+            // see the injection below — so for it the body shares a scope with the head's own
+            // expressions too, and a body declaration shadows every name they read, not only the
+            // loop variable's:
+            //   const n = 3; for (let r = 1; r <= n; ++r) { const n = 1; }
+            // read the body's `n` in the test and threw "Cannot access 'n' before initialization"
+            // on the first evaluation, one iteration before that binding exists. Which names the
+            // test and update read is what decides it, so collect them alongside the head's.
+            var headExpressionNames = cStyle && declaration.Kind == FastVariableKind.Let
+                ? IdentifierNameCollector.Collect(test, update)
+                : null;
+            var nestBody = sourceBlock != null
+                && BodyShadowsHeadBinding(declaration, body, headExpressionNames);
 
             var statementList = new Sequence<AstStatement>(nestBody ? 2 : body.Count + 1) { null! };
             if (nestBody)

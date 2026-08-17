@@ -46,6 +46,45 @@ class FakeMinifier:
         }
 
 
+class FakeReferenceEngine:
+    """Reference-engine double; no Node.js installation is required.
+
+    Answers are keyed by the BODY the program was assembled from, so a test states what the
+    second engine thinks of the original and of the minified source separately.
+    """
+
+    name = "fake-engine"
+    version = "1.test"
+
+    def __init__(
+        self,
+        verdicts: dict[str, str] | None = None,
+        unparsable: tuple[str, ...] = (),
+        error: Exception | None = None,
+    ) -> None:
+        self.verdicts = verdicts or {}
+        self.unparsable = unparsable
+        self.error = error
+        self.programs: list[str] = []
+        self.parse_checks: list[str] = []
+
+    def _verdict_for(self, program: str) -> str:
+        for marker, verdict in self.verdicts.items():
+            if marker in program:
+                return verdict
+        return "passed"
+
+    def run(self, program: str, is_async: bool) -> str:
+        if self.error is not None:
+            raise self.error
+        self.programs.append(program)
+        return self._verdict_for(program)
+
+    def parses(self, program: str) -> bool:
+        self.parse_checks.append(program)
+        return not any(marker in program for marker in self.unparsable)
+
+
 class RecordingPopen:
     """Successful Broiler process double that records each assembled script."""
 
@@ -1539,6 +1578,139 @@ includes: [assert.js, sta.js]
             paths,
             [r["path"] for r in results],
         )
+
+
+    # ---- reference-engine cross-check ----
+
+    def _cross_check_case(
+        self,
+        reference_engine: object,
+        *,
+        source: str = "ORIGINAL_BODY();\n",
+        minified: str = "MINIFIED_BODY();",
+        engine_reason: str = "Test262Error: Expected SameValue",
+    ) -> dict[str, object]:
+        path = self.write_test("test/language/cross-check.js", source)
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+
+        def run_test(repo, dll, path, cache, timeout, mem, include_negative=False,
+                     *, variant=None, body_override=None, **kwargs):
+            result: dict[str, object] = {"path": path, "status": "passed"}
+            if variant is not None:
+                result["variant"] = variant
+            if body_override is not None:
+                result["status"] = "failed"
+                result["stderr"] = engine_reason
+            return result
+
+        with mock.patch.object(run_test262, "run_test", side_effect=run_test):
+            results = run_test262.run_test_variants_with_metadata(
+                repo,
+                TEST_ENGINE_PATH,
+                path,
+                {},
+                30.0,
+                0,
+                minifier=FakeMinifier(code=minified),
+                reference_engine=reference_engine,
+            )
+
+        self.assertEqual(["original", "terser"], [r["variant"] for r in results])
+        return results[1]
+
+    def test_reference_engine_failing_the_minified_body_attributes_it_to_the_minifier(
+        self,
+    ) -> None:
+        # The second engine runs the test and fails its minified body, so the failure is
+        # about the transformation and the case leaves the engine's column entirely.
+        engine = FakeReferenceEngine({"MINIFIED_BODY": "failed"})
+        result = self._cross_check_case(engine)
+
+        self.assertEqual("skipped", result["status"])
+        self.assertIs(True, result["notApplicable"])
+        self.assertEqual("minifier-changed-semantics", result["skipKind"])
+        self.assertEqual("minifier-changed-semantics", result["referenceCrossCheck"])
+        self.assertEqual("fake-engine", result["referenceEngine"])
+        self.assertEqual("1.test", result["referenceEngineVersion"])
+        # What the engine said is kept: a skipped case still has to be readable.
+        self.assertIn("Test262Error", str(result["engineFailure"]))
+
+    def test_minified_body_the_reference_engine_cannot_parse_is_its_own_kind(self) -> None:
+        engine = FakeReferenceEngine(
+            {"MINIFIED_BODY": "failed"}, unparsable=("MINIFIED_BODY",)
+        )
+        result = self._cross_check_case(engine)
+
+        self.assertEqual("skipped", result["status"])
+        self.assertEqual("minifier-invalid-output", result["skipKind"])
+        self.assertIn("cannot parse", str(result["reason"]))
+
+    def test_reference_engine_passing_the_minified_body_keeps_the_engine_failure(
+        self,
+    ) -> None:
+        # The whole point of the check: a divergence the second engine does not reproduce
+        # is Broiler's, and stays reported as a failure.
+        engine = FakeReferenceEngine()
+        result = self._cross_check_case(engine)
+
+        self.assertEqual("failed", result["status"])
+        self.assertNotIn("skipKind", result)
+        self.assertEqual("engine-divergence", result["referenceCrossCheck"])
+
+    def test_reference_engine_that_cannot_run_the_original_is_inconclusive(self) -> None:
+        # A feature the second engine does not implement fails both variants and decides
+        # nothing, so the engine's failure stands rather than being explained away.
+        engine = FakeReferenceEngine({"BODY": "failed"})
+        result = self._cross_check_case(engine)
+
+        self.assertEqual("failed", result["status"])
+        self.assertEqual("inconclusive", result["referenceCrossCheck"])
+        self.assertEqual([], engine.parse_checks)
+
+    def test_unusable_reference_engine_leaves_the_failure_reported(self) -> None:
+        engine = FakeReferenceEngine(error=run_test262.ReferenceEngineError("no node"))
+        result = self._cross_check_case(engine)
+
+        self.assertEqual("failed", result["status"])
+        self.assertEqual("inconclusive", result["referenceCrossCheck"])
+        self.assertIn("no node", str(result["referenceCrossCheckError"]))
+
+    def test_passing_minified_cases_are_never_cross_checked(self) -> None:
+        path = self.write_test("test/language/cross-check-pass.js", "OK();\n")
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        engine = FakeReferenceEngine()
+
+        with mock.patch.object(run_test262, "run_test", side_effect=passing_run_test):
+            run_test262.run_test_variants_with_metadata(
+                repo, TEST_ENGINE_PATH, path, {}, 30.0, 0,
+                minifier=FakeMinifier(), reference_engine=engine,
+            )
+
+        self.assertEqual([], engine.programs)
+
+    def test_negative_tests_keep_their_own_verdict(self) -> None:
+        # A negative test passes BY failing, which the cross-check's exit-code comparison
+        # cannot read, so it is not consulted at all.
+        engine = FakeReferenceEngine({"MINIFIED_BODY": "failed"})
+        result = self._cross_check_case(
+            engine,
+            source="/*---\nnegative:\n  phase: runtime\n  type: Test262Error\n---*/\nthrow 1;\n",
+        )
+
+        self.assertEqual("failed", result["status"])
+        self.assertEqual([], engine.programs)
+
+    def test_cross_check_compares_the_same_program_the_engine_ran(self) -> None:
+        engine = FakeReferenceEngine({"MINIFIED_BODY": "failed"})
+        self._cross_check_case(engine)
+
+        self.assertEqual(2, len(engine.programs))
+        minified_program, original_program = engine.programs
+        for program in (minified_program, original_program):
+            self.assertIn("// assert harness", program)
+            self.assertIn("// sta harness", program)
+        self.assertIn("MINIFIED_BODY();", minified_program)
+        self.assertIn("ORIGINAL_BODY();", original_program)
 
 
 if __name__ == "__main__":

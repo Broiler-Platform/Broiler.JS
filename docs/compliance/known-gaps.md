@@ -27,6 +27,29 @@ linked issue remains; do not rely on deleted issue snapshots as evidence.
 - `module` tests need a module-host mode.
 - `raw` tests need raw-harness semantics.
 - Negative-metadata support exists but must be enabled and reported by release runs.
+- **An `async` test cannot currently fail, so its result is not evidence.** The runner
+  injects a `$DONE` that settles a promise and appends it as the script's completion
+  value; `--script-host` evaluates and discards that value, and reports no unhandled
+  rejection, so a rejected `$DONE(error)` and a `$DONE` that is never called both exit 0.
+  The suite has 5581 `async`-flagged files. Measured over a random sample of 200 against
+  the standard marker protocol (a `$DONE` that prints `Test262:AsyncTestComplete` /
+  `Test262:AsyncTestFailure:`, which the runner then requires on stdout): 168 pass either
+  way, 26 report a real assertion failure, and 2 never settle — so on the order of 780
+  currently-counted passes are not passes. Switching protocols is the fix; it is a
+  deliberate, visible correction to the headline number and wants its own change, not a
+  quiet one. Until then, treat `flags: [async]` results as unverified.
+
+  Two engine defects behind that measurement are fixed (a promise reaction whose body is
+  a tail call was dropped entirely; the `let`-head loop scoping described below), but one
+  remains open and is the largest single contributor: **`obj.method(await p)` — a call
+  through a member expression with an `await` among its arguments — is silently skipped**,
+  while `plain(await p)` and `var v = await p; obj.method(v)` both run. `assert.sameValue(
+  await p, x)` is that shape, so the assertion never executes. Minimal repro:
+
+  ```js
+  var log = [], obj = { hit(v) { log.push(v); } };
+  (async function () { obj.hit(await Promise.resolve(1)); })();   // logs nothing
+  ```
 
 ## Gap lifecycle
 

@@ -374,7 +374,14 @@ public partial class JSPromise : JSObject, IJSPromise
         {
             try
             {
-                var handlerResult = reaction.Handler(new Arguments(JSUndefined.Value, result));
+                // The reaction is invoked through the function's raw delegate rather than
+                // InvokeFunction, so the proper-tail-call trampoline has to be run here: a
+                // handler whose body ENDS IN A CALL (`() => f()`, `function () { return f(); }`)
+                // compiles to a JSTailCall sentinel that its caller is required to force. Left
+                // unforced the sentinel was simply resolved into the derived promise — f never
+                // ran, and `p.then(v => assert(v))` silently asserted nothing.
+                var handlerResult = JSTailCall.Resolve(
+                    reaction.Handler(new Arguments(JSUndefined.Value, result)));
                 reaction.Promise?.Resolve(handlerResult);
             }
             catch (Exception ex)

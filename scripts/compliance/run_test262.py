@@ -96,10 +96,69 @@ FUNCTION_TOSTRING_REFERENCE = re.compile(
 )
 POST_TERMINATION_TIMEOUT_SECONDS = 5.0
 INTERNAL_EXEC_WITH_LIMITS = "--_exec-with-test262-limits"
+# The engine consulted about a FAILING minified case before it is attributed to Broiler.
+# Node is already a hard requirement of the Terser variant (it runs the minifier), so this
+# adds a second opinion without adding a dependency. See ReferenceEngine.
+REFERENCE_ENGINE = "node"
+DEFAULT_REFERENCE_ENGINE_TIMEOUT_SECONDS = 30.0
+# The minified program is not valid JavaScript: the reference engine's parser rejects what
+# the minifier emitted. Terser accepts `if (false) let \n {}` and prints `if(false){let{}}`,
+# unescapes `for (async of [7])` into the `for (async of …)` the grammar forbids, and
+# drops the parentheses from `import((0, "./m.js"))` leaving a two-argument call. No engine
+# runs any of those, so there is no minified variant to hold Broiler to.
+MINIFIER_INVALID_OUTPUT = "minifier-invalid-output"
+# The minified program runs but is no longer the test: mangling renamed something the test
+# MEASURES. `assert.sameValue(cls.name, 'cls')` is checking the name a binding gave an
+# anonymous class, and the binding is now `a`; the Annex B early-error cases in
+# block-decl-func-skip-early-err-* turn on a body function sharing a name with a lexical
+# declaration, and the two are renamed apart. Every engine fails these, which is how they
+# are told from an engine defect.
+MINIFIER_CHANGED_SEMANTICS = "minifier-changed-semantics"
+ASYNC_DONE_PRELUDE = """
+const __broilerDonePromise = new Promise((resolve, reject) => {
+  let settled = false;
+  globalThis.$DONE = function(error) {
+    if (settled) {
+      reject(new Error("$DONE called multiple times"));
+      return;
+    }
+    settled = true;
+    if (error === undefined) {
+      resolve(undefined);
+      return;
+    }
+    reject(error);
+  };
+});
+""".strip()
+# Node-only tail for the reference run: fail the process when the async test rejects, and
+# when it never settles at all (nothing keeps the loop alive, so Node exits at that point —
+# `settled` is what tells the two apart).
+ASYNC_REFERENCE_EPILOGUE = """
+;(function () {
+  let settled = false;
+  process.exitCode = 1;
+  Promise.resolve(__broilerDonePromise).then(
+    () => { settled = true; process.exitCode = 0; },
+    (error) => {
+      settled = true;
+      process.exitCode = 1;
+      console.error(String((error && error.stack) || error));
+    });
+  process.on("exit", () => {
+    if (!settled)
+      console.error("async test did not call $DONE");
+  });
+})();
+""".strip()
 
 
 class MinifierError(RuntimeError):
     """Raised when the configured JavaScript minifier cannot produce output."""
+
+
+class ReferenceEngineError(RuntimeError):
+    """Raised when the reference engine cannot be started or invoked."""
 
 
 class MinifierTimeoutError(MinifierError):
@@ -1228,6 +1287,143 @@ def _is_selectable(
     return False
 
 
+def assemble_test_program(
+    repo: Test262Repository,
+    harness_cache: dict[str, str],
+    metadata: dict[str, list[str]],
+    body: str,
+    *,
+    body_includes_strict: bool = False,
+) -> str:
+    """Build the complete script a host is handed for one test: harness, then body.
+
+    Shared by the engine under test and the reference engine so a cross-check compares
+    the same program rather than two assemblies that happen to look alike.
+    """
+
+    def harness_text(name: str) -> str:
+        if name not in harness_cache:
+            harness_cache[name] = repo.read_text(f"harness/{name}")
+        return harness_cache[name]
+
+    is_async = "async" in metadata["flags"]
+    is_only_strict = "onlyStrict" in metadata["flags"]
+
+    parts = []
+    if is_only_strict and not body_includes_strict:
+        parts.append('"use strict";')
+    parts.extend([harness_text("assert.js"), harness_text("sta.js")])
+    for include in metadata["includes"]:
+        parts.append(harness_text(include))
+    if is_async:
+        parts.append(ASYNC_DONE_PRELUDE)
+    parts.append(body)
+    if is_async:
+        # The leading semicolon is an explicit token boundary for a minified
+        # body, independent of its final token and automatic-semicolon rules.
+        parts.append(";__broilerDonePromise")
+
+    return "\n".join(parts)
+
+
+class ReferenceEngine:
+    """A second engine, consulted only about whether a MINIFIED program is still the test.
+
+    A minified variant is evidence about the engine only while the transformation preserved
+    what the test measures, and Terser's contract does not include that: it renames the very
+    bindings whose names a `fn-name-*` test asserts, and it occasionally emits source no
+    engine accepts. Both produce a failure that says nothing about Broiler, and
+    docs/compliance/process.md already answers them the same way — check the case against a
+    second engine before filing it. This runs that check instead of asking a reader to.
+
+    It is asked only when a minified case FAILED, so a passing run costs nothing, and its
+    answer can only ever move a case OUT of the engine's column: a divergence the reference
+    engine does not reproduce stays a Broiler failure, exactly as before.
+    """
+
+    name = REFERENCE_ENGINE
+
+    def __init__(self, executable: str, timeout_seconds: float) -> None:
+        if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
+            raise ValueError("reference engine timeout must be finite and positive")
+        resolved = shutil.which(executable)
+        if resolved is None:
+            raise ReferenceEngineError(
+                f"Reference engine executable was not found: {executable}"
+            )
+        self.executable = resolved
+        self.timeout_seconds = timeout_seconds
+        try:
+            probe = subprocess.run(
+                [self.executable, "--version"],
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise ReferenceEngineError(
+                f"Could not run the reference engine at {self.executable}: {exc}"
+            ) from exc
+        self.version = (probe.stdout or "").strip()
+        if not self.version:
+            raise ReferenceEngineError(
+                f"Reference engine at {self.executable} did not report a version"
+            )
+
+    def _write_program(self, program: str) -> str:
+        TEMP_DIRECTORY.mkdir(parents=True, exist_ok=True)
+        # .cjs: the harness and every script-mode test are CommonJS to Node, whatever a
+        # package.json above the temp directory happens to say about .js.
+        with tempfile.NamedTemporaryFile(
+            "w",
+            suffix=".cjs",
+            delete=False,
+            dir=TEMP_DIRECTORY,
+            encoding="utf-8",
+            newline="",
+        ) as handle:
+            handle.write(program)
+            return handle.name
+
+    def _invoke(self, arguments: list[str], script_path: str) -> str:
+        try:
+            process = subprocess.run(
+                [self.executable, *arguments, script_path],
+                capture_output=True,
+                text=True,
+                timeout=self.timeout_seconds,
+            )
+        except subprocess.TimeoutExpired:
+            return "timedOut"
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise ReferenceEngineError(
+                f"Reference engine invocation failed: {exc}"
+            ) from exc
+        return "passed" if process.returncode == 0 else "failed"
+
+    def parses(self, program: str) -> bool:
+        """Whether the reference engine's parser accepts the program at all."""
+        script_path = self._write_program(program)
+        try:
+            return self._invoke(["--check"], script_path) == "passed"
+        finally:
+            os.unlink(script_path)
+
+    def run(self, program: str, is_async: bool) -> str:
+        """Run one assembled program: "passed", "failed", or "timedOut"."""
+        if is_async:
+            # The shared assembly ends in the $DONE promise as the script's completion
+            # value, which a host that awaits it observes. Node does not, so settle it
+            # here — an async test that rejects or never calls $DONE must not read as a
+            # pass on the side of the comparison that decides attribution.
+            program = f"{program}\n{ASYNC_REFERENCE_EPILOGUE}"
+        script_path = self._write_program(program)
+        try:
+            return self._invoke([], script_path)
+        finally:
+            os.unlink(script_path)
+
+
 def run_test(
     repo: Test262Repository,
     broiler_dll: str,
@@ -1279,45 +1475,13 @@ def run_test(
             reason="negative metadata test (use --include-negative to run)",
         )
 
-    is_async = "async" in metadata["flags"]
-    is_only_strict = "onlyStrict" in metadata["flags"]
-
-    def harness_text(name: str) -> str:
-        if name not in harness_cache:
-            harness_cache[name] = repo.read_text(f"harness/{name}")
-        return harness_cache[name]
-
-    parts = []
-    if is_only_strict and not body_override_includes_strict:
-        parts.append('"use strict";')
-    parts.extend([harness_text("assert.js"), harness_text("sta.js")])
-    for include in metadata["includes"]:
-        parts.append(harness_text(include))
-    if is_async:
-        parts.append(
-            """
-const __broilerDonePromise = new Promise((resolve, reject) => {
-  let settled = false;
-  globalThis.$DONE = function(error) {
-    if (settled) {
-      reject(new Error("$DONE called multiple times"));
-      return;
-    }
-    settled = true;
-    if (error === undefined) {
-      resolve(undefined);
-      return;
-    }
-    reject(error);
-  };
-});
-""".strip()
-        )
-    parts.append(body if body_override is None else body_override)
-    if is_async:
-        # The leading semicolon is an explicit token boundary for a minified
-        # body, independent of its final token and automatic-semicolon rules.
-        parts.append(";__broilerDonePromise")
+    program = assemble_test_program(
+        repo,
+        harness_cache,
+        metadata,
+        body if body_override is None else body_override,
+        body_includes_strict=body_override_includes_strict,
+    )
 
     TEMP_DIRECTORY.mkdir(parents=True, exist_ok=True)
     # newline="" for the same reason read_text uses it: the assembled script must reach the
@@ -1333,7 +1497,7 @@ const __broilerDonePromise = new Promise((resolve, reject) => {
         encoding="utf-8",
         newline="",
     ) as handle:
-        handle.write("\n".join(parts))
+        handle.write(program)
         script_path = handle.name
 
     try:
@@ -1414,6 +1578,7 @@ def build_summary(
     runner_arch: str = "",
     dotnet_version: str = "",
     minifier: str = "none",
+    reference_engine: str = "",
     minifier_version: str = "",
     minifier_profile: str = "",
     minifier_timeout_seconds: float = 0.0,
@@ -1511,6 +1676,11 @@ def build_summary(
         "runnerArch": runner_arch,
         "dotnetVersion": dotnet_version,
         "minifier": minifier,
+        # The engine name only. Its VERSION rides on the individual cross-checked cases
+        # instead: the merge demands cross-shard equality of every run-configuration field,
+        # and nothing pins a runner's Node to the patch level the way the lockfile pins
+        # Terser's, so recording it here would turn a mid-run image bump into a merge failure.
+        "referenceEngine": reference_engine,
         "minifierVersion": minifier_version,
         "minifierProfile": minifier_profile,
         "minifierTimeoutSeconds": minifier_timeout_seconds,
@@ -1606,6 +1776,95 @@ def _not_applicable_minified_result(
     }
 
 
+def cross_check_minified_failure(
+    reference_engine: object,
+    repo: Test262Repository,
+    path: str,
+    harness_cache: dict[str, str],
+    metadata: dict[str, list[str]],
+    body: str,
+    minified_body: str,
+    minified_result: dict[str, object],
+    *,
+    includes_strict: bool,
+) -> dict[str, object]:
+    """Ask the reference engine whether a failing minified case is still the test.
+
+    Three answers, and only the first moves the case:
+
+    * the reference engine passes the ORIGINAL and fails the MINIFIED body — the
+      transformation, not the engine, is what the failure is about, so the case becomes a
+      not-applicable minifier skip (invalid output when its parser refuses the body at
+      all, changed semantics when it runs and fails);
+    * the reference engine passes BOTH — the divergence is Broiler's, and the failure
+      stands with `referenceCrossCheck: engine-divergence` recording that it was checked;
+    * the reference engine cannot run the original either — a feature it does not
+      implement (Temporal, `using`, decorators) or a fixture it cannot resolve — so it has
+      no opinion, and the failure stands as `inconclusive`.
+
+    Anything the reference engine itself cannot do (a missing binary, a spawn failure) is
+    also inconclusive: this may report an engine failure it cannot explain, never suppress
+    one it did not check.
+    """
+    is_async = "async" in metadata["flags"]
+    minified_program = assemble_test_program(
+        repo,
+        harness_cache,
+        metadata,
+        minified_body,
+        # The strict directive is re-added by the assembler, exactly as the Broiler run has it.
+        body_includes_strict=False,
+    )
+
+    engine_name = str(getattr(reference_engine, "name", REFERENCE_ENGINE))
+    engine_version = str(getattr(reference_engine, "version", ""))
+
+    def stands(verdict: str) -> dict[str, object]:
+        minified_result["referenceCrossCheck"] = verdict
+        minified_result["referenceEngine"] = engine_name
+        minified_result["referenceEngineVersion"] = engine_version
+        return minified_result
+
+    try:
+        if reference_engine.run(minified_program, is_async) == "passed":  # type: ignore[attr-defined]
+            return stands("engine-divergence")
+
+        # Whether the reference engine can run the test AS WRITTEN is asked before its
+        # verdict on the minified body is read for anything: a feature it does not
+        # implement fails both variants and says nothing about either.
+        original_program = assemble_test_program(
+            repo, harness_cache, metadata, body, body_includes_strict=includes_strict
+        )
+        if reference_engine.run(original_program, is_async) != "passed":  # type: ignore[attr-defined]
+            return stands("inconclusive")
+
+        if not reference_engine.parses(minified_program):  # type: ignore[attr-defined]
+            outcome = MINIFIER_INVALID_OUTPUT
+            reason = (
+                f"{engine_name} runs this test but cannot parse its minified body: the "
+                "minifier emitted source no engine accepts"
+            )
+        else:
+            outcome = MINIFIER_CHANGED_SEMANTICS
+            reason = (
+                f"{engine_name} passes this test and fails its minified body: "
+                "minification changed what the test measures"
+            )
+    except ReferenceEngineError as exc:
+        minified_result["referenceCrossCheckError"] = str(exc)
+        return stands("inconclusive")
+
+    skipped = _not_applicable_minified_result(path, reason, skip_kind=outcome)
+    skipped["referenceCrossCheck"] = outcome
+    skipped["referenceEngine"] = engine_name
+    skipped["referenceEngineVersion"] = engine_version
+    # What the engine actually said, kept so a skipped case can still be read back.
+    engine_failure = minified_result.get("stderr") or minified_result.get("reason") or ""
+    if engine_failure:
+        skipped["engineFailure"] = str(engine_failure)[:2000]
+    return skipped
+
+
 def run_test_with_metadata(
     repo: Test262Repository,
     broiler_dll: str,
@@ -1643,6 +1902,7 @@ def run_test_variants_with_metadata(
     memory_limit_mb: int,
     include_negative: bool = False,
     minifier: object | None = None,
+    reference_engine: object | None = None,
 ) -> list[dict[str, object]]:
     """Run the original source and, when configured, its minified body."""
     original_started = time.perf_counter()
@@ -1651,6 +1911,7 @@ def run_test_variants_with_metadata(
     flags: list[str] = []
     source = ""
     body = ""
+    metadata: dict[str, list[str]] = {"flags": [], "features": [], "includes": []}
     negative: dict[str, str] | None = None
     try:
         source = repo.read_text(path)
@@ -1724,6 +1985,7 @@ def run_test_variants_with_metadata(
     minifier_started = time.perf_counter()
     minifier_input = body
     includes_strict = "onlyStrict" in flags
+    code: object = None
     if includes_strict:
         minifier_input = f'"use strict";\n{body}'
     try:
@@ -1775,6 +2037,26 @@ def run_test_variants_with_metadata(
             failure_stage="minifier",
         )
 
+    if (
+        reference_engine is not None
+        and minified_result.get("status") == "failed"
+        and minified_result.get("infrastructure") is not True
+        # A negative test passes BY failing, which an exit code alone cannot tell from the
+        # failure this is asking about. Those keep the engine's own verdict.
+        and negative is None
+    ):
+        minified_result = cross_check_minified_failure(
+            reference_engine,
+            repo,
+            path,
+            harness_cache,
+            metadata,
+            body,
+            str(code) if isinstance(code, str) else "",
+            minified_result,
+            includes_strict=includes_strict,
+        )
+
     minified_result["minifier"] = str(getattr(minifier, "name", TERSER_VARIANT))
     minified_result["minifierVersion"] = str(getattr(minifier, "version", ""))
     minified_result["minifierProfile"] = str(
@@ -1821,6 +2103,7 @@ def run_selected_tests(
     max_workers: int = 1,
     include_negative: bool = False,
     minifier: object | None = None,
+    reference_engine: object | None = None,
 ) -> list[dict[str, object]]:
     if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
         raise ValueError(f"timeout_seconds must be finite and positive, got {timeout_seconds}")
@@ -1847,6 +2130,13 @@ def run_selected_tests(
             f"variants ({getattr(minifier, 'profile', TERSER_PROFILE)}, "
             f"version {getattr(minifier, 'version', 'unknown')})."
         )
+    if reference_engine is not None:
+        log_progress(
+            f"A failing minified case is cross-checked against "
+            f"{getattr(reference_engine, 'name', REFERENCE_ENGINE)} "
+            f"{getattr(reference_engine, 'version', 'unknown')} before it counts as an "
+            "engine failure."
+        )
     if max_workers > 1:
         log_progress(f"Using {max_workers} parallel worker(s).")
 
@@ -1856,10 +2146,12 @@ def run_selected_tests(
         return _run_tests_serial(
             repo, broiler_dll, expanded_paths, timeout_seconds,
             memory_limit_mb, interval, total, include_negative, minifier,
+            reference_engine,
         )
     return _run_tests_parallel(
         repo, broiler_dll, expanded_paths, timeout_seconds,
         memory_limit_mb, interval, total, max_workers, include_negative, minifier,
+        reference_engine,
     )
 
 
@@ -1873,6 +2165,7 @@ def _run_tests_serial(
     total: int,
     include_negative: bool,
     minifier: object | None,
+    reference_engine: object | None = None,
 ) -> list[dict[str, object]]:
     harness_cache: dict[str, str] = {}
     results: list[dict[str, object]] = []
@@ -1891,6 +2184,7 @@ def _run_tests_serial(
             memory_limit_mb,
             include_negative,
             minifier,
+            reference_engine,
         )
         results.extend(path_results)
 
@@ -1930,6 +2224,7 @@ def _run_tests_parallel(
     max_workers: int,
     include_negative: bool,
     minifier: object | None,
+    reference_engine: object | None = None,
 ) -> list[dict[str, object]]:
     # Each worker gets its own harness cache to avoid contention.
     results_by_path: list[list[dict[str, object]]] = [[] for _ in range(total)]
@@ -1949,6 +2244,7 @@ def _run_tests_parallel(
         path_results = run_test_variants_with_metadata(
             repo, broiler_dll, path, harness_cache,
             timeout_seconds, memory_limit_mb, include_negative, minifier,
+            reference_engine,
         )
         return index, path_results
 
@@ -2114,6 +2410,23 @@ def main() -> int:
         help="Per-source Terser transformation timeout in seconds",
     )
     parser.add_argument(
+        "--reference-engine-bin",
+        default=REFERENCE_ENGINE,
+        help=(
+            "Second engine consulted about a FAILING minified case before it is attributed "
+            "to Broiler (default: node, which the Terser variant already requires)"
+        ),
+    )
+    parser.add_argument(
+        "--no-reference-cross-check",
+        action="store_true",
+        help=(
+            "Attribute every failing minified case to the engine without a second opinion. "
+            "Terser renames what fn-name tests measure and sometimes emits source no engine "
+            "accepts, so expect minifier artefacts among the reported failures."
+        ),
+    )
+    parser.add_argument(
         "--memory-limit-mb",
         type=non_negative_int,
         default=0,
@@ -2159,6 +2472,18 @@ def main() -> int:
             minifier.probe()
         except (MinifierError, ValueError) as exc:
             parser.error(str(exc))
+
+    reference_engine: ReferenceEngine | None = None
+    if minifier is not None and not args.no_reference_cross_check:
+        try:
+            reference_engine = ReferenceEngine(
+                args.reference_engine_bin,
+                DEFAULT_REFERENCE_ENGINE_TIMEOUT_SECONDS,
+            )
+        except (ReferenceEngineError, ValueError) as exc:
+            parser.error(
+                f"{exc}. Pass --no-reference-cross-check to run without a second opinion."
+            )
 
     log_progress(
         f"Starting test262 run for suite ref {args.suite_ref}"
@@ -2218,6 +2543,7 @@ def main() -> int:
             max_workers=max_workers,
             include_negative=args.include_negative,
             minifier=minifier,
+            reference_engine=reference_engine,
         )
     finally:
         if minifier is not None:
@@ -2240,6 +2566,9 @@ def main() -> int:
         runner_arch=args.runner_arch,
         dotnet_version=args.dotnet_version,
         minifier=args.minifier,
+        reference_engine=(
+            str(getattr(reference_engine, "name", "")) if reference_engine is not None else ""
+        ),
         minifier_version=minifier.version if minifier is not None else "",
         minifier_profile=minifier.profile if minifier is not None else "",
         minifier_timeout_seconds=(
