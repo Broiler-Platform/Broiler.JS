@@ -955,4 +955,91 @@ public class ParserTests
         Assert.Contains("Unexpected token Negate: ! at 1, 1", error.Message);
         Assert.Contains("SemiColon at 1, 2", error.Message);
     }
+
+    /// <summary>
+    /// A character no token can start with is reported by naming the character. The scanner used to
+    /// report <c>Token</c> instead — the token most recently produced — which says nothing, since the
+    /// offending character has not been tokenised and that is the whole problem. On the FIRST
+    /// character of a source no token has been produced at all, so the report read "Unexpected token
+    /// Empty:  at 1, 1": neither a token nor a character in it. That is the case that matters,
+    /// because a source whose very first character is untokenisable is usually not JavaScript.
+    /// </summary>
+    [Theory]
+    [InlineData("\u2022var a=1;", "'\u2022' (U+2022)")]
+    [InlineData("\u2013var a=1;", "'\u2013' (U+2013)")]
+    [InlineData("\u20ACvar a=1;", "'\u20AC' (U+20AC)")]
+    [InlineData("var a = \u2022;", "'\u2022' (U+2022)")]
+    public void ParseProgram_UntokenisableCharacter_NamesTheCharacter(string source, string expected)
+    {
+        // The scanner reads the first two tokens in its constructor, so a bad FIRST character is
+        // reported from `new FastTokenStream(...)` rather than from ParseProgram — which is why the
+        // stack of such a failure shows only FastScanner._ReadToken.
+        var error = Assert.ThrowsAny<FastParseException>(
+            () => new FastParser(new FastTokenStream(new StringSpan(source))).ParseProgram());
+
+        Assert.Contains("Unexpected character", error.Message);
+        Assert.Contains(expected, error.Message);
+    }
+
+    /// <summary>
+    /// A control character has no glyph to print, so it is named by code point and called what it is.
+    /// This is the shape a response body that was never decompressed arrives in.
+    /// </summary>
+    [Theory]
+    [InlineData("\u001fvar a=1;", "U+001F (a control character)")]
+    [InlineData("\u0000var a=1;", "U+0000 (a control character)")]
+    [InlineData("\u007fvar a=1;", "U+007F (a control character)")]
+    public void ParseProgram_ControlCharacter_IsNamedByCodePoint(string source, string expected)
+    {
+        var error = Assert.ThrowsAny<FastParseException>(
+            () => new FastParser(new FastTokenStream(new StringSpan(source))).ParseProgram());
+
+        Assert.Contains(expected, error.Message);
+    }
+
+    /// <summary>
+    /// U+FFFD is what a decoder substitutes for bytes it could not decode, so it is the signature of
+    /// a body that arrived in another encoding — said outright, because "invalid character" would
+    /// send the reader looking for a typo instead of at the transport.
+    /// </summary>
+    [Fact]
+    public void ParseProgram_ReplacementCharacter_SaysTheSourceWasMisdecoded()
+    {
+        var error = Assert.ThrowsAny<FastParseException>(
+            () => new FastParser(new FastTokenStream(new StringSpan("\ufffdvar a=1;"))).ParseProgram());
+
+        Assert.Contains("U+FFFD", error.Message);
+        Assert.Contains("not valid text in the encoding it was decoded with", error.Message);
+    }
+
+    /// <summary>
+    /// An astral character is a surrogate PAIR; naming half of one prints a broken glyph and the
+    /// wrong code point.
+    /// </summary>
+    [Fact]
+    public void ParseProgram_AstralCharacter_IsNamedByItsCodePoint()
+    {
+        var error = Assert.ThrowsAny<FastParseException>(
+            () => new FastParser(new FastTokenStream(new StringSpan("\ud83d\ude00var a=1;"))).ParseProgram());
+
+        Assert.Contains("U+1F600", error.Message);
+    }
+
+    /// <summary>
+    /// The characters that legitimately start a token are unaffected — `$` and `_` are
+    /// IdentifierStart, and the whole ASCII operator set still scans.
+    /// </summary>
+    [Theory]
+    [InlineData("var $ = 1, _ = 2, $_a = 3;")]
+    [InlineData("var a = b % c ^ d | e & f ~ 0;")]
+    [InlineData("var \u00e9 = 1, \u4e2d = 2;")]
+    [InlineData("var a = '\u2022 \u2013 \u20AC';")]
+    [InlineData("// \u2022 \u2013\nvar a = 1;")]
+    public void ParseProgram_LegitimateCharacters_StillScan(string source)
+    {
+        var stream = new FastTokenStream(new StringSpan(source));
+        var parser = new FastParser(stream);
+
+        Assert.NotNull(parser.ParseProgram());
+    }
 }

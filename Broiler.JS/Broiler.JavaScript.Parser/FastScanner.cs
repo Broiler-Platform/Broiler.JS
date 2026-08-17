@@ -61,6 +61,49 @@ public class FastScanner
         return new FastParseException(c, $"Unexpected token {c.Type}: {c.Span} at {Location}");
     }
 
+    /// <summary>
+    /// Reports a character that cannot begin any token, naming the character itself.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Unexpected"/> reports <see cref="Token"/> — the token most recently produced —
+    /// which says nothing here: the offending character has not been tokenised, and that is the
+    /// whole problem. Worse, on the FIRST character of a source no token has been produced at all,
+    /// so the report read "Unexpected token Empty:  at 1, 1" — a message with neither a token nor a
+    /// character in it. That is the case that matters, because a source whose very first character
+    /// is untokenisable is usually not JavaScript: a data block handed to the engine by mistake, a
+    /// response body that was never decompressed, or text decoded with the wrong encoding. Naming
+    /// the character says which.
+    /// </remarks>
+    private Exception UnexpectedCharacter(char c)
+    {
+        var token = Token;
+
+        if (c == char.MaxValue && position >= Text.Length)
+            return new FastParseException(token, $"Unexpected end of input at {Location}");
+
+        // An astral character (emoji, and anything else outside the BMP) is a surrogate PAIR, and
+        // printing half of one prints a broken glyph. Report the code point it forms.
+        if (char.IsHighSurrogate(c) && char.IsLowSurrogate(Peek(1)))
+        {
+            var pair = char.ConvertToUtf32(c, Peek(1));
+            return new FastParseException(token,
+                $"Unexpected character '{char.ConvertFromUtf32(pair)}' (U+{pair:X4}) at {Location}");
+        }
+
+        // U+FFFD is what a decoder substitutes for bytes it could not decode, so it is the
+        // signature of a body that arrived compressed or in another encoding — worth saying
+        // outright, since "invalid character" would send the reader looking for a typo.
+        var description = c == '�'
+            ? "U+FFFD (the replacement character — the source is not valid text in the encoding it was decoded with)"
+            : char.IsControl(c)
+                ? $"U+{(int)c:X4} (a control character)"
+                : char.IsSurrogate(c)
+                    ? $"U+{(int)c:X4} (an unpaired surrogate)"
+                    : $"'{c}' (U+{(int)c:X4})";
+
+        return new FastParseException(token, $"Unexpected character {description} at {Location}");
+    }
+
     public FastScanner(FastPool pool, in StringSpan text, FastKeywordMap keywords = null)
     {
         this.pool = pool;
@@ -601,7 +644,9 @@ public class FastScanner
                 return state.Commit(TokenTypes.Assign);
         }
 
-        throw Unexpected();
+        // `first` is the character the switch could not start a token with; nothing has been
+        // consumed for it, so Location points at it.
+        throw UnexpectedCharacter(first);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
