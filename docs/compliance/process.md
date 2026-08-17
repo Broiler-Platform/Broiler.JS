@@ -58,6 +58,23 @@ transformation independently. The fixed `test262-safe-mangle-v1` profile applies
 syntax minification and identifier mangling with compression disabled. The original
 variant always runs.
 
+A source Terser's own parser rejects is recorded as a not-applicable skip
+(`skipKind: minifier-unsupported-syntax`), not a failure: nothing was minified, so there
+is no minified variant whose result could be attributed to the engine. test262 exercises
+corners a production minifier has no reason to accept — an escaped keyword used as an
+IdentifierName (`break(){}`), `let` as a sloppy-mode identifier, a redeclared
+`arguments`, an Annex B CallExpression assignment target, decorators, import attributes
+with a trailing comma — and the engine passes all of them as written. Transformation
+timeouts and internal minifier errors remain infrastructure failures.
+
+Mangling can also change what a test measures, which is a limit of the variant rather
+than a defect either side. A test whose subject IS binding identity — the separate
+parameter scope in `scope-*-paramsbody-var-open`, the Annex B early-error condition in
+`block-decl-func-skip-early-err-*`, a private name reached from a direct eval — is
+measuring a relationship between two names that the mangler renames independently. The
+minified program is then a different program, and every engine rejects it. Confirm
+against a second engine before treating a Terser-only divergence as an engine bug.
+
 Tests requiring `$262` host hooks remain host-harness exclusions. The `module` and `raw`
 flags require separate host modes and are not validated by the ordinary script host.
 Do not count excluded files as passes.
@@ -74,8 +91,9 @@ after a merge or for a pull request.
 Triage output is split into four focused issues: the most common normalized failure
 groups, the biggest severity/impact groups, the size-ranked timeouts, and the
 Terser-only failures. The last one lists only base paths whose original source passes
-while the minified variant fails, times out, or cannot be transformed, so a
-minification-specific defect is never buried in a mixed-variant report.
+while the minified variant fails or times out, so a minification-specific defect is
+never buried in a mixed-variant report. A source the minifier could not parse is a
+not-applicable skip and does not appear there.
 `terser_only_problems_limit` bounds its ranked case list, which leads with the smallest
 minified body because that is the cheapest reduction.
 
