@@ -32,14 +32,39 @@ public class JSException : Exception
     public static string NotIterable(object name) => $"{name} is not iterable";
     public static string NotEntry(object name) => $"Iterator value {name} is an entry object";
 
+    /// <summary>
+    /// The thrown value's message, rendered the way JavaScript would render it.
+    /// </summary>
+    /// <remarks>
+    /// Rendering it runs JavaScript: for an Error it is a property read, and for any other
+    /// thrown value — <c>throw new Test262Error(...)</c>, or anything else with a
+    /// user-defined <c>toString</c> — it is a call into that method. Both need a live
+    /// JavaScript context on the *calling* thread, and an exception outlives the frame that
+    /// threw it: the script host captures one on the JavaScript thread and rethrows it on the
+    /// main thread, where <c>JSEngine.Current</c> is a different (null) thread-static and the
+    /// context has already been disposed. Letting that failure escape made
+    /// <see cref="Exception.ToString"/> throw, and the runtime's unhandled-exception printer
+    /// answers that with "Cannot print exception string because Exception.ToString() failed."
+    /// — so the one thing the diagnostic exists to carry, the thrown value's text, was the
+    /// one thing lost. <see cref="RawMessage"/> is that same text, rendered in the
+    /// constructor on the throwing thread, so falling back to it keeps the message intact
+    /// instead of merely keeping the process from printing nothing.
+    /// </remarks>
     public override string Message
     {
         get
         {
-            if (Error is IJSError)
-                return Error[KeyStrings.message].ToString();
+            try
+            {
+                if (Error is IJSError)
+                    return Error[KeyStrings.message].ToString();
 
-            return Error.ToString();
+                return Error.ToString();
+            }
+            catch (Exception)
+            {
+                return RawMessage ?? base.Message;
+            }
         }
     }
 
@@ -235,8 +260,19 @@ public class JSException : Exception
             }
 
             // add internal stack..
-            if (Error is IJSError error)
-                sb.AppendLine(error.Stack);
+            // Guarded for the same reason as Message: Exception.ToString() reads this too,
+            // and reaching the error's `stack` can run JavaScript, which is not available
+            // once the exception has left the context that threw it. The frames collected
+            // above are still worth printing on their own.
+            try
+            {
+                if (Error is IJSError error)
+                    sb.AppendLine(error.Stack);
+            }
+            catch (Exception)
+            {
+                // no JavaScript-side stack available here
+            }
 
             return sb.ToString();
         }

@@ -675,6 +675,40 @@ class MergeTest262ShardsTests(unittest.TestCase):
         )
         self.assertEqual([], persisted["manifestPaths"])
 
+    def test_minifier_unsupported_syntax_is_a_not_applicable_skip_kind(self) -> None:
+        # A source the minifier's own parser rejects yields no minified variant, so the
+        # case is exempt in the same way a source-text-sensitive test is — under its own
+        # skip kind, so a report can still tell the two apart.
+        path = "test/language/escaped-keyword-method.js"
+        manifest = self.write_text("failures.txt", f"{path}\n")
+        self.write_report(
+            0,
+            [
+                {"path": path, "variant": "original", "status": "passed"},
+                {
+                    "path": path,
+                    "variant": "terser",
+                    "status": "skipped",
+                    "notApplicable": True,
+                    "skipKind": "minifier-unsupported-syntax",
+                    "reason": (
+                        "minifier cannot parse this source: Terser SyntaxError at "
+                        "line 8, column 2: Escaped characters are not allowed in keywords"
+                    ),
+                },
+            ],
+            minifier="terser",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+        persisted = merger.merge_into_manifest(merged, manifest)
+
+        self.assertEqual([], merged["incompleteShards"])
+        self.assertEqual(1, merged["summary"]["notApplicable"])
+        self.assertEqual(0, merged["summary"]["failed"])
+        self.assertEqual([path], merged["notApplicablePaths"])
+        self.assertEqual([], persisted["manifestPaths"])
+
     def test_not_applicable_marker_requires_terser_skip_contract(self) -> None:
         path = "test/language/bad-marker.js"
         self.write_report(

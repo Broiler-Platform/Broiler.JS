@@ -192,6 +192,26 @@ public class FastScanner
         column = cursor.column;
     }
 
+    /// <summary>
+    /// True once the whole source has been consumed.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Peek"/>, <see cref="Next"/> and <see cref="Consume"/> report the end of the
+    /// source as <see cref="char.MaxValue"/>, but U+FFFF is also an ordinary BMP character that
+    /// a source may contain — inside a string, a template, a regular expression, or a comment it
+    /// is content, not a terminator. (Minifiers emit it raw: Terser writes "￿" back out as
+    /// the character itself unless `ascii_only` is set.) Testing the sentinel alone therefore
+    /// truncated the source at the first literal U+FFFF, silently dropping the rest of the
+    /// program or reporting a syntax error further along. Every scanning loop that means "end of
+    /// input" pairs the sentinel with this check; the second test only runs for an actual U+FFFF,
+    /// so the hot path is unchanged.
+    /// </remarks>
+    private bool AtEnd
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => position >= Text.Length;
+    }
+
     private char Peek()
     {
         if (position >= Text.Length)
@@ -311,7 +331,7 @@ public class FastScanner
         var state = Push();
         char first = Peek();
 
-        if (first == char.MaxValue)
+        if (first == char.MaxValue && AtEnd)
             return EOF;
 
         // following logic will
@@ -340,7 +360,10 @@ public class FastScanner
         // switch to `throw Unexpected()` (reporting the previous token). The
         // initial EOF guard only runs before whitespace skipping, so a source
         // that ends in spaces/tabs (no final newline) would spuriously fail.
-        if (first == char.MaxValue)
+        // A U+FFFF that is not the end of the source is not a token start
+        // either; it falls through to UnexpectedCharacter below, which names it,
+        // rather than silently ending the program here.
+        if (first == char.MaxValue && AtEnd)
             return EOF;
 
         if (skipped)
@@ -1077,7 +1100,7 @@ public class FastScanner
                         break;
                 }
 
-                if (ch == char.MaxValue)
+                if (ch == char.MaxValue && AtEnd)
                     throw Unexpected();
 
                 if (ScanEscaped(ch, t, deferInvalid: true))
@@ -1129,6 +1152,29 @@ public class FastScanner
 
             case TokenTypes.SquareBracketEnd:
             case TokenTypes.Number:
+            // Every token below ends an operand, so the `/` that follows one is a
+            // division — a regular expression can only begin where an expression can.
+            // Only `Number` was listed, which held for source a human wrote (`1 / x`
+            // reads as division either way, because the speculative regex scan fails
+            // and falls back). It stopped holding for minified source, where the scan
+            // finds a later `/` — commonly the one inside a string on the same line —
+            // and succeeds, swallowing everything between as a "regular expression":
+            // `assert.throws(TypeError,function(){1n/1},"1n / 1 throws TypeError")`
+            // read `/1},"1n /` as one, and the rest of the file went with it.
+            case TokenTypes.BigInt:
+            case TokenTypes.Decimal:
+            case TokenTypes.String:
+            case TokenTypes.TemplateEnd:
+            case TokenTypes.RegExLiteral:
+            case TokenTypes.Null:
+            case TokenTypes.True:
+            case TokenTypes.False:
+            // Postfix `++`/`--` likewise ends an operand (`i++/2`). The prefix form is
+            // the only other reading, and its operand must be a valid assignment target,
+            // which a regular-expression literal never is — so no valid program has a
+            // regex here either.
+            case TokenTypes.Increment:
+            case TokenTypes.Decrement:
                 // probably not regexp...
                 scanRegExp = false;
                 break;
@@ -1244,7 +1290,12 @@ public class FastScanner
                     switch (first)
                     {
                         case char.MaxValue:
-                            return false;
+                            if (AtEnd)
+                                return false;
+
+                            // A literal U+FFFF is an ordinary PatternCharacter.
+                            t.Append(first);
+                            break;
 
                         // A LineTerminator may not appear unescaped in a regex literal.
                         case '\n':
@@ -1478,6 +1529,11 @@ public class FastScanner
                     continue;
 
                 case char.MaxValue:
+                    // A literal U+FFFF is ordinary comment text; only a true end of
+                    // input closes an unterminated comment.
+                    if (!AtEnd)
+                        continue;
+
                     if (hasLineTerminator)
                     {
                         return ReadSymbol(state, TokenTypes.LineTerminator);
@@ -1491,7 +1547,7 @@ public class FastScanner
                         Consume();
                         break;
                     }
-                    if (ch == char.MaxValue)
+                    if (ch == char.MaxValue && AtEnd)
                     {
                         break;
                     }
@@ -1519,14 +1575,14 @@ public class FastScanner
     {
         for (var i = 0; i < prefixLength; i++)
         {
-            if (Peek() == char.MaxValue)
+            if (AtEnd)
                 break;
 
             Consume();
         }
 
         var ch = Peek();
-        while (!ch.IsLineTerminator() && ch != char.MaxValue)
+        while (!ch.IsLineTerminator() && !AtEnd)
         {
             ch = Consume();
         }
@@ -1546,7 +1602,7 @@ public class FastScanner
             {
                 first = Consume();
 
-                if (first == char.MaxValue)
+                if (first == char.MaxValue && AtEnd)
                     throw Unexpected();
 
                 if (first == start)
@@ -1786,7 +1842,13 @@ public class FastScanner
 
         // this logic is perfect
         // cannot be replaced with switch
-        if (CanConsume('.'))
+        //
+        // A leading-dot literal consumed its fractional digits in the ConsumeDigits()
+        // above — `first == '.'` means position started at the first of them — so a `.`
+        // here is the next token, a member access, not a second decimal point. Consuming
+        // it made `.5.toFixed(1)` fail on the `t` that followed; that is the shape a
+        // minifier emits for `(0.5).toFixed(1)`.
+        if (first != '.' && CanConsume('.'))
             ConsumeDigits();
 
         if (CanConsume('m'))

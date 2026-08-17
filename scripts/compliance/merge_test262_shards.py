@@ -101,6 +101,17 @@ _VARIANTS = ("original", "terser")
 _VARIANT_RANK = {variant: index for index, variant in enumerate(_VARIANTS)}
 _MINIFIER_PROFILE = "test262-safe-mangle-v1"
 _MINIFIER_NOT_APPLICABLE = "minifier-not-applicable"
+# The source could not be minified at all because the minifier's own parser rejected it
+# (an escaped keyword used as an IdentifierName, sloppy-mode `let`, an Annex B assignment
+# target, decorators, import attributes with a trailing comma — all of which the engine
+# runs). There is no minified variant to execute, so the case is not applicable rather
+# than a failure; the kind is kept distinct from `minifier-not-applicable` so a report can
+# still tell "the minifier could not read it" apart from "this test cannot be minified
+# before execution".
+_MINIFIER_UNSUPPORTED_SYNTAX = "minifier-unsupported-syntax"
+_MINIFIER_SKIP_KINDS = frozenset(
+    {_MINIFIER_NOT_APPLICABLE, _MINIFIER_UNSUPPORTED_SYNTAX}
+)
 _MINIFIER_OPTIONS = {
     "compress": False,
     "mangle": True,
@@ -351,9 +362,7 @@ def _validate_report(artifact: Artifact) -> str | None:
         ):
             return f"result {position} notApplicable is not a boolean"
         not_applicable = result.get("notApplicable") is True
-        has_not_applicable_kind = (
-            result.get("skipKind") == _MINIFIER_NOT_APPLICABLE
-        )
+        has_not_applicable_kind = result.get("skipKind") in _MINIFIER_SKIP_KINDS
         if not_applicable:
             if status != "skipped":
                 return f"result {position} marks a non-skipped case notApplicable"
@@ -362,14 +371,15 @@ def _validate_report(artifact: Artifact) -> str | None:
             if not has_not_applicable_kind:
                 return (
                     f"result {position} notApplicable case has no "
-                    f"{_MINIFIER_NOT_APPLICABLE!r} skipKind"
+                    f"minifier skipKind (expected one of "
+                    f"{', '.join(sorted(_MINIFIER_SKIP_KINDS))})"
                 )
             if not str(result.get("reason") or "").strip():
                 return f"result {position} notApplicable case has no reason"
             not_applicable_count += 1
         elif has_not_applicable_kind:
             return (
-                f"result {position} has {_MINIFIER_NOT_APPLICABLE!r} skipKind "
+                f"result {position} has {result.get('skipKind')!r} skipKind "
                 "without notApplicable=true"
             )
 

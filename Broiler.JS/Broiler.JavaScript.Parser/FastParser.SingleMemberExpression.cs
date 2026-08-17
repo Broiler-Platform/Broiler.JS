@@ -176,11 +176,11 @@ partial class FastParser
                     if ((token.Type == TokenTypes.Dot || token.Type == TokenTypes.QuestionDot)
                         && stream.CheckAndConsume(TokenTypes.Hash, out var hashToken))
                     {
-                        if (!Identitifer(out var privateIdentifier))
+                        if (!PrivateIdentifierName(out var privateIdentifier))
                             throw stream.Unexpected();
 
                         node = node.Member(
-                            new AstIdentifier(hashToken, $"#{privateIdentifier.Name.Value}"),
+                            new AstIdentifier(hashToken, $"#{privateIdentifier}"),
                             false,
                             dotOptional,
                             inOptional);

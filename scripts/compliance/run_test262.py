@@ -106,6 +106,20 @@ class MinifierTimeoutError(MinifierError):
     """Raised when the minifier does not answer within its per-source timeout."""
 
 
+class MinifierSyntaxError(MinifierError):
+    """Raised when the minifier's own parser rejects a test's source.
+
+    This says something about the minifier, never about the engine under test. test262
+    exercises corners a production minifier has no reason to accept — an escaped keyword
+    used as an IdentifierName (``br\\u0065ak(){}``), ``let`` as a sloppy-mode identifier,
+    a redeclared ``arguments``, an Annex B CallExpression assignment target, decorators,
+    import attributes with a trailing comma — and Terser refuses all of them even though
+    the engine (and every browser) runs them. Nothing was minified, so there is nothing
+    the engine could have got wrong: the case is reported as not applicable rather than
+    counted against the engine.
+    """
+
+
 class TerserSession:
     """A persistent JSON-lines bridge to Terser for one Python worker thread."""
 
@@ -233,7 +247,13 @@ class TerserSession:
                 location = f" at line {response['line']}"
                 if response.get("column") is not None:
                     location += f", column {response['column']}"
-            raise MinifierError(f"Terser {error_name}{location}: {error_message}")
+            # A SyntaxError is Terser's parser declining the source; anything else
+            # (a protocol fault, an internal Terser error) is a real infrastructure
+            # problem and keeps failing the run.
+            error_type = (
+                MinifierSyntaxError if error_name == "SyntaxError" else MinifierError
+            )
+            raise error_type(f"Terser {error_name}{location}: {error_message}")
         return response
 
     def minify(self, source: str, path: str) -> dict[str, object]:
@@ -1574,6 +1594,7 @@ def _enrich_result(
 def _not_applicable_minified_result(
     path: str,
     reason: str,
+    skip_kind: str = "minifier-not-applicable",
 ) -> dict[str, object]:
     return {
         "path": path,
@@ -1581,7 +1602,7 @@ def _not_applicable_minified_result(
         "status": "skipped",
         "reason": reason,
         "notApplicable": True,
-        "skipKind": "minifier-not-applicable",
+        "skipKind": skip_kind,
     }
 
 
@@ -1725,6 +1746,19 @@ def run_test_variants_with_metadata(
             # Keep run_test's strict directive at byte zero. Terser also saw
             # the directive so it parsed the body under the same semantics.
             body_override_includes_strict=False,
+        )
+    except MinifierSyntaxError as exc:
+        # The minifier's parser declined the source, so no minified variant of this test
+        # exists to run. That is a fact about the minifier — see MinifierSyntaxError — and
+        # reporting it as a failure attributed hundreds of Terser parser gaps (escaped
+        # keywords as IdentifierNames, sloppy-mode `let`, Annex B assignment targets,
+        # decorators, import attributes) to the engine, which passes every one of those
+        # tests as written.
+        minification_duration = time.perf_counter() - minifier_started
+        minified_result = _not_applicable_minified_result(
+            path,
+            f"minifier cannot parse this source: {exc}",
+            skip_kind="minifier-unsupported-syntax",
         )
     except Exception as exc:
         minification_duration = time.perf_counter() - minifier_started
