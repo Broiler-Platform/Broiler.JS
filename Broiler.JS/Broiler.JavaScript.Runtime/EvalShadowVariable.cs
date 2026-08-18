@@ -80,19 +80,11 @@ public sealed class EvalShadowVariable : JSVariable
     // see the outer binding again after `eval('delete y')`). A plain JSVariable an eval created
     // keeps the tear-down semantics that eval-code/direct/var-env-*-init-local-new-delete expects.
     //
-    // A shadow that does not own a value is not the binding being deleted, it is only forwarding to
-    // it: `delete y` inside a function nested in the eval that declared `var y` must remove the
-    // binding in the DECLARING function's variable environment, which is the next shadow out. Only
-    // a shadow is followed — a plain outer binding (a global var, a caller's own declaration) is
-    // not this eval's to remove, and the global case is already settled by the property itself
-    // disappearing, which GetValueChecked reports.
-    public override void MarkDeleted()
-    {
-        if (IsInitialized)
-            Uninitialize();
-        else if (outer is EvalShadowVariable)
-            outer.MarkDeleted();
-    }
+    // Only an OWNED shadow can get here: the sole caller, JSContext.DeleteIdentifier, finds the
+    // binding through TryResolveDirectEvalBinding without includeUninitializedShadows, which walks
+    // past a shadow that is still forwarding. So there is no un-owned case to handle — an
+    // unowned shadow is not the binding being deleted, and whichever binding is gets found instead.
+    public override void MarkDeleted() => Uninitialize();
 
     public override JSValue SetValue(JSValue value)
     {

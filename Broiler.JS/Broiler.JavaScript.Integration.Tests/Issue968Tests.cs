@@ -233,16 +233,39 @@ public class Issue968Tests
     // test262 staging/sm/regress/regress-610026.js: 2^21 empty blocks used to become 2^21
     // debug-Step call sites in one method, which the JIT could not compile.
 
-    [Fact]
-    public void ManyEmptyBlocksCompile()
-    {
-        Assert.Equal("2", EvalString(
-            "(function () { var s = '{}'; for (var i = 0; i < 12; i++) s += s; return String(eval(s + '1; 2;')); })()"));
-        // The completion value is unchanged: an empty block completes with `empty`, which
-        // UpdateEmpty replaces with the last value-bearing statement's result.
-        Assert.Equal("1", EvalString("String(eval('{} {} 1;'))"));
-        Assert.Equal("1", EvalString("String(eval('1; {}'))"));
-    }
+    [Theory]
+    // Each of these compiles to nothing, so N of them must cost nothing. Skipping only the debug
+    // Step was not enough: `{;}` and `{{}}` are blocks that CONTAIN such a statement, so they came
+    // back as a BBlockExpression wrapping one Empty — not Empty — and the blow-up returned one
+    // token away from the test262 file. The statement itself has to go.
+    [InlineData("{}")]
+    [InlineData(";")]
+    [InlineData("{;}")]
+    [InlineData("{{}}")]
+    [InlineData("{ ; ; }")]
+    public void AStatementThatCompilesToNothingCostsNothing(string unit)
+        => Assert.Equal("2", EvalString(
+            $"(function () {{ var s = {Quote(unit)}; for (var i = 0; i < 12; i++) s += s; return String(eval(s + '1; 2;')); }})()"));
+
+    [Theory]
+    // Eliding the statement must not disturb the completion value: an empty statement completes
+    // with `empty`, and UpdateEmpty leaves the running value alone. Every expectation here is
+    // Node's.
+    [InlineData("{} {} 1;", "1")]
+    [InlineData("1; {}", "1")]
+    [InlineData("1; {;}", "1")]
+    [InlineData("{;}", "undefined")]
+    [InlineData("{ let x = 5; }", "undefined")]
+    [InlineData("{ let x; }", "undefined")]
+    [InlineData("{ var v; }", "undefined")]
+    [InlineData("try{}finally{}", "undefined")]
+    [InlineData("with({}){}", "undefined")]
+    [InlineData("switch(1){case 1:}", "undefined")]
+    [InlineData("lbl: {;}", "undefined")]
+    [InlineData("if(1);else;", "undefined")]
+    [InlineData("for(;;){break}", "undefined")]
+    public void ElidingEmptyStatementsKeepsTheCompletionValue(string source, string expected)
+        => Assert.Equal(expected, EvalString($"String(eval({Quote(source)}))"));
 
     // ── An object past the shape-chain cap behaves identically ───────────────────────────
     // test262 staging/sm/Proxy/ownkeys-linear.js builds a 15 000-property target; the shape
