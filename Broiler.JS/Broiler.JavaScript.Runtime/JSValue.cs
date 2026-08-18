@@ -1222,11 +1222,21 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     private void ThrowOnFailedElementAssignment(object key)
     {
         if (IsNullOrUndefined)
-            throw NewTypeError?.Invoke($"Cannot set properties of {this}")
-                ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
+            throw NewNullOrUndefinedWriteError();
 
         ThrowOnStrictPrimitiveAssignment(key);
     }
+
+    /// <summary>
+    /// Builds the "Cannot set properties of …" TypeError, reporting it to
+    /// <see cref="JSThrowDiagnostics"/> first so a host can see it even when page script catches
+    /// it. Shared by the two sites that raise it.
+    /// </summary>
+    private Exception NewNullOrUndefinedWriteError()
+        => NewTypeError?.Invoke(JSThrowDiagnostics.Reported(
+                JSThrowDiagnostics.PropertyWrite,
+                $"Cannot set properties of {this}"))
+            ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
 
     public virtual JSValue this[IJSSymbol symbol]
     {
@@ -1247,8 +1257,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
                 return;
 
             if (IsNullOrUndefined)
-                throw NewTypeError?.Invoke($"Cannot set properties of {this}")
-                    ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
+                throw NewNullOrUndefinedWriteError();
 
             ThrowOnStrictPrimitiveAssignment(key);
         }
@@ -1322,8 +1331,12 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     {
         // Per spec (6.2.5.5 GetValue), ToObject(base) must precede ToPropertyKey(key).
         // For null/undefined, ToObject throws TypeError before the key is converted.
+        // Reported before the throw, because page script catching this is exactly the case the
+        // host cannot otherwise see. See JSThrowDiagnostics.
         if (IsNullOrUndefined)
-            throw NewTypeError?.Invoke($"Cannot read properties of {this}{DescribeKeyForDiagnostic(key)}")
+            throw NewTypeError?.Invoke(JSThrowDiagnostics.Reported(
+                    JSThrowDiagnostics.PropertyRead,
+                    $"Cannot read properties of {this}{DescribeKeyForDiagnostic(key)}"))
                 ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
 
         var k = key.ToKey(false);

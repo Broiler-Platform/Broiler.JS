@@ -47,18 +47,18 @@ public sealed class JSNull : JSValue
                 Console.Error.WriteLine(st.ToString());
             }
 #endif
-            throw JSEngine.NewTypeError($"Cannot get property {name} of null");
+            throw JSEngine.NewTypeError(JSThrowDiagnostics.Reported(JSThrowDiagnostics.PropertyRead, $"Cannot get property {name} of null"));
         }
-        set => throw JSEngine.NewTypeError($"Cannot set property {name} of null");
+        set => throw JSEngine.NewTypeError(JSThrowDiagnostics.Reported(JSThrowDiagnostics.PropertyWrite, $"Cannot set property {name} of null"));
     }
 
     public override JSValue this[uint key]
     {
-        get => throw JSEngine.NewTypeError($"Cannot get property {key} of null");
-        set => throw JSEngine.NewTypeError($"Cannot get property {key} of null");
+        get => throw JSEngine.NewTypeError(JSThrowDiagnostics.Reported(JSThrowDiagnostics.PropertyRead, $"Cannot get property {key} of null"));
+        set => throw JSEngine.NewTypeError(JSThrowDiagnostics.Reported(JSThrowDiagnostics.PropertyWrite, $"Cannot get property {key} of null"));
     }
 
-    internal override JSFunctionDelegate GetMethod(in KeyString key) => throw JSEngine.NewTypeError($"Cannot get property {key} of null");
+    internal override JSFunctionDelegate GetMethod(in KeyString key) => throw JSEngine.NewTypeError(JSThrowDiagnostics.Reported(JSThrowDiagnostics.PropertyRead, $"Cannot get property {key} of null"));
 
 
     public override IElementEnumerator GetElementEnumerator() => throw JSEngine.NewTypeError("null is not iterable");

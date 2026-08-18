@@ -38,18 +38,18 @@ public sealed class JSUndefined : JSValue
                 Console.Error.WriteLine(st.ToString());
             }
 #endif
-            throw NewTypeError($"Cannot get property {name} of undefined");
+            throw NewTypeError(JSThrowDiagnostics.Reported(JSThrowDiagnostics.PropertyRead, $"Cannot get property {name} of undefined"));
         }
-        set => throw NewTypeError($"Cannot set property {name} of undefined");
+        set => throw NewTypeError(JSThrowDiagnostics.Reported(JSThrowDiagnostics.PropertyWrite, $"Cannot set property {name} of undefined"));
     }
 
     public override JSValue this[uint key]
     {
-        get => throw NewTypeError($"Cannot get property {key} of undefined");
-        set => throw NewTypeError($"Cannot set property {key} of undefined");
+        get => throw NewTypeError(JSThrowDiagnostics.Reported(JSThrowDiagnostics.PropertyRead, $"Cannot get property {key} of undefined"));
+        set => throw NewTypeError(JSThrowDiagnostics.Reported(JSThrowDiagnostics.PropertyWrite, $"Cannot set property {key} of undefined"));
     }
 
-    internal override JSFunctionDelegate GetMethod(in KeyString key) => throw NewTypeError($"Cannot get property {key} of undefined");
+    internal override JSFunctionDelegate GetMethod(in KeyString key) => throw NewTypeError(JSThrowDiagnostics.Reported(JSThrowDiagnostics.PropertyRead, $"Cannot get property {key} of undefined"));
 
     public override JSValue Delete(in KeyString key) => throw NewTypeError(JSObject.Cannot_convert_undefined_or_null_to_object);
 
