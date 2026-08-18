@@ -110,31 +110,44 @@ public static class DirectEvalSupport
 
         var text = value.StringValue;
         string location = null;
+        AstProgram program;
 
-        (JSEngine.Current as IJSExecutionContext)?.DispatchEvalEvent(ref text, ref location);
+        while (true)
+        {
+            (JSEngine.Current as IJSExecutionContext)?.DispatchEvalEvent(ref text, ref location);
 
-        if (inheritStrictMode)
-            text = "\"use strict\";\n" + text;
+            if (inheritStrictMode)
+                text = "\"use strict\";\n" + text;
 
-        var program = Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope, allowSuperProperty, allowSuperCall, rejectArguments: inFieldInitializer, rejectNewTarget: rejectNewTarget);
+            program = Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope, allowSuperProperty, allowSuperCall, rejectArguments: inFieldInitializer, rejectNewTarget: rejectNewTarget);
 
-        // Nothing to run: PerformEval owes an empty StatementList the undefined completion,
-        // and a body with no statements declares nothing, so none of the scope, activation
-        // and binding-snapshot scaffolding below can be observed either.
-        if (program.Statements.Count == 0)
-            return JSUndefined.Value;
+            // Nothing to run: PerformEval owes an empty StatementList the undefined completion,
+            // and a body with no statements declares nothing, so none of the scope, activation
+            // and binding-snapshot scaffolding below can be observed either.
+            if (program.Statements.Count == 0)
+                return JSUndefined.Value;
 
-        // Nothing to compile either. A body whose every statement is a literal expression —
-        // `eval("/" + character + "/")`, `eval("0")` — or `new.target` declares nothing, reads no
-        // binding and calls nothing, so its completion value is that last value and the compile is
-        // pure overhead. And it is nearly all of the cost: emitting and JITting one throwaway method
-        // is ~2.6 ms in a Release build against ~13 µs to parse the same text. test262 runs exactly
-        // that loop 65 536 times, once per BMP code unit (language/literals/regexp/S7.8.5_A*_T2,
-        // annexB RegExp-{leading,trailing}-escape-BMP), and staging/sm/class/newTargetEval runs
-        // `eval('new.target')` 4 400 times — where it decides between four CPU-minutes and two
-        // seconds, and the runner caps a test at 30 CPU-seconds.
-        if (TryEvaluateInertProgram(program, inheritStrictMode, directEvalNewTarget, out var inertCompletion))
-            return inertCompletion;
+            // Nothing to compile either. A body whose every statement is a literal expression —
+            // `eval("/" + character + "/")`, `eval("0")` — or `new.target` declares nothing, reads no
+            // binding and calls nothing, so its completion value is that last value and the compile is
+            // pure overhead. And it is nearly all of the cost: emitting and JITting one throwaway method
+            // is ~2.6 ms in a Release build against ~13 µs to parse the same text. test262 runs exactly
+            // that loop 65 536 times, once per BMP code unit (language/literals/regexp/S7.8.5_A*_T2,
+            // annexB RegExp-{leading,trailing}-escape-BMP), and staging/sm/class/newTargetEval runs
+            // `eval('new.target')` 4 400 times — where it decides between four CPU-minutes and two
+            // seconds, and the runner caps a test at 30 CPU-seconds.
+            if (TryEvaluateInertProgram(program, inheritStrictMode, directEvalNewTarget, out var inertCompletion))
+                return inertCompletion;
+
+            // A body that is nothing but `eval("…")` over a constant is the same evaluation as
+            // that constant, so run it as one instead of compiling the call. See
+            // TryGetNestedDirectEvalText for why the level is not observable and what it costs.
+            if (!TryGetNestedDirectEvalText(program, inheritStrictMode, lexicalBindings, capturedBindings, capturedLexicalBindingNames, parameterBindings, catchParameterNames, evalVarEnvNames, out var nestedText))
+                break;
+
+            text = nestedText;
+            location = null;
+        }
 
         // The program Validate already parsed, rather than a second parse of the same text.
         var declaredBindings = disallowArgumentsDeclaration ? CollectProgramDeclaredBindings(program) : null;
@@ -463,6 +476,137 @@ public static class DirectEvalSupport
         // the caller wrote a body with no statements of its own — PerformEval owes that the
         // undefined completion, not the text of a directive it never wrote.
         return any || injectedStrictDirective;
+    }
+
+    /// <summary>
+    /// Reports whether <paramref name="program"/> is exactly one call, <c>eval(«constant»)</c>,
+    /// and hands back the text of that constant.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The nested eval is the same evaluation as its text. A direct eval runs with its caller's
+    /// variable environment, this, new.target, super and strict mode, and PerformEval gives the
+    /// call's completion value straight back — so a body that is only such a call adds a level
+    /// nothing can observe when, as here, it declares nothing itself. A strict inner text keeps
+    /// its own directive and its own environment either way.
+    /// </para>
+    /// <para>
+    /// What the level costs is a compile of that one call. The direct-eval call site is a large
+    /// piece of IL — the caller's bindings, lexical names, parameter names and private names all
+    /// travel with it — and in a Release build, where the JIT optimizes what it emits, it is
+    /// ~21 ms against ~15 µs to parse the text. staging/sm/class/newTargetEval is 2 200 of them
+    /// (<c>eval('eval("new.target")')</c> and <c>eval("eval('eval(`new.target`)')")</c>, 550
+    /// iterations each, twice): a CPU-minute where the runner allows 30 seconds. Flattened, they
+    /// reach the inert-program path above and the file runs in about two seconds.
+    /// </para>
+    /// <para>
+    /// The callee has to be %eval%, and finding that out must not itself be observable — a
+    /// `with` object would be asked for the name, a global accessor would run — so
+    /// <see cref="JSContext.IsIntrinsicEvalUnshadowed"/> answers only where nothing can stand
+    /// between the name and the intrinsic, and any binding the caller has in scope under that
+    /// name (which the compiler would bind the reference to) rules it out here first.
+    /// </para>
+    /// </remarks>
+    private static bool TryGetNestedDirectEvalText(AstProgram program, bool injectedStrictDirective, string[] lexicalBindings, JSVariable[] capturedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] catchParameterNames, string[] evalVarEnvNames, out string text)
+    {
+        text = null;
+
+        if (!TryGetSingleStatement(program, injectedStrictDirective, out var statement)
+            || statement is not AstExpressionStatement { Expression: AstCallExpression call }
+            || call.InOptionalChain
+            || call.Callee is not AstIdentifier callee
+            || !callee.Name.Equals("eval")
+            || call.Arguments.Count != 1
+            || !TryGetConstantStringValue(call.Arguments.First(), out var argument))
+        {
+            return false;
+        }
+
+        if (BindsEvalName(lexicalBindings)
+            || BindsEvalName(capturedLexicalBindingNames)
+            || BindsEvalName(parameterBindings)
+            || BindsEvalName(catchParameterNames)
+            || BindsEvalName(evalVarEnvNames)
+            || BindsEvalName(capturedBindings)
+            || JSEngine.Current is not JSContext context
+            || !context.IsIntrinsicEvalUnshadowed)
+        {
+            return false;
+        }
+
+        text = argument;
+        return true;
+    }
+
+    /// <summary>
+    /// The program's only statement, skipping the <c>"use strict";</c>
+    /// <see cref="Execute"/> prefixed when the eval inherits strict mode.
+    /// </summary>
+    private static bool TryGetSingleStatement(AstProgram program, bool injectedStrictDirective, out AstStatement statement)
+    {
+        var expected = injectedStrictDirective ? 2 : 1;
+        statement = null;
+        if (program.Statements.Count != expected)
+            return false;
+
+        statement = program.Statements[expected - 1];
+        return true;
+    }
+
+    /// <summary>
+    /// The value of <paramref name="expression"/> when it is a string literal or a template
+    /// with no substitutions, both of which are known without evaluating anything.
+    /// </summary>
+    private static bool TryGetConstantStringValue(AstExpression expression, out string value)
+    {
+        value = null;
+
+        if (expression is AstLiteral { TokenType: TokenTypes.String } literal)
+        {
+            value = literal.StringValue;
+            return value != null;
+        }
+
+        if (expression is not AstTemplateExpression template)
+            return false;
+
+        var builder = new System.Text.StringBuilder();
+        var parts = template.Parts.GetFastEnumerator();
+        while (parts.MoveNext(out var part))
+        {
+            // A substitution is not constant, and an invalid escape sequence is an early
+            // SyntaxError the ordinary compile still owes the caller.
+            if (part is not AstLiteral partLiteral || partLiteral.Start.CookedInvalid)
+                return false;
+
+            var partText = partLiteral.TokenType == TokenTypes.TemplatePart
+                ? partLiteral.Start.CookedText
+                : partLiteral.StringValue;
+            if (partText == null)
+                return false;
+
+            builder.Append(partText);
+        }
+
+        value = builder.ToString();
+        return true;
+    }
+
+    private static bool BindsEvalName(string[] names)
+        => names != null && Array.IndexOf(names, "eval") >= 0;
+
+    private static bool BindsEvalName(JSVariable[] bindings)
+    {
+        if (bindings == null)
+            return false;
+
+        foreach (var binding in bindings)
+        {
+            if (binding != null && binding.Name.Equals("eval"))
+                return true;
+        }
+
+        return false;
     }
 
     private static bool IsNewTarget(AstExpression expression)

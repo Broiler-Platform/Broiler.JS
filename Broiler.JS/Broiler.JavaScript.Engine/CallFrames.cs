@@ -28,6 +28,23 @@ public struct CallFrame
     internal Dictionary<uint, JSVariable> DirectEvalBindings;
 
     /// <summary>
+    /// The source this frame was compiled from, and the half-open range it occupies in it — its
+    /// lexical position, which is what decides whose direct-eval bindings it can see (see
+    /// <see cref="CallFrameStack.IsLexicallyVisible"/>). Null for a frame with no source to
+    /// point at, which is left visible to everything.
+    /// </summary>
+    internal string Code;
+    internal int SpanStart;
+    internal int SpanEnd;
+
+    /// <summary>
+    /// True for a script, a program or a direct eval's body. Such a frame covers its whole
+    /// source, so the code running in it is recognised by <see cref="Code"/> — but it has no
+    /// position of its OWN: it runs where its caller called it from, which is the frame beneath.
+    /// </summary>
+    internal bool IsProgramScope;
+
+    /// <summary>
     /// Non-null when this slot is standing in for a body that can outlive it — a generator or
     /// async function. Such a body's mutable state lives in the heap frame, and the slot is
     /// only a marker of where it currently sits on the stack; see
@@ -225,10 +242,14 @@ public sealed class CallFrameStack
     }
 
     /// <summary>Pushes a frame for an ordinary call and returns its handle.</summary>
-    public FrameToken Enter(ScriptInfo scriptInfo, int nameOffset, int nameLength, int line, int column, JSValue newTarget)
+    public FrameToken Enter(ScriptInfo scriptInfo, int nameOffset, int nameLength, int line, int column, JSValue newTarget, int spanStart = 0, int spanEnd = 0)
     {
         var slot = depth;
         ref var frame = ref Reserve();
+        frame.Code = spanEnd > spanStart ? scriptInfo?.Code : null;
+        frame.SpanStart = spanStart;
+        frame.SpanEnd = spanEnd;
+        frame.IsProgramScope = false;
         frame.FileName = scriptInfo?.FileName;
         frame.Function = IsValidFunctionSpan(scriptInfo?.Code, nameOffset, nameLength)
             ? new StringSpan(scriptInfo.Code, nameOffset, nameLength)
@@ -242,10 +263,14 @@ public sealed class CallFrameStack
     }
 
     /// <summary>Pushes a frame identified by an explicit name, used for a whole script/program.</summary>
-    public FrameToken Enter(string fileName, in StringSpan function, int line, int column)
+    public FrameToken Enter(string fileName, in StringSpan function, int line, int column, string code = null, int codeLength = 0)
     {
         var slot = depth;
         ref var frame = ref Reserve();
+        frame.Code = codeLength > 0 ? code : null;
+        frame.SpanStart = 0;
+        frame.SpanEnd = codeLength;
+        frame.IsProgramScope = true;
         frame.FileName = fileName;
         frame.Function = function;
         frame.Line = line;
@@ -272,6 +297,10 @@ public sealed class CallFrameStack
         frame.Column = 0;
         frame.NewTarget = null;
         frame.DirectEvalBindings = null;
+        frame.Code = null;
+        frame.SpanStart = 0;
+        frame.SpanEnd = 0;
+        frame.IsProgramScope = false;
         return new FrameToken(slot, heapFrame);
     }
 
@@ -407,6 +436,56 @@ public sealed class CallFrameStack
         frame.DirectEvalBindings ??= [];
         frame.DirectEvalBindings[KeyStrings.GetOrCreate(variable.Name).Key] = variable;
         AnyDirectEvalBindings = true;
+    }
+
+    /// <summary>
+    /// Reads the lexical position of frame <paramref name="index"/> — the source it was
+    /// compiled from and where in it the frame's function begins — and reports whether the
+    /// frame HAS one. Only a function frame does: a script, program or direct-eval body runs
+    /// inside the frame beneath it, so the position of the code running in it is that frame's.
+    /// </summary>
+    internal bool TryGetLexicalPosition(int index, out string code, out int position)
+    {
+        ref var frame = ref frames[index];
+        var escaped = frame.Escaped;
+        code = escaped != null ? escaped.Code : frame.Code;
+        position = escaped != null ? escaped.SpanStart : frame.SpanStart;
+        // A program scope has no position of its own — it is written where it was called from —
+        // and a frame that does not know where it was written cannot fix one either. Both leave
+        // the walk to take its position from the frame below instead of guessing.
+        return code != null && !(escaped != null ? escaped.IsProgramScope : frame.IsProgramScope);
+    }
+
+    /// <summary>
+    /// Whether frame <paramref name="index"/> lexically encloses the code at
+    /// <paramref name="position"/> of <paramref name="code"/>, and so is part of its scope
+    /// chain rather than merely part of its call stack.
+    /// </summary>
+    /// <remarks>
+    /// A direct eval's declarations belong to the VARIABLE ENVIRONMENT of the function that
+    /// called it, so they are in scope for that function, for anything nested inside it, and
+    /// for nothing else. The stack under a call is its CALLER, which is not its scope: matching
+    /// on the stack alone let any function that happened to be running answer with a name some
+    /// unrelated frame's eval had introduced — <c>function f(){ eval("var y = 5"); return [y,
+    /// globalY()] }</c> read the eval's <c>y</c> for globalY's read of the global one (test262
+    /// staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode). Source containment is
+    /// the scope relation itself: <c>globalY</c> is not written inside <c>f</c>, while the
+    /// arrow in <c>(p = eval("var arguments = 'param'"), q = () =&gt; arguments) =&gt; {…}</c>
+    /// is, and only the second may read what the eval declared.
+    /// A frame that does not know what source it came from is left visible, so an unrecognised
+    /// one never removes an answer the walk used to give.
+    /// </remarks>
+    internal bool IsLexicallyVisible(int index, string code, int position)
+    {
+        ref var frame = ref frames[index];
+        var escaped = frame.Escaped;
+        var frameCode = escaped != null ? escaped.Code : frame.Code;
+        if (frameCode == null)
+            return true;
+
+        var start = escaped != null ? escaped.SpanStart : frame.SpanStart;
+        var end = escaped != null ? escaped.SpanEnd : frame.SpanEnd;
+        return ReferenceEquals(frameCode, code) && start <= position && position < end;
     }
 
     internal bool TryGetDirectEvalBinding(int index, in KeyString name, out JSVariable variable)
