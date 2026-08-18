@@ -68,6 +68,7 @@ public class JSContextBuilder
     private static MethodInfo _DeclareGlobalFunction = typeof(JSContext).GetMethod(nameof(JSContext.DeclareGlobalFunction), [typeof(KeyString).MakeByRefType(), typeof(JSValue)]);
     private static MethodInfo _DeclareGlobalLexical = typeof(JSContext).GetMethod(nameof(JSContext.DeclareGlobalLexical), [typeof(JSVariable)]);
     private static MethodInfo _DeclareGlobalAnnexBFunction = typeof(JSContext).GetMethod(nameof(JSContext.DeclareGlobalAnnexBFunction), [typeof(KeyString).MakeByRefType(), typeof(JSValue)]);
+    private static MethodInfo _SetDirectEvalVarBinding = typeof(JSContext).GetMethod(nameof(JSContext.SetDirectEvalVarBinding), [typeof(KeyString).MakeByRefType(), typeof(JSValue)]);
     private static MethodInfo _RegisterDirectEvalVariable = typeof(JSContext).GetMethod(
         nameof(JSContext.RegisterDirectEvalVariable),
         BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
@@ -96,6 +97,7 @@ public class JSContextBuilder
     public static Expression DeclareGlobalFunction(Expression key, Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeclareGlobalFunction, key, value);
     public static Expression DeclareGlobalLexical(Expression variable) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeclareGlobalLexical, variable);
     public static Expression DeclareGlobalAnnexBFunction(Expression key, Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeclareGlobalAnnexBFunction, key, value);
+    public static Expression SetDirectEvalVarBinding(Expression key, Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _SetDirectEvalVarBinding, key, value);
     public static Expression RegisterDirectEvalVariable(Expression variable) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _RegisterDirectEvalVariable, variable);
     private static MethodInfo _GetOrCreateDirectEvalLocalBinding = typeof(JSContext).GetMethod(nameof(JSContext.GetOrCreateDirectEvalLocalBinding), [typeof(KeyString).MakeByRefType(), typeof(JSValue)]);
     public static Expression GetOrCreateDirectEvalLocalBinding(Expression key, Expression fallback) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _GetOrCreateDirectEvalLocalBinding, key, fallback);

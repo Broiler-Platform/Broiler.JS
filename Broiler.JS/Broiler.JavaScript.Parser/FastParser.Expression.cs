@@ -199,16 +199,23 @@ partial class FastParser
                 functionDepth++;
                 var previousInGeneratorBody = inGeneratorBody;
                 var previousInAsyncFunctionBody = inAsyncFunctionBody;
-                // An arrow's body — a Block or a concise AssignmentExpression[+In] — is
-                // its own [+In] context, so a `for` head's `[~In]` does not reach into it.
+                // ArrowFunction[In] : ArrowParameters => ConciseBody[?In] — the body INHERITS the
+                // [In] parameter, it does not reset it. Only the Block form is its own [+In]
+                // context (its contents are Statements); a ConciseBody is
+                // AssignmentExpression[?In], so a `for` head's [~In] reaches into it and
+                // `for (x => 0 in 1;;) break;` is the SyntaxError the grammar says it is, not an
+                // arrow returning `0 in 1` (test262 staging/sm/statements/
+                // arrow-function-in-for-statement-head). Parenthesising restores [+In] on its own
+                // — `for ((x => 0 in 1);;)` parses — because a parenthesised expression is an
+                // [+In] context wherever it appears.
                 var previousConsiderIn = considerInOfAsOperators;
-                considerInOfAsOperators = true;
                 inGeneratorBody = isGenerator;
                 inAsyncFunctionBody = isAsync;
                 try
                 {
                     if (stream.CheckAndConsume(TokenTypes.CurlyBracketStart))
                     {
+                        considerInOfAsOperators = true;
                         if (!Block(out var block))
                             throw stream.Unexpected();
 

@@ -7,6 +7,7 @@ using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.ExpressionCompiler.Runtime;
+using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 
 using System;
 using System.Collections.Generic;
@@ -123,6 +124,17 @@ public static class DirectEvalSupport
         if (program.Statements.Count == 0)
             return JSUndefined.Value;
 
+        // Nothing to compile either. A body whose every statement is a literal expression —
+        // `eval("/" + character + "/")`, `eval("0")` — declares nothing, reads no binding and calls
+        // nothing, so its completion value is that last literal and the compile is pure overhead.
+        // And it is nearly all of the cost: emitting and JITting one throwaway method is ~2.6 ms in
+        // a Release build against ~13 µs to parse the same text. test262 runs exactly that loop
+        // 65 536 times, once per BMP code unit (language/literals/regexp/S7.8.5_A*_T2, annexB
+        // RegExp-{leading,trailing}-escape-BMP), where it decides between four CPU-minutes and two
+        // seconds — and the runner caps a test at 30 CPU-seconds.
+        if (TryEvaluateLiteralProgram(program, inheritStrictMode, out var literalCompletion))
+            return literalCompletion;
+
         // The program Validate already parsed, rather than a second parse of the same text.
         var declaredBindings = disallowArgumentsDeclaration ? CollectProgramDeclaredBindings(program) : null;
 
@@ -176,7 +188,12 @@ public static class DirectEvalSupport
                         if (capturedBinding == null || !capturedBinding.Name.Equals(declaredBinding))
                             continue;
 
-                        capturedBinding.Value = context.ResolveIdentifier(KeyStrings.GetOrCreate(declaredBinding));
+                        // The eval's declarations live in its VARIABLE environment. Reading them
+                        // back through the `with`-aware ResolveIdentifier let an enclosing
+                        // `with (o)` whose object happens to own the name answer with o[name],
+                        // which then overwrote the caller's binding — B.3.3.3 sets the function on
+                        // the nearest VariableEnvironment and must neither touch nor consult o.
+                        capturedBinding.Value = context.ResolveIdentifierWithoutWithScopes(KeyStrings.GetOrCreate(declaredBinding));
                         break;
                     }
                 }
@@ -377,6 +394,90 @@ public static class DirectEvalSupport
         }
 
         return [.. names];
+    }
+
+    /// <summary>
+    /// Reports whether every statement of <paramref name="program"/> is an expression statement over
+    /// a literal, and if so hands back the completion value: the last of those literals. Such a body
+    /// has no declarations, no references and no calls, so evaluating it is exactly building that one
+    /// value — see the call site for why that is worth short-circuiting.
+    /// </summary>
+    /// <param name="injectedStrictDirective">
+    /// True when <see cref="Execute"/> prefixed the source with its own <c>"use strict";</c>. That
+    /// line is not part of the program the caller wrote and its value must not become the completion
+    /// value, so it is skipped; a body that is nothing else falls through to the ordinary path.
+    /// </param>
+    private static bool TryEvaluateLiteralProgram(AstProgram program, bool injectedStrictDirective, out JSValue value)
+    {
+        value = JSUndefined.Value;
+
+        var statements = program.Statements.GetFastEnumerator();
+        var first = true;
+        var any = false;
+        while (statements.MoveNext(out var statement))
+        {
+            if (first)
+            {
+                first = false;
+                if (injectedStrictDirective)
+                    continue;
+            }
+
+            if (statement is not AstExpressionStatement expressionStatement
+                || expressionStatement.Expression is not AstLiteral literal
+                || !TryCreateLiteralValue(literal, out var literalValue))
+            {
+                value = JSUndefined.Value;
+                return false;
+            }
+
+            value = literalValue;
+            any = true;
+        }
+
+        // Reaching here with nothing found means the injected directive was the only statement, so
+        // the caller wrote a body with no statements of its own — PerformEval owes that the
+        // undefined completion, not the text of a directive it never wrote.
+        return any || injectedStrictDirective;
+    }
+
+    /// <summary>
+    /// Builds the value of a literal the way <c>FastCompiler.VisitLiteral</c> would, without
+    /// generating code for it. BigInt and Decimal literals are deliberately not handled — they
+    /// would need their own runtime factories and no measured workload evaluates them this way.
+    /// </summary>
+    private static bool TryCreateLiteralValue(AstLiteral literal, out JSValue value)
+    {
+        switch (literal.TokenType)
+        {
+            case TokenTypes.True:
+                value = JSValue.BooleanTrue;
+                return true;
+
+            case TokenTypes.False:
+                value = JSValue.BooleanFalse;
+                return true;
+
+            case TokenTypes.Null:
+                value = JSValue.NullValue;
+                return true;
+
+            case TokenTypes.Number when JSNumberBuilder.Create is { } number:
+                value = number(literal.NumericValue);
+                return true;
+
+            case TokenTypes.String when JSStringBuilder.Create is { } text:
+                value = text(literal.StringValue);
+                return true;
+
+            case TokenTypes.RegExLiteral when JSRegExpBuilder.Create is { } regexp:
+                var (pattern, flags) = literal.Regex;
+                value = regexp(pattern, flags);
+                return true;
+        }
+
+        value = JSUndefined.Value;
+        return false;
     }
 
     private static bool IsDirectEval(JSValue callee)

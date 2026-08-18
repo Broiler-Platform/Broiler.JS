@@ -57,6 +57,35 @@ public sealed class EvalShadowVariable : JSVariable
     public override JSValue GetValue()
         => IsInitialized ? Value : OuterValue;
 
+    // The throwing read. A shadow of a global-object-backed binding must notice that `delete`
+    // removed the (configurable, eval-introduced) property and throw, where GetValue's plain
+    // GlobalValue read answers undefined; `typeof` keeps GetValue. A chained shadow forwards with
+    // GetValueChecked so the check survives to the outermost, global-backed link.
+    public override JSValue GetValueChecked()
+    {
+        if (IsInitialized)
+            return Value;
+
+        if (outer == null)
+            return JSUndefined.Value;
+
+        return outerIsGlobal ? outer.GlobalValueChecked : outer.GetValueChecked();
+    }
+
+    // `delete` of an eval-introduced var removes the binding from the variable environment it was
+    // created in; the name then resolves to the binding this shadow forwards to (an enclosing
+    // function's, or the global's) rather than becoming unresolvable. Give up ownership instead of
+    // tearing the binding down — tearing it down made every later read through the shadow throw
+    // (test262 staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode, where the caller must
+    // see the outer binding again after `eval('delete y')`). A plain JSVariable an eval created
+    // keeps the tear-down semantics that eval-code/direct/var-env-*-init-local-new-delete expects.
+    //
+    // Only an OWNED shadow can get here: the sole caller, JSContext.DeleteIdentifier, finds the
+    // binding through TryResolveDirectEvalBinding without includeUninitializedShadows, which walks
+    // past a shadow that is still forwarding. So there is no un-owned case to handle — an
+    // unowned shadow is not the binding being deleted, and whichever binding is gets found instead.
+    public override void MarkDeleted() => Uninitialize();
+
     public override JSValue SetValue(JSValue value)
     {
         // Once a direct eval has introduced this binding it owns the value; before

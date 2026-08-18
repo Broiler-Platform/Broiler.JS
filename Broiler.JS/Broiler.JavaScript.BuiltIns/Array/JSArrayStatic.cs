@@ -41,14 +41,27 @@ public partial class JSArray
         if (useArrayLike)
         {
             var arrayLike = ToArrayLikeObject(f);
-            var length = GetArrayLikeLength(arrayLike);
+            // §23.1.2.1 step 8 reads the length with LengthOfArrayLike (ToLength, up to 2^53-1) and
+            // step 10 hands it to ArrayCreate, which rejects anything above 2^32-1 with a
+            // RangeError. Clamping into the array-index range instead made `{length: Infinity}`
+            // look like the largest LEGAL length, so the RangeError never surfaced and the loop
+            // below tried to materialise 4.29 billion properties — dying of memory exhaustion,
+            // reported as a plain Error (test262 staging/sm/Array/to-length.js). Slice, ToReversed,
+            // ToSorted, ToSpliced and With already enforce the limit this way.
+            var length = GetArrayLikeLengthLong(arrayLike);
             var arrayLikeResult = constructor != null
                 ? constructor.CreateInstance(new Arguments(JSUndefined.Value, CreateNumber(length))) as JSObject
-                : new JSArray();
+                : ArrayCreateChecked(length);
             if (arrayLikeResult == null)
                 throw JSEngine.NewTypeError("Array.from constructor must return an object");
 
-            for (uint i = 0; i < length; i++)
+            // Both creation paths above have already rejected a length beyond the array-index range
+            // unless a CUSTOM constructor accepted one. The counter is 32-bit, so bound the walk
+            // there as well — comparing a uint counter against a long length wraps it back to 0 at
+            // 2^32 and spins forever.
+            var count = length > uint.MaxValue ? uint.MaxValue : (uint)length;
+
+            for (uint i = 0; i < count; i++)
             {
                 var value = arrayLike[i];
                 if (!map.IsUndefined)
@@ -61,8 +74,10 @@ public partial class JSArray
             }
 
             if (arrayLikeResult is JSArray arrayLikeArray)
-                arrayLikeArray._length = length;
+                arrayLikeArray._length = count;
             else
+                // Step 14 sets "length" to the true ToLength value, so a custom collection still
+                // observes the length the spec computed rather than the walked-index count.
                 arrayLikeResult.SetPropertyOrThrow(KeyStrings.length.ToJSValue(), CreateNumber(length));
 
             return arrayLikeResult;

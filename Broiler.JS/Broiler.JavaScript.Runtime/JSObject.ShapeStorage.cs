@@ -246,6 +246,16 @@ public partial class JSObject
             return false;
         }
 
+        // Past ObjectShape.MaxSlots the chain's O(n²) LIVE cost outweighs the inline-cache win.
+        // AbandonObjectShape materializes the named properties first, so returning false here
+        // loses nothing: the caller runs the ordinary descriptor path, and IsShapeOnlyStorage is
+        // false on every later call, so this branch is taken at most once per object.
+        if (objectShape.WouldExceedSlotLimit(key.Key))
+        {
+            AbandonObjectShape();
+            return false;
+        }
+
         if (!objectShape.TryGetSlot(key.Key, out var slot))
         {
             objectShape = objectShape.Add(key.Key);

@@ -17,6 +17,10 @@ public static class EvalShadowBuilder
     public static Expression GetValue(Expression target) =>
         target.CallExpression<JSVariable, JSValue>(() => x => x.GetValue());
 
+    // The read a throwing IdentifierReference uses (see JSVariable.GetValueChecked).
+    public static Expression GetValueChecked(Expression target) =>
+        target.CallExpression<JSVariable, JSValue>(() => x => x.GetValueChecked());
+
     public static Expression SetValue(Expression target, Expression value) =>
         target.CallExpression<JSVariable, JSValue, JSValue>(() => (x, v) => x.SetValue(v), value);
 
