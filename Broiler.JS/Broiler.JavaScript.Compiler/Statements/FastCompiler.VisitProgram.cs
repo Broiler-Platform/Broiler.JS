@@ -109,6 +109,19 @@ partial class FastCompiler
                     var localVariable = scope.CreateVariable(v, null, true);
                     localVariable.IsLexical = false;
                     localVariable.IsDeletable = !IsStrictMode && isDirectEvalProgramScope;
+                    if (IsDirectEvalCatchShadowedName(v))
+                    {
+                        // B.3.5: the var is created in the variable environment as usual, but a
+                        // simple catch parameter of the caller shadows it for the whole eval body,
+                        // so this compilation binds the name to the PARAMETER's storage. Skipping
+                        // registration keeps the parameter from being published under this name
+                        // as an eval binding, which would then shadow the declared var for the
+                        // caller once the catch block is left.
+                        localVariable.SkipRegistration = true;
+                        localVariable.SetInit(JSContextBuilder.DeclareDirectEvalCatchShadowedVar(KeyOfName(v), localVarEnvironment: true));
+                        continue;
+                    }
+
                     if (usesDirectEvalLocalVarEnvironment && !IsStrictMode)
                     {
                         // EvalDeclarationInstantiation initializes a NEWLY created var binding to
@@ -122,6 +135,21 @@ partial class FastCompiler
                         // must leave `hidden` undefined even though an outer `var hidden = 17` exists).
                         localVariable.SetInit(JSContextBuilder.GetOrCreateDirectEvalLocalBinding(KeyOfName(v), JSUndefinedBuilder.Value));
                     }
+                    continue;
+                }
+
+                // B.3.5, the global-var-environment half of the branch above: the global var is
+                // created and registered by the runtime helper, and this compilation binds the
+                // name to the shadowing catch parameter. A simple catch parameter is in the
+                // captured lexical set too, so this must be tested first — treating it as an
+                // ordinary captured lexical would suppress the var the eval owes.
+                if (isDirectEvalProgramScope && IsDirectEvalCatchShadowedName(v))
+                {
+                    var catchShadowed = scope.CreateVariable(v, null, true);
+                    catchShadowed.IsLexical = false;
+                    catchShadowed.SkipRegistration = true;
+                    catchShadowed.SetInit(JSContextBuilder.DeclareDirectEvalCatchShadowedVar(KeyOfName(v), localVarEnvironment: false));
+                    scope.Parent?.AddExternalVariable(v, catchShadowed);
                     continue;
                 }
 

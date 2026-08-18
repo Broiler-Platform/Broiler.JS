@@ -43,6 +43,22 @@ partial class FastCompiler
         return true;
     }
 
+    // The spec's paramNames — BoundNames of the formal parameter list, and nothing else.
+    // Notably not "arguments" unless a parameter is literally spelled that way: the implicit
+    // arguments object joins paramBindings, one list over.
+    private static bool ParameterNamesContain(AstFunctionExpression function, in StringSpan name)
+    {
+        var names = new List<StringSpan>();
+        CollectParameterNames(function.Params, names);
+        foreach (var parameterName in names)
+        {
+            if (parameterName.Value == name.Value)
+                return true;
+        }
+
+        return false;
+    }
+
     private static void CollectParameterNames(IFastEnumerable<VariableDeclarator> parameters, List<StringSpan> names)
     {
         var enumerator = parameters.GetFastEnumerator();

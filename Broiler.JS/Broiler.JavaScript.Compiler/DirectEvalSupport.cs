@@ -89,7 +89,7 @@ public static class DirectEvalSupport
         }
     }
 
-    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, FrameToken activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, JSVariable[] shadowedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, JSValue directEvalSuperConstructor = null, JSVariable directEvalThisBinding = null, string[] evalVarEnvNames = null, JSValue directEvalNewTarget = null, bool tailCall = false)
+    public static JSValue Execute(Arguments arguments, JSValue callee, JSValue @this, FrameToken activationOwner, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, JSVariable[] capturedBindings, JSVariable[] shadowedBindings, string[] capturedLexicalBindingNames, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool useActivationBinding = false, JSValue directEvalSuper = null, bool inFieldInitializer = false, bool rejectNewTarget = false, JSValue directEvalSuperConstructor = null, JSVariable directEvalThisBinding = null, string[] evalVarEnvNames = null, JSValue directEvalNewTarget = null, string[] catchParameterNames = null, bool tailCall = false)
     {
         if (!IsDirectEval(callee))
         {
@@ -125,15 +125,16 @@ public static class DirectEvalSupport
             return JSUndefined.Value;
 
         // Nothing to compile either. A body whose every statement is a literal expression —
-        // `eval("/" + character + "/")`, `eval("0")` — declares nothing, reads no binding and calls
-        // nothing, so its completion value is that last literal and the compile is pure overhead.
-        // And it is nearly all of the cost: emitting and JITting one throwaway method is ~2.6 ms in
-        // a Release build against ~13 µs to parse the same text. test262 runs exactly that loop
-        // 65 536 times, once per BMP code unit (language/literals/regexp/S7.8.5_A*_T2, annexB
-        // RegExp-{leading,trailing}-escape-BMP), where it decides between four CPU-minutes and two
-        // seconds — and the runner caps a test at 30 CPU-seconds.
-        if (TryEvaluateLiteralProgram(program, inheritStrictMode, out var literalCompletion))
-            return literalCompletion;
+        // `eval("/" + character + "/")`, `eval("0")` — or `new.target` declares nothing, reads no
+        // binding and calls nothing, so its completion value is that last value and the compile is
+        // pure overhead. And it is nearly all of the cost: emitting and JITting one throwaway method
+        // is ~2.6 ms in a Release build against ~13 µs to parse the same text. test262 runs exactly
+        // that loop 65 536 times, once per BMP code unit (language/literals/regexp/S7.8.5_A*_T2,
+        // annexB RegExp-{leading,trailing}-escape-BMP), and staging/sm/class/newTargetEval runs
+        // `eval('new.target')` 4 400 times — where it decides between four CPU-minutes and two
+        // seconds, and the runner caps a test at 30 CPU-seconds.
+        if (TryEvaluateInertProgram(program, inheritStrictMode, directEvalNewTarget, out var inertCompletion))
+            return inertCompletion;
 
         // The program Validate already parsed, rather than a second parse of the same text.
         var declaredBindings = disallowArgumentsDeclaration ? CollectProgramDeclaredBindings(program) : null;
@@ -147,6 +148,10 @@ public static class DirectEvalSupport
             // Pushed for every direct eval (even with no names) so the innermost var-env-name scope
             // always corresponds to the currently running eval (see IsImmediateEvalVarEnvName).
             using var varEnvNameScope = context.PushDirectEvalVarEnvNames(evalVarEnvNames);
+            // Pushed unconditionally for the same reason: the innermost scope must always be
+            // the running eval's, so a nested eval does not inherit the outer one's catch
+            // parameters.
+            using var catchParameterScope = context.PushDirectEvalCatchParameterNames(catchParameterNames);
             using var lexicalBindingScope = capturedLexicalBindingNames?.Length > 0
                 ? context.PushDirectEvalLexicalBindingNames(capturedLexicalBindingNames)
                 : null;
@@ -398,16 +403,23 @@ public static class DirectEvalSupport
 
     /// <summary>
     /// Reports whether every statement of <paramref name="program"/> is an expression statement over
-    /// a literal, and if so hands back the completion value: the last of those literals. Such a body
-    /// has no declarations, no references and no calls, so evaluating it is exactly building that one
-    /// value — see the call site for why that is worth short-circuiting.
+    /// a literal or over <c>new.target</c>, and if so hands back the completion value: the last of
+    /// those values. Such a body has no declarations, no references and no calls, so evaluating it is
+    /// exactly building that one value — see the call site for why that is worth short-circuiting.
     /// </summary>
     /// <param name="injectedStrictDirective">
     /// True when <see cref="Execute"/> prefixed the source with its own <c>"use strict";</c>. That
     /// line is not part of the program the caller wrote and its value must not become the completion
     /// value, so it is skipped; a body that is nothing else falls through to the ordinary path.
     /// </param>
-    private static bool TryEvaluateLiteralProgram(AstProgram program, bool injectedStrictDirective, out JSValue value)
+    /// <param name="directEvalNewTarget">
+    /// The caller's [[NewTarget]], which PerformEval shares with the eval body. It is the whole
+    /// meaning of a <c>new.target</c> at the eval's top level: the ordinary path threads the same
+    /// value through <c>PushDirectEvalNewTarget</c> for compiled code to read. Where new.target is
+    /// not legal here at all — indirect eval, or a direct eval outside function code — Validate has
+    /// already rejected the body, so reaching this point means it is.
+    /// </param>
+    private static bool TryEvaluateInertProgram(AstProgram program, bool injectedStrictDirective, JSValue directEvalNewTarget, out JSValue value)
     {
         value = JSUndefined.Value;
 
@@ -423,16 +435,28 @@ public static class DirectEvalSupport
                     continue;
             }
 
-            if (statement is not AstExpressionStatement expressionStatement
-                || expressionStatement.Expression is not AstLiteral literal
-                || !TryCreateLiteralValue(literal, out var literalValue))
+            if (statement is not AstExpressionStatement expressionStatement)
             {
                 value = JSUndefined.Value;
                 return false;
             }
 
-            value = literalValue;
-            any = true;
+            if (expressionStatement.Expression is AstLiteral literal && TryCreateLiteralValue(literal, out var literalValue))
+            {
+                value = literalValue;
+                any = true;
+                continue;
+            }
+
+            if (IsNewTarget(expressionStatement.Expression))
+            {
+                value = directEvalNewTarget ?? JSUndefined.Value;
+                any = true;
+                continue;
+            }
+
+            value = JSUndefined.Value;
+            return false;
         }
 
         // Reaching here with nothing found means the injected directive was the only statement, so
@@ -440,6 +464,11 @@ public static class DirectEvalSupport
         // undefined completion, not the text of a directive it never wrote.
         return any || injectedStrictDirective;
     }
+
+    private static bool IsNewTarget(AstExpression expression)
+        => expression is AstMeta meta
+            && meta.Identifier.Name.Equals("new")
+            && meta.Property.Name.Equals("target");
 
     /// <summary>
     /// Builds the value of a literal the way <c>FastCompiler.VisitLiteral</c> would, without

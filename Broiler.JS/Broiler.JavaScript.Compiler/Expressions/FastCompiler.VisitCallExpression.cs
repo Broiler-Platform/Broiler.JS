@@ -14,8 +14,8 @@ namespace Broiler.JavaScript.Compiler;
 partial class FastCompiler
 {
     private static readonly System.Reflection.MethodInfo DirectEvalMethod = typeof(DirectEvalSupport)
-        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(FrameToken), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool), typeof(JSValue), typeof(bool), typeof(bool), typeof(JSValue), typeof(JSVariable), typeof(string[]), typeof(JSValue), typeof(bool)])
-        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, FrameToken, bool, bool, string[], JSVariable[], JSVariable[], string[], string[], string[], bool, bool, bool, JSValue, bool, bool, JSValue, JSVariable, string[], JSValue, bool) not found");
+        .GetMethod(nameof(DirectEvalSupport.Execute), [typeof(Arguments), typeof(JSValue), typeof(JSValue), typeof(FrameToken), typeof(bool), typeof(bool), typeof(string[]), typeof(JSVariable[]), typeof(JSVariable[]), typeof(string[]), typeof(string[]), typeof(string[]), typeof(bool), typeof(bool), typeof(bool), typeof(JSValue), typeof(bool), typeof(bool), typeof(JSValue), typeof(JSVariable), typeof(string[]), typeof(JSValue), typeof(string[]), typeof(bool)])
+        ?? throw new InvalidOperationException("DirectEvalSupport.Execute(Arguments, JSValue, JSValue, FrameToken, bool, bool, string[], JSVariable[], JSVariable[], string[], string[], string[], bool, bool, bool, JSValue, bool, bool, JSValue, JSVariable, string[], JSValue, string[], bool) not found");
 
     protected override BExpression VisitCallExpression(AstCallExpression callExpression)
     {
@@ -176,13 +176,14 @@ partial class FastCompiler
             }
 
             var evalVarEnvNames = CaptureEvalVarEnvNames();
+            var catchParameterNames = CaptureDirectEvalCatchParameterNames();
             // The caller's new.target, threaded so `new.target` in the eval body
             // (PerformEval shares the calling context's [[NewTarget]]) resolves to it.
             // Inside an enclosing direct-eval compilation read the already-threaded
             // value so a nested eval inherits it.
             var directEvalNewTarget = scope.Top.NewTargetExpression
                 ?? (isDirectEvalCompilation ? JSContextBuilder.DirectEvalNewTarget : JSContextBuilder.NewTarget());
-            return BExpression.Call(null, DirectEvalMethod, paramArray, evalCallee, thisArg, activationOwner, BExpression.Constant(IsStrictMode), BExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, shadowedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, BExpression.Constant(allowSuperProperty), BExpression.Constant(allowSuperCall), BExpression.Constant(useActivationBinding), superValue, BExpression.Constant(inMemberInitializer), BExpression.Constant(rejectNewTarget), directEvalSuperConstructor, directEvalThisBinding, evalVarEnvNames, directEvalNewTarget);
+            return BExpression.Call(null, DirectEvalMethod, paramArray, evalCallee, thisArg, activationOwner, BExpression.Constant(IsStrictMode), BExpression.Constant(disallowArgumentsDeclaration), lexicalBindings, capturedBindings, shadowedBindings, capturedBindingLexicalNames, parameterBindings, privateNames, BExpression.Constant(allowSuperProperty), BExpression.Constant(allowSuperCall), BExpression.Constant(useActivationBinding), superValue, BExpression.Constant(inMemberInitializer), BExpression.Constant(rejectNewTarget), directEvalSuperConstructor, directEvalThisBinding, evalVarEnvNames, directEvalNewTarget, catchParameterNames);
         }
 
         // A parenthesized optional chain closes the chain at the parens (per spec ECMAScript
@@ -480,6 +481,21 @@ partial class FastCompiler
     {
         var names = new Sequence<BExpression>();
         foreach (var name in scope.Top.GetImmediateVarEnvNames())
+            names.Add(BExpression.Constant(name));
+
+        return BExpression.NewArrayInit(typeof(string), names);
+    }
+
+    // The simple CatchParameter names between this eval and its variable environment.
+    // B.3.5 lets a direct eval declare `var x` over such a parameter, but the declaration
+    // only creates the binding in the variable environment: every reference in the eval
+    // body — including the `var`'s own initializer — resolves through the running
+    // LexicalEnvironment and reaches the catch parameter instead. Names in this list are
+    // therefore left unbound at compile time in the eval body (see VisitProgram).
+    private BExpression CaptureDirectEvalCatchParameterNames()
+    {
+        var names = new Sequence<BExpression>();
+        foreach (var name in scope.Top.GetImmediateCatchParameterNames())
             names.Add(BExpression.Constant(name));
 
         return BExpression.NewArrayInit(typeof(string), names);

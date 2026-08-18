@@ -179,6 +179,24 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
         public bool IsEvalShadow { get; internal set; }
 
         /// <summary>
+        /// Whether more than one scope holds this binding, and so emits its <see cref="Init"/>
+        /// (see <see cref="AddExternalVariable"/>).
+        /// </summary>
+        /// <remarks>
+        /// A program-level <c>var</c> is created in the program block and then handed to the
+        /// compiler root, so the root's Register loop can reach it — and both scopes then
+        /// construct it. The two JSVariables that produced disagreed: the root's ran first and
+        /// is the one Register published to globalVars, while the program block's replaced the
+        /// local a moment later, so a write through one was invisible to a read through the
+        /// other. That is how a closure a direct eval created read a global the eval had itself
+        /// just written as its pre-eval value (test262
+        /// staging/sm/lexical-environment/block-scoped-functions-annex-b-eval). The construction
+        /// is made idempotent rather than moved to one scope: which block declares the local is
+        /// what the closure rewriter reads to place its box, and that has to stay as it is.
+        /// </remarks>
+        internal bool SharedWithOuterScope { get; set; }
+
+        /// <summary>
         /// The raw CLR <c>double</c> holding this binding, for a local the compiler proved
         /// only ever holds a number (docs/performance-roadmap.md P2-2 item 3). Null for every
         /// ordinary binding.
@@ -247,16 +265,16 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
                 {
                     if (typeof(JSValue).IsAssignableFrom(exp.Type))
                     {
-                        Init = BExpression.Assign(Variable, JSVariableBuilder.New(exp, Name));
+                        Init = AssignConstruction(JSVariableBuilder.New(exp, Name));
                     }
                     else
                     {
-                        Init = BExpression.Assign(Variable, exp);
+                        Init = AssignConstruction(exp);
                     }
                 }
                 else
                 {
-                    Init = BExpression.Assign(Variable, initialize ? JSVariableBuilder.New(Name) : JSVariableBuilder.NewUninitialized(Name));
+                    Init = AssignConstruction(initialize ? JSVariableBuilder.New(Name) : JSVariableBuilder.NewUninitialized(Name));
                 }
             }
             else
@@ -271,6 +289,18 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
                 }
             }
         }
+
+        // Builds the binding's construction. A binding two scopes hold (SharedWithOuterScope)
+        // has this emitted once per scope, and the second run must not mint a second cell over
+        // the first — the outer scope's copy is the one JSContext.Register published, and a
+        // replacement leaves the two disagreeing forever after. Constructing only when the
+        // local is still empty keeps both copies naming the same JSVariable while leaving the
+        // block structure alone: which block declares the local is what the closure rewriter
+        // reads to decide where the binding's box lives.
+        private BExpression AssignConstruction(BExpression construction)
+            => BExpression.Assign(
+                Variable,
+                SharedWithOuterScope ? BExpression.Coalesce(Variable, construction) : construction);
     }
 
     private SharedParserStringMap<VariableScope> variableScopeList = new();
@@ -278,7 +308,12 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
     // BROILER-PATCH: Register an externally-created variable in this scope.
     // Used for function expression names (ES3 §13) where the variable is
     // declared in the parent scope's block but referenced in the function body.
-    internal void AddExternalVariable(in StringSpan name, VariableScope scope) => variableScopeList[name] = scope;
+    internal void AddExternalVariable(in StringSpan name, VariableScope scope)
+    {
+        variableScopeList[name] = scope;
+        // From here on two scopes hold this binding and both will emit its construction.
+        scope.SharedWithOuterScope = true;
+    }
 
     public AstFunctionExpression Function { get; }
     public bool CanScalarReplaceLocals { get; internal set; }
@@ -767,6 +802,36 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
                     || string.IsNullOrEmpty(variable.Name)
                     || variable.Name == "this"
                     || variable.Name == NewTargetBindingName
+                    || !seen.Add(NormalizeVisibleName(variable.Name)))
+                {
+                    continue;
+                }
+
+                yield return variable.Name;
+            }
+
+            current = current.Parent;
+        }
+    }
+
+    // The simple CatchParameter names between this scope and the variable environment that
+    // encloses it — the same walk GetImmediateVarEnvNames makes, since a catch block deeper
+    // than the current function cannot be crossed. These are the only bindings that can
+    // legally shadow a name a direct eval declares as `var` (B.3.5); any other lexical
+    // binding in the same range makes EvalDeclarationInstantiation throw a SyntaxError.
+    public IEnumerable<string> GetImmediateCatchParameterNames()
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var current = this;
+        while (current != null && current.Function == Function)
+        {
+            var variables = current.variableScopeList.AllValues;
+            while (variables.MoveNext(out var entry))
+            {
+                var variable = entry.Value;
+                if (!variable.IsSimpleCatchBinding
+                    || variable.IsTemp
+                    || string.IsNullOrEmpty(variable.Name)
                     || !seen.Add(NormalizeVisibleName(variable.Name)))
                 {
                     continue;

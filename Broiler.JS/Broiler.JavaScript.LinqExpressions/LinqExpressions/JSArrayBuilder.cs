@@ -16,6 +16,7 @@ public class JSArrayBuilder
     private static ConstructorInfo _NewFromElementEnumerator;
     public static MethodInfo _Add;
     public static MethodInfo _AddRange;
+    private static MethodInfo _FromTemplate;
 
     /// <summary>
     /// Initializes the builder with the concrete JSArray type.
@@ -28,7 +29,15 @@ public class JSArrayBuilder
         _NewFromElementEnumerator = type.GetConstructor([typeof(IElementEnumerator)]);
         _Add = type.GetMethod("Add", [typeof(JSValue)]);
         _AddRange = type.GetMethod("AddRange", [typeof(JSValue)]);
+        _FromTemplate = type.GetMethod("FromTemplate", [typeof(string)]);
     }
+
+    /// <summary>
+    /// Emits an ArrayLiteral of nothing but constants as its encoded description plus one call,
+    /// rather than as an <c>Add</c> per element. See <c>JSArray.FromTemplate</c>.
+    /// </summary>
+    public static Expression FromTemplate(string encoded)
+        => Expression.Call(null, _FromTemplate, Expression.Constant(encoded));
 
     public static Expression New()
     {

@@ -889,6 +889,32 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         return new DirectEvalLexicalBindingScope(this, names);
     }
 
+    // The simple CatchParameter names between the running direct eval and its variable
+    // environment. B.3.5 lets the eval declare `var x` over such a parameter — the binding
+    // is created in the variable environment, but every reference in the eval body still
+    // resolves through the running LexicalEnvironment and reaches the catch parameter, so
+    // the compiler must not bind those names statically. A scope is pushed for every direct
+    // eval (empty when there are none) so the innermost scope is the running eval's.
+    private readonly List<string[]> directEvalCatchParameterNameScopes = [];
+
+    public string[] DirectEvalCatchParameterNamesInScope
+        => directEvalCatchParameterNameScopes.Count == 0 ? null : directEvalCatchParameterNameScopes[^1];
+
+    private sealed class DirectEvalCatchParameterScope(JSContext context) : IDisposable
+    {
+        public void Dispose()
+        {
+            if (context.directEvalCatchParameterNameScopes.Count > 0)
+                context.directEvalCatchParameterNameScopes.RemoveAt(context.directEvalCatchParameterNameScopes.Count - 1);
+        }
+    }
+
+    public IDisposable PushDirectEvalCatchParameterNames(string[] names)
+    {
+        directEvalCatchParameterNameScopes.Add(names ?? []);
+        return new DirectEvalCatchParameterScope(this);
+    }
+
     // The calling function's var-environment binding names for the running direct eval, so its var
     // declarations can reuse an existing function-local binding (EvalDeclarationInstantiation) rather
     // than create a shadowing overlay. A scope is pushed for every direct eval (empty when there are
@@ -1145,6 +1171,55 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
             Frames.RegisterDirectEvalBinding(in owner, variable);
 
         return variable;
+    }
+
+    /// <summary>
+    /// Declares a direct eval's top-level <c>var</c> whose name one of the caller's simple
+    /// CatchParameters shadows (B.3.5), and returns the storage the eval body must compile
+    /// against — the catch parameter's own binding.
+    /// </summary>
+    /// <remarks>
+    /// Both halves are needed and they are different bindings. EvalDeclarationInstantiation
+    /// creates the var in the VariableEnvironment, which is what the name means once the catch
+    /// block is left; but a reference inside the eval resolves through the running
+    /// LexicalEnvironment, and the catch environment sits between the two. Resolution here is
+    /// per-frame rather than a nested environment chain, so once the var is registered a lookup
+    /// by name finds it and not the parameter — which is why the parameter is taken from the
+    /// captured direct-eval scope instead. If nothing shadows the name after all, the declared
+    /// binding is its own storage, exactly as for any other eval var.
+    /// </remarks>
+    public JSVariable DeclareDirectEvalCatchShadowedVar(in KeyString name, bool localVarEnvironment)
+    {
+        // Read before declaring: the caller's bindings reach the eval as an overlay on
+        // globalVars, and the declaration below may replace the entry this needs.
+        var hasShadowing = TryResolveDirectEvalOverlayBinding(name, out var shadowing);
+
+        JSVariable declared;
+        if (localVarEnvironment)
+        {
+            declared = GetOrCreateDirectEvalLocalBinding(name, JSUndefined.Value);
+        }
+        else
+        {
+            declared = new JSVariable(JSUndefined.Value, name.Value);
+            Register(declared);
+        }
+
+        return hasShadowing ? shadowing : declared;
+    }
+
+    // The binding the running direct eval's captured-scope overlay currently holds for
+    // <paramref name="name"/> — the caller's own storage for it, not a same-named global.
+    private bool TryResolveDirectEvalOverlayBinding(in KeyString name, out JSVariable variable)
+    {
+        for (var i = activeDirectEvalScopes.Count - 1; i >= 0; i--)
+        {
+            if (activeDirectEvalScopes[i].ContainsName(name))
+                return globalVars.TryGetValue(name.Key, out variable);
+        }
+
+        variable = null;
+        return false;
     }
 
     // Only the innermost (current) direct eval's var-env names apply: a var the running eval declares
