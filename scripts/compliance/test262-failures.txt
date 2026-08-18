@@ -3,11 +3,6 @@
 # these paths are rerun before the workflow falls back to the full suite.
 
 test/staging/sm/RegExp/unicode-ignoreCase.js
-test/staging/sm/String/string-upper-lower-mapping.js
 test/staging/sm/class/newTargetEval.js
 test/staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode.js
-test/staging/sm/lexical-environment/block-scoped-functions-annex-b-arguments.js
-test/staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js
-test/staging/sm/lexical-environment/var-in-catch-body-annex-b-eval.js
-test/staging/sm/regress/regress-602621.js
 test/staging/sm/regress/regress-610026.js
