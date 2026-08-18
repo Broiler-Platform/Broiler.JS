@@ -8,12 +8,6 @@ test/built-ins/RegExp/CharacterClassEscapes/character-class-digit-class-escape-n
 test/built-ins/RegExp/CharacterClassEscapes/character-class-non-digit-class-escape-positive-cases.js
 test/built-ins/RegExp/CharacterClassEscapes/character-class-non-word-class-escape-positive-cases.js
 test/built-ins/RegExp/CharacterClassEscapes/character-class-word-class-escape-negative-cases.js
-test/built-ins/RegExp/property-escapes/generated/General_Category_-_Other.js
-test/built-ins/RegExp/property-escapes/generated/General_Category_-_Other_Letter.js
-test/built-ins/RegExp/property-escapes/generated/General_Category_-_Unassigned.js
-test/built-ins/RegExp/property-escapes/generated/Script_-_Unknown.js
-test/language/comments/S7.4_A5.js
-test/language/comments/S7.4_A6.js
 test/language/literals/regexp/S7.8.5_A1.1_T2.js
 test/language/literals/regexp/S7.8.5_A1.4_T2.js
 test/language/literals/regexp/S7.8.5_A2.1_T2.js
