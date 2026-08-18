@@ -101,6 +101,8 @@ public class JSContextBuilder
     public static Expression RegisterDirectEvalVariable(Expression variable) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _RegisterDirectEvalVariable, variable);
     private static MethodInfo _GetOrCreateDirectEvalLocalBinding = typeof(JSContext).GetMethod(nameof(JSContext.GetOrCreateDirectEvalLocalBinding), [typeof(KeyString).MakeByRefType(), typeof(JSValue)]);
     public static Expression GetOrCreateDirectEvalLocalBinding(Expression key, Expression fallback) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _GetOrCreateDirectEvalLocalBinding, key, fallback);
+    private static MethodInfo _DeclareDirectEvalCatchShadowedVar = typeof(JSContext).GetMethod(nameof(JSContext.DeclareDirectEvalCatchShadowedVar), [typeof(KeyString).MakeByRefType(), typeof(bool)]);
+    public static Expression DeclareDirectEvalCatchShadowedVar(Expression key, bool localVarEnvironment) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeclareDirectEvalCatchShadowedVar, key, Expression.Constant(localVarEnvironment));
     public static Expression NewTarget() => Expression.Coalesce(
         NewLambdaExpression.StaticCallExpression<JSValue>(() => () => CallFrames.CurrentNewTarget(null), Current),
         JSUndefinedBuilder.Value);

@@ -51,6 +51,12 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
     private readonly string[] directEvalBindingNames;
     private readonly string[] directEvalLexicalBindingNames;
 
+    // The caller's simple CatchParameter names that lie between this direct eval and its
+    // variable environment. B.3.5 allows a `var` of the same name; its binding is created in
+    // the variable environment, but the catch parameter shadows it for the whole eval body,
+    // so those names get no compile-time binding here and resolve dynamically instead.
+    private readonly string[] directEvalCatchParameterNames;
+
     // Annex B 3.3: names handed from CreateFunction to the next VisitBlock (the
     // function body) to create function-scope var bindings for block-nested
     // function declarations. Consumed and cleared by the first VisitBlock so
@@ -106,6 +112,7 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         usesDirectEvalLocalVarEnvironment = context?.UsesDirectEvalLocalVarEnvironment ?? false;
         directEvalBindingNames = isDirectEvalCompilation ? context?.DirectEvalBindingNamesInScope : null;
         directEvalLexicalBindingNames = isDirectEvalCompilation ? context?.DirectEvalLexicalBindingNamesInScope : null;
+        directEvalCatchParameterNames = isDirectEvalCompilation ? context?.DirectEvalCatchParameterNamesInScope : null;
         var directEvalPrivateNames = isDirectEvalCompilation ? context?.DirectEvalPrivateNamesInScope : null;
 
         // add top level...
@@ -615,14 +622,30 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
             return;
         }
 
-        // `arguments` is an implicit parameter name of every ordinary (non-arrow) function
-        // that has an arguments object, so a block-level `function arguments(){}` is NOT
-        // Annex B var-hoisted into the function's variable environment — the arguments
-        // object must survive the block (B.3.2.6 step 1.a.ii; test262 annexB block-decl-
-        // func-skip-arguments). An arrow has no arguments object of its own, and at program
-        // scope there is none either, so the copy-out still applies there.
+        // `arguments` is NOT one of the function's parameter names. 10.2.11 appends it to
+        // paramBindings — the list the var-initialisation steps consult — while the Annex B
+        // condition tests paramNames, so a block-level `function arguments(){}` reaches the
+        // copy-out and overwrites the arguments object in the variable environment. (What the
+        // gap in the wording does suppress is the *binding creation* one step in: "and funcName
+        // is not 'arguments'". The binding already exists, holding the arguments object, so
+        // there is nothing to create — see RegisterAnnexBFunctionHoisting, which is where that
+        // half lives.) A parameter really spelled `arguments` is in paramNames and does block
+        // the whole thing.
+        //
+        // test262 annexB/language/function-code/block-decl-func-skip-arguments quotes the
+        // pre-2021 wording ("Append "arguments" to parameterNames") and now contradicts the
+        // spec it cites; SpiderMonkey and V8 both answer the way this does, and the two
+        // staging/sm tests that assert it are the ones that agree with current 10.2.11.
         if (name.Equals("arguments") && currentFunction is { IsArrowFunction: false })
-            return;
+        {
+            if (ParameterNamesContain(currentFunction, name))
+                return;
+
+            // The copy-out can be the only mention of the name in the whole function, in which
+            // case the outer-binding search below would mint an uninitialised var in the
+            // function root rather than find the arguments object's binding.
+            MaterializeArgumentsBinding();
+        }
 
         // Per B.3.3.3 step ii: skip Annex B hoisting when replacing the
         // FunctionDeclaration with a VariableStatement would produce an
@@ -660,6 +683,17 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
             }
         }
     }
+
+    // A direct eval's top-level `var` whose name is shadowed by one of the caller's simple
+    // catch parameters (B.3.5). The binding still has to be created in the variable
+    // environment — it is what the name means once the catch block is left — but nothing
+    // inside the eval can see it, so the compiler must leave the name unbound and let
+    // ResolveIdentifier / AssignIdentifier walk the running environment to the parameter.
+    private bool IsDirectEvalCatchShadowedName(in StringSpan name)
+        => isDirectEvalCompilation
+            && !IsStrictMode
+            && directEvalCatchParameterNames != null
+            && Array.IndexOf(directEvalCatchParameterNames, name.Value) >= 0;
 
     private bool IsAnnexBHoistingBlocked(in StringSpan name)
     {

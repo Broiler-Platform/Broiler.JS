@@ -203,12 +203,13 @@ partial class FastParser
             && funcScope.DeclaresVariable(name))
             return;
 
-        // Annex B FunctionDeclarationInstantiation appends "arguments" to parameterNames
-        // when the function needs an arguments object (every ordinary, non-arrow function
-        // that does not otherwise bind "arguments"). A block-level `function arguments(){}`
-        // is therefore NOT var-hoisted — the arguments object must survive the block. An
-        // arrow has no arguments object of its own, so "arguments" is not a parameter name
-        // there and the hoist proceeds; at program scope there is no arguments object either.
+        // 10.2.11: the var binding is created only "if instantiatedVariableNames does not
+        // contain funcName and funcName is not "arguments"" — an ordinary, non-arrow function
+        // already has an `arguments` binding holding the arguments object, so there is nothing
+        // to create and no undefined to hoist. Only this half is suppressed: the declaration's
+        // own copy-out still writes the function over that binding when it is evaluated (see
+        // AppendAnnexBOuterBindingAssignments). An arrow has no arguments object of its own,
+        // and at program scope there is none either, so both halves apply there.
         if (name.Equals("arguments")
             && target.Parent is { NodeType: FastNodeType.FunctionExpression, IsArrow: false })
             return;

@@ -8,14 +8,33 @@ when that manifest changes materially.
 
 The current failure manifest includes work in these areas:
 
-- RegExp literal parsing, Annex B escape handling, and Unicode ignore-case behavior;
+- **Unicode ignore-case for astral code points.** `Broiler.Regex`'s
+  `CaseFolding.SimpleFold` is built on `char.ToLowerInvariant`/`ToUpperInvariant`, which
+  are defined over a single UTF-16 code unit, so every code point above U+FFFF is its own
+  canonical form and `/𐐀/ui` does not match `𐐨`. The fix belongs in the `Broiler.Regex`
+  submodule: fold through the string overloads (or the `Broiler.Unicode` simple-fold
+  table), in both `SimpleFold` and `SimpleSiblings`.
+- **An eval-introduced `var` that shadows a global.** It is implemented by mutating the
+  global's binding for the duration of the caller's activation, so an unrelated global
+  function called during that window reads the eval's value rather than the global's
+  (`staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode`). Correcting it means
+  giving the eval's variable environment a binding of its own, which is architectural
+  rather than a defect in one place.
+- **Per-eval compilation cost.** Every direct `eval` compiles a fresh `DynamicMethod`,
+  and JITting it is ~6 ms — nearly all of the cost of a small eval. A body that is inert
+  (nothing but literals, or `new.target`) already skips compilation entirely;
+  `staging/sm/class/newTargetEval` still evaluates 3 300 bodies that are not, and spends
+  the runner's whole CPU budget on the JIT. What would remove it is reusing a compiled
+  eval body across calls, keyed on the source text together with the compile-time scope
+  facts `DirectEvalSupport.Execute` is handed.
+- **Parse cost on a pathological block count.** `staging/sm/regress/regress-610026`
+  evaluates three programs of up to 2^21 `{}` blocks. Each block allocates an AST node, a
+  parser scope with its own dictionary, and two sequences, and the resulting garbage —
+  not the parse itself — is what exhausts the CPU budget.
 - Array `slice`, `unshift`, `toReversed`, `reduceRight`, and near-maximum length
   semantics, including Proxy-created results;
-- comment and regular-expression literal lexical edge cases;
-- labeled/unlabeled `continue` and block-scoped loop bindings;
-- direct and indirect `eval`, including lexical environments and `new.target`;
-- Annex B block-scoped function and catch/`var` behavior; and
-- string/array legacy edge cases represented by the staging tests.
+- comment and regular-expression literal lexical edge cases; and
+- labeled/unlabeled `continue` and block-scoped loop bindings.
 
 Older triage also identified `Intl.DateTimeFormat` range/parts behavior and
 SameValue/Proxy ordering cases. Keep them here only while a current reproduction or
