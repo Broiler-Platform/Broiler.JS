@@ -110,4 +110,41 @@ public class DirectEvalClosureScopeTests
             Eval("(function(){ var b = 1; try { var f = eval('0,function(){return zzNope;}'); return f(); }" +
                  " catch (x) { return x.constructor.name; } })()"));
     }
+
+    // A function the EVALLED function creates when it runs is written inside the eval's scope too,
+    // and until the capture was made to carry through it was handed nothing: the eval had long
+    // returned, so there was no overlay left to snapshot. `f()` resolved `b` and `f()()` threw
+    // "b is not defined" — one level of nesting apart.
+    //
+    // google.com's bot-detection VM is this shape. Its opcode handlers are evaluated with
+    // `function(X){return eval(X)}(src)` and build closures on nearly every step, which is what
+    // made it a "g is not defined" there rather than the "b is not defined" above.
+    [Theory]
+    [InlineData("(function(){ var b = 42; var f = eval('0,function(){ return function(){ return b; }; }'); return f()(); })()", "42")]
+    [InlineData("(function(){ var b = 42; var f = eval('0,function(){ return function(){ return function(){ return b; }; }; }'); return f()()(); })()", "42")]
+    // Created while the evalled function runs, invoked long after everything has returned.
+    [InlineData("(function(){ var b = 42; var s = []; var f = eval('0,function(){ s.push(function(){ return b; }); }');"
+        + " f(); return s[0](); })()", "42")]
+    // Reached through a builtin's callback rather than a plain call.
+    [InlineData("(function(){ var b = 42; var f = eval('0,function(){ return [0].map(function(){ return b; })[0]; }'); return f(); })()", "42")]
+    // A nested direct eval inside the evalled function sees the outer eval's bindings as well.
+    [InlineData("(function(){ var b = 42; var f = eval('0,function(){ return eval(\"0,function(){ return b; }\"); }'); return f()(); })()", "42")]
+    public void AClosureCreatedByAnEvalledFunction_KeepsTheEvalsBindings(string source, string expected)
+    {
+        Assert.Equal(expected, Eval(source));
+    }
+
+    // `typeof` resolves through its own non-throwing path, which did not consult the capture: it
+    // answered "undefined" for a name the very next read produced a value for.
+    [Fact]
+    public void Typeof_AgreesWithTheRead()
+    {
+        Assert.Equal("number,42", Eval("(function(){ var b = 42; var f = eval('0,function(){ return typeof b + \",\" + b; }'); return f(); })()"));
+    }
+
+    [Fact]
+    public void Typeof_StillAnswersUndefined_ForAGenuinelyUndeclaredName()
+    {
+        Assert.Equal("undefined", Eval("(function(){ var b = 1; var f = eval('0,function(){ return typeof zzNopeTypeof; }'); return f(); })()"));
+    }
 }

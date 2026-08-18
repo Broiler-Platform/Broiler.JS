@@ -730,6 +730,20 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     /// <summary>Snapshots the direct-eval bindings in scope, for a function to carry.</summary>
     public Dictionary<uint, JSVariable>[] CaptureDirectEvalBindings()
     {
+        // The eval scope the RUNNING function carries is the lexical environment of every function
+        // it creates, and it is the only trace of the eval left once the eval has returned. A
+        // function the eval produced keeps working — it carries the snapshot — but a function
+        // *that* function creates when it runs was, until this line, handed nothing:
+        //
+        //   f = eval("0,function(){ return function(){ return b; }; }");  f()()  // b is not defined
+        //
+        // The inner function is written inside the eval's scope exactly as the outer one is, so it
+        // must carry the same bindings. Collected FIRST, so an inner scope's binding of the same
+        // name overwrites it below. (google.com's bot-detection VM evaluates its opcode handlers
+        // this way and builds a closure inside them on nearly every step, which is what made this
+        // a "g is not defined" there.)
+        var carried = capturedDirectEvalScope;
+
         // The caller's bindings reach a direct eval as an overlay on globalVars, installed for the
         // duration of the eval and withdrawn when it returns. That is why a closure the eval
         // creates loses them: nothing is wrong while the eval runs, and the names simply cease to
@@ -737,10 +751,24 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         if (activeDirectEvalScopes.Count == 0)
         {
             var fromFrames = Frames.CaptureDirectEvalBindings();
-            return fromFrames;
+            if (carried == null)
+                return fromFrames;
+
+            // Frame bindings are inner to the carried snapshot, so they come after it: the walk in
+            // TryResolveCapturedDirectEvalBinding runs from the end and takes the first hit.
+            return fromFrames == null ? carried : [.. carried, .. fromFrames];
         }
 
         var bindings = new Dictionary<uint, JSVariable>();
+        if (carried != null)
+        {
+            foreach (var map in carried)
+            {
+                foreach (var pair in map)
+                    bindings[pair.Key] = pair.Value;
+            }
+        }
+
         // Outermost first, so an inner scope's binding overwrites an outer one of the same name.
         for (var i = 0; i < activeDirectEvalScopes.Count; i++)
             activeDirectEvalScopes[i].CollectOverlayBindings(bindings);
@@ -1587,6 +1615,15 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
 
         if (!GetInternalProperty(name).IsEmpty)
             return this[name];
+
+        // The same last resort ResolveIdentifierWithoutWithScopes takes, so `typeof` agrees with a
+        // read: a closure a direct eval created resolves the eval site's bindings, and answering
+        // "undefined" here said the binding did not exist while reading it produced its value.
+        // A DELETED binding is the one case where the two must differ — `delete` unresolves the
+        // reference, so a read throws and `typeof` is "undefined" — and an uninitialized one still
+        // throws through GetValue, which is what `typeof` owes a binding in its temporal dead zone.
+        if (TryResolveCapturedDirectEvalBinding(name, out var capturedBinding) && !capturedBinding.IsDeleted)
+            return capturedBinding.GetValue();
 
         return JSUndefined.Value;
     }

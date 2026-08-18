@@ -1032,8 +1032,57 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             CallPathDiagnostics.RecordCallbackCall();
 
         using var realmScope = EnterRealm();
+        // A native callback site is still a [[Call]], and the scopes a function CLOSED OVER are
+        // part of what it is. Skipping them here made a closure resolve its free names when
+        // called directly and fail the moment it was handed to Array.prototype.map,
+        // Set/Map.prototype.forEach, a JSON reviver or replacer — `eval("0,function(x){ return
+        // b + x; }")` threw "b is not defined" from inside map and returned b + x from a plain
+        // call, and a function created inside `with (o)` lost o the same way.
+        using var capturedScopes = EnterCapturedScopes();
         var invocationDelegate = SelectInvocationDelegate();
         return JSTailCall.Resolve((CoerceThisOnInvoke ? invocationDelegate(a.OverrideThis(CoerceNonStrictThis(a.This))) : invocationDelegate(in a)) ?? JSUndefined.Value);
+    }
+
+    /// <summary>
+    /// Re-establishes, for the duration of one invocation, the scopes this function closed over
+    /// but which are not part of its compiled body: a captured <c>with</c> chain, the <c>with</c>
+    /// lexical fallbacks, and the bindings of the direct eval that created it. The same four
+    /// scopes <see cref="InvokeFunction"/> pushes, in the same order.
+    /// </summary>
+    /// <remarks>
+    /// Returns a disposable that does nothing for a function carrying none of them — which is
+    /// almost every function — so the callback path keeps costing what it did.
+    /// </remarks>
+    private CapturedScopeGuard EnterCapturedScopes()
+    {
+        if (CapturedDirectEvalBindings == null && CapturedWithObjects == null && CapturedWithFallbackScopes == null)
+            return default;
+
+        if (JSEngine.Current is not JSContext context)
+            return default;
+
+        return new CapturedScopeGuard(
+            context.Options.ScriptHostMode ? context.SuspendWithScopes() : null,
+            context.PushWithFallbackScopes(CapturedWithFallbackScopes),
+            context.PushWithScopes(CapturedWithObjects),
+            context.PushDirectEvalBindings(CapturedDirectEvalBindings));
+    }
+
+    // Disposes the four scopes in the reverse order they were established, which is what the
+    // stacked `using var` declarations in InvokeFunction do.
+    private readonly struct CapturedScopeGuard(
+        IDisposable suspendedWithScope,
+        IDisposable withFallbackScope,
+        IDisposable withScope,
+        IDisposable directEvalScope) : IDisposable
+    {
+        public void Dispose()
+        {
+            directEvalScope?.Dispose();
+            withScope?.Dispose();
+            withFallbackScope?.Dispose();
+            suspendedWithScope?.Dispose();
+        }
     }
 
     // Function.prototype has no own `valueOf`: per the spec it simply inherits
