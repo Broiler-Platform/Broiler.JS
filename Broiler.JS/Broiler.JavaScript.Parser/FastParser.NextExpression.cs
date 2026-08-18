@@ -377,7 +377,17 @@ partial class FastParser
                 if (OperatorPrecedence(type) >= floor)
                     return true;
 
-                stream.Consume();
+                // The operator is NOT consumed here. Both recursions below re-enter
+                // NextExpression with it as `previousType`, and the entry does
+                // `stream.CheckAndConsume(previousType)` — so consuming it here as well
+                // left CheckAndConsume pointed at the first token of the right operand.
+                // That is harmless for a token of some other type, which is why this
+                // mostly worked, but `+` and `-` are also prefix operators: in
+                // `a * b - -1` the operand's unary minus is the same token type as the
+                // binary operator, so CheckAndConsume swallowed it and the expression
+                // silently parsed as `a * b - 1`. Only the FIRST operator of this loop
+                // was affected — later iterations already relied on the recursion to
+                // consume — which is why `x - -1 - -1` lost exactly one negation.
                 do
                 {
                     if (Precedes(type, previousType))
