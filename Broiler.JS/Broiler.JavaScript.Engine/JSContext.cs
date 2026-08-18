@@ -1049,6 +1049,35 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         return value;
     }
 
+    /// <summary>
+    /// <c>varEnv.SetMutableBinding(name, value, false)</c> for a direct eval running in a function's
+    /// local variable environment: updates the existing binding, and RE-CREATES one that a `delete`
+    /// inside the same eval body removed — a Declarative Environment Record's SetMutableBinding with
+    /// S = false performs CreateMutableBinding(N, true) + InitializeBinding(N, V) when the binding is
+    /// gone. Assigning the compile-time cell instead wrote into a JSVariable that DeleteIdentifier
+    /// had already torn down and unregistered, so the enclosing function's own read of the name threw
+    /// (test262 staging/sm/lexical-environment/block-scoped-functions-annex-b-eval).
+    /// </summary>
+    public JSValue SetDirectEvalVarBinding(in KeyString name, JSValue value)
+    {
+        if (TryResolveDirectEvalBinding(name, out var binding) && !binding.IsDeleted)
+        {
+            binding.Value = value;
+            return value;
+        }
+
+        // The binding is gone — the eval's own `delete F` removed it from the frame's table and
+        // tore the cell down. SetMutableBinding with S = false re-creates it (CreateMutableBinding
+        // + InitializeBinding), so publish a live one under the name again; without it the
+        // enclosing function's read of F threw "F is not defined" even though the block-level
+        // declaration had just run (test262
+        // staging/sm/lexical-environment/block-scoped-functions-annex-b-eval).
+        if (directEvalLocalVarEnvironmentDepth > 0 && TryGetCurrentDirectEvalActivationOwner(out var owner))
+            Frames.RegisterDirectEvalBinding(in owner, new JSVariable(value, name.Value));
+
+        return value;
+    }
+
     // Keep any registered global variable slot in sync with the global-object
     // property so identifier resolution (which consults globalVars first) does
     // not observe a stale binding when a global function declaration replaces an

@@ -150,6 +150,21 @@ public class JSVariable
     internal bool IsInitialized => _isInitialized;
 
     /// <summary>
+    /// Whether <c>delete</c> has removed this binding from its variable environment. A store that
+    /// implements SetMutableBinding has to notice, because a Declarative Environment Record
+    /// re-creates a binding that is no longer there rather than writing into the torn-down cell.
+    /// </summary>
+    public bool IsDeleted => _deleted;
+
+    /// <summary>
+    /// Undoes <see cref="MarkDeleted"/>. A store that implements SetMutableBinding with S = false
+    /// re-creates a binding `delete` removed (CreateMutableBinding + InitializeBinding) rather than
+    /// writing into the torn-down cell, and reusing the same object keeps every reference that was
+    /// compiled against it addressing the binding the environment now holds.
+    /// </summary>
+    public void Undelete() => _deleted = false;
+
+    /// <summary>
     /// Tears down a binding that <c>delete</c> has removed from its (function) variable
     /// environment. A reference still holding this binding object — e.g. a closure created
     /// inside the same direct eval (<c>eval('delete x; cb=()=>x; var x;')</c>) — must then
@@ -157,7 +172,25 @@ public class JSVariable
     /// (CreateMutableBinding(name, true)) local bindings. Reuses the uninitialized state so
     /// the hot <see cref="Value"/> read stays a single branch.
     /// </summary>
-    public void MarkDeleted() => _deleted = true;
+    public virtual void MarkDeleted() => _deleted = true;
+
+    /// <summary>
+    /// Returns this binding to the uninitialized state. <see cref="EvalShadowVariable"/> uses it to
+    /// give up ownership of a value an eval introduced and <c>delete</c> then removed, so the name
+    /// resolves to the binding the shadow forwards to again instead of becoming unresolvable.
+    /// </summary>
+    private protected void Uninitialize()
+    {
+        _isInitialized = false;
+        _value = JSUndefined.Value;
+    }
+
+    /// <summary>
+    /// Reads this binding for an ordinary (throwing) IdentifierReference. Identical to
+    /// <see cref="GetValue"/> for every binding except <see cref="EvalShadowVariable"/>, which
+    /// forwards to a binding a <c>delete</c> may have removed and must then throw.
+    /// </summary>
+    public virtual JSValue GetValueChecked() => GetValue();
 
     private string ReferenceErrorMessage
         => _deleted
@@ -353,6 +386,31 @@ public class JSVariable
         }
     }
 
+    /// <summary>
+    /// A read of a global-object-backed binding that honours deletion. An eval-introduced global
+    /// <c>var</c> is created configurable, so once <c>delete</c> removes the property the reference
+    /// is unresolvable and the read owes a ReferenceError rather than the absent property's
+    /// <c>undefined</c> — the rule <c>JSContext.ResolveGlobalVarRead</c> applies to a read that
+    /// resolved statically. <see cref="EvalShadowVariable"/> forwards through this binding instead
+    /// of resolving statically, so it needs the same rule here.
+    /// </summary>
+    internal JSValue GlobalValueChecked
+    {
+        get
+        {
+            if (_isInitialized && GetCurrentContext?.Invoke() is JSObject ctx)
+            {
+                if (key.Value == null)
+                    key = KeyStrings.GetOrCreate(Name);
+
+                if (ctx.GetInternalProperty(key, false).IsEmpty)
+                    throw (NewReferenceErrorFactory ?? throw new InvalidOperationException("JSVariable.NewReferenceErrorFactory delegate is not initialized. Ensure the Engine assembly module initializer has run."))
+                        (Name.IsEmpty ? "variable is not defined" : $"{Name.Value} is not defined");
+            }
+
+            return GlobalValue;
+        }
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public JSVariable(Exception e, string name) : this(e is JSException je ? je.Error : JSException.From(e).Error, name) { }

@@ -32,7 +32,28 @@ internal sealed class ObjectShape
     public int SlotCount => slots.Count;
     public bool IsDictionary { get; }
 
+    /// <summary>
+    /// Most named properties an object tracks in a shape before it converts to dictionary mode.
+    /// <see cref="Add"/> copies the parent's whole slot map per transition, so a chain of n
+    /// additions costs sum(i) = n²/2 entries — and every shape it mints stays reachable from the
+    /// static <see cref="Empty"/> through <see cref="transitions"/>, so that cost is LIVE for the
+    /// life of the process rather than garbage a collection can take back. An object that
+    /// accumulated 15 000 named properties therefore held ~2.3 GiB of unreclaimable memory
+    /// (test262 staging/sm/Proxy/ownkeys-linear builds exactly that target, and CI reported it out
+    /// of memory); capping the chain bounds the cost at 128²/2 × ~21 B ≈ 172 KiB. The value
+    /// matches V8's kMaxFastProperties, and past it an object is simply dictionary-shaped — the
+    /// behaviour it had before shape tracking existed.
+    /// </summary>
+    public const int MaxSlots = 128;
+
     public bool TryGetSlot(uint key, out int slot) => slots.TryGetValue(key, out slot);
+
+    /// <summary>
+    /// Whether adding <paramref name="key"/> would push this shape past <see cref="MaxSlots"/>.
+    /// False for a key the shape already holds, so overwriting a property on a full object never
+    /// abandons its shape.
+    /// </summary>
+    public bool WouldExceedSlotLimit(uint key) => slots.Count >= MaxSlots && !slots.ContainsKey(key);
 
     /// <summary>
     /// This shape's keys indexed by slot, which is also their insertion order.

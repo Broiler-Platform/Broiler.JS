@@ -149,7 +149,15 @@ public partial class JSArray
         var (locales, options) = a.Get2();
         StringBuilder sb = new();
 
-        var length = (uint)@this.Length;
+        // §23.1.3.32 step 2: len is LengthOfArrayLike(array) — ToLength(? Get(array, "length")).
+        // JSObject.Length is a raw ToUint32 probe of the receiver's OWN property table that answers
+        // -1 when there is no own "length"; `(uint)(-1)` is 4294967295, so a receiver whose length
+        // is simply absent — `Array.prototype.toLocaleString.call({})` — drove a 4.3-billion
+        // iteration loop appending commas until the process ran out of memory (test262
+        // staging/sm/Array/toLocaleString-01.js). The same held for an inherited length, a Proxy
+        // and a boxed primitive. GetArrayLikeLength does the real [[Get]] and ToLength, which is
+        // what Join above already uses.
+        var length = GetArrayLikeLength(@this);
         var toLocaleString = KeyStrings.GetOrCreate("toLocaleString");
         for (uint i = 0; i < length; i++)
         {

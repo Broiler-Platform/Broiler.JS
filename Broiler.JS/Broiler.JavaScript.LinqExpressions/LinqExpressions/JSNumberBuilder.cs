@@ -46,7 +46,16 @@ public class JSNumberBuilder
         One = Expression.Field(null, type.GetField("One"));
         MinusOne = Expression.Field(null, type.GetField("MinusOne"));
         Two = Expression.Field(null, type.GetField("Two"));
+
+        Create = (Func<double, JSValue>)_createLiteral.CreateDelegate(typeof(Func<double, JSValue>));
     }
+
+    /// <summary>
+    /// The value of a NumericLiteral, through the same <c>JSNumber.CreateLiteral</c> that
+    /// <see cref="NewLiteral"/> emits a call to but without generating a method. Null until the
+    /// BuiltIns assembly has registered its Number type.
+    /// </summary>
+    public static Func<double, JSValue> Create { get; private set; }
 
     /// <summary>
     /// Emits the creation of a number. Routed through the factory rather than the

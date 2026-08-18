@@ -66,7 +66,19 @@ partial class FastCompiler
                 // its own JSVariable storage like a function local — so it must use
                 // GetValue/SetValue. Treating it as global made the shadow read the
                 // (absent) global-object property and observe undefined.
-                outerIsGlobal = s.Function == null && !v.IsLexical;
+                //
+                // A sloppy direct eval running in a FUNCTION's variable environment also has
+                // Function == null on its program scope, but its top-level `var`s live in that
+                // function's activation as ordinary JSVariable storage (VisitProgram →
+                // JSContext.GetOrCreateDirectEvalLocalBinding), not on the global object.
+                // Forwarding those through GlobalValue read and wrote the global property instead
+                // of the caller's binding, and the getter's `_value = ctx[key]` write-back then
+                // clobbered the caller's own cell with the global value (test262
+                // staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode saw the global 17
+                // where the eval's `var x = 4` had already reached the caller).
+                outerIsGlobal = s.Function == null
+                    && !v.IsLexical
+                    && !(isDirectEvalCompilation && usesDirectEvalLocalVarEnvironment);
                 break;
             }
 
@@ -401,7 +413,11 @@ partial class FastCompiler
         }
 
         if (TryResolveEvalShadow(identifier.Name, out var shadow))
-            return shadow.Expression;
+            // Same split as the static path below: a throwing read takes the dedicated read
+            // expression, which raises ReferenceError once the forwarded-to global var has been
+            // deleted; `typeof` (throwIfMissing == false) keeps the plain Expression, which must
+            // answer undefined rather than throw.
+            return throwIfMissing && shadow.ReadExpression != null ? shadow.ReadExpression : shadow.Expression;
 
         if (TryGetStaticIdentifierVariable(identifier, out var variable) && variable != null)
             // A throwing read prefers the binding's dedicated read expression when it has one

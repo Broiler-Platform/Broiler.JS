@@ -462,7 +462,16 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         if (currentBinding == null)
             return result;
 
-        if (isDirectEvalCompilation && !IsStrictMode)
+        // Only the eval's VAR-environment binding is configurable: EvalDeclarationInstantiation
+        // creates it with CreateMutableBinding(N, true), so `delete f` removes it. A BLOCK-nested
+        // declaration's own binding is the block's lexical one (BlockDeclarationInstantiation →
+        // CreateMutableBinding(N, false)); `delete` of that returns false and removes nothing.
+        // Marking it deletable made `eval("{ function q(){} delete q; }")` answer true and actually
+        // tear the binding down (test262
+        // staging/sm/lexical-environment/block-scoped-functions-annex-b-eval). The eval program's
+        // own scope is the one directly under the compiler root — anything deeper is a block or
+        // switch scope.
+        if (isDirectEvalCompilation && !IsStrictMode && scope.Top.Parent == scope.Top.RootScope)
             currentBinding.IsDeletable = true;
 
         using var temp = scope.Top.GetTempVariable(typeof(JSValue));
@@ -636,6 +645,14 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
                 var evalProgramBinding = GetOrCreateDirectEvalProgramBinding(name);
                 if (evalProgramBinding != null && evalProgramBinding != currentBinding)
                     statements.Add(BExpression.Assign(evalProgramBinding.Expression, value));
+
+                // The compile-time cell above is what reads inside this eval were compiled
+                // against; the store the spec asks for is varEnv.SetMutableBinding(F, funcObj,
+                // false), which a declarative record answers by RE-CREATING a binding that
+                // `delete` removed. Assigning only the cell left the name unresolvable, so the
+                // enclosing function's `return q` threw after `eval("(delete q); { function q(){} }")`
+                // (test262 staging/sm/lexical-environment/block-scoped-functions-annex-b-eval).
+                statements.Add(JSContextBuilder.SetDirectEvalVarBinding(KeyOfName(name), value));
             }
             else
             {

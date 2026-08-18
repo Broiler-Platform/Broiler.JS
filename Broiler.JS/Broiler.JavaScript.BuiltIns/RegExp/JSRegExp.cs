@@ -169,6 +169,18 @@ public partial class JSRegExp : JSObject, IJSRegExp
             return "(?:)";
 
         var sb = new StringBuilder(pattern.Length);
+        // EscapeRegExpPattern (§22.2.6.13) only has to keep the result parseable between
+        // the two `/` delimiters: a bare `/` and the four line terminators are escaped,
+        // and every other code unit is carried through unchanged. A SURROGATE in
+        // particular — lone or part of a pair — is an ordinary SourceCharacter, so
+        // rewriting it as `\uHHHH` would change `source` into text the pattern never
+        // contained. test262 asserts the identity over every BMP code unit
+        // (language/literals/regexp/S7.8.5_A{1.1,1.4,2.1,2.4}_T2,
+        // annexB/built-ins/RegExp/RegExp-{leading,trailing}-escape-BMP), and escaping a
+        // pair additionally made `/😀/.source` six characters wide.
+        // (RegExp.escape, above, is a different function: it produces a pattern from
+        // arbitrary text, and there a lone surrogate genuinely must be escaped.)
+        //
         // Whether the cursor is inside an unescaped character class `[...]`. A bare
         // `/` only needs escaping outside a class — inside one it is an ordinary
         // member and must be preserved verbatim (test262 sm/RegExp/escape).
@@ -194,10 +206,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     continue;
 
                 sb.Append('\\');
-                if (char.IsSurrogate(next))
-                    AppendUnicodeEscape(sb, next);
-                else
-                    sb.Append(next);
+                sb.Append(next);
                 continue;
             }
 
@@ -220,12 +229,6 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // A bare line terminator likewise cannot appear literally in the source.
             if (TryAppendLineTerminatorEscape(sb, c))
                 continue;
-
-            if (char.IsSurrogate(c))
-            {
-                AppendUnicodeEscape(sb, c);
-                continue;
-            }
 
             sb.Append(c);
         }
@@ -901,12 +904,6 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 // short forms before the surrogate-aware class transforms run.
                 pattern = TransformUnicodePropertyEscapes(pattern, unicodeSets, ignoreCase);
                 pattern = TransformUnicodeWordBoundaries(pattern, ignoreCase);
-                // Inline modifiers disable .NET ECMAScript mode, so `\w`/`\W` need the ECMAScript word
-                // set re-imposed (effective-ignoreCase aware). Only needed when modifiers are present —
-                // a plain /u pattern keeps ECMAScript mode and its ASCII `\w`. Runs before the
-                // surrogate-aware `\W` expansion below so each `\w`/`\W` is rewritten exactly once.
-                if (hasInlineModifiers)
-                    pattern = TransformUnicodeWordClassEscapes(pattern, ignoreCase);
                 pattern = TransformUnicodeDot(pattern, dotAll);
                 // Transform character class escapes (\S, \W, \D) outside character
                 // classes so they also match supplementary-plane code points (surrogate pairs).
@@ -1012,6 +1009,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // that consumes no input does exactly zero iterations and never sets the captures
             // inside it. .NET keeps those captures, so rewrite such a quantifier to `{0}`.
             pattern = RewriteZeroWidthMinZeroQuantifiers(pattern);
+
+            // Give `\d` / `\D` / `\w` / `\W` their ECMAScript sets, which neither of .NET's own
+            // dialects supplies: without RegexOptions.ECMAScript `\d` is every Nd digit and `\w`
+            // every Unicode word character, and WITH it .NET's ECMA word set still contains U+0130.
+            // Runs here, after the Unicode class transforms, so an out-of-class `\D` / `\W` is
+            // rewritten inside the surrogate-pair wrapper those transforms put around it rather
+            // than losing it.
+            pattern = TransformEcmaScriptClassEscapes(pattern, ignoreCase, unicode || unicodeSets);
 
             // Final transform: rename capturing groups to synthetic, source-ordered
             // names so .NET's group numbering and duplicate-name handling match
@@ -2247,24 +2252,72 @@ public partial class JSRegExp : JSObject, IJSRegExp
         return sb.ToString();
     }
 
+    // ECMAScript's `\d` and `\w` are ASCII sets — `[0-9]` and `[A-Za-z0-9_]` — and nothing
+    // widens them except /iu and /iv, which add the two code points whose simple case folding
+    // lands inside the ASCII word set: U+017F (ſ) and U+212A (K). .NET agrees only under
+    // RegexOptions.ECMAScript; in its default mode `\d` is every Nd digit and `\w` every
+    // Unicode word character, so `/\d/u` matched U+0660 and `/\w/u` matched é
+    // (test262 built-ins/RegExp/CharacterClassEscapes/character-class-{digit,non-digit,word,
+    // non-word}-class-escape-*). ParseFlags drops ECMAScript mode for `u`, `v` and `s` (the
+    // option is illegal beside Singleline and the u/v transforms need the default dialect),
+    // and an inline modifier group drops it too — so every one of those flags silently
+    // widened both classes, inside a character class and out.
+    //
+    // Re-impose the ECMAScript sets textually whenever the mode is off. The negated forms are
+    // written as the complement over UTF-16 code units so they survive inside a class, where
+    // `[^…]` cannot be nested.
+    private const string EcmaWordChars = "A-Za-z0-9_";
+    private const string EcmaWordCharsIgnoreCase = @"A-Za-z0-9_\u017F\u212A";
+    private const string EcmaNonDigitRanges = @"\u0000-\u002F\u003A-\uFFFF";
+    private const string EcmaNonWordRanges =
+        @"\u0000-\u002F\u003A-\u0040\u005B-\u005E\u0060\u007B-\uFFFF";
+    // The same complement with U+017F and U+212A carved out of the trailing span.
+    private const string EcmaNonWordRangesIgnoreCase =
+        @"\u0000-\u002F\u003A-\u0040\u005B-\u005E\u0060\u007B-\u017E\u0180-\u2129\u212B-\uFFFF";
+
     /// <summary>
-    /// An inline modifier group `(?i:…)` / `(?-i:…)` forces the whole pattern out of .NET's ECMAScript
-    /// mode, so `\w` / `\W` revert to .NET's broad Unicode word set instead of the ECMAScript one. In
-    /// Unicode mode re-impose the ECMAScript word set — ASCII `[A-Za-z0-9_]`, extended with U+017F (ſ)
-    /// and U+212A (K) only where the EFFECTIVE ignoreCase is on — tracking the (?i:…)/(?-i:…) scopes so
-    /// each `\w`/`\W` uses the flag in effect at its position (test262
-    /// regexp-modifiers/{add,remove}-ignoreCase-affects-slash-{lower,upper}-w). `\W` keeps matching a
-    /// surrogate pair (an astral code point is a non-word character).
+    /// Rewrites every `\d` / `\D` / `\w` / `\W` — inside a character class and outside one — to the
+    /// ECMAScript set it denotes, so .NET never gets to apply a set of its own. The ſ/K extension
+    /// applies only in Unicode mode and only where the EFFECTIVE ignoreCase is on, so the
+    /// (?i:…)/(?-i:…) scopes are tracked to know which is which.
+    /// <para>
+    /// An emitted class is wrapped in `(?-i:…)` wherever ignoreCase is in effect. .NET would
+    /// otherwise case-fold the class itself and pull U+212A (KELVIN SIGN) into `[A-Za-z0-9_]`
+    /// through `K` — `/\w/i` must not match it, and `/\w/iu` must, which is exactly the difference
+    /// the explicit ſ/K members carry. The ASCII word set is closed under ASCII case, so
+    /// suppressing the folding costs nothing else.
+    /// </para>
+    /// <para>
+    /// The surrogate-pair alternative that gives an out-of-class `\D` / `\W` its code-point
+    /// semantics in Unicode mode is already wrapped around these escapes by
+    /// <see cref="TransformUnicodeCharClassEscapes"/>, so this substitution happens inside that
+    /// wrapper and must not add one of its own.
+    /// </para>
     /// </summary>
-    private static string TransformUnicodeWordClassEscapes(string pattern, bool ignoreCase)
+    private static string TransformEcmaScriptClassEscapes(string pattern, bool ignoreCase, bool unicodeMode)
     {
-        if (string.IsNullOrEmpty(pattern))
+        if (string.IsNullOrEmpty(pattern) || pattern.IndexOf('\\') < 0)
             return pattern;
 
-        static string Word(bool ic, bool negated)
+        string Replacement(char escape, bool ic, bool inClass)
         {
-            var chars = ic ? @"A-Za-z0-9_ſK" : "A-Za-z0-9_";
-            return negated ? $@"(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[^{chars}])" : $"[{chars}]";
+            var wordChars = unicodeMode && ic ? EcmaWordCharsIgnoreCase : EcmaWordChars;
+            var nonWordRanges = unicodeMode && ic ? EcmaNonWordRangesIgnoreCase : EcmaNonWordRanges;
+            var members = escape switch
+            {
+                'd' => "0-9",
+                'D' => EcmaNonDigitRanges,
+                'w' => wordChars,
+                _ => nonWordRanges,
+            };
+
+            // Inside a class the members are spliced into the enclosing `[...]`; a `(?-i:…)`
+            // group cannot go there, so a class that mixes `\w` with case-sensitive members
+            // keeps .NET's folding — the same behaviour as before this transform.
+            if (inClass)
+                return members;
+
+            return ic ? $"(?-i:[{members}])" : $"[{members}]";
         }
 
         StringBuilder sb = null;
@@ -2277,16 +2330,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
         {
             var c = pattern[i];
 
-            // Skip an escaped pair first (in and out of classes) so `\]` cannot mis-close a class and a
-            // class-internal `\w` is left to the class transforms; only an out-of-class `\w`/`\W` is rewritten.
             if (c == '\\' && i + 1 < pattern.Length)
             {
                 var next = pattern[i + 1];
-                if (!inClass && (next == 'w' || next == 'W'))
+                if (next is 'd' or 'D' or 'w' or 'W')
                 {
                     sb ??= new StringBuilder(pattern.Length + 64);
                     sb.Append(pattern, start, i - start);
-                    sb.Append(Word(ignoreCaseStack.Peek(), negated: next == 'W'));
+                    sb.Append(Replacement(next, ignoreCaseStack.Peek(), inClass));
                     start = i + 2;
                 }
 

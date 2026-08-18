@@ -241,7 +241,17 @@ partial class FastCompiler
                     // result (UpdateEmpty). Declarations synthesized inside desugared
                     // for-in/for-of bodies are likewise untouched.
 
-                    blockList.Add(CallStackItemBuilder.Step(scope.Context, scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
+                    // A statement that compiled to nothing — an empty block, an EmptyStatement —
+                    // emits no IL, so its CallFrames.Step would record a source position nothing
+                    // can observe: no code runs between it and the next statement's Step, and an
+                    // empty statement cannot throw. Emitted anyway, it was the ENTIRE IL
+                    // contribution of an empty block, so a script of N of them produced one
+                    // DynamicMethod with N call sites. At N = 2^21 that is tens of megabytes of IL
+                    // in a single method body, which RyuJIT expands past 11 GB and the OOM killer
+                    // ends the process with no output at all
+                    // (test262 staging/sm/regress/regress-610026.js).
+                    if (exp.NodeType != BExpressionType.Empty)
+                        blockList.Add(CallStackItemBuilder.Step(scope.Context, scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
                     blockList.Add(exp);
                 }
             }

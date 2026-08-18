@@ -988,6 +988,10 @@ public class FastFunctionScope : LinkedStackItem<FastFunctionScope>
             Name = name.Value,
             Variable = pe,
             Expression = EvalShadowBuilder.GetValue(pe),
+            // A throwing read must observe a `delete` of the (configurable) eval-introduced global
+            // var this shadow forwards to; `typeof` and the write path keep Expression, which owes
+            // an absent property `undefined` rather than a throw.
+            ReadExpression = EvalShadowBuilder.GetValueChecked(pe),
             Create = true,
             IsEvalShadow = true,
             OwnerFunction = Function,

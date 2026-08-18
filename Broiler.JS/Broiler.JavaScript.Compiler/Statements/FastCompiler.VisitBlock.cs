@@ -207,7 +207,9 @@ partial class FastCompiler
             if (exp == null)
                 continue;
 
-            blockList.Add(CallStackItemBuilder.Step(scope.Context, scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
+            // See VisitProgram: a statement that compiled to nothing gets no debug Step either.
+            if (exp.NodeType != BExpressionType.Empty)
+                blockList.Add(CallStackItemBuilder.Step(scope.Context, scope.StackItem, stmt.Start.Start.Line, stmt.Start.Start.Column));
             blockList.Add(exp);
         }
 

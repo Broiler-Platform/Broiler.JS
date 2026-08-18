@@ -219,10 +219,12 @@ public partial class JSObject : JSValue
         if (!SupportsShapeTracking || objectShape.IsDictionary)
             return;
 
-        if (key.Metadata.IsPrivateName)
+        if (key.Metadata.IsPrivateName || objectShape.WouldExceedSlotLimit(key.Key))
         {
             // A private name is per-class-evaluation, so admitting one would mint a shape per
             // class instantiation rather than share a chain. Not worth a slot it cannot use.
+            // Past ObjectShape.MaxSlots the chain's O(n²) LIVE cost outweighs the inline-cache
+            // win, so the object goes dictionary-shaped instead.
             AbandonObjectShape();
             NotifyNamedPropertyMutation();
             return;
@@ -257,7 +259,9 @@ public partial class JSObject : JSValue
         if (objectShape.IsDictionary
             || value == null
             || key.Metadata.IsPrivateName
-            || !IsShapeTrackableData(attributes))
+            || !IsShapeTrackableData(attributes)
+            // Past ObjectShape.MaxSlots the chain's O(n²) LIVE cost outweighs the inline-cache win.
+            || objectShape.WouldExceedSlotLimit(key.Key))
         {
             AbandonObjectShape();
             NotifyNamedPropertyMutation();
