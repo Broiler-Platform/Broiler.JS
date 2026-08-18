@@ -1,6 +1,7 @@
 ﻿extern alias BRegex;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System;
@@ -3859,26 +3860,33 @@ public partial class JSRegExp : JSObject, IJSRegExp
             return fragment.ToString();
         }
 
-        var positive = BuildPositiveCodePointMatcher(ranges);
         if (!negated)
-            return positive;
+            return BuildPositiveCodePointMatcher(ranges);
 
-        // Under ignoreCase, `\P{X}` matches the case closure of the COMPLEMENT of X
-        // (22.2.2.7.1: ch matches iff some `a` NOT in X has Canonicalize(a) ==
-        // Canonicalize(ch)). The negative-lookahead form below is wrong there: a
-        // `(?!positive)` lookahead has the active IgnoreCase applied to `positive`, so it
-        // rejects every ch that case-folds into X — e.g. `(?i:\P{Lu})` would reject "a"
-        // because "a" folds to "A" ∈ Lu, and reject "A" too. Emit a positive matcher over
-        // the COMPLEMENT ranges instead: .NET applies the active IgnoreCase to that set,
-        // yielding the correct case-closed-complement (so "a" and "A" both match). Without
-        // ignoreCase the two forms are equivalent, so keep the lookahead there — it is the
-        // shape the surrogate/lone-surrogate handling was tuned against.
-        if (ignoreCase)
-            return BuildPositiveCodePointMatcher(ComplementCodePointRanges(ranges));
+        // `\P{X}` matches one code point that is not in X, which is one code point in the
+        // COMPLEMENT of X — so it is the same matcher over complemented ranges, and no
+        // negative lookahead is needed.
+        //
+        // Under ignoreCase it has to be built this way: a `(?!positive)` lookahead has the
+        // active IgnoreCase applied to `positive`, so it rejects every ch that case-folds
+        // INTO X — `(?i:\P{Lu})` would reject "a" because "a" folds to "A" ∈ Lu, and reject
+        // "A" too, whereas 22.2.2.7.1 asks for the case closure of the complement (both
+        // match). .NET applies IgnoreCase to the complement set, which is exactly that.
+        //
+        // Without ignoreCase the two forms are equivalent, and this one is far cheaper: the
+        // lookahead re-ran the whole positive alternation at every position before the
+        // engine could conclude the code point was not in X, which is what made the negated
+        // half of the test262 property-escape files an order of magnitude slower than the
+        // positive half (issue #966).
+        var complementRanges = ComplementCodePointRanges(ranges);
 
-        // Match one code point that is NOT in the set: reject the set, then consume
-        // a full code point (a surrogate pair or any single code unit).
-        return $"(?:(?!{positive})(?:[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]|[\\s\\S]))";
+        // `\P{Any}`: no code point lies outside the set, so the escape matches nothing. An
+        // empty range list would otherwise build the empty group `(?:)`, which matches the
+        // empty string everywhere — `/\P{Any}/iu.test("")` returned true, and
+        // `"a".replace(/\P{Any}/giu, "X")` returned "XaX".
+        return complementRanges.Length == 0
+            ? "(?!)"
+            : BuildPositiveCodePointMatcher(complementRanges);
     }
 
     /// <summary>
@@ -3906,7 +3914,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
     {
         var bmp = new StringBuilder();
         var loneSurrogates = new List<string>();
-        var supplementary = new List<string>();
+        // Supplementary members are collected per leading surrogate first and turned into
+        // alternatives only at the end, so the whole property contributes one alternative
+        // per *lead* rather than one per range — see CollectSupplementaryRange.
+        var byLead = new SortedDictionary<int, List<(int Lo, int Hi)>>();
 
         foreach (var (lo, hi) in ranges)
         {
@@ -3915,13 +3926,15 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 AppendBmpRange(bmp, loneSurrogates, lo, Math.Min(hi, 0xFFFF));
                 if (hi <= 0xFFFF)
                     continue;
-                AppendSupplementaryRange(supplementary, 0x10000, hi);
+                CollectSupplementaryRange(byLead, 0x10000, hi);
             }
             else
             {
-                AppendSupplementaryRange(supplementary, lo, hi);
+                CollectSupplementaryRange(byLead, lo, hi);
             }
         }
+
+        var supplementary = EmitSupplementaryAlternatives(byLead);
 
         var sb = new StringBuilder("(?:");
         var first = true;
@@ -3930,14 +3943,21 @@ public partial class JSRegExp : JSObject, IJSRegExp
             sb.Append('[').Append(bmp).Append(']');
             first = false;
         }
-        foreach (var alt in loneSurrogates)
+        // Supplementary alternatives before the lone-surrogate ones. Every alternative here
+        // is disjoint from every other — the BMP class has U+D800..U+DFFF split out of it, a
+        // lone-surrogate alternative only matches a unit that does NOT form a pair, and a
+        // supplementary alternative only matches one that does — so at most one of them can
+        // match at a position and their order cannot change what is matched, only how long
+        // the engine takes to find it. The lone-surrogate alternatives carry the lookarounds,
+        // and astral input is far more common than an unpaired surrogate, so they go last.
+        foreach (var alt in supplementary)
         {
             if (!first)
                 sb.Append('|');
             sb.Append(alt);
             first = false;
         }
-        foreach (var alt in supplementary)
+        foreach (var alt in loneSurrogates)
         {
             if (!first)
                 sb.Append('|');
@@ -3979,10 +3999,24 @@ public partial class JSRegExp : JSObject, IJSRegExp
     }
 
     /// <summary>
-    /// Decomposes a supplementary-plane code-point range [lo, hi] into UTF-16
-    /// surrogate-pair regex alternatives (.NET regex matches code units).
+    /// Decomposes the supplementary-plane code-point range [lo, hi] into UTF-16 surrogate
+    /// pairs (.NET regex matches code units) and records, for each leading surrogate the
+    /// range touches, the trailing-surrogate span that completes it.
     /// </summary>
-    private static void AppendSupplementaryRange(List<string> alts, int lo, int hi)
+    /// <remarks>
+    /// Accumulating instead of emitting is what keeps a big property cheap to match. A
+    /// property is a list of code-point ranges, and emitting each range on its own produced
+    /// one alternative per range: <c>\p{General_Category=Other_Letter}</c> came out as 266
+    /// alternatives, and every input character that is not an Other_Letter had to fail all
+    /// of them before the alternation as a whole could fail. Because every alternative is a
+    /// (lead, trail) pair, the ranges that share a lead can share an alternative — and the
+    /// leads that end up with the same trail set can share one too. That is what
+    /// <see cref="EmitSupplementaryAlternatives"/> does with what this collects, and it is a
+    /// pure re-encoding of the same set: 266 alternatives become 43, which measured 7.7×
+    /// faster on the test262 <c>property-escapes/generated</c> subject (issue #966).
+    /// </remarks>
+    private static void CollectSupplementaryRange(
+        SortedDictionary<int, List<(int Lo, int Hi)>> byLead, int lo, int hi)
     {
         int highLo = 0xD800 + ((lo - 0x10000) >> 10);
         int lowLo = 0xDC00 + ((lo - 0x10000) & 0x3FF);
@@ -3991,25 +4025,111 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         if (highLo == highHi)
         {
-            alts.Add(Atom(highLo) + UnitRange(lowLo, lowHi));
+            Add(highLo, lowLo, lowHi);
             return;
         }
 
-        alts.Add(Atom(highLo) + UnitRange(lowLo, 0xDFFF));
-        if (highHi - highLo >= 2)
-            alts.Add(UnitRange(highLo + 1, highHi - 1) + UnitRange(0xDC00, 0xDFFF));
-        alts.Add(Atom(highHi) + UnitRange(0xDC00, lowHi));
+        Add(highLo, lowLo, 0xDFFF);
+        for (var lead = highLo + 1; lead <= highHi - 1; lead++)
+            Add(lead, 0xDC00, 0xDFFF);
+        Add(highHi, 0xDC00, lowHi);
 
-        static string Unit(int u) => $"\\u{u:X4}";
-        // A single surrogate code unit here is an internal code-UNIT pair atom (one
-        // half of a surrogate pair), not a code-POINT lone surrogate. It is emitted
-        // as a degenerate range `[\uX-\uX]` rather than a single-member class `[\uX]`:
-        // the lone-surrogate class transform guards single-member surrogate classes
-        // (so a code-point `[\uD83D]` matches only a lone surrogate) but leaves
-        // surrogate *ranges* verbatim, which is exactly the code-unit semantics a
-        // pair atom needs.
-        static string Atom(int u) => $"[\\u{u:X4}-\\u{u:X4}]";
-        static string UnitRange(int lo, int hi) => $"[{Unit(lo)}-{Unit(hi)}]";
+        void Add(int lead, int trailLo, int trailHi)
+        {
+            if (!byLead.TryGetValue(lead, out var trails))
+                byLead[lead] = trails = [];
+            trails.Add((trailLo, trailHi));
+        }
+    }
+
+    /// <summary>
+    /// Turns the per-lead trailing-surrogate spans collected by
+    /// <see cref="CollectSupplementaryRange"/> into surrogate-pair alternatives: the trailing
+    /// spans of one lead are coalesced into a single class, and every lead that ends up with
+    /// the same class — not only adjacent ones — shares one alternative.
+    /// </summary>
+    /// <remarks>
+    /// Grouping by class rather than by adjacency is what collapses a plane. The leads whose
+    /// trail class is the full <c>[\uDC00-\uDFFF]</c> are scattered across the lead space, so
+    /// merging only neighbours leaves each run its own alternative; keying on the class puts
+    /// all of them in one. The alternatives are then ordered widest-first, because the widest
+    /// is also the one most input matches, and a backtracking alternation pays for every
+    /// alternative it tries before the one that succeeds.
+    /// </remarks>
+    private static List<string> EmitSupplementaryAlternatives(
+        SortedDictionary<int, List<(int Lo, int Hi)>> byLead)
+    {
+        var groups = new Dictionary<string, (List<int> Leads, int TrailCount)>(StringComparer.Ordinal);
+
+        foreach (var (lead, trails) in byLead)
+        {
+            var trailClass = TrailClass(MergeAscending(trails), out var trailCount);
+            if (!groups.TryGetValue(trailClass, out var group))
+                groups[trailClass] = group = ([], trailCount);
+            group.Leads.Add(lead);
+        }
+
+        var alts = new List<string>(groups.Count);
+        // Widest first: a group covers (leads × trails) code points, and the alternation is a
+        // linear scan. Ties break on the trail class so the emitted pattern stays a pure
+        // function of the range set — a pattern that varied with dictionary order would make
+        // the translated form unreproducible.
+        foreach (var (trailClass, group) in groups
+            .OrderByDescending(g => (long)g.Value.Leads.Count * g.Value.TrailCount)
+            .ThenBy(g => g.Key, StringComparer.Ordinal))
+        {
+            var sb = new StringBuilder();
+            sb.Append('[');
+            // Each lead is written as an explicit range even when it is a single unit. A
+            // surrogate here is one half of a pair — a code UNIT — not a code-POINT lone
+            // surrogate, and the lone-surrogate class transform guards single-member surrogate
+            // classes while leaving surrogate *ranges* verbatim. `[\uD83D-\uD83D]` is how a
+            // pair atom says so; `[\uD83D]` would be rewritten into a lone-surrogate matcher.
+            var leads = group.Leads;
+            for (var i = 0; i < leads.Count;)
+            {
+                var runEnd = i;
+                while (runEnd + 1 < leads.Count && leads[runEnd + 1] == leads[runEnd] + 1)
+                    runEnd++;
+                sb.Append(Unit(leads[i])).Append('-').Append(Unit(leads[runEnd]));
+                i = runEnd + 1;
+            }
+            sb.Append(']').Append(trailClass);
+            alts.Add(sb.ToString());
+        }
+
+        return alts;
+
+        // Sorts the spans and coalesces the ones that touch or overlap, so a lead reached by
+        // several code-point ranges ends up with the tightest class that covers them all.
+        static List<(int Lo, int Hi)> MergeAscending(List<(int Lo, int Hi)> spans)
+        {
+            spans.Sort(static (a, b) => a.Lo.CompareTo(b.Lo));
+            var merged = new List<(int Lo, int Hi)>(spans.Count);
+            foreach (var (lo, hi) in spans)
+            {
+                if (merged.Count > 0 && lo <= merged[^1].Hi + 1)
+                {
+                    if (hi > merged[^1].Hi)
+                        merged[^1] = (merged[^1].Lo, hi);
+                    continue;
+                }
+                merged.Add((lo, hi));
+            }
+            return merged;
+        }
+
+        static string TrailClass(List<(int Lo, int Hi)> spans, out int count)
+        {
+            count = 0;
+            var sb = new StringBuilder("[");
+            foreach (var (lo, hi) in spans)
+            {
+                sb.Append(Unit(lo)).Append('-').Append(Unit(hi));
+                count += hi - lo + 1;
+            }
+            return sb.Append(']').ToString();
+        }
     }
 
     private static void AppendClassRange(StringBuilder sb, int lo, int hi)

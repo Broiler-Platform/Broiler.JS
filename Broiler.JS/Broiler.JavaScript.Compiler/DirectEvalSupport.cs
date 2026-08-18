@@ -115,8 +115,16 @@ public static class DirectEvalSupport
         if (inheritStrictMode)
             text = "\"use strict\";\n" + text;
 
-        Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope, allowSuperProperty, allowSuperCall, rejectArguments: inFieldInitializer, rejectNewTarget: rejectNewTarget);
-        var declaredBindings = disallowArgumentsDeclaration ? CollectProgramDeclaredBindings(text) : null;
+        var program = Validate(text, inheritStrictMode, disallowArgumentsDeclaration, lexicalBindings, parameterBindings, privateNamesInScope, allowSuperProperty, allowSuperCall, rejectArguments: inFieldInitializer, rejectNewTarget: rejectNewTarget);
+
+        // Nothing to run: PerformEval owes an empty StatementList the undefined completion,
+        // and a body with no statements declares nothing, so none of the scope, activation
+        // and binding-snapshot scaffolding below can be observed either.
+        if (program.Statements.Count == 0)
+            return JSUndefined.Value;
+
+        // The program Validate already parsed, rather than a second parse of the same text.
+        var declaredBindings = disallowArgumentsDeclaration ? CollectProgramDeclaredBindings(program) : null;
 
         if (JSEngine.Current is JSContext context)
         {
@@ -278,11 +286,8 @@ public static class DirectEvalSupport
         }
     }
 
-    private static string[] CollectProgramDeclaredBindings(string text)
+    private static string[] CollectProgramDeclaredBindings(AstProgram program)
     {
-        var pool = new FastPool();
-        var parser = new FastParser(new FastTokenStream(pool, text));
-        var program = parser.ParseProgram();
         var bindings = new HashSet<string>(StringComparer.Ordinal);
         CollectDeclaredBindings(program.Statements, bindings);
 
@@ -383,10 +388,20 @@ public static class DirectEvalSupport
         return !globalEval.IsUndefined && callee.StrictEquals(globalEval);
     }
 
-    public static void ValidateIndirectEval(string text)
-        => Validate(text, false, false, null, null, null, false, false, rejectNewTarget: true);
+    /// <summary>
+    /// Runs the indirect-eval early errors over <paramref name="text"/> and reports whether
+    /// its body has any statements at all, so an inert body can skip compilation the same
+    /// way <see cref="Execute"/> does.
+    /// </summary>
+    public static bool ValidateIndirectEval(string text)
+        => Validate(text, false, false, null, null, null, false, false, rejectNewTarget: true)
+            .Statements.Count > 0;
 
-    private static void Validate(string text, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool rejectArguments = false, bool rejectNewTarget = false)
+    /// <summary>
+    /// Enforces the eval early errors and returns the program they were checked against, so
+    /// the caller can reuse that parse rather than paying for another one.
+    /// </summary>
+    private static AstProgram Validate(string text, bool inheritStrictMode, bool disallowArgumentsDeclaration, string[] lexicalBindings, string[] parameterBindings, string[] privateNamesInScope, bool allowSuperProperty, bool allowSuperCall, bool rejectArguments = false, bool rejectNewTarget = false)
     {
         if (inheritStrictMode && ContainsStrictReservedWordUsage(text))
             throw JSEngine.NewSyntaxError("Unexpected strict mode reserved word");
@@ -417,6 +432,8 @@ public static class DirectEvalSupport
                 if (IsRestrictedDeclaration(statement, inheritStrictMode, disallowArgumentsDeclaration && inParameterInitializer))
                     throw new FastParseException(statement.Start, "Invalid declaration in direct eval code");
             }
+
+            return program;
         }
         catch (FastParseException ex)
         {
