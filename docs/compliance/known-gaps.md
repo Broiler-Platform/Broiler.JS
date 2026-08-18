@@ -8,29 +8,31 @@ when that manifest changes materially.
 
 The current failure manifest includes work in these areas:
 
-- **Unicode ignore-case for astral code points.** `Broiler.Regex`'s
-  `CaseFolding.SimpleFold` is built on `char.ToLowerInvariant`/`ToUpperInvariant`, which
-  are defined over a single UTF-16 code unit, so every code point above U+FFFF is its own
-  canonical form and `/𐐀/ui` does not match `𐐨`. The fix belongs in the `Broiler.Regex`
-  submodule: fold through the string overloads (or the `Broiler.Unicode` simple-fold
-  table), in both `SimpleFold` and `SimpleSiblings`.
-- **An eval-introduced `var` that shadows a global.** It is implemented by mutating the
-  global's binding for the duration of the caller's activation, so an unrelated global
-  function called during that window reads the eval's value rather than the global's
-  (`staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode`). Correcting it means
-  giving the eval's variable environment a binding of its own, which is architectural
-  rather than a defect in one place.
-- **Per-eval compilation cost.** Every direct `eval` compiles a fresh `DynamicMethod`,
-  and JITting it is ~6 ms — nearly all of the cost of a small eval. A body that is inert
-  (nothing but literals, or `new.target`) already skips compilation entirely;
-  `staging/sm/class/newTargetEval` still evaluates 3 300 bodies that are not, and spends
-  the runner's whole CPU budget on the JIT. What would remove it is reusing a compiled
-  eval body across calls, keyed on the source text together with the compile-time scope
-  facts `DirectEvalSupport.Execute` is handed.
-- **Parse cost on a pathological block count.** `staging/sm/regress/regress-610026`
-  evaluates three programs of up to 2^21 `{}` blocks. Each block allocates an AST node, a
-  parser scope with its own dictionary, and two sequences, and the resulting garbage —
-  not the parse itself — is what exhausts the CPU budget.
+- **Per-eval compilation cost.** Every direct `eval` compiles a fresh `DynamicMethod`, and
+  JITting it is nearly all of the cost of a small eval — ~21 ms in a Release build for a
+  body that is one call, where the same text parses in ~15 µs. Three shapes now avoid it:
+  an inert body (nothing but literals, or `new.target`), a body with no statements, and a
+  body that is only `eval("…")` over a constant, which is the same evaluation as that
+  constant and is run as one. Everything else still pays per call. What would remove the
+  rest is reusing a compiled eval body across calls, keyed on the source text together with
+  the compile-time scope facts `DirectEvalSupport.Execute` is handed.
+- **A `delete` of an eval-introduced `var`, read back through the closure that deleted it.**
+  `(function(){ var f = eval("var y = 5; (function (w) { return w ? y : eval('delete y') })");
+  f(0); return f(1) })()` throws a ReferenceError where the name should resolve outward to
+  the global. The delete tears the binding down, and a closure the eval compiled holds that
+  cell directly rather than re-resolving the name. `staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode`
+  passes because the function it deletes through also has an outer binding to fall back to.
+- **`new.target` inside a direct eval nested in eval-compiled code.**
+  `eval("(function(){ return typeof eval('new.target') })()")` is a SyntaxError, because the
+  outer program's "reject new.target" (right for an eval's own top level) reaches the inner
+  call site, which sits inside a function and should allow it.
+- **A Directive Prologue that an empty statement ends after a directive.**
+  `function f(){ 'x'; ; 'use strict'; return typeof this }` runs strict, where the `;` ends
+  the prologue and `'use strict'` is an ordinary expression statement. `function f(){ ;
+  'use strict'; … }` (no directive before the `;`) and `function f(){ 'x'; 0; 'use strict';
+  … }` are both read correctly, so it is the combination that is wrong, and the compiler's
+  own prologue scan (`FastCompiler.HasUseStrictDirective`) stops at the empty statement as
+  it should — the strictness is being decided somewhere else.
 - Array `slice`, `unshift`, `toReversed`, `reduceRight`, and near-maximum length
   semantics, including Proxy-created results;
 - comment and regular-expression literal lexical edge cases; and

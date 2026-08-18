@@ -669,20 +669,36 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
             return false;
         }
 
+        // Where the code doing the lookup is written, taken from the innermost frame that has
+        // a position of its own. Frames above it (a direct eval's body, and a nested eval's)
+        // run at that same position; frames below it are consulted only if they lexically
+        // enclose it, which is what makes this the scope chain rather than the call stack —
+        // see CallFrameStack.IsLexicallyVisible.
+        string code = null;
+        var position = 0;
+        var located = false;
+
         for (var i = Frames.Depth - 1; i >= 0; i--)
         {
-            if (Frames.TryGetDirectEvalBinding(i, name, out variable))
+            var visible = !located || Frames.IsLexicallyVisible(i, code, position);
+            if (visible && Frames.TryGetDirectEvalBinding(i, name, out variable))
             {
                 // An uninitialized EvalShadowVariable means a sloppy parameter-eval
                 // shadow whose name the eval has not (yet) introduced; it forwards to
                 // the outer binding, so resolution must look through it to the real
                 // binding. The eval's own var-declaration path (Register) passes
                 // includeUninitializedShadows so it can find and initialize the shadow.
-                if (!includeUninitializedShadows && variable is EvalShadowVariable { IsInitialized: false })
-                    continue;
-
-                return true;
+                if (includeUninitializedShadows || variable is not EvalShadowVariable { IsInitialized: false })
+                    return true;
             }
+
+            // A frame in scope fixes where the walk continues from. One with no position of
+            // its own — a script, or a direct eval's body — hands the question to the frame
+            // beneath it: that is where its code was called from, and so where it is written.
+            // A frame that is NOT in scope answers nothing and changes nothing; the walk keeps
+            // looking for one that encloses the same code.
+            if (visible)
+                located = Frames.TryGetLexicalPosition(i, out code, out position);
         }
 
         variable = null;
@@ -1709,6 +1725,42 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         throw JSEngine.NewTypeError($"Cannot define global function {name}");
     }
 
+    /// <summary>
+    /// Whether the identifier <c>eval</c> is certain to resolve to <see cref="IntrinsicEval"/>
+    /// here, decided WITHOUT resolving it.
+    /// </summary>
+    /// <remarks>
+    /// Asking is not free of consequence — a <c>with</c> object is sent a <c>has</c> trap, an
+    /// accessor on the global object runs — and a caller that then takes the ordinary path would
+    /// make that happen twice. So this answers true only where nothing can stand between the
+    /// name and the intrinsic: no <c>with</c> chain, no eval-introduced or captured binding of
+    /// the name, and a plain data property on the global object still holding %eval%.
+    /// Used by DirectEvalSupport to recognise <c>eval("…")</c> as a direct eval it can run as
+    /// its own text rather than compile.
+    /// </remarks>
+    public bool IsIntrinsicEvalUnshadowed
+    {
+        get
+        {
+            if (withScope != null || IntrinsicEval.IsUndefined)
+                return false;
+
+            if (TryResolveDirectEvalBinding(KeyStrings.eval, out _)
+                || TryResolveCapturedDirectEvalBinding(KeyStrings.eval, out _))
+            {
+                return false;
+            }
+
+            if (globalVars.TryGetValue(KeyStrings.eval.Key, out var declared))
+                return declared.Value.StrictEquals(IntrinsicEval);
+
+            var property = GetInternalProperty(KeyStrings.eval, false);
+            return property.IsValue
+                && !property.IsProperty
+                && GetOwnPropertyValue(KeyStrings.eval).StrictEquals(IntrinsicEval);
+        }
+    }
+
     public JSValue DeleteIdentifier(in KeyString name)
     {
         if (TryResolveWithObject(name, out var withObject))
@@ -1724,7 +1776,17 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         if (IsWithFallbackOverlayBinding(name))
             return BooleanFalse;
 
-        if (TryResolveDirectEvalBinding(name, out var directEvalBinding))
+        // A closure the eval created carries the declaring frame's bindings and is invoked with
+        // them re-established (CaptureDirectEvalBindings / PushDirectEvalBindings), so its
+        // `delete` has to reach the same binding its reads do. The frame walk above cannot once
+        // the eval has returned: such a closure is compiled from the EVAL's text, and no frame
+        // of the enclosing script encloses that. Deleting still happens only through the loop
+        // below, which removes a binding a FRAME owns — that is what makes it an eval-introduced
+        // var rather than one of the caller's own locals, which `delete` must leave alone
+        // (test262 staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode: `eval('delete
+        // y')` inside a function the enclosing eval defined).
+        if (TryResolveDirectEvalBinding(name, out var directEvalBinding)
+            || TryResolveCapturedDirectEvalBinding(name, out directEvalBinding))
         {
             for (var i = Frames.Depth - 1; i >= 0; i--)
             {

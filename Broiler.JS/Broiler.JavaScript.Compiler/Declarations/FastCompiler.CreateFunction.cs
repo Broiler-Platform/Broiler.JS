@@ -314,7 +314,12 @@ partial class FastCompiler
             // A generator or async body is rewritten into a state machine whose frame is
             // pushed once, at priming, and then held across every suspension — so it keeps
             // its caller's frame pinned out of the recycling pool (see CallStackItem.PinSuspendable).
+            // The frame also carries where this function is written (nodeCode, the same span
+            // `code` above is built from). That is its lexical position, and a direct-eval
+            // binding lookup uses it to tell the frames that enclose the running code from the
+            // ones that merely called it — see CallFrameStack.IsLexicallyVisible.
             sList.Add(BExpression.Assign(stackItem, CallStackItemBuilder.New(cs.Context, scriptInfo, nameOffset, nameLength, point.Line, point.Column,
+                nodeCode.Offset, nodeCode.Offset + nodeCode.Length,
                 suspendable: functionDeclaration.Generator || functionDeclaration.Async)));
 
             var argumentElements = args;

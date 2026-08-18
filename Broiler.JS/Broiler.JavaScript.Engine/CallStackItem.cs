@@ -43,6 +43,17 @@ public sealed class CallStackItem
     public int Column;
     public JSValue NewTarget;
 
+    /// <summary>
+    /// The body's lexical position, carried here rather than in the slot because a suspendable
+    /// body outlives any one slot. See <see cref="CallFrameStack.IsLexicallyVisible"/>.
+    /// </summary>
+    internal string Code;
+    internal int SpanStart;
+    internal int SpanEnd;
+
+    /// <summary>True for a top-level-await program; see <see cref="CallFrame.IsProgramScope"/>.</summary>
+    internal bool IsProgramScope;
+
     internal Dictionary<uint, JSVariable> DirectEvalBindings;
 
     internal void RegisterDirectEvalBinding(JSVariable variable)
@@ -69,16 +80,16 @@ public static class CallFrames
 {
     /// <summary>Enters an ordinary call. Allocates nothing.</summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public static FrameToken Enter(IJSExecutionContext context, ScriptInfo scriptInfo, int nameOffset, int nameLength, int line, int column)
+    public static FrameToken Enter(IJSExecutionContext context, ScriptInfo scriptInfo, int nameOffset, int nameLength, int line, int column, int spanStart = 0, int spanEnd = 0)
     {
         context = Resolve(context);
         context.EnsureSufficientExecutionStack();
-        return context.Frames.Enter(scriptInfo, nameOffset, nameLength, line, column, TakeNewTarget(context));
+        return context.Frames.Enter(scriptInfo, nameOffset, nameLength, line, column, TakeNewTarget(context), spanStart, spanEnd);
     }
 
     /// <summary>Enters a generator or async body, which needs a heap frame; see <see cref="CallStackItem"/>.</summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public static FrameToken EnterSuspendable(IJSExecutionContext context, ScriptInfo scriptInfo, int nameOffset, int nameLength, int line, int column)
+    public static FrameToken EnterSuspendable(IJSExecutionContext context, ScriptInfo scriptInfo, int nameOffset, int nameLength, int line, int column, int spanStart = 0, int spanEnd = 0)
     {
         context = Resolve(context);
         context.EnsureSufficientExecutionStack();
@@ -89,27 +100,37 @@ public static class CallFrames
                 : CallStackItem.InlineName,
             line,
             column)
-        { NewTarget = TakeNewTarget(context) };
+        {
+            NewTarget = TakeNewTarget(context),
+            Code = spanEnd > spanStart ? scriptInfo?.Code : null,
+            SpanStart = spanStart,
+            SpanEnd = spanEnd,
+        };
 
         return context.Frames.EnterSuspendable(heapFrame);
     }
 
     /// <summary>Enters a whole script or program.</summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public static FrameToken EnterScope(IJSExecutionContext context, string fileName, in StringSpan function, int line, int column)
+    public static FrameToken EnterScope(IJSExecutionContext context, string fileName, in StringSpan function, int line, int column, string code = null, int codeLength = 0)
     {
         context = Resolve(context);
         context.EnsureSufficientExecutionStack();
-        return context.Frames.Enter(fileName, in function, line, column);
+        return context.Frames.Enter(fileName, in function, line, column, code, codeLength);
     }
 
     /// <summary>Enters a top-level-await program, which is rewritten into a state machine.</summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public static FrameToken EnterSuspendableScope(IJSExecutionContext context, string fileName, in StringSpan function, int line, int column)
+    public static FrameToken EnterSuspendableScope(IJSExecutionContext context, string fileName, in StringSpan function, int line, int column, string code = null, int codeLength = 0)
     {
         context = Resolve(context);
         context.EnsureSufficientExecutionStack();
-        return context.Frames.EnterSuspendable(new CallStackItem(fileName, in function, line, column));
+        return context.Frames.EnterSuspendable(new CallStackItem(fileName, in function, line, column)
+        {
+            Code = codeLength > 0 ? code : null,
+            SpanEnd = codeLength,
+            IsProgramScope = true,
+        });
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]

@@ -15,9 +15,9 @@ public class JSContextStackBuilder
 {
     public readonly static Type itemTypeRef = typeof(FrameToken).MakeByRefType();
 
-    public static void Push(Sequence<Expression> stmtList, Expression context, Expression stack, Expression fileName, Expression function, int line, int column, bool suspendable = false)
+    public static void Push(Sequence<Expression> stmtList, Expression context, Expression stack, Expression fileName, Expression function, int line, int column, bool suspendable = false, Expression code = null, int codeLength = 0)
     {
-        var newScope = LexicalScopeBuilder.NewScope(context, fileName, function, line, column, suspendable);
+        var newScope = LexicalScopeBuilder.NewScope(context, fileName, function, line, column, suspendable, code, codeLength);
         stmtList.Add(Expression.Assign(stack, newScope));
     }
 
