@@ -15,6 +15,10 @@ COMMIT_HELPER_PATH = REPO_ROOT / "scripts" / "ci-commit-generated-results.sh"
 TERSER_TOOL_ROOT = REPO_ROOT / ".github" / "actions" / "run-test262-shard" / "terser"
 TERSER_PACKAGE_PATH = TERSER_TOOL_ROOT / "package.json"
 TERSER_LOCK_PATH = TERSER_TOOL_ROOT / "package-lock.json"
+CLOSURE_TOOL_ROOT = REPO_ROOT / ".github" / "actions" / "run-test262-shard" / "closure"
+CLOSURE_PACKAGE_PATH = CLOSURE_TOOL_ROOT / "package.json"
+CLOSURE_LOCK_PATH = CLOSURE_TOOL_ROOT / "package-lock.json"
+CLOSURE_VERSION = "20260816.0.0"
 
 
 class Test262WorkflowTests(unittest.TestCase):
@@ -88,20 +92,22 @@ class Test262WorkflowTests(unittest.TestCase):
             "most_common_problems_limit",
             "biggest_problems_limit",
             "timeout_problems_limit",
-            "terser_only_problems_limit",
+            "minifier_only_problems_limit",
         }
         self.assertEqual(expected, set(inputs))
         self.assertTrue(inputs["rerun_failed_only"]["default"])
         self.assertEqual("any", inputs["feature_match"]["default"])
         self.assertEqual(["any", "all"], inputs["feature_match"]["options"])
         self.assertEqual("terser", inputs["minifier"]["default"])
-        self.assertEqual(["terser", "none"], inputs["minifier"]["options"])
+        self.assertEqual(
+            ["terser", "closure", "none"], inputs["minifier"]["options"]
+        )
         self.assertEqual(30, inputs["minifier_timeout_seconds"]["default"])
         self.assertEqual(-1, inputs["shard_index"]["default"])
         self.assertEqual(10, inputs["most_common_problems_limit"]["default"])
         self.assertEqual(3, inputs["biggest_problems_limit"]["default"])
         self.assertEqual(10, inputs["timeout_problems_limit"]["default"])
-        self.assertEqual(10, inputs["terser_only_problems_limit"]["default"])
+        self.assertEqual(10, inputs["minifier_only_problems_limit"]["default"])
 
     def test_issue_permission_and_token_fallback_are_configured(self) -> None:
         self.assertEqual("write", self.workflow["permissions"]["contents"])
@@ -125,21 +131,27 @@ class Test262WorkflowTests(unittest.TestCase):
             "non-passing variant case(s)", issue_steps[0]["with"]["script"]
         )
         self.assertIn("timed out", issue_steps[0]["with"]["script"])
-        terser_only_step = issue_steps[-1]
+        minifier_only_step = issue_steps[-1]
         self.assertEqual(
-            "steps.merge.outputs.create_terser_only_issue == 'true'",
-            terser_only_step["if"],
+            "steps.merge.outputs.create_minifier_only_issue == 'true'",
+            minifier_only_step["if"],
         )
         self.assertEqual(
-            "${{ steps.merge.outputs.terser_only_failure_count }}",
-            terser_only_step["env"]["TERSER_ONLY_FAILURE_COUNT"],
+            "${{ steps.merge.outputs.minifier_only_failure_count }}",
+            minifier_only_step["env"]["MINIFIER_ONLY_FAILURE_COUNT"],
+        )
+        self.assertEqual(
+            "${{ steps.merge.outputs.minified_variant }}",
+            minifier_only_step["env"]["MINIFIED_VARIANT"],
         )
         self.assertIn(
-            "test262-merged/terser-only-issue.md",
-            terser_only_step["with"]["script"],
+            "test262-merged/minifier-only-issue.md",
+            minifier_only_step["with"]["script"],
         )
+        # The title names whichever minifier ran, so a Closure run does not file a
+        # "Terser-only" issue.
         self.assertIn(
-            "Terser-only failure(s)", terser_only_step["with"]["script"]
+            "${label}-only failure(s)", minifier_only_step["with"]["script"]
         )
         for step in issue_steps:
             self.assertTrue(step["continue-on-error"])
@@ -167,7 +179,7 @@ class Test262WorkflowTests(unittest.TestCase):
         self.assertIn('checked_integer("COMMON_LIMIT", 1, 100)', run_text)
         self.assertIn('checked_integer("BIGGEST_LIMIT", 1, 100)', run_text)
         self.assertIn('checked_integer("TIMEOUT_LIMIT", 1, 100)', run_text)
-        self.assertIn('checked_integer("TERSER_ONLY_LIMIT", 1, 100)', run_text)
+        self.assertIn('checked_integer("MINIFIER_ONLY_LIMIT", 1, 100)', run_text)
 
     def test_prepare_resolves_and_caches_an_immutable_suite_commit(self) -> None:
         prepare = self.workflow["jobs"]["prepare"]
@@ -283,6 +295,8 @@ class Test262WorkflowTests(unittest.TestCase):
             self.action_text,
         )
         self.assertIn('ARGS+=(--terser-module "$TERSER_MODULE")', self.action_text)
+        self.assertIn('ARGS+=(--closure-module "$CLOSURE_MODULE")', self.action_text)
+        self.assertIn("none|terser|closure)", self.action_text)
         self.assertEqual("30", self.action["inputs"]["minifier-timeout-seconds"]["default"])
         self.assertIn('--selection-label "$SELECTION_LABEL"', self.action_text)
         self.assertIn('--runner-os "${RUNNER_OS:-unknown}"', self.action_text)
@@ -312,9 +326,10 @@ class Test262WorkflowTests(unittest.TestCase):
             for step in self.action["runs"]["steps"]
             if step.get("name") == "Install and resolve pinned Terser"
         )
-        terser_condition = "${{ inputs.minifier == 'terser' }}"
-        self.assertEqual(terser_condition, setup_node["if"])
-        self.assertEqual(terser_condition, install["if"])
+        # Node is provisioned for every minified variant; only the install step is
+        # specific to Terser.
+        self.assertEqual("${{ inputs.minifier != 'none' }}", setup_node["if"])
+        self.assertEqual("${{ inputs.minifier == 'terser' }}", install["if"])
         self.assertIn('npm ci --prefix "$TERSER_PREFIX"', self.action_text)
         self.assertIn('require.resolve("terser/package.json"', self.action_text)
         self.assertIn('test "$version" = "5.50.0"', self.action_text)
@@ -327,6 +342,31 @@ class Test262WorkflowTests(unittest.TestCase):
             self.assertIn(f"summary.get('{provenance_field}'", self.action_text)
         self.assertIn('summary.get("variants")', self.action_text)
         self.assertIn('summary.get("pathSummary")', self.action_text)
+
+    def test_composite_installs_a_locked_pinned_closure_module(self) -> None:
+        package = json.loads(CLOSURE_PACKAGE_PATH.read_text(encoding="utf-8"))
+        lock = json.loads(CLOSURE_LOCK_PATH.read_text(encoding="utf-8"))
+        self.assertEqual(
+            CLOSURE_VERSION, package["dependencies"]["google-closure-compiler"]
+        )
+        locked = lock["packages"]["node_modules/google-closure-compiler"]
+        self.assertEqual(CLOSURE_VERSION, locked["version"])
+        self.assertTrue(str(locked["integrity"]).startswith("sha512-"))
+        # The native image is what makes an ADVANCED compile per test affordable at all;
+        # without it every request would pay JVM start-up.
+        native = lock["packages"]["node_modules/google-closure-compiler-linux"]
+        self.assertEqual(CLOSURE_VERSION, native["version"])
+        install = next(
+            step
+            for step in self.action["runs"]["steps"]
+            if step.get("name") == "Install and resolve pinned Closure Compiler"
+        )
+        self.assertEqual("${{ inputs.minifier == 'closure' }}", install["if"])
+        self.assertIn('npm ci --prefix "$CLOSURE_PREFIX"', self.action_text)
+        self.assertIn(
+            'require.resolve("google-closure-compiler/package.json"', self.action_text
+        )
+        self.assertIn(f'test "$version" = "{CLOSURE_VERSION}"', self.action_text)
 
     def _runner_script(self) -> str:
         return next(
@@ -397,15 +437,48 @@ class Test262WorkflowTests(unittest.TestCase):
             for step in validate["steps"]
             if step.get("name") == "Validate pinned Terser worker"
         )
-        condition = "${{ (github.event.inputs.minifier || 'terser') == 'terser' }}"
-        self.assertEqual(condition, setup_node["if"])
-        self.assertEqual(condition, smoke["if"])
+        self.assertEqual(
+            "${{ (github.event.inputs.minifier || 'terser') != 'none' }}",
+            setup_node["if"],
+        )
+        self.assertEqual(
+            "${{ (github.event.inputs.minifier || 'terser') == 'terser' }}",
+            smoke["if"],
+        )
         self.assertIn('npm ci --prefix "$TERSER_PREFIX"', smoke["run"])
         self.assertIn('"operation": "hello"', smoke["run"])
         self.assertIn('"operation": "minify"', smoke["run"])
         self.assertIn('"profile": "test262-safe-mangle-v2"', smoke["run"])
         self.assertIn('"version": "5.50.0"', smoke["run"])
         self.assertIn("timeout=30", smoke["run"])
+        self.assertIn("except subprocess.TimeoutExpired", smoke["run"])
+
+    def test_validation_smokes_the_pinned_closure_worker_before_fan_out(self) -> None:
+        validate = self.workflow["jobs"]["validate"]
+        setup_node = next(
+            step
+            for step in validate["steps"]
+            if step.get("uses") == "actions/setup-node@v5"
+        )
+        smoke = next(
+            step
+            for step in validate["steps"]
+            if step.get("name") == "Validate pinned Closure Compiler worker"
+        )
+        self.assertEqual(
+            "${{ (github.event.inputs.minifier || 'terser') != 'none' }}",
+            setup_node["if"],
+        )
+        self.assertEqual(
+            "${{ (github.event.inputs.minifier || 'terser') == 'closure' }}",
+            smoke["if"],
+        )
+        self.assertIn('npm ci --prefix "$CLOSURE_PREFIX"', smoke["run"])
+        self.assertIn('"operation": "hello"', smoke["run"])
+        self.assertIn('"profile": "test262-closure-advanced-v1"', smoke["run"])
+        self.assertIn('"compilationLevel": "ADVANCED_OPTIMIZATIONS"', smoke["run"])
+        self.assertIn('"language": "ECMASCRIPT_NEXT"', smoke["run"])
+        self.assertIn(f'"version": "{CLOSURE_VERSION}"', smoke["run"])
         self.assertIn("except subprocess.TimeoutExpired", smoke["run"])
 
     def test_report_selects_one_authoritative_phase_and_emits_four_reports(self) -> None:
@@ -417,11 +490,11 @@ class Test262WorkflowTests(unittest.TestCase):
             "--issue-md",
             "--biggest-issue-md",
             "--timeout-issue-md",
-            "--terser-only-issue-md",
+            "--minifier-only-issue-md",
             "--problem-limit",
             "--biggest-problem-limit",
             "--timeout-limit",
-            "--terser-only-limit",
+            "--minifier-only-limit",
             "--run-url",
             "--artifact-name",
             "--broiler-commit",

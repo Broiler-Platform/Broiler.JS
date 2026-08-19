@@ -36,9 +36,16 @@ class FakeMinifier:
         self.error = error
         self.unsupported_syntax = unsupported_syntax
         self.calls: list[tuple[str, str]] = []
+        self.includes: list[list[str]] = []
 
-    def minify(self, source: str, path: str) -> dict[str, object]:
+    def minify(
+        self,
+        source: str,
+        path: str,
+        includes: list[str] | None = None,
+    ) -> dict[str, object]:
         self.calls.append((source, path))
+        self.includes.append(list(includes or []))
         if self.error is not None:
             raise self.error
         result: dict[str, object] = {
@@ -49,6 +56,14 @@ class FakeMinifier:
         if self.unsupported_syntax is not None:
             result["unsupportedSyntax"] = self.unsupported_syntax
         return result
+
+
+class FakeClosureMinifier(FakeMinifier):
+    """Closure double: the same protocol, under the ADVANCED profile's identity."""
+
+    name = run_test262.CLOSURE_VARIANT
+    version = "2026.test"
+    profile = run_test262.CLOSURE_PROFILE
 
 
 class FakeReferenceEngine:
@@ -1176,6 +1191,94 @@ includes: [assert.js, sta.js]
         self.assertTrue(results[1]["notApplicable"])
         self.assertIn("original variant is not runnable", results[1]["reason"])
 
+    def test_closure_variant_labels_every_case_it_produces(self) -> None:
+        (self.suite_root / "harness" / "custom.js").write_text(
+            "// custom harness\n",
+            encoding="utf-8",
+        )
+        path = self.write_test(
+            "test/language/closure-variant.js",
+            "/*---\nincludes: [custom.js]\n---*/\nORIGINAL_BODY();\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        minifier = FakeClosureMinifier("COMPILED_BODY();")
+        engine = RecordingPopen()
+
+        with mock.patch.object(run_test262.subprocess, "Popen", side_effect=engine):
+            results = run_test262.run_test_variants_with_metadata(
+                repo,
+                TEST_ENGINE_PATH,
+                path,
+                {},
+                30.0,
+                0,
+                minifier=minifier,
+            )
+
+        self.assertEqual(["original", "closure"], [r["variant"] for r in results])
+        self.assertEqual(run_test262.CLOSURE_VARIANT, results[1]["minifier"])
+        self.assertEqual(run_test262.CLOSURE_PROFILE, results[1]["minifierProfile"])
+        # The harness a test includes is what the ADVANCED profile turns into externs,
+        # so the worker has to be told which files those are.
+        self.assertEqual([["custom.js"]], minifier.includes)
+        self.assertIn("COMPILED_BODY();", engine.scripts[1])
+
+    def test_closure_not_applicable_cases_carry_the_closure_variant(self) -> None:
+        path = self.write_test("test/language/closure-skipped.js", "1;\n")
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        minifier = FakeClosureMinifier(
+            error=run_test262.MinifierSyntaxError(
+                "Closure Compiler SyntaxError: JSC_PARSE_ERROR"
+            )
+        )
+
+        with mock.patch.object(
+            run_test262,
+            "run_test",
+            side_effect=passing_run_test,
+        ):
+            results = run_test262.run_test_variants_with_metadata(
+                repo,
+                TEST_ENGINE_PATH,
+                path,
+                {},
+                30.0,
+                0,
+                minifier=minifier,
+            )
+
+        self.assertEqual(["original", "closure"], [r["variant"] for r in results])
+        self.assertEqual("skipped", results[1]["status"])
+        self.assertIs(True, results[1]["notApplicable"])
+        self.assertEqual("minifier-unsupported-syntax", results[1]["skipKind"])
+
+    def test_closure_minifier_needs_the_pinned_harness_for_its_externs(self) -> None:
+        module_root = self.suite_root / "closure-package"
+        module_root.mkdir(parents=True, exist_ok=True)
+        (module_root / "package.json").write_text(
+            '{"name": "google-closure-compiler", "version": "20260816.0.0"}',
+            encoding="utf-8",
+        )
+
+        with self.assertRaises(run_test262.MinifierError) as missing:
+            run_test262.ClosureMinifier(
+                str(module_root), module_root / "not-a-harness", 30.0
+            )
+        self.assertIn("harness", str(missing.exception))
+
+        harness_root = module_root / "harness"
+        harness_root.mkdir()
+        minifier = run_test262.ClosureMinifier(str(module_root), harness_root, 30.0)
+        self.assertEqual(run_test262.CLOSURE_VARIANT, minifier.name)
+        self.assertEqual(run_test262.CLOSURE_PROFILE, minifier.profile)
+        self.assertEqual("20260816.0.0", minifier.version)
+        # The worker is told where the compiler and the externs live, plus a process
+        # ceiling above the per-request timeout the Python side enforces.
+        self.assertEqual(
+            [str(module_root.resolve()), str(harness_root.resolve()), "35000"],
+            minifier._worker_arguments(),
+        )
+
     def test_minifier_errors_and_timeouts_do_not_replace_original_result(self) -> None:
         path = self.write_test("test/language/minifier-failure.js", "1;\n")
         repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
@@ -1467,6 +1570,47 @@ includes: [assert.js, sta.js]
         self.assertEqual(True, summary["minifierOptions"]["mangle"])
         self.assertEqual(False, summary["minifierOptions"]["toplevel"])
 
+    def test_build_summary_records_the_closure_advanced_profile(self) -> None:
+        path = "test/language/compiled.js"
+        results = [
+            {"path": path, "variant": "original", "status": "passed"},
+            {"path": path, "variant": "closure", "status": "passed"},
+        ]
+        summary = run_test262.build_summary(
+            TEST_SUITE_REF,
+            TEST_ENGINE_PATH,
+            [path],
+            [path],
+            results,
+            {
+                "selectionMode": "requested",
+                "candidateCount": 1,
+                "selectedCountBeforeSharding": 1,
+                "shardCount": 1,
+                "shardIndex": 0,
+            },
+            30.0,
+            0,
+            minifier=run_test262.CLOSURE_VARIANT,
+            minifier_version="20260816.0.0",
+            minifier_profile=run_test262.CLOSURE_PROFILE,
+            minifier_timeout_seconds=60.0,
+        )
+
+        self.assertEqual(["original", "closure"], summary["variants"])
+        self.assertEqual(2, summary["expectedVariantCountPerPath"])
+        self.assertEqual(run_test262.CLOSURE_PROFILE, summary["minifierProfile"])
+        options = summary["minifierOptions"]
+        self.assertEqual("ADVANCED_OPTIMIZATIONS", options["compilationLevel"])
+        # Closure has no ECMASCRIPT_2026 language mode; ECMASCRIPT_NEXT is what it calls
+        # the current standard, and the year is recorded next to it so the report says
+        # which standard was asked for.
+        self.assertEqual("ECMASCRIPT_NEXT", options["languageIn"])
+        self.assertEqual("ECMASCRIPT_NEXT", options["languageOut"])
+        self.assertEqual(2026, options["ecmaScriptYear"])
+        self.assertIs(True, options["mangleProperties"])
+        self.assertIs(True, options["harnessExterns"])
+
     def test_run_selected_tests_enriches_results_with_triage_metadata(self) -> None:
         path = self.write_test(
             "test/language/metadata.js",
@@ -1664,6 +1808,7 @@ includes: [assert.js, sta.js]
         source: str = "ORIGINAL_BODY();\n",
         minified: str = "MINIFIED_BODY();",
         engine_reason: str = "Test262Error: Expected SameValue",
+        minifier: object | None = None,
     ) -> dict[str, object]:
         path = self.write_test("test/language/cross-check.js", source)
         repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
@@ -1686,11 +1831,14 @@ includes: [assert.js, sta.js]
                 {},
                 30.0,
                 0,
-                minifier=FakeMinifier(code=minified),
+                minifier=minifier or FakeMinifier(code=minified),
                 reference_engine=reference_engine,
             )
 
-        self.assertEqual(["original", "terser"], [r["variant"] for r in results])
+        expected_variant = str(getattr(minifier, "name", run_test262.TERSER_VARIANT))
+        self.assertEqual(
+            ["original", expected_variant], [r["variant"] for r in results]
+        )
         return results[1]
 
     def test_reference_engine_failing_the_minified_body_attributes_it_to_the_minifier(
@@ -1709,6 +1857,21 @@ includes: [assert.js, sta.js]
         self.assertEqual("1.test", result["referenceEngineVersion"])
         # What the engine said is kept: a skipped case still has to be readable.
         self.assertIn("Test262Error", str(result["engineFailure"]))
+
+    def test_a_cross_checked_skip_keeps_the_variant_that_produced_it(self) -> None:
+        # The skip REPLACES the minified case, so it has to answer to the same variant
+        # name; a closure run that emitted "terser" skips would leave every attributed
+        # path without its configured variant and fail the merge's coverage check.
+        engine = FakeReferenceEngine({"COMPILED_BODY": "failed"})
+        result = self._cross_check_case(
+            engine,
+            minified="COMPILED_BODY();",
+            minifier=FakeClosureMinifier(code="COMPILED_BODY();"),
+        )
+
+        self.assertEqual(run_test262.CLOSURE_VARIANT, result["variant"])
+        self.assertEqual("skipped", result["status"])
+        self.assertEqual("minifier-changed-semantics", result["skipKind"])
 
     def test_minified_body_the_reference_engine_cannot_parse_is_its_own_kind(self) -> None:
         engine = FakeReferenceEngine(

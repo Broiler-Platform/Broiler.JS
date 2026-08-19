@@ -54,11 +54,14 @@ inputs:
     description: Per-test wall-clock timeout.
     required: true
   minifier:
-    description: Run original tests only (none) or original plus eligible Terser variants.
+    description: >
+      Run original tests only (none), or original plus one minified variant:
+      terser for the conservative test262-safe mangle, closure for Google Closure
+      Compiler at ADVANCED_OPTIMIZATIONS against the ES2026 standard.
     required: false
     default: terser
   minifier-timeout-seconds:
-    description: Per-test Terser transformation timeout.
+    description: Per-test minifier transformation timeout.
     required: false
     default: '30'
   memory-limit-mb:
@@ -92,11 +95,13 @@ runs:
         python-version: '3.12'
 
     - uses: actions/setup-node@v5
-      if: ${{ inputs.minifier == 'terser' }}
+      if: ${{ inputs.minifier != 'none' }}
       with:
         node-version: '20'
         cache: npm
-        cache-dependency-path: .github/actions/run-test262-shard/terser/package-lock.json
+        cache-dependency-path: |
+          .github/actions/run-test262-shard/terser/package-lock.json
+          .github/actions/run-test262-shard/closure/package-lock.json
 
     - name: Install and resolve pinned Terser
       id: terser
@@ -110,6 +115,23 @@ runs:
         module="$(node -e 'const path=require("node:path"); process.stdout.write(path.dirname(require.resolve("terser/package.json", {paths:[process.argv[1]]})))' "$TERSER_PREFIX")"
         version="$(node -e 'process.stdout.write(require(process.argv[1]).version)' "$module/package.json")"
         test "$version" = "5.50.0"
+        echo "module=$module" >> "$GITHUB_OUTPUT"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+
+    # The npm package ships the compiler as a platform-native image alongside the JAR, so
+    # the install is a plain dependency install and no JDK is provisioned here.
+    - name: Install and resolve pinned Closure Compiler
+      id: closure
+      if: ${{ inputs.minifier == 'closure' }}
+      shell: bash
+      env:
+        CLOSURE_PREFIX: ${{ github.action_path }}/closure
+      run: |
+        set -euo pipefail
+        npm ci --prefix "$CLOSURE_PREFIX" --ignore-scripts --no-audit --no-fund
+        module="$(node -e 'const path=require("node:path"); process.stdout.write(path.dirname(require.resolve("google-closure-compiler/package.json", {paths:[process.argv[1]]})))' "$CLOSURE_PREFIX")"
+        version="$(node -e 'process.stdout.write(require(process.argv[1]).version)' "$module/package.json")"
+        test "$version" = "20260816.0.0"
         echo "module=$module" >> "$GITHUB_OUTPUT"
         echo "version=$version" >> "$GITHUB_OUTPUT"
 
@@ -178,6 +200,7 @@ runs:
         MINIFIER: ${{ inputs.minifier }}
         MINIFIER_TIMEOUT_SECONDS: ${{ inputs.minifier-timeout-seconds }}
         TERSER_MODULE: ${{ steps.terser.outputs.module }}
+        CLOSURE_MODULE: ${{ steps.closure.outputs.module }}
         MEMORY_LIMIT_MB: ${{ inputs.memory-limit-mb }}
         MAX_WORKERS: ${{ inputs.max-workers }}
         SHUFFLE_SEED: ${{ inputs.shuffle-seed }}
@@ -191,7 +214,7 @@ runs:
           *) echo "Unsupported test262 phase: $PHASE" >&2; exit 2 ;;
         esac
         case "$MINIFIER" in
-          none|terser) ;;
+          none|terser|closure) ;;
           *) echo "Unsupported test262 minifier: $MINIFIER" >&2; exit 2 ;;
         esac
 
@@ -231,6 +254,14 @@ runs:
             exit 2
           fi
           ARGS+=(--terser-module "$TERSER_MODULE")
+        fi
+
+        if [ "$MINIFIER" = "closure" ]; then
+          if [ -z "$CLOSURE_MODULE" ]; then
+            echo "Closure Compiler was requested but its pinned module was not resolved." >&2
+            exit 2
+          fi
+          ARGS+=(--closure-module "$CLOSURE_MODULE")
         fi
 
         if [ "$RERUN_FAILED" = "true" ]; then

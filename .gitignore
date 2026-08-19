@@ -26,3 +26,4 @@
 /BenchmarkDotNet.Artifacts/
 /.vs
 /.github/actions/run-test262-shard/terser/node_modules/
+/.github/actions/run-test262-shard/closure/node_modules/

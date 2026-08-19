@@ -14,6 +14,7 @@ if str(COMPLIANCE_DIR) not in sys.path:
     sys.path.insert(0, str(COMPLIANCE_DIR))
 
 import merge_test262_shards as merger
+import run_test262
 
 
 class MergeTest262ShardsTests(unittest.TestCase):
@@ -49,8 +50,8 @@ class MergeTest262ShardsTests(unittest.TestCase):
         suite_ref: str = "abc123",
         selected_before_sharding: int | None = None,
         minifier: str | None = None,
-        minifier_version: str = "5.31.0",
-        minifier_profile: str = "test262-safe-mangle-v2",
+        minifier_version: str | None = None,
+        minifier_profile: str | None = None,
         minifier_timeout_seconds: float = 15.0,
         variants: list[str] | None = None,
     ) -> dict[str, object]:
@@ -83,38 +84,27 @@ class MergeTest262ShardsTests(unittest.TestCase):
         if selected_before_sharding is not None:
             payload["selectedCountBeforeSharding"] = selected_before_sharding
         if minifier is not None:
+            minified = minifier in merger._MINIFIED_VARIANTS
             configured_variants = variants or (
-                ["original", "terser"]
-                if minifier == "terser"
-                else ["original"]
+                ["original", minifier] if minified else ["original"]
             )
+            # Callers that do not care about provenance get the pinned profile for
+            # whichever minifier they asked for; a caller testing a mismatch passes
+            # its own.
+            if minifier_profile is None:
+                minifier_profile = merger._MINIFIER_PROFILES.get(minifier, "")
+            if minifier_version is None:
+                minifier_version = (
+                    "20260816.0.0" if minifier == "closure" else "5.31.0"
+                )
             payload["minifier"] = minifier
-            payload["minifierVersion"] = (
-                minifier_version if minifier == "terser" else ""
-            )
-            payload["minifierProfile"] = (
-                minifier_profile if minifier == "terser" else ""
-            )
+            payload["minifierVersion"] = minifier_version if minified else ""
+            payload["minifierProfile"] = minifier_profile if minified else ""
             payload["minifierTimeoutSeconds"] = (
-                minifier_timeout_seconds if minifier == "terser" else 0
+                minifier_timeout_seconds if minified else 0
             )
             payload["minifierOptions"] = (
-                {
-                    "compress": False,
-                    "mangle": True,
-                    "mangleProperties": False,
-                    "mangleEval": False,
-                    "reserveQuotedNames": True,
-                    "toplevel": False,
-                    "module": False,
-                    "keepFunctionNames": True,
-                    "keepClassNames": True,
-                    "asciiOnly": False,
-                    "comments": False,
-                    "semicolons": True,
-                }
-                if minifier == "terser"
-                else {}
+                dict(merger._MINIFIER_OPTIONS[minifier]) if minified else {}
             )
             payload["variants"] = configured_variants
             payload["expectedVariantCountPerPath"] = len(configured_variants)
@@ -183,8 +173,8 @@ class MergeTest262ShardsTests(unittest.TestCase):
         selected_before_sharding: int | None = None,
         suite_ref: str = "abc123",
         minifier: str | None = None,
-        minifier_version: str = "5.31.0",
-        minifier_profile: str = "test262-safe-mangle-v2",
+        minifier_version: str | None = None,
+        minifier_profile: str | None = None,
         minifier_timeout_seconds: float = 15.0,
         variants: list[str] | None = None,
     ) -> Path:
@@ -711,7 +701,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
         self.assertEqual([path], merged["notApplicablePaths"])
         self.assertEqual([], persisted["manifestPaths"])
 
-    def test_cross_checked_skip_kinds_leave_the_terser_only_report(self) -> None:
+    def test_cross_checked_skip_kinds_leave_the_minifier_only_report(self) -> None:
         # The two verdicts the reference engine can return. Both are conclusive exemptions:
         # they clear the manifest, they are counted per kind so they stay visible, and
         # neither reaches the Terser-only report, which exists to name ENGINE defects.
@@ -754,10 +744,10 @@ class MergeTest262ShardsTests(unittest.TestCase):
             merged["summary"]["notApplicableByKind"],
         )
         self.assertEqual([changed, invalid], sorted(merged["notApplicablePaths"]))
-        self.assertEqual(0, merged["terserOnlyFailureCount"])
+        self.assertEqual(0, merged["minifierOnlyFailureCount"])
         self.assertEqual([], persisted["manifestPaths"])
 
-        body = merger.render_terser_only_issue_markdown(merged)
+        body = merger.render_minifier_only_issue_markdown(merged)
         self.assertIn("Attributed to the minifier", body)
 
     def test_not_applicable_marker_requires_terser_skip_contract(self) -> None:
@@ -1611,7 +1601,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
         # deliberately drawn from the complete timeout set.
         self.assertIn("test/language/unknown.js", markdown)
 
-    def test_terser_only_failures_isolate_minification_regressions(self) -> None:
+    def test_minifier_only_failures_isolate_minification_regressions(self) -> None:
         self.write_report(
             0,
             [
@@ -1679,23 +1669,23 @@ class MergeTest262ShardsTests(unittest.TestCase):
         )
 
         merged = merger.merge(
-            self.root, expected_shard_indexes={0}, terser_only_limit=2
+            self.root, expected_shard_indexes={0}, minifier_only_limit=2
         )
 
-        self.assertEqual(3, merged["terserOnlyFailureCount"])
-        self.assertEqual(2, merged["terserOnlyDivergenceCount"])
-        self.assertEqual(1, merged["terserOnlyMinifierFailureCount"])
-        self.assertEqual(3, merged["terserOnlyPathCount"])
+        self.assertEqual(3, merged["minifierOnlyFailureCount"])
+        self.assertEqual(2, merged["minifierOnlyDivergenceCount"])
+        self.assertEqual(1, merged["minifierOnlyMinifierFailureCount"])
+        self.assertEqual(3, merged["minifierOnlyPathCount"])
         self.assertEqual(
             [
                 "test/built-ins/mangled-small.js",
                 "test/built-ins/minifier-broke.js",
                 "test/language/mangled-large.js",
             ],
-            merged["terserOnlyPaths"],
+            merged["minifierOnlyPaths"],
         )
         self.assertNotIn(
-            "test/language/broken-both-ways.js", merged["terserOnlyPaths"]
+            "test/language/broken-both-ways.js", merged["minifierOnlyPaths"]
         )
         # The ranked list honours its limit and leads with the cheapest
         # reduction, while the group list keeps every distinct symptom.
@@ -1704,14 +1694,14 @@ class MergeTest262ShardsTests(unittest.TestCase):
                 "test/built-ins/mangled-small.js",
                 "test/language/mangled-large.js",
             ],
-            [case["path"] for case in merged["terserOnlyFailures"]],
+            [case["path"] for case in merged["minifierOnlyFailures"]],
         )
         self.assertEqual(
             ["MinifierFailure", "Timeout", "Failure"],
-            [group["kind"] for group in merged["terserOnlyGroups"]],
+            [group["kind"] for group in merged["minifierOnlyGroups"]],
         )
 
-        markdown = merger.render_terser_only_issue_markdown(merged)
+        markdown = merger.render_minifier_only_issue_markdown(merged)
         self.assertIn("3 Terser-only failure(s)", markdown)
         self.assertIn("Minifier infrastructure failures: 1", markdown)
         self.assertIn("test/built-ins/minifier-broke.js", markdown)
@@ -1721,7 +1711,164 @@ class MergeTest262ShardsTests(unittest.TestCase):
             markdown.index("test/language/mangled-large.js"),
         )
 
-    def test_original_only_run_reports_no_terser_only_failures(self) -> None:
+    def test_merger_and_runner_agree_on_every_minifier_profile(self) -> None:
+        """The merger REJECTS a report whose options it does not recognise byte for byte.
+
+        So the two tables are one contract in two files, and a profile changed on the
+        runner side without the merger following would turn every shard of the next run
+        into a configuration failure.
+        """
+        self.assertEqual(
+            set(run_test262.MINIFIER_VARIANTS), set(merger._MINIFIED_VARIANTS)
+        )
+        self.assertEqual(
+            {
+                run_test262.TERSER_VARIANT: run_test262.TERSER_PROFILE,
+                run_test262.CLOSURE_VARIANT: run_test262.CLOSURE_PROFILE,
+            },
+            merger._MINIFIER_PROFILES,
+        )
+        self.assertEqual(run_test262.MINIFIER_OPTIONS, merger._MINIFIER_OPTIONS)
+
+    def test_closure_run_is_merged_under_its_own_variant_and_profile(self) -> None:
+        self.write_report(
+            0,
+            [
+                {
+                    "path": "test/language/compiled.js",
+                    "variant": "original",
+                    "status": "passed",
+                    "sourceSizeBytes": 400,
+                },
+                {
+                    "path": "test/language/compiled.js",
+                    "variant": "closure",
+                    "status": "failed",
+                    "reason": "expected 'fn' but got 'a'",
+                    "sourceSizeBytes": 400,
+                    "minifiedSourceSizeBytes": 120,
+                },
+                # ADVANCED renames properties, so a case the transformation moved out of
+                # being the test is the common outcome, not an engine defect.
+                {
+                    "path": "test/language/renamed-property.js",
+                    "variant": "original",
+                    "status": "passed",
+                },
+                {
+                    "path": "test/language/renamed-property.js",
+                    "variant": "closure",
+                    "status": "skipped",
+                    "notApplicable": True,
+                    "skipKind": "minifier-changed-semantics",
+                    "reason": "node passes this test and fails its minified body",
+                },
+            ],
+            minifier="closure",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual([], merged["configurationFailures"])
+        self.assertEqual(["original", "closure"], merged["observedVariants"])
+        self.assertEqual("closure", merged["minifiedVariant"])
+        self.assertEqual(
+            "test262-closure-advanced-v1",
+            merged["runConfiguration"]["minifierProfile"],
+        )
+        self.assertEqual(
+            "ADVANCED_OPTIMIZATIONS",
+            merged["runConfiguration"]["minifierOptions"]["compilationLevel"],
+        )
+        self.assertEqual(
+            2026, merged["runConfiguration"]["minifierOptions"]["ecmaScriptYear"]
+        )
+        self.assertEqual(1, merged["minifierOnlyFailureCount"])
+        self.assertEqual(
+            ["test/language/compiled.js"], merged["minifierOnlyPaths"]
+        )
+        self.assertEqual(
+            {"minifier-changed-semantics": 1},
+            merged["summary"]["notApplicableByKind"],
+        )
+        markdown = merger.render_minifier_only_issue_markdown(merged)
+        self.assertIn("Closure-only failure(s)", markdown)
+        self.assertIn("### Normalized Closure-only failure groups", markdown)
+        self.assertIn("test262-closure-advanced-v1", markdown)
+        self.assertIn("--minifier closure --closure-module", markdown)
+        self.assertIn(
+            "Attributed to the minifier "
+            "(minification changed what the test measures): 1",
+            markdown,
+        )
+
+    def test_closure_run_recording_the_terser_profile_is_a_configuration_failure(
+        self,
+    ) -> None:
+        self.write_report(
+            0,
+            [
+                {
+                    "path": "test/language/compiled.js",
+                    "variant": "original",
+                    "status": "passed",
+                },
+                {
+                    "path": "test/language/compiled.js",
+                    "variant": "closure",
+                    "status": "passed",
+                },
+            ],
+            minifier="closure",
+            minifier_profile="test262-safe-mangle-v2",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        kinds = {failure["kind"] for failure in merged["configurationFailures"]}
+        self.assertIn("InvalidMinifierConfiguration", kinds)
+        messages = " ".join(
+            failure["message"] for failure in merged["configurationFailures"]
+        )
+        self.assertIn("test262-closure-advanced-v1", messages)
+
+    def test_a_report_cannot_declare_two_minified_variants(self) -> None:
+        self.write_report(
+            0,
+            [
+                {
+                    "path": "test/language/two.js",
+                    "variant": "original",
+                    "status": "passed",
+                },
+                {
+                    "path": "test/language/two.js",
+                    "variant": "terser",
+                    "status": "passed",
+                },
+                {
+                    "path": "test/language/two.js",
+                    "variant": "closure",
+                    "status": "passed",
+                },
+            ],
+            minifier="terser",
+            variants=["original", "terser", "closure"],
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual([0], [item["shardIndex"] for item in merged["incompleteShards"]])
+        self.assertEqual(
+            ["MalformedReport"],
+            [item["failureReason"] for item in merged["incompleteShards"]],
+        )
+        self.assertIn(
+            "report variants must be ['original'] or ['original', <minifier>]",
+            merged["incompleteShards"][0]["failureDetail"],
+        )
+
+    def test_original_only_run_reports_no_minifier_only_failures(self) -> None:
         self.write_report(
             0,
             [
@@ -1738,11 +1885,11 @@ class MergeTest262ShardsTests(unittest.TestCase):
         merged = merger.merge(self.root, expected_shard_indexes={0})
 
         self.assertEqual(1, merged["summary"]["failed"])
-        self.assertEqual(0, merged["terserOnlyFailureCount"])
-        self.assertEqual([], merged["terserOnlyGroups"])
-        self.assertIn("- None", merger.render_terser_only_issue_markdown(merged))
+        self.assertEqual(0, merged["minifierOnlyFailureCount"])
+        self.assertEqual([], merged["minifierOnlyGroups"])
+        self.assertIn("- None", merger.render_minifier_only_issue_markdown(merged))
 
-    def test_terser_only_cases_without_sizes_rank_last(self) -> None:
+    def test_minifier_only_cases_without_sizes_rank_last(self) -> None:
         self.write_report(
             0,
             [
@@ -1779,16 +1926,16 @@ class MergeTest262ShardsTests(unittest.TestCase):
 
         self.assertEqual(
             ["test/language/known-size.js", "test/language/unknown-size.js"],
-            [case["path"] for case in merged["terserOnlyFailures"]],
+            [case["path"] for case in merged["minifierOnlyFailures"]],
         )
-        markdown = merger.render_terser_only_issue_markdown(merged)
+        markdown = merger.render_minifier_only_issue_markdown(merged)
         self.assertIn("2.0 KiB minified of 4.0 KiB original", markdown)
         self.assertIn("unknown size", markdown)
         # Both cases share one normalized symptom, so they are one group.
-        self.assertEqual(1, len(merged["terserOnlyGroups"]))
-        self.assertEqual(2, merged["terserOnlyGroups"][0]["count"])
+        self.assertEqual(1, len(merged["minifierOnlyGroups"]))
+        self.assertEqual(2, merged["minifierOnlyGroups"][0]["count"])
 
-    def test_not_applicable_terser_case_is_not_a_terser_only_failure(self) -> None:
+    def test_not_applicable_minified_case_is_not_a_minifier_only_failure(self) -> None:
         path = "test/built-ins/Function/prototype/toString/source.js"
         self.write_report(
             0,
@@ -1808,8 +1955,8 @@ class MergeTest262ShardsTests(unittest.TestCase):
 
         merged = merger.merge(self.root, expected_shard_indexes={0})
 
-        self.assertEqual(0, merged["terserOnlyFailureCount"])
-        self.assertEqual([], merged["terserOnlyFailures"])
+        self.assertEqual(0, merged["minifierOnlyFailureCount"])
+        self.assertEqual([], merged["minifierOnlyFailures"])
 
     def test_cli_writes_reports_manifest_and_failure_outputs(self) -> None:
         self.write_report(
@@ -1835,7 +1982,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
         common_md = self.root / "out" / "common.md"
         biggest_md = self.root / "out" / "biggest.md"
         timeout_md = self.root / "out" / "timeout.md"
-        terser_only_md = self.root / "out" / "terser-only.md"
+        minifier_only_md = self.root / "out" / "minifier-only.md"
         github_output = self.root / "out" / "github-output.txt"
 
         stdout = StringIO()
@@ -1858,8 +2005,8 @@ class MergeTest262ShardsTests(unittest.TestCase):
                     str(biggest_md),
                     "--timeout-issue-md",
                     str(timeout_md),
-                    "--terser-only-issue-md",
-                    str(terser_only_md),
+                    "--minifier-only-issue-md",
+                    str(minifier_only_md),
                     "--problem-limit",
                     "1",
                     "--biggest-problem-limit",
@@ -1900,13 +2047,13 @@ class MergeTest262ShardsTests(unittest.TestCase):
         )
         # An original-only run cannot produce Terser-only evidence, so the
         # dedicated report is still written and still says so.
-        self.assertIn("- None", terser_only_md.read_text(encoding="utf-8"))
+        self.assertIn("- None", minifier_only_md.read_text(encoding="utf-8"))
         outputs = github_output.read_text(encoding="utf-8")
         self.assertIn("failed_count=2", outputs)
         self.assertIn("create_issue=true", outputs)
         self.assertIn("create_biggest_issue=true", outputs)
         self.assertIn("create_timeout_issue=true", outputs)
-        self.assertIn("create_terser_only_issue=false", outputs)
+        self.assertIn("create_minifier_only_issue=false", outputs)
         self.assertIn("incomplete_shard_indexes=1", outputs)
         self.assertIn(
             'incomplete_shard_matrix=[{"shard-index":1}]',
@@ -1975,7 +2122,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
         self.assertIn("create_issue=false", outputs)
         self.assertIn("create_biggest_issue=false", outputs)
         self.assertIn("create_timeout_issue=false", outputs)
-        self.assertIn("create_terser_only_issue=false", outputs)
+        self.assertIn("create_minifier_only_issue=false", outputs)
         self.assertIn("has_incomplete_shards=false", outputs)
         self.assertIn("suite_passed=true", outputs)
 
@@ -2005,7 +2152,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
         self.assertIn("total_count=2", outputs)
         self.assertIn("unique_path_count=1", outputs)
         self.assertIn("original_case_count=1", outputs)
-        self.assertIn("terser_case_count=1", outputs)
+        self.assertIn("minified_case_count=1", outputs)
         self.assertIn("not_applicable_count=1", outputs)
         self.assertIn("suite_passed=true", outputs)
 
@@ -2040,7 +2187,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
         self.assertIn("create_timeout_issue=true", outputs)
         self.assertIn("suite_passed=false", outputs)
 
-    def test_terser_only_run_opens_its_own_issue_through_the_cli(self) -> None:
+    def test_minifier_only_run_opens_its_own_issue_through_the_cli(self) -> None:
         path = "test/language/mangled.js"
         self.write_report(
             0,
@@ -2062,7 +2209,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
             ],
             minifier="terser",
         )
-        terser_only_md = self.root / "out" / "terser-only.md"
+        minifier_only_md = self.root / "out" / "minifier-only.md"
         github_output = self.root / "out" / "github-output.txt"
 
         with redirect_stdout(StringIO()):
@@ -2072,9 +2219,9 @@ class MergeTest262ShardsTests(unittest.TestCase):
                     str(self.root),
                     "--expected-shards",
                     "0",
-                    "--terser-only-issue-md",
-                    str(terser_only_md),
-                    "--terser-only-limit",
+                    "--minifier-only-issue-md",
+                    str(minifier_only_md),
+                    "--minifier-only-limit",
                     "1",
                     "--github-output",
                     str(github_output),
@@ -2082,16 +2229,16 @@ class MergeTest262ShardsTests(unittest.TestCase):
             )
 
         self.assertEqual(0, exit_code)
-        body = terser_only_md.read_text(encoding="utf-8")
+        body = minifier_only_md.read_text(encoding="utf-8")
         self.assertIn("1 Terser-only failure(s)", body)
         self.assertIn("mangled binding resolved to the wrong value", body)
         self.assertIn(path, body)
         outputs = github_output.read_text(encoding="utf-8")
-        self.assertIn("create_terser_only_issue=true", outputs)
-        self.assertIn("terser_only_failure_count=1", outputs)
-        self.assertIn("terser_only_divergence_count=1", outputs)
-        self.assertIn("terser_only_minifier_failure_count=0", outputs)
-        self.assertIn("terser_only_path_count=1", outputs)
+        self.assertIn("create_minifier_only_issue=true", outputs)
+        self.assertIn("minifier_only_failure_count=1", outputs)
+        self.assertIn("minifier_only_divergence_count=1", outputs)
+        self.assertIn("minifier_only_infrastructure_failure_count=0", outputs)
+        self.assertIn("minifier_only_path_count=1", outputs)
         self.assertIn("suite_passed=false", outputs)
 
     def test_cli_rejects_non_positive_limits(self) -> None:
@@ -2099,7 +2246,7 @@ class MergeTest262ShardsTests(unittest.TestCase):
             "--problem-limit",
             "--biggest-problem-limit",
             "--timeout-limit",
-            "--terser-only-limit",
+            "--minifier-only-limit",
         ):
             with self.subTest(option=option), redirect_stderr(StringIO()):
                 with self.assertRaises(SystemExit) as raised:
