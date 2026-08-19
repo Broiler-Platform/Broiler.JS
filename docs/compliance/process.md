@@ -96,6 +96,30 @@ compilation unit `assert.sameValue` is a property of a free name that `ADVANCED`
 otherwise rename; declaring the pinned suite's own harness as externs protects exactly
 that surface without a hand-maintained list that would rot against the suite.
 
+**The host the compiled body runs on is declared the same way, and the engine is what
+declares it.** ADVANCED renames every property name its externs do not mention, and the
+externs Closure ships describe the standard surface its own release knows about — which
+is not this standard. `Temporal.Duration` compiles to `Temporal.h`, `Iterator.prototype`'s
+helpers to one-letter names, and the resulting program cannot reach the API the test is
+about, so the engine correctly reports that `undefined` is not a constructor and a
+conformance report reads it as the engine having lost Temporal. A production ADVANCED
+build answers this with externs for its host; so does this profile. Before the first
+compile of a shard, the runner has the engine under test walk its own globals — every own
+property name reachable from `globalThis` through data properties and prototypes, with
+accessors named but never invoked — and writes the result as an externs file that every
+compilation gets (`minifierHostExternNames` records how many names that was). Asking the
+engine rather than keeping a list is the same argument as the harness: a list is wrong the
+day the engine implements one more builtin, and wrong in the direction that reports the
+new builtin as a defect. A run whose engine cannot answer does not start, because a
+Closure run without those externs measures a program that never reaches the engine.
+
+What this does not cover is an option name the host reads off an object the *test* builds:
+`{ smallestUnit: "second" }` is renamed to `{ a: "second" }` because nothing in the host's
+own object graph is called `smallestUnit`. That program is broken in every engine — it is
+the ADVANCED hazard that record-type externs exist to answer in production — so the
+cross-check below is what settles those, whenever the reference engine implements the
+feature the test needs.
+
 A source the minifier's own parser rejects is recorded as a not-applicable skip
 (`skipKind: minifier-unsupported-syntax`), not a failure: nothing was minified, so there
 is no minified variant whose result could be attributed to the engine. test262 exercises
@@ -159,11 +183,26 @@ imports, and still rejects the three-argument `ImportCall` Terser printed for
 `import((1, 0, "./m.js"))`. The original is the control — an engine that cannot parse
 THAT either is refusing the test's own syntax and has said nothing about the minifier.
 
+The last row is the expensive one, because it is the row that keeps a case attributed to
+Broiler, so the reference engine is given the test as test262 wrote it: a script, evaluated
+in the global scope. Node run over a file does not do that — it wraps a CommonJS file in a
+function body, where a top-level `var` is a local of the wrapper rather than a property of
+the global object — and every test whose subject IS that distinction then fails under Node
+no matter how correct Node is. The Annex B eval-code cases declare a function inside
+`(0,eval)(…)` and read the binding back from the enclosing scope; `S15.3_A3_T2` asks a
+`Function`-constructed body for `this.x`. Each of those originals fails inside the module
+wrapper, and each therefore comes back "cannot run the original either".
+`reference_host.cjs` compiles the program with `vm.runInThisContext` instead, which is the
+scope the test was written for, and its `--check` is `vm.Script` — the script-mode parse
+that `node --check`, which parses a module, is not.
+
 The check can only move a case OUT of the engine's column, never into it, and it never
 runs on a passing case, a negative test (which passes BY failing, which an exit code
 cannot distinguish), or when the reference engine is unusable — those keep the engine's
-own verdict. `--no-reference-cross-check` turns it off, at the cost of reading minifier
-artefacts as engine failures. The reference engine's own version rides on each
+own verdict. A feature the reference engine has not implemented is the same "no opinion":
+Node has no `Temporal`, so it cannot say whether a Temporal test's minified body is still
+that test, and the case stays with the engine. `--no-reference-cross-check` turns it off,
+at the cost of reading minifier artefacts as engine failures. The reference engine's own version rides on each
 cross-checked case rather than on the run configuration, because nothing pins a runner's
 Node the way the lockfiles pin the manglers' versions.
 

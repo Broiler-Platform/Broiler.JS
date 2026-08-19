@@ -258,6 +258,13 @@ jobs:
                   "Test262Error.thrower = function (message) {};\n"
               ),
           }
+          # Stands in for the externs the runner generates from the engine's own globals:
+          # a name the host owns must survive ADVANCED even though the test never quotes it.
+          host_externs = (
+              "/** @fileoverview @externs */\n"
+              "/** @type {?} */ var __broilerTest262HostNames;\n"
+              "__broilerTest262HostNames.hostOwnedName;\n"
+          )
           requests = [
               {"id": 1, "operation": "hello"},
               {
@@ -265,19 +272,22 @@ jobs:
                   "operation": "minify",
                   "path": "validation.js",
                   "source": (
-                      "var holder = { quotedName: 1, mangledName: 2 };\n"
+                      "var holder = { quotedName: 1, mangledName: 2, hostOwnedName: 3 };\n"
                       "unpredictableGlobal(holder);\n"
                       "assert.sameValue(holder.quotedName, 1, 'quotedName');\n"
                       "assert.sameValue(holder.mangledName, 2);\n"
+                      "assert.sameValue(holder.hostOwnedName, 3);\n"
                   ),
               },
           ]
           with tempfile.TemporaryDirectory() as harness:
               for name, text in harness_stubs.items():
                   Path(harness, name).write_text(text, encoding="utf-8")
+              externs_path = Path(harness, "test262-host-surface.js")
+              externs_path.write_text(host_externs, encoding="utf-8")
               try:
                   completed = subprocess.run(
-                      ["node", str(worker), module, harness, "60000"],
+                      ["node", str(worker), module, harness, "60000", str(externs_path)],
                       input="\n".join(json.dumps(request) for request in requests) + "\n",
                       text=True,
                       capture_output=True,
@@ -311,6 +321,8 @@ jobs:
               sys.exit(f"Unexpected Closure transformation response: {transformed!r}")
           if "assert.sameValue" not in code:
               sys.exit(f"Closure renamed the harness API the externs declare: {code!r}")
+          if "hostOwnedName" not in code:
+              sys.exit(f"Closure renamed a name the host's own externs declare: {code!r}")
           if "mangledName" in code or code.count("quotedName") < 2:
               sys.exit(f"Closure did not reserve exactly the quoted names: {code!r}")
           if transformed.get("reserved") != ["quotedName"]:

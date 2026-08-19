@@ -480,6 +480,12 @@ class Test262WorkflowTests(unittest.TestCase):
         self.assertIn('"language": "ECMASCRIPT_NEXT"', smoke["run"])
         self.assertIn(f'"version": "{CLOSURE_VERSION}"', smoke["run"])
         self.assertIn("except subprocess.TimeoutExpired", smoke["run"])
+        # The engine's own surface is externs too, and the smoke test proves ADVANCED
+        # honours it: a host-owned name the source never quotes must come back unrenamed.
+        self.assertIn("__broilerTest262HostNames.hostOwnedName;", smoke["run"])
+        self.assertIn(
+            'Closure renamed a name the host\'s own externs declare', smoke["run"]
+        )
 
     def test_report_selects_one_authoritative_phase_and_emits_four_reports(self) -> None:
         report = self.workflow["jobs"]["report"]

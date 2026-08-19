@@ -42,6 +42,24 @@ Older triage also identified `Intl.DateTimeFormat` range/parts behavior and
 SameValue/Proxy ordering cases. Keep them here only while a current reproduction or
 linked issue remains; do not rely on deleted issue snapshots as evidence.
 
+## Deliberate deviations
+
+These are not gaps. They are places where the engine answers a pinned-suite test the way
+the current specification and the major engines do, and the test does not.
+
+- **`annexB/language/function-code/block-decl-func-skip-arguments`.** The test asserts that
+  a block-level `function arguments(){}` in a sloppy function leaves the arguments object
+  in place afterwards, and quotes the pre-2021 FunctionDeclarationInstantiation that
+  appended `"arguments"` to _parameterNames_ — the list Annex B's "and _F_ is not an
+  element of _parameterNames_" condition tests. Current 10.2.11 appends it to
+  _paramBindings_ instead, so the Annex B copy-out runs and the function value replaces the
+  arguments object. V8 and SpiderMonkey both answer as Broiler does (`node` prints
+  `function arguments() {}` after the block), and the `staging/sm` cases covering the same
+  shape assert the current wording. The file is unchanged at test262 HEAD, so it is not a
+  `KNOWN_INCORRECT_TESTS` entry either: it is the one expected failure of an
+  original-variant full run, and the reasoning lives next to the code in
+  `FastCompiler.AppendAnnexBOuterBindingAssignments`.
+
 ## Host-coverage gaps
 
 - `$262` host-harness helpers are incomplete.

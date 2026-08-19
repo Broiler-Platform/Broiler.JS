@@ -43,6 +43,13 @@ const harnessRoot = path.resolve(process.argv[3] || "");
 // and replaces the worker when it does; this only stops an unkillable compiler from
 // holding a worker thread forever, so it is deliberately the looser of the two.
 const PROCESS_TIMEOUT_MS = Number.parseInt(process.argv[4] || "", 10) || 300000;
+// Externs for the host the compiled body will run on, written by the Python side from what
+// the engine under test says it implements. Closure's bundled externs stop at the standard
+// surface its own release knows, so without this ADVANCED renames `Temporal.Duration` to
+// `Temporal.h` and every test of a newer builtin measures a program that can no longer
+// reach it. Required rather than optional: a Closure run without it reports the engine's
+// own API as the engine's own failures, which is worse than not running at all.
+const hostExterns = path.resolve(process.argv[5] || "");
 
 // See terser_worker.cjs: a quoted spelling that is also an identifier is a name the test
 // TALKS ABOUT. Terser answers that with `mangle.reserved`; Closure's equivalent is an
@@ -140,6 +147,11 @@ try {
       throw new Error(`test262 harness/${name} was not found under ${harnessRoot}`);
     }
   }
+  // A missing argument resolves to the working directory, which exists — so this asks for
+  // the file itself rather than for something at that path.
+  if (!process.argv[5] || !fs.statSync(hostExterns, { throwIfNoEntry: false })?.isFile()) {
+    throw new Error(`the engine's own externs were not found at ${hostExterns}`);
+  }
   compiler = resolveCompilerCommand(moduleRoot);
   temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "broiler-closure-"));
 } catch (error) {
@@ -157,7 +169,7 @@ function externsArguments(source, includes) {
     }
   }
 
-  const args = [];
+  const args = ["--externs", hostExterns];
   for (const name of names) {
     // `path.basename` keeps a metadata `includes:` entry from reaching outside the pinned
     // harness directory. A name the pinned suite does not have is skipped rather than

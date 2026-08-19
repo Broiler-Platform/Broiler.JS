@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import tempfile
 from pathlib import Path
 import subprocess
@@ -1259,23 +1260,40 @@ includes: [assert.js, sta.js]
             '{"name": "google-closure-compiler", "version": "20260816.0.0"}',
             encoding="utf-8",
         )
+        host_externs = module_root / "host-surface.js"
+        host_externs.write_text("/** @externs */\n", encoding="utf-8")
 
         with self.assertRaises(run_test262.MinifierError) as missing:
             run_test262.ClosureMinifier(
-                str(module_root), module_root / "not-a-harness", 30.0
+                str(module_root), module_root / "not-a-harness", 30.0, host_externs
             )
         self.assertIn("harness", str(missing.exception))
 
         harness_root = module_root / "harness"
         harness_root.mkdir()
-        minifier = run_test262.ClosureMinifier(str(module_root), harness_root, 30.0)
+        # The engine's own surface is as necessary as the harness: without it ADVANCED
+        # renames every builtin Closure's bundled externs do not mention.
+        with self.assertRaises(run_test262.MinifierError) as no_host:
+            run_test262.ClosureMinifier(
+                str(module_root), harness_root, 30.0, module_root / "not-written-yet.js"
+            )
+        self.assertIn("global surface", str(no_host.exception))
+
+        minifier = run_test262.ClosureMinifier(
+            str(module_root), harness_root, 30.0, host_externs
+        )
         self.assertEqual(run_test262.CLOSURE_VARIANT, minifier.name)
         self.assertEqual(run_test262.CLOSURE_PROFILE, minifier.profile)
         self.assertEqual("20260816.0.0", minifier.version)
         # The worker is told where the compiler and the externs live, plus a process
         # ceiling above the per-request timeout the Python side enforces.
         self.assertEqual(
-            [str(module_root.resolve()), str(harness_root.resolve()), "35000"],
+            [
+                str(module_root.resolve()),
+                str(harness_root.resolve()),
+                "35000",
+                str(host_externs.resolve()),
+            ],
             minifier._worker_arguments(),
         )
 
@@ -1595,6 +1613,7 @@ includes: [assert.js, sta.js]
             minifier_version="20260816.0.0",
             minifier_profile=run_test262.CLOSURE_PROFILE,
             minifier_timeout_seconds=60.0,
+            minifier_host_extern_names=594,
         )
 
         self.assertEqual(["original", "closure"], summary["variants"])
@@ -1610,6 +1629,10 @@ includes: [assert.js, sta.js]
         self.assertEqual(2026, options["ecmaScriptYear"])
         self.assertIs(True, options["mangleProperties"])
         self.assertIs(True, options["harnessExterns"])
+        self.assertIs(True, options["hostExterns"])
+        # How much of itself the engine declared: an observation of this shard's engine, so
+        # it is reported outside minifierOptions, which the merge holds every shard to.
+        self.assertEqual(594, summary["minifierHostExternNames"])
 
     def test_run_selected_tests_enriches_results_with_triage_metadata(self) -> None:
         path = self.write_test(
@@ -1979,6 +2002,155 @@ includes: [assert.js, sta.js]
             self.assertIn("// sta harness", program)
         self.assertIn("MINIFIED_BODY();", minified_program)
         self.assertIn("ORIGINAL_BODY();", original_program)
+
+
+class ReferenceHostTests(unittest.TestCase):
+    """The reference engine is handed each program as the script test262 wrote it as.
+
+    Node's module wrapper makes a top-level `var` a local of the wrapper function, so Node
+    fails the originals of every test whose subject is global scope — and a reference engine
+    that cannot run the original is the answer that keeps the case attributed to Broiler.
+    """
+
+    def test_every_program_reaches_node_through_the_script_launcher(self) -> None:
+        version = mock.Mock(returncode=0, stdout="v22.0.0\n", stderr="")
+        with mock.patch.object(run_test262.subprocess, "run", return_value=version) as run:
+            engine = run_test262.ReferenceEngine("node", 30.0)
+            engine.run("1;", is_async=False)
+            engine.parses("1;")
+
+        ran, checked = [call.args[0] for call in run.call_args_list[1:]]
+        self.assertEqual([engine.executable, str(run_test262.REFERENCE_HOST)], ran[:2])
+        self.assertEqual(
+            [engine.executable, str(run_test262.REFERENCE_HOST), "--check"], checked[:3]
+        )
+
+    @unittest.skipUnless(shutil.which("node"), "the reference engine needs Node.js")
+    def test_a_program_node_can_only_pass_as_a_script_passes(self) -> None:
+        engine = run_test262.ReferenceEngine("node", 30.0)
+        # Annex B in miniature: the eval'd code assigns the `var` the enclosing program
+        # declared, which is one binding in a script and two in a CommonJS module.
+        program = (
+            "var reached;\n"
+            "(0,eval)('{ function f() { reached = 1; } }');\n"
+            "f();\n"
+            "if (reached !== 1) { throw new Error('not the global binding'); }\n"
+        )
+
+        self.assertEqual("passed", engine.run(program, is_async=False))
+        self.assertTrue(engine.parses(program))
+        # And the parse is a script parse: `return` outside a function is a SyntaxError
+        # here, however happily Node's module wrapper would have swallowed it.
+        self.assertFalse(engine.parses("return 1;\n"))
+
+
+class HostExternsTests(unittest.TestCase):
+    """The engine describes its own global surface, and that description becomes externs.
+
+    Closure's bundled externs stop at the standard surface its release knows about, so
+    every property name past that — `Temporal.Duration`, `Iterator.prototype.take` — is
+    renamed by ADVANCED and the compiled program can no longer reach the API the test is
+    about. The engine is asked what it implements instead of a list being kept here, so a
+    builtin added tomorrow is protected without anyone remembering to add it.
+    """
+
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+
+    @staticmethod
+    def _engine_output(names: list[str], **overrides: object) -> object:
+        reported = "\n".join(
+            [run_test262.HOST_SURFACE_BEGIN, *names, run_test262.HOST_SURFACE_END]
+        )
+        completed = mock.Mock()
+        completed.returncode = overrides.get("returncode", 0)
+        completed.stdout = overrides.get("stdout", f"{reported}\n")
+        completed.stderr = overrides.get("stderr", "")
+        return completed
+
+    def test_the_reporting_script_prints_the_sentinels_the_parser_reads(self) -> None:
+        # The program is JavaScript the engine runs and the sentinels are how its output is
+        # found; a rename on one side alone would leave every Closure run unable to start.
+        self.assertIn(
+            f'print("{run_test262.HOST_SURFACE_BEGIN}")', run_test262.HOST_SURFACE_SCRIPT
+        )
+        self.assertIn(
+            f'print("{run_test262.HOST_SURFACE_END}")', run_test262.HOST_SURFACE_SCRIPT
+        )
+
+    def test_the_engine_is_asked_for_the_names_its_own_globals_own(self) -> None:
+        completed = self._engine_output(["Temporal", "Duration", "take", "Temporal"])
+        with mock.patch.object(
+            run_test262.subprocess, "run", return_value=completed
+        ) as engine:
+            names = run_test262.collect_host_property_names(TEST_ENGINE_PATH)
+
+        self.assertEqual(["Duration", "Temporal", "take"], names)
+        command = engine.call_args.args[0]
+        self.assertEqual(["dotnet", TEST_ENGINE_PATH, "--script-host"], command[:3])
+
+    def test_a_name_no_property_access_could_spell_is_left_out(self) -> None:
+        # An array index or a name with a space cannot be written as `.name`, which is the
+        # only form ADVANCED renames, so there is nothing for the externs to hold back.
+        completed = self._engine_output(["0", "12", "a b", "$fine", "_also", ""])
+        with mock.patch.object(run_test262.subprocess, "run", return_value=completed):
+            names = run_test262.collect_host_property_names(TEST_ENGINE_PATH)
+
+        self.assertEqual(["$fine", "_also"], names)
+
+    def test_an_engine_that_cannot_report_its_surface_stops_the_run(self) -> None:
+        cases = (
+            ("exit", self._engine_output([], returncode=1, stderr="boom\n")),
+            ("truncated", self._engine_output([], stdout="__broilerHostSurfaceBegin__\n")),
+            ("silent", self._engine_output([], stdout="")),
+        )
+        for label, completed in cases:
+            with self.subTest(label), mock.patch.object(
+                run_test262.subprocess, "run", return_value=completed
+            ):
+                with self.assertRaises(run_test262.MinifierError) as failure:
+                    run_test262.collect_host_property_names(TEST_ENGINE_PATH)
+                self.assertIn("global surface", str(failure.exception))
+
+    def test_an_empty_surface_is_a_failure_rather_than_empty_externs(self) -> None:
+        with mock.patch.object(
+            run_test262.subprocess, "run", return_value=self._engine_output(["0"])
+        ):
+            with self.assertRaises(run_test262.MinifierError) as failure:
+                run_test262.collect_host_property_names(TEST_ENGINE_PATH)
+        self.assertIn("empty global surface", str(failure.exception))
+
+    def test_an_engine_that_hangs_is_reported_as_a_timeout(self) -> None:
+        with mock.patch.object(
+            run_test262.subprocess,
+            "run",
+            side_effect=subprocess.TimeoutExpired(cmd=["dotnet"], timeout=120.0),
+        ):
+            with self.assertRaises(run_test262.MinifierError) as failure:
+                run_test262.collect_host_property_names(TEST_ENGINE_PATH, 120.0)
+        self.assertIn("120s", str(failure.exception))
+
+    def test_every_reported_name_becomes_a_property_access_in_the_externs(self) -> None:
+        destination = self.root / "externs" / run_test262.HOST_EXTERNS_NAME
+        written = run_test262.write_host_externs(["Temporal", "take"], destination)
+
+        self.assertEqual(destination, written)
+        lines = written.read_text(encoding="utf-8").splitlines()
+        self.assertIn("@externs", lines[0])
+        # A `?`-typed holder asks nothing about the object itself; the property access is
+        # all Closure's renaming pass reads.
+        self.assertEqual(
+            f"/** @type {{?}} */ var {run_test262.HOST_EXTERNS_HOLDER};", lines[1]
+        )
+        self.assertEqual(
+            [
+                f"{run_test262.HOST_EXTERNS_HOLDER}.Temporal;",
+                f"{run_test262.HOST_EXTERNS_HOLDER}.take;",
+            ],
+            lines[2:],
+        )
 
 
 if __name__ == "__main__":

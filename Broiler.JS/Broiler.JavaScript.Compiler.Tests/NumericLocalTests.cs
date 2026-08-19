@@ -167,6 +167,31 @@ public class NumericLocalTests
         => Assert.Equal(expected, Fn(body));
 
     [Theory]
+    // `!x` is a boolean whatever x was, so a local initialized from one is a boolean local.
+    // Typing it numeric stored the 0 that DoubleValue(false) produces and every read
+    // answered 0 rather than false — the shape every minifier writes its booleans in.
+    [InlineData("var b = !1; return typeof b + ':' + b;", "boolean:false")]
+    [InlineData("var b = !0; return typeof b + ':' + b;", "boolean:true")]
+    [InlineData("var b = !!1; return typeof b + ':' + b;", "boolean:true")]
+    [InlineData("var b = !1; return String(b === false);", "true")]
+    [InlineData("var b = !1; var f = function () { b = !0; }; f(); return typeof b + ':' + b;", "boolean:true")]
+    [InlineData("var b = !1; [1].forEach(function () { b = !0; }); return String(b);", "true")]
+    [InlineData("var b = !1; [].forEach(function () { b = !0; }); return String(b === false);", "true")]
+    [InlineData("var n = 1; var b = !n; return typeof b + ':' + b;", "boolean:false")]
+    public void ALocalHoldingTheValueOfLogicalNotStaysABoolean(string body, string expected)
+        => Assert.Equal(expected, Fn(body));
+
+    [Fact]
+    public void ArithmeticNegationOfANumberIsStillANumericLocal()
+    {
+        // The operator the boolean case is told apart from: `-x` over a number IS numeric.
+        var (result, numericLocals) = Compile("var x = -1; var s = 0; for (var i = 0; i < 3; i++) s += x; return typeof s + ':' + s;");
+
+        Assert.Equal("number:-3", result);
+        Assert.True(numericLocals >= 2, $"expected the negated local to stay unboxed, got {numericLocals}");
+    }
+
+    [Theory]
     // A `var` is observably undefined until its initializer runs, which a double cannot
     // represent — so anything that can be read before that point must be refused.
     [InlineData("var x; return String(x);", "undefined")]
