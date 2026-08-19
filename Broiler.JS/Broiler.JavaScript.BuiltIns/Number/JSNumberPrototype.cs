@@ -529,7 +529,7 @@ partial class JSNumber
     /// </summary>
     private static (string digits, int e) ShortestSignificantDigits(double x)
     {
-        var repr = x.ToString("R", CultureInfo.InvariantCulture);
+        var repr = JSNumber.RoundTrippable(x);
 
         var eIdx = repr.IndexOf('E');
         string mantissa;

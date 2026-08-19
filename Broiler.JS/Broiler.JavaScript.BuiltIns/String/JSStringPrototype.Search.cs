@@ -133,21 +133,30 @@ public partial class JSString
         // Spec order: ToString(this), then ToString(searchString), then
         // ToNumber(position). Read searchString BEFORE coercing position.
         var search = (a[0] ?? JSUndefined.Value).StringValue;
-        var fromIndex = a[1]?.DoubleValue ?? int.MaxValue;
-        var startIndex = double.IsNaN(fromIndex) ? int.MaxValue : (int)(((long)fromIndex << 32) >> 32);
+        var fromIndex = a[1]?.DoubleValue ?? double.NaN;
+        var length = @this.Length;
 
-        startIndex = Math.Min(startIndex, @this.Length - 1);
-        startIndex = Math.Min(startIndex + search.Length - 1, @this.Length - 1);
+        // \u00a7String.prototype.lastIndexOf steps 4-6: a NaN position (which is also what an absent one
+        // coerces to) means +\u221e, and the result is clamped into [0, length] \u2014 NOT [0, length - 1].
+        // The distinction is only visible for the empty search string, which is found AT every
+        // position including one past the end: `"abc".lastIndexOf("")` is 3, and clamping to
+        // length - 1 answered 2. A negative position clamps to 0 and still finds it, where this
+        // returned -1 \u2014 "not found" for a string that is always found.
+        var start = double.IsNaN(fromIndex)
+            ? length
+            : fromIndex <= 0 ? 0 : fromIndex >= length ? length : (int)fromIndex;
 
-        if (startIndex < 0)
-        {
-            if (@this == string.Empty && search.Length == 0)
-                return NumberZero;
-
+        // StringLastIndexOf: the largest k <= start with k + searchLength <= length that matches.
+        var lastPossible = Math.Min(start, length - search.Length);
+        if (lastPossible < 0)
             return NumberMinusOne;
-        }
 
-        return CreateNumber(@this.LastIndexOf(search, startIndex, StringComparison.Ordinal));
+        if (search.Length == 0)
+            return CreateNumber(lastPossible);
+
+        // .NET's LastIndexOf takes the index the match must END at or before, not the one it may
+        // start at, so the spec's start is converted rather than passed through.
+        return CreateNumber(@this.LastIndexOf(search, lastPossible + search.Length - 1, StringComparison.Ordinal));
     }
 
     [JSPrototypeMethod]

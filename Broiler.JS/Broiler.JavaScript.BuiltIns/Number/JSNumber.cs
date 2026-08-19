@@ -372,6 +372,30 @@ public sealed partial class JSNumber : JSPrimitive
     /// IEEE 754 double-precision, formatted using ECMAScript rules for when
     /// to use decimal vs scientific notation.
     /// </summary>
+    /// <summary>
+    /// The shortest decimal string that reads back as <paramref name="value"/> exactly, which is what
+    /// Number::toString is defined to produce: the digits are chosen so that no shorter string denotes
+    /// the same Number.
+    /// </summary>
+    /// <remarks>
+    /// <c>"R"</c> alone does not give it. The specifier is documented as unreliable and, for 2**-25, it
+    /// drops the seventeenth significant digit: .NET renders <c>2.980232238769531E-08</c>, which parses
+    /// back as a DIFFERENT double (0x1.fffffffffffffp-26 rather than 0x1.0p-25). So <c>String(2**-25)</c>
+    /// answered a number that is not the one it was asked about, and a page round-tripping a value
+    /// through a string - a hash, a serialized payload, a cache key - got a different value back than it
+    /// put in. The short form is verified by parsing and only widened to 17 digits when it fails, so
+    /// every value that already round-trips keeps its shortest form: <c>String(0.1)</c> stays
+    /// <c>"0.1"</c> rather than becoming <c>"0.10000000000000001"</c>.
+    /// </remarks>
+    internal static string RoundTrippable(double value)
+    {
+        var shortest = value.ToString("R", CultureInfo.InvariantCulture);
+        return double.TryParse(shortest, NumberStyles.Float, CultureInfo.InvariantCulture, out var reparsed)
+            && reparsed.Equals(value)
+                ? shortest
+                : value.ToString("G17", CultureInfo.InvariantCulture);
+    }
+
     internal static string ToECMAString(double value)
     {
         if (double.IsNaN(value))
@@ -391,7 +415,7 @@ public sealed partial class JSNumber : JSPrimitive
 
         // Get the round-trip representation using InvariantCulture
         // to ensure '.' as decimal separator.
-        string repr = value.ToString("R", CultureInfo.InvariantCulture);
+        string repr = RoundTrippable(value);
 
         // Parse repr into significand digits and base-10 exponent
         // such that value = significand × 10^exp  (significand is an integer string).
