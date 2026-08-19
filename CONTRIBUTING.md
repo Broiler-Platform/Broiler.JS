@@ -16,9 +16,14 @@ fragile-first controls are also exposed by the dispatch form. By default each
 eligible test runs twice: once unchanged and once through the workflow's
 lockfile-pinned Terser using the `test262-safe-mangle-v2` syntax-minification and
 identifier-mangling profile (compression is disabled, and an identifier the test itself
-quotes is held back from mangling so a name the test asserts still exists). Select `minifier: none` for an
-original-only diagnostic run; that narrower profile is reported but cannot rewrite the
-canonical failure manifest.
+quotes is held back from mangling so a name the test asserts still exists).
+Select `minifier: closure` to run the second variant through the lockfile-pinned Google
+Closure Compiler instead, at `ADVANCED_OPTIMIZATIONS` against the ES2026 standard — that
+profile also renames properties and removes code it proves unreachable, so expect many
+more cases to be attributed to the transformation rather than to the engine, and expect a
+markedly longer run. Select `minifier: none` for an original-only diagnostic run. Only the
+default Terser profile may rewrite the canonical failure manifest; the other two are
+reported but cannot.
 
 For an untargeted run, the workflow can follow a two-phase approach:
 

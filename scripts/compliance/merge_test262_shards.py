@@ -30,7 +30,7 @@ from typing import Any, Callable, Iterable
 DEFAULT_PROBLEM_LIMIT = 10
 DEFAULT_BIGGEST_PROBLEM_LIMIT = 3
 DEFAULT_TIMEOUT_LIMIT = 10
-DEFAULT_TERSER_ONLY_LIMIT = 10
+DEFAULT_MINIFIER_ONLY_LIMIT = 10
 PATH_SAMPLE_LIMIT = 5
 _RUN_CONFIGURATION_FIELDS = (
     "suiteRef",
@@ -97,9 +97,18 @@ _STATUS_RANK = {
     "failed": 2,
     "timedOut": 3,
 }
-_VARIANTS = ("original", "terser")
+_ORIGINAL_VARIANT = "original"
+# Every minified variant a report may carry. A single run configures exactly ONE of them —
+# a report is ["original"] or ["original", <one minifier>] — but the merger must recognise
+# each, because which one a shard ran is a run-configuration field it validates rather than
+# something it may assume.
+_MINIFIED_VARIANTS = ("terser", "closure")
+_VARIANTS = (_ORIGINAL_VARIANT, *_MINIFIED_VARIANTS)
 _VARIANT_RANK = {variant: index for index, variant in enumerate(_VARIANTS)}
-_MINIFIER_PROFILE = "test262-safe-mangle-v2"
+_MINIFIER_PROFILES = {
+    "terser": "test262-safe-mangle-v2",
+    "closure": "test262-closure-advanced-v1",
+}
 _MINIFIER_NOT_APPLICABLE = "minifier-not-applicable"
 # The source could not be minified at all because the minifier's own parser rejected it
 # (an escaped keyword used as an IdentifierName, sloppy-mode `let`, an Annex B assignment
@@ -126,21 +135,44 @@ _MINIFIER_SKIP_KINDS = frozenset(
         _MINIFIER_CHANGED_SEMANTICS,
     }
 )
+# The exact transformation each profile stands for, mirrored from
+# run_test262.MINIFIER_OPTIONS. A report that records anything else is not the run this
+# merger can describe, so it is a configuration failure rather than a silent relabelling.
 _MINIFIER_OPTIONS = {
-    "compress": False,
-    "mangle": True,
-    "mangleProperties": False,
-    "mangleEval": False,
-    # Identifiers the test itself quotes are held back from mangling: see
-    # run_test262.TERSER_PROFILE.
-    "reserveQuotedNames": True,
-    "toplevel": False,
-    "module": False,
-    "keepFunctionNames": True,
-    "keepClassNames": True,
-    "asciiOnly": False,
-    "comments": False,
-    "semicolons": True,
+    "terser": {
+        "compress": False,
+        "mangle": True,
+        "mangleProperties": False,
+        "mangleEval": False,
+        # Identifiers the test itself quotes are held back from mangling: see
+        # run_test262.TERSER_PROFILE.
+        "reserveQuotedNames": True,
+        "toplevel": False,
+        "module": False,
+        "keepFunctionNames": True,
+        "keepClassNames": True,
+        "asciiOnly": False,
+        "comments": False,
+        "semicolons": True,
+    },
+    "closure": {
+        "compilationLevel": "ADVANCED_OPTIMIZATIONS",
+        "languageIn": "ECMASCRIPT_NEXT",
+        "languageOut": "ECMASCRIPT_NEXT",
+        "ecmaScriptYear": 2026,
+        "mangle": True,
+        # ADVANCED renames properties too, which is the whole difference from the Terser
+        # profile and the reason a Closure run reports far more cases the transformation
+        # moved out of being the test.
+        "mangleProperties": True,
+        "harnessExterns": True,
+        "reserveQuotedNames": True,
+        "emitUseStrict": False,
+        "isolationMode": "NONE",
+        "processCommonJsModules": False,
+        "rewritePolyfills": False,
+        "warningLevel": "QUIET",
+    },
 }
 _BIGGEST_KIND_RANK = {
     "IncompleteShards": 5,
@@ -198,6 +230,14 @@ def _is_not_applicable(result: dict[str, Any]) -> bool:
     return result.get("notApplicable") is True
 
 
+def _valid_variant_shapes() -> tuple[tuple[str, ...], ...]:
+    """The variant lists one run may declare: originals alone, or plus one minifier."""
+    return (
+        (_ORIGINAL_VARIANT,),
+        *((_ORIGINAL_VARIANT, variant) for variant in _MINIFIED_VARIANTS),
+    )
+
+
 def _expected_report_variants(
     payload: dict[str, Any], observed: set[str]
 ) -> tuple[tuple[str, ...] | None, str | None]:
@@ -205,8 +245,11 @@ def _expected_report_variants(
     minifier: str | None = None
     if raw_minifier is not None:
         minifier = str(raw_minifier).strip().lower()
-        if minifier not in ("none", "terser"):
-            return None, "report minifier must be 'none' or 'terser'"
+        if minifier not in ("none", *_MINIFIED_VARIANTS):
+            return None, (
+                "report minifier must be 'none' or one of "
+                f"{', '.join(repr(name) for name in _MINIFIED_VARIANTS)}"
+            )
 
     declared: tuple[str, ...] | None = None
     if "variants" in payload:
@@ -219,13 +262,15 @@ def _expected_report_variants(
         declared = tuple(str(value) for value in canonical)
         if len(set(declared)) != len(declared):
             return None, "report variants contains duplicate entries"
-        if declared not in (("original",), ("original", "terser")):
-            return None, "report variants must be ['original'] or ['original', 'terser']"
+        if declared not in _valid_variant_shapes():
+            return None, (
+                "report variants must be ['original'] or ['original', <minifier>]"
+            )
 
     configured = (
-        ("original", "terser")
-        if minifier == "terser"
-        else (("original",) if minifier == "none" else None)
+        (_ORIGINAL_VARIANT, minifier)
+        if minifier in _MINIFIED_VARIANTS
+        else ((_ORIGINAL_VARIANT,) if minifier == "none" else None)
     )
     if configured is not None and declared is not None and configured != declared:
         return None, "report minifier and variants settings disagree"
@@ -237,8 +282,10 @@ def _expected_report_variants(
         expected = tuple(
             sorted(observed or {"original"}, key=lambda value: _VARIANT_RANK[value])
         )
-    if "original" not in expected:
+    if _ORIGINAL_VARIANT not in expected:
         return None, "report variants does not include the required original case"
+    if len(expected) > 2:
+        return None, "report variants declares more than one minified variant"
     return expected, None
 
 
@@ -365,13 +412,13 @@ def _validate_report(artifact: Artifact) -> str | None:
 
         failure_type = str(result.get("failureType") or "").strip()
         if failure_type in ("MinifierError", "MinifierTimeout") and (
-            variant != "terser"
+            variant not in _MINIFIED_VARIANTS
             or status != "failed"
             or result.get("infrastructure") is not True
         ):
             return (
                 f"result {position} {failure_type} must be an infrastructure "
-                "failure for the Terser variant"
+                "failure for a minified variant"
             )
 
         if "notApplicable" in result and not isinstance(
@@ -383,8 +430,11 @@ def _validate_report(artifact: Artifact) -> str | None:
         if not_applicable:
             if status != "skipped":
                 return f"result {position} marks a non-skipped case notApplicable"
-            if variant != "terser":
-                return f"result {position} marks a non-Terser case notApplicable"
+            if variant not in _MINIFIED_VARIANTS:
+                return (
+                    f"result {position} marks a case that is not a minified "
+                    "variant notApplicable"
+                )
             if not has_not_applicable_kind:
                 return (
                     f"result {position} notApplicable case has no "
@@ -733,6 +783,7 @@ def _normalise_result(result: dict[str, Any]) -> dict[str, Any]:
     # The runner module is machine-local provenance, not portable run data.
     # Drop it defensively even if an older producer wrote it on a case row.
     normalised.pop("terserModule", None)
+    normalised.pop("closureModule", None)
     normalised["path"] = _normalise_path(result.get("path"))
     normalised["status"] = _canonical_status(result.get("status"))
     normalised["variant"] = _canonical_variant(result.get("variant", "original"))
@@ -845,28 +896,38 @@ def _validate_minifier_configuration(
         )
     )
     if not has_minifier_metadata:
-        if "terser" in observed_variants:
+        minified_observed = [
+            variant for variant in observed_variants if variant in _MINIFIED_VARIANTS
+        ]
+        if minified_observed:
             failures.append(
                 {
                     "kind": "MissingMinifierConfiguration",
                     "message": (
-                        "Terser result cases were emitted without the required "
-                        "minifier provenance fields."
+                        f"{minified_observed[0]} result cases were emitted without "
+                        "the required minifier provenance fields."
                     ),
                 }
             )
         return failures
 
-    if minifier not in ("none", "terser"):
+    if minifier not in ("none", *_MINIFIED_VARIANTS):
         failures.append(
             {
                 "kind": "InvalidMinifierConfiguration",
-                "message": "Run configuration minifier must be 'none' or 'terser'.",
+                "message": (
+                    "Run configuration minifier must be 'none' or one of "
+                    f"{', '.join(repr(name) for name in _MINIFIED_VARIANTS)}."
+                ),
             }
         )
         return failures
 
-    expected_variants = ["original", "terser"] if minifier == "terser" else ["original"]
+    expected_variants = (
+        [_ORIGINAL_VARIANT, minifier]
+        if minifier in _MINIFIED_VARIANTS
+        else [_ORIGINAL_VARIANT]
+    )
     if variants != expected_variants:
         failures.append(
             {
@@ -906,32 +967,34 @@ def _validate_minifier_configuration(
 
     timeout = configuration.get("minifierTimeoutSeconds")
     minifier_options = configuration.get("minifierOptions")
-    if minifier == "terser":
+    if minifier in _MINIFIED_VARIANTS:
+        label = minifier.capitalize()
+        expected_profile = _MINIFIER_PROFILES[minifier]
+        expected_options = _MINIFIER_OPTIONS[minifier]
         version = configuration.get("minifierVersion")
         if not isinstance(version, str) or not version.strip():
             failures.append(
                 {
                     "kind": "InvalidMinifierConfiguration",
-                    "message": "Terser runs must record a non-empty minifierVersion.",
+                    "message": f"{label} runs must record a non-empty minifierVersion.",
                 }
             )
-        if configuration.get("minifierProfile") != _MINIFIER_PROFILE:
+        if configuration.get("minifierProfile") != expected_profile:
             failures.append(
                 {
                     "kind": "InvalidMinifierConfiguration",
                     "message": (
-                        "Terser runs must record minifierProfile="
-                        f"{_MINIFIER_PROFILE}."
+                        f"{label} runs must record minifierProfile={expected_profile}."
                     ),
                 }
             )
         options_are_exact = (
             isinstance(minifier_options, dict)
-            and set(minifier_options) == set(_MINIFIER_OPTIONS)
+            and set(minifier_options) == set(expected_options)
             and all(
-                type(minifier_options[key]) is bool
-                and minifier_options[key] is expected
-                for key, expected in _MINIFIER_OPTIONS.items()
+                type(minifier_options[key]) is type(expected)
+                and minifier_options[key] == expected
+                for key, expected in expected_options.items()
             )
         )
         if not options_are_exact:
@@ -939,8 +1002,8 @@ def _validate_minifier_configuration(
                 {
                     "kind": "InvalidMinifierConfiguration",
                     "message": (
-                        "Terser runs must record the exact "
-                        f"{_MINIFIER_PROFILE} minifierOptions."
+                        f"{label} runs must record the exact "
+                        f"{expected_profile} minifierOptions."
                     ),
                 }
             )
@@ -954,7 +1017,7 @@ def _validate_minifier_configuration(
                 {
                     "kind": "InvalidMinifierConfiguration",
                     "message": (
-                        "Terser runs must record a positive finite "
+                        f"{label} runs must record a positive finite "
                         "minifierTimeoutSeconds value."
                     ),
                 }
@@ -1081,7 +1144,7 @@ def _failure_descriptor(result: dict[str, Any]) -> tuple[str, str, str]:
     reason = _clean_line(result.get("reason"))
     failure_type = str(result.get("failureType") or "").strip()
     if failure_type in ("MinifierError", "MinifierTimeout"):
-        detail = reason or "requested Terser evidence was not produced"
+        detail = reason or "requested minified evidence was not produced"
         label = f"Minifier failure ({failure_type}): {detail}"
         return (
             "MinifierFailure",
@@ -1438,15 +1501,27 @@ def _minification_ratio(result: dict[str, Any]) -> float | None:
     return ratio
 
 
-def _rank_terser_only_failures(
+def _minified_variant(results: list[dict[str, Any]]) -> str | None:
+    """The one minified variant this run carries, if it carries any."""
+    for variant in _MINIFIED_VARIANTS:
+        if any(str(result["variant"]) == variant for result in results):
+            return variant
+    return None
+
+
+def _rank_minified_only_failures(
     results: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[str]]:
-    """Isolate paths whose original source passes and whose Terser case does not.
+    """Isolate paths whose original source passes and whose minified case does not.
 
     These cases are the only evidence in a run that minification, not the test
     itself, exposes the defect, so they are reported separately from the
     frequency, severity, and timeout views that mix both variants.
     """
+    minified_variant = _minified_variant(results)
+    if minified_variant is None:
+        return [], [], []
+
     cases_by_path: dict[str, dict[str, dict[str, Any]]] = defaultdict(dict)
     for result in results:
         cases_by_path[str(result["path"])][str(result["variant"])] = result
@@ -1454,8 +1529,8 @@ def _rank_terser_only_failures(
     cases: list[dict[str, Any]] = []
     for path in sorted(cases_by_path):
         variants = cases_by_path[path]
-        original = variants.get("original")
-        minified = variants.get("terser")
+        original = variants.get(_ORIGINAL_VARIANT)
+        minified = variants.get(minified_variant)
         if original is None or minified is None:
             continue
         # Only an original pass proves the minified case regressed on its own.
@@ -1464,14 +1539,18 @@ def _rank_terser_only_failures(
         if minified["status"] not in ("failed", "timedOut"):
             continue
         if minified["status"] == "timedOut":
-            kind, key, label = "Timeout", "timeout|variant=terser", "Timed out"
+            kind, key, label = (
+                "Timeout",
+                f"timeout|variant={minified_variant}",
+                "Timed out",
+            )
         else:
             kind, key, label = _failure_descriptor(minified)
         cases.append(
             {
                 "path": path,
                 "relativeTestPath": path,
-                "variant": "terser",
+                "variant": minified_variant,
                 "status": str(minified["status"]),
                 "kind": kind,
                 "groupKey": key,
@@ -1547,7 +1626,7 @@ def merge(
     problem_limit: int = DEFAULT_PROBLEM_LIMIT,
     biggest_problem_limit: int = DEFAULT_BIGGEST_PROBLEM_LIMIT,
     timeout_limit: int = DEFAULT_TIMEOUT_LIMIT,
-    terser_only_limit: int = DEFAULT_TERSER_ONLY_LIMIT,
+    minifier_only_limit: int = DEFAULT_MINIFIER_ONLY_LIMIT,
     broiler_commit: str = "",
     run_url: str = "",
     artifact_name: str = "test262-merged",
@@ -1559,8 +1638,8 @@ def merge(
         raise ValueError("biggest_problem_limit must be positive")
     if timeout_limit < 1:
         raise ValueError("timeout_limit must be positive")
-    if terser_only_limit < 1:
-        raise ValueError("terser_only_limit must be positive")
+    if minifier_only_limit < 1:
+        raise ValueError("minifier_only_limit must be positive")
 
     reports, incomplete, retried, reported = _selected_attempts(
         Path(shard_dir), phase, expected_shard_indexes
@@ -1641,8 +1720,9 @@ def merge(
     configured_variants = run_configuration.get("variants")
     expected_variants = (
         list(configured_variants)
-        if configured_variants in (["original"], ["original", "terser"])
-        else (observed_variants or ["original"])
+        if configured_variants is not None
+        and tuple(configured_variants) in _valid_variant_shapes()
+        else (observed_variants or [_ORIGINAL_VARIANT])
     )
     expected_variant_set = set(expected_variants)
     partial_variant_paths = [
@@ -1802,12 +1882,12 @@ def merge(
     )
     timeouts, timeout_features = _rank_timeouts(results, timeout_limit)
     (
-        terser_only_cases,
-        terser_only_groups,
-        terser_only_paths,
-    ) = _rank_terser_only_failures(results)
-    terser_only_minifier_failures = sum(
-        1 for case in terser_only_cases if case["kind"] == "MinifierFailure"
+        minifier_only_cases,
+        minifier_only_groups,
+        minifier_only_paths,
+    ) = _rank_minified_only_failures(results)
+    minifier_only_infrastructure_failures = sum(
+        1 for case in minifier_only_cases if case["kind"] == "MinifierFailure"
     )
     suite_refs = sorted(
         {
@@ -1867,16 +1947,19 @@ def merge(
         "timeoutCount": summary["timedOut"],
         "timeouts": timeouts,
         "timeoutFeatureGroups": timeout_features,
-        "terserOnlyLimit": terser_only_limit,
-        "terserOnlyFailureCount": len(terser_only_cases),
-        "terserOnlyMinifierFailureCount": terser_only_minifier_failures,
-        "terserOnlyDivergenceCount": (
-            len(terser_only_cases) - terser_only_minifier_failures
+        # Which minifier produced the minified half of this run, so a reader (and the
+        # issue this feeds) never has to infer it from a profile string.
+        "minifiedVariant": _minified_variant(results) or "",
+        "minifierOnlyLimit": minifier_only_limit,
+        "minifierOnlyFailureCount": len(minifier_only_cases),
+        "minifierOnlyMinifierFailureCount": minifier_only_infrastructure_failures,
+        "minifierOnlyDivergenceCount": (
+            len(minifier_only_cases) - minifier_only_infrastructure_failures
         ),
-        "terserOnlyPathCount": len(terser_only_paths),
-        "terserOnlyPaths": terser_only_paths,
-        "terserOnlyFailures": terser_only_cases[:terser_only_limit],
-        "terserOnlyGroups": terser_only_groups,
+        "minifierOnlyPathCount": len(minifier_only_paths),
+        "minifierOnlyPaths": minifier_only_paths,
+        "minifierOnlyFailures": minifier_only_cases[:minifier_only_limit],
+        "minifierOnlyGroups": minifier_only_groups,
     }
 
 
@@ -1986,7 +2069,7 @@ def render_issue_markdown(
         f"- Failed cases: {summary['failed']}",
         f"- Timed-out cases: {summary['timedOut']}",
         f"- Skipped cases: {summary['skipped']}",
-        f"- Terser not-applicable cases: {summary.get('notApplicable', 0)}",
+        f"- Minifier not-applicable cases: {summary.get('notApplicable', 0)}",
         (
             "- Configured variants: "
             + ", ".join(
@@ -2173,31 +2256,37 @@ def _format_minified_size(case: dict[str, Any]) -> str:
     return label
 
 
-def render_terser_only_issue_markdown(
+def render_minifier_only_issue_markdown(
     merged: dict[str, Any],
     run_url: str | None = None,
     artifact_name: str = "test262-merged",
 ) -> str:
-    count = int(merged.get("terserOnlyFailureCount") or 0)
-    divergences = int(merged.get("terserOnlyDivergenceCount") or 0)
-    minifier_failures = int(merged.get("terserOnlyMinifierFailureCount") or 0)
-    limit = int(merged.get("terserOnlyLimit") or DEFAULT_TERSER_ONLY_LIMIT)
-    cases = merged.get("terserOnlyFailures") or []
-    groups = merged.get("terserOnlyGroups") or []
+    count = int(merged.get("minifierOnlyFailureCount") or 0)
+    divergences = int(merged.get("minifierOnlyDivergenceCount") or 0)
+    minifier_failures = int(merged.get("minifierOnlyMinifierFailureCount") or 0)
+    limit = int(merged.get("minifierOnlyLimit") or DEFAULT_MINIFIER_ONLY_LIMIT)
+    cases = merged.get("minifierOnlyFailures") or []
+    groups = merged.get("minifierOnlyGroups") or []
+    variant = str(merged.get("minifiedVariant") or "")
+    label = variant.capitalize() if variant else "Minifier"
+    profile = str(
+        (merged.get("runConfiguration") or {}).get("minifierProfile")
+        or _MINIFIER_PROFILES.get(variant, "the configured profile")
+    )
     lines = [
-        f"## test262 {merged['phase']} run — {count} Terser-only failure(s)",
+        f"## test262 {merged['phase']} run — {count} {label}-only failure(s)",
         "",
         "_Every case below passes as original source and stops passing only after "
-        f"{_MINIFIER_PROFILE} minification, so minification — not the test itself — "
+        f"{profile} minification, so minification — not the test itself — "
         "is the trigger._",
         "",
-        f"- Terser-only non-passing cases: {count}",
+        f"- {label}-only non-passing cases: {count}",
         f"- Engine divergences after minification: {divergences}",
         f"- Minifier infrastructure failures: {minifier_failures}",
-        f"- Affected base paths: {int(merged.get('terserOnlyPathCount') or 0)}",
+        f"- Affected base paths: {int(merged.get('minifierOnlyPathCount') or 0)}",
     ]
     attributed = merged["summary"].get("notApplicableByKind") or {}
-    for kind, label in (
+    for kind, attribution in (
         (
             _MINIFIER_UNSUPPORTED_SYNTAX,
             "source the minifier cannot read or does not preserve",
@@ -2206,9 +2295,11 @@ def render_terser_only_issue_markdown(
         (_MINIFIER_CHANGED_SEMANTICS, "minification changed what the test measures"),
     ):
         if attributed.get(kind):
-            lines.append(f"- Attributed to the minifier ({label}): {attributed[kind]}")
+            lines.append(
+                f"- Attributed to the minifier ({attribution}): {attributed[kind]}"
+            )
     lines.append("")
-    lines.extend(["### Normalized Terser-only failure groups", ""])
+    lines.extend([f"### Normalized {label}-only failure groups", ""])
     if not groups:
         lines.append("- None")
     for index, group in enumerate(groups, start=1):
@@ -2255,8 +2346,8 @@ def render_terser_only_issue_markdown(
                 "Run one base path as both variants with "
                 "`python scripts/compliance/run_test262.py --suite-ref "
                 f"{_inline(merged.get('suiteRef')) or '<suite-ref>'} --subset "
-                f"{_inline(cases[0]['path'])} --minifier terser --terser-module "
-                "<terser-package-directory>`.",
+                f"{_inline(cases[0]['path'])} --minifier {variant or 'terser'} "
+                f"--{variant or 'terser'}-module <package-directory>`.",
             ]
         )
     lines.extend(_metadata_lines(run_url, artifact_name))
@@ -2289,7 +2380,7 @@ def _write_github_outputs(path: Path, merged: dict[str, Any]) -> None:
     ]
     biggest_count = len(merged.get("biggestProblems") or [])
     timeout_count = int(merged.get("timeoutCount") or 0)
-    terser_only_count = int(merged.get("terserOnlyFailureCount") or 0)
+    minifier_only_count = int(merged.get("minifierOnlyFailureCount") or 0)
     configuration_failure_count = len(merged.get("configurationFailures") or [])
     has_failures = (
         summary["failed"] > 0
@@ -2314,8 +2405,11 @@ def _write_github_outputs(path: Path, merged: dict[str, Any]) -> None:
         "original_case_count": (
             merged.get("variantSummary", {}).get("original", {}).get("total", 0)
         ),
-        "terser_case_count": (
-            merged.get("variantSummary", {}).get("terser", {}).get("total", 0)
+        "minified_variant": str(merged.get("minifiedVariant") or ""),
+        "minified_case_count": (
+            merged.get("variantSummary", {})
+            .get(str(merged.get("minifiedVariant") or ""), {})
+            .get("total", 0)
         ),
         "incomplete_shard_count": len(incomplete_indexes),
         "create_issue": "true" if has_failures else "false",
@@ -2323,15 +2417,15 @@ def _write_github_outputs(path: Path, merged: dict[str, Any]) -> None:
         "create_biggest_issue": "true" if biggest_count else "false",
         "timeout_count": timeout_count,
         "create_timeout_issue": "true" if timeout_count else "false",
-        "terser_only_failure_count": terser_only_count,
-        "terser_only_divergence_count": int(
-            merged.get("terserOnlyDivergenceCount") or 0
+        "minifier_only_failure_count": minifier_only_count,
+        "minifier_only_divergence_count": int(
+            merged.get("minifierOnlyDivergenceCount") or 0
         ),
-        "terser_only_minifier_failure_count": int(
-            merged.get("terserOnlyMinifierFailureCount") or 0
+        "minifier_only_infrastructure_failure_count": int(
+            merged.get("minifierOnlyMinifierFailureCount") or 0
         ),
-        "terser_only_path_count": int(merged.get("terserOnlyPathCount") or 0),
-        "create_terser_only_issue": "true" if terser_only_count else "false",
+        "minifier_only_path_count": int(merged.get("minifierOnlyPathCount") or 0),
+        "create_minifier_only_issue": "true" if minifier_only_count else "false",
         "configuration_failure_count": configuration_failure_count,
         "incomplete_shard_indexes": ",".join(
             str(index) for index in incomplete_indexes
@@ -2367,7 +2461,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--issue-md", type=Path)
     parser.add_argument("--biggest-issue-md", type=Path)
     parser.add_argument("--timeout-issue-md", type=Path)
-    parser.add_argument("--terser-only-issue-md", type=Path)
+    parser.add_argument("--minifier-only-issue-md", type=Path)
     parser.add_argument(
         "--problem-limit", type=int, default=DEFAULT_PROBLEM_LIMIT
     )
@@ -2380,7 +2474,7 @@ def main(argv: list[str] | None = None) -> int:
         "--timeout-limit", type=int, default=DEFAULT_TIMEOUT_LIMIT
     )
     parser.add_argument(
-        "--terser-only-limit", type=int, default=DEFAULT_TERSER_ONLY_LIMIT
+        "--minifier-only-limit", type=int, default=DEFAULT_MINIFIER_ONLY_LIMIT
     )
     parser.add_argument(
         "--run-url",
@@ -2402,8 +2496,8 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("--biggest-problem-limit must be a positive integer")
     if args.timeout_limit < 1:
         parser.error("--timeout-limit must be a positive integer")
-    if args.terser_only_limit < 1:
-        parser.error("--terser-only-limit must be a positive integer")
+    if args.minifier_only_limit < 1:
+        parser.error("--minifier-only-limit must be a positive integer")
 
     if args.merged_input:
         if args.expected_shards is not None:
@@ -2421,7 +2515,7 @@ def main(argv: list[str] | None = None) -> int:
             problem_limit=args.problem_limit,
             biggest_problem_limit=args.biggest_problem_limit,
             timeout_limit=args.timeout_limit,
-            terser_only_limit=args.terser_only_limit,
+            minifier_only_limit=args.minifier_only_limit,
             broiler_commit=args.broiler_commit,
             run_url=args.run_url or "",
             artifact_name=args.artifact_name,
@@ -2453,8 +2547,8 @@ def main(argv: list[str] | None = None) -> int:
             ),
         ),
         (
-            args.terser_only_issue_md,
-            render_terser_only_issue_markdown(
+            args.minifier_only_issue_md,
+            render_minifier_only_issue_markdown(
                 merged, args.run_url, args.artifact_name
             ),
         ),
@@ -2476,7 +2570,7 @@ def main(argv: list[str] | None = None) -> int:
         f"{summary['skipped']} skipped across "
         f"{summary.get('uniquePaths', summary['total'])} base path(s); "
         f"{len(merged['incompleteShards'])} incomplete shard(s); "
-        f"{int(merged.get('terserOnlyFailureCount') or 0)} Terser-only failure(s)."
+        f"{int(merged.get('minifierOnlyFailureCount') or 0)} minifier-only failure(s)."
     )
     return 0
 

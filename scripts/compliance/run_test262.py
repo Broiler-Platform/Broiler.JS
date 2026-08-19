@@ -86,9 +86,50 @@ DEFAULT_TEST_TIMEOUT_SECONDS = 30.0
 DEFAULT_MINIFIER_TIMEOUT_SECONDS = 30.0
 TERSER_PROFILE = "test262-safe-mangle-v2"
 TERSER_VARIANT = "terser"
+CLOSURE_PROFILE = "test262-closure-advanced-v1"
+CLOSURE_VARIANT = "closure"
 ORIGINAL_VARIANT = "original"
 TERSER_WORKER = Path(__file__).with_name("terser_worker.cjs")
-TERSER_SOURCE_SENSITIVE_PREFIXES = (
+CLOSURE_WORKER = Path(__file__).with_name("closure_worker.cjs")
+MINIFIER_VARIANTS = (TERSER_VARIANT, CLOSURE_VARIANT)
+# The transformation each variant applies, recorded on every report so a merge can refuse
+# to combine shards that ran different profiles and a reader can tell what a failure was
+# produced by. Terser's profile is a conservative mangle; Closure's is the full
+# ADVANCED_OPTIMIZATIONS package (variable AND property renaming, dead-code removal,
+# inlining) against the ES2026 draft standard, which Closure spells ECMASCRIPT_NEXT — see
+# closure_worker.cjs.
+MINIFIER_OPTIONS: dict[str, dict[str, object]] = {
+    TERSER_VARIANT: {
+        "compress": False,
+        "mangle": True,
+        "mangleProperties": False,
+        "mangleEval": False,
+        "reserveQuotedNames": True,
+        "toplevel": False,
+        "keepFunctionNames": True,
+        "keepClassNames": True,
+        "module": False,
+        "asciiOnly": False,
+        "comments": False,
+        "semicolons": True,
+    },
+    CLOSURE_VARIANT: {
+        "compilationLevel": "ADVANCED_OPTIMIZATIONS",
+        "languageIn": "ECMASCRIPT_NEXT",
+        "languageOut": "ECMASCRIPT_NEXT",
+        "ecmaScriptYear": 2026,
+        "mangle": True,
+        "mangleProperties": True,
+        "harnessExterns": True,
+        "reserveQuotedNames": True,
+        "emitUseStrict": False,
+        "isolationMode": "NONE",
+        "processCommonJsModules": False,
+        "rewritePolyfills": False,
+        "warningLevel": "QUIET",
+    },
+}
+MINIFIER_SOURCE_SENSITIVE_PREFIXES = (
     "test/built-ins/Function/prototype/toString/",
 )
 FUNCTION_TOSTRING_REFERENCE = re.compile(
@@ -187,27 +228,38 @@ class MinifierSyntaxError(MinifierError):
     used as an IdentifierName (``br\\u0065ak(){}``), ``let`` as a sloppy-mode identifier,
     a redeclared ``arguments``, an Annex B CallExpression assignment target, decorators,
     import attributes with a trailing comma — and Terser refuses all of them even though
-    the engine (and every browser) runs them. Nothing was minified, so there is nothing
-    the engine could have got wrong: the case is reported as not applicable rather than
-    counted against the engine.
+    the engine (and every browser) runs them. Closure declines a further set of its own
+    (decorators, ``using``, auto-accessors, private ``#x in o``, the RegExp ``v`` flag).
+    Nothing was minified, so there is nothing the engine could have got wrong: the case is
+    reported as not applicable rather than counted against the engine.
     """
 
 
-class TerserSession:
-    """A persistent JSON-lines bridge to Terser for one Python worker thread."""
+class MinifierSession:
+    """A persistent JSON-lines bridge to one minifier worker for one Python thread.
+
+    Terser and Closure speak the same protocol — ``hello`` returns the profile the worker
+    implements and the minifier's own version, ``minify`` returns transformed source — so
+    the process plumbing, the per-request timeout, and the crash diagnostics are shared and
+    only the argv and the labels differ.
+    """
 
     def __init__(
         self,
-        module_root: Path,
+        worker_path: Path,
+        worker_arguments: list[str],
         timeout_seconds: float,
-        worker_path: Path = TERSER_WORKER,
+        expected_profile: str,
+        label: str,
     ) -> None:
         node = shutil.which("node")
         if node is None:
-            raise MinifierError("Node.js is required for the Terser variant")
+            raise MinifierError(f"Node.js is required for the {label} variant")
         if not worker_path.is_file():
-            raise MinifierError(f"Terser worker was not found: {worker_path}")
+            raise MinifierError(f"{label} worker was not found: {worker_path}")
 
+        self.label = label
+        self.expected_profile = expected_profile
         self.timeout_seconds = timeout_seconds
         self._next_request_id = 1
         self._responses: queue.Queue[str | None] = queue.Queue()
@@ -215,7 +267,7 @@ class TerserSession:
         self._stderr_lock = threading.Lock()
         try:
             self._process = subprocess.Popen(
-                [node, str(worker_path), str(module_root)],
+                [node, str(worker_path), *worker_arguments],
                 stdin=subprocess.PIPE,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -225,7 +277,9 @@ class TerserSession:
                 bufsize=1,
             )
         except OSError as exc:
-            raise MinifierError(f"Could not start the Terser worker: {exc}") from exc
+            raise MinifierError(
+                f"Could not start the {label} worker: {exc}"
+            ) from exc
 
         assert self._process.stdout is not None
         assert self._process.stderr is not None
@@ -243,16 +297,18 @@ class TerserSession:
         self._stderr_thread.start()
 
         hello = self._request({"operation": "hello"})
-        if hello.get("profile") != TERSER_PROFILE:
+        if hello.get("profile") != expected_profile:
             self.close()
             raise MinifierError(
-                "Terser worker profile mismatch: "
-                f"expected {TERSER_PROFILE}, got {hello.get('profile')!r}"
+                f"{label} worker profile mismatch: "
+                f"expected {expected_profile}, got {hello.get('profile')!r}"
             )
         self.version = str(hello.get("version") or "")
         if not self.version:
             self.close()
-            raise MinifierError("Terser worker did not report its package version")
+            raise MinifierError(
+                f"{label} worker did not report its package version"
+            )
 
     def _read_stdout(self, stream: object) -> None:
         try:
@@ -277,7 +333,8 @@ class TerserSession:
             detail = self._stderr_tail()
             suffix = f": {detail}" if detail else ""
             raise MinifierError(
-                f"Terser worker exited with code {self._process.returncode}{suffix}"
+                f"{self.label} worker exited with code "
+                f"{self._process.returncode}{suffix}"
             )
 
         request_id = self._next_request_id
@@ -293,25 +350,33 @@ class TerserSession:
         except (BrokenPipeError, OSError) as exc:
             detail = self._stderr_tail()
             suffix = f": {detail}" if detail else ""
-            raise MinifierError(f"Could not write to Terser worker{suffix}") from exc
+            raise MinifierError(
+                f"Could not write to the {self.label} worker{suffix}"
+            ) from exc
 
         try:
             line = self._responses.get(timeout=self.timeout_seconds)
         except queue.Empty as exc:
             self.close()
             raise MinifierTimeoutError(
-                f"Terser exceeded {self.timeout_seconds:g}s"
+                f"{self.label} exceeded {self.timeout_seconds:g}s"
             ) from exc
         if line is None:
             detail = self._stderr_tail()
             suffix = f": {detail}" if detail else ""
-            raise MinifierError(f"Terser worker closed its output unexpectedly{suffix}")
+            raise MinifierError(
+                f"{self.label} worker closed its output unexpectedly{suffix}"
+            )
         try:
             response = json.loads(line)
         except json.JSONDecodeError as exc:
-            raise MinifierError("Terser worker returned malformed JSON") from exc
+            raise MinifierError(
+                f"{self.label} worker returned malformed JSON"
+            ) from exc
         if not isinstance(response, dict) or response.get("id") != request_id:
-            raise MinifierError("Terser worker returned an out-of-sequence response")
+            raise MinifierError(
+                f"{self.label} worker returned an out-of-sequence response"
+            )
         if not response.get("ok"):
             error_name = str(response.get("errorName") or "Error")
             error_message = str(response.get("errorMessage") or "unknown minifier error")
@@ -320,22 +385,39 @@ class TerserSession:
                 location = f" at line {response['line']}"
                 if response.get("column") is not None:
                     location += f", column {response['column']}"
-            # A SyntaxError is Terser's parser declining the source; anything else
-            # (a protocol fault, an internal Terser error) is a real infrastructure
-            # problem and keeps failing the run.
+            # A SyntaxError is the minifier's parser declining the source; anything
+            # else (a protocol fault, an internal minifier error) is a real
+            # infrastructure problem and keeps failing the run.
             error_type = (
                 MinifierSyntaxError if error_name == "SyntaxError" else MinifierError
             )
-            raise error_type(f"Terser {error_name}{location}: {error_message}")
+            raise error_type(
+                f"{self.label} {error_name}{location}: {error_message}"
+            )
         return response
 
-    def minify(self, source: str, path: str) -> dict[str, object]:
+    def minify(
+        self,
+        source: str,
+        path: str,
+        includes: list[str] | None = None,
+    ) -> dict[str, object]:
         response = self._request(
-            {"operation": "minify", "source": source, "path": path}
+            {
+                "operation": "minify",
+                "source": source,
+                "path": path,
+                # Only Closure reads this: the harness files a test includes become the
+                # externs that keep ADVANCED from renaming the API the test calls. The
+                # Terser worker ignores the field.
+                "includes": list(includes or []),
+            }
         )
         code = response.get("code")
         if not isinstance(code, str):
-            raise MinifierError("Terser worker returned no JavaScript output")
+            raise MinifierError(
+                f"{self.label} worker returned no JavaScript output"
+            )
         result: dict[str, object] = {
             "code": code,
             "originalBytes": len(source.encode("utf-8")),
@@ -367,42 +449,67 @@ class TerserSession:
                 pass
 
 
-class TerserMinifier:
-    """Thread-local persistent Terser sessions shared by one shard run."""
+class WorkerMinifier:
+    """Thread-local persistent minifier-worker sessions shared by one shard run.
 
-    name = TERSER_VARIANT
-    profile = TERSER_PROFILE
+    Subclasses name the variant, the profile its worker implements, and the argv that
+    starts it. Everything else — one live session per Python worker thread, a version that
+    may not change under the run, and replacing a session only once it has actually died —
+    is identical for every minifier.
+    """
 
-    def __init__(self, module_root: str, timeout_seconds: float) -> None:
+    name = ""
+    profile = ""
+    label = ""
+    worker_path = TERSER_WORKER
+
+    def __init__(self, timeout_seconds: float) -> None:
         if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
             raise ValueError("minifier timeout must be finite and positive")
-        self.module_root = Path(module_root).resolve()
-        package_json = self.module_root / "package.json"
+        self.timeout_seconds = timeout_seconds
+        self.version = ""
+        self._local = threading.local()
+        self._sessions: list[MinifierSession] = []
+        self._lock = threading.Lock()
+
+    def _worker_arguments(self) -> list[str]:
+        raise NotImplementedError
+
+    def _read_package_version(self, module_root: Path, option: str) -> str:
+        package_json = module_root / "package.json"
         if not package_json.is_file():
             raise MinifierError(
-                f"--terser-module must name the installed Terser package directory: "
-                f"{self.module_root}"
+                f"{option} must name the installed {self.label} package directory: "
+                f"{module_root}"
             )
         try:
             package = json.loads(package_json.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
             raise MinifierError(f"Could not read {package_json}: {exc}") from exc
-        self.version = str(package.get("version") or "")
-        if not self.version:
-            raise MinifierError(f"Terser package has no version: {package_json}")
-        self.timeout_seconds = timeout_seconds
-        self._local = threading.local()
-        self._sessions: list[TerserSession] = []
-        self._lock = threading.Lock()
+        version = str(package.get("version") or "")
+        if not version:
+            raise MinifierError(
+                f"{self.label} package has no version: {package_json}"
+            )
+        return version
 
-    def _session(self) -> TerserSession:
+    def _new_session(self) -> MinifierSession:
+        return MinifierSession(
+            self.worker_path,
+            self._worker_arguments(),
+            self.timeout_seconds,
+            self.profile,
+            self.label,
+        )
+
+    def _session(self) -> MinifierSession:
         session = getattr(self._local, "session", None)
         if session is None:
-            session = TerserSession(self.module_root, self.timeout_seconds)
+            session = self._new_session()
             if session.version != self.version:
                 session.close()
                 raise MinifierError(
-                    f"Terser package version changed during the run "
+                    f"{self.label} package version changed during the run "
                     f"({self.version} -> {session.version})"
                 )
             self._local.session = session
@@ -411,23 +518,28 @@ class TerserMinifier:
         return session
 
     def probe(self) -> None:
-        """Fail once, before shard execution, when Node/Terser is unusable."""
-        session = TerserSession(self.module_root, self.timeout_seconds)
+        """Fail once, before shard execution, when Node or the minifier is unusable."""
+        session = self._new_session()
         try:
             if session.version != self.version:
                 raise MinifierError(
-                    f"Terser package version mismatch "
+                    f"{self.label} package version mismatch "
                     f"({self.version} metadata, {session.version} runtime)"
                 )
         finally:
             session.close()
 
-    def minify(self, source: str, path: str) -> dict[str, object]:
+    def minify(
+        self,
+        source: str,
+        path: str,
+        includes: list[str] | None = None,
+    ) -> dict[str, object]:
         session = self._session()
         try:
-            return session.minify(source, path)
+            return session.minify(source, path, includes)
         except MinifierError:
-            # A source-level Terser diagnostic leaves the worker usable. A
+            # A source-level minifier diagnostic leaves the worker usable. A
             # timeout/broken process is replaced for the next independent test
             # so one bad transformation cannot poison the rest of the shard.
             if not session.is_alive:
@@ -440,6 +552,73 @@ class TerserMinifier:
             self._sessions.clear()
         for session in sessions:
             session.close()
+
+
+class TerserMinifier(WorkerMinifier):
+    """Terser under the conservative test262-safe mangle profile."""
+
+    name = TERSER_VARIANT
+    profile = TERSER_PROFILE
+    label = "Terser"
+    worker_path = TERSER_WORKER
+
+    def __init__(self, module_root: str, timeout_seconds: float) -> None:
+        super().__init__(timeout_seconds)
+        self.module_root = Path(module_root).resolve()
+        self.version = self._read_package_version(
+            self.module_root, "--terser-module"
+        )
+
+    def _worker_arguments(self) -> list[str]:
+        return [str(self.module_root)]
+
+
+class ClosureMinifier(WorkerMinifier):
+    """Google Closure Compiler at ADVANCED_OPTIMIZATIONS against the ES2026 standard.
+
+    ADVANCED renames properties as well as variables, removes what it proves unreachable,
+    and inlines aggressively. That is a far larger transformation than Terser's, and a
+    correspondingly larger share of test262 stops being the test it was once it has been
+    applied — a test that reads a property name back as a string, or asserts the ``name`` a
+    binding gave a function, now measures the compiled program instead. Those cases are not
+    engine defects and are not counted as such: the reference-engine cross-check moves each
+    one to a ``minifier-changed-semantics`` skip. What survives is the real question this
+    variant asks — whether Broiler runs the compact, whole-program-optimized JavaScript an
+    ADVANCED-compiled production bundle actually ships.
+    """
+
+    name = CLOSURE_VARIANT
+    profile = CLOSURE_PROFILE
+    label = "Closure Compiler"
+    worker_path = CLOSURE_WORKER
+
+    def __init__(
+        self,
+        module_root: str,
+        harness_root: str | Path,
+        timeout_seconds: float,
+    ) -> None:
+        super().__init__(timeout_seconds)
+        self.module_root = Path(module_root).resolve()
+        self.harness_root = Path(harness_root).resolve()
+        if not self.harness_root.is_dir():
+            raise MinifierError(
+                "The Closure variant needs the pinned test262 harness directory for its "
+                f"externs, and it is not there: {self.harness_root}"
+            )
+        self.version = self._read_package_version(
+            self.module_root, "--closure-module"
+        )
+
+    def _worker_arguments(self) -> list[str]:
+        return [
+            str(self.module_root),
+            str(self.harness_root),
+            # The worker's own ceiling on one compiler process. Kept above the Python
+            # timeout so the request times out here, where a timeout is a reported
+            # per-test outcome, rather than there, where it is an opaque worker error.
+            str(int(self.timeout_seconds * 1000) + 5000),
+        ]
 
 
 class Test262Repository:
@@ -1746,24 +1925,7 @@ def build_summary(
         "minifierVersion": minifier_version,
         "minifierProfile": minifier_profile,
         "minifierTimeoutSeconds": minifier_timeout_seconds,
-        "minifierOptions": (
-            {
-                "compress": False,
-                "mangle": True,
-                "mangleProperties": False,
-                "mangleEval": False,
-                "reserveQuotedNames": True,
-                "toplevel": False,
-                "keepFunctionNames": True,
-                "keepClassNames": True,
-                "module": False,
-                "asciiOnly": False,
-                "comments": False,
-                "semicolons": True,
-            }
-            if minifier == TERSER_VARIANT
-            else {}
-        ),
+        "minifierOptions": dict(MINIFIER_OPTIONS.get(minifier, {})),
         "variants": variants,
         "expectedVariantCountPerPath": len(variants),
         "variantSummary": variant_summary,
@@ -1828,10 +1990,11 @@ def _not_applicable_minified_result(
     path: str,
     reason: str,
     skip_kind: str = "minifier-not-applicable",
+    variant: str = TERSER_VARIANT,
 ) -> dict[str, object]:
     return {
         "path": path,
-        "variant": TERSER_VARIANT,
+        "variant": variant,
         "status": "skipped",
         "reason": reason,
         "notApplicable": True,
@@ -1930,7 +2093,12 @@ def cross_check_minified_failure(
         minified_result["referenceCrossCheckError"] = str(exc)
         return stands("inconclusive")
 
-    skipped = _not_applicable_minified_result(path, reason, skip_kind=outcome)
+    skipped = _not_applicable_minified_result(
+        path,
+        reason,
+        skip_kind=outcome,
+        variant=str(minified_result.get("variant") or TERSER_VARIANT),
+    )
     skipped["referenceCrossCheck"] = outcome
     skipped["referenceEngine"] = engine_name
     skipped["referenceEngineVersion"] = engine_version
@@ -1981,6 +2149,7 @@ def run_test_variants_with_metadata(
     reference_engine: object | None = None,
 ) -> list[dict[str, object]]:
     """Run the original source and, when configured, its minified body."""
+    minified_variant = str(getattr(minifier, "name", TERSER_VARIANT))
     original_started = time.perf_counter()
     source_size_bytes: int | None = None
     features: list[str] = []
@@ -2025,6 +2194,7 @@ def run_test_variants_with_metadata(
         skipped = _not_applicable_minified_result(
             path,
             f"original variant is not runnable: {original.get('reason', 'skipped')}",
+            variant=minified_variant,
         )
         results.append(
             _enrich_result(skipped, source_size_bytes, features, flags, 0.0)
@@ -2040,6 +2210,7 @@ def run_test_variants_with_metadata(
         skipped = _not_applicable_minified_result(
             path,
             "parse, early, and resolution negative tests cannot be minified before execution",
+            variant=minified_variant,
         )
         results.append(
             _enrich_result(skipped, source_size_bytes, features, flags, 0.0)
@@ -2048,7 +2219,7 @@ def run_test_variants_with_metadata(
 
     quoted_source = quoted_source_text(body)
     if (
-        path.startswith(TERSER_SOURCE_SENSITIVE_PREFIXES)
+        path.startswith(MINIFIER_SOURCE_SENSITIVE_PREFIXES)
         or FUNCTION_TOSTRING_REFERENCE.search(body)
         or quoted_source is not None
     ):
@@ -2060,6 +2231,7 @@ def run_test_variants_with_metadata(
         skipped = _not_applicable_minified_result(
             path,
             "test observes source text changed by minification" + detail,
+            variant=minified_variant,
         )
         results.append(
             _enrich_result(skipped, source_size_bytes, features, flags, 0.0)
@@ -2073,7 +2245,9 @@ def run_test_variants_with_metadata(
     if includes_strict:
         minifier_input = f'"use strict";\n{body}'
     try:
-        minified = minifier.minify(minifier_input, path)  # type: ignore[attr-defined]
+        minified = minifier.minify(  # type: ignore[attr-defined]
+            minifier_input, path, metadata["includes"]
+        )
         minification_duration = time.perf_counter() - minifier_started
         code = minified.get("code")
         if not isinstance(code, str):
@@ -2093,6 +2267,7 @@ def run_test_variants_with_metadata(
                 f"minifier does not preserve this source: {unsupported_syntax} is "
                 "parsed as something else and silently rewritten",
                 skip_kind="minifier-unsupported-syntax",
+                variant=minified_variant,
             )
         else:
             minified_result = run_test(
@@ -2103,10 +2278,10 @@ def run_test_variants_with_metadata(
                 timeout_seconds,
                 memory_limit_mb,
                 include_negative,
-                variant=TERSER_VARIANT,
+                variant=minified_variant,
                 body_override=code,
-                # Keep run_test's strict directive at byte zero. Terser also saw
-                # the directive so it parsed the body under the same semantics.
+                # Keep run_test's strict directive at byte zero. The minifier also
+                # saw the directive so it parsed the body under the same semantics.
                 body_override_includes_strict=False,
             )
     except MinifierSyntaxError as exc:
@@ -2121,6 +2296,7 @@ def run_test_variants_with_metadata(
             path,
             f"minifier cannot parse this source: {exc}",
             skip_kind="minifier-unsupported-syntax",
+            variant=minified_variant,
         )
     except Exception as exc:
         minification_duration = time.perf_counter() - minifier_started
@@ -2132,7 +2308,7 @@ def run_test_variants_with_metadata(
         minified_result = _infrastructure_failure_result(
             path,
             exc,
-            variant=TERSER_VARIANT,
+            variant=minified_variant,
             failure_type=failure_type,
             failure_stage="minifier",
         )
@@ -2157,7 +2333,7 @@ def run_test_variants_with_metadata(
             includes_strict=includes_strict,
         )
 
-    minified_result["minifier"] = str(getattr(minifier, "name", TERSER_VARIANT))
+    minified_result["minifier"] = minified_variant
     minified_result["minifierVersion"] = str(getattr(minifier, "version", ""))
     minified_result["minifierProfile"] = str(
         getattr(minifier, "profile", TERSER_PROFILE)
@@ -2494,9 +2670,13 @@ def main() -> int:
     )
     parser.add_argument(
         "--minifier",
-        choices=("none", TERSER_VARIANT),
+        choices=("none", *MINIFIER_VARIANTS),
         default="none",
-        help="Also execute each selected path after safe Terser minification",
+        help=(
+            "Also execute each selected path after minification: terser applies the "
+            "conservative test262-safe mangle, closure applies Closure Compiler's "
+            "ADVANCED_OPTIMIZATIONS against the ES2026 standard"
+        ),
     )
     parser.add_argument(
         "--terser-module",
@@ -2504,17 +2684,25 @@ def main() -> int:
         help="Installed Terser package directory (required with --minifier terser)",
     )
     parser.add_argument(
+        "--closure-module",
+        default="",
+        help=(
+            "Installed google-closure-compiler package directory "
+            "(required with --minifier closure)"
+        ),
+    )
+    parser.add_argument(
         "--minifier-timeout-seconds",
         type=positive_float,
         default=DEFAULT_MINIFIER_TIMEOUT_SECONDS,
-        help="Per-source Terser transformation timeout in seconds",
+        help="Per-source minifier transformation timeout in seconds",
     )
     parser.add_argument(
         "--reference-engine-bin",
         default=REFERENCE_ENGINE,
         help=(
             "Second engine consulted about a FAILING minified case before it is attributed "
-            "to Broiler (default: node, which the Terser variant already requires)"
+            "to Broiler (default: node, which every minified variant already requires)"
         ),
     )
     parser.add_argument(
@@ -2523,7 +2711,8 @@ def main() -> int:
         help=(
             "Attribute every failing minified case to the engine without a second opinion. "
             "Terser renames what fn-name tests measure and sometimes emits source no engine "
-            "accepts, so expect minifier artefacts among the reported failures."
+            "accepts, and Closure's ADVANCED profile renames properties on top of that, so "
+            "expect minifier artefacts among the reported failures."
         ),
     )
     parser.add_argument(
@@ -2560,7 +2749,18 @@ def main() -> int:
     subset_patterns = parse_semicolon_patterns(args.subset, normalize_paths=True)
     feature_patterns = parse_semicolon_patterns(args.features)
 
-    minifier: TerserMinifier | None = None
+    log_progress(
+        f"Starting test262 run for suite ref {args.suite_ref}"
+        + (f" using local suite root {args.suite_root}" if args.suite_root else "")
+    )
+
+    repo = Test262Repository(args.suite_ref, args.suite_root)
+    TEMP_DIRECTORY.mkdir(parents=True, exist_ok=True)
+
+    # The minifier is built after the repository because the Closure variant needs the
+    # pinned suite's own harness directory: those files are its externs, and they are what
+    # keep ADVANCED from renaming the assertion API out from under every test.
+    minifier: WorkerMinifier | None = None
     if args.minifier == TERSER_VARIANT:
         if not args.terser_module.strip():
             parser.error("--terser-module is required with --minifier terser")
@@ -2571,6 +2771,18 @@ def main() -> int:
             )
             minifier.probe()
         except (MinifierError, ValueError) as exc:
+            parser.error(str(exc))
+    elif args.minifier == CLOSURE_VARIANT:
+        if not args.closure_module.strip():
+            parser.error("--closure-module is required with --minifier closure")
+        try:
+            minifier = ClosureMinifier(
+                args.closure_module,
+                repo.ensure_local_suite_root() / "harness",
+                args.minifier_timeout_seconds,
+            )
+            minifier.probe()
+        except (MinifierError, ValueError, OSError, RuntimeError) as exc:
             parser.error(str(exc))
 
     reference_engine: ReferenceEngine | None = None
@@ -2585,13 +2797,6 @@ def main() -> int:
                 f"{exc}. Pass --no-reference-cross-check to run without a second opinion."
             )
 
-    log_progress(
-        f"Starting test262 run for suite ref {args.suite_ref}"
-        + (f" using local suite root {args.suite_root}" if args.suite_root else "")
-    )
-
-    repo = Test262Repository(args.suite_ref, args.suite_root)
-    TEMP_DIRECTORY.mkdir(parents=True, exist_ok=True)
     requested_paths = collect_requested_paths(args.paths, args.path_file)
     if args.all_script_host_verifiable and requested_paths:
         parser.error("--all-script-host-verifiable cannot be combined with explicit paths")

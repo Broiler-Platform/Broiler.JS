@@ -52,21 +52,60 @@ Use `--shard-index -1` to run every shard locally. The runner supports async and
 Test262 metadata filters through `--features` and `--feature-match`, per-test timeout,
 optional POSIX memory limits, `--max-workers`, `--shuffle-seed`,
 `--prioritize-fragile`, and expected-error handling through `--include-negative`.
-`--minifier terser --terser-module <package-directory>` adds a Terser-transformed
-variant for each eligible script-host test; `--minifier-timeout-seconds` bounds each
-transformation independently. The fixed `test262-safe-mangle-v2` profile applies
-syntax minification and identifier mangling with compression disabled, and reserves
-from mangling every identifier the test itself quotes (see below). The original
-variant always runs.
+`--minifier` adds one minified variant for each eligible script-host test;
+`--minifier-timeout-seconds` bounds each transformation independently, and the original
+variant always runs. Two manglers are available, one per run:
 
-A source Terser's own parser rejects is recorded as a not-applicable skip
+| `--minifier` | Module flag | Profile | Transformation |
+| --- | --- | --- | --- |
+| `terser` | `--terser-module` | `test262-safe-mangle-v2` | Syntax minification and identifier mangling, compression disabled |
+| `closure` | `--closure-module` | `test262-closure-advanced-v1` | Closure Compiler `ADVANCED_OPTIMIZATIONS` against the ES2026 standard |
+
+Both reserve from renaming every identifier the test itself quotes (see below).
+
+The Closure profile is the aggressive one on purpose: `ADVANCED_OPTIMIZATIONS` renames
+properties as well as variables, removes what it proves unreachable, inlines, and
+collapses namespaces, which is the shape a real ADVANCED-compiled production bundle
+ships. Two consequences follow, and both are expected rather than defects. First, far
+more cases stop being the test they were — anything that reads a property name back as a
+string, or asserts the `name` a binding gave a function, now measures the compiled
+program — and the reference-engine cross-check below moves each of those to a
+`minifier-changed-semantics` skip instead of an engine failure. Second, it is slow: the
+compiler is a fresh process per test (roughly a second and a half each on CI hardware,
+against Terser's persistent worker), so a Closure run costs substantially more wall-clock
+than a Terser one at the same shard count.
+
+One consequence of dead-code removal is worth reading reports with in mind: a minified
+body is only evidence while it still contains the assertions. Calls into the harness are
+calls into externs, which Closure must assume have side effects, so the assertions
+themselves survive — but `minifiedSourceSizeBytes` and `minificationRatio` are recorded on
+every case, and a case whose compiled body collapsed to almost nothing deserves a look
+before it is read as a pass.
+
+Closure has no `ECMASCRIPT_2026` language mode. Its flag parser accepts year names only
+up to `ECMASCRIPT_2022`, which the compiler itself then refuses, and it calls the current
+draft standard `ECMASCRIPT_NEXT` — "latest features supported". `ECMASCRIPT_NEXT` is
+therefore what the profile passes for both `--language_in` and `--language_out`, and the
+report records `ecmaScriptYear: 2026` alongside it so the standard that was asked for is
+in the artifact.
+
+The harness files a test includes — `assert.js`, `sta.js`, and everything in its
+`includes:` metadata — are handed to Closure as externs. The runner concatenates the
+harness around the compiled body rather than compiling them together, so within the
+compilation unit `assert.sameValue` is a property of a free name that `ADVANCED` would
+otherwise rename; declaring the pinned suite's own harness as externs protects exactly
+that surface without a hand-maintained list that would rot against the suite.
+
+A source the minifier's own parser rejects is recorded as a not-applicable skip
 (`skipKind: minifier-unsupported-syntax`), not a failure: nothing was minified, so there
 is no minified variant whose result could be attributed to the engine. test262 exercises
 corners a production minifier has no reason to accept — an escaped keyword used as an
 IdentifierName (`break(){}`), `let` as a sloppy-mode identifier, a redeclared
 `arguments`, an Annex B CallExpression assignment target, decorators, import attributes
-with a trailing comma — and the engine passes all of them as written. Transformation
-timeouts and internal minifier errors remain infrastructure failures.
+with a trailing comma — and the engine passes all of them as written. Closure declines a
+further set of its own (decorators, `using`, auto-accessors, private `#x in o`, the
+RegExp `v` flag), each reported the same way. Transformation timeouts and internal
+minifier errors remain infrastructure failures.
 
 Syntax the minifier neither rejects nor preserves is the same skip. Terser 5 has no
 auto-accessor: it reads `class C { accessor #x = 1; }` as a field named `accessor`
@@ -104,7 +143,7 @@ either.
 
 **The runner settles both automatically, by asking a second engine.** A minified case that
 FAILS is re-run under the reference engine (`--reference-engine-bin`, Node by default —
-already required to run Terser at all) before it is attributed to Broiler:
+already required to run either mangler at all) before it is attributed to Broiler:
 
 | Reference engine | Attribution |
 | --- | --- |
@@ -126,7 +165,7 @@ cannot distinguish), or when the reference engine is unusable — those keep the
 own verdict. `--no-reference-cross-check` turns it off, at the cost of reading minifier
 artefacts as engine failures. The reference engine's own version rides on each
 cross-checked case rather than on the run configuration, because nothing pins a runner's
-Node the way the lockfile pins Terser's version.
+Node the way the lockfiles pin the manglers' versions.
 
 Tests requiring `$262` host hooks remain host-harness exclusions. The `module` and `raw`
 flags require separate host modes and are not validated by the ordinary script host.
@@ -137,25 +176,27 @@ Do not count excluded files as passes.
 `.github/workflows/test262.yml` is the unified manual workflow. It can scope work through
 `scripts/compliance/test262-assemblies.json`, path/glob subsets, and Test262 feature
 metadata; shard the runnable selection; rerun saved failures first; retry an abnormal
-shard once; execute original plus lockfile-pinned Terser variants by default; and
-publish per-shard plus merged JSON/Markdown artifacts. It does not run automatically
+shard once; execute original plus lockfile-pinned Terser variants by default (or Closure
+variants with `minifier: closure`); and publish per-shard plus merged JSON/Markdown
+artifacts. It does not run automatically
 after a merge or for a pull request.
 
 Triage output is split into four focused issues: the most common normalized failure
 groups, the biggest severity/impact groups, the size-ranked timeouts, and the
-Terser-only failures. The last one lists only base paths whose original source passes
+minifier-only failures (titled for whichever mangler ran). The last one lists only base
+paths whose original source passes
 while the minified variant fails or times out, so a minification-specific defect is
 never buried in a mixed-variant report. A source the minifier could not parse, and a
 failure the reference engine attributed to the minifier, are not-applicable skips and do
 not appear there; the issue body reports how many were attributed that way, so the volume
 stays visible without crowding out the engine's own defects.
-`terser_only_problems_limit` bounds its ranked case list, which leads with the smallest
+`minifier_only_problems_limit` bounds its ranked case list, which leads with the smallest
 minified body because that is the cheapest reduction.
 
 The canonical merged JSON records the exact Broiler and test262 commits, workflow URL,
 selection filters/scope, resource options, worker/shuffle settings, and runner
-OS/architecture/.NET version, plus the selected minifier profile, pinned Terser
-version, and transformation timeout. Cross-shard configuration drift and selections
+OS/architecture/.NET version, plus the selected minifier, its profile and exact option
+set, its pinned version, and the transformation timeout. Cross-shard configuration drift and selections
 that run no tests are configuration failures rather than green results. A terminal
 verdict uses this authoritative merge, so a recovered retry can heal an initial job
 failure while a missing full phase cannot pass accidentally.
@@ -172,7 +213,9 @@ may be removed only after:
 
 Manifest persistence consumes the canonical merged artifact, is serialized per branch,
 and uses a compare-and-swap push. Only the canonical Terser-enabled profile may clear
-the path-only manifest: an original-only pass cannot erase a Terser-only failure. If
+the path-only manifest: an original-only pass cannot erase a Terser-only failure, and a
+Closure run measures a different transformation entirely, so it never writes the
+baseline. If
 source files changed after the tested commit, the workflow leaves the newer branch
 untouched instead of applying stale measurements.
 
