@@ -225,6 +225,36 @@ function compilerArguments(source, includes) {
   return { args, reserved };
 }
 
+// Closure can also die on a program it accepted. `for (x.y of [23])` — a MemberExpression
+// as a for-of target, which the grammar allows and every engine runs — walks
+// RemoveUnusedCode into a NullPointerException, and the `import(specifier)` a script may
+// contain reaches an "AST should not contain Dynamic module import" assertion. The process
+// exits non-zero having reported no error diagnostic at all, so classifyDiagnostics sees
+// nothing; what it does report is the AST node it died on, and the file that node came
+// from. When every file it names is the test's own source, the compiler is declining THIS
+// PROGRAM as surely as a parse error is, and there is no minified variant either way. A
+// crash that names an externs file, or names no source at all, is this harness being wrong
+// about the compilation rather than the compiler being wrong about the test, so it stays a
+// failure.
+const JVM_STACK_FRAME = /\n\s+at [\w$.]+\(/;
+const JVM_THROWABLE = /(?:[a-z]\w*\.)+[A-Z]\w*(?:Exception|Error)\b[^\n]*/;
+const SOURCE_FILE_REFERENCE = /\[source_file: ([^\]]*)\]/g;
+const CRASH_SUMMARY_LIMIT = 200;
+
+function classifyCrash(stderr) {
+  if (!JVM_STACK_FRAME.test(stderr)) {
+    return null;
+  }
+  const named = [...stderr.matchAll(SOURCE_FILE_REFERENCE)].map((match) => match[1]);
+  if (named.length === 0 || named.some((name) => name !== SOURCE_NAME)) {
+    return null;
+  }
+  const summary = (JVM_THROWABLE.exec(stderr) || ["compiler crashed"])[0].trim();
+  return summary.length > CRASH_SUMMARY_LIMIT
+    ? `${summary.slice(0, CRASH_SUMMARY_LIMIT)}…`
+    : summary;
+}
+
 // A diagnostic anchored in the test's own source is Closure declining THIS PROGRAM —
 // syntax it does not implement (decorators, `using`, auto-accessors, private `#x in o`,
 // the RegExp `v` flag), which says nothing about the engine. A diagnostic with no source,
@@ -283,6 +313,13 @@ function compile(source, includes) {
   if (completed.status !== 0) {
     const diagnostic = classifyDiagnostics(stderr);
     if (diagnostic === null) {
+      const crash = classifyCrash(stderr);
+      if (crash !== null) {
+        // The Python side reads InternalError as "the minifier crashed on this source",
+        // which is the same not-applicable fact as a declined parse with a different
+        // diagnostic. See MinifierInternalError in run_test262.py.
+        throw Object.assign(new Error(crash), { name: "InternalError" });
+      }
       throw new Error(
         `Closure Compiler exited ${completed.status}${stderr ? `: ${stderr}` : ""}`,
       );

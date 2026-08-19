@@ -161,6 +161,27 @@ REFERENCE_ENGINE = "node"
 # global scope, instead of inside Node's CommonJS module wrapper. See reference_host.cjs.
 REFERENCE_HOST = Path(__file__).with_name("reference_host.cjs")
 DEFAULT_REFERENCE_ENGINE_TIMEOUT_SECONDS = 30.0
+# Features the reference engine implements but does not switch on by default.
+#
+# The cross-check can only speak about a case whose ORIGINAL the reference engine runs, so
+# a feature it hides is a blind spot that answers "no opinion" and leaves every case in
+# that area attributed to Broiler. Temporal is the expensive one: `node` reports no
+# `Temporal`, so it cannot say whether `duration.round({ largestUnit: "days" })` still
+# means that after ADVANCED renamed `largestUnit` to a one-letter property nothing reads —
+# and that single question is most of what a Temporal-heavy Closure run files. V8 has each
+# of these; it just keeps them behind a flag.
+#
+# They are PROBED rather than pinned, and each is used only if the binary accepts it: a
+# newer Node that ships the feature drops the flag, an engine that is not V8 never had it,
+# and either way the reference engine keeps working with whatever it does have. The list is
+# also the safe direction to be wrong in — a flag that is missing costs an opinion, and a
+# missing opinion leaves the failure reported against the engine rather than suppressed.
+REFERENCE_ENGINE_FEATURE_FLAGS = (
+    "--harmony-temporal",
+    "--harmony-shadow-realm",
+    "--harmony-intl-duration-format",
+    "--js-float16array",
+)
 # Closure's ADVANCED renames every property name it has no externs for, and the externs it
 # ships describe the standard surface the compiler's own release knows about. A host that
 # implements more than that — Temporal, iterator helpers, the newest ArrayBuffer methods —
@@ -243,6 +264,11 @@ MINIFIER_INVALID_OUTPUT = "minifier-invalid-output"
 # declaration, and the two are renamed apart. Every engine fails these, which is how they
 # are told from an engine defect.
 MINIFIER_CHANGED_SEMANTICS = "minifier-changed-semantics"
+# The minifier crashed on the test's own source rather than declining it — see
+# MinifierInternalError. Kept apart from `minifier-unsupported-syntax` because the two say
+# different things about the minifier: one read the program and refused it, the other
+# accepted it and then fell over compiling it.
+MINIFIER_INTERNAL_ERROR = "minifier-internal-error"
 ASYNC_DONE_PRELUDE = """
 const __broilerDonePromise = new Promise((resolve, reject) => {
   let settled = false;
@@ -306,6 +332,24 @@ class MinifierSyntaxError(MinifierError):
     (decorators, ``using``, auto-accessors, private ``#x in o``, the RegExp ``v`` flag).
     Nothing was minified, so there is nothing the engine could have got wrong: the case is
     reported as not applicable rather than counted against the engine.
+    """
+
+
+class MinifierInternalError(MinifierError):
+    """Raised when the minifier crashes on a test's source instead of declining it.
+
+    The same fact as MinifierSyntaxError with a different diagnostic: the minifier read the
+    program, started compiling it, and died. Closure walks ``for (x.y of [23])`` — a
+    MemberExpression as a for-of target, which the grammar allows and every engine runs —
+    into a ``NullPointerException`` inside ``RemoveUnusedCode``, and reaches an "AST should
+    not contain Dynamic module import" assertion on the ``import(specifier)`` a script may
+    contain. Nothing came out of either, so there is no minified variant whose result could
+    be attributed to the engine.
+
+    It is told apart from a broken harness by what the compiler said it died on: the crash
+    has to name the test's own source and nothing else. A crash naming an externs file, or
+    naming no source at all, is this runner being wrong about the compilation rather than
+    the compiler being wrong about the test, and stays an infrastructure failure.
     """
 
 
@@ -459,12 +503,15 @@ class MinifierSession:
                 location = f" at line {response['line']}"
                 if response.get("column") is not None:
                     location += f", column {response['column']}"
-            # A SyntaxError is the minifier's parser declining the source; anything
-            # else (a protocol fault, an internal minifier error) is a real
+            # A SyntaxError is the minifier's parser declining the source, and an
+            # InternalError is the minifier crashing on it (see MinifierInternalError);
+            # both leave no minified variant to run. Anything else — a protocol fault, a
+            # crash the worker could not tie to the test's own source — is a real
             # infrastructure problem and keeps failing the run.
-            error_type = (
-                MinifierSyntaxError if error_name == "SyntaxError" else MinifierError
-            )
+            error_type = {
+                "SyntaxError": MinifierSyntaxError,
+                "InternalError": MinifierInternalError,
+            }.get(error_name, MinifierError)
             raise error_type(
                 f"{self.label} {error_name}{location}: {error_message}"
             )
@@ -1796,6 +1843,31 @@ class ReferenceEngine:
             raise ReferenceEngineError(
                 f"Reference engine at {self.executable} did not report a version"
             )
+        self.options = self._accepted_feature_flags()
+
+    def _accepted_feature_flags(self) -> list[str]:
+        """The REFERENCE_ENGINE_FEATURE_FLAGS this binary actually takes.
+
+        Asked of the binary rather than assumed of it: the same `--version` probe that
+        already had to succeed, run once more per candidate flag. Node exits non-zero on a
+        flag it does not know ("bad option"), which is the whole test — a flag this engine
+        has is kept, and one it does not is simply not there to turn on.
+        """
+
+        accepted: list[str] = []
+        for flag in REFERENCE_ENGINE_FEATURE_FLAGS:
+            try:
+                probe = subprocess.run(
+                    [self.executable, flag, "--version"],
+                    capture_output=True,
+                    text=True,
+                    timeout=self.timeout_seconds,
+                )
+            except (OSError, subprocess.SubprocessError):
+                continue
+            if probe.returncode == 0:
+                accepted.append(flag)
+        return accepted
 
     def _write_program(self, program: str) -> str:
         TEMP_DIRECTORY.mkdir(parents=True, exist_ok=True)
@@ -1816,7 +1888,13 @@ class ReferenceEngine:
     def _invoke(self, arguments: list[str], script_path: str) -> str:
         try:
             process = subprocess.run(
-                [self.executable, str(REFERENCE_HOST), *arguments, script_path],
+                [
+                    self.executable,
+                    *self.options,
+                    str(REFERENCE_HOST),
+                    *arguments,
+                    script_path,
+                ],
                 capture_output=True,
                 text=True,
                 timeout=self.timeout_seconds,
@@ -2203,8 +2281,6 @@ def cross_check_minified_failure(
     body: str,
     minified_body: str,
     minified_result: dict[str, object],
-    *,
-    includes_strict: bool,
 ) -> dict[str, object]:
     """Ask the reference engine whether a failing minified case is still the test.
 
@@ -2233,30 +2309,45 @@ def cross_check_minified_failure(
     one it did not check.
     """
     is_async = "async" in metadata["flags"]
+    # Both programs are assembled the way run_test assembles the ones Broiler was handed:
+    # the body is the test's own, without a directive, and the assembler is what puts
+    # `"use strict";` at byte zero for an onlyStrict test. Telling it the body already
+    # carried one left the ORIGINAL of every onlyStrict test running sloppy here, so Node
+    # failed the tests whose subject IS strict mode — `gNonStrict.caller` does not throw
+    # outside it — and every one of them came back "cannot run the original either",
+    # which is the answer that keeps the case attributed to Broiler.
     minified_program = assemble_test_program(
         repo,
         harness_cache,
         metadata,
         minified_body,
-        # The strict directive is re-added by the assembler, exactly as the Broiler run has it.
         body_includes_strict=False,
     )
 
     engine_name = str(getattr(reference_engine, "name", REFERENCE_ENGINE))
     engine_version = str(getattr(reference_engine, "version", ""))
+    # Which features the reference engine was asked to switch on rides on the case for the
+    # same reason its version does: neither is pinned by the run's configuration, and a
+    # verdict is only readable next to what the engine could see when it gave it.
+    engine_options = list(getattr(reference_engine, "options", []) or [])
+
+    def record(result: dict[str, object], verdict: str) -> dict[str, object]:
+        result["referenceCrossCheck"] = verdict
+        result["referenceEngine"] = engine_name
+        result["referenceEngineVersion"] = engine_version
+        if engine_options:
+            result["referenceEngineOptions"] = list(engine_options)
+        return result
 
     def stands(verdict: str) -> dict[str, object]:
-        minified_result["referenceCrossCheck"] = verdict
-        minified_result["referenceEngine"] = engine_name
-        minified_result["referenceEngineVersion"] = engine_version
-        return minified_result
+        return record(minified_result, verdict)
 
     try:
         if reference_engine.run(minified_program, is_async) == "passed":  # type: ignore[attr-defined]
             return stands("engine-divergence")
 
         original_program = assemble_test_program(
-            repo, harness_cache, metadata, body, body_includes_strict=includes_strict
+            repo, harness_cache, metadata, body, body_includes_strict=False
         )
         if not reference_engine.parses(minified_program):  # type: ignore[attr-defined]
             # Reading the minified body needs no support for what the test does, only for
@@ -2291,9 +2382,7 @@ def cross_check_minified_failure(
         skip_kind=outcome,
         variant=str(minified_result.get("variant") or TERSER_VARIANT),
     )
-    skipped["referenceCrossCheck"] = outcome
-    skipped["referenceEngine"] = engine_name
-    skipped["referenceEngineVersion"] = engine_version
+    record(skipped, outcome)
     # What the engine actually said, kept so a skipped case can still be read back.
     engine_failure = minified_result.get("stderr") or minified_result.get("reason") or ""
     if engine_failure:
@@ -2490,6 +2579,17 @@ def run_test_variants_with_metadata(
             skip_kind="minifier-unsupported-syntax",
             variant=minified_variant,
         )
+    except MinifierInternalError as exc:
+        # The minifier accepted the source and then crashed compiling it — see
+        # MinifierInternalError. Nothing came out, so like a declined source there is no
+        # minified variant whose result could be about the engine.
+        minification_duration = time.perf_counter() - minifier_started
+        minified_result = _not_applicable_minified_result(
+            path,
+            f"minifier crashed on this source: {exc}",
+            skip_kind=MINIFIER_INTERNAL_ERROR,
+            variant=minified_variant,
+        )
     except Exception as exc:
         minification_duration = time.perf_counter() - minifier_started
         failure_type = (
@@ -2522,7 +2622,6 @@ def run_test_variants_with_metadata(
             body,
             str(code) if isinstance(code, str) else "",
             minified_result,
-            includes_strict=includes_strict,
         )
 
     minified_result["minifier"] = minified_variant
@@ -2599,11 +2698,19 @@ def run_selected_tests(
             f"version {getattr(minifier, 'version', 'unknown')})."
         )
     if reference_engine is not None:
+        reference_options = list(getattr(reference_engine, "options", []) or [])
         log_progress(
             f"A failing minified case is cross-checked against "
             f"{getattr(reference_engine, 'name', REFERENCE_ENGINE)} "
             f"{getattr(reference_engine, 'version', 'unknown')} before it counts as an "
             "engine failure."
+            + (
+                f" It accepts {' '.join(reference_options)}, so it can speak about those "
+                "features."
+                if reference_options
+                else " It accepts none of the optional feature flags, so a test of a "
+                "feature it hides decides nothing."
+            )
         )
     if max_workers > 1:
         log_progress(f"Using {max_workers} parallel worker(s).")
@@ -2894,7 +3001,10 @@ def main() -> int:
         default=REFERENCE_ENGINE,
         help=(
             "Second engine consulted about a FAILING minified case before it is attributed "
-            "to Broiler (default: node, which every minified variant already requires)"
+            "to Broiler (default: node, which every minified variant already requires). "
+            "It is started with whichever of "
+            f"{', '.join(REFERENCE_ENGINE_FEATURE_FLAGS)} it accepts, so a feature it "
+            "hides is not read as an opinion it does not have"
         ),
     )
     parser.add_argument(

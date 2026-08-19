@@ -750,6 +750,45 @@ class MergeTest262ShardsTests(unittest.TestCase):
         body = merger.render_minifier_only_issue_markdown(merged)
         self.assertIn("Attributed to the minifier", body)
 
+    def test_a_minifier_crash_is_a_conclusive_exemption_of_its_own(self) -> None:
+        # Closure accepting `for (x.y of [23])` and then crashing on it produced no
+        # minified body, so — like a source its parser declines — the case is not
+        # applicable, clears the manifest, and stays visible under its own kind rather
+        # than being folded into "the minifier could not read it".
+        crashed = "test/language/minifier-crashed-on-this.js"
+        manifest = self.write_text("failures.txt", f"{crashed}\n")
+        self.write_report(
+            0,
+            [
+                {"path": crashed, "variant": "original", "status": "passed"},
+                {
+                    "path": crashed,
+                    "variant": "closure",
+                    "status": "skipped",
+                    "notApplicable": True,
+                    "skipKind": "minifier-internal-error",
+                    "reason": "minifier crashed on this source: NullPointerException",
+                },
+            ],
+            minifier="closure",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+        persisted = merger.merge_into_manifest(merged, manifest)
+
+        self.assertEqual([], merged["incompleteShards"])
+        self.assertEqual(0, merged["summary"]["failed"])
+        self.assertEqual(
+            {"minifier-internal-error": 1},
+            merged["summary"]["notApplicableByKind"],
+        )
+        self.assertEqual(0, merged["minifierOnlyFailureCount"])
+        self.assertEqual([], persisted["manifestPaths"])
+        self.assertIn(
+            "source the minifier crashed on",
+            merger.render_minifier_only_issue_markdown(merged),
+        )
+
     def test_not_applicable_marker_requires_terser_skip_contract(self) -> None:
         path = "test/language/bad-marker.js"
         self.write_report(

@@ -118,6 +118,13 @@ _MINIFIER_NOT_APPLICABLE = "minifier-not-applicable"
 # still tell "the minifier could not read it" apart from "this test cannot be minified
 # before execution".
 _MINIFIER_UNSUPPORTED_SYNTAX = "minifier-unsupported-syntax"
+# The minifier accepted the source and then crashed compiling it: Closure walks
+# `for (x.y of [23])` into a NullPointerException and asserts on the `import(specifier)` a
+# script may contain. Nothing came out, so the case is not applicable for the same reason a
+# declined parse is; the kind stays distinct because the two say different things about the
+# minifier. A crash the worker could not tie to the test's own source is still an
+# infrastructure failure and never reaches here.
+_MINIFIER_INTERNAL_ERROR = "minifier-internal-error"
 # The two verdicts a reference engine can return about a FAILING minified case (see
 # run_test262.ReferenceEngine): it could not parse what the minifier emitted, or it ran the
 # body and failed the same way the engine did. Either way the minified program is not
@@ -131,6 +138,7 @@ _MINIFIER_SKIP_KINDS = frozenset(
     {
         _MINIFIER_NOT_APPLICABLE,
         _MINIFIER_UNSUPPORTED_SYNTAX,
+        _MINIFIER_INTERNAL_ERROR,
         _MINIFIER_INVALID_OUTPUT,
         _MINIFIER_CHANGED_SEMANTICS,
     }
@@ -2294,6 +2302,7 @@ def render_minifier_only_issue_markdown(
             _MINIFIER_UNSUPPORTED_SYNTAX,
             "source the minifier cannot read or does not preserve",
         ),
+        (_MINIFIER_INTERNAL_ERROR, "source the minifier crashed on"),
         (_MINIFIER_INVALID_OUTPUT, "minified body the reference engine cannot parse"),
         (_MINIFIER_CHANGED_SEMANTICS, "minification changed what the test measures"),
     ):

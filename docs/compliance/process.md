@@ -118,7 +118,10 @@ What this does not cover is an option name the host reads off an object the *tes
 own object graph is called `smallestUnit`. That program is broken in every engine — it is
 the ADVANCED hazard that record-type externs exist to answer in production — so the
 cross-check below is what settles those, whenever the reference engine implements the
-feature the test needs.
+feature the test needs. That proviso used to exclude Temporal, which is where most of
+these tests are; the cross-check now asks the reference engine to switch Temporal on, and
+what remains excluded is the feature *behind* the feature — V8's Temporal aborts on a
+non-ISO calendar, so the `intl402` cases keep coming back with no opinion.
 
 A source the minifier's own parser rejects is recorded as a not-applicable skip
 (`skipKind: minifier-unsupported-syntax`), not a failure: nothing was minified, so there
@@ -128,8 +131,19 @@ IdentifierName (`break(){}`), `let` as a sloppy-mode identifier, a redeclared
 `arguments`, an Annex B CallExpression assignment target, decorators, import attributes
 with a trailing comma — and the engine passes all of them as written. Closure declines a
 further set of its own (decorators, `using`, auto-accessors, private `#x in o`, the
-RegExp `v` flag), each reported the same way. Transformation timeouts and internal
-minifier errors remain infrastructure failures.
+RegExp `v` flag), each reported the same way.
+
+A minifier that *crashes* on a source it accepted is the same fact with a different
+diagnostic, and is its own kind (`skipKind: minifier-internal-error`). Closure walks
+`for (x.y of [23])` — a MemberExpression as a for-of target, which the grammar allows and
+every engine runs — into a `NullPointerException` inside `RemoveUnusedCode`, and reaches
+an "AST should not contain Dynamic module import" assertion on the `import(specifier)` a
+script may contain. Neither produced a minified body, so neither says anything about the
+engine. What separates that from a broken harness is what the compiler named as the node
+it died on: the crash has to name the test's own source and nothing else. A crash that
+names an externs file, or names no source at all, is this runner being wrong about the
+compilation rather than the compiler being wrong about the test, and it — along with every
+transformation timeout — remains an infrastructure failure.
 
 Syntax the minifier neither rejects nor preserves is the same skip. Terser 5 has no
 auto-accessor: it reads `class C { accessor #x = 1; }` as a field named `accessor`
@@ -196,13 +210,33 @@ wrapper, and each therefore comes back "cannot run the original either".
 scope the test was written for, and its `--check` is `vm.Script` — the script-mode parse
 that `node --check`, which parses a module, is not.
 
+**A strict test is assembled strict, on both sides.** An `onlyStrict` test's body does not
+carry its own directive: the assembler is what puts `"use strict";` at byte zero, exactly
+as it does for the program Broiler was handed. Telling the assembler the body already had
+one ran the ORIGINAL of every `onlyStrict` test sloppy on this side of the comparison, so
+the reference engine failed each test whose subject IS strict mode — `gNonStrict.caller`
+throws only inside it — and each came back "cannot run the original either", which is the
+row that keeps a case attributed to Broiler.
+
+**A feature the reference engine hides is asked for rather than worked around.** The check
+speaks only about a case whose original it can run, so a feature switched off is a blind
+spot that answers "no opinion" and leaves that whole area attributed to Broiler — and for
+a Closure run that area is most of the report, because the option name a Temporal test
+writes into an object literal is precisely what ADVANCED renames. V8 has Temporal,
+ShadowRealm, `Intl.DurationFormat`, and `Float16Array`; it keeps them behind flags. The
+runner probes each flag against the binary with the same `--version` call that already had
+to succeed, passes the ones it accepts, and records them on every cross-checked case
+(`referenceEngineOptions`) next to the version. A flag the engine does not have costs an
+opinion and nothing else, which is the safe direction: a missing opinion leaves the failure
+reported against the engine rather than suppressed. What stays out of reach is a feature
+the reference engine has but has not finished — V8's Temporal aborts on a non-ISO calendar,
+so the `intl402` Temporal cases are still inconclusive.
+
 The check can only move a case OUT of the engine's column, never into it, and it never
 runs on a passing case, a negative test (which passes BY failing, which an exit code
 cannot distinguish), or when the reference engine is unusable — those keep the engine's
-own verdict. A feature the reference engine has not implemented is the same "no opinion":
-Node has no `Temporal`, so it cannot say whether a Temporal test's minified body is still
-that test, and the case stays with the engine. `--no-reference-cross-check` turns it off,
-at the cost of reading minifier artefacts as engine failures. The reference engine's own version rides on each
+own verdict. `--no-reference-cross-check` turns it off, at the cost of reading minifier
+artefacts as engine failures. The reference engine's own version and flags ride on each
 cross-checked case rather than on the run configuration, because nothing pins a runner's
 Node the way the lockfiles pin the manglers' versions.
 
