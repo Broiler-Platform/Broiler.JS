@@ -1369,6 +1369,36 @@ includes: [assert.js, sta.js]
         self.assertNotIn("infrastructure", results[1])
         self.assertIn(str(error), results[1]["reason"])
 
+    def test_a_minifier_crash_on_the_source_is_not_applicable_not_a_failure(self) -> None:
+        # Closure accepts `for (x.y of [23])` and then walks RemoveUnusedCode into a
+        # NullPointerException on it. Nothing came out, so — exactly as for a source its
+        # parser declines — there is no minified variant whose result could be about the
+        # engine. The kind stays separate because the two say different things about the
+        # minifier.
+        path = self.write_test("test/language/minifier-crash.js", "1;\n")
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        error = run_test262.MinifierInternalError(
+            "Closure Compiler InternalError: java.lang.NullPointerException: "
+            "NAME x 9:5 [length: 1] [source_file: test262-source.js]"
+        )
+        minifier = FakeMinifier(error=error)
+
+        with mock.patch.object(
+            run_test262,
+            "run_test",
+            side_effect=passing_run_test,
+        ) as run_test_mock:
+            results = run_test262.run_test_variants_with_metadata(
+                repo, TEST_ENGINE_PATH, path, {}, 30.0, 0, minifier=minifier
+            )
+
+        self.assertEqual(1, run_test_mock.call_count)
+        self.assertEqual("skipped", results[1]["status"])
+        self.assertTrue(results[1]["notApplicable"])
+        self.assertEqual("minifier-internal-error", results[1]["skipKind"])
+        self.assertNotIn("infrastructure", results[1])
+        self.assertIn(str(error), results[1]["reason"])
+
     def test_terser_engine_timeout_is_kept_as_a_separate_variant_case(self) -> None:
         path = self.write_test("test/language/terser-engine-timeout.js", "1;\n")
         repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
@@ -2003,6 +2033,43 @@ includes: [assert.js, sta.js]
         self.assertIn("MINIFIED_BODY();", minified_program)
         self.assertIn("ORIGINAL_BODY();", original_program)
 
+    def test_an_onlystrict_original_reaches_the_reference_engine_strict(self) -> None:
+        # The assembler is what puts `"use strict";` at byte zero, exactly as it does for
+        # the program Broiler was handed. Telling it the body already carried one ran the
+        # ORIGINAL of every onlyStrict test sloppy here, so the second engine failed the
+        # tests whose subject IS strict mode — `gNonStrict.caller` throws only inside it —
+        # and each came back "cannot run the original either", the answer that keeps the
+        # case attributed to Broiler.
+        engine = FakeReferenceEngine({"MINIFIED_BODY": "failed"})
+        result = self._cross_check_case(
+            engine,
+            source="/*---\nflags: [onlyStrict]\n---*/\nORIGINAL_BODY();\n",
+        )
+
+        minified_program, original_program = engine.programs
+        for program in (minified_program, original_program):
+            self.assertTrue(
+                program.startswith('"use strict";'),
+                f"program does not open with the strict directive: {program[:40]!r}",
+            )
+        # And with the original runnable as written, the case is attributable again.
+        self.assertEqual("minifier-changed-semantics", result["skipKind"])
+
+    def test_the_reference_engines_options_ride_on_the_case(self) -> None:
+        # Which features the engine was asked to switch on is as much a part of reading a
+        # verdict as its version is, and neither is pinned by the run's configuration.
+        engine = FakeReferenceEngine({"MINIFIED_BODY": "failed"})
+        engine.options = ["--harmony-temporal"]
+        result = self._cross_check_case(engine)
+
+        self.assertEqual(["--harmony-temporal"], result["referenceEngineOptions"])
+
+    def test_a_reference_engine_without_options_records_none(self) -> None:
+        engine = FakeReferenceEngine()
+        result = self._cross_check_case(engine)
+
+        self.assertNotIn("referenceEngineOptions", result)
+
 
 class ReferenceHostTests(unittest.TestCase):
     """The reference engine is handed each program as the script test262 wrote it as.
@@ -2019,10 +2086,47 @@ class ReferenceHostTests(unittest.TestCase):
             engine.run("1;", is_async=False)
             engine.parses("1;")
 
-        ran, checked = [call.args[0] for call in run.call_args_list[1:]]
-        self.assertEqual([engine.executable, str(run_test262.REFERENCE_HOST)], ran[:2])
+        # One `--version` probe for the engine itself, then one per candidate feature flag.
+        probes = 1 + len(run_test262.REFERENCE_ENGINE_FEATURE_FLAGS)
+        ran, checked = [call.args[0] for call in run.call_args_list[probes:]]
+        prefix = [engine.executable, *engine.options, str(run_test262.REFERENCE_HOST)]
+        self.assertEqual(prefix, ran[: len(prefix)])
+        self.assertEqual([*prefix, "--check"], checked[: len(prefix) + 1])
+
+    def test_only_the_feature_flags_the_engine_accepts_are_passed(self) -> None:
+        # Node exits non-zero on a flag it does not know ("bad option"), which is the whole
+        # probe: a binary without the flag simply does not get it, and the cross-check goes
+        # on working with whatever features that engine does have.
+        offered = run_test262.REFERENCE_ENGINE_FEATURE_FLAGS[0]
+
+        def probe(arguments, **kwargs):
+            known = arguments[1] in ("--version", offered)
+            return mock.Mock(
+                returncode=0 if known else 9,
+                stdout="v22.0.0\n" if known else "",
+                stderr="" if known else "node: bad option\n",
+            )
+
+        with mock.patch.object(run_test262.subprocess, "run", side_effect=probe):
+            engine = run_test262.ReferenceEngine("node", 30.0)
+
+        self.assertEqual([offered], engine.options)
+
+    @unittest.skipUnless(shutil.which("node"), "the reference engine needs Node.js")
+    def test_the_reference_engine_is_asked_about_the_features_it_hides(self) -> None:
+        # Without this the engine reports no `Temporal`, so it cannot say whether a
+        # Temporal test's minified body is still that test — and a Temporal-heavy Closure
+        # run is mostly that question. V8 has Temporal; it just keeps it behind a flag.
+        engine = run_test262.ReferenceEngine("node", 30.0)
+        if "--harmony-temporal" not in engine.options:
+            self.skipTest("this Node does not offer --harmony-temporal")
+
         self.assertEqual(
-            [engine.executable, str(run_test262.REFERENCE_HOST), "--check"], checked[:3]
+            "passed",
+            engine.run(
+                "if (typeof Temporal !== 'object') { throw new Error('no Temporal'); }\n",
+                is_async=False,
+            ),
         )
 
     @unittest.skipUnless(shutil.which("node"), "the reference engine needs Node.js")
