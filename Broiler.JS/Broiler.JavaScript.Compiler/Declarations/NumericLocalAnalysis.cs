@@ -626,8 +626,10 @@ internal sealed class NumericLocalAnalysis
             case AstSequenceExpression sequence:
                 return Classify(Last(sequence));
 
+            // The operators IsNumericUnary types from their operand. `!x` is not one of
+            // them — it is a boolean — so it falls through to UnhandledOperator below.
             case AstUnaryExpression unary
-                when unary.Operator is UnaryOperator.Negate or UnaryOperator.BitwiseNot
+                when unary.Operator is UnaryOperator.Minus or UnaryOperator.BitwiseNot
                     or UnaryOperator.Increment or UnaryOperator.Decrement:
                 return Classify(unary.Argument);
 
@@ -855,7 +857,12 @@ internal sealed class NumericLocalAnalysis
     {
         // `-x` and `~x` on a number are numbers. On a BigInt they are BigInts, which is
         // why the operand has to be provably numeric rather than merely "not a string".
-        UnaryOperator.Negate or UnaryOperator.BitwiseNot => IsNumeric(unary.Argument),
+        // UnaryOperator.Negate is `!`, not `-`: its value is a boolean whatever the operand
+        // was, so `var b = !1` is a boolean local holding false. Typing it numeric stored
+        // the 0 that DoubleValue(false) produces, and every read then answered 0 rather
+        // than false — which is what a minifier's `!0`/`!1` spelling of the booleans runs
+        // into (test262 TypedArray prototype find/reduce predicate-not-called cases).
+        UnaryOperator.Minus or UnaryOperator.BitwiseNot => IsNumeric(unary.Argument),
 
         // `++x` / `--x` yield ToNumeric(x); numeric in, numeric out.
         UnaryOperator.Increment or UnaryOperator.Decrement => IsNumeric(unary.Argument),

@@ -21,9 +21,11 @@ Select `minifier: closure` to run the second variant through the lockfile-pinned
 Closure Compiler instead, at `ADVANCED_OPTIMIZATIONS` against the ES2026 standard — that
 profile also renames properties and removes code it proves unreachable, so expect many
 more cases to be attributed to the transformation rather than to the engine, and expect a
-markedly longer run. Select `minifier: none` for an original-only diagnostic run. Only the
-default Terser profile may rewrite the canonical failure manifest; the other two are
-reported but cannot.
+markedly longer run. Before its first compile the runner asks the engine to list its own
+globals and hands them to Closure as externs, so ADVANCED does not rename the host API out
+of the program it is compiling. Select `minifier: none` for an original-only diagnostic
+run. Only the default Terser profile may rewrite the canonical failure manifest; the other
+two are reported but cannot.
 
 For an untargeted run, the workflow can follow a two-phase approach:
 

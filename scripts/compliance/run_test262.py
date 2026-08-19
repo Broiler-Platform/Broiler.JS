@@ -121,6 +121,7 @@ MINIFIER_OPTIONS: dict[str, dict[str, object]] = {
         "mangle": True,
         "mangleProperties": True,
         "harnessExterns": True,
+        "hostExterns": True,
         "reserveQuotedNames": True,
         "emitUseStrict": False,
         "isolationMode": "NONE",
@@ -155,7 +156,80 @@ INTERNAL_EXEC_WITH_LIMITS = "--_exec-with-test262-limits"
 # Node is already a hard requirement of the Terser variant (it runs the minifier), so this
 # adds a second opinion without adding a dependency. See ReferenceEngine.
 REFERENCE_ENGINE = "node"
+# The reference engine is handed each program through this launcher rather than being
+# pointed at the file: it compiles the program as the SCRIPT test262 wrote, in the real
+# global scope, instead of inside Node's CommonJS module wrapper. See reference_host.cjs.
+REFERENCE_HOST = Path(__file__).with_name("reference_host.cjs")
 DEFAULT_REFERENCE_ENGINE_TIMEOUT_SECONDS = 30.0
+# Closure's ADVANCED renames every property name it has no externs for, and the externs it
+# ships describe the standard surface the compiler's own release knows about. A host that
+# implements more than that — Temporal, iterator helpers, the newest ArrayBuffer methods —
+# is invisible to it, so `Temporal.Duration` compiles to `Temporal.h` and the program that
+# comes out no longer reaches the engine's own API. A production ADVANCED build answers
+# that with externs for its host; so does this variant, and it asks the engine under test
+# what to put in them rather than keeping a list that would rot against the engine.
+HOST_SURFACE_BEGIN = "__broilerHostSurfaceBegin__"
+HOST_SURFACE_END = "__broilerHostSurfaceEnd__"
+HOST_EXTERNS_HOLDER = "__broilerTest262HostNames"
+HOST_EXTERNS_NAME = "test262-host-surface.js"
+DEFAULT_HOST_SURFACE_TIMEOUT_SECONDS = 120.0
+HOST_SURFACE_IDENTIFIER = re.compile(r"[A-Za-z_$][A-Za-z0-9_$]*")
+# Walks everything reachable from `globalThis` through data properties and prototypes,
+# reporting every own property name it passes. An accessor is named but never invoked: what
+# it would return is not the harness's business, and several of them throw when the receiver
+# is the prototype that declares them.
+HOST_SURFACE_SCRIPT = """
+(function () {
+  var seenObjects = new Set();
+  var names = new Set();
+  var pending = [globalThis];
+  seenObjects.add(globalThis);
+  while (pending.length > 0) {
+    var target = pending.pop();
+    var keys;
+    try {
+      keys = Object.getOwnPropertyNames(target);
+    } catch (error) {
+      keys = [];
+    }
+    for (var index = 0; index < keys.length; index++) {
+      var key = keys[index];
+      names.add(key);
+      var descriptor;
+      try {
+        descriptor = Object.getOwnPropertyDescriptor(target, key);
+      } catch (error) {
+        continue;
+      }
+      if (!descriptor || !("value" in descriptor)) {
+        continue;
+      }
+      var value = descriptor.value;
+      var kind = typeof value;
+      if (value === null || (kind !== "object" && kind !== "function")) {
+        continue;
+      }
+      if (!seenObjects.has(value)) {
+        seenObjects.add(value);
+        pending.push(value);
+      }
+    }
+    var prototype;
+    try {
+      prototype = Object.getPrototypeOf(target);
+    } catch (error) {
+      continue;
+    }
+    if (prototype !== null && !seenObjects.has(prototype)) {
+      seenObjects.add(prototype);
+      pending.push(prototype);
+    }
+  }
+  print("__broilerHostSurfaceBegin__");
+  print(Array.from(names).join("\\n"));
+  print("__broilerHostSurfaceEnd__");
+})();
+""".strip()
 # The minified program is not valid JavaScript: the reference engine's parser rejects what
 # the minifier emitted. Terser accepts `if (false) let \n {}` and prints `if(false){let{}}`,
 # unescapes `for (async of [7])` into the `for (async of …)` the grammar forbids, and
@@ -597,6 +671,7 @@ class ClosureMinifier(WorkerMinifier):
         module_root: str,
         harness_root: str | Path,
         timeout_seconds: float,
+        host_externs: str | Path,
     ) -> None:
         super().__init__(timeout_seconds)
         self.module_root = Path(module_root).resolve()
@@ -605,6 +680,12 @@ class ClosureMinifier(WorkerMinifier):
             raise MinifierError(
                 "The Closure variant needs the pinned test262 harness directory for its "
                 f"externs, and it is not there: {self.harness_root}"
+            )
+        self.host_externs = Path(host_externs).resolve()
+        if not self.host_externs.is_file():
+            raise MinifierError(
+                "The Closure variant needs the engine's own global surface as externs, "
+                f"and that file is not there: {self.host_externs}"
             )
         self.version = self._read_package_version(
             self.module_root, "--closure-module"
@@ -618,7 +699,101 @@ class ClosureMinifier(WorkerMinifier):
             # timeout so the request times out here, where a timeout is a reported
             # per-test outcome, rather than there, where it is an opaque worker error.
             str(int(self.timeout_seconds * 1000) + 5000),
+            str(self.host_externs),
         ]
+
+
+def collect_host_property_names(
+    broiler_dll: str,
+    timeout_seconds: float = DEFAULT_HOST_SURFACE_TIMEOUT_SECONDS,
+) -> list[str]:
+    """Ask the engine under test which property names its own globals own.
+
+    The answer is the engine's, not a list kept here, for the same reason the harness is
+    handed to Closure as externs rather than transcribed: a transcription is wrong the day
+    the engine implements one more builtin, and wrong in the direction that reports the new
+    builtin as an engine failure.
+    """
+
+    TEMP_DIRECTORY.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile(
+        "w",
+        suffix=".js",
+        delete=False,
+        dir=TEMP_DIRECTORY,
+        encoding="utf-8",
+        newline="",
+    ) as handle:
+        handle.write(HOST_SURFACE_SCRIPT)
+        script_path = handle.name
+
+    try:
+        process = subprocess.run(
+            ["dotnet", broiler_dll, "--script-host", script_path],
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise MinifierError(
+            f"The engine did not report its global surface within {timeout_seconds:g}s"
+        ) from exc
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise MinifierError(
+            f"Could not run the engine at {broiler_dll} to read its global surface: {exc}"
+        ) from exc
+    finally:
+        os.unlink(script_path)
+
+    lines = (process.stdout or "").splitlines()
+    bounded = (
+        process.returncode == 0
+        and HOST_SURFACE_BEGIN in lines
+        and HOST_SURFACE_END in lines
+        and lines.index(HOST_SURFACE_BEGIN) < lines.index(HOST_SURFACE_END)
+    )
+    if not bounded:
+        detail = (process.stderr or "").strip().splitlines()
+        raise MinifierError(
+            f"The engine at {broiler_dll} did not report its global surface "
+            f"(exit {process.returncode})"
+            + (f": {detail[0]}" if detail else "")
+        )
+
+    reported = lines[lines.index(HOST_SURFACE_BEGIN) + 1 : lines.index(HOST_SURFACE_END)]
+    # A property name that is not identifier-shaped — an array index, a name with a space
+    # in it — cannot be written as a `.name` access and ADVANCED does not rename it either,
+    # so there is nothing to hold back.
+    names = sorted(
+        {
+            name
+            for name in (line.strip() for line in reported)
+            if HOST_SURFACE_IDENTIFIER.fullmatch(name)
+        }
+    )
+    if not names:
+        raise MinifierError(
+            f"The engine at {broiler_dll} reported an empty global surface"
+        )
+    return names
+
+
+def write_host_externs(names: list[str], destination: Path) -> Path:
+    """Write the engine's property names as an externs file ADVANCED will not rename.
+
+    A property name that appears anywhere in externs is exempt from Closure's property
+    renaming, and the holder is typed ``?`` so the compiler asks nothing about the object
+    itself — the same shape closure_worker.cjs uses for the names a test quotes.
+    """
+
+    lines = [
+        "/** @fileoverview Property names the Broiler script host owns. @externs */",
+        f"/** @type {{?}} */ var {HOST_EXTERNS_HOLDER};",
+    ]
+    lines.extend(f"{HOST_EXTERNS_HOLDER}.{name};" for name in names)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return destination
 
 
 class Test262Repository:
@@ -1580,6 +1755,13 @@ class ReferenceEngine:
     It is asked only when a minified case FAILED, so a passing run costs nothing, and its
     answer can only ever move a case OUT of the engine's column: a divergence the reference
     engine does not reproduce stays a Broiler failure, exactly as before.
+
+    Every program reaches it through reference_host.cjs, which compiles it as a script in
+    the global scope rather than inside Node's module wrapper. What that buys is the
+    reference engine's opinion on the tests whose subject IS global scope: without it Node
+    fails the Annex B eval-code originals — a `var` the enclosing file declares is not the
+    one the eval'd code assigns — and every one of them comes back "cannot run the original
+    either", which is the answer that leaves the case attributed to Broiler.
     """
 
     name = REFERENCE_ENGINE
@@ -1591,6 +1773,10 @@ class ReferenceEngine:
         if resolved is None:
             raise ReferenceEngineError(
                 f"Reference engine executable was not found: {executable}"
+            )
+        if not REFERENCE_HOST.is_file():
+            raise ReferenceEngineError(
+                f"Reference engine launcher was not found: {REFERENCE_HOST}"
             )
         self.executable = resolved
         self.timeout_seconds = timeout_seconds
@@ -1613,8 +1799,9 @@ class ReferenceEngine:
 
     def _write_program(self, program: str) -> str:
         TEMP_DIRECTORY.mkdir(parents=True, exist_ok=True)
-        # .cjs: the harness and every script-mode test are CommonJS to Node, whatever a
-        # package.json above the temp directory happens to say about .js.
+        # The suffix labels the file and no longer decides how it is read: reference_host.cjs
+        # reads the program itself and compiles it as a script, so no package.json above the
+        # temp directory can make Node treat it as a module.
         with tempfile.NamedTemporaryFile(
             "w",
             suffix=".cjs",
@@ -1629,7 +1816,7 @@ class ReferenceEngine:
     def _invoke(self, arguments: list[str], script_path: str) -> str:
         try:
             process = subprocess.run(
-                [self.executable, *arguments, script_path],
+                [self.executable, str(REFERENCE_HOST), *arguments, script_path],
                 capture_output=True,
                 text=True,
                 timeout=self.timeout_seconds,
@@ -1643,7 +1830,7 @@ class ReferenceEngine:
         return "passed" if process.returncode == 0 else "failed"
 
     def parses(self, program: str) -> bool:
-        """Whether the reference engine's parser accepts the program at all."""
+        """Whether the reference engine's parser accepts the program as a script."""
         script_path = self._write_program(program)
         try:
             return self._invoke(["--check"], script_path) == "passed"
@@ -1823,6 +2010,7 @@ def build_summary(
     minifier_version: str = "",
     minifier_profile: str = "",
     minifier_timeout_seconds: float = 0.0,
+    minifier_host_extern_names: int = 0,
 ) -> dict[str, object]:
     passed = sum(1 for result in results if result["status"] == "passed")
     failed = sum(1 for result in results if result["status"] == "failed")
@@ -1926,6 +2114,10 @@ def build_summary(
         "minifierProfile": minifier_profile,
         "minifierTimeoutSeconds": minifier_timeout_seconds,
         "minifierOptions": dict(MINIFIER_OPTIONS.get(minifier, {})),
+        # How much of itself the engine declared to Closure. An observation of this shard's
+        # engine rather than a setting of the run, so — like the reference engine's version
+        # — it is reported without being one of the fields the merge demands agreement on.
+        "minifierHostExternNames": minifier_host_extern_names,
         "variants": variants,
         "expectedVariantCountPerPath": len(variants),
         "variantSummary": variant_summary,
@@ -2761,6 +2953,7 @@ def main() -> int:
     # pinned suite's own harness directory: those files are its externs, and they are what
     # keep ADVANCED from renaming the assertion API out from under every test.
     minifier: WorkerMinifier | None = None
+    host_externs_names: list[str] = []
     if args.minifier == TERSER_VARIANT:
         if not args.terser_module.strip():
             parser.error("--terser-module is required with --minifier terser")
@@ -2776,10 +2969,22 @@ def main() -> int:
         if not args.closure_module.strip():
             parser.error("--closure-module is required with --minifier closure")
         try:
+            # The engine describes itself once per shard, and the description is externs:
+            # without it ADVANCED renames every host API Closure's own externs do not
+            # mention, and the variant reports the engine's newest builtins as its defects.
+            host_externs_names = collect_host_property_names(args.broiler_dll)
+            host_externs = write_host_externs(
+                host_externs_names, TEMP_DIRECTORY / HOST_EXTERNS_NAME
+            )
+            log_progress(
+                f"The engine reports {len(host_externs_names)} property name(s) of its "
+                f"own; ADVANCED will not rename those."
+            )
             minifier = ClosureMinifier(
                 args.closure_module,
                 repo.ensure_local_suite_root() / "harness",
                 args.minifier_timeout_seconds,
+                host_externs,
             )
             minifier.probe()
         except (MinifierError, ValueError, OSError, RuntimeError) as exc:
@@ -2879,6 +3084,7 @@ def main() -> int:
         minifier_timeout_seconds=(
             args.minifier_timeout_seconds if minifier is not None else 0.0
         ),
+        minifier_host_extern_names=len(host_externs_names),
     )
 
     if args.output:

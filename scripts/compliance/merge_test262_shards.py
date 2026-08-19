@@ -166,6 +166,9 @@ _MINIFIER_OPTIONS = {
         # moved out of being the test.
         "mangleProperties": True,
         "harnessExterns": True,
+        # The engine's own globals are externs as well, generated per run from what the
+        # engine says it implements: see run_test262.collect_host_property_names.
+        "hostExterns": True,
         "reserveQuotedNames": True,
         "emitUseStrict": False,
         "isolationMode": "NONE",
