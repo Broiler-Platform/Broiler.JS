@@ -79,6 +79,13 @@ public class JSException : Exception
 
     private readonly List<(StringSpan target, string file, int line, int column)> trace = [];
 
+    /// <summary>
+    /// Whether the JavaScript frames have already been folded into <see cref="trace"/>, so that
+    /// reading <see cref="JSStackTrace"/> again renders them instead of collecting them a second
+    /// time.
+    /// </summary>
+    private bool javaScriptFramesCaptured;
+
     public JSException(JSValue message, [CallerMemberName] string function = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int line = 0) : base()
     {
         if (function != null)
@@ -108,6 +115,27 @@ public class JSException : Exception
             (this, prototype);
     }
 
+    /// <summary>
+    /// The thrown value's message over the frames it was raised through: the throw site the
+    /// constructor recorded, then the JavaScript frames that were live at the throw.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Reading this is what <em>collects</em> the JavaScript frames — the walker appends them to
+    /// <see cref="trace"/> as it renders them, which is what keeps them printable by
+    /// <see cref="StackTrace"/> after the context that threw is gone. So the read has to be
+    /// collected from once and rendered from thereafter, and it was not: every read walked the live
+    /// frames again and appended them again, so an exception whose stack a host renders for several
+    /// sinks reported the same frame once per sink. A page's first script failing on line 14 came
+    /// back as five identical <c>at native in inline-0:line 14</c> lines above a JavaScript-side
+    /// <c>stack</c> that correctly showed one — the shape of a recursion that never happened, and
+    /// the reason the two halves of the same report disagreed.
+    /// </para>
+    /// <para>
+    /// The captured frames are also the better answer for a later read: they are the stack as it
+    /// stood at the throw, while the live stack has been unwinding since.
+    /// </para>
+    /// </remarks>
     public JSValue JSStackTrace
     {
         get
@@ -115,13 +143,27 @@ public class JSException : Exception
             var sb = new StringBuilder();
             sb.AppendLine(Message);
 
+            if (javaScriptFramesCaptured)
+            {
+                // Already collected: render what was captured at the throw.
+                foreach (var (target, file, line, column) in trace)
+                    sb.AppendLine($"    at {target}:{file}:{line},{column}");
+
+                return JSValue.CreateString(sb.ToString());
+            }
+
             if (trace.Count > 0)
             {
                 var f = trace[0];
                 sb.AppendLine($"    at {f.target}:{f.file}:{f.line},{f.column}");
             }
 
+            var beforeWalk = trace.Count;
             AppendStackTraceHelper?.Invoke(sb, trace);
+            // Only once frames were actually collected. An exception constructed with no JavaScript
+            // context current on this thread collects none, and must stay free to collect them on a
+            // read that does have one, exactly as before.
+            javaScriptFramesCaptured = trace.Count > beforeWalk;
 
             return JSValue.CreateString(sb.ToString());
         }
