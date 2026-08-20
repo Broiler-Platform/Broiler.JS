@@ -321,6 +321,40 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
             temp);
     }
 
+    /// <summary>
+    /// `a &amp;&amp; b`, `a || b` and `a ?? b` all reach the backend as this node — the JavaScript
+    /// operators lower to <c>Coalesce(NullIfTrue/NullIfFalse/NullIfNullOrUndefined(a), b)</c> —
+    /// and it emits `left; dup; brtrue end; pop; right; end:`.
+    /// </summary>
+    /// <remarks>
+    /// A suspension inside either operand lowers to `return state; &lt;jump label&gt;; value`, so
+    /// the resume `goto` lands in the middle of that sequence: past the `dup`/`pop` pair the
+    /// emitter's stack bookkeeping recorded for the label, on a re-entry whose evaluation stack is
+    /// empty. It is the hazard the value-producing conditional above describes, and it gets the
+    /// same answer — spill into a temp and make the second operand a statement, so each suspension
+    /// sits at statement level where FlattenBlocks can hoist it out cleanly. Only reached when the
+    /// node really does contain one: an ordinary `a || b` keeps the short-circuit emit.
+    /// </remarks>
+    protected override Exp VisitCoalesce(BCoalesceExpression node)
+    {
+        var coalesce = base.VisitCoalesce(node);
+        if (!node.HasYield() || coalesce is not BCoalesceExpression rewritten)
+            return coalesce;
+
+        var temp = Expression.Parameter(node.Type);
+        return Expression.Block(
+            new Sequence<ParameterExpression> { temp },
+            Expression.Assign(temp, rewritten.Left),
+            new BConditionalExpression(
+                // Null first: BBinaryExpression types a comparison only when the left type is
+                // assignable from the right, and `object` is assignable from `JSValue`.
+                Expression.Equal(Expression.Null, temp),
+                Expression.Block(Expression.Assign(temp, rewritten.Right), Expression.Empty),
+                null,
+                typeof(void)),
+            temp);
+    }
+
     protected override Exp VisitLambda(LambdaExpression yLambdaExpression)
     {
         // we need to rewrite nested lambda to replace `this` or closures

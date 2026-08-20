@@ -512,10 +512,16 @@ partial class FastParser
             if (stream.Current.Type == TokenTypes.LineTerminator)
                 throw stream.Unexpected();
 
-            if (!Expression(out var target))
+            // `ThrowStatement : throw [no LineTerminator here] Expression ;` — Expression, the
+            // comma operator included, exactly as `return` takes one. Parsing a single
+            // AssignmentExpression here threw the FIRST operand of `throw a, b, c` and dropped
+            // the rest unevaluated; the sequence a minifier writes for `x = 1; throw "ex1";`
+            // then threw 1.
+            if (!ExpressionSequence(out var target, TokenTypes.SemiColon))
                 throw stream.Unexpected();
 
             statement = new AstThrowStatement(begin, PreviousToken, target);
+            EndOfStatement();
             return true;
         }
 

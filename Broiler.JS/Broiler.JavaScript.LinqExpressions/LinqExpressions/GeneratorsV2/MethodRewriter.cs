@@ -124,6 +124,30 @@ public class MethodRewriter : BExpressionMapVisitor
         return bb.Build();
     }
 
+    /// <summary>
+    /// An array initializer whose elements hold a suspension, hoisted the same way a
+    /// constructor's arguments are.
+    /// </summary>
+    /// <remarks>
+    /// This is how a call's argument list is built once there are more than four arguments,
+    /// and how it is built at any length once one of them is a spread — so
+    /// <c>f(1, 2, 3, 4, await p)</c> and <c>f(...[await p])</c> both arrived here. Left
+    /// nested, the suspension's `return state; &lt;jump label&gt;; value` sits between the
+    /// `newarr`/`dup`/index of one element and the store of the next, where the resume goto
+    /// lands with none of that on the stack: the CLR rejected the whole method as an invalid
+    /// program, which is a crash rather than a wrong answer.
+    /// </remarks>
+    protected override Exp VisitNewArray(BNewArrayExpression node)
+    {
+        if (node.Elements == null || !node.HasYield())
+            return base.VisitNewArray(node);
+
+        var bb = new BBlockBuilder();
+        var elements = bb.ConvertToVariables(node.Elements, this);
+        bb.AddExpression(new BNewArrayExpression(node.ElementType, elements));
+        return bb.Build();
+    }
+
     protected override Exp VisitMemberInit(BMemberInitExpression node)
     {
         if (!node.HasYield())

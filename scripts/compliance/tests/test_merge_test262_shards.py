@@ -1640,6 +1640,92 @@ class MergeTest262ShardsTests(unittest.TestCase):
         # deliberately drawn from the complete timeout set.
         self.assertIn("test/language/unknown.js", markdown)
 
+    def test_reports_separate_a_confirmed_divergence_from_no_opinion(self) -> None:
+        """A cross-checked failure is only actionable when the check actually settled it.
+
+        `engine-divergence` is the reference engine passing both variants; `inconclusive` is
+        it failing the original too, which says nothing. Added together they read as one pile
+        of engine defects, which is how a triage starts on the wrong end of the report.
+        """
+        self.write_report(
+            0,
+            [
+                {"path": "test/language/confirmed.js", "variant": "original", "status": "passed"},
+                {
+                    "path": "test/language/confirmed.js",
+                    "variant": "closure",
+                    "status": "failed",
+                    "reason": "expected 1 but got 2",
+                    "referenceCrossCheck": "engine-divergence",
+                },
+                {"path": "test/language/unsettled.js", "variant": "original", "status": "passed"},
+                {
+                    "path": "test/language/unsettled.js",
+                    "variant": "closure",
+                    "status": "failed",
+                    "reason": "expected 1 but got 2",
+                    "referenceCrossCheck": "inconclusive",
+                },
+                {"path": "test/language/also-unsettled.js", "variant": "original", "status": "passed"},
+                {
+                    "path": "test/language/also-unsettled.js",
+                    "variant": "closure",
+                    "status": "failed",
+                    "reason": "expected 1 but got 2",
+                    "referenceCrossCheck": "inconclusive",
+                },
+            ],
+            minifier="closure",
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual(3, merged["minifierOnlyDivergenceCount"])
+        self.assertEqual(1, merged["minifierOnlyConfirmedDivergenceCount"])
+        self.assertEqual(2, merged["minifierOnlyInconclusiveCount"])
+        # The three share one normalized symptom, so the split has to live on the group.
+        self.assertEqual(
+            [{"verdict": "inconclusive", "count": 2}, {"verdict": "engine-divergence", "count": 1}],
+            merged["problemGroups"][0]["crossCheck"],
+        )
+
+        markdown = merger.render_issue_markdown(merged)
+        self.assertIn(
+            "Reference cross-check: inconclusive 2 (the reference engine cannot run the "
+            "original either), engine-divergence 1 (the reference engine passes both "
+            "variants)",
+            markdown,
+        )
+        minifier_markdown = merger.render_minifier_only_issue_markdown(merged)
+        self.assertIn(
+            "confirmed by the reference engine (it passes both variants): 1",
+            minifier_markdown,
+        )
+        self.assertIn(
+            "no opinion (the reference engine cannot run the original either): 2",
+            minifier_markdown,
+        )
+
+    def test_an_original_only_run_reports_no_cross_check_line(self) -> None:
+        # Nothing is cross-checked without a minified variant, so the line must not appear
+        # at all rather than appear empty.
+        self.write_report(
+            0,
+            [
+                {
+                    "path": "test/language/plain.js",
+                    "variant": "original",
+                    "status": "failed",
+                    "reason": "expected 1 but got 2",
+                },
+            ],
+        )
+
+        merged = merger.merge(self.root, expected_shard_indexes={0})
+
+        self.assertEqual([], merged["problemGroups"][0]["crossCheck"])
+        self.assertNotIn("Reference cross-check", merger.render_issue_markdown(merged))
+
     def test_minifier_only_failures_isolate_minification_regressions(self) -> None:
         self.write_report(
             0,

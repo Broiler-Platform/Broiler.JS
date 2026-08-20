@@ -239,13 +239,25 @@ function compilerArguments(source, includes) {
 const JVM_STACK_FRAME = /\n\s+at [\w$.]+\(/;
 const JVM_THROWABLE = /(?:[a-z]\w*\.)+[A-Z]\w*(?:Exception|Error)\b[^\n]*/;
 const SOURCE_FILE_REFERENCE = /\[source_file: ([^\]]*)\]/g;
+// Closure names the node it died on in two spellings, and which one it uses is a property of
+// the crash rather than of the program. A pass that fails inside its own traversal reports
+// `[source_file: …]`; one that reaches Compiler.throwInternalError reports the offending node
+// and its parent instead, as `Node(CLASS_MEMBERS): test262-source.js:7:0`. Both are the same
+// fact — the file the compiler was reading when it died — so both are read here. Without the
+// second, ConvertToDottedProperties walking a class whose members carry string-literal names
+// into a NullPointerException, and `super[0] = …` reaching a "no superclass" assertion, were
+// crashes that named nothing this could recognise and so stayed infrastructure failures.
+const CRASH_NODE_REFERENCE = /\b(?:Node|Parent)\([A-Z_]+\): ([^\s:]+):\d+/g;
 const CRASH_SUMMARY_LIMIT = 200;
 
 function classifyCrash(stderr) {
   if (!JVM_STACK_FRAME.test(stderr)) {
     return null;
   }
-  const named = [...stderr.matchAll(SOURCE_FILE_REFERENCE)].map((match) => match[1]);
+  const named = [
+    ...stderr.matchAll(SOURCE_FILE_REFERENCE),
+    ...stderr.matchAll(CRASH_NODE_REFERENCE),
+  ].map((match) => match[1]);
   if (named.length === 0 || named.some((name) => name !== SOURCE_NAME)) {
     return null;
   }
