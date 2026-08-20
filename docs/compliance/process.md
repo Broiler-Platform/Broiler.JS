@@ -145,6 +145,18 @@ names an externs file, or names no source at all, is this runner being wrong abo
 compilation rather than the compiler being wrong about the test, and it — along with every
 transformation timeout — remains an infrastructure failure.
 
+**Which file the crash names is read in both of Closure's spellings.** A pass that fails
+inside its own traversal reports `[source_file: …]`; one that reaches
+`Compiler.throwInternalError` reports the offending node and its parent instead, as
+`Node(CLASS_MEMBERS): test262-source.js:7:0`. They are the same fact, and the rule applies
+to both — every file named has to be the test's own source. Reading only the first left
+`ConvertToDottedProperties` walking a class whose members carry string-literal names
+(`class C { "a"() {} }`) into a `NullPointerException`, and `super[0] = …` reaching a "no
+superclass" assertion, as infrastructure failures rather than declined programs.
+`scripts/compliance/tests/test_closure_worker.py` drives the worker with a stub compiler
+that prints recorded crash text, so the classification is tested without depending on a
+compiler release continuing to crash on the same source.
+
 Syntax the minifier neither rejects nor preserves is the same skip. Terser 5 has no
 auto-accessor: it reads `class C { accessor #x = 1; }` as a field named `accessor`
 followed by a private field and prints `class C{accessor;#x=1}`, which parses and runs
@@ -232,6 +244,38 @@ reported against the engine rather than suppressed. What stays out of reach is a
 the reference engine has but has not finished — V8's Temporal aborts on a non-ISO calendar,
 so the `intl402` Temporal cases are still inconclusive.
 
+The same argument decides which Node the workflow installs, because a feature a release does
+not have yet is the same blind spot as a flag it does not accept. Node 20 has no Iterator
+helpers, no `JSON.rawJSON`, no new `Set` methods and no `Intl.DurationFormat`: 18 of issue
+#989's cases were attributed to this engine only because the reference engine could not run
+their originals, and Node 22 settles all 18 as `minifier-changed-semantics`. The shard action
+and the validation job therefore install Node 22, and the version each case was actually
+checked against keeps riding on the case (`referenceEngineVersion`).
+
+Temporal is not among what that bump settles, and it is the largest unsettled area by far.
+Node 22 exposes `Temporal` under `--harmony-temporal`, but the implementation is an older
+draft: it fails the ORIGINAL of the `built-ins/Temporal` rounding and total cases outright
+(`balances-up-to-weeks` expects a RangeError V8 does not throw), and it aborts on a non-ISO
+calendar, which is the whole of `intl402/Temporal`. Those cases therefore keep coming back
+`inconclusive` — reported against this engine with nothing having established them — and they
+are what the top of a Closure run's frequency report is made of. A reference engine whose
+Temporal is finished is what would settle them; until there is one, read those groups as
+unattributed.
+
+**What the check cannot do is speak for a host it is not.** It answers whether the minified
+body still measures what the test measures, by running both under a second engine — so
+wherever that engine's globals or its implementation of a feature differ from this one's,
+its opinion is about its own program. Both directions occur. `staging/sm/global/eval-native-callback-is-indirect`
+declares `var global = this` and reads the name back out of an `eval`ed string; ADVANCED
+renames the declaration, the string keeps saying `global`, and Node passes the minified body
+only because `global` is a binding Node itself provides — a `minifier-changed-semantics`
+case reported as an engine divergence. `Temporal/Duration/compare/relativeto-no-fractional-minutes-hours`
+is the other way round: with `relativeTo` renamed the two durations are exactly equal, which
+`Temporal.Duration.compare` answers with +0 before it ever requires a `relativeTo`, and V8
+throws there instead — so the reference engine passes the minified body for a reason the
+specification does not have. Neither is a defect on this side, and neither is settleable by a
+second engine; they are read by hand.
+
 The check can only move a case OUT of the engine's column, never into it, and it never
 runs on a passing case, a negative test (which passes BY failing, which an exit code
 cannot distinguish), or when the reference engine is unusable — those keep the engine's
@@ -256,7 +300,13 @@ after a merge or for a pull request.
 
 Triage output is split into four focused issues: the most common normalized failure
 groups, the biggest severity/impact groups, the size-ranked timeouts, and the
-minifier-only failures (titled for whichever mangler ran). The last one lists only base
+minifier-only failures (titled for whichever mangler ran). **A group carries what the
+cross-check said about its cases** — `engine-divergence` is a case the reference engine
+settled against this engine, `inconclusive` is one it had no opinion about — because the two
+are not the same finding and a single count reads as though they were. Issue #989's ten
+largest groups were `inconclusive` to the last case, while the 67 the check had confirmed
+were scattered thin enough that none of them reached the list; the confirmed 67 were one
+parser bug and four other defects, and the ten groups at the top were not defects at all. The last one lists only base
 paths whose original source passes
 while the minified variant fails or times out, so a minification-specific defect is
 never buried in a mixed-variant report. A source the minifier could not parse, and a

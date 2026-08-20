@@ -28,6 +28,13 @@ public class JSClass : JSFunction
     // not bound to the superclass delegate captured at definition.
     internal bool IsBodylessDefaultConstructor;
 
+    // Whether the class was written with a ClassHeritage — which is what makes its default
+    // constructor the DERIVED one that runs `super(...args)`. A base class carries the Object
+    // constructor as `super` for prototype resolution alone (see the constructor), so `super`
+    // cannot answer this, and only a derived class's [[Construct]] looks at the class's current
+    // [[Prototype]] at all.
+    internal readonly bool hasHeritage;
+
     internal static JSObject ResolveSuperclassPrototype(JSValue super)
     {
         if (super.IsNull)
@@ -52,6 +59,7 @@ public class JSClass : JSFunction
         : base(fx ?? (super as JSFunction)?.Delegate ?? empty, name, code)
     {
         this.super = super;
+        this.hasHeritage = hasHeritage;
         IsBodylessDefaultConstructor = fx == null;
 
         // Class bodies are always strict (MakeClassConstructor / ClassDefinitionEvaluation),
@@ -171,6 +179,27 @@ public class JSClass : JSFunction
         if (IsBodylessDefaultConstructor && super != null && super.IsNull)
             throw JSEngine.NewTypeError("Super constructor null of derived class is not a constructor");
 
+        // And whatever GetSuperConstructor resolves to has to BE a constructor, because
+        // `super(...args)` [[Construct]]s it. `Object.setPrototypeOf(C, Math.sin)` leaves a
+        // callable that is not one, and the delegate fast path below would then run its [[Call]]
+        // as though it were, constructing an instance out of a class whose super() cannot
+        // succeed. A class that writes `constructor(){ super(); }` already reports this from
+        // JSFunction's own [[Construct]]; the class that writes no constructor at all — which is
+        // what a minifier leaves behind when it drops the trivial one — must report it too.
+        if (IsBodylessDefaultConstructor && hasHeritage)
+        {
+            var dynamicSuperConstructor = GetPrototypeOf();
+            if (dynamicSuperConstructor == null
+                || !JSConstructorOperations.IsConstructor(dynamicSuperConstructor))
+            {
+                var superName = dynamicSuperConstructor is JSFunction superAsFunction
+                    ? superAsFunction.name.Value
+                    : "null";
+                throw JSEngine.NewTypeError(
+                    $"Super constructor {superName} of derived class is not a constructor");
+            }
+        }
+
         // A body-less default derived constructor runs `super(...args)`. The delegate
         // fast-path below calls the super constructor's delegate directly, which is only
         // equivalent to [[Construct]] for a plain JSFunction super (its [[Call]] with
@@ -179,8 +208,14 @@ public class JSClass : JSFunction
         // or a bound function — has no such delegate, so it must be invoked through its
         // real [[Construct]] via CreateInstance, threading the active new target so the
         // base allocates the most-derived prototype (test262 sm/class/superCallBaseInvoked,
-        // proxy default-constructor case).
-        if (IsBodylessDefaultConstructor && GetPrototypeOf() is { } superCtor && !superCtor.IsNull && superCtor is not JSFunction)
+        // proxy default-constructor case). A bound function IS a JSFunction, so it has to be
+        // named here rather than fall out of the type test: its own delegate is the [[Call]]
+        // that never reaches the target's [[Construct]], and taking it left the instance
+        // uninitialised ("Must call super constructor before accessing 'this'").
+        if (IsBodylessDefaultConstructor
+            && GetPrototypeOf() is { } superCtor
+            && !superCtor.IsNull
+            && (superCtor is not JSFunction superFunction || superFunction.BoundConstructTarget != null))
         {
             JSValue constructed;
             try

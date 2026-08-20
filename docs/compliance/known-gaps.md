@@ -33,6 +33,17 @@ The current failure manifest includes work in these areas:
   … }` are both read correctly, so it is the combination that is wrong, and the compiler's
   own prologue scan (`FastCompiler.HasUseStrictDirective`) stops at the empty statement as
   it should — the strictness is being decided somewhere else.
+- **Symbol-keyed own properties enumerate in SYMBOL creation order, not PROPERTY creation
+  order.** OrdinaryOwnPropertyKeys orders symbol keys "in ascending chronological order of
+  property creation"; the symbol map is a sparse map keyed by the symbol's own id, and
+  `GetOwnPropertyKeysInListOrder` sorts by that id to keep the answer deterministic. The two
+  agree unless a symbol is created before the property that uses it while another symbol
+  property is defined in between — `var later = Symbol(); o[Symbol()] = 1; o[later] = 2`
+  answers `later` first. `built-ins/Object/assign/strings-and-symbol-order` is the case that
+  finds it, once ADVANCED hoists one of its two `Symbol()` calls above the other. Fixing it
+  needs a per-object record of the order symbol properties were added (the map cannot carry
+  it: its enumeration is node-allocation order, which is key-clustered, not insertion order),
+  so it is a property-storage change rather than a sort to delete.
 - Array `slice`, `unshift`, `toReversed`, `reduceRight`, and near-maximum length
   semantics, including Proxy-created results;
 - comment and regular-expression literal lexical edge cases; and
@@ -78,17 +89,19 @@ the current specification and the major engines do, and the test does not.
   deliberate, visible correction to the headline number and wants its own change, not a
   quiet one. Until then, treat `flags: [async]` results as unverified.
 
-  Two engine defects behind that measurement are fixed (a promise reaction whose body is
-  a tail call was dropped entirely; the `let`-head loop scoping described below), but one
-  remains open and is the largest single contributor: **`obj.method(await p)` — a call
-  through a member expression with an `await` among its arguments — is silently skipped**,
-  while `plain(await p)` and `var v = await p; obj.method(v)` both run. `assert.sameValue(
-  await p, x)` is that shape, so the assertion never executes. Minimal repro:
+  Four engine defects behind that measurement are fixed. A promise reaction whose body is a
+  tail call was dropped entirely; the `let`-head loop scoping described below; and the two
+  that made a call whose ARGUMENTS suspend not be the call the source wrote —
+  `obj.method(await p)` invoked the nested call in its own arguments instead (the receiver
+  and callee temps come from a pool that nested call is handed back, which is only safe
+  while both values sit on the evaluation stack), and an argument list of more than four
+  arguments, or of any length containing a spread, is built as an array initializer that
+  nothing hoisted, so the suspension inside it produced an InvalidProgramException.
+  `assert.sameValue(await p, x)` is the first shape, so those assertions did not execute at
+  all; `Broiler.JavaScript.Integration.Tests/SuspendedCallArgumentTests.cs` covers both.
 
-  ```js
-  var log = [], obj = { hit(v) { log.push(v); } };
-  (async function () { obj.hit(await Promise.resolve(1)); })();   // logs nothing
-  ```
+  The measurement above predates those fixes and should be retaken with the marker protocol
+  before the totals here are quoted again.
 
 ## Gap lifecycle
 

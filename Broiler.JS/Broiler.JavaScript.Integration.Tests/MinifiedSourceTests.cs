@@ -3,9 +3,9 @@ using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Integration.Tests;
 
-// Regression tests for engine bugs that only a MINIFIED program reaches. Each was found by
-// the test262 "terser" variant — every case below passes as written and failed only after
-// Terser rewrote it — but none of them is really about minification: they are ordinary
+// Regression tests for engine bugs that only a MINIFIED program reaches. Each was found by a
+// test262 minifier variant — every case below passes as written and failed only after Terser
+// or Closure rewrote it — but none of them is really about minification: they are ordinary
 // engine defects that hand-written source happens not to walk into, and minified code on
 // the web walks into constantly.
 //
@@ -33,6 +33,15 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   * `const n = 3; for (let r = 1; r <= n; ++r) { const n = 1; }`: a `let` head evaluates its
 //     test inside the per-iteration block, which the body shared, so the body's `n` captured
 //     the test's. The two names come from one short alphabet once a mangler has been through.
+//   * `throw a, b, c`: the parser took an AssignmentExpression where the grammar says
+//     Expression, so the first operand was thrown and the rest never evaluated. Folding
+//     statements into a comma sequence is the first thing a minifier does.
+//   * `false || (yield i)` inside a loop: a suspension inside a short-circuit operator put the
+//     resume label in the middle of the operator's own branch, which is not valid IL. A
+//     compiler writes `f(x) || (yield x)` where the source wrote an `if`.
+//   * `class D extends B {}` re-parented onto a non-constructor: the default derived
+//     constructor called it anyway. Closure drops a `constructor(){ super(); }` that does
+//     nothing else, which is what moved the test onto the synthetic constructor's path.
 public class MinifiedSourceTests
 {
     private static string Eval(string code)
@@ -310,4 +319,112 @@ public class MinifiedSourceTests
         // it before its declaration is its temporal dead zone, not a peek at the outer value.
         => Assert.Throws<JSException>(() => Eval(
             "const n = 3; for (let r = 1; r <= n; ++r) { n; const n = 1; }"));
+
+    // ---- `throw` takes an Expression, comma operator included ----
+
+    [Fact]
+    public void ThrowThrowsTheLastOperandOfASequence()
+    {
+        // `ThrowStatement : throw [no LineTerminator here] Expression ;` — the parser read an
+        // AssignmentExpression instead, so the FIRST operand was thrown and the rest never ran.
+        // Statements a minifier folds into the throw are exactly this shape: `x = 1;
+        // throw "ex1";` becomes `throw x = 1, "ex1";`, which threw 1.
+        Assert.Equal("3", Eval("var e; try { throw 1, 2, 3; } catch (x) { e = x; } '' + e"));
+        Assert.Equal("ex1", Eval(
+            "var e, x = 0; try { throw x = 1, 'ex1'; } catch (c) { e = c; } '' + e"));
+    }
+
+    [Fact]
+    public void ThrowEvaluatesEveryOperandOfASequence()
+        // Every operand runs, in order, before the last one is thrown.
+        => Assert.Equal("ab/y", Eval(
+            "var s = '', e; try { throw (s += 'a', 'x'), (s += 'b', 'y'); } catch (c) { e = c; } "
+            + "s + '/' + e"));
+
+    [Fact]
+    public void ASequenceOperandThatThrowsIsCaughtByTheEnclosingTry()
+        // The operand is evaluated inside the try, so a conversion that throws on the way to
+        // the thrown value is that try's exception rather than an escape.
+        => Assert.Equal("error", Eval(
+            "var e; try { throw 1, ~{ valueOf: function () { throw 'error'; } }, 'unreached'; } "
+            + "catch (c) { e = c; } '' + e"));
+
+    // ---- a suspension inside a short-circuit operator, inside a loop ----
+
+    [Fact]
+    public void YieldInsideAShortCircuitOperatorInALoop()
+    {
+        // `a || b`, `a && b` and `a ?? b` all lower to one Coalesce node, which emits
+        // `left; dup; brtrue end; pop; right; end:`. A yield in either operand lowers to
+        // `return state; <label>; value`, and the resume goto then landed in the middle of
+        // that sequence — invalid IL, which faulted as a NullReferenceException on the first
+        // `next()`. Outside a loop the same source was fine, so only a minified body — which
+        // writes `f(x) || (yield x)` where the source wrote an `if` — met it.
+        Assert.Equal("0,1", Eval(
+            "function* g() { for (var i = 0; i < 2; i++) { false || (yield i); } } [...g()].join()"));
+        Assert.Equal("0,1", Eval(
+            "function* g() { for (var i = 0; i < 2; i++) { true && (yield i); } } [...g()].join()"));
+        Assert.Equal("0,1", Eval(
+            "function* g() { for (var i = 0; i < 2; i++) { null ?? (yield i); } } [...g()].join()"));
+        Assert.Equal("0,1", Eval(
+            "function* g() { var i = 0; while (i < 2) { false || (yield i); i++; } } [...g()].join()"));
+        // …and with the suspension on the left of the operator.
+        Assert.Equal("0,1", Eval(
+            "function* g() { for (var i = 0; i < 2; i++) { (yield i) || false; } } [...g()].join()"));
+    }
+
+    [Fact]
+    public void ShortCircuitingStillShortCircuitsAroundAYield()
+    {
+        // The rewrite must not turn a conditional evaluation into an unconditional one: the
+        // right operand runs only when the left does not decide the value, and the value the
+        // whole expression produces is still the operand that decided it.
+        Assert.Equal("y0,y2", Eval(
+            "function* g() { for (var i = 0; i < 3; i++) { (i % 2) || (yield 'y' + i); } } "
+            + "[...g()].join()"));
+        Assert.Equal("sent,fallback", Eval(
+            "function* g() { var out = []; for (var i = 0; i < 2; i++) { "
+            + "out.push((yield i) || 'fallback'); } return out.join(); } "
+            + "var it = g(); it.next(); it.next('sent'); it.next(0).value"));
+    }
+
+    // ---- a class that writes no constructor still checks its super ----
+
+    [Fact]
+    public void DefaultDerivedConstructorRejectsANonConstructorSuper()
+    {
+        // The synthetic `constructor(...args) { super(...args) }` [[Construct]]s whatever
+        // GetSuperConstructor resolves to, so a class re-parented onto a callable that is not
+        // a constructor must throw — as it already did when the class wrote that constructor
+        // out. A minifier drops the trivial constructor, which is how the two paths came to
+        // disagree.
+        Assert.Equal("TypeError", Eval(
+            "class B { constructor() {} } class D extends B {} "
+            + "Object.setPrototypeOf(D, Math.sin); "
+            + "var n = 'no-throw'; try { new D(); } catch (e) { n = e.constructor.name; } n"));
+        Assert.Equal("TypeError", Eval(
+            "class B { constructor() {} } class D extends B {} Object.setPrototypeOf(D, null); "
+            + "var n = 'no-throw'; try { new D(); } catch (e) { n = e.constructor.name; } n"));
+    }
+
+    [Fact]
+    public void DefaultDerivedConstructorStillConstructsEveryRealSuper()
+    {
+        // The check is about IsConstructor, not about the shape of the super: an ordinary
+        // class, a Proxy and a bound function all still construct. (The bound function was
+        // taking the delegate fast path, which never reaches the target's [[Construct]] and
+        // left the instance uninitialised.)
+        Assert.Equal("1", Eval(
+            "class B { constructor() { this.b = 1; } } class D extends B {} '' + new D().b"));
+        Assert.Equal("1", Eval(
+            "class B { constructor() { this.b = 1; } } class D extends B {} "
+            + "Object.setPrototypeOf(D, new Proxy(B, {})); '' + new D().b"));
+        Assert.Equal("1", Eval(
+            "class B { constructor() { this.b = 1; } } class D extends B {} "
+            + "Object.setPrototypeOf(D, B.bind(null)); '' + new D().b"));
+        Assert.Equal("3", Eval("class D extends Array {} '' + new D(1, 2, 3).length"));
+        // A base class has no super to call, so re-parenting it changes nothing.
+        Assert.Equal("object", Eval(
+            "class B {} Object.setPrototypeOf(B, Math.sin); typeof new B()"));
+    }
 }

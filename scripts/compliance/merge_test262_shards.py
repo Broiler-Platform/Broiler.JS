@@ -143,6 +143,15 @@ _MINIFIER_SKIP_KINDS = frozenset(
         _MINIFIER_CHANGED_SEMANTICS,
     }
 )
+# The two verdicts a case that KEEPS failing carries out of the cross-check (see
+# run_test262.cross_check_minified_failure). `engine-divergence` is the reference engine
+# passing both variants — the transformation preserved the test, so the failure is this
+# engine's, and the case is worth a reduction. `inconclusive` is the reference engine
+# failing the ORIGINAL too, which is no opinion at all: the case is reported against the
+# engine because that is the safe direction, not because anything established it is a
+# defect. A report that adds the two together invites a triage to start on the wrong end.
+_ENGINE_DIVERGENCE = "engine-divergence"
+_CROSS_CHECK_INCONCLUSIVE = "inconclusive"
 # The exact transformation each profile stands for, mirrored from
 # run_test262.MINIFIER_OPTIONS. A report that records anything else is not the run this
 # merger can describe, so it is a configuration failure rather than a silent relabelling.
@@ -1266,6 +1275,7 @@ def _materialise_problem_groups(
         variant: str | None = None,
         features: Iterable[str] = (),
         shard_index: int | None = None,
+        cross_check: str = "",
     ) -> None:
         group = groups.setdefault(
             key,
@@ -1279,6 +1289,7 @@ def _materialise_problem_groups(
                 "_variants": Counter(),
                 "_features": Counter(),
                 "_shards": set(),
+                "_crossCheck": Counter(),
             },
         )
         group["count"] += 1
@@ -1291,6 +1302,8 @@ def _materialise_problem_groups(
         group["_features"].update(features)
         if shard_index is not None:
             group["_shards"].add(shard_index)
+        if cross_check:
+            group["_crossCheck"][cross_check] += 1
 
     for result in results:
         status = result["status"]
@@ -1304,6 +1317,7 @@ def _materialise_problem_groups(
                 str(result["path"]),
                 variant,
                 _features(result),
+                cross_check=str(result.get("referenceCrossCheck") or ""),
             )
         elif status == "timedOut":
             add(
@@ -1338,6 +1352,21 @@ def _materialise_problem_groups(
         variant_counter: Counter[str] = group.pop("_variants")
         feature_counter: Counter[str] = group.pop("_features")
         shards = sorted(group.pop("_shards"))
+        cross_check_counter: Counter[str] = group.pop("_crossCheck")
+        # What the reference engine said about each case in this group. A minified group is
+        # only actionable to the extent the cross-check CONFIRMED it (`engine-divergence`:
+        # the second engine passes both variants, so the transformation preserved the test);
+        # `inconclusive` means it could not run the original and therefore has no opinion,
+        # which leaves the case reported here without anything having established it is a
+        # defect. Triage reads a group very differently depending on which it is, so the
+        # split rides on the group rather than being recoverable only from the raw JSON.
+        group["crossCheck"] = [
+            {"verdict": verdict, "count": count}
+            for verdict, count in sorted(
+                cross_check_counter.items(),
+                key=lambda item: (-item[1], item[0]),
+            )
+        ]
         group["paths"] = paths
         group["pathSamples"] = paths[:PATH_SAMPLE_LIMIT]
         group["caseSamples"] = [
@@ -1568,6 +1597,7 @@ def _rank_minified_only_failures(
                 "label": label,
                 "reason": str(minified.get("reason") or ""),
                 "failureType": str(minified.get("failureType") or ""),
+                "referenceCrossCheck": str(minified.get("referenceCrossCheck") or ""),
                 "infrastructure": minified.get("infrastructure") is True,
                 "sourceSizeBytes": _source_size(minified),
                 "minifiedSourceSizeBytes": _optional_size(
@@ -1589,15 +1619,26 @@ def _rank_minified_only_failures(
                 "count": 0,
                 "paths": [],
                 "_features": Counter(),
+                "_crossCheck": Counter(),
             },
         )
         group["count"] += 1
         group["paths"].append(str(case["path"]))
         group["_features"].update(case["features"])
+        if case["referenceCrossCheck"]:
+            group["_crossCheck"][str(case["referenceCrossCheck"])] += 1
 
     materialised: list[dict[str, Any]] = []
     for group in groups.values():
         feature_counter: Counter[str] = group.pop("_features")
+        cross_check_counter: Counter[str] = group.pop("_crossCheck")
+        group["crossCheck"] = [
+            {"verdict": verdict, "count": count}
+            for verdict, count in sorted(
+                cross_check_counter.items(),
+                key=lambda item: (-item[1], item[0]),
+            )
+        ]
         group["paths"] = sorted(group["paths"])
         group["pathSamples"] = group["paths"][:PATH_SAMPLE_LIMIT]
         group["features"] = [
@@ -1900,6 +1941,21 @@ def merge(
     minifier_only_infrastructure_failures = sum(
         1 for case in minifier_only_cases if case["kind"] == "MinifierFailure"
     )
+    # Of the cases left after the infrastructure ones, how many the cross-check actually
+    # settled against the engine. The rest are cases it had no opinion about — a reference
+    # engine that cannot run the ORIGINAL cannot say whether the minified body is still the
+    # test — and reading them as engine defects is what a triage does by accident when the
+    # report gives it one number.
+    minifier_only_confirmed = sum(
+        1
+        for case in minifier_only_cases
+        if case.get("referenceCrossCheck") == _ENGINE_DIVERGENCE
+    )
+    minifier_only_inconclusive = sum(
+        1
+        for case in minifier_only_cases
+        if case.get("referenceCrossCheck") == _CROSS_CHECK_INCONCLUSIVE
+    )
     suite_refs = sorted(
         {
             str(report.payload.get("suiteRef"))
@@ -1967,6 +2023,8 @@ def merge(
         "minifierOnlyDivergenceCount": (
             len(minifier_only_cases) - minifier_only_infrastructure_failures
         ),
+        "minifierOnlyConfirmedDivergenceCount": minifier_only_confirmed,
+        "minifierOnlyInconclusiveCount": minifier_only_inconclusive,
         "minifierOnlyPathCount": len(minifier_only_paths),
         "minifierOnlyPaths": minifier_only_paths,
         "minifierOnlyFailures": minifier_only_cases[:minifier_only_limit],
@@ -2053,6 +2111,34 @@ def _inline(value: object) -> str:
     return " ".join(str(value or "").replace(chr(96), "'").split())
 
 
+_CROSS_CHECK_DESCRIPTIONS = {
+    _ENGINE_DIVERGENCE: "the reference engine passes both variants",
+    _CROSS_CHECK_INCONCLUSIVE: "the reference engine cannot run the original either",
+}
+
+
+def _cross_check_line(group: dict[str, Any]) -> str:
+    """The group's reference-engine verdicts, or "" when it was never cross-checked.
+
+    Only a minified case is cross-checked at all, so an original-variant group has nothing
+    here — and a group that IS cross-checked is read very differently depending on which
+    verdict it carries. See the constants beside `_ENGINE_DIVERGENCE`.
+    """
+    verdicts = group.get("crossCheck") or []
+    if not verdicts:
+        return ""
+    rendered = ", ".join(
+        f"{_inline(item['verdict'])} {item['count']}"
+        + (
+            f" ({_CROSS_CHECK_DESCRIPTIONS[str(item['verdict'])]})"
+            if str(item["verdict"]) in _CROSS_CHECK_DESCRIPTIONS
+            else ""
+        )
+        for item in verdicts
+    )
+    return f"   - Reference cross-check: {rendered}"
+
+
 def _metadata_lines(run_url: str | None, artifact_name: str) -> list[str]:
     return [
         "",
@@ -2135,6 +2221,9 @@ def render_issue_markdown(
         elif group["pathSamples"]:
             samples = ", ".join(_inline(path) for path in group["pathSamples"])
             lines.append(f"   - Path samples: {samples}")
+        cross_check = _cross_check_line(group)
+        if cross_check:
+            lines.append(cross_check)
         if group["features"]:
             features = ", ".join(
                 f"{_inline(item['feature'])} ({item['count']})"
@@ -2274,6 +2363,8 @@ def render_minifier_only_issue_markdown(
 ) -> str:
     count = int(merged.get("minifierOnlyFailureCount") or 0)
     divergences = int(merged.get("minifierOnlyDivergenceCount") or 0)
+    confirmed = int(merged.get("minifierOnlyConfirmedDivergenceCount") or 0)
+    inconclusive = int(merged.get("minifierOnlyInconclusiveCount") or 0)
     minifier_failures = int(merged.get("minifierOnlyMinifierFailureCount") or 0)
     limit = int(merged.get("minifierOnlyLimit") or DEFAULT_MINIFIER_ONLY_LIMIT)
     cases = merged.get("minifierOnlyFailures") or []
@@ -2293,6 +2384,9 @@ def render_minifier_only_issue_markdown(
         "",
         f"- {label}-only non-passing cases: {count}",
         f"- Engine divergences after minification: {divergences}",
+        f"  - confirmed by the reference engine (it passes both variants): {confirmed}",
+        f"  - no opinion (the reference engine cannot run the original either): "
+        f"{inconclusive}",
         f"- Minifier infrastructure failures: {minifier_failures}",
         f"- Affected base paths: {int(merged.get('minifierOnlyPathCount') or 0)}",
     ]
@@ -2322,6 +2416,9 @@ def render_minifier_only_issue_markdown(
         if group.get("pathSamples"):
             samples = ", ".join(_inline(path) for path in group["pathSamples"])
             lines.append(f"   - Path samples: {samples}")
+        cross_check = _cross_check_line(group)
+        if cross_check:
+            lines.append(cross_check)
         if group.get("features"):
             features = ", ".join(
                 f"{_inline(item['feature'])} ({item['count']})"

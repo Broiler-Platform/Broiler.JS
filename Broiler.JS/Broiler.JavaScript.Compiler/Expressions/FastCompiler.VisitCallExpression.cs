@@ -264,6 +264,32 @@ partial class FastCompiler
             using var te = scope.Top.GetTempVariable(typeof(JSValue));
             using var te2 = scope.Top.GetTempVariable(typeof(JSValue));
 
+            // InvokeMethod reads the receiver and the resolved method into these two temps
+            // BEFORE it evaluates the arguments, because that is the order CallExpression
+            // evaluation requires. The temps come from a pool, and a nested call inside those
+            // same arguments is handed the very same two back — which is safe only because
+            // ordinary code has both values on the evaluation stack by the time an argument
+            // runs. A suspension anywhere in the argument list ends that: the generator/async
+            // rewrite spills the argument evaluation into statements that run BETWEEN the two
+            // assignments and the invocation, so the nested call's assignment is what this
+            // call then invokes. `obj.hit(await Promise.resolve(1))` called `Promise.resolve`
+            // a second time and dropped the `obj.hit` the source asked for — silently, since
+            // the wrong callee returns a value nobody looks at. Locals declared on this call's
+            // own block cannot be handed to another call, so they cannot be clobbered.
+            // Asked of the enclosing body first, so an ordinary function pays nothing: only a
+            // generator, an async function, or a program with top-level await has a state
+            // machine for a suspension to split, and `Generator` is the scope's own record of
+            // being one. Without it every member call in every script would walk its argument
+            // list looking for an await that cannot be there.
+            var argumentsSuspend = scope.Top.Generator != null
+                && ArgumentEvaluationSuspends(me, arguments);
+            var receiver = argumentsSuspend
+                ? BExpression.Parameter(typeof(JSValue), "#recv")
+                : te.Variable;
+            var resolvedMethod = argumentsSuspend
+                ? BExpression.Parameter(typeof(JSValue), "#callee")
+                : te2.Variable;
+
             // A private name resolves to a per-evaluation key captured from the class
             // scope. InvokeMethod takes the key as an `in KeyString` (by-address)
             // argument, and a captured closure variable cannot be loaded by address;
@@ -275,12 +301,23 @@ partial class FastCompiler
                 invocation = BExpression.Block(
                 [
                     BExpression.Assign(keyTemp.Variable, name),
-                    JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, keyTemp.Variable, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain),
+                    JSValueBuilder.InvokeMethod(receiver, resolvedMethod, target, keyTemp.Variable, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain),
                 ]);
             }
             else
             {
-                invocation = JSValueBuilder.InvokeMethod(te.Variable, te2.Variable, target, name, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain, allowCache: true);
+                invocation = JSValueBuilder.InvokeMethod(receiver, resolvedMethod, target, name, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain, allowCache: true);
+            }
+
+            if (argumentsSuspend)
+            {
+                invocation = BExpression.Block(
+                    new Sequence<BParameterExpression>
+                    {
+                        (BParameterExpression)receiver,
+                        (BParameterExpression)resolvedMethod,
+                    },
+                    invocation);
             }
 
             // A parenthesized optional chain closes its chain at the parens, so the
@@ -396,6 +433,34 @@ partial class FastCompiler
             var target = VisitExpression(callee);
             return JSFunctionBuilder.InvokeFunction(target, paramArray, coalesce, inChain);
         }
+    }
+
+    /// <summary>
+    /// Whether anything evaluated AFTER a method call's receiver and callee are read into
+    /// temps — its argument list, and a computed property key, which is read after the
+    /// receiver — contains an `await` or a `yield`.
+    /// </summary>
+    /// <remarks>
+    /// That window is the one in which a shared temp can be reassigned by a nested call, and
+    /// a suspension is what turns the window from "values already on the evaluation stack"
+    /// into "statements the state machine runs in between". Contains does not descend into a
+    /// nested function or class body, which is right here too: a suspension there belongs to
+    /// that function's own state machine and never splits this call.
+    /// </remarks>
+    private static bool ArgumentEvaluationSuspends(
+        AstMemberExpression member, IFastEnumerable<AstExpression> arguments)
+    {
+        if (member.Computed && AwaitYieldParameterDetector.Contains(member.Property))
+            return true;
+
+        var e = arguments.GetFastEnumerator();
+        while (e.MoveNext(out var argument))
+        {
+            if (AwaitYieldParameterDetector.Contains(argument))
+                return true;
+        }
+
+        return false;
     }
 
     // Walks out through arrow-function scopes (which inherit new.target from
