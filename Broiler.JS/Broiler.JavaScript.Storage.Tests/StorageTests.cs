@@ -185,6 +185,14 @@ public class StorageTests
         Assert.False(KeyStrings.GetOrCreate("4294967295").Metadata.IsArrayIndex);
         Assert.False(KeyStrings.GetOrCreate("01").Metadata.IsArrayIndex);
         Assert.True(KeyStrings.GetOrCreate("\u0001#secret").Metadata.IsPrivateName);
+
+        // The marker alone is not the classification: a private name always carries its '#', so
+        // an ordinary string key that merely begins with the marker stays an ordinary key.
+        // Reading it as private made writing it throw the brand-check TypeError and hid it from
+        // reflection, which is what broke WPT's testharness.js on `String.fromCharCode(1)`.
+        Assert.False(KeyStrings.GetOrCreate("\u0001").Metadata.IsPrivateName);
+        Assert.False(KeyStrings.GetOrCreate("\u0001tail").Metadata.IsPrivateName);
+        Assert.False(KeyStrings.GetOrCreate("#secret").Metadata.IsPrivateName);
         Assert.Equal(index.Metadata.StableOrdinalHash, KeyStrings.GetOrCreate("4294967294").Metadata.StableOrdinalHash);
     }
 

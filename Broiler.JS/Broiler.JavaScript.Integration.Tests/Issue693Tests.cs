@@ -523,4 +523,20 @@ public class Issue693Tests
             "class A { #v = 1; get(){ return this.#v; } }"
             + "class B { #v = 2; get(){ return this.#v; } }"
             + "new A().get() + '|' + new B().get();").ToString());
+
+    // The private-name namespace is the marker *and* the '#' that every private name carries.
+    // Matching the marker on its own claimed ordinary string keys that happen to begin with
+    // U+0001: the write threw the brand-check TypeError and reflection hid the key. WPT's
+    // testharness.js builds its escape map with `formatEscapeMap[String.fromCharCode(p)]`, so
+    // p = 1 threw while the harness was loading and no testharness test reported anything.
+    [Fact(Timeout = 600000)]
+    public void MarkerPrefixedStringPropertyIsAnOrdinaryProperty()
+    {
+        Assert.Equal("v|1", Eval(
+            "var o = {}; o[String.fromCharCode(1)] = 'v';"
+            + "o[String.fromCharCode(1)] + '|' + Object.keys(o).length;").ToString());
+        Assert.Equal("v|1", Eval(
+            "var o = {}; o[String.fromCharCode(1) + 'tail'] = 'v';"
+            + "o[String.fromCharCode(1) + 'tail'] + '|' + Object.keys(o).length;").ToString());
+    }
 }

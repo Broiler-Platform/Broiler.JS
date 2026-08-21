@@ -214,8 +214,15 @@ public static class KeyStrings
     {
         var isArrayIndex = TryGetArrayIndex(text.AsSpan(), out var arrayIndex);
         var isCanonicalNumeric = TryGetCanonicalNumericIndex(text, isArrayIndex, arrayIndex, out var numericIndex);
+        // A private name's key is the marker followed by the name, and a private name always
+        // carries its leading '#' (JSObject.MintPrivateName / FastCompiler.KeyOfPrivateName), so
+        // both characters have to be there. Testing the marker alone claimed every ordinary string
+        // key that merely begins with the marker: writing one threw the brand-check TypeError, and
+        // reflection and enumeration hid it. WPT's testharness.js does exactly that while building
+        // its escape map (`formatEscapeMap[String.fromCharCode(p)]` with p = 1), so the harness
+        // threw on load and every testharness-based test in the suite reported nothing at all.
         return new KeyMetadata(
-            text.Length != 0 && text[0] == '\u0001',
+            text.Length >= 2 && text[0] == '\u0001' && text[1] == '#',
             isArrayIndex,
             arrayIndex,
             isCanonicalNumeric,
