@@ -24,7 +24,7 @@ public class Issue975Tests
     // live read the eval's `y` instead of the global one. Frames now answer only where they
     // lexically enclose the code asking.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnEvalVarIsNotVisibleToAnUnrelatedFunctionOnTheStack()
         => Assert.Equal("5,42", EvalString(
             @"var y = 42;
@@ -32,7 +32,7 @@ public class Issue975Tests
               function f() { eval('var y = 5;'); return [y, globalY()].join(','); }
               f()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnEvalVarIsNotVisibleThroughTheGlobalObjectEither()
         => Assert.Equal("42,42", EvalString(
             @"var y = 42;
@@ -41,7 +41,7 @@ public class Issue975Tests
               f();
               [y, globalY()].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFunctionCalledFromInsideTheEvalBodyReadsItsOwnScope()
         => Assert.Equal("42", EvalString(
             @"var y = 42;
@@ -62,7 +62,7 @@ public class Issue975Tests
     public void AnEvalVarIsVisibleToEverythingItEncloses(string expression, string expected)
         => Assert.Equal(expected, EvalString($"var y = 42; String({expression})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFunctionTheEvalCreatedCanDeleteTheVarTheEvalDeclared()
         => Assert.Equal("5,true", EvalString(
             @"var y = 42;
@@ -101,7 +101,7 @@ public class Issue975Tests
     public void ElidingEmptyStatementsKeepsTheProgramsValue(string expression, string expected)
         => Assert.Equal(expected, EvalString($"String({expression})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ManyEmptyBlocksParseAndRun()
         => Assert.Equal("2", EvalString(
             @"(function () { var s = '{}'; for (var i = 0; i < 16; i++) s += s; return String(eval(s + '1; 2;')); })()"));

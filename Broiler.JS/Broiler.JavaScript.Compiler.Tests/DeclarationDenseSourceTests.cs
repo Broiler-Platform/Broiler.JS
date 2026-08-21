@@ -40,7 +40,7 @@ public class DeclarationDenseSourceTests
         return source.ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ManyTopLevelDeclarations_CompileInTimeLinearInTheirCount()
     {
         // Four times the declarations should cost about four times as much. Quadratic predicts
@@ -90,7 +90,7 @@ public class DeclarationDenseSourceTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BindingDeclaredBeforeANestedBlock_StaysInScopeAfterIt()
     {
         // The duplicate-registration case, at the top level where the deep block-variable
@@ -113,7 +113,7 @@ public class DeclarationDenseSourceTests
         Assert.Equal("after/nested", context.Eval(source).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClosuresOverManyTopLevelBindings_CaptureTheirOwn()
     {
         // Width plus capture: every one of these closures reads a distinct top-level binding,

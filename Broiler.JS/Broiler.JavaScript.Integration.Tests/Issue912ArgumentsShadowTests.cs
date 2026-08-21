@@ -26,17 +26,17 @@ public class Issue912ArgumentsShadowTests
         => Assert.Equal(expected, Eval(code));
 
     // Outside the block, `arguments` is still the arguments object (no over-eager shadow).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArgumentsObjectIntactOutsideBlock()
         => Assert.Equal("[object Arguments]", Eval("(function(){ { let arguments = 5; } return arguments.toString(); }(1,2,3))"));
 
     // A function-scope `var arguments` still aliases the arguments binding (unchanged).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void VarArgumentsStillSharesBinding()
         => Assert.Equal("hello", Eval("(function(){ var arguments = 'hello'; return arguments; }(1,2,3))"));
 
     // Plain `arguments` (no shadow) is still the arguments object.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainArgumentsUnchanged()
         => Assert.Equal("3", Eval("(function(){ return arguments.length; }(1,2,3))"));
 }

@@ -14,7 +14,7 @@ namespace Broiler.JavaScript.Integration.Tests;
 /// </summary>
 public class SessionIsolationTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Interleaved_Evals_On_Two_Contexts_Do_Not_Share_Globals()
     {
         using var a = new JSContext();
@@ -30,7 +30,7 @@ public class SessionIsolationTests
         Assert.Equal("undefined", b.Eval("typeof globalThis.y").ToString()); // not leaked from a
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void A_Stored_Callback_Resolves_Its_Own_Context_After_Another_Is_Created()
     {
         using var a = new JSContext();
@@ -45,7 +45,7 @@ public class SessionIsolationTests
         Assert.Equal("A", getV.InvokeFunction(new Arguments(JSUndefined.Value)).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task Concurrent_Evals_On_Two_Contexts_Never_Clobber_Each_Other()
     {
         using var a = new JSContext();

@@ -43,7 +43,7 @@ public class SmallNumberCacheTests
     public void NegativeZeroStaysDistinct(string expression, string expected)
         => Assert.Equal(expected, Eval("String(" + expression + ");"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NegativeZeroSurvivesRepeatedCreation()
         // Whatever the cache does, the thousandth `-0` must be as negative as the first.
         => Assert.Equal("true", Eval("""
@@ -52,7 +52,7 @@ public class SmallNumberCacheTests
             String(ok);
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NegativeZeroNormalizesAsAPropertyKey()
         // -0 as a key is the string "0" per ToPropertyKey, which is unrelated to the cache
         // but is the other place the two zeroes could be confused.
@@ -74,7 +74,7 @@ public class SmallNumberCacheTests
     public void ValuesOutsideTheRangeAreUnchanged(string expression, string expected)
         => Assert.Equal(expected, Eval("String(" + expression + ");"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NaNIsNeverEqualToItself()
         => Assert.Equal("false,true,1", Eval(
             "var n = 0 / 0; (n === n) + ',' + Object.is(n, n) + ',' + new Set([0 / 0, 0 / 0]).size;"));
@@ -91,7 +91,7 @@ public class SmallNumberCacheTests
         => Assert.Equal(expected + "," + expected, Eval(
             "var a = " + literal + "; var b = (" + literal + " - 1) + 1; (a) + ',' + (b);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EveryIntegerAcrossTheBoundaryRoundTrips()
         => Assert.Equal("true", Eval("""
             var ok = true;
@@ -101,25 +101,25 @@ public class SmallNumberCacheTests
             String(ok);
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SummingTheWholeRangeIsExact()
         => Assert.Equal("516544", Eval("var s = 0; for (var i = -128; i <= 1024; i++) s += i; String(s);"));
 
     // ── a reused instance is not observable ───────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APrimitiveStillRejectsProperties()
         => Assert.Equal("undefined,undefined", Eval(
             "var a = 5; a.tag = 1; var b = 5; String(a.tag) + ',' + String(b.tag);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APrimitiveStillThrowsOnStrictAssignment()
         => Assert.Equal("TypeError", Eval("""
             'use strict';
             (function () { var n = 5; try { n.tag = 1; return 'no-throw'; } catch (e) { return e.constructor.name; } })();
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BoxingStillProducesDistinctWrappers()
         => Assert.Equal("false,false,1,undefined", Eval("""
             var a = new Number(5), b = new Number(5);
@@ -135,13 +135,13 @@ public class SmallNumberCacheTests
     public void KeyedCollectionsStillUseSameValueZero(string source, string expected)
         => Assert.Equal(expected, Eval(source));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MethodsOnASmallIntegerStillWork()
         => Assert.Equal("5.00,ff,1010,true,5", Eval(
             "(5).toFixed(2) + ',' + (255).toString(16) + ',' + (10).toString(2) + ',' " +
             "+ ((5).constructor === Number) + ',' + (5).valueOf();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PatchingNumberPrototypeReachesCachedInstances()
         => Assert.Equal("42,600,-14", Eval("""
             Number.prototype.twice = function () { return this * 2; };
@@ -150,7 +150,7 @@ public class SmallNumberCacheTests
 
     // ── the realm the number is used in is the one that answers ───────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EachRealmSeesItsOwnNumberPrototype()
     {
         // The regression this exists for: JSPrimitive.GetMethod used to fill the prototype
@@ -171,7 +171,7 @@ public class SmallNumberCacheTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EachRealmSeesItsOwnPrototypeThroughDynamicAccessToo()
     {
         Load();
@@ -187,7 +187,7 @@ public class SmallNumberCacheTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ARealmWithoutTheMethodStillReportsItMissing()
         => Assert.Equal("function,undefined", Eval("""
             Number.prototype.only = function () { return 1; };
@@ -210,7 +210,7 @@ public class SmallNumberCacheTests
     public void OrdinaryNumericBehaviourIsUnchanged(string source, string expected)
         => Assert.Equal(expected, Eval(source));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayIndicesAndValuesStayConsistent()
         => Assert.Equal("true", Eval("""
             var a = [];
@@ -220,7 +220,7 @@ public class SmallNumberCacheTests
             String(ok);
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IncrementAndDecrementRoundTrip()
         => Assert.Equal("5,5,1030,1030", Eval("""
             var i = 5; i++; ++i; i--; --i;

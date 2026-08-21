@@ -44,27 +44,27 @@ public class Issue683Tests
 
     // ---- Problem 7: WeakMap / WeakSet has / set ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WeakMapHasReturnsFalseForAbsentKey()
         => Assert.Equal("false|false|false|false", Eval(
             "var m = new WeakMap();"
             + "String(m.has(1)) + '|' + String(m.has('')) + '|' +"
             + "String(m.has(null)) + '|' + String(m.has(undefined))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WeakMapHasReturnsFalseAfterDelete()
         => Assert.Equal("true|false", Eval(
             "var k = {}; var m = new WeakMap(); m.set(k, 42);"
             + "var r = m.delete(k);"
             + "String(r) + '|' + String(m.has(k))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WeakSetHasReturnsFalseForAbsentValue()
         => Assert.Equal("false|true|false", Eval(
             "var a = {}, b = {}; var s = new WeakSet(); s.add(a);"
             + "String(s.has(b)) + '|' + String(s.has(a)) + '|' + String(s.delete(b))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WeakMapSetUpdatesExistingKey()
         => Assert.Equal("one|mutated", Eval(
             "var k = {}; var m = new WeakMap(); m.set(k, 'one');"
@@ -73,14 +73,14 @@ public class Issue683Tests
 
     // ---- Problem 8: bound function [[Construct]] ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BoundFunctionConstructPreservesTargetReturn()
         => Assert.Equal("true", Eval(
             "var func = function() { return new Boolean(arguments.length === 0); };"
             + "var NewFunc = Function.prototype.bind.call(func);"
             + "String(new NewFunc().valueOf())"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BoundFunctionConstructPrependsBoundArguments()
         => Assert.Equal("1,2,3", Eval(
             "function F() { this.args = Array.prototype.slice.call(arguments).join(','); }"
@@ -89,7 +89,7 @@ public class Issue683Tests
 
     // ---- Problem 1: strict caller observed from a constructor body ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictCallerFromConstructorBodyIsNotLeaked()
         => Assert.Equal("TypeError", Eval(
             "function thr(f){ try { f(); return 'none'; } catch (e) { return e.constructor.name; } }"
@@ -99,19 +99,19 @@ public class Issue683Tests
 
     // ---- Problem 9: concise methods have no legacy caller/arguments ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConciseMethodHasNoArgumentsOwnProperty()
         => Assert.Equal("false", Eval(
             "var obj = { method() { return this.method.hasOwnProperty('arguments'); } };"
             + "String(obj.method())"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConciseMethodHasNoCallerOwnProperty()
         => Assert.Equal("false", Eval(
             "var obj = { method() { return this.method.hasOwnProperty('caller'); } };"
             + "String(obj.method())"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OrdinaryFunctionStillHasLegacyCallerAndArguments()
         => Assert.Equal("true|true", Eval(
             "function f() {}"

@@ -105,7 +105,7 @@ public class Issue966PropertyEscapeShapeTests
     public void BmpOnlyPropertiesUnaffected(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NegatedPropertyIsExactlyTheComplementAcrossTheSupplementaryPlanes()
     {
         // The re-encoding is only allowed to change the shape of the alternation, so `\P{X}`
@@ -137,7 +137,7 @@ public class Issue966PropertyEscapeShapeTests
         Assert.Equal("0", mismatches);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EveryLoneSurrogateIsOutsideAnAstralProperty()
     {
         // A surrogate code unit standing on its own is a code point in its own right, and it
@@ -162,7 +162,7 @@ public class Issue966PropertyEscapeShapeTests
         Assert.Equal("0", mismatches);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheTimingOutTestShapeCompletesQuickly()
     {
         // The shape of test262's property-escapes/generated files: one string holding every

@@ -45,35 +45,35 @@ public class Issue687Tests
 
     // ---- Problem 10: non-strict callback `this` coerces to the global object ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FindNonStrictPredicateThisIsGlobal()
         => Assert.Equal("true", EvalScriptHost(
             "var g = this; var seen;"
             + "[1].find(function(){ seen = this; });"
             + "String(seen === g)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FindIndexNonStrictPredicateThisIsGlobal()
         => Assert.Equal("true", EvalScriptHost(
             "var g = this; var seen;"
             + "[1].findIndex(function(){ seen = this; });"
             + "String(seen === g)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapNonStrictCallbackThisIsGlobal()
         => Assert.Equal("true", EvalScriptHost(
             "var g = this; var seen;"
             + "[1].map(function(){ seen = this; return 1; });"
             + "String(seen === g)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictCallbackThisStaysUndefined()
         => Assert.Equal("true", EvalScriptHost(
             "'use strict'; var seen = 'x';"
             + "[1].find(function(){ seen = this; });"
             + "String(seen === undefined)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CallbackThisArgIsRespected()
         => Assert.Equal("true", EvalScriptHost(
             "var o = {}; var seen;"
@@ -82,30 +82,30 @@ public class Issue687Tests
 
     // ---- Problem 2 / 9: NumberFormat option resolution & reflection ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NotationDefaultsToStandardAndIsAlwaysPresent()
         => Assert.Equal("standard|true", Eval(
             "var ro = new Intl.NumberFormat([], { notation: undefined }).resolvedOptions();"
             + "ro.notation + '|' + ('notation' in ro)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NotationReflectsProvidedValue()
         => Assert.Equal("scientific", Eval(
             "new Intl.NumberFormat([], { notation: 'scientific' }).resolvedOptions().notation"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SignDisplayDefaultsToAuto()
         => Assert.Equal("auto", Eval(
             "new Intl.NumberFormat([], { signDisplay: undefined }).resolvedOptions().signDisplay"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CompactDisplayReflectedOnlyWhenNotationIsCompact()
         => Assert.Equal("short|false", Eval(
             "var c = new Intl.NumberFormat([], { notation: 'compact' }).resolvedOptions();"
             + "var s = new Intl.NumberFormat([], { notation: 'standard', compactDisplay: 'long' }).resolvedOptions();"
             + "c.compactDisplay + '|' + ('compactDisplay' in s)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CompactDisplayGettersObservedInConstructionOrderOnce()
         => Assert.Equal("n,c", Eval(
             "var order = [];"
@@ -115,14 +115,14 @@ public class Issue687Tests
             + "nf.resolvedOptions();"
             + "order.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnitDisplayReflectedOnlyWhenStyleIsUnit()
         => Assert.Equal("short|false", Eval(
             "var u = new Intl.NumberFormat([], { style: 'unit', unit: 'hour', unitDisplay: undefined }).resolvedOptions();"
             + "var p = new Intl.NumberFormat([], { style: 'percent', unitDisplay: 'short' }).resolvedOptions();"
             + "u.unitDisplay + '|' + ('unitDisplay' in p)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InvalidEnumOptionsThrowRangeError()
         => Assert.Equal("true|true|true", Eval(
             "function bad(o){ try { new Intl.NumberFormat([], o); return false; } catch (e) { return e instanceof RangeError; } }"

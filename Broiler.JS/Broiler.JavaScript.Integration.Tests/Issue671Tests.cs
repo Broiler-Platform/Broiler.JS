@@ -46,59 +46,59 @@ public class Issue671Tests
 
     // ---- Problem 10: super.prop in a derived class's static block ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticBlockSuperPropertyResolvesAgainstParentConstructor()
         => Assert.Equal("test262", Eval(
             "function Parent() {} Parent.test262 = 'test262';"
             + " var value; class C extends Parent { static { value = super.test262; } } value"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticBlockCanReadAndWriteThisInDerivedClass()
         => Assert.Equal("pk/by", Eval(
             "class P {} P.k = 'pk';"
             + " class B extends P { static { this.y = 'by'; } static read() { return super.k + '/' + this.y; } }"
             + " B.read()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticBlockWithoutSuperclassStillWorks()
         => Assert.Equal("ax", Eval(
             "var out; class A { static x = 'ax'; static { out = A.x; } } out"));
 
     // ---- Problem 1: JSON.stringify includes integer-indexed own properties ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringifyIncludesIntegerKeysBeforeStringKeys()
         => Assert.Equal("{\"0\":\"z\",\"2\":\"w\",\"a\":1}",
             Eval("JSON.stringify({a:1, 0:'z', 2:'w'})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringifyIntegerOnlyObject()
         => Assert.Equal("{\"0\":\"a\",\"1\":\"b\"}",
             Eval("JSON.stringify({0:'a', 1:'b'})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringifyOrdersIntegerKeysNumericallyAscending()
         => Assert.Equal("{\"0\":\"zero\",\"1\":\"one\",\"10\":\"ten\",\"foo\":\"bar\"}",
             Eval("JSON.stringify({1:'one', 0:'zero', foo:'bar', 10:'ten'})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringifySkipsUndefinedAndNonEnumerableIntegerKeys()
         => Assert.Equal("{\"3\":5,\"n\":null}",
             Eval("JSON.stringify({n:null, u:undefined, 2:undefined, 3:5})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringifyInvokesGetterOnIntegerKey()
         => Assert.Equal("{\"0\":\"G\",\"k\":1}",
             Eval("var g = {}; Object.defineProperty(g, 0, { get: function(){ return 'G'; }, enumerable: true });"
                 + " g.k = 1; JSON.stringify(g)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringifyOmitsNonEnumerableIntegerKey()
         => Assert.Equal("{\"v\":2}",
             Eval("var o = {}; Object.defineProperty(o, 0, { value: 'hidden', enumerable: false });"
                 + " o.v = 2; JSON.stringify(o)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringifyArraysStillWork()
         => Assert.Equal("[10,20]", Eval("JSON.stringify([10, 20])"));
 }

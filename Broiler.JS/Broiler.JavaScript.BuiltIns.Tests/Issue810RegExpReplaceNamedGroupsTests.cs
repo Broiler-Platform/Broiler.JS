@@ -42,19 +42,19 @@ public class Issue810RegExpReplaceNamedGroupsTests
         }
         """;
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionalReplace_NullGroups_PassedThrough()
         => Assert.Equal("true", Eval(Harness + "\nString(lastArgFor(null) === null);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionalReplace_NumberGroups_PassedThrough()
         => Assert.Equal("true", Eval(Harness + "\nString(lastArgFor(10) === 10);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionalReplace_ObjectGroups_PassedThrough()
         => Assert.Equal("true", Eval(Harness + "\nvar o = {}; String(lastArgFor(o) === o);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionalReplace_UndefinedGroups_UsesMatchedString()
         => Assert.Equal("a", Eval(Harness + "\nString(lastArgFor(undefined));"));
 }

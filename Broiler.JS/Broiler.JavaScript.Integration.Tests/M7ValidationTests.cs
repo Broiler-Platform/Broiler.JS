@@ -31,7 +31,7 @@ public class M7ValidationTests
 
     // ── 7.1: TypedArrays — Extracted to BuiltIns ──────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_TypedArrays_ExtractedToBuiltInsAssembly()
     {
         // TypedArrays have been extracted from Core to BuiltIns.
@@ -42,7 +42,7 @@ public class M7ValidationTests
         Assert.Equal("Broiler.JavaScript.BuiltIns", typedArrayAsm);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_TypedArrays_NoCompilerCoupling()
     {
         // The Compiler assembly must NOT reference TypedArray types.
@@ -68,7 +68,7 @@ public class M7ValidationTests
             t => t.Contains("JSArrayBuffer") || t.Contains("JSTypedArray"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_TypedArrays_FunctionalAfterAssemblyLoad()
     {
         // TypedArrays must work end-to-end through eval after extraction.
@@ -82,7 +82,7 @@ public class M7ValidationTests
         Assert.Equal(3.0, result.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_TypedArrays_StructuredCloneDelegated()
     {
         // ArrayBuffer StructuredClone is now handled by the extension delegate
@@ -103,7 +103,7 @@ public class M7ValidationTests
 
     // ── 7.2: RegExp — Extracted to BuiltIns ──────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_RegExp_ResideInBuiltInsAssembly()
     {
         // RegExp has been extracted to BuiltIns using the Initialize(Type)
@@ -112,7 +112,7 @@ public class M7ValidationTests
         Assert.Equal("Broiler.JavaScript.BuiltIns", regExpAsm);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_RegExp_CompilerDecoupledViaInitialize()
     {
         // JSRegExpBuilder lives in LinqExpressions and uses the
@@ -131,7 +131,7 @@ public class M7ValidationTests
         Assert.Contains("Broiler.JavaScript.Engine", compilerRefs);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_RegExp_FunctionalWithStringMethods()
     {
         // RegExp is tightly integrated with String prototype methods.
@@ -150,14 +150,14 @@ public class M7ValidationTests
 
     // ── 7.3: Promise — NOT Extractable ─────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_Promise_ResideInCoreAssembly()
     {
         var promiseAsm = typeof(JSPromise).Assembly.GetName().Name;
         Assert.Equal("Broiler.JavaScript.BuiltIns", promiseAsm);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_Promise_TightlyCoupledToJSContext()
     {
         var contextType = typeof(JSContext);
@@ -172,7 +172,7 @@ public class M7ValidationTests
             .Select(t => t.Name));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_Promise_FunctionalEndToEnd()
     {
         EnsureAllAssembliesLoaded();
@@ -187,7 +187,7 @@ public class M7ValidationTests
 
     // ── 7.4: Iterator — Extracted to BuiltIns ──────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_Iterator_ExtractedToBuiltInsAssembly()
     {
         // Iterator helpers have been extracted from Core to BuiltIns.
@@ -195,7 +195,7 @@ public class M7ValidationTests
         Assert.Equal("Broiler.JavaScript.BuiltIns", iteratorAsm);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_Iterator_NoCompilerOrParserCoupling()
     {
         // Neither Compiler nor Parser reference JSIteratorObject.
@@ -215,7 +215,7 @@ public class M7ValidationTests
             n => n.Contains("JSIteratorObject"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_Iterator_DecoupledFromDefaultBuiltInRegistry()
     {
         // DefaultBuiltInRegistry uses the IteratorPrototypeSetup delegate
@@ -230,7 +230,7 @@ public class M7ValidationTests
             typeof(DefaultBuiltInRegistry).Assembly.GetName().Name);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_Iterator_FunctionalEndToEnd()
     {
         // Iterator helpers must work through eval after extraction.
@@ -246,14 +246,14 @@ public class M7ValidationTests
 
     // ── 7.5: Intl — Already Extracted ──────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_Intl_AlreadyInBuiltInsAssembly()
     {
         var intlAsm = typeof(JSIntl).Assembly.GetName().Name;
         Assert.Equal("Broiler.JavaScript.BuiltIns", intlAsm);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_Intl_CoreHasNoDirectReference()
     {
         var coreRefs = typeof(JSContext).Assembly.GetReferencedAssemblies()
@@ -262,7 +262,7 @@ public class M7ValidationTests
         Assert.DoesNotContain("Broiler.JavaScript.BuiltIns", coreRefs);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_Intl_FactoryDelegatePattern()
     {
         EnsureAllAssembliesLoaded();
@@ -282,7 +282,7 @@ public class M7ValidationTests
 
     // ── 7.6: Extraction Pattern Invariants ─────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_ExtractionPattern_CoreDoesNotReferenceFeatureAssemblies()
     {
         var coreRefs = typeof(JSContext).Assembly.GetReferencedAssemblies()
@@ -304,7 +304,7 @@ public class M7ValidationTests
             $"Core references disallowed assemblies: {string.Join(", ", disallowed)}");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M7_ExtractionPattern_AllCandidatesAccountedFor()
     {
         // Verify all 5 documented candidates exist in the expected locations.

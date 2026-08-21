@@ -50,7 +50,7 @@ public class TemporalInstantToStringTimeZoneTests
         Assert.Equal("true", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_UtcTimeZone_AppendsZeroOffset()
     {
         Load();
@@ -58,7 +58,7 @@ public class TemporalInstantToStringTimeZoneTests
         Assert.Equal("1970-01-01T00:00:00+00:00", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_OffsetTimeZone_ShiftsLocalAndAppendsOffset()
     {
         Load();
@@ -66,7 +66,7 @@ public class TemporalInstantToStringTimeZoneTests
         Assert.Equal("1970-01-01T05:30:00+05:30", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_NoTimeZone_StillUsesZ()
     {
         Load();

@@ -95,7 +95,7 @@ public sealed class SpecializingTierTests
     // The base case, and the one that says the machinery runs at all: four reads of one own data
     // property on one shape. The site is monomorphic, so the promoted body reads the slot behind
     // a shape guard — and never misses, because the receiver never changes shape.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AMonomorphicOwnPropertyReadIsSpecializedAndCorrect()
     {
         var outcome = Compare(Monomorphic, "4|4|4|4");
@@ -109,7 +109,7 @@ public sealed class SpecializingTierTests
     // The control for the control: with feedback off nothing is specialized, and the same source
     // still answers the same. Without this, "speculation sites >= 1" above could be measuring
     // some other part of the engine.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WithoutFeedbackNothingIsSpecialized()
     {
         using var untiered = Untiered();
@@ -149,7 +149,7 @@ public sealed class SpecializingTierTests
 
     // A second shape arrives only AFTER promotion, so the feedback still says monomorphic and the
     // guard is emitted — then misses. The answer must not change.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AShapeTheFeedbackNeverSawFallsBackToTheCachedGet()
     {
         var outcome = Compare("""
@@ -167,7 +167,7 @@ public sealed class SpecializingTierTests
 
     // Adding a property to the very receiver the feedback described moves it to a new shape id,
     // so the guard fails on an object that is otherwise the same one.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GrowingTheReceiverInvalidatesTheGuard()
         => Compare("""
             function read(p) { var t = p.x; return t; }
@@ -179,7 +179,7 @@ public sealed class SpecializingTierTests
             """, "1|1|1|1|1");
 
     // Deleting a property drops the object out of shape mode entirely.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeletingAPropertyDropsToTheGenericPath()
         => Compare("""
             function read(p) { var t = p.x; return t; }
@@ -192,7 +192,7 @@ public sealed class SpecializingTierTests
 
     // Redefining the property as an accessor must be observed: a slot load would answer the old
     // value, and there is no old value to answer.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RedefiningAsAnAccessorIsObserved()
         => Compare("""
             function read(p) { var t = p.x; return t; }
@@ -204,7 +204,7 @@ public sealed class SpecializingTierTests
             """, "1|1|1|42|42");
 
     // Writing through the property between reads: the slot is the same, the value is not.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AWrittenSlotReadsTheNewValue()
         => Compare("""
             function read(p) { var t = p.x; return t; }
@@ -220,7 +220,7 @@ public sealed class SpecializingTierTests
     // A method lives on the PROTOTYPE, so no own slot describes it and the site is never
     // specialized — the read stays on the cached get, which has the prototype guards. Kept
     // because getting this wrong would read some unrelated own slot of the receiver.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APrototypeResolvedReadIsNotSpecialized()
     {
         var outcome = Compare("""
@@ -237,7 +237,7 @@ public sealed class SpecializingTierTests
     // An element read is not a shape read at all — the key is an array index, which no shape
     // tracks, and the feedback declines to describe it for the same reason the cache declines to
     // cache it.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnIndexedReadIsNotSpecialized()
         => Compare("""
             function read(p) { var t = p[0]; return t; }
@@ -253,7 +253,7 @@ public sealed class SpecializingTierTests
     // at the default the site's whole history when the recompile reads it is the handful of calls
     // that got the function promoted, so "what the site saw" is a claim about very little. The
     // shipping threshold is 64; this uses 8 so the second shape is seen four times first.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APolymorphicSiteIsNotSpecialized()
     {
         var outcome = Compare("""
@@ -274,7 +274,7 @@ public sealed class SpecializingTierTests
     // the guard and again in whichever arm ran, so an effectful receiver would run twice — a
     // wrong answer visible only on receivers nobody tests by hand. This is item 4-3b's stated
     // guarantee, exercised through JavaScript for the first time.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnEffectfulReceiverIsEvaluatedOnce()
         => Compare("""
             var calls = 0;
@@ -286,7 +286,7 @@ public sealed class SpecializingTierTests
             """, "1|1|1|1|4");
 
     // The same, on the miss path: the fallback arm must not re-evaluate either.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnEffectfulReceiverIsEvaluatedOnceWhenTheGuardMisses()
         => Compare("""
             var calls = 0;
@@ -307,7 +307,7 @@ public sealed class SpecializingTierTests
     // one range for both — a shared code cache would do exactly that — the second would read the
     // first's slots. They are given receivers whose shapes put `x` at different slots, so a
     // crossed mapping answers the wrong number rather than merely missing.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TwoIdenticalFunctionsDoNotShareASiteRange()
         => Compare("""
             function one(p) { var t = p.x; return t; }
@@ -321,7 +321,7 @@ public sealed class SpecializingTierTests
 
     // Several reads in one body, so the ordinal mapping has to line up for more than one site.
     // Each key sits at a different slot, so a mapping off by one answers the wrong property.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SeveralReadsInOneBodyKeepTheirOwnSites()
     {
         var outcome = Compare("""
@@ -337,7 +337,7 @@ public sealed class SpecializingTierTests
 
     // A read whose receiver is not an object at all. The guard's type test is what catches it,
     // and the fallback has to produce the same TypeError the untiered engine produces.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANullReceiverStillThrowsTheSameWay()
         => Compare("""
             function read(p) { var t = p.x; return t; }
@@ -349,7 +349,7 @@ public sealed class SpecializingTierTests
 
     // A receiver that is a primitive: `'s'.length` resolves through the String wrapper, never
     // through a shape slot on the receiver.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APrimitiveReceiverTakesTheGenericPath()
         => Compare("""
             function read(p) { var t = p.length; return t; }

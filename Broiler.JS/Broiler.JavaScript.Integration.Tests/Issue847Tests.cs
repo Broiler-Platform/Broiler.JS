@@ -44,7 +44,7 @@ public class Issue847Tests
 
     // maxLength is coerced (ToLength) before fillString is coerced (ToString), and
     // fillString must not be coerced at all when no padding is required.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FillStringNotCoercedWhenNoPaddingNeeded()
     {
         var code = "var coerced = false;"
@@ -57,7 +57,7 @@ public class Issue847Tests
     // Problem 91: a computed PropertyName is evaluated — including ToPropertyKey's
     // observable ToString — before the property value expression. Here the key's
     // toString mutates `value` from "bad" to "ok" and the value read must see "ok".
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedPropertyKeyEvaluatedBeforeValue()
     {
         var code = "var value='bad';"
@@ -69,7 +69,7 @@ public class Issue847Tests
 
     // The computed key's side effects ordering also applies in the object-literal
     // path that builds via a temp (a __proto__ setter / super reference present).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedPropertyKeyEvaluatedBeforeValueWithProto()
     {
         var code = "var log=[];"
@@ -280,7 +280,7 @@ public class Issue847Tests
         Assert.Equal("SyntaxError", Eval(code).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DynamicFunctionWithInvalidRestParameterIsSyntaxError()
     {
         var code = "try { new Function('...a,...b',''); 'no-error'; } catch (e) { e.constructor.name; }";
@@ -327,7 +327,7 @@ public class Issue847Tests
         Assert.Equal(expected, Eval(code).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LabelledLoopBreakStillWorks()
         => Assert.Equal("7", Eval("foo: for(var i=0;i<10;i++){ if(i===7){ break foo; } } i").ToString());
 
@@ -503,7 +503,7 @@ public class Issue847Tests
     public void NonLegacyOctalLiteralsStillParseCorrectly(string code, string expected)
         => Assert.Equal(expected, Eval(code).ToString());
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LegacyOctalLiteralIsSyntaxErrorInStrictMode()
         => Assert.Equal("SyntaxError", CompileResult("'use strict'; 010"));
 

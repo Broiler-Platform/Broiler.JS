@@ -63,60 +63,60 @@ public class Issue749Tests
 
     // ---- Problem 29: for-of/for-in target persists after the loop ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfIntoExistingVarPersists()
         => Assert.Equal("9", Eval("var x; for (x of [9]) {} x"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfTargetAssignedInBodyPersists()
         => Assert.Equal("99", Eval("var x; for (x of [9]) { x = 99; } x"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfMultiElementLeavesLastValue()
         => Assert.Equal("3", Eval("var x; for (x of [1,2,3]) {} x"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfParenthesisedIdentifierTarget()
         => Assert.Equal("7", Eval("var a; for ((a) of [7]) {} a"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInIntoExistingVarPersists()
         => Assert.Equal("b", Eval("var k; for (k in {a:1,b:2}) {} k"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfLetHeadStillWorks()
         => Assert.Equal("6", Eval("var s=0; for (let v of [1,2,3]) { s+=v; } s"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfMemberTargetStillWorks()
         => Assert.Equal("9", Eval("var o={}; for (o.p of [9]) {} o.p"));
 
     // ---- Problem 28: for-in over a string yields string keys ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInStringKeyIsString()
         => Assert.Equal("string", Eval("var t; for (var k in 'foo') { t = typeof k; break; } t"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInStringKeyDestructuringLength()
         => Assert.Equal("1", Eval("var t; for (var {length:x} in 'foo') { t = x; break; } t"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInStringComputedKeyDestructuring()
         => Assert.Equal("1,0", Eval(
             "var t; for (var {length:x, [x-1]:y} in 'foo') { t = x + ',' + y; break; } t"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectKeysOfStringAreStrings()
         => Assert.Equal("string", Eval("typeof Object.keys('foo')[0]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayKeysIteratorStillNumeric()
         => Assert.Equal("number", Eval("typeof [10,20].keys().next().value"));
 
     // ---- Problem 16: switch discriminant evaluated in the outer environment ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwitchDiscriminantCapturesOuterLexical()
         => Assert.Equal("outside,inside,inside", Eval(
             "let x = 'outside';" +
@@ -128,7 +128,7 @@ public class Issue749Tests
             "}" +
             "probeExpr() + ',' + probeSelector() + ',' + probeStmt()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwitchDiscriminantSeesOuterBindingValue()
         => Assert.Equal("outer", Eval(
             "let v = 'outer'; let r;" +
@@ -137,125 +137,125 @@ public class Issue749Tests
 
     // ---- Problem 33: `this` inside an arrow in a static field initializer ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticFieldArrowCapturesConstructorThis()
         => Assert.Equal("true", Eval(
             "var C = class { static f = () => this; }; (C.f() === C).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticFieldDirectThisStillConstructor()
         => Assert.Equal("true", Eval(
             "var C = class { static g = this; }; (C.g === C).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InstanceFieldArrowStillCapturesInstance()
         => Assert.Equal("7", Eval(
             "class A { v = 7; f = () => this.v; } new A().f()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MethodNestedArrowThisUnaffected()
         => Assert.Equal("true", Eval(
             "var o = { m(){ return (()=>(()=>this)())(); } }; (o.m() === o).toString()"));
 
     // ---- Problem 32: Map/Set forEach callback `this` is the thisArg, not the receiver ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapForEachNoThisArgIsGlobalInSloppy()
         => Assert.Equal("true", Eval(
             "var t=[]; new Map([[1,1]]).forEach(function(){t.push(this);}); (t[0]===globalThis).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapForEachUsesThisArgWhenSupplied()
         => Assert.Equal("true", Eval(
             "var t=[],o={}; new Map([[1,1]]).forEach(function(){t.push(this);}, o); (t[0]===o).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetForEachUsesThisArgWhenSupplied()
         => Assert.Equal("true", Eval(
             "var t=[],o={}; new Set([5]).forEach(function(){t.push(this);}, o); (t[0]===o).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapForEachStrictCallbackThisIsUndefined()
         => Assert.Equal("true", Eval(
             "'use strict'; var t=[]; new Map([[1,1]]).forEach(function(){t.push(this);}); (t[0]===undefined).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapAndSetForEachLengthIsOne()
         => Assert.Equal("1,1", Eval(
             "Map.prototype.forEach.length + ',' + Set.prototype.forEach.length"));
 
     // ---- Problem 17: Object.prototype.toString classifies raw primitives ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectToStringTagsRawPrimitives()
         => Assert.Equal(
             "[object Boolean],[object Number],[object String],[object Null],[object Undefined]",
             Eval("var t=Object.prototype.toString;" +
                  "[t.call(true),t.call(0),t.call('x'),t.call(null),t.call(undefined)].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectToStringTagsRawSymbolAndBigInt()
         => Assert.Equal("[object Symbol],[object BigInt]", Eval(
             "var t=Object.prototype.toString; [t.call(Symbol()),t.call(1n)].join(',')"));
 
     // ---- Problem 31/39/40: generator object's [[Prototype]] is the function's .prototype ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorInstanceProtoIsFunctionPrototype()
         => Assert.Equal("true", Eval(
             "function* g(){} (Object.getPrototypeOf(g()) === g.prototype).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorInstanceProtoChainHasGeneratorPrototype()
         => Assert.Equal("Generator", Eval(
             "function* g(){} Object.getPrototypeOf(g.prototype)[Symbol.toStringTag]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorStillIterates()
         => Assert.Equal("1,2,3", Eval(
             "function* g(){ yield 1; yield 2; return 3; } var it=g();" +
             "[it.next().value, it.next().value, it.next().value].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorReassignedPrototypeHonoured()
         => Assert.Equal("true", Eval(
             "function* g(){} var p={}; g.prototype=p; (Object.getPrototypeOf(g())===p).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorToStringTagStillGenerator()
         => Assert.Equal("[object Generator]", Eval(
             "function* g(){} Object.prototype.toString.call(g())"));
 
     // ---- Problem 38 (partial): String.prototype.concat coerces args via ToString ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConcatCoercesObjectViaToString()
         => Assert.Equal("aZ", Eval("'a'.concat({toString(){return 'Z';}})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConcatCoercesSymbolWrapperViaToString()
         => Assert.Equal("Symbol(d)", Eval(
             "delete Symbol.prototype[Symbol.toPrimitive]; ''.concat(Object(Symbol('d')))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConcatRawSymbolThrows()
         => Assert.Equal("TypeError", Eval(
             "var r; try { ''.concat(Symbol()); r='no'; } catch(e){ r=e.constructor.name; } r"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConcatPrimitivesUnchanged()
         => Assert.Equal("1atrue1,2null", Eval("''.concat(1,'a',true,[1,2],null)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolWrapperStringifiesViaToString()
         => Assert.Equal("Symbol(d)", Eval("'' + Object(Symbol('d')).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolWrapperInTemplateUsesToString()
         => Assert.Equal("Symbol(d)", Eval(
             "delete Symbol.prototype[Symbol.toPrimitive]; `${Object(Symbol('d'))}`"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolWrapperRedefinedToStringHonoured()
         => Assert.Equal("foo", Eval(
             "delete Symbol.prototype[Symbol.toPrimitive];" +

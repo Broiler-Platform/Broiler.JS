@@ -40,7 +40,7 @@ public class CompactElementStorageTests
         Assert.False(elements.HasDefaultDescriptors);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnAccessorPairLeavesDenseMode()
     {
         var elements = new ElementArray();
@@ -51,7 +51,7 @@ public class CompactElementStorageTests
         Assert.False(elements.HasDefaultDescriptors);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainValuesInDictionaryModeStillCountAsDefaultDescriptors()
     {
         // Going sparse is a storage decision, not a descriptor one: `HasDefaultDescriptors`
@@ -67,7 +67,7 @@ public class CompactElementStorageTests
 
     // ── the descriptor survives the round-trip ───────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADenseSlotRebuildsTheFullDefaultDescriptor()
     {
         var value = new TestValue("v");
@@ -86,7 +86,7 @@ public class CompactElementStorageTests
         Assert.Null(property.set);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADenseSlotHoldingAnAccessorRebuildsItsGetter()
     {
         // A value that happens to also be an accessor keeps the derived `get` the descriptor
@@ -102,7 +102,7 @@ public class CompactElementStorageTests
         Assert.Null(property.set);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADenseSlotHoldingANonAccessorHasNoGetter()
     {
         var elements = new ElementArray();
@@ -111,7 +111,7 @@ public class CompactElementStorageTests
         Assert.Null(elements.Get(0).get);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheRebuiltDescriptorCarriesItsOwnIndexAsTheKey()
     {
         var elements = new ElementArray();
@@ -120,7 +120,7 @@ public class CompactElementStorageTests
         Assert.Equal(7u, elements.Get(7).key);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EveryReadPathAgreesOnADenseSlot()
     {
         var value = new TestValue("v");
@@ -141,7 +141,7 @@ public class CompactElementStorageTests
 
     // ── holes ────────────────────────────────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AHoleIsEmptyOnEveryReadPath()
     {
         var elements = new ElementArray();
@@ -157,7 +157,7 @@ public class CompactElementStorageTests
         Assert.Equal(ElementKind.Holey, elements.Kind);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RefillingAHoleRepacks()
     {
         var elements = new ElementArray();
@@ -171,7 +171,7 @@ public class CompactElementStorageTests
         Assert.Equal("back", elements.Get(0).value.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnumerationSkipsHoles()
     {
         var elements = new ElementArray();
@@ -187,7 +187,7 @@ public class CompactElementStorageTests
         Assert.Equal([0u, 2u, 4u], keys);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WritingPastTheEndLeavesHolesNotStaleValues()
     {
         var elements = new ElementArray();
@@ -203,7 +203,7 @@ public class CompactElementStorageTests
 
     // ── the transition out of the compact store ──────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PromotionToDictionaryPreservesEveryDenseValue()
     {
         var elements = new ElementArray();
@@ -232,7 +232,7 @@ public class CompactElementStorageTests
         Assert.True(elements.Get(8).IsReadOnly);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PromotionKeepsAscendingKeyOrder()
     {
         var elements = new ElementArray();
@@ -247,7 +247,7 @@ public class CompactElementStorageTests
         Assert.Equal([0u, 1u, 2u, 3u, 2_000_000u], keys);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OverwritingADenseSlotWithACustomDescriptorReplacesIt()
     {
         var elements = new ElementArray();
@@ -262,7 +262,7 @@ public class CompactElementStorageTests
 
     // ── bulk mutation over the compact store ─────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FillOverwritesTheRequestedRangeOnly()
     {
         var elements = new ElementArray();
@@ -276,7 +276,7 @@ public class CompactElementStorageTests
         Assert.Equal(ElementKind.Packed, elements.Kind);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FillRebuildsFullDescriptors()
     {
         var elements = new ElementArray();
@@ -288,7 +288,7 @@ public class CompactElementStorageTests
         Assert.True(elements.HasDefaultDescriptors);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FillRefusesANullValueRatherThanPunchingHoles()
     {
         var elements = new ElementArray();
@@ -298,7 +298,7 @@ public class CompactElementStorageTests
         Assert.Equal("zero", elements.Get(0).value.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CopyWithinMovesValues()
     {
         var elements = new ElementArray();
@@ -310,7 +310,7 @@ public class CompactElementStorageTests
         Assert.Equal(["3", "4", "2", "3", "4"], Read(elements, 5));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReverseFlipsValues()
     {
         var elements = new ElementArray();
@@ -322,7 +322,7 @@ public class CompactElementStorageTests
         Assert.Equal(["3", "2", "1", "0"], Read(elements, 4));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BulkMutationIsRefusedOnceDescriptorsAreCustom()
     {
         var elements = new ElementArray();
@@ -334,7 +334,7 @@ public class CompactElementStorageTests
         Assert.False(elements.TryCopyWithin(0, 1, 1, 2));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SortOrdersValues()
     {
         var elements = new ElementArray();
@@ -348,7 +348,7 @@ public class CompactElementStorageTests
 
     // ── growth ───────────────────────────────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AResizedArrayIsEmptyButPreallocated()
     {
         var elements = new ElementArray();
@@ -361,7 +361,7 @@ public class CompactElementStorageTests
         Assert.True(elements.Get(0).IsEmpty);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GrowingBeyondCapacityKeepsEveryValue()
     {
         var elements = new ElementArray();

@@ -79,7 +79,7 @@ public class EngineErrorOriginFrameTests
     // the throw site: two failures that reach the SAME factory delegate — both of these go through
     // JSValue.NewTypeError — have to be told apart. Before the fix both read
     // `InitializeFactories:JSValueCoreExtensions.cs:17,1`.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DistinctThrowSitesSharingAFactoryReportDistinctOrigins()
     {
         var read = OriginFrameOf("var u; u.foo;");
@@ -90,7 +90,7 @@ public class EngineErrorOriginFrameTests
 
     // The JavaScript frames are the part a page author can act on, and they sit below the origin
     // frame. A trace that lost them would still pass the assertions above.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheJavaScriptFramesFollowTheOriginFrame()
     {
         using var context = new JSContext();

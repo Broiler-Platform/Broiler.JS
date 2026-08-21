@@ -65,7 +65,7 @@ public class Issue871NextTests
     public void SumPreciseIsCorrectlyRounded(string expr, string expected)
         => Assert.Equal(expected, Eval($"String({expr})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SumPreciseEmptyIsNegativeZero()
         => Assert.Equal("-Infinity", Eval("String(1 / Math.sumPrecise([]))"));
 
@@ -92,7 +92,7 @@ public class Issue871NextTests
     public void RejectsOutOfRangeMonthCode(string expr)
         => Assert.Equal("RangeError", ThrownErrorName(expr));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MissingYearThrowsTypeErrorBeforeMonthCodeRangeError()
         => Assert.Equal("TypeError", ThrownErrorName("Temporal.PlainYearMonth.from({ monthCode: 'M99L' })"));
 

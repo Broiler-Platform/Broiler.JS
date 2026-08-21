@@ -51,7 +51,7 @@ public class Issue699Tests
             Eval($"Object.prototype.toString.call(new {ctor})").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Plain_Object_And_Array_Still_Tag_Correctly()
     {
         Assert.Equal("[object Object]", Eval("Object.prototype.toString.call({})").ToString());
@@ -59,7 +59,7 @@ public class Issue699Tests
         Assert.Equal("[object Function]", Eval("Object.prototype.toString.call(function(){})").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToStringTag_Still_Overrides_Builtin_Tag()
     {
         // A string @@toStringTag wins even over the Error builtin tag.
@@ -111,7 +111,7 @@ public class Issue699Tests
         Assert.Equal(expected, Eval($"Object.is({expr}, -0)").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SumPrecise_Mixed_Zero_Is_Positive_Zero()
     {
         Assert.Equal("true", Eval("Object.is(Math.sumPrecise([-0, 0]), 0)").ToString());
@@ -119,7 +119,7 @@ public class Issue699Tests
         Assert.Equal("true", Eval("Object.is(Math.sumPrecise([1, -1]), 0)").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SumPrecise_Still_Sums()
     {
         Assert.Equal("6", Eval("String(Math.sumPrecise([1, 2, 3]))").ToString());
@@ -127,14 +127,14 @@ public class Issue699Tests
 
     // ---- Problem 9: Map canonicalizes -0 key to +0 ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetOrInsertComputed_Passes_Canonical_Key_To_Callback()
     {
         Assert.Equal("true", Eval(
             "var k; new Map().getOrInsertComputed(-0, function(a){ k = a; }); Object.is(k, 0)").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetOrInsert_Stores_Canonical_Key()
     {
         Assert.Equal("true", Eval(
@@ -143,7 +143,7 @@ public class Issue699Tests
 
     // ---- Problem 10: Reflect.ownKeys lists symbol keys ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OwnKeys_Lists_String_Then_Symbol_Keys()
     {
         // [[OwnPropertyKeys]] order: integer-index, string, then symbol keys.
@@ -152,14 +152,14 @@ public class Issue699Tests
             "Reflect.ownKeys(o).map(String).join(',')").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OwnKeys_Includes_Assigned_Symbol()
     {
         Assert.Equal("true", Eval(
             "var s = Symbol(); var o = {}; o[s] = 1; Reflect.ownKeys(o)[0] === s").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Computed_Key_From_Symbol_Returning_ToString_Is_A_Symbol_Key()
     {
         // ToPropertyKey returns a Symbol from ToPrimitive directly (no ToString),
@@ -170,7 +170,7 @@ public class Issue699Tests
             "found.length === 1 && found[0] === sym && obj[sym] === 13").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OwnKeys_On_Proxy_Still_Uses_Trap()
     {
         // The Proxy path must keep firing the ownKeys trap (not the ordinary helper).
@@ -182,7 +182,7 @@ public class Issue699Tests
 
     // ---- Problem 3: TypedArray out-of-bounds element write semantics ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArray_OOB_Set_Calls_ToNumber_And_Returns_True()
     {
         // IntegerIndexedElementSet performs ToNumber BEFORE the bounds check and the
@@ -192,14 +192,14 @@ public class Issue699Tests
             "var r = Reflect.set(ta, 0, v); r === true && n === 1").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArray_OOB_Plain_Assignment_Does_Not_Throw_In_Strict_Mode()
     {
         Assert.Equal("ok", Eval(
             "'use strict'; var ta = new Int32Array(0); ta[5] = 1; 'ok';").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArray_OOB_DefineProperty_Returns_False_Without_ToNumber()
     {
         // IntegerIndexedDefineOwnProperty checks IsValidIntegerIndex first and returns
@@ -210,7 +210,7 @@ public class Issue699Tests
             "r === false && n === 0").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArray_InBounds_Write_Still_Works()
     {
         Assert.Equal("5", Eval("var ta = new Int32Array(2); ta[1] = 5; String(ta[1])").ToString());
@@ -224,14 +224,14 @@ public class Issue699Tests
 
     // ---- Problem 10: CanonicalizeLocaleList accepts Intl.Locale objects ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetCanonicalLocales_Accepts_A_Single_Locale_Object()
     {
         Assert.Equal("ar", Eval(
             "Intl.getCanonicalLocales(new Intl.Locale('ar')).join(',')").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetCanonicalLocales_Uses_Locale_Slot_Not_ToString()
     {
         // A Locale subclass with a throwing toString must still canonicalize via the
@@ -241,7 +241,7 @@ public class Issue699Tests
             "Intl.getCanonicalLocales(new L('fa')).join(',')").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetCanonicalLocales_Mixed_List_With_Locale_Objects()
     {
         Assert.Equal("ar,zh,fa", Eval(
@@ -262,7 +262,7 @@ public class Issue699Tests
         Assert.Equal("TypeError", Catch(call + ";"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayBuffer_With_New_Still_Constructs()
     {
         Assert.Equal("8", Eval("String(new ArrayBuffer(8).byteLength)").ToString());
@@ -294,7 +294,7 @@ public class Issue699Tests
         Assert.Equal("TypeError", PrivateEval(setup, "c2.access(c1)"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Nested_Class_Private_Name_Shadows_Outer()
     {
         // The inner class's `#x` is a distinct private name; an outer instance does
@@ -307,14 +307,14 @@ public class Issue699Tests
         Assert.Equal("TypeError", PrivateEval(setup, "outer.makeInner().reach(outer)"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Instance_Private_Field_And_Method_Still_Work()
     {
         Assert.Equal("42", Eval("class C { #f = 42; get() { return this.#f; } } new C().get()").ToString());
         Assert.Equal("7", Eval("class C { #m() { return 7; } call() { return this.#m(); } } new C().call()").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Static_Private_Members_Still_Work()
     {
         // Static private members keep the stable key (one constructor per evaluation).
@@ -322,7 +322,7 @@ public class Issue699Tests
         Assert.Equal("2", Eval("class C { static #m() { return 2; } static call() { return this.#m(); } } String(C.call())").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Private_Name_Visible_To_Direct_Eval_In_Member()
     {
         // A class whose member uses direct eval falls back to the stable constant key

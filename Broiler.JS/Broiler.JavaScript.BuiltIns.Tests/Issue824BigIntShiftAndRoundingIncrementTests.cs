@@ -35,7 +35,7 @@ public class Issue824BigIntShiftAndRoundingIncrementTests
     public void UnsignedRightShiftWithBigIntThrowsTypeError(string expr)
         => Assert.Equal("TypeError", Outcome(expr));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberShiftStillWorks()
         => Assert.Equal("no-throw", Outcome("var x = 8 >>> 1; if (x !== 4) throw new Error('bad')"));
 

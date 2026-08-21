@@ -20,7 +20,7 @@ public class Issue845ClusterTests4
 
     // ---- Iterator.zip padding (Problem 35) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZipPaddingStopsCallingNextAfterDone()
     {
         // The padding iterable yields once then reports done; zip must not call next()
@@ -44,7 +44,7 @@ public class Issue845ClusterTests4
 
     // ---- yield* value not accessed while incomplete (Problem 21) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStarDoesNotReadValueWhenNotDone()
     {
         const string code = @"
@@ -62,14 +62,14 @@ public class Issue845ClusterTests4
         Assert.Equal("0,1", Eval(code));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStarStillForwardsValuesAndReturn()
         => Assert.Equal("[1,2,9]",
             Eval("function* inner(){ yield 1; yield 2; return 9; } function* g(){ var r = yield* inner(); yield r; } JSON.stringify([...g()])"));
 
     // ---- delete arguments within a with block (Problem 41) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeleteArgumentsInsideWithDeletesShadowingProperty()
         => Assert.Equal("true,false",
             Eval(@"(function(){ var o = { 'arguments': 42 }; var d; with (o) { d = delete arguments; } return d + ',' + ('arguments' in o); })()"));

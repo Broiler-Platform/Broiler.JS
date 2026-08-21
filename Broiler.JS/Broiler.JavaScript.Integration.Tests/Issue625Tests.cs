@@ -52,7 +52,7 @@ public class Issue625Tests
         Assert.Equal(expected, Eval(code).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ListFormatResolvedOptionsHasTypeAndStyle()
     {
         var code = "var o = new Intl.ListFormat('en', {type:'disjunction'}).resolvedOptions();"
@@ -90,7 +90,7 @@ public class Issue625Tests
         Assert.Equal("SyntaxError", Eval(code).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Base64UrlAlphabet()
     {
         // 0xfb 0xff 0xfe -> standard "+/+ " ; base64url uses '-' and '_'.
@@ -98,7 +98,7 @@ public class Issue625Tests
         Assert.Equal("fbff", Eval(code).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetFromBase64WritesUpToError()
     {
         // "Zm9vYmFy" decodes to "foobar" (6 bytes); the trailing '!' is invalid.
@@ -111,7 +111,7 @@ public class Issue625Tests
         Assert.Equal("true|666f6f626172", Eval(code).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetFromBase64ReportsReadAndWritten()
     {
         var code =
@@ -121,7 +121,7 @@ public class Issue625Tests
         Assert.Equal("8|6", Eval(code).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetFromBase64StopsAtTargetSize()
     {
         // Target only holds 3 bytes; decoding stops after the first complete chunk.

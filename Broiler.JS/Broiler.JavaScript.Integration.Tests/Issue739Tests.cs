@@ -115,53 +115,53 @@ public class Issue739Tests
 
     // ---- Problem 13: RegExp.prototype.test is generic over the receiver's exec ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegExpTestUsesReceiverExecOnPlainObject()
         => Assert.Equal("true", Eval(
             "var obj={exec(){return function(){};}};" +
             "''+RegExp.prototype.test.call(obj,'')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegExpTestReturnsFalseWhenReceiverExecReturnsNull()
         => Assert.Equal("false", Eval(
             "var obj={exec(){return null;}};''+RegExp.prototype.test.call(obj,'x')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegExpTestStillWorksOnRealRegExp()
         => Assert.Equal("true,false", Eval("[/ab/.test('zabz'),/ab/.test('zz')].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegExpTestOnNonObjectThrowsTypeError()
         => Assert.Equal("TypeError", Eval(
             "try{RegExp.prototype.test.call(5,'');'no'}catch(e){e.constructor.name}"));
 
     // ---- Problem 19 / 20: duplicate named groups with an iterated backreference ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DuplicateNamedGroupsExecGroupsObject()
         => Assert.Equal("b,a,c|x,y,z", Eval(
             "var m=/(?:(?<x>a)|(?<y>a)(?<x>b))(?:(?<z>c)|(?<z>d))/;var r=m.exec('abc');" +
             "[r.groups.x,r.groups.y,r.groups.z].join(',')+'|'+Object.keys(r.groups).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DuplicateNamedGroupsNonParticipatingIsUndefined()
         => Assert.Equal("a,undefined,d", Eval(
             "var m=/(?:(?<x>a)|(?<y>a)(?<x>b))(?:(?<z>c)|(?<z>d))/;var r=m.exec('ad');" +
             "[r.groups.x,String(r.groups.y),r.groups.z].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DuplicateNamedGroupIteratedBackrefMatchesWithResetCapture()
         => Assert.Equal("aac|undefined", Eval(
             "var it=/(?:(?:(?<x>a)|(?<x>b)|c)\\k<x>){2}/;var r=it.exec('aac');" +
             "r[0]+'|'+String(r.groups.x)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DuplicateNamedGroupIteratedBackrefKeepsLastIterationCapture()
         => Assert.Equal("b,a", Eval(
             "var it=/(?:(?:(?<x>a)|(?<x>b)|c)\\k<x>){2}/;" +
             "[it.exec('aabb').groups.x, it.exec('aaaa').groups.x].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DuplicateNamedGroupIndicesGroupsObject()
         => Assert.Equal("1,2|0,1|2,3", Eval(
             "var m=/(?:(?<x>a)|(?<y>a)(?<x>b))(?:(?<z>c)|(?<z>d))/d;var r=m.exec('abc');" +
@@ -169,20 +169,20 @@ public class Issue739Tests
 
     // ---- Problem 15: Reflect.setPrototypeOf returns false on a cyclic change ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectSetPrototypeOfSameTargetReturnsFalse()
         => Assert.Equal("false,true", Eval(
             "var o={};" +
             "[Reflect.setPrototypeOf(o,o), Object.getPrototypeOf(o)===Object.prototype].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectSetPrototypeOfCyclicReturnsFalse()
         => Assert.Equal("false", Eval(
             "var a={};var b=Object.create(a);''+Reflect.setPrototypeOf(a,b)"));
 
     // ---- Problem 16: Reflect.setPrototypeOf returns false on a non-extensible target ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectSetPrototypeOfNonExtensibleReturnsFalse()
         => Assert.Equal("false,false,false", Eval(
             "var o1={};Object.preventExtensions(o1);" +
@@ -190,21 +190,21 @@ public class Issue739Tests
             "var o3=Object.create(null);Object.preventExtensions(o3);" +
             "[Reflect.setPrototypeOf(o1,{}),Reflect.setPrototypeOf(o2,null),Reflect.setPrototypeOf(o3,{})].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectSetPrototypeOfNonExtensibleLeavesPrototypeUnchanged()
         => Assert.Equal("true", Eval(
             "var o=Object.create(null);Object.preventExtensions(o);" +
             "Reflect.setPrototypeOf(o,{});''+(Object.getPrototypeOf(o)===null)"));
 
     // Object.setPrototypeOf still throws for the same conditions.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectSetPrototypeOfNonExtensibleStillThrows()
         => Assert.Equal("TypeError", Eval(
             "var o={};Object.preventExtensions(o);" +
             "try{Object.setPrototypeOf(o,{});'no'}catch(e){e.constructor.name}"));
 
     // Reflect.setPrototypeOf still succeeds (true) on a normal change.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectSetPrototypeOfNormalReturnsTrue()
         => Assert.Equal("true,true", Eval(
             "var o={};var p={};" +
@@ -232,7 +232,7 @@ public class Issue739Tests
     public void LeadingStarIsNotAnExpression(string code)
         => Assert.Equal("SyntaxError", SyntaxCheck(code));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MultiplicationAndGeneratorMethodsStillWork()
     {
         Assert.Equal("42", Eval("''+(6*7)"));
@@ -260,7 +260,7 @@ public class Issue739Tests
         => Assert.Equal("SyntaxError", SyntaxCheck(
             $"new Function({System.Text.Json.JsonSerializer.Serialize(p)},{System.Text.Json.JsonSerializer.Serialize(b)})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionConstructorStillBuildsValidFunctions()
     {
         Assert.Equal("5", Eval("''+new Function('a','b','return a+b')(2,3)"));
@@ -299,7 +299,7 @@ public class Issue739Tests
     public void YieldContextPositivesParse(string code)
         => Assert.Equal("OK", EvalOk(code));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorYieldStillRunsCorrectly()
     {
         Assert.Equal("1,2,3", Eval(
@@ -350,44 +350,44 @@ public class Issue739Tests
 
     // ---- Problem 12: a static accessor may be named `constructor` ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticAccessorNamedConstructorIsAllowed()
         => Assert.Equal("true,true,true", Eval(
             "class C { static get constructor() {} static set constructor(_) {} constructor() {} }" +
             "[C.hasOwnProperty('constructor'),C.prototype.hasOwnProperty('constructor')," +
             "C.prototype.constructor!==C.constructor].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticAccessorNamedConstructorReadsThroughGetter()
         => Assert.Equal("7", Eval("class C { static get constructor(){return 7;} } ''+C.constructor"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InstanceAccessorNamedConstructorIsSyntaxError()
         => Assert.Equal("SyntaxError", SyntaxCheck("class C { get constructor(){} }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticAccessorNamedPrototypeStillRejected()
         => Assert.NotEqual("NOTHROW", SyntaxCheck("class C { static get prototype(){} }"));
 
     // ---- Problem 11: `accessor` auto-accessor fields ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AccessorFieldsParseAndEvaluate()
         => Assert.Equal("undefined,5", Eval(
             "var C=class{ accessor x; accessor y = 5; };var c=new C();[String(c.x),c.y].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticAccessorFieldEvaluates()
         => Assert.Equal("3", Eval("class C { static accessor z = 3; } ''+C.z"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AccessorFieldComputedAndPrivateNames()
         => Assert.Equal("ok", Eval(
             "var k='m';class C { accessor [k] = 1; accessor #p = 2; getP(){return this.#p;} }" +
             "var c=new C();(c.m===1 && c.getP()===2)?'ok':'no'"));
 
     // `accessor` is still usable as an ordinary field / method / identifier name.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AccessorRemainsUsableAsName()
     {
         Assert.Equal("ok", Eval("class C { accessor; } 'ok'"));

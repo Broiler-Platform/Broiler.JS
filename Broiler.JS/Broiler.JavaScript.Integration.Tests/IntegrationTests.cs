@@ -11,7 +11,7 @@ namespace Broiler.JavaScript.Integration.Tests;
 
 public class IntegrationTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FullPipeline_ParseCompileExecute()
     {
         // Parse
@@ -27,7 +27,7 @@ public class IntegrationTests
         Assert.Equal(5.0, result.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CompilerRegistration_Works()
     {
         // Creating a JSContext triggers ModuleInitializer chain
@@ -37,7 +37,7 @@ public class IntegrationTests
         Assert.Equal("undefined", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BuiltInsRegistration_Works()
     {
         // Ensure the BuiltIns assembly is loaded so its ModuleInitializer fires
@@ -49,7 +49,7 @@ public class IntegrationTests
         Assert.Equal("function", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClrRegistration_Works()
     {
         using var ctx = new JSContext();
@@ -57,7 +57,7 @@ public class IntegrationTests
         Assert.NotNull(JSEngine.Current);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypeLocation_ResolvesCorrectly()
     {
         // Types live directly in their target assemblies after refactoring
@@ -66,7 +66,7 @@ public class IntegrationTests
         Assert.Equal("Broiler.JavaScript.Runtime", jsValueType.Namespace);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSModuleContext_WithCompiler_Works()
     {
         var moduleCtx = new JSModuleContext();
@@ -78,7 +78,7 @@ public class IntegrationTests
             exports);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SourceGenerator_IndependentPerAssembly()
     {
         // Both Core and BuiltIns assemblies should have independent Names classes
@@ -93,7 +93,7 @@ public class IntegrationTests
 
     // ── M2: Cross-assembly wiring tests ──────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M2_Math_RegisteredFromBuiltIns()
     {
         System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(
@@ -104,7 +104,7 @@ public class IntegrationTests
         Assert.Equal("object", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M2_Math_MethodsWorkAcrossAssembly()
     {
         System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(
@@ -114,7 +114,7 @@ public class IntegrationTests
         Assert.Equal(10.0, result.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M2_Reflect_RegisteredFromBuiltIns()
     {
         System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(
@@ -124,7 +124,7 @@ public class IntegrationTests
         Assert.Equal("object", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M2_Reflect_MethodsWorkAcrossAssembly()
     {
         System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(
@@ -137,7 +137,7 @@ public class IntegrationTests
         Assert.Equal(3.0, result.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M2_Proxy_RegisteredFromBuiltIns()
     {
         System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(
@@ -147,7 +147,7 @@ public class IntegrationTests
         Assert.Equal("function", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M2_Proxy_ConstructAndTraps()
     {
         System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(
@@ -165,7 +165,7 @@ public class IntegrationTests
         Assert.Equal("10|default", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M2_Console_RegisteredFromBuiltIns()
     {
         System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(
@@ -177,7 +177,7 @@ public class IntegrationTests
         Assert.Equal("object", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M2_Console_LogWarnErrorWork()
     {
         System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(
@@ -192,7 +192,7 @@ public class IntegrationTests
         Assert.Equal("function|function|function", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M2_ConsoleFactory_WiredByModuleInitializer()
     {
         System.Runtime.CompilerServices.RuntimeHelpers.RunClassConstructor(
@@ -202,7 +202,7 @@ public class IntegrationTests
 
     // ── BuiltInsAssemblyInitializer eager loading tests ──────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BuiltInsInitializer_DelegatesWired_AfterRegister()
     {
         // Verify that DefaultBuiltInRegistry.Register() triggers
@@ -220,7 +220,7 @@ public class IntegrationTests
         Assert.NotNull(DefaultBuiltInRegistry.IteratorPrototypeSetup);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BuiltInsInitializer_FactoryDelegates_WiredAfterRegister()
     {
         // Verify factory delegates on JSValue are wired by Initialize().

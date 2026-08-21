@@ -64,7 +64,7 @@ public class BlockScopedVarNumericLocalTests
     // The case the item is really about: a temporary declared and consumed inside a loop body.
     // Entering the block is what proves the initializer ran, so the reference has to stay
     // inside it.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ALoopBodyTemporaryReachesTheNumericTier()
     {
         var (result, numericLocals) = Compile(
@@ -224,7 +224,7 @@ public class BlockScopedVarNumericLocalTests
         => Assert.Equal(expected, Fn(body));
 
     // A rejected block-scoped var must not drag down the body-level locals that do not read it.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ARejectedBlockVarDoesNotCostTheRestTheirSpecialization()
     {
         var (result, numericLocals) = Compile(

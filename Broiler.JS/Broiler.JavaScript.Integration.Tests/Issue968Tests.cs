@@ -110,7 +110,7 @@ public class Issue968Tests
     public void LiteralEvalProducesTheSameCompletionValue(string expression, string expected)
         => Assert.Equal(expected, EvalString($"String({expression})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LiteralEvalBuildsAFreshRegExpEachTime()
         => Assert.Equal("0", EvalString(
             @"(function () { var a = eval('/a/g'); a.lastIndex = 5; return String(eval('/a/g').lastIndex); })()"));
@@ -118,7 +118,7 @@ public class Issue968Tests
     // ── Array generics with a huge or absent length ──────────────────────────────────────
     // test262 staging/sm/Array/{to-length,toLocaleString-01}.js.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToLocaleStringUsesLengthOfArrayLike()
     {
         // No own "length": LengthOfArrayLike is 0, not the ToUint32 of the -1 probe.
@@ -132,7 +132,7 @@ public class Issue968Tests
             "Array.prototype.toLocaleString.call({ length: { valueOf: function () { return 2; } }, 0: 'x', 1: 'z' })"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayFromRejectsALengthAboveTheArrayIndexRange()
     {
         Assert.Equal("RangeError", EvalString(
@@ -166,7 +166,7 @@ public class Issue968Tests
     // test262 staging/sm/eval/exhaustive-global-*.js: reading a global var an eval created and
     // `delete` then removed is an unresolvable reference, not undefined.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReadingADeletedEvalIntroducedGlobalThrows()
     {
         Assert.Equal("ReferenceError,undefined,71", EvalString(@"
@@ -192,7 +192,7 @@ public class Issue968Tests
     // ── Annex B.3.3 block-level function declarations inside a direct eval ───────────────
     // test262 staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.js.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BlockLevelFunctionInEvalDoesNotWriteThroughAWithObject()
         => Assert.Equal("outer-geval-gwith-g", EvalString(@"
             (function () {
@@ -209,18 +209,18 @@ public class Issue968Tests
               return log;
             })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeletingABlockLevelFunctionInEvalReturnsFalse()
         // The eval's var-environment binding is configurable, the block's lexical one is not.
         => Assert.Equal("true,false", EvalString(
             @"(function () { var r = []; eval('r.push(delete q); { function q() {} r.push(delete q); }'); return r.join(','); })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ABlockLevelFunctionRestoresAVarBindingItsOwnDeleteRemoved()
         => Assert.Equal("function", EvalString(
             @"(function () { eval('(delete q); { function q() {} }'); return typeof q; })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnEvalFunctionDeclarationStillUpdatesACollidingCallerBinding()
     {
         Assert.Equal("99", EvalString(
@@ -271,7 +271,7 @@ public class Issue968Tests
     // test262 staging/sm/Proxy/ownkeys-linear.js builds a 15 000-property target; the shape
     // chain that cost O(n²) LIVE bytes is capped at ObjectShape.MaxSlots.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ManyNamedPropertiesKeepInsertionOrderAndValues()
         => Assert.Equal("300,k0,k299,42,,299", EvalString(@"
             (function () {

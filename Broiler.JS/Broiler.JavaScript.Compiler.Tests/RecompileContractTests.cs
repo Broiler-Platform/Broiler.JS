@@ -77,7 +77,7 @@ public sealed class RecompileContractTests
     // A function DECLARATION. Wrapped as `({source})` the declaration becomes a named function
     // EXPRESSION, whose self-name binding shadows the outer binding the body meant — so `tally`
     // names the copy, which has no `step`. Before the contract: 6|NaN|NaN|NaN.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADeclarationReadingAPropertyOfItsOwnNameIsRefused()
     {
         var snapshot = AssertSameAnswer("""
@@ -93,7 +93,7 @@ public sealed class RecompileContractTests
     // A named function EXPRESSION, where the self-name binding is genuine rather than an artifact
     // of the wrapper — and still binds the copy. Same wrong answer, opposite reason, which is why
     // the refusal covers both rather than distinguishing them.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANamedFunctionExpressionReadingItsOwnNameIsRefused()
     {
         var snapshot = AssertSameAnswer("""
@@ -108,7 +108,7 @@ public sealed class RecompileContractTests
 
     // Identity, not just properties: the copy is a different object, so `===` against the
     // original answers false from the second call on. Before the contract: true|false|false|false.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IdentityAgainstItsOwnNameIsRefused()
     {
         var snapshot = AssertSameAnswer("""
@@ -123,7 +123,7 @@ public sealed class RecompileContractTests
     // `arguments.callee` is the function object again by a route no name check can see, and it
     // can be reached through an alias — so any mention of `arguments` is refused, not just the
     // direct member access. Before the contract: true|false|false|false.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArgumentsCalleeIsRefused()
     {
         var snapshot = AssertSameAnswer("""
@@ -134,7 +134,7 @@ public sealed class RecompileContractTests
         Assert.Equal(0, snapshot.Candidates);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnAliasedArgumentsObjectIsRefusedToo()
     {
         var snapshot = AssertSameAnswer("""
@@ -149,7 +149,7 @@ public sealed class RecompileContractTests
     // the self-reference replaced by an ordinary global read IS a candidate and IS promoted. A
     // refusal that was really the gate rejecting the shape for some unrelated reason would fail
     // here, and the tests above would be passing vacuously.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheSameBodyWithoutASelfReferenceIsStillPromoted()
     {
         var snapshot = AssertSameAnswer("""
@@ -166,7 +166,7 @@ public sealed class RecompileContractTests
     // answer — the copy calling the copy computes the same thing — but the refusal is keyed on
     // the name being mentioned at all, which is the conservative side of a rule that cannot tell
     // "invoked" from "observed" without a use analysis. Pinned so the cost stays visible.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RecursionByNameIsRefusedEvenThoughItWouldHaveBeenCorrect()
     {
         var snapshot = AssertSameAnswer("""
@@ -195,7 +195,7 @@ public sealed class RecompileContractTests
     }
 
     // An anonymous function has no name to observe, so nothing is refused on that account.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnAnonymousFunctionExpressionIsStillPromoted()
     {
         var snapshot = AssertSameAnswer("""
@@ -211,7 +211,7 @@ public sealed class RecompileContractTests
     // matches the identifier, not the binding it resolves to. Conservative on purpose — deciding
     // that this mention is a different binding needs the scope walk the contract deliberately
     // does not do.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AShadowedNameIsRefusedConservatively()
     {
         var snapshot = AssertSameAnswer("""
@@ -228,7 +228,7 @@ public sealed class RecompileContractTests
     // function carries no directive of its own, so re-parsing its text at the top level of a
     // fresh script makes the copy sloppy: before the fix this answered
     // ReferenceError|ok|ok — the promoted body silently created a global.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AStrictFunctionStaysStrictAfterPromotion()
     {
         var snapshot = AssertSameAnswer("""
@@ -245,7 +245,7 @@ public sealed class RecompileContractTests
 
     // A function with its OWN directive was already correct, and stays correct: the wrapper adds
     // a second one, which is a no-op rather than a change.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFunctionWithItsOwnDirectiveIsUnaffected()
     {
         var snapshot = AssertSameAnswer("""
@@ -260,7 +260,7 @@ public sealed class RecompileContractTests
 
     // A sloppy function must NOT be made strict by the repair — the wrapper is conditional, and
     // this is what says so. A sloppy assignment to an undeclared name creates a global.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASloppyFunctionIsNotMadeStrict()
     {
         var snapshot = AssertSameAnswer("""

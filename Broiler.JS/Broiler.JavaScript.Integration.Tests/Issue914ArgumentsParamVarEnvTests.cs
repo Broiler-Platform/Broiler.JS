@@ -20,7 +20,7 @@ public class Issue914ArgumentsParamVarEnvTests
     }
 
     // g8: `var arguments = 0` shadows; the arrow still sees the arguments object.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BodyVarArgumentsWithInitializerShadowsParamArguments()
     {
         Assert.Equal("0", Eval(
@@ -31,7 +31,7 @@ public class Issue914ArgumentsParamVarEnvTests
 
     // g9: `var arguments` (no initializer) starts as the param arguments object, then a
     // later assignment writes only the body binding.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BodyVarArgumentsWithoutInitializerSeedsFromParamArguments()
     {
         Assert.Equal("false", Eval(
@@ -44,14 +44,14 @@ public class Issue914ArgumentsParamVarEnvTests
 
     // Without a `var arguments` there is no shadow: the body `arguments` IS the captured
     // parameter-environment object.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BodyArgumentsWithoutVarSharesParamArguments()
         => Assert.Equal("true", Eval(
             "function g(h=()=>arguments){ return (arguments===h()); } g()"));
 
     // A simple parameter list has a single environment, so `var arguments` shares the
     // function's own arguments binding (no split) — test262 language/.../S13_A15_T2.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SimpleParameterListVarArgumentsSharesSingleBinding()
     {
         // var arguments = x overrides the arguments object for that single binding.
@@ -61,7 +61,7 @@ public class Issue914ArgumentsParamVarEnvTests
     }
 
     // The arrow captures the actual mapped arguments object (not a copy lacking identity).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParamArrowCapturesArgumentsObject()
         => Assert.Equal("[object Arguments]", Eval(
             "function g(h=()=>arguments){ var arguments=0; return Object.prototype.toString.call(h()); } g()"));

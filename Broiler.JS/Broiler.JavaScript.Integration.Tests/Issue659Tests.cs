@@ -24,51 +24,51 @@ public class Issue659Tests
 
     // ---- Emoji_Keycap_Sequence ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void KeycapDigitMatches()
         => Assert.Equal("true", Eval(@"String(/^\p{Emoji_Keycap_Sequence}$/v.test('1️⃣'))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void KeycapHashAndStarMatch()
         => Assert.Equal("true", Eval(
             @"String(/^\p{Emoji_Keycap_Sequence}$/v.test('#️⃣') && /^\p{Emoji_Keycap_Sequence}$/v.test('*️⃣'))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void KeycapDoesNotMatchBarePlainDigit()
         => Assert.Equal("false", Eval(@"String(/^\p{Emoji_Keycap_Sequence}$/v.test('1'))"));
 
     // ---- Basic_Emoji ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BasicEmojiMatchesSingleCodePoint()
         => Assert.Equal("true", Eval(@"String(/^\p{Basic_Emoji}$/v.test('\u{1F600}'))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BasicEmojiMatchesTextPresentationWithVariationSelector()
         => Assert.Equal("true", Eval(@"String(/^\p{Basic_Emoji}$/v.test('❤️'))"));
 
     // ---- RGI_Emoji (the union) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RgiEmojiMatchesFlagSequence()
         => Assert.Equal("true", Eval(@"String(/^\p{RGI_Emoji}$/v.test('\u{1F1E9}\u{1F1EA}'))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RgiEmojiMatchesZwjFamilySequence()
         => Assert.Equal("true", Eval(
             @"String(/^\p{RGI_Emoji}$/v.test('\u{1F468}‍\u{1F469}‍\u{1F467}‍\u{1F466}'))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RgiEmojiMatchesSingleEmoji()
         => Assert.Equal("true", Eval(@"String(/^\p{RGI_Emoji}$/v.test('\u{1F600}'))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RgiEmojiDoesNotMatchLetter()
         => Assert.Equal("false", Eval(@"String(/^\p{RGI_Emoji}$/v.test('a'))"));
 
     // Leftmost-longest: an embedded match must consume the whole ZWJ sequence,
     // not just its leading code point.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RgiEmojiEmbeddedMatchIsLeftmostLongest()
         => Assert.Equal("true", Eval(
             @"var s='x\u{1F468}‍\u{1F469}‍\u{1F467}‍\u{1F466}y';"
@@ -78,13 +78,13 @@ public class Issue659Tests
     // ---- Validity rules ----
 
     // Properties of strings require the `v` flag; bare in `u` mode it is a SyntaxError.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RgiEmojiInUnicodeModeThrowsSyntaxError()
         => Assert.Equal("SyntaxError", Eval(
             @"var n='ok'; try { eval('/\\p{RGI_Emoji}/u'); } catch(e){ n=e.constructor.name; } n"));
 
     // Negating a property of strings (\P{...}) is a SyntaxError even in `v` mode.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NegatedRgiEmojiThrowsSyntaxError()
         => Assert.Equal("SyntaxError", Eval(
             @"var n='ok'; try { eval('/\\P{RGI_Emoji}/v'); } catch(e){ n=e.constructor.name; } n"));

@@ -102,11 +102,11 @@ public class Issue761Tests
     public void UnaryMinusAllowsLineTerminatorBeforeNumberOperand(string lt)
         => Assert.Equal("-5", Eval("-" + lt + "5"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeleteAllowsLineTerminatorBeforeParenthesizedOperand()
         => Assert.Equal("true", Eval("delete\n(0)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeleteAllowsNonLineTerminatorWhitespaceBeforeOperand()
     {
         // VT (U+000B) and FF (U+000C) are whitespace, not line terminators.
@@ -114,7 +114,7 @@ public class Issue761Tests
         Assert.Equal("true", Eval("var r = delete" + (char)0x0C + "0; r"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrefixOperatorStillWorksWithIdentifierOperandAcrossNewline()
     {
         Assert.Equal("d", Eval("var x={}; delete\nx.y; 'd'"));
@@ -123,17 +123,17 @@ public class Issue761Tests
 
     // ---- Problem 38: line terminators inside the new.target meta-property ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewTargetAllowsLineBreaksBetweenTokens()
         => Assert.Equal("true", Eval(
             "var t=null; var f=function(){t = new\n.\ntarget;}; new f(); t===f"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewTargetUndefinedOnPlainCallWithLineBreaks()
         => Assert.Equal("undefined", Eval(
             "var t='x'; var f=function(){t = new\n.\ntarget;}; f(); String(t)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewTargetStillWorksWithSpacesAndComments()
     {
         Assert.Equal("true", Eval(
@@ -145,11 +145,11 @@ public class Issue761Tests
             "var t=null; var f=function(){t = new/*\n*/./*\n*/target;}; new f(); t===f"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewExpressionStillWorksWithLineBreakBeforeCallee()
         => Assert.Equal("true", Eval("function Foo(){}; var o = new\nFoo(); o instanceof Foo"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestedNewExpressionStillParses()
         // `new new F().constructor` is `new (new F().constructor)`: the `.constructor`
         // member binds to the inner `new F()` (an F instance, whose .constructor is F),
@@ -162,7 +162,7 @@ public class Issue761Tests
 
     // ---- Problem 25: invalid escape sequences in tagged / untagged templates ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TaggedTemplateInvalidEscapeCookedIsUndefined()
         => Assert.Equal("true", Eval(
             "var c=(s=>s[0]);" +
@@ -173,19 +173,19 @@ public class Issue761Tests
     // A single program (distinct source offsets) so the per-offset template-object
     // cache does not alias the cases — this mirrors how the real test262 file is
     // structured (every template at its own source position).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TaggedTemplateInvalidEscapeRawIsPreserved()
         => Assert.Equal("\\01,\\9,\\xg,\\xAg,\\u0,\\u0g,\\u{g,\\u{0,\\u{10FFFFF}", Eval(
             "var r=(s=>s.raw[0]);" +
             "[r`\\01`,r`\\9`,r`\\xg`,r`\\xAg`,r`\\u0`,r`\\u0g`,r`\\u{g`,r`\\u{0`,r`\\u{10FFFFF}`].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TaggedTemplateInvalidEscapeBeforeSubstitution()
         => Assert.Equal("\\u{10FFFFF}|undefined|inner|right|right", Eval(
             "((s, val) => [s.raw[0], String(s[0]), val, s[1], s.raw[1]].join('|'))" +
             "`\\u{10FFFFF}${'inner'}right`"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TaggedTemplateValidEscapesStillCook()
         => Assert.Equal("10,A,A,0", Eval(
             "[(s=>s[0].charCodeAt(0))`\\n`," +   // \n => LF
@@ -207,7 +207,7 @@ public class Issue761Tests
         Assert.Contains("template", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UntaggedTemplateValidEscapesStillWork()
     {
         Assert.Equal("aAb", Eval("`a\\u0041b`"));
@@ -241,14 +241,14 @@ public class Issue761Tests
     public void OtherIdContinueCharacterIsValidIdentifierPart(int cp)
         => Assert.Equal("7", Eval("var a" + U(cp) + " = 7; a" + U(cp)));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IdentifierWithZwnjZwjAndKatakanaMiddleDots()
         // The full identifier from test262 part-unicode-15.1.0.js: _<ZWNJ><ZWJ>・･
         => Assert.Equal("7", Eval(
             "var " + U('_', 0x200C, 0x200D, 0x30FB, 0xFF65) + " = 7; "
                    + U('_', 0x200C, 0x200D, 0x30FB, 0xFF65)));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateClassFieldWithOtherIdContinueCharacters()
         // test262 part-unicode-15.1.0-class.js: a private field named #_<ZWNJ><ZWJ>・･
         => Assert.Equal("7", Eval(
@@ -258,23 +258,23 @@ public class Issue761Tests
 
     // ---- Problem 36: await operand precedence and ASI ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitOperandIsUnaryExpressionMultiplicative()
         // (await 2) * 2 == 4, not await(2 * 2)
         => Assert.Equal("4", Drive(
             "async function f(){ let x = 2; r = await Promise.resolve(2) * x; } f();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitOperandIsUnaryExpressionAdditive()
         => Assert.Equal("5", Drive(
             "async function f(){ r = await Promise.resolve(2) + 3; } f();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitOperandIsUnaryExpressionRelational()
         => Assert.Equal("true", Drive(
             "async function f(){ r = await Promise.resolve(2) < 5; } f();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitExpressionAllowsAsiInEnclosingStatement()
     {
         // The newline after the await expression must let ASI terminate the
@@ -285,7 +285,7 @@ public class Issue761Tests
             "async function f(){ let y = await Promise.resolve(5)\n return y; } 'parsed'"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitBeforeExponentiationIsSyntaxError()
     {
         var ex = Assert.Throws<Broiler.JavaScript.Runtime.JSException>(
@@ -293,12 +293,12 @@ public class Issue761Tests
         Assert.Contains("exponentiation", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParenthesizedAwaitBeforeExponentiationIsAllowed()
         => Assert.Equal("parsed", Eval(
             "async function f(){ return (await 2) ** 2; } 'parsed'"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitOfNonThenableRunsContinuation()
     {
         // (await 1) + 1 == 2 — the continuation after awaiting a non-thenable runs.
@@ -311,7 +311,7 @@ public class Issue761Tests
             "async function f(){ let v = await undefined; r = v === undefined ? 'u' : v; } f();"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitOfNonThenableSuspendsOneMicrotaskTick()
         // Interleaving proves await(0) suspends rather than running synchronously.
         => Assert.Equal("A1,main,A2,after", Drive(
@@ -321,22 +321,22 @@ public class Issue761Tests
 
     // ---- Problems 21/22/23: duplicate block-nested function declarations ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SloppyDuplicateFunctionDeclarationInBlockIsAllowed()
         // Annex B 3.3.4: the last declaration wins.
         => Assert.Equal("2", Eval("{ function a(){return 1} function a(){return 2} } a()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SloppyDuplicateFunctionDeclarationInSwitchIsAllowed()
         => Assert.Equal("2", Eval(
             "switch(0){ default: function a(){return 1} function a(){return 2} } a()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SloppyDuplicateFunctionDeclarationInFunctionBlockIsAllowed()
         => Assert.Equal("ok", Eval(
             "function f(){ { function a(){} function a(){} } return 'ok'; } f()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictDuplicateFunctionDeclarationInBlockIsSyntaxError()
     {
         var ex = Assert.Throws<Broiler.JavaScript.Runtime.JSException>(
@@ -344,7 +344,7 @@ public class Issue761Tests
         Assert.Contains("already defined", ex.Message);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictDuplicateFunctionDeclarationAcrossSwitchClausesIsSyntaxError()
     {
         var ex = Assert.Throws<Broiler.JavaScript.Runtime.JSException>(
@@ -352,7 +352,7 @@ public class Issue761Tests
         Assert.Contains("already defined", ex.Message);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictDuplicateFunctionDeclarationInNestedBlockIsSyntaxError()
     {
         var ex = Assert.Throws<Broiler.JavaScript.Runtime.JSException>(
@@ -360,18 +360,18 @@ public class Issue761Tests
         Assert.Contains("already defined", ex.Message);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictFunctionBodyTopLevelDuplicateFunctionsAllowed()
         // A function body is a var-scoped environment: top-level duplicate function
         // declarations are allowed even in strict mode.
         => Assert.Equal("2", Eval(
             "function f(){ 'use strict'; function a(){return 1} function a(){return 2} return a(); } f()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictBlockWithDistinctFunctionNamesIsAllowed()
         => Assert.Equal("ok", Eval("'use strict'; { function a(){} function b(){} } 'ok'"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BlockFunctionStillConflictsWithLexicalBinding()
     {
         Assert.Throws<Broiler.JavaScript.Runtime.JSException>(() => Eval("{ let a; function a(){} }"));

@@ -87,7 +87,7 @@ public class ExceptionStackTraceReadTests
     /// The repeats carried <c>readSrc</c> at line 4 — the <c>catch</c> — which is a position it
     /// reached only after the throw, and which named the handler as if it were a call site.
     /// </summary>
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheFramesReportTheThrowSiteAndNotTheHandler()
     {
         var trace = TraceAfterReads(reads: 4);
@@ -101,7 +101,7 @@ public class ExceptionStackTraceReadTests
     /// it, which is captured once at construction — the two halves of one report saying the same
     /// thing is what was lost.
     /// </summary>
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheTwoHalvesOfOneReportAgree()
     {
         var trace = TraceAfterReads(reads: 4);

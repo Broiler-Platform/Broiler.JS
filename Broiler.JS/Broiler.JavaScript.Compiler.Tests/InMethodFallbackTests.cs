@@ -206,7 +206,7 @@ public sealed class InMethodFallbackTests
     // is worse than never having speculated. After PoisonThreshold misses the site stops
     // evaluating the guard at all — visible as "guard" disappearing from the log while the
     // answer stays the same.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASiteThatKeepsMissingStopsEvaluatingItsGuard()
     {
         Speculation.Reset();
@@ -233,7 +233,7 @@ public sealed class InMethodFallbackTests
     }
 
     // A site that never misses is never poisoned and keeps taking the fast path.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASiteWhoseGuardHoldsIsNeverPoisoned()
     {
         Speculation.Reset();
@@ -253,7 +253,7 @@ public sealed class InMethodFallbackTests
 
     // A refused site index (the table is bounded) must emit the generic form alone rather than
     // a guard against a site that does not exist.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ARefusedSiteEmitsTheGenericFormWithNoGuard()
     {
         Speculation.Reset();

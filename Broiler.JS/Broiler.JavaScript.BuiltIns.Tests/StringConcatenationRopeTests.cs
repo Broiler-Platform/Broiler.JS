@@ -41,33 +41,33 @@ public class StringConcatenationRopeTests
     public void ADeferredStringBehavesLikeAFlatOne(string expression, string expected)
         => Assert.Equal(expected, Eval(BuildRope, expression));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADeferredStringEqualsTheEagerlyBuiltOne()
         => Assert.Equal("true", Eval(
             BuildRope + "var f = ''; for (var i = 0; i < 20; i++) f = f.concat('abcdefgh');",
             "s === f"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADeferredStringRoundTripsThroughJson()
         => Assert.Equal("true", Eval(BuildRope, "JSON.parse(JSON.stringify(s)) === s"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADeferredStringWorksAsAPropertyKey()
         => Assert.Equal("1,160", Eval(
             BuildRope + "var o = {}; o[s] = 1;",
             "o[s] + ',' + Object.keys(o)[0].length"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADeferredKeyMatchesTheEquivalentFlatKey()
         => Assert.Equal("1", Eval(BuildRope + "var f = s.slice(0); var o = {}; o[s] = 1;", "o[f]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnArrayIndexKeyIsUnaffected()
         // Below the threshold a join stays flat anyway, and an array index is at most ten
         // digits, so an index key can never itself be deferred.
         => Assert.Equal("5,5", Eval("var k = '1' + '2'; var o = {}; o[k] = 5;", "o[12] + ',' + o['12']"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ALongNumericConcatenationIsAnOrdinaryStringKey()
         => Assert.Equal("7,160", Eval(
             "var k = ''; for (var i = 0; i < 20; i++) k = k + '12345678'; var o = {}; o[k] = 7;",
@@ -75,7 +75,7 @@ public class StringConcatenationRopeTests
 
     // ── the shape this exists for ─────────────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AVeryDeepConcatenationFlattensWithoutOverflowingTheStack()
         // The pending chain is exactly as deep as the number of appends, so a recursive
         // flatten would blow the stack on precisely the workload the rope is for.
@@ -83,7 +83,7 @@ public class StringConcatenationRopeTests
             "var s = ''; for (var i = 0; i < 100000; i++) s = s + 'x';",
             "s.length + ',' + s.charAt(99999)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JoiningTwoDeferredStringsIsCorrect()
         => Assert.Equal("320,h,1", Eval(
             "var a = ''; for (var i = 0; i < 20; i++) a = a + 'abcdefgh';" +
@@ -91,7 +91,7 @@ public class StringConcatenationRopeTests
             "var c = a + b;",
             "c.length + ',' + c.charAt(159) + ',' + c.charAt(160)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RepeatedSelfConcatenationIsCorrect()
         => Assert.Equal("5120", Eval(
             "var s = ''; for (var i = 0; i < 20; i++) s = s + 'abcdefgh';" +
@@ -106,21 +106,21 @@ public class StringConcatenationRopeTests
 
     // ── sharing must not leak between derived strings ─────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ExtendingADeferredStringDoesNotDisturbIt()
         => Assert.Equal("160,164,165,TAIL,OTHER", Eval(
             "var a = ''; for (var i = 0; i < 20; i++) a = a + 'abcdefgh';" +
             "var b = a + 'TAIL'; var c = a + 'OTHER';",
             "a.length + ',' + b.length + ',' + c.length + ',' + b.slice(160) + ',' + c.slice(160)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TwoStringsSharingAPrefixStayDistinct()
         => Assert.Equal("12,160", Eval(
             "var base = ''; for (var i = 0; i < 20; i++) base = base + 'abcdefgh';" +
             "var x = base + '1'; var y = base + '2';",
             "x.charAt(160) + y.charAt(160) + ',' + base.length"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObservingTwiceIsStable()
         => Assert.Equal("160,160,aa", Eval(BuildRope, "s.length + ',' + s.length + ',' + s.charAt(0) + s.charAt(0)"));
 
@@ -141,23 +141,23 @@ public class StringConcatenationRopeTests
     public void CoercionAndComparisonSeeTheWholeString(string expression, string expected)
         => Assert.Equal(expected, Eval(BuildRope, expression));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConcatenatingWithEmptyIsIdentity()
         => Assert.Equal("160,true|160,true", Eval(
             BuildRope + "var head = '' + s; var tail = s + '';",
             "head.length + ',' + (head === s) + '|' + tail.length + ',' + (tail === s)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnEmptyStringStaysFalsy()
         => Assert.Equal("falsy", Eval("var s = '';", "s ? 'truthy' : 'falsy'"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConcatenatingAnObjectUsesItsToString()
         => Assert.Equal("161,Z", Eval(
             BuildRope + "var o = { toString: function () { return 'Z'; } }; var r = s + o;",
             "r.length + ',' + r.charAt(160)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConcatenatingASymbolStillThrows()
         => Assert.Equal("TypeError", Eval(
             BuildRope,

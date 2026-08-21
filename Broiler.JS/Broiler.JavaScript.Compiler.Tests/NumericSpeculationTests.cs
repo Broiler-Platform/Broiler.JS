@@ -263,13 +263,13 @@ public sealed class NumericSpeculationTests
             """, speculate));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheSwitchDefaultsOn()
     {
         Assert.True(NumericSpeculation.Enabled);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheSpecializationActuallyFires()
     {
         // Every case above passes on both arms, which is what it is for and is also exactly what a

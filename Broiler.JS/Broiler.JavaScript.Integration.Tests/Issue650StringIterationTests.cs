@@ -20,41 +20,41 @@ public class Issue650StringIterationTests
 
     private const string Clef = "'\\uD834\\uDD1E'"; // "𝄞"
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SpreadYieldsCodePoints()
         => Assert.Equal("1", Eval($"'' + [...{Clef}].length"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayFromYieldsCodePoints()
         => Assert.Equal("1", Eval($"'' + Array.from({Clef}).length"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayFromAstralElementRoundTrips()
         // The single element is the full surrogate pair (length 2), not a half.
         => Assert.Equal("2", Eval($"'' + Array.from({Clef})[0].length"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfYieldsCodePoints()
         => Assert.Equal("1", Eval($"var n=0; for (var c of {Clef}) n++; '' + n"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MixedBmpAndAstralSplitsCorrectly()
         => Assert.Equal("3 a b", Eval($"var a=[...('a'+{Clef}+'b')]; '' + a.length + ' ' + a[0] + ' ' + a[2]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DestructuringYieldsCodePoints()
         => Assert.Equal("2 undefined", Eval($"var [x, y] = {Clef}; '' + x.length + ' ' + y"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetConstructionDeduplicatesByCodePoint()
         => Assert.Equal("1", Eval($"'' + new Set({Clef}).size"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BasicMultiCharStringStillIterates()
         => Assert.Equal("a,b,c", Eval("[...'abc'].join(',')"));
 
     // Array-like access remains code-unit based.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringLengthAndIndexingStayCodeUnits()
         => Assert.Equal("2 0,1", Eval($"var s={Clef}; '' + s.length + ' ' + Object.keys('ab').join(',')"));
 }

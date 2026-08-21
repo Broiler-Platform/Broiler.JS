@@ -5,7 +5,7 @@ namespace Broiler.JavaScript.Ast.Tests;
 
 public class AstTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringSpan_FromString_HasCorrectLengthAndValue()
     {
         var span = new StringSpan("hello");
@@ -13,7 +13,7 @@ public class AstTests
         Assert.Equal("hello", span.Value);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringSpan_Substring_CreatesView()
     {
         var span = new StringSpan("hello world", 0, 5);
@@ -21,7 +21,7 @@ public class AstTests
         Assert.Equal(5, span.Length);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringSpan_IsEmpty_ForNullOrEmpty()
     {
         var empty = new StringSpan("");
@@ -31,7 +31,7 @@ public class AstTests
         Assert.False(nonEmpty.IsEmpty);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringSpan_Equals_MatchesString()
     {
         var span = new StringSpan("test");
@@ -39,7 +39,7 @@ public class AstTests
         Assert.False(span.Equals("other"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FastToken_Constructor_SetsType()
     {
         var token = new FastToken(TokenTypes.Number, number: 42.0);

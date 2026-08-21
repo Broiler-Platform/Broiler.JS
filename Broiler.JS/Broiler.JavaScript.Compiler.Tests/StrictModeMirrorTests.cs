@@ -50,7 +50,7 @@ public sealed class StrictModeMirrorTests
 
     // The transition cases: strictness is a property of the code currently running, not of any
     // frame on the stack, so it has to be restored on the way back out in both directions.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASloppyCalleeInvokedFromStrictCodeIsSloppy()
         => Assert.Equal("ok|ReferenceError", Run("""
             function sloppy() { undeclaredA = 1; return 'ok'; }
@@ -58,7 +58,7 @@ public sealed class StrictModeMirrorTests
             [sloppy(), strict()].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AStrictCalleeInvokedFromSloppyCodeIsStrict()
         => Assert.Equal("ReferenceError|ok", Run("""
             function strict() { 'use strict'; try { undeclaredA = 1; return 'no throw'; } catch (e) { return e.name; } }
@@ -68,7 +68,7 @@ public sealed class StrictModeMirrorTests
 
     // And back out again: after a strict callee returns, the sloppy caller must be sloppy once
     // more. A mirror that was written but never restored would leave the caller strict.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictnessIsRestoredWhenAStrictCalleeReturns()
         => Assert.Equal("ok", Run("""
             function strict() { 'use strict'; return 1; }
@@ -76,7 +76,7 @@ public sealed class StrictModeMirrorTests
             sloppy();
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestingStrictAndSloppyRestoresEachLevel()
         => Assert.Equal("sloppy,strict,sloppy,strict,sloppy", Run("""
             var out = [];
@@ -92,7 +92,7 @@ public sealed class StrictModeMirrorTests
     // thread the microtask queue pumps it from; ExecutionContext capture is what carries the
     // strictness across, and a bare ThreadStatic would not survive it. Asserted on both sides of
     // the await so a resumption that lost the flag is visible.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictnessSurvivesAnAwaitInAStrictAsyncFunction()
         => Assert.Equal("ReferenceError|ReferenceError", Drive("""
             async function strictAsync() {
@@ -106,7 +106,7 @@ public sealed class StrictModeMirrorTests
 
     // The same for a sloppy async body, which must NOT come back strict — the mirror restoring a
     // stale `true` would show up here and nowhere else.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASloppyAsyncFunctionStaysSloppyAcrossAnAwait()
         => Assert.Equal("ok|ok", Drive("""
             async function sloppyAsync() {
@@ -119,7 +119,7 @@ public sealed class StrictModeMirrorTests
 
     // A strict async function awaiting inside a sloppy caller's continuation: the resumption must
     // restore the awaiting function's strictness, not the resuming context's.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AStrictAndASloppyAsyncBodyInterleaveWithoutLeaking()
         => Assert.Equal("strict|sloppy|strict|sloppy", Drive("""
             async function s() {
@@ -139,7 +139,7 @@ public sealed class StrictModeMirrorTests
     // A generator suspends and resumes too, without an ExecutionContext capture — it resumes on
     // the thread that calls next(). Kept because it is the other suspendable shape and the mirror
     // has to be right for it as well.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictnessSurvivesAGeneratorSuspension()
         => Assert.Equal("ReferenceError|ReferenceError", Drive("""
             function* strictGen() {
@@ -153,7 +153,7 @@ public sealed class StrictModeMirrorTests
             """));
 
     // Strict `this` is a second observable of the same flag, reached by a different route.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictThisBindingIsUnaffected()
         => Assert.Equal("undefined|object", Run("""
             function strict() { 'use strict'; return typeof this; }

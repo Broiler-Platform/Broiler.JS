@@ -24,7 +24,7 @@ public sealed class MicrotaskSchedulingTests
     /// <summary>Enough synchronous work after the call that a pool thread would reliably finish.</summary>
     private const string Spin = "var spin = 0; for (var i = 0; i < 3000000; i++) { spin += i; }";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnAwaitResumptionCannotRunWhileTheScriptThatStartedItIsStillRunning()
     {
         // §27.7.5.3: `await` queues a job. The statements after `f()` belong to the job already
@@ -43,7 +43,7 @@ public sealed class MicrotaskSchedulingTests
             """).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APromiseReactionCannotRunWhileTheScriptThatQueuedItIsStillRunning()
     {
         // The same guarantee through the other dispatch site. `Promise.resolve().then(...)` queues
@@ -59,7 +59,7 @@ public sealed class MicrotaskSchedulingTests
             """).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheJobHasRunByTheTimeTheNextEvaluationLooks()
     {
         // The other half, and the one that says the queue is a *deferral* and not a drop: deferring
@@ -75,7 +75,7 @@ public sealed class MicrotaskSchedulingTests
         Assert.Equal("12", context.Eval("String(v)").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JobsRunInTheOrderTheyWereQueued()
     {
         // A queue, not a set. Three reactions queued in one script must run first-in-first-out,
@@ -91,7 +91,7 @@ public sealed class MicrotaskSchedulingTests
         Assert.Equal("abc", context.Eval("log").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AJobMayQueueAnotherAndTheDrainRunsToTheEnd()
     {
         // The drain loops until the queue is empty rather than taking one pass, because an `await`
@@ -106,7 +106,7 @@ public sealed class MicrotaskSchedulingTests
         Assert.Equal("4", context.Eval("String(v)").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AThrowingJobDoesNotSwallowTheRestOfTheQueue()
     {
         // A job is a complete unit of work and there is no caller left to hand its exception to —
@@ -122,7 +122,7 @@ public sealed class MicrotaskSchedulingTests
         Assert.Equal("ab", context.Eval("log").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheAsyncFunctionStillRunsSynchronouslyUpToItsFirstAwait()
     {
         // The guarantee this change must NOT break, and the idiom several existing tests rest on:
@@ -140,7 +140,7 @@ public sealed class MicrotaskSchedulingTests
             """).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANestedEvaluationDoesNotDrainTheOuterOnesQueue()
     {
         // The reason the queue counts execution depth instead of draining whenever an evaluation

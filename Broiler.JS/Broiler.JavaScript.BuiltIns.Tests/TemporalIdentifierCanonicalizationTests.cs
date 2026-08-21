@@ -43,7 +43,7 @@ public class TemporalIdentifierCanonicalizationTests
         Assert.Equal("iso8601", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YearMonthString_StillParsesWhenValid()
     {
         // A valid no-separator year-month must still parse as a year-month, not a time.

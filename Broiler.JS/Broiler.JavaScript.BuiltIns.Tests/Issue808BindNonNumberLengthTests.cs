@@ -36,15 +36,15 @@ public class Issue808BindNonNumberLengthTests
         Assert.Equal(expected, actual);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Bind_Length_SubtractsBoundArguments()
         => Assert.Equal("2", Eval("(function (a, b, c) {}).bind(null, 1).length;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Bind_Length_NeverNegative()
         => Assert.Equal("0", Eval("(function (a) {}).bind(null, 1, 2, 3).length;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Bind_Length_InfinitePreserved()
         => Assert.Equal("Infinity", Eval("""
             var fn = function () {};
@@ -52,7 +52,7 @@ public class Issue808BindNonNumberLengthTests
             String(fn.bind().length);
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Bind_Length_InheritedLengthIgnored()
         // After deleting the own "length", the inherited one (42) must not be used: HasOwnProperty is
         // false, so the bound length defaults to 0.

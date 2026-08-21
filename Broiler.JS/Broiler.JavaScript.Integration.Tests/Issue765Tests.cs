@@ -15,14 +15,14 @@ public class Issue765Tests
     // with a primitive is still a constructor (constructorness must not be re-read
     // off the mutable prototype cache field), and the instance it builds falls back
     // to %Object.prototype% per OrdinaryCreateFromConstructor.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionWithPrimitivePrototypeStaysConstructable()
         => Assert.Equal("true", Eval(
             "function F(){} F.prototype = 1;"
             + " var d = new F();"
             + " '' + (typeof F.prototype === 'number' && Object.prototype.isPrototypeOf(d));"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionExpressionWithPrimitivePrototypeStaysConstructable()
         => Assert.Equal("true", Eval(
             "var F = function(){}; F.prototype = 'x';"
@@ -31,39 +31,39 @@ public class Issue765Tests
     // P41: ECMAScript allows quantifier counts up to 2^53-1; .NET caps them at
     // Int32.MaxValue. Building such a regex must not throw, and the (unsatisfiable)
     // count must simply never match.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HugeQuantifierExactDoesNotThrowAndNeverMatches()
         => Assert.Equal("false", Eval(
             "'' + new RegExp('b{' + Number.MAX_SAFE_INTEGER + '}', 'u').test('')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HugeQuantifierOpenEndedDoesNotThrow()
         => Assert.Equal("false", Eval(
             "'' + new RegExp('b{' + Number.MAX_SAFE_INTEGER + ',}?').test('a')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HugeQuantifierRangeDoesNotThrow()
         => Assert.Equal("false", Eval(
             "'' + new RegExp('b{' + Number.MAX_SAFE_INTEGER + ',' + Number.MAX_SAFE_INTEGER + '}').test('b')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NormalQuantifierStillMatches()
         => Assert.Equal("true", Eval("'' + /b{2,3}/.test('bbb')"));
 
     // P36: `lastIndex` is a per-instance own data property, not a property of
     // %RegExp.prototype%. Reading it off the prototype previously threw
     // "Failed to convert this to JSRegExp".
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegExpPrototypeHasNoLastIndex()
         => Assert.Equal("true", Eval(
             "'' + (Object.getOwnPropertyNames(RegExp.prototype).indexOf('lastIndex') === -1)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegExpInstanceLastIndexStillWorks()
         => Assert.Equal("2", Eval(
             "var re = /a/g; re.exec('xa'); '' + re.lastIndex;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegExpInstanceLastIndexDescriptorIsSpecCompliant()
         => Assert.Equal("true", Eval(
             "var d = Object.getOwnPropertyDescriptor(/a/, 'lastIndex');"
@@ -72,7 +72,7 @@ public class Issue765Tests
     // P18: in sloppy mode `let` is an IdentifierReference when not followed by a
     // BindingList, including in the C-style for-head (`for (let; ;)`,
     // `for (let = 3; ;)`).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LetAsIdentifierInForHead()
         => Assert.Equal("1|3", Eval(
             "var let, out = [];"
@@ -81,33 +81,33 @@ public class Issue765Tests
             + " out.join('|');"));
 
     // P33/P34: `let` as the LeftHandSideExpression of a for-in head.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LetAsIdentifierInForInHead()
         => Assert.Equal("key", Eval(
             "var obj = Object.create(null); obj.key = 1; var let;"
             + " for (let in obj) ; '' + let;"));
 
     // Normal lexical declarations must be unaffected.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LetLexicalDeclarationStillWorks()
         => Assert.Equal("2|3|6", Eval(
             "let a = 2; let [b] = [3]; var s = 0; for (let i of [1,2,3]) s += i;"
             + " a + '|' + b + '|' + s;"));
 
     // P20: `let` is a valid LabelIdentifier in sloppy mode.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LetAsLabelSloppy()
         => Assert.Equal("done", Eval("let: { break let; } 'done';"));
 
     // P20: `let` as a label is a SyntaxError in strict mode.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LetAsLabelStrictThrows()
         => Assert.Equal("true", Eval(
             "var t = false;"
             + " try { eval(\"'use strict'; let: 42\"); } catch (e) { t = e instanceof SyntaxError; }"
             + " '' + t;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EscapedLetAsLabelStrictThrows()
         => Assert.Equal("true", Eval(
             "var t = false;"
@@ -133,7 +133,7 @@ public class Issue765Tests
     // so the lone-surrogate transform no longer breaks supplementary-plane matches
     // (Variation_Selector U+E0100–E01EF), while a genuine lone surrogate still must
     // not match a surrogate pair.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AstralPropertyEscapeMatchesSupplementaryCodePoints()
         => Assert.Equal("true|true|false", Eval(
             "var re = /\\p{Variation_Selector}/u;"
@@ -141,7 +141,7 @@ public class Issue765Tests
             + " + re.test(String.fromCodePoint(0xE01EF)) + '|'"
             + " + re.test('a');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LoneHighSurrogateDoesNotMatchSurrogatePair()
         => Assert.Equal("false", Eval(
             "'' + /\\uD800[\\uDC00-\\uDFFF]/u.test(String.fromCodePoint(0x10000))"));
@@ -164,7 +164,7 @@ public class Issue765Tests
     // Assigned includes the surrogate category (Cs); a supplementary code point that
     // sits in an unassigned gap (U+1000C, between Linear B blocks) must NOT match
     // \p{Assigned} even though its lead surrogate U+D800 is itself assigned.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AssignedDoesNotMatchSupplementaryGapViaSurrogate()
         => Assert.Equal("false|true", Eval(
             "var s = String.fromCodePoint(0x1000C);"
@@ -184,7 +184,7 @@ public class Issue765Tests
     public void ScriptPropertyEscapes(string regex, string input, string expected)
         => Assert.Equal(expected, Eval($"'' + {regex}.test({System.Text.Json.JsonSerializer.Serialize(input)})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LoneScriptNameIsSyntaxError()
         => Assert.Equal("true", Eval(
             "var t = false; try { new RegExp('\\\\p{Han}', 'u'); } catch (e) { t = e instanceof SyntaxError; } '' + t;"));

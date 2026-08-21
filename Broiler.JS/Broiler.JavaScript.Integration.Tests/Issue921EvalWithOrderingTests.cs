@@ -18,7 +18,7 @@ public class Issue921EvalWithOrderingTests
         return ctx.Eval(code);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalSeesFunctionLocalNotCapturedWithObject()
     {
         // eval-02: `eval` reached via an argument, a var, and a `with` object — all direct
@@ -32,7 +32,7 @@ public class Issue921EvalWithOrderingTests
              directWith(this, 'a+1'), directWith({eval: eval, a: -1000}, 'a+1')].join(',')").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CapturedWithStillWinsWhenFunctionHasNoSuchLocal()
     {
         // No local `a` in the closure: the eval reads the captured with-object's `a`.
@@ -42,7 +42,7 @@ public class Issue921EvalWithOrderingTests
             '' + w({a: -1000, eval: eval}, 'a')").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BodyWithStillBeatsFunctionLocal()
     {
         // A `with` pushed by a with STATEMENT in the running body is INNER to the
@@ -52,7 +52,7 @@ public class Issue921EvalWithOrderingTests
             '' + g({a: -7, eval: eval}, 'a')").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalReadWriteOfFunctionLocalAreCoherentUnderCapturedWith()
     {
         // The eval reads AND writes the inner local; the captured with-object is untouched.
@@ -66,7 +66,7 @@ public class Issue921EvalWithOrderingTests
             dw({a: -1000})").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClosureInWithWithoutEvalIsUnaffected()
     {
         // No eval: a closure created in a `with` still resolves the with-object's binding

@@ -50,7 +50,7 @@ public class NumericIndexKeyTests
         _ = why;
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AHoleStillReachesThePrototypeChain()
     {
         // The fast path must not answer "absent" itself — a missing element is an ordinary
@@ -67,7 +67,7 @@ public class NumericIndexKeyTests
                 """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnIndexAccessorStillRuns()
     {
         Assert.Equal(
@@ -96,7 +96,7 @@ public class NumericIndexKeyTests
             expected,
             Eval($"var t = new Int32Array([10, 20, 30]); var i = 0; i = {index}; String(t[i]);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AProxyStillSeesTheGetTrap()
     {
         // The fast path calls [[Get]] on the receiver, so an exotic receiver must be entirely
@@ -113,19 +113,19 @@ public class NumericIndexKeyTests
                 """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANonCanonicalNumericStringIsADifferentPropertyAndStaysThatWay()
     {
         Assert.Equal("x|y", Eval("var o = { '0': 'x', '00': 'y' }; var i = 0; o[i] + '|' + o['00'];"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReadsSeeEveryUpdateToTheIndexInOrder()
     {
         Assert.Equal("a,b,c", Eval("var a = ['a','b','c']; var out = []; for (var i = 0; i < 3; i++) out.push(a[i]); out.join(',');"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnIndexReadInAnOptionalChainIsUnaffected()
     {
         // Excluded from the fast path on purpose: inside a chain the key evaluation stays lifted
@@ -133,7 +133,7 @@ public class NumericIndexKeyTests
         Assert.Equal("b|undefined", Eval("var a = ['a','b']; var n = null; var i = 1; a?.[i] + '|' + String(n?.[i]);"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WritesThroughANumericLocalIndexStillLandOnTheSameKey()
     {
         // The agreement test between the two halves: a write and a read through the same numeric
@@ -175,15 +175,15 @@ public class NumericIndexKeyTests
         _ = why;
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AWriteEvaluatesToTheAssignedValue()
         => Assert.Equal("7", Eval("var a = []; var i = 3; String(a[i] = 7);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AWriteExtendsLength()
         => Assert.Equal("4", Eval("var a = []; var i = 3; a[i] = 'x'; String(a.length);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnIndexSetterStillRuns()
     {
         Assert.Equal(
@@ -198,11 +198,11 @@ public class NumericIndexKeyTests
                 """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFrozenArrayRefusesTheWriteSilentlyInSloppyMode()
         => Assert.Equal("1", Eval("var a = [1]; Object.freeze(a); var i = 0; a[i] = 99; String(a[0]);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFrozenArrayThrowsInStrictMode()
     {
         var message = Eval("""
@@ -218,7 +218,7 @@ public class NumericIndexKeyTests
         Assert.Equal("TypeError:1", message);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AProxyStillSeesTheSetTrapWithAStringKey()
     {
         Assert.Equal(
@@ -247,7 +247,7 @@ public class NumericIndexKeyTests
             Eval($"var t = new Int32Array([10, 20, 30]); var i = 0; i = {index}; t[i] = 99; String(t[1]);"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANullOrUndefinedReceiverStillReportsTheVariableIndexMessage()
     {
         // A constant index has always reported through the this[uint] override ("Cannot set
@@ -267,7 +267,7 @@ public class NumericIndexKeyTests
                 """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACompoundAssignmentThroughANumericLocalIndexIsUnaffected()
     {
         // Excluded on purpose: its target is read and written through one reference. Pinned so
@@ -284,7 +284,7 @@ public class NumericIndexKeyTests
                 """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheReceiverAndKeyAreEvaluatedBeforeTheRightHandSide()
     {
         // §13.15.2 order. The RHS reassigns the index, which must not affect where the value

@@ -29,7 +29,7 @@ public class M8ValidationTests
 
     // ── 8.1: Extraction Pattern Documentation Accuracy ────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M8_DocumentedExtractionPattern_DelegatesExist()
     {
         // The extraction pattern documentation references these delegate
@@ -44,7 +44,7 @@ public class M8ValidationTests
             nameof(DefaultBuiltInRegistry.IteratorPrototypeSetup)));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M8_DocumentedExtractionPattern_AddProtoIsPublic()
     {
         // The documentation states AddProto is public for satellite assembly use.
@@ -59,7 +59,7 @@ public class M8ValidationTests
 
     // ── 8.2: Architecture Diagram Accuracy ────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M8_ArchitectureDiagram_LayeringIsCorrect()
     {
         // Verify the documented 4-layer architecture by checking assembly references.
@@ -83,7 +83,7 @@ public class M8ValidationTests
 
     // ── 8.3: Module Initializer Documentation Accuracy ────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M8_DocumentedInitializers_AllDelegatesWired()
     {
         // Force load all satellite assemblies to trigger module initializers.
@@ -119,7 +119,7 @@ public class M8ValidationTests
         Assert.NotNull(JSEngine.ClrInterop);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M8_DocumentedInitializers_SixInitializersExist()
     {
         // The documentation states there are 6 module initializers across 4 assemblies.
@@ -150,7 +150,7 @@ public class M8ValidationTests
 
     // ── 8.4: Contribution Guidelines Accuracy ─────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M8_ContributionGuide_NamespaceConventionHolds()
     {
         // The contribution guide states that built-in types live in
@@ -167,7 +167,7 @@ public class M8ValidationTests
             typeof(BuiltIns.BigInt.JSBigInt).Namespace);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M8_ContributionGuide_TypesInCorrectAssemblies()
     {
         // After refactoring, types live directly in their target assemblies
@@ -182,7 +182,7 @@ public class M8ValidationTests
 
     // ── M8 Documentation file existence ───────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M8_DocumentationFiles_Exist()
     {
         // Verify the M8 documentation artifacts exist at the documented paths.

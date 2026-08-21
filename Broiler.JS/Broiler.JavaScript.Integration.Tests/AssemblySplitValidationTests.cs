@@ -38,7 +38,7 @@ public class AssemblySplitValidationTests
         ("Broiler.JavaScript.Parser", typeof(FastParser).Assembly),
     ];
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ModelAndFrontEnd_DoNotReferenceReflectionEmit()
     {
         foreach (var (name, assembly) in MustStayEmitFree)
@@ -55,7 +55,7 @@ public class AssemblySplitValidationTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FrontEnd_DoesNotDependOnTheEmitter_TransitivelyOrOtherwise()
     {
         foreach (var (name, assembly) in MustStayEmitFree)

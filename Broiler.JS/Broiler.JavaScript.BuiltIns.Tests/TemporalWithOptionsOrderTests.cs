@@ -42,14 +42,14 @@ public class TemporalWithOptionsOrderTests
     public void With_NonPositiveDayOrMonth_AlwaysRangeError(string expr)
         => Assert.Equal("RangeError", ErrorOf(expr));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void With_StillRejectsDisagreeingMonthAndMonthCode()
     {
         Assert.Equal("RangeError",
             ErrorOf("new Temporal.PlainDateTime(1976,11,18).with({ month: 2, monthCode: 'M03' })"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void With_ValidPartial_Applies()
     {
         Load();

@@ -43,7 +43,7 @@ public class Issue794Tests
     public void Annotation_UppercaseKey_Throws(string code)
         => Assert.Equal("RangeError", ErrorName(code));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Annotation_LowercaseKey_StillAccepted()
         => Assert.Equal(
             "1970-01-01T00:00:00",
@@ -51,7 +51,7 @@ public class Issue794Tests
 
     // ── Problems 2/13: ZonedDateTime add uses the calendar's date arithmetic ──────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTime_AddYear_Chinese_KeepsDay()
     {
         const string code = @"
@@ -61,7 +61,7 @@ public class Issue794Tests
         Assert.Equal("1,M01", Eval(code));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTime_AddMonth_Ethiopic_KeepsDay30()
     {
         const string code = @"
@@ -73,7 +73,7 @@ public class Issue794Tests
 
     // ── Problem 11: islamic era boundary (1 year before Hijra keeps the day) ───────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTime_AddYear_IslamicCivil_AcrossEra_KeepsDay()
     {
         const string code = @"
@@ -85,7 +85,7 @@ public class Issue794Tests
 
     // ── Problem 12: Hebrew Adar I (M05L) add/subtract constrains to Adar (M06) ─────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Hebrew_AddYear_AdarI_ToCommonYear_ConstrainsToAdar()
     {
         const string code = @"
@@ -94,7 +94,7 @@ public class Issue794Tests
         Assert.Equal("M06", Eval(code));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Hebrew_AddYear_AdarI_ToCommonYear_RejectThrows()
         => Assert.Equal("RangeError", ErrorName(
             "Temporal.PlainDate.from({year:5779,monthCode:'M05L',day:1,calendar:'hebrew'}).add({years:1}, {overflow:'reject'})"));
@@ -196,17 +196,17 @@ public class Issue794Tests
     public void PlainDateFrom_ZonedDateTime_HonoursZone()
         => Assert.Equal("1969-12-31", Eval("Temporal.PlainDate.from(new Temporal.ZonedDateTime(0n,'-08:00')).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainDateCompare_AcceptsZonedDateTime()
         => Assert.Equal("0", Eval(
             "String(Temporal.PlainDate.compare(new Temporal.ZonedDateTime(0n,'UTC'), Temporal.PlainDate.from('1970-01-01')))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainDateEquals_AcceptsZonedDateTime()
         => Assert.Equal("true", Eval(
             "String(Temporal.PlainDate.from('1970-01-01').equals(new Temporal.ZonedDateTime(0n,'UTC')))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainDateUntil_AcceptsZonedDateTime()
         => Assert.Equal("P1D", Eval(
             "Temporal.PlainDate.from('1970-01-01').until(new Temporal.ZonedDateTime(86400000000000n,'UTC')).toString()"));

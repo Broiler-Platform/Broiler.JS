@@ -182,7 +182,7 @@ public class Issue788Tests
         Assert.Equal(expected, Eval(code));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Iterator_Dispose_CallsReturn()
     {
         // Disposing a live iterator invokes its return method (the generator finally runs).
@@ -196,7 +196,7 @@ public class Issue788Tests
         Assert.Equal("true", Eval(code));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Iterator_ToStringTag_SetterIgnoresPrototype()
     {
         // The setter is SetterThatIgnoresPrototypeProperties: assigning on %Iterator.prototype% itself
@@ -246,7 +246,7 @@ public class Issue788Tests
         Assert.Equal("RangeError", ErrorName(code));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTime_HoursInDay_StartOfDayOutOfRange_Throws()
     {
         Assert.Equal("RangeError",

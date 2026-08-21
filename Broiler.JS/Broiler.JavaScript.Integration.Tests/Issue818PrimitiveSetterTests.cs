@@ -20,7 +20,7 @@ public class Issue818PrimitiveSetterTests
         return ctx.Eval(code).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolInheritedSetterIsInvokedWithPrimitiveReceiver()
         => Assert.Equal("1,nv,symbol,true", Eval(
             "var sym = Symbol('s'); var sets = 0, seen, thisType, thisIsPrim;" +
@@ -29,26 +29,26 @@ public class Issue818PrimitiveSetterTests
             "sym.q = 'nv';" +
             "sets + ',' + seen + ',' + thisType + ',' + thisIsPrim"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberInheritedSetterIsInvoked()
         => Assert.Equal("1", Eval(
             "var n = 0; Object.defineProperty(Number.prototype, 'q', { set: function () { n++; } });" +
             "(5).q = 'x'; '' + n"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringInheritedSetterIsInvokedViaComputedKey()
         => Assert.Equal("1", Eval(
             "var n = 0; Object.defineProperty(String.prototype, 'q', { set: function () { n++; } });" +
             "var k = 'q'; 'abc'[k] = 'x'; '' + n"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolKeyedInheritedSetterIsInvoked()
         => Assert.Equal("1", Eval(
             "var sk = Symbol('k'); var n = 0;" +
             "Object.defineProperty(Symbol.prototype, sk, { set: function () { n++; } });" +
             "var s = Symbol(); s[sk] = 1; '' + n"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AssignmentExpressionReturnsTheAssignedValue()
         => Assert.Equal("nv", Eval(
             "Object.defineProperty(Symbol.prototype, 'q', { set: function () {} });" +
@@ -56,7 +56,7 @@ public class Issue818PrimitiveSetterTests
 
     // A data property on the prototype cannot be created on the primitive receiver:
     // the assignment is a no-op and must not pollute the shared wrapper prototype.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AssigningOverAnInheritedDataPropertyDoesNotPolluteThePrototype()
         => Assert.Equal("function,undefined", Eval(
             "(5).toFixed = 1;" +

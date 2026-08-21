@@ -103,11 +103,11 @@ public class Issue859Tests
 
     // ───────────── Problem 21: BigInt.prototype.toString / toLocaleString length ─────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BigIntPrototypeToStringLengthIsZero()
         => Assert.Equal("0", Eval("'' + BigInt.prototype.toString.length").ToString());
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BigIntPrototypeToLocaleStringLengthIsZero()
         => Assert.Equal("0", Eval("'' + BigInt.prototype.toLocaleString.length").ToString());
 
@@ -121,7 +121,7 @@ public class Issue859Tests
     public void BareIslamicCalendarIsRejected(string call)
         => Assert.Equal("RangeError", ErrorName(call));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SuffixedIslamicCalendarIsAccepted()
         => Assert.Equal("islamic-civil", Eval(
             "Temporal.PlainDate.from({ year: 1446, month: 7, day: 1, calendar: 'islamic-civil' }).calendarId").ToString());
@@ -135,7 +135,7 @@ public class Issue859Tests
         => Assert.Equal("RangeError", ErrorName(
             $"Temporal.PlainDate.from({{ year: {year}, monthCode: 'M13', day: 1, calendar: 'hebrew' }})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HebrewLeapMonthCodeIsAccepted()
         => Assert.Equal("M05L", Eval(
             "Temporal.PlainDate.from({ year: 5784, monthCode: 'M05L', day: 1, calendar: 'hebrew' }).monthCode").ToString());
@@ -165,12 +165,12 @@ public class Issue859Tests
     // ───────────── Problem 6: String.prototype.replace ToString-coerces non-functional replaceValue
     //                          before searching (so toString runs even on a no-match) ─────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReplaceCoercesNonFunctionalReplaceValueEvenWithoutMatch()
         => Assert.Equal("1,", Eval(
             "(function(){var n=0;var rv={toString:function(){n+=1;return 'b';}};var r=''.replace('a',rv);return n+','+r;})()").ToString());
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReplaceCoercesRegExpObjectToStringEvenWithoutMatch()
         => Assert.Equal("1", Eval(
             "(function(){var n=0;var rv=/$/;var old=rv.toString.bind(rv);rv.toString=function(){n+=1;return old();};''.replace('a',rv);return '' + n;})()").ToString());
@@ -190,12 +190,12 @@ public class Issue859Tests
 
     // ───────────── Problem 13: Object.prototype is a non-writable property of Object ─────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectPrototypeIsNonWritable()
         => Assert.Equal("false,false,false", Eval(
             "(function(){var d=Object.getOwnPropertyDescriptor(Object,'prototype');return d.writable+','+d.enumerable+','+d.configurable;})()").ToString());
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectPrototypeAssignmentIsSilentlyIgnoredInLooseMode()
         => Assert.Equal("true", Eval(
             "(function(){var before=Object.prototype;Object.prototype={};return '' + (Object.prototype===before);})()").ToString());
@@ -203,13 +203,13 @@ public class Issue859Tests
     // ───────────── Problem 15: ArrayBuffer / SharedArrayBuffer fire NewTarget.prototype
     //                          before the host-side data-block RangeError ─────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayBufferReadsNewTargetPrototypeBeforeAllocationCheck()
         => Assert.Equal("EvalError", ErrorName(
             "var nt = Object.defineProperty(function(){}.bind(null),'prototype',{get(){throw new EvalError('p');}});"
             + "Reflect.construct(ArrayBuffer, [7 * 1125899906842624], nt)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SharedArrayBufferReadsNewTargetPrototypeBeforeAllocationCheck()
         => Assert.Equal("EvalError", ErrorName(
             "var nt = Object.defineProperty(function(){}.bind(null),'prototype',{get(){throw new EvalError('p');}});"
@@ -218,7 +218,7 @@ public class Issue859Tests
     // ───────────── Problem 17: a `?.[expr]` computed key is not evaluated when the chain
     //                          short-circuits ─────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OptionalComputedKeyIsNotEvaluatedWhenChainShortCircuits()
         => Assert.Equal("0", Eval(
             "(function(){let touched=0,count=0;const obj={get a(){return undefined;}};"
@@ -227,7 +227,7 @@ public class Issue859Tests
     // ───────────── Problem 19: RegExp constructor reads NewTarget.prototype before
     //                          ToString(flags) (RegExpInitialize runs AFTER RegExpAlloc) ─────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegExpConstructorReadsPrototypeBeforeFlagsToString()
         => Assert.Equal("true,true,true", Eval(
             "(function(){var didLookup=false;var re=/a/;"
@@ -239,14 +239,14 @@ public class Issue859Tests
     // ───────────── Problem 20: DataView re-checks bounds against the (possibly resized)
     //                          buffer after OrdinaryCreateFromConstructor ─────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DataViewBoundsAreRecheckedAfterPrototypeAccessResizesTheBuffer()
         => Assert.Equal("RangeError", ErrorName(
             "var buf=new ArrayBuffer(3,{maxByteLength:3});"
             + "var nt=Object.defineProperty(function(){}.bind(null),'prototype',{get(){buf.resize(2);return DataView.prototype;}});"
             + "Reflect.construct(DataView,[buf,1,2],nt)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DataViewOutOfRangeOffsetStillThrowsBeforePrototypeAccess()
         => Assert.Equal("RangeError", ErrorName(
             "var nt=Object.defineProperty(function(){}.bind(null),'prototype',{get(){throw new EvalError('p');}});"
@@ -279,13 +279,13 @@ public class Issue859Tests
     public void TemporalPositionalCalendarRejectsIsoStrings(string call)
         => Assert.Equal("RangeError", ErrorName(call));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TemporalPositionalCalendarNonStringIsTypeError()
         => Assert.Equal("TypeError", ErrorName("new Temporal.PlainDate(2000, 5, 2, 42)"));
 
     // ───────────── Problem 2: TypedArray.fill re-validates after argument coercion ─────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayFillRejectsOutOfBoundsAfterValueOfResize()
         => Assert.Equal("TypeError", ErrorName(
             "var rab=new ArrayBuffer(16,{maxByteLength:32});"
@@ -293,7 +293,7 @@ public class Issue859Tests
             + "var evil={valueOf(){rab.resize(8);return 3;}};"
             + "fl.fill(evil, 1, 2)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayFillRejectsOutOfBoundsAfterStartValueOfResize()
         => Assert.Equal("TypeError", ErrorName(
             "var rab=new ArrayBuffer(16,{maxByteLength:32});"
@@ -303,7 +303,7 @@ public class Issue859Tests
 
     // ───────────── Problem 8: class-field ASI when the initializer continues with `in` ─────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassFieldsAsiWithInOperatorAcrossNewlines()
         => Assert.Equal("true,false,false,false", Eval(
             "(function(){var x=0,y=1,z=[42];"
@@ -336,7 +336,7 @@ public class Issue859Tests
 
     // ───────────── Problem 30: `\P{X}` inside a character class expands to the BMP complement
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegExpNegatedPropertyInsideCharacterClass()
         => Assert.Equal("true,true,true,true", Eval(
             "(function(){return ["
@@ -348,7 +348,7 @@ public class Issue859Tests
 
     // ───────────── Problem 26: nested `eval("eval('super()')")` binds the constructor's `this`
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestedEvalSuperCallInitializesDerivedConstructorThis()
         => Assert.Equal("true,true", Eval(
             "(function(){"

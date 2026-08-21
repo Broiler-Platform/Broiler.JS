@@ -30,7 +30,7 @@ public class GlobalReplaceStreamingAllocationTests
         })()
         """;
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AGlobalReplaceDoesNotRetainOneResultArrayPerMatch()
     {
         using var context = new JSContext();
@@ -97,7 +97,7 @@ public class GlobalReplaceStreamingGuardTests
         Assert.Equal(expected, context.Eval(source).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFunctionalReplacerIsNotStreamed()
     {
         // The spec collects ALL matches before calling the replacer for any of them, so by the
@@ -114,7 +114,7 @@ public class GlobalReplaceStreamingGuardTests
         Assert.Equal("a-b-c|0,0", answer);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnOwnExecIsNotStreamed()
     {
         // An own "exec" is not the captured intrinsic, so the receiver's own function must run.
@@ -128,7 +128,7 @@ public class GlobalReplaceStreamingGuardTests
         Assert.Equal("a-c-|true", answer);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnExecReturningNullIsNotStreamed()
     {
         using var context = new JSContext();
@@ -141,7 +141,7 @@ public class GlobalReplaceStreamingGuardTests
         Assert.Equal("abc", answer);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APatchedPrototypeExecIsNotStreamed()
     {
         // The guard compares against the intrinsic captured at realm init, so replacing
@@ -179,7 +179,7 @@ public class GlobalReplaceStreamingGuardTests
         Assert.Equal(expectedUnits, answer);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LastIndexIsResetAfterAStreamedReplace()
     {
         using var context = new JSContext();
@@ -192,7 +192,7 @@ public class GlobalReplaceStreamingGuardTests
         Assert.Equal(0d, answer);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheLegacyStaticsStillDescribeTheLastMatchAfterAStreamedReplace()
     {
         // The statics are updated per match inside ExecMatch, which the fast path still calls —

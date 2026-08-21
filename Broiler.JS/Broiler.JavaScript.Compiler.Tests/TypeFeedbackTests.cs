@@ -31,7 +31,7 @@ public class TypeFeedbackTests
 
     // ── it is off unless asked ───────────────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NothingIsRecordedWhileFeedbackIsDisabled()
     {
         TypeFeedback.Reset();
@@ -48,7 +48,7 @@ public class TypeFeedbackTests
     // call free of any extra work when the flag is clear. Compiling first and enabling after
     // must therefore record no calls, and this pins that so nobody reads a partial figure as a
     // whole one.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACallCompiledBeforeFeedbackWasEnabledIsNotRecorded()
     {
         TypeFeedback.Reset();
@@ -74,7 +74,7 @@ public class TypeFeedbackTests
 
     // ── retention: the claim the inline cache cannot make ────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AReadThatOnlyEverSeesOneShapeIsMonomorphic()
     {
         var (reads, _, result) = Observe(
@@ -88,7 +88,7 @@ public class TypeFeedbackTests
 
     // Five distinct shapes at one site is past the four-entry cap, so the site is megamorphic —
     // and unlike the cache, feedback still SAYS so afterwards instead of simply stopping.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AReadThatSeesMoreShapesThanTheCapIsMegamorphic()
     {
         var (reads, _, result) = Observe("""
@@ -104,7 +104,7 @@ public class TypeFeedbackTests
     }
 
     // Two shapes is polymorphic, and must not be reported as either of the extremes.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AReadThatSeesTwoShapesIsPolymorphic()
     {
         var (reads, _, result) = Observe("""
@@ -121,7 +121,7 @@ public class TypeFeedbackTests
 
     // ── callee identity ──────────────────────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACallSiteThatOnlyEverSeesOneCalleeIsMonomorphic()
     {
         var (_, calls, result) = Observe(
@@ -134,7 +134,7 @@ public class TypeFeedbackTests
     }
 
     // The shape 4-4 cannot inline: one site, several different functions.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACallSiteThatSeesManyCalleesIsMegamorphic()
     {
         var (_, calls, result) = Observe("""
@@ -152,7 +152,7 @@ public class TypeFeedbackTests
 
     // ── the classification itself ────────────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASiteThatNeverRanIsCold()
     {
         var (reads, _, result) = Observe(
@@ -166,7 +166,7 @@ public class TypeFeedbackTests
 
     // Cold sites must stay out of the shares, since a tier that specializes code nothing runs
     // has bought nothing.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ColdSitesAreExcludedFromTheShares()
     {
         var (reads, _, _) = Observe(
@@ -177,7 +177,7 @@ public class TypeFeedbackTests
         Assert.Equal(1.0, reads.MonomorphicObservationShare);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ResetClearsEveryHistory()
     {
         Observe("var o = { a: 1 }; var s = 0; for (var i = 0; i < 20; i++) { s += o.a; } return s;");

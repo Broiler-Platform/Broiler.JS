@@ -17,7 +17,7 @@ public class ExpressionCompilationBackendTests
         Assert.False(result.HasDiagnostics);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DynamicMethodBackend_Returns_Diagnostics_When_Requested()
     {
         var result = CreateAnswer().CompileWithNestedLambdas(new ExpressionCompilationOptions

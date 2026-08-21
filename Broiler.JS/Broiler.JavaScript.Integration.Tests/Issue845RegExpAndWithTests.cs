@@ -22,11 +22,11 @@ public class Issue845RegExpAndWithTests
 
     // ---- Problem 83: legacy static RegExp properties ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LastMatchReflectsMostRecentExec()
         => Assert.Equal("y", Eval("/y/g.exec('y'); RegExp.lastMatch"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DollarAmpersandAliasesLastMatch()
         => Assert.Equal("y", Eval("/y/g.exec('y'); RegExp['$&']"));
 
@@ -44,7 +44,7 @@ public class Issue845RegExpAndWithTests
     public void LegacyStaticsAfterCaptureMatch(string expression, string expected)
         => Assert.Equal(expected, Eval($"'abcdef'.match(/c(d)(e)/); {expression}"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LegacyStaticsDefaultToEmptyBeforeAnyMatch()
         => Assert.Equal("|||", Eval("[RegExp.lastMatch, RegExp.$1, RegExp.input, RegExp.leftContext].join('|')"));
 
@@ -54,20 +54,20 @@ public class Issue845RegExpAndWithTests
     // surrogate pair, so there is no extra empty match between the two halves of a frog.
     private const string Frogs = "'\\uD83D\\uDC38\\uD83D\\uDC39X\\uD83D\\uDC3A'";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GlobalUnicodeMatchSkipsSurrogatePairsOnEmptyMatch()
         => Assert.Equal(",,X,,", Eval($"{Frogs}.match(/\\uD83D|X|/gu).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GlobalUnicodeReplaceSkipsSurrogatePairsOnEmptyMatch()
         => Assert.Equal("x🐸x🐹xx🐺x",
             Eval($"{Frogs}.replace(/\\uD83D|X|/gu, 'x')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MatchAllUnicodeSkipsSurrogatePairsOnEmptyMatch()
         => Assert.Equal("5", Eval($"[...{Frogs}.matchAll(/\\uD83D|X|/gu)].length.toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonUnicodeMatchStillStepsByOneCodeUnit()
         // Without the `u` flag the same pattern advances one code unit at a time, so empty
         // matches fall between surrogate halves — more matches than the Unicode-aware count.
@@ -75,17 +75,17 @@ public class Issue845RegExpAndWithTests
 
     // ---- Problem 11: with-binding deleted by @@unscopables getter ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WithBindingDeletedInUnscopablesGetterYieldsUndefined()
         => Assert.Equal("undefined", Eval(
             "var env = { binding: 0, get [Symbol.unscopables]() { delete env.binding; return null; } };" +
             "var result; with (env) { result = binding; } typeof result"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WithBindingPresentStillResolves()
         => Assert.Equal("5", Eval("var o = { a: 5 }; with (o) { a; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WithFallsThroughToOuterWhenObjectLacksBinding()
         => Assert.Equal("9", Eval("var outer = 9; with ({}) { outer; }"));
 }

@@ -27,7 +27,7 @@ public class Issue828EvalGlobalMutationTests
 
     // A nested eval that assigns to an eval-created global must persist that write to
     // the global object (it was reverted to the pre-overlay value on teardown).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestedEvalWriteToGlobalPersists()
         => Assert.Equal("42", Eval(
             "var fns = eval(\"var y = 5; function setY(v){ eval('y = ' + v); } [setY];\");" +
@@ -36,7 +36,7 @@ public class Issue828EvalGlobalMutationTests
 
     // A nested eval that deletes an eval-created (configurable) global must actually
     // remove the global-object property (it was resurrected on teardown).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestedEvalDeleteOfGlobalRemovesProperty()
         => Assert.Equal("true,false,undefined", Eval(
             "var fns = eval(\"var y = 5; function delY(){ return eval('delete y'); } [delY];\");" +
@@ -45,7 +45,7 @@ public class Issue828EvalGlobalMutationTests
 
     // A top-level (script) `var` is non-configurable: deleting it returns false and the
     // binding stays (regression guard — the teardown change must not make script vars deletable).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalCreatedGlobalIsConfigurableButScriptVarIsNot()
         => Assert.Equal("true,false", Eval(
             "var configurable = eval(\"var a = 1; delete a;\");" +

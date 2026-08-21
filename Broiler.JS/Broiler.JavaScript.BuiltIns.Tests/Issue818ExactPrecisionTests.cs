@@ -30,20 +30,20 @@ public class Issue818ExactPrecisionTests
         => Assert.Equal("true", Eval(
             $"String(Number({literal}n) === {literal})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TotalMicrosecondsUsesExactMathematicalValue()
         => Assert.Equal("true", Eval(
             "var d = new Temporal.Duration(0, 0, 0, 0, 0, 0, 8692288669465520, 0, 373761);" +
             "var expected = Number(8692288669465520n * 1000000n + 373761n);" +
             "String(d.total({ unit: 'microseconds' }) === expected && expected === 8692288669465520373761)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TotalMillisecondsUsesExactMathematicalValue()
         => Assert.Equal("true", Eval(
             "var d = new Temporal.Duration(0, 0, 0, 0, 0, 0, 8692288669465520, 513);" +
             "String(d.total({ unit: 'milliseconds' }) === 8692288669465520513)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TotalNanosecondsUsesExactMathematicalValue()
         => Assert.Equal("true", Eval(
             "var d = new Temporal.Duration(0, 0, 0, 0, 0, 0, 8692288669465520, 0, 0, 321414345);" +
@@ -51,7 +51,7 @@ public class Issue818ExactPrecisionTests
 
     // Calendar-unit total: the exact rational 1 + 950400000000000/2678400000000000 must
     // round to 1.3548387096774193, not the adjacent 1.3548387096774195.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TotalMonthsRoundsTheExactRationalOnce()
         => Assert.Equal("1.3548387096774193", Eval(
             "'' + new Temporal.Duration(0, 0, 5, 5).total({ unit: 'months', relativeTo: '1972-01-31' })"));

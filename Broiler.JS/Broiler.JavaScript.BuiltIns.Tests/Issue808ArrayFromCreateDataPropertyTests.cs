@@ -17,7 +17,7 @@ public class Issue808ArrayFromCreateDataPropertyTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void From_ReadOnlyElementTarget_Throws()
         => Assert.Equal("TypeError", Eval("""
             function ReadOnly() { Object.defineProperty(this, "0", { value: null }); this.length = 0; }
@@ -28,7 +28,7 @@ public class Issue808ArrayFromCreateDataPropertyTests
             err;
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void From_InextensibleTarget_Throws()
         => Assert.Equal("TypeError", Eval("""
             function Inext() { Object.preventExtensions(this); }
@@ -39,7 +39,7 @@ public class Issue808ArrayFromCreateDataPropertyTests
             err;
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void From_EmptyIntoReadOnlyTarget_Succeeds()
         => Assert.Equal("0", Eval("""
             function ReadOnly() { Object.defineProperty(this, "0", { value: null }); this.length = 0; }
@@ -47,11 +47,11 @@ public class Issue808ArrayFromCreateDataPropertyTests
             String(ReadOnly.from([]).length);
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void From_Array_StillWorks()
         => Assert.Equal("1,2,3", Eval("Array.from([1, 2, 3]).join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void From_WithMapFn_StillWorks()
         => Assert.Equal("2,4,6", Eval("Array.from([1, 2, 3], function (x) { return x * 2; }).join(',');"));
 }

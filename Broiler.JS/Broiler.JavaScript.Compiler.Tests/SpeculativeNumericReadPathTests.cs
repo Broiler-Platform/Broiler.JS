@@ -73,7 +73,7 @@ public sealed class SpeculativeNumericReadPathTests
         f("!");
         """;
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheFixturesActuallyReachTheMechanism()
     {
         // Every other assertion in this file is an answer that must hold on both arms, which a
@@ -207,7 +207,7 @@ public sealed class SpeculativeNumericReadPathTests
             """, speculate));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnIndexThatTheReceiverCouldDisturbIsNotSpeculativeAtAll()
     {
         // `a[i]` evaluates the receiver before it reads i, so a receiver that changed i's flag

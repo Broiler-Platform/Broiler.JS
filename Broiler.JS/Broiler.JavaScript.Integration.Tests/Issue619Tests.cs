@@ -33,7 +33,7 @@ public class Issue619Tests
     // expression). Reassigning the name inside the body must be observable to a
     // subsequent read in the same body. Previously the self-name was bound
     // read-only, so the write was silently ignored.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalBlockFunctionSelfNameIsMutable()
     {
         var code = "var cBV;"
@@ -46,7 +46,7 @@ public class Issue619Tests
     // initialBV() must return the function's value ('decl'), the block-scoped
     // binding must be mutable (currentBV === 123), and the var-scoped binding
     // captured before the call is independent (varBinding() === 'decl').
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnnexBEvalFuncBlockScoping()
     {
         var code = "var initialBV, currentBV, varBinding;"
@@ -74,7 +74,7 @@ public class Issue619Tests
         Assert.Equal(expected, Eval(code).DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayFromArrayLikeCopiesByIndex()
     {
         var code = "Array.prototype.join.call(Int8Array.from({0:'0',1:'1',2:'two',9:'n',length:2}), ',');";
@@ -86,7 +86,7 @@ public class Issue619Tests
     // `this.then`; with a Symbol receiver this resolved to undefined and threw
     // "undefined is not a function". A Symbol's wrapper prototype is now
     // Symbol.prototype, mirroring Boolean/Number/String primitives.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolPrimitiveConsultsSymbolPrototype()
     {
         var code = "var count = 0;"
@@ -98,7 +98,7 @@ public class Issue619Tests
 
     // Problem 3: ArrayBuffer.prototype.byteLength getter returns +0 for a detached
     // buffer (e.g. after transfer) rather than throwing a TypeError.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DetachedArrayBufferByteLengthIsZero()
     {
         var code = "var s = new ArrayBuffer(4); s.transfer(8);"
@@ -106,7 +106,7 @@ public class Issue619Tests
         Assert.Equal("true|0", Eval(code).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TransferToFixedLengthDetachesSource()
     {
         var code = "var s = new ArrayBuffer(4); var d = s.transferToFixedLength(2);"

@@ -65,7 +65,7 @@ public class Issue845ReservedWordTests
     public void ValidBindingsStillParse(string code)
         => Assert.Equal("no throw", ErrorOf(code));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ValidSuperAndExtendsStillWork()
         => Assert.Equal("[object Object]",
             Eval("class C extends Object { m() { return super.toString; } } Object.prototype.toString.call(new C())"));

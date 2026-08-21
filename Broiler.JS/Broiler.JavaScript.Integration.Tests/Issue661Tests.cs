@@ -38,7 +38,7 @@ public class Issue661Tests
     // ---- Problem 1: v-mode class set operations ----
 
     // Difference: digits minus keycap sequences = the digits (no overlap).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DifferenceDigitsMinusKeycapMatchesDigitsOnly()
         => Assert.Equal("true,false,false", Eval(
             "var re=/^[\\d--\\p{Emoji_Keycap_Sequence}]+$/v;"
@@ -46,21 +46,21 @@ public class Issue661Tests
 
     // Difference: keycap sequences minus the digit chars = all keycaps
     // (a 3-code-unit keycap is never a single digit char).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DifferenceKeycapMinusDigitClassKeepsKeycaps()
         => Assert.Equal("true,true,false", Eval(
             "var re=/^[\\p{Emoji_Keycap_Sequence}--[0-9]]+$/v;"
             + "[re.test('0\\uFE0F\\u20E3'), re.test('#\\uFE0F\\u20E3'), re.test('7')].join(',')"));
 
     // Difference against a \q{...} string literal removes the named sequence.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DifferenceAgainstStringLiteralRemovesSequence()
         => Assert.Equal("false,true", Eval(
             "var re=/^[\\p{Emoji_Keycap_Sequence}--\\q{0|2|4|9\\uFE0F\\u20E3}]+$/v;"
             + "[re.test('9\\uFE0F\\u20E3'), re.test('8\\uFE0F\\u20E3')].join(',')"));
 
     // Intersection of a property of strings with itself is that property.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntersectionOfKeycapWithItself()
         => Assert.Equal("true,false", Eval(
             "var re=/^[\\p{Emoji_Keycap_Sequence}&&\\p{Emoji_Keycap_Sequence}]+$/v;"
@@ -68,14 +68,14 @@ public class Issue661Tests
 
     // Intersection of a character property (ASCII_Hex_Digit) with a property of
     // strings is empty (no single hex digit is a keycap sequence).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntersectionOfCharPropertyAndStringPropertyIsEmpty()
         => Assert.Equal("false,false", Eval(
             "var re=/[\\p{Emoji_Keycap_Sequence}&&\\p{ASCII_Hex_Digit}]/v;"
             + "[re.test('1\\uFE0F\\u20E3'), re.test('a')].join(',')"));
 
     // Plain v-mode classes (no set construct) are untouched and still work.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainUnicodeSetsClassesStillWork()
         => Assert.Equal("true,false,true", Eval(
             "var re=/^[a-z]+$/v; var neg=/^[^0-9]+$/v;"
@@ -83,25 +83,25 @@ public class Issue661Tests
 
     // ---- Problem 5: code after try/catch with a returning catch ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StatementAfterTryCatchRunsWhenTryCompletesNormally()
         => Assert.Equal("AFTER", Eval(
             "function g(){ try { 1; } catch(e){ return 'C'; } return 'AFTER'; } g();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ThrowAfterTryCatchWithReturningCatchIsReached()
         => Assert.Equal("FINAL", Eval(
             "var r='?'; function f(){} "
             + "function g(){ try { f(); } catch(e){ return 'C'; } return 'FINAL'; } r=g(); r"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReturningCatchStillReturnsWhenTryThrows()
         => Assert.Equal("C", Eval(
             "function g(){ try { throw 9; } catch(e){ return 'C'; } return 'AFTER'; } g();"));
 
     // assert.throws-style harness shape: assert.throws must throw a Test262Error
     // when the inner function does NOT throw, and the caller must observe it.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AssertThrowsShapeObservesThrownWhenFuncDoesNotThrow()
         => Assert.Equal("true", Eval(
             "function at(fn){ try{ fn(); }catch(t){ return; } throw new Error('final'); }"
@@ -109,29 +109,29 @@ public class Issue661Tests
 
     // ---- Problem 6: object rest in a lexical `for` head ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConstObjectRestInForHeadBindsRest()
         => Assert.Equal("1,2", Eval(
             "var o=''; for (const {...rest} = {x:1,y:2}; o===''; ) { o = rest.x+','+rest.y; } o"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LetPartialObjectRestInForHeadExcludesDestructuredKeys()
         => Assert.Equal("1|3|false", Eval(
             "var o=''; for (let {x,...r} = {x:1,y:2,z:3}; o===''; ) { o = x+'|'+r.z+'|'+('x' in r); } o"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectRestPerIterationBindingIsFreshEachIteration()
         => Assert.Equal("1,1", Eval(
             "var seen=[]; for (const {...r} = {a:1}; seen.length<2; ) { seen.push(r.a); if(seen.length===2) break; } seen.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedKeyInForHeadStillWorks()
         => Assert.Equal("42", Eval(
             "var k='q', o=''; for (const {[k]:v} = {q:42}; o===''; ) { o = String(v); } o"));
 
     // ---- Problem 9: Array.prototype.every with an inherited indexed property ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EveryVisitsIndicesInheritedFromPrototype()
         => Assert.Equal("true", Eval(
             "Boolean.prototype[0]=1; Boolean.prototype.length=1; var accessed=false;"
@@ -139,7 +139,7 @@ public class Issue661Tests
             + "delete Boolean.prototype[0]; delete Boolean.prototype.length;"
             + "String(res && accessed)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EveryStillSkipsTrueHolesWithNoInheritedProperty()
         => Assert.Equal("0", Eval(
             "var count=0; [,,].every(function(){ count++; return true; }); String(count)"));

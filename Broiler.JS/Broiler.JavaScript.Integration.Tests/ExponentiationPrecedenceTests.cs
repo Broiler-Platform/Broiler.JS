@@ -39,7 +39,7 @@ public class ExponentiationPrecedenceTests
         => Assert.Equal(expected, Eval(expr));
 
     // `**=` continues to work and evaluates its right side as an exponentiation.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AssignExponentiation()
         => Assert.Equal("512", Eval("(function(){ var x = 2; x **= 3 ** 2; return x; })()"));
 

@@ -30,7 +30,7 @@ public sealed class ExecutionExclusionTests
     private const string Busy =
         "(function () { var t = 0; for (var j = 0; j < 20000; j++) { t += j; } return t; })()";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AJobDispatchedWithNothingRunningDoesNotOverlapALaterEvaluation()
     {
         // The residual the job queue could not close, and the reason the execution LOCK exists
@@ -60,7 +60,7 @@ public sealed class ExecutionExclusionTests
         Assert.Equal(1, peak);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TwoThreadsEvaluatingOnOneContextTakeTurns()
     {
         // The plainest violation the lock has to prevent, and one no dispatch rule addresses: two
@@ -85,7 +85,7 @@ public sealed class ExecutionExclusionTests
         Assert.Equal("160", context.Eval("String(globalThis.n)").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AHostCallIntoJavaScriptJoinsTheExclusionThroughEnterExecution()
     {
         // The contract itself. The engine cannot guard every route into JavaScript — invoking a
@@ -123,7 +123,7 @@ public sealed class ExecutionExclusionTests
         Assert.Equal("120", context.Eval("String(globalThis.total)").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheScopeIsReentrantSoNestingIsNotADeadlock()
     {
         // Required rather than convenient: a host that wraps an entry point which turns out to be
@@ -139,7 +139,7 @@ public sealed class ExecutionExclusionTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JobsQueuedUnderAHostScopeRunWhenTheOutermostOneIsReleased()
     {
         // The scope is an execution, so the queue is live inside it and drains on the way out —

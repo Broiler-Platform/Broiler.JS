@@ -34,7 +34,7 @@ public class Issue871ThirdTests
 
     // ---- Cluster 1: Date constructor coerces all arguments ------------------------------------
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Date_CoercesAllArguments_EvenAfterNaN()
         => Assert.Equal("8", Eval("""
             var bad = { toString: function () { throw 17; }, valueOf: function () { throw 42; } };

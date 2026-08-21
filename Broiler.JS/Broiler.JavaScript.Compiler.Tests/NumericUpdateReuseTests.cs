@@ -178,7 +178,7 @@ public sealed class NumericUpdateReuseTests
         Assert.Equal("3,2", Eval("var a = [1, 3]; var y = a[1]--; return y + ',' + a[1];", reuse));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheCoercionCountIsTheSameOnBothArmsAndOnlyTheSplitMoves()
     {
         // The counter invariant, and the reason the reuse column exists: the two arms must run the
@@ -218,7 +218,7 @@ public sealed class NumericUpdateReuseTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheSwitchIsOnByDefault()
     {
         Assert.True(NumericUpdateReuse.Enabled);

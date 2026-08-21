@@ -23,7 +23,7 @@ public class NullishAccessMessageTests
     }
 
     // The shape the whole change is for: a chained read whose middle link is undefined.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AChainedReadNamesTheWholeAccess()
     {
         Assert.Equal(
@@ -33,7 +33,7 @@ public class NullishAccessMessageTests
 
     // A null base takes the same clause. The two singletons word their messages separately, so
     // covering only one would leave the other free to drift.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANullBaseIsNamedToo()
     {
         Assert.Equal(
@@ -42,7 +42,7 @@ public class NullishAccessMessageTests
     }
 
     // The write side, which has its own cache, its own site numbering and its own message.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AWriteNamesTheAccess()
     {
         Assert.Equal(
@@ -65,7 +65,7 @@ public class NullishAccessMessageTests
     // `o.m()` resolves its callee through the same read cache a bare `o.m` does, so the callee
     // read carries a description. The call itself does not: "undefined is not a function" is
     // raised at the invocation, which has no site to hang one on (see NullishAccess).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AMethodCallNamesTheCalleeRead()
     {
         Assert.Equal(
@@ -73,7 +73,7 @@ public class NullishAccessMessageTests
             MessageOf("var config = { server: {} }; return config.server.tls.connect();"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACallOnAnUndefinedCalleeIsUnchanged()
     {
         Assert.Equal(
@@ -83,7 +83,7 @@ public class NullishAccessMessageTests
 
     // A chain broken over several lines is the ordinary way this is written, and it has to read
     // back as the thing that can be searched for. See NullishAccess.Quote.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AMultiLineChainReadsBackAsOneExpression()
     {
         Assert.Equal(
@@ -100,7 +100,7 @@ public class NullishAccessMessageTests
 
     // A base with an effect is quoted as written, and the single quotes the clause is delimited
     // by are escaped rather than dropped, so the text stays the text that is in the file.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AQuoteInsideTheAccessIsEscaped()
     {
         Assert.Equal(
@@ -111,7 +111,7 @@ public class NullishAccessMessageTests
     // A COMPUTED access has no well-formed span to quote — its last token is the key, not the
     // bracket that closes it — so it is left undescribed rather than quoted as `a.b["x"`. The
     // message is what it was, key naming included.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AComputedAccessIsNotDescribed()
     {
         Assert.Equal(
@@ -120,7 +120,7 @@ public class NullishAccessMessageTests
     }
 
     // A computed access NESTED inside the span is fine: the access still ends at an identifier.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AComputedLinkInsideTheAccessIsKept()
     {
         Assert.Equal(
@@ -131,7 +131,7 @@ public class NullishAccessMessageTests
     // A parenthesized base cannot be quoted from token positions — the opening parenthesis is
     // not part of any token — so the access is left undescribed rather than quoted as text that
     // is not in the file.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AParenthesizedBaseIsNotDescribed()
     {
         Assert.Equal(
@@ -141,7 +141,7 @@ public class NullishAccessMessageTests
 
     // The description belongs to one message. A failure that carries none must not inherit the
     // last one that did — which is what a description left lying on the thread would do.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADescriptionDoesNotOutliveItsMessage()
     {
         Assert.Equal(
@@ -178,7 +178,7 @@ public class NullishAccessMessageTests
     }
 
     // A read that succeeds is untouched, on the path the description is recorded against.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASuccessfulReadStillSucceeds()
     {
         Assert.Equal("1", MessageOf("var o = { a: { b: 1 } }; return String(o.a.b);"));
@@ -187,7 +187,7 @@ public class NullishAccessMessageTests
     // The site a description is recorded against is warmed by repetition, and a hit takes a path
     // that never looks at one. The message has to be the same on the hundredth failure as on the
     // first — including when the same site has been succeeding in between.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheClauseSurvivesAWarmedSite()
     {
         Assert.Equal(
@@ -203,7 +203,7 @@ public class NullishAccessMessageTests
 
     // Nothing bounds the source text of an access — a base can hold a whole call — and a message
     // is read in a log line, so it is cut and marked rather than left to run.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AVeryLongAccessIsTruncated()
     {
         var message = MessageOf(

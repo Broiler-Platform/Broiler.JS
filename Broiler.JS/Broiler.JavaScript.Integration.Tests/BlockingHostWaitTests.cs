@@ -45,7 +45,7 @@ public sealed class BlockingHostWaitTests
             throw new Xunit.Sdk.XunitException($"worker threw: {failure}");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WaitForCompletesWhenOnlyAQueuedJobCanCompleteTheTask()
     {
         // Form one. The reaction that signals the task is queued behind the very execution that is
@@ -71,7 +71,7 @@ public sealed class BlockingHostWaitTests
         });
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WaitForCompletesWhenTheTaskNeedsAnotherThreadToEnterTheContext()
     {
         // Form two, and the one the execution lock introduced. Draining cannot help here — the work
@@ -101,7 +101,7 @@ public sealed class BlockingHostWaitTests
         });
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WaitForRunsQueuedJobsBeforeItReleasesTheContext()
     {
         // "Nothing is left owed" — a job queued by the suspending execution runs on the thread that
@@ -131,7 +131,7 @@ public sealed class BlockingHostWaitTests
         });
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WaitForReturnsTheValueAndPropagatesAFault()
     {
         WithinBudget(() =>
@@ -146,7 +146,7 @@ public sealed class BlockingHostWaitTests
         });
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WaitForOutsideAnExecutionIsAnOrdinaryWait()
     {
         // There is no context held to release, so the suspension is a no-op and the depth
@@ -159,7 +159,7 @@ public sealed class BlockingHostWaitTests
         });
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReleasingAndRetakingTheContextLeavesTheExclusionIntact()
     {
         // The suspension hands the context to another thread on purpose, so the invariant has to
@@ -193,7 +193,7 @@ public sealed class BlockingHostWaitTests
         });
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestedExecutionsAreReleasedAndRestoredTogether()
     {
         // The depth released is also the number of lock entries this thread holds, so a wait made

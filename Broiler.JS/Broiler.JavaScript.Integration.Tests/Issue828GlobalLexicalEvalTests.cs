@@ -20,14 +20,14 @@ public class Issue828GlobalLexicalEvalTests
     }
 
     // Indirect eval resolves a top-level `let` through the global environment.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IndirectEvalSeesGlobalLet()
         => Assert.Equal("outside", Eval("""
             let x = 'outside';
             (0, eval)('x');
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IndirectEvalSeesGlobalConst()
         => Assert.Equal("42", Eval("""
             const k = 42;
@@ -36,7 +36,7 @@ public class Issue828GlobalLexicalEvalTests
 
     // A block-scoped `let` does NOT leak to an indirect eval, which sees the outer global one
     // (lex-env-heritage: indirect eval's outer environment is the global environment).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IndirectEvalIgnoresBlockScopedShadow()
         => Assert.Equal("outside,outside", Eval("""
             let x = 'outside';
@@ -50,7 +50,7 @@ public class Issue828GlobalLexicalEvalTests
         """));
 
     // A top-level `let` is a lexical binding, never a property of the global object.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GlobalLetIsNotAGlobalObjectProperty()
         => Assert.Equal("value,undefined,false", Eval("""
             let x = 'value';

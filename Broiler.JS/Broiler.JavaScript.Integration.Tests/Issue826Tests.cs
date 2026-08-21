@@ -27,7 +27,7 @@ public class Issue826Tests
     // S11.13.1_A6_T1: the eval introduces an (uninitialized) inner `var x`; the
     // assignment still writes to the outer x via the initially resolved reference,
     // and `return x` observes the inner binding (undefined).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SimpleAssignment_EvalVarInRhs_WritesOuterReference()
         => Assert.Equal("undefined|1", Eval(
             "function t(){" +
@@ -37,7 +37,7 @@ public class Issue826Tests
             "} t();"));
 
     // S11.13.1_A6_T2: same, but the eval initializes the inner binding to 2.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SimpleAssignment_EvalVarWithInitInRhs_WritesOuterReference()
         => Assert.Equal("2|1", Eval(
             "function t(){" +
@@ -48,7 +48,7 @@ public class Issue826Tests
 
     // S11.13.1_A6_T3: the RHS adds `x` to the with object, which must NOT redirect
     // the already-resolved write to the outer x.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SimpleAssignment_WithObjectGainsProperty_WritesOuterReference()
         => Assert.Equal("2|1", Eval(
             "function t(){" +
@@ -60,7 +60,7 @@ public class Issue826Tests
 
     // Once a direct eval has introduced `var x`, a subsequent assignment targets the
     // new inner binding (the shadow now owns its value), leaving the outer untouched.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AssignmentAfterEvalVar_TargetsInnerBinding()
         => Assert.Equal("9|5", Eval(
             "var x = 5;" +
@@ -69,7 +69,7 @@ public class Issue826Tests
 
     // A closed-over outer variable is read correctly inside a function that contains
     // a body direct eval introducing the same name, before the eval runs.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReadOuterBeforeEvalIntroducesVar()
         => Assert.Equal("5", Eval(
             "var x = 5;" +

@@ -25,7 +25,7 @@ public class MinifiedScriptParsingTests
 
     // marked.js (bundled into monaco-editor and into several news sites' page bundles)
     // walks a markdown table's alignment row with the regex as the loop body.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegularExpression_AsStatementBodyOfFor_Matches()
     {
         Assert.Equal("right,center,left", Eval(@"
@@ -37,13 +37,13 @@ public class MinifiedScriptParsingTests
             out.join(',');"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegularExpression_AsStatementBodyOfIf_Matches()
     {
         Assert.Equal("true", Eval("var r = false; if (1) /ab/.test('xaby') && (r = true); r;"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegularExpression_AsStatementBodyOfWhile_Matches()
     {
         Assert.Equal("3", Eval("var n = 0; while (n < 3) /x/.test('x') && n++; n;"));
@@ -51,7 +51,7 @@ public class MinifiedScriptParsingTests
 
     // The other half of the same decision: a `)` that closed a call or a grouping is still
     // followed by division. Getting this wrong would silently turn arithmetic into a regex.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SlashAfterCallOrGrouping_StillDivides()
     {
         Assert.Equal("5", Eval("var f = function (x) { return x; }; (4 + 6) / 2;"));
@@ -64,7 +64,7 @@ public class MinifiedScriptParsingTests
     // core-js and its re-bundles install properties from a `for` head whose initialiser is
     // a function expression that tests `e in C`. The `[~In]` of the head leaked into the
     // function body and rejected the script at that `in`.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void In_InsideAFunctionExpressionOfAForHead_IsAnOperator()
     {
         Assert.Equal("true,false", Eval(@"
@@ -74,20 +74,20 @@ public class MinifiedScriptParsingTests
             out.join(',');"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void In_InsideCallArgumentsOfAForHead_IsAnOperator()
     {
         Assert.Equal("true", Eval("var C = { a: 1 }, id = function (v) { return v; }; for (var r = id('a' in C); 0;); r;"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void In_InsideATemplateSubstitutionOfAForHead_IsAnOperator()
     {
         Assert.Equal("true", Eval("var C = { a: 1 }; for (var s = `${'a' in C}`; 0;); s;"));
     }
 
     // And the head's own `[~In]` is untouched: a for-in loop must still be a for-in loop.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInHead_StillIteratesProperties()
     {
         Assert.Equal("a,b", Eval("var out = []; for (var k in { a: 1, b: 2 }) out.push(k); out.join(',');"));
@@ -96,13 +96,13 @@ public class MinifiedScriptParsingTests
     // ---- A template substitution takes a full Expression ----
 
     // swiper-bundle.min.js folds a whole initialisation sequence into one interpolation.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TemplateSubstitution_CommaSequence_EvaluatesToItsLastElement()
     {
         Assert.Equal("id-16", Eval("var n; `id-${n = 16, void 0 === n && (n = 1), n}`;"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TemplateSubstitution_CommaSequence_EvaluatesEveryElement()
     {
         Assert.Equal("2:done", Eval("var calls = 0, bump = function () { calls++; }; var s = `${bump(), bump(), 'done'}`; calls + ':' + s;"));
@@ -111,7 +111,7 @@ public class MinifiedScriptParsingTests
     // ---- A binding pattern's PropertyName may be a reserved word ----
 
     // TypeScript's own bundle destructures groupBy's result by its boolean keys.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectBindingPattern_ReservedWordPropertyNames_BindTheRightValues()
     {
         Assert.Equal("d,m", Eval("var { false: decorators, true: metadata } = { false: 'd', true: 'm' }; decorators + ',' + metadata;"));
@@ -123,7 +123,7 @@ public class MinifiedScriptParsingTests
 
     // Adobe Launch's bundle sanitises input with this exact pattern; rejecting `\_` made
     // the scanner re-read the `/` as division and fail the file.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegularExpressionClass_IdentityEscape_MatchesTheLiteralCharacter()
     {
         Assert.Equal("a-b_c", Eval(@"'a-b_c!?'.replace(/[^0-9a-zA-Z\-\_]/g, '');"));

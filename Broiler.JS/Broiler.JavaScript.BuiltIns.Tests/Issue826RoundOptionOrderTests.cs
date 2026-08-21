@@ -57,7 +57,7 @@ public class Issue826RoundOptionOrderTests
         return ctx.Eval(Observer + "\n" + source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTimeRound_ReadsAllOptionsBeforeIncrementValidation()
         => Assert.Equal(
             "RangeError|" + string.Join(",",
@@ -92,7 +92,7 @@ public class Issue826RoundOptionOrderTests
 
     // A relativeTo property bag (no timeZone) reads calendar then every recognised field in
     // alphabetical order, coercing only the present ones, between relativeTo and roundingIncrement.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationRound_OptionOrder_PlainRelativeToBag()
         => Assert.Equal(
             string.Join(",",
@@ -121,7 +121,7 @@ public class Issue826RoundOptionOrderTests
 
     // A relativeTo bag carrying a timeZone additionally coerces the time and offset fields (valueOf /
     // toString) while keeping the same alphabetical field order.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationRound_OptionOrder_ZonedRelativeToBag()
         => Assert.Equal(
             string.Join(",",

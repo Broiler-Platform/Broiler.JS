@@ -25,11 +25,11 @@ public class SuppressedErrorPrototypeTests
     public void Instance_HasOwnErrorAndSuppressed(string expr, string expected)
         => Assert.Equal(expected, E(expr));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Instance_ErrorAndSuppressed_AreNonEnumerable()
         => Assert.Equal("", E("Object.keys(new SuppressedError(1, 2, 'm')).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Instance_ErrorIsWritableAndConfigurable()
         => Assert.Equal("writable:true,configurable:true,enumerable:false", E("""
             var d = Object.getOwnPropertyDescriptor(new SuppressedError(1, 2, 'm'), 'error');

@@ -32,7 +32,7 @@ public class Issue914ProxyGlobalReceiverTests
 
     // Reading an unqualified name the prototype proxy claims yields the proxy's value
     // (undefined here) and fires the `get` trap exactly once with the global as receiver.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnqualifiedReadGoesThroughProxyGetTrap()
     {
         Assert.Equal("undefined", Eval(Setup + "'' + bareword"));
@@ -41,7 +41,7 @@ public class Issue914ProxyGlobalReceiverTests
 
     // A sloppy assignment to an unresolved name is Set(global, ...): it fires the proxy
     // `set` trap with the global as receiver and creates the own property on the global.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnqualifiedSloppyWriteGoesThroughProxySetTrap()
     {
         Assert.Equal("1", Eval(Setup + "bareword = 12; '' + sets"));
@@ -49,7 +49,7 @@ public class Issue914ProxyGlobalReceiverTests
     }
 
     // The full sequence of the test262 file's four assertions.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FullGlobalReceiverSequence()
         => Assert.Equal("true,1,1,12", Eval(Setup +
             "var r = (bareword === undefined);" +
@@ -59,13 +59,13 @@ public class Issue914ProxyGlobalReceiverTests
             "r + ',' + g + ',' + s + ',' + global.bareword"));
 
     // A genuinely undeclared name (ordinary prototype, no proxy) still throws.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GenuinelyUndeclaredNameStillThrowsReferenceError()
         => Assert.Equal("ReferenceError", Eval(
             "var t; try { undeclaredNameNowhere; t = 'no-throw'; } catch (e) { t = e.constructor.name; } t"));
 
     // typeof of a truly-undeclared name remains undefined (no throw).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypeofUndeclaredRemainsUndefined()
         => Assert.Equal("undefined", Eval("typeof anotherUndeclaredName"));
 }

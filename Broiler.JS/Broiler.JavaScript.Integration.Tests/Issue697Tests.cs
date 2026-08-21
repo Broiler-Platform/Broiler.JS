@@ -67,45 +67,45 @@ public class Issue697Tests
         => Assert.Equal("URIError", Catch(expr + ";"));
 
     // A valid surrogate pair is UTF-8 encoded, not rejected.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EncodeURIEncodesValidSurrogatePair()
         => Assert.Equal("%F0%9F%98%80", Eval("encodeURI('\\uD83D\\uDE00');").ToString());
 
     // encodeURI leaves the reserved/unescaped marks intact.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EncodeURIPreservesReservedCharacters()
         => Assert.Equal("http://a.b/c%20d?e=1#f", Eval("encodeURI('http://a.b/c d?e=1#f');").ToString());
 
     // encodeURIComponent escapes the reserved characters that encodeURI keeps.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EncodeURIComponentEscapesReserved()
         => Assert.Equal("a%20b%2Fc%3Fd%3D1", Eval("encodeURIComponent('a b/c?d=1');").ToString());
 
     // ---- Problem 10: matchAll propagates abrupt completions ----
 
     // A throwing `flags` getter on the receiver propagates.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MatchAllPropagatesFlagsGetterThrow()
         => Assert.Equal("Error", Catch(
             "var re = /./; Object.defineProperty(re, 'flags', { get() { throw new Error(); } });" +
             " re[Symbol.matchAll]('');"));
 
     // A `flags` value whose toString throws propagates (valueOf must not be called).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MatchAllPropagatesFlagsToStringThrow()
         => Assert.Equal("Error", Catch(
             "var re = /\\w/; Object.defineProperty(re, 'flags', { value: { toString() { throw new Error(); } } });" +
             " re[Symbol.matchAll]('');"));
 
     // A `lastIndex` whose valueOf throws propagates (ToLength coercion).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MatchAllPropagatesLastIndexValueOfThrow()
         => Assert.Equal("Error", Catch(
             "var re = /./; re.lastIndex = { valueOf() { throw new Error(); } };" +
             " re[Symbol.matchAll]('');"));
 
     // Ordinary matchAll still yields the expected matches.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MatchAllStillIterates()
         => Assert.Equal("a:0,a:1", Eval(
             "var r = []; for (var m of 'aabb'.matchAll(/(a)/g)) r.push(m[0] + ':' + m.index); r.join(',');").ToString());
@@ -114,7 +114,7 @@ public class Issue697Tests
 
     // A write to a function-local `var` that is shadowed (and @@unscopables-blocked
     // in the with object) stays local; the same-named global is untouched.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WithUnscopablesWriteStaysLocal()
         => Assert.Equal("20|1", Eval(
             "var v = 1; globalThis[Symbol.unscopables] = { v: true };" +
@@ -123,7 +123,7 @@ public class Issue697Tests
             "var out = local + '|' + globalThis.v; delete globalThis[Symbol.unscopables]; out;").ToString());
 
     // A blocked read resolves to the hoisted local (undefined), not the global.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WithUnscopablesReadResolvesToLocal()
         => Assert.Equal("undefined", Eval(
             "var v = 1; globalThis[Symbol.unscopables] = { v: true };" +
@@ -132,14 +132,14 @@ public class Issue697Tests
 
     // A genuine global `var` written inside a global-scope `with` still updates the
     // global (and its property) — the shadowing isolation must not apply to it.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GlobalVarWriteInWithStillSyncs()
         => Assert.Equal("5|5", Eval(
             "var gg = 1; var o = {}; with (o) { gg = 5; } gg + '|' + globalThis.gg;").ToString());
 
     // A `with`-object property of a non-blocked name wins over the local, and the
     // local stays untouched.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WithObjectPropertyWinsOverLocal()
         => Assert.Equal("7|99", Eval(
             "(function(){ var k = 99; var o = { k: 1 }; with (o) { k = 7; } return o.k + '|' + k; })();").ToString());
@@ -161,7 +161,7 @@ public class Issue697Tests
             "try { C.prototype.m.call(" + primitive + "); t = 'no throw'; } catch (e) { t = e.constructor.name; } t;").ToString());
 
     // A genuine instance still reads its private field.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateFieldReadOnInstanceStillWorks()
         => Assert.Equal("1", Eval("class C { #p = 1; m() { return this.#p; } } new C().m();").ToString());
 
@@ -182,32 +182,32 @@ public class Issue697Tests
 
     // The outer declaration binding stays mutable: reassigning the class name
     // *after* the declaration is allowed.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassDeclarationNameIsReassignableOutside()
         => Assert.Equal("99", Eval("class C {}; C = 99; C;").ToString());
 
     // The name is still readable inside the body (it resolves to the class).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassNameReadableInsideBody()
         => Assert.Equal("C", Eval("class C { m() { return C.name; } } new C().m();").ToString());
 
     // Static recursion through the class name still works.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassNameStaticRecursionWorks()
         => Assert.Equal("120", Eval("class F { static run(n) { return n <= 1 ? 1 : n * F.run(n - 1); } } F.run(5);").ToString());
 
     // A named class EXPRESSION does not leak its name to the enclosing scope.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NamedClassExpressionDoesNotLeakName()
         => Assert.Equal("undefined", Eval("(class C {}); typeof C;").ToString());
 
     // The expression's name is still usable inside the body (self-reference).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NamedClassExpressionNameVisibleInside()
         => Assert.Equal("E", Eval("var D = class E { who() { return E.name; } }; new D().who();").ToString());
 
     // A class DECLARATION still binds (and the binding is reassignable).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassDeclarationStillBindsName()
         => Assert.Equal("function", Eval("class Decl {} typeof Decl;").ToString());
 
@@ -215,20 +215,20 @@ public class Issue697Tests
 
     // A function expression in the heritage is strict, so its `arguments` /
     // `caller` are poison pills (TypeError on access).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassHeritageFunctionArgumentsIsPoisonPill()
         => Assert.Equal("TypeError", Catch(
             "var D = class extends function () {} {}; Object.getPrototypeOf(D).arguments;"));
 
     // Running that heritage function as the [[Construct]] target (via super)
     // executes its strict body, where `arguments.callee` throws.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassHeritageArgumentsCalleeThrows()
         => Assert.Equal("TypeError", Catch(
             "var D = class extends function () { arguments.callee; } {}; new D;"));
 
     // A class declaration is still in its temporal dead zone before the declaration.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassDeclarationTdzBeforeDeclaration()
         => Assert.Equal("ReferenceError", Eval(
             "var t; try { DZ; t = 'no throw'; } catch (e) { t = e.constructor.name; } class DZ {} t;").ToString());
@@ -238,7 +238,7 @@ public class Issue697Tests
     // When a `return`-override base hands back a Proxy as `this`, a public field
     // initializer is CreateDataPropertyOrThrow and must fire the defineProperty
     // trap.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PublicFieldInitFiresProxyDefinePropertyTrap()
         => Assert.Equal("trapped", Eval(
             "function PB(){ return new Proxy(this, { defineProperty() { throw new Error('trapped'); } }); }" +
@@ -247,7 +247,7 @@ public class Issue697Tests
 
     // An ordinary public field initializer is unchanged: it defines an own data
     // property rather than invoking an inherited setter.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PublicFieldDefinesOwnDataPropertyOverPrototypeSetter()
         => Assert.Equal("5", Eval(
             "class P { set v(x) { throw new Error('setter'); } } class Q extends P { v = 5; } new Q().v;").ToString());
@@ -256,7 +256,7 @@ public class Issue697Tests
 
     // `then` builds its result promise via SpeciesConstructor(this, %Promise%); a
     // species constructor that throws surfaces synchronously from `then`.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PromiseThenSpeciesConstructorThrowPropagates()
         => Assert.Equal("Test262Error", Eval(
             "function Test262Error(){} var bad = function(){ throw new Test262Error(); };" +
@@ -265,25 +265,25 @@ public class Issue697Tests
             "var t; try { p.then(); t = 'no throw'; } catch (e) { t = e.constructor.name; } t;").ToString());
 
     // A non-constructor @@species is a TypeError.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PromiseThenNonConstructorSpeciesThrows()
         => Assert.Equal("TypeError", Catch(
             "var p = Promise.resolve(1); var c = function(){}; c[Symbol.species] = 42;" +
             "Object.defineProperty(p, 'constructor', { value: c }); p.then();"));
 
     // The default species keeps returning a %Promise% and settling normally.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PromiseThenDefaultSpeciesSettles()
         => Assert.Equal("2", Execute("Promise.resolve(1).then(function(v){ return v + 1; });"));
 
     // A custom (subclass) species: `then` returns an instance of the subclass …
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PromiseThenSubclassSpeciesReturnsSubclassInstance()
         => Assert.Equal("true", Eval(
             "class MyP extends Promise {} (MyP.resolve(1).then(function(x){ return x; }) instanceof MyP);").ToString());
 
     // … and that subclass-built result promise still settles with the handler value.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PromiseThenSubclassSpeciesSettles()
         => Assert.Equal("21", Execute(
             "class MyP extends Promise {} MyP.resolve(10).then(function(v){ return v * 2; }).then(function(v){ return v + 1; });"));

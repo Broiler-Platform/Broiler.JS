@@ -22,7 +22,7 @@ public class TemporalZonedDateTimeSubMinuteOffsetTests
 
     // The instant of 1970-01-01T00:00:00 in Africa/Monrovia is 44 min 30 s after the epoch, because
     // the zone's offset was -00:44:30 at the time.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Monrovia_ExactSubMinuteOffsetInString_Parses()
     {
         var result = Eval("""
@@ -31,7 +31,7 @@ public class TemporalZonedDateTimeSubMinuteOffsetTests
         Assert.Equal((44 * 60 + 30) * 1_000_000_000L + "", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Monrovia_MinutePrecisionOffsetInString_MatchesByRounding()
     {
         // "-00:45" has minute precision, so it matches the rounded (-00:44:30 → -00:45) zone offset;
@@ -58,7 +58,7 @@ public class TemporalZonedDateTimeSubMinuteOffsetTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Monrovia_PropertyBag_DoesNoFuzzyMatching()
     {
         // No match-minutes rounding for a property-bag offset: "-00:45" does not match -00:44:30.
@@ -73,7 +73,7 @@ public class TemporalZonedDateTimeSubMinuteOffsetTests
         Assert.True(result.BooleanValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Monrovia_PropertyBag_ExactSubMinuteOffset_Parses()
     {
         var result = Eval("""
@@ -84,14 +84,14 @@ public class TemporalZonedDateTimeSubMinuteOffsetTests
         Assert.Equal((44 * 60 + 30) * 1_000_000_000L + "", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Monrovia_OffsetGetter_ReportsSubMinuteValue()
     {
         var result = Eval("""new Temporal.ZonedDateTime(0n, "Africa/Monrovia").offset;""");
         Assert.Equal("-00:44:30", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Niue_MinutePrecisionOffsetInString_MatchesByRounding()
     {
         // Pacific/Niue used -11:19:40 before 1952-10-16; "-11:20" matches it by rounding to the minute.
@@ -113,7 +113,7 @@ public class TemporalZonedDateTimeSubMinuteOffsetTests
     public void Niue_FoldOffsets_AreAccepted(string str)
         => Assert.Equal("ok", Eval($"Temporal.ZonedDateTime.from('{str}'); 'ok';").ToString());
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Niue_WrongSubMinuteOffsetInFold_Throws()
         => Assert.Equal("RangeError", Eval("""
             var err = "none";
@@ -122,7 +122,7 @@ public class TemporalZonedDateTimeSubMinuteOffsetTests
             err;
         """).ToString());
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PropertyBagOffset_FractionalSeconds_MatchesFixedOffsetZone()
         // A fractional-second offset value parses and matches a fixed-offset zone exactly.
         => Assert.Equal("ok", Eval("""

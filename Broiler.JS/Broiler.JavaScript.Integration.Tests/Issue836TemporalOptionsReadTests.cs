@@ -40,7 +40,7 @@ public class Issue836TemporalOptionsReadTests
         }
     ";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InstantToStringReadsTimeZoneBeforeRejectingDateUnit()
         => Assert.Equal("fractionalSecondDigits,roundingMode,smallestUnit,timeZone", Eval(Observer + @"
             var options = obs({ smallestUnit: 'month', fractionalSecondDigits: 'auto', roundingMode: 'expand', timeZone: undefined });
@@ -48,7 +48,7 @@ public class Issue836TemporalOptionsReadTests
             actual.join(',');
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTimeToStringReadsTimeZoneNameBeforeRejectingDateUnit()
         => Assert.Equal("calendarName,fractionalSecondDigits,offset,roundingMode,smallestUnit,timeZoneName", Eval(Observer + @"
             var options = obs({ calendarName: 'auto', fractionalSecondDigits: 'auto', offset: 'auto',
@@ -57,7 +57,7 @@ public class Issue836TemporalOptionsReadTests
             actual.join(',');
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTimeWithReadsAllOptionsBeforeRejectingMonthCode()
         => Assert.Equal("disambiguation,offset,overflow", Eval(Observer + @"
             var options = obs({ overflow: 'constrain', offset: 'prefer', disambiguation: 'compatible' });
@@ -67,7 +67,7 @@ public class Issue836TemporalOptionsReadTests
 
     // A non-object options bag is still a TypeError, but only after the partial fields are
     // processed: an invalid field is a RangeError first.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTimeWithPrimitiveOptionsValidFieldsThrowsTypeError()
         => Assert.Equal("TypeError", Eval(@"
             var r;
@@ -76,7 +76,7 @@ public class Issue836TemporalOptionsReadTests
             r;
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTimeWithPrimitiveOptionsInvalidFieldThrowsRangeError()
         => Assert.Equal("RangeError", Eval(@"
             var r;

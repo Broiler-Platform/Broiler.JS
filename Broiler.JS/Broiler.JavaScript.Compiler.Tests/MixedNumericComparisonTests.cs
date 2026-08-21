@@ -66,7 +66,7 @@ public sealed class MixedNumericComparisonTests
         => Assert.Equal(expected, Compare(value, local));
 
     // A numeric local holding NaN, so the NATIVE side is the NaN one.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANaNNativeSideIsFalseEveryWay()
         => Assert.Equal("false,false,false,false", Compare("1", "0/0"));
 
@@ -97,13 +97,13 @@ public sealed class MixedNumericComparisonTests
     // A boxed Number object is NOT a primitive number, so it must take the fallback — and the
     // fallback unwraps it to the same answer. Getting this wrong would read the wrapper's
     // DoubleValue and answer by accident rather than by rule.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANumberWrapperObjectTakesTheFallbackAndStillAnswers()
         => Assert.Equal("true,false,false,true", Compare("new Number(2)"));
 
     // A BigInt is comparable with a Number for relational operators but is not a Number, so it
     // must reach the ordinary operator.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ABigIntOperandStillCompares()
         => Assert.Equal("true,false,false,true", Compare("2n"));
 
@@ -111,7 +111,7 @@ public sealed class MixedNumericComparisonTests
 
     // valueOf runs exactly once per comparison, and only on the fallback path. Four comparisons,
     // four calls — not eight (the value side is read twice by the emitted code) and not zero.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ValueOfRunsExactlyOncePerComparison()
         => Assert.Equal("true,false,false,true|4", Run("""
             var calls = 0;
@@ -124,7 +124,7 @@ public sealed class MixedNumericComparisonTests
             """));
 
     // The operands are evaluated left-to-right, exactly once each, whichever side is native.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OperandsAreEvaluatedInSourceOrderExactlyOnce()
         => Assert.Equal("true|L,R|true|R,L", Run("""
             var log = [];
@@ -139,7 +139,7 @@ public sealed class MixedNumericComparisonTests
             """));
 
     // A throwing valueOf must still throw, from the fallback path.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AThrowingValueOfStillThrows()
         => Assert.Equal("boom", Run("""
             var box = { valueOf: function () { throw 'boom'; } };
@@ -149,7 +149,7 @@ public sealed class MixedNumericComparisonTests
 
     // A Symbol cannot be converted to a number, so the comparison must throw a TypeError rather
     // than answering false.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASymbolOperandStillThrows()
         => Assert.Equal("threw", Run("""
             function probe(v) { var i = 1; return i < v; }
@@ -158,7 +158,7 @@ public sealed class MixedNumericComparisonTests
 
     // ── the loop the item is about ───────────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheCountedLoopStillComputesTheSameSum()
         => Assert.Equal("4950|4950", Run("""
             function withParameter(n) { var s = 0; for (var i = 0; i < n; i++) s = s + i; return s; }
@@ -181,7 +181,7 @@ public sealed class MixedNumericComparisonTests
     // A bound that CHANGES type mid-loop: the guard is per evaluation, not per site, so the loop
     // must follow it. Getting this wrong would need the fast path to be sticky, which it is not —
     // pinned so it stays that way.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ABoundThatChangesTypeMidLoopIsFollowed()
         => Assert.Equal("0,1,2,3", Run("""
             var limit = { n: 0, valueOf: function () { return this.n; } };
@@ -197,7 +197,7 @@ public sealed class MixedNumericComparisonTests
     // The operand that is a property read rather than a parameter — the case that made this fix
     // worth more than "give a parameter a numeric local", because a.length is boxed for the same
     // reason and is at least as common a loop bound.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APropertyReadBoundBehavesTheSame()
         => Assert.Equal("6|6", Run("""
             var a = [1, 2, 3];

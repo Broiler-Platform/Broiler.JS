@@ -17,25 +17,25 @@ public class Issue822Tests
         return ctx.Eval(code).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DecodeUri_UsesValueOfWhenToStringReturnsObject()
         => Assert.Equal("^|^", Eval(
             "var o = { valueOf: function () { return '%5E'; }, toString: function () { return {}; } };"
             + "decodeURI(o) + '|' + decodeURIComponent(o)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EncodeUri_UsesValueOfWhenToStringReturnsObject()
         => Assert.Equal("%5E|%5E", Eval(
             "var o = { valueOf: function () { return '^'; }, toString: function () { return {}; } };"
             + "encodeURI(o) + '|' + encodeURIComponent(o)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseFloatAndParseInt_UseValueOfWhenToStringReturnsObject()
         => Assert.Equal("1|1", Eval(
             "var o = { valueOf: function () { return 1; }, toString: function () { return {}; } };"
             + "String(parseFloat(o)) + '|' + String(parseInt(o))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GlobalCoercion_NormalArgumentsStillWork()
         => Assert.Equal("^|%5E%20a|3.14|255|5", Eval(
             "decodeURI('%5E') + '|' + encodeURI('^ a') + '|' + String(parseFloat('3.14xyz'))"
@@ -44,13 +44,13 @@ public class Issue822Tests
     // A top-level FunctionDeclaration of a script creates a non-configurable global
     // binding (deletable D = false), so `delete f` returns false — like `var`, and
     // unlike an implicit global or an eval-introduced function.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GlobalFunctionDeclarationIsNonDeletable()
         => Assert.Equal("false|false|function", Eval(
             "function f() {} function MyFunction() {}"
             + "String(delete f) + '|' + String(delete MyFunction) + '|' + typeof f"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GlobalVarStillNonDeletable_ImplicitGlobalStillDeletable()
         => Assert.Equal("false|true", Eval(
             "var v = 1; ig = 2; String(delete v) + '|' + String(delete ig)"));

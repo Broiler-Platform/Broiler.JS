@@ -23,7 +23,7 @@ public sealed class Phase5AdvancedExecutionTests
             })
             .Build();
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CountedReductionPromotesAndMixedInputDeoptimizesToBaseline()
     {
         using var context = CreateTieredContext();
@@ -45,7 +45,7 @@ public sealed class Phase5AdvancedExecutionTests
         Assert.InRange(snapshot.RetainedCodeBytes, 1, 1024 * 1024);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RecompilationCountAndRetainedCodeAreBoundedPerRealm()
     {
         using var context = CreateTieredContext(threshold: 1, maxRecompilations: 1, maxRetainedCodeBytes: 4096);
@@ -64,7 +64,7 @@ public sealed class Phase5AdvancedExecutionTests
         Assert.InRange(snapshot.RetainedCodeBytes, 1, 4096);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CapturingAndDynamicScopeFunctionsRemainOnBaselineTier()
     {
         using var context = CreateTieredContext(threshold: 1);
@@ -83,7 +83,7 @@ public sealed class Phase5AdvancedExecutionTests
         Assert.Equal(0, snapshot.Recompilations);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvaluationAttachesTieringToTheTargetRealmInsteadOfTheCurrentRealm()
     {
         using var baselineContext = JavaScriptBootstrap.CreateContextBuilder()
@@ -100,7 +100,7 @@ public sealed class Phase5AdvancedExecutionTests
         Assert.Equal(1, tieredContext.FunctionTiering.Snapshot().Recompilations);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConstantAndAliasedBindingsKeepBaselineSemantics()
     {
         using var context = CreateTieredContext(threshold: 1);

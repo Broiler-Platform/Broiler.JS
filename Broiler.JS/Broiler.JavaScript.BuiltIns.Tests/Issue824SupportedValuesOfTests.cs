@@ -17,7 +17,7 @@ public class Issue824SupportedValuesOfTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnitsAcceptedByNumberFormat()
     {
         var sanctioned = """
@@ -44,7 +44,7 @@ public class Issue824SupportedValuesOfTests
         Assert.Equal("ok", r);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CurrenciesAcceptedByDisplayNames()
     {
         var r = Eval("""

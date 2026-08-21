@@ -19,7 +19,7 @@ public class TemporalZonedDateTimeToStringOptionsTests
     // epoch 1000000000.1239875 s → "2001-09-09T01:46:40.1239875+00:00[UTC]" at full precision.
     private const string Zdt = "new Temporal.ZonedDateTime(1000000000123987500n, 'UTC')";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_FullPrecisionByDefault()
         => Assert.Equal("2001-09-09T01:46:40.1239875+00:00[UTC]", Eval($"{Zdt}.toString()"));
 
@@ -35,7 +35,7 @@ public class TemporalZonedDateTimeToStringOptionsTests
         => Assert.Equal(expected, Eval($"{Zdt}.toString({options})"));
 
     // smallestUnit / roundingMode given as an object with toString are coerced via ToString (problem 48).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_SmallestUnit_ObjectWithToString_IsCoerced()
         => Assert.Equal("2001-09-09T01:46:40.123987+00:00[UTC]",
             Eval($"{Zdt}.toString({{ smallestUnit: {{ toString() {{ return 'microsecond'; }} }} }})"));

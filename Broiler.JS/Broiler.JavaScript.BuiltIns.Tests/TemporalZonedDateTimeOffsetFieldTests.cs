@@ -8,7 +8,7 @@ public class TemporalZonedDateTimeOffsetFieldTests
 {
     private static void Load() => RuntimeHelpers.RunClassConstructor(typeof(Clr.DefaultClrInterop).TypeHandle);
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OffsetObjectWithToString_IsCoerced_AndObserved()
     {
         Load();
@@ -26,7 +26,7 @@ public class TemporalZonedDateTimeOffsetFieldTests
         Assert.Equal("+00:00|toString", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OffsetNumber_ThrowsTypeError()
     {
         Load();

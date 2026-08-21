@@ -130,25 +130,25 @@ public class Issue693Tests
     }
 
     // "und" (undetermined) and other tags with no available match are dropped.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UndeterminedLocaleIsDropped()
         => Assert.Equal("0", Eval("Intl.NumberFormat.supportedLocalesOf(['und']).length;").ToString());
 
     // A genuinely supported locale survives, and a script subtag still matches via
     // the BestAvailableLocale language fallback.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SupportedLocalesAreKept()
         => Assert.Equal("3", Eval("Intl.NumberFormat.supportedLocalesOf(['de-DE', 'fr', 'en-Latn-US']).length;").ToString());
 
     // A Unicode extension sequence is stripped before matching but preserved on
     // the locale that is returned.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ExtensionSequenceIsPreservedOnSupportedLocale()
         => Assert.Equal("de-DE-u-co-phonebk", Eval(
             "Intl.NumberFormat.supportedLocalesOf(['de-DE-u-co-phonebk'])[0];").ToString());
 
     // An empty request stays an empty array (not undefined / not throwing).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EmptyRequestReturnsEmptyArray()
         => Assert.Equal("true|0", Eval(
             "var s = Intl.NumberFormat.supportedLocalesOf([]); Array.isArray(s) + '|' + s.length;").ToString());
@@ -171,7 +171,7 @@ public class Issue693Tests
     }
 
     // A NaN operand remains a RangeError, and ordinary numeric ranges still format.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatRangeStillRejectsNaNAndFormatsNumbers()
     {
         Assert.Equal("RangeError", Eval(
@@ -189,7 +189,7 @@ public class Issue693Tests
     // The exact shape of derived-class-return-override-with-object.js: a derived
     // constructor that returns an object after super() yields that object as-is,
     // discarding the super-constructed `this` (and its class identity).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DerivedConstructorReturnOverrideDiscardsThis()
         => Assert.Equal("1|undefined|false|false", Eval(
             "var calls = 0;"
@@ -199,7 +199,7 @@ public class Issue693Tests
             + "calls + '|' + (typeof o.prop) + '|' + (o instanceof Derived) + '|' + (o instanceof Base);").ToString());
 
     // A base class returning a distinct object keeps that object's own prototype.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BaseConstructorReturnOverrideKeepsObjectPrototype()
         => Assert.Equal("true|false|true", Eval(
             "class Base { constructor(){ return { tag: 'x' }; } }"
@@ -208,7 +208,7 @@ public class Issue693Tests
 
     // Regression guard: a normal derived instance (no object return) still gets the
     // most-derived prototype — the explicit super() call must thread the new target.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NormalDerivedConstructionKeepsMostDerivedPrototype()
         => Assert.Equal("1|2|true|true", Eval(
             "class A { constructor(){ this.x = 1; } }"
@@ -218,7 +218,7 @@ public class Issue693Tests
 
     // Regression guard: new.target observed inside a superclass constructor is the
     // original (most-derived) constructor, not the immediate superclass.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewTargetIsThreadedThroughExplicitSuper()
         => Assert.Equal("B", Eval(
             "var seen;"
@@ -230,7 +230,7 @@ public class Issue693Tests
     // instances branded with the subclass — even when constructed during another
     // [[Construct]] (the throwing-getter idiom from the test262 abrupt-completion
     // suites). This is the case the previous unconditional prototype rewrite covered.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NativeSubclassThrownDuringConstructionKeepsBrand()
         => Assert.Equal("T", Eval(
             "class T extends Error {}"
@@ -259,7 +259,7 @@ public class Issue693Tests
 
     // Every computed key — instance/static, field/method/accessor — is evaluated
     // exactly once, in source order.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedKeysEvaluateInSourceOrder()
         => Assert.Equal("a,b,c,d,e,f", Eval(
             "var log = []; function k(n){ log.push(n); return n; }"
@@ -300,14 +300,14 @@ public class Issue693Tests
             + " d.writable + '|' + d.configurable + '|' + d.enumerable;").ToString());
 
     // An ordinary function's "prototype" stays writable — the change is class-only.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OrdinaryFunctionPrototypeStaysWritable()
         => Assert.Equal("true|false|false", Eval(
             "var d = Object.getOwnPropertyDescriptor(function f(){}, 'prototype');"
             + "d.writable + '|' + d.configurable + '|' + d.enumerable;").ToString());
 
     // The read-only prototype cannot be reassigned: a strict write throws.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassPrototypeReassignmentThrowsInStrictMode()
         => Assert.Equal("TypeError", Eval(
             "'use strict'; class A {} var t; try { A.prototype = {}; t = 'no-throw'; }"
@@ -315,7 +315,7 @@ public class Issue693Tests
 
     // A string-keyed "constructor" method is the class constructor; returning an
     // object from it discards the instance (staging/sm/class/stringConstructor.js).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringKeyedConstructorActsAsConstructor()
         => Assert.Equal("false|false", Eval(
             "class A { \"constructor\"() { return {}; } }"
@@ -326,7 +326,7 @@ public class Issue693Tests
 
     // A typed array's own keys are the integer indices followed by ordinary
     // string-keyed own properties, surfaced through getOwnPropertyNames/keys/for-in.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayOwnKeysIncludeExtraProperties()
     {
         Assert.Equal("0,1,b", Eval(
@@ -340,7 +340,7 @@ public class Issue693Tests
     // staging/sm/TypedArray/seal-and-freeze.js: an empty non-extensible typed array
     // with a still-writable extra own property is NOT frozen; only once that
     // property is made non-writable & non-configurable does it become frozen.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayWithWritableExtraPropertyIsNotFrozen()
     {
         Assert.Equal("false", Eval(
@@ -352,7 +352,7 @@ public class Issue693Tests
     }
 
     // The fix must not disturb element iteration, spread, or symbol-keyed lookups.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayIterationAndSymbolsUnaffected()
     {
         Assert.Equal("10,20", Eval("var a = new Int32Array([10,20]); a.foo = 9; Array.from(a).join(',');").ToString());
@@ -364,7 +364,7 @@ public class Issue693Tests
 
     // An out-of-range numeric index is absent even when the prototype carries a
     // same-named element, but inherited non-index properties are still visible.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayInOperatorIgnoresInheritedIndices()
     {
         // out-of-range index on the prototype is still not "in" the typed array
@@ -379,7 +379,7 @@ public class Issue693Tests
 
     // hasOwnProperty is unchanged: own indices and own string properties are present,
     // out-of-range indices are not.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayHasOwnPropertyUnaffected()
         => Assert.Equal("true|true|false", Eval(
             "var o = new Int32Array(5); o.b = 1;"
@@ -394,7 +394,7 @@ public class Issue693Tests
         + "  return() { closed = true; return {}; } }; } };";
 
     // A throwing map callback closes the iterator and propagates the original error.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayFromClosesIteratorWhenMapThrows()
         => Assert.Equal("map throws|true", Eval(
             IterableHarness
@@ -403,7 +403,7 @@ public class Issue693Tests
 
     // A throwing element store (here a defineProperty trap on the constructed object)
     // also closes the iterator.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayFromClosesIteratorWhenStoreThrows()
         => Assert.Equal("defineProperty throws|true", Eval(
             "class MyArray extends Array { constructor(){ return new Proxy({}, { defineProperty(){ throw 'defineProperty throws'; } }); } }"
@@ -412,7 +412,7 @@ public class Issue693Tests
             + "msg + '|' + closed;").ToString());
 
     // An error from the iterator's own next() does NOT close it.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayFromDoesNotCloseWhenNextThrows()
         => Assert.Equal("next throws|false", Eval(
             "var closed = false;"
@@ -423,7 +423,7 @@ public class Issue693Tests
 
     // A secondary error from return() during the close is suppressed; the original
     // map/store error is what propagates.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayFromSuppressesSecondaryCloseError()
         => Assert.Equal("defineProperty throws|true", Eval(
             "class MyArray extends Array { constructor(){ return new Proxy({}, { defineProperty(){ throw 'defineProperty throws'; } }); } }"
@@ -455,7 +455,7 @@ public class Issue693Tests
     }
 
     // A secondary error from the iterator's return() is suppressed; the TypeError wins.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ListFormatSuppressesSecondaryCloseError()
         => Assert.Equal("TypeError", Eval(
             "var lf = new Intl.ListFormat();"
@@ -467,7 +467,7 @@ public class Issue693Tests
 
     // The exact shape of private-field-is-not-clobbered-by-computed-property.js: a
     // private #m and a public ["#m"] coexist as distinct bindings.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateFieldNotClobberedByComputedProperty()
         => Assert.Equal("44|4|true", Eval(
             "class C {"
@@ -478,7 +478,7 @@ public class Issue693Tests
             + "new C().chk();").ToString());
 
     // The same for a private method vs a public "#m" data property.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateMethodNotClobberedByComputedProperty()
         => Assert.Equal("1|9", Eval(
             "class C { #m(){ return 1; } ['#m'] = 9; chk(){ return this.#m() + '|' + this['#m']; } }"
@@ -486,7 +486,7 @@ public class Issue693Tests
 
     // A public string property that merely starts with '#' must be a normal, visible
     // own property — not mistaken for a private name.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PublicHashStringPropertyIsVisible()
     {
         Assert.Equal("#z|true", Eval(
@@ -497,7 +497,7 @@ public class Issue693Tests
 
     // Private members stay hidden from reflection/enumeration and serialization, and
     // do not leak the internal marker.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateMembersRemainHidden()
     {
         Assert.Equal("#a,pub", Eval(
@@ -507,7 +507,7 @@ public class Issue693Tests
     }
 
     // All read/write/update/call access paths resolve the private (not public) member.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateAccessPathsAreConsistent()
         => Assert.Equal("1,2,3,4", Eval(
             "class C {"
@@ -517,7 +517,7 @@ public class Issue693Tests
             + "new C().chk();").ToString());
 
     // Two unrelated classes with the same private name spelling keep separate bindings.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SamePrivateNameInDifferentClassesIsDistinct()
         => Assert.Equal("1|2", Eval(
             "class A { #v = 1; get(){ return this.#v; } }"

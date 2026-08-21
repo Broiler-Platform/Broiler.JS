@@ -30,7 +30,7 @@ public class Issue849Tests
 
     // The class's own prototype.constructor identity is the same class object, so the
     // constructor accessed via the prototype must report the same source text.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassPrototypeConstructorToStringMatchesClass()
     {
         Assert.Equal("class C { m(){ return 1; } }",
@@ -38,7 +38,7 @@ public class Issue849Tests
     }
 
     // Native functions still report the "[native code]" placeholder.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NativeFunctionToStringUnaffected()
     {
         Assert.Equal("function parseInt() { [native code] }",
@@ -48,7 +48,7 @@ public class Issue849Tests
     // Problem 95: %RegExpStringIteratorPrototype% must expose its own @@toStringTag
     // ("RegExp String Iterator"). Without it the prototype inherited the
     // %IteratorPrototype% accessor and reported "Iterator" instead.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegExpStringIteratorPrototypeHasToStringTag()
     {
         Assert.Equal("RegExp String Iterator",
@@ -57,7 +57,7 @@ public class Issue849Tests
 
     // The descriptor is { writable: false, enumerable: false, configurable: true }
     // (verifyProperty in the test262 case checks each attribute independently).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegExpStringIteratorPrototypeToStringTagDescriptor()
     {
         var code = "var p = Object.getPrototypeOf(/./[Symbol.matchAll](''));"
@@ -67,7 +67,7 @@ public class Issue849Tests
     }
 
     // Object.prototype.toString picks up the new tag on RegExp String Iterators.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectToStringUsesRegExpStringIteratorTag()
     {
         Assert.Equal("[object RegExp String Iterator]",
@@ -78,7 +78,7 @@ public class Issue849Tests
     // ToString(separator) (step 7) BEFORE the lim==0 short-circuit (step 8). The old
     // path skipped separator coercion entirely when limit valueOf'd to 0, dropping a
     // user-visible side effect (test262 sm/String/split-order).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SplitObservesSeparatorToStringWhenLimitIsZero()
     {
         var code = "var log = [];"
@@ -89,7 +89,7 @@ public class Issue849Tests
     }
 
     // The lim==0 path still returns the empty array — only the coercion order changed.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SplitReturnsEmptyArrayWhenLimitIsZero()
     {
         Assert.Equal("0",
@@ -111,7 +111,7 @@ public class Issue849Tests
     // (position < nextSourcePosition — §22.2.6.11 step 16.p). The previous behaviour
     // emitted "abcXXcde" because it always appended the replacement and rewound the
     // running nextSourcePosition (test262 g-pos-decrement).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolReplaceIgnoresBackwardPosition()
     {
         var code = "var r = /./g;"
@@ -142,7 +142,7 @@ public class Issue849Tests
     // always consumed the iterator for the rest pattern, producing an extra "next,"
     // entry in the log for `[obj.a, ...obj.r] = createIterable(0)` (test262 sm/
     // expressions/destructuring-array-done).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayDestructuringRestSkipsNextWhenIteratorDone()
     {
         var code = "var log = '';"
@@ -158,7 +158,7 @@ public class Issue849Tests
 
     // A rest pattern after a partially-consumed iterator collects the remaining
     // elements with exactly one trailing next call (the one that returns done).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayDestructuringRestCollectsRemainingElements()
     {
         var code = "var log = '';"
@@ -175,7 +175,7 @@ public class Issue849Tests
     // ToNumber / ToString on Number and String wrapper objects, so a user-redefined
     // valueOf / toString on the prototype chain must be observed instead of the internal
     // slot being read directly.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringifyNumberWrapperRespectsPrototypeValueOf()
     {
         var code = "var saved = Number.prototype.valueOf;"
@@ -186,7 +186,7 @@ public class Issue849Tests
         Assert.Equal("17", Eval(code).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringifyStringWrapperRespectsPrototypeToString()
     {
         var code = "var saved = String.prototype.toString;"
@@ -211,7 +211,7 @@ public class Issue849Tests
 
     // A Number wrapper whose valueOf returns NaN (e.g. when both methods are
     // unavailable / non-callable) still serializes as null per §25.5.2 step 9.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringifyNumberWrapperWithNoUsefulCoercion()
     {
         var code = "var n = new Number(5);"
@@ -226,7 +226,7 @@ public class Issue849Tests
     // newTarget.prototype (RegExp(pattern, flags) steps 5 and 8). The previous order
     // produced "b" because `: base(JSEngine.NewTargetPrototype)` evaluated the getter
     // first and then read source from the (now-recompiled) original.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegExpConstructorReadsSourceBeforeNewTargetPrototype()
     {
         var code = "var re = /a/;"
@@ -240,7 +240,7 @@ public class Issue849Tests
 
     // Subclassing still routes through newTarget.prototype, so an ordinary subclass
     // instance correctly inherits its custom prototype.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegExpSubclassStillInheritsCustomPrototype()
     {
         var code = "class MyRe extends RegExp {}"
@@ -265,7 +265,7 @@ public class Issue849Tests
     // leaked "0" before "length", which is observable through a Proxy result. A
     // non-global match has no preceding empty-match probe (step 14.f.i), so the trace
     // contains exactly one access of each property in the spec-mandated order.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolReplaceReadsResultPropertiesInSpecOrder()
     {
         var code = "var log = [];"
@@ -285,7 +285,7 @@ public class Issue849Tests
     // The global-match path still probes "0" as part of the empty-match advance check
     // (step 14.f.i) BEFORE the accumulation loop's length-first reads — exactly what
     // the upstream replace-trace test262 case observes.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolReplaceGlobalReadsProbeZeroBeforeAccumulationLengthFirst()
     {
         var code = "var log = [];"
@@ -320,7 +320,7 @@ public class Issue849Tests
     }
 
     // Same behaviour for U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LineContinuationEatsLineAndParagraphSeparators()
     {
         var ls = "\"a\\\u2028b\"";
@@ -356,7 +356,7 @@ public class Issue849Tests
     }
 
     // Backreferences resolve through the same decoded-name path.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegExpNamedGroupBackrefDecodesUnicodeEscape()
     {
         // A = "A": GroupSpecifier uses an escape, \k<A> uses the literal.
@@ -374,21 +374,21 @@ public class Issue849Tests
     // the eval'd block must be "undefined" — they now follow the same implicit-block
     // path as plain function declarations in eval, with the Annex B var copy-out
     // suppressed by the existing generator/async guard.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalBlockScopedGeneratorIsNotHoisted()
     {
         Assert.Equal("undefined",
             Eval("function f() { eval('{ function* g() {} }'); return typeof g; } f()").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalAtTopLevelBlockScopedGeneratorIsNotHoisted()
     {
         Assert.Equal("undefined",
             Eval("eval('{ function* g() {} }'); typeof g").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalBlockScopedAsyncFunctionIsNotHoisted()
     {
         Assert.Equal("undefined",
@@ -397,7 +397,7 @@ public class Issue849Tests
 
     // Plain function declarations in direct eval blocks are still hoisted via Annex
     // B's web-legacy var binding.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalBlockScopedFunctionIsHoistedByAnnexB()
     {
         Assert.Equal("function",
@@ -449,14 +449,14 @@ public class Issue849Tests
     // scope therefore wrongly saw the inner value. Only let / const heads (with the
     // parser's useLoopEnv lowering) need the synthetic scope; a plain for / var head
     // keeps the original single-scope path.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForLetHeadDoesNotLeakIntoEnclosingLet()
     {
         Assert.Equal("outside",
             Eval("let x='outside'; var probe = function(){ return x; }; for (let x='inside'; false;){} probe()").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForConstHeadDoesNotLeakIntoEnclosingConst()
     {
         Assert.Equal("outside",
@@ -465,7 +465,7 @@ public class Issue849Tests
 
     // A var head is hoisted to the function scope as before, so a same-named outer
     // var IS overwritten — this regression-test pins that behaviour.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForVarHeadStillFunctionScoped()
     {
         Assert.Equal("inside",
@@ -475,7 +475,7 @@ public class Issue849Tests
     // The probes captured inside the head and body still see the per-iteration let
     // binding — the scope push isolates the head from the OUTER scope but doesn't
     // collapse the parser's useLoopEnv lowering.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForLetClosuresInHeadAndBodyResolveToLoopBinding()
     {
         var code = "var probeDecl, probeTest, probeIncr, probeBody;"
@@ -497,7 +497,7 @@ public class Issue849Tests
     // (a, combining-dot-below, combining-diaeresis) — so the compare returned -1
     // instead of 0. The Collator now NFD-normalizes both sides before delegating to
     // the locale's collation, which folds the orderings together.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CollatorComparesCanonicallyEquivalentStringsAsEqual()
     {
         Assert.Equal("0",

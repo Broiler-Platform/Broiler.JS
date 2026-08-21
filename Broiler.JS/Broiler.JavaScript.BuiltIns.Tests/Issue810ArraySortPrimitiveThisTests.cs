@@ -32,7 +32,7 @@ public class Issue810ArraySortPrimitiveThisTests
     public void Sort_NullOrUndefined_ThrowsTypeError(string expr)
         => Assert.Equal("TypeError", Eval("try { " + expr + "; 'no throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Sort_NonCallableComparator_ThrowsTypeError()
         => Assert.Equal("TypeError", Eval("""
             try { [3, 1, 2].sort(42); "no throw"; } catch (e) { e.constructor.name; }

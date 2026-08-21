@@ -43,7 +43,7 @@ public class Issue914Tests
         Assert.Equal(expected, Eval(code).DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArgumentsCalleeInEvalBodyResolvesToEnclosingFunction()
     {
         Assert.Equal("function", Eval("(function f(){ return eval('typeof arguments.callee'); })(1)").ToString());

@@ -22,7 +22,7 @@ public class AsyncReturnPromiseAdoptionTests
         return ctx.Eval("'' + globalThis.r").ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitAsyncFnReturningResolvedPromiseUnwrapsInnerValue()
         // Before the fix `await w()` resumed with the inner promise object, so r was
         // "[object Promise]"; adoption unwraps it to the settled value 42.
@@ -30,13 +30,13 @@ public class AsyncReturnPromiseAdoptionTests
             "async function w(){ return Promise.resolve(42); }"
             + " async function run(){ globalThis.r = '' + (await w()); } run();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitAsyncFnReturningGenericThenableUnwrapsInnerValue()
         => Assert.Equal("99", Drive(
             "async function w(){ return { then: function(res){ res(99); } }; }"
             + " async function run(){ globalThis.r = '' + (await w()); } run();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitAsyncFnReturningPromiseWaitsForInnerToSettle()
         // Adoption means `await w()` must not resume until the inner promise settles:
         // the inner microtask ('inner;') runs before the code after the await
@@ -47,7 +47,7 @@ public class AsyncReturnPromiseAdoptionTests
             + " async function w(){ return Promise.resolve().then(function(){ globalThis.r += 'inner;'; return 5; }); }"
             + " async function run(){ globalThis.r += 'before;'; var v = await w(); globalThis.r += 'after' + v + ';'; } run();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitAsyncFnReturningRejectedPromiseThrows()
         // Adopting a rejected thenable makes `await w()` throw rather than resume with
         // the rejected promise as a value.
@@ -56,14 +56,14 @@ public class AsyncReturnPromiseAdoptionTests
             + " async function run(){ try { await w(); globalThis.r = 'no-throw'; }"
             + " catch(err){ globalThis.r = 'caught:' + err; } } run();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitAsyncFnReturningPrimitiveStillWorks()
         // The fast (non-adopting) path for primitive completions is unchanged.
         => Assert.Equal("5", Drive(
             "async function w(){ return 5; }"
             + " async function run(){ globalThis.r = '' + (await w()); } run();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitAsyncFnReturningPlainObjectStillYieldsObject()
         // A returned non-thenable object is not adopted; await resumes with the object.
         => Assert.Equal("7", Drive(

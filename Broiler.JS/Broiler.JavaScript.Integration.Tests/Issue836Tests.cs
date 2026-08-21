@@ -22,7 +22,7 @@ public class Issue836Tests
         return ctx.Eval(code).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectKeysSkipsNonEnumerableArrayIndex()
         => Assert.Equal("0,2,4,10000", Eval(
             "var obj = [1, , 3, , 5];" +
@@ -30,7 +30,7 @@ public class Issue836Tests
             "Object.defineProperty(obj, 10000, { value: 'x', enumerable: true, configurable: true });" +
             "Object.keys(obj).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectKeysLengthExcludesNonEnumerableIndex()
         => Assert.Equal("4", Eval(
             "var obj = [1, , 3, , 5];" +
@@ -38,7 +38,7 @@ public class Issue836Tests
             "Object.defineProperty(obj, 10000, { value: 'x', enumerable: true, configurable: true });" +
             "String(Object.keys(obj).length)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectValuesSkipsNonEnumerableArrayIndex()
         => Assert.Equal("1,2", Eval(
             "var a = [1];" +
@@ -46,7 +46,7 @@ public class Issue836Tests
             "Object.defineProperty(a, 2, { value: 2, enumerable: true, configurable: true });" +
             "Object.values(a).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInSkipsNonEnumerableArrayIndex()
         => Assert.Equal("0,2", Eval(
             "var a = [1];" +
@@ -54,7 +54,7 @@ public class Issue836Tests
             "Object.defineProperty(a, 2, { value: 2, enumerable: true, configurable: true });" +
             "var keys = []; for (var k in a) keys.push(k); keys.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SpreadOwnEnumerablePropertiesSkipsNonEnumerableArrayIndex()
         => Assert.Equal("0,2", Eval(
             "var a = [1];" +
@@ -64,7 +64,7 @@ public class Issue836Tests
 
     // getOwnPropertyNames is NOT enumerable-filtered: the non-enumerable index
     // must still appear (alongside "length").
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetOwnPropertyNamesStillIncludesNonEnumerableIndex()
         => Assert.Equal("0,1,2,length", Eval(
             "var a = [1];" +
@@ -73,7 +73,7 @@ public class Issue836Tests
             "Object.getOwnPropertyNames(a).join(',')"));
 
     // for-of / Array iteration visits every index regardless of enumerability.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfVisitsNonEnumerableArrayIndex()
         => Assert.Equal("1,99,2", Eval(
             "var a = [1];" +

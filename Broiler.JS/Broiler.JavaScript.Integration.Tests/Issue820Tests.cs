@@ -66,31 +66,31 @@ public class Issue820Tests
 
     // The canonical test262 case: the inner (b+)? matched only in the middle iteration,
     // so it must reset to undefined for the final "ac" iteration.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestedOptionalGroupResetsToUndefined()
         => Assert.Equal("zaacbbbcac|z|ac|a|<undef>|c",
             Captures(@"/(z)((a+)?(b+)?(c))*/", "\"zaacbbbcac\""));
 
     // Same semantics with named groups (exercises the bjsg rename + reset path).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestedOptionalNamedGroupResetsToUndefined()
         => Assert.Equal("zaacbbbcac|z|ac|a|<undef>|c",
             Captures(@"/(?<z>z)((?<a>a+)?(?<b>b+)?(?<c>c))*/", "\"zaacbbbcac\""));
 
     // A group that DID participate in the final iteration keeps its value.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GroupParticipatingInFinalIterationIsRetained()
         => Assert.Equal("abab|b",
             Captures(@"/(?:a(b))*/", "\"abab\""));
 
     // A capture in the last iteration overwrites the earlier one (no stale value).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RepeatedSingleCaptureKeepsLastIteration()
         => Assert.Equal("xyz|z",
             Captures(@"/(?:(.))*/", "\"xyz\""));
 
     // Patterns without a capture nested in a quantifier are unaffected.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonRepeatedCaptureIsUnaffected()
         => Assert.Equal("abc|b",
             Captures(@"/a(b)c/", "\"abc\""));
@@ -110,25 +110,25 @@ public class Issue820Tests
             calls + ',' + name;");
 
     // valueOf must run on the non-Temporal start argument before the TypeError is thrown.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatRangeCoercesNonTemporalStartBeforeKindCheck()
         => Assert.Equal("1,TypeError",
             RangeOrdering("formatRange", "bad", "new Temporal.PlainDate(1970, 1, 1)"));
 
     // ...and on a non-Temporal end argument too.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatRangeCoercesNonTemporalEndBeforeKindCheck()
         => Assert.Equal("1,TypeError",
             RangeOrdering("formatRange", "new Temporal.PlainDate(1970, 1, 1)", "bad"));
 
     // formatRangeToParts shares the same coercion path.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatRangeToPartsCoercesNonTemporalBeforeKindCheck()
         => Assert.Equal("1,TypeError",
             RangeOrdering("formatRangeToParts", "bad", "new Temporal.Instant(0n)"));
 
     // Two Temporal objects of different kinds are still a TypeError (no coercion needed).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatRangeDifferentTemporalKindsThrowTypeError()
         => Assert.Equal("0,TypeError",
             RangeOrdering("formatRange",
@@ -147,17 +147,17 @@ public class Issue820Tests
         => Assert.Equal("42", Eval($"var {ch} = 42; {ch};"));
 
     // A 17.0.0 ID_Continue-only code point (combining mark U+1ACF) is valid after a start.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Unicode17IdContinueIsAccepted()
         => Assert.Equal("7", Eval("var a᫏ = 7; a᫏;"));
 
     // The same character works through a \u{...} escape in the identifier.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Unicode17IdStartViaUnicodeEscape()
         => Assert.Equal("5", Eval("var \\u{10940} = 5; \\u{10940};"));
 
     // ...and as a class private name (#name).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Unicode17IdStartInPrivateName()
         => Assert.Equal("9", Eval(
             "class C { #౜ = 9; get() { return this.#౜; } } new C().get();"));
@@ -166,7 +166,7 @@ public class Issue820Tests
 
     // `await using of` binds the contextual `of`, the second `of` is the for-of keyword;
     // the loop body runs once over the single-element iterable.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForAwaitUsingOfOfBindsTheContextualOf()
         => Assert.Equal("1", Execute(@"
             (async function () {
@@ -177,7 +177,7 @@ public class Issue820Tests
 
     // Plain `for (using of of x)` is unchanged: `using` stays an identifier and `of[…]`
     // is element access (here of[2] === 7), so the body runs once.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForUsingOfOfKeepsUsingAsIdentifier()
         => Assert.Equal("7", Eval(@"
             var using, of = [[9], [8], [7]], result = [];
@@ -189,7 +189,7 @@ public class Issue820Tests
     // The `in` in the second import() argument must parse as a binary operator even though
     // the surrounding for-head otherwise suppresses `in`. Here `'k' in {}` is false, so the
     // options argument is undefined; the call just has to compile and produce a value.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ImportCallSecondArgAllowsInOperatorInForHead()
         => Assert.Equal("object", Eval(@"
             var promise;
@@ -197,7 +197,7 @@ public class Issue820Tests
             typeof promise;"));
 
     // `in` is likewise allowed in the specifier (first) argument.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ImportCallFirstArgAllowsInOperatorInForHead()
         => Assert.Equal("object", Eval(@"
             var promise;

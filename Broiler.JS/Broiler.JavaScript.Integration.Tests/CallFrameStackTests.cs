@@ -29,7 +29,7 @@ public class CallFrameStackTests
 
     // ── the trace is still the real trace after slots have been reused ──
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StackTraceNamesEveryFrameAfterManySlotReuses()
         => Assert.Equal("true", Eval(@"
             function inner() { return new Error('x').stack; }
@@ -39,7 +39,7 @@ public class CallFrameStackTests
             var s = outer();
             String(s.indexOf('inner') >= 0 && s.indexOf('middle') >= 0 && s.indexOf('outer') >= 0);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StackTraceDepthMatchesRecursionDepthAfterSlotReuse()
         => Assert.Equal("true", Eval(@"
             function d(n) { return n === 0 ? new Error('x').stack : d(n - 1); }
@@ -50,7 +50,7 @@ public class CallFrameStackTests
 
     // ── a suspended body strands frames; the trace must not loop or grow ──
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StackTraceInsideResumedGeneratorTerminates()
         => Assert.Equal("true", Eval(@"
             function* g() { for (var i = 0; i < 3; i++) yield new Error('x').stack; }
@@ -64,7 +64,7 @@ public class CallFrameStackTests
             function filler() { function q(){ return 1; } for (var i = 0; i < 20; i++) q(); }
             String(ok);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorInterleavedWithOrdinaryCallsKeepsStackFinite()
         => Assert.Equal("true", Eval(@"
             function* g() { yield 1; yield 2; yield 3; }
@@ -82,7 +82,7 @@ public class CallFrameStackTests
             }
             String(ok);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task StackTraceInsideResumedAsyncBodyTerminates()
     {
         using var ctx = new JSContext();
@@ -147,7 +147,7 @@ public class CallFrameStackTests
     // resumed, under whatever caller resumed it. Its identity — and therefore its trace entry
     // and its new.target — has to survive that, which is the whole reason it holds a heap frame
     // rather than living in the array like everything else.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASuspendableFrameSurvivesLosingItsSlotAndRetakesOne()
     {
         using var ctx = new JSContext();
@@ -180,7 +180,7 @@ public class CallFrameStackTests
     // Unwinding to a remembered depth is how a generator's caller gets its stack back, and it
     // must only ever shrink. Growing back into slots that were abandoned would resurrect frames
     // whose contents are gone — the array-shaped version of handing a dead frame to a new owner.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RestoringADepthOnlyEverUnwinds()
     {
         using var ctx = new JSContext();
@@ -206,7 +206,7 @@ public class CallFrameStackTests
     // Popping names the frame to unwind to, not "one frame", so a call whose callees were left
     // behind — which is what a suspension inside it does — still restores its caller's depth
     // exactly rather than leaking the abandoned slots.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PoppingUnwindsToTheNamedFrameEvenWithStrandedCallees()
     {
         using var ctx = new JSContext();
@@ -224,7 +224,7 @@ public class CallFrameStackTests
 
     // ── new.target must not survive into a reused frame slot ──
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewTargetIsNotInheritedByAReusedFrameSlot()
         => Assert.Equal("true", Eval(@"
             function C() { this.nt = new.target !== undefined; }
@@ -238,7 +238,7 @@ public class CallFrameStackTests
             }
             String(ok);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewTargetStaysUndefinedInCallsMadeFromAConstructor()
         => Assert.Equal("true", Eval(@"
             function helper() { return new.target === undefined; }
@@ -249,7 +249,7 @@ public class CallFrameStackTests
 
     // ── direct eval bindings are per-frame and must not leak between reuses ──
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalBindingsDoNotLeakIntoARecycledFrame()
         => Assert.Equal("true", Eval(@"
             function withEval(n) { eval('var leaked = ' + n + ';'); return leaked; }
@@ -264,7 +264,7 @@ public class CallFrameStackTests
 
     // ── the pool must not change what a program computes ──
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeepRecursionUnwindsAndRecursesAgainToTheSameResult()
         => Assert.Equal("true", Eval(@"
             function sum(n) { return n === 0 ? 0 : n + sum(n - 1); }
@@ -272,7 +272,7 @@ public class CallFrameStackTests
             for (var i = 0; i < 200; i++) sum(400);
             String(first === 80200 && sum(400) === first);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ThrowingUnwindReleasesFramesAndLeavesTheStackUsable()
         => Assert.Equal("true", Eval(@"
             function boom(n) { if (n === 0) throw new Error('boom'); return boom(n - 1); }

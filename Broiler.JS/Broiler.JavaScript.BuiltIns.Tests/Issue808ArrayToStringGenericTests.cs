@@ -18,19 +18,19 @@ public class Issue808ArrayToStringGenericTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_NormalArray_JoinsElements()
         => Assert.Equal("1,2,3", Eval("[1, 2, 3].toString();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_OnBoolean_FallsBackToObjectToString()
         => Assert.Equal("[object Boolean]", Eval("Array.prototype.toString.call(true);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_OnPlainObject_FallsBackToObjectToString()
         => Assert.Equal("[object Object]", Eval("Array.prototype.toString.call({});"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_NonCallableJoin_UsesObjectToStringWithTag()
         => Assert.Equal("[object Foo]", Eval("""
             var a = [];
@@ -39,7 +39,7 @@ public class Issue808ArrayToStringGenericTests
             Array.prototype.toString.call(a);
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_OverriddenCallableJoin_IsUsed()
         => Assert.Equal("custom", Eval("""
             var a = [1, 2];
@@ -47,7 +47,7 @@ public class Issue808ArrayToStringGenericTests
             a.toString();
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_OnNullReceiver_Throws()
         => Assert.Equal("TypeError", Eval("""
             var err = "none";

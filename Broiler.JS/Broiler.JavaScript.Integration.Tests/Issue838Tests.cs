@@ -141,41 +141,41 @@ public class Issue838Tests
 
     // ---- Problems 96/98/99: negative-year human-readable Date strings ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToStringSerializesNegativeYearWithSignedFourDigitYear()
         => Assert.Equal("Fri Jan 01 -0001 00:00:00 GMT+0000 (Coordinated Universal Time)",
             Eval("new Date(Date.UTC(-1, 0, 1)).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToUTCStringSerializesNegativeYear()
         => Assert.Equal("Fri, 01 Jan -0001 00:00:00 GMT",
             Eval("new Date(Date.UTC(-1, 0, 1)).toUTCString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToDateStringSerializesNegativeYear()
         => Assert.Equal("Fri Jan 01 -0001", Eval("new Date(Date.UTC(-1, 0, 1)).toDateString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NegativeYearDateIsNotReportedInvalid()
         => Assert.Equal("false", Eval(
             "var s = new Date(Date.UTC(-1, 0, 1)).toString(); String(s === 'Invalid Date')"));
 
     // ---- in-range dates and the genuine NaN case are unchanged ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EpochToStringStillRendersInUtcContainer()
         => Assert.Equal("Thu Jan 01 1970 00:00:00 GMT+0000 (Coordinated Universal Time)",
             Eval("new Date(0).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EpochToUTCStringUnchanged()
         => Assert.Equal("Thu, 01 Jan 1970 00:00:00 GMT", Eval("new Date(0).toUTCString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EpochToDateStringUnchanged()
         => Assert.Equal("Thu Jan 01 1970", Eval("new Date(0).toDateString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InvalidDateStillSerializesToInvalidDate()
         => Assert.Equal("Invalid Date,Invalid Date,Invalid Date", Eval(
             "var d = new Date(NaN);" +
@@ -183,162 +183,162 @@ public class Issue838Tests
 
     // ---- Problem 95: toString output round-trips through Date.parse ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateParseRoundTripsToStringAtEpoch()
         => Assert.Equal("0", Eval("String(Date.parse(new Date(0).toString()))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateParseRoundTripsToStringAtArbitraryInstant()
         => Assert.Equal("true", Eval(
             "var d = new Date(1687000000000); String(Date.parse(d.toString()) === d.getTime())"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateParseRoundTripsToStringForPreEpochInstant()
         => Assert.Equal("true", Eval(
             "var d = new Date(-5000000000); String(Date.parse(d.toString()) === d.getTime())"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateParseHonoursExplicitNonZeroOffsetInToStringShape()
         => Assert.Equal("28800000", Eval(
             "String(Date.parse('Thu Jan 01 1970 00:00:00 GMT-0800 (Pacific Standard Time)'))"));
 
     // ---- guard: the normalisation does not regress the existing ISO / UTC / NaN paths ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IsoStringStillParses()
         => Assert.Equal("1686825000000", Eval("String(Date.parse('2023-06-15T10:30:00Z'))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UtcStringStillParses()
         => Assert.Equal("0", Eval("String(Date.parse('Thu, 01 Jan 1970 00:00:00 GMT'))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NegativeZeroExtendedYearStillRejected()
         => Assert.Equal("true", Eval("String(isNaN(Date.parse('-000000-03-31T00:45Z')))"));
 
     // ---- Problem 97: Date.prototype.toLocale* throws the same exceptions as DateTimeFormat ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToLocaleStringNullLocaleThrowsTypeError()
         => Assert.Equal("TypeError", Eval(
             "try { new Date(0).toLocaleString(null); 'no-throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToLocaleDateStringNullLocaleThrowsTypeError()
         => Assert.Equal("TypeError", Eval(
             "try { new Date(0).toLocaleDateString(null); 'no-throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToLocaleTimeStringNullLocaleThrowsTypeError()
         => Assert.Equal("TypeError", Eval(
             "try { new Date(0).toLocaleTimeString(null); 'no-throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToLocaleStringNullLocaleMatchesDateTimeFormatConstructor()
         => Assert.Equal("true", Eval(
             "function err(fn){ try { fn(); return 'no-throw'; } catch (e) { return e.constructor.name; } }" +
             "String(err(function(){ new Date(0).toLocaleString(null); }) ===" +
             "       err(function(){ new Intl.DateTimeFormat(null); }))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToLocaleStringMalformedTagThrowsRangeError()
         => Assert.Equal("RangeError", Eval(
             "try { new Date(0).toLocaleString('i'); 'no-throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InvalidDateReturnsInvalidDateBeforeLocaleValidation()
         => Assert.Equal("Invalid Date", Eval("new Date(NaN).toLocaleString(null)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToLocaleStringStillWorksWithNoArgsAndValidLocale()
         => Assert.Equal("string,string", Eval(
             "(typeof new Date(0).toLocaleString()) + ',' + (typeof new Date(0).toLocaleString('en-US'))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToLocaleStringStillFormatsThroughIntlOptions()
         => Assert.Equal("1970", Eval(
             "new Date(0).toLocaleString('en-US', { year: 'numeric', timeZone: 'UTC' })"));
 
     // ---- Problem 35: Array.prototype[@@unscopables] matches the spec list (no "with") ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayUnscopablesMatchesSpecListWithoutWith()
         => Assert.Equal(
             "at,copyWithin,entries,fill,find,findIndex,findLast,findLastIndex," +
             "flat,flatMap,includes,keys,toReversed,toSorted,toSpliced,values",
             Eval("Object.keys(Array.prototype[Symbol.unscopables]).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayUnscopablesDoesNotIncludeWith()
         => Assert.Equal("false", Eval("String('with' in Array.prototype[Symbol.unscopables])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayUnscopablesHasNullPrototype()
         => Assert.Equal("true", Eval(
             "String(Object.getPrototypeOf(Array.prototype[Symbol.unscopables]) === null)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayWithMethodItselfStillExistsAndWorks()
         => Assert.Equal("function,1,9,3", Eval(
             "(typeof Array.prototype.with) + ',' + [1, 2, 3].with(1, 9).join(',')"));
 
     // ---- String.prototype.replace / replaceAll $-substitution for a string searchValue ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReplaceStringSearchExpandsMatchedSubstitution()
         => Assert.Equal("a[b]c", Eval("'abc'.replace('b', '[$&]')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReplaceStringSearchExpandsDollarDollar()
         => Assert.Equal("a$c", Eval("'abc'.replace('b', '$$')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReplaceStringSearchExpandsPrecedingAndFollowing()
         => Assert.Equal("ab[ab]d,a[cd]cd", Eval(
             "'abcd'.replace('c', '[$`]') + ',' + \"abcd\".replace('b', \"[$']\")"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReplaceStringSearchLeavesCaptureAndNamedPatternsLiteral()
         => Assert.Equal("a$1c,a$<x>c,a$zc,ax$c", Eval(
             "'abc'.replace('b','$1') + ',' + 'abc'.replace('b','$<x>') + ',' +" +
             "'abc'.replace('b','$z') + ',' + 'abc'.replace('b','x$')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReplaceStringSearchFunctionalReplacementStillWorks()
         => Assert.Equal("a[b]c", Eval("'abc'.replace('b', function (m) { return '[' + m + ']'; })"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReplaceAllStringSearchExpandsSubstitution()
         => Assert.Equal("a[-]b[-]c", Eval("'a-b-c'.replaceAll('-', '[$&]')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReplaceAllStringSearchExpandsPrecedingPerMatch()
         => Assert.Equal("a[a]a[aba]", Eval("'abab'.replaceAll('b', '[$`]')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReplaceAllEmptySearchExpandsSubstitutionAtEachPosition()
         => Assert.Equal("--a--b--", Eval("'ab'.replaceAll('', '-$&-')"));
 
     // ---- Problem 52: Intl.Locale.prototype.getTextInfo ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetTextInfoReturnsObjectWithDirectionKey()
         => Assert.Equal("direction", Eval("Object.keys(new Intl.Locale('en').getTextInfo()).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetTextInfoDirectionIsLtrForLatinAndRtlForArabicHebrew()
         => Assert.Equal("ltr,rtl,rtl", Eval(
             "new Intl.Locale('en').getTextInfo().direction + ',' +" +
             "new Intl.Locale('ar').getTextInfo().direction + ',' +" +
             "new Intl.Locale('he').getTextInfo().direction"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetTextInfoExplicitScriptOverridesLanguageDirection()
         => Assert.Equal("rtl,ltr", Eval(
             "new Intl.Locale('az-Arab').getTextInfo().direction + ',' +" +
             "new Intl.Locale('ar-Latn').getTextInfo().direction"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetTextInfoDirectionIsAnOrdinaryDataProperty()
         => Assert.Equal(
             "{\"value\":\"ltr\",\"writable\":true,\"enumerable\":true,\"configurable\":true}",
@@ -346,20 +346,20 @@ public class Issue838Tests
 
     // ---- Problem 53: Intl.Locale.prototype.getWeekInfo ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetWeekInfoReturnsSpecKeysInOrder()
         // minimalDays was removed from getWeekInfo by a normative ECMA-402 change (issue #840
         // Problem 42); the output is now exactly { firstDay, weekend }.
         => Assert.Equal("firstDay,weekend", Eval(
             "Object.keys(new Intl.Locale('en-US').getWeekInfo()).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetWeekInfoFirstDayIsNumberAndWeekendIsArray()
         => Assert.Equal("number,true", Eval(
             "var w = new Intl.Locale('en-US').getWeekInfo();" +
             "(typeof w.firstDay) + ',' + Array.isArray(w.weekend)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetWeekInfoFirstDayIsSundayForUsAndMondayForGermany()
         => Assert.Equal("7,1", Eval(
             "new Intl.Locale('en-US').getWeekInfo().firstDay + ',' +" +
@@ -370,26 +370,26 @@ public class Issue838Tests
     private const string IteratorPrototypeIterator =
         "Object.getPrototypeOf(Object.getPrototypeOf([].values()))[Symbol.iterator]";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IteratorPrototypeSymbolIteratorNameIsBracketed()
         => Assert.Equal("[Symbol.iterator]", Eval(IteratorPrototypeIterator + ".name"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IteratorPrototypeSymbolIteratorToStringConformsToNativeFunctionSyntax()
         => Assert.Equal("function [Symbol.iterator]() { [native code] }",
             Eval(IteratorPrototypeIterator + ".toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IteratorPrototypeSymbolIteratorStillReturnsThis()
         => Assert.Equal("true", Eval("var it = [].values(); String(it[Symbol.iterator]() === it)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IterationStillWorksAfterRename()
         => Assert.Equal("1,2,3", Eval("[...[1, 2, 3]].join(',')"));
 
     // ---- Problem 92: Intl.NumberFormat canonicalizes the currency code to upper case ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatCanonicalizesLowercaseCurrencyToUpper()
         => Assert.Equal("USD,EUR,USD", Eval(
             "new Intl.NumberFormat('en', { style: 'currency', currency: 'usd' }).resolvedOptions().currency + ',' +" +
@@ -400,7 +400,7 @@ public class Issue838Tests
     // only sets [[Currency]] when style is "currency", so resolvedOptions omits the property
     // entirely otherwise (test262 NumberFormat/prototype/resolvedOptions/basic.js asserts
     // `verifyProperty(actual, "currency", undefined)` on a default decimal formatter).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatDoesNotReflectCurrencyWhenStyleNotCurrency()
         => Assert.Equal("undefined,false", Eval(
             "var ro = new Intl.NumberFormat('en', { currency: 'jpy' }).resolvedOptions();" +
@@ -408,7 +408,7 @@ public class Issue838Tests
 
     // ...but the code is still validated at construction, so a malformed one is a RangeError
     // even though it would never be reflected.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatStillValidatesCurrencyWhenStyleNotCurrency()
         => Assert.Equal("RangeError", Eval(
             "try { new Intl.NumberFormat('en', { currency: 'jp' }); 'no-throw'; } catch (e) { e.constructor.name; }"));
@@ -417,7 +417,7 @@ public class Issue838Tests
     // only when style is "unit", so a unit supplied under any other style is dropped — including
     // under style:"currency", where both option groups are present (test262
     // NumberFormat/constructor-unit.js and constructor-unitDisplay.js).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatDoesNotReflectUnitWhenStyleNotUnit()
         => Assert.Equal("false,false,false,false", Eval(
             "function has(o, k) { return Object.prototype.hasOwnProperty.call(" +
@@ -427,50 +427,50 @@ public class Issue838Tests
             " has({style:'currency', currency:'USD', unit:'meter'}, 'unit')," +
             " has({style:'percent', unit:'meter', unitDisplay:'long'}, 'unitDisplay')].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatStillReflectsUnitWhenStyleIsUnit()
         => Assert.Equal("unit,meter,long,5 meters", Eval(
             "var f = new Intl.NumberFormat('en', { style:'unit', unit:'meter', unitDisplay:'long' });" +
             "var r = f.resolvedOptions();" +
             "[r.style, r.unit, r.unitDisplay, f.format(5)].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatStillValidatesUnitWhenStyleNotUnit()
         => Assert.Equal("RangeError,RangeError", Eval(
             "function kind(o) { try { new Intl.NumberFormat('en', o); return 'no-throw'; }" +
             "                  catch (e) { return e.constructor.name; } }" +
             "[kind({unit:'bogus'}), kind({unit:'meter', unitDisplay:'bogus'})].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatStillFormatsCurrencyGivenLowercaseCode()
         => Assert.Equal("$5.00", Eval(
             "new Intl.NumberFormat('en-US', { style: 'currency', currency: 'usd' }).format(5)"));
 
     // ---- Problem 70: an invalid NumberFormat "style" option is a RangeError ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatInvalidStyleThrowsRangeError()
         => Assert.Equal("RangeError", Eval(
             "try { new Intl.NumberFormat('en', { style: 'invalid' }); 'no-throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberToLocaleStringInvalidStyleThrowsRangeError()
         => Assert.Equal("RangeError", Eval(
             "try { (1).toLocaleString('en', { style: 'invalid' }); 'no-throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BigIntToLocaleStringInvalidStyleThrowsRangeError()
         => Assert.Equal("RangeError", Eval(
             "try { (1n).toLocaleString('en', { style: 'invalid' }); 'no-throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatValidStylesStillResolve()
         => Assert.Equal("decimal,percent,unit", Eval(
             "new Intl.NumberFormat('en').resolvedOptions().style + ',' +" +
             "new Intl.NumberFormat('en', { style: 'percent' }).resolvedOptions().style + ',' +" +
             "new Intl.NumberFormat('en', { style: 'unit', unit: 'meter' }).resolvedOptions().style"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatCurrencyStyleStillRequiresCurrencyAndRejectsMalformedCode()
         => Assert.Equal("TypeError,RangeError", Eval(
             "function err(f){ try { f(); return 'no-throw'; } catch (e) { return e.constructor.name; } }" +
@@ -479,19 +479,19 @@ public class Issue838Tests
 
     // ---- Problem 73: deprecated calendar keyword values are canonicalized ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LocaleCanonicalizesDeprecatedCalendarKeyword()
         => Assert.Equal("islamic-civil,ethioaa", Eval(
             "new Intl.Locale('en-u-ca-islamicc').calendar + ',' +" +
             "new Intl.Locale('en-u-ca-ethiopic-amete-alem').calendar"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetCanonicalLocalesCanonicalizesCalendarKeyword()
         => Assert.Equal("en-u-ca-islamic-civil,en-u-ca-ethioaa", Eval(
             "Intl.getCanonicalLocales('en-u-ca-islamicc')[0] + ',' +" +
             "Intl.getCanonicalLocales('en-u-ca-ethiopic-amete-alem')[0]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateTimeFormatCanonicalizesCalendarOptionAndTag()
         => Assert.Equal("islamic-civil,islamic-civil", Eval(
             "new Intl.DateTimeFormat('en', { calendar: 'islamicc' }).resolvedOptions().calendar + ',' +" +
@@ -501,7 +501,7 @@ public class Issue838Tests
     // DateTimeFormat/prototype/resolvedOptions/calendar.js requires the full Intl.Era-monthcode
     // set, "hebrew" included); only an identifier outside that set falls back to the default
     // "gregory" and drops the keyword from the resolved locale.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SupportedCalendarStillResolvesAndUnsupportedStillFallsBack()
         => Assert.Equal("chinese,hebrew,gregory,en", Eval(
             "new Intl.DateTimeFormat('en-u-ca-chinese').resolvedOptions().calendar + ',' +" +
@@ -511,25 +511,25 @@ public class Issue838Tests
 
     // ---- Problem 79: an unsupported collation resolves to "default" ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CollatorUnsupportedCollationResolvesToDefault()
         => Assert.Equal("default,default", Eval(
             "new Intl.Collator('en-u-co-invalid').resolvedOptions().collation + ',' +" +
             "new Intl.Collator('en', { collation: 'invalid' }).resolvedOptions().collation"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CollatorKnownCollationIsReflected()
         => Assert.Equal("phonebk,zhuyin", Eval(
             "new Intl.Collator('de-u-co-phonebk').resolvedOptions().collation + ',' +" +
             "new Intl.Collator('zh', { collation: 'zhuyin' }).resolvedOptions().collation"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CollatorDefaultCollationAndCompareUnaffected()
         => Assert.Equal("default,-1", Eval(
             "new Intl.Collator('en').resolvedOptions().collation + ',' +" +
             "new Intl.Collator('en').compare('a', 'b')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LocaleCanonicalizesCollationAliasInTag()
         => Assert.Equal("phonebk", Eval("new Intl.Locale('de-u-co-phonebk').collation"));
 
@@ -541,13 +541,13 @@ public class Issue838Tests
     // "default"), so it must NOT appear; a genuinely resolvable tailoring ("phonebk")
     // and the root collations ("emoji") must. (Corrected for #912 Problem 11; the original
     // #838 fix over-listed non-resolvable collations — see collations-accepted-by-Collator.)
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SupportedValuesOfCollationListsOnlyResolvable()
         => Assert.Equal("false,true,true", Eval(
             "var a = Intl.supportedValuesOf('collation');" +
             "String(a.includes('big5han')) + ',' + String(a.includes('phonebk')) + ',' + String(a.includes('emoji'))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SupportedValuesOfCollationIsSortedAndExcludesReserved()
         => Assert.Equal("true,false", Eval(
             "var a = Intl.supportedValuesOf('collation');" +
@@ -557,7 +557,7 @@ public class Issue838Tests
     // Each supportedValuesOf("collation") value must resolve for SOME locale (not 'en'
     // specifically — phonebk resolves for de, pinyin for zh, etc.). Mirrors test262
     // intl402/Intl/supportedValuesOf/collations-accepted-by-Collator (#912 Problem 11).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EverySupportedCollationIsAcceptedByCollator()
         => Assert.Equal("true", Eval(
             "var sv = Intl.supportedValuesOf('collation');" +
@@ -568,45 +568,45 @@ public class Issue838Tests
             "  if (!hit) ok = false; });" +
             "String(ok)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SupportedValuesOfCollationOmitsUnsupportedValue()
         => Assert.Equal("false", Eval("String(Intl.supportedValuesOf('collation').includes('invalid'))"));
 
     // ---- Problem 91: currency fraction digits reflected in resolvedOptions ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CurrencyResolvedFractionDigitsUseMinorUnitCount()
         => Assert.Equal("0/0,2/2,3/3,4/4", Eval(
             "function f(c){ var r = new Intl.NumberFormat('en', { style: 'currency', currency: c })" +
             ".resolvedOptions(); return r.minimumFractionDigits + '/' + r.maximumFractionDigits; }" +
             "[f('JPY'), f('USD'), f('BHD'), f('CLF')].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CurrencyFractionDigitsHonourLowercaseCode()
         => Assert.Equal("0/0", Eval(
             "var r = new Intl.NumberFormat('en', { style: 'currency', currency: 'jpy' })" +
             ".resolvedOptions(); r.minimumFractionDigits + '/' + r.maximumFractionDigits"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CurrencyExplicitMinimumRaisesAgainstMinorUnitDefault()
         => Assert.Equal("2/2", Eval(
             "var r = new Intl.NumberFormat('en', { style: 'currency', currency: 'JPY', minimumFractionDigits: 2 })" +
             ".resolvedOptions(); r.minimumFractionDigits + '/' + r.maximumFractionDigits"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CurrencyExplicitMaximumLowersAgainstMinorUnitDefault()
         => Assert.Equal("0/0", Eval(
             "var r = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })" +
             ".resolvedOptions(); r.minimumFractionDigits + '/' + r.maximumFractionDigits"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CurrencyResolvedFractionDigitsAgreeWithFormatting()
         => Assert.Equal("¥1,235,$3.00,$3", Eval(
             "new Intl.NumberFormat('en-US', { style: 'currency', currency: 'JPY' }).format(1234.5) + ',' +" +
             "new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(3) + ',' +" +
             "new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(3)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DecimalFractionDigitsUnchanged()
         => Assert.Equal("0/3,2/3", Eval(
             "var a = new Intl.NumberFormat('en').resolvedOptions();" +
@@ -616,31 +616,31 @@ public class Issue838Tests
 
     // ---- Problem 84: English compact notation ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnglishCompactFormatsWithShortScaleSuffixes()
         => Assert.Equal("1.5M,12K,1K,1B,1.5T", Eval(
             "var nf = new Intl.NumberFormat('en', { notation: 'compact' });" +
             "[nf.format(1500000), nf.format(12345), nf.format(1000)," +
             " nf.format(1000000000), nf.format(1500000000000)].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnglishCompactFormatToPartsHasIntegerAndCompactParts()
         => Assert.Equal("integer:988|compact:M", Eval(
             "new Intl.NumberFormat('en', { notation: 'compact' }).formatToParts(987654321)" +
             ".map(function (p) { return p.type + ':' + p.value; }).join('|')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnglishCompactFormatToPartsLengthIsTwo()
         => Assert.Equal("2", Eval(
             "String(new Intl.NumberFormat('en-US', { notation: 'compact' }).formatToParts(987654321).length)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CompactBelowThousandAndZeroAndNegativeAreHandled()
         => Assert.Equal("999,0,-2.5M", Eval(
             "var nf = new Intl.NumberFormat('en', { notation: 'compact' });" +
             "nf.format(999) + ',' + nf.format(0) + ',' + nf.format(-2500000)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CompactResolvedOptionsAndStandardNotationUnaffected()
         => Assert.Equal("compact,short,1,500,000", Eval(
             "var r = new Intl.NumberFormat('en', { notation: 'compact' }).resolvedOptions();" +
@@ -648,7 +648,7 @@ public class Issue838Tests
 
     // ---- Problem 49: object rest does not read excluded keys ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectRestDoesNotCallProxyGetOwnPropertyDescriptorForExcludedKeys()
         => Assert.Equal("b,c", Eval(
             "var log = [];" +
@@ -657,7 +657,7 @@ public class Issue838Tests
             "  getOwnPropertyDescriptor: function (t, k) { log.push(k); return Reflect.getOwnPropertyDescriptor(t, k); } });" +
             "var { a, ...r } = p; log.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectRestDoesNotReReadExcludedAccessor()
         => Assert.Equal("a,b | {\"b\":2}", Eval(
             "var calls = [];" +
@@ -665,7 +665,7 @@ public class Issue838Tests
             "var { a, ...rest } = o;" +
             "calls.join(',') + ' | ' + JSON.stringify(rest)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectRestExcludesStringIndexAndSymbolKeys()
         => Assert.Equal("{\"1\":\"b\",\"2\":\"c\"},false", Eval(
             "var s = Symbol('s');" +
@@ -673,7 +673,7 @@ public class Issue838Tests
             "var { 0: z, [s]: w, ...rest } = o;" +
             "JSON.stringify(rest) + ',' + (s in rest)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectRestComputedKeyEvaluatedOnceAndExcluded()
         => Assert.Equal("1|{\"b\":2}", Eval(
             "var log = [];" +
@@ -681,7 +681,7 @@ public class Issue838Tests
             "var { [k()]: x, ...rest } = { a: 1, b: 2 };" +
             "log.length + '|' + JSON.stringify(rest)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainObjectSpreadAndRestOnlyStillCopyEverything()
         => Assert.Equal("{\"a\":1,\"b\":2},{\"a\":1,\"b\":2}", Eval(
             "var spread = { ...{ a: 1, b: 2 } };" +
@@ -695,31 +695,31 @@ public class Issue838Tests
 
     private static string Quote(string s) => "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForAwaitWithCStyleHeadIsSyntaxError()
         => Assert.Equal("SyntaxError", Eval(SyntaxCheck("async function* g(){ for await (;;) ; }")));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForAwaitWithCStyleInitHeadIsSyntaxError()
         => Assert.Equal("SyntaxError", Eval(SyntaxCheck("async function f(){ for await (var i=0;i<1;i++) ; }")));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForAwaitWithForInHeadIsSyntaxError()
         => Assert.Equal("SyntaxError", Eval(SyntaxCheck("async function f(){ for await (var x in {}) ; }")));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForAwaitOfHeadIsStillValid()
         => Assert.Equal("ok", Eval(
             "try { eval('async function f(){ for await (var x of []) ; }'); 'ok'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForAwaitUsingOfHeadAndCStyleAwaitUsingStillValid()
         => Assert.Equal("ok,ok", Eval(
             "function chk(s){ try { eval(s); return 'ok'; } catch (e) { return e.constructor.name; } }" +
             "chk('async function f(){ for await (using x of []) ; }') + ',' +" +
             "chk('async function f(){ for (await using x = null; false;) ; }')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainForLoopsWithoutAwaitAreUnaffected()
         => Assert.Equal("3,ab,6", Eval(
             "var s=0; for (var i=0;i<3;i++) s+=i;" +
@@ -729,25 +729,25 @@ public class Issue838Tests
 
     // ---- Problem 67: await/yield in arrow parameters is a SyntaxError ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitInAsyncArrowParameterDefaultIsSyntaxError()
         => Assert.Equal("SyntaxError", Eval(SyntaxCheck("async function f(){ return (a = await 1) => {}; }")));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitRegexInAsyncArrowParameterDefaultIsSyntaxError()
         => Assert.Equal("SyntaxError", Eval(SyntaxCheck("async function f(){ return (a = await /r/g) => {}; }")));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldInGeneratorArrowParameterDefaultIsSyntaxError()
         => Assert.Equal("SyntaxError", Eval(SyntaxCheck("function* g(){ return (a = yield 1) => {}; }")));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitInNestedAsyncArrowDefaultIsAllowed()
         => Assert.Equal("ok", Eval(
             "function chk(s){ try { eval(s); return 'ok'; } catch (e) { return e.constructor.name; } }" +
             "chk('async function f(){ var g = (a = (async () => await 1)) => a; }')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitInArrowBodyAndPlainArrowsAreAllowed()
         => Assert.Equal("ok,ok,ok", Eval(
             "function chk(s){ try { eval(s); return 'ok'; } catch (e) { return e.constructor.name; } }" +

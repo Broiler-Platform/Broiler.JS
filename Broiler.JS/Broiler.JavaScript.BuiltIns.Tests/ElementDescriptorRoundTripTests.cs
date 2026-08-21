@@ -39,18 +39,18 @@ public class ElementDescriptorRoundTripTests
     public void ADenseElementDescribesItselfAsAPlainDataProperty(string prepare, string key)
         => Assert.Equal("5,true,true,true,false", Eval(prepare + " d(a, " + key + ");"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AHoleHasNoDescriptor()
         => Assert.Equal("none", Eval("var a = [1, 2]; delete a[0]; d(a, 0);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADescriptorSurvivesTheMoveToSparseStorage()
         // Going sparse rewrites every dense slot into a real descriptor; the ones that were
         // already there have to come out exactly as they went in.
         => Assert.Equal("1,true,true,true,false|9,true,true,true,false", Eval(
             "var a = [1, 2, 3]; a[100000] = 9; d(a, 0) + '|' + d(a, 100000);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADescriptorSurvivesACustomDescriptorElsewhere()
         // Defining one non-default element moves the whole array out of compact storage.
         => Assert.Equal("1,true,true,true,false", Eval(
@@ -68,7 +68,7 @@ public class ElementDescriptorRoundTripTests
         => Assert.Equal(expected, Eval(
             "var a = [1, 2]; Object.defineProperty(a, 0, " + descriptor + "); d(a, 0);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnAccessorElementStaysAnAccessor()
         => Assert.Equal("42,undefined,true,true", Eval(
             "var a = []; var seen; " +
@@ -78,14 +78,14 @@ public class ElementDescriptorRoundTripTests
             "var x = Object.getOwnPropertyDescriptor(a, 0); " +
             "[a[0], String(x.value), typeof x.get === 'function', seen === 9].join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RedefiningAnAccessorBackToAValueRestoresADataProperty()
         => Assert.Equal("7,true,true,true,false", Eval(
             "var a = []; Object.defineProperty(a, 0, { get: function () { return 1; }, configurable: true }); " +
             "Object.defineProperty(a, 0, { value: 7, writable: true, enumerable: true, configurable: true }); " +
             "d(a, 0);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANonConfigurableElementCannotBeDeleted()
         => Assert.Equal("false,1", Eval(
             "var a = [1]; Object.defineProperty(a, 0, { configurable: false }); [delete a[0], a[0]].join(',');"));
@@ -100,20 +100,20 @@ public class ElementDescriptorRoundTripTests
     public void KeysComeOutInAscendingIndexOrder(string prepare, string expected)
         => Assert.Equal(expected, Eval(prepare + " Object.keys(a).join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANonEnumerableElementIsHiddenButStillOwned()
         => Assert.Equal("1|0,1|true", Eval(
             "var a = [1, 2]; Object.defineProperty(a, 0, { enumerable: false }); " +
             "[Object.keys(a).join(','), Object.getOwnPropertyNames(a).slice(0, 2).join(','), " +
             "a.hasOwnProperty(0)].join('|');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PropertyIsEnumerableReadsTheRebuiltDescriptor()
         => Assert.Equal("true,false,false", Eval(
             "var a = [1, 2]; Object.defineProperty(a, 1, { enumerable: false }); " +
             "[a.propertyIsEnumerable(0), a.propertyIsEnumerable(1), a.propertyIsEnumerable(5)].join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInSkipsHolesAndNonEnumerables()
         => Assert.Equal("0,3", Eval(
             "var a = [1, 2, 3, 4]; delete a[1]; Object.defineProperty(a, 2, { enumerable: false }); " +
@@ -130,12 +130,12 @@ public class ElementDescriptorRoundTripTests
         => Assert.Equal(contents + "|" + descriptor, Eval(
             "var a = [1, 2, 3, 4]; " + operation + " a.join(',') + '|' + d(a, 1);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FillRebuildsDefaultDescriptors()
         => Assert.Equal("9,9,9|9,true,true,true,false", Eval(
             "var a = new Array(3); a.fill(9); a.join(',') + '|' + d(a, 1);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BulkOperationsRespectANonWritableElement()
         // With a custom descriptor in play the array is no longer eligible for the
         // descriptor-free bulk path, and the spec's per-element rules must reassert.
@@ -143,7 +143,7 @@ public class ElementDescriptorRoundTripTests
             "'use strict'; var a = [1, 2, 3]; Object.defineProperty(a, 0, { writable: false }); " +
             "var e = 'none'; try { a.fill(9); } catch (x) { e = x.constructor.name; } [e, a[0]].join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SortMovesHolesToTheEnd()
         => Assert.Equal("4,1,2,3,true", Eval(
             "var a = [2, 1]; a[3] = 3; a.sort(); [a.length, a[0], a[1], a[2], !(3 in a)].join(',');"));
@@ -157,47 +157,47 @@ public class ElementDescriptorRoundTripTests
     public void JsonSerializationIsUnchanged(string literal, string expected)
         => Assert.Equal(expected, Eval("JSON.stringify(" + literal + ");"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SliceAndConcatProduceOrdinaryElements()
         => Assert.Equal("2,3|3,true,true,true,false", Eval(
             "var a = [1, 2, 3, 4].slice(1, 3).concat([]); a.join(',') + '|' + d(a, 1);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SpliceKeepsTheSurvivingElementsOrdinary()
         => Assert.Equal("1,x,4|x,true,true,true,false", Eval(
             "var a = [1, 2, 3, 4]; a.splice(1, 2, 'x'); a.join(',') + '|' + d(a, 1);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SpreadAndDestructuringSeeHolesAsUndefined()
         => Assert.Equal("1,undefined,3|3", Eval(
             "var a = [1, , 3]; var x = a[0], y = a[1], z = a[2]; " +
             "[x, String(y), z].join(',') + '|' + [...a].length;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectAssignCopiesElementsAsPlainProperties()
         => Assert.Equal("1,2|1,true,true,true,false", Eval(
             "var a = Object.assign({}, [1, 2]); [a[0], a[1]].join(',') + '|' + d(a, 0);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FreezeReportsEveryElementLockedDown()
         => Assert.Equal("true|1,false,true,false,false", Eval(
             "var a = Object.freeze([1, 2]); Object.isFrozen(a) + '|' + d(a, 0);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SealLeavesElementsWritable()
         => Assert.Equal("true|1,true,true,false,false", Eval(
             "var a = Object.seal([1, 2]); Object.isSealed(a) + '|' + d(a, 0);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MappedArgumentsElementsDescribeNormally()
         => Assert.Equal("9,true,true,true,false", Eval(
             "function f() { arguments[0] = 9; return d(arguments, 0); } f(1, 2);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringExoticIndicesAreUnaffected()
         => Assert.Equal("b,false,true,false,false", Eval("d(Object('abc'), 1);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayIndicesAreUnaffected()
         => Assert.Equal("5,true,true,true,false", Eval("var a = new Int32Array(4); a[1] = 5; d(a, 1);"));
 }

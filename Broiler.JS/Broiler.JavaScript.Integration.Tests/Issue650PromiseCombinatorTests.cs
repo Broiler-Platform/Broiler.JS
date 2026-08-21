@@ -23,7 +23,7 @@ public class Issue650PromiseCombinatorTests
 
     // Three synchronous thenables settle during the loop; the capability resolve runs
     // exactly once, with all three values present.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AllResolvesOnceWithSynchronousThenables()
         => Assert.Equal("1|3|p1-fulfill,p2-fulfill,p3-fulfill", Eval(@"
 var callCount=0, vals;
@@ -37,7 +37,7 @@ Promise.all.call(C,[p1,p2,p3]);
 callCount + '|' + vals.length + '|' + vals.join(',')"));
 
     // A resolve element re-invoked after Promise.all returned is a no-op ([[AlreadyCalled]]).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AllResolveElementIsAlreadyCalledGuarded()
         => Assert.Equal("1|expectedValue|1|expectedValue", Eval(@"
 var callCount=0, vals;
@@ -51,7 +51,7 @@ p1of('unexpectedValue');
 before + '|' + callCount + '|' + vals[0]"));
 
     // Promise.any rejects with an AggregateError carrying every rejection reason.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnyRejectsWithAggregateError()
         => Assert.Equal("1|true|p1-rejection,p2-rejection,p3-rejection", Eval(@"
 var callCount=0, errs, isAgg;
@@ -65,7 +65,7 @@ Promise.any.call(C,[p1,p2,p3]);
 callCount + '|' + isAgg + '|' + errs.join(',')"));
 
     // A reject element re-invoked after Promise.any returned is a no-op ([[AlreadyCalled]]).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnyRejectElementIsAlreadyCalledGuarded()
         => Assert.Equal("1|onRejectedValue|onRejectedValue", Eval(@"
 var callCount=0, errs;
@@ -79,7 +79,7 @@ p1oj('unexpected');
 before + '|' + errs[0]"));
 
     // Promise.allSettled produces the per-element status records synchronously.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AllSettledProducesStatusRecords()
         => Assert.Equal("1|2|fulfilled:A|rejected:B", Eval(@"
 var callCount=0, arr;
@@ -91,7 +91,7 @@ Promise.allSettled.call(C,[p1,p2]);
 callCount + '|' + arr.length + '|' + arr[0].status + ':' + arr[0].value + '|' + arr[1].status + ':' + arr[1].reason"));
 
     // Native Promise.all still resolves (asynchronously) with the right values.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async System.Threading.Tasks.Task NativePromiseAllStillResolves()
     {
         using var ctx = new JSContext();
@@ -102,7 +102,7 @@ callCount + '|' + arr.length + '|' + arr[0].status + ':' + arr[0].value + '|' + 
     }
 
     // Native Promise.any still resolves with the first fulfillment.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async System.Threading.Tasks.Task NativePromiseAnyStillResolves()
     {
         using var ctx = new JSContext();
@@ -126,12 +126,12 @@ iter[Symbol.iterator]=function(){ return {
 var P=function(ex){ return new Promise(function(_,reject){ ex(function(){ throw new Error('x'); }, reject); }); };
 P.resolve=Promise.resolve;";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AllCapabilityResolveThrowDoesNotCloseExhaustedIterator()
         => Assert.Equal("1|0", Eval(
             ThrowingResolveCapability + "try { Promise.all.call(P, iter); } catch (e) {} nextCount + '|' + returnCount"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AllSettledCapabilityResolveThrowDoesNotCloseExhaustedIterator()
         => Assert.Equal("1|0", Eval(
             ThrowingResolveCapability + "try { Promise.allSettled.call(P, iter); } catch (e) {} nextCount + '|' + returnCount"));

@@ -58,7 +58,7 @@ public class Issue971Tests
     // resolves through the running LexicalEnvironment and reaches the catch parameter.
     // test262 staging/sm/lexical-environment/var-in-catch-body-annex-b-eval.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalVarOverCatchParameterAssignsTheParameter()
     {
         const string source = """
@@ -99,7 +99,7 @@ public class Issue971Tests
     // global the eval had itself just written as its pre-eval value.
     // test262 staging/sm/lexical-environment/block-scoped-functions-annex-b-eval.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClosureCreatedInsideEvalSeesTheEvalsOwnWrites()
     {
         const string source = """
@@ -114,7 +114,7 @@ public class Issue971Tests
         Assert.Equal("A|A", EvalString(source));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BlockLevelFunctionDeclaredByEvalWritesTheLiveGlobal()
     {
         const string source = """
@@ -153,14 +153,14 @@ public class Issue971Tests
     private static string LargeLiteral(Func<int, string> element, int count = 400)
         => "[" + string.Join(",", Enumerable.Range(0, count).Select(element)) + "]";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LargeConstantArrayKeepsItsElements()
     {
         var source = $"var a = {LargeLiteral(i => i.ToString())}; a.length + ',' + a[0] + ',' + a[399] + ',' + a.join('').length;";
         Assert.Equal("400,0,399,1090", EvalString(source));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LargeConstantArrayOfNestedArraysKeepsItsShape()
     {
         var source = $"""
@@ -170,7 +170,7 @@ public class Issue971Tests
         Assert.Equal("400,k7,7,true", EvalString(source));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EachEvaluationOfALargeConstantArrayIsFresh()
     {
         var source = "function make() { return " + LargeLiteral(i => $"[{i}]") + """
@@ -182,7 +182,7 @@ public class Issue971Tests
         Assert.Equal("false,false,2,1", EvalString(source));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LargeConstantArrayPreservesHolesAndNegativeZero()
     {
         // 400 elements: index 0 is a hole, index 1 is -0, the rest are 1.
@@ -197,7 +197,7 @@ public class Issue971Tests
         Assert.Equal("400,false,true,true,1", EvalString(source));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LargeConstantArrayCarriesEveryLiteralKind()
     {
         // Strings holding the encoding's own delimiters must survive: the format is
@@ -213,7 +213,7 @@ public class Issue971Tests
         Assert.Equal("a5:b|s3:|h|a|true|false|null|1.5|-3|1e+21|\u0000:|2|400", EvalString(source));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LargeConstantArrayCarriesLoneSurrogates()
     {
         // The encoding is a .NET string and the emitted constant is a `ldstr`, so an unpaired
@@ -229,7 +229,7 @@ public class Issue971Tests
         Assert.Equal("1,55296,57343,128512,400", EvalString(source));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConstantArrayTemplateIsNotUsedForASmallLiteral()
     {
         // Below the threshold nothing changes; asserted through behaviour rather than through
@@ -255,7 +255,7 @@ public class Issue971Tests
     public void EvalOfNewTargetAlone(string expression, string expected)
         => Assert.Equal(expected, EvalString(expression));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewTargetIsStillASyntaxErrorInGlobalEvalCode()
     {
         using var ctx = new JSContext();
@@ -263,7 +263,7 @@ public class Issue971Tests
         Assert.Contains("new.target", error.Message);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LargeArrayWithANonConstantElementStillEvaluatesIt()
     {
         var elements = new StringBuilder("x++");

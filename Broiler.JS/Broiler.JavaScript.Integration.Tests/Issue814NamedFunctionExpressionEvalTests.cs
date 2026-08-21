@@ -21,39 +21,39 @@ public class Issue814NamedFunctionExpressionEvalTests
         return ctx.Eval(code).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalSeesNamedFunctionExpressionName()
         => Assert.Equal("function", Eval(
             "var f = function g() { return eval('typeof g'); }; f()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictDirectEvalReassignOfNameThrowsTypeError()
         => Assert.Equal("TypeError", Eval(
             "var f = function g() { 'use strict'; try { eval('g = 1'); return 'no-error'; } " +
             "catch (e) { return e.constructor.name; } }; f()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictDirectEvalReassignOfGeneratorNameThrowsTypeError()
         => Assert.Equal("TypeError", Eval(
             "var f = function* g() { 'use strict'; try { eval('g = 1'); } " +
             "catch (e) { yield e.constructor.name; } }; f().next().value"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalCanRecurseThroughName()
         => Assert.Equal("24", Eval(
             "var fact = function f(n) { return n <= 1 ? 1 : n * eval('f(n - 1)'); }; '' + fact(4)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InnerVarShadowsNameForDirectEval()
         => Assert.Equal("number:7", Eval(
             "var f = function g() { var g = 7; return eval('typeof g + \":\" + g'); }; f()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NameStillResolvesStaticallyInBody()
         => Assert.Equal("function", Eval(
             "var f = function g() { return typeof g; }; f()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectStrictReassignOfNameStillThrowsTypeError()
         => Assert.Equal("TypeError", Eval(
             "var f = function g() { 'use strict'; try { g = 1; return 'no-error'; } " +

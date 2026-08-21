@@ -18,29 +18,29 @@ public class Issue808ArrayFromStringIteratorTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void From_String_IteratesByCodePoint()
         => Assert.Equal("a,b,c", Eval("Array.from('abc').join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void From_String_SurrogatePairIsOneCodePoint()
         => Assert.Equal("1", Eval("String(Array.from('\\u{1D11E}').length);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void From_String_CustomIterator_IsHonoured()
         => Assert.Equal("X,Y", Eval("""
             String.prototype[Symbol.iterator] = function () { return ["X", "Y"][Symbol.iterator](); };
             Array.from("zz").join(",");
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void From_String_DeletedIterator_FallsBackToCodeUnits()
         => Assert.Equal("a,b,c", Eval("""
             delete String.prototype[Symbol.iterator];
             Array.from("abc").join(",");
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void From_String_DeletedIterator_SurrogateSplitsIntoTwoCodeUnits()
         => Assert.Equal("2", Eval("""
             delete String.prototype[Symbol.iterator];

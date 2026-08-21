@@ -117,7 +117,7 @@ public class Issue790Tests
         => Assert.Equal("RangeError", ErrorName(code));
 
     // a plain numeric offset is merely ignored (not a UTC designator)
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainTime_NumericOffset_Ignored()
         => Assert.Equal("09:00:00", Eval("Temporal.PlainTime.from('09:00:00+01:00').toString()"));
 
@@ -134,28 +134,28 @@ public class Issue790Tests
     private static string Order(string expr, string smallest)
         => Eval(Observer.Replace("EXPR", expr).Replace("SMALLEST", smallest));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainDate_Since_ReadsAllOptionsBeforeValidating()
         => Assert.Equal("largestUnit,roundingIncrement,roundingMode,smallestUnit|RangeError",
             Order("new Temporal.PlainDate(2000,1,1).since(new Temporal.PlainDate(2001,1,1), options)", "'day'"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainDate_Until_ReadsAllOptionsBeforeValidating()
         => Assert.Equal("largestUnit,roundingIncrement,roundingMode,smallestUnit|RangeError",
             Order("new Temporal.PlainDate(2000,1,1).until(new Temporal.PlainDate(2001,1,1), options)", "'day'"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainYearMonth_Since_ReadsAllOptionsBeforeValidating()
         => Assert.Equal("largestUnit,roundingIncrement,roundingMode,smallestUnit|RangeError",
             Order("new Temporal.PlainYearMonth(2000,1).since(new Temporal.PlainYearMonth(2001,1), options)", "'month'"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainTime_Since_ReadsAllOptionsBeforeValidating()
         // largestUnit 'hour' is valid for PlainTime, so make smallestUnit the disallowed (date) unit
         => Assert.Equal("largestUnit,roundingIncrement,roundingMode,smallestUnit|RangeError",
             Order("new Temporal.PlainTime(1,0,0).since(new Temporal.PlainTime(2,0,0), options)", "'day'"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Instant_Since_ReadsAllOptionsBeforeValidating()
         => Assert.Equal("largestUnit,roundingIncrement,roundingMode,smallestUnit|RangeError",
             Order("new Temporal.Instant(0n).since(new Temporal.Instant(1000n), {" +
@@ -218,7 +218,7 @@ public class Issue790Tests
     }
 
     // The identifier itself is preserved (only equality canonicalizes).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTime_TimeZoneId_PreservesAlias()
         => Assert.Equal("Asia/Calcutta",
             Eval("Temporal.ZonedDateTime.from('2020-01-01T00:00:00+05:30[Asia/Calcutta]').timeZoneId"));
@@ -243,7 +243,7 @@ public class Issue790Tests
 
     // When both the mapper and the source's return() throw, the original (mapper) error propagates and
     // the close error is swallowed (IteratorClose with a throw completion).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IteratorHelper_CallbackThrows_CloseErrorSwallowed()
         => Assert.Equal("cb", Eval(
             "const u={next(){return {done:false,value:1};},return(){throw new Error('ret');}," +
@@ -306,7 +306,7 @@ public class Issue790Tests
         => Assert.Equal("0,2,u,u", IterResize(method, 2, 0));
 
     // reduce observes the element as its 2nd callback argument and visits all indices.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArray_Reduce_GrowMidIteration_DoesNotExtend()
         => Assert.Equal("0,2,4,6", Eval(
             "const rab=new ArrayBuffer(4,{maxByteLength:8});" +
@@ -314,7 +314,7 @@ public class Issue790Tests
             "let v=[]; ta.reduce((acc,x,i)=>{ v.push(x); if(i===1) rab.resize(8); return acc; }, 0);" +
             "v.map(x=>x===undefined?'u':x).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArray_Reduce_ShrinkMidIteration_ReadsUndefined()
         => Assert.Equal("0,2,u,u", Eval(
             "const rab=new ArrayBuffer(4,{maxByteLength:8});" +
@@ -348,7 +348,7 @@ public class Issue790Tests
             "let n=0; for(const x of ta." + method + "()){ if(++n===1) rab.resize(2); }"));
 
     // for-of over a fixed-length view that shrinks likewise throws.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArray_ForOf_FixedLength_ShrinkMidIteration_Throws()
         => Assert.Equal("TypeError", ErrorName(
             "const rab=new ArrayBuffer(4,{maxByteLength:8});" +
@@ -356,7 +356,7 @@ public class Issue790Tests
             "let n=0; for(const x of ta){ if(++n===1) rab.resize(2); }"));
 
     // A length-tracking view simply yields fewer elements after a shrink — no throw.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArray_LengthTrackingIterator_ShrinkMidIteration_YieldsSubset()
         => Assert.Equal("0,2|none", Eval(
             "const rab=new ArrayBuffer(4,{maxByteLength:8});" +
@@ -387,7 +387,7 @@ public class Issue790Tests
 
     // slice re-validates after coercing start/end: a fixed-length view shrunk out of bounds throws,
     // a length-tracking view returns the still-in-bounds elements (the rest zero-filled).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArray_Slice_FixedLength_CoercedShrink_Throws()
         => Assert.Equal("TypeError", ErrorName(
             "const rab=new ArrayBuffer(4,{maxByteLength:8});" +
@@ -395,7 +395,7 @@ public class Issue790Tests
             "const evil={valueOf(){ rab.resize(2); return 0; }};" +
             "ta.slice(evil)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArray_Slice_LengthTracking_CoercedShrink_ZeroFills()
         => Assert.Equal("1,2,0,0", Eval(
             "const rab=new ArrayBuffer(4,{maxByteLength:8});" +
@@ -404,7 +404,7 @@ public class Issue790Tests
             "Array.from(ta.slice(evil)).join(',')"));
 
     // set with a source typed array left out of bounds by a resize is a TypeError.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArray_Set_OutOfBoundsSource_Throws()
         => Assert.Equal("TypeError", ErrorName(
             "const rab=new ArrayBuffer(8,{maxByteLength:16});" +

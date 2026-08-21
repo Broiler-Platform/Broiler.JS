@@ -17,7 +17,7 @@ public class Issue919Tests
         return ctx.Eval(code);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewlyCreatedLocalEvalFunctionBindingMayBeDeleted()
     {
         var result = Eval(@"
@@ -31,7 +31,7 @@ try { postDeletion(); } catch (e) { threw = e instanceof ReferenceError; }
         Assert.Equal("function,33,true", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TopLevelEvalFunctionIsCallableBeforeAndAfterTextualSite()
     {
         // Hoisted at eval entry: readable before the textual declaration, and a stable
@@ -42,14 +42,14 @@ try { postDeletion(); } catch (e) { threw = e instanceof ReferenceError; }
         Assert.True(Eval(@"(function(){ return eval('var a=f; function f(){}; var b=f; a===b'); })()").BooleanValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalFunctionDeclarationCollidingWithParamOrVarUpdatesBinding()
     {
         Assert.Equal("99", Eval(@"(function(p){ eval('function p(){return 99}'); return typeof p==='function' ? p() : p; })(5)").ToString());
         Assert.Equal("8", Eval(@"(function(){ var v=1; eval('function v(){return 8}'); return typeof v==='function'?v():v; })()").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GlobalAndStrictEvalFunctionDeclarationsAreUnaffected()
     {
         // Global/indirect eval funcdecls still become global bindings; strict eval stays local.

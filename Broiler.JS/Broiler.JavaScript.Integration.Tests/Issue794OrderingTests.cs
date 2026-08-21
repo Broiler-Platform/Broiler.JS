@@ -37,13 +37,13 @@ public class Issue794OrderingTests
 
     // Subclassing still works: the instance gets the subclass prototype (resolved after a successful
     // construction) and the buffer is allocated.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayBuffer_Subclass_StillGetsSubclassPrototype()
         => Assert.Equal("8 true", Eval(
             "class B extends ArrayBuffer {} var b = new B(8); " +
             "b.byteLength + ' ' + (Object.getPrototypeOf(b) === B.prototype)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DataView_Subclass_StillGetsSubclassPrototype()
         => Assert.Equal("true", Eval(
             "class V extends DataView {} var v = new V(new ArrayBuffer(8), 2); " +

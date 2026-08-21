@@ -22,22 +22,22 @@ public class Issue650ForLoopScopeTests
 
     // ---- var hoisting out of a lexically-headed for-of/for-in body ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void VarInForOfBodyHoistsToFunctionScope()
         => Assert.Equal("function", Eval(
             "for (let a of [9]) var f = function () { return 7; }; typeof f"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MultipleVarDeclaratorsInForOfBodyAllHoist()
         => Assert.Equal("2 3", Eval(
             "for (let [a] of [[9]]) var x = 2, y = 3; '' + x + ' ' + y"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void VarInBracedForOfBodyHoists()
         => Assert.Equal("function", Eval(
             "for (let a of [9]) { var f = function () { return 7; }; } typeof f"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void VarInForInBodyHoists()
         => Assert.Equal("function", Eval(
             "for (let k in {p:1}) var f = function () { return 7; }; typeof f"));
@@ -53,13 +53,13 @@ public class Issue650ForLoopScopeTests
     public void NewlineBeforeOfKeywordParsesAsForOf(string loop)
         => Assert.Equal("3", Eval($"var n=0; {loop} '' + n"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewlineBeforeInKeywordParsesAsForIn()
         => Assert.Equal("2", Eval("var n=0; for (\n  let k\n  in\n  {p:1,q:2}\n) n++; '' + n"));
 
     // ---- the full test262 scope-body-var-none.js body ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ScopeBodyVarNone()
         => Assert.Equal("22222", Eval(@"
 var probeBefore = function() { return x; };

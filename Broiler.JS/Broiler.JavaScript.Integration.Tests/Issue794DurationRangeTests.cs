@@ -28,12 +28,12 @@ public class Issue794DurationRangeTests
         return ctx.Eval(code).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Add_ResultOverflowsLimit_Throws()
         => Assert.Equal("RangeError", ErrorName(
             "Temporal.Duration.from({nanoseconds: 9.007199254740991e+24}).add(Temporal.Duration.from({microseconds: 1000000}))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Subtract_ResultOverflowsLimit_Throws()
         => Assert.Equal("RangeError", ErrorName(
             "Temporal.Duration.from({nanoseconds: -9.007199254740991e+24}).subtract(Temporal.Duration.from({microseconds: 1000000}))"));
@@ -42,12 +42,12 @@ public class Issue794DurationRangeTests
     public void Add_Normal_Works()
         => Assert.Equal("PT2H15M", Eval("Temporal.Duration.from({hours:1, minutes:30}).add({minutes:45}).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_RoundedDurationInvalid_Throws()
         => Assert.Equal("RangeError", ErrorName(
             "Temporal.Duration.from({seconds: Number.MAX_SAFE_INTEGER, milliseconds: 999}).toString({smallestUnit:'seconds', roundingMode:'ceil'})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_TotalUnitsOutOfRange_Throws()
         => Assert.Equal("RangeError", ErrorName(
             "new Temporal.Duration(0,0,0,1,0,0,Math.pow(2,53)-1-86400,0,0,999999999).toString({roundingMode:'ceil', fractionalSecondDigits:7})"));

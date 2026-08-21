@@ -15,7 +15,7 @@ public class Phase2CollectionsAndArraysTests
         return context.Eval(source, "phase2-collections-and-arrays.js").ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapAndSetUseSameValueZeroWithoutTextualIdentityKeys()
         => Assert.Equal(
             "true|true|true|true|true|false|true",
@@ -39,7 +39,7 @@ public class Phase2CollectionsAndArraysTests
                 ].join('|');
                 """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapAndSetDeleteReaddAtTheEndOfIterationOrder()
         => Assert.Equal(
             "a,c,b|a,c,b",
@@ -51,7 +51,7 @@ public class Phase2CollectionsAndArraysTests
                 Array.from(map.keys()).join(',') + '|' + Array.from(set.values()).join(',');
                 """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WeakCollectionsSupportDeleteReinsertAndRejectPrimitiveKeys()
         => Assert.Equal(
             "true|true|false|true|true|false",
@@ -67,7 +67,7 @@ public class Phase2CollectionsAndArraysTests
                  set.has(key), set.has(1)].join('|');
                 """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WeakMapValueToKeyCycleDoesNotRetainKey()
     {
         using var context = new JSContext();
@@ -81,7 +81,7 @@ public class Phase2CollectionsAndArraysTests
         GC.KeepAlive(context);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WeakSetDoesNotRetainMember()
     {
         using var context = new JSContext();
@@ -95,7 +95,7 @@ public class Phase2CollectionsAndArraysTests
         GC.KeepAlive(context);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectEnumerationPreservesOrderAndDescriptorInterleaving()
         => Assert.Equal(
             "1,3,4|1",
@@ -113,7 +113,7 @@ public class Phase2CollectionsAndArraysTests
                 Object.values(ordered).slice(1).join(',') + '|' + Object.values(dynamic).join(',');
                 """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DenseArrayFastPathsRespectHolesAndIndexedPrototypeInvalidation()
         => Assert.Equal(
             "false|9|9|3,2,1|7,7,7",

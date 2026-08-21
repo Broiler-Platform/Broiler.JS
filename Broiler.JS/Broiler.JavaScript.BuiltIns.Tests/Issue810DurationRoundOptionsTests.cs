@@ -17,7 +17,7 @@ public class Issue810DurationRoundOptionsTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Round_LargestUnitAuto_Succeeds()
         => Assert.Equal("PT25H", Eval("""
             var d = new Temporal.Duration(0, 0, 0, 0, 25);
@@ -33,14 +33,14 @@ public class Issue810DurationRoundOptionsTests
             d.round({ smallestUnit: "days", roundingIncrement: {{increment}} }).toString();
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Round_NoSmallestOrLargestUnit_ThrowsRangeError()
         => Assert.Equal("RangeError", Eval("""
             var d = new Temporal.Duration(0, 0, 0, 0, 25);
             try { d.round({}); "no throw"; } catch (e) { e.constructor.name; }
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Round_RoundingIncrementBelowOne_ThrowsRangeError()
         => Assert.Equal("RangeError", Eval("""
             var d = new Temporal.Duration(0, 0, 0, 2);

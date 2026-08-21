@@ -70,23 +70,23 @@ public class Issue737Tests
 
     // ---- Problem 13: multi-line comment with a line terminator triggers ASI ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MultiLineCommentActsAsLineTerminatorBetweenStrings()
         => Assert.Equal("b", Eval("'a'/*\n*/'b'"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MultiLineCommentDoesNotSwallowFollowingVarKeyword()
         => Assert.Equal("3", Eval("var a=1/*\n*/var b=2\na+b"));
 
     // ---- Problem 14: finally / catch work on any thenable, not just JSPromise ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PromiseFinallyOnThenableReturnsThenResult()
         => Assert.Equal("true", Eval(
             "var t={};var T=function(){};T.prototype.then=function(){return t;};" +
             "(Promise.prototype.finally.call(new T())===t)+''"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PromiseCatchOnThenableForwardsToThen()
         => Assert.Equal("true", Eval(
             "var T=function(){};T.prototype.then=function(s,f){return f;};" +
@@ -94,7 +94,7 @@ public class Issue737Tests
 
     // ---- Problem 17: Array.from overwrites a non-writable target property ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayFromOverwritesNonWritableElementWithDataProperty()
         => Assert.Equal("2,true,true,true", Eval(
             "var items=function*(){yield 2;};" +
@@ -105,7 +105,7 @@ public class Issue737Tests
 
     // ---- Problem 19: non-callable toJSON is ignored ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringifyIgnoresNonCallableToJSON()
         => Assert.Equal("{\"toJSON\":null}|{\"toJSON\":false}|{\"toJSON\":[]}|{\"toJSON\":{}}", Eval(
             "[JSON.stringify({toJSON:null})," +
@@ -115,95 +115,95 @@ public class Issue737Tests
 
     // ---- Problem 20: optional chain short-circuit propagates to a trailing access ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateFieldAfterOptionalChainShortCircuits()
         => Assert.Equal("Test262,,", Eval(
             "var C=class{#f='Test262';method(o){return o?.c.#f;}};var c=new C();" +
             "[c.method({c:c}), c.method(null), c.method(undefined)].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateFieldAfterOptionalChainBrandChecksNonNullishBase()
         => Assert.Equal("true", Eval(
             "var C=class{#f=1;method(o){return o?.c.#f;}};var c=new C();" +
             "var threw=false;try{c.method({c:{}});}catch(e){threw=(e instanceof TypeError);}threw+''"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OptionalChainTrailingMemberShortCircuits()
         => Assert.Equal("undefined,undefined", Eval(
             "[String(undefined?.c.d), String(null?.c.d)].join(',')"));
 
     // ---- Problem 15: String.prototype is a String exotic (typeof object, length 0) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringPrototypeIsObjectWithNumberLength()
         => Assert.Equal("object,number,0", Eval(
             "[typeof String.prototype, typeof String.prototype.length, String.prototype.length].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringPrototypeMethodsRemainCallable()
         => Assert.Equal("function,b,3", Eval(
             "[typeof String.prototype.charAt, 'abc'.charAt(1), 'abc'.length].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringDynamicLengthKeyResolvesOwnLength()
         => Assert.Equal("function 3", Eval(
             "var k='charAt'; var l='length'; typeof 'abc'[k] + ' ' + 'abc'[l]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringPrototypeLengthIsReadonlyDataPropertyZero()
         => Assert.Equal("0,false", Eval(
             "var d=Object.getOwnPropertyDescriptor(String.prototype,'length'); [d.value, d.writable].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringPrototypeInheritsObjectPrototype()
         => Assert.Equal("true", Eval(
             "(Object.getPrototypeOf(String.prototype)===Object.prototype)+''"));
 
     // ---- Problem 18: %Function.prototype% is a callable no-op function ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionPrototypeIsCallableReturningUndefined()
         => Assert.Equal("undefined,undefined", Eval(
             "var x; [String(Function.prototype(x)), String(Function.prototype(1,2,3))].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionPrototypeTypeofIsFunctionWithEmptyNameZeroLength()
         => Assert.Equal("function,,0", Eval(
             "[typeof Function.prototype, Function.prototype.name, Function.prototype.length].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionPrototypeIsNotAConstructor()
         => Assert.Equal("true", Eval(
             "var t=false; try{ new Function.prototype(); }catch(e){ t=(e instanceof TypeError); } t+''"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionPrototypeHasNoOwnPrototypeAndInheritsObjectPrototype()
         => Assert.Equal("false,true", Eval(
             "[Function.prototype.hasOwnProperty('prototype'), Object.getPrototypeOf(Function.prototype)===Object.prototype].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionsStillInheritFromFunctionPrototype()
         => Assert.Equal("true,true", Eval(
             "function f(){} [Object.getPrototypeOf(f)===Function.prototype, typeof f.call==='function'].join(',')"));
 
     // ---- Problem 2: computed super-property as a destructuring / for-head target ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedSuperPropertyAsForOfTarget()
         => Assert.Equal("2,2", Eval(
             "var obj={ m(){ var hits=0; for (super['prop'] of [1,2]) hits++; return this.prop+','+hits; } }; obj.m()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedSuperPropertyAsForInTarget()
         => Assert.Equal("b,2", Eval(
             "var obj={ m(){ var hits=0; for (super['prop'] in {a:1,b:2}) hits++; return this.prop+','+hits; } }; obj.m()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedSuperPropertyAsObjectDestructuringTarget()
         => Assert.Equal("9", Eval(
             "var obj={ m(){ ({a: super['prop']} = {a: 9}); return this.prop; } }; String(obj.m())"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedSuperPropertyAsArrayDestructuringTarget()
         => Assert.Equal("5", Eval(
             "var obj={ m(){ [super['prop']] = [5]; return this.prop; } }; String(obj.m())"));

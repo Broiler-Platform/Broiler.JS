@@ -62,7 +62,7 @@ public sealed class CallPathDiagnosticsTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NothingIsCountedWhileDisabled()
     {
         CallPathDiagnostics.Reset();
@@ -75,7 +75,7 @@ public sealed class CallPathDiagnosticsTests
 
     // A known number of calls, counted exactly. Deliberately not "at least": the emitter divides by
     // this, so an over-count would deflate every share it reports.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EveryCallIsCountedExactlyOnce()
     {
         var (answer, calls) = Count(Untiered, """
@@ -95,7 +95,7 @@ public sealed class CallPathDiagnosticsTests
     // apart because they are not the same operation, and this is what says so: four callback
     // invocations, none of them on the emitted-call path, plus the two native calls (`forEach`
     // and `join`) that reach it from the script.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ABuiltinRunsItsCallbackOnTheOtherEntry()
     {
         var (answer, calls) = Count(Untiered, """
@@ -115,7 +115,7 @@ public sealed class CallPathDiagnosticsTests
 
     // A call to a native builtin has an emitted call site and no body to inline, so it must not be
     // counted into item 4-4's surface. Without this the surface would include every `Math.floor`.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACallToANativeBuiltinIsNotAUserCall()
     {
         var (answer, calls) = Count(Untiered, """
@@ -129,7 +129,7 @@ public sealed class CallPathDiagnosticsTests
         Assert.Equal(0, calls.UserCalls);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WithoutTieringNoCallIsAttributedToAPromotedCaller()
     {
         var (_, calls) = Count(Untiered, """
@@ -145,7 +145,7 @@ public sealed class CallPathDiagnosticsTests
     // The attribution is to the CALLER. `caller` is promoted after two invocations, so the calls it
     // makes to `callee` from then on are attributable and the calls to `caller` itself — made from
     // top-level script, which is not a promoted function — are not.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CallsAreAttributedToThePromotedCallerNotThePromotedCallee()
     {
         var (answer, calls) = Count(() => Tiered(), """
@@ -167,7 +167,7 @@ public sealed class CallPathDiagnosticsTests
 
     // A function that is a candidate but never gets hot attributes nothing, which is what keeps
     // "from a promoted function" from quietly meaning "from any function".
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACallerBelowTheThresholdAttributesNothing()
     {
         var (_, calls) = Count(() => Tiered(threshold: 1000), """

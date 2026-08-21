@@ -18,23 +18,23 @@ public class TryFinallyReturnTests
         return ctx.Eval(code).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Return_In_If_In_Finally()
         => Assert.Equal("c", Eval("function f(){ try {} finally { if (true) return 'c'; } } f();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Return_In_While_In_Finally()
         => Assert.Equal("w", Eval("function f(){ try {} finally { while (true) return 'w'; } } f();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Return_In_If_In_Finally_Overrides_Try()
         => Assert.Equal("F,T", Eval("function f(x){ try { return 'T'; } finally { if (x) return 'F'; } } '' + f(true) + ',' + f(false);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Finally_Without_Return_Falls_Through_To_Try_Value()
         => Assert.Equal("T", Eval("function f(){ try { return 'T'; } finally { if (false) return 'X'; } } f();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Return_In_If_In_Finally_With_Catch()
         => Assert.Equal("F", Eval("function f(){ try { throw 1; } catch(e){} finally { if (true) return 'F'; } } f();"));
 }

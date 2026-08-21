@@ -34,7 +34,7 @@ public class Issue808MathPrecisionTests
     public void Accurate(string expr, string expected)
         => Assert.Equal(expected, Eval($"String({expr});"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Expm1_PreservesNegativeZeroSign()
         => Assert.Equal("true", Eval("String(Object.is(Math.expm1(-0), -0));"));
 
@@ -47,7 +47,7 @@ public class Issue808MathPrecisionTests
     public void Constants(string expr, string expected)
         => Assert.Equal(expected, Eval($"String({expr});"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Log2_OfPowersOfTwo_AreExact()
         => Assert.Equal("true", Eval("""
             var ok = true;

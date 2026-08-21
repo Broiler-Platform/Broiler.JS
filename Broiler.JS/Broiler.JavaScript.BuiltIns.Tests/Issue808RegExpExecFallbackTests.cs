@@ -18,7 +18,7 @@ public class Issue808RegExpExecFallbackTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Match_NonCallableExec_UsesBuiltin()
         => Assert.Equal("a", Eval("""
             var re = /a/;
@@ -26,7 +26,7 @@ public class Issue808RegExpExecFallbackTests
             JSON.stringify("xax".match(re));
         """).Replace("[", "").Replace("]", "").Replace("\"", ""));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Replace_NullExec_UsesBuiltin()
         => Assert.Equal("xYxY", Eval("""
             var re = /a/g;
@@ -34,7 +34,7 @@ public class Issue808RegExpExecFallbackTests
             "xaxa".replace(re, "Y");
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Split_NonCallableExec_UsesBuiltin()
         => Assert.Equal("x|x", Eval("""
             var re = /a/;
@@ -42,7 +42,7 @@ public class Issue808RegExpExecFallbackTests
             "xax".split(re).join("|");
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Replace_CallableExec_IsUsed()
         => Assert.Equal("Z", Eval("""
             var re = /a/;
@@ -50,7 +50,7 @@ public class Issue808RegExpExecFallbackTests
             "xax".replace(re, "Z");
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Replace_ExecReturnsNonObject_Throws()
         => Assert.Equal("TypeError", Eval("""
             var re = /a/;

@@ -9,14 +9,14 @@ namespace Broiler.JavaScript.ModuleExtensions.Tests;
 
 public class ModuleExtensionsTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ModuleBuilder_Create_Succeeds()
     {
         var builder = new ModuleBuilder("testmod");
         Assert.NotNull(builder);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ModuleBuilder_ExportValue_ReturnsSelf()
     {
         var builder = new ModuleBuilder("testmod");
@@ -24,7 +24,7 @@ public class ModuleExtensionsTests
         Assert.Same(builder, result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ModuleBuilder_ExportFunction_ReturnsSelf()
     {
         var builder = new ModuleBuilder("testmod");
@@ -35,7 +35,7 @@ public class ModuleExtensionsTests
     // ExportValue records the .NET value and marshals it in AddModuleToContext. Marshalling at
     // record time reached JSValue.CreateString before the BuiltIns [ModuleInitializer] that wires
     // it had run — building a module without first touching the engine threw NullReferenceException.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ModuleBuilder_ExportValue_AcceptsPrimitivesBeforeEngineInitialization()
     {
         var builder = new ModuleBuilder("testmod");
@@ -46,7 +46,7 @@ public class ModuleExtensionsTests
     }
 
     // ...and the deferred marshalling still produces the right JS values once a context exists.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task ModuleBuilder_ExportedValues_AreVisibleToImportingScript()
     {
         using var ctx = new TestModuleContext();

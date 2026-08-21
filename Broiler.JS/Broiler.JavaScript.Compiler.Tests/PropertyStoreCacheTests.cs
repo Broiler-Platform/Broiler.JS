@@ -68,7 +68,7 @@ public class PropertyStoreCacheTests
             $"expected the site to hit, got {stats.StoreCacheHits} hits / {stats.StoreCacheMisses} misses");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WritingThroughThis_IsCached()
     {
         var (result, stats) = Measure("""
@@ -83,7 +83,7 @@ public class PropertyStoreCacheTests
         Assert.True(stats.StoreCacheHits >= 499, $"got {stats.StoreCacheHits} hits / {stats.StoreCacheMisses} misses");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ShadowingAnInheritedDataProperty_IsCachedAfterTheFirstWrite()
     {
         // The first store creates the own property (and the shape it lives in); every store
@@ -100,7 +100,7 @@ public class PropertyStoreCacheTests
         Assert.True(stats.StoreCacheHits >= 499, $"got {stats.StoreCacheHits} hits / {stats.StoreCacheMisses} misses");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APolymorphicSiteKeepsHittingUpToFourShapes()
     {
         var (result, stats) = Measure("""
@@ -116,7 +116,7 @@ public class PropertyStoreCacheTests
         Assert.True(stats.StoreCacheHits >= 396, $"got {stats.StoreCacheHits} hits / {stats.StoreCacheMisses} misses");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFifthShapeMakesTheSiteMegamorphic()
     {
         var (result, stats) = MeasureFirstRun("""
@@ -132,7 +132,7 @@ public class PropertyStoreCacheTests
         Assert.True(stats.StoreMegamorphicSites >= 1, "the fifth shape should retire the site");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASiteThatCanNeverCacheStopsProbing()
     {
         // An inherited setter means the write never lands in an own slot. Rather than pay a
@@ -148,7 +148,7 @@ public class PropertyStoreCacheTests
         Assert.True(stats.StoreMegamorphicSites >= 1, "a permanently uncacheable site should retire itself");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TwoKeysOnOneSiteStayCorrect()
         // One emitted site, two keys: the site cannot describe both, so it retires. What
         // matters is that neither key ends up written through the other's slot.
@@ -170,7 +170,7 @@ public class PropertyStoreCacheTests
         => Assert.Equal(expected, Eval(
             "var o = { x: 0 }; for (var i = 0; i <= 9; i++) o.x = i; " + revoke + " o.x = 99; o.x;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AWriteRefusedAfterWarmUp_ThrowsInStrictMode()
         => Assert.Equal("TypeError", Eval("""
             'use strict';
@@ -180,12 +180,12 @@ public class PropertyStoreCacheTests
             (function () { try { o.x = 99; return 'no-throw'; } catch (e) { return e.constructor.name; } })();
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASealedObjectStaysWritable()
         => Assert.Equal("99", Eval(
             "var o = { x: 0 }; for (var i = 0; i <= 9; i++) o.x = i; Object.seal(o); o.x = 99; o.x;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RedefiningAsAnAccessorAfterWarmUp_RunsTheSetter()
         => Assert.Equal("99,9", Eval("""
             var o = { x: 0 };
@@ -197,7 +197,7 @@ public class PropertyStoreCacheTests
             o.x + ',' + last;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AddingAPrototypeSetterAfterWarmUp_DoesNotStealTheOwnWrite()
         // An own data property wins over an inherited setter, so this must keep writing the
         // own slot — the cached entry stays correct precisely because it is an OWN entry.
@@ -212,7 +212,7 @@ public class PropertyStoreCacheTests
             o.x + ',' + seen;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeletingAfterWarmUp_RecreatesTheProperty()
         => Assert.Equal("99,y,x", Eval("""
             var o = { x: 0, y: 1 };
@@ -222,7 +222,7 @@ public class PropertyStoreCacheTests
             o.x + ',' + Object.keys(o).join(',');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PreventingExtensionsAfterWarmUp_StillAllowsTheExistingProperty()
         => Assert.Equal("99,undefined", Eval("""
             var o = { x: 0 };
@@ -233,7 +233,7 @@ public class PropertyStoreCacheTests
             o.x + ',' + String(o.z);
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADictionaryModeObjectStillWritesCorrectly()
         => Assert.Equal("99", Eval("""
             var o = { x: 0 };
@@ -245,7 +245,7 @@ public class PropertyStoreCacheTests
 
     // ── receivers the cache must not claim ────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AProxyReceiverStillFiresItsSetTrap()
         => Assert.Equal("10,9", Eval("""
             var log = 0;
@@ -255,7 +255,7 @@ public class PropertyStoreCacheTests
             log + ',' + target.x;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AProxyInThePrototypeChainStillFiresItsSetTrap()
         // Once, not ten times: the first Reflect.set creates the own property on the
         // receiver, and every store after that resolves there without reaching the chain.
@@ -277,7 +277,7 @@ public class PropertyStoreCacheTests
 
     // ── keys the cache must not key on ────────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AComputedKeyIsNotCached()
     {
         var (result, stats) = Measure("var o = { x: 0 }; var k = 'x'; for (var i = 0; i < 200; i++) o[k] = i; o.x;");
@@ -286,7 +286,7 @@ public class PropertyStoreCacheTests
         Assert.Equal(0, stats.StoreCacheHits);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnArrayIndexNamedAsAStringIsNotCached()
     {
         var (result, stats) = Measure("var o = {}; for (var i = 0; i < 200; i++) o['0'] = i; o[0] + ',' + Object.keys(o).join(',');");
@@ -295,7 +295,7 @@ public class PropertyStoreCacheTests
         Assert.Equal(0, stats.StoreCacheHits);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APrivateFieldWriteKeepsItsBrandCheck()
     {
         Assert.Equal("199", Eval("""
@@ -312,7 +312,7 @@ public class PropertyStoreCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASuperAssignmentStillTargetsTheHomeObjectsPrototype()
         => Assert.Equal("9", Eval("""
             var proto = { set x(v) { this.got = v; } };
@@ -322,7 +322,7 @@ public class PropertyStoreCacheTests
 
     // ── the write is still observable everywhere else ─────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AttributesAndOrderSurviveCachedWrites()
         => Assert.Equal("a,b,c|9,true,false,true", Eval("""
             var o = { a: 0, b: 0, c: 0 };
@@ -332,12 +332,12 @@ public class PropertyStoreCacheTests
             Object.getOwnPropertyNames(o).join(',') + '|' + [d.value, d.writable, d.enumerable, d.configurable].join(',');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACachedWriteIsVisibleToAReadCacheOnTheSameProperty()
         => Assert.Equal("45", Eval(
             "var o = { x: 0 }; var s = 0; for (var i = 0; i <= 9; i++) { o.x = i; s += o.x; } s;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACachedWriteToAPrototypeIsVisibleThroughItsInstances()
         // Writing to an object that is in use as a prototype has to publish the mutation, or
         // a read cache further down would keep serving the old value.
@@ -349,7 +349,7 @@ public class PropertyStoreCacheTests
             before + ',' + o.x;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACachedWriteIsVisibleToJsonAndEnumeration()
         => Assert.Equal("{\"a\":9,\"b\":18}|a9b18", Eval("""
             var o = { a: 0, b: 0 };
@@ -359,19 +359,19 @@ public class PropertyStoreCacheTests
             JSON.stringify(o) + '|' + s;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADestructuringMemberTargetWritesCorrectly()
         => Assert.Equal("5,1,2", Eval("var o = {}; ({ a: o.x } = { a: 5 }); [o.y, o.z] = [1, 2]; o.x + ',' + o.y + ',' + o.z;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AForOfMemberHeadWritesCorrectly()
         => Assert.Equal("123,3", Eval("var o = {}; var s = ''; for (o.x of [1, 2, 3]) s += o.x; s + ',' + o.x;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheAssignmentStillEvaluatesToTheAssignedValue()
         => Assert.Equal("5,5,5", Eval("var a = {}, b = {}; var r = (a.x = b.x = 5); r + ',' + a.x + ',' + b.x;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheBaseIsEvaluatedBeforeTheValue()
         => Assert.Equal("base,value", Eval("""
             var log = [];
@@ -381,7 +381,7 @@ public class PropertyStoreCacheTests
             log.join(',');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheBaseIsEvaluatedExactlyOnce()
         => Assert.Equal("10", Eval("""
             var n = 0;
@@ -399,7 +399,7 @@ public class PropertyStoreCacheTests
     // What must not change is the order and the count of the observable steps: the base once,
     // ToNumeric once, the getter once, the setter once, and the same value out.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnIncrementOnAMemberGoesThroughBothCaches()
     {
         var (result, stats) = Measure("""
@@ -425,7 +425,7 @@ public class PropertyStoreCacheTests
     public void AnUpdateExpressionStillYieldsTheRightValues(string source, string expected)
         => Assert.Equal(expected, Eval(source));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnUpdateThroughAWarmedSiteStillRunsTheAccessorsOnce()
         => Assert.Equal("400|400|400", Eval("""
             var gets = 0, sets = 0, last = 0;
@@ -439,7 +439,7 @@ public class PropertyStoreCacheTests
             [gets, sets, last === 2 ? 400 : last].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnUpdateOnANonWritablePropertyIsRefused()
         => Assert.Equal("1|false", Eval("""
             var o = {};
@@ -448,7 +448,7 @@ public class PropertyStoreCacheTests
             o.x + '|' + Object.getOwnPropertyDescriptor(o, 'x').writable;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnUpdateOnANonWritablePropertyThrowsInStrictMode()
         => Assert.Equal("200|200", Eval("""
             function bump(o) { 'use strict'; o.x++; }
@@ -461,7 +461,7 @@ public class PropertyStoreCacheTests
             made + '|' + thrown;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheBaseOfAnUpdateIsEvaluatedExactlyOnce()
         => Assert.Equal("300|300", Eval("""
             var n = 0;
@@ -471,7 +471,7 @@ public class PropertyStoreCacheTests
             n + '|' + o.x;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ExcludedUpdateFormsStillWork()
         => Assert.Equal("300|7,8,7|300|300", Eval("""
             // A computed key, a private field and a super member all keep the ordinary
@@ -500,7 +500,7 @@ public class PropertyStoreCacheTests
             [computed.x, superLast + ',' + c.v + ',' + P.prototype.v, p.n, arr.tag].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnUpdateOnAProxyStillFiresBothTraps()
         => Assert.Equal("300|300|300", Eval("""
             var gets = 0, sets = 0;
@@ -513,7 +513,7 @@ public class PropertyStoreCacheTests
             [gets, sets, target.x].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnUpdateAndAPlainStoreOnTheSamePropertyAgree()
         => Assert.Equal("900", Eval("""
             var o = { x: 0 };
@@ -532,7 +532,7 @@ public class PropertyStoreCacheTests
     // §13.15.2 fixes the order: the old value is read BEFORE the right-hand side is
     // evaluated, so an RHS that writes the same property must not be visible to the read.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACompoundAssignmentOnAMemberGoesThroughBothCaches()
     {
         var (result, stats) = Measure("""
@@ -546,7 +546,7 @@ public class PropertyStoreCacheTests
         Assert.True(stats.StoreCacheHits >= 499, $"expected store hits, got {stats.StoreCacheHits}/{stats.StoreCacheMisses}");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AWarmedCompoundSiteKeepsTheSameArithmetic()
         => Assert.Equal("400", Eval("""
             var o = { x: 0 };
@@ -580,7 +580,7 @@ public class PropertyStoreCacheTests
     public void ACompoundAssignmentStillYieldsTheRightValues(string source, string expected)
         => Assert.Equal(expected, Eval(source));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheOldValueIsReadBeforeTheRightHandSide()
         => Assert.Equal("11|300", Eval("""
             // The RHS overwrites the very property being compounded. Reading first means the
@@ -592,7 +592,7 @@ public class PropertyStoreCacheTests
             o.x + '|' + n;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ARightHandSideThatMovesTheReceiversShapeStillWritesTheRightSlot()
         => Assert.Equal("11", Eval("""
             // Every iteration adds a new key, so the shape the store cache recorded on the way
@@ -604,7 +604,7 @@ public class PropertyStoreCacheTests
             o.x;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACompoundAssignmentThroughAWarmedSiteStillRunsTheAccessorsOnce()
         => Assert.Equal("400|400|400", Eval("""
             var gets = 0, sets = 0, last = 0;
@@ -618,7 +618,7 @@ public class PropertyStoreCacheTests
             [gets, sets, last === 3 ? 400 : last].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACompoundAssignmentOnANonWritablePropertyIsRefused()
         => Assert.Equal("1|false", Eval("""
             var o = {};
@@ -627,7 +627,7 @@ public class PropertyStoreCacheTests
             o.x + '|' + Object.getOwnPropertyDescriptor(o, 'x').writable;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ARefusedCompoundAssignmentStillEvaluatesToTheComputedValue()
         => Assert.Equal("6|1", Eval("""
             var o = {};
@@ -637,7 +637,7 @@ public class PropertyStoreCacheTests
             r + '|' + o.x;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACompoundAssignmentOnANonWritablePropertyThrowsInStrictMode()
         => Assert.Equal("200|200", Eval("""
             function add(o) { 'use strict'; o.x += 1; }
@@ -650,7 +650,7 @@ public class PropertyStoreCacheTests
             made + '|' + thrown;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheBaseOfACompoundAssignmentIsEvaluatedExactlyOnce()
         => Assert.Equal("300|300", Eval("""
             var n = 0;
@@ -660,7 +660,7 @@ public class PropertyStoreCacheTests
             n + '|' + o.x;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheShortCircuitingCompoundFormsStillSkipTheWrite()
         => Assert.Equal("300|0|300|300", Eval("""
             // This is why `&&=`, `||=` and `??=` are excluded: whether the setter runs at all
@@ -674,7 +674,7 @@ public class PropertyStoreCacheTests
             [g1, s1, g2, s2].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheShortCircuitingCompoundFormsStillYieldTheRightValues()
         => Assert.Equal("2|7|5", Eval("""
             var o = { a: 1, b: 0, c: null };
@@ -684,7 +684,7 @@ public class PropertyStoreCacheTests
             [o.a, o.b, o.c].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACompoundAssignmentOnAProxyStillFiresBothTraps()
         => Assert.Equal("300|300|300", Eval("""
             var gets = 0, sets = 0;
@@ -697,7 +697,7 @@ public class PropertyStoreCacheTests
             [gets, sets, target.x].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACompoundAssignmentShadowingAnInheritedDataPropertyReadsTheProtoOnlyOnce()
         => Assert.Equal("310|10", Eval("""
             // The first iteration reads the prototype's 10 and creates an own 11; every one
@@ -709,7 +709,7 @@ public class PropertyStoreCacheTests
             q.x + '|' + P.prototype.x;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ExcludedCompoundFormsStillWork()
         => Assert.Equal("300|8,8,7|300|300", Eval("""
             // A computed key, a private field and a super member keep the ordinary reference;
@@ -737,7 +737,7 @@ public class PropertyStoreCacheTests
             [computed.x, superLast + ',' + c.v + ',' + P.prototype.v, pv.n, arr.tag].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACompoundAssignmentOnANullishBaseThrowsBeforeTheRightHandSideRuns()
         => Assert.Equal("300|300|0", Eval("""
             // The read comes first, so a base that cannot be coerced fails before the RHS is
@@ -752,7 +752,7 @@ public class PropertyStoreCacheTests
             [nulls, undefineds, rhs].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACompoundAssignmentOnAPrimitiveBaseIsRefusedThenThrowsInStrictMode()
         => Assert.Equal("2|NaN|300", Eval("""
             // The base is boxed per access, so the write lands on a wrapper nobody keeps -
@@ -772,7 +772,7 @@ public class PropertyStoreCacheTests
             [s.length, last, thrown].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACompoundAssignmentOnAGetterOnlyPropertyIsRefusedThenThrowsInStrictMode()
         => Assert.Equal("300|0|300", Eval("""
             var gets = 0;
@@ -789,7 +789,7 @@ public class PropertyStoreCacheTests
             [gets - thrown, own, thrown].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestedCompoundAssignmentsDoNotShareTheirBaseTemporary()
         => Assert.Equal("600|300|300", Eval("""
             // Two compound assignments in one expression, each with its own base temp; the
@@ -800,7 +800,7 @@ public class PropertyStoreCacheTests
             [o.y + p.z, o.y, p.z].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACompoundAssignmentAnUpdateAndAPlainStoreOnTheSamePropertyAgree()
         => Assert.Equal("900", Eval("""
             var o = { x: 0 };
@@ -820,7 +820,7 @@ public class PropertyStoreCacheTests
     // prototype chain supplies nothing for the key. Every way either can stop being true is
     // below, each after the site has been warmed on the fast path.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CreatingAPropertyInAConstructor_IsCached()
     {
         var (result, stats) = MeasureFirstRun("""
@@ -837,7 +837,7 @@ public class PropertyStoreCacheTests
             $"expected creating stores to hit, got {stats.StoreCacheHits}/{stats.StoreCacheMisses}");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACreatedPropertyGetsTheDefaultAttributesAndOrder()
     {
         // CreateDataProperty means writable, enumerable and configurable — all true — and the
@@ -851,7 +851,7 @@ public class PropertyStoreCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APrototypeSetterTakesTheCreationInsteadOfAnOwnProperty()
     {
         // Present from the start, so the site never installs a transition entry at all.
@@ -868,7 +868,7 @@ public class PropertyStoreCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APrototypeSetterAddedAfterWarmUp_TakesTheCreation()
     {
         // The invalidation path that matters most: 200 objects get their own property, then a
@@ -886,7 +886,7 @@ public class PropertyStoreCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnInheritedReadOnlyDataProperty_RefusesTheCreation()
     {
         Assert.Equal("false|5", Eval("""
@@ -898,7 +898,7 @@ public class PropertyStoreCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnInheritedReadOnlyDataPropertyAddedAfterWarmUp_ThrowsInStrictMode()
     {
         Assert.Equal("200|200", Eval("""
@@ -913,7 +913,7 @@ public class PropertyStoreCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANonExtensibleReceiverRefusesTheCreation()
     {
         Assert.Equal("true|true|false|false", Eval("""
@@ -928,7 +928,7 @@ public class PropertyStoreCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANonExtensibleReceiverThrowsInStrictMode()
     {
         Assert.Equal("200|200", Eval("""
@@ -943,7 +943,7 @@ public class PropertyStoreCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFrozenReceiverRefusesTheCreation()
         => Assert.Equal("true|false", Eval("""
             function add(o) { o.x = 1; return o.hasOwnProperty('x'); }
@@ -952,7 +952,7 @@ public class PropertyStoreCacheTests
             add(open) + '|' + add(frozen);
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TwoReceiversSharingAShapeButNotAPrototype_DoNotShareATransition()
     {
         // Both receivers are empty objects, so they present the same shape; only their
@@ -973,7 +973,7 @@ public class PropertyStoreCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwappingTheReceiversPrototypeAfterWarmUp_IsObserved()
         => Assert.Equal("true|false|200", Eval("""
             var taken = 0;
@@ -990,7 +990,7 @@ public class PropertyStoreCacheTests
             [own[0], own[399], taken].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADunderProtoAssignmentStillRunsTheInheritedAccessor()
         => Assert.Equal("false|true|true", Eval("""
             // `__proto__` is an accessor on %Object.prototype%, so the chain is never free of
@@ -1008,7 +1008,7 @@ public class PropertyStoreCacheTests
             [ownAny, allLinked, allMarked].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADictionaryModeReceiverStillCreatesCorrectly()
         => Assert.Equal("400|400", Eval("""
             function add(o) { o.x = 1; return o.x; }
@@ -1022,7 +1022,7 @@ public class PropertyStoreCacheTests
             ok + '|' + dict;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACreatedPropertyIsVisibleToReadsEnumerationAndJson()
         => Assert.Equal("1|a|{\"a\":1}|true", Eval("""
             function T() { this.a = 1; }
@@ -1031,7 +1031,7 @@ public class PropertyStoreCacheTests
             [last.a, Object.keys(last).join(','), JSON.stringify(last), 'a' in last].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeletingACreatedPropertyAndRecreatingIt_Works()
         => Assert.Equal("1|false|1", Eval("""
             function add(o) { o.x = 1; }
@@ -1044,7 +1044,7 @@ public class PropertyStoreCacheTests
             [before, gone, o.x].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AProxyReceiverStillFiresItsSetTrapForACreation()
         => Assert.Equal("400|1", Eval("""
             var traps = 0;
@@ -1056,7 +1056,7 @@ public class PropertyStoreCacheTests
             traps + '|' + target.x;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AProxyInThePrototypeChainStillFiresItsSetTrapForACreation()
         => Assert.Equal("400|false", Eval("""
             var traps = 0;

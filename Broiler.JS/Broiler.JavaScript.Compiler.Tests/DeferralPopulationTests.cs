@@ -81,7 +81,7 @@ public sealed class DeferralPopulationTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheSwitchIsOffByDefault()
     {
         // It costs a FreeNameScan per compiled function, which 0101 measured as superlinear in
@@ -90,7 +90,7 @@ public sealed class DeferralPopulationTests
         Assert.False(DeferrableFunctions.Counting);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFunctionReferencingOnlyItsOwnBindingsIsCaptureFree()
     {
         // The floor case: nothing free at all, so nothing to resolve and nothing to box.
@@ -101,7 +101,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(0, p.FreeNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFunctionReferencingOnlyGlobalsIsCaptureFree()
     {
         // Free names that resolve to NOTHING this compilation holds. `Math` is looked up on the
@@ -115,7 +115,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(0, p.BoundFreeNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFunctionReadingAnEnclosingLocalCaptures()
     {
         var p = Count("""
@@ -134,7 +134,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(1, p.FunctionOwnedFreeNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheSameBodyTextIsCaptureFreeOrNotDependingOnTheENCLOSINGScope()
     {
         // **The fixture the whole instrument rests on.** The two bodies are byte-identical. Nothing
@@ -153,7 +153,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(1, captured.FunctionOwnedFreeNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AParameterSharingTheOuterSpellingCapturesNothing()
     {
         // Separates this from an identifier scan, which is the distinction the roadmap names as the
@@ -173,7 +173,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(0, p.BoundFreeNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnInnerDeclarationSharingTheOuterSpellingCapturesNothing()
     {
         // The same separation through a `var` rather than a parameter, and through hoisting: the
@@ -191,7 +191,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(0, p.Captures);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANamedFunctionExpressionDoesNotCaptureItsOwnName()
     {
         var p = Count("var f = function g(n) { return n < 1 ? 0 : g(n - 1); }; f(3);");
@@ -200,7 +200,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(0, p.Captures);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CaptureIsTransitiveThroughAnInterveningFunction()
     {
         // A name read two levels down is free in BOTH the reader and the function between it and
@@ -223,7 +223,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(2, p.BoundFreeNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADirectEvalMakesTheSiteUndeferrableRatherThanCapturing()
     {
         // A permanent refusal, and it must not be filed under the mechanical one: no capture
@@ -248,7 +248,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(0, p.CaptureFree);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AWithStatementMakesTheSiteUndeferrable()
     {
         var p = Count("""
@@ -260,7 +260,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(1, p.Dynamic);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADynamicBodyPoisonsTheFunctionsAboveItAndNotThoseBesideIt()
     {
         // FreeNameScan propagates Dynamic to the parent, because an enclosing body cannot be
@@ -280,7 +280,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(1, p.CaptureFree);  // beside
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EveryFunctionSiteIsClassifiedExactlyOnce()
     {
         // The waterfall's own invariant, as a test rather than as a corpus reading: a program with
@@ -297,7 +297,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(5, p.Sites);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ATopLevelLexicalBindingIsCountedAsBoundButNotFunctionOwned()
     {
         // The two name counts exist to be told apart. A program-level `let` is a real binding this
@@ -315,7 +315,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(0, p.FunctionOwnedFreeNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ABindingWithNoCellOfItsOwnIsBoundAndNotCellBacked()
     {
         // **The fixture that makes the corpus reading mean anything.** `cellBacked` reads exactly
@@ -343,7 +343,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(0, p.Captures);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnOrdinaryEnclosingLocalIsBothBoundAndCellBacked()
     {
         // The positive half of the pair above. Without it, "cellBacked reads 0 here" is consistent
@@ -361,7 +361,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(1, p.CellBackedFreeNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AProgramTopLevelVarIsCellBackedDESPITEBeingAGlobalProperty()
     {
         // **The reading that looked like an opening, refused.** A script's top-level `var` is a
@@ -385,7 +385,7 @@ public sealed class DeferralPopulationTests
         Assert.Equal(1, p.Captures);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CountingChangesNoAnswer()
     {
         // The instrument reads the enclosing scope through TryResolveBinding rather than

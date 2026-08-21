@@ -23,36 +23,36 @@ public class Issue814Tests
 
     // ---- closures created in the initializer (the bug) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClosureInInitializerCapturesLoopVariable()
         => Assert.Equal("0", Eval(
             "var g; for (let i = (g = () => i, 0); i < 3; i++) {} '' + g()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClosureInInitializerSeesInitialValueNotFinalValue()
         // The loop-environment binding holds the initializer's value (0) and is never
         // reassigned by the per-iteration copies, so it is not the post-loop value (3).
         => Assert.Equal("true", Eval(
             "var g; for (let i = (g = () => i, 0); i < 3; i++) {} '' + (g() === 0)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClosureInInitializerWithMultipleBindings()
         => Assert.Equal("11", Eval(
             "var g; for (let a = 1, b = (g = () => a + b, 10); a < 3; a++) {} '' + g()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InitializerSideEffectRunsExactlyOnce()
         => Assert.Equal("1", Eval(
             "var n = 0; for (let i = (n++, 0); i < 3; i++) {} '' + n"));
 
     // ---- the per-iteration body binding still works (must not regress) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BodyClosuresCapturePerIterationBinding()
         => Assert.Equal("0,1,2", Eval(
             "var f = []; for (let i = 0; i < 3; i++) { f.push(() => i); } f.map(g => g()).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InitializerAndBodyClosuresAreIndependent()
         => Assert.Equal("0|0,1,2", Eval(
             "var g, f = []; for (let i = (g = () => i, 0); i < 3; i++) { f.push(() => i); } " +

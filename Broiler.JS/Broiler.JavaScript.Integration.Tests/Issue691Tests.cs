@@ -39,7 +39,7 @@ public class Issue691Tests
     // The exact shape of built-ins/Array/prototype/map/15.4.4.19-1-3.js: map
     // applied to a boolean primitive, whose boxed wrapper inherits its index 0
     // and length from Boolean.prototype.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapAppliedToBooleanPrimitiveVisitsInheritedIndex()
         => Assert.Equal("true", Eval(
             "Boolean.prototype[0] = true;"
@@ -51,7 +51,7 @@ public class Issue691Tests
 
     // The callback's value argument must be the inherited element value, not
     // undefined.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapPassesInheritedElementValueToCallback()
         => Assert.Equal("99", Eval(
             "Number.prototype[0] = 99;"
@@ -61,7 +61,7 @@ public class Issue691Tests
 
     // A plain array-like object whose indexed property is only present on its
     // prototype is iterated too.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapVisitsIndexInheritedFromObjectPrototype()
         => Assert.Equal("inherited", Eval(
             "var proto = { 0: 'inherited' };"
@@ -71,7 +71,7 @@ public class Issue691Tests
             + "r[0]"));
 
     // Own holes are still skipped: only present indices (own or inherited) run.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapStillSkipsHolesWithNoInheritedIndex()
         => Assert.Equal("a,,c", Eval(
             "var a = ['a', , 'c'];"
@@ -80,7 +80,7 @@ public class Issue691Tests
 
     // ---- filter shares the same iteration semantics ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FilterAppliedToBooleanPrimitiveVisitsInheritedIndex()
         => Assert.Equal("1", Eval(
             "Boolean.prototype[0] = true;"
@@ -90,7 +90,7 @@ public class Issue691Tests
             + "});"
             + "String(r.length)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FilterVisitsIndexInheritedFromObjectPrototype()
         => Assert.Equal("keep", Eval(
             "var proto = { 0: 'keep' };"

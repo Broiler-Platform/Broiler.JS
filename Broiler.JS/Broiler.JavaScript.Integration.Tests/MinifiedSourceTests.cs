@@ -54,35 +54,35 @@ public class MinifiedSourceTests
 
     private const string FFFF = "￿";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonCharacterInsideStringLiteralIsOrdinaryContent()
     {
         Assert.Equal("3 true", Eval(
             $"var s = \"A{FFFF}B\"; `${{s.length}} ${{s.charCodeAt(1) === 0xFFFF}}`"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonCharacterInsideTemplateLiteralIsOrdinaryContent()
     {
         Assert.Equal("3 true", Eval(
             $"var s = `A{FFFF}B`; `${{s.length}} ${{s.charCodeAt(1) === 0xFFFF}}`"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonCharacterInsideRegExpLiteralIsOrdinaryContent()
     {
         Assert.Equal("true 3", Eval(
             $"var r = /a{FFFF}b/; `${{r.test(\"a{FFFF}b\")}} ${{r.source.length}}`"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonCharacterInsideCommentsDoesNotEndTheProgram()
     {
         Assert.Equal("ok", Eval($"// comment {FFFF} continues\n\"ok\""));
         Assert.Equal("ok", Eval($"/* block {FFFF} comment */ \"ok\""));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrayNonCharacterIsReportedRatherThanTruncatingTheProgram()
     {
         // Silently returning EOF here dropped every statement after it — the failure mode
@@ -91,7 +91,7 @@ public class MinifiedSourceTests
         Assert.Contains("U+FFFF", error.Message);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnterminatedStringIsStillAnError()
         => Assert.ThrowsAny<Exception>(() => Eval("var s = \"unterminated"));
 
@@ -134,7 +134,7 @@ public class MinifiedSourceTests
 
     // ---- the catch parameter's scope ends with the catch block ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FinallyBlockSeesTheOuterBindingNotTheCatchParameter()
     {
         // `e` in the finally is the function's `var e`; the catch parameter shadows it only
@@ -144,7 +144,7 @@ public class MinifiedSourceTests
             "(function () { var e = 1; try { throw 2; } catch (e) {} finally { return e; } })()"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CatchParameterStillShadowsInsideTheCatchBlock()
     {
         Assert.Equal("2 1", Eval(
@@ -152,7 +152,7 @@ public class MinifiedSourceTests
             + "finally { return `${seen} ${e}`; } })()"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DestructuredCatchBindingDoesNotLeakIntoTheFinallyBlock()
     {
         Assert.Equal("7 1", Eval(
@@ -174,7 +174,7 @@ public class MinifiedSourceTests
     public void ReservedWordsAreValidPrivateNames(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BrandCheckWorksForAReservedWordPrivateName()
     {
         Assert.Equal("true false", Eval(
@@ -184,7 +184,7 @@ public class MinifiedSourceTests
 
     // ---- the loop body's block is its own scope ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfBodyMayShadowAConstHeadBinding()
     {
         // The body's initializer used to assign the head's const binding instead of
@@ -193,14 +193,14 @@ public class MinifiedSourceTests
             "var r = []; for (const x of [1, 2]) { const x = 5; r.push(x); } r.join(\",\")"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInBodyMayShadowAConstHeadBinding()
     {
         Assert.Equal("5", Eval(
             "var r = []; for (const k in { a: 1 }) { const k = 5; r.push(k); } r.join(\",\")"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfDestructuringHeadMayBeShadowedByTheBody()
     {
         Assert.Equal("1:9,2:9", Eval(
@@ -208,7 +208,7 @@ public class MinifiedSourceTests
             + "r.join(\",\")"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CStyleLoopStillAdvancesWhenTheBodyShadowsTheLoopVariable()
     {
         // The body's shadowing binding was being copied back into the per-iteration carrier,
@@ -217,13 +217,13 @@ public class MinifiedSourceTests
             "var r = []; for (let i = 0; i < 2; i++) { let i = 9; r.push(i); } r.join(\",\")"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PerIterationBindingsSurviveAShadowedBody()
         => Assert.Equal("1,2,3", Eval(
             "var f = []; for (const x of [1, 2, 3]) { const y = x; f.push(() => y); } "
             + "f.map(g => g()).join(\",\")"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionDeclarationsAreStillHoistedInsideAShadowedBody()
     {
         // Giving the body its own scope must not strand its hoisted names: a function
@@ -239,7 +239,7 @@ public class MinifiedSourceTests
             + "function z() {} } out"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void VarAndControlFlowAreUnaffectedByAShadowedBody()
     {
         // `var` still reaches the enclosing function, and `continue` — plain and labelled —
@@ -254,13 +254,13 @@ public class MinifiedSourceTests
             + "for (const y of [1, 2]) { n++; continue outer; } } n"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HeadBindingIsStillInTheTemporalDeadZoneOfAShadowingBody()
         // The body's own `x` shadows the head's for the WHOLE block, so reading it before
         // the declaration is a ReferenceError rather than a peek at the head's value.
         => Assert.Throws<JSException>(() => Eval("for (const x of [1]) { x; const x = 1; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LoopBodyWithoutAShadowingBindingIsUnchanged()
     {
         Assert.Equal("3/2", Eval(
@@ -272,7 +272,7 @@ public class MinifiedSourceTests
 
     // ---- a `let` head reads the enclosing scope, not the body's bindings ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LoopTestReadsTheEnclosingBindingAShadowingBodyHides()
     {
         // A `let` head evaluates its test against each iteration's own binding, which the
@@ -288,7 +288,7 @@ public class MinifiedSourceTests
             "const n = 3; var c = 0; for (let r = 1; r <= n; ++r) { class n {} c++; } c"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LoopUpdateReadsTheEnclosingBindingAShadowingBodyHides()
         // The update is moved into the same block when it carries a closure, so it needs the
         // same separation: `step` here is the outer 1, never the body's 99.
@@ -296,7 +296,7 @@ public class MinifiedSourceTests
             "const step = 1; var c = 0, fs = []; "
             + "for (let r = 0; r < 3; r += step) { const step = 99; fs.push(() => r); c++; } c"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ShadowedBodyKeepsPerIterationBindingsAndControlFlow()
     {
         // Giving the body its own scope must not disturb what the per-iteration lowering is
@@ -313,7 +313,7 @@ public class MinifiedSourceTests
             + "if (r === 2) break; c++; } c"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ShadowedBodyDoesNotHideTheNameFromItself()
         // The body's own binding is still the one the body sees, for the whole block: reading
         // it before its declaration is its temporal dead zone, not a peek at the outer value.
@@ -322,7 +322,7 @@ public class MinifiedSourceTests
 
     // ---- `throw` takes an Expression, comma operator included ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ThrowThrowsTheLastOperandOfASequence()
     {
         // `ThrowStatement : throw [no LineTerminator here] Expression ;` — the parser read an
@@ -334,14 +334,14 @@ public class MinifiedSourceTests
             "var e, x = 0; try { throw x = 1, 'ex1'; } catch (c) { e = c; } '' + e"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ThrowEvaluatesEveryOperandOfASequence()
         // Every operand runs, in order, before the last one is thrown.
         => Assert.Equal("ab/y", Eval(
             "var s = '', e; try { throw (s += 'a', 'x'), (s += 'b', 'y'); } catch (c) { e = c; } "
             + "s + '/' + e"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASequenceOperandThatThrowsIsCaughtByTheEnclosingTry()
         // The operand is evaluated inside the try, so a conversion that throws on the way to
         // the thrown value is that try's exception rather than an escape.
@@ -351,7 +351,7 @@ public class MinifiedSourceTests
 
     // ---- a suspension inside a short-circuit operator, inside a loop ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldInsideAShortCircuitOperatorInALoop()
     {
         // `a || b`, `a && b` and `a ?? b` all lower to one Coalesce node, which emits
@@ -373,7 +373,7 @@ public class MinifiedSourceTests
             "function* g() { for (var i = 0; i < 2; i++) { (yield i) || false; } } [...g()].join()"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ShortCircuitingStillShortCircuitsAroundAYield()
     {
         // The rewrite must not turn a conditional evaluation into an unconditional one: the
@@ -390,7 +390,7 @@ public class MinifiedSourceTests
 
     // ---- a class that writes no constructor still checks its super ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DefaultDerivedConstructorRejectsANonConstructorSuper()
     {
         // The synthetic `constructor(...args) { super(...args) }` [[Construct]]s whatever
@@ -407,7 +407,7 @@ public class MinifiedSourceTests
             + "var n = 'no-throw'; try { new D(); } catch (e) { n = e.constructor.name; } n"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DefaultDerivedConstructorStillConstructsEveryRealSuper()
     {
         // The check is about IsConstructor, not about the shape of the super: an ordinary

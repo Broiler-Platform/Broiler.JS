@@ -45,23 +45,23 @@ public class Issue747Tests
 
     // ---- Problem 16: JSON.stringify of negative zero ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringifyNegativeZeroIsZero()
         => Assert.Equal("0", Eval("JSON.stringify(-0)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringifyNegativeZeroInArray()
         => Assert.Equal("[0,0,1.5,1e+21]", Eval("JSON.stringify([-0, 0, 1.5, 1e21])"));
 
     // ---- Problem 22: Date / Date.UTC coerce each argument exactly once ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateConstructorCoercesEachArgumentOnce()
         => Assert.Equal("ymodhmisms", Eval(
             "var log='';function mk(t){return {valueOf:function(){log+=t;return 1;}};}" +
             "new Date(mk('y'),mk('mo'),mk('d'),mk('h'),mk('mi'),mk('s'),mk('ms'));log"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateUtcCoercesEachArgumentOnce()
         => Assert.Equal("ymodhmisms", Eval(
             "var log='';function mk(t){return {valueOf:function(){log+=t;return 1;}};}" +
@@ -69,7 +69,7 @@ public class Issue747Tests
 
     // ---- Problem 25: indexOf across the integer limit ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IndexOfFindsPropertyNearIntegerLimit()
         => Assert.Equal("9007199254740990", Eval(
             "var o={length:9007199254740991};o[9007199254740990]='x';" +
@@ -77,13 +77,13 @@ public class Issue747Tests
 
     // ---- Problem 33: findLast / findLastIndex maximum index ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FindLastIndexVisitsMaximumIndexFirst()
         => Assert.Equal("9007199254740990", Eval(
             "var seen;Array.prototype.findLastIndex.call({length:9007199254740991}," +
             "function(v,i){seen=i;return true;});''+seen"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FindLastVisitsMaximumIndexFirst()
         => Assert.Equal("4294967294", Eval(
             "var seen;Array.prototype.findLast.call({length:4294967295}," +
@@ -91,47 +91,47 @@ public class Issue747Tests
 
     // ---- Problem 41: object rest / spread over a string primitive ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectRestOverStringPrimitiveCopiesIndices()
         => Assert.Equal("f,o", Eval("var {...x}='fo';x[0]+','+x[1]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectSpreadOverStringPrimitiveCopiesIndices()
         => Assert.Equal("a,b", Eval("var o={...'ab'};o[0]+','+o[1]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectSpreadOverNumberPrimitiveCopiesNothing()
         => Assert.Equal("0", Eval("''+Object.keys({...42}).length"));
 
     // ---- Problem 28: parseInt of a bare "0x" ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseIntBare0xIsNaN()
         => Assert.Equal("NaN", Eval("''+parseInt('0x')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseIntBare0xWithRadix16IsNaN()
         => Assert.Equal("NaN", Eval("''+parseInt('0x',16)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseIntHexStillParses()
         => Assert.Equal("31", Eval("''+parseInt('0x1f')"));
 
     // ---- Problem 31: declaration completes empty ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalOfBareVarDeclarationIsUndefined()
         => Assert.Equal("undefined", Eval("''+eval('var x = 1;')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalVarAfterExpressionKeepsExpressionValue()
         => Assert.Equal("1", Eval("''+eval('1; var x = 5;')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalLetAfterExpressionKeepsExpressionValue()
         => Assert.Equal("1", Eval("''+eval('1; let y = 5;')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalBareLetDeclarationIsUndefined()
         => Assert.Equal("undefined", Eval("''+eval('let y = 1;')"));
 
@@ -147,18 +147,18 @@ public class Issue747Tests
         "function* g(){try{yield* badIter;}finally{delegationComplete=true;}}" +
         "var iter=g();iter.next();";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStarReturnDoesNotReadValueWhileNotDone()
         => Assert.Equal("0,false", Eval(
             YieldStarReturnHarness + "iter.return();callCount+','+delegationComplete"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStarReturnReadsValueOnceWhenDone()
         => Assert.Equal("1,true", Eval(
             YieldStarReturnHarness + "iter.return();spyValue.done=true;iter.return();" +
             "callCount+','+delegationComplete"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStarThrowDoesNotReadValueWhileNotDone()
         => Assert.Equal("0,false", Eval(
             "var callCount=0;" +
@@ -172,40 +172,40 @@ public class Issue747Tests
 
     // ---- Problems 37/38: spec-shared built-in function identity ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberParseFloatIsGlobalParseFloat()
         => Assert.Equal("true", Eval("''+(Number.parseFloat === parseFloat)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberParseIntIsGlobalParseInt()
         => Assert.Equal("true", Eval("''+(Number.parseInt === parseInt)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayToStringIsArrayToString()
         => Assert.Equal("true", Eval(
             "''+(Object.getPrototypeOf(Int8Array.prototype).toString === Array.prototype.toString)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberParseIntStillFunctionalAfterAlias()
         => Assert.Equal("16,NaN", Eval("Number.parseInt('0x10')+','+Number.parseInt('0x')"));
 
     // ---- Problems 23/24: Object.prototype.toString ToObject(this) before @@toStringTag ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToStringReadsTagFromPrimitiveWrapperPrototype()
         => Assert.Equal("[object test262]", Eval(
             "Boolean.prototype[Symbol.toStringTag]='test262';Object.prototype.toString.call(true)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToStringReadsTagFromNumberPrimitive()
         => Assert.Equal("[object test262]", Eval(
             "Number.prototype[Symbol.toStringTag]='test262';Object.prototype.toString.call(0)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToStringReadsDefaultSymbolTagFromPrimitive()
         => Assert.Equal("[object Symbol]", Eval("Object.prototype.toString.call(Symbol())"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToStringReadsTagFromBigIntPrimitive()
         => Assert.Equal("[object test262]", Eval(
             "Object.defineProperty(BigInt.prototype,Symbol.toStringTag,{value:'test262'});" +
@@ -213,19 +213,19 @@ public class Issue747Tests
 
     // ---- Problem 21: catch-binding destructuring NamedEvaluation (cover initializer) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CatchArrayPatternCoverInitializerDoesNotInferName()
         => Assert.Equal("cover,", Eval(
             "var r;try{throw [];}catch([cover=(function(){}), xCover=(0,function(){})])" +
             "{r=cover.name+','+xCover.name;}r"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CatchObjectPatternCoverInitializerDoesNotInferName()
         => Assert.Equal("cover,", Eval(
             "var r;try{throw {};}catch({cover=(function(){}), xCover=(0,function(){})})" +
             "{r=cover.name+','+xCover.name;}r"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CatchArrayPatternPlainAnonymousInitializerInfersName()
         => Assert.Equal("fn", Eval(
             "var r;try{throw [undefined];}catch([fn=function(){}]){r=fn.name;}r"));
@@ -238,19 +238,19 @@ public class Issue747Tests
         "next(){return o.done?{done:true}:{done:false,value:l};}," +
         "return(){if(o.t)throw new o.t();return{done:true};}};}";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IteratorZipShortestPropagatesReturnError()
         => Assert.Equal("ExpErr", Eval(
             ZipCloseHarness +
             "var it=Iterator.zip([mk('a'),mk('b',{done:true}),mk('c',{t:T262}),mk('d',{t:ExpErr})]);" +
             "var r='NONE';try{it.next();}catch(e){r=e instanceof ExpErr?'ExpErr':'other';}r"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IteratorZipCleanShortestCloseCompletes()
         => Assert.Equal("[[1,4],[2,5]]", Eval(
             "JSON.stringify([...Iterator.zip([[1,2,3],[4,5]])])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IteratorZipKeyedShortestPropagatesReturnError()
         => Assert.Equal("ExpErr", Eval(
             ZipCloseHarness +
@@ -259,7 +259,7 @@ public class Issue747Tests
 
     // ---- Problem 34: Object.keys on a proxy reads the ownKeys result's `length` ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ProxyOwnKeysReadsArrayLikeLengthObservably()
         => Assert.Equal("get length,get 0,get 1,get 2", Eval(
             "var log=[];var sym=Symbol();" +
@@ -270,7 +270,7 @@ public class Issue747Tests
             "getOwnPropertyDescriptor(t,k){return{value:1,enumerable:k==='a',configurable:true};}});" +
             "Object.keys(p);log.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ProxyOwnKeysSkipsSymbolForObjectKeys()
         => Assert.Equal("a", Eval(
             "var sym=Symbol();" +

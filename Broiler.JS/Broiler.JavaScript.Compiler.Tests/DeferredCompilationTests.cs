@@ -28,7 +28,7 @@ namespace Broiler.JavaScript.Compiler.Tests;
 /// </remarks>
 public class DeferredCompilationTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SyntaxErrorInNeverCalledFunction_StillThrowsAtCompileTime()
     {
         // The item's first risk. Nothing here is ever called, so if the error surfaced at
@@ -38,7 +38,7 @@ public class DeferredCompilationTests
             () => context.Eval("function never() { var 1invalid = 2; } 'reached';"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeferredFunctionCapturesItsOwnInstanceOfALoopBinding()
     {
         // Generation is memoized per syntactic site and the boxes are captured per closure
@@ -54,7 +54,7 @@ public class DeferredCompilationTests
         Assert.Equal("0,10,20,30,40", context.Eval(source).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeferredFunctionSeesLaterWritesToACapturedBinding()
     {
         // A capture is by cell, not by value, and the cell is bound at closure creation while
@@ -73,7 +73,7 @@ public class DeferredCompilationTests
         Assert.Equal("1/2", context.Eval(source).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RecursionThroughADeferredFunctionTerminates()
     {
         // The first call generates the method and only then runs the body, which calls the same
@@ -85,7 +85,7 @@ public class DeferredCompilationTests
                 .DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MutuallyRecursiveDeferredFunctionsTerminate()
     {
         // Two sites, each first-called from inside the other's first call. Generation is under
@@ -100,7 +100,7 @@ public class DeferredCompilationTests
         Assert.Equal("true/false", context.Eval(source).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalInsideADeferredFunctionSeesItsScope()
     {
         // The item's third risk. A direct eval resolves names against the enclosing activation
@@ -115,7 +115,7 @@ public class DeferredCompilationTests
         Assert.Equal(9, context.Eval(source).DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeferredGeneratorAndAsyncBodiesRun()
     {
         // The item's fourth risk. A generator body is rewritten into a state machine before it
@@ -132,7 +132,7 @@ public class DeferredCompilationTests
         Assert.Equal(6, context.Eval(source).DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ManyInstancesOfOneSiteKeepDistinctCaptures()
     {
         // One site, many closure instances: generation happens once and is shared, the boxes do
@@ -151,7 +151,7 @@ public class DeferredCompilationTests
         Assert.Equal(4950, context.Eval(source).DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConcurrentFirstCallsOfOneSiteAgree()
     {
         // Generation is guarded and resolution deliberately is not — two threads racing to
@@ -174,7 +174,7 @@ public class DeferredCompilationTests
         Assert.All(results, r => Assert.Equal(499500, r));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADeferredFunctionThatIsNeverCalledDoesNotAffectTheRest()
     {
         // The shape the whole item is for: thousands of definitions, almost none invoked. It

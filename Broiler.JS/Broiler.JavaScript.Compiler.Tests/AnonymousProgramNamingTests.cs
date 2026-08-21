@@ -16,7 +16,7 @@ public class AnonymousProgramNamingTests
 
     // The reported shape: one eval'd program defines a function, a second calls it. The two frames
     // have to name different programs.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TwoEvaluatedPrograms_AreNamedApart()
     {
         using var context = new JSContext();
@@ -47,7 +47,7 @@ public class AnonymousProgramNamingTests
     // Distinct sources get distinct names, so a name never covers two different programs.
     // (Re-evaluating the *same* source may reuse a cached compilation, and reusing its name with
     // it is right — the name still identifies exactly one piece of code.)
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DistinctEvaluatedSources_GetDistinctNames()
     {
         using var context = new JSContext();
@@ -61,7 +61,7 @@ public class AnonymousProgramNamingTests
     }
 
     // A script that HAS a name keeps it — the numbering is only the fallback.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANamedScript_KeepsItsName()
     {
         using var context = new JSContext();

@@ -30,7 +30,7 @@ public class AnonymousProgramDumpTests : IDisposable
     // The reported shape: one program defines a wrapper, another calls it, and the failing
     // identifier is inside the wrapper. Both programs have to land on disk under the names their
     // frames use, because that correspondence is the whole point.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvaluatedPrograms_AreWrittenUnderTheNameTheirFramesUse()
     {
         AnonymousProgramDump.Directory = root;
@@ -71,7 +71,7 @@ public class AnonymousProgramDumpTests : IDisposable
 
     // Off unless asked for: page script is page content, and writing it on every render is not
     // something a diagnostic should decide on a page's behalf.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NothingIsWritten_WhenNoDirectoryIsConfigured()
     {
         AnonymousProgramDump.Directory = string.Empty;
@@ -84,7 +84,7 @@ public class AnonymousProgramDumpTests : IDisposable
     }
 
     // A script that has a name of its own is not an anonymous program and is not dumped.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANamedScript_IsNotDumped()
     {
         AnonymousProgramDump.Directory = root;
@@ -97,7 +97,7 @@ public class AnonymousProgramDumpTests : IDisposable
     }
 
     // Writing must never be able to break the execution it observes.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnUnwritableDirectory_DoesNotDisturbExecution()
     {
         AnonymousProgramDump.Directory = "\0:/nowhere/that/can/exist";

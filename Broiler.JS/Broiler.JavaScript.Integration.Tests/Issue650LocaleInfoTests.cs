@@ -17,42 +17,42 @@ public class Issue650LocaleInfoTests
         return ctx.Eval(code).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetCalendarsReturnsNonEmptyArray()
         => Assert.Equal("true 1 gregory", Eval(
             "var c=new Intl.Locale('en').getCalendars(); '' + Array.isArray(c) + ' ' + c.length + ' ' + c[0]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetCollationsExcludesStandardAndSearch()
         => Assert.Equal("true true", Eval(
             "var c=new Intl.Locale('en').getCollations(); '' + (c.length>0) + ' ' + (c.indexOf('standard')<0 && c.indexOf('search')<0)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetHourCyclesReturnsValidValues()
         => Assert.Equal("true true", Eval(
             "var h=new Intl.Locale('en').getHourCycles(); '' + (h.length>0) + ' ' + h.every(function(x){return ['h11','h12','h23','h24'].indexOf(x)>=0;})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetNumberingSystemsReturnsNonEmptyArray()
         => Assert.Equal("true 1 latn", Eval(
             "var n=new Intl.Locale('en').getNumberingSystems(); '' + Array.isArray(n) + ' ' + n.length + ' ' + n[0]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetTimeZonesReturnsNonEmptyArrayForRegion()
         => Assert.Equal("true true", Eval(
             "var t=new Intl.Locale('en-US').getTimeZones(); '' + Array.isArray(t) + ' ' + (t.length>0)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetTimeZonesIsUndefinedWithoutRegion()
         => Assert.Equal("undefined", Eval("'' + new Intl.Locale('en').getTimeZones()"));
 
     // The -u- preferred value is placed first (CreateArrayFromListAndPreferred).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PreferredCalendarComesFirst()
         => Assert.Equal("buddhist gregory", Eval(
             "new Intl.Locale('en-u-ca-buddhist').getCalendars().join(' ')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PreferredNumberingSystemComesFirst()
         => Assert.Equal("arab latn", Eval(
             "new Intl.Locale('en-u-nu-arab').getNumberingSystems().join(' ')"));

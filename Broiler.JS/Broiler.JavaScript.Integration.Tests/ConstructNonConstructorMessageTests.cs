@@ -33,19 +33,19 @@ public class ConstructNonConstructorMessageTests
             "t.js").ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void New_Undefined_Is_Not_A_Constructor()
     {
         Assert.Equal("undefined is not a constructor", MessageOf("new undefined();"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void New_Null_Is_Not_A_Constructor()
     {
         Assert.Equal("null is not a constructor", MessageOf("new null();"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void An_Undefined_Property_Constructed_Reports_The_Same_Way()
     {
         // The shape a feature probe actually takes: every alternative is missing, so the whole
@@ -55,7 +55,7 @@ public class ConstructNonConstructorMessageTests
             MessageOf("var w = {}; new (w.A || w.B || w.C)(null);"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Calling_Undefined_Still_Reports_Not_A_Function()
     {
         // Unchanged, and deliberately so: "undefined is not a function" is already the browser
@@ -64,7 +64,7 @@ public class ConstructNonConstructorMessageTests
         Assert.Equal("undefined is not a function", MessageOf("var f; f();"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void The_Message_Matches_The_Wording_Used_For_A_Real_Non_Constructor()
     {
         // The point of the change is consistency, so pin the neighbour it now agrees with: an

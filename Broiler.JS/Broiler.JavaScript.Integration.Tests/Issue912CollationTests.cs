@@ -16,7 +16,7 @@ public class Issue912CollationTests
     }
 
     // Loop 1: every supportedValuesOf("collation") value resolves for some locale.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EverySupportedCollationResolves()
     {
         var code = @"
@@ -35,7 +35,7 @@ public class Issue912CollationTests
 
     // Loop 2 (both directions): supportedValuesOf == exactly the resolvable subset of the
     // full CLDR collation list (search/standard excluded by Collator).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SupportedMatchesResolvableSet()
     {
         var code = @"

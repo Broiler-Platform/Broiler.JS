@@ -35,7 +35,7 @@ public class ModulesTests
                 : throw new FileNotFoundException(module.filePath));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task HostUrlSeams_Resolve_Fetch_And_Execute_A_Url_Dependency()
     {
         // A URL entry imports a dependency living under a different sub-path; the specifier './lib/dep.js'
@@ -63,14 +63,14 @@ public class ModulesTests
         Assert.Equal(1.0, ctx.Eval("globalThis.ranDep|0").DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSModuleContext_Create_Succeeds()
     {
         var ctx = new JSModuleContext();
         Assert.NotNull(ctx);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSModuleContext_RegisterModule_Succeeds()
     {
         var ctx = new JSModuleContext();
@@ -78,7 +78,7 @@ public class ModulesTests
         ctx.RegisterModule(KeyStrings.GetOrCreate(new StringSpan("testmod")), exports);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSModule_Create_WithExports()
     {
         var ctx = new JSModuleContext();
@@ -87,7 +87,7 @@ public class ModulesTests
         Assert.NotNull(module);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSAssertThrows_InvokesCallbackWithoutPassingAssertionArguments()
     {
         using var ctx = new JSModuleContext();
@@ -104,7 +104,7 @@ public class ModulesTests
         Assert.Equal(0.0, result.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task JSModuleContext_RunScriptAsync_AllowsTopLevelAwait()
     {
         using var ctx = new JSModuleContext();
@@ -121,7 +121,7 @@ public class ModulesTests
     // (or rejects for a missing module); that end-to-end async flow is exercised by the
     // file-based module runner. Here we lock in that it parses and compiles everywhere an
     // expression may appear.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DynamicImport_InsideUncalledFunction_CompilesWithoutExecuting()
     {
         // The syntax/valid test262 cases define (but never call) functions containing nested

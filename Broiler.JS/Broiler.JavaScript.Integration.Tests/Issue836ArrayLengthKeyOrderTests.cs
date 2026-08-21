@@ -19,31 +19,31 @@ public class Issue836ArrayLengthKeyOrderTests
         return ctx.Eval(code).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LengthPrecedesLaterStringKeyAfterDefineProperty()
         => Assert.Equal("length,a", Eval(
             "var arr = []; arr.a = 1; Object.defineProperty(arr, 'length', { value: 2 });" +
             "Object.getOwnPropertyNames(arr).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectOwnKeysIndicesThenLengthThenStrings()
         => Assert.Equal("0,1,length,a", Eval(
             "var arr = ['x','y']; arr.a = 1; Object.defineProperty(arr, 'length', { value: 2 });" +
             "Reflect.ownKeys(arr).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LengthFirstWhenSoleStringKey()
         => Assert.Equal("length", Eval(
             "var arr = []; Object.defineProperty(arr, 'length', { value: 0 });" +
             "Object.getOwnPropertyNames(arr).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SyntheticLengthStillOrderedBeforeStrings()
         => Assert.Equal("length,a", Eval(
             "var arr = []; arr.a = 1; Object.getOwnPropertyNames(arr).join(',')"));
 
     // "length" stays non-enumerable, so enumerable-only walks never surface it.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectKeysExcludesLengthAfterDefineProperty()
         => Assert.Equal("a", Eval(
             "var arr = []; arr.a = 1; Object.defineProperty(arr, 'length', { value: 2 });" +

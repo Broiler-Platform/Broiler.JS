@@ -78,7 +78,7 @@ public sealed class NumericLocalDefeatTests
 
     private static long Dropped(Defeat d, NumericDropCause c) => d.DropCauses[(int)c];
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ALiteralInitializedLocalIsNumericAndCostsNothing()
     {
         // The control every row below is read against.
@@ -88,7 +88,7 @@ public sealed class NumericLocalDefeatTests
         Assert.Equal(1, d.NumericLocals);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANestedFunctionDeclarationDoesNotDefeatTheEnclosingLocal()
     {
         // Ruled out first, because it is the obvious suspect and it is innocent:
@@ -101,7 +101,7 @@ public sealed class NumericLocalDefeatTests
         Assert.Equal(1, d.NumericLocals);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ALocalNamedByAHoistedFunctionBecomesACellNotASlot()
     {
         // Item 3-7's correctness conjunct: a hoisted `function g(){ return c; }` can read `c`
@@ -159,7 +159,7 @@ public sealed class NumericLocalDefeatTests
         Assert.Equal(1, Dropped(d, NumericDropCause.OtherName));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheEnclosingNameIsHeldByACorrectnessRuleWhenItsReadersAreDeclarations()
     {
         // Why no static widening can reach NavierStokes. The functions that read `rowSize` are
@@ -207,7 +207,7 @@ public sealed class NumericLocalDefeatTests
         Assert.Equal(1, Dropped(d, NumericDropCause.OtherName));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PassingTheValueInAsAnArgumentTradesOneDefeatForAnother()
     {
         // The rewrite a static fix would have to turn NavierStokes into, and it does not help: a

@@ -26,36 +26,36 @@ public class Issue818NumberFormatRangeTests
         "var nf = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });" +
         "function dump(parts){ return parts.map(function(p){ return p.type + ':' + p.value + ':' + p.source; }).join('|'); }";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DistinctRangeHasStartAndEndSources()
         => Assert.Equal(
             "currency:$:startRange|integer:3:startRange|literal: – :shared|currency:$:endRange|integer:5:endRange",
             Eval(Setup + "dump(nf.formatRangeToParts(3, 5))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EqualEndpointsRenderApproximatelyShared()
         => Assert.Equal(
             "approximatelySign:~:shared|currency:$:shared|integer:1:shared",
             Eval(Setup + "dump(nf.formatRangeToParts(1, 1))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EndpointsThatRoundEqualRenderApproximately()
         => Assert.Equal(
             "approximatelySign:~:shared|currency:$:shared|integer:3:shared",
             Eval(Setup + "dump(nf.formatRangeToParts(2.999, 3.001))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatRangeStringJoinsTheParts()
         => Assert.Equal("$3 – $5", Eval(Setup + "nf.formatRange(3, 5)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RangePartsHaveObjectPrototypeAndAllThreeKeys()
         => Assert.Equal("true", Eval(
             Setup +
             "var p = nf.formatRangeToParts(3, 5)[0];" +
             "String(Object.getPrototypeOf(p) === Object.prototype && 'type' in p && 'value' in p && 'source' in p)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatRangeRejectsNaN()
         => Assert.Equal("RangeError", Eval(
             "var nf = new Intl.NumberFormat('en');" +
@@ -63,17 +63,17 @@ public class Issue818NumberFormatRangeTests
 
     // SetNumberFormatDigitOptions: a lone maximumFractionDigits lowers the currency
     // default minimum instead of being clamped back up to it.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CurrencyMaximumFractionDigitsZeroDropsTheFraction()
         => Assert.Equal("$3", Eval(
             "new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(3)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CurrencyDefaultStillHasTwoFractionDigits()
         => Assert.Equal("$3.00", Eval(
             "new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(3)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DecimalMinimumFractionDigitsStillRaisesMaximum()
         => Assert.Equal("3.50000", Eval(
             "new Intl.NumberFormat('en-US', { minimumFractionDigits: 5 }).format(3.5)"));

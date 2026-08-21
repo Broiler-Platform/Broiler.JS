@@ -54,7 +54,7 @@ public sealed class AsyncGeneratorExclusionTests
     private const string Busy =
         "(function () { var t = 0; for (var j = 0; j < 20000; j++) { t += j; } return t; })()";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnAsyncGeneratorResumedFromAHostThreadDoesNotOverlapAnEvaluation()
     {
         // The generator suspends at `await` with nothing else running, so firing the thenable's
@@ -91,7 +91,7 @@ public sealed class AsyncGeneratorExclusionTests
         Assert.Equal(1, peak);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheResumptionStillRunsAndItsSideEffectIsWhole()
     {
         // **The discriminating case.** Two things are asserted at once and both matter: the

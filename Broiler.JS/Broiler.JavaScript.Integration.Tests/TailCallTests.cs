@@ -38,7 +38,7 @@ public class TailCallTests
         Assert.Equal("done", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Catch_Body_TailCall_DoesNotGrowStack()
     {
         // A `return f(n-1)` in a catch (no finally) must be a proper tail call.
@@ -55,7 +55,7 @@ public class TailCallTests
         Assert.Equal("done", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Conditional_In_Return_Preserves_Value()
     {
         var result = EvalWithScriptHost("""
@@ -66,7 +66,7 @@ public class TailCallTests
         Assert.Equal("zero,pos", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LogicalAnd_In_Return_Preserves_Value()
     {
         var result = EvalWithScriptHost("""
@@ -78,7 +78,7 @@ public class TailCallTests
         Assert.Equal("5,false,0", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Coalesce_In_Return_Preserves_Value()
     {
         var result = EvalWithScriptHost("""
@@ -90,7 +90,7 @@ public class TailCallTests
         Assert.Equal("9,2,9", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Real_TryFinally_Still_Blocks_Tail_Call_Ordering()
     {
         // A user try/finally must run its finally BEFORE the (non-tail) call result
@@ -106,7 +106,7 @@ public class TailCallTests
         Assert.Equal("g:call,finally", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Catch_With_Finally_Does_Not_Reorder_Tail_Call()
     {
         // `return` inside a catch that has a finally is NOT a tail position: the
@@ -122,7 +122,7 @@ public class TailCallTests
         Assert.Equal("g:call,finally", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Catch_Inside_Outer_Finally_Still_Runs_Finally()
     {
         // A catch tail call enabled only when there is no finally — an *enclosing*
@@ -143,7 +143,7 @@ public class TailCallTests
         Assert.Equal("g:call,finally", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Catch_Tail_Call_Preserves_Catch_Side_Effects_And_Value()
     {
         // The catch body runs (binding + side effects) and a tail call from it
@@ -160,7 +160,7 @@ public class TailCallTests
         Assert.Equal("done:3,2,1,0", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Finally_Return_Overrides_Try_Completion()
     {
         // A return in finally overrides the try's pending return; without one the
@@ -181,7 +181,7 @@ public class TailCallTests
     // Note: these run in sloppy mode (no top-level "use strict"): the global case
     // reassigns `eval` and the with case uses `with`, both illegal under strict.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonEval_Global_TailCall()
     {
         var result = EvalWithScriptHost("""
@@ -198,7 +198,7 @@ public class TailCallTests
         Assert.Equal("1", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonEval_With_Scope_TailCall()
     {
         var result = EvalWithScriptHost("""
@@ -218,7 +218,7 @@ public class TailCallTests
         Assert.Equal("1", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonEval_Function_Dynamic_TailCall()
     {
         var result = EvalWithScriptHost("""
@@ -237,7 +237,7 @@ public class TailCallTests
         Assert.Equal("1", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonTail_Indirect_Eval_Returns_Value_Not_Sentinel()
     {
         // The tail-call lift must not leak a JSTailCall sentinel into a non-tail use.
@@ -249,7 +249,7 @@ public class TailCallTests
         Assert.Equal("51", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Direct_Eval_In_Tail_Position_Returns_Real_Value()
     {
         // A genuine direct eval in tail position evaluates its body to a real value.
@@ -260,7 +260,7 @@ public class TailCallTests
         Assert.Equal("42", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Finally_Inside_Outer_Finally_Still_Runs_Outer()
     {
         // An inner finally tail call must not skip an enclosing finally.

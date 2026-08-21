@@ -7,14 +7,14 @@ namespace Broiler.JavaScript.Core.Tests;
 
 public class CoreTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSContext_Create_And_Dispose()
     {
         using var ctx = new JSContext();
         Assert.NotNull(ctx);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSContext_Eval_SimpleArithmetic()
     {
         using var ctx = new JSContext();
@@ -22,7 +22,7 @@ public class CoreTests
         Assert.Equal(5.0, result.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSContext_Eval_StringConcatenation()
     {
         using var ctx = new JSContext();
@@ -30,7 +30,7 @@ public class CoreTests
         Assert.Equal("hello world", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSNumber_StoresValue()
     {
         var num = new JSNumber(42);
@@ -38,7 +38,7 @@ public class CoreTests
         Assert.True(num.IsNumber);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSString_StoresValue()
     {
         var str = new JSString("test");
@@ -46,7 +46,7 @@ public class CoreTests
         Assert.True(str.IsString);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSContext_Eval_VariableDeclaration()
     {
         using var ctx = new JSContext();
@@ -55,7 +55,7 @@ public class CoreTests
         Assert.Equal(20.0, result.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSContext_Eval_FunctionCall()
     {
         using var ctx = new JSContext();
@@ -63,7 +63,7 @@ public class CoreTests
         Assert.Equal(7.0, result.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task JSContext_EvalWithTopLevelAwaitAsync_Allows_Standalone_Fixture_Await()
     {
         using var ctx = new JSContext();
@@ -73,7 +73,7 @@ public class CoreTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSContext_Eval_StillRejects_TopLevelAwait_ByDefault()
     {
         using var ctx = new JSContext();

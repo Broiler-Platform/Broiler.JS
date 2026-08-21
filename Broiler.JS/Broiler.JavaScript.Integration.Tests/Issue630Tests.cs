@@ -27,7 +27,7 @@ public class Issue630Tests
         Assert.Equal(expected, Eval(code).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedKeyInMethodParameterDestructures()
     {
         // Object-literal method (Problem 4) and generator method (Problem 5).
@@ -35,7 +35,7 @@ public class Issue630Tests
         Assert.Equal("8", Eval("class C { *gen({ ['a']: x }) { yield x; } } [...new C().gen({a:8})][0];").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedKeyIsEvaluatedOnceAndBeforeTargetRead()
     {
         // The key expression must be evaluated exactly once, before the value is read,
@@ -47,7 +47,7 @@ public class Issue630Tests
             "var {[k()]:x}=o; log.join(',');").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedKeyEvaluationErrorPropagates()
     {
         var code = "function thrower(){throw new Error('boom');} var t;" +

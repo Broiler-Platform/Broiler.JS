@@ -37,45 +37,45 @@ public class Issue707Tests
 
     // ---- Problems 7/8/9: accessor / async-generator method toString ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetterToStringIncludesGetKeyword()
         => Assert.Equal("get f() {}",
             Eval("Object.getOwnPropertyDescriptor({ get f() {} }, 'f').get.toString();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetterToStringIncludesSetKeyword()
         => Assert.Equal("set f(a) {}",
             Eval("Object.getOwnPropertyDescriptor({ set f(a) {} }, 'f').set.toString();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AsyncGeneratorMethodToStringIncludesAsyncStar()
         => Assert.Equal("async *f() {}",
             Eval("({ async *f() {} }).f.toString();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorMethodToStringIncludesStar()
         => Assert.Equal("*f() {}",
             Eval("({ *f() {} }).f.toString();"));
 
     // The "static" class modifier is part of the ClassElement, not the
     // MethodDefinition, so it must NOT appear in the function source.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticGetterToStringExcludesStaticIncludesGet()
         => Assert.Equal("get f() {}",
             Eval("Object.getOwnPropertyDescriptor(class { static get f() {} }, 'f').get.toString();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticMethodToStringExcludesStatic()
         => Assert.Equal("f() {}",
             Eval("Object.getOwnPropertyDescriptor(class { static f() {} }, 'f').value.toString();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainMethodToStringRoundTrips()
         => Assert.Equal("f() {}",
             Eval("({ f() {} }).f.toString();"));
 
     // Comments between the keyword and body are preserved verbatim.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetterToStringPreservesComments()
         => Assert.Equal("get /* a */ f /* b */ ( /* c */ ) /* d */ { /* e */ }",
             Eval("Object.getOwnPropertyDescriptor({ get /* a */ f /* b */ ( /* c */ ) /* d */ { /* e */ } }, 'f').get.toString();"));
@@ -107,25 +107,25 @@ public class Issue707Tests
 
     // German uses "," as the decimal separator in the mantissa; the exponent is
     // still "E"+digits.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ScientificNotationDeDeUsesCommaDecimal()
         => Assert.Equal("3,45E-4",
             Eval("new Intl.NumberFormat('de-DE', { notation: 'scientific' }).format(0.000345);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ScientificNotationFormatsInfinityAndNaN()
     {
         Assert.Equal("-∞", Eval("new Intl.NumberFormat('en-US', { notation: 'scientific' }).format(-Infinity);"));
         Assert.Equal("NaN", Eval("new Intl.NumberFormat('en-US', { notation: 'engineering' }).format(NaN);"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ScientificNotationFormatToPartsEmitsExponentParts()
         => Assert.Equal("integer:3|decimal:.|fraction:45|exponentSeparator:E|exponentMinusSign:-|exponentInteger:4",
             Eval("new Intl.NumberFormat('en-US', { notation: 'scientific' }).formatToParts(0.000345)" +
                  ".map(function(p){return p.type+':'+p.value;}).join('|');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EngineeringNotationFormatToPartsEmitsExponentParts()
         => Assert.Equal("integer:345|exponentSeparator:E|exponentMinusSign:-|exponentInteger:6",
             Eval("new Intl.NumberFormat('en-US', { notation: 'engineering' }).formatToParts(0.000345)" +
@@ -139,7 +139,7 @@ public class Issue707Tests
     // binding for closures created in the parameter list and the body, even after
     // the function has returned. EvalShadowVariable provides this.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParamEvalIntroducedVarShadowsForParamClosures()
         => Assert.Equal("inside|inside", Eval(
             "var x = 'outside'; var probe1, probe2;" +
@@ -149,7 +149,7 @@ public class Issue707Tests
             ") {}());" +
             "probe1() + '|' + probe2();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParamEvalIntroducedVarShadowsForBodyClosure()
         => Assert.Equal("inside|inside|inside", Eval(
             "var x = 'outside'; var probe1, probe2, probeBody;" +
@@ -160,7 +160,7 @@ public class Issue707Tests
             "probe1() + '|' + probe2() + '|' + probeBody();"));
 
     // The outer binding is left untouched (the shadow does not leak back).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParamEvalDoesNotMutateOuterBinding()
         => Assert.Equal("outside", Eval(
             "var x = 'outside';" +
@@ -169,7 +169,7 @@ public class Issue707Tests
 
     // When the eval does NOT introduce the var, references forward to the live
     // outer binding (assignments too).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParamEvalWithoutIntroductionForwardsToOuter()
         => Assert.Equal("outside", Eval(
             "var x = 'outside'; var probe;" +
@@ -177,7 +177,7 @@ public class Issue707Tests
             "probe();"));
 
     // The outer binding can be a function-local rather than a global.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParamEvalShadowsEnclosingFunctionLocal()
         => Assert.Equal("inside", Eval(
             "function outer() {" +
@@ -188,7 +188,7 @@ public class Issue707Tests
             "outer();"));
 
     // A generator method form (one of the listed scope-param families).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParamEvalShadowsForGenerator()
         => Assert.Equal("inside|inside", Eval(
             "var x = 'outside'; var probe1, probe2;" +

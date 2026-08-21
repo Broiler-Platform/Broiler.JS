@@ -18,22 +18,22 @@ public class Issue808ErrorConstructorTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SuppressedError_CallableWithoutNew()
         => Assert.Equal("true|m|1|2", Eval("""
             var e = SuppressedError(1, 2, "m");
             [e instanceof SuppressedError, e.message, e.error, e.suppressed].join("|");
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SuppressedError_PrototypeIsError()
         => Assert.Equal("true", Eval("String(Object.getPrototypeOf(SuppressedError) === Error);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SuppressedError_LengthAndName()
         => Assert.Equal("3|SuppressedError", Eval("SuppressedError.length + '|' + SuppressedError.name;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SuppressedError_NewStillWorks()
         => Assert.Equal("true|true", Eval("""
             var e = new SuppressedError(1, 2, "m");
@@ -51,7 +51,7 @@ public class Issue808ErrorConstructorTests
             err;
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Error_MessageToStringThrow_Propagates()
         => Assert.Equal("42", Eval("""
             var caught = "none";
@@ -60,7 +60,7 @@ public class Issue808ErrorConstructorTests
             caught;
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Error_ObjectMessage_UsesToString()
         => Assert.Equal("hello", Eval("new Error({ toString() { return 'hello'; } }).message;"));
 }

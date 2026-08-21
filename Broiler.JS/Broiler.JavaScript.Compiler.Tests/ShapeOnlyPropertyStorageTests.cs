@@ -37,7 +37,7 @@ public class ShapeOnlyPropertyStorageTests
         Assert.Equal(expected, Eval($"{setup} Object.keys(o).join(',');"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnumerationOrder_IsStable_AcrossTheBoundary()
     {
         // Properties added AFTER materialization must continue the same order, not restart it.
@@ -46,7 +46,7 @@ public class ShapeOnlyPropertyStorageTests
             Eval("var o = {}; o.a = 1; o.b = 2; o.c = 3; Object.keys(o); o.d = 4; o.e = 5; Object.keys(o).join(',');"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeletedThenRecreatedProperty_MovesToTheEnd_AcrossTheBoundary()
     {
         // A delete materializes (it needs a real descriptor to check configurability), so this
@@ -57,7 +57,7 @@ public class ShapeOnlyPropertyStorageTests
 
     // ── attributes survive the rebuild ────────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonEnumerableProperty_StaysHidden_FromKeysAfterMaterialization()
     {
         Assert.Equal(
@@ -90,7 +90,7 @@ public class ShapeOnlyPropertyStorageTests
                 """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TwoObjectsAtTheSameShape_KeepTheirOwnAttributes()
     {
         // The reason attributes cannot live in the shape, stated as a test: same key set, same
@@ -108,7 +108,7 @@ public class ShapeOnlyPropertyStorageTests
 
     // ── a refused write is still refused on the shape-only path ───────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AWarmedStoreSite_StillRefusesAFrozenReceiver()
     {
         // The site is warmed on 300 ordinary receivers first, so the store inline cache is live
@@ -126,7 +126,7 @@ public class ShapeOnlyPropertyStorageTests
                 """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AWarmedStoreSite_StillRefusesAPropertyMadeNonWritable()
     {
         Assert.Equal(
@@ -141,7 +141,7 @@ public class ShapeOnlyPropertyStorageTests
                 """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASealedObject_TakesAnOverwriteAndRefusesAnAddition()
     {
         Assert.Equal("2,undefined", Eval("var s = { a: 1 }; Object.seal(s); s.a = 2; s.b = 3; s.a + ',' + s.b;"));
@@ -149,7 +149,7 @@ public class ShapeOnlyPropertyStorageTests
 
     // ── the descriptor kinds a shape slot cannot hold ─────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnAccessorRedefinedOnAWarmedSite_TakesOverBothDirections()
     {
         // An accessor abandons the shape, which materializes first. Both halves are asserted
@@ -170,7 +170,7 @@ public class ShapeOnlyPropertyStorageTests
                 """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFunctionsAnnexBDeferredCells_KeepTheirDataDescriptor()
     {
         // Every ordinary non-strict function carries `caller`/`arguments` as deferred cells
@@ -186,7 +186,7 @@ public class ShapeOnlyPropertyStorageTests
                 """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APrivateFieldDoesNotAppearAsAnOwnKey()
     {
         Assert.Equal(
@@ -200,7 +200,7 @@ public class ShapeOnlyPropertyStorageTests
 
     // ── the boundary as other assemblies reach it ─────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectAssign_CopiesEveryPropertyOfAShapeOnlySource()
     {
         Assert.Equal(
@@ -208,7 +208,7 @@ public class ShapeOnlyPropertyStorageTests
             Eval("var src = {}; src.m = 1; src.n = 2; src.o = 3; JSON.stringify(Object.assign({}, src));"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SpreadCopiesEveryPropertyOfAShapeOnlySource()
     {
         Assert.Equal(
@@ -216,7 +216,7 @@ public class ShapeOnlyPropertyStorageTests
             Eval("var src = {}; src.m = 1; src.n = 2; src.o = 3; JSON.stringify({ ...src });"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AProxyOverAShapeOnlyTarget_SeesEveryProperty()
     {
         Assert.Equal(
@@ -228,7 +228,7 @@ public class ShapeOnlyPropertyStorageTests
                 """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForIn_WalksOwnThenInheritedProperties()
     {
         Assert.Equal(
@@ -242,7 +242,7 @@ public class ShapeOnlyPropertyStorageTests
                 """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HasOwnPropertyAndIn_AgreeOnAShapeOnlyObject()
     {
         Assert.Equal(
@@ -257,7 +257,7 @@ public class ShapeOnlyPropertyStorageTests
 
     // ── past the slot array's growth steps ────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ManyProperties_KeepTheirValuesAndOrderAcrossEveryGrowth()
     {
         // The slot array and the parallel attribute array grow together; a resize that copied one
@@ -277,7 +277,7 @@ public class ShapeOnlyPropertyStorageTests
                 """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReadsAgreeOnBothSidesOfTheBoundary()
     {
         // The same property read shape-only, then again after a rebuild, has to give the same

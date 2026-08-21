@@ -19,7 +19,7 @@ public class Issue808ObjectConstructorPassthroughTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewObject_OfDate_PreservesPrototypeAndMethods()
         => Assert.Equal("true|true|0", Eval("""
             var d = new Date(0);
@@ -27,7 +27,7 @@ public class Issue808ObjectConstructorPassthroughTests
             [o === d, Object.getPrototypeOf(o) === Date.prototype, o.getFullYear() - d.getFullYear()].join("|");
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewObject_OfArray_StaysArray()
         => Assert.Equal("true|true", Eval("""
             var a = [1, 2, 3];
@@ -35,7 +35,7 @@ public class Issue808ObjectConstructorPassthroughTests
             [o === a, Array.isArray(o)].join("|");
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewObject_OfPrimitive_BoxesWithTypePrototype()
         => Assert.Equal("true|true|true", Eval("""
             [new Object(1) instanceof Number,
@@ -43,7 +43,7 @@ public class Issue808ObjectConstructorPassthroughTests
              new Object("s") instanceof String].join("|");
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NativeConstructors_StillGetCorrectPrototype()
         => Assert.Equal("true|true|true|true", Eval("""
             [Object.getPrototypeOf(new Date()) === Date.prototype,
@@ -52,7 +52,7 @@ public class Issue808ObjectConstructorPassthroughTests
              Object.getPrototypeOf(new RegExp("a")) === RegExp.prototype].join("|");
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Subclassing_StillAppliesSubclassPrototype()
         => Assert.Equal("true|true|true", Eval("""
             class MyDate extends Date {}

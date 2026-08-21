@@ -17,7 +17,7 @@ public class Issue810ArrayPushMaxLengthTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Push_NoArguments_AtMaxLength_ReturnsLength()
         => Assert.Equal("4294967295", Eval("""
             var x = [];
@@ -25,7 +25,7 @@ public class Issue810ArrayPushMaxLengthTests
             String(x.push());
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Push_OverflowingMaxLength_ThrowsRangeError()
         => Assert.Equal("RangeError", Eval("""
             var x = [];
@@ -33,7 +33,7 @@ public class Issue810ArrayPushMaxLengthTests
             try { x.push("x"); "no throw"; } catch (e) { e.constructor.name; }
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Push_PreservesLength_WhenNoArguments()
         => Assert.Equal("4294967295", Eval("""
             var x = [];

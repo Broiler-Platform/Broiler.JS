@@ -27,19 +27,19 @@ public class Issue810ArrayCopyMethodsBypassSettersTests
             __r;
         """);
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void With_BypassesInheritedSetter()
         => Assert.Equal("3,2", WithPoisonedZero("[1, 2].with(0, 3)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToSpliced_BypassesInheritedSetter()
         => Assert.Equal("9,1,2", WithPoisonedZero("[1, 2].toSpliced(0, 0, 9)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToReversed_BypassesInheritedSetter()
         => Assert.Equal("2,1", WithPoisonedZero("[1, 2].toReversed()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToSorted_BypassesInheritedSetter()
         => Assert.Equal("1,2", WithPoisonedZero("[2, 1].toSorted()"));
 }

@@ -40,7 +40,7 @@ public class Issue673Tests
         return ctx.Eval(code).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStar_EvaluatesToDelegateReturnValue()
         => Assert.Equal("3", Eval(@"
             function* inner(){ yield 1; yield 2; return 3; }
@@ -50,7 +50,7 @@ public class Issue673Tests
             String(it.next().value);     // r === 3 is yielded here
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStar_ForwardsYieldedValuesThenReturnValue()
         => Assert.Equal("[1,2,3]", Eval(@"
             function* inner(){ yield 1; yield 2; return 3; }
@@ -58,7 +58,7 @@ public class Issue673Tests
             JSON.stringify([...outer()]);
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStar_ReturnValueIsUsableInExpression()
         => Assert.Equal("[\"a\",\"got:R\"]", Eval(@"
             function* inner(){ yield 'a'; return 'R'; }
@@ -66,7 +66,7 @@ public class Issue673Tests
             JSON.stringify([...outer()]);
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStar_OverArrayHasUndefinedValue()
         => Assert.Equal("undefined", Eval(@"
             function* outer(){ var r = yield* [1, 2, 3]; yield r; }
@@ -75,7 +75,7 @@ public class Issue673Tests
             String(it.next().value);           // spreading yielded r === undefined
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStar_NestedDelegationPropagatesReturnValue()
         => Assert.Equal("inner", Eval(@"
             function* inner(){ yield 1; return 'inner'; }
@@ -86,7 +86,7 @@ public class Issue673Tests
             String(it.next().value);     // outer yields 'inner'
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStar_ForwardsSentValuesToInner()
         => Assert.Equal("sent:42", Eval(@"
             function* inner(){ var got = yield 1; return 'sent:' + got; }
@@ -98,15 +98,15 @@ public class Issue673Tests
 
     // ---- Category 8: `constructor` accessor in object literals parses ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectLiteral_GetConstructor_Parses()
         => Assert.Equal("42", Eval("var o = { get constructor() { return 42; } }; String(o.constructor);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectLiteral_SetConstructor_Parses()
         => Assert.Equal("7", Eval("var hit = 0; var o = { set constructor(v) { hit = v; } }; o.constructor = 7; String(hit);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectLiteral_MethodAndDataConstructor_StillWork()
         => Assert.Equal("5,9", Eval(@"
             var a = { constructor() { return 5; } };
@@ -114,7 +114,7 @@ public class Issue673Tests
             String(a.constructor()) + ',' + String(b.constructor);
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetConstructorAccessor_IsNotInvokedByPromiseThen()
         // test/built-ins/Promise/prototype/then/context-check-on-entry.js: the
         // IsPromise check must reject before any `constructor` lookup.
@@ -126,7 +126,7 @@ public class Issue673Tests
             name;
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SubclassWithBaseConstructorSetter_DoesNotInvokeSetter()
         // test/language/statements/class/subclass/superclass-prototype-setter-constructor.js
         => Assert.Equal("ok", Eval(@"
@@ -137,7 +137,7 @@ public class Issue673Tests
             'ok';
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassGetConstructorAccessor_IsStillRejected()
     {
         // A class get/set accessor named `constructor` remains a SyntaxError.
@@ -146,14 +146,14 @@ public class Issue673Tests
 
     // ---- Category 10: iterating a primitive via its prototype's @@iterator ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SpreadPrimitiveBoolean_UsesPrototypeIterator()
         => Assert.Equal("[true]", Eval(@"
             Boolean.prototype[Symbol.iterator] = function*() { yield this.valueOf(); };
             JSON.stringify([...true]);
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStarOverPrimitive_UsesPrototypeIterator()
         => Assert.Equal("[true]", Eval(@"
             Boolean.prototype[Symbol.iterator] = function*() { yield this.valueOf(); };
@@ -161,14 +161,14 @@ public class Issue673Tests
             JSON.stringify([...g()]);
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayFromPrimitive_UsesPrototypeIterator()
         => Assert.Equal("[true]", Eval(@"
             Boolean.prototype[Symbol.iterator] = function*() { yield this.valueOf(); };
             JSON.stringify(Array.from(true));
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapFromPrimitiveNumber_PreservesPrimitiveReceiver()
         // test/staging/sm/Map/iterable.js: `new Map(0)` boxes 0 to look up
         // Number.prototype[Symbol.iterator]; the method's `this` stays a number.
@@ -182,7 +182,7 @@ public class Issue673Tests
             t;
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapConstructor_DoesNotPassArgumentsToNext()
         // test/staging/sm/Map/iterable.js: next() receives zero arguments.
         => Assert.Equal("0", Eval(@"
@@ -195,14 +195,14 @@ public class Issue673Tests
             String(len);
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrimitiveWithoutIterator_StillThrows()
         // A primitive without a Symbol.iterator on its prototype is not iterable.
         => Assert.ThrowsAny<Exception>(() => Eval("[...42]"));
 
     // ---- Category 2: Generator.prototype.return() runs finally / IteratorClose ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorReturn_RunsFinally()
         => Assert.Equal("F,99,true", Eval(@"
             var log = '';
@@ -212,7 +212,7 @@ public class Issue673Tests
             log + ',' + r.value + ',' + r.done;
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorReturn_SkipsCatch_RunsFinally()
         => Assert.Equal("F,7,true", Eval(@"
             var log = '';
@@ -222,7 +222,7 @@ public class Issue673Tests
             log + ',' + r.value + ',' + r.done;
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorReturn_FinallyCanOverrideCompletion()
         => Assert.Equal("over,true", Eval(@"
             function* g() { try { yield 1; } finally { return 'over'; } }
@@ -231,7 +231,7 @@ public class Issue673Tests
             r.value + ',' + r.done;
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorReturn_BeforeStart_DoesNotRunBody()
         => Assert.Equal("none,3,true", Eval(@"
             var log = 'none';
@@ -241,7 +241,7 @@ public class Issue673Tests
             log + ',' + r.value + ',' + r.done;
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorReturn_ClosesDestructuringIterator()
         // test/language/.../dstr/array-rest-iter-rtrn-close.js shape: a yield inside
         // a destructuring rest target; return() must close the partially-read iterator.
@@ -258,7 +258,7 @@ public class Issue673Tests
             String(returnCount);
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorReturn_ClosesForOfIterator()
         => Assert.Equal("closed", Eval(@"
             var state = 'open';
@@ -272,7 +272,7 @@ public class Issue673Tests
             state;
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorReturn_RunsNestedFinallies()
         => Assert.Equal("BA,done", Eval(@"
             var log = '';
@@ -286,7 +286,7 @@ public class Issue673Tests
 
     // ---- Category 1: Array.prototype.concat honours @@isConcatSpreadable ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Concat_ArrayWithSpreadableFalse_IsNotSpread()
         => Assert.Equal("[0,[1,2]]", Eval(@"
             var a = [1, 2];
@@ -294,14 +294,14 @@ public class Issue673Tests
             JSON.stringify([0].concat(a));
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Concat_ArrayLikeWithSpreadableTrue_IsSpread()
         => Assert.Equal("[0,\"a\",\"b\"]", Eval(@"
             var o = { length: 2, 0: 'a', 1: 'b', [Symbol.isConcatSpreadable]: true };
             JSON.stringify([0].concat(o));
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Concat_DefaultArraySpreads_PlainObjectDoesNot()
         => Assert.Equal("[1,2,3,{\"x\":1}]", Eval(@"
             JSON.stringify([1].concat([2, 3], { x: 1 }));

@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.Runtime.Tests;
 
 public sealed class Phase5TaggedValuePrototypeTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ScalarPrototypeIsEightBytesAndRoundTripsSupportedValues()
     {
         Assert.Equal(8, Marshal.SizeOf<TaggedValuePrototype>());
@@ -29,7 +29,7 @@ public sealed class Phase5TaggedValuePrototypeTests
         Assert.True(TaggedValuePrototype.Undefined.IsUndefined);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrototypeRejectsReferencesInsteadOfHidingAGcHandlePolicy()
     {
         using var context = new JSContext();

@@ -79,7 +79,7 @@ public class LexicalNumericLocalTests
     // The temporal dead zone is DISCHARGED rather than removed: a name with any reference
     // before its declaration is rejected, so the throw stays reachable on exactly the names
     // that would otherwise observe it.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReadingALetBeforeItsDeclarationStillThrows()
     {
         using var context = new JSContext();
@@ -88,7 +88,7 @@ public class LexicalNumericLocalTests
         Assert.Contains("v", ex.Message);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReadingAConstBeforeItsDeclarationStillThrows()
     {
         using var context = new JSContext();
@@ -99,7 +99,7 @@ public class LexicalNumericLocalTests
     // A write to a const is a TypeError raised by the binding's cell, and a raw double has no
     // cell to raise it — so a const written anywhere is rejected outright rather than
     // specialized into a store that would silently succeed.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AssigningToAConstStillThrows()
     {
         using var context = new JSContext();
@@ -123,7 +123,7 @@ public class LexicalNumericLocalTests
     // because nothing was optimized in the first place". The control differs only in that the
     // write is absent, so the difference between the two counts is exactly `v`: the control
     // specializes both bindings and the written arm specializes only `s`.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AWrittenConstIsRejectedRatherThanSpecialized()
     {
         // `s` deliberately does not read `v`, so rejecting `v` cannot drag `s` down with it
@@ -187,7 +187,7 @@ public class LexicalNumericLocalTests
     }
 
     // A nested block's own dead zone is still a dead zone.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANestedBlockLexicalKeepsItsOwnDeadZone()
     {
         using var context = new JSContext();
@@ -223,7 +223,7 @@ public class LexicalNumericLocalTests
     // Item 3-3's withdrawn attempt failed only AFTER an earlier compilation in the same
     // process, so a single evaluation is not an instrument that can see it. Every arm here
     // runs in a fresh JSContext behind a first compilation that specializes a lexical binding.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ALexicalBindingIsUnaffectedByAnEarlierCompilationInTheSameProcess()
     {
         var first = Eval("(function () { let v = 3.5; v = v + 1; return v; })()");
@@ -238,7 +238,7 @@ public class LexicalNumericLocalTests
 
     // The same, driven the other way round: a first compilation that does NOT specialize
     // anything, then one that does.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnEarlierUnspecializedCompilationDoesNotDisturbTheNextOne()
     {
         Assert.Equal("x", Eval("(function () { let v = 'x'; return v; })()"));

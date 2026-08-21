@@ -38,12 +38,12 @@ public class Issue773Tests
 
     // ---- Canonicalize / withCalendar accepts "japanese" ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CanonicalizeAcceptsJapanese()
         => Assert.Equal("japanese",
             Eval("Temporal.PlainDate.from({ year: 2020, month: 1, day: 1, calendar: 'japanese' }).calendarId"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WithCalendarConvertsIsoToJapanese()
         => Assert.Equal("1800,6,M06,15,ce,1800",
             Eval(@"var d = new Temporal.PlainDate(1800, 6, 15).withCalendar('japanese');
@@ -51,114 +51,114 @@ public class Issue773Tests
 
     // ---- era of a full date (boundaries fall mid-year) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReiwaStartsMay1_2019()
         => Assert.Equal("2019,5,M05,1,reiwa,1",
             FromJapanese("{ year: 2019, month: 5, day: 1 }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BeforeReiwaStartIsHeisei31()
         => Assert.Equal("2019,4,M04,30,heisei,31",
             FromJapanese("{ year: 2019, month: 4, day: 30 }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ShowaToHeiseiBoundaryJan8_1989()
         => Assert.Equal("1989,1,M01,7,showa,64",
             FromJapanese("{ year: 1989, month: 1, day: 7 }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HeiseiStartsJan8_1989()
         => Assert.Equal("1989,1,M01,8,heisei,1",
             FromJapanese("{ year: 1989, month: 1, day: 8 }"));
 
     // ---- { era, eraYear } resolves to ISO year, then re-displays from the date ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Reiwa1BeforeStartRemapsToHeisei31()
         => Assert.Equal("2019,4,M04,30,heisei,31",
             FromJapanese("{ era: 'reiwa', eraYear: 1, monthCode: 'M04', day: 30 }", "{ overflow: 'reject' }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Reiwa1OnStartStaysReiwa1()
         => Assert.Equal("2019,5,M05,1,reiwa,1",
             FromJapanese("{ era: 'reiwa', eraYear: 1, monthCode: 'M05', day: 1 }", "{ overflow: 'reject' }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Heisei37RemapsToReiwa7()
         => Assert.Equal("2025,4,M04,25,reiwa,7",
             FromJapanese("{ era: 'heisei', eraYear: 37, monthCode: 'M04', day: 25 }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Reiwa0RemapsToHeisei30()
         => Assert.Equal("2018,4,M04,25,heisei,30",
             FromJapanese("{ era: 'reiwa', eraYear: 0, monthCode: 'M04', day: 25 }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReiwaNegative20RemapsToHeisei10()
         => Assert.Equal("1998,4,M04,25,heisei,10",
             FromJapanese("{ era: 'reiwa', eraYear: -20, monthCode: 'M04', day: 25 }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Showa64AfterStartIsHeisei1()
         => Assert.Equal("1989,1,M01,8,heisei,1",
             FromJapanese("{ era: 'showa', eraYear: 64, monthCode: 'M01', day: 8 }", "{ overflow: 'reject' }"));
 
     // ---- pre-Meiji uses Gregorian ce / bce eras ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Meiji6IsCe1873()
         => Assert.Equal("1873,1,M01,1,meiji,6",
             FromJapanese("{ era: 'ce', eraYear: 1873, monthCode: 'M01', day: 1 }", "{ overflow: 'reject' }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PreMeijiCe1800()
         => Assert.Equal("1800,6,M06,15,ce,1800",
             FromJapanese("{ era: 'ce', eraYear: 1800, month: 6, day: 15 }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BceDateEraYear100()
         => Assert.Equal("-99,1,M01,1,bce,100",
             FromJapanese("{ era: 'bce', eraYear: 100, month: 1, day: 1 }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Ce2000IsHeisei12()
         => Assert.Equal("2000,12,M12,31,heisei,12",
             FromJapanese("{ era: 'ce', eraYear: 2000, monthCode: 'M12', day: 31 }", "{ overflow: 'reject' }"));
 
     // ---- era aliases ad→ce, bc→bce ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AdAliasCanonicalizesToCe()
         => Assert.Equal("ce",
             Eval("Temporal.PlainDate.from({ calendar: 'japanese', era: 'ad', eraYear: 1, month: 1, day: 1 }).era"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BcAliasCanonicalizesToBce()
         => Assert.Equal("bce",
             Eval("Temporal.PlainDate.from({ calendar: 'japanese', era: 'bc', eraYear: 1, month: 1, day: 1 }).era"));
 
     // ---- accessors / arithmetic keep the ISO month/day surface ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DaysInMonthAndYearAreIso()
         => Assert.Equal("29,366,12,true",
             Eval(@"var d = Temporal.PlainDate.from({ year: 2020, month: 2, day: 1, calendar: 'japanese' });
                    [d.daysInMonth, d.daysInYear, d.monthsInYear, d.inLeapYear].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AddPreservesJapaneseCalendarAndCrossesEraBoundary()
         => Assert.Equal("2019,5,M05,1,reiwa,1,japanese",
             Eval(@"var d = Temporal.PlainDate.from({ year: 2019, month: 4, day: 30, calendar: 'japanese' }).add({ days: 1 });
                    [d.year, d.month, d.monthCode, d.day, d.era, d.eraYear, d.calendarId].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SinceBetweenJapaneseDates()
         => Assert.Equal("P1Y2M5D",
             Eval(@"var a = Temporal.PlainDate.from({ year: 2020, month: 3, day: 15, calendar: 'japanese' });
                    var b = Temporal.PlainDate.from({ year: 2019, month: 1, day: 10, calendar: 'japanese' });
                    a.since(b, { largestUnit: 'year' }).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToStringAppendsCalendarAnnotation()
         => Assert.Equal("2020-03-15[u-ca=japanese]",
             Eval(@"Temporal.PlainDate.from({ year: 2020, month: 3, day: 15, calendar: 'japanese' })
@@ -171,7 +171,7 @@ public class Issue773Tests
             var d = Temporal.PlainDate.from({{ ...{bag}, calendar: '{cal}' }}, {options});
             [d.year, d.monthCode, d.day, d.era, d.eraYear].join(',')");
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CopticAccepted()
         => Assert.Equal("am",
             Eval("Temporal.PlainDate.from({ year: 1743, month: 1, day: 1, calendar: 'coptic' }).era"));
@@ -182,7 +182,7 @@ public class Issue773Tests
             Eval(@"function dim(y,m){ return Temporal.PlainDate.from({year:y,month:m,day:1,calendar:'coptic'},{overflow:'reject'}).daysInMonth; }
                    [dim(1687,1), dim(1687,12), dim(1687,13), dim(1688,13)].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CopticLeapYearAndMonthsInYear()
         => Assert.Equal("true,366,13,false,365",
             Eval(@"var l = Temporal.PlainDate.from({year:1687,month:1,day:1,calendar:'coptic'});
@@ -231,7 +231,7 @@ public class Issue773Tests
             + "|" + FromCal("ethiopic", "{ era: 'aa', eraYear: 0, monthCode: 'M01', day: 1 }")
             + "|" + FromCal("ethiopic", "{ era: 'aa', eraYear: -1, monthCode: 'M01', day: 1 }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EthiopicPositiveYearUsesAmEra()
         => Assert.Equal("1963,M01,1,am,1963",
             FromCal("ethiopic", "{ year: 1963, monthCode: 'M01', day: 1 }"));
@@ -268,7 +268,7 @@ public class Issue773Tests
                    var tbla  = Temporal.PlainDate.from({year:1446,month:1,day:1,calendar:'islamic-tbla'}).withCalendar('iso8601');
                    String(Temporal.PlainDate.compare(civil, tbla))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArithmeticCalendarRoundTripsThroughIso()
         => Assert.Equal("1446,M01,1,ah,1446",
             Eval(@"var d = Temporal.PlainDate.from({year:1446,month:1,day:1,calendar:'islamic-civil'});

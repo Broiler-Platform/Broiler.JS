@@ -18,7 +18,7 @@ public class Issue830FlatProxyAccessTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FlatReadsLengthThenConstructorThenElements()
     {
         var r = Eval("""
@@ -33,7 +33,7 @@ public class Issue830FlatProxyAccessTests
         Assert.Equal("length,constructor,0,1,2,3", r);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FlatMapReadsLengthThenConstructorThenElements()
     {
         var r = Eval("""

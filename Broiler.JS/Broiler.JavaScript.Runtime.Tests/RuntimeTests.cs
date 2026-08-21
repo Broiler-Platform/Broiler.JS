@@ -8,7 +8,7 @@ namespace Broiler.JavaScript.Runtime.Tests;
 
 public class RuntimeTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSUndefined_IsUndefined()
     {
         var undef = JSUndefined.Value;
@@ -16,7 +16,7 @@ public class RuntimeTests
         Assert.False(undef.IsNull);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSNull_IsNull()
     {
         var n = JSNull.Value;
@@ -24,7 +24,7 @@ public class RuntimeTests
         Assert.False(n.IsUndefined);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PropertyKey_FromInt_IsUInt()
     {
         PropertyKey key = 42;
@@ -32,7 +32,7 @@ public class RuntimeTests
         Assert.Equal(42u, key.Index);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PropertyKey_FromString_IsKeyString()
     {
         var ks = KeyStrings.GetOrCreate(new StringSpan("prop"));
@@ -41,7 +41,7 @@ public class RuntimeTests
         Assert.False(key.IsSymbol);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetValue_UintKey_NonFunctionGetter_ReturnsUndefined()
     {
         // Arrange: create a JSObject and add an accessor property (getter/setter descriptor)
@@ -61,7 +61,7 @@ public class RuntimeTests
         Assert.True(result.IsUndefined);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetValue_KeyString_NonFunctionGetter_ReturnsUndefined()
     {
         // Arrange: create a JSObject and add an accessor property (getter/setter descriptor)
@@ -82,7 +82,7 @@ public class RuntimeTests
         Assert.True(result.IsUndefined);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetValue_UintKey_NonFunctionSetter_ThrowsTypeError()
     {
         // Arrange: create a JSObject and add an accessor property (getter/setter descriptor)
@@ -99,7 +99,7 @@ public class RuntimeTests
         Assert.Contains("only a getter", exception.Message);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSException_From_RegularException_CreatesNewJSException()
     {
         var exception = new InvalidOperationException("boom");
@@ -110,7 +110,7 @@ public class RuntimeTests
         Assert.Contains("boom", jsException.Message);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JSException_From_AggregateException_ReturnsNestedJSException()
     {
         var expected = new JSException(new JSString("boom"));

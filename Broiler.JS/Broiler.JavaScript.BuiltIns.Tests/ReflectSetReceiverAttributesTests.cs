@@ -29,7 +29,7 @@ public class ReflectSetReceiverAttributesTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void KnownGap_ReflectSetCopiesTargetAttributesToTheReceiver()
     {
         // KNOWN GAP, pinned so it cannot change silently. Expected per spec is
@@ -50,7 +50,7 @@ public class ReflectSetReceiverAttributesTests
         Assert.Equal("true,false,false", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectSet_WritesTheValueToTheReceiverAndNotTheTarget()
     {
         // The value half is correct and is not part of the gap — pinned so a future fix to
@@ -68,7 +68,7 @@ public class ReflectSetReceiverAttributesTests
         Assert.Equal("true,42,1", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectSet_OnAnEmptyTarget_GivesTheReceiverAllTrueAttributes()
     {
         // The case test262 DOES cover (creates-a-data-descriptor.js): with no own property

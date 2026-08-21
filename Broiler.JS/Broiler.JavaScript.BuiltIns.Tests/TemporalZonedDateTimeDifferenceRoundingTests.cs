@@ -16,7 +16,7 @@ public class TemporalZonedDateTimeDifferenceRoundingTests
         return ctx.Eval(expr).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Since_TimeUnit_RoundsToSmallestUnit()
     {
         Load();
@@ -30,7 +30,7 @@ public class TemporalZonedDateTimeDifferenceRoundingTests
         Assert.Equal("654,0", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Since_SmallestUnit_ObjectWithToString_IsCoerced()
     {
         Load();
@@ -43,7 +43,7 @@ public class TemporalZonedDateTimeDifferenceRoundingTests
         Assert.Equal("0", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Until_DefaultNanosecond_IsUnchanged()
     {
         Load();

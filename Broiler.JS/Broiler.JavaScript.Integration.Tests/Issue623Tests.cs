@@ -14,7 +14,7 @@ public class Issue623Tests
 
     // Problem 1a: duplicate FunctionDeclarations at the top level of a (eval) body
     // are var-scoped, so they are allowed and the last declaration wins.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DuplicateTopLevelFunctionDeclarationsAllowed_LastWins()
     {
         var code = "var initial;"
@@ -43,12 +43,12 @@ public class Issue623Tests
 
     // ...but without a blocking lexical binding the if-clause function still
     // Annex B var-hoists (here, out of the switch to the global scope).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IfClauseFunctionWithoutConflictStillHoists()
         => Assert.Equal("function,9", Eval("eval('switch (0) { default: if (true) function f() {return 9;} } typeof f + \",\" + f();')"));
 
     // The if-clause function declaration must still be an early error in strict mode.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictModeIfClauseFunctionIsSyntaxError()
     {
         var ex = Assert.Throws<JSException>(() => Eval("'use strict'; if (true) function f() {} typeof f;"));
@@ -58,7 +58,7 @@ public class Issue623Tests
     // A direct eval inside a function: an if-clause function declaration must
     // update the surrounding var binding (Annex B copy-out), with the last
     // declaration winning over an earlier block-scoped one.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalInFunctionIfClauseFunctionUpdatesVarBinding()
     {
         var code = "(function () { var updated;"
@@ -78,11 +78,11 @@ public class Issue623Tests
 
     // Problem 3: Intl.RelativeTimeFormat.prototype.resolvedOptions() must expose a
     // valid `locale` so that supportedLocalesOf(default-locale) round-trips.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RelativeTimeFormatResolvedOptionsHasLocale()
         => Assert.Equal("string", Eval("typeof new Intl.RelativeTimeFormat().resolvedOptions().locale;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RelativeTimeFormatSupportedLocalesOfDefaultLocale()
     {
         var code = "var d = new Intl.RelativeTimeFormat().resolvedOptions().locale;"

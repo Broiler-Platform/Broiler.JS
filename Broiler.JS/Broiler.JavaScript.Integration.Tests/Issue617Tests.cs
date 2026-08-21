@@ -75,7 +75,7 @@ public class Issue617Tests
 
     // Problem 3B: reading super.x when the home object's prototype is null is not
     // object-coercible and must throw a TypeError (MakeSuperPropertyReference).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SuperPropertyWithNullHomePrototypeThrowsTypeError()
     {
         var code = "var caught;"

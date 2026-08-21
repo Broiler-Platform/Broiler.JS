@@ -69,7 +69,7 @@ public sealed class RestartContractTests
     // The control, and it is what makes the three above mean something: the SAME body as an
     // ordinary function is tiered, so the refusal is about suspendability and not about the
     // shape failing to match.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheSameBodyAsAnOrdinaryFunctionIsTiered()
     {
         using var context = Tiered();
@@ -89,7 +89,7 @@ public sealed class RestartContractTests
 
     // A generator that actually yields is the same refusal for a second reason, and is kept
     // separate so a change that only fixed the no-yield case would still fail one of the two.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AYieldingGeneratorStillIterates()
     {
         using var context = Tiered();
@@ -113,7 +113,7 @@ public sealed class RestartContractTests
     // `valueOf` that counts its own calls is observable, and the guard tests `IsNumber` without
     // coercing, so the deoptimizing call must produce EXACTLY the effects the untiered engine
     // produces — not one more.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADeoptimizingCallProducesNoEffectTheUntieredEngineDoesNot()
     {
         const string Probe = """
@@ -171,7 +171,7 @@ public sealed class RestartContractTests
     // The specialized delegate pushes no CallFrameStack slot, so on the bailout path the
     // baseline pushes exactly one — as it would have without tiering. If a slot were stranded,
     // a deoptimizing call in a deep recursion would either lose frames or refuse to grow back.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeoptimizingInsideDeepRecursionStillUnwinds()
     {
         using var context = Tiered();
@@ -189,7 +189,7 @@ public sealed class RestartContractTests
 
     // A throw raised on the bailout path has to unwind through the frame the baseline pushed,
     // and be catchable — which it would not be if the restart had left the stack inconsistent.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AThrowOnTheBailoutPathIsCatchable()
     {
         using var context = Tiered();
@@ -207,7 +207,7 @@ public sealed class RestartContractTests
 
     // And the engine keeps working afterwards: a deoptimized function is re-entered many more
     // times without the state machine wedging or re-promoting into a wrong answer.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheFunctionKeepsAnsweringAfterDeoptimization()
     {
         using var context = Tiered();

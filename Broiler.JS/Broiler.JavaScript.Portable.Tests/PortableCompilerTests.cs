@@ -19,7 +19,7 @@ public sealed class PortableCompilerTests
         }
         """;
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OfflineCompilerAndInterpreterExecuteNumericControlFlow()
     {
         var program = new PortableCompiler().Compile(FibonacciSource);
@@ -30,7 +30,7 @@ public sealed class PortableCompilerTests
         Assert.Contains("PortableOpCode.JumpIfFalse", PortableCompiler.EmitCSharp(program, "Sample", "Generated"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnsupportedObjectSurfaceIsRejectedAtOfflineCompileTime()
     {
         var error = Assert.Throws<NotSupportedException>(() =>
@@ -39,7 +39,7 @@ public sealed class PortableCompilerTests
         Assert.Contains("does not support", error.Message);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CompilerCanBeReusedWithoutLeakingPreviousProgramState()
     {
         var compiler = new PortableCompiler();
@@ -50,7 +50,7 @@ public sealed class PortableCompilerTests
         Assert.Equal(9_227_465, PortableInterpreter.Execute(second, [35]));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ProgramValidationRejectsOperandStackUnderflow()
     {
         var error = Assert.Throws<ArgumentException>(() => new PortableProgram(
@@ -63,7 +63,7 @@ public sealed class PortableCompilerTests
         Assert.Contains("underflow", error.Message);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConstantBindingsAreRejectedInsteadOfLosingAssignmentSemantics()
     {
         var error = Assert.Throws<NotSupportedException>(() => new PortableCompiler().Compile(

@@ -19,14 +19,14 @@ public class Issue921Tests
         return ctx.Eval(code);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FinallyReturnOverridesTryReturn()
     {
         Assert.Equal("42", Eval(@"(function*(){ try { return 42; } finally {} })().next().value").ToString());
         Assert.Equal("43", Eval(@"(function*(){ try { return 42; } finally { return 43; } })().next().value").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FinallyThrowOverridesTryReturn()
     {
         var threw = Eval(@"
@@ -37,7 +37,7 @@ public class Issue921Tests
         Assert.Equal("43", threw.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FinallyBreakContinueCancelTryReturn()
     {
         // F.[[type]] is break / continue / labelled break — the finally's abrupt
@@ -47,7 +47,7 @@ public class Issue921Tests
         Assert.Equal("43", Eval(@"(function*(){ do try { return 42; } finally { continue; } while(false); return 43; })().next().value").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestedAbruptCompletionInOuterFinallySwallowsInnerReturn()
     {
         // The outer try returns 42; the outer finally contains a nested try whose own
@@ -59,7 +59,7 @@ public class Issue921Tests
         Assert.Equal("42", Eval(@"(function*(){ try { return 42; } finally { try { try { return 43; } finally { throw 9; } } catch(e){} } })().next().value").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeeplyNestedFinallyReturnOverride()
     {
         // Innermost break swallows return 43; inner finally completes normally → return 42
@@ -67,7 +67,7 @@ public class Issue921Tests
         Assert.Equal("42", Eval(@"(function*(){ try { return 41; } finally { try { return 42; } finally { do try { return 43; } finally { break; } while(0); } } })().next().value").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldInFinallyReachedByReturnSuspendsThenCompletes()
     {
         Assert.Equal("43,false,42,true", Eval(@"
@@ -77,7 +77,7 @@ public class Issue921Tests
             [a.value, a.done, b.value, b.done].join(',')").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ThrowWhileParkedAtYieldInFinally()
     {
         Assert.Equal("44", Eval(@"
@@ -88,7 +88,7 @@ public class Issue921Tests
             caught").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReturnWhileParkedAtYieldInFinally()
     {
         // Generator.prototype.return overrides; and a nested continue still completes it.

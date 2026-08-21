@@ -38,7 +38,7 @@ public class Issue725Tests
     // direct eval must copy its value to the eval var-environment binding, so the
     // LAST block wins.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalTwoBlocksLastFunctionWins()
         => Assert.Equal(
             "function|second declaration",
@@ -49,25 +49,25 @@ public class Issue725Tests
                 }());
                 typeof updated + '|' + (typeof updated === 'function' ? updated() : 'n/a');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalThreeBlocksLastFunctionWins()
         => Assert.Equal(
             "C",
             Eval(@"(function(){ return eval('{ function f(){ return ""A""; } }{ function f(){ return ""B""; } }{ function f(){ return ""C""; } } f();'); }());"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalBlockFunctionUpdatesBindingAfterEachBlock()
         => Assert.Equal(
             "AB",
             Eval(@"(function(){ return eval('{ function f(){ return ""A""; } } var t1 = f(); { function f(){ return ""B""; } } var t2 = f(); t1 + t2;'); }());"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalSingleBlockFunctionStillHoists()
         => Assert.Equal(
             "A",
             Eval(@"(function(){ return eval('{ function f(){ return ""A""; } } f();'); }());"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GlobalEvalTwoBlocksLastFunctionWinsUnchanged()
         => Assert.Equal(
             "B",
@@ -79,7 +79,7 @@ public class Issue725Tests
     // eval (direct or indirect) has its own variable environment, so a top-level
     // function declaration must not be created on the caller/global environment.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IndirectStrictEvalDoesNotLeakFunctionToGlobal()
         => Assert.Equal(
             "undefined|undefined",
@@ -91,19 +91,19 @@ public class Issue725Tests
                 }());
                 typeofInside + '|' + (typeof fun);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectStrictEvalDoesNotLeakFunction()
         => Assert.Equal(
             "undefined",
             Eval(@"var t; (function(){ eval(""'use strict'; function dfn(){}""); t = typeof dfn; }()); t;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IndirectSloppyEvalStillDeclaresGlobalFunction()
         => Assert.Equal(
             "function|7",
             Eval(@"(0,eval)('function gfn(){ return 7; }'); typeof gfn + '|' + gfn();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictEvalVarStillIsolated()
         => Assert.Equal(
             "undefined|undefined",
@@ -111,29 +111,29 @@ public class Issue725Tests
 
     // ---- replacer-array-empty.js ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EmptyReplacerArraySerializesObjectToEmptyBraces()
         => Assert.Equal("{}", Eval("JSON.stringify({a: 1, b: 2}, [])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EmptyReplacerArrayAppliesToNestedObjects()
         => Assert.Equal("{}", Eval("JSON.stringify({a: 1, b: {c: 2}}, [])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EmptyReplacerArrayDoesNotFilterArrayElements()
         => Assert.Equal("[1,{}]", Eval("JSON.stringify([1, {a: 2}], [])"));
 
     // ---- replacer-array-undefined.js ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UndefinedReplacerArrayEntriesAreIgnored()
         => Assert.Equal("{}", Eval("JSON.stringify({undefined: 1}, [undefined])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SparseReplacerArrayHolesAreIgnored()
         => Assert.Equal("{}", Eval("JSON.stringify({key: 1, undefined: 2}, [,,,])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SparseReplacerArrayKeepsRealKeys()
         => Assert.Equal(
             "{\"key\":2}",
@@ -141,29 +141,29 @@ public class Issue725Tests
 
     // ---- additional PropertyList semantics ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReplacerArrayKeepsListedKeysInListOrder()
         => Assert.Equal(
             "{\"b\":2,\"a\":1}",
             Eval("JSON.stringify({a: 1, b: 2, c: 3}, ['b', 'a'])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReplacerArrayDeduplicatesKeys()
         => Assert.Equal(
             "{\"a\":1}",
             Eval("JSON.stringify({a: 1, b: 2}, ['a', 'a'])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumericReplacerArrayEntriesBecomeStringKeys()
         => Assert.Equal(
             "{\"1\":\"one\"}",
             Eval("JSON.stringify({1: 'one', 2: 'two'}, [1])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BooleanReplacerArrayEntriesAreIgnored()
         => Assert.Equal("{}", Eval("JSON.stringify({a: 1, true: 2}, [true])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionReplacerStillAppliesToRootAndArrayElements()
         => Assert.Equal(
             "[2,4]",
@@ -184,11 +184,11 @@ public class Issue725Tests
     public void GetCanonicalLocalesMapsRegularGrandfatheredTags(string tag, string canonical)
         => Assert.Equal(canonical, Eval($"Intl.getCanonicalLocales('{tag}')[0]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GrandfatheredCanonicalizationIsCaseInsensitive()
         => Assert.Equal("jbo", Eval("Intl.getCanonicalLocales('Art-LojBan')[0]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntlLocaleCanonicalizesGrandfatheredTag()
         => Assert.Equal("jbo", Eval("new Intl.Locale('art-lojban').toString()"));
 
@@ -209,43 +209,43 @@ public class Issue725Tests
     // static-field-anonymous-function-name.js. The function assigned to a field
     // takes the field's name; a private field uses the "#name" form.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticPublicFieldAnonymousFunctionGetsFieldName()
         => Assert.Equal(
             "field",
             Eval("class C { static field = function () { return 42; }; } C.field.name"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticPrivateFieldAnonymousArrowGetsHashName()
         => Assert.Equal(
             "#field",
             Eval("class C { static #field = () => 'x'; static getName() { return this.#field.name; } } C.getName()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InstancePublicFieldAnonymousFunctionGetsFieldName()
         => Assert.Equal(
             "f",
             Eval("class C { f = function () {}; } new C().f.name"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InstancePrivateFieldAnonymousFunctionGetsHashName()
         => Assert.Equal(
             "#m",
             Eval("class C { #m = function () {}; getName() { return this.#m.name; } } new C().getName()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedFieldAnonymousFunctionGetsComputedName()
         => Assert.Equal(
             "computed",
             Eval("var k = 'computed'; class C { static [k] = function () {}; } C.computed.name"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NamedFunctionFieldKeepsItsOwnName()
         => Assert.Equal(
             "original",
             Eval("class C { static field = function original() {}; } C.field.name"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticFieldAnonymousClassGetsFieldName()
         => Assert.Equal(
             "field",
@@ -256,23 +256,23 @@ public class Issue725Tests
     // staging/sm/Symbol/constructor.js: Symbol.prototype.valueOf on a non-symbol
     // receiver must throw (it fell through to Object.prototype.valueOf).
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolPrototypeValueOfOnPrototypeThrows()
         => Assert.Equal(
             "TypeError",
             Eval("try { Symbol.prototype.valueOf(); 'no throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolPrototypeValueOfReturnsWrappedSymbol()
         => Assert.Equal("true", Eval("var s = Symbol('x'); Object(s).valueOf() === s"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolConstructorWithSymbolArgumentThrows()
         => Assert.Equal(
             "TypeError",
             Eval("var s = Symbol(); try { Symbol(s); 'no throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolConstructorWithBoxedSymbolArgumentThrows()
         => Assert.Equal(
             "TypeError",
@@ -294,13 +294,13 @@ public class Issue725Tests
             "TypeError",
             Eval($"var a = new Int32Array(2); try {{ Object.defineProperty(a, 0, {desc}); 'no throw'; }} catch (e) {{ e.constructor.name; }}"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayDefinePropertyAllowsMatchingAttributes()
         => Assert.Equal(
             "15",
             Eval("var a = new Int32Array(2); Object.defineProperty(a, 0, {configurable: true}); Object.defineProperty(a, 0, {value: 15}); String(a[0])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayElementDescriptorIsConfigurable()
         => Assert.Equal(
             "true,true,true",
@@ -330,7 +330,7 @@ public class Issue725Tests
             expected,
             Eval($"new Intl.DateTimeFormat('en', {{dayPeriod:'long'}}).format(new Date(2017,11,12,{hour},0));"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnDayPeriodAcrossDayUsesOnlyTheFiveExpectedPeriods()
         => Assert.Equal(
             "in the morning,noon,in the afternoon,in the evening,at night",
@@ -346,13 +346,13 @@ public class Issue725Tests
                   return order.indexOf(a)-order.indexOf(b);
                 }).join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnDayPeriodShortMidnightIsAtNight()
         => Assert.Equal(
             "at night",
             Eval("new Intl.DateTimeFormat('en', {dayPeriod:'short'}).format(new Date(2017,11,12,0,0));"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnDayPeriodFormatToPartsMidnightIsAtNight()
         => Assert.Equal(
             "dayPeriod:at night",
@@ -389,13 +389,13 @@ public class Issue725Tests
     public void CompactNotationFormatsCjkLocales(string loc, double n, string expected)
         => Assert.Equal(expected, Eval($"new Intl.NumberFormat('{loc}',{{notation:'compact'}}).format({n});"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CompactNotationFormatToPartsHasFourParts()
         => Assert.Equal(
             "integer:9|decimal:.|fraction:9|compact:億",
             Eval(@"new Intl.NumberFormat('ja-JP',{notation:'compact'}).formatToParts(987654321).map(function(p){return p.type+':'+p.value;}).join('|');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CompactNotationNegativeKeepsSign()
         => Assert.Equal(
             "minusSign:-|integer:9|decimal:.|fraction:9|compact:億",
@@ -412,7 +412,7 @@ public class Issue725Tests
     // quantifier iteration); .NET keeps the prior capture, so such self/ancestor
     // references are rewritten to an empty group.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SelfBackreferenceInQuantifierMatchesEmpty()
         => Assert.Equal(
             "zzz|z|0|zzz",
@@ -460,7 +460,7 @@ public class Issue725Tests
     public void NumericDateUsesLocaleLayout(string locale, string expected)
         => Assert.Equal(expected, Eval($"Intl.DateTimeFormat('{locale}', {{}}).format(24*60*60*1000);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GermanDateFormatRobustToSplitPrototypePatch()
         => Assert.Equal(
             "true,true,true,true",
@@ -478,7 +478,7 @@ public class Issue725Tests
     // formatToParts / formatRangeToParts pattern than the en (gregorian) default.
     // The buddhist calendar (year + 543, era "BE") adds an era part.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SomeCalendarProducesADifferentFormatToPartsPattern()
         => Assert.Equal("true", Eval(@"
             var date = new Date(2017, 11, 12);
@@ -489,7 +489,7 @@ public class Issue725Tests
             cals.forEach(function(c){ if (ser(new Intl.DateTimeFormat('en-u-ca-'+c).formatToParts(date)) !== base) found = true; });
             String(found);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SomeCalendarProducesADifferentFormatRangePattern()
         => Assert.Equal("true", Eval(@"
             var d1 = new Date(2017, 11, 12), d2 = new Date(2018, 0, 5);
@@ -500,7 +500,7 @@ public class Issue725Tests
             cals.forEach(function(c){ if (ser(new Intl.DateTimeFormat('en-u-ca-'+c).formatRangeToParts(d1, d2)) !== base) found = true; });
             String(found);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BuddhistCalendarFormatsYearPlus543WithEra()
         => Assert.Equal("12/12/2560 BE", Eval("new Intl.DateTimeFormat('en-u-ca-buddhist').format(new Date(2017,11,12));"));
 
@@ -508,11 +508,11 @@ public class Issue725Tests
     // inside it (the formatter projects the date through the Hebrew calendar and renders its
     // month names), so it resolves to itself — see SupportedCalendarStillResolvesAndUnsupported-
     // StillFallsBack, and test262 DateTimeFormat/prototype/resolvedOptions/calendar.js.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnsupportedCalendarResolvesToGregory()
         => Assert.Equal("gregory", Eval("new Intl.DateTimeFormat('en-u-ca-invalid').resolvedOptions().calendar;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HebrewCalendarFormatsHebrewMonthAndYear()
         => Assert.Equal("Kislev 24, 5778", Eval(
             "new Intl.DateTimeFormat('en-u-ca-hebrew',{year:'numeric',month:'long',day:'numeric'}).format(new Date(2017,11,12));"));
@@ -521,13 +521,13 @@ public class Issue725Tests
         // related-year.js: the chinese calendar shows the year as relatedYear(yearName),
     // so formatToParts must contain both a "relatedYear" and a "yearName" part.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ChineseCalendarYearHasRelatedYearAndYearNameParts()
         => Assert.Equal(
             "relatedYear=2017|literal=(|yearName=\u4E01\u9149|literal=)",
             Eval(@"new Intl.DateTimeFormat('en-u-ca-chinese', {year:'numeric'}).formatToParts(new Date(2017,11,12)).map(function(p){return p.type+'='+p.value;}).join('|');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ChineseCalendarResolves()
         => Assert.Equal("chinese", Eval("new Intl.DateTimeFormat('en-u-ca-chinese').resolvedOptions().calendar;"));
 

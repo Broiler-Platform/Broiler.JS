@@ -88,7 +88,7 @@ public sealed class NumberBoxingConversionSiteTests
             + At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoReturn)
             + At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoArgument);
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void The_eight_sites_partition_the_conversion_total()
     {
         // Deliberately mixed: an arithmetic tree, a numeric local read into a call argument, an
@@ -110,7 +110,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.True(boxing.ConversionRequests > 0, "the shape must box at all for the partition to mean anything");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void No_conversion_is_left_unclassified()
     {
         // Every JSNumberBuilder.New call site in the compiler names a site. If one is added
@@ -125,7 +125,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.Equal(0, At(boxing, NumberBoxingConversionSite.Unclassified));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void An_arithmetic_tree_boxes_at_its_root_and_not_at_every_node()
     {
         // Item 3-1's whole claim is that a guarded tree mints ONE box for the root instead of one
@@ -147,7 +147,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.True(root <= 200, $"root boxing tracked the operator count rather than the tree count ({root})");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Reading_a_numeric_local_is_attributed_to_the_local_and_not_to_the_operator()
     {
         // The site that separates "the operators mint the boxes" from "the representation does".
@@ -165,7 +165,7 @@ public sealed class NumberBoxingConversionSiteTests
             "reading a raw-double local into a JSValue consumer must be attributed to the read");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void The_update_step_is_attributed_to_the_update_and_not_to_the_binary_operator()
     {
         // `++` was measured at 30.9% of the corpus's boxing (item 3-8's re-opening) and is a
@@ -183,7 +183,7 @@ public sealed class NumberBoxingConversionSiteTests
             "the ++ step must be attributed to the update site");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Resetting_clears_every_counter_including_the_speculative_read()
     {
         // Item 3-8a's counter was added to the snapshot and not to Reset(), so a host that resets
@@ -211,7 +211,7 @@ public sealed class NumberBoxingConversionSiteTests
     // The leak case below is therefore the load-bearing one: it is the shape that would make the
     // instrument agree with whatever it was pointed at.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void A_root_stored_into_an_element_is_attributed_to_the_element()
     {
         var (_, boxing) = Count(
@@ -224,7 +224,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.Equal(0, At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoProperty));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void A_root_stored_into_a_property_is_attributed_to_the_property()
     {
         var (_, boxing) = Count(
@@ -237,7 +237,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.Equal(0, At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoElement));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void A_root_returned_is_attributed_to_the_return()
     {
         var (_, boxing) = Count(
@@ -250,7 +250,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.True(At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoReturn) > 0);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void A_root_passed_as_an_argument_is_attributed_to_the_argument()
     {
         var (_, boxing) = Count(
@@ -263,7 +263,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.True(At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoArgument) > 0);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void A_consumer_does_not_leak_into_a_tree_nested_inside_its_own_right_hand_side()
     {
         // THE case this instrument can fail silently on. The element store's right-hand side
@@ -293,7 +293,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.True(element <= 150, $"the element consumer leaked into the nested tree ({element})");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void A_compound_assignment_does_not_claim_its_right_hand_side()
     {
         // Under `a[0] += <tree>` the tree is an operand of `+=`, not the value stored, so the
@@ -308,7 +308,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.Equal(0, At(boxing, NumberBoxingConversionSite.GuardedTreeRootIntoElement));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void The_root_consumers_still_partition_the_conversion_total()
     {
         // The partition has to survive the split, or one of the six root rows is double-counting.
@@ -346,7 +346,7 @@ public sealed class NumberBoxingConversionSiteTests
     private static long Miss(NumberBoxingSnapshot boxing, NumericLocalMiss miss)
         => boxing.LocalMissAt(miss);
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void A_local_refused_for_an_element_read_is_attributed_to_the_element_read()
     {
         // `t` would be numeric but for `a[i]`, which the analysis will not type. The guarded tree
@@ -361,7 +361,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.True(Miss(boxing, NumericLocalMiss.ElementRead) > 0);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void A_local_refused_for_a_property_read_is_attributed_to_the_property_read()
     {
         var (_, boxing) = Count(
@@ -373,7 +373,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.True(Miss(boxing, NumericLocalMiss.PropertyRead) > 0);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void A_cascade_is_attributed_to_the_dropped_candidate_rather_than_to_its_root_cause()
     {
         // `t` is refused for the property read; `u` is refused only BECAUSE `t` was. The roadmap's
@@ -396,7 +396,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.True(Miss(boxing, NumericLocalMiss.PropertyRead) > 0, "its root is still charged to the property read");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void The_refusals_partition_the_roots_consumed_by_a_refused_local()
     {
         // The load-bearing check: every box counted at the IntoLocal site carries exactly one
@@ -453,7 +453,7 @@ public sealed class NumberBoxingConversionSiteTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void A_guarded_leaf_reading_a_refused_local_is_counted_against_its_refusal()
     {
         // `t` is refused for the element read; `t * b + i` then reads it as a guarded leaf.
@@ -471,7 +471,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.True(leafReads > 0, "a guarded leaf over a refused local must be counted");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void The_leaf_counter_does_not_change_what_the_tree_does()
     {
         // The check the reverted counter failed, as a test rather than as a census comparison: the
@@ -497,7 +497,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.Equal(boxingOff.ConversionRequests, boxingOn.ConversionRequests);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void A_refused_local_handed_straight_to_a_consumer_is_counted_as_a_boxing_read()
     {
         // `t` is refused for the element read and then passed straight to a call, which needs a
@@ -528,7 +528,7 @@ public sealed class NumberBoxingConversionSiteTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void A_read_inside_a_tree_is_free_and_not_charged_to_the_consumer()
     {
         // The two halves must not both claim the same read. `t` here is only ever read as a
@@ -559,7 +559,7 @@ public sealed class NumberBoxingConversionSiteTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void The_widening_is_off_unless_its_environment_variable_asks_for_it()
     {
         // It is a measured regression (item 3-1) and ships off. Stated against the environment
@@ -570,7 +570,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.Equal(asked, ElementReadNumericLocals.Enabled);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void The_raw_arm_stores_a_tree_root_into_a_widened_local_without_boxing_it()
     {
         // `0109`'s defect and `0110`'s fix in one case. The saving the widening was selected for
@@ -602,7 +602,7 @@ public sealed class NumberBoxingConversionSiteTests
             "the raw arm must remove root boxes the ordinary store path pays");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void The_parameter_population_is_off_and_is_measured_apart_from_the_others()
     {
         // Item 3-1's fourth candidate population. It ships off — the read cost was counted first,
@@ -618,7 +618,7 @@ public sealed class NumberBoxingConversionSiteTests
             ElementReadNumericLocals.EnvironmentVariable);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void All_four_candidate_populations_are_off_and_have_distinct_switches()
     {
         // Every population item 3-1 has tried is off in the shipped engine: each was measured by
@@ -645,7 +645,7 @@ public sealed class NumberBoxingConversionSiteTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Leaf_counting_is_off_by_default()
     {
         // It emits a call per guarded leaf over a refused local, so a run that leaves it on is a
@@ -653,7 +653,7 @@ public sealed class NumberBoxingConversionSiteTests
         Assert.False(NumericLocalLeafReadCensus.Enabled);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Counting_is_off_by_default()
     {
         // The counter sits on an allocation path. A run that leaves it on is a run whose wall

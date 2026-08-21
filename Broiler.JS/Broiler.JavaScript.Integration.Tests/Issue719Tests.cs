@@ -56,44 +56,44 @@ public class Issue719Tests
 
     // ---- Problem 9: Date setter day-overflow rolls into next month ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetMonthDayOverflowRollsIntoNextMonth()
         => Assert.Equal("2016,6,1",
             Eval("var d = new Date(2016, 0, 15, 10, 30); d.setMonth(5, 31); [d.getFullYear(), d.getMonth(), d.getDate()].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetFullYearDayOverflowRollsIntoNextMonth()
         => Assert.Equal("2016,6,1",
             Eval("var d = new Date(2016, 0, 15); d.setFullYear(2016, 5, 31); [d.getFullYear(), d.getMonth(), d.getDate()].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetUTCMonthDayOverflowRollsIntoNextMonth()
         => Assert.Equal("2016,6,1",
             Eval("var d = new Date(Date.UTC(2016, 0, 15)); d.setUTCMonth(5, 31); [d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetMonthNoOverflowStillWorks()
         => Assert.Equal("2016,6,15",
             Eval("var d = new Date(2016, 0, 15); d.setMonth(6, 15); [d.getFullYear(), d.getMonth(), d.getDate()].join(',')"));
 
     // ---- Problem 10: Number constants are read-only data properties ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberNaNIsReadonlyDataProperty()
         => Assert.Equal("false,false,false,false,false",
             Eval("var d = Object.getOwnPropertyDescriptor(Number, 'NaN'); [d.writable, d.enumerable, d.configurable, ('get' in d), ('set' in d)].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberPositiveInfinityIsReadonlyDataProperty()
         => Assert.Equal("false,false,false",
             Eval("var d = Object.getOwnPropertyDescriptor(Number, 'POSITIVE_INFINITY'); [d.writable, d.enumerable, d.configurable].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberNegativeInfinityIsReadonlyDataProperty()
         => Assert.Equal("false,false,false",
             Eval("var d = Object.getOwnPropertyDescriptor(Number, 'NEGATIVE_INFINITY'); [d.writable, d.enumerable, d.configurable].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberNaNStillReadsCorrectValue()
         => Assert.Equal("true", Eval("Number.isNaN(Number.NaN) + ''"));
 
@@ -104,48 +104,48 @@ public class Issue719Tests
     // because the async pre-rewrite finalized the nested lambda's closures against an
     // incomplete scope. Now nested lambdas are threaded by the full top-down rewrite.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AsyncNestedFunctionCapturesGlobal()
         => Assert.Equal("ran",
             Eval("var out='no'; async function f(){ (function(){ out='ran'; })(); } f(); out"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AsyncNestedFunctionCapturesLocal()
         => Assert.Equal("5",
             Eval("var out='no'; async function f(){ var y=5; (function(){ out=y; })(); } f(); out+''"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AsyncNestedFunctionCapturesParameter()
         => Assert.Equal("9",
             Eval("var out='no'; async function f(p){ (function(){ out=p; })(); } f(9); out+''"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AsyncNestedArrowCapturesLocal()
         => Assert.Equal("7",
             Eval("var out='no'; async function f(){ var y=7; (()=>{ out=y; })(); } f(); out+''"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AsyncDirectGlobalWriteStillWorks()
         => Assert.Equal("1", Eval("var x=0; async function f(){ x=1; } f(); x+''"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AsyncArrowOuterWithNestedCapture()
         => Assert.Equal("ran",
             Eval("var out='no'; var f = async () => { (function(){ out='ran'; })(); }; f(); out"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AsyncMethodWithNestedCapture()
         => Assert.Equal("6",
             Eval("var out='no'; var o = { async m(){ var y=6; (function(){ out=y; })(); } }; o.m(); out+''"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AsyncNestedCaptureMutationIsShared()
         => Assert.Equal("inner",
             Eval("var box='outer'; async function f(){ var v='start'; (function(){ v='inner'; })(); box=v; } f(); box"));
 
     // The exact #719 P2 scenario: ref() is async but has no await, so its body — two
     // IIFEs with `with`/@@unscopables — runs synchronously; count must reach 6.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AsyncWithUnscopablesInNestedFnCountIsSix()
         => Assert.Equal("6", Eval(@"
 var count=0; var v=1; globalThis[Symbol.unscopables]={v:true};
@@ -171,16 +171,16 @@ var c = new C();
 var innerB = new c.B();
 ";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateAccessorWithoutGetterThrowsOnRead()
         => Assert.Equal("TypeError", Eval(PrivateShadowClasses +
             "try { innerB.method(innerB); 'no throw' } catch (e) { e.constructor.name }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateGetterOnDeclaringInstanceStillReads()
         => Assert.Equal("outer class", Eval(PrivateShadowClasses + "c.method()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateAccessorBrandCheckAcrossNestedClasses()
         => Assert.Equal("TypeError", Eval(PrivateShadowClasses +
             "try { innerB.method(c); 'no throw' } catch (e) { e.constructor.name }"));
@@ -198,54 +198,54 @@ var c = new C();
 var innerB = new c.B();
 ";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateMethodShadowedBySetterThrowsOnRead()
         => Assert.Equal("TypeError", Eval(PrivateMethodShadowClasses +
             "try { innerB.method(innerB); 'no throw' } catch (e) { e.constructor.name }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateMethodOnDeclaringInstanceStillCalls()
         => Assert.Equal("outer class", Eval(PrivateMethodShadowClasses + "c.method()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateMethodShadowBrandCheckAcrossNestedClasses()
         => Assert.Equal("TypeError", Eval(PrivateMethodShadowClasses +
             "try { innerB.method(c); 'no throw' } catch (e) { e.constructor.name }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateAccessorWithGetterStillReads()
         => Assert.Equal("42", Eval(
             "class D { get #x() { return 42; } read() { return this.#x; } } new D().read() + ''"));
 
     // ---- Problem 4: for-in / for-of with an undeclared (sloppy global) head ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInUndeclaredIdentifierCreatesGlobal()
         => Assert.Equal("a,b",
             Eval("var out = []; for (k in { a: 1, b: 2 }) out.push(k); out.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInUndeclaredOverObjectWithNoEnumerableKeys()
         => Assert.Equal("ok", Eval("for (k in Boolean) {} 'ok'"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfUndeclaredIdentifierCreatesGlobal()
         => Assert.Equal("1,2,3",
             Eval("var out = []; for (k of [1, 2, 3]) out.push(k); out.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInDeclaredVariableStillWorks()
         => Assert.Equal("a,b",
             Eval("var out = []; var k; for (k in { a: 1, b: 2 }) out.push(k); out.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictForInUndeclaredIdentifierThrowsReferenceError()
         => Assert.Equal("ReferenceError",
             Eval("'use strict'; try { for (k in { a: 1 }) {} 'no throw' } catch (e) { e.constructor.name }"));
 
     // ---- Problem 8: Function.prototype.toString preserves CR / CRLF verbatim ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionToStringPreservesCrlf()
     {
         using var ctx = new JSContext();
@@ -254,7 +254,7 @@ var innerB = new c.B();
         Assert.Equal("function a(\r\nx\r\n){\r\n;\r\n}", s);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionToStringPreservesLoneCr()
     {
         using var ctx = new JSContext();
@@ -267,7 +267,7 @@ var innerB = new c.B();
     // function expression with interleaved comments): the full source span — the
     // leading `function`, the comments and the original CRLF line terminators — is
     // captured verbatim, with NO normalisation to LF.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionToStringCapturesFullSourceWithComments()
     {
         const string body = "function\n// a\nf\n// b\n(\n// c\nx\n// d\n,\n// e\ny\n// f\n)\n// g\n{\n// h\n;\n// i\n;\n// j\n}";

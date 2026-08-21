@@ -34,87 +34,87 @@ public class SwitchTypeSoundnessTests
 
     // ---- integer-case switch: only an exact integer Number matches ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntSwitchMatchesNumber() => Assert.Equal("one", Eval(IntSwitch + "f(1)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntSwitchBooleanDoesNotMatch() => Assert.Equal("d", Eval(IntSwitch + "f(true)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntSwitchNullDoesNotMatch() => Assert.Equal("d", Eval(IntSwitch + "f(null)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntSwitchUndefinedDoesNotMatch() => Assert.Equal("d", Eval(IntSwitch + "f(undefined)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntSwitchNaNDoesNotMatch() => Assert.Equal("d", Eval(IntSwitch + "f(NaN)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntSwitchInfinityDoesNotMatch() => Assert.Equal("d", Eval(IntSwitch + "f(Infinity)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntSwitchFractionDoesNotMatch() => Assert.Equal("d", Eval(IntSwitch + "f(1.5)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntSwitchNumericStringDoesNotMatch() => Assert.Equal("d", Eval(IntSwitch + "f('1')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntSwitchBoxedNumberDoesNotMatch()
         => Assert.Equal("d", Eval(IntSwitch + "f(new Number(1))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntSwitchBigIntDoesNotMatch()
         // 1n !== 1; reading the numeric value of a BigInt would throw, so the
         // type guard must short-circuit before coercing.
         => Assert.Equal("d", Eval(IntSwitch + "f(1n)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntSwitchOutOfRangeIntegerDoesNotMatch()
         => Assert.Equal("d", Eval(IntSwitch + "f(3000000000)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntSwitchNegativeZeroMatchesZero()
         => Assert.Equal("zero", Eval(
             "function f(v){ switch(v){ case 0: return 'zero'; default: return 'd'; } } f(-0)"));
 
     // ---- fractional-case switch (the previously-broken double path) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DoubleSwitchMatchesFraction() => Assert.Equal("a", Eval(DoubleSwitch + "f(1.5)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DoubleSwitchMatchesSecondFraction() => Assert.Equal("b", Eval(DoubleSwitch + "f(2.5)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DoubleSwitchNoMatch() => Assert.Equal("d", Eval(DoubleSwitch + "f(9)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DoubleSwitchBooleanDoesNotMatch() => Assert.Equal("d", Eval(DoubleSwitch + "f(true)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DoubleSwitchNaNDoesNotMatch() => Assert.Equal("d", Eval(DoubleSwitch + "f(NaN)"));
 
     // ---- string-case switch: only a String primitive matches ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringSwitchMatches() => Assert.Equal("X", Eval(StringSwitch + "f('x')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringSwitchNoMatch() => Assert.Equal("d", Eval(StringSwitch + "f('z')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringSwitchNumberDoesNotMatch() => Assert.Equal("d", Eval(StringSwitch + "f(1)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringSwitchBooleanDoesNotMatch() => Assert.Equal("d", Eval(StringSwitch + "f(true)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringSwitchBoxedStringDoesNotMatch()
         => Assert.Equal("d", Eval(StringSwitch + "f(new String('x'))"));
 
     // ---- the discriminant is still evaluated exactly once ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DiscriminantEvaluatedOnce()
         => Assert.Equal("1", Eval(
             "var n = 0; function side(){ n++; return true; }"

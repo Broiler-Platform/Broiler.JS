@@ -33,7 +33,7 @@ public class Issue818ZonedFieldOrderTests
         "track('microsecond', 0); track('nanosecond', 0);" +
         "track('offset', '+00:00'); track('timeZone', 'UTC'); track('calendar', 'iso8601');";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SinceReadsOtherBagFieldsAlphabetically()
         => Assert.Equal(
             "calendar,day,hour,microsecond,millisecond,minute,month,monthCode,nanosecond,offset,second,timeZone,year",
@@ -42,7 +42,7 @@ public class Issue818ZonedFieldOrderTests
                  "zdt.since(bag);" +
                  "log.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FromReadsBagFieldsAlphabetically()
         => Assert.Equal(
             "calendar,day,hour,microsecond,millisecond,minute,month,monthCode,nanosecond,offset,second,timeZone,year",
@@ -51,7 +51,7 @@ public class Issue818ZonedFieldOrderTests
                  "log.join(',')"));
 
     // timeZone is no longer read first, and offset no longer last.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TimeZoneIsNotReadFirst()
         => Assert.Equal("false", Eval(
             OrderedBag +
@@ -60,18 +60,18 @@ public class Issue818ZonedFieldOrderTests
             "String(log[0] === 'timeZone')"));
 
     // The conversion still produces the right value and still validates.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BagStillConstructsCorrectly()
         => Assert.Equal("2024-06-15T12:30:00+00:00[UTC]", Eval(
             "Temporal.ZonedDateTime.from({ year: 2024, month: 6, day: 15, hour: 12, minute: 30, timeZone: 'UTC' }).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MissingTimeZoneStillThrows()
         => Assert.Equal("TypeError", Eval(
             "try { Temporal.ZonedDateTime.from({ year: 2024, month: 6, day: 15, timeZone: undefined }); 'no-throw'; }" +
             "catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OffsetMismatchStillRejects()
         => Assert.Equal("RangeError", Eval(
             "try { Temporal.ZonedDateTime.from({ year: 2024, month: 6, day: 1, hour: 12, offset: '+05:00', timeZone: 'UTC' });" +

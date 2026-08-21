@@ -22,35 +22,35 @@ public class TopLevelAwaitResumeTests
         return await ctx.EvalWithTopLevelAwaitAsync(code);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task Local_Read_After_Await()
         => Assert.Equal(5.0, (await Tla("await Promise.resolve(); var x = 5; x;")).DoubleValue);
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task Member_Get_On_Identifier_Receiver_After_Await()
         => Assert.Equal(3.141592653589793, (await Tla("await Promise.resolve(); Math.PI;")).DoubleValue, 12);
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task Member_Call_On_Identifier_Receiver_After_Await()
         => Assert.Equal(2.0, (await Tla("await Promise.resolve(); Math.max(1, 2);")).DoubleValue);
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task Member_Assign_After_Await()
         => Assert.Equal(2.0, (await Tla("await Promise.resolve(); globalThis.__a = 2; globalThis.__a;")).DoubleValue);
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task Member_On_Awaited_Value()
         => Assert.Equal(7.0, (await Tla("var o = await Promise.resolve({ m: 7 }); o.m;")).DoubleValue);
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task Sequential_Awaits_Keep_Bindings()
         => Assert.Equal(3.0, (await Tla("var a = await Promise.resolve(1); var b = await Promise.resolve(2); a + b;")).DoubleValue);
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task Constant_Receiver_Member_After_Await_Still_Works()
         => Assert.Equal(2.0, (await Tla("await Promise.resolve(); 'hi'.length;")).DoubleValue);
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task Nested_Async_Function_Member_After_Await_Unregressed()
     {
         using var ctx = new JSContext();
@@ -61,7 +61,7 @@ public class TopLevelAwaitResumeTests
         Assert.Equal(106.0, r.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Generator_Member_After_Yield_Unregressed()
     {
         using var ctx = new JSContext();

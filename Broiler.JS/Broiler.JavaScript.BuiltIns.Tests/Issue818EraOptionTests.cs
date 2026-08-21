@@ -24,7 +24,7 @@ public class Issue818EraOptionTests
         "function checkEra(parts){ for (var i = 0; i < parts.length; i++) " +
         "if (parts[i].type === 'era' && parts[i].value.indexOf('A') === 0) return true; return false; }";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EraOptionAddsEraPartForDate()
         => Assert.Equal("11/4/2025 A", Eval(
             "new Intl.DateTimeFormat('en', { era: 'narrow' }).format(new Date(2025, 10, 4))"));
@@ -37,14 +37,14 @@ public class Issue818EraOptionTests
         => Assert.Equal($"11/4/2025 {expectedEra}", Eval(
             $"new Intl.DateTimeFormat('en', {{ era: '{style}' }}).format(new Date(2025, 10, 4))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TemporalPlainDateGetsEra()
         => Assert.Equal("true", Eval(
             CheckEra +
             "String(checkEra(new Intl.DateTimeFormat(['en'], { era: 'narrow' })" +
             ".formatToParts(new Temporal.PlainDate(2025, 11, 4))))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TemporalPlainYearMonthGetsEra()
         => Assert.Equal("true", Eval(
             CheckEra +
@@ -52,7 +52,7 @@ public class Issue818EraOptionTests
             ".formatToParts(new Temporal.PlainYearMonth(2025, 11, 'gregory'))))"));
 
     // PlainMonthDay has no year, so the era must NOT appear.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TemporalPlainMonthDayHasNoEra()
         => Assert.Equal("false", Eval(
             CheckEra +
@@ -60,7 +60,7 @@ public class Issue818EraOptionTests
             ".formatToParts(new Temporal.PlainMonthDay(11, 4, 'gregory'))))"));
 
     // PlainTime has no date, so the era must NOT appear.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TemporalPlainTimeHasNoEra()
         => Assert.Equal("false", Eval(
             CheckEra +
@@ -68,14 +68,14 @@ public class Issue818EraOptionTests
             ".formatToParts(new Temporal.PlainTime(14, 46))))"));
 
     // An era-using calendar keeps showing its era when no era option is given.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EraCalendarStillShowsEraWithoutEraOption()
         => Assert.Equal("11/4/2568 BE", Eval(
             "new Intl.DateTimeFormat('en-u-ca-buddhist', { year: 'numeric', month: 'numeric', day: 'numeric' })" +
             ".format(new Date(2025, 10, 4))"));
 
     // No era option and a gregorian calendar: unchanged.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NoEraOptionIsUnchanged()
         => Assert.Equal("11/4/2025", Eval(
             "new Intl.DateTimeFormat('en').format(new Date(2025, 10, 4))"));

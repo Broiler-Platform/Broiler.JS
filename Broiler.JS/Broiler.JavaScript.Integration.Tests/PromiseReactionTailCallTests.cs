@@ -37,31 +37,31 @@ public sealed class PromiseReactionTailCallTests
 
     private const string Mark = "function mark(s) { log.push(s); return s; }\n";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AConciseArrowReactionRuns()
         => Assert.Equal("fulfilled", Run(Mark + "Promise.resolve().then(() => mark('fulfilled'));"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AReturnedCallInAReactionRuns()
         => Assert.Equal("fulfilled", Run(
             Mark + "Promise.resolve().then(function () { return mark('fulfilled'); });"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ARejectionHandlerEndingInACallRuns()
         => Assert.Equal("rejected", Run(
             Mark + "Promise.reject(new Error('x')).then(null, () => mark('rejected'));"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACatchHandlerEndingInACallRuns()
         => Assert.Equal("caught", Run(
             Mark + "Promise.reject(new Error('x')).catch(() => mark('caught'));"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFinallyHandlerEndingInACallRuns()
         => Assert.Equal("finally", Run(
             Mark + "Promise.resolve(1).finally(() => mark('finally'));"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EveryReactionShapeRunsAndKeepsQueueOrder()
         // Both shapes in one queue, so a regression shows up as a GAP in the order rather than
         // as an empty log: the tail-call ones are the odd positions.
@@ -72,7 +72,7 @@ public sealed class PromiseReactionTailCallTests
             Promise.resolve().then(() => { mark('d'); });
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheDerivedPromiseSeesTheCallsValueRatherThanTheSentinel()
         // The sentinel is an ordinary object, so resolving with it did not throw — the next
         // reaction just received something that was not the handler's result.
@@ -80,7 +80,7 @@ public sealed class PromiseReactionTailCallTests
             "function inc(v) { return v + 1; }\n"
             + "Promise.resolve(1).then(v => inc(v)).then(v => { log.push(v); });"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AReactionReturningAPromiseIsStillAdopted()
         // Forcing the sentinel must produce the CALL's value for the resolution to adopt, not
         // the sentinel itself: `() => Promise.resolve(x)` is a tail call too.
@@ -88,7 +88,7 @@ public sealed class PromiseReactionTailCallTests
             "function later(v) { return Promise.resolve(v); }\n"
             + "Promise.resolve().then(() => later('adopted')).then(v => { log.push(v); });"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AThrowFromATailCalledReactionRejectsTheDerivedPromise()
         // The call now happens inside the handler's try, so its error rejects the derived
         // promise as any other handler error would.
@@ -96,7 +96,7 @@ public sealed class PromiseReactionTailCallTests
             "function fail() { throw new Error('boom'); }\n"
             + "Promise.resolve().then(() => fail()).catch(function (e) { log.push(e.message); });"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnAwaitedTailCallReactionResumesWithTheValue()
         // The awaited value is spilled to a local first, deliberately: `log.push(await …)` — a
         // METHOD call with an await among its arguments — is silently skipped by the async

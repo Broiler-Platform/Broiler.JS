@@ -39,14 +39,14 @@ public class Issue887Tests3
     public void BigIntShift(string expr, string expected)
         => Assert.Equal(expected, Eval($"String({expr})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BigIntHugeLeftShiftThrowsRangeError()
         // `5n >> -1e12n` == `5n << 1e12n` exceeds any representable BigInt → RangeError, not a crash.
         => Assert.Equal("RangeError", ErrorName("5n >> -1000000000000n"));
 
     // ── Cluster H — super() in an arrow inside a derived constructor ───────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateFieldDestructuringTargetBeforeSuperThrowsReferenceError()
         // Accessing `this.#field` (a destructuring target) before `super()` runs must throw a
         // ReferenceError (this-TDZ) — it previously NullReferenced in the compiler.
@@ -56,7 +56,7 @@ public class Issue887Tests3
             "  constructor() { var init = () => super(); var o = { get a() { init(); } }; ({ a: this.#field } = o); }" +
             "} new C();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrowSuperWithDefaultedFieldDoesNotCrash()
         // A `super()` reached through an arrow in a class that declares a field must compile and run.
         => Assert.Equal("7", Eval(
@@ -64,13 +64,13 @@ public class Issue887Tests3
             "class C extends B { constructor() { var go = () => super(7); go(); } } " +
             "'' + new C().x"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectSuperWithFieldsStillInitializes()
         => Assert.Equal("3", Eval(
             "class B {} class C extends B { a = 1; b = 2; constructor() { super(); } } " +
             "var c = new C(); '' + (c.a + c.b)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateMethodWithArrowSuperStillWorks()
         => Assert.Equal("3", Eval(
             "class B {} class C extends B { #m() { return 3; } constructor() { (() => super())(); } call() { return this.#m(); } } " +

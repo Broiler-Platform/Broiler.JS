@@ -63,7 +63,7 @@ public sealed class UpdateTargetCensusTests
         Assert.Equal(total, sum);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnElementUpdateIsCountedAsAnElement()
     {
         // Deliberately loop-free, for the reason 0085's fixtures record: written with the
@@ -77,7 +77,7 @@ public sealed class UpdateTargetCensusTests
         AssertRowsSumToTotal(targets, total);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFieldUpdateIsCountedAsAProperty()
     {
         var (targets, total) = Count("var o = { x: 1, y: 2 }; o.x++; --o.y; o.x;");
@@ -88,7 +88,7 @@ public sealed class UpdateTargetCensusTests
         AssertRowsSumToTotal(targets, total);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AComputedKeyThatIsAStringStillCountsAsAnElement()
     {
         // The census splits on syntax — computed against named — because the key is not known
@@ -102,7 +102,7 @@ public sealed class UpdateTargetCensusTests
         AssertRowsSumToTotal(targets, total);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ALocalTheAnalysisCannotTypeIsCountedAsASlot()
     {
         // A local assigned from a call's return value: statically resolved, so it never reaches
@@ -121,7 +121,7 @@ public sealed class UpdateTargetCensusTests
         AssertRowsSumToTotal(targets, total);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ATopLevelVarIsAJSVariableCellRatherThanAGlobalOrALocal()
     {
         // Pinned because it is what three of these fixtures got wrong on the first attempt, and
@@ -142,7 +142,7 @@ public sealed class UpdateTargetCensusTests
         AssertRowsSumToTotal(targets, total);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AGlobalUpdateIsCountedAsGlobalOrWith()
     {
         // No `var`, so the name resolves dynamically through the global object rather than to a
@@ -154,7 +154,7 @@ public sealed class UpdateTargetCensusTests
         AssertRowsSumToTotal(targets, total);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AWithBoundNameIsCountedAsGlobalOrWith()
     {
         var (targets, total) = Count("var o = { n: 1 }; with (o) { n++; } o.n;");
@@ -164,7 +164,7 @@ public sealed class UpdateTargetCensusTests
         AssertRowsSumToTotal(targets, total);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANumericLocalContributesNothingAtAll()
     {
         // THE discriminating fixture. `i++` on a raw double local is a native add — it never calls
@@ -181,7 +181,7 @@ public sealed class UpdateTargetCensusTests
             Assert.Equal(0, row);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheRowsSeparateTwoKindsInOneProgram()
     {
         // Every kind at once, so a census that collapsed two of them into one row would still pass
@@ -211,7 +211,7 @@ public sealed class UpdateTargetCensusTests
         AssertRowsSumToTotal(targets, total);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheCensusIsOffByDefaultAndCountsNothingWhenDisabled()
     {
         var previous = ArithmeticOperandDiagnostics.Enabled;
@@ -231,7 +231,7 @@ public sealed class UpdateTargetCensusTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheStepStillAnswersTheSameWithTheCensusOn()
     {
         // The census carries a compile-time constant into a run-time call, so it changes the

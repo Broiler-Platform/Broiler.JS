@@ -42,7 +42,7 @@ public class Issue828IteratorHelperDoneTests
         """));
 
     // After the helper has finished, repeated next() calls stay done and never touch the source.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RepeatedNextAfterDoneStaysDoneWithoutPulling()
         => Assert.Equal("true,true,2", Eval("""
             var calls = 0;

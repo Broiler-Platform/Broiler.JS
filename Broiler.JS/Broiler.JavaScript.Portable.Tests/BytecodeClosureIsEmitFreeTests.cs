@@ -30,7 +30,7 @@ public sealed class BytecodeClosureIsEmitFreeTests
         "System.Reflection.Emit.Lightweight",
     ];
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PortableCompiler_ReferenceClosure_ContainsNoEmitter()
     {
         var offenders = new List<string>();

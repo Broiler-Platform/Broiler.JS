@@ -54,7 +54,7 @@ public class Issue824ArrayBoundaryTests
         => Assert.Equal(expected, Eval(
             $"var a=new Array(0,1);a[4294967294]=2;a[4294967295]=3;a[4294967296]=4;a[4294967297]=5;{expr}"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     // 81 — lastIndexOf finds the 2^32-2 indexed property (matches on the first probed index).
     public void LastIndexOfLargeIndex()
         => Assert.Equal("4294967294", Eval(

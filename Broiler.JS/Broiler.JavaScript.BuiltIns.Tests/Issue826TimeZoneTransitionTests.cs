@@ -38,7 +38,7 @@ public class Issue826TimeZoneTransitionTests
         """));
 
     // An instant before a zone's first transition has no "previous" transition.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetTimeZoneTransition_BeforeFirst_PreviousIsNull()
         => Assert.Equal("null", Eval("""
             var z = new Temporal.ZonedDateTime(-5364662400000000000n, "America/New_York");

@@ -45,34 +45,34 @@ public class Issue685Tests
 
     // ---- Problem 10: tail-call callback must not leak a JSTailCall sentinel ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapCallbackWithTailCallReturnsRealValue()
         => Assert.Equal("number|5", EvalScriptHost(
             "function id(x){ return x; }"
             + "var r = [0].map(function(){ return id(5); });"
             + "(typeof r[0]) + '|' + r[0]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FilterCallbackWithFalseTailCallExcludesElement()
         => Assert.Equal("0", EvalScriptHost(
             "function id(x){ return x; }"
             + "String([1, 2, 3].filter(function(){ return id(false); }).length)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SomeAndEveryCallbackWithTailCallUseRealBoolean()
         => Assert.Equal("false|false", EvalScriptHost(
             "function id(x){ return x; }"
             + "String([0].some(function(){ return id(false); })) + '|' +"
             + "String([0].every(function(){ return id(false); }))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForEachCallbackWithTailCallStillRunsSideEffects()
         => Assert.Equal("6", EvalScriptHost(
             "var sum = 0; function add(x){ sum += x; }"
             + "[1, 2, 3].forEach(function(x){ return add(x); });"
             + "String(sum)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetTimezoneOffsetThroughMapIsNumeric()
         => Assert.Equal("number", EvalScriptHost(
             "function tz(t){ var d = new Date(NaN); d.setTime(t); return d.getTimezoneOffset(); }"
@@ -82,26 +82,26 @@ public class Issue685Tests
 
     // ---- Problem 9: Intl.ListFormat.format performs CLDR list assembly ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ListFormatEnglishConjunction()
         => Assert.Equal("|foo|foo and bar|foo, bar, and baz", Eval(
             "var lf = new Intl.ListFormat('en-US');"
             + "lf.format([]) + '|' + lf.format(['foo']) + '|' +"
             + "lf.format(['foo','bar']) + '|' + lf.format(['foo','bar','baz'])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ListFormatEnglishDisjunctionAndShort()
         => Assert.Equal("foo, bar, or baz|foo, bar, & baz", Eval(
             "new Intl.ListFormat('en-US', { type: 'disjunction' }).format(['foo','bar','baz']) + '|' +"
             + "new Intl.ListFormat('en-US', { style: 'short' }).format(['foo','bar','baz'])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ListFormatSpanishUnit()
         => Assert.Equal("foo, bar y baz|foo bar baz", Eval(
             "new Intl.ListFormat('es-ES', { type: 'unit', style: 'long' }).format(['foo','bar','baz']) + '|' +"
             + "new Intl.ListFormat('es-ES', { type: 'unit', style: 'narrow' }).format(['foo','bar','baz'])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ListFormatIteratesStringByCharacter()
         => Assert.Equal("f, o, and o", Eval(
             "new Intl.ListFormat('en-US').format('foo')"));

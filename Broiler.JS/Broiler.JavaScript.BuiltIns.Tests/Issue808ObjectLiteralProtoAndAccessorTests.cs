@@ -19,7 +19,7 @@ public class Issue808ObjectLiteralProtoAndAccessorTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ProtoColon_AfterComputedProto_StillMutatesPrototype()
         => Assert.Equal("null|true", Eval("""
             var o = { ["__proto__"]: null, __proto__: null };
@@ -27,14 +27,14 @@ public class Issue808ObjectLiteralProtoAndAccessorTests
                 (Object.getOwnPropertyDescriptor(o, "__proto__") !== undefined);
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ProtoColon_PrimitiveValueIgnored()
         => Assert.Equal("true|0", Eval("""
             var o = { __proto__: 5 };
             (Object.getPrototypeOf(o) === Object.prototype) + "|" + Object.getOwnPropertyNames(o).length;
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DataThenSetter_ProducesCleanAccessor()
         => Assert.Equal("undefined|function", Eval("""
             var o = { ["x"]: null, set x(v) {} };
@@ -42,7 +42,7 @@ public class Issue808ObjectLiteralProtoAndAccessorTests
             typeof d.get + "|" + typeof d.set;
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DataThenGetter_ProducesCleanAccessor()
         => Assert.Equal("function|undefined|undefined", Eval("""
             var o = { x: 5, get x() { return 1; } };
@@ -50,7 +50,7 @@ public class Issue808ObjectLiteralProtoAndAccessorTests
             typeof d.get + "|" + typeof d.set + "|" + d.value;
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetterThenSetter_MergesBothAccessors()
         => Assert.Equal("function|function", Eval("""
             var o = { get x() { return 1; }, set x(v) {} };
@@ -58,7 +58,7 @@ public class Issue808ObjectLiteralProtoAndAccessorTests
             typeof d.get + "|" + typeof d.set;
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DuplicateProtoColon_IsSyntaxError()
         => Assert.Equal("SyntaxError", Eval("""
             var err = "none";

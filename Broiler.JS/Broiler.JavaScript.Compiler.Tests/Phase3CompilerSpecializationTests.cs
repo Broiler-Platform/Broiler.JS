@@ -15,7 +15,7 @@ public sealed class Phase3DiagnosticsCollection
 [Collection(Phase3DiagnosticsCollection.Name)]
 public sealed class Phase3CompilerSpecializationTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ScalarReplacement_UsesRawLocals_OnlyWhenBindingsAreUnobservable()
     {
         using var context = new JSContext();
@@ -52,7 +52,7 @@ public sealed class Phase3CompilerSpecializationTests
         Assert.Equal(capturedCounts.NumericLocals, capturedCounts.ScalarLocals);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ScalarReplacement_DoesNotCrossNestedDirectEvalShadowBoundaries()
     {
         using var context = new JSContext();
@@ -70,7 +70,7 @@ public sealed class Phase3CompilerSpecializationTests
         Assert.Equal("2|1", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DenseIntegerAndStringSwitches_UseBoundedDispatchTables()
     {
         using var context = new JSContext();
@@ -105,7 +105,7 @@ public sealed class Phase3CompilerSpecializationTests
         Assert.InRange(snapshot.SwitchTableSlots, 8, 32);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwitchSpecialization_PreservesDuplicateDefaultFallthroughAndGenericFallbacks()
     {
         using var context = new JSContext();
@@ -145,7 +145,7 @@ public sealed class Phase3CompilerSpecializationTests
         Assert.InRange(snapshot.SwitchTableSlots, 6, 16);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PropertyCaches_PromoteBoundedly_AndKeepDictionaryAndProxySlowPaths()
     {
         using var context = new JSContext();
@@ -181,7 +181,7 @@ public sealed class Phase3CompilerSpecializationTests
         Assert.True(snapshot.DictionaryFallbacks > 0);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PropertyCaches_RemainReadOnlyAcrossAllMemberWriteForms()
     {
         using var context = new JSContext();
@@ -198,7 +198,7 @@ public sealed class Phase3CompilerSpecializationTests
         Assert.Equal("1|2|3|4|5,6|second", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrototypeMutations_AdvanceTheVersion_AndInvalidateSafely()
     {
         using var context = new JSContext();
@@ -223,7 +223,7 @@ public sealed class Phase3CompilerSpecializationTests
         Assert.True(after.PrototypeInvalidations > before.PrototypeInvalidations);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PersistentCache_CommitsPeManifestAndPortablePdb_ThenHitsCold()
     {
         var folder = Path.Combine(Path.GetTempPath(), "broiler-phase3-" + Guid.NewGuid().ToString("N"));

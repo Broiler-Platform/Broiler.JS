@@ -52,7 +52,7 @@ public class PropertyShapeCacheTests
         Assert.True(stats.CacheHits >= 499, $"expected the site to hit, got {stats.CacheHits} hits / {stats.CacheMisses} misses");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InheritedDataRead_IsCached()
     {
         var (result, stats) = Measure("""
@@ -68,7 +68,7 @@ public class PropertyShapeCacheTests
         Assert.True(stats.CacheHits >= 499, $"expected hits, got {stats.CacheHits}/{stats.CacheMisses}");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InheritedMethodCall_IsCached()
     {
         // The callee read of `p.get()` goes through the same cache a bare `p.get` does.
@@ -86,7 +86,7 @@ public class PropertyShapeCacheTests
         Assert.True(stats.CacheHits >= 999, $"expected hits, got {stats.CacheHits}/{stats.CacheMisses}");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassMethodCall_IsCached()
     {
         var (result, stats) = Measure("""
@@ -101,7 +101,7 @@ public class PropertyShapeCacheTests
         Assert.True(stats.CacheHits >= 999, $"expected hits, got {stats.CacheHits}/{stats.CacheMisses}");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OrdinaryWrite_DoesNotFallBackToDictionaryMode()
     {
         var (_, stats) = Measure("""
@@ -116,7 +116,7 @@ public class PropertyShapeCacheTests
 
     // ── every way a cached lookup can go stale ────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OwnPropertyAddedMidLoop_ShadowsTheInheritedOne()
     {
         Assert.Equal("800", Eval("""
@@ -129,7 +129,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrototypePropertyMutatedMidLoop_IsObserved()
     {
         Assert.Equal("800", Eval("""
@@ -142,7 +142,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetPrototypeOfMidLoop_IsObserved()
     {
         Assert.Equal("800", Eval("""
@@ -156,7 +156,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeletingAnOwnProperty_RevealsTheInheritedOne()
     {
         Assert.Equal("1200", Eval("""
@@ -170,7 +170,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MethodRedefinedOnThePrototypeMidLoop_IsObserved()
     {
         Assert.Equal("600", Eval("""
@@ -183,7 +183,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OwnMethodShadowingThePrototypeMidLoop_IsObserved()
     {
         Assert.Equal("1200", Eval("""
@@ -196,7 +196,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TwoReceiversSharingAShapeButNotAPrototype_StayDistinct()
     {
         // x and y reach the same shape by the same key sequence, so a guard keyed on the
@@ -212,7 +212,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnInheritedAccessorIsNotSlotCached()
     {
         // The prototype is linked by `__proto__` in the literal rather than by
@@ -233,7 +233,7 @@ public class PropertyShapeCacheTests
         Assert.Equal(0, stats.CacheHits);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APrototypeOwnValueOfUndefined_ShadowsFurtherUpTheChain()
     {
         Assert.Equal("undefined", Eval("""
@@ -248,7 +248,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FreezingThePrototypeMidLoop_KeepsReadsCorrect()
     {
         Assert.Equal("2000", Eval("""
@@ -261,7 +261,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RedefiningAsAnAccessorMidLoop_IsObserved()
     {
         Assert.Equal("1200", Eval("""
@@ -275,7 +275,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APolymorphicSiteStaysCorrectAcrossFourShapes()
     {
         Assert.Equal("10", Eval("""
@@ -287,7 +287,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AMegamorphicSiteStaysCorrect()
     {
         Assert.Equal("21", Eval("""
@@ -303,7 +303,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANumericStringKeyIsNeverSlotCached()
     {
         // "3" names an ELEMENT, which lives outside the shape; caching it as a named slot
@@ -328,7 +328,7 @@ public class PropertyShapeCacheTests
     // Now that a construct installs the prototype once, the same paths have to be re-checked
     // with an allocation in the loop, where before there was nothing left to invalidate.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InheritedReadInAnAllocatingLoop_IsCached()
     {
         // The fix itself. Identical to InheritedMethodCall_IsCached with one allocation added
@@ -352,7 +352,7 @@ public class PropertyShapeCacheTests
             $"expected allocation to stop invalidating, got {stats.PrototypeInvalidations}");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrototypePropertyMutatedMidLoop_IsObserved_WhileAllocating()
     {
         Assert.Equal("800", Eval("""
@@ -366,7 +366,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetPrototypeOfMidLoop_IsObserved_WhileAllocating()
     {
         Assert.Equal("800", Eval("""
@@ -381,7 +381,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OwnPropertyAddedMidLoop_ShadowsTheInheritedOne_WhileAllocating()
     {
         Assert.Equal("800", Eval("""
@@ -395,7 +395,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RedefiningAsAnAccessorMidLoop_IsObserved_WhileAllocating()
     {
         Assert.Equal("800", Eval("""
@@ -413,7 +413,7 @@ public class PropertyShapeCacheTests
             """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AClassInstanceStillGetsItsNewTargetPrototype()
     {
         // The construct paths changed to install the prototype by construction rather than by
@@ -444,7 +444,7 @@ public class PropertyShapeCacheTests
     // Arrays now opt in. What must not change is everything an array does that is NOT a named
     // data property: its elements, its exotic `length`, and the interaction between the two.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANamedPropertyOnAnArray_IsCached()
     {
         var (result, stats) = Measure("""
@@ -459,7 +459,7 @@ public class PropertyShapeCacheTests
         Assert.True(stats.CacheHits >= 499, $"expected hits, got {stats.CacheHits}/{stats.CacheMisses}");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GrowingAnArrayThroughABuiltInKeepsItsNamedShape()
     {
         // `length` is computed from the element store rather than held as a data property, so
@@ -491,7 +491,7 @@ public class PropertyShapeCacheTests
         Assert.True(stats.CacheHits >= 499, $"expected the named read to keep hitting after growth, got {stats.CacheHits}/{stats.CacheMisses}");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ElementsAndNamedPropertiesOnAnArrayStayDistinct()
         => Assert.Equal("10|9|2|tag,other", Eval("""
             var a = [];
@@ -503,7 +503,7 @@ public class PropertyShapeCacheTests
             [a.length, a.tag, Object.keys(a).length - a.length, named.join(',')].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MaterializingLengthDoesNotConfuseTheShape()
         => Assert.Equal("3|false|7|3", Eval("""
             var a = [1, 2, 3];
@@ -515,7 +515,7 @@ public class PropertyShapeCacheTests
             [a.length, Object.getOwnPropertyDescriptor(a, 'length').writable, a.tag, a[2]].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeletingANamedPropertyOnAnArray_RevealsTheInheritedOne()
         => Assert.Equal("1200", Eval("""
             Array.prototype.tag = 5;
@@ -526,7 +526,7 @@ public class PropertyShapeCacheTests
             s;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnArrayPrototypePropertyMutatedMidLoop_IsObserved()
         => Assert.Equal("800", Eval("""
             Array.prototype.tag = 1;
@@ -537,7 +537,7 @@ public class PropertyShapeCacheTests
             s;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayMethodsStillWorkAfterNamedPropertiesAreTracked()
         => Assert.Equal("1,2,3|6|3,2,1|[1,2,3]|2", Eval("""
             var a = [1, 2, 3];
@@ -548,7 +548,7 @@ public class PropertyShapeCacheTests
             [a.join(','), sum, a.slice().reverse().join(','), JSON.stringify(a), a.indexOf(3)].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFrozenArrayRefusesBothKinds()
         => Assert.Equal("1|7|false|false", Eval("""
             var a = [1];
@@ -560,7 +560,7 @@ public class PropertyShapeCacheTests
             [a[0], a.tag, Object.isExtensible(a), Object.getOwnPropertyDescriptor(a, 'tag').writable].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASparseArrayWithNamedPropertiesKeepsItsHoles()
         => Assert.Equal("5|false|true|7", Eval("""
             var a = [];
@@ -570,7 +570,7 @@ public class PropertyShapeCacheTests
             [a.length, 2 in a, 4 in a, a.tag].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnArraySubclassInstanceIsStillAnArray()
         => Assert.Equal("3|9|true|4", Eval("""
             class MyArray extends Array {}
@@ -582,7 +582,7 @@ public class PropertyShapeCacheTests
             [a.length, s, Array.isArray(a), (a.push(4), a.length)].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ATypedArrayIsStillNotShapeTracked()
         => Assert.Equal("4|9|0", Eval("""
             var a = new Float64Array(4);
@@ -592,7 +592,7 @@ public class PropertyShapeCacheTests
             [a.length, s, a[0]].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TwoArraysReachingTheSameShapeStayDistinct()
         => Assert.Equal("1,2|3,4", Eval("""
             var x = []; x.tag = 1; x.other = 2;
@@ -632,7 +632,7 @@ public class PropertyShapeCacheTests
         Assert.Equal(0, stats.DictionaryFallbacks);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFunctionsOwnPropertiesAreUnchangedAndComplete()
         // length, name and prototype now go through the shape tracker. Their values, their
         // attributes and their enumeration order are what must not have moved.
@@ -650,7 +650,7 @@ public class PropertyShapeCacheTests
             ].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheAnnexBCallerAndArgumentsKeepTheirDescriptorShape()
         // A deferred cell is now recorded in the shape with no slot value instead of abandoning
         // it. The cell still has to be the thing that answers, with the Annex B descriptor P0-3
@@ -668,7 +668,7 @@ public class PropertyShapeCacheTests
             ].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANullSlotKeyStillReadsThroughTheGenericPath()
         // The read site for `caller` is warmed against a key the shape carries with no slot
         // value, so every read must decline the fast path and realize the cell.
@@ -680,7 +680,7 @@ public class PropertyShapeCacheTests
             n + '|' + last;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReadingCallerWhileTheFunctionIsOnTheStackStillWorks()
         => Assert.Equal("true|true", Eval("""
             function inner() { return inner.caller === outer; }
@@ -690,7 +690,7 @@ public class PropertyShapeCacheTests
             first + '|' + second;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AStaticRedefinedAsAnAccessorMidLoop_IsObserved()
         => Assert.Equal("800", Eval("""
             function S() {}
@@ -703,7 +703,7 @@ public class PropertyShapeCacheTests
             s;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OverwritingAFunctionsOwnLengthAndNameStillWorks()
         => Assert.Equal("9|renamed|7", Eval("""
             function f(a, b) {}
@@ -714,7 +714,7 @@ public class PropertyShapeCacheTests
             [f.length, f.name, f.tag].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ABoundFunctionKeepsItsNameAndLength()
         => Assert.Equal("bound f|1|3", Eval("""
             function f(a, b) { return a + b; }
@@ -722,7 +722,7 @@ public class PropertyShapeCacheTests
             [b.name, b.length, b(2)].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ThePoisonPillThrowTypeErrorStillThrows()
         => Assert.Equal("TypeError|TypeError", Eval("""
             'use strict';
@@ -734,7 +734,7 @@ public class PropertyShapeCacheTests
             r.join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeletingAStaticRevealsTheInheritedOne()
         => Assert.Equal("1200", Eval("""
             function S() {}
@@ -745,7 +745,7 @@ public class PropertyShapeCacheTests
             s;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AProxyInThePrototypeChainStillTraps()
     {
         Assert.Equal("400|5", Eval("""
@@ -772,7 +772,7 @@ public class PropertyShapeCacheTests
     // call after it hit and was wrong, and the second level of every inheritance chain came out
     // unlinked. The loop that measured 2-8's win never wrote a prototype, so it saw none of it.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AWarmedPrototypeWriteSiteStillRelinksTheWholeChain()
         => Assert.Equal("true|true|function|function|true", Eval("""
             // DeltaBlue's exact idiom, three levels deep. One store site, many functions.
@@ -802,7 +802,7 @@ public class PropertyShapeCacheTests
             ].join('|');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OneWarmedSiteWritingManyFunctionsPrototypes_EveryNewGetsItsOwn()
         => Assert.Equal("300|300", Eval("""
             // The store site is warm from the second iteration on; every instance after that
@@ -819,7 +819,7 @@ public class PropertyShapeCacheTests
             right + '|' + (300 - wrong);
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APrototypeWriteThroughAWarmedSiteAgreesWithTheObservableProperty()
         => Assert.Equal("400|400", Eval("""
             // The property and [[Construct]] must never disagree — that disagreement WAS the bug.
@@ -834,7 +834,7 @@ public class PropertyShapeCacheTests
             agreed + '|' + constructed;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AClassPrototypeWriteThroughAWarmedSiteIsStillRefused()
         => Assert.Equal("300|true|true", Eval("""
             // JSClass derives from JSFunction, so it inherits the same cached field and the same
@@ -859,7 +859,7 @@ public class PropertyShapeCacheTests
             kept + '|' + (d.writable === false) + '|' + (d.configurable === false);
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AssigningANonObjectPrototypeThroughAWarmedSiteKeepsConstructability()
         => Assert.Equal("300|300", Eval("""
             // AssignPrototypeField's other half: a function that HAS had a prototype object is a
@@ -875,7 +875,7 @@ public class PropertyShapeCacheTests
             constructed + '|' + accepted;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFunctionsOtherNamedPropertiesStillTakeTheStoreCache()
     {
         // The exclusion is one key wide. Statics are where item 2-8's win is, so they must
@@ -892,7 +892,7 @@ public class PropertyShapeCacheTests
             $"a function's statics must still hit, got {stats.StoreCacheHits}/{stats.StoreCacheMisses}");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReadingAFunctionsPrototypeIsStillCached()
     {
         // Only the WRITE paths are gated: a read has no field to keep in sync, and gating it

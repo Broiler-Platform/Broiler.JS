@@ -17,7 +17,7 @@ public class Issue808DurationFormatStringTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Format_StringArg_MatchesEquivalentObject()
         => Assert.Equal("true", Eval("""
             var df = new Intl.DurationFormat("en");
@@ -27,14 +27,14 @@ public class Issue808DurationFormatStringTests
             String(s === o && s.length > 0);
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatToParts_StringArg_ProducesParts()
         => Assert.Equal("true", Eval("""
             var df = new Intl.DurationFormat("en");
             String(df.formatToParts("P1Y2M").length > 0);
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Format_InvalidString_ThrowsRangeError()
         => Assert.Equal("RangeError", Eval("""
             var df = new Intl.DurationFormat("en");

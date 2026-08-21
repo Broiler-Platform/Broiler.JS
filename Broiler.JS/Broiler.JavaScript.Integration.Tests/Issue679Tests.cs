@@ -56,44 +56,44 @@ public class Issue679Tests
 
     // ---- Constructor return-value semantics ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BaseConstructorReturnPrimitiveIsIgnored()
         => Assert.Equal("true", Eval(
             "class B { constructor(){ return null; } } (new B() instanceof B)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BaseConstructorReturnObjectIsUsed()
         => Assert.Equal("9", Eval(
             "class B { constructor(){ return { z: 9 }; } } String(new B().z)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DerivedConstructorReturnPrimitiveThrowsTypeError()
         => Assert.Equal("TypeError", ThrowKind(
             "class C extends Object { constructor(){ return null; } } new C()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DerivedConstructorReturnUndefinedWithoutSuperThrowsReferenceError()
         => Assert.Equal("ReferenceError", ThrowKind(
             "class C extends Object { constructor(){ return undefined; } } new C()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DerivedConstructorReturnObjectWithoutSuperIsAllowed()
         => Assert.Equal("1", Eval(
             "class C extends Object { constructor(){ return { ok: 1 }; } } String(new C().ok)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DerivedConstructorImplicitReturnUsesSuperThis()
         => Assert.Equal("true", Eval(
             "class C extends Object { constructor(){ super(); } } (new C() instanceof C)"));
 
     // ---- super(...) BindThisValue (single call) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SecondSuperCallThrowsReferenceError()
         => Assert.Equal("ReferenceError", ThrowKind(
             "class B {} class C extends B { constructor(){ super(); super(); } } new C()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DoubleSuperRunsBaseTwiceButFieldsOnce()
         => Assert.Equal("2,1", Eval(
             "var base=0, field=0;"
@@ -103,47 +103,47 @@ public class Issue679Tests
             + "     try { super(); } catch (e) {} } };"
             + " new C(); base + ',' + field"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AccessThisBeforeSuperThrowsReferenceError()
         => Assert.Equal("ReferenceError", ThrowKind(
             "class B {} class C extends B { constructor(){ this; super(); } } new C()"));
 
     // ---- delete super reference ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeleteSuperPropertyThrowsReferenceError()
         => Assert.Equal("ReferenceError", ThrowKind(
             "class C extends Object { constructor(){ super(); delete super.x; } } new C()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeleteSuperComputedThrowsReferenceError()
         => Assert.Equal("ReferenceError", ThrowKind(
             "class C extends Object { constructor(){ super(); delete super['x']; } } new C()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeleteSuperInMethodThrowsReferenceError()
         => Assert.Equal("ReferenceError", ThrowKind(
             "class C extends Object { m(){ delete super.x; } } new C().m()"));
 
     // ---- DataView setBigInt64 / setBigUint64 ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetBigInt64WithoutValueThrowsTypeError()
         => Assert.Equal("TypeError", ThrowKind(
             "new DataView(new ArrayBuffer(8)).setBigInt64(0)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetBigUint64WithoutValueThrowsTypeError()
         => Assert.Equal("TypeError", ThrowKind(
             "new DataView(new ArrayBuffer(8)).setBigUint64(0)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetBigInt64RoundTripsNegative()
         => Assert.Equal("true", Eval(
             "var dv = new DataView(new ArrayBuffer(8));"
             + " dv.setBigInt64(0, -2n); (dv.getBigInt64(0) === -2n)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetBigUint64RoundTripsLargeMagnitude()
         => Assert.Equal("true", Eval(
             "var dv = new DataView(new ArrayBuffer(8));"
@@ -152,16 +152,16 @@ public class Issue679Tests
 
     // ---- Number.prototype.toPrecision argument coercion ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToPrecisionWithSymbolThrowsTypeError()
         => Assert.Equal("TypeError", ThrowKind(
             "Number.prototype.toPrecision(Symbol('1'))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToPrecisionWithUndefinedReturnsToString()
         => Assert.Equal("123", Eval("(123).toPrecision(undefined)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToPrecisionWithNumberStillFormats()
         => Assert.Equal("1.0", Eval("(1).toPrecision(2)"));
 }

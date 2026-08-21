@@ -57,7 +57,7 @@ public class Issue723Tests
 
     // The number parts of each unit get the singular unit name; the ListFormat
     // separator (", ") between elements stays unit-less.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatToPartsAttachesUnitToNumberParts()
         => Assert.Equal(
             "integer:1:hour|literal: :hour|unit:hr:hour|literal:, :<none>|integer:30:minute|literal: :minute|unit:min:minute",
@@ -67,7 +67,7 @@ public class Issue723Tests
     // Every part that is not a list separator must own a `unit`; the separator
     // between the two elements must not. (Mirrors the `"unit" in part` assertion
     // that was failing as `unit for entry 0`.)
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatToPartsUnitPresenceMatchesReference()
         => Assert.Equal(
             "true|true|true|true|true|true|true",
@@ -77,7 +77,7 @@ public class Issue723Tests
 
     // Numeric (digital) elements: the colon time separators inside an element stay
     // unit-less while the integer parts keep their unit.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatToPartsNumericTimeSeparatorIsUnitLess()
         => Assert.Equal(
             "integer:1:hour|literal:::<none>|integer:02:minute|literal:::<none>|integer:03:second",
@@ -133,14 +133,14 @@ public class Issue723Tests
         => Assert.Equal(expected, Eval(ShowExec + "show(" + expr + ");"));
 
     // The resolved `groups` object exposes the participating capture per name.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DuplicateNamedGroupsResolvedGroupsObject()
         => Assert.Equal(
             "b|undefined",
             Eval("var m = /(?<x>a)|(?<x>b)/.exec('bab'); m.groups.x + '|' + ('y' in m.groups ? m.groups.y : 'undefined');"));
 
     // matchAll surfaces the same per-alternative slots across iterations.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DuplicateNamedGroupsMatchAll()
         => Assert.Equal(
             "a,u/x=a;u,b/x=b",
@@ -179,7 +179,7 @@ public class Issue723Tests
     // A surrogate pair is a single code-point atom in u-mode, so a quantifier binds
     // to the whole pair: /🐸?/u on a lone lead matches the empty string (the pair
     // can't match a lone lead), and /🐸+/u on "🐸<trail>" matches only the one pair.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SurrogatePairIsAtomicUnderQuantifierInUnicodeMode()
         => Assert.Equal(
             "empty|2:55357,56376",
@@ -190,7 +190,7 @@ public class Issue723Tests
 
     // Without the u flag the pair is two units: `?`/`+` bind to the trail unit, so
     // the same inputs behave per code-unit (regression guard that u-only changed).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SurrogatePairQuantifierUnaffectedWithoutUnicodeFlag()
         => Assert.Equal(
             "55357|55357,56376,56376",

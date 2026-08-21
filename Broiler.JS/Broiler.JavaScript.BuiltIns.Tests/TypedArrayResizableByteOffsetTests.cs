@@ -11,14 +11,14 @@ public class TypedArrayResizableByteOffsetTests
     private static void Load() => RuntimeHelpers.RunClassConstructor(typeof(Clr.DefaultClrInterop).TypeHandle);
     private static string E(string e) { Load(); using var c = new JSContext(); return c.Eval(e).ToString(); }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ByteOffset_InBounds_ReportsRealOffset()
         => Assert.Equal("8", E("""
             var ab = new ArrayBuffer(16, { maxByteLength: 16 });
             new Int8Array(ab, 8).byteOffset + '';
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ByteOffset_FixedLength_OutOfBoundsAfterShrink_IsZero()
         => Assert.Equal("0,0,0", E("""
             var ab = new ArrayBuffer(16, { maxByteLength: 16 });
@@ -27,7 +27,7 @@ public class TypedArrayResizableByteOffsetTests
             [ta.byteOffset, ta.byteLength, ta.length].join(',');
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ByteOffset_LengthTracking_OutOfBoundsAfterShrink_IsZero()
         => Assert.Equal("0,0,0", E("""
             var ab = new ArrayBuffer(16, { maxByteLength: 16 });
@@ -36,7 +36,7 @@ public class TypedArrayResizableByteOffsetTests
             [ta.byteOffset, ta.byteLength, ta.length].join(',');
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ByteOffset_RecoversAfterGrowBackInBounds()
         => Assert.Equal("8", E("""
             var ab = new ArrayBuffer(16, { maxByteLength: 16 });
@@ -46,7 +46,7 @@ public class TypedArrayResizableByteOffsetTests
             ta.byteOffset + '';
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ByteOffset_DetachedBuffer_IsZero()
         => Assert.Equal("0", E("""
             var ab = new ArrayBuffer(16, { maxByteLength: 16 });
@@ -55,7 +55,7 @@ public class TypedArrayResizableByteOffsetTests
             ta.byteOffset + '';
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ByteOffset_BigInt64_OutOfBounds_IsZero()
         => Assert.Equal("0", E("""
             var ab = new ArrayBuffer(32, { maxByteLength: 32 });
@@ -67,7 +67,7 @@ public class TypedArrayResizableByteOffsetTests
     // values() iterator exhausted, then the buffer is resized so the view is out of bounds: the
     // length/byteOffset read 0 and a further next() returns {done:true} without throwing (issue #805
     // problem 7 — make-out-of-bounds-after-exhausted.js).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ValuesIterator_AfterExhaustedThenOutOfBounds()
         => Assert.Equal("11,22,true,undefined,0,0,true,undefined", E("""
             var rab = new ArrayBuffer(3, { maxByteLength: 5 });

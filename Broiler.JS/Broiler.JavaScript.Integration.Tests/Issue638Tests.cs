@@ -29,7 +29,7 @@ public class Issue638Tests
         => Assert.Equal(expected, Eval(code));
 
     // A genuine non-constructor (arrow function) is still rejected as newTarget.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectConstructRejectsArrowNewTarget()
         => Assert.Equal("TypeError", Eval("(function(){ try { Reflect.construct(ArrayBuffer,[8],()=>{}); return 'no throw'; } catch (e) { return e.constructor.name; } })()"));
 
@@ -37,27 +37,27 @@ public class Issue638Tests
 
     // The default comparator orders BigInt elements as BigInt (they have no Number
     // value), rather than throwing while coercing to a double.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BigIntTypedArraySortDefault()
         => Assert.Equal("1,2,3", Eval("var ta=new BigInt64Array([3n,1n,2n]); ta.sort(); ta.join(',')"));
 
     // sort mutates in place and returns the same instance.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArraySortReturnsSameInstance()
         => Assert.Equal("true", Eval("var ta=new BigInt64Array([3n,1n,2n]); '' + (ta.sort()===ta)"));
 
     // A user comparefn is honoured (consulted by sign) for BigInt arrays.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BigIntTypedArraySortWithComparefn()
         => Assert.Equal("3,2,1", Eval("var ta=new BigInt64Array([3n,1n,2n]); ta.sort((a,b)=>a<b?1:a>b?-1:0); ta.join(',')"));
 
     // Numeric sort still applies the spec NaN-last / -0-before-+0 ordering.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumericTypedArraySortOrdering()
         => Assert.Equal("0,1,2,3,NaN", Eval("var ta=new Float64Array([3,1,2,NaN,-0]); ta.sort(); ta.join(',')"));
 
     // toSorted returns a new same-type typed array and leaves the receiver intact.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BigIntTypedArrayToSorted()
         => Assert.Equal("1,2,3|3,1,2|true", Eval("var ta=new BigInt64Array([3n,1n,2n]); var s=ta.toSorted(); s.join(',')+'|'+ta.join(',')+'|'+(s instanceof BigInt64Array)"));
 }

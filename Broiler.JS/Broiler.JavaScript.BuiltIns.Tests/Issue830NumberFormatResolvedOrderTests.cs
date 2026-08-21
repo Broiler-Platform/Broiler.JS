@@ -18,7 +18,7 @@ public class Issue830NumberFormatResolvedOrderTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CompactCurrencyKeyOrder()
     {
         var r = Eval("""
@@ -34,7 +34,7 @@ public class Issue830NumberFormatResolvedOrderTests
         Assert.Equal("ok", r);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnitDisplayBeforeDigitOptions()
     {
         var r = Eval("""

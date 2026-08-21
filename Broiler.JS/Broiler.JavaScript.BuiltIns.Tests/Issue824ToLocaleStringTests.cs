@@ -17,7 +17,7 @@ public class Issue824ToLocaleStringTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberMatchesNumberFormat()
     {
         var r = Eval("""
@@ -48,7 +48,7 @@ public class Issue824ToLocaleStringTests
         Assert.Equal("ok", r);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BigIntMatchesNumberFormat()
     {
         var r = Eval("""

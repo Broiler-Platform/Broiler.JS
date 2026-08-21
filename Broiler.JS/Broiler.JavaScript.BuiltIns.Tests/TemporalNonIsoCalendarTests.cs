@@ -97,7 +97,7 @@ public class TemporalNonIsoCalendarTests
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MonthDayFrom_IslamicCivil_ConstrainsDay()
     {
         // Islamic M02 has 29 days; day 30 constrains to 29 and rejects under "reject".

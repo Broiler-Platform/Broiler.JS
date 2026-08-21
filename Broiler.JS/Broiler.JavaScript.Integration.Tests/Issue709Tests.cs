@@ -50,23 +50,23 @@ public class Issue709Tests
 
     // ---- Problem 7: find family visits holes ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FindVisitsHoles()
         => Assert.Equal("4", Eval("var c=0; [undefined,,,'foo'].find(function(){c++;}); c;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FindIndexVisitsHoles()
         => Assert.Equal("4", Eval("var c=0; [undefined,,,'foo'].findIndex(function(){c++;}); c;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FindLastVisitsHoles()
         => Assert.Equal("4", Eval("var c=0; [undefined,,,'foo'].findLast(function(){c++;}); c;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FindLastIndexVisitsHoles()
         => Assert.Equal("4", Eval("var c=0; [undefined,,,'foo'].findLastIndex(function(){c++;}); c;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FindHoleReadsAsUndefined()
         => Assert.Equal("undefined,0,1,2,3", Eval(
             "var seen=[]; [10,,,40].find(function(v,i){ seen.push(i); return false; }); " +
@@ -74,34 +74,34 @@ public class Issue709Tests
 
     // ---- Problem 8: NamedEvaluation must not observe a user `name` getter ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnonymousNamingDoesNotInvokeNameGetterDuringDeclaration()
         => Assert.Equal("ok", Eval(
             "var ran=false;" +
             "var target = Object.defineProperty(function(){}, 'name', { get:function(){ ran=true; throw new Error('x'); } });" +
             "ran ? 'getter-fired' : 'ok';"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BindPropagatesTargetNameGetterError()
         => Assert.Equal("true", Eval(
             "var target = Object.defineProperty(function(){}, 'name', { get:function(){ throw new Error('G'); } });" +
             "var caught=false; try { target.bind(); } catch(e){ caught = e.message==='G'; } caught;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnonymousFunctionStillNamedFromBinding()
         => Assert.Equal("f", Eval("var f = function(){}; f.name;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrowFunctionStillNamedFromBinding()
         => Assert.Equal("g", Eval("var g = () => {}; g.name;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonAnonymousRhsKeepsEmptyName()
         => Assert.Equal("", Eval("var r = (0, function(){}); r.name;"));
 
     // ---- Problem 8: matchAll derives flags from the flags string ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MatchAllDoesNotReadGlobalOffConstructedMatcher()
         => Assert.Equal("ok", Eval(
             "var re = /./;" +
@@ -109,7 +109,7 @@ public class Issue709Tests
             "  return Object.defineProperty(/./, 'global', { get(){ throw new Error('no'); } }); } };" +
             "re[Symbol.matchAll](''); 'ok';"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MatchAllDoesNotReadUnicodeOffConstructedMatcher()
         => Assert.Equal("ok", Eval(
             "var re = /./;" +
@@ -119,7 +119,7 @@ public class Issue709Tests
 
     // ---- Problem 2: TypedArray constructors require `new` (uniformly) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayCalledWithoutNewThrows()
         => Assert.Equal("TypeError,TypeError,TypeError,TypeError,TypeError", Eval(
             "var c = Int32Array, r = [];" +
@@ -131,19 +131,19 @@ public class Issue709Tests
             "t(function(){ Reflect.apply(c, null, []); });" +
             "r.join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayNewStillConstructs()
         => Assert.Equal("3|5", Eval(
             "var a = new Int32Array(3); a[0] = 5; a.length + '|' + a[0];"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayFromAndOfStillWork()
         => Assert.Equal("8|9", Eval(
             "Int32Array.from([7,8])[1] + '|' + Int32Array.of(9,10)[0];"));
 
     // structuredClone of a multi-byte typed array reconstructs the right element
     // length (the constructor's third argument is in elements, not bytes).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StructuredCloneMultiByteTypedArray()
     {
         using var ctx = new JSContext(experimentalFeatures: JavaScriptFeatureFlags.StructuredClone);
@@ -156,7 +156,7 @@ public class Issue709Tests
     // ---- Problems 2 & 6: dynamic super resolution ----
 
     // super() in an explicit derived constructor targets the class's CURRENT prototype.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SuperCallUsesCurrentPrototypeExplicitCtor()
         => Assert.Equal("1,2", Eval(
             "class B1 { constructor(){ this.b = 1; } }" +
@@ -167,7 +167,7 @@ public class Issue709Tests
             "before + ',' + new C().b;"));
 
     // ...and for a body-less default derived constructor (handled in JSClass at runtime).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SuperCallUsesCurrentPrototypeDefaultCtor()
         => Assert.Equal("1,2", Eval(
             "class B1 { constructor(){ this.b = 1; } }" +
@@ -178,7 +178,7 @@ public class Issue709Tests
             "before + ',' + new C().b;"));
 
     // Instance super.x reads the prototype's current [[Prototype]].
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SuperPropertyReadIsDynamic()
         => Assert.Equal("1,2", Eval(
             "class D1 { m(){ return 1; } }" +
@@ -190,7 +190,7 @@ public class Issue709Tests
 
     // A static super.x = on a class whose [[Prototype]] is null throws a TypeError,
     // and the RHS is evaluated first (target-super-*-reference-null).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticSuperAssignToNullProtoThrowsAfterEvaluatingRhs()
         => Assert.Equal("TypeError|1", Eval(
             "var count = 0;" +
@@ -200,14 +200,14 @@ public class Issue709Tests
             "k + '|' + count;"));
 
     // Native subclassing brand is preserved (regression guard for the JSClass change).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DefaultDerivedNativeSubclassKeepsBrand()
         => Assert.Equal("T", Eval(
             "class T extends Error {}" +
             "var e = new T(); e.constructor.name;"));
 
     // Anonymous class still receives its binding name (the home-object holder must not).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnonymousClassStillNamedFromBinding()
         => Assert.Equal("cls|foo", Eval(
             "var cls = class {}; var o = { foo: class {} }; cls.name + '|' + o.foo.name;"));
@@ -217,7 +217,7 @@ public class Issue709Tests
     // A function-local var in a function that CONTAINS a direct eval must not leak to
     // the global object once the function returns (it was overlaid for the eval and
     // published as a non-configurable global property that Dispose could not delete).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionLocalWithBodyEvalDoesNotLeakToGlobal()
         => Assert.Equal("undefined,undefined,undefined", Eval(
             "(function(){ var x = 111; eval('1'); }());" +
@@ -227,7 +227,7 @@ public class Issue709Tests
 
     // A sloppy direct eval introducing a var into the calling function's var-env updates
     // that binding (no global leak); accessing the name globally afterwards is undefined.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalVarStaysLocalToCallingFunction()
         => Assert.Equal("44443|undefined", Eval(
             "var initial;" +
@@ -236,7 +236,7 @@ public class Issue709Tests
 
     // A var introduced by a body direct eval is observed by a closure created in the
     // same function, even after the function returns (sm/regress-554955-1).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BodyEvalVarSeenByReturnedClosure()
         => Assert.Equal("2", Eval(
             "function f(s){ eval(s); return function(){ return b; }; }" +
@@ -246,7 +246,7 @@ public class Issue709Tests
 
     // The body-eval shadow must not disturb ordinary outer-variable reads when the eval
     // introduces nothing.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BodyEvalWithoutIntroductionKeepsOuterValue()
         => Assert.Equal("7", Eval(
             "var n = 7;" +

@@ -105,13 +105,13 @@ public class Issue695Tests
     }
 
     // The resolved value is reflected back by resolvedOptions().
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SignDisplayNegativeRoundTripsThroughResolvedOptions()
         => Assert.Equal("negative", Eval(
             "new Intl.NumberFormat('en', { signDisplay: 'negative' }).resolvedOptions().signDisplay;").ToString());
 
     // An unknown signDisplay value is still a RangeError.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnknownSignDisplayValueStillThrows()
         => Assert.Equal("RangeError", Eval(
             "var t; try { new Intl.NumberFormat('en', { signDisplay: 'sometimes' }); t = 'no throw'; }" +
@@ -199,12 +199,12 @@ public class Issue695Tests
         => Assert.Equal("ok", EvalCatch(source));
 
     // A single `__proto__:` still mutates the prototype; shorthand is an own property.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SingleProtoSetterMutatesPrototype()
         => Assert.Equal("1|true", Eval(
             "var p = { a: 1 }; var o = { __proto__: p }; o.a + '|' + (Object.getPrototypeOf(o) === p);").ToString());
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ProtoShorthandIsOwnProperty()
         => Assert.Equal("true|5", Eval(
             "var __proto__ = 5; var o = { __proto__ }; o.hasOwnProperty('__proto__') + '|' + o.__proto__;").ToString());
@@ -221,20 +221,20 @@ public class Issue695Tests
         => Assert.Equal("undefined", Eval(code).ToString());
 
     // Writing the function-local `var` must not leak to the same-named global.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LocalVarDoesNotLeakToGlobal()
         => Assert.Equal("5|9", Eval(
             "var x = 9; function h(){ var x = 5; return x; } var inner = h(); inner + '|' + x;").ToString());
 
     // A `var` whose name matches a parameter is the same binding, not a new one.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void VarDedupesWithParameter()
         => Assert.Equal("5|7", Eval(
             "function h(a){ var keep = a; var a = 7; return keep + '|' + a; } h(5);").ToString());
 
     // The original unscopables-with shape: a read inside a `with` blocked by
     // @@unscopables resolves to the hoisted function-local var, not the global.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnscopablesBlockedReadResolvesToHoistedLocal()
         => Assert.Equal("undefined", Eval(
             "var v = 1; globalThis[Symbol.unscopables] = { v: true };" +
@@ -256,7 +256,7 @@ public class Issue695Tests
     }
 
     // The same inside a function-scoped direct eval.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalIfClauseFnDoesNotClobberLexicalInFunction()
         => Assert.Equal("123/number", Eval(
             "function g(){ var init, after;" +
@@ -265,7 +265,7 @@ public class Issue695Tests
 
     // A non-lexical name (a sibling block-scoped function's annexB var binding) must
     // still be updated by the if-clause function (last declaration wins).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalIfClauseFnUpdatesNonLexicalVarBinding()
         => Assert.Equal("2", Eval(
             "(function () { var updated;" +
@@ -277,24 +277,24 @@ public class Issue695Tests
     // A read before the if-clause FunctionDeclaration observes the existing global
     // value (the binding is not reinitialized to undefined), and afterwards the
     // binding is the function.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalIfClauseFnLeavesExistingGlobalBinding()
         => Assert.Equal("x", Eval(
             "var f = 'x'; eval('var probe = f; if (true) function f() {} globalThis.__p = probe;'); globalThis.__p;").ToString());
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalIfClauseFnLeavesNonConfigurableGlobalBinding()
         => Assert.Equal("x", Eval(
             "Object.defineProperty(globalThis, 'f', { value: 'x', enumerable: true, writable: true, configurable: false });" +
             "eval('var probe = f; if (true) function f() {} globalThis.__p = probe;'); globalThis.__p;").ToString());
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalIfClauseFnFinalValueIsFunction()
         => Assert.Equal("function", Eval(
             "var f = 'x'; eval('if (true) function f() {}'); typeof f;").ToString());
 
     // An eval-created global function from an if-clause remains deletable.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalIfClauseGlobalFunctionIsDeletable()
         => Assert.Equal("true|undefined", Eval(
             "eval('if (true) function delme(){}'); (delete delme) + '|' + (typeof delme);").ToString());

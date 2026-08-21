@@ -20,7 +20,7 @@ public class Issue828WithClosureUnscopablesTests
     }
 
     // @@unscopables blocks env.x, so the returned closure's `x` is the parameter (3), not env.x.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClosureInWithFallsThroughUnscopableToParameter()
         => Assert.Equal("13", Eval("""
             let env = { x: 9000, [Symbol.unscopables]: { x: true } };
@@ -29,7 +29,7 @@ public class Issue828WithClosureUnscopablesTests
         """));
 
     // Without @@unscopables the closure resolves `x` to env.x (9000), as before.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClosureInWithStillResolvesScopableWithProperty()
         => Assert.Equal("9010", Eval("""
             function make_adder(x) { with ({ x: 9000 }) return function (y) { return x + y; }; }
@@ -38,7 +38,7 @@ public class Issue828WithClosureUnscopablesTests
 
     // The full sm test shape: nested eval-created closures still fall through @@unscopables to the
     // global `x` after the `with` has exited.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalClosureInWithFallsThroughUnscopableToGlobal()
         => Assert.Equal("510", Eval("""
             let env = { x: 9000, [Symbol.unscopables]: { x: true } };

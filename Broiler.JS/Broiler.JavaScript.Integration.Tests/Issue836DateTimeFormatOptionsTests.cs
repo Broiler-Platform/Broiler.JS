@@ -24,7 +24,7 @@ public class Issue836DateTimeFormatOptionsTests
     }
 
     // The full read order for the basic component set.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReadsOptionsInSpecOrder()
         => Assert.Equal(
             "localeMatcher,hour12,hourCycle,timeZone,weekday,era,year,month,day,hour,minute,second,timeZoneName,formatMatcher",
@@ -48,7 +48,7 @@ public class Issue836DateTimeFormatOptionsTests
             "));
 
     // dayPeriod sits between day and hour.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DayPeriodReadBetweenDayAndHour()
         => Assert.Equal("day,dayPeriod,hour", Eval(@"
             var actual = [];
@@ -64,7 +64,7 @@ public class Issue836DateTimeFormatOptionsTests
         "));
 
     // A throwing getter must propagate from the constructor.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ThrowingGetterThrowsAtConstruction()
         => Assert.Equal("caught", Eval(@"
             var options = { get hour() { throw new Error('boom'); } };
@@ -75,7 +75,7 @@ public class Issue836DateTimeFormatOptionsTests
         "));
 
     // An out-of-set component value is a RangeError.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InvalidComponentValueThrowsRangeError()
         => Assert.Equal("RangeError", Eval(@"
             var r;
@@ -85,13 +85,13 @@ public class Issue836DateTimeFormatOptionsTests
         "));
 
     // resolvedOptions still reports the requested components (snapshot round-trip).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ResolvedOptionsReportsComponents()
         => Assert.Equal("long", Eval(
             "new Intl.DateTimeFormat('en', { weekday: 'long' }).resolvedOptions().weekday"));
 
     // A bare constructor (no options) still works.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NoOptionsConstructsAndFormats()
         => Assert.Equal("string", Eval(
             "typeof new Intl.DateTimeFormat('en').format(0)"));

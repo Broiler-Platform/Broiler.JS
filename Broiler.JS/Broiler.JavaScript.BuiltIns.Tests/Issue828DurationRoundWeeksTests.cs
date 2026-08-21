@@ -53,7 +53,7 @@ public class Issue828DurationRoundWeeksTests
         """));
 
     // Increment 1 to weeks must NOT throw even though largestUnit defaults to the coarser "year".
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RoundWeeks_IncrementOne_DefaultLargestUnit_DoesNotThrow()
         => Assert.Equal("5,7,4", Eval("""
             var d = new Temporal.Duration(5, 6, 7, 8, 40, 30, 20, 123, 987, 500);
@@ -64,7 +64,7 @@ public class Issue828DurationRoundWeeksTests
 
     // Increment > 1 with a calendar smallestUnit still requires largestUnit == smallestUnit
     // (test262 round/balances-up-to-weeks).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RoundWeeks_IncrementNinetyNine_DefaultLargestUnit_Throws()
         => Assert.Equal("RangeError", Eval("""
             try {
@@ -76,7 +76,7 @@ public class Issue828DurationRoundWeeksTests
         """));
 
     // An explicit largestUnit finer than smallestUnit is a RangeError.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Round_LargestUnitFinerThanSmallestUnit_Throws()
         => Assert.Equal("RangeError", Eval("""
             try {

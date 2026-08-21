@@ -334,7 +334,7 @@ public sealed class FreeNameScanTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheOnePassFormGivesEachNestedFunctionItsOwnSet()
     {
         // The per-function form cannot answer this at all — it reports one set for whatever it was
@@ -347,7 +347,7 @@ public sealed class FreeNameScanTests
         Assert.Equal(["a", "c"], sets[1]);   // inner: `b` is its own, `a` and `c` come from above
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AParameterBindsAndAnUndeclaredNameDoesNot()
     {
         // The pair the whole walk exists for, and the one a mention-collector cannot answer.
@@ -355,7 +355,7 @@ public sealed class FreeNameScanTests
         Assert.Equal(["x"], Scan("var f = function () { return x; };").Free);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AVarIsFunctionScopedAndALetIsBlockScoped()
     {
         // `{ var x; } x` is bound and `{ let x; } x` is free — the difference the scope stack
@@ -365,7 +365,7 @@ public sealed class FreeNameScanTests
         Assert.Equal(["x"], Scan("var f = function () { { let x = 1; } return x; };").Free);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AHoistedDeclarationBindsAReferenceThatPrecedesIt()
     {
         // `f(); function f(){}` and `x; var x;` are both bound: hoisting is why the walk needs a
@@ -375,20 +375,20 @@ public sealed class FreeNameScanTests
         Assert.Empty(Scan("var o = function () { return x; var x = 1; };").Free);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANamedFunctionExpressionBindsItsOwnName()
     {
         Assert.Empty(Scan("var f = function g () { return g; };").Free);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArgumentsIsBoundByAFunctionAndNotByAnArrow()
     {
         Assert.Empty(Scan("var f = function () { return arguments; };").Free);
         Assert.Equal(["arguments"], Scan("var f = () => arguments;").Free);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CaptureIsTransitiveThroughANestedFunction()
     {
         // A body two levels down reaching a name two levels up is the shape `RelayRewriteTests`
@@ -399,14 +399,14 @@ public sealed class FreeNameScanTests
         Assert.Empty(Scan("var f = function () { return function (outer) { return outer; }; };").Free);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACatchParameterBindsOnlyInsideItsHandler()
     {
         Assert.Empty(Scan("var f = function () { try { } catch (e) { return e; } };").Free);
         Assert.Equal(["e"], Scan("var f = function () { try { } catch (q) { } return e; };").Free);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DestructuringBindsItsTargetsAndReadsItsDefaults()
     {
         // The two sides of one declarator go opposite ways, which is the easiest thing here to get
@@ -416,7 +416,7 @@ public sealed class FreeNameScanTests
         Assert.Equal(["src"], Scan("var f = function () { var [m, n] = src; return m + n; };").Free);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APropertyNameIsNotAReference()
     {
         // `{ a: 1 }` does not read `a`, and `o.a` does not either — but `o[a]` does. A scanner that
@@ -425,7 +425,7 @@ public sealed class FreeNameScanTests
         Assert.Equal(["k"], Scan("var f = function (o) { return o[k]; };").Free);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ADirectEvalOrWithMakesTheBodyUndeferrable()
     {
         // Neither can be described by a free-name set — they reach bindings that are never
@@ -435,7 +435,7 @@ public sealed class FreeNameScanTests
         Assert.False(Scan("var f = function (o) { return o.x; };").Dynamic);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ALoopVariableAndItsBodyResolveTogether()
     {
         Assert.Equal(["limit"], Scan("var f = function () { for (var i = 0; i < limit; i++) { } return i; };").Free);

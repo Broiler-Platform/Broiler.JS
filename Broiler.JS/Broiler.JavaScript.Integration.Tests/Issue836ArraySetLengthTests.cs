@@ -24,7 +24,7 @@ public class Issue836ArraySetLengthTests
     }
 
     // defineProperty: value coerced twice, writability re-read after coercion → TypeError.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DefinePropertyCoercesValueTwiceThenValidates()
         => Assert.Equal("2,TypeError", Eval(@"
             var array = [1, 2];
@@ -40,7 +40,7 @@ public class Issue836ArraySetLengthTests
             calls + ',' + r"));
 
     // [[Set]] of length: @@toPrimitive observed for both ToUint32 and ToNumber → 2 reads.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictAssignCoercesValueTwice()
         => Assert.Equal("number,number,TypeError", Eval(@"
             var array = [1, 2, 3];
@@ -56,7 +56,7 @@ public class Issue836ArraySetLengthTests
             catch (e) { r = e.constructor.name; }
             hints.join(',') + ',' + r"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DefineLengthAsAccessorRejectedWithoutCallingGetter()
         => Assert.Equal("TypeError,not-called", Eval(@"
             var called = 'not-called';
@@ -65,7 +65,7 @@ public class Issue836ArraySetLengthTests
             catch (e) { r = e.constructor.name; }
             r + ',' + called"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DefineLengthConfigurableRejected()
         => Assert.Equal("TypeError", Eval(@"
             var r;
@@ -73,14 +73,14 @@ public class Issue836ArraySetLengthTests
             catch (e) { r = e.constructor.name; }
             r"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectDefineLengthAccessorReturnsFalse()
         => Assert.Equal("false", Eval(
             "String(Reflect.defineProperty([], 'length', { set: function(_v) {} }))"));
 
     // An invalid length value is a RangeError (ToUint32 ≠ ToNumber), thrown before the
     // writability invariant.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InvalidLengthValueIsRangeError()
         => Assert.Equal("RangeError", Eval(@"
             var r;

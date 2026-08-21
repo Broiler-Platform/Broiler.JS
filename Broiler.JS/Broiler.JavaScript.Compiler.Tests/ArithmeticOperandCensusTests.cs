@@ -65,7 +65,7 @@ public sealed class ArithmeticOperandCensusTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArithmeticOnValuesOutOfAnArrayIsCountedAndIsBothNumbers()
     {
         // The shape the whole item is about: the operands come out of an array, so the compiler
@@ -94,7 +94,7 @@ public sealed class ArithmeticOperandCensusTests
         Assert.Equal(0, specialized.Generic);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AStringOperandIsCountedAndIsNotBothNumbers()
     {
         // The discriminating case. Without it "100% are both Numbers" could be a counter that
@@ -117,7 +117,7 @@ public sealed class ArithmeticOperandCensusTests
             $"a string operand must not count as both-Numbers ({census.BothNumbers} of {census.Generic})");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnObjectOperandIsCountedAndIsNotBothNumbers()
     {
         // An object with valueOf is a Number only AFTER ToPrimitive, and the census reads the
@@ -137,7 +137,7 @@ public sealed class ArithmeticOperandCensusTests
             $"an un-coerced object must not count as both-Numbers ({census.BothNumbers} of {census.Generic})");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArithmeticOnProvenNumericLocalsNeverReachesTheGenericPath()
     {
         // The control, and the item's whole argument in one assertion: the same arithmetic on
@@ -155,7 +155,7 @@ public sealed class ArithmeticOperandCensusTests
         Assert.Equal(0, census.Generic);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ExclusiveOrIsCounted()
     {
         // This one is here because it was MISSING. The census's first version hooked every generic
@@ -180,7 +180,7 @@ public sealed class ArithmeticOperandCensusTests
     // the 10 and 20 that showed up. Exact counts on a straight-line body say what the counter
     // attributes without an incidental second source of the same operation.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnaryNegationIsCountedExactlyOncePerOperation()
     {
         // `-x` mints a box, and the count must not double: JSValue.Negate coerces and then
@@ -237,7 +237,7 @@ public sealed class ArithmeticOperandCensusTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheUnaryCountersStayStillOnBinaryArithmetic()
     {
         // The discriminating control for the pair above: binary arithmetic must not leak into the
@@ -254,7 +254,7 @@ public sealed class ArithmeticOperandCensusTests
         Assert.Equal(0, census.UnaryToNumeric);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheCounterIsOffByDefault()
     {
         // It sits on the arithmetic path, so "off by default" is a property worth asserting
@@ -288,7 +288,7 @@ public sealed class ArithmeticOperandCensusTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EachRelationalComparisonIsCountedExactlyOnce()
     {
         // **The load-bearing fixture for the relational census, and the reason it is a re-entrancy
@@ -318,7 +318,7 @@ public sealed class ArithmeticOperandCensusTests
         Assert.Equal(0, census.NeitherNumber);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AComparisonThroughAnObjectIsStillCountedOnce()
     {
         // The re-dispatching path, which is where a naive hook double counts: JSObject.Less
@@ -338,7 +338,7 @@ public sealed class ArithmeticOperandCensusTests
         Assert.Equal(0, census.BothNumbers);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AStringComparisonSeparatesFromANumericOne()
     {
         // The discriminating half. A census whose both-Numbers share is 100% on everything it is
@@ -355,7 +355,7 @@ public sealed class ArithmeticOperandCensusTests
         Assert.Equal(40, strings.NeitherNumber);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AllFourRelationalOperatorsAreHooked()
     {
         // BitwiseXor's lesson as a fixture rather than as a note: an unhooked operator reports a

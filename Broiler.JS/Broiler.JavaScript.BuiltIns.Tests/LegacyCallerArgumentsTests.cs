@@ -21,7 +21,7 @@ public class LegacyCallerArgumentsTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Arguments_IsNullOffStack_AndReportsTheInvocationWhileRunning()
     {
         var result = Eval("""
@@ -37,7 +37,7 @@ public class LegacyCallerArgumentsTests
         Assert.Equal("true|false,2,7,8|true", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Arguments_ReadTwiceInOneInvocation_ReportsTheSameContents()
     {
         // The value is recomputed per read, so two reads produce distinct objects; their
@@ -54,7 +54,7 @@ public class LegacyCallerArgumentsTests
         Assert.Equal("true,true,42", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Arguments_IsAnOrdinaryDataProperty_WithLegacyAttributes()
     {
         var result = Eval("""
@@ -72,7 +72,7 @@ public class LegacyCallerArgumentsTests
             result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Arguments_DescriptorReadWhileOnStack_ReportsTheInvocation()
     {
         // GetOwnPropertyDescriptor must resolve the deferred value exactly as [[Get]] does.
@@ -87,7 +87,7 @@ public class LegacyCallerArgumentsTests
         Assert.Equal("false,1,x,false,false", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Caller_ReportsANonStrictOrdinaryCaller_AndNullAtTopLevel()
     {
         var result = Eval("""
@@ -99,7 +99,7 @@ public class LegacyCallerArgumentsTests
         Assert.Equal("true|true|true", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Caller_HidesAStrictCaller_AsNull()
     {
         // Annex B forbidden extension: the observed value must never be a strict function,
@@ -113,7 +113,7 @@ public class LegacyCallerArgumentsTests
         Assert.Equal("true|true", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RecursiveInvocation_RestoresTheOuterFrameWhenTheInnerReturns()
     {
         // Each invocation saves and restores the previous frame, so after an inner
@@ -132,7 +132,7 @@ public class LegacyCallerArgumentsTests
         Assert.Equal("enter2:2,enter1:1,enter0:0,exit0:0,exit1:1,exit2:2|true", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ThrowingInvocation_StillRestoresTheFrame()
     {
         var result = Eval("""
@@ -145,7 +145,7 @@ public class LegacyCallerArgumentsTests
         Assert.Equal("true|true|true", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConstructInvocation_ReportsTheFrame_AndRestoresIt()
     {
         var result = Eval("""
@@ -158,7 +158,7 @@ public class LegacyCallerArgumentsTests
         Assert.Equal("false,1,5|true", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Redefining_FreezesTheValue_AndStopsLiveUpdates()
     {
         // A non-writable, non-configurable data property's value must stay constant once
@@ -177,7 +177,7 @@ public class LegacyCallerArgumentsTests
         Assert.Equal("true,true|true|true", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictFunctions_DoNotExposeLegacyProperties()
     {
         // A strict function has no own caller/arguments; it inherits Function.prototype's
@@ -196,7 +196,7 @@ public class LegacyCallerArgumentsTests
         Assert.Equal("true|true|TypeError|TypeError", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AssigningLegacyProperties_IsRejected()
     {
         var result = Eval("""
@@ -209,7 +209,7 @@ public class LegacyCallerArgumentsTests
         Assert.Equal("true|TypeError", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LegacyArgumentsObject_IsAPlainUnmappedObject()
     {
         var result = Eval("""
@@ -226,7 +226,7 @@ public class LegacyCallerArgumentsTests
         Assert.Equal("original,false,false,true", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeferredValue_DoesNotLeakThroughPropertyEnumeration()
     {
         var result = Eval("""

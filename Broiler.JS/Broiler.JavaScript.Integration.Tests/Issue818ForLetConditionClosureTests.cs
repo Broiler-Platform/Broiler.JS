@@ -24,7 +24,7 @@ public class Issue818ForLetConditionClosureTests
     }
 
     // The exact test262 fixture shape.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConditionClosureCapturesPerIterationBinding()
         => Assert.Equal("0,1,2,3,4", Eval(
             "let a = [];" +
@@ -35,21 +35,21 @@ public class Issue818ForLetConditionClosureTests
 
     // The loop-terminating evaluation of the condition still runs (its closure is
     // pushed) before the loop exits, so `a` has one extra closure for i === 5.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConditionRunsOnTheTerminatingIterationToo()
         => Assert.Equal("0,1,2,3,4,5", Eval(
             "let a = [];" +
             "for (let i = 0; a.push(function () { return i; }), i < 5; ++i) {}" +
             "a.map(function (f) { return f(); }).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BodyClosureStillCapturesPerIterationBinding()
         => Assert.Equal("0,1,2", Eval(
             "var a = [];" +
             "for (let i = 0; i < 3; i++) { a.push(function () { return i; }); }" +
             "a[0]() + ',' + a[1]() + ',' + a[2]()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConditionAndBodyClosuresAreBothPerIteration()
         => Assert.Equal("0123|012", Eval(
             "var c = [], b = [];" +

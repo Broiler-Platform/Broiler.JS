@@ -49,7 +49,7 @@ public class Issue926Tests
     }
 
     // An astral braced escape still decodes to a single code point and matches.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AstralBracedEscapeStillMatches()
     {
         Assert.Equal("🐸", Eval(@"/\u{1F438}/u.exec('\u{1F438}')[0]").ToString());
@@ -57,7 +57,7 @@ public class Issue926Tests
     }
 
     // A lone braced surrogate matches a code unit only when it is not part of a pair.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LoneBracedSurrogateMatchesOnlyWhenNotPaired()
     {
         // Lead surrogate not followed by a trail: matches.

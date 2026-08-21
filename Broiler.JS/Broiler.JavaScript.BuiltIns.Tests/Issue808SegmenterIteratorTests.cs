@@ -17,7 +17,7 @@ public class Issue808SegmenterIteratorTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Segments_HasIteratorMethod_WithCorrectName()
         => Assert.Equal("function|[Symbol.iterator]|0", Eval("""
             var segs = new Intl.Segmenter("en").segment("hi");
@@ -25,7 +25,7 @@ public class Issue808SegmenterIteratorTests
             typeof it + "|" + it.name + "|" + it.length;
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Segments_Iterator_YieldsSegments()
         => Assert.Equal("h|e|l|l|o", Eval("""
             var segs = new Intl.Segmenter("en").segment("hello");
@@ -34,7 +34,7 @@ public class Issue808SegmenterIteratorTests
             out.join("|");
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Segments_Iterator_IsSelfIterable()
         => Assert.Equal("true", Eval("""
             var segs = new Intl.Segmenter("en").segment("hi");
@@ -42,7 +42,7 @@ public class Issue808SegmenterIteratorTests
             String(it[Symbol.iterator]() === it);
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Segments_SpreadAndForOf_StillWork()
         => Assert.Equal("h,i|h,i", Eval("""
             var segs = new Intl.Segmenter("en").segment("hi");

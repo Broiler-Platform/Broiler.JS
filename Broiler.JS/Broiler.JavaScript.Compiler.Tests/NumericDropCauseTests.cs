@@ -57,7 +57,7 @@ public sealed class NumericDropCauseTests
             $"expected at least one {expected}, got [{string.Join(", ", causes)}]");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AParameterIsDistinguishedFromAnyOtherName()
     {
         // The cause item 3-3 named as phase 4's job. It has to be told apart from a global,
@@ -67,7 +67,7 @@ public sealed class NumericDropCauseTests
         Assert.Equal(0, Cause(causes, NumericDropCause.OtherName));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AGlobalIsNotAParameter()
     {
         var (_, causes, _) = Compile("var v = globalThis; var s = 0; for (var i = 0; i < 3; i++) s += 1; return s;");
@@ -75,7 +75,7 @@ public sealed class NumericDropCauseTests
         Assert.Equal(0, Cause(causes, NumericDropCause.Parameter));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACascadeIsNotCountedAsARootCause()
     {
         // `v` is dropped by the property read; `s` is then dropped only because `v` was. Fixing
@@ -92,7 +92,7 @@ public sealed class NumericDropCauseTests
         Assert.Equal(1, Cause(causes, NumericDropCause.DroppedCandidate));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheFirstLeafWins()
     {
         // `a.x * 2 + 1` is charged to the property read, not to the operator and not to the
@@ -106,7 +106,7 @@ public sealed class NumericDropCauseTests
         Assert.Equal(0, Cause(causes, NumericDropCause.NonNumericLiteral));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AProvablyNumericLocalRecordsNoCauseAtAll()
     {
         // The other half of the correspondence with IsNumeric: nothing it accepts may be charged.
@@ -117,7 +117,7 @@ public sealed class NumericDropCauseTests
         Assert.All(causes, c => Assert.Equal(0, c));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheTierItselfCanBeTurnedOffForAControl()
     {
         // Every phase 3 item was measured as a delta against the tier as it stood; this switch is

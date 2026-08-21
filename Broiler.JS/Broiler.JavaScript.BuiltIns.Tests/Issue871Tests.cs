@@ -67,7 +67,7 @@ public class Issue871Tests
     public void IteratorConcat_RejectsUncallableIteratorMethod(string expr)
         => Assert.Equal("TypeError", ThrownErrorName(expr));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IteratorConcat_ConcatenatesValidIterables()
         => Assert.Equal("1,2,3,4", Eval("Array.from(Iterator.concat([1, 2], [3, 4])).join(',')"));
 

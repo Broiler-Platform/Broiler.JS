@@ -29,7 +29,7 @@ public class Phase2ValidationTests
 
     // ── M9: Code-Generation Builder Isolation Analysis ─────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M9_BuildersInLinqExpressions()
     {
         // LinqExpressions builders live in the LinqExpressions assembly.
@@ -46,7 +46,7 @@ public class Phase2ValidationTests
         Assert.Contains(runtimeTypes, t => t != null && t.Contains("JSObjectBuilder"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M9_RuntimeCoupling_ScriptInfoInRuntime()
     {
         // ScriptInfo is a runtime data type used in JSContext delegate signatures
@@ -58,7 +58,7 @@ public class Phase2ValidationTests
         Assert.NotNull(scriptInfoType);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M9_RuntimeCoupling_DictionaryCodeCacheInRuntime()
     {
         // DictionaryCodeCache was moved to Runtime alongside the ICodeCache
@@ -69,7 +69,7 @@ public class Phase2ValidationTests
         Assert.NotNull(cacheType);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M9_CompilerStillReferencesEngine()
     {
         // Verify that Compiler assembly references Engine (not the other way around).
@@ -88,7 +88,7 @@ public class Phase2ValidationTests
 
     // ── M10: Core Large-File Decomposition ─────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M10_JSArrayPrototype_PartialFilesExist()
     {
         // JSArray was moved to the BuiltIns assembly (Broiler.JavaScript.BuiltIns.Array namespace).
@@ -111,7 +111,7 @@ public class Phase2ValidationTests
         Assert.Contains("IndexOf", methodNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M10_JSObject_PartialFilesExist()
     {
         // Verify JSObject class exists in Runtime and is not broken by the split.
@@ -126,7 +126,7 @@ public class Phase2ValidationTests
             .Length > 10, "JSObject should have many members after partial split");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M10_JSDatePrototype_PartialFilesExist()
     {
         // JSDate was moved from Core to BuiltIns as part of the JSDate extraction.
@@ -149,7 +149,7 @@ public class Phase2ValidationTests
         Assert.Contains("GetFullYear", methodNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M10_JSStringPrototype_PartialFilesExist()
     {
         // JSString's prototype methods were split into partial files:
@@ -165,7 +165,7 @@ public class Phase2ValidationTests
             "JSString should have methods after partial split");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M10_JSObjectStatic_PartialFilesExist()
     {
         // Verify JSObjectStatic exists in Runtime and has methods from each category.
@@ -176,7 +176,7 @@ public class Phase2ValidationTests
 
     // ── M12: Compiler Internal Organization ────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M12_CompilerAssembly_AllPartialClassesMerged()
     {
         // Moving files to subdirectories should not affect partial class merging.
@@ -193,7 +193,7 @@ public class Phase2ValidationTests
             $"FastCompiler should have many methods after subdirectory reorganization, found {methods.Length}");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M12_CompilerAssembly_InitializerStillWorks()
     {
         // Verify CompilerAssemblyInitializer still registers correctly
@@ -206,7 +206,7 @@ public class Phase2ValidationTests
         Assert.NotNull(initializerType);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M12_CompilerAssembly_NamespaceMatchesAssembly()
     {
         // FastCompiler lives in the Broiler.JavaScript.Compiler namespace.
@@ -222,7 +222,7 @@ public class Phase2ValidationTests
     // itself lives in AssemblySplitValidationTests; these two keep M13's original questions —
     // where the functional groups are, and what the bottom of the graph references.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M13_ExpressionCompiler_SplitsIntoModelAndEmitter()
     {
         var modelAssembly = typeof(ExpressionCompiler.Expressions.BExpression).Assembly;
@@ -248,7 +248,7 @@ public class Phase2ValidationTests
         Assert.DoesNotContain("BBinaryExpression", emitterTypes);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M13_ExpressionModel_IsLeafDependency()
     {
         // The model is the bottom of the graph: it references no other Broiler assembly.
@@ -271,7 +271,7 @@ public class Phase2ValidationTests
 
     // ── M14: Cross-Cutting Validation ──────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M14_NoCircularReferences()
     {
         // Verify no circular assembly references exist in the engine assemblies.
@@ -315,7 +315,7 @@ public class Phase2ValidationTests
         return false;
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M14_AllModuleInitializersDelegatesWired()
     {
         // Comprehensive check that all 6 module initializers from Phase 1
@@ -336,7 +336,7 @@ public class Phase2ValidationTests
         Assert.NotNull(JSEngine.ClrInterop);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M14_TypesInCorrectAssemblies()
     {
         // Verify types reside directly in their target assemblies after
@@ -347,7 +347,7 @@ public class Phase2ValidationTests
         Assert.Equal("Broiler.JavaScript.Engine", typeof(JSContext).Assembly.GetName().Name);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M14_EndToEnd_EvalStillWorks()
     {
         // End-to-end smoke test: verify the JavaScript engine still works
@@ -359,7 +359,7 @@ public class Phase2ValidationTests
         Assert.Equal(3, result.IntValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M14_EndToEnd_BuiltInsStillWork()
     {
         // Verify built-in types work after Phase 2 changes.

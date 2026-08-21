@@ -35,7 +35,7 @@ public class NumberRoundTripAndLastIndexOfTests
     }
 
     /// <summary>The property that makes it a defect rather than a preference.</summary>
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheRenderedNumber_ReadsBackAsItself()
     {
         Assert.Equal("true", Eval("String(Number(String(Math.pow(2, -25))) === Math.pow(2, -25))"));

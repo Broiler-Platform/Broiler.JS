@@ -59,7 +59,7 @@ public class RegexTieringTests : IDisposable
 
     private const int WarmUpMatches = 1_050;
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WarmUpExceedsThreshold()
         => Assert.True(WarmUpMatches > RegexTiering.PromotionThreshold);
 
@@ -114,7 +114,7 @@ public class RegexTieringTests : IDisposable
         Assert.Equal(expected, Eval(expression, tiering: true));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HotPattern_RacesExactlyOnce_AndSiblingsInheritTheVerdict()
     {
         Load();
@@ -144,7 +144,7 @@ public class RegexTieringTests : IDisposable
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ColdPattern_NeverRaces()
     {
         Load();
@@ -171,7 +171,7 @@ public class RegexTieringTests : IDisposable
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Disabled_ByDefault_RacesNothingHowEverHotThePatternGets()
     {
         Load();
@@ -194,7 +194,7 @@ public class RegexTieringTests : IDisposable
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GapFeaturePattern_RoutedToBroiler_IsNeverRaced()
     {
         Load();
@@ -223,7 +223,7 @@ public class RegexTieringTests : IDisposable
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnnexBStatics_SurviveAPromotion()
     {
         // RegExp.$1 and friends are written from the match data, which the promoted arm produces

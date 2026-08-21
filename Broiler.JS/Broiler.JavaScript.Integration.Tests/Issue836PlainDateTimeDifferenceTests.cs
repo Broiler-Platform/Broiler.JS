@@ -25,13 +25,13 @@ public class Issue836PlainDateTimeDifferenceTests
         "var a = new Temporal.PlainDateTime(2020, 2, 1, 0, 0);" +
         "var b = new Temporal.PlainDateTime(2020, 2, 2, 0, 0, 0, 250, 250, 250);";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UntilMillisecondsFoldsDays()
         => Assert.Equal("0,86400250", Eval(Setup +
             "var d = a.until(b, { largestUnit: 'milliseconds' });" +
             "d.days + ',' + d.milliseconds"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UntilHoursFoldsDays()
         => Assert.Equal("0,24", Eval(
             "var a = new Temporal.PlainDateTime(2020, 1, 1);" +
@@ -39,7 +39,7 @@ public class Issue836PlainDateTimeDifferenceTests
             "var d = a.until(b, { largestUnit: 'hours' });" +
             "d.days + ',' + d.hours"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UntilHoursOverFullYear()
         => Assert.Equal("0,8784", Eval(
             "var a = new Temporal.PlainDateTime(2020, 1, 1);" +
@@ -47,14 +47,14 @@ public class Issue836PlainDateTimeDifferenceTests
             "var d = a.until(b, { largestUnit: 'hours' });" +
             "d.days + ',' + d.hours"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SinceMillisecondsFoldsDays()
         => Assert.Equal("0,-86400250", Eval(Setup +
             "var d = a.since(b, { largestUnit: 'milliseconds' });" +
             "d.days + ',' + d.milliseconds"));
 
     // A day (or coarser) largestUnit still keeps the days component.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UntilDaysKeepsDaysComponent()
         => Assert.Equal("1,0", Eval(Setup +
             "var d = a.until(b, { largestUnit: 'days' });" +

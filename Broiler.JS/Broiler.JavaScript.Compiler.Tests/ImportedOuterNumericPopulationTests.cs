@@ -66,7 +66,7 @@ public sealed class ImportedOuterNumericPopulationTests
         return p;
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheSwitchIsOffByDefault()
     {
         // It costs two extra analysis passes per compiled function, which is compile time nothing
@@ -74,7 +74,7 @@ public sealed class ImportedOuterNumericPopulationTests
         Assert.False(ImportedOuterNumerics.Counting);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnEnclosingNumericLocalReadThroughAFunctionExpressionIsInThePopulation()
     {
         // The shape item 3-9 exists for, and the only one it can reach. `rowSize` is proven
@@ -94,7 +94,7 @@ public sealed class ImportedOuterNumericPopulationTests
         Assert.Equal(1, p.Imported);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnEnclosingNameHeldByAHoistedDeclarationIsNotInThePopulation()
     {
         // **The item's own prediction, and the reason it was expected not to reach NavierStokes.**
@@ -123,7 +123,7 @@ public sealed class ImportedOuterNumericPopulationTests
         Assert.True(p.Speculative > 0);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AGlobalIsNotInThePopulationAlthoughItIsIn3_8aS()
     {
         // The sharpest separation from 3-8a, because this is the shape 3-8a's own count was
@@ -135,7 +135,7 @@ public sealed class ImportedOuterNumericPopulationTests
         Assert.Equal(1, p.Speculative);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnEnclosingNameTheAnalysisDroppedIsNotInThePopulation()
     {
         // The second separation from 3-8a: the outer name exists and is a local, and the enclosing
@@ -154,7 +154,7 @@ public sealed class ImportedOuterNumericPopulationTests
         Assert.True(p.Speculative > 0);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnInnerDeclarationSharingTheSpellingIsNotTypedFromTheOuterOne()
     {
         // A wrong-answer negative rather than a coverage one. `rowSize` inside `f` is `f`'s own
@@ -178,7 +178,7 @@ public sealed class ImportedOuterNumericPopulationTests
         Assert.Equal(0, p.Imported);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnInnerParameterSharingTheSpellingIsNotTypedFromTheOuterOne()
     {
         // The same hazard through the other binding form, and the one 3-8a's instrument also had
@@ -197,7 +197,7 @@ public sealed class ImportedOuterNumericPopulationTests
         Assert.Equal(0, p.Imported);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheCascadeResolvesRatherThanBeingCountedAsOneRootCause()
     {
         // The imported pass is a fixed point like the real one, so relaxing the first name
@@ -221,7 +221,7 @@ public sealed class ImportedOuterNumericPopulationTests
         Assert.Equal(2, p.Imported);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TwoLevelsOutIsStillOneLookup()
     {
         // The probe resolves through the whole enclosing chain rather than one frame, which is

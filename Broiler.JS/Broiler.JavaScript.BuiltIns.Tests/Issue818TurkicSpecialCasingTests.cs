@@ -75,7 +75,7 @@ public class Issue818TurkicSpecialCasingTests
         => Assert.Equal("true", Eval($"String('I'.toLocaleLowerCase('{locale}') === '\\u0131')"));
 
     // A non-Turkic locale is unaffected: I + DOT ABOVE stays "i" + DOT ABOVE.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonTurkicLocaleIsUnchanged()
         => Assert.Equal("true", Eval(
             "String('I\\u0307'.toLocaleLowerCase('en') === '\\u0069\\u0307')"));

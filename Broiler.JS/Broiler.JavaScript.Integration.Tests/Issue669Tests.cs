@@ -49,57 +49,57 @@ public class Issue669Tests
 
     // ---- Problem 10: template substitution with inner braces ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TemplateSubstitutionWithFunctionBodyBraces()
         => Assert.Equal("caught", Eval(
             "(function(){ try { `${function(){ throw 1; }()}`; return 'no-throw'; }"
             + " catch(e){ return 'caught'; } })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TemplateSubstitutionWithObjectLiteralBraces()
         => Assert.Equal("1", Eval("`${ {a:1}.a }`"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TemplateSubstitutionWithCallAfterBraces()
         => Assert.Equal("a5b", Eval("var f = function(){ return 5; }; `a${ f() }b`"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestedTemplateLiteralsWithBraces()
         => Assert.Equal("xy5zw", Eval("`x${ `y${ {n:2}.n + 3 }z` }w`"));
 
     // ---- Problem 8: computed member CALL with a null literal key ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassComputedNullKeyMethodCall()
         => Assert.Equal("11", Eval(
             "class C { [null]() { return 11; } static [null]() { return 22; } }"
             + " new C()[null]()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassComputedNullKeyStaticMethodCall()
         => Assert.Equal("22", Eval(
             "class C { static [null]() { return 22; } } C[null]()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MemberCallWithNullLiteralMatchesStringNullKey()
         => Assert.Equal("ok", Eval(
             "var o = { 'null': function(){ return 'ok'; } }; o[null]()"));
 
     // ---- Problem 9: switch case with a null literal ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwitchCaseNullMatches()
         => Assert.Equal("n", Eval(
             "function f(v){ switch(v){ case null: return 'n'; case 1: return 'one';"
             + " default: return 'd'; } } f(null)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwitchCaseNullDoesNotMatchUndefined()
         => Assert.Equal("d", Eval(
             "function f(v){ switch(v){ case null: return 'n'; default: return 'd'; } }"
             + " f(undefined)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwitchCaseNullFallThrough()
         // case null matches, then falls through into the (last) default: 64 + 32.
         => Assert.Equal("96", Eval(
@@ -108,34 +108,34 @@ public class Issue669Tests
 
     // ---- Problem 9: a `default:` clause that is not the last clause ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwitchDefaultInMiddleNoMatchFallsThrough()
         // no case matches -> run default (32) then fall through to the case after it (4).
         => Assert.Equal("36", Eval(
             "function f(v){ var r=0; switch(v){ case 0: r+=2; default: r+=32; case 1: r+=4; }"
             + " return r; } f(9)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwitchDefaultInMiddleMatchBeforeDefaultFallsThrough()
         // case 0 matches -> 2, fall through default -> 32, fall through case 1 -> 4.
         => Assert.Equal("38", Eval(
             "function f(v){ var r=0; switch(v){ case 0: r+=2; default: r+=32; case 1: r+=4; }"
             + " return r; } f(0)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwitchDefaultInMiddleMatchAfterDefaultDoesNotRunDefault()
         // case 1 matches -> only 4, default is not entered.
         => Assert.Equal("4", Eval(
             "function f(v){ var r=0; switch(v){ case 0: r+=2; default: r+=32; case 1: r+=4; }"
             + " return r; } f(1)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwitchDefaultFirstNoMatchFallsThrough()
         => Assert.Equal("38", Eval(
             "function f(v){ var r=0; switch(v){ default: r+=32; case 0: r+=2; case 1: r+=4; }"
             + " return r; } f(9)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwitchDefaultInMiddleStringDiscriminant()
         // string discriminant exercises the non-numeric dispatch path.
         => Assert.Equal("def-b", Eval(
@@ -144,29 +144,29 @@ public class Issue669Tests
 
     // ---- Problem 7: Intl options coerced via ToObject ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatPrimitiveOptionsCoercedToObject()
         => Assert.Equal(
             Eval("new Intl.NumberFormat(['en-US'], new Number(42)).resolvedOptions().style"),
             Eval("new Intl.NumberFormat(['en-US'], 42).resolvedOptions().style"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatStringOptionsDoesNotThrow()
         => Assert.Equal("decimal", Eval(
             "new Intl.NumberFormat(['en-US'], 'foo').resolvedOptions().style"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatBooleanOptionsDoesNotThrow()
         => Assert.Equal("decimal", Eval(
             "new Intl.NumberFormat(['en-US'], true).resolvedOptions().style"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatNullOptionsThrowsTypeError()
         => Assert.Equal("TypeError", Eval(
             "(function(){ try { new Intl.NumberFormat(['en-US'], null); return 'no-throw'; }"
             + " catch(e){ return e.constructor.name; } })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatUndefinedOptionsUsesDefaults()
         => Assert.Equal("decimal", Eval(
             "new Intl.NumberFormat(['en-US'], undefined).resolvedOptions().style"));

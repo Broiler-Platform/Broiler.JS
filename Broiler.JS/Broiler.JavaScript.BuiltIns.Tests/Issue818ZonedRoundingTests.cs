@@ -29,7 +29,7 @@ public class Issue818ZonedRoundingTests
             "r.days + 'd' + r.hours + 'h'");
 
     // 13h, UTC (24-hour day), largestUnit hours: rounds up to 24 hours, NOT 1 day.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TimeLargestUnitKeepsFullDayAsHours()
         => Assert.Equal("0d24h", Round(
             "new Temporal.Duration(0, 0, 0, 0, 13)",
@@ -40,21 +40,21 @@ public class Issue818ZonedRoundingTests
     private const string FallBack = "Temporal.ZonedDateTime.from('2024-11-03T00:00:00[America/New_York]')";       // 25h day
 
     // 13h over a 23-hour day, largestUnit years: an extra day is added -> 1 day 12 hours.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ShortDstDayAddsADay()
         => Assert.Equal("1d12h", Round(
             "new Temporal.Duration(0, 0, 0, 0, 13)", SpringForward,
             "{ largestUnit: 'years', smallestUnit: 'hours', roundingIncrement: 12, roundingMode: 'ceil' }"));
 
     // 24h over a 25-hour day, largestUnit years: 24h < one day here, so it stays 24 hours.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TwentyFourHoursIsNotAFullDayInA25HourDay()
         => Assert.Equal("0d24h", Round(
             "new Temporal.Duration(0, 0, 0, 0, 24)", FallBack,
             "{ largestUnit: 'years', smallestUnit: 'hours', roundingIncrement: 12, roundingMode: 'ceil' }"));
 
     // A 1-day duration over a 25-hour day, largestUnit hours: 25 hours rounds up to 36.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OneDayBecomesActualHoursForTimeLargestUnit()
         => Assert.Equal("0d36h", Round(
             "new Temporal.Duration(0, 0, 0, 1)", FallBack,

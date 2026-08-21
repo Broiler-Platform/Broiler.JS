@@ -23,19 +23,19 @@ public class Issue818DurationFloat64Tests
         return ctx.Eval(code).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InstantSinceMicrosecondsIsRoundedToNearestDouble()
         => Assert.Equal("true", Eval(
             "var r = new Temporal.Instant(0n).since(new Temporal.Instant(18446744073709551616n), { largestUnit: 'microseconds' });" +
             "String(r.microseconds === -18446744073709552 && r.nanoseconds === -616)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InstantUntilMicrosecondsIsRoundedToNearestDouble()
         => Assert.Equal("true", Eval(
             "var r = new Temporal.Instant(0n).until(new Temporal.Instant(18446744073709551616n), { largestUnit: 'microseconds' });" +
             "String(r.microseconds === 18446744073709552 && r.nanoseconds === 616)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTimeSinceMicrosecondsIsRoundedToNearestDouble()
         => Assert.Equal("true", Eval(
             "var z1 = new Temporal.ZonedDateTime(0n, 'UTC');" +
@@ -43,7 +43,7 @@ public class Issue818DurationFloat64Tests
             "var r = z1.since(z2, { largestUnit: 'microseconds' });" +
             "String(r.microseconds === -18446744073709552 && r.nanoseconds === -616)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTimeUntilMicrosecondsIsRoundedToNearestDouble()
         => Assert.Equal("true", Eval(
             "var z1 = new Temporal.ZonedDateTime(0n, 'UTC');" +
@@ -53,14 +53,14 @@ public class Issue818DurationFloat64Tests
 
     // Adding 1 microsecond to a value whose internal representation is already the
     // rounded double must not change it (no more-precise internal representation).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SubsequentDurationOpsUseTheRoundedRepresentation()
         => Assert.Equal("0", Eval(
             "var r = new Temporal.Instant(0n).since(new Temporal.Instant(18446744073709551616n), { largestUnit: 'microseconds' });" +
             "String(Temporal.Duration.compare(r.add({ microseconds: 1 }), r))"));
 
     // Ordinary (small) differences are unaffected.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SmallDifferencesAreExact()
         => Assert.Equal("90061000000001", Eval(
             "var r = new Temporal.Instant(0n).until(new Temporal.Instant(90061000000001n), { largestUnit: 'nanoseconds' });" +

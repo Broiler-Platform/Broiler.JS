@@ -24,18 +24,18 @@ public class Issue887Tests2
 
     // ── Cluster D — getTimeZoneTransition skips no-op transitions ──────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NoFutureTransitionReturnsNull()
         // Asia/Riyadh (+03, no DST) has no transition after its 1947 LMT→+03 change.
         => Assert.Equal("null", Eval(
             "String(Temporal.ZonedDateTime.from('2024-01-01T00:00[Asia/Riyadh]').getTimeZoneTransition('next'))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GenuinePreviousTransitionStillFound()
         => Assert.Equal("1947-03-13T23:53:08+03:00[Asia/Riyadh]", Eval(
             "Temporal.ZonedDateTime.from('2024-01-01T00:00[Asia/Riyadh]').getTimeZoneTransition('previous').toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DstZoneTransitionsStillWork()
     {
         Assert.Equal("2024-03-10T03:00:00-04:00[America/New_York]", Eval(
@@ -46,7 +46,7 @@ public class Issue887Tests2
 
     // ── Cluster E — keyed destructuring-assignment evaluation order ────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MemberTargetReferenceEvaluatedBeforeSourceValue()
     {
         // `{ [sk]: tg[tk] = dv } = s` inside `with` so identifier resolutions surface via the
@@ -64,7 +64,7 @@ public class Issue887Tests2
         Assert.Equal("b:s,b:sk,sk,b:tg,b:tk,get,b:dv,tk,set", Eval(code));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MemberTargetWithoutDefaultEvaluationOrder()
     {
         const string code = @"
@@ -78,7 +78,7 @@ public class Issue887Tests2
         Assert.Equal("source,sk,sk-ts,target,tk,get,tk-ts,set", Eval(code));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DestructuringAssignmentStillProducesCorrectValues()
     {
         Assert.Equal("5", Eval("var o={}; ({a:o.x}={a:5}); '' + o.x"));
@@ -89,19 +89,19 @@ public class Issue887Tests2
 
     // ── Cluster F — Temporal offset strings rounded to the minute ─────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTimeToStringRoundsSubMinuteOffset()
         // Europe/Paris LMT is +00:09:21; the serialized offset rounds to +00:09.
         => Assert.Equal("1800-01-01T00:00:00+00:09[Europe/Paris]", Eval(
             "new Temporal.PlainDateTime(1800, 1, 1).toZonedDateTime('Europe/Paris').toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InstantToStringRoundsSubMinuteOffsetHalfExpand()
         // Africa/Monrovia is -00:44:30 at the epoch; -44.5 min rounds away from zero to -00:45.
         => Assert.Equal("1969-12-31T23:15:30-00:45", Eval(
             "new Temporal.Instant(0n).toString({ timeZone: 'Africa/Monrovia' })"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OffsetPropertyAndNanosecondsKeepFullPrecision()
     {
         Assert.Equal("+00:09:21", Eval(
@@ -110,7 +110,7 @@ public class Issue887Tests2
             "String(new Temporal.PlainDateTime(1800, 1, 1).toZonedDateTime('Europe/Paris').offsetNanoseconds)"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WholeMinuteOffsetsAreUnaffected()
     {
         Assert.Equal("1969-12-31T19:00:00-05:00", Eval(

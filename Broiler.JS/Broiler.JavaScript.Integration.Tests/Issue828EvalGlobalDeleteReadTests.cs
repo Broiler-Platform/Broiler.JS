@@ -19,7 +19,7 @@ public class Issue828EvalGlobalDeleteReadTests
     }
 
     // A closure defined in the eval reads the eval-created global; after delete the read throws.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClosureReadOfDeletedEvalGlobalThrows()
         => Assert.Equal("1,true,ReferenceError", Eval("""
             var fns = eval("var z = 1; function gz(){ return z; } function delZ(){ return delete z; } [gz, delZ];");
@@ -32,7 +32,7 @@ public class Issue828EvalGlobalDeleteReadTests
         """));
 
     // `typeof` of a deleted eval global is "undefined", never a ReferenceError.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypeofDeletedEvalGlobalIsUndefined()
         => Assert.Equal("undefined", Eval("""
             var fns = eval("var z = 1; function tz(){ return typeof z; } function delZ(){ delete z; } [tz, delZ];");
@@ -41,7 +41,7 @@ public class Issue828EvalGlobalDeleteReadTests
         """));
 
     // An eval that reassigns an existing global var is observed by later reads (no stale mirror).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalReassignmentOfExistingGlobalIsVisible()
         => Assert.Equal("4,4", Eval("""
             var x = 17;
@@ -50,7 +50,7 @@ public class Issue828EvalGlobalDeleteReadTests
         """));
 
     // A never-declared free reference still throws (the fix must not make undeclared reads silent).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NeverDeclaredEvalReferenceThrows()
         => Assert.Equal("ReferenceError", Eval("""
             var f = eval("(function(){ return neverDeclaredName; })");

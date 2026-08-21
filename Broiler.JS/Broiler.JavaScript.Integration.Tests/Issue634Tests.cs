@@ -29,7 +29,7 @@ public class Issue634Tests
     // Problem 1 (function scope, B.3.3.1): the var-scoped binding is created in the
     // enclosing function's var environment, initialized to `undefined`, and is
     // mutable before the declaration executes.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionIfClauseFunctionBindingInitializedAndMutable()
     {
         var code = "(function(){ var init = f; f = 123; var changed = f;"
@@ -39,7 +39,7 @@ public class Issue634Tests
 
     // Problem 1: the hoisted global binding has CreateGlobalFunctionBinding
     // semantics — enumerable, writable, non-configurable.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GlobalIfClauseFunctionBindingIsNonConfigurable()
     {
         var code = "if (true) function f() {} var d = Object.getOwnPropertyDescriptor(this, 'f');"
@@ -64,7 +64,7 @@ public class Issue634Tests
         => Assert.Equal("decl,123,decl", Eval(code));
 
     // Problem 4 (function scope): same block-scoping at function var-environment level.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionIfClauseFunctionIsBlockScoped()
     {
         var code = "(function(){ var initialBV, currentBV;"
@@ -75,13 +75,13 @@ public class Issue634Tests
 
     // A nested block containing an `if`-clause function still hoists the Annex B
     // var binding to the enclosing body (read before the inner block -> undefined).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestedBlockIfClauseFunctionStillHoists()
         => Assert.Equal("undefined,function", Eval("var b; { b = f; if (true) function f(){} } typeof b + ',' + typeof f;"));
 
     // A blocking lexical sibling at the same (non-eval) block level prevents the
     // Annex B var-hoist, so nothing leaks to the global scope.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IfClauseFunctionBlockedByLexicalSiblingDoesNotLeak()
         => Assert.Equal("undefined", Eval("{ let f; if (true) function f(){} } typeof f;"));
 }

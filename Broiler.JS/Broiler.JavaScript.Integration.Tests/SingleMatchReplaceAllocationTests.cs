@@ -32,7 +32,7 @@ public class SingleMatchReplaceAllocationTests
         })()
         """;
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASingleMatchReplaceDoesNotBuildTheSubjectTwice()
     {
         using var context = new JSContext();
@@ -134,7 +134,7 @@ public class SingleMatchReplaceAnswerTests
         Assert.Equal(expected, context.Eval(source).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnIllBehavingExecReportingAnIndexPastTheSubjectIsStillClamped()
     {
         // §22.2.6.11 step 16.f-g clamps position to [0, lengthS]. The fast path slices the
@@ -150,7 +150,7 @@ public class SingleMatchReplaceAnswerTests
         Assert.Equal("abcX", answer);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASingleMatchStillRecordsTheLegacyStatics()
     {
         // The fast path returns before the accumulating loop, so it has to leave everything that
@@ -164,7 +164,7 @@ public class SingleMatchReplaceAnswerTests
         Assert.Equal("X|a|b|aXb", answer);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ThePropertyReadOrderOnTheResultIsUnchanged()
     {
         // §22.2.6.11 step 16 reads length -> "0" -> index -> captures -> groups, and the order is

@@ -287,7 +287,7 @@ public sealed class CapturedNumericLocalTests
 
     // ── the counts, which are the half the switch actually moves ──────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACapturedNumericLocalReachesTheTierOnlyWhenTheWideningIsOn()
     {
         const string Body = "var s = 0; var g = function () { return s; }; for (var i = 0; i < 10; i++) s += i; return s;";
@@ -302,7 +302,7 @@ public sealed class CapturedNumericLocalTests
         Assert.Equal(1, narrow.NumericLocals);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AHoistedDeclarationRefusesTheNameOnBothSettings()
     {
         // The same body with the closure written as a declaration instead of an expression.
@@ -314,7 +314,7 @@ public sealed class CapturedNumericLocalTests
         Assert.Equal(1, Compile(Body, captured: false).NumericLocals);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheJSValueTierStaysClosedToCapturedNames()
     {
         // Widening the NUMERIC tier does not widen the other one: a captured name the analysis
@@ -329,7 +329,7 @@ public sealed class CapturedNumericLocalTests
         Assert.Equal(0, numericLocals);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheHelpersRestoreTheSwitchWhicheverWayItWasSet()
     {
         // Guards the fixture itself: every test above sets the flag and restores it, so a leak

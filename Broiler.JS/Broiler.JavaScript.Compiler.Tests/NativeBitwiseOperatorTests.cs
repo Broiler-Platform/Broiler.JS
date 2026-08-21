@@ -135,7 +135,7 @@ public sealed class NativeBitwiseOperatorTests
         Assert.Equal("1023", Eval("var s = 0; for (var i = 0; i < 1024; i++) { s = s ^ i ^ s; } return s | 1023;", native));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheNativeFormIsWhatRemovesTheBox()
     {
         // The counts, which are the half the switch actually moves. Both arms answer 1023.

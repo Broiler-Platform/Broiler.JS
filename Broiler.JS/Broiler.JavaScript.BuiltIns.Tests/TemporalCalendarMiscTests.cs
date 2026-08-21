@@ -72,7 +72,7 @@ public class TemporalCalendarMiscTests
         Assert.Equal("true|true", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WeekOfYear_DefinedForIsoCalendar()
         => Assert.Equal("1|2024", Eval("var d = new Temporal.PlainDate(2024, 1, 1); d.weekOfYear + '|' + d.yearOfWeek;"));
 }

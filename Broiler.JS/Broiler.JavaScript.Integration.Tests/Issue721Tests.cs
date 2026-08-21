@@ -79,61 +79,61 @@ public class Issue721Tests
     // ---- Problem 1: hoisted FunctionDeclaration capturing a for-let binding ----
 
     // The exact shape from sm/regress/regress-560998-1.js: no longer throws.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForLetNestedFunctionDeclarationDoesNotThrow()
         => Assert.Equal("done", Eval("for (let j = 0; j < 4; ++j) { function g() { j; } g(); } 'done';"));
 
     // The closure observes the *current* iteration's value when called eagerly.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForLetNestedFunctionDeclarationSeesCurrentIteration()
         => Assert.Equal("3", Eval("var s = 0; for (let j = 0; j < 3; ++j) { function g() { return j; } s += g(); } s;"));
 
     // Per-iteration binding semantics: each captured closure keeps its own copy.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForLetNestedFunctionDeclarationCapturesPerIteration()
         => Assert.Equal(
             "0,1,2",
             Eval("var fns = []; for (let j = 0; j < 3; ++j) { function g() { return j; } fns.push(g); } fns[0]() + ',' + fns[1]() + ',' + fns[2]();"));
 
     // The declaration is still hoisted to the top of the per-iteration block.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForLetNestedFunctionDeclarationIsHoisted()
         => Assert.Equal("function", Eval("var out = ''; for (let j = 0; j < 1; ++j) { out += typeof g; function g() { return j; } } out;"));
 
     // for-of with a body FunctionDeclaration closing over the iteration variable.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfLetNestedFunctionDeclaration()
         => Assert.Equal("ab", Eval("var s = ''; for (let j of ['a', 'b']) { function g() { return j; } s += g(); } s;"));
 
     // for-in with a body FunctionDeclaration closing over the iteration variable.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInLetNestedFunctionDeclaration()
         => Assert.Equal("xy", Eval("var s = ''; for (let k in { x: 1, y: 1 }) { function g() { return k; } s += g(); } s;"));
 
     // Multiple loop bindings captured together.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForLetMultipleBindingsCaptured()
         => Assert.Equal("22", Eval("var s = 0; for (let a = 0, b = 10; a < 2; ++a, ++b) { function g() { return a + b; } s += g(); } s;"));
 
     // A nested-within-nested function still resolves the loop binding.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForLetDoublyNestedFunctionDeclaration()
         => Assert.Equal("1", Eval("var s = 0; for (let j = 0; j < 2; ++j) { function g() { function h() { return j; } return h(); } s += g(); } s;"));
 
     // Regression guard: a non-capturing nested declaration keeps working.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForLetNonCapturingNestedFunctionDeclaration()
         => Assert.Equal("3", Eval("var s = 0; for (let j = 0; j < 3; ++j) { function g() { return 1; } s += g(); } s;"));
 
     // Regression guard: a classic `for (var …)` loop is unaffected.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForVarNestedFunctionDeclaration()
         => Assert.Equal("3", Eval("var s = 0; for (var j = 0; j < 3; ++j) { function g() { return j; } s += g(); } s;"));
 
     // A static async private method invoked through a public wrapper settles
     // correctly (covers the async/private-name machinery exercised by the
     // class-elements samples in Problem 1).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticAsyncPrivateMethodSettles()
         => Assert.Equal(
             "1",
@@ -142,32 +142,32 @@ public class Issue721Tests
     // ---- Problem 3: strict-mode reassignment of a function-expression name ----
 
     // A named generator function expression: assigning to its own name throws.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictGeneratorNameReassignThrows()
         => Assert.Equal(
             "TypeError",
             Eval("'use strict'; var ref = function* BindingIdentifier() { BindingIdentifier = 1; yield; }; var r; try { ref().next(); r = 'no throw'; } catch (e) { r = e.constructor.name; } r;"));
 
     // A named async function expression behaves the same once awaited.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictAsyncNameReassignThrows()
         => Assert.Equal(
             "TypeError",
             Execute("'use strict'; var f = async function g() { g = 1; }; f().then(function () { return 'no throw'; }, function (e) { return e.constructor.name; });"));
 
     // Regression guard: the ordinary named function expression case still throws.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictFunctionNameReassignThrows()
         => Assert.Equal(
             "TypeError",
             Eval("'use strict'; var f = function g() { g = 1; }; var r; try { f(); r = 'no throw'; } catch (e) { r = e.constructor.name; } r;"));
 
     // In sloppy mode the assignment is silently ignored (no throw, no effect).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SloppyGeneratorNameReassignIsSilent()
         => Assert.Equal("function", Eval("var ref = function* g() { g = 1; yield typeof g; }; ref().next().value;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SloppyFunctionNameReassignIsSilent()
         => Assert.Equal("function", Eval("var f = function g() { g = 1; return typeof g; }; f();"));
 
@@ -176,103 +176,103 @@ public class Issue721Tests
     // CR (U+000D) between two statements triggers ASI, so the second statement
     // runs and resolving the undeclared `asdf` is a ReferenceError (not a parse
     // SyntaxError). Mirrors S8.4_A7.2.js.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CarriageReturnIsLineTerminatorForAsi()
         => Assert.Equal("ReferenceError", Catch("eval('var x = asdf\\u000Dghjk');"));
 
     // LINE SEPARATOR (U+2028). Mirrors S8.4_A7.3/A7.4.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LineSeparatorIsLineTerminatorForAsi()
         => Assert.Equal("ReferenceError", Catch("eval('var x = asdf\\u2028ghjk');"));
 
     // PARAGRAPH SEPARATOR (U+2029).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParagraphSeparatorIsLineTerminatorForAsi()
         => Assert.Equal("ReferenceError", Catch("eval('var x = asdf\\u2029ghjk');"));
 
     // A CR-terminated single-line comment ends at the CR; the following code runs.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CarriageReturnEndsLineComment()
         => Assert.Equal("1", Eval("eval('// comment\\u000Dvar y = 1; y');"));
 
     // LF still works (regression guard).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LineFeedIsLineTerminatorForAsi()
         => Assert.Equal("ReferenceError", Catch("eval('var x = asdf\\u000Aghjk');"));
 
     // ---- Problem 8: Function.prototype.toString source range / verbatim text ----
 
     // A trailing comment after the function must not be swallowed into its source.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionToStringExcludesTrailingComment()
         => Assert.Equal("function f(){}", Eval("function f(){}\n// after\nf.toString();"));
 
     // Blank lines between the function and the next token are likewise excluded.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionToStringExcludesTrailingBlankLines()
         => Assert.Equal("function f(){}", Eval("function f(){}\n\n\nvar z = 1; f.toString();"));
 
     // CR / CRLF line terminators inside the source are preserved, not normalised.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionToStringPreservesCarriageReturns()
         => Assert.Equal("function a(\rb\r){\r}", Eval("var f = function a(\rb\r){\r}; f.toString();"));
 
     // ---- Problem 9: Intl.DurationFormat.format / resolvedOptions ----
 
     // Numeric hours introduce a time separator for the following units (1:00:30).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationFormatNumericHoursTimeSeparator()
         => Assert.Equal(
             "1:00:30",
             Eval("new Intl.DurationFormat('en', { hours: 'numeric' }).format({ hours: 1, minutes: 0, seconds: 30 });"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationFormatNumericHoursAllUnits()
         => Assert.Equal(
             "1:01:01",
             Eval("new Intl.DurationFormat('en', { hours: 'numeric' }).format({ hours: 1, minutes: 1, seconds: 1 });"));
 
     // Default ("short") style joins unit-formatted values with a list separator.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationFormatDefaultShortStyle()
         => Assert.Equal(
             "1 hr, 30 min",
             Eval("new Intl.DurationFormat('en').format({ hours: 1, minutes: 30 });"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationFormatLongStyle()
         => Assert.Equal(
             "1 year, 2 months, 3 days",
             Eval("new Intl.DurationFormat('en', { style: 'long' }).format({ years: 1, months: 2, days: 3 });"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationFormatDigitalStyle()
         => Assert.Equal(
             "1:02:03",
             Eval("new Intl.DurationFormat('en', { style: 'digital' }).format({ hours: 1, minutes: 2, seconds: 3 });"));
 
     // Sub-second units fold into a fractional value on the seconds field.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationFormatFractionalSubSeconds()
         => Assert.Equal(
             "1:00:00.001",
             Eval("new Intl.DurationFormat('en', { hours: 'numeric' }).format({ hours: 1, milliseconds: 1 });"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationFormatFractionalDigitsTruncates()
         => Assert.Equal(
             "0:00:01.23",
             Eval("new Intl.DurationFormat('en', { style: 'digital', fractionalDigits: 2 }).format({ seconds: 1, milliseconds: 234 });"));
 
     // Only the first displayed value carries the negative sign.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationFormatNegativeSignOnFirstValueOnly()
         => Assert.Equal(
             "-1 hour, 30 minutes",
             Eval("new Intl.DurationFormat('en', { style: 'long' }).format({ hours: -1, minutes: -30 });"));
 
     // resolvedOptions reports the resolved per-unit styles/displays.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationFormatResolvedOptions()
         => Assert.Equal(
             "short|numeric|always|2-digit|2-digit",
@@ -280,7 +280,7 @@ public class Issue721Tests
                + " [o.style, o.hours, o.hoursDisplay, o.minutes, o.seconds].join('|');"));
 
     // format() against a self-consistent reference holds for the partition algorithm.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationFormatMixedSignThrows()
         => Assert.Equal(
             "RangeError",

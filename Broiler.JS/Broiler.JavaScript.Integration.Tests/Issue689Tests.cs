@@ -49,7 +49,7 @@ public class Issue689Tests
     // Each loop counts to one via its update expression, then breaks. Before the
     // fix only the first loop behaved; later loops saw the stale break-state and
     // exited after one body iteration (count stayed 0, update never ran).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConsecutiveBreakingForLoopsEachReachCountOne()
         => Assert.Equal("1,1,1,1", Eval(
             "var r = [];"
@@ -60,7 +60,7 @@ public class Issue689Tests
             + "}"
             + "r.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConsecutiveBreakingForLoopsEachReachCountOne_ScriptHost()
         => Assert.Equal("1,1,1,1", EvalScriptHost(
             "var r = [];"
@@ -73,7 +73,7 @@ public class Issue689Tests
 
     // The exact shape from optional-chaining/iteration-statement-for.js: the
     // update expression has the side effect that drives the break condition.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForUpdateSideEffectRunsAfterAnEarlierLoopBroke()
         => Assert.Equal("1|1", EvalScriptHost(
             "var first = 0;"
@@ -85,7 +85,7 @@ public class Issue689Tests
 
     // ---- Other loop control flow stays correct after the fix ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ContinueAfterABreakingLoopStillSkips()
         => Assert.Equal("4", Eval(
             "for (var i = 0; i < 3; i++) { if (i == 1) break; }"
@@ -93,7 +93,7 @@ public class Issue689Tests
             + "for (var j = 0; j < 5; j++) { if (j == 2) continue; b++; }"
             + "String(b)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LabeledBreakAcrossNestedForLoops()
         => Assert.Equal("4", Eval(
             "var s = 0;"
@@ -102,14 +102,14 @@ public class Issue689Tests
             + "}"
             + "String(s)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReturnInsideForLoopAfterAnotherLoopBroke()
         => Assert.Equal("3", Eval(
             "for (var i = 0; i < 3; i++) { if (i == 1) break; }"
             + "function f(){ for (var k = 0; k < 10; k++) { if (k == 3) return k; } return -1; }"
             + "String(f())"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwitchBreakInsideLoopThenForLoopReachesCountOne()
         => Assert.Equal("3|1", Eval(
             "var s = 0;"

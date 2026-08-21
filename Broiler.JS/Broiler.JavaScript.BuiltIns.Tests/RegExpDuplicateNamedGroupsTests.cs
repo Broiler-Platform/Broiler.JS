@@ -39,7 +39,7 @@ public class RegExpDuplicateNamedGroupsTests
     [InlineData("JSON.stringify('xz'.match(/^(?:(?<a>x)|(?<a>y)|z){2}\\k<a>$/))", "[\"xz\",null,null]")]
     public void Match(string expr, string expected) => Assert.Equal(expected, E(expr));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DuplicateNameInSameAlternative_IsSyntaxError()
     {
         // Two same-named groups reachable together (not in separate alternatives) remain a SyntaxError.

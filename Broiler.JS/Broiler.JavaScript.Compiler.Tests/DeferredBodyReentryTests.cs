@@ -53,11 +53,11 @@ public sealed class DeferredBodyReentryTests
         Assert.Equal(c.Total, c.Structural);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheSwitchIsOffByDefault()
         => Assert.False(DeferredTreeCompilation.Retaining);
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ARetainedScopeIsStillValidAfterTheEnclosingCompilationFinished()
     {
         // The whole design in one fixture: `inner`'s body is compiled a second time, from a scope
@@ -73,7 +73,7 @@ public sealed class DeferredBodyReentryTests
             """);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACaptureThreeLevelsDownReproduces()
     {
         AssertReproduced("""
@@ -89,7 +89,7 @@ public sealed class DeferredBodyReentryTests
             """);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APerIterationLoopCellReproduces()
     {
         // The shape that makes the most cells, and where a re-entry that resolved names against
@@ -101,7 +101,7 @@ public sealed class DeferredBodyReentryTests
             """);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AShadowedNameReproduces()
     {
         AssertReproduced("""
@@ -114,7 +114,7 @@ public sealed class DeferredBodyReentryTests
             """);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictnessIsRestoredRatherThanInherited()
     {
         // Strictness is one of the five FastCompiler fields the context saves, and the one whose
@@ -133,7 +133,7 @@ public sealed class DeferredBodyReentryTests
             """);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ARecursiveDeclarationAndANamedExpressionBothReproduce()
     {
         // The two self-name shapes 0104 had to fix in the layout. They resolve their own name
@@ -148,7 +148,7 @@ public sealed class DeferredBodyReentryTests
             """);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReEntryLeavesTheCompilerStateItFound()
     {
         // A deferred compile happens in the middle of somebody else's work. If the scope stack or
@@ -176,7 +176,7 @@ public sealed class DeferredBodyReentryTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BothEqualitiesAreShownToReportADifferenceBeforeTheirZerosAreTrusted()
     {
         // **The fixture that makes `structural = 100%` mean something**, and §3.5's rule from 0096
@@ -210,7 +210,7 @@ public sealed class DeferredBodyReentryTests
         Assert.True(DeferredTreeCompilation.SameStructurally(reused, fresh));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EachGensymFamilyIsCanonicalisedAgainstItsOwnTable()
     {
         // **The defect the corpus run found in this comparison itself.** The families were
@@ -225,7 +225,7 @@ public sealed class DeferredBodyReentryTests
         Assert.True(DeferredTreeCompilation.SameUpToCounters(eager, reentered));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RetentionChangesNoAnswer()
     {
         // Retention is meant to be inert: the body is still compiled eagerly and the switch only

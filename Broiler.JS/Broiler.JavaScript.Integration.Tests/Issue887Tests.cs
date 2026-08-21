@@ -38,21 +38,21 @@ public class Issue887Tests
     public void VFlagNestedClassUnionMatchesZero(string regex)
         => Assert.True(Test(regex + @".test('0')"), regex);
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void VFlagNestedClassUnionStillExcludesNonMembers()
     {
         Assert.True(Test(@"/[d[0-9]]/v.test('d')"));
         Assert.False(Test(@"/[d[0-9]]/v.test('a')"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void VFlagNegatedNestedClassComplementsTheUnion()
     {
         Assert.True(Test(@"/[^[0-9]]/v.test('a')"));
         Assert.False(Test(@"/[^[0-9]]/v.test('5')"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void VFlagSetOperatorsStillWorkAlongsideNesting()
     {
         Assert.True(Test(@"/[[0-9]--[5]]/v.test('3')"));
@@ -83,17 +83,17 @@ public class Issue887Tests
 
     // ── Cluster C — Unicode 17.0 emoji properties of strings ──────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BasicEmojiMatchesUnicode17Addition()
         // U+1F6D8 LANDSLIDE is a Basic_Emoji introduced in Emoji 17.0.
         => Assert.True(Test(@"/\p{Basic_Emoji}/v.test('\u{1F6D8}')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RgiEmojiModifierSequenceMatches()
         // 👋🏻 = waving hand + light skin tone.
         => Assert.True(Test(@"/\p{RGI_Emoji_Modifier_Sequence}/v.test('\u{1F44B}\u{1F3FB}')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RgiEmojiZwjSequenceMatches()
         // 👨‍👩‍👧 = family: man, woman, girl (ZWJ sequence).
         => Assert.True(Test(@"/\p{RGI_Emoji_ZWJ_Sequence}/v.test('\u{1F468}‍\u{1F469}‍\u{1F467}')"));

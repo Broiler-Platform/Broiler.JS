@@ -27,35 +27,35 @@ public class Issue814SyncUsingInAsyncLoopTests
         return ctx.Eval("'' + globalThis.r").ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SyncUsingInAsyncForOf()
         => Assert.Equal("b,d", Drive(
             "(async function () { var g = []; " +
             "for (using x of [{ [Symbol.dispose]() { g.push('d'); } }]) g.push('b'); " +
             "globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SyncUsingInAsyncCStyleFor()
         => Assert.Equal("b,d0,b,d1", Drive(
             "(async function () { var g = []; " +
             "for (var i = 0; i < 2; i++) { using x = { [Symbol.dispose]() { g.push('d' + i); } }; g.push('b'); } " +
             "globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SyncUsingInAsyncWhile()
         => Assert.Equal("b,d", Drive(
             "(async function () { var g = []; var n = 0; " +
             "while (n++ < 1) { using x = { [Symbol.dispose]() { g.push('d'); } }; g.push('b'); } " +
             "globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SyncUsingInAsyncBlockStillDisposes()
         => Assert.Equal("b,d", Drive(
             "(async function () { var g = []; " +
             "{ using x = { [Symbol.dispose]() { g.push('d'); } }; g.push('b'); } " +
             "globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SyncUsingDisposalIsSynchronousNotAwaited()
         // The sync disposal must not introduce a microtask tick: 'after-block' runs before
         // a separately-queued microtask.
@@ -64,14 +64,14 @@ public class Issue814SyncUsingInAsyncLoopTests
             "(async function () { { using x = { [Symbol.dispose]() { order.push('dispose'); } }; } order.push('after-block'); })();" +
             "Promise.resolve().then(() => { order.push('microtask'); globalThis.r = order.join(','); });"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitUsingInAsyncBlockStillAwaitsDisposal()
         => Assert.Equal("b,ad,after", Drive(
             "(async function () { var g = []; " +
             "{ await using x = { [Symbol.asyncDispose]() { g.push('ad'); return Promise.resolve(); } }; g.push('b'); } " +
             "g.push('after'); globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SyncUsingInSyncLoopUnaffected()
     {
         using var ctx = new JSContext();

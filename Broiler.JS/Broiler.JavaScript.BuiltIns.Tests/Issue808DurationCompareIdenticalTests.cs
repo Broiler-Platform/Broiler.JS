@@ -36,7 +36,7 @@ public class Issue808DurationCompareIdenticalTests
         Assert.Equal("0", actual);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Compare_DifferentCalendarDurations_StillRequiresRelativeTo()
     {
         var actual = Eval("""
@@ -50,7 +50,7 @@ public class Issue808DurationCompareIdenticalTests
         Assert.Equal("RangeError", actual);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Compare_IdenticalDuration_StillValidatesRelativeTo()
     {
         // The spec resolves relativeTo before the identical-durations short-circuit, so an invalid

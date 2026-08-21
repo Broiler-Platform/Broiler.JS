@@ -11,7 +11,7 @@ namespace Broiler.JavaScript.Core.Tests;
 /// </summary>
 public class MovedEnumeratorTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ListElementEnumerator_EnumeratesElements_ViaJSArray()
     {
         using var ctx = new JSContext();
@@ -29,7 +29,7 @@ public class MovedEnumeratorTests
         Assert.Equal(new double[] { 10, 20, 30 }, values.ToArray());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ListElementEnumerator_CanBeConstructed()
     {
         using var ctx = new JSContext();
@@ -39,7 +39,7 @@ public class MovedEnumeratorTests
         Assert.IsType<ListElementEnumerator>(enumerator);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ListElementEnumerator_Empty_ReturnsFalse()
     {
         using var ctx = new JSContext();
@@ -50,7 +50,7 @@ public class MovedEnumeratorTests
         Assert.Null(value);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ListElementEnumerator_NextOrDefault_ReturnsDefault_WhenEmpty()
     {
         using var ctx = new JSContext();
@@ -62,7 +62,7 @@ public class MovedEnumeratorTests
         Assert.Equal(99.0, result.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ListElementEnumerator_MoveNextOrDefault_ReturnsDefault_WhenExhausted()
     {
         using var ctx = new JSContext();
@@ -75,7 +75,7 @@ public class MovedEnumeratorTests
         Assert.Equal(77.0, value.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnumerableElementEnumerable_WrapsClrEnumerator()
     {
         using var ctx = new JSContext();
@@ -91,7 +91,7 @@ public class MovedEnumeratorTests
         Assert.Equal(new double[] { 10, 20, 30 }, values.ToArray());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnumerableElementEnumerable_Empty_ReturnsUndefined()
     {
         using var ctx = new JSContext();
@@ -103,7 +103,7 @@ public class MovedEnumeratorTests
         Assert.True(value.IsUndefined);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnumerableElementEnumerable_MoveNextWithIndex_TracksIndex()
     {
         using var ctx = new JSContext();
@@ -121,7 +121,7 @@ public class MovedEnumeratorTests
         Assert.Equal(15.0, value2.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClrObjectEnumerable_CanBeCreated()
     {
         using var ctx = new JSContext();
@@ -134,7 +134,7 @@ public class MovedEnumeratorTests
         Assert.NotNull(enumerator);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JavaScriptObject_TypeForwarding_TypeResolvesCorrectly()
     {
         // Verify that JavaScriptObject type resolves correctly from Runtime assembly
@@ -144,7 +144,7 @@ public class MovedEnumeratorTests
         Assert.Equal("Broiler.JavaScript.Runtime", type.Namespace);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ListElementEnumerator_TypeResolvesFromRuntimeAssembly()
     {
         var type = typeof(ListElementEnumerator);
@@ -153,7 +153,7 @@ public class MovedEnumeratorTests
         Assert.Equal("Broiler.JavaScript.Runtime", type.Namespace);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnumerableElementEnumerable_TypeResolvesFromRuntimeAssembly()
     {
         var type = typeof(EnumerableElementEnumerable);
@@ -162,7 +162,7 @@ public class MovedEnumeratorTests
         Assert.Equal("Broiler.JavaScript.Runtime", type.Namespace);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClrObjectEnumerator_TypeResolvesFromRuntimeAssembly()
     {
         var type = typeof(ClrObjectEnumerator<>);
@@ -170,7 +170,7 @@ public class MovedEnumeratorTests
         Assert.Equal("Broiler.JavaScript.Runtime", type.Assembly.GetName().Name);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClrObjectEnumerable_TypeResolvesFromRuntimeAssembly()
     {
         var type = typeof(ClrObjectEnumerable<>);

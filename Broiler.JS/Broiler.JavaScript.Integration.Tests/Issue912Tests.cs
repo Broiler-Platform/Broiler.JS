@@ -23,7 +23,7 @@ public class Issue912Tests
     // test/built-ins/Function/prototype/toString/getter-class-expression.js — three
     // getter class expressions inline as Object.getOwnPropertyDescriptor arguments,
     // including computed string and identifier names.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetterClassExpressionInline()
     {
         var code =
@@ -35,7 +35,7 @@ public class Issue912Tests
         Assert.Equal("functionfunctionfunction", Eval(code).ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetterClassExpressionInline()
     {
         var code = "'' + typeof Object.getOwnPropertyDescriptor(class { set [\"f\"](v) {} }.prototype, \"f\").set;";
@@ -44,7 +44,7 @@ public class Issue912Tests
 
     // test/language/expressions/class/accessor-name-inst-computed-in.js — a computed
     // accessor name using `in`, with the class expression in a for-statement init.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AccessorNameComputedInForInit()
     {
         var code =
@@ -70,7 +70,7 @@ public class Issue912Tests
     // #867 regression guard: a computed key with an inline member store to a
     // non-extensible object must STILL throw TypeError (the runtime strict-mode scope
     // is kept whenever the key contains an inline store).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedKeyStoreToFrozenStillThrows()
     {
         var code = "var o = Object.preventExtensions({});"
@@ -84,7 +84,7 @@ public class Issue912Tests
     // proposal). When that toJSON ends in `return f()` (a tail call), the script host
     // returns a JSTailCall sentinel from the native Delegate call; JSON.stringify must
     // trampoline it to its value instead of serializing the sentinel object as "{}".
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BigIntToJsonTailCallResolved()
     {
         var code = "BigInt.prototype.toJSON = function () { return this.toString(); };"
@@ -93,7 +93,7 @@ public class Issue912Tests
     }
 
     // The same trampoline for an ordinary object's toJSON ending in a tail call.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectToJsonTailCallResolved()
     {
         var code = "var o = { toJSON() { return (function () { return 7; })(); } };"

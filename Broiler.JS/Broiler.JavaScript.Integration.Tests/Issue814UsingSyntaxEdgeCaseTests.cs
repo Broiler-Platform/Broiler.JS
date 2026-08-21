@@ -47,39 +47,39 @@ public class Issue814UsingSyntaxEdgeCaseTests
     public void AwaitUsingWithoutInitializerIsSyntaxError(string code)
         => Assert.Equal("SyntaxError", ParseResult(code));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ValidUsingWithInitializerWorks()
         => Assert.Equal("d", Eval(
             "(function () { var log = []; { using x = { [Symbol.dispose]() { log.push('d'); } }; } return log.join(','); })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ValidUsingMultipleInitializersWork()
         => Assert.Equal("ok", Eval("(function () { using a = null, b = null; return 'ok'; })()"));
 
     // ---- `using` as a contextual identifier ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UsingAsVariableReference()
         => Assert.Equal("5", Eval("var using = 5; '' + using"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UsingAsAssignmentTarget()
         => Assert.Equal("9", Eval("var using; using = 9; '' + using"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UsingAsMemberBase()
         => Assert.Equal("42", Eval("var using = { a: 42 }; '' + using.a"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UsingAsCallee()
         => Assert.Equal("99", Eval("var using = () => 99; '' + using()"));
 
     // Problem 54: `using[i]` is element access, not a using declaration with a pattern.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UsingElementAccessIsNotADeclaration()
         => Assert.Equal("20", Eval("var using = [10, 20, 30]; '' + using[1]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UsingElementAssignmentWorks()
         => Assert.Equal("7", Eval("(function () { var using = [0]; { using[0] = 7; } return '' + using[0]; })()"));
 
@@ -93,14 +93,14 @@ public class Issue814UsingSyntaxEdgeCaseTests
 
     // A `using` / `await using` LexicalDeclaration IS valid in a C-style for head: its resources
     // are disposed when the loop's lexical environment is torn down.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UsingInCStyleForHeadDisposesResource()
         => Assert.Equal("d", Eval(
             "(function () { var log = []; "
             + "for (using x = { [Symbol.dispose]() { log.push('d'); } }; false;) {} "
             + "return log.join(','); })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UsingInCStyleForHeadWithOfBindingName()
         => Assert.Equal("ok", Eval(
             "(function () { for (using of = null; false;) {} return 'ok'; })()"));

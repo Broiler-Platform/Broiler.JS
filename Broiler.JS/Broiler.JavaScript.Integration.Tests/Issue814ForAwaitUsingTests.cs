@@ -24,7 +24,7 @@ public class Issue814ForAwaitUsingTests
         return ctx.Eval("'' + globalThis.r").ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForAwaitWithSyncUsingHead()
         => Assert.Equal("b,d1,b,d2", Drive(
             "(async function () { var g = []; " +
@@ -32,28 +32,28 @@ public class Issue814ForAwaitUsingTests
             "  { [Symbol.dispose]() { g.push('d1'); } }, { [Symbol.dispose]() { g.push('d2'); } }]) { g.push('b'); } " +
             "globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForAwaitWithSyncUsingInBody()
         => Assert.Equal("b1,d1,b2,d2", Drive(
             "(async function () { var g = []; " +
             "for await (const y of [1, 2]) { using x = { [Symbol.dispose]() { g.push('d' + y); } }; g.push('b' + y); } " +
             "globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForAwaitWithAwaitUsingHead()
         => Assert.Equal("b,ad", Drive(
             "(async function () { var g = []; " +
             "for await (await using x of [{ [Symbol.asyncDispose]() { g.push('ad'); return Promise.resolve(); } }]) { g.push('b'); } " +
             "globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForAwaitWithAwaitUsingInBody()
         => Assert.Equal("b,ad", Drive(
             "(async function () { var g = []; " +
             "for await (const y of [1]) { await using x = { [Symbol.asyncDispose]() { g.push('ad'); return Promise.resolve(); } }; g.push('b'); } " +
             "globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorValueTryFinallyTailAssignedToLiftedVariable()
         // The general FlattenBlocks fix: a value-producing try/finally whose result becomes
         // a tracked (lifted) completion value across a yield, inside async iteration.

@@ -28,7 +28,7 @@ public class IndexedWriteAndLengthTests
 
     // ── ordinary element writes ───────────────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANewElementGetsDefaultAttributes()
         => Assert.Equal("1,1|true,true,true", Eval("""
             var a = [];
@@ -37,7 +37,7 @@ public class IndexedWriteAndLengthTests
             a[0] + ',' + a.length + '|' + [d.writable, d.enumerable, d.configurable].join(',');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OverwritingAnElementPreservesItsAttributes()
         => Assert.Equal("2,true,false,true", Eval("""
             var a = [];
@@ -47,11 +47,11 @@ public class IndexedWriteAndLengthTests
             [a[0], d.writable, d.enumerable, d.configurable].join(',');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASparseWriteExtendsLength()
         => Assert.Equal("6,undefined", Eval("var a = []; a[5] = 1; a.length + ',' + String(a[0]);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AReadOnlyElementRejectsTheWrite()
     {
         Assert.Equal("1", Eval("""
@@ -82,7 +82,7 @@ public class IndexedWriteAndLengthTests
     public void GrowthIsBlockedWhereTheSpecSaysSo(string source, string expected)
         => Assert.Equal(expected, Eval(source + " String(a[a.length]) + ',' + a.length;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainObjectsWithNumericKeysBehaveTheSame()
         => Assert.Equal("1,2,01|true,true,true", Eval("""
             var o = {};
@@ -95,7 +95,7 @@ public class IndexedWriteAndLengthTests
 
     // ── prototype interaction ─────────────────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnInheritedIndexedSetterStillRuns()
         => Assert.Equal("s:5|false", Eval("""
             var log = [];
@@ -106,7 +106,7 @@ public class IndexedWriteAndLengthTests
             log.join('') + '|' + Object.prototype.hasOwnProperty.call(o, '0');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnInheritedReadOnlyIndexShadowsTheWrite()
         => Assert.Equal("1,false", Eval("""
             var proto = {};
@@ -118,7 +118,7 @@ public class IndexedWriteAndLengthTests
 
     // ── foreign receivers ─────────────────────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectSetWritesToTheReceiverNotTheBase()
         => Assert.Equal("true,1,1,false", Eval("""
             var base = {};
@@ -136,7 +136,7 @@ public class IndexedWriteAndLengthTests
 
     // ── exotics must keep the general path ────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArraysKeepIntegerIndexedSemantics()
         => Assert.Equal("5,undefined,2|44", Eval("""
             var t = new Int8Array(2);
@@ -148,7 +148,7 @@ public class IndexedWriteAndLengthTests
             clamped + '|' + c[0];
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AProxyReceiverStillFiresDefinePropertyTrap()
         => Assert.Equal("dp:0", Eval("""
             var log = [];
@@ -157,7 +157,7 @@ public class IndexedWriteAndLengthTests
             log.join(',');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AProxyInThePrototypeChainStillFiresSetTrap()
         => Assert.Equal("set:0|true", Eval("""
             var log = [];
@@ -167,17 +167,17 @@ public class IndexedWriteAndLengthTests
             log.join(',') + '|' + Object.prototype.hasOwnProperty.call(o, '0');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MappedArgumentsStayMapped()
         => Assert.Equal("9", Eval("function f(x) { arguments[0] = 9; return x; } f(1);"));
 
     // ── length shrink ─────────────────────────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ShrinkingLengthDeletesTheTail()
         => Assert.Equal("2|12|undefined", Eval("var a = [1,2,3,4,5]; a.length = 2; [a.length, a.join(''), String(a[4])].join('|');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ShrinkingHaltsAtTheFirstNonConfigurableElement()
         => Assert.Equal("3,3", Eval("""
             var a = [1,2,3,4,5];
@@ -186,7 +186,7 @@ public class IndexedWriteAndLengthTests
             [a.length, String(a[2])].join(',');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ShrinkingFromAHugeSparseLengthStaysCheap()
         // The range here spans the whole uint domain, so this must take the scan-the-stored-
         // elements strategy rather than walking [newLength, oldLength).
@@ -198,7 +198,7 @@ public class IndexedWriteAndLengthTests
             [a.length, a[0], String(a[1])].join(',');
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PoppingEveryElementIsCorrect()
         // Guards the quadratic shrink: each pop used to scan and sort the entire element
         // table, so this loop took minutes at 200k. Kept small enough to stay a unit test.
@@ -210,13 +210,13 @@ public class IndexedWriteAndLengthTests
             s + ',' + a.length;
             """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GrowingThenShrinkingLengthKeepsElements()
         => Assert.Equal("10,1,1", Eval("var a = [1,2,3]; a.length = 10; var g = a.length; a.length = 1; g + ',' + a.length + ',' + a.join('');"));
 
     // ── push ──────────────────────────────────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PushReturnsTheNewLength()
         => Assert.Equal("3,123", Eval("var a = [1]; a.push(2, 3) + ',' + a.join('');"));
 
@@ -226,17 +226,17 @@ public class IndexedWriteAndLengthTests
     public void PushRejectsAnUnwritableTarget(string prepare)
         => Assert.Equal("TypeError", Eval(prepare + " (function () { try { a.push(1); return 'no-throw'; } catch (e) { return e.constructor.name; } })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PushWorksOnAPlainArrayLike()
         => Assert.Equal("3,x", Eval("var o = { length: 2 }; Array.prototype.push.call(o, 'x'); [o.length, o[2]].join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PushKeepsHolesAsHoles()
         => Assert.Equal("3,undefined,9", Eval("var a = []; a.length = 2; a.push(9); [a.length, String(a[0]), a[2]].join(',');"));
 
     // ── the filled array still behaves ordinarily ─────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFilledArrayEnumeratesAndSerializesNormally()
         => Assert.Equal("012|[0,1,2]|1,,3", Eval("""
             var a = [];

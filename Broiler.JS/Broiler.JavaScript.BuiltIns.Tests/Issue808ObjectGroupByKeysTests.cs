@@ -18,7 +18,7 @@ public class Issue808ObjectGroupByKeysTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GroupBy_NumericKey_IndexedAccess()
         => Assert.Equal("test|foo,bar|hello", Eval("""
             var array = ["test", "foo", "bar", "hello"];
@@ -26,21 +26,21 @@ public class Issue808ObjectGroupByKeysTests
             arr[4][0] + "|" + arr[3].join(",") + "|" + arr[5][0];
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GroupBy_NullPrototype()
         => Assert.Equal("true", Eval("""
             var arr = Object.groupBy([1], function () { return 0; });
             String(Object.getPrototypeOf(arr) === null);
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GroupBy_StringKeys()
         => Assert.Equal("1,3|2,4", Eval("""
             var s = Object.groupBy([1, 2, 3, 4], function (x) { return x % 2 ? "odd" : "even"; });
             s.odd.join(",") + "|" + s.even.join(",");
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GroupBy_SymbolKey()
         => Assert.Equal("1", Eval("""
             var sym = Symbol("k");
@@ -48,7 +48,7 @@ public class Issue808ObjectGroupByKeysTests
             String(sg[sym][0]);
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapGroupBy_NumericKey()
         => Assert.Equal("test", Eval("""
             var array = ["test", "foo", "bar", "hello"];

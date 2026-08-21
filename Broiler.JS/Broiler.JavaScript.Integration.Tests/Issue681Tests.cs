@@ -38,7 +38,7 @@ public class Issue681Tests
 
     // ---- Problem 9: Date setters coerce arguments (valueOf) before the NaN check ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateSetterCallsValueOfOnceOnInvalidDate()
         => Assert.Equal("1|NaN|0", Eval(
             "var dt = new Date(NaN); var n = 0;"
@@ -46,12 +46,12 @@ public class Issue681Tests
             + "var r = dt.setHours(v);"
             + "n + '|' + r + '|' + dt.getTime()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetTimeWorksOnInvalidDate()
         => Assert.Equal("0|0", Eval(
             "var dt = new Date(NaN); var r = dt.setTime(0); r + '|' + dt.getTime()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetFullYearRevivesInvalidDateAndCallsValueOfOnce()
         => Assert.Equal("1|2001|false", Eval(
             "var dt = new Date(NaN); var n = 0;"
@@ -59,14 +59,14 @@ public class Issue681Tests
             + "var r = dt.setFullYear(v);"
             + "n + '|' + dt.getFullYear() + '|' + String(r !== r)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetUtcFullYearRevivesInvalidDate()
         => Assert.Equal("2001-01-01T00:00:00.000Z", Eval(
             "var dt = new Date(NaN); dt.setUTCFullYear(2001); dt.toISOString()"));
 
     // ---- Problem 6: descriptor fields may be inherited / accessor-backed ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DefinePropertyReadsInheritedSetter()
         => Assert.Equal("overrideData", Eval(
             "var data = 'data';"
@@ -78,7 +78,7 @@ public class Issue681Tests
             + "obj.p = 'overrideData';"
             + "data"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DefinePropertyReadsInheritedValue()
         => Assert.Equal("42", Eval(
             "var proto = { value: 42 };"
@@ -87,7 +87,7 @@ public class Issue681Tests
             + "Object.defineProperty(obj, 'p', new Ctor());"
             + "String(obj.p)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DefinePropertyReadsAccessorBackedDescriptorField()
         => Assert.Equal("7", Eval(
             "var obj = {};"
@@ -95,7 +95,7 @@ public class Issue681Tests
             + "Object.defineProperty(obj, 'p', desc);"
             + "String(obj.p)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectDefinePropertyReadsInheritedValue()
         => Assert.Equal("42", Eval(
             "var proto = { value: 42 };"
@@ -104,7 +104,7 @@ public class Issue681Tests
             + "Reflect.defineProperty(obj, 'p', new Ctor());"
             + "String(obj.p)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DefinePropertiesReadsInheritedValue()
         => Assert.Equal("42", Eval(
             "var proto = { value: 42 };"
@@ -115,7 +115,7 @@ public class Issue681Tests
 
     // ---- Problem 4: IteratorClose skipped when next() throws ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayDestructuringDoesNotCloseIteratorWhenNextThrows()
         => Assert.Equal("0|1", Eval(
             "var ret = 0, next = 0;"
@@ -125,7 +125,7 @@ public class Issue681Tests
             + "try { var x; [ x ] = iterable; } catch (e) {}"
             + "ret + '|' + next"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfDestructuringDoesNotCloseIteratorWhenNextThrows()
         => Assert.Equal("0|1", Eval(
             "var ret = 0, next = 0;"
@@ -135,7 +135,7 @@ public class Issue681Tests
             + "try { for (var [ x ] of [iterable]) {} } catch (e) {}"
             + "ret + '|' + next"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayDestructuringClosesIteratorWhenNotExhausted()
         => Assert.Equal("1", Eval(
             "var ret = 0;"
@@ -147,7 +147,7 @@ public class Issue681Tests
 
     // ---- Problem 1: Intl GetOptionsObject rejects non-object options ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ListFormatRejectsPrimitiveOptions()
         => Assert.Equal("TypeError|TypeError|TypeError|TypeError", Eval(
             "function thr(f){ try { f(); return 'none'; } catch (e) { return e.constructor.name; } }"
@@ -156,7 +156,7 @@ public class Issue681Tests
             + "thr(function(){ new Intl.ListFormat([], true); }) + '|' +"
             + "thr(function(){ new Intl.ListFormat([], 123n); })"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ListFormatAcceptsObjectAndUndefinedOptions()
         => Assert.Equal("conjunction", Eval(
             "new Intl.ListFormat([], undefined);"

@@ -39,7 +39,7 @@ public class NumericLocalTests
 
     // ── the shapes that should specialize ─────────────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACountedLoopSpecializesItsCounterAndAccumulator()
     {
         var (result, numericLocals) = Compile("var s = 0; for (var i = 0; i < 10; i++) s += i; return s;");
@@ -181,7 +181,7 @@ public class NumericLocalTests
     public void ALocalHoldingTheValueOfLogicalNotStaysABoolean(string body, string expected)
         => Assert.Equal(expected, Fn(body));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArithmeticNegationOfANumberIsStillANumericLocal()
     {
         // The operator the boolean case is told apart from: `-x` over a number IS numeric.
@@ -202,7 +202,7 @@ public class NumericLocalTests
     public void AVarThatCanBeReadBeforeItsInitializerIsNotSpecialized(string body, string expected)
         => Assert.Equal(expected, Fn(body));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANameACloSureCanReachIsNotSpecialized()
     {
         Assert.Equal("6", Fn("var i = 5; var f = function () { return i; }; i = 6; return f();"));
@@ -232,7 +232,7 @@ public class NumericLocalTests
     public void OperatorsThatNeedTheBindingItselfStillWork(string body, string expected)
         => Assert.Equal(expected, Fn(body));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AParameterIsNeverSpecialized()
     {
         // A parameter's value arrives as a JSValue and nothing proves it is a number.
@@ -253,7 +253,7 @@ public class NumericLocalTests
     public void ControlFlowIsUnaffected(string body, string expected)
         => Assert.Equal(expected, Fn(body));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RecursionAcrossFunctionBoundariesIsUnaffected()
         => Assert.Equal("610", Fn("function f(n) { return n < 2 ? n : f(n - 1) + f(n - 2); } return f(15);"));
 
@@ -283,7 +283,7 @@ public class NumericLocalTests
         Assert.Equal(2, numericLocals);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OnlyTheNamesANestedFunctionMentionsAreRefused()
     {
         // `s` is named by the helper and keeps a cell; `i` is not and stays a double.

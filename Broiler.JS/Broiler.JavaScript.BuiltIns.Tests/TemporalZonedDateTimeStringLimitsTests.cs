@@ -80,7 +80,7 @@ public class TemporalZonedDateTimeStringLimitsTests
         Assert.Equal("1,0,0,1", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainDate_AcceptsBasicDateForm()
     {
         EnsureBuiltInsLoaded();
@@ -105,7 +105,7 @@ public class TemporalZonedDateTimeStringLimitsTests
         """));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationRound_RelativeToBagInfiniteField_ReadsFieldOnce()
     {
         EnsureBuiltInsLoaded();

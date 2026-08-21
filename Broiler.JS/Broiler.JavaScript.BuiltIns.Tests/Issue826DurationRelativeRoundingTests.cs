@@ -47,7 +47,7 @@ public class Issue826DurationRelativeRoundingTests
         """));
 
     // Month smallest, year largest still decomposes correctly (14 months -> 1y2m).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RoundMonths_LargestYear_Decomposes()
         => Assert.Equal("1,2,0,0", Eval("""
             var r = new Temporal.Duration(0, 14, 0, 0).round({
@@ -57,7 +57,7 @@ public class Issue826DurationRelativeRoundingTests
 
     // P41 — a ZonedDateTime relativeTo one second past the maximum usable instant overflows
     // the day-after boundary needed to total in days.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TotalDays_ZonedRelativeToBeyondLimit_Throws()
         => Assert.Equal("RangeError", Eval("""
             try {
@@ -66,14 +66,14 @@ public class Issue826DurationRelativeRoundingTests
             } catch (e) { e.constructor.name; }
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TotalDays_ZonedRelativeToAtLimit_IsZero()
         => Assert.Equal("0", Eval("""
             "" + new Temporal.Duration(0).total({ unit: "days", relativeTo: "+275760-09-12T00:00:00+00:00[UTC]" });
         """));
 
     // P5 — rounding to weeks while the largest unit is coarser (defaults to month here) throws.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RoundWeeks_WithMonths_NoLargestUnit_Throws()
         => Assert.Equal("RangeError", Eval("""
             try {
@@ -84,7 +84,7 @@ public class Issue826DurationRelativeRoundingTests
             } catch (e) { e.constructor.name; }
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RoundWeeks_WithMonths_ExplicitWeeksLargestUnit_Succeeds()
         => Assert.Equal("0,0,99,0", Eval("""
             var r = new Temporal.Duration(0, 1, 0, 1).round({

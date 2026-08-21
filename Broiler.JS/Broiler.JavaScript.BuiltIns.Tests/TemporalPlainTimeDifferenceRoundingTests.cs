@@ -16,7 +16,7 @@ public class TemporalPlainTimeDifferenceRoundingTests
         return ctx.Eval(expr).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Since_RoundsToSmallestUnit()
     {
         Load();
@@ -30,7 +30,7 @@ public class TemporalPlainTimeDifferenceRoundingTests
         Assert.Equal("987,654,0", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Since_SmallestUnit_ObjectWithToString_IsCoerced()
     {
         Load();
@@ -44,7 +44,7 @@ public class TemporalPlainTimeDifferenceRoundingTests
         Assert.Equal("0", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Until_RoundsWithIncrementAndMode()
     {
         Load();
@@ -58,7 +58,7 @@ public class TemporalPlainTimeDifferenceRoundingTests
         Assert.Equal("1,0", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Since_NegatesRoundingMode()
     {
         Load();
@@ -73,7 +73,7 @@ public class TemporalPlainTimeDifferenceRoundingTests
         Assert.Equal("1", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Until_LargestUnit_FoldsIntoLargestUnit()
     {
         Load();

@@ -30,15 +30,15 @@ public class Issue808IteratorHelperBrandCheckTests
             err;
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Generator_OwnNext_StillWorks()
         => Assert.Equal("1", Eval("function* gen() { yield 1; } String(gen().next().value);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HelperMethod_OnRealHelper_StillWorks()
         => Assert.Equal("2,4,6", Eval("[...[1, 2, 3].values().map(function (x) { return x * 2; })].join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WrapIterator_Next_StillWorks()
         => Assert.Equal("5", Eval("String(Iterator.from([5][Symbol.iterator]()).next().value);"));
 }

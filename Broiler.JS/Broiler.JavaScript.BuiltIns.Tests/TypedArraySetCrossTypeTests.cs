@@ -15,7 +15,7 @@ public class TypedArraySetCrossTypeTests
         return ctx.Eval(expr).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Set_LargerSourceType_ConvertsValues_NoOverflow()
     {
         Load();
@@ -31,7 +31,7 @@ public class TypedArraySetCrossTypeTests
         Assert.Equal("1,-2,44,4", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Set_SmallerSourceType_ConvertsValues()
     {
         Load();
@@ -44,7 +44,7 @@ public class TypedArraySetCrossTypeTests
         Assert.Equal("10,20,30", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Set_DifferentTypeSharedBuffer_NoCorruption()
     {
         Load();
@@ -62,7 +62,7 @@ public class TypedArraySetCrossTypeTests
         Assert.Equal("1,2,3,4,3,0,4,0", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Set_MixBigIntAndNumber_Throws()
     {
         Load();
@@ -75,7 +75,7 @@ public class TypedArraySetCrossTypeTests
         Assert.Equal("true", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Set_SameType_StillWorks()
     {
         Load();

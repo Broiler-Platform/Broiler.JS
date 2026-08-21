@@ -30,7 +30,7 @@ public class M6ValidationTests
 
     // ── 6.2: Type Location Verification ──────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M6_TypesResolveToCorrectAssembly()
     {
         // Spot-check representative types resolve to their target assemblies.
@@ -74,7 +74,7 @@ public class M6ValidationTests
 
     // ── 6.3: Module Initializer Verification ───────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M6_CompilerRegistration_WiredByModuleInitializer()
     {
         // CompilerAssemblyInitializer registers FastCompiler pipeline.
@@ -84,7 +84,7 @@ public class M6ValidationTests
         Assert.Equal(2.0, result.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M6_BuiltInsRegistration_WiredByModuleInitializer()
     {
         EnsureAllAssembliesLoaded();
@@ -99,7 +99,7 @@ public class M6ValidationTests
         Assert.NotNull(JSValue.CreateDecimalFromStringFactory);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M6_ClrRegistration_WiredByModuleInitializer()
     {
         EnsureAllAssembliesLoaded();
@@ -109,14 +109,14 @@ public class M6ValidationTests
         Assert.IsType<Clr.DefaultClrInterop>(JSEngine.ClrInterop);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M6_PropertySequenceTypeErrorFactory_WiredByModuleInitializer()
     {
         // PropertySequenceCoreExtensions wires TypeErrorFactory.
         Assert.NotNull(PropertySequence.TypeErrorFactory);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M6_CoreScriptFactories_VerifiedThroughEval()
     {
         // CoreScriptCoreExtensions wires factory delegates on CoreScript.
@@ -127,7 +127,7 @@ public class M6ValidationTests
         Assert.Equal(42.0, result.DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M6_JSValueFactories_VerifiedThroughPrimitives()
     {
         // JSValueCoreExtensions wires core value constants.
@@ -147,7 +147,7 @@ public class M6ValidationTests
 
     // ── 6.4: No Circular Assembly References ───────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M6_NoCircularAssemblyReferences()
     {
         EnsureAllAssembliesLoaded();
@@ -219,7 +219,7 @@ public class M6ValidationTests
 
     // ── 6.5: Backward Compatibility ────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M6_TypesResolvedDirectlyInTargetAssemblies()
     {
         // After refactoring, types live directly in their target assemblies
@@ -229,7 +229,7 @@ public class M6ValidationTests
         Assert.Equal("Broiler.JavaScript.Parser", typeof(FastParser).Assembly.GetName().Name);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M6_NamespacePreserved_AfterExtraction()
     {
         // Types extracted to BuiltIns retain their Core namespace for source compatibility.
@@ -249,7 +249,7 @@ public class M6ValidationTests
         Assert.Equal("{\"a\":1}", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M6_BigIntFactory_WorksAcrossAssemblies()
     {
         // BigInt factory delegates wired by BuiltInsAssemblyInitializer
@@ -260,7 +260,7 @@ public class M6ValidationTests
         Assert.Equal("bigint", result.ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M6_DependencyLayering_FeaturesDependOnEngine()
     {
         EnsureAllAssembliesLoaded();
@@ -288,7 +288,7 @@ public class M6ValidationTests
 
     // ── 6.6: Performance Baseline ──────────────────────────────────────
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M6_PerformanceBaseline_EvalOverhead()
     {
         EnsureAllAssembliesLoaded();
@@ -317,7 +317,7 @@ public class M6ValidationTests
             $"Average eval latency {avgMs:F2}ms exceeds 200ms baseline");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void M6_PerformanceBaseline_AssemblyLoadingDoesNotRegress()
     {
         // Verify that evaluating a moderately complex expression across

@@ -32,7 +32,7 @@ public class ArrayBufferTransferResizableTests
         Assert.Equal(expected, result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TransferToFixedLength_FromResizable_BecomesFixed()
     {
         Load();
@@ -44,7 +44,7 @@ public class ArrayBufferTransferResizableTests
         Assert.Equal("false,8,8", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Transfer_FromFixed_StaysFixed()
     {
         Load();
@@ -56,7 +56,7 @@ public class ArrayBufferTransferResizableTests
         Assert.Equal("false,8", result);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Transfer_ResizableResult_CanStillResize()
     {
         Load();

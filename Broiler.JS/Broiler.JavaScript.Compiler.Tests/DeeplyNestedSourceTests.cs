@@ -20,7 +20,7 @@ namespace Broiler.JavaScript.Compiler.Tests;
 /// </remarks>
 public class DeeplyNestedSourceTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeepBinaryExpressionChain_Compiles()
     {
         const int operators = 20_000;
@@ -34,7 +34,7 @@ public class DeeplyNestedSourceTests
         Assert.Equal(operators + 1, ctx.Eval(source.ToString()).DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeepConditionalExpressionNesting_Compiles()
     {
         // Right-nested, so the depth is in the parser's own recursive descent rather than
@@ -50,7 +50,7 @@ public class DeeplyNestedSourceTests
         Assert.Equal(7, ctx.Eval(source.ToString()).DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeepConditionalExpressionNesting_PastTheCompilationStack_Compiles()
     {
         // The fixture above at 15 000 levels passed before the PARSER was guarded, because a
@@ -74,7 +74,7 @@ public class DeeplyNestedSourceTests
         Assert.Equal(7, ctx.Eval(source.ToString()).DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LongFlatStatementList_Compiles()
     {
         // The size case, kept deliberately: it already passed before nesting was addressed,
@@ -91,7 +91,7 @@ public class DeeplyNestedSourceTests
         Assert.Equal(statements, ctx.Eval(source.ToString()).DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SyntaxErrorInDeeplyNestedSource_ReportsAsOneInShallowSource()
     {
         // Compiling off the calling thread must not change what compiling *reports*. The

@@ -74,7 +74,7 @@ public class SuspendedCallArgumentTests
             Recorder + "function* g() { " + statement + " return out.join(','); } "
             + "var it = g(); it.next(); '' + it.next('V').value"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AComputedKeyThatSuspendsStillResolvesAgainstItsOwnReceiver()
         // The key is read after the receiver, so it is inside the same window: a nested call
         // while computing it must not become what the call invokes.
@@ -82,7 +82,7 @@ public class SuspendedCallArgumentTests
             Recorder + "function* g() { obj[String(yield 1)](2); return out.join(','); } "
             + "var it = g(); it.next(); '' + it.next('hit').value"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainFunctionCallsAndConstructorsTakeTheSamePath()
     {
         Assert.Equal("1,2,3,4,5", Drive(
@@ -95,7 +95,7 @@ public class SuspendedCallArgumentTests
             "(async function () { globalThis.r = [1, 2, 3, 4, 5, await Promise.resolve(6)].join(','); })();"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArgumentsStillEvaluateInSourceOrderAroundTheSuspension()
         // Hoisting the operands must not reorder them: the receiver is read first, then each
         // argument left to right, and the method runs last.
@@ -106,7 +106,7 @@ public class SuspendedCallArgumentTests
             + "(async function () { recv().m(arg('a', await Promise.resolve(1)), arg('b', 2)); "
             + "globalThis.r = out.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANestedCallInTheArgumentsStillRunsExactlyOnce()
         => Assert.Equal("inner,outer", Drive(
             "var out = []; "

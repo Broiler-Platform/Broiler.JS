@@ -45,15 +45,15 @@ public class Issue715Tests
 
     // ---- Problem 2: for-of/for-in destructuring target reinterpretation ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfObjectAssignmentPatternWithDefault()
         => Assert.Equal("1", Eval("var x; for ({ x = 1 } of [{}]) {} x;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForOfNestedArrayObjectAssignmentPattern()
         => Assert.Equal("1", Eval("var x; for ([{ x = 1 }] of [[{}]]) {} x;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInObjectCoverInitPattern()
         // The for-in key ("a") is destructured: property "k" is absent, so the
         // default applies. The point is that the cover-init `{ k = 5 }` parses.
@@ -61,55 +61,55 @@ public class Issue715Tests
 
     // ---- Problem 2: yield inside a destructuring default (generator) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldInObjectAssignmentDefault()
         => Assert.Equal("7", Eval(
             "var a; function* g(){ ({ a = yield } = {}); } var it = g(); it.next(); it.next(7); a;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldInArrayAssignmentDefault()
         => Assert.Equal("7", Eval(
             "var a; function* g(){ [ a = yield ] = []; } var it = g(); it.next(); it.next(7); a;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldInForOfObjectDestructuringDefault()
         => Assert.Equal("5", Eval(
             "var x; function* g(){ for ({ x = yield } of [{}]) {} } var it = g(); it.next(); it.next(5); x;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DestructuringDefaultStillAppliesWhenPresent()
         => Assert.Equal("11", Eval(
             "var a; function* g(){ for ({ a = yield } of [{ a: 11 }]) {} } var it = g(); it.next(); it.next(99); a;"));
 
     // ---- Problem 4: new Object(primitive) keeps the wrapper's prototype ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewObjectNumberConstructorIsNumber()
         => Assert.Equal("Number", Eval("(new Object(1)).constructor.name;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewObjectStringConstructorIsString()
         => Assert.Equal("String", Eval("(new Object('x')).constructor.name;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewObjectBooleanInstanceOfBoolean()
         => Assert.Equal("true", Eval("((new Object(true)) instanceof Boolean).toString();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectCallFormStillBoxes()
         => Assert.Equal("Number", Eval("Object(1).constructor.name;"));
 
     // ---- Problem 5: exec stores the ToString-coerced input ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ExecInputIsCoercedUndefinedString()
         => Assert.Equal("undefined", Eval("/undefined/.exec(undefined).input;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ExecInputIsCoercedNumberString()
         => Assert.Equal("123", Eval("/2/.exec(123).input;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ExecInputIsAString()
         => Assert.Equal("string", Eval("typeof /2/.exec(123).input;"));
 }

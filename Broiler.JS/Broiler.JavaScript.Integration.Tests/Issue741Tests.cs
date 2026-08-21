@@ -66,7 +66,7 @@ public class Issue741Tests
 
     // ---- Problem 5: String.prototype.match with a null Symbol.match ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MatchWithNullSymbolMatchFallsThroughToRegExp()
         => Assert.Equal("true|3", Eval(
             "var re={};re[Symbol.match]=null;re.toString=function(){return '\\\\d';};" +
@@ -74,7 +74,7 @@ public class Issue741Tests
 
     // ---- Problem 8: String.prototype.replace with a null Symbol.replace ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReplaceWithNullSymbolReplaceFallsThrough()
         => Assert.Equal("aXc", Eval(
             "var re={};re[Symbol.replace]=null;re.toString=function(){return 'b';};" +
@@ -82,7 +82,7 @@ public class Issue741Tests
 
     // ---- Problem 11: String.prototype.search with a null Symbol.search ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SearchWithNullSymbolSearchFallsThrough()
         => Assert.Equal("-1|2", Eval(
             "var re={};re[Symbol.search]=null;re.toString=function(){return '\\\\d';};" +
@@ -90,7 +90,7 @@ public class Issue741Tests
 
     // ---- Problem 12: String.prototype.split with a null Symbol.split ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SplitWithNullSymbolSplitFallsThrough()
         => Assert.Equal("a,c", Eval(
             "var re={};re[Symbol.split]=null;re.toString=function(){return 'b';};" +
@@ -98,7 +98,7 @@ public class Issue741Tests
 
     // ---- Problem 13: JSON.stringify of a BigInt honours toJSON ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringifyBigIntUsesToJson()
         => Assert.Equal("\"0\"", Eval(
             "BigInt.prototype.toJSON=function(){return this.toString();};JSON.stringify(0n)"));
@@ -110,7 +110,7 @@ public class Issue741Tests
 
     // ---- Problem 14: Promise.prototype.then ignores non-callable handlers ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async System.Threading.Tasks.Task PromiseThenNonCallableHandlersAreIgnored()
     {
         using var ctx = new JSContext();
@@ -124,14 +124,14 @@ public class Issue741Tests
 
     // ---- Problems 16/17: indexOf/lastIndexOf coerce searchString before position ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IndexOfCoercesSearchStringBeforePosition()
         => Assert.Equal("intostr", Eval(
             "var s={toString:function(){throw 'intostr';}};" +
             "var p={valueOf:function(){throw 'intoint';}};" +
             "try{'abc'.indexOf(s,p);'no throw';}catch(e){e}"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LastIndexOfCoercesSearchStringBeforePosition()
         => Assert.Equal("intostr", Eval(
             "var s={toString:function(){throw 'intostr';}};" +
@@ -140,25 +140,25 @@ public class Issue741Tests
 
     // ---- Problem 18: `return` at the top level of eval/global code is a SyntaxError ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReturnInDirectEvalThrowsSyntaxError()
         => Assert.Equal("true", Eval(
             "try{eval('return;');'no throw';}catch(e){(e instanceof SyntaxError)+''}"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReturnInEvalFromWithinFunctionThrowsSyntaxError()
         => Assert.Equal("true", Eval(
             "function f(){return eval('return;');}" +
             "try{f();'no throw';}catch(e){(e instanceof SyntaxError)+''}"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReturnInIndirectEvalThrowsSyntaxError()
         => Assert.Equal("true", Eval(
             "var g=eval;try{g('return 1;');'no throw';}catch(e){(e instanceof SyntaxError)+''}"));
 
     // `return` remains valid inside every kind of function body.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReturnStillValidInsideFunctionsArrowsAndMethods()
         => Assert.Equal("1|2|3|4", Eval(
             "function a(){return 1;}" +
@@ -169,14 +169,14 @@ public class Issue741Tests
 
     // ---- Problem 25: Array.prototype.slice with length near 2^53 (64-bit indices) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SliceHandlesIndicesBeyond32BitRange()
         => Assert.Equal("9007199254740989,9007199254740990", Eval(
             "var o={'9007199254740988':'9007199254740988','9007199254740989':'9007199254740989'," +
             "'9007199254740990':'9007199254740990','9007199254740991':'9007199254740991',length:2**53+2};" +
             "Array.prototype.slice.call(o,9007199254740989).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SliceHandlesNegativeIndicesBeyond32BitRange()
         => Assert.Equal("9007199254740989", Eval(
             "var o={'9007199254740988':'9007199254740988','9007199254740989':'9007199254740989'," +
@@ -185,26 +185,26 @@ public class Issue741Tests
 
     // ---- Problem 22: TypedArray(object) coerces each element via ToNumber ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayCtorFromObjectPropagatesThrowingValueOf()
         => Assert.Equal("threw:1", Eval(
             "var s=new Int8Array(1);var n=0;s.valueOf=function(){n++;throw new Error('x');};" +
             "try{new Float64Array([8,s]);'nothrow';}catch(e){'threw:'+n}"));
 
     // A typed array coerces to a number via ToPrimitive (toString), not always NaN.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberOfSingleElementTypedArrayUsesToString()
         => Assert.Equal("5|7", Eval(
             "Number(new Int8Array([5]))+'|'+(+new Float64Array([7]))"));
 
     // ---- Problem 30: class constructor own-key order is [length, name, prototype, …] ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassConstructorOwnKeyOrder()
         => Assert.Equal("length,name,prototype,method", Eval(
             "class A{static method(){}static length(){}}Object.getOwnPropertyNames(A).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainFunctionOwnKeyOrderStartsWithLengthNamePrototype()
         => Assert.Equal("length,name,prototype", Eval(
             "Object.getOwnPropertyNames(function f(){}).slice(0,3).join(',')"));
@@ -214,7 +214,7 @@ public class Issue741Tests
     // on the Receiver: the value is written there uncoerced, the typed array is left
     // unchanged, and a setter on %TypedArray%.prototype[index] is never reached.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArraySetWithForeignReceiverDoesNotCoerceOrHitPrototypeSetter()
         => Assert.Equal("true|0|true|false|false|1|vo=0", Eval(
             "var voCalls=0;var value={valueOf:function(){++voCalls;return 2.3;}};var TA=Float64Array;" +
@@ -229,7 +229,7 @@ public class Issue741Tests
             "out.push(Reflect.set(target,0,value,receiver)?'set':receiver[0]);" +
             "delete TA.prototype[0];out.push('vo='+voCalls);out.join('|')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BigIntTypedArraySetWithForeignReceiverDoesNotHitPrototypeSetter()
         => Assert.Equal("true|0|true", Eval(
             "var TA=BigInt64Array;" +

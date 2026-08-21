@@ -56,7 +56,7 @@ public class Issue705Tests
         => Assert.Equal(expected, Format("en-US", signDisplay, "Infinity"));
 
     // The NaN symbol is locale dependent (zh-TW uses 非數值).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NaNUsesLocaleSymbol()
     {
         Assert.Equal("NaN", Format("en-US", "auto", "NaN"));
@@ -86,35 +86,35 @@ public class Issue705Tests
     public void PositiveIntegerSignDisplay(string signDisplay, string expected)
         => Assert.Equal(expected, Format("en-US", signDisplay, "987"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NegativeIntegerAlwaysShowsMinus()
         => Assert.Equal("-987", Format("en-US", "negative", "-987"));
 
     // ---- Problem 8 / 9: formatToParts splits sign / number / symbol parts ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatToPartsNegativeInfinity()
         => Assert.Equal("minusSign:-|infinity:∞", Parts("en-US", "auto", "-Infinity"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatToPartsPositiveInfinityAlways()
         => Assert.Equal("plusSign:+|infinity:∞", Parts("en-US", "always", "Infinity"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatToPartsNaN()
         => Assert.Equal("nan:NaN", Parts("en-US", "auto", "NaN"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatToPartsNegativeInteger()
         => Assert.Equal("minusSign:-|integer:987", Parts("en-US", "auto", "-987"));
 
     // "negative" never shows a sign on a value that rounds to zero.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatToPartsNegativeRoundingToZeroNegativeSignDisplay()
         => Assert.Equal("integer:0", Parts("en-US", "negative", "-0.0001"));
 
     // Grouping splits the integer into integer/group parts for large numbers.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatToPartsGroupsLargeIntegers()
         => Assert.Equal("integer:1|group:,|integer:234|group:,|integer:567",
             Parts("en-US", "auto", "1234567"));
@@ -127,18 +127,18 @@ public class Issue705Tests
                 ".map(function(p){return p.type+':'+p.value;}).join('|');").ToString();
 
     // USD defaults to 2 fraction digits; the symbol precedes the number in en-US.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CurrencyPositiveEnUs()
         => Assert.Equal("currency:$|integer:987|decimal:.|fraction:00", CurrencyParts("en-US", "auto", "987"));
 
     // An accounting negative is wrapped in parentheses in en-US.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CurrencyAccountingNegativeEnUs()
         => Assert.Equal("literal:(|currency:$|integer:987|decimal:.|fraction:00|literal:)",
             CurrencyParts("en-US", "auto", "-987"));
 
     // ko-KR uses the "US$" symbol; the accounting parens convention still applies.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CurrencySymbolIsLocaleSpecific()
         => Assert.Equal("literal:(|currency:US$|integer:987|decimal:.|fraction:00|literal:)",
             CurrencyParts("ko-KR", "auto", "-987"));
@@ -146,7 +146,7 @@ public class Issue705Tests
     // de-DE places the symbol after the number, separated by a no-break space
     // (U+00A0, normalized to <nbsp> below), and uses a leading minus for
     // accounting negatives instead of parentheses.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CurrencyDeUsesTrailingSymbolAndMinus()
     {
         var actual = CurrencyParts("de-DE", "auto", "-987").Replace(" ", "<nbsp>");
@@ -154,7 +154,7 @@ public class Issue705Tests
     }
 
     // "never" suppresses the accounting parens entirely (uses the positive layout).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CurrencyNeverSuppressesAccountingParens()
         => Assert.Equal("currency:$|integer:987|decimal:.|fraction:00", CurrencyParts("en-US", "never", "-987"));
 
@@ -164,14 +164,14 @@ public class Issue705Tests
         => Eval($"new Intl.NumberFormat('en-US', {{style:'unit', unit:'{unit}', unitDisplay:'{display}'}}).format({value});").ToString();
 
     // Singular vs plural is chosen by the locale's plural rules.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnitLongSingularAndPlural()
     {
         Assert.Equal("1 meter", Unit("meter", "long", "1"));
         Assert.Equal("5 meters", Unit("meter", "long", "5"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnitShortAndNarrow()
     {
         Assert.Equal("-987 m", Unit("meter", "short", "-987"));
@@ -179,7 +179,7 @@ public class Issue705Tests
     }
 
     // formatToParts emits a "unit" part and stays consistent with format().
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnitFormatToPartsHasUnitPart()
         => Assert.Equal("minusSign:-|integer:987|literal: |unit:m", Eval(
             "new Intl.NumberFormat('en-US', { style:'unit', unit:'meter' }).formatToParts(-987)" +

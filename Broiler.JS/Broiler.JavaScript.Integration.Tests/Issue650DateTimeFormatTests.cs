@@ -33,7 +33,7 @@ public class Issue650DateTimeFormatTests
             $"var c='ok'; try {{ new Intl.DateTimeFormat('en', {{minute:'numeric', second:'numeric', fractionalSecondDigits:{digits}}}); }} catch (e) {{ c = e.constructor.name; }} c"));
 
     // minute + second, no fractionalSecondDigits → 3 parts (mm : ss).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatToPartsMinuteSecond()
         => Assert.Equal("minute=02,literal=:,second=03", Eval(
             "var d=new Date(2019,7,10,1,2,3,234);" +
@@ -72,7 +72,7 @@ public class Issue650DateTimeFormatTests
         => Assert.Equal(expected, DayPeriod("en", "long", hour));
 
     // German and French day periods come from the locale's CLDR data.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DayPeriodIsLocalized()
     {
         Assert.Equal("morgens", DayPeriod("de", "long", 9));
@@ -80,7 +80,7 @@ public class Issue650DateTimeFormatTests
         Assert.Equal("du matin", DayPeriod("fr", "long", 9));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DayPeriodNarrowNoon()
         => Assert.Equal("n", DayPeriod("en", "narrow", 12));
 }

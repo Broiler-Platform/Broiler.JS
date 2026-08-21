@@ -58,11 +58,11 @@ public sealed class CaptureLayoutTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheSwitchIsOffByDefault()
         => Assert.False(DeferredCaptureLayout.Checking);
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASimpleCaptureIsPredictedExactly()
     {
         var l = Check("""
@@ -79,7 +79,7 @@ public sealed class CaptureLayoutTests
         Assert.Equal(0, l.MissedNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACaptureThreeLevelsDownIsPredictedAtEveryLevel()
     {
         // The transitive case, and the one a per-function walk gets wrong if it does not compose:
@@ -101,7 +101,7 @@ public sealed class CaptureLayoutTests
         Assert.Equal(0, l.MissedNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AWriteThroughACaptureIsPredicted()
     {
         // A capture the body only ever ASSIGNS. A walk that collects reads and forgets writes
@@ -120,7 +120,7 @@ public sealed class CaptureLayoutTests
         Assert.Equal(0, l.MissedNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void APerIterationLoopCellIsPredicted()
     {
         // `let` in a for-head is a distinct binding per iteration, which is the case where the
@@ -135,7 +135,7 @@ public sealed class CaptureLayoutTests
         Assert.Equal(0, l.MissedNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ACaptureInsideACatchAndAWithFreeBodyIsPredicted()
     {
         var l = Check("""
@@ -153,7 +153,7 @@ public sealed class CaptureLayoutTests
         Assert.Equal(0, l.MissedNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AShadowedNameIsNotPredictedAndIsNotCaptured()
     {
         // The over-approximation guard. `q` is mentioned and bound by the inner function, so
@@ -173,7 +173,7 @@ public sealed class CaptureLayoutTests
         Assert.Equal(0, l.Over);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ASelfReferentialFUNCTIONDECLARATIONCapturesItsOwnName()
     {
         // **The defect the corpus run found, as a fixture.** A function DECLARATION's name is
@@ -194,7 +194,7 @@ public sealed class CaptureLayoutTests
         Assert.Equal(0, l.MissedNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANamedFunctionEXPRESSIONSelfNameIsHandedInAndIsPredicted()
     {
         // **The one shape the corpus does not contain, and it took two attempts.** A named
@@ -223,7 +223,7 @@ public sealed class CaptureLayoutTests
         Assert.Equal(declaration.PredictedNames, expression.PredictedNames);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheCheckerIsShownToCatchAMissBeforeItsZeroIsTrusted()
     {
         // **The fixture that makes every zero above mean something**, and §3.5's rule from 0096
@@ -261,7 +261,7 @@ public sealed class CaptureLayoutTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SyntheticBindingsAreExcludedRatherThanCountedAsMisses()
     {
         // `this` and `arguments` are captured by the rewrite and are not identifiers a free-name

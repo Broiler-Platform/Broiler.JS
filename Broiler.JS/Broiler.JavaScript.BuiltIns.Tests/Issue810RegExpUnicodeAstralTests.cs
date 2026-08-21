@@ -21,11 +21,11 @@ public class Issue810RegExpUnicodeAstralTests
     // U+1D306 TETRAGRAM FOR CENTRE (𝌆), U+1F4A9 (💩) .. U+1F4AB (💫).
     private const string Centre = "\U0001D306";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AstralQuantifier()
         => Assert.True(Test($"/{Centre}{{2}}/u.test('{Centre}{Centre}')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AstralClass()
         => Assert.True(Test($"/^[{Centre}]$/u.test('{Centre}')"));
 
@@ -40,29 +40,29 @@ public class Issue810RegExpUnicodeAstralTests
 
     // Lone surrogates are passed via explicit \u escapes (xUnit cannot distinguish two
     // InlineData rows whose only difference is an unpaired surrogate).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NegatedAstralClass_MatchesLoneLeadSurrogate()
         => Assert.True(Test($"/[^{Centre}]/u.test('\\ud834')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NegatedAstralClass_MatchesLoneTrailSurrogate()
         => Assert.True(Test($"/[^{Centre}]/u.test('\\udf06')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NegatedAstralClass_MatchesBmpCharacter()
         => Assert.True(Test($"/[^{Centre}]/u.test('a')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NegatedAstralClass_DoesNotMatchTheExcludedAstralCharacter()
         => Assert.False(Test($"/[^{Centre}]/u.test('{Centre}')"));
 
     // \u{...}-escaped astral members and ranges (problems 40 & 42): the scanner emits
     // these as \uHHHH surrogate-escape pairs, which must also decode to whole code points.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BracedEscape_SingleAstral_Matches()
         => Assert.True(Test(@"/[\u{1F438}]/u.test('\u{1F438}')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BracedEscape_MaxCodePoint_Matches()
         => Assert.True(Test(@"/[\u{10FFFF}]/u.test('\u{10FFFF}')"));
 

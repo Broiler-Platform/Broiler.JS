@@ -6,7 +6,7 @@ namespace Broiler.JavaScript.Compiler.Tests;
 
 public class ExpressionLoggingTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MemberInit_Print_Handles_ElementBindings_And_Null_Bindings()
     {
         var constructor = typeof(List<int>).GetConstructor(Type.EmptyTypes)!;

@@ -17,7 +17,7 @@ public class Issue824RelatedYearZhTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RelatedYearZh()
     {
         var formatted = Eval("""
@@ -36,7 +36,7 @@ public class Issue824RelatedYearZhTests
         => Assert.Equal(expected, Eval(
             $"new Intl.DateTimeFormat('zh-u-ca-chinese', {{ year: 'numeric' }}).format(new Date({year}, 5, 1))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonChineseLocaleKeepsParenthesizedForm()
     {
         // en keeps the root "r(U)" form rather than the zh "rU年" form.

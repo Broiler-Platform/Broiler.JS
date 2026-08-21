@@ -51,15 +51,15 @@ public class Issue675Tests
     // and rejected by the parser. .NET 10 ships Unicode 16 tables, so these now
     // pass without the project needing its own static ID_Start fallback table.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Unicode15_1_CJKExtensionI_IsIdentifierStart()
         => Assert.Equal("1", Eval("var " + char.ConvertFromUtf32(0x2EBF0) + " = 1; " + char.ConvertFromUtf32(0x2EBF0)));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Unicode16_TuluTigalari_IsIdentifierStart()
         => Assert.Equal("1", Eval("var " + char.ConvertFromUtf32(0x11380) + " = 1; " + char.ConvertFromUtf32(0x11380)));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Unicode16_GurungKhema_IsIdentifierStart()
         => Assert.Equal("1", Eval("var " + char.ConvertFromUtf32(0x16100) + " = 1; " + char.ConvertFromUtf32(0x16100)));
 
@@ -67,7 +67,7 @@ public class Issue675Tests
     // scanner leaves the `#<char>` private name unconsumed when <char> is
     // unrecognised as identifier-start. With .NET 10's tables the private
     // declaration scans cleanly.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Unicode15_1_AsPrivateClassName()
         => Assert.Equal("1", Eval(@"
             class C { #" + char.ConvertFromUtf32(0x2EBF0) + @" = 1; get() { return this.#" + char.ConvertFromUtf32(0x2EBF0) + @"; } }
@@ -78,17 +78,17 @@ public class Issue675Tests
 
     // Default String iterator: still walks Unicode code points (a high/low
     // surrogate pair counts as one element).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringIteration_DefaultWalksByCodePoint()
         => Assert.Equal("3", Eval(@"String(Array.from('a😀b').length);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringIteration_DefaultArrayFromYieldsCodeUnits()
         => Assert.Equal("a,b,c", Eval(@"Array.from('abc').join(',');"));
 
     // Replacing String.prototype[Symbol.iterator] must affect every consumer of
     // the iteration protocol over a string primitive.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringIteration_ArrayFromHonoursPrototypeOverride()
         => Assert.Equal("X,Y", Eval(@"
             String.prototype[Symbol.iterator] = function () {
@@ -98,7 +98,7 @@ public class Issue675Tests
             Array.from('ab').join(',');
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringIteration_SpreadHonoursPrototypeOverride()
         => Assert.Equal("X,Y", Eval(@"
             String.prototype[Symbol.iterator] = function () {
@@ -108,7 +108,7 @@ public class Issue675Tests
             [...'ab'].join(',');
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringIteration_ForOfHonoursPrototypeOverride()
         => Assert.Equal("X,Y", Eval(@"
             String.prototype[Symbol.iterator] = function () {
@@ -120,7 +120,7 @@ public class Issue675Tests
             r.join(',');
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringIteration_DestructuringHonoursPrototypeOverride()
         => Assert.Equal("X", Eval(@"
             String.prototype[Symbol.iterator] = function () {
@@ -135,7 +135,7 @@ public class Issue675Tests
 
     // S12.14_A9_T2 CHECK#6 shape: `continue` in finally discards the throw and
     // the loop continues to completion.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FinallyContinue_OverridesPendingThrow()
         => Assert.Equal("{\"c\":2,\"log\":[\"fin\",\"fin\"]}", Eval(@"
             var log=[]; var c=0;
@@ -143,14 +143,14 @@ public class Issue675Tests
             JSON.stringify({c:c, log:log});
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FinallyReturn_OverridesPendingThrow()
         => Assert.Equal("R", Eval(@"
             function f(){ try { throw 'ex'; } finally { return 'R'; } }
             f();
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FinallyBreak_OverridesPendingThrow()
         => Assert.Equal("after", Eval(@"
             var s='before';
@@ -160,7 +160,7 @@ public class Issue675Tests
 
     // The guard is gated on the finally actually branching out: a finally that
     // does not branch must let the pending throw propagate unchanged.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonBranchingFinally_DoesNotSwallowThrow()
         => Assert.Equal("caught:keep", Eval(@"
             var r;
@@ -170,14 +170,14 @@ public class Issue675Tests
 
     // Existing behaviour preserved: a finally return overrides a try return,
     // and an inner branching finally is itself overridden by an outer one.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FinallyReturn_OverridesTryReturn()
         => Assert.Equal("F", Eval(@"
             function f(){ try { return 'T'; } finally { return 'F'; } }
             f();
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestedBranchingFinally_OuterContinueWins()
         => Assert.Equal("done:2", Eval(@"
             var n=0;
@@ -187,7 +187,7 @@ public class Issue675Tests
 
     // A catch that re-throws followed by a branching finally: the finally's
     // continue overrides the re-thrown exception.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CatchRethrow_ThenFinallyContinue_Overrides()
         => Assert.Equal("ok:2", Eval(@"
             var k=0;
@@ -197,11 +197,11 @@ public class Issue675Tests
 
     // ---- Problem 8: Set.prototype.add returns the Set (chainable) ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetAdd_ReturnsTheSet()
         => Assert.Equal("true", Eval("var s = new Set(); String(s.add(9) === s);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetAdd_IsChainable_PreservesInsertionOrder()
         => Assert.Equal("1,2,3", Eval(@"
             var s = new Set();
@@ -209,7 +209,7 @@ public class Issue675Tests
             [...s].join(',');
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WeakSetAdd_ReturnsTheWeakSet()
         => Assert.Equal("true", Eval(@"
             var ws = new WeakSet();
@@ -220,35 +220,35 @@ public class Issue675Tests
 
     // ---- Problem 9: Intl.PluralRules.prototype.select ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PluralRulesSelect_IsAFunctionOfLengthOne()
         => Assert.Equal("function,1", Eval(@"
             var pr = new Intl.PluralRules('en');
             (typeof pr.select) + ',' + pr.select.length;
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PluralRulesSelect_CardinalEnglish()
         => Assert.Equal("one,other,other", Eval(@"
             var pr = new Intl.PluralRules('en');
             [pr.select(1), pr.select(0), pr.select(2)].join(',');
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PluralRulesSelect_NonFiniteIsOther()
         => Assert.Equal("other,other,other", Eval(@"
             var pr = new Intl.PluralRules('en');
             [pr.select(Infinity), pr.select(-Infinity), pr.select(NaN)].join(',');
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PluralRulesSelect_OrdinalEnglish()
         => Assert.Equal("one,two,few,other,other", Eval(@"
             var pr = new Intl.PluralRules('en', { type: 'ordinal' });
             [pr.select(1), pr.select(2), pr.select(3), pr.select(4), pr.select(11)].join(',');
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PluralRulesSelect_ThrowsOnIncompatibleReceiver()
         => Assert.Equal("true", Eval(@"
             var select = Intl.PluralRules.prototype.select;
@@ -259,21 +259,21 @@ public class Issue675Tests
 
     // ---- Problem 10: Promise.withResolvers ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PromiseWithResolvers_ReturnsPromiseAndResolvers()
         => Assert.Equal("true,function,function", Eval(@"
             var d = Promise.withResolvers();
             [d.promise instanceof Promise, typeof d.resolve, typeof d.reject].join(',');
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PromiseWithResolvers_HasLengthZero()
         => Assert.Equal("0", Eval("String(Promise.withResolvers.length);"));
 
     // Driven against a custom (synchronous) constructor so resolution is
     // observable without a microtask queue: withResolvers must hand back the
     // capability's own resolve/reject functions.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PromiseWithResolvers_WiresCapabilityResolveAndReject()
         => Assert.Equal("resolved-with-42", Eval(@"
             var captured;

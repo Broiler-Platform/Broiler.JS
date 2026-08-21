@@ -23,34 +23,34 @@ public class Issue818DirectEvalAssignmentTests
         return ctx.Eval(code).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalAssignToLocalVarDoesNotLeakToGlobal()
         => Assert.Equal("global", Eval(
             "var x = 'global'; (function () { var x = 'local'; eval('x = 0;'); })(); '' + x"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalAssignToLocalVarUpdatesTheLocalBinding()
         => Assert.Equal("0", Eval(
             "var x = 'global'; (function () { var x = 'local'; eval('x = 0;'); return '' + x; })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalAssignToParameterDoesNotLeakToGlobal()
         => Assert.Equal("global", Eval(
             "var x = 'global'; (function (x) { eval('x = 0;'); })('param'); '' + x"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalAssignToGenuineGlobalStillWritesGlobal()
         => Assert.Equal("2", Eval(
             "var x = 1; (function () { eval('x = 2;'); })(); '' + x"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalVarRedeclarationDoesNotLeakToGlobal()
         => Assert.Equal("global", Eval(
             "var x = 'global'; (function () { var x = 'local'; eval('var x = 9;'); })(); '' + x"));
 
     // The exact eval-spread-empty-leading.js shape: an empty leading spread followed
     // by the eval text makes a direct eval whose only argument is the source string.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalEmptyLeadingSpreadAssignsLocalOnly()
         => Assert.Equal("0:global", Eval(
             "var nextCount = 0;" +

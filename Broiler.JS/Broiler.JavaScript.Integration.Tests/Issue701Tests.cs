@@ -66,7 +66,7 @@ public class Issue701Tests
 
     // A base constructor `return`-override hands the same object to two separate
     // field initializations; the second PrivateFieldAdd of `#x` throws.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DuplicatePrivateFieldThrows()
         => Assert.Equal("TypeError", Catch(
             "class A { constructor(a) { return a; } }" +
@@ -77,7 +77,7 @@ public class Issue701Tests
 
     // A derived instance whose base constructor sealed `this` cannot receive the
     // subclass private field.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateFieldOnNonExtensibleDerivedInstanceThrows()
         => Assert.Equal("TypeError", Catch(
             "class B { constructor(seal) { if (seal) Object.preventExtensions(this); } }" +
@@ -86,7 +86,7 @@ public class Issue701Tests
 
     // A base-class field initializer that makes `this` non-extensible before the
     // field is stored throws when the field is added.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateFieldOnSelfSealedBaseThrows()
         => Assert.Equal("TypeError", Catch(
             "class T { #g = (Object.preventExtensions(this), 'Test262'); } new T();"));
@@ -94,13 +94,13 @@ public class Issue701Tests
     // ---- Ordinary private-field initialization is unaffected ----
 
     // A field on a fresh, extensible instance is readable.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateFieldOnExtensibleInstanceReads()
         => Assert.Equal("5", Eval(
             "class C { #x = 5; get() { return this.#x; } } new C().get();").ToString());
 
     // An extensible derived instance still constructs and reads its field.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateFieldOnExtensibleDerivedInstanceReads()
         => Assert.Equal("42", Eval(
             "class B { constructor(seal) { if (seal) Object.preventExtensions(this); } }" +
@@ -109,7 +109,7 @@ public class Issue701Tests
 
     // Two independent instances each get their own private field (the duplicate
     // check is per object, not per private name).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DistinctInstancesEachGetTheirOwnField()
         => Assert.Equal("1,1", Eval(
             "class C { #x = 1; v() { return this.#x; } } new C().v() + ',' + new C().v();").ToString());
@@ -126,7 +126,7 @@ public class Issue701Tests
 
     // Valid ClassElement forms still parse and run: field, method, accessor pair,
     // static block, and a computed-key method.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ValidClassElementsStillParse()
         => Assert.Equal("5,7,9,3,4", Eval(
             "class CF { x = 5; }" +
@@ -138,11 +138,11 @@ public class Issue701Tests
             "[new CF().x, new CM().m(), a.x, CS.y, new CC().m()].join(',');").ToString());
 
     // The object-literal and destructuring colons are untouched.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectLiteralColonStillWorks()
         => Assert.Equal("1", Eval("({ a: 1 }).a;").ToString());
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DestructuringDefaultStillWorks()
         => Assert.Equal("5", Eval("var { a = 5 } = {}; a;").ToString());
 
@@ -150,7 +150,7 @@ public class Issue701Tests
 
     // Re-running a constructor over the same `return`-override object installs the
     // private method a second time and throws (PrivateMethodOrAccessorAdd).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateMethodDoubleInstallThrows()
         => Assert.Equal("TypeError", Catch(
             "class B { constructor(o) { return o; } }" +
@@ -158,7 +158,7 @@ public class Issue701Tests
             "var o = {}; new C(o); new C(o);"));
 
     // The same for a private accessor sharing a getter and setter.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateAccessorDoubleInstallThrows()
         => Assert.Equal("TypeError", Catch(
             "class B { constructor(o) { return o; } }" +
@@ -166,7 +166,7 @@ public class Issue701Tests
             "var o = {}; new C(o); new C(o);"));
 
     // Installing a private method on a non-extensible instance throws.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateMethodOnNonExtensibleThrows()
         => Assert.Equal("TypeError", Catch(
             "class B { constructor(seal) { if (seal) Object.preventExtensions(this); } }" +
@@ -175,7 +175,7 @@ public class Issue701Tests
 
     // A `return`-override object carries the private method and can call it — the
     // method is on the instance, not (only) the class prototype.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReturnOverrideObjectCanCallPrivateMethod()
         => Assert.Equal("7", Eval(
             "class B { constructor(o) { return o; } }" +
@@ -183,13 +183,13 @@ public class Issue701Tests
             "var o = {}; var inst = new C(o); C.call(inst);").ToString());
 
     // A private method is callable on an ordinary instance (the common case).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateMethodOnOrdinaryInstanceWorks()
         => Assert.Equal("3", Eval(
             "class C { #m() { return 3; } call() { return this.#m(); } } new C().call();").ToString());
 
     // A private accessor (getter + setter) round-trips on an ordinary instance.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateAccessorRoundTrips()
         => Assert.Equal("9", Eval(
             "class C { #v = 1; get #x() { return this.#v; } set #x(n) { this.#v = n; }" +
@@ -197,13 +197,13 @@ public class Issue701Tests
 
     // Private methods install before field initializers, so a field initializer
     // may call one.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FieldInitializerCanCallPrivateMethod()
         => Assert.Equal("5", Eval(
             "class C { #m() { return 5; } x = this.#m(); } new C().x;").ToString());
 
     // A private method is not an enumerable own property.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateMethodIsNotEnumerable()
         => Assert.Equal("0", Eval(
             "class C { #m() {} f = 1; }" +
@@ -211,7 +211,7 @@ public class Issue701Tests
 
     // A class with private methods but no fields and no explicit constructor still
     // installs them (the synthetic constructor runs InitMembers).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SyntheticConstructorInstallsPrivateMethod()
         => Assert.Equal("4", Eval(
             "class C { #m() { return 4; } call() { return this.#m(); } } new C().call();").ToString());
@@ -220,34 +220,34 @@ public class Issue701Tests
 
     // A static private field added to a constructor that an earlier initializer
     // sealed is a TypeError.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticPrivateFieldOnSelfSealedConstructorThrows()
         => Assert.Equal("TypeError", Catch(
             "class T { static #g = (Object.preventExtensions(T), 'x'); }"));
 
     // The class name resolves to the constructor inside a static field initializer
     // (it was previously undefined).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassNameVisibleInStaticFieldInitializer()
         => Assert.Equal("function", Eval(
             "class C { static #t = (typeof C); static get() { return C.#t; } } C.get();").ToString());
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassNameVisibleInPublicStaticFieldInitializer()
         => Assert.Equal("function", Eval("class C { static t = typeof C; } C.t;").ToString());
 
     // Static methods install before static field initializers, so a static field
     // initializer may call one.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticFieldInitializerCanCallStaticMethod()
         => Assert.Equal("3", Eval("class C { static m() { return 3; } static x = C.m(); } C.x;").ToString());
 
     // Ordinary static private and public fields still read back.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticPrivateFieldStillReads()
         => Assert.Equal("5", Eval("class C { static #x = 5; static get() { return C.#x; } } C.get();").ToString());
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticPublicFieldStillReads()
         => Assert.Equal("7", Eval("class C { static y = 7; } C.y;").ToString());
 
@@ -255,21 +255,21 @@ public class Issue701Tests
 
     // Calling a method through a Proxy runs it with the proxy as `this`; the
     // proxy does not carry the target's private field, so `this.#x` is a TypeError.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateFieldDoesNotLeakThroughProxy()
         => Assert.Equal("TypeError", Catch(
             "class C { #x = 1; x() { return this.#x; } }" +
             "var c = new C(); var p = new Proxy(c, {}); p.x();"));
 
     // The original object still reads its own private field.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateFieldReadsOnRealReceiver()
         => Assert.Equal("1", Eval(
             "class C { #x = 1; x() { return this.#x; } } new C().x();").ToString());
 
     // A proxy handed a private field by a constructor return-override holds it as
     // its own element and can read it.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ProxyWithOwnPrivateFieldReads()
         => Assert.Equal("7", Eval(
             "class B { constructor(o) { return o; } }" +
@@ -277,7 +277,7 @@ public class Issue701Tests
             "var p = new Proxy({}, {}); var inst = new C(p); C.get(p);").ToString());
 
     // Ordinary (non-private) property access through a Proxy is unaffected.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ProxyOrdinaryGetTrapStillWorks()
         => Assert.Equal("42", Eval(
             "var p = new Proxy({ a: 1 }, { get(t, k) { return k === 'a' ? 42 : t[k]; } }); p.a;").ToString());

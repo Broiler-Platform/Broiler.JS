@@ -24,19 +24,19 @@ public class Issue853Tests
     // display comes only from the string @@toStringTag on their prototypes, which
     // a non-string override must NOT be able to fall back to.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectToString_BigIntPrimitive_UsesPrototypeToStringTag()
         => Assert.Equal("[object BigInt]", Eval("Object.prototype.toString.call(1n);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectToString_SymbolPrimitive_UsesPrototypeToStringTag()
         => Assert.Equal("[object Symbol]", Eval("Object.prototype.toString.call(Symbol());"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectToString_BigIntWrapper_DefaultIsBigInt()
         => Assert.Equal("[object BigInt]", Eval("Object.prototype.toString.call(Object(1n));"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectToString_BigIntWrapper_NonStringTagFallsBackToObject()
         => Assert.Equal("[object Object]", Eval("""
             var b = Object(1n);
@@ -44,7 +44,7 @@ public class Issue853Tests
             Object.prototype.toString.call(b);
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectToString_SymbolWrapper_NonStringTagFallsBackToObject()
         => Assert.Equal("[object Object]", Eval("""
             var s = Object(Symbol());
@@ -56,11 +56,11 @@ public class Issue853Tests
     // U+180E (MONGOLIAN VOWEL SEPARATOR) was reclassified from Zs to Cf in
     // Unicode 6.3, so it is no longer WhiteSpace and must not be trimmed.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Trim_DoesNotStripMongolianVowelSeparator()
         => Assert.Equal("1", Eval("'\\u180E'.trim().length.toString();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Trim_StillStripsRealWhitespace()
         => Assert.Equal("x", Eval("'\\u0020\\u00A0\\t x \\u3000'.trim();"));
 
@@ -68,19 +68,19 @@ public class Issue853Tests
     // Lone (unpaired) surrogates are escaped as \uXXXX; well-formed pairs stay
     // verbatim.
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringify_EscapesLoneHighSurrogate()
         => Assert.Equal("\"\\ud800\"", Eval("JSON.stringify('\\uD800');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringify_EscapesLoneLowSurrogate()
         => Assert.Equal("\"\\udc00\"", Eval("JSON.stringify('\\uDC00');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringify_EscapesReversedSurrogatePair()
         => Assert.Equal("\"\\udc00\\ud800\"", Eval("JSON.stringify('\\uDC00\\uD800');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonStringify_PreservesWellFormedSurrogatePair()
         => Assert.Equal("\"\\ud83d\\ude00\"", Eval("""
             var s = JSON.stringify('😀');

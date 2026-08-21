@@ -37,7 +37,7 @@ public class Issue836TemporalOptionsRead2Tests
         }
     ";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainDateWithReadsOverflowBeforeRejectingMonthCode()
         => Assert.Equal("overflow", Eval(Observer + @"
             var options = obs({ overflow: 'constrain' });
@@ -45,7 +45,7 @@ public class Issue836TemporalOptionsRead2Tests
             actual.join(',');
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainYearMonthFromReadsOverflowBeforeRejectingMonthCode()
         => Assert.Equal("overflow", Eval(Observer + @"
             var options = obs({ overflow: 'constrain' });
@@ -53,7 +53,7 @@ public class Issue836TemporalOptionsRead2Tests
             actual.join(',');
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainMonthDayFromReadsOverflowBeforeRejectingMonthCode()
         => Assert.Equal("overflow", Eval(Observer + @"
             var options = obs({ overflow: 'constrain' });
@@ -61,7 +61,7 @@ public class Issue836TemporalOptionsRead2Tests
             actual.join(',');
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainDateTimeRoundReadsOptionsInOrder()
         => Assert.Equal("roundingIncrement,roundingMode,smallestUnit", Eval(Observer + @"
             var options = obs({ smallestUnit: 'hour', roundingIncrement: 25, roundingMode: 'expand' });
@@ -69,7 +69,7 @@ public class Issue836TemporalOptionsRead2Tests
             actual.join(',');
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainDateTimeRoundRejectsIncrementNotDividingUnit()
         => Assert.Equal("RangeError", Eval(@"
             var r;
@@ -78,7 +78,7 @@ public class Issue836TemporalOptionsRead2Tests
             r;
         "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainDateTimeRoundAcceptsValidIncrement()
         => Assert.Equal("2025-08-14T12:00:00", Eval(
             "new Temporal.PlainDateTime(2025, 8, 14, 12, 10).round({ smallestUnit: 'hour', roundingIncrement: 12 }).toString()"));

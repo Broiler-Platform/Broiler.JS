@@ -28,7 +28,7 @@ public class Issue650SpliceTests
 
     // ToLength clamps oversized lengths to 2^53-1; splice() with no args leaves
     // the (clamped) length in place rather than throwing.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClampsLengthToIntegerLimit()
         => Assert.Equal("9007199254740991 9007199254740991 9007199254740991 9007199254740991", Eval(@"
 var a = {}; var out = [];
@@ -39,7 +39,7 @@ a.length = Infinity;         Array.prototype.splice.call(a); out.push(a.length);
 out.join(' ')"));
 
     // Removing one element near the integer limit shifts the tail down by one.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ShrinkArrayNearIntegerLimit()
         => Assert.Equal("9007199254740987|9007199254740990|9007199254740988|false|9007199254740990|false|9007199254740991", Eval(@"
 var a = {
@@ -55,7 +55,7 @@ var r = Array.prototype.splice.call(a, 9007199254740987, 1);
  ('9007199254740990' in a), a['9007199254740991']].join('|')"));
 
     // deleteCount exceeding the limit is clamped to len - start.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeleteCountExceedingIntegerLimit()
         => Assert.Equal("9007199254740989,9007199254740990|9007199254740989|9007199254740988|false|false|9007199254740991", Eval(@"
 var a = {
@@ -69,7 +69,7 @@ var r = Array.prototype.splice.call(a, 9007199254740989, 9007199254740996);
  ('9007199254740989' in a), ('9007199254740990' in a), a['9007199254740991']].join('|')"));
 
     // Inserting one element grows length from 2^53-2 to exactly 2^53-1 (no throw).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GrowArrayNearIntegerLimit()
         => Assert.Equal("0|9007199254740991|new-value", Eval(@"
 var a = {
@@ -83,7 +83,7 @@ var r = Array.prototype.splice.call(a, 9007199254740986, 0, 'new-value');
 
     // Sputnik S15.4.4.12_A3_T1: length 2^32, splice the last (2^32-1) element.
     // (join renders the now-undefined obj[4294967295] as an empty field.)
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToLengthForNonArrayObjectAtUint32Limit()
         => Assert.Equal("1|4294967295|x||y", Eval(@"
 var obj = {}; obj.splice = Array.prototype.splice;
@@ -92,7 +92,7 @@ var arr = obj.splice(4294967295, 1);
 [arr.length, obj.length, obj[0], obj[4294967295], arr[0]].join('|')"));
 
     // A result length exceeding 2^53-1 is a TypeError (spec step 7).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ResultLengthExceedingSafeIntegerThrowsTypeError()
         => Assert.Equal("TypeError", Eval(@"
 var a = { length: 9007199254740991 };
@@ -101,7 +101,7 @@ try { Array.prototype.splice.call(a, 0, 0, 'x'); } catch (e) { c = e.constructor
 c"));
 
     // A real (32-bit) array still splices correctly via the fast path.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OrdinaryArraySpliceUnaffected()
         => Assert.Equal("2,3|1,9,4", Eval(
             "var a=[1,2,3,4]; var r=a.splice(1,2,9); r.join(',') + '|' + a.join(',')"));

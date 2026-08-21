@@ -40,7 +40,7 @@ public class EngineModuleImportBindingTests
         return ctx.Eval("globalThis.result|0").DoubleValue;
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task Named_Import_Binds_Value()
     {
         var files = new Dictionary<string, string>
@@ -51,7 +51,7 @@ public class EngineModuleImportBindingTests
             "import { d, add } from './lib/dep.js';\nglobalThis.result = add(d, 5);"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task Namespace_Import_Binds_Value()
     {
         var files = new Dictionary<string, string> { ["file:///app/lib/dep.js"] = "export const d = 7;" };
@@ -59,7 +59,7 @@ public class EngineModuleImportBindingTests
             "import * as ns from './lib/dep.js';\nglobalThis.result = ns.d;"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task Default_Import_Binds_Value()
     {
         var files = new Dictionary<string, string> { ["file:///app/lib/dep.js"] = "export default 41;" };
@@ -67,7 +67,7 @@ public class EngineModuleImportBindingTests
             "import v from './lib/dep.js';\nglobalThis.result = v + 1;"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task Transitive_Chain_Binds()
     {
         var files = new Dictionary<string, string>
@@ -79,7 +79,7 @@ public class EngineModuleImportBindingTests
             "import { b } from './b.js';\nglobalThis.result = b;"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task Diamond_Shared_Dependency_Evaluated_Once()
     {
         var files = new Dictionary<string, string>
@@ -96,7 +96,7 @@ public class EngineModuleImportBindingTests
         Assert.Equal(1.0, ctx.Eval("globalThis.evalCount|0").DoubleValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public async Task TopLevelAwait_In_Dependency_Completes()
     {
         var files = new Dictionary<string, string>

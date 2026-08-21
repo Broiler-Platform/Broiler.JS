@@ -18,19 +18,19 @@ public class Issue808RegExpToStringGenericTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_OnPrototype_ReturnsEmptyPattern()
         => Assert.Equal("/(?:)/", Eval("RegExp.prototype.toString();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_OnRegExpInstance_Works()
         => Assert.Equal("/ab+c/gi", Eval("/ab+c/gi.toString();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_OnGenericObject_UsesSourceAndFlags()
         => Assert.Equal("/abc/g", Eval("RegExp.prototype.toString.call({ source: 'abc', flags: 'g' });"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_ReadsSourceBeforeFlags()
     {
         var actual = Eval("""
@@ -45,7 +45,7 @@ public class Issue808RegExpToStringGenericTests
         Assert.Equal("/x/y|source,flags", actual);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToString_OnNonObject_Throws()
         => Assert.Equal("TypeError", Eval("""
             var err = "none";

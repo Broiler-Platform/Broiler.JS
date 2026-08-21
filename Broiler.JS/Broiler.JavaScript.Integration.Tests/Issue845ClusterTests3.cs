@@ -28,7 +28,7 @@ public class Issue845ClusterTests3
     public void SymmetricDifference(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymmetricDifferenceTogglesAgainstLiveReceiver()
     {
         // A set-like whose keys() iterator mutates the receiver mid-iteration; the toggle
@@ -58,7 +58,7 @@ public class Issue845ClusterTests3
     public void NativeFunctionToString(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NativeAccessorKeepsItsNameProperty()
         => Assert.Equal("get $&", Eval("Object.getOwnPropertyDescriptor(RegExp, '$&').get.name"));
 

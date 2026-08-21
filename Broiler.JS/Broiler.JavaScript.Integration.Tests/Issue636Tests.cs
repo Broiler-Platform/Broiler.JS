@@ -44,7 +44,7 @@ public class Issue636Tests
 
     // The valid fractionDigits range is 0..100 (raised from the old 0..20 limit),
     // checked against the truncated integer value.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToExponentialAcceptsUpTo100Digits()
         => Assert.Equal("1." + new string('0', 100) + "e+0", Eval("(1).toExponential(100)"));
 
@@ -64,32 +64,32 @@ public class Issue636Tests
         => Assert.Equal(expected, Eval(code));
 
     // Non-legacy Intl constructors still require `new`.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonLegacyIntlConstructorStillRequiresNew()
         => Assert.Equal("TypeError", Eval("(function(){ try { Intl.PluralRules(); return 'no throw'; } catch (e) { return e.constructor.name; } })()"));
 
     // ---- Problem 8: Symbol.prototype[Symbol.toPrimitive] with a boxed receiver ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolToPrimitiveUnwrapsBoxedSymbol()
         => Assert.Equal("true", Eval("var s = Symbol('x'); '' + (Object(s)[Symbol.toPrimitive]() === s)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolToPrimitiveStillRejectsNonSymbolReceiver()
         => Assert.Equal("TypeError", Eval("(function(){ try { Symbol.prototype[Symbol.toPrimitive].call({}); return 'no throw'; } catch (e) { return e.constructor.name; } })()"));
 
     // ---- Problem 2: Object.freeze / Object.seal on a String wrapper ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FreezeStringWrapperSucceeds()
         => Assert.Equal("true", Eval("var s = new String('abc'); Object.freeze(s); '' + Object.isFrozen(s)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SealStringWrapperSucceeds()
         => Assert.Equal("true", Eval("var s = new String('abc'); Object.seal(s); '' + Object.isSealed(s)"));
 
     // Freezing must not corrupt the wrapper's characters or length.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FrozenStringWrapperRetainsCharactersAndLength()
         => Assert.Equal("a,b,c,3", Eval("var s = new String('abc'); Object.freeze(s); '' + s[0] + ',' + s[1] + ',' + s[2] + ',' + s.length"));
 }

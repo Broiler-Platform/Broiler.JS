@@ -18,7 +18,7 @@ public class Issue830ZipKeyedTests
         return ctx.Eval(source).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     // Symbol-keyed iterables are included, after the string keys.
     public void SymbolKeysIncluded()
     {
@@ -35,7 +35,7 @@ public class Issue830ZipKeyedTests
         Assert.Equal("2|b|true|1|2", r);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     // The key list is snapshotted before values are read: a getter deleting a later key
     // does not stop that key's own getter from running.
     public void KeysSnapshottedBeforeReadingValues()

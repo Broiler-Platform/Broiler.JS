@@ -21,35 +21,35 @@ public class Issue814DerivedConstructorEvalSuperTests
         return ctx.Eval(code).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalSuperCallInitializesThis()
         => Assert.Equal("6", Eval(
             "class A { constructor() { this.x = 6; } }" +
             "class B extends A { constructor() { eval('super()'); this.y = this.x; } }" +
             "'' + new B().y"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrowEvalSuperCallInitializesThis()
         => Assert.Equal("7", Eval(
             "class A { constructor() { this.x = 7; } }" +
             "class B extends A { constructor() { (() => { eval('super()'); })(); this.y = this.x; } }" +
             "'' + new B().y"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestedArrowEvalSuperCallInitializesThis()
         => Assert.Equal("8", Eval(
             "class A { constructor() { this.x = 8; } }" +
             "class B extends A { constructor() { var g = () => () => { eval('super()'); }; g()(); this.y = this.x; } }" +
             "'' + new B().y"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalSuperForwardsArguments()
         => Assert.Equal("99", Eval(
             "class A { constructor(v) { this.v = v; } }" +
             "class B extends A { constructor() { eval('super(99)'); } }" +
             "'' + new B().v"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ThisIsReadableInsideEvalAfterSuper()
         // The `this` is read inside the eval, after its super() — the assignment target
         // must be a plain local: `this.r = eval(...)` would (correctly) read the `this`
@@ -59,14 +59,14 @@ public class Issue814DerivedConstructorEvalSuperTests
             "class B extends A { constructor() { var t = eval('super(); this.x'); this.r = t; } }" +
             "'' + new B().r"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InstanceFieldsInitializeAfterEvalSuper()
         => Assert.Equal("5", Eval(
             "class A { constructor() {} }" +
             "class B extends A { y = 5; constructor() { eval('super()'); } }" +
             "'' + new B().y"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SecondSuperViaEvalThrowsReferenceError()
         => Assert.Equal("ReferenceError", Eval(
             "class A { constructor() {} }" +
@@ -74,7 +74,7 @@ public class Issue814DerivedConstructorEvalSuperTests
             "catch (e) { this.r = e.constructor.name; } } }" +
             "new B().r"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReadingThisBeforeEvalSuperThrowsReferenceError()
         => Assert.Equal("ReferenceError", Eval(
             "class A { constructor() {} }" +
@@ -82,14 +82,14 @@ public class Issue814DerivedConstructorEvalSuperTests
             "catch (e) { super(); this.r = e.constructor.name; } } }" +
             "new B().r"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SuperPropertyViaEvalStillWorks()
         => Assert.Equal("42", Eval(
             "class A { constructor() {} m() { return 42; } }" +
             "class B extends A { constructor() { super(); this.z = eval('super.m()'); } }" +
             "'' + new B().z"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonDerivedConstructorEvalThisUnaffected()
         => Assert.Equal("3", Eval(
             "class A { constructor() { this.x = 1; this.z = eval('this.x + 2'); } }" +

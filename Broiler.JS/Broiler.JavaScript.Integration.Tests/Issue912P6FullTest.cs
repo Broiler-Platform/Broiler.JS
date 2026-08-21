@@ -13,7 +13,7 @@ public class Issue912P6FullTest
     }
 
     // The full staging/sm/lexical-environment/block-scoped-functions-annex-b-label.js test.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FullP6()
     {
         var code = @"

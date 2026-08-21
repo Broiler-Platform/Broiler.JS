@@ -29,44 +29,44 @@ public class Issue914NumberRangeTests
 
     // --- P8: en-US (test262 formatRange/en-US.js) ---
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnCurrencyRangeKeepsBothSymbolsWithSpacedDash()
         => Assert.Equal("$3 " + Dash + " $5", Eval(
             "new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).formatRange(3,5)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnCurrencyRangeApproximatelyWhenEndpointsFormatEqual()
         => Assert.Equal("~$3", Eval(
             "new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).formatRange(2.9,3.1)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnCurrencyRangeCollapsesSignAndCurrencyPrefixTight()
         => Assert.Equal("+$2.90" + Dash + "3.10", Eval(
             "new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',signDisplay:'always'}).formatRange(2.9,3.1)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnDecimalRangeUsesTightDashBetweenDigits()
         => Assert.Equal("987,654,321,987,654,321" + Dash + "987,654,321,987,654,322", Eval(
             "new Intl.NumberFormat('en-US').formatRange('987654321987654321','987654321987654322')"));
 
     // --- P10: pt-PT (test262 formatRange/pt-PT.js) ---
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PtCurrencyRangeCollapsesSuffixWithSpacedHyphen()
         => Assert.Equal("3 - 5" + Nb + Eur, Eval(
             "new Intl.NumberFormat('pt-PT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).formatRange(3,5)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PtCurrencyRangeApproximately()
         => Assert.Equal("~3" + Nb + Eur, Eval(
             "new Intl.NumberFormat('pt-PT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).formatRange(2.9,3.1)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PtCurrencyRangeCollapsesSignPrefixAndCurrencySuffix()
         => Assert.Equal("+2,90 - 3,10" + Nb + Eur, Eval(
             "new Intl.NumberFormat('pt-PT',{style:'currency',currency:'EUR',signDisplay:'always'}).formatRange(2.9,3.1)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PtDecimalRangeUsesSpacedHyphen()
         => Assert.Equal(
             "987" + Nb + "654" + Nb + "321" + Nb + "987" + Nb + "654" + Nb + "321 - "
@@ -74,13 +74,13 @@ public class Issue914NumberRangeTests
             Eval("new Intl.NumberFormat('pt-PT').formatRange('987654321987654321','987654321987654322')"));
 
     // pt-PT single currency format places the symbol after the amount with a NBSP.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PtSingleCurrencyPlacesSymbolAfterAmount()
         => Assert.Equal("3" + Nb + Eur, Eval(
             "new Intl.NumberFormat('pt-PT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(3)"));
 
     // en-US single currency format keeps the symbol before the amount (no regression).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnSingleCurrencyPlacesSymbolBeforeAmount()
         => Assert.Equal("$3", Eval(
             "new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(3)"));

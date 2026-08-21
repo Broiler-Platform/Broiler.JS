@@ -87,7 +87,7 @@ public class Issue966InertEvalTests
     public void InertBodyLeavesTheCallerAlone(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StrictModeEvalIsUnaffected()
     {
         // A strict direct eval has `"use strict";` prepended to its body, so its statement
@@ -97,7 +97,7 @@ public class Issue966InertEvalTests
         Assert.Equal("0", Eval("'use strict'; var yy = 0; eval('//c'); yy"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheTimingOutTestShapeCompletesQuickly()
     {
         // S7.4_A5's own shape: one direct eval of a comment-only program per code unit. The

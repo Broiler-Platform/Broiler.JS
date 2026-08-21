@@ -27,7 +27,7 @@ public class Issue814AwaitUsingInLoopTests
         return ctx.Eval("'' + globalThis.r").ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitUsingInCStyleForWithTrailingStatement()
         => Assert.Equal("b0,ad0,b1,ad1", Drive(
             "(async function () { var g = []; " +
@@ -36,7 +36,7 @@ public class Issue814AwaitUsingInLoopTests
             "  g.push('b' + i); } " +
             "globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitUsingInForOfBody()
         => Assert.Equal("b,ad,b,ad", Drive(
             "(async function () { var g = []; " +
@@ -45,7 +45,7 @@ public class Issue814AwaitUsingInLoopTests
             "  g.push('b'); } " +
             "globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitUsingInWhileBody()
         => Assert.Equal("b,ad,b,ad", Drive(
             "(async function () { var g = []; var n = 0; " +
@@ -54,7 +54,7 @@ public class Issue814AwaitUsingInLoopTests
             "  g.push('b'); } " +
             "globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitUsingForOfHead()
         => Assert.Equal("b,ad,b,ad2", Drive(
             "(async function () { var g = []; " +
@@ -63,7 +63,7 @@ public class Issue814AwaitUsingInLoopTests
             "  { [Symbol.asyncDispose]() { g.push('ad2'); return Promise.resolve(); } }]) { g.push('b'); } " +
             "globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MixedAwaitAndSyncUsingDisposeInReverseOrder()
         // Disposal is LIFO: the later (sync) `using y` disposes before the earlier
         // (async) `await using x`.
@@ -75,14 +75,14 @@ public class Issue814AwaitUsingInLoopTests
             "  g.push('b'); } " +
             "globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitUsingInBlockStillWorks()
         => Assert.Equal("b,ad,after", Drive(
             "(async function () { var g = []; " +
             "{ await using x = { [Symbol.asyncDispose]() { g.push('ad'); return Promise.resolve(); } }; g.push('b'); } " +
             "g.push('after'); globalThis.r = g.join(','); })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ValueProducingTryFinallyWithAwaitInLoop()
         // The general rewriter fix: a value-producing try/finally whose finally awaits,
         // inside a loop, must preserve its value.

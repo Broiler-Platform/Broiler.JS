@@ -28,7 +28,7 @@ public class Issue828ProxySetReceiverTests
     }
 
     // A string-keyed write surfaces the proxy as the set trap's receiver.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringKeyedSetTrapReceivesProxyAsReceiver()
         => Assert.Equal("true,object", Eval("""
             var seen;
@@ -38,7 +38,7 @@ public class Issue828ProxySetReceiverTests
         """));
 
     // A symbol-keyed write likewise passes the proxy as the receiver.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolKeyedSetTrapReceivesProxyAsReceiver()
         => Assert.Equal("true", Eval("""
             var s = Symbol('s');
@@ -50,7 +50,7 @@ public class Issue828ProxySetReceiverTests
 
     // The receiver is the proxy even when the write happens via `this` inside a method
     // invoked through the proxy (the sm/Iterator proxy-accesses shape: `this.value++`).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ThisWriteThroughProxyReceivesProxyAsReceiver()
         => Assert.Equal("true", Eval("""
             var seen;
@@ -61,7 +61,7 @@ public class Issue828ProxySetReceiverTests
         """));
 
     // A proxy compares equal only to itself, never to its target.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ProxyComparesByOwnIdentity()
         => Assert.Equal("true,false,false,true", Eval("""
             var t = {};
@@ -70,7 +70,7 @@ public class Issue828ProxySetReceiverTests
         """));
 
     // Distinct proxies over the same target are distinct values.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DistinctProxiesOverSameTargetAreNotEqual()
         => Assert.Equal("false", Eval("""
             var t = {};
@@ -82,7 +82,7 @@ public class Issue828ProxySetReceiverTests
     // each field is read through the result's own [[HasProperty]]/[[Get]] (observable) in the
     // fixed enumerable/configurable/value/writable/get/set order, and the caller gets a plain
     // record carrying those values — not the raw trap object.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GetOwnPropertyDescriptorReadsTrapResultFieldsInOrder()
         => Assert.Equal("enumerable,configurable,value,writable|1|true", Eval("""
             var reads = [];

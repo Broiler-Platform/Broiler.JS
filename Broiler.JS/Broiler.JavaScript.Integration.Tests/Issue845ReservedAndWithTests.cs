@@ -34,7 +34,7 @@ public class Issue845ReservedAndWithTests
     public void BareSuperIsSyntaxError(string code)
         => Assert.Equal("SyntaxError", ErrorOf(code));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SuperPropertyAndCallStillWork()
         => Assert.Equal("ok",
             Eval("class C extends Object { constructor(){ super(); this.t = super.toString; } m(){ return super['toString']; } } var c = new C(); (typeof c.t === 'function' && typeof c.m() === 'function') ? 'ok' : 'no'"));
@@ -58,7 +58,7 @@ public class Issue845ReservedAndWithTests
 
     // ---- reading arguments inside a with ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArgumentsInWithResolvesWithObjectProperty()
         => Assert.Equal("42",
             Eval("(function(){ var o = { arguments: 42 }; with (o) { return arguments; } })()"));

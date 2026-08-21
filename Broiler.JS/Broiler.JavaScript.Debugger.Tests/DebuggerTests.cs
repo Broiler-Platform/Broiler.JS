@@ -5,7 +5,7 @@ namespace Broiler.JavaScript.Debugger.Tests;
 
 public class DebuggerTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void V8RemoteObject_FromNumber_HasNumberType()
     {
         using var ctx = new JSContext();
@@ -14,14 +14,14 @@ public class DebuggerTests
         Assert.Equal("number", remote.Type);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void V8RemoteObject_FromString_HasStringType()
     {
         var remote = new V8RemoteObject("test");
         Assert.Equal("string", remote.Type);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void V8CallFrame_DefaultValues()
     {
         var frame = new V8CallFrame();

@@ -2,7 +2,7 @@ namespace LogParser.Tests;
 
 public class LogSummaryBuilderTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseFile_ReadsShard7AndAdditionalFixture()
     {
         var shardSeven = LogSummaryBuilder.ParseFile(GetShardSevenPath());
@@ -14,7 +14,7 @@ public class LogSummaryBuilderTests
         Assert.Equal(fixture.Executed, fixture.Results.Length);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SummarizeGroups_ByStatus_ComputesCountsMetricsAndNotableEntries()
     {
         var summary = LogSummaryBuilder.ParseAndSummarize(GetFixturePath());
@@ -32,7 +32,7 @@ public class LogSummaryBuilderTests
         Assert.Equal("test/built-ins/Array/map/c.js", notableEntry.Path);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SummarizeGroups_ByPathBucket_UsesRequestedDepth()
     {
         var summary = LogSummaryBuilder.ParseAndSummarize(GetFixturePath(), bucketDepth: 4);
@@ -45,7 +45,7 @@ public class LogSummaryBuilderTests
         Assert.Equal(1, mapBucket.StatusCounts["failed"]);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseAndSummarizeDirectory_CombinesAllFilesIntoOneSummary()
     {
         var summary = LogSummaryBuilder.ParseAndSummarizeDirectory(GetTestDataDirectoryPath());
@@ -67,7 +67,7 @@ public class LogSummaryBuilderTests
         Assert.Contains(summary.PathGroups, group => group.Key == "test/annexB/alpha.js" && group.Count == 1);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Format_IncludesBothFilesAndSummarySections()
     {
         var formatted = LogReportFormatter.Format(
@@ -88,7 +88,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("statusCounts:", formatted, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Format_DirectorySummary_UsesDirectoryHeading()
     {
         var formatted = LogReportFormatter.Format(
@@ -103,7 +103,7 @@ public class LogSummaryBuilderTests
         Assert.DoesNotContain("File: sample-exceptions.json", formatted, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseAndSummarize_ExtractsAndCountsExceptions()
     {
         var summary = LogSummaryBuilder.ParseAndSummarize(GetExceptionFixturePath());
@@ -147,7 +147,7 @@ public class LogSummaryBuilderTests
             pattern => pattern.Contains("Cannot get property set of undefined", StringComparison.Ordinal));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Format_IncludesParsedExceptionDetailsAndExceptions()
     {
         var formatted = LogReportFormatter.Format(
@@ -166,7 +166,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("path: test/annexB/alpha.js", formatted, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseAndSummarize_IncludesAllExceptionsInsteadOfTruncatingMatches()
     {
         using var fixture = TempLogFile.Create("""
@@ -234,7 +234,7 @@ public class LogSummaryBuilderTests
             typeGroup.Exceptions.Select(exception => exception.Path).ToArray());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Format_IncludesEveryExceptionEntryForLargeGroups()
     {
         using var fixture = TempLogFile.Create("""
@@ -288,7 +288,7 @@ public class LogSummaryBuilderTests
         Assert.DoesNotContain("examples:", formatted, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatJson_SerializesStructuredReport()
     {
         var json = LogReportFormatter.FormatJson(
@@ -305,7 +305,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("\"exceptionSummary\"", json, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatJson_IncludesExceptionLineNumbers()
     {
         var json = LogReportFormatter.FormatJson(
@@ -361,7 +361,7 @@ public class LogSummaryBuilderTests
         Assert.True(options.MostCommonProblem);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseOptions_DefaultsToTextWhenOutputIsNotSpecified()
     {
         var options = Program.ParseOptions(["sample.json"]);
@@ -375,7 +375,7 @@ public class LogSummaryBuilderTests
         Assert.False(options.MostCommonProblems);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseOptions_RejectsCombiningMostCommonProblemWithFilters()
     {
         var exception = Assert.Throws<ArgumentException>(() =>
@@ -384,7 +384,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("--most-common-problem", exception.Message, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseOptions_RejectsCombiningMostCommonProblemsWithFilters()
     {
         var exception = Assert.Throws<ArgumentException>(() =>
@@ -393,7 +393,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("--most-common-problems", exception.Message, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatFilteredExceptions_SuppressesSummariesAndShowsOnlyMatches()
     {
         var formatted = LogReportFormatter.FormatFilteredExceptions(
@@ -415,7 +415,7 @@ public class LogSummaryBuilderTests
         Assert.DoesNotContain("path: test/date/beta.js", formatted, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CreateFilteredExceptionReport_FiltersByPartialMessageMatch()
     {
         var report = LogReportFormatter.CreateFilteredExceptionReport(
@@ -440,7 +440,7 @@ public class LogSummaryBuilderTests
         Assert.All(match.Exceptions, exception => Assert.True(exception.LineNumber is 17 or 99));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatFilteredExceptionsJson_SuppressesSummariesProperty()
     {
         var json = LogReportFormatter.FormatFilteredExceptionsJson(
@@ -460,7 +460,7 @@ public class LogSummaryBuilderTests
         Assert.DoesNotContain("\"summaries\"", json, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FindMostCommonProblem_SelectsMostCommonTypeContextAndMessage()
     {
         using var fixture = TempLogFile.Create("""
@@ -520,7 +520,7 @@ public class LogSummaryBuilderTests
             problem.Occurrences.Select(occurrence => occurrence.Path).ToArray());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatMostCommonProblem_EmitsGithubIssueMarkdown()
     {
         using var fixture = TempLogFile.Create("""
@@ -579,7 +579,7 @@ public class LogSummaryBuilderTests
         Assert.DoesNotContain("logLine:", formatted, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatMostCommonProblem_LimitsSamplePathsToTwentyUniqueFiles()
     {
         var results = Enumerable.Range(1, 25)
@@ -626,7 +626,7 @@ public class LogSummaryBuilderTests
         Assert.DoesNotContain("  - test/generated/file-21.js", formatted, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatMostCommonProblemJson_SerializesStructuredProblemReport()
     {
         using var fixture = TempLogFile.Create("""
@@ -682,7 +682,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("\"occurrences\"", json, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatMostCommonProblems_EmitsGithubIssueMarkdownForTopThreeProblems()
     {
         using var fixture = TempLogFile.Create("""
@@ -748,7 +748,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("  - test/language/expressions/assignment.js", formatted, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatMostCommonProblems_HonorsExplicitLimit()
     {
         using var fixture = TempLogFile.Create("""
@@ -794,7 +794,7 @@ public class LogSummaryBuilderTests
         Assert.DoesNotContain("#### Problem 3", formatted, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatMostCommonProblemsJson_SerializesStructuredProblemReport()
     {
         using var fixture = TempLogFile.Create("""
@@ -859,7 +859,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("\"occurrences\"", json, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FindHighestImpactProblem_PrefersHigherAreaWeightOverRawCount()
     {
         // 3 annexB hits vs 2 language hits: language wins because area weight 3.0 * 2 = 6 > 1.0 * 3 = 3.
@@ -922,7 +922,7 @@ public class LogSummaryBuilderTests
             highestImpact.Occurrences.Select(occurrence => occurrence.Path).ToArray());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FindHighestImpactProblem_PrefersBreadthAcrossDistinctPathBuckets()
     {
         // Two built-in failures: one concentrated in a single bucket, another spread across two.
@@ -969,7 +969,7 @@ public class LogSummaryBuilderTests
         Assert.Equal(8.0, highestImpact.ImpactScore);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FindHighestImpactProblem_ReturnsNullWhenNoExceptionsParsed()
     {
         using var fixture = TempLogFile.Create("""
@@ -991,7 +991,7 @@ public class LogSummaryBuilderTests
         Assert.Null(LogSummaryBuilder.FindHighestImpactProblem(summary.LogRun.Results, summary.BucketDepth));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatHighestImpactProblem_EmitsImpactSummary()
     {
         using var fixture = TempLogFile.Create("""
@@ -1031,7 +1031,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("test/language/statements/return/b.js", formatted, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FormatHighestImpactProblemJson_SerializesImpactScoreAndBreadth()
     {
         using var fixture = TempLogFile.Create("""
@@ -1090,7 +1090,7 @@ public class LogSummaryBuilderTests
         Assert.False(options.MostCommonProblem);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseOptions_RejectsCombiningHighestImpactWithFilters()
     {
         var exception = Assert.Throws<ArgumentException>(() =>
@@ -1099,7 +1099,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("--highest-impact-problem", exception.Message, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseOptions_RejectsCombiningHighestImpactWithMostCommon()
     {
         var exception = Assert.Throws<ArgumentException>(() =>
@@ -1109,7 +1109,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("--most-common-problem", exception.Message, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseOptions_RejectsCombiningMostCommonFlags()
     {
         var exception = Assert.Throws<ArgumentException>(() =>
@@ -1119,7 +1119,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("--most-common-problems", exception.Message, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseOptions_DefaultsMostCommonProblemsLimitToTen()
     {
         var options = Program.ParseOptions(["--most-common-problems", "sample.json"]);
@@ -1148,7 +1148,7 @@ public class LogSummaryBuilderTests
             Program.ParseOptions(["--most-common-problems", "--most-common-problems-limit", value, "sample.json"]));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseOptions_RejectsMostCommonProblemsLimitWithoutMostCommonProblems()
     {
         var exception = Assert.Throws<ArgumentException>(() =>
@@ -1157,7 +1157,7 @@ public class LogSummaryBuilderTests
         Assert.Contains("--most-common-problems-limit", exception.Message, StringComparison.Ordinal);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseAndSummarize_IgnoresExceptionTypesContainingNonSpaceWhitespace()
     {
         var path = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");

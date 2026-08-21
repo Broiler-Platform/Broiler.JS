@@ -32,56 +32,56 @@ public class Issue715FollowupTests
 
     // ---- P3: RegExp modifier-group validation ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ModifierSameFlagAddedAndRemovedThrows()
         => Assert.Equal("SyntaxError", Eval("try { RegExp('(?s-s:a)',''); 'no throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ModifierSameFlagAddedAndRemovedThrows_I()
         => Assert.Equal("SyntaxError", Eval("try { RegExp('(?im-m:a)',''); 'no throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ModifierDuplicateFlagInGroupThrows()
         => Assert.Equal("SyntaxError", Eval("try { RegExp('(?ss:a)',''); 'no throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ValidModifierGroupStillWorks()
         => Assert.Equal("true", Eval("(new RegExp('(?i-s:a)','')).test('A').toString();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonCapturingGroupStillWorks()
         => Assert.Equal("true", Eval("(new RegExp('(?:a)','')).test('a').toString();"));
 
     // ---- P8: key enumeration must not use @@iterator; proxies skip symbols ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectKeysWithNonCallableIteratorDoesNotThrow()
         => Assert.Equal("0", Eval("var o = {}; o[Symbol.iterator] = 'List'; Object.keys(o).length.toString();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInWithNonCallableIteratorDoesNotThrow()
         => Assert.Equal("0", Eval("var o = {}; o[Symbol.iterator] = 'List'; var n = 0; for (var k in o) n++; n.toString();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInSkipsSymbolKeys()
         => Assert.Equal("", Eval(
             "var o = {}; o[Symbol.for('m')] = 1; o[Symbol('s')] = 2; o[Symbol.iterator] = 'x';"
             + " var hit = ''; for (var k in o) hit += String(k); hit;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectKeysOnProxySkipsSymbolTrapKeys()
         => Assert.Equal("a,0", Eval(
             "var h = { ownKeys: function(t){ return ['a','0',Symbol.for('m'),Symbol('s'),Symbol.iterator]; },"
             + " getOwnPropertyDescriptor: function(t,k){ return {configurable:true,enumerable:true,value:0,writable:true}; } };"
             + " Object.keys(new Proxy({}, h)).join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ForInOverProxySkipsSymbols()
         => Assert.Equal("PASS", Eval(
             "var o = {}; o[Symbol.for('m')] = 1; o[Symbol.iterator] = 'x';"
             + " var p = new Proxy(o, {}); var hit = ''; for (var k in p) hit += String(k); hit === '' ? 'PASS' : 'FAIL ' + hit;"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectOwnKeysStillReturnsSymbols()
         => Assert.Equal("true", Eval(
             "var s = Symbol('x'); var o = {}; o.a = 1; o[s] = 2;"
@@ -89,19 +89,19 @@ public class Issue715FollowupTests
 
     // ---- P9: yield* re-yields the delegated result object without re-boxing ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStarDoesNotReboxDelegatedResult()
         => Assert.Equal("PASS", Eval(DelegatingYieldHarness
             + "function* yr(e){ return yield* results(e); }"
             + " shape(collect(yr(expected)), expected);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStarDeepChainDoesNotRebox()
         => Assert.Equal("PASS", Eval(DelegatingYieldHarness
             + "function* yr(e, n){ return yield* n ? yr(e, n - 1) : results(e); }"
             + " shape(collect(yr(expected, 20)), expected);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStarOverProxyDoesNotRebox()
         => Assert.Equal("PASS", Eval(DelegatingYieldHarness
             + "function r7(rs){ var i=0; function it(){return this;} function next(){return rs[i++];} var ret={next:next}; ret[Symbol.iterator]=it; return ret; }"
@@ -109,7 +109,7 @@ public class Issue715FollowupTests
             + " var got=[]; var r; var it=yr(expected); do { r=it.next(); got.push(r); } while(!r.done);"
             + " shape(got, expected);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldStarPreservesResultIdentity()
         => Assert.Equal("true", Eval(DelegatingYieldHarness
             + "function* yr(e){ return yield* results(e); }"

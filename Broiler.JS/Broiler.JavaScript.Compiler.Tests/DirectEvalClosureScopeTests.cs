@@ -22,7 +22,7 @@ public class DirectEvalClosureScopeTests
     }
 
     // The reported failure, reduced.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AFunctionCreatedByEval_SeesTheCallersBinding_WhenCalledLater()
     {
         Assert.Equal("42", Eval("(function(){ var b = 42; var f = eval('(function(){ return b; })'); return f(); })()"));
@@ -30,7 +30,7 @@ public class DirectEvalClosureScopeTests
 
     // google.com's shape: a comma-expression fragment evaluated by an IIFE whose whole body is the
     // eval, the result stored and called afterwards.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheReportedShape_Resolves()
     {
         Assert.Equal(
@@ -41,7 +41,7 @@ public class DirectEvalClosureScopeTests
     }
 
     // The binding may be several scopes above the eval, as it is in the real code.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ABindingSeveralScopesAbove_Resolves()
     {
         Assert.Equal(
@@ -51,7 +51,7 @@ public class DirectEvalClosureScopeTests
     }
 
     // Stored by the eval, invoked from somewhere else entirely - the loader's pattern.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AStoredFunction_ResolvesWhenInvokedFromElsewhere()
     {
         Assert.Equal(
@@ -62,14 +62,14 @@ public class DirectEvalClosureScopeTests
     }
 
     // It is the caller's binding, not a copy of its value: a later write is visible...
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheBindingIsShared_NotSnapshotted()
     {
         Assert.Equal("5", Eval("(function(){ var b = 1; var f = eval('0,function(){return b;}'); b = 5; return f(); })()"));
     }
 
     // ...and a write from inside the closure lands on it rather than on a new global.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AWriteFromTheClosure_ReachesTheCallersBinding()
     {
         Assert.Equal("7", Eval("(function(){ var b = 1; var f = eval('0,function(){ b = 7; }'); f(); return b; })()"));
@@ -85,7 +85,7 @@ public class DirectEvalClosureScopeTests
     }
 
     // A function nested inside the evalled function reaches it too.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ANestedFunction_Resolves()
     {
         Assert.Equal("3", Eval("(function(){ var b = 3; var f = eval('0,function(){ return (function(){ return b; })(); }'); return f(); })()"));
@@ -102,7 +102,7 @@ public class DirectEvalClosureScopeTests
         Assert.Equal(expected, Eval(source));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AGenuinelyUndeclaredName_StillThrows()
     {
         Assert.Equal(
@@ -136,13 +136,13 @@ public class DirectEvalClosureScopeTests
 
     // `typeof` resolves through its own non-throwing path, which did not consult the capture: it
     // answered "undefined" for a name the very next read produced a value for.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Typeof_AgreesWithTheRead()
     {
         Assert.Equal("number,42", Eval("(function(){ var b = 42; var f = eval('0,function(){ return typeof b + \",\" + b; }'); return f(); })()"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Typeof_StillAnswersUndefined_ForAGenuinelyUndeclaredName()
     {
         Assert.Equal("undefined", Eval("(function(){ var b = 1; var f = eval('0,function(){ return typeof zzNopeTypeof; }'); return f(); })()"));

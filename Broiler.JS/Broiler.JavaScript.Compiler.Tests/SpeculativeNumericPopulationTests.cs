@@ -43,7 +43,7 @@ public sealed class SpeculativeNumericPopulationTests
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheSwitchIsOffByDefault()
     {
         // It costs a second analysis pass per compiled function, which is compile time nothing
@@ -51,7 +51,7 @@ public sealed class SpeculativeNumericPopulationTests
         Assert.False(SpeculativeNumericLocals.Counting);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AnInitializerReadingAnOuterNameIsInThePopulation()
     {
         // The shape item 3-8a exists for, and the assertion the first instrument failed silently.
@@ -62,7 +62,7 @@ public sealed class SpeculativeNumericPopulationTests
         Assert.Equal(1, p.Dropped);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TheCascadeResolvesRatherThanBeingCountedAsOneRootCause()
     {
         // `r` is dropped for OtherName and `c` for DroppedCandidate. The optimistic pass is a
@@ -75,7 +75,7 @@ public sealed class SpeculativeNumericPopulationTests
         Assert.Equal(2, p.Dropped);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AProvenNumericLocalIsNotInThePopulation()
     {
         // The control: a name the real analysis already keeps must not appear in a set defined as
@@ -86,7 +86,7 @@ public sealed class SpeculativeNumericPopulationTests
         Assert.Equal(0, p.Speculative);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AParameterInitializedLocalIsNotInThePopulation()
     {
         // THE discriminating negative. This name is dropped too, by a cause one slot away in the
@@ -101,7 +101,7 @@ public sealed class SpeculativeNumericPopulationTests
         Assert.Equal(0, p.Speculative);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ALocalDefeatedByAPropertyReadIsNotInThePopulation()
     {
         // The other large drop cause on the corpus, refused for the same reason: a property read
@@ -113,7 +113,7 @@ public sealed class SpeculativeNumericPopulationTests
         Assert.Equal(1, p.Dropped);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ALocalThatNeverQualifiedIsNotMistakenForAnOuterName()
     {
         // The bug the `declaredNames` set exists to stop, and it is the one that would have

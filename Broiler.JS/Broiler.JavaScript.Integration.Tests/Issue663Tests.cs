@@ -35,7 +35,7 @@ public class Issue663Tests
 
     // ---- Problem 7: flags errors propagate from @@match / @@replace ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolMatchPropagatesFlagsGetterError()
         => Assert.Equal("CustomError", Eval(
             "function CustomError(){} "
@@ -44,7 +44,7 @@ public class Issue663Tests
             + "(function(){ try { RegExp.prototype[Symbol.match].call(obj); return 'no-throw'; }"
             + "catch(e){ return e instanceof CustomError ? 'CustomError' : 'other'; } })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolMatchPropagatesFlagsToStringError()
         => Assert.Equal("CustomError", Eval(
             "function CustomError(){} "
@@ -55,7 +55,7 @@ public class Issue663Tests
             + "(function(){ try { re[Symbol.match](''); return 'no-throw'; }"
             + "catch(e){ return e instanceof CustomError ? 'CustomError' : 'other'; } })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolReplacePropagatesFlagsGetterError()
         => Assert.Equal("CustomError", Eval(
             "function CustomError(){} "
@@ -65,17 +65,17 @@ public class Issue663Tests
             + "catch(e){ return e instanceof CustomError ? 'CustomError' : 'other'; } })()"));
 
     // A normal RegExp still reads flags through the property and matches/replaces.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolMatchStillWorksForNormalRegExp()
         => Assert.Equal("a,a", Eval("'abab'.match(/a/g).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SymbolReplaceStillWorksForNormalRegExp()
         => Assert.Equal("XbXb", Eval("'abab'.replace(/a/g, 'X')"));
 
     // ---- Problem 9: Array.prototype[@@unscopables] has a null prototype ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnscopablesHasNullPrototype()
         => Assert.Equal("true", Eval(
             "String(Object.getPrototypeOf(Array.prototype[Symbol.unscopables]) === null)"));
@@ -85,7 +85,7 @@ public class Issue663Tests
     // §23.1.3.40: the change-array-by-copy proposal added toReversed/toSorted/toSpliced to
     // the @@unscopables list but NOT "with" (a reserved word that can never name a binding
     // shadowed inside a `with` statement), so "with" must be absent (see issue #838 Problem 35).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnscopablesListsTheFullSpecSetAsEnumerableTrue()
         => Assert.Equal("true", Eval(
             "var u=Array.prototype[Symbol.unscopables];"
@@ -99,31 +99,31 @@ public class Issue663Tests
 
     // ---- Problem 10: invalid localeMatcher is a RangeError ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatRejectsInvalidLocaleMatcher()
         => Assert.Equal("RangeError", Eval(
             "(function(){ try { new Intl.NumberFormat('en', { localeMatcher: 'invalid' }); return 'no-throw'; }"
             + "catch(e){ return e.constructor.name; } })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CollatorRejectsInvalidLocaleMatcher()
         => Assert.Equal("RangeError", Eval(
             "(function(){ try { new Intl.Collator('en', { localeMatcher: 'invalid' }); return 'no-throw'; }"
             + "catch(e){ return e.constructor.name; } })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateTimeFormatRejectsInvalidLocaleMatcher()
         => Assert.Equal("RangeError", Eval(
             "(function(){ try { new Intl.DateTimeFormat('en', { localeMatcher: 'invalid' }); return 'no-throw'; }"
             + "catch(e){ return e.constructor.name; } })()"));
 
     // Valid localeMatcher values are accepted.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatAcceptsValidLocaleMatcher()
         => Assert.Equal("object", Eval(
             "typeof new Intl.NumberFormat('en', { localeMatcher: 'lookup' })"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateTimeFormatAcceptsBestFitLocaleMatcher()
         => Assert.Equal("object", Eval(
             "typeof new Intl.DateTimeFormat('en', { localeMatcher: 'best fit' })"));

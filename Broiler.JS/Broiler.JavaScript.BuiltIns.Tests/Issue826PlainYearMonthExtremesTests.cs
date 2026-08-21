@@ -50,7 +50,7 @@ public class Issue826PlainYearMonthExtremesTests
         """));
 
     // The ISO calendar's own boundary is unaffected: +275760-09 is the maximum, +275760-10 is rejected.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IsoYearMonthBoundary()
         => Assert.Equal("9|RangeError", Eval("""
             var max = Temporal.PlainYearMonth.from({ year: 275760, month: 9 }).month;
@@ -61,7 +61,7 @@ public class Issue826PlainYearMonthExtremesTests
         """));
 
     // A PlainDate at the day-precise boundary is still enforced (the fix only relaxes YearMonth).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainDateDayPreciseLimitStillEnforced()
         => Assert.Equal("RangeError", Eval("""
             try { Temporal.PlainDate.from({ year: 275760, month: 9, day: 14 }); "no throw"; }

@@ -4,7 +4,7 @@ namespace Broiler.JavaScript.Clr.Tests;
 
 public class ClrTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClrProxy_From_WrapsObject()
     {
         using var ctx = new JSContext();
@@ -13,7 +13,7 @@ public class ClrTests
         Assert.NotNull(proxy);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClrType_From_WrapsType()
     {
         using var ctx = new JSContext();
@@ -21,7 +21,7 @@ public class ClrTests
         Assert.NotNull(clrType);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClrProxy_Marshal_Int_ReturnsJSNumber()
     {
         using var ctx = new JSContext();

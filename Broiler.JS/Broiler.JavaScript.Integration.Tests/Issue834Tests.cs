@@ -83,7 +83,7 @@ public class Issue834Tests
 
     // ---- Problem 85: numeric access reaches a string-defined 2^32-1 property ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumericReadSeesPropertyDefinedAtMaxUintViaString()
         => Assert.Equal("100", Eval(
             "var a = []; Object.defineProperties(a, { '4294967295': " +
@@ -91,7 +91,7 @@ public class Issue834Tests
 
     // ---- Problem 84: hasOwnProperty agrees with the define ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HasOwnPropertyAtMaxUintIsTrueAndLengthUnaffected()
         => Assert.Equal("true,0", Eval(
             "var a = []; Object.defineProperty(a, '4294967295', " +
@@ -100,48 +100,48 @@ public class Issue834Tests
 
     // ---- the shared root cause: numeric and string access must agree at 2^32-1 ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumericSetIsVisibleViaStringKey()
         => Assert.Equal("true", Eval("var o = {}; o[4294967295] = 1; String(o.hasOwnProperty('4294967295'))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StringSetIsVisibleViaNumericAccess()
         => Assert.Equal("7", Eval("var o = {}; o['4294967295'] = 7; String(o[4294967295])"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MaxUintKeyIsEnumeratedByObjectKeys()
         => Assert.Equal("4294967295", Eval("var o = {}; o[4294967295] = 1; Object.keys(o).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AssigningMaxUintIndexOnArrayDoesNotChangeLength()
         => Assert.Equal("0,5", Eval("var a = []; a[4294967295] = 5; a.length + ',' + String(a[4294967295])"));
 
     // ---- guard against over-correction: 2^32-2 is still a real array index ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LargestValidArrayIndexStillExtendsLength()
         => Assert.Equal("4294967295", Eval("var a = []; a[4294967294] = 3; String(a.length)"));
 
     // ---- Problems 4/80/98: shared per-realm %ThrowTypeError% poison pill ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CallerGetAndSetAreTheSameFunction()
         => Assert.Equal("true", Eval(
             "var d = Object.getOwnPropertyDescriptor(Function.prototype, 'caller'); String(d.get === d.set)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArgumentsGetAndSetAreTheSameFunction()
         => Assert.Equal("true", Eval(
             "var d = Object.getOwnPropertyDescriptor(Function.prototype, 'arguments'); String(d.get === d.set)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CallerAndArgumentsShareTheSameThrowTypeError()
         => Assert.Equal("true", Eval(
             "var c = Object.getOwnPropertyDescriptor(Function.prototype, 'caller');" +
             "var a = Object.getOwnPropertyDescriptor(Function.prototype, 'arguments');" +
             "String(c.get === a.get && a.get === c.set && c.set === a.set)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnmappedArgumentsCalleePoisonIsTheSameThrowTypeError()
         => Assert.Equal("true", Eval(
             "var args = (function () { 'use strict'; return arguments; })();" +
@@ -149,13 +149,13 @@ public class Issue834Tests
             "var caller = Object.getOwnPropertyDescriptor(Function.prototype, 'caller');" +
             "String(callee.get === caller.get && callee.get === callee.set)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ThrowTypeErrorIsAnonymousZeroLengthAndNonExtensible()
         => Assert.Equal("\"\",0,false", Eval(
             "var t = Object.getOwnPropertyDescriptor(Function.prototype, 'caller').get;" +
             "JSON.stringify(t.name) + ',' + t.length + ',' + Object.isExtensible(t)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ThrowTypeErrorNameAndLengthAreFrozen()
         => Assert.Equal(
             "{\"value\":0,\"writable\":false,\"enumerable\":false,\"configurable\":false}|" +
@@ -165,7 +165,7 @@ public class Issue834Tests
                 "JSON.stringify(Object.getOwnPropertyDescriptor(t, 'length')) + '|' +" +
                 "JSON.stringify(Object.getOwnPropertyDescriptor(t, 'name'))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionPrototypeCallerIsNonEnumerableConfigurableAccessor()
         => Assert.Equal("false,true", Eval(
             "var d = Object.getOwnPropertyDescriptor(Function.prototype, 'caller');" +
@@ -173,7 +173,7 @@ public class Issue834Tests
 
     // ---- Problems 50/51: Iterator.from performs the OrdinaryHasInstance walk ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IteratorFromWalksPrototypeChainOfProxyIterator()
         => Assert.Equal("get:Symbol(Symbol.iterator),get:next,getProto", Eval(
             "var log = [];" +
@@ -183,7 +183,7 @@ public class Issue834Tests
             "  getPrototypeOf: function () { log.push('getProto'); return null; } });" +
             "Iterator.from(p); log.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IteratorFromReadsNextBeforeGetPrototypeOf()
         => Assert.Equal(
             "get:Symbol(Symbol.iterator),get:next,getProto,get:return,ret", Eval(
@@ -195,7 +195,7 @@ public class Issue834Tests
             "  getPrototypeOf: function () { log.push('getProto'); return null; } });" +
             "Iterator.from(p).return(); log.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IteratorFromReturnsUnwrappedWhenPrototypeChainHasIteratorPrototype()
         => Assert.Equal("true", Eval(
             "var proto = Object.getPrototypeOf([].values());" +
@@ -204,49 +204,49 @@ public class Issue834Tests
             "  getPrototypeOf: function (t) { return Reflect.getPrototypeOf(t); } });" +
             "String(Iterator.from(p) === p)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IteratorFromStillWrapsAndIteratesPlainArray()
         => Assert.Equal("2,4,6", Eval("Iterator.from([1, 2, 3]).map(function (x) { return x * 2; }).toArray().join(',')"));
 
     // ---- Problem 92: Date constructor coerces non-string primitives via ToNumber ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateFromBooleanTrueIsOne()
         => Assert.Equal("1", Eval("String(new Date(true).getTime())"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateFromBooleanFalseIsZero()
         => Assert.Equal("0", Eval("String(new Date(false).getTime())"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateFromNullIsZero()
         => Assert.Equal("0", Eval("String(new Date(null).getTime())"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateFromUndefinedIsNaN()
         => Assert.Equal("NaN", Eval("String(new Date(undefined).getTime())"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateFromToPrimitiveReturningBooleanIsCoercedViaToNumber()
         => Assert.Equal("1", Eval(
             "String(new Date({ [Symbol.toPrimitive]: function () { return true; } }).getTime())"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateFromNumericPrimitiveAndIsoStringStillWork()
         => Assert.Equal("5,5", Eval(
             "String(new Date(5).getTime()) + ',' + String(new Date('1970-01-01T00:00:00.005Z').getTime())"));
 
     // ---- Problem 88: Atomics.store normalizes -0 to +0 in its return value ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AtomicsStoreNormalizesNegativeZeroReturnToPositiveZero()
         => Assert.Equal("Infinity", Eval("var t = new Int32Array(2); String(1 / Atomics.store(t, 0, -0))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AtomicsStoreNormalizesTruncatedToZeroReturnToPositiveZero()
         => Assert.Equal("Infinity", Eval("var t = new Int32Array(2); String(1 / Atomics.store(t, 0, -0.5))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AtomicsStoreStillReturnsIntegralValues()
         => Assert.Equal("5,-5,Infinity,0", Eval(
             "var t = new Int32Array(2);" +
@@ -255,7 +255,7 @@ public class Issue834Tests
 
     // ---- Problems 95/96: TypedArray map creates the species result before looping ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayMapDoesNotCallCallbackWhenSpeciesGetterThrows()
         => Assert.Equal("0", Eval(
             "var calls = 0; var ta = new Float64Array([1, 2, 3, 4]);" +
@@ -264,7 +264,7 @@ public class Issue834Tests
             "try { ta.map(function () { calls++; return 0; }); } catch (e) {}" +
             "String(calls)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BigIntTypedArrayMapDoesNotCallCallbackWhenSpeciesGetterThrows()
         => Assert.Equal("0", Eval(
             "var calls = 0; var ta = new BigInt64Array([1n, 2n, 3n, 4n]);" +
@@ -273,7 +273,7 @@ public class Issue834Tests
             "try { ta.map(function () { calls++; return 0n; }); } catch (e) {}" +
             "String(calls)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayMapStillMapsValuesAndPreservesType()
         => Assert.Equal("11,12,13,Int32Array", Eval(
             "var r = new Int32Array([1, 2, 3]).map(function (x) { return x + 10; });" +
@@ -281,49 +281,49 @@ public class Issue834Tests
 
     // ---- Problem 22: optional-chaining short-circuit only propagates from the `?.` base ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TrailingMemberAfterOptionalThrowsOnGenuineUndefined()
         => Assert.Equal("TypeError", Eval(
             "var o = { a: undefined }; try { o?.a.b; 'no-throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TrailingMemberAfterOptionalThrowsWhenPropertyAbsent()
         => Assert.Equal("TypeError", Eval(
             "var o = {}; try { o?.a.b.c; 'no-throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OptionalChainShortCircuitsWholeChainOnNullishBase()
         => Assert.Equal("undefined", Eval("var o = null; String(o?.a.b.c);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MultipleOptionalLinksShortCircuitIndependently()
         => Assert.Equal("undefined,undefined,7", Eval(
             "function g(o) { return String(o?.a?.b); }" +
             "g(null) + ',' + g({ a: null }) + ',' + g({ a: { b: 7 } })"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TrailingComputedAfterOptionalThrowsOnGenuineUndefined()
         => Assert.Equal("TypeError", Eval(
             "var o = { x: undefined }, k = 'x'; try { o?.[k].y; 'no-throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParenthesisedOptionalResetsTheChain()
         => Assert.Equal("TypeError", Eval(
             "var o = null; try { (o?.a).b; 'no-throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OptionalMethodCallChainShortCircuitsAndKeepsThisBinding()
         => Assert.Equal("undefined,4", Eval(
             "var n = null;" +
             "var o = { b: { c: function () { return this === o.b ? 4 : 5; } } };" +
             "String(n?.b.c()) + ',' + String(o?.b.c())"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TrailingCallAfterOptionalThrowsWhenIntermediateUndefined()
         => Assert.Equal("TypeError", Eval(
             "var o = { b: undefined }; try { o?.b.c(); 'no-throw'; } catch (e) { e.constructor.name; }"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeleteOptionalChainShortCircuitsButDeletesWhenPresent()
         => Assert.Equal("true,true,false", Eval(
             "var n = null; var r1 = delete n?.b;" +

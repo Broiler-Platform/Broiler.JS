@@ -81,46 +81,46 @@ public class Issue751Tests
 
     // ---- Problem 18: number parsing precision ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LiteralLargeExponentIsCorrectlyRounded()
         => Assert.Equal("true", Eval("1.23456789e+34 === 1.23456789e+34 && (1.23456789e+34).toString() === '1.23456789e+34'"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberCtorLargeExponentMatchesLiteral()
         => Assert.Equal("true", Eval("Number('1.23456789e+34') === 1.23456789e+34"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseFloatLargeExponentMatchesLiteral()
         => Assert.Equal("true", Eval("parseFloat('1.23456789e+34') === 1.23456789e+34"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonParseLargeExponentMatchesLiteral()
         => Assert.Equal("true", Eval("JSON.parse('1.23456789e+34') === 1.23456789e+34"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SmallExponentFastPathUnchanged()
         => Assert.Equal("true", Eval("1.5e3 === 1500 && 1e22 === 1e22 && 0.5 === 0.5"));
 
     // ---- Problem 30: NumberFormat resolvedOptions rounding slots ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatResolvedRoundingDefaults()
         => Assert.Equal("1,halfExpand,auto,auto", Eval(
             "var r=new Intl.NumberFormat('en').resolvedOptions();" +
             "[r.roundingIncrement,r.roundingMode,r.roundingPriority,r.trailingZeroDisplay].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatResolvedRoundingCustom()
         => Assert.Equal("5,floor,stripIfInteger", Eval(
             "var r=new Intl.NumberFormat('en',{roundingIncrement:5,minimumFractionDigits:2,maximumFractionDigits:2,roundingMode:'floor',trailingZeroDisplay:'stripIfInteger'}).resolvedOptions();" +
             "[r.roundingIncrement,r.roundingMode,r.trailingZeroDisplay].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatInvalidRoundingIncrementThrows()
         => Assert.Equal("RangeError", Eval(
             "var t='none'; try{ new Intl.NumberFormat('en',{roundingIncrement:3}); }catch(e){ t=e.constructor.name; } t"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatRoundingSlotsAfterSignDisplay()
         => Assert.Equal("true", Eval(
             "var k=Object.keys(new Intl.NumberFormat('en').resolvedOptions());" +
@@ -128,35 +128,35 @@ public class Issue751Tests
 
     // ---- Problem 35: Promise resolve/reject function length ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PromiseResolvingFunctionsLengthIsOne()
         => Assert.Equal("1,1,,", Eval(
             "var L; new Promise(function(res,rej){ L=[res.length,rej.length,res.name,rej.name].join(','); }); L"));
 
     // ---- Problem 36: indexOf/lastIndexOf length checked before ToInteger ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IndexOfEmptyDoesNotCoerceFromIndex()
         => Assert.Equal("false", Eval(
             "var seen=false; [].indexOf(1,{valueOf:function(){seen=true;return 0;}}); seen"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LastIndexOfEmptyDoesNotCoerceFromIndex()
         => Assert.Equal("false", Eval(
             "var seen=false; [].lastIndexOf(1,{valueOf:function(){seen=true;return 0;}}); seen"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IndexOfStillWorksOnNonEmpty()
         => Assert.Equal("1", Eval("[5,6,7].indexOf(6)"));
 
     // ---- Problem 38/41: Map/Set entries/values/keys name ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void MapPrototypeIteratorNames()
         => Assert.Equal("entries,values,keys", Eval(
             "[Map.prototype.entries.name,Map.prototype.values.name,Map.prototype.keys.name].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetPrototypeIteratorNames()
         // Per ECMA-262 §24.2.3.6, Set.prototype.keys IS the same function object as
         // Set.prototype.values (Set has no separate keys iterator), so its name is "values"
@@ -167,37 +167,37 @@ public class Issue751Tests
 
     // ---- Problem 39/40: computed-key accessor name ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectComputedSymbolGetterName()
         => Assert.Equal("get [desc]", Eval(
             "var s=Symbol('desc'); var o={ get [s](){} }; Object.getOwnPropertyDescriptor(o,s).get.name"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectComputedSymbolSetterName()
         => Assert.Equal("set [desc]", Eval(
             "var s=Symbol('desc'); var o={ set [s](v){} }; Object.getOwnPropertyDescriptor(o,s).set.name"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectComputedUndefinedDescriptionSymbolGetterName()
         => Assert.Equal("get ", Eval(
             "var s=Symbol(); var o={ get [s](){} }; Object.getOwnPropertyDescriptor(o,s).get.name"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectComputedStringGetterName()
         => Assert.Equal("get ab", Eval(
             "var o={ get ['a'+'b'](){} }; Object.getOwnPropertyDescriptor(o,'ab').get.name"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassComputedSymbolGetterName()
         => Assert.Equal("get [desc]", Eval(
             "var s=Symbol('desc'); class C { get [s](){} }; Object.getOwnPropertyDescriptor(C.prototype,s).get.name"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassComputedStaticSymbolSetterName()
         => Assert.Equal("set [desc]", Eval(
             "var s=Symbol('desc'); class C { static set [s](v){} }; Object.getOwnPropertyDescriptor(C,s).set.name"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonComputedAccessorNamesStillWork()
         => Assert.Equal("get id,set id", Eval(
             "var o={ get id(){}, set id(v){} };" +
@@ -205,49 +205,49 @@ public class Issue751Tests
 
     // ---- Problem 14: Annex B block-level function hoisting ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainFunctionInBlockStillHoists()
         => Assert.Equal("function", Eval("(function(){ { function f(){} } return typeof f; })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorInBlockDoesNotHoist()
         => Assert.Equal("undefined", Eval("(function(){ { function* g(){} } return typeof g; })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AsyncFunctionInBlockDoesNotHoist()
         => Assert.Equal("undefined", Eval("(function(){ { async function af(){} } return typeof af; })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AsyncGeneratorInBlockDoesNotHoist()
         => Assert.Equal("undefined", Eval("(function(){ { async function* ag(){} } return typeof ag; })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorInBlockIsVisibleInBlock()
         => Assert.Equal("function", Eval("(function(){ var r; { function* g(){} r = typeof g; } return r; })()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NestedBlockGeneratorDoesNotHoist()
         => Assert.Equal("undefined", Eval("(function(){ {{ function* g(){} }} return typeof g; })()"));
 
     // ---- Problem 22: bound function new.target remap ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NewBoundFunctionRemapsNewTargetToTarget()
         => Assert.Equal("true", Eval(
             "function A(){ this.nt = new.target; } var BA = A.bind(null); (new BA()).nt === A"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectConstructBoundSelfRemapsNewTarget()
         => Assert.Equal("true", Eval(
             "function A(){ this.nt = new.target; } var BA = A.bind(null); Reflect.construct(BA, [], BA).nt === A"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectConstructBoundExplicitNewTargetPreserved()
         => Assert.Equal("true", Eval(
             "function A(){ this.nt = new.target; } function C(){} var BA = A.bind(null);" +
             "var o = Reflect.construct(BA, [], C); o.nt === C && Object.getPrototypeOf(o) === C.prototype"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ChainedBoundConstructRemapsToOriginalTarget()
         => Assert.Equal("true", Eval(
             "function A(){ this.nt = new.target; } var BBA = A.bind(null).bind(null);" +
@@ -255,87 +255,87 @@ public class Issue751Tests
 
     // ---- Problem 32/33: toUpperCase/toLowerCase special casing ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SharpSUpperCasesToSS()
         => Assert.Equal("SS", Eval("'\\u00DF'.toUpperCase()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LatinLigaturesUpperCase()
         => Assert.Equal("FF,FI,FL,FFI,FFL,ST,ST", Eval(
             "['\\uFB00','\\uFB01','\\uFB02','\\uFB03','\\uFB04','\\uFB05','\\uFB06'].map(s=>s.toUpperCase()).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CapitalIWithDotLowerCases()
         => Assert.Equal("i̇", Eval("'\\u0130'.toLowerCase()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GreekIotaSubscriptUpperCase()
         => Assert.Equal("ΑΙ", Eval("'\\u1FB3'.toUpperCase()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ApostropheNAndArmenianUpperCase()
         => Assert.Equal("ʼN,ԵՒ", Eval(
             "['\\u0149','\\u0587'].map(s=>s.toUpperCase()).join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LocaleUpperKeepsUnconditionalExpansion()
         => Assert.Equal("SS", Eval("'\\u00DF'.toLocaleUpperCase('en')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TurkishLocaleUpperDottedI()
         => Assert.Equal("İ", Eval("'i'.toLocaleUpperCase('tr')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OrdinaryCaseMappingUnaffected()
         => Assert.Equal("HELLO,hello", Eval("['Hello'.toUpperCase(),'Hello'.toLowerCase()].join(',')"));
 
     // ---- Problem 13: supplementary-plane (astral) regex group names ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AstralGroupNameBraceEscape()
         => Assert.Equal("z", Eval("/(?<\\u{1d49c}>z)/u.exec('z').groups['\\u{1d49c}']"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AstralGroupNameLiteral()
         => Assert.Equal("z", Eval("/(?<\\u{1d49c}>z)/u.exec('z').groups['\\uD835\\uDC9C']"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AstralGroupNameBackreferenceMatches()
         => Assert.Equal("zz", Eval("/(?<\\u{1d49c}>.)\\k<\\u{1d49c}>/u.exec('zz')[0]"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BmpGroupNamesStillWork()
         => Assert.Equal("x,x,x", Eval(
             "[/(?<a>x)/.exec('x').groups.a,/(?<\\u{61}>x)/u.exec('x').groups.a,/(?<\\u03C0>x)/u.exec('x').groups['\\u03C0']].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LookbehindNotTreatedAsGroupName()
         => Assert.Equal("b", Eval("/(?<=a)b/.exec('ab')[0]"));
 
     // ---- Problem 37: Intl resolved locale extension-key filtering ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatDropsIrrelevantExtensionKey()
         => Assert.Equal("ja-JP", Eval("new Intl.NumberFormat('ja-JP-u-cu-usd').resolvedOptions().locale"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatKeepsRelevantNuKey()
         => Assert.Equal("ja-JP-u-nu-latn", Eval("new Intl.NumberFormat('ja-JP-u-nu-latn').resolvedOptions().locale"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NumberFormatDropsAllButRelevant()
         => Assert.Equal("ja-JP-u-nu-latn", Eval("new Intl.NumberFormat('ja-JP-u-ca-japanese-cu-usd-nu-latn').resolvedOptions().locale"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DateTimeFormatKeepsCalendarAndHourCycle()
         => Assert.Equal("ja-JP-u-ca-japanese-hc-h23", Eval(
             "new Intl.DateTimeFormat('ja-JP-u-ca-japanese-cu-usd-hc-h23').resolvedOptions().locale"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void LocaleWithoutExtensionUnchanged()
         => Assert.Equal("en-US", Eval("new Intl.NumberFormat('en-US').resolvedOptions().locale"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateExtensionPreserved()
         => Assert.Equal("en-US-x-priv", Eval("new Intl.NumberFormat('en-US-u-cu-usd-x-priv').resolvedOptions().locale"));
 
@@ -344,18 +344,18 @@ public class Issue751Tests
     private static string Hc(string locale, string opts)
         => Eval($"new Intl.DateTimeFormat('{locale}', {opts}).resolvedOptions().hourCycle");
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HourCycleFromLocaleExtension()
         => Assert.Equal("h23,h11,h24", string.Join(",",
             Hc("en-US-u-hc-h23", "{hour:'numeric'}"),
             Hc("en-US-u-hc-h11", "{hour:'numeric'}"),
             Hc("en-US-u-hc-h24", "{hour:'numeric'}")));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HourCycleOptionOverridesExtension()
         => Assert.Equal("h12", Hc("en-US-u-hc-h23", "{hour:'numeric',hourCycle:'h12'}"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HourCycleLocaleDefaults()
         => Assert.Equal("h12,h23,h23", string.Join(",",
             Hc("en-US", "{hour:'numeric'}"),
@@ -366,7 +366,7 @@ public class Issue751Tests
     // ([[hourCycle12]] / [[hourCycle24]]), NOT a cycle derived from the locale default: test262
     // DateTimeFormat/prototype/resolvedOptions/hourCycle-default.js asserts the 24-hour clock is
     // "h23" in every locale and the 12-hour clock is "h12" in every locale except "ja".
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void HourCycleFromHour12()
         => Assert.Equal("h12,h23,h12,h23,h11", string.Join(",",
             Hc("en-US", "{hour:'numeric',hour12:true}"),
@@ -375,7 +375,7 @@ public class Issue751Tests
             Hc("fr-FR", "{hour:'numeric',hour12:false}"),
             Hc("ja-JP", "{hour:'numeric',hour12:true}")));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Hour12ConsistentWithHourCycle()
         => Assert.Equal("false,true", string.Join(",",
             Eval("new Intl.DateTimeFormat('en-US-u-hc-h23',{hour:'numeric'}).resolvedOptions().hour12"),

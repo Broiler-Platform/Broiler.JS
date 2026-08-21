@@ -36,7 +36,7 @@ public class Issue808ArrayBufferSpeciesCtorTests
             out;
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Slice_NoOverride_UsesDefault()
         => Assert.Equal("4", Eval("String(new ArrayBuffer(8).slice(0, 4).byteLength);"));
 }

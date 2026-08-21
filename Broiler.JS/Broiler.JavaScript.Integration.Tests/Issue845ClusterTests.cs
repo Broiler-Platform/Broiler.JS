@@ -36,7 +36,7 @@ public class Issue845ClusterTests
     public void TypedArrayJoinCapturesLengthBeforeCoercion(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayJoinBasicUnaffected()
         => Assert.Equal("1-2-3", Eval("new Int8Array([1,2,3]).join('-')"));
 
@@ -50,7 +50,7 @@ public class Issue845ClusterTests
     public void ReplaceTreatsNamedRefAsLiteralWithoutNamedGroups(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReplaceNamedGroupStillExpands()
         => Assert.Equal("01/2024", Eval("'2024-01'.replace(/(?<y>\\d+)-(?<m>\\d+)/, '$<m>/$<y>')"));
 }

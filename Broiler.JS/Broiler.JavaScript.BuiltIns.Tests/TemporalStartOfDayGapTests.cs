@@ -20,13 +20,13 @@ public class TemporalStartOfDayGapTests
     public void StartOfDay_GapCoversMidnight_IsTransitionInstant(string expr)
         => Assert.StartsWith("1919-03-31T00:30:00", E(expr));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ExplicitMidnight_GapCoversMidnight_DisambiguatesLater()
         // An explicit T00 is midnight-with-disambiguation (compatible → after the gap), i.e. 01:00.
         => Assert.StartsWith("1919-03-31T01:00:00",
             E("Temporal.ZonedDateTime.from('1919-03-31T00[America/Toronto]').toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StartOfDay_IsThirtyMinutesBeforeDisambiguatedMidnight()
         => Assert.Equal("PT30M", E("""
             var sod = Temporal.ZonedDateTime.from('1919-03-31[America/Toronto]');
@@ -34,12 +34,12 @@ public class TemporalStartOfDayGapTests
             sod.until(mid).toString();
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StartOfDay_NormalDay_IsMidnight()
         => Assert.StartsWith("2020-06-15T00:00:00",
             E("new Temporal.PlainDate(2020,6,15).toZonedDateTime('America/Toronto').toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainDate_ToZonedDateTime_WithPlainTime_UsesThatTime()
         => Assert.StartsWith("2020-06-15T08:30:00",
             E("new Temporal.PlainDate(2020,6,15).toZonedDateTime({ timeZone: 'America/Toronto', plainTime: new Temporal.PlainTime(8,30) }).toString()"));

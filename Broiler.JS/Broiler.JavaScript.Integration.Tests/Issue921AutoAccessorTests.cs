@@ -18,7 +18,7 @@ public class Issue921AutoAccessorTests
         return ctx.Eval(code);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InstanceAutoAccessorReadsAndWritesBackingField()
     {
         Assert.Equal("undefined,1,2,5", Eval(@"
@@ -29,7 +29,7 @@ public class Issue921AutoAccessorTests
             class C { accessor x = 1; } var c = new C(); c.x = 43; '' + c.x").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AutoAccessorIsAnAccessorOnThePrototype()
     {
         Assert.Equal("function,function,undefined", Eval(@"
@@ -39,13 +39,13 @@ public class Issue921AutoAccessorTests
             [typeof d.get, typeof d.set, String(own)].join(',')").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RedeclaredAutoAccessorLastWins()
     {
         Assert.Equal("1", Eval(@"class C { accessor x = 0; accessor x = 1; } '' + new C().x").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void StaticAutoAccessorOnConstructorWithDerivedBrandCheck()
     {
         Assert.Equal("9,10", Eval(@"
@@ -58,7 +58,7 @@ public class Issue921AutoAccessorTests
             var threw = false; try { D.x; } catch (e) { threw = e instanceof TypeError; } threw").BooleanValue);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InheritedAndOverriddenInstanceAutoAccessors()
     {
         Assert.Equal("7,8", Eval(@"
@@ -66,7 +66,7 @@ public class Issue921AutoAccessorTests
             var d = new D(); [d.y, d.z].join(',')").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedAndSymbolAutoAccessorNames()
     {
         Assert.Equal("11,12", Eval(@"
@@ -75,7 +75,7 @@ public class Issue921AutoAccessorTests
             var c = new C(); [c.cn, c[sym]].join(',')").ToString());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AutoAccessorGetterOverridesLaterUserSetterWins()
     {
         // get x; accessor x; set x  →  getter = auto-accessor, setter = user-defined.

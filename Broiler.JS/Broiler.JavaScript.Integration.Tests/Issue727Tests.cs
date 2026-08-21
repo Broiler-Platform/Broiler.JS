@@ -21,11 +21,11 @@ public class Issue727Tests
     private const string DumpParts =
         "function d(p){return JSON.stringify(p.map(function(x){return {type:x.type,value:x.value,unit:x.unit};}));}";
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnUsFormatNumericAlways()
         => Assert.Equal("in 1,000 seconds", Eval("new Intl.RelativeTimeFormat('en-US').format(1000, 'second');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnUsFormatToPartsGrouped()
         => Assert.Equal(
             "[{\"type\":\"literal\",\"value\":\"in \"},"
@@ -35,7 +35,7 @@ public class Issue727Tests
             + "{\"type\":\"literal\",\"value\":\" seconds\"}]",
             Eval(DumpParts + "d(new Intl.RelativeTimeFormat('en-US').formatToParts(1000, 'second'));"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnUsFormatToPartsSingular()
         => Assert.Equal(
             "[{\"type\":\"literal\",\"value\":\"in \"},"
@@ -43,41 +43,41 @@ public class Issue727Tests
             + "{\"type\":\"literal\",\"value\":\" second\"}]",
             Eval(DumpParts + "d(new Intl.RelativeTimeFormat('en-US').formatToParts(1, 'second'));"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnUsNegativeZeroIsPast()
         => Assert.Equal(
             "[{\"type\":\"integer\",\"value\":\"0\",\"unit\":\"second\"},"
             + "{\"type\":\"literal\",\"value\":\" seconds ago\"}]",
             Eval(DumpParts + "d(new Intl.RelativeTimeFormat('en-US').formatToParts(-0, 'second'));"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnUsNumericAutoUsesExactPhrase()
         => Assert.Equal("tomorrow", Eval("new Intl.RelativeTimeFormat('en-US', { numeric: 'auto' }).format(1, 'day');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnUsNumericAutoNow()
         => Assert.Equal("now", Eval("new Intl.RelativeTimeFormat('en-US', { numeric: 'auto' }).format(0, 'second');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnUsShortStyle()
         => Assert.Equal("in 1,000 sec.", Eval("new Intl.RelativeTimeFormat('en-US', { style: 'short' }).format(1000, 'second');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PolishLongFormat()
         // Polish has CLDR minimumGroupingDigits=2, so a four-digit value like 1000
         // is NOT grouped ("1000", not "1 000") — matching V8/test262.
         => Assert.Equal("za 1000 sekund", Eval("new Intl.RelativeTimeFormat('pl-PL').format(1000, 'second');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PluralUnitSpellingAccepted()
         => Assert.Equal("in 3 days", Eval("new Intl.RelativeTimeFormat('en-US').format(3, 'days');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InvalidUnitThrowsRangeError()
         => Assert.Equal("RangeError", Eval(
             "(function(){ try { new Intl.RelativeTimeFormat('en').format(1, 'fortnight'); return 'no throw'; } catch (e) { return e.constructor.name; } })();"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonFiniteValueThrowsRangeError()
         => Assert.Equal("RangeError", Eval(
             "(function(){ try { new Intl.RelativeTimeFormat('en').format(Infinity, 'second'); return 'no throw'; } catch (e) { return e.constructor.name; } })();"));

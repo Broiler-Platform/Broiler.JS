@@ -44,46 +44,46 @@ public class Issue667Tests
 
     // ---- Problems 9 & 10: trailing-whitespace EOF must not produce a phantom token ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SourceEndingInTrailingSpacesParses()
         // A trailing VariableStatement completes with an empty value (so the program
         // completion carries the preceding expression's value); the point of this test
         // is that the trailing whitespace before EOF does not produce a phantom token.
         => Assert.Equal("1", Eval("var x = 1; x  "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwitchCaseFunctionDeclarationEndingInTrailingSpacesParses()
         => Assert.Equal("function", Eval("switch (1) { case 1: function f() {} }  typeof f  "));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalOfStringEndingInTrailingSpaces()
         => Assert.Equal("function", Eval(
             "eval('switch (1) {  case 1:    function f() {  }}  '); typeof f"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TrailingSpacesAfterClosingBraceParses()
         => Assert.Equal("undefined", Eval("var o = {};  void 0  "));
 
     // ---- Problem 8: private name visible to direct eval in a field initializer ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateFieldVisibleToDirectEvalInInitializer()
         => Assert.Equal("44", Eval(
             "class C { #m = 44; v = eval('this.#m'); } new C().v"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateMethodVisibleToDirectEvalInInitializer()
         => Assert.Equal("7", Eval(
             "class C { #m() { return 7; } v = eval('this.#m()'); } new C().v"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PrivateAccessorVisibleToDirectEvalInInitializer()
         => Assert.Equal("9", Eval(
             "class C { get #m() { return 9; } v = eval('this.#m'); } new C().v"));
 
     // ---- Problem 6: Set set-like operation order and small-side iteration ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DifferenceCoercesSizeBeforeReadingHasAndKeys()
         => Assert.Equal("get-size,valueOf,get-has,get-keys", Eval(
             "var log = [];"
@@ -94,7 +94,7 @@ public class Issue667Tests
             + "new Set().difference(setLike);"
             + "log.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DifferenceUsesKeysAndSkipsHasWhenReceiverIsLarger()
         => Assert.Equal("true", Eval(
             "var setLike = { size: 0,"
@@ -103,7 +103,7 @@ public class Issue667Tests
             + "var r = new Set([1]).difference(setLike);"
             + "String(r.size === 1 && r.has(1))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IntersectionUsesKeysAndSkipsHasWhenReceiverIsLarger()
         => Assert.Equal("true", Eval(
             "var setLike = { size: 0,"
@@ -111,7 +111,7 @@ public class Issue667Tests
             + "  keys: function(){ return { next(){ return { done:true }; } }; } };"
             + "String(new Set([1, 2]).intersection(setLike).size === 0)"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IsSubsetOfReturnsFalseWithoutProbingHasWhenReceiverIsSmaller()
         => Assert.Equal("false", Eval(
             "var setLike = { size: 0,"
@@ -119,7 +119,7 @@ public class Issue667Tests
             + "  keys: function(){ return { next(){ return { done:true }; } }; } };"
             + "String(new Set([1]).isSubsetOf(setLike))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DifferenceIteratesSnapshotWhenHasMutatesReceiver()
         => Assert.Equal("11,22", Eval(
             "var set = new Set([1, 2, 3, 4]);"
@@ -131,7 +131,7 @@ public class Issue667Tests
             + "set.difference(setLike);"
             + "[...set].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DifferenceSnapshotProbesOnlyOriginalElements()
         => Assert.Equal("1,2,3,4", Eval(
             "var set = new Set([1, 2, 3, 4]);"

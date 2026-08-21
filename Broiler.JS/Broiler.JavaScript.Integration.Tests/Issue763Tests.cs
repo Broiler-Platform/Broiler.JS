@@ -25,32 +25,32 @@ public class Issue763Tests
         return ctx.Eval("'' + globalThis.r").ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConditionalYieldInForLoopDoesNotCrash()
         => Assert.Equal("0,1,2", Drive(
             "function* g(){ for (var i = 0; i < 3; i++) { if (i >= 0) yield i; } }"
             + " var s = []; for (var x of g()) s.push(x); globalThis.r = s.join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ConditionalYieldWithElseInForLoop()
         => Assert.Equal("a,b,a", Drive(
             "function* g(){ for (var i = 0; i < 3; i++) { if (i === 1) yield 'b'; else yield 'a'; } }"
             + " var s = []; for (var x of g()) s.push(x); globalThis.r = s.join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TernaryYieldInForLoop()
         => Assert.Equal("0,1,2", Drive(
             "function* g(){ for (var i = 0; i < 3; i++) { var t = (i > 0) ? yield i : yield i; } }"
             + " var s = []; var it = g(); var r = it.next();"
             + " while (!r.done) { s.push(r.value); r = it.next(); } globalThis.r = s.join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SwitchYieldInForLoop()
         => Assert.Equal("0,one,2", Drive(
             "function* g(){ for (var i = 0; i < 3; i++) { switch (i) { case 1: yield 'one'; break; default: yield i; } } }"
             + " var s = []; for (var x of g()) s.push(x); globalThis.r = s.join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void InvalidControlEscapeRegExpFallsBackToLiteral()
         // annexB/built-ins/RegExp/RegExp-control-escape-russian-letter.js shape:
         // `\c` + invalid control letter must match the literal `\c`, driven from a
@@ -63,7 +63,7 @@ public class Issue763Tests
             + " if (re.exec(src) === null) bad = true; if (re.exec(src.substring(1)) !== null) bad = true; }"
             + " globalThis.r = bad ? 'fail' : 'ok';"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AsyncGeneratorConditionalYieldInForLoop()
         => Assert.Equal("0,10,20", Drive(
             "async function* g(){ for (var i = 0; i < 3; i++) { if (i >= 0) yield i * 10; } }"
@@ -113,7 +113,7 @@ public class Issue763Tests
 
     // The computed PropertyName must be evaluated exactly once even when it also
     // names an anonymous method value (a latent bug in non-generator code too).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ComputedMethodKeyEvaluatedOnce()
         => Assert.Equal("1|m", Drive(
             "var n = 0; function k(){ n++; return 'm'; }"
@@ -123,7 +123,7 @@ public class Issue763Tests
     // Problem 41: `?.` is an optional-chaining punctuator only when NOT followed by
     // a DecimalDigit. `true ?.30 : false` is the conditional operator with a
     // fractional literal, not optional chaining.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OptionalChainPunctuatorDecimalLookahead()
         => Assert.Equal("0.3", Drive("var v = true ?.30 : false; globalThis.r = '' + v;"));
 
@@ -137,7 +137,7 @@ public class Issue763Tests
     // Problem 40: `??=` (logical nullish assignment) must parse a full
     // AssignmentExpression RHS — including an arrow function — and perform
     // NamedEvaluation, exactly like `||=`/`&&=`.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NullishAssignmentWithArrowNamedEvaluation()
         => Assert.Equal("value", Drive("var value = undefined; value ??= () => {}; globalThis.r = value.name;"));
 
@@ -151,7 +151,7 @@ public class Issue763Tests
     // Problem 45: a bare `yield` (no operand) may end a template substitution
     // (`` `1${ yield }3${ 4 }5` ``); the closing `}` is re-scanned as the template
     // tail, which the YieldExpression parser must accept as an operand terminator.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BareYieldEndingTemplateSubstitution()
         => Assert.Equal("12345", Drive(
             "var s; function* g(){ s = `1${ yield }3${ 4 }5`; }"
@@ -161,13 +161,13 @@ public class Issue763Tests
     // apply), `await` is an ordinary identifier. `await instanceof X` /
     // `new await instanceof await` must parse `await` as an IdentifierReference —
     // `instanceof`/`in` are binary operators that cannot begin await's operand.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitAsIdentifierBeforeInstanceof()
         => Assert.Equal("true", Drive(
             "async function await(){ return 1; }"
             + " globalThis.r = '' + (await instanceof Function);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitClassNameWithNewAndInstanceof()
         => Assert.Equal("true", Drive(
             "class await {}"
@@ -201,7 +201,7 @@ public class Issue763Tests
 
     // `a?.b()` with a non-nullish receiver but a non-callable member must throw a
     // TypeError (the `?.` guards the receiver, not the call).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void OptionalMethodCallThrowsWhenMethodNotCallable()
         => Assert.Equal("TypeError", Drive(
             "var o = {}; try { o?.missing(); globalThis.r = 'no-throw'; }"

@@ -20,21 +20,21 @@ public class ClassFieldInitializerEvalSuperTests
         return ctx.Eval(code).ToString();
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DirectEvalInFieldInitializerCallsSuperMethod()
         => Assert.Equal("1", Eval(
             "class B { foo() { return 1; } }" +
             "class C extends B { x = eval('super.foo()'); }" +
             "'' + new C().x"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrowInsideEvalInFieldInitializerCallsSuperMethod()
         => Assert.Equal("2", Eval(
             "class B { foo() { return 2; } }" +
             "class C extends B { x = eval('(() => super.foo())()'); }" +
             "'' + new C().x"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrowInsideEvalInFieldInitializerReadsSuperMethodAsValue()
         // Reading `super.foo` without calling it yields the method itself, so the field
         // holds a function rather than its result.
@@ -43,7 +43,7 @@ public class ClassFieldInitializerEvalSuperTests
             "class C extends B { x = eval('(() => super.foo)()'); }" +
             "typeof new C().x"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrowInFieldInitializerCallsSuperMethodWithoutEval()
         // The no-eval baseline: whatever the eval cases do, this must keep working, or
         // the home object is being lost before eval is even involved.
@@ -52,7 +52,7 @@ public class ClassFieldInitializerEvalSuperTests
             "class C extends B { x = (() => super.foo())(); }" +
             "'' + new C().x"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void FunctionDeclaredInsideEvalInFieldInitializerCallsSuperMethod()
         // The arrow is declared in one eval statement and invoked in the next, so the
         // home object has to survive on the closure rather than on the call site.
@@ -61,7 +61,7 @@ public class ClassFieldInitializerEvalSuperTests
             "class C extends B { x = eval('var f = () => super.foo(); f();'); }" +
             "'' + new C().x"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrowInsideEvalInMethodCallsSuperMethod()
         // The same shape in an ordinary method rather than a field initializer.
         => Assert.Equal("5", Eval(

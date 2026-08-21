@@ -34,7 +34,7 @@ public class Issue857Tests
 
     // Problem 4: two `[yield …]` computed property names of a class inside a generator share one
     // reused compiler temp; the rewriter must box it once instead of faulting on a duplicate key.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ClassWithMultipleYieldComputedNamesInsideGenerator()
     {
         var code =
@@ -55,7 +55,7 @@ public class Issue857Tests
     }
 
     // The doubled object-literal computed-name variant exercises the same shared-temp path.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectLiteralWithMultipleYieldComputedNamesInsideGenerator()
     {
         var code =
@@ -69,7 +69,7 @@ public class Issue857Tests
     }
 
     // Problem 7: a sync `using` declaration is a valid C-style for-head LexicalDeclaration.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SyncUsingInCStyleForHeadIsDisposed()
     {
         var code =
@@ -95,7 +95,7 @@ public class Issue857Tests
     // overlay used to publish it as one, so a `count++` inside `with (globalThis)` read/wrote the
     // leaked property while code outside the `with` used the real binding — desyncing them. The two
     // `with` blocks (with a plain `count++` between them) must observe the same, live `count`.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void WithOverGlobalThisDoesNotDesyncGlobalLet()
     {
         var code =
@@ -112,12 +112,12 @@ public class Issue857Tests
     // PlainMonthDay / PlainYearMonth require the Temporal value's calendar to equal the formatter's
     // resolved calendar IDENTIFIER. iso8601 must not be collapsed to gregory for that check, so an
     // iso8601 value with an explicit { calendar: "iso8601" } (or -u-ca-iso8601 locale) formats.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainMonthDayToLocaleStringIso8601IsAString()
         => Assert.Equal("string", Eval(
             "typeof new Temporal.PlainMonthDay(1, 1).toLocaleString(undefined, { calendar: 'iso8601' })").ToString());
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainYearMonthToLocaleStringIso8601IsAString()
         => Assert.Equal("string", Eval(
             "typeof new Temporal.PlainYearMonth(2024, 1).toLocaleString('en-u-ca-iso8601')").ToString());
@@ -127,19 +127,19 @@ public class Issue857Tests
     // since/until with a rounding increment large enough to push the rounding boundary past the valid
     // ISO range is a RangeError — but the default (smallestUnit month, increment 1) still differences
     // exactly at the limit (issue #794), building no boundary.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainYearMonthSinceHugeIncrementThrows()
         => Assert.Equal("RangeError", ErrorName(
             "new Temporal.PlainYearMonth(1970, 1).since(new Temporal.PlainYearMonth(1971, 1), { roundingIncrement: 100000000 })"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainYearMonthSinceAtIsoLimitDoesNotThrow()
         => Assert.Equal("ok", Eval(
             "new Temporal.PlainYearMonth(1970, 1).since('+275760-09'); 'ok'").ToString());
 
     // Duration.compare adds each duration to relativeTo; an endpoint outside the representable
     // PlainDateTime range is a RangeError (a duration carrying ~2^53 seconds reaches far past it).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationCompareOutOfRangeEndpointThrows()
         => Assert.Equal("RangeError", ErrorName(
             "Temporal.Duration.compare("
@@ -149,12 +149,12 @@ public class Issue857Tests
 
     // PlainMonthDay.from with overspecified, disagreeing year fields (era/eraYear vs year) is a
     // RangeError; agreeing ones are accepted.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainMonthDayFromConflictingEraAndYearThrows()
         => Assert.Equal("RangeError", ErrorName(
             "Temporal.PlainMonthDay.from({ calendar: 'gregory', era: 'ce', eraYear: 2024, year: 2023, monthCode: 'M01', day: 1 })"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainMonthDayFromAgreeingEraAndYearIsAccepted()
         => Assert.Equal("string", Eval(
             "typeof Temporal.PlainMonthDay.from({ calendar: 'gregory', era: 'ce', eraYear: 2024, year: 2024, monthCode: 'M01', day: 1 }).toString()").ToString());
@@ -169,7 +169,7 @@ public class Issue857Tests
         => Assert.Equal("RangeError", ErrorName(
             $"Temporal.PlainMonthDay.from({{ calendar: 'hebrew', monthCode: '{monthCode}', day: 1 }})"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainMonthDayFromValidHebrewLeapCodeIsAccepted()
         => Assert.Equal("M05L", Eval(
             "Temporal.PlainMonthDay.from({ calendar: 'hebrew', monthCode: 'M05L', day: 1 }).monthCode").ToString());
@@ -180,12 +180,12 @@ public class Issue857Tests
     // undefined. An eval-introduced global `var` updated by `++` inside the loop previously emitted an
     // assignment to the binding's (non-assignable) throwing read expression — NotImplementedException
     // at IL generation. The write must target the assignable global-object property instead.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalForLoopWithBreakInCatchCompletionIsUndefined()
         => Assert.Equal("undefined", Eval(
             "typeof eval(\"for (var i = 0; i < 2; ++i) { if (i) { try { throw null; } catch (e) { break; } } 'x'; }\")").ToString());
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EvalGlobalVarIncrementInLoop()
         => Assert.Equal("undefined", Eval(
             "typeof eval(\"for (var count = 0;;) { if (count === 5) break; else count++; }\")").ToString());
@@ -195,19 +195,19 @@ public class Issue857Tests
     // A lunisolar year has 12 regular months (M01..M12) plus an optional leap month. A regular month
     // code outside that range — "M13", or the "M13L" leap code constraining through it — does not exist
     // and is a RangeError, not a silent clamp to the 12th month (test262 .../with/{chinese,dangi}-…).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ChineseWithMonth13LeapCodeThrows()
         => Assert.Equal("RangeError", ErrorName(
             "Temporal.PlainDate.from({ year: 2001, month: 13, day: 1, calendar: 'chinese' }).with({ monthCode: 'M13L' })"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ChineseWithNonExistentLeapCodeRejectThrows()
         => Assert.Equal("RangeError", ErrorName(
             "Temporal.PlainDate.from({ year: 2001, month: 1, day: 1, calendar: 'chinese' }).with({ monthCode: 'M07L' }, { overflow: 'reject' })"));
 
     // The year's actual leap month (chinese 2001 has M04L) is still accepted, and a non-leap code that
     // constrains onto it works.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ChineseWithExistingLeapCodeIsAccepted()
         => Assert.Equal("M04L", Eval(
             "Temporal.PlainDate.from({ year: 2001, month: 1, day: 1, calendar: 'chinese' }).with({ monthCode: 'M04L' }).monthCode").ToString());
@@ -217,12 +217,12 @@ public class Issue857Tests
     // PlainDateTime.toZonedDateTime must apply the disambiguation option, not just validate it. A
     // spring-forward gap (2000-04-02T02:30 in America/Vancouver) is a RangeError under "reject" and
     // resolves to the later/earlier instant under "later"/"earlier"; the default is "compatible".
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToZonedDateTimeGapRejectThrows()
         => Assert.Equal("RangeError", ErrorName(
             "new Temporal.PlainDateTime(2000, 4, 2, 2, 30).toZonedDateTime('America/Vancouver', { disambiguation: 'reject' })"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ToZonedDateTimeFoldRejectThrows()
         => Assert.Equal("RangeError", ErrorName(
             "new Temporal.PlainDateTime(2000, 10, 29, 1, 30).toZonedDateTime('America/Vancouver', { disambiguation: 'reject' })"));

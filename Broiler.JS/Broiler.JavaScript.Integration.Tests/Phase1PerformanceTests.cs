@@ -5,7 +5,7 @@ namespace Broiler.JavaScript.Integration.Tests;
 
 public class Phase1PerformanceTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ContextsUseIsolatedBoundedCachesByDefault()
     {
         using var first = new JSContext();
@@ -16,7 +16,7 @@ public class Phase1PerformanceTests
         Assert.NotSame(first.CodeCache, second.CodeCache);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ProcessSharedCacheRequiresExplicitOptIn()
     {
         using var context = new JSContext(options: new JSContextOptions
@@ -27,7 +27,7 @@ public class Phase1PerformanceTests
         Assert.Same(DictionaryCodeCache.Current, context.CodeCache);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CacheKeyIncludesLocationAndCompilationOptions()
     {
         var cache = new DictionaryCodeCache();
@@ -52,7 +52,7 @@ public class Phase1PerformanceTests
         Assert.Equal(3, metrics.Compilations);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CacheEvictsToConfiguredEntryLimit()
     {
         var cache = new DictionaryCodeCache(new DictionaryCodeCacheOptions
@@ -72,7 +72,7 @@ public class Phase1PerformanceTests
         Assert.Equal(1, cache.Metrics.Evictions);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void EnvironmentChangesDoNotMutateHostMode()
     {
         var previous = Environment.GetEnvironmentVariable("BROILER_SCRIPT_HOST");

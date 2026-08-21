@@ -134,17 +134,17 @@ public class Issue779Tests
         => Assert.Equal("TypeError", ErrorName(code));
 
     // An unrecognized calendar *string* remains a RangeError.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void UnknownCalendarStringThrowsRangeError()
         => Assert.Equal("RangeError", ErrorName("Temporal.PlainDate.from('2000-01-01').withCalendar('bogus')"));
 
     // A calendar-identifier string and a calendar-bearing Temporal object are still accepted, and the
     // object's calendar is adopted directly.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ValidCalendarStringIsAccepted()
         => Assert.Equal("gregory", Eval("Temporal.PlainDate.from('2000-01-01').withCalendar('gregory').calendarId"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void CalendarFromTemporalObjectIsAdopted()
         => Assert.Equal("gregory",
             Eval(@"var base = Temporal.PlainDate.from('2000-01-01').withCalendar('gregory');
@@ -305,15 +305,15 @@ public class Issue779Tests
     // gregory/buddhist/roc/japanese share the ISO month/day structure, so the month-day carries the
     // calendar id (the lunisolar / arithmetic non-ISO calendars remain unimplemented for MonthDay).
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainMonthDayCalendarIdPreserved()
         => Assert.Equal("gregory", Eval("Temporal.PlainMonthDay.from({calendar:'gregory', monthCode:'M01', day:1}).calendarId"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainMonthDayConstructorCalendar()
         => Assert.Equal("gregory", Eval("new Temporal.PlainMonthDay(6, 15, 'gregory').calendarId"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainMonthDayGregoryMonthAndCode()
         => Assert.Equal("M06,15,gregory",
             Eval("var m=Temporal.PlainMonthDay.from({calendar:'gregory', year:1972, month:6, day:15}); [m.monthCode, m.day, m.calendarId].join(',')"));
@@ -324,7 +324,7 @@ public class Issue779Tests
     public void PlainMonthDayGregoryOverflowConstrain(string call, string expected)
         => Assert.Equal(expected, Eval(call));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void PlainMonthDayGregoryOverflowReject()
         => Assert.Equal("RangeError",
             ErrorName("Temporal.PlainMonthDay.from({calendar:'gregory', monthCode:'M02', day:30}, {overflow:'reject'})"));
@@ -355,7 +355,7 @@ public class Issue779Tests
     // the same calendar math as PlainDate (projecting the local wall-clock date). (Calendar/DST
     // arithmetic — add/subtract/with/round — remains unimplemented; that is Problems 6/16.)
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTimeNonIsoCalendarAccepted()
         => Assert.Equal("chinese",
             Eval("Temporal.ZonedDateTime.from('2024-06-15T12:00:00+00:00[UTC][u-ca=chinese]').calendarId"));
@@ -473,7 +473,7 @@ public class Issue779Tests
     public void ZonedDateTimeRoundInvalid(string call)
         => Assert.Equal("RangeError", ErrorName(Zr + call));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ZonedDateTimeRoundRequiresSmallestUnit()
         => Assert.Equal("RangeError", ErrorName(Zr + "z.round({})"));
 

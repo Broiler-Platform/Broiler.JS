@@ -8,7 +8,7 @@ namespace Broiler.JavaScript.Parser.Tests;
 
 public class ParserTests
 {
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_SimpleExpression_ReturnsProgram()
     {
         var stream = new FastTokenStream(new StringSpan("42;"));
@@ -18,7 +18,7 @@ public class ParserTests
         Assert.Equal(FastNodeType.Program, program.Type);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_VariableDeclaration_Succeeds()
     {
         var stream = new FastTokenStream(new StringSpan("var x = 10;"));
@@ -27,7 +27,7 @@ public class ParserTests
         Assert.NotNull(program);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_FunctionDeclaration_Succeeds()
     {
         var stream = new FastTokenStream(new StringSpan("function add(a, b) { return a + b; }"));
@@ -49,7 +49,7 @@ public class ParserTests
         Assert.NotNull(program);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_FunctionParameters_Reject_HtmlCloseComment_Without_Preceding_LineTerminator()
     {
         var stream = new FastTokenStream(new StringSpan("function f(-->){ return 1; }"));
@@ -57,7 +57,7 @@ public class ParserTests
         Assert.Throws<FastParseException>(() => parser.ParseProgram());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_ArrowFunction_Succeeds()
     {
         var stream = new FastTokenStream(new StringSpan("const f = (x) => x * 2;"));
@@ -78,7 +78,7 @@ public class ParserTests
         Assert.NotNull(program);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_GeneratorFunction_BareYield_Succeeds()
     {
         var stream = new FastTokenStream(new StringSpan("""
@@ -123,7 +123,7 @@ public class ParserTests
         Assert.False(program.IsAsync);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_ExportNamespaceFrom_Succeeds()
     {
         var stream = new FastTokenStream(new StringSpan("export * as ns from 'module';"));
@@ -139,7 +139,7 @@ public class ParserTests
         Assert.True(program.IsAsync);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_InvalidSyntax_ThrowsFastParseException()
     {
         var stream = new FastTokenStream(new StringSpan("function { }"));
@@ -159,7 +159,7 @@ public class ParserTests
         Assert.Throws<FastParseException>(() => parser.ParseProgram());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_ObjectLiteral_Allows_AsyncMethods_Named_Get_And_Set()
     {
         var stream = new FastTokenStream(new StringSpan("({ async get() { return 1; }, async set(value) { return value; } });"));
@@ -175,7 +175,7 @@ public class ParserTests
         AssertAsyncMethod(properties[1], "set");
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_ClassBody_Allows_AsyncMethods_Named_Get_And_Set()
     {
         var stream = new FastTokenStream(new StringSpan("class C { async get() { return 1; } async set(value) { return value; } }"));
@@ -192,7 +192,7 @@ public class ParserTests
     }
 
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_ClassBody_Allows_FieldDefinitions_Without_Initializers()
     {
         var stream = new FastTokenStream(new StringSpan("""
@@ -227,7 +227,7 @@ public class ParserTests
     }
 
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_ClassBody_Allows_StaticBlocks()
     {
         var stream = new FastTokenStream(new StringSpan("class C { static { let value = 1; let await; await; } }"));
@@ -288,7 +288,7 @@ public class ParserTests
         Assert.Equal(expectedName, key.Name.Value);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_ForAwaitOf_In_AsyncFunction_Succeeds()
     {
         var stream = new FastTokenStream(new StringSpan("async function run() { for await (const value of source) { value; } }"));
@@ -308,7 +308,7 @@ public class ParserTests
         Assert.NotNull(program);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_ForAwaitIn_ThrowsFastParseException()
     {
         var stream = new FastTokenStream(new StringSpan("async function run() { for await (value in source) { } }"));
@@ -341,7 +341,7 @@ public class ParserTests
         Assert.Throws<FastParseException>(() => parser.ParseProgram());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_ForAwaitOf_AsyncTarget_Succeeds()
     {
         var stream = new FastTokenStream(new StringSpan("async function run() { for await (async of source) { } }"));
@@ -389,7 +389,7 @@ public class ParserTests
         Assert.Equal(expectedName, key.Name.Value);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_ClassBody_Allows_PrivateMemberAccess()
     {
         var stream = new FastTokenStream(new StringSpan("class C { #m() { return 1; } get method() { return this.#m; } }"));
@@ -425,7 +425,7 @@ public class ParserTests
         Assert.NotNull(program);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_TemplateLiteral_WithSubstitution_DoesNotConsume_TemplateEnd_As_TaggedTemplate()
     {
         var stream = new FastTokenStream(new StringSpan("`U+${hex}`;"));
@@ -461,7 +461,7 @@ public class ParserTests
         Assert.NotNull(program);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_DynamicImport_ProducesImportCallNode()
     {
         var stream = new FastTokenStream(new StringSpan("import('./mod.js');"));
@@ -474,7 +474,7 @@ public class ParserTests
         Assert.Null(importCall.Options);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_DynamicImport_WithOptions_CapturesSecondArgument()
     {
         var stream = new FastTokenStream(new StringSpan("import('./mod.js', opts);"));
@@ -486,7 +486,7 @@ public class ParserTests
         Assert.NotNull(importCall.Options);
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_StaticImportDeclaration_StillParses()
     {
         var stream = new FastTokenStream(new StringSpan("import x from './mod.js';"));
@@ -524,7 +524,7 @@ public class ParserTests
 
     // The computed ClassElementName keeps the surrounding [+Await], so `[await]` is an
     // AwaitExpression (with no operand) — a SyntaxError.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_ClassComputedFieldName_AwaitKeepsAsyncContext_Throws()
     {
         var stream = new FastTokenStream(new StringSpan("async () => class { [await] = 1 };"));
@@ -534,7 +534,7 @@ public class ParserTests
 
     // A field initializer must be terminated by `;`, ASI, `}` or EOF; the bare
     // identifier `await` cannot be followed by `1`.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_ClassFieldInitializer_AwaitFollowedByOperand_Throws()
     {
         var stream = new FastTokenStream(new StringSpan("async () => class { x = await 1 };"));
@@ -644,7 +644,7 @@ public class ParserTests
         Assert.Throws<FastParseException>(() => parser.ParseProgram());
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_ReturnWithArgument_KeepsArgument()
     {
         var stream = new FastTokenStream(new StringSpan("function f(){ return 1 }"));
@@ -708,7 +708,7 @@ public class ParserTests
     /// shape rather than only that it parses is what distinguishes the fix from a parser that
     /// merely swallows the token.
     /// </summary>
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_PostfixAfterPrefixUnary_BindsToTheOperand()
     {
         var stream = new FastTokenStream(new StringSpan("!c++;"));
@@ -728,7 +728,7 @@ public class ParserTests
     /// A postfix still may not cross a line terminator (ASI puts the <c>++</c> on the next
     /// statement), and taking the postfix earlier must not have changed that.
     /// </summary>
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_PostfixAfterPrefixUnary_StillRespectsAsi()
     {
         var stream = new FastTokenStream(new StringSpan("!c\n++d;"));
@@ -928,7 +928,7 @@ public class ParserTests
     /// file, which says nothing at all. The report now also names where the parse actually
     /// stopped, which for a script that ends early is the end of the script.
     /// </summary>
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_UnparseableStatement_ReportsWhereTheParseStopped()
     {
         var stream = new FastTokenStream(new StringSpan("!"));
@@ -944,7 +944,7 @@ public class ParserTests
     /// And when the parse stopped at a real token, that token is named with its position rather
     /// than the statement's.
     /// </summary>
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_UnparseableStatement_NamesTheTokenItStoppedAt()
     {
         var stream = new FastTokenStream(new StringSpan("!;"));
@@ -1002,7 +1002,7 @@ public class ParserTests
     /// a body that arrived in another encoding — said outright, because "invalid character" would
     /// send the reader looking for a typo instead of at the transport.
     /// </summary>
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_ReplacementCharacter_SaysTheSourceWasMisdecoded()
     {
         var error = Assert.ThrowsAny<FastParseException>(
@@ -1016,7 +1016,7 @@ public class ParserTests
     /// An astral character is a surrogate PAIR; naming half of one prints a broken glyph and the
     /// wrong code point.
     /// </summary>
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ParseProgram_AstralCharacter_IsNamedByItsCodePoint()
     {
         var error = Assert.ThrowsAny<FastParseException>(

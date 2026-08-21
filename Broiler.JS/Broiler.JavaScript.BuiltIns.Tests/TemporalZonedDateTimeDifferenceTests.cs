@@ -54,7 +54,7 @@ public class TemporalZonedDateTimeDifferenceTests
                   "{ year: 1970, monthCode: 'M02', day: 28 }", "years", "gregory"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Since_BackwardDirectionIsAnchoredAtTheStart()
     {
         // since/until are intentionally asymmetric across differing month lengths: the later.since

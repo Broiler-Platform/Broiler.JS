@@ -84,12 +84,12 @@ public class Issue755Tests
 
     // ---- Problem 23: @@unscopables descriptor is non-writable ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayUnscopablesIsNonWritable()
         => Assert.Equal("false", Eval(
             "Object.getOwnPropertyDescriptor(Array.prototype, Symbol.unscopables).writable.toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayUnscopablesIsConfigurableNonEnumerable()
         => Assert.Equal("true,false,true", Eval(
             "var d=Object.getOwnPropertyDescriptor(Array.prototype, Symbol.unscopables);" +
@@ -97,86 +97,86 @@ public class Issue755Tests
 
     // ---- Problem 26: BigInt.asIntN/asUintN missing argument → TypeError ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BigIntAsIntNNoArgumentThrowsTypeError()
         => Assert.Equal("TypeError", Eval(
             "try{BigInt.asIntN();'no throw';}catch(e){e.constructor.name;}"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BigIntAsIntNOneArgumentThrowsTypeError()
         => Assert.Equal("TypeError", Eval(
             "try{BigInt.asIntN(0);'no throw';}catch(e){e.constructor.name;}"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void BigIntAsUintNNoArgumentThrowsTypeError()
         => Assert.Equal("TypeError", Eval(
             "try{BigInt.asUintN();'no throw';}catch(e){e.constructor.name;}"));
 
     // ---- Problem 27/28: TypedArray slice/subarray end coercion ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArraySliceUndefinedEndIsFullLength()
         => Assert.Equal("40,41,42,43", Eval(
             "Array.prototype.join.call(new Int8Array([40,41,42,43]).slice(0, undefined))"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArraySliceCoercesEnd()
         => Assert.Equal("40,41|40|40,41,42", Eval(
             "var s=new Int8Array([40,41,42,43]);var j=function(a){return Array.prototype.join.call(a);};" +
             "[j(s.slice(0,{valueOf:function(){return 2;}})), j(s.slice(0,'1')), j(s.slice(0,-1))].join('|')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArraySubarrayUndefinedEndIsFullLength()
         => Assert.Equal("4", Eval(
             "new Int8Array([40,41,42,43]).subarray(0, undefined).length.toString()"));
 
     // ---- Problem 29: Intl.DurationFormat.format argument validation ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationFormatRejectsNonObject()
         => Assert.Equal("TypeError,TypeError,TypeError,TypeError", Eval(
             "var df=new Intl.DurationFormat();function t(x){try{df.format(x);return 'no throw';}catch(e){return e.constructor.name;}}" +
             "[t(undefined),t(null),t(1),t(2n)].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationFormatRejectsEmptyObject()
         => Assert.Equal("TypeError,TypeError", Eval(
             "var df=new Intl.DurationFormat();function t(x){try{df.format(x);return 'no throw';}catch(e){return e.constructor.name;}}" +
             "[t({}),t({years:undefined})].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DurationFormatRejectsBadStringWithRangeError()
         => Assert.Equal("RangeError", Eval(
             "var df=new Intl.DurationFormat();try{df.format('bad string');'no throw';}catch(e){e.constructor.name;}"));
 
     // ---- Problem 30/31: Date setters explicit undefined → NaN ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetMinutesExplicitUndefinedMsIsNaN()
         => Assert.Equal("true", Eval(
             "var d=new Date(2016,6);Number.isNaN(d.setMinutes(0,0,undefined)).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetSecondsExplicitUndefinedMsIsNaN()
         => Assert.Equal("true", Eval(
             "var d=new Date(2016,6);Number.isNaN(d.setSeconds(0,undefined)).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetMonthExplicitUndefinedDayIsNaN()
         => Assert.Equal("true", Eval(
             "var d=new Date(2016,6,7,11,36,23,2);Number.isNaN(d.setMonth(6,undefined)).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetFullYearExplicitUndefinedDayIsNaN()
         => Assert.Equal("true", Eval(
             "var d=new Date(2016,6,7,11,36,23,2);Number.isNaN(d.setFullYear(2016,6,undefined)).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetMinutesMissingMsKeepsCurrentField()
         => Assert.Equal("false", Eval(
             "var d=new Date(2016,6,1,0,0,0,2);Number.isNaN(d.setMinutes(0,0)).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void SetFullYearCoercesDayArgument()
         => Assert.Equal("true", Eval(
             "var d=new Date(2016,6,7,11,36,23,2);" +
@@ -184,22 +184,22 @@ public class Issue755Tests
 
     // ---- Problem 33: yield/await in parameters are early SyntaxErrors ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldInGeneratorParameterIsSyntaxError()
         => Assert.Equal("SyntaxError", Eval(
             "try{eval('(function*(x = yield){})');'no throw';}catch(e){e.constructor.name;}"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void AwaitInAsyncFunctionParameterIsSyntaxError()
         => Assert.Equal("SyntaxError", Eval(
             "try{eval('(async function(x = await 1){})');'no throw';}catch(e){e.constructor.name;}"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void YieldInGeneratorBodyIsAllowed()
         => Assert.Equal("function", Eval(
             "(typeof eval('(function*(){ yield 1; })')).toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DynamicGeneratorFunctionYieldInParameterIsSyntaxError()
         => Assert.Equal("SyntaxError", Eval(
             "var GF=Object.getPrototypeOf(function*(){}).constructor;" +
@@ -207,7 +207,7 @@ public class Issue755Tests
 
     // ---- Problem 34: JSON wrapper holder uses CreateDataProperty, not [[Set]] ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void JsonParseReviverWrapperDoesNotInvokeInheritedSetter()
         => Assert.Equal("object", Eval(
             "var called=false;" +
@@ -218,7 +218,7 @@ public class Issue755Tests
 
     // ---- Problem 36: Object.entries/values interleave gOPD and Get per key ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectEntriesInterleavesDescriptorAndGet()
         => Assert.Equal("|ownKeys|gopd:a|get:a|gopd:b|get:b", Eval(
             "var log='';var o={a:1,b:2};" +
@@ -229,46 +229,46 @@ public class Issue755Tests
 
     // ---- Problem 37/38: TypedArray constructor length is ToIndex ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayCtorFractionalNegativeLengthFloorsToZero()
         => Assert.Equal("0,0,0", Eval(
             "[new Int8Array(-0.1).length,new Int8Array(-0.99999).length,new Int8Array(0.9).length].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void TypedArrayCtorCoercesLengthValues()
         => Assert.Equal("1,0,1,0", Eval(
             "[new Int8Array(true).length,new Int8Array(false).length,new Int8Array('1').length,new Int8Array(null).length].join(',')"));
 
     // ---- Problem 9: Array length [[Set]] receiver redirect + Reflect.defineProperty ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectDefinePropertyShrinksArrayLength()
         => Assert.Equal("true,0,", Eval(
             "var a=[1,2,3];var ok=Reflect.defineProperty(a,'length',{value:0});[ok,a.length,a.join(',')].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectDefinePropertyGrowsArrayLength()
         => Assert.Equal("true,5", Eval(
             "var a=[1,2,3];var ok=Reflect.defineProperty(a,'length',{value:5});[ok,a.length].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectDefinePropertyReadonlyLengthReturnsFalse()
         => Assert.Equal("false,3", Eval(
             "var a=[1,2,3];Reflect.defineProperty(a,'length',{writable:false});" +
             "var ok=Reflect.defineProperty(a,'length',{value:1});[ok,a.length].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ReflectDefinePropertyInvalidLengthThrowsRangeError()
         => Assert.Equal("RangeError", Eval(
             "try{Reflect.defineProperty([1],'length',{value:-1});'no throw';}catch(e){e.constructor.name;}"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ObjectDefinePropertyReadonlyLengthStillThrows()
         => Assert.Equal("TypeError", Eval(
             "var a=[1,2,3];Object.defineProperty(a,'length',{writable:false});" +
             "try{Object.defineProperty(a,'length',{value:1});'no throw';}catch(e){e.constructor.name;}"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayLengthSetWithForeignReceiverRedirects()
         => Assert.Equal("gopd:length,dp:length", Eval(
             "var log=[];var p=new Proxy([],{" +
@@ -276,97 +276,97 @@ public class Issue755Tests
             "defineProperty:function(t,k,d){log.push('dp:'+k);return Reflect.defineProperty(t,k,d);}});" +
             "Reflect.set([],'length',0,p);log.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ArrayPopViaProxyShrinksUnderlyingArray()
         => Assert.Equal("3,2,12", Eval(
             "var a=[1,2,3];var p=new Proxy(a,{});var r=Array.prototype.pop.call(p);[r,a.length,a.join('')].join(',')"));
 
     // ---- Problem 13: dynamic Function has no `anonymous` self-binding ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DynamicFunctionHasNoAnonymousBinding()
         => Assert.Equal("undefined", Eval("new Function('return typeof anonymous')()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DynamicFunctionNestedHasNoAnonymousBinding()
         => Assert.Equal("undefined", Eval(
             "new Function('return function() { return typeof anonymous; }')()()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DynamicFunctionNameIsAnonymous()
         => Assert.Equal("anonymous", Eval("new Function('a','return a').name"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DynamicFunctionToStringUsesAnonymous()
         => Assert.Equal("function anonymous(a,b\n) {\nreturn a+b\n}", Eval(
             "new Function('a','b','return a+b').toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DynamicFunctionStillCallableWithLength()
         => Assert.Equal("5,1", Eval(
             "var f=new Function('a','return a*5');[f(1),f.length].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DynamicGeneratorFunctionNameIsAnonymous()
         => Assert.Equal("anonymous,x", Eval(
             "var GF=Object.getPrototypeOf(function*(){}).constructor;var g=GF('a','yield a');[g.name,g('x').next().value].join(',')"));
 
     // ---- Problem 17: delete of a lexical binding inside `with` returns false ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeleteConstInsideWithUnscopableReturnsFalse()
         => Assert.Equal("false", Eval(
             "const c=1;var e={};e[Symbol.unscopables]={c:true};var r;with(e){r=delete c;}r.toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeleteLexicalBindingsInsideWith()
         => Assert.Equal("false,false,false,true", Eval(
             "const c=1;let l=2;var v=3;g=4;var e={};" +
             "e[Symbol.unscopables]={c:true,l:true,v:true,g:true};" +
             "var r=[];with(e){r.push(delete c);r.push(delete l);r.push(delete v);r.push(delete g);}r.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeleteSloppyEvalVarInsideWithStillReturnsTrue()
         => Assert.Equal("true", Eval(
             "function f(){ eval('var ev=1;'); with({}){ return delete ev; } } f().toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void DeleteWithObjectPropertyStillWorks()
         => Assert.Equal("true", Eval(
             "var o={p:1};with(o){delete p;}(o.p===undefined).toString()"));
 
     // ---- Problem 35: generator return runs nested finally; throw on completed ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorReturnRunsFinallyAroundYieldInCatch()
         => Assert.Equal("f,42,true", Eval(
             "var o=[];function* g(){try{try{throw 0;}catch(e){yield 1;}}finally{o.push('f');}}" +
             "var it=g();it.next();var r=it.return(42);[o.join(','),r.value,r.done].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorReturnRunsFinallyAroundYieldInInnerTry()
         => Assert.Equal("f,42,true", Eval(
             "var o=[];function* g(){try{try{yield 1;}catch(e){throw e;}}finally{o.push('f');}}" +
             "var it=g();it.next();var r=it.return(42);[o.join(','),r.value,r.done].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorReturnRunsBothNestedFinallies()
         => Assert.Equal("inner,outer", Eval(
             "var o=[];function* g(){try{try{yield 1;}finally{o.push('inner');}}finally{o.push('outer');}}" +
             "var it=g();it.next();it.return(0);o.join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorFinallyCanOverrideReturnValue()
         => Assert.Equal("99", Eval(
             "function* g(){try{yield 1;}finally{return 99;}}var it=g();it.next();it.return(5).value.toString()"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorThrowOnCompletedThrowsValue()
         => Assert.Equal("E", Eval(
             "function E(){}function* g(){}var it=g();it.next();" +
             "try{it.throw(new E());'no throw';}catch(e){e.constructor.name;}"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void GeneratorThrowOnSuspendedStartThrowsValue()
         => Assert.Equal("E", Eval(
             "function E(){}function* g(){yield 1;}var it=g();" +
@@ -374,27 +374,27 @@ public class Issue755Tests
 
     // ---- Problem 39/40: Annex B IdentityEscape in a non-Unicode regex ----
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegexIdentityEscapeUnderscoreAndLetter()
         => Assert.Equal("true,true,true", Eval(
             "[/\\_/.test('_'),/\\C/.test('C'),/O\\PQ/.test('OPQ')].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegexMalformedUnicodeHexNamedEscapesAreIdentity()
         => Assert.Equal("true,true,true", Eval(
             "[eval('/\\\\u/').test('u'),eval('/\\\\x/').test('x'),eval('/\\\\k/').test('k')].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegexIdentityEscapeSourcePreserved()
         => Assert.Equal("\\_,\\C,\\u", Eval(
             "[/\\_/.source,/\\C/.source,eval('/\\\\u/').source].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegexRecognizedEscapesUnaffected()
         => Assert.Equal("true,false,true,true", Eval(
             "[/\\d/.test('5'),/\\d/.test('d'),/\\u0041/.test('A'),/\\x41/.test('A')].join(',')"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void RegexNewRegExpMalformedUnicodeEscape()
         => Assert.Equal("true", Eval("new RegExp('\\\\u').test('u').toString()"));
 }

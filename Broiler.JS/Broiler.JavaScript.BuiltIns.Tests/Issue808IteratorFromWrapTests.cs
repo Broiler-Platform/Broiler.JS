@@ -29,19 +29,19 @@ public class Issue808IteratorFromWrapTests
         Assert.Equal(expected, Eval($"String(Iterator.from({{ next: function () {{ return {value}; }} }}).next());"));
     }
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Wrap_Next_NullResult()
         => Assert.Equal("true", Eval("String(Iterator.from({ next: function () { return null; } }).next() === null);"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Wrap_OverNormalIterator_Works()
         => Assert.Equal("1,2,3", Eval("[...Iterator.from([1, 2, 3][Symbol.iterator]())].join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Wrap_Map_Works()
         => Assert.Equal("2,4,6", Eval("[...Iterator.from([1, 2, 3][Symbol.iterator]()).map(function (x) { return x * 2; })].join(',');"));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void Wrap_Return_ForwardsToUnderlying()
         => Assert.Equal("true", Eval("""
             var closed = false;
@@ -53,7 +53,7 @@ public class Issue808IteratorFromWrapTests
             String(closed);
         """));
 
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void From_IteratorInstance_ReturnedDirectly()
         => Assert.Equal("true", Eval("""
             var it = [1][Symbol.iterator]();

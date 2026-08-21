@@ -27,7 +27,7 @@ public class TypedArrayFromErrorOrderingTests
 
     // A non-undefined, non-callable mapfn throws a TypeError BEFORE the source is
     // observed in any way (no @@iterator lookup, no length read, no element read).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NonCallableMapfnThrowsBeforeTouchingSource()
     {
         var code = @"
@@ -44,7 +44,7 @@ public class TypedArrayFromErrorOrderingTests
     }
 
     // mapfn provided as null is non-callable -> TypeError (only undefined disables mapping).
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void NullMapfnThrowsTypeError()
     {
         var code = "var t=''; try { Int8Array.from([1,2,3], null); } catch (e) { t = e.constructor.name; } t;";
@@ -65,7 +65,7 @@ public class TypedArrayFromErrorOrderingTests
     }
 
     // An iterator whose next() returns a primitive is a TypeError.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void IteratorNextReturningPrimitiveThrows()
     {
         var code = @"
@@ -76,7 +76,7 @@ public class TypedArrayFromErrorOrderingTests
 
     // For an array-like source the result is constructed (via the receiver C)
     // BEFORE any element is visited: the call order is length, construct, element.
-    [Fact]
+    [Fact(Timeout = 600000)]
     public void ResultConstructedBeforeArrayLikeElementsVisited()
     {
         var code = @"
