@@ -323,7 +323,7 @@ public static class PropertyInlineCacheSite
         if ((uint)site >= MaxSites)
             return target[key];
 
-        return SiteTable<PropertyInlineCache>.Rent(site).Get(target, in key);
+        return SiteTable<PropertyInlineCache>.Rent(site).Get(site, target, in key);
     }
 
     /// <summary>Allocates one bounded store-cache side-table entry for an emitted constant-key write.</summary>
@@ -341,7 +341,7 @@ public static class PropertyInlineCacheSite
             return value;
         }
 
-        SiteTable<PropertyStoreInlineCache>.Rent(site).Set(target, in key, value);
+        SiteTable<PropertyStoreInlineCache>.Rent(site).Set(site, target, in key, value);
         return value;
     }
 
@@ -443,7 +443,11 @@ public static class PropertyInlineCacheSite
         private int declinedInstalls;
         private bool megamorphic;
 
-        public void Set(JSValue target, in KeyString property, JSValue value)
+        /// <param name="site">
+        /// This cache's own emission-site index; the read twin's <c>site</c> parameter, and used
+        /// on the same path and for the same reason.
+        /// </param>
+        public void Set(int site, JSValue target, in KeyString property, JSValue value)
         {
             if (!megamorphic && target is JSObject receiver && key == property.Key)
             {
@@ -474,6 +478,15 @@ public static class PropertyInlineCacheSite
             var shapeBeforeStore = (target as JSObject)?.TransitionShape;
 
             PropertyOptimizationDiagnostics.RecordStoreCacheMiss();
+
+            // See the read twin: a nullish receiver always misses, so the hit path is untouched,
+            // and this is the last frame that knows the emission site.
+            if (target.IsNullOrUndefined)
+            {
+                NullishAccess.WriteNullish(site, target, in property, value);
+                return;
+            }
+
             target[property] = value;
 
             if (megamorphic || target is not JSObject ordinary || property.Metadata.IsPrivateName)
@@ -625,7 +638,12 @@ public static class PropertyInlineCacheSite
         private int count;
         private bool megamorphic;
 
-        public JSValue Get(JSValue target, in KeyString property)
+        /// <param name="site">
+        /// This cache's own emission-site index, carried through so a nullish receiver can be
+        /// reported against the source text recorded for the site (<see cref="NullishAccess"/>).
+        /// It is read only on the miss path below.
+        /// </param>
+        public JSValue Get(int site, JSValue target, in KeyString property)
         {
             if (!megamorphic && target is JSObject receiver && key == property.Key)
             {
@@ -665,6 +683,14 @@ public static class PropertyInlineCacheSite
                 else
                     PropertyOptimizationDiagnostics.RecordMissShape();
             }
+            // A nullish receiver can only reach here: it is not a JSObject, so it never hits, and
+            // the hit path above therefore pays nothing for this test. The read below is the one
+            // that raises "Cannot get property x of undefined", and this is the last place that
+            // still knows which emission site it came from — which is what carries the source text
+            // of the access being attempted.
+            if (target.IsNullOrUndefined)
+                return NullishAccess.ReadNullish(site, target, in property);
+
             var result = target[property];
 
             if (megamorphic || target is not JSObject ordinary || property.Metadata.IsPrivateName)

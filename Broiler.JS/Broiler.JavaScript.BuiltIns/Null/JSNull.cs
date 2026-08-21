@@ -47,9 +47,11 @@ public sealed class JSNull : JSValue
                 Console.Error.WriteLine(st.ToString());
             }
 #endif
-            throw JSEngine.NewTypeError($"Cannot get property {name} of null");
+            // The undefined twin's clause, on the same terms: it names the expression the access
+            // was written as, and is empty when the emitted access carries no description.
+            throw JSEngine.NewTypeError($"Cannot get property {name} of null{NullishAccess.Evaluating(in name)}");
         }
-        set => throw JSEngine.NewTypeError($"Cannot set property {name} of null");
+        set => throw JSEngine.NewTypeError($"Cannot set property {name} of null{NullishAccess.Evaluating(in name)}");
     }
 
     public override JSValue this[uint key]
@@ -62,6 +64,10 @@ public sealed class JSNull : JSValue
 
 
     public override IElementEnumerator GetElementEnumerator() => throw JSEngine.NewTypeError("null is not iterable");
+
+    // The undefined twin's override; see JSUndefined.GetIterableEnumerator for why spread and
+    // for-of missed the message above.
+    public override IElementEnumerator GetIterableEnumerator() => throw JSEngine.NewTypeError("null is not iterable");
 
 
     public override int GetHashCode() => 0;

@@ -51,12 +51,19 @@ public class UndefinedPropertyReadMessageTests
         Assert.Equal("Cannot read properties of undefined", message);
     }
 
-    // The static path already named the property and keeps its own wording.
+    // The static path already named the property and keeps its own wording. It has since gained
+    // the "(evaluating '…')" clause, which names the ACCESS rather than the key — a separate
+    // change, covered by NullishAccessMessageTests, and asserted here only so that this test says
+    // what the static message is rather than a prefix of it.
+    //
+    // `null.foo` is a literal base, so there is no expression to name that the message does not
+    // already contain; the clause is emitted all the same, because a description is recorded per
+    // emitted access and not per how interesting the access looks.
     [Fact]
     public void AStaticReadIsUnchanged()
     {
-        Assert.Equal("Cannot get property foo of undefined", MessageOf("var u; return u.foo;"));
-        Assert.Equal("Cannot get property foo of null", MessageOf("return null.foo;"));
+        Assert.Equal("Cannot get property foo of undefined (evaluating 'u.foo')", MessageOf("var u; return u.foo;"));
+        Assert.Equal("Cannot get property foo of null (evaluating 'null.foo')", MessageOf("return null.foo;"));
     }
 
     // A read that succeeds is untouched.

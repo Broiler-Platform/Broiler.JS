@@ -1708,6 +1708,13 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public virtual IElementEnumerator GetElementEnumerator() => ElementEnumerator.Empty;
     public virtual IElementEnumerator GetAsyncElementEnumerator() => GetElementEnumerator();
+    // "Value is not iterable" names nothing — not the value, not even its type — and it was the
+    // message `[...undefined]` produced, because undefined and null were the only two kinds of
+    // value that did not override this. Every other one does and every other one names itself:
+    // JSObject and JSPrimitive resolve @@iterator and fall back to NotIterable(this), JSString
+    // and Intl.Segments enumerate. The two singletons now override it too
+    // (JSUndefined.GetIterableEnumerator), so nothing in the engine reaches this line; it stays
+    // as the answer for a subtype that adds neither.
     public virtual IElementEnumerator GetIterableEnumerator() => throw NewTypeError("Value is not iterable");
     public virtual IElementEnumerator GetAsyncIterableEnumerator() => GetIterableEnumerator();
 

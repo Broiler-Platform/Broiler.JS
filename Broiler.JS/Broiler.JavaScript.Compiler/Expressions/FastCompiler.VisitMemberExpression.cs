@@ -50,7 +50,12 @@ partial class FastCompiler
         // Inside an optional chain, member access routes through the skip-aware links
         // (a `?.` link short-circuits on a nullish base; a trailing link only propagates
         // an in-flight short-circuit). Outside a chain it is an ordinary index.
-        BExpression Access(BExpression keyExpr, bool allowCache = true)
+        //
+        // `property` is the property name as source text, for the site description below. Only a
+        // constant key has one — a computed key is whatever its expression evaluates to, which is
+        // not knowable here — so it is passed by the cases that know it and left empty by the
+        // rest, which then record no description.
+        BExpression Access(BExpression keyExpr, bool allowCache = true, StringSpan property = default)
         {
             if (allowCache
                 && super == null
@@ -58,7 +63,10 @@ partial class FastCompiler
                 && !memberExpression.Coalesce
                 && keyExpr.Type == typeof(KeyString))
             {
-                return JSValueBuilder.CachedIndex(target, keyExpr);
+                // The whole access as it was written — `config.server.tls.enabled` — recorded
+                // against the emitted site so that a nullish base is reported as the expression
+                // rather than only as the property name it failed to read (NullishAccess).
+                return JSValueBuilder.CachedIndex(target, keyExpr, memberExpression.AccessCode(), in property);
             }
 
             return memberExpression.InOptionalChain
@@ -117,7 +125,7 @@ partial class FastCompiler
                                 JSValueBuilder.Index(recv.Expression, super, key, false)));
                     }
 
-                    return Access(key, allowCache: !isPrivate);
+                    return Access(key, allowCache: !isPrivate, property: id.Name);
                 }
 
                 // Item 3-0: `a[i]` where the compiler holds `i` in a raw double reads the element
@@ -170,17 +178,17 @@ partial class FastCompiler
                 switch (l.TokenType)
                 {
                     case TokenTypes.True:
-                        return Access(KeyOfName(l.StringValue));
+                        return Access(KeyOfName(l.StringValue), property: l.StringValue);
 
                     case TokenTypes.False:
-                        return Access(KeyOfName(l.StringValue));
+                        return Access(KeyOfName(l.StringValue), property: l.StringValue);
 
                     case TokenTypes.String:
                         var text = l.StringValue;
                         if (NumberParser.TryGetArrayIndex(text, out var d))
                             return Access(BExpression.Constant(d));
 
-                        return Access(KeyOfName(text));
+                        return Access(KeyOfName(text), property: text);
 
                     case TokenTypes.Number:
                         var number = l.NumericValue;

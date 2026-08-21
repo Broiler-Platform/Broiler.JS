@@ -301,6 +301,11 @@ partial class FastCompiler
         // reference. See TryCreateCachedUpdateKey; null means the ordinary reference is used.
         BExpression cachedKey = null;
 
+        // The source text of the access the two cached sites belong to, and the property it
+        // names. Empty for every shape that does not take the cached pair.
+        StringSpan cachedAccess = default;
+        StringSpan cachedAccessProperty = default;
+
         // Where the operand lives, for item 3-1's update-target census. Decided here because the
         // step itself is emitted once for every member shape, and the shared tail can no longer
         // tell them apart. `Other` is the honest default: anything reaching the tail that this
@@ -375,8 +380,12 @@ partial class FastCompiler
             else
             {
                 cachedKey = TryCreateCachedUpdateKey(memberExpression);
+                // `obj.x++` on a nullish `obj` fails on this read, before the step or the
+                // write-back, so both sites carry the access's source text (NullishAccess).
+                cachedAccess = memberExpression.AccessCode();
+                cachedAccessProperty = PropertyNameText(memberExpression.Property);
                 right = cachedKey != null
-                    ? JSValueBuilder.CachedIndex(target.Expression, cachedKey)
+                    ? JSValueBuilder.CachedIndex(target.Expression, cachedKey, in cachedAccess, in cachedAccessProperty)
                     : CreateMemberExpression(target.Expression, memberExpression.Property, false);
             }
         }
@@ -410,7 +419,7 @@ partial class FastCompiler
         // the silent-failure behaviour below are unchanged; a hit skips it.
         BExpression WriteBack(BExpression value)
             => cachedKey != null
-                ? JSValueBuilder.CachedStore(target.Expression, cachedKey, value)
+                ? JSValueBuilder.CachedStore(target.Expression, cachedKey, value, in cachedAccess, in cachedAccessProperty)
                 : BExpression.Assign(right, value);
 
         if (updateExpression.Prefix)

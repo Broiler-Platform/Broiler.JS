@@ -7,6 +7,7 @@ using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Storage;
 using Broiler.JavaScript.LinqExpressions.LambdaGen;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Ast.Misc;
 
 namespace Broiler.JavaScript.LinqExpressions.LinqExpressions;
 
@@ -210,9 +211,21 @@ public class JSValueBuilder
     /// 4-1's feedback for that site becomes addressable, which is what item 4-2b specializes on.
     /// Outside one this is unchanged.
     /// </remarks>
-    public static Expression CachedIndex(Expression target, Expression property)
+    /// <param name="access">
+    /// The source text of the whole access (<c>config.server.tls.enabled</c>), recorded against
+    /// the site so a nullish receiver can be reported as the expression it was written as rather
+    /// than as a bare property name (<see cref="NullishAccess"/>). Default for a caller with no
+    /// source to point at, which leaves the message as it was.
+    /// </param>
+    /// <param name="accessProperty">
+    /// The name of the property <paramref name="access"/> reads, which the description is verified
+    /// against before it is used. See <see cref="NullishAccess"/> for why a site index alone is not
+    /// enough to trust.
+    /// </param>
+    public static Expression CachedIndex(Expression target, Expression property, in StringSpan access = default, in StringSpan accessProperty = default)
     {
         var site = SpecializingTier.NextReadSite();
+        NullishAccess.DescribeRead(site, in access, in accessProperty);
         var generic = Expression.Call(null, _CachedPropertyGet, Expression.Constant(site), target, property);
 
         if (!SpecializingTier.MaySpecialize
@@ -258,9 +271,12 @@ public class JSValueBuilder
     /// Creates one bounded store-cache side-table entry for an emitted constant-key write, and
     /// yields the assigned value so the call can stand in for the assignment expression.
     /// </summary>
-    public static Expression CachedStore(Expression target, Expression property, Expression value)
+    /// <param name="access">The read twin's <c>access</c>; see <see cref="CachedIndex"/>.</param>
+    /// <param name="accessProperty">The read twin's <c>accessProperty</c>; see <see cref="CachedIndex"/>.</param>
+    public static Expression CachedStore(Expression target, Expression property, Expression value, in StringSpan access = default, in StringSpan accessProperty = default)
     {
         var site = PropertyInlineCacheSite.AllocateStore();
+        NullishAccess.DescribeStore(site, in access, in accessProperty);
         return Expression.Call(null, _CachedPropertySet, Expression.Constant(site), target, property, value);
     }
 
@@ -269,7 +285,14 @@ public class JSValueBuilder
     /// method, whose key is a per-class-evaluation variable rather than a constant and would
     /// only drive the site megamorphic.
     /// </param>
-    public static Expression InvokeMethod(Expression targetTemp, Expression methodTemp, Expression target, Expression name, IFastEnumerable<Expression> args, bool spread, bool memberCoalesce, bool callCoalesce = false, bool inChain = false, bool allowCache = false)
+    /// <param name="access">
+    /// The source text of the callee's member access (<c>config.server.connect</c>), describing
+    /// the CALLEE READ below — so `config.server.connect()` on a nullish `config.server` names the
+    /// expression. It does not reach the "is not a function" throw, which happens at the
+    /// invocation and carries no site; see <see cref="NullishAccess"/>.
+    /// </param>
+    /// <param name="accessProperty">The property <paramref name="access"/> reads.</param>
+    public static Expression InvokeMethod(Expression targetTemp, Expression methodTemp, Expression target, Expression name, IFastEnumerable<Expression> args, bool spread, bool memberCoalesce, bool callCoalesce = false, bool inChain = false, bool allowCache = false, StringSpan access = default, StringSpan accessProperty = default)
     {
         var method = _Index;
 
@@ -303,7 +326,7 @@ public class JSValueBuilder
             // most common shape of property access in real JavaScript — calling an inherited
             // method — always took the generic lookup. See docs/performance-roadmap.md P1-2.
             var calleeRead = allowCache && name.Type == typeof(KeyString)
-                ? CachedIndex(targetTemp, name)
+                ? CachedIndex(targetTemp, name, in access, in accessProperty)
                 : Expression.MakeIndex(targetTemp, method, name);
 
             return Expression.Block(

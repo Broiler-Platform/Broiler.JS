@@ -38,9 +38,13 @@ public sealed class JSUndefined : JSValue
                 Console.Error.WriteLine(st.ToString());
             }
 #endif
-            throw NewTypeError($"Cannot get property {name} of undefined");
+            // NullishAccess.Evaluating names the expression the access was written as — the half
+            // "Cannot get property enabled of undefined" never said, and the half that identifies
+            // WHICH value was undefined. Empty for an access the compiler emitted no description
+            // for; see NullishAccess for what carries one.
+            throw NewTypeError($"Cannot get property {name} of undefined{NullishAccess.Evaluating(in name)}");
         }
-        set => throw NewTypeError($"Cannot set property {name} of undefined");
+        set => throw NewTypeError($"Cannot set property {name} of undefined{NullishAccess.Evaluating(in name)}");
     }
 
     public override JSValue this[uint key]
@@ -70,6 +74,12 @@ public sealed class JSUndefined : JSValue
     public override JSValue InvokeFunction(in Arguments a) => throw NewTypeError("undefined is not a function");
 
     public override IElementEnumerator GetElementEnumerator() => throw NewTypeError("undefined is not iterable");
+
+    // Spread and for-of enter through GetIterableEnumerator, not GetElementEnumerator, so
+    // `[...undefined]` reported the base's "Value is not iterable" — a sentence that names
+    // neither the value nor its type, and the one not-iterable message in the engine that did
+    // not. `undefined` renders without running any JavaScript, so it can simply be said.
+    public override IElementEnumerator GetIterableEnumerator() => throw NewTypeError("undefined is not iterable");
 
     public override bool ConvertTo(Type type, out object value)
     {
