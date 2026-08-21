@@ -306,7 +306,13 @@ partial class FastCompiler
             }
             else
             {
-                invocation = JSValueBuilder.InvokeMethod(receiver, resolvedMethod, target, name, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain, allowCache: true);
+                // `me` is the callee's member access; describing its read site is what lets
+                // `config.server.connect()` on a nullish `config.server` name the expression
+                // rather than only the property (NullishAccess).
+                invocation = JSValueBuilder.InvokeMethod(
+                    receiver, resolvedMethod, target, name, args, spread, me.Coalesce, coalesce,
+                    inChain || me.InOptionalChain, allowCache: true,
+                    access: me.AccessCode(), accessProperty: PropertyNameText(me.Property));
             }
 
             if (argumentsSuspend)

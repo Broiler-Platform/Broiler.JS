@@ -36,6 +36,18 @@ features. `Broiler.JavaScript.Portable` is not the full engine and must not be p
 as Native AOT support for general JavaScript. See
 [Performance measurement and execution modes](roadmap/measurement.md).
 
+## Diagnostics surface
+
+| Type | Assembly | Consumer | Notes |
+| --- | --- | --- | --- |
+| `NullishAccess` | `Broiler.JavaScript.Runtime` | Hosts tuning diagnostics | Records the source text of each emitted constant-key property access so a `null`/`undefined` TypeError can name the expression it came from — `Cannot get property enabled of undefined (evaluating 'config.server.tls.enabled')`. `Enabled` (default `true`) stops new accesses being recorded; `Reset()` drops what has been recorded. No effect on evaluation, and no cost on a successful access. Descriptions are spans into source, so they keep that source reachable: a host that evaluates a stream of unrelated programs should `Reset()` between them. |
+
+`NullishAccess` describes only the accesses that take the constant-key read and store
+caches: `a.b.c`, `a.b.c = v`, `a.b.c op= v`, `a.b.c++`, and the receiver read of
+`a.b.c()`. A computed access (`a[k]`), a parenthesized base, a `super` access, an
+optional-chain link, and the "is not a function" raised at a call keep the message they
+had. The type's own remarks say why each is excluded.
+
 ## Documentation updates for new APIs
 
 When adding or changing a public type, update this file with the owning assembly, the intended consumer, and any compliance impact. If the API implements a specific ECMAScript feature, link the related compliance test area from `docs/compliance/process.md` or record a gap in `docs/compliance/known-gaps.md`.

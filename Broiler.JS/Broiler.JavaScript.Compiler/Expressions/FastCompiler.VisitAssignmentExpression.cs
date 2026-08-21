@@ -177,7 +177,7 @@ partial class FastCompiler
             {
                 return BExpression.Block(
                     BExpression.Assign(objectTemp.Expression, Visit(mem.Object)),
-                    CachedCompoundAssign(objectTemp.Expression, cachedKey, right, assignmentOperator));
+                    CachedCompoundAssign(objectTemp.Expression, cachedKey, right, assignmentOperator, mem));
             }
 
             var memberExp = CreateMemberExpression(objectTemp.Expression, mem.Property, false);
@@ -477,13 +477,21 @@ partial class FastCompiler
     /// performs the write.
     /// </para>
     /// </remarks>
+    /// <param name="member">
+    /// The access being compounded, so both emitted sites can be described against its source
+    /// text — a nullish base fails on the READ here, before the operator or the write
+    /// (<see cref="NullishAccess"/>).
+    /// </param>
     private BExpression CachedCompoundAssign(
         BExpression target,
         BExpression key,
         AstExpression right,
-        TokenTypes assignmentOperator)
+        TokenTypes assignmentOperator,
+        AstMemberExpression member)
     {
-        var read = JSValueBuilder.CachedIndex(target, key);
+        var access = member.AccessCode();
+        var property = PropertyNameText(member.Property);
+        var read = JSValueBuilder.CachedIndex(target, key, in access, in property);
 
         BExpression computed = null;
         if (assignmentOperator == TokenTypes.AssignAdd && right.Type == FastNodeType.Literal && right is AstLiteral literal)
@@ -499,7 +507,7 @@ partial class FastCompiler
             Visit(right),
             CompoundAssignmentToBinaryOperator(assignmentOperator));
 
-        return JSValueBuilder.CachedStore(target, key, computed);
+        return JSValueBuilder.CachedStore(target, key, computed, in access, in property);
     }
 
     private static TokenTypes CompoundAssignmentToBinaryOperator(TokenTypes assignmentOperator) => assignmentOperator switch

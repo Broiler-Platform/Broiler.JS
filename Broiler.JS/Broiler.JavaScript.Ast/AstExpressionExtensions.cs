@@ -90,6 +90,90 @@ public static class AstExpressionExtensions
         return false;
     }
 
+    /// <summary>
+    /// A member access as it was written, from the leftmost token of its base through its own last
+    /// token — <c>config.server.tls.enabled</c>, not the <c>tls.enabled</c> that
+    /// <see cref="AstNode.Code"/> yields.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <see cref="AstNode.Code"/> spans <c>Start</c> to <c>End</c>, and a member expression's
+    /// <c>Start</c> is its BASE'S LAST TOKEN — <c>AstMemberExpression</c> passes
+    /// <c>target.End</c> — so <c>Code</c> on a chain gives only the final link. That is the right
+    /// answer for pointing at the link and the wrong one for naming the expression a reader would
+    /// search the file for, which is what a diagnostic wants. The spine is walked instead: down
+    /// through bases and callees to the token the whole access starts at.
+    /// </para>
+    /// <para>
+    /// <b>A COMPUTED access declines.</b> Its last token is the key, not the <c>]</c> that closes
+    /// it — <c>a.b["x"]</c> would span <c>a.b["x"</c> — and the bracket cannot simply be taken
+    /// from the next character, because a key is an arbitrary expression that may itself end in
+    /// brackets (<c>a[b[c]]</c>) or contain one inside a string (<c>a["]"]</c>). A computed access
+    /// nested INSIDE the span is unaffected: <c>list[0].name</c> ends at <c>name</c> and reads
+    /// back whole.
+    /// </para>
+    /// <para>
+    /// <b>A parenthesized base gives up rather than guessing.</b> The start token of
+    /// <c>(a || b).c</c>'s base is <c>a</c>, not the <c>(</c> before it, so the span would read
+    /// <c>a || b).c</c> — text that is not in the file and does not parse. Where whitespace or a
+    /// comment sits between the parenthesis and the token there is no offset to recover it from
+    /// either, so the case is declined: for a diagnostic, saying nothing beats saying something
+    /// that cannot be found.
+    /// </para>
+    /// </remarks>
+    public static StringSpan AccessCode(this AstMemberExpression member)
+    {
+        if (member == null || member.Computed)
+            return default;
+
+        var start = LeftmostToken(member);
+        if (start == null)
+            return default;
+
+        var startSpan = start.Span;
+        var endSpan = member.End.Type == TokenTypes.EOF ? member.Start.Span : member.End.Span;
+
+        if (startSpan.Source == null
+            || !ReferenceEquals(startSpan.Source, endSpan.Source))
+        {
+            return default;
+        }
+
+        var length = endSpan.Offset + endSpan.Length - startSpan.Offset;
+        if (length <= 0)
+            return default;
+
+        return new StringSpan(startSpan.Source, startSpan.Offset, length);
+    }
+
+    /// <summary>
+    /// The token an access begins at, or null when the spine passes through a parenthesized
+    /// expression whose opening parenthesis no token accounts for.
+    /// </summary>
+    private static FastToken LeftmostToken(AstExpression expression)
+    {
+        while (true)
+        {
+            var next = expression switch
+            {
+                AstMemberExpression member => member.Object,
+                AstCallExpression call => call.Callee,
+                _ => null,
+            };
+
+            // The end of the spine: this node's own start token is the access's start. The
+            // outermost node may itself have been wrapped — `(a.b.c)` — which changes nothing
+            // about where its text begins, so only a wrapped BASE declines.
+            if (next == null)
+                return expression?.Start;
+
+            if (next.WasParenthesized)
+                return null;
+
+            expression = next;
+        }
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsNumberLiteral(this AstNode exp, out double value)
     {

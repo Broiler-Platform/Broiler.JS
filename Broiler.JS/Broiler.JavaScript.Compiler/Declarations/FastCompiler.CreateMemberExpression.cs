@@ -251,6 +251,23 @@ partial class FastCompiler
             return null;
 
         var target = VisitExpression(member.Object);
-        return JSValueBuilder.CachedStore(target, key, compileValue());
+
+        // The read cache's description, on the write side: `config.server.tls.enabled = true`
+        // against a nullish `config.server.tls` reports the expression it was written as. The key
+        // is a constant KeyString by the guards above, so the property name is the member's own
+        // identifier or string literal (NullishAccess).
+        return JSValueBuilder.CachedStore(
+            target, key, compileValue(), member.AccessCode(), PropertyNameText(member.Property));
     }
+
+    /// <summary>
+    /// The source text of a non-computed property name, for a site description. Empty for anything
+    /// whose key is not a compile-time constant, which records no description.
+    /// </summary>
+    private static StringSpan PropertyNameText(AstExpression property) => property switch
+    {
+        AstIdentifier id => id.Name,
+        AstLiteral { TokenType: TokenTypes.String } literal => literal.StringValue,
+        _ => default,
+    };
 }
