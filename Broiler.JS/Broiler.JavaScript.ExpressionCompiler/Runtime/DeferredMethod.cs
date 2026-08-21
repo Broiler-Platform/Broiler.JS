@@ -50,12 +50,18 @@ internal sealed class DeferredMethod
     /// </summary>
     private readonly Type delegateType;
 
-    // Cleared by Force. A site is registered under a GCHandle that is never freed, so anything
-    // still referenced here is retained for the life of the process: eagerly that is a
-    // DynamicMethod, and while deferred it is the whole expression tree, which is far larger.
-    // Keeping them past generation would turn every compiled script into a permanent copy of
-    // its own tree — measurably, on a probe that compiles six corpora in one process, the
-    // corpora measured last paid for the ones before them.
+    // Cleared by Force, because the tree is far larger than the code it generates and a site that
+    // has generated has no further use for it. Keeping it past generation would turn every
+    // compiled script into a permanent copy of its own tree — measurably, on a probe that
+    // compiles six corpora in one process, the corpora measured last paid for the ones before
+    // them.
+    //
+    // Force is not the only way it is released now. A site used to be registered under a GCHandle
+    // that was never freed, so a function that was compiled and never called — which never
+    // reaches Force — held its tree for the life of the process no matter what became of the
+    // code. MethodRepository addresses its sites by index instead, so an unforced site is
+    // released with the repository, and this clear is the earlier of the two rather than the
+    // only one.
     private BLambdaExpression lambda;
     private IMethodBuilder methodBuilder;
 

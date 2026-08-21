@@ -187,13 +187,18 @@ internal static class CompilePhaseMetrics
         var stopwatch = new Stopwatch();
 
         // The decomposition's own check, and it is taken FIRST. Every compile in this method
-        // registers a deferred site per relayed lambda, each rooted by a GCHandle that is never
-        // freed and each holding its subtree — so a phase measured late in the sequence pays
+        // registers a deferred site per relayed lambda, each holding its subtree until the site
+        // generates or its repository is released — so a phase measured late in the sequence pays
         // collection time the phases before it caused. Measured last, this column read 3.4x the
         // sum of the phases on Box2D and 1.0x on jQuery, and the difference between those two
         // corpora is exactly how many sites a deferred compile registers: 982 against 1. That is
         // item 1-1's own retained-tree artifact, one level down from where the roadmap records
         // it. Taken first, against a fresh collection, it is comparable with the sum.
+        //
+        // Those figures were taken when a site was rooted by a GCHandle that was never freed,
+        // so the trees outlived every compile unconditionally. They are released with the
+        // repository now (see MethodRepository), which should narrow the gap between the
+        // corpora without closing it: within one sequence the repositories are still all live.
         GC.Collect(2, GCCollectionMode.Forced, blocking: true);
         var previousForEndToEnd = DeferredMethodCompilation.Enabled;
         DeferredMethodCompilation.Enabled = true;
