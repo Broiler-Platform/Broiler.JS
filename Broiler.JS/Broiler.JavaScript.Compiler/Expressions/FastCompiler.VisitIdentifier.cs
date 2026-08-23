@@ -310,7 +310,19 @@ partial class FastCompiler
     private BExpression VisitIdentifier(AstIdentifier identifier, bool throwIfMissing)
     {
         if (identifier.Name.Equals("undefined"))
-            return JSUndefinedBuilder.Value;
+        {
+            // `undefined` is a PROPERTY of the global object, not a keyword: non-writable,
+            // non-enumerable and non-configurable, so a reference that resolves to it always
+            // evaluates to the undefined value and can be folded to it. A BINDING of that name
+            // shadows the property and cannot — `function f(undefined) { return undefined }`
+            // returns its argument, and `let undefined = 1` is legal in both modes — nor can a
+            // reference under a `with`, whose object may supply an `undefined` of its own.
+            // Folding unconditionally made every such binding read as the undefined value.
+            if (withBoundaries.Count == 0
+                && !(TryGetStaticIdentifierVariable(identifier, out var undefinedBinding)
+                    && undefinedBinding != null))
+                return JSUndefinedBuilder.Value;
+        }
 
         if (identifier.Name.Equals("this"))
         {

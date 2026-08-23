@@ -1085,13 +1085,15 @@ test262 `properties-proxy` and `strict-mode`, covering 2-1, 2-2, 2-4, 2-8 and no
 **Exit criterion: DeltaBlue and Richards inside 200×.** They are the outliers on a
 curve whose median is ~180×, and this phase is the reason they are.
 
-> **A known deviation on this path**, pinned by `ReflectSetReceiverAttributesTests`:
-> `Reflect.set` gives a receiver's new property the *base's* attributes instead of the
-> all-true set `CreateDataProperty` mandates. **No test262 file at the pinned ref
-> reaches it** — `creates-a-data-descriptor.js` uses an empty target where step 4.d
-> supplies the default `ownDesc`, and `different-property-descriptors.js` covers only
-> an accessor. The engine passes every file in `Reflect/set/`. Do not let phase 2 make
-> it worse silently.
+> **A known deviation on this path — since fixed**, and still pinned by
+> `ReflectSetReceiverAttributesTests`, which now asserts the correct answer:
+> `Reflect.set` gave a receiver's new property the *base's* attributes instead of the
+> all-true set `CreateDataProperty` mandates. The receiver-create paths in
+> `JSObject.PropertyStorage` take `CreateDataPropertyAttributes` instead. **No test262
+> file at the pinned ref reaches it** — `creates-a-data-descriptor.js` uses an empty
+> target where step 4.d supplies the default `ownDesc`, and
+> `different-property-descriptors.js` covers only an accessor — so those tests are the
+> only evidence there is.
 
 ---
 ### 2-10 · DeltaBlue's dictionary fallbacks — **found, fixed, and it is not the explanation**
