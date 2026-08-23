@@ -1,197 +1,206 @@
-# Phase 9 — VM 4.0: an adaptive two-tier engine
+# Phase 9 — VM 4.0: optional adaptive IL/bytecode execution
 
-The catalogue's VM 4.0 stage: hotness counters, tier-up, deoptimization, OSR. **And it is
-where the VM track pays back into the IL track**, because a bytecode VM is precisely the
-interpreter frame that phase 4's item 4-3 could not find and had to design around.
+Decide whether starting selected work in bytecode and promoting it to IL improves product
+startup/resource use on hosts where dynamic code is permitted. Separately decide whether an
+explicit IL-to-bytecode deoptimization ABI is feasible and valuable. OSR remains a later,
+independent high-risk option.
 
-> The plan half of [`Phase-9.status.md`](Phase-9.status.md) — which records that **no
-> measurement exists yet**, and carries the entry measurement this phase is blocked on.
+Phase 9 is not automatically authorized by a Phase 6 VM decision. An `execution-only-go`
+funds a precompiled bytecode product and does not by itself fund runtime IL tiering. A
+`narrow-runtime-go` or `full-go` may enter this phase only when its product/host profile also
+includes a dynamic-code-capable composition and names adaptivity as a requirement.
+
+> The plan half of [`Phase-9.status.md`](Phase-9.status.md). No Phase 9 measurement or
+> feasibility result exists.
 > Part of the [performance and benchmark roadmap](Roadmap.md); the four VM phases are
 > [track two](Roadmap.md#track-two--the-vm-tier-phases-69).
 
 ---
 
-## Why this phase is the reason the other three might be worth it
+## Capability is not adaptivity
 
-Phases 6–8 buy a capability: JavaScript on platforms that forbid `Reflection.Emit`. That is
-worth doing if such a platform matters, and worth nothing if it does not. **Phase 9 is
-different — it improves the engine on platforms that already work.**
+Phases 6–8 can provide JavaScript on a platform where IL emission is prohibited. Phase 9
+targets hosts where both approved bytecode and IL compositions exist:
 
-### The deoptimization argument
+- **tier-up question:** is VM-first plus promotion better than the accepted current IL
+  startup/lazy-compilation path? and
+- **deopt question:** can emitted IL explicitly materialize a semantically complete VM frame
+  at supported guards, and does that capability retire a real current limitation?
 
-Phase 4's item 4-3 asked for V8-style deoptimization: bail out mid-function by
-reconstructing an interpreter frame. It was **re-specified because that is not expressible
-in Broiler.JS**:
+These questions have different entry evidence. A negative tier-up result does not prove
+deoptimization infeasible; a technically feasible deopt path does not prove it is worth its
+metadata, guard, code-size, or maintenance cost.
 
-> tier-1 locals are CLR locals of an IL method, and `CallFrame` carries no JavaScript values
+## What is already built — a control-plane seed, not this tier
 
-So 4-3 became a **restart contract** (4-3a) plus an **in-method fallback branch** (4-3b),
-and both landed. But the restart contract is sound only if the body has no suspendable
-frames — a condition that was held by **two unrelated accidents**, two ordinary refactors
-away from breaking — and item **4-4 is still deferred** partly behind that compromise.
-
-**Phase 6 creates the interpreter frame.** With a VM tier, deoptimization has somewhere to
-land: a guard fails in specialized IL, the engine reconstructs a *bytecode* frame at the
-corresponding program point, and execution continues in the interpreter. That is the
-mechanism 4-3 was written for and could not have.
-
-### The tier-up argument
-
-Today the engine compiles **everything** to IL eagerly — item 1-1's deferral half exists to
-soften exactly that, and it is still open. A two-tier engine inverts the default: **run in
-the VM, compile only what is hot.** That reaches the same target from the other side, and it
-is what every production JavaScript engine does.
-
-**But the baseline is different from the catalogue's.** In the catalogue's staging, tier 1
-is a VM and tier 2 is IL. Here **IL is what already exists and is fast**, so phase 9's real
-question is not "is IL faster than bytecode" — it is *"is starting in the VM and promoting
-cheaper than compiling everything eagerly?"* That is 9-0.
-
-**Owner assemblies:** `Runtime/FunctionTiering.cs`, `Engine/CallFrames.cs`,
-`BuiltIns/Function/JSFunction.cs`, `.Portable`, `.Compiler`, `.ExpressionCompiler`.
-
-## What is already built
-
-**Most of the tiering machinery exists and is general** — phase 4 built it, and it was
-designed without a VM in mind but not against one:
-
-| | Where | State |
+| Existing facility | Useful part | Missing for Phase 9 |
 |---|---|---|
-| Invocation threshold, per-realm budget, retained-code cap, delegate replacement, `RecordDeoptimization` counters | `Runtime/FunctionTiering.cs` (`FunctionTieringController`) | ✅ built, tested, **off by default**, and **must retain the original delegate as the semantic fallback** |
-| The restart contract | item 4-3a | ✅ landed |
-| A generic fallback branch inside a specialized method | item 4-3b | ✅ landed; 4-2b is its first consumer |
-| Type feedback per site | item 4-1 | ✅ landed |
-| A frame model addressed by a struct token | phase 4's shadow stack (`CallFrameStack`, `FrameToken`) | ✅ landed — an argument-less call allocates **0 B** |
-| A hotness counter driving a race, in production | phase 5's item 5 | ✅ shipped, default off |
+| `FunctionTieringController` | per-realm threshold/budget/counters and delegate replacement | bytecode-function descriptor, safe cross-backend compilation, owner-local feedback, cancellation/publication policy |
+| source-text tiering hook | an opt-in experiment and retained original delegate | realm/function identity correctness; it reparses a function as a fresh top-level program and therefore refuses observable self/scope cases |
+| restart and in-method fallback contracts | proven limited fallbacks and deopt counters | resume-at-bytecode-PC state materialization |
+| `CallFrameStack` / `FrameToken` | stack-trace identity and low-allocation engine bookkeeping | operand stack, live locals/environments, completion/handler state, bytecode PC |
+| current type feedback | historical population evidence | realm/function ownership, thread safety, snapshot/invalidation/eviction under MOD-M6 |
 
-**So phase 9 is largely wiring**, and the genuinely new work is 9-3 and 9-4.
+The current controller can remain the budget/transition coordinator after its semantics are
+proved, but Phase 9 is not “largely wiring.” Compilation identity, frame state, safepoints,
+publication, fallback, and lifetime are the main work.
 
 ## Items
 
 | # | Item | Size | State |
 |---|---|---|---|
-| **9-0** | **Is tier-up worth it here?** — the entry measurement | M | ❌ **not started; blocks the phase, and may cancel it** |
-| **9-1** | Hotness counters in the VM, feeding `FunctionTieringController` | S | ❌ |
-| **9-2** | Promote bytecode → IL where dynamic code is permitted | M | ❌ |
-| **9-3** | **Deoptimize IL → bytecode** — the item phase 4 could not build | L | ❌ |
-| **9-4** | OSR — switch a running hot loop into compiled code | **XL** | ❌ |
-| **9-5** | Retire 4-3a's restart compromise, if 9-3 subsumes it | M | ❌ |
+| **9-0** | **Decide whether VM-first promotion beats accepted current-IL alternatives** | M | ❌ **not started; may cancel 9-1/9-2** |
+| **9-1** | Owner-local hotness counters and promotion state | S–M | ❌ |
+| **9-2** | Promote bytecode → IL from a realm-correct compiled-function descriptor | L | ❌ |
+| **9-3** | **Feasibility spike, then explicit IL → bytecode deoptimization** | L spike; XL implementation | ❌ |
+| **9-4** | OSR entry-stub feasibility and any measured implementation | **XL** | ❌ |
+| **9-5** | Retire or retain the restart compromise after 9-3 evidence | M | ❌ |
 
-### 9-0 · Is tier-up worth it here? — **the entry measurement, and it may cancel the phase**
+### 9-0 · Is VM-first promotion worth it? — **the performance gate**
 
-Three numbers, and the phase does not start without them:
+Under MOD-M1, compare on the same accepted modern/product workload manifest:
 
-1. **Start-in-VM-and-promote against compile-everything-eagerly**, on the real corpora, for
-   time *and* allocation *and* peak working set. The IL path's eager compilation is the
-   incumbent and it is fast; the VM's advantage is that **84–99.7% of a script's functions
-   are never invoked**, so most of that compilation is wasted.
-2. **How that compares to item 1-1's deferral half**, which reaches the same waste without a
-   second tier and is already half-built. **If 1-1 gets most of it, 9-2 is redundant** —
-   and finding that out costs a measurement rather than an M.
-3. **The promotion threshold's sensitivity.** Phase 5's item 5 is the cautionary tale: a
-   per-pattern tiering race, built complete and correct, measured at **1.010× on 3 of 6
-   pairs** and shipped **off by default** because no speed-up was worth a retained
-   `DynamicMethod`. A per-function tier has the same failure mode at larger scale.
+1. VM-only;
+2. VM-first with promotion enabled over a predeclared threshold curve;
+3. current IL eager behavior where still supported;
+4. the accepted current-IL lazy/deferred-function path; and
+5. bytecode persistence/cache arms where relevant, identified explicitly.
 
-**Note the honest ordering:** 9-3, not 9-2, is the item with the argument behind it. If 9-0
-says promotion is not worth it, **9-3 may still be** — deoptimization is a correctness
-capability for phase 4, not a speed-up for phase 9.
+Report first-context/first-script/first-paint and steady-state time with allocation, GC,
+peak/steady memory, retained code/source/IR/bytecode, code and package size, compilation queue
+and latency, promotion count/failure, and p50/p95/p99. Separate foreground and any approved
+background compilation. Compare the promoted and non-promoted results to the independent
+expected-result manifest, not only to each other.
 
-### 9-1 · Hotness counters in the VM
+Use CoreCLR dynamic-code-capable hosts for the tier-up comparison. Native AOT-only targets
+remain VM-only controls; they cannot execute item 9-2 and must not be averaged into a tier-up
+claim.
 
-The interpreter counts invocations and loop back-edges and hands them to
-`FunctionTieringController`, which already has the threshold, the budget and the cap.
+Write the primary product metric, minimum relevant effect/equivalence budget, resource
+guardrail precedence, and maintenance/retained-code ceiling before running the curve. If the
+current IL lazy path captures the benefit, the effect remains below measurement resolution,
+or every useful threshold violates a resource guardrail, cancel 9-1/9-2.
 
-**S, because the controller exists.** Back-edge counting is what 9-4 later needs; add it
-here even if OSR is never built, since it costs one increment in a loop that is already
-paying dispatch.
+### 9-1 · Hotness and transition state with explicit ownership
 
-### 9-2 · Promote bytecode → IL
+Count function invocation and, only if a funded consumer exists, loop back edges. The state
+belongs to the bytecode function/program or realm, is not serialized, and is reclaimed with
+the code/cache entry. Define atomic transition states, duplicate-promotion suppression,
+cancellation, failure/backoff, and quiescent publication.
 
-Where `RuntimeFeature.IsDynamicCodeCompiled` is true, recompile a hot function through the
-existing `FastCompiler` + `.ExpressionCompiler` path and swap the delegate.
+This item depends on MOD-M6 whenever compilation/installation can overlap work or contexts run
+in parallel. One context remains single-entrant; a replacement delegate is installed only at
+an approved quiescent boundary.
 
-**Two rules inherited from phase 4, both non-negotiable:**
+### 9-2 · Promote from a compiled-function descriptor, not reparsed source
 
-- **Retain the original as the semantic fallback.** This is already
-  [`Measurement.md`](Measurement.md)'s rule for function tiering and it is why the existing
-  controller is safe.
-- **Measure that the promoted arm produces the same answers.** Item 4-2a exists because the
-  shipping tier-2 hook produced **wrong answers** — DeltaBlue died on it — and that was found
-  by measuring the branch, not by a test.
+The shared Phase 6 front end must retain a backend-neutral `CompiledFunctionDescriptor` (or
+equivalent) containing the function's semantic IR and identity inputs: realm, source span,
+strictness, lexical/private environment shape, home object, module state, arguments/eval
+requirements, and stable site/safepoint mapping.
 
-**On AOT platforms this item is inert by construction**, which is correct: the VM is the
-only tier there, and phases 6–8 are what make that acceptable.
+The IL backend compiles that descriptor and installs only a delegate proven equivalent for
+the original function object/environment. Do not reparse the function text as a fresh
+top-level script and steal the delegate from a second function object; the current tiering
+hook documents why that changes observable identity and scope.
 
-### 9-3 · Deoptimize IL → bytecode — **the item phase 4 could not build**
+Retain the VM/original delegate as fallback, bound retained code and metadata by the
+per-realm budget, and release failed/evicted candidates. Run source, cached-bytecode,
+promoted, promotion-failure, and disabled arms through the independent oracle.
 
-A guard fails in specialized IL; the engine reconstructs a **bytecode** frame at the
-equivalent program point and resumes in the interpreter.
+### 9-3 · IL → bytecode deoptimization — **feasibility before promise**
 
-**What makes it possible now and not before:** the VM frame holds JavaScript values in a
-form the engine controls, so "reconstruct an interpreter frame" is a data transformation
-rather than an impossibility.
+Having a VM frame as a destination is necessary but not sufficient. Managed code has no
+supported general mechanism for inspecting arbitrary live CLR locals at a guard. The IL
+backend must explicitly materialize every supported live value.
 
-**What makes it hard:** the **mapping**. Every point in the specialized IL where a guard can
-fail needs a corresponding bytecode offset and a rule for materializing the VM frame's locals
-and operand stack from the IL frame's state. That mapping has to be produced by the same
-compilation that emits the guards, kept in sync with 6-5's peephole pass, and tested at
-*every* guard rather than at a sample.
+Before implementation, prove one end-to-end guarded loop/function with a documented ABI:
 
-**The test already exists in specification form** — phase 4's exit gate: *a test that forces
-every guard to fail at every point in a function body and asserts the fallback produces the
-unspecialized answer.* 4-3b satisfies it with an in-method branch; 9-3 must satisfy it
-across the tier boundary.
+- a canonical bytecode PC/safepoint independent of peephole or quickened opcode addresses;
+- a generated `DeoptState` containing live locals/operand values, lexical environment,
+  receiver/arguments/new-target state, completion value, and handler/finally state;
+- IL guard code that spills/passes that state before leaving the compiled frame;
+- verifier/source/debug metadata tying every materialized slot to the shared IR; and
+- a VM resume entry that reconstructs the exact frame without replaying observable effects.
 
-### 9-4 · OSR — **XL, and last**
+Define the supported safepoint subset explicitly. Guards inside exception filters/handlers,
+`finally`, host calls, async/generator suspension, direct eval, or other complex regions are
+excluded until separately proved. Force every supported guard to fail and compare the
+resumed answer/effects to uninterrupted VM and IL controls.
 
-Switch a *running* hot loop from the VM into compiled code without waiting for the call to
-return. The catalogue rates it ⭐⭐, "extremely high effect, very high effort", and marks its
-AOT compatibility ⚠️.
+If the spike cannot materialize source state within the predeclared code-size, runtime,
+conformance, and maintenance ceilings, record `no-go` for 9-3. Do not describe the existence
+of an interpreter as proof that deoptimization is implementable.
 
-**It is the correct last item.** It needs 9-3's mapping in the opposite direction, and its
-value is concentrated in long-running loops — which is a population that should be counted
-before it is served, exactly as 4-4's was.
+### 9-4 · OSR — not the reverse of deoptimization
 
-### 9-5 · Retire 4-3a's restart compromise, if 9-3 subsumes it
+OSR needs compiled loop-header entry points that accept a validated VM-state schema; an
+ordinary function delegate that enters at the function start is insufficient. Before any XL
+implementation, measure the population and duration of long-running loops that would benefit
+after normal function-level promotion is available.
 
-4-3a's restart contract is sound only under a no-suspendable-bodies condition that was held
-by accident. **If 9-3 gives the engine real deoptimization, the compromise may be
-retired** — which removes a latent hazard from the IL path and is a clean payback from the VM
-track into the one that ships today.
+The feasibility design must specify:
 
-**Check, do not assume.** Restart may still be the cheaper path for the cases it covers.
+- which loop headers and nesting/handler/suspension states are eligible;
+- entry-stub calling convention and mapping from VM slots/environments to IL locals;
+- behavior for a guard failure immediately after OSR and prevention of tier thrashing;
+- debugger/stack/source identity across the transition; and
+- code/metadata/cache lifetime and per-realm budgets.
+
+An inverse-looking mapping is not accepted as a design. Defer or cancel OSR when the measured
+population or attainable ceiling does not justify its separate compiler entry paths.
+
+### 9-5 · Re-evaluate the restart fallback
+
+After 9-3 is validated, compare its supported guard set and cost with the existing restart
+and in-method fallback contracts. Retire restart only where deopt fully subsumes it and the
+fallback remains semantically sound. Keeping the cheaper limited mechanism is an allowed
+terminal decision.
 
 ## Order
 
+```text
+runtime-capable Phase 6 outcome + accepted Phase 7 baseline
+  ├→ 9-0 VM-first/promotion decision curve
+  │    └→ 9-1 owned transition state → 9-2 descriptor-based promotion
+  │                                      └→ 9-4 OSR population + separate entry-stub feasibility
+  └→ 9-3 explicit deopt feasibility spike
+       ├→ stop/defer if CLR-state materialization or budgets fail
+       └→ validated deopt implementation → 9-5 restart decision
 ```
-9-0 measure ← BLOCKS THE PHASE, and may cancel 9-1/9-2 while leaving 9-3 justified
-  ├→ 9-1 hotness counters → 9-2 promote (only if 9-0 beats item 1-1's deferral)
-  └→ 9-3 deoptimize  ← the item with an argument independent of 9-0
-        ├→ 9-5 retire the restart compromise (check first)
-        └→ 9-4 OSR (last; count the loop population first)
-```
+
+9-3 may have a correctness/optimizer-enablement case independent of 9-0's speed result, but
+it still requires its own product requirement, feasibility proof, budget, and terminal
+decision. It is never “free payback” from building a VM. Item 9-4 starts only after normal
+function-level promotion is validated, but it does not depend on 9-3 succeeding; its loop
+population, entry ABI, and fallback behavior remain a separate high-risk decision.
 
 ## Exit gate
 
-1. **Deopt correctness proven before any tier-up ships** — phase 4's gate, unchanged, now
-   applied across the tier boundary: force every guard to fail at every point and assert the
-   fallback produces the unspecialized answer.
-2. **The full test262 matrix on every tier configuration** — VM only, IL only, and VM with
-   promotion enabled. This phase can break anything, and it can break it in a way that only
-   appears after N invocations.
-3. **Tier-up stays opt-in** until its supported semantics and fallback behaviour are
-   release-tested, per [`Measurement.md`](Measurement.md) — the same rule that keeps the
-   existing function tiering and phase 5's regex race off by default.
-4. **A rate, not a share, and a threshold sensitivity curve.** Phase 5's item 5 shipped off
-   by default on exactly this evidence; that outcome must remain available here.
+1. Item 9-0 has a predeclared threshold curve and paired MOD-M1 result against the accepted
+   current-IL lazy/eager alternatives, with time and resource evidence.
+2. Every enabled tier configuration—VM-only, IL-only, VM+promotion, promotion failure,
+   deopt where supported, and persisted/non-persisted variants—matches the independent
+   expected-result manifest and has no unexplained IL/VM delta.
+3. Promotion compiles a realm-correct descriptor, preserves function/environment identity,
+   retains a valid fallback, publishes at a quiescent boundary, and reaches a memory plateau
+   under its count/byte budgets.
+4. Deoptimization is accepted only for explicitly enumerated safepoints with generated live
+   state, forced-failure coverage, and no replayed observable effects.
+5. OSR has a separate measured population and feasibility/ABI result; it may remain deferred
+   even when deopt is accepted.
+6. Tier-up remains opt-in until its supported semantics and fallback behavior are
+   release-tested. Every experiment ends accepted, opt-in, deferred, cancelled, or removed.
 
 ## Dependencies
 
-**Depends on phase 6 in full** and on phase 7 for the VM to be worth promoting *from*.
-**Does not depend on phase 8** — tier-up needs a correct VM, not an optimized one, so 8 and
-9 may be re-ordered.
-
-**Pays back into phase 4**: 9-3 is the deoptimization 4-3 was specified for, 9-5 retires
-4-3a's compromise, and item **4-4** — inlining, currently deferred behind a 2.43% ceiling and
-a restricted fallback — should be re-priced once 9-3 lands.
+- Depends on a runtime-capable Phase 6 outcome (`narrow-runtime-go` or `full-go`) that names
+  a dynamic-code-capable composition, the shared semantic IR/function descriptor, stable
+  canonical bytecode positions, and Phase 7's accepted baseline. An `execution-only-go`
+  alone does not authorize this phase.
+- Depends on MOD-M1 for performance decisions and MOD-M6 for feedback/hotness ownership, concurrent
+  contexts, shared artifacts, background work, and quiescent installation.
+- Does not require optional Phase 8 speed items, but any peephole/quickening/persistence work
+  must preserve canonical PCs and metadata compatibility.
+- Pays back into current IL optimization only after 9-3's explicit state-materialization
+  gate passes; until then, current restart/in-method fallbacks remain authoritative.

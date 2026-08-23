@@ -40,7 +40,8 @@ profiles and how their effectiveness is measured.
 ## compiler-fixer
 
 - **Scope:** `Broiler.JavaScript.Parser/`, `Broiler.JavaScript.Ast/`,
-  `Broiler.JavaScript.Compiler/`, `Broiler.JavaScript.ExpressionCompiler/`,
+  `Broiler.JavaScript.Compiler/`, `Broiler.JavaScript.Expressions/`,
+  `Broiler.JavaScript.ExpressionCompiler/`,
   `Broiler.JavaScript.LinqExpressions/`, matching `*.Compiler.Tests`.
 - **Use when:** fixing a parse error, lexical scope / TDZ behavior, strict
   mode handling, codegen for a syntactic construct, or function metadata
@@ -50,8 +51,9 @@ profiles and how their effectiveness is measured.
   - Run `dotnet test Broiler.JS/Broiler.JavaScript.Compiler.Tests/Broiler.JavaScript.Compiler.Tests.csproj -m:1`.
   - For changes that affect generated code, also run the built-ins regression
     suite to catch indirect breakage.
-- **Must not:** modify AST node contracts without updating every consumer in
-  the compiler and parser projects.
+- **Must not:** modify AST or backend-neutral expression contracts without updating every
+  parser/compiler/backend consumer; do not move `System.Reflection.Emit` dependencies into
+  `Broiler.JavaScript.Expressions`.
 
 ## runtime-engineer
 

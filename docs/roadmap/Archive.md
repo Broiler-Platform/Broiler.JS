@@ -2,10 +2,12 @@
 
 > ## ⚠️ Nothing in this file is the current plan.
 >
-> **The current plan is [`Roadmap.md`](Roadmap.md)**, which merged this document
-> with the Octane-driven roadmap on 2026-08-01 and has since **corrected several of the
-> diagnoses below**. Where the two disagree, the other one is right. Nothing here has been
-> back-ported.
+> **The current cross-track execution plan is [`Modernization.md`](Modernization.md)**;
+> [`Roadmap.md`](Roadmap.md) is the campaign catalogue and historical crosswalk. They have
+> **corrected several diagnoses and replaced the acceptance protocol below**. Where this archive
+> disagrees with either current document, the current owning phase/status pair and
+> [`Measurement.md`](Measurement.md) win. In particular, “two runs inside a configured band” is
+> historical smoke evidence, not present-day acceptance. Nothing else here has been back-ported.
 >
 > It is kept, in full and unedited apart from this banner and the link rewrites the
 > consolidation required, for three things the merge deliberately did **not** carry

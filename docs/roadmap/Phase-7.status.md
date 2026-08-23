@@ -1,15 +1,10 @@
-# Phase 7 — VM 2.0: respectable JavaScript performance — status
+# Phase 7 — VM 2.0: make the approved interpreter shippable — status
 
-**No measurement exists. Nothing in phase 7 has been built, measured, or attempted.**
+**No Phase 7 measurement exists. Nothing in Phase 7 has been built, measured, or attempted.**
 
-> The evidence half of [`Phase-7.md`](Phase-7.md). This file exists so the convention
-> holds across the whole directory — **a plan document is never the place a number lives** —
-> and so the phase's entry measurement has somewhere to land. When the first result arrives,
-> it goes here.
->
-> **Nothing in the plan document may be quoted as a result.** Every figure it cites is
-> borrowed from phases 0-5 and is attributed there. [`Measurement.md`](Measurement.md)
-> governs what may be claimed.
+> The evidence half of [`Phase-7.md`](Phase-7.md). Historical IL-path findings cited by the
+> plan remain in their Phase 0–5 status records; they are priors to test against the VM, not
+> measurements of a VM that does not yet exist.
 
 ---
 
@@ -20,30 +15,75 @@
 | Items started | **0** |
 | Items landed | **0** |
 | Measurements taken | **0** |
-| Blocked on | item **7-0 · Profile the VM**, which has not been run |
+| Blocked on | an MOD-M9 positive outcome (`execution-only-go`, `narrow-runtime-go`, or `full-go`), accepted Phase 6 scope and exit evidence, and MOD-M1 acceptance lanes |
+| Mutable-site work additionally blocked on | applicable MOD-M6 IC/feedback ownership and lifetime gates |
+| Next action after entry gates | item **7-0 · decision-grade uninstrumented VM baseline** |
 
-**This phase is not scheduled.** It is written down so the option is specified rather than
-vague, and so the entry measurement below is the first thing anyone doing it would have to
-produce. Track two's justification is argued in
-[`Roadmap.md`](Roadmap.md#track-two--the-vm-tier-phases-69), and **it is an argument, not a
-measurement.**
+The former instruction to begin with a three-repetition, all-fifteen Octane run is
+superseded. Octane remains historical continuity; MOD-M1's supported modern/product workload
+manifest and paired stable-host protocol govern future acceptance.
+
+For `execution-only-go`, unsupported source-compilation modes are recorded as outside the
+approved product profile, not as missing results. A `narrow-runtime-go` or `full-go` adds
+the applicable in-process source-to-result measurement arms.
 
 ---
 
-## The entry measurement — item 7-0
+## Entry measurement — item 7-0
 
-**What 7-0 must report before any item in this phase is designed:**
+Before an optional Phase 7 implementation is designed, record:
 
-1. **The VM's own Octane profile** — all **fifteen** suites, `--repetitions 3`, medians and
-   a per-suite spread, exactly as [`Phase-0.md`](Phase-0.md) requires of the IL path. Seven
-   suites is how phases 3 and 4 acquired a denominator error that qualified every headline
-   they produced.
-2. **The per-suite ratio to the IL path**, measured on the same machine at the same time.
-   **This is the only context in which the two paths may be compared** — everywhere else the
-   VM's competitor is *not running at all*.
-3. **Where the VM's time goes**, by family: dispatch, operand decode, property, element,
-   arithmetic, call, allocation, control flow.
-4. **Allocation beside time**, per family. This campaign twice found the interesting half in
-   the column it was not looking at, and a fresh interpreter is where that happens again.
-5. **Operand-stack traffic as its own line** — `Duplicate`/`Pop` and redundant load/store
-   pairs. That number, and only that number, decides item 7-5.
+1. **Approved capability/profile identity** — execution-only or runtime-compiler, feature
+   manifest, source revision, package closure, and bytecode format version.
+2. **Uninstrumented end-to-end modes** — cold source compile/run, warm source compile/run,
+   precompiled execution, and cache-hit execution when 8-6 exists. Missing modes are marked
+   unsupported rather than silently omitted.
+3. **Pipeline decomposition** — parse/shared semantics, bytecode lowering, verification,
+   deserialization, installation/bootstrap, execution, and end-to-end product milestone.
+4. **Representative corpus** — product startup/steady-state cases, supported JetStream 3
+   shell cases, focused engine probes, and accepted conformance fixtures. Octane is a
+   separately labelled continuity column.
+5. **Two platform views** — same-machine CoreCLR IL/VM diagnostic comparison and actual
+   published Native AOT results on every claimed target RID/device.
+6. **Resource evidence beside time** — allocation, GC, peak/steady RSS or working set,
+   committed/virtual memory, code/package/bytecode size, frame depth/bytes, and applicable
+   p50/p95/p99.
+7. **Predeclared decision** — primary metric, target or equivalence budget, guardrail
+   precedence, missing-row failure, and confirmation-run rule from MOD-M1.
+
+Detailed opcode-family, type, and bigram instrumentation belongs to 8-0. If 7-0 enables
+instrumentation for a coarse opportunity count, its uninstrumented control and perturbation
+must be recorded separately.
+
+---
+
+## Evidence conditions for the planned items
+
+| Item | Evidence required before implementation can be accepted |
+|---|---|
+| 7-1 owned ICs | program-relative slot design; no persisted process ids; realm/function lifetime tests; concurrent-context and eviction plateau evidence under MOD-M6 |
+| 7-2 dense elements | measured element population/hit ceiling; sparse/proxy/exotic/typed-array correctness matrix; generic fallback |
+| 7-3 constants/interning | text serialized and re-interned on load; size/startup/retained-string result; no raw `KeyString`, shape, or IC id persisted |
+| 7-4 numeric slots | accepted 6-2 ABI, coercion/order fixtures, avoided-allocation count and paired time result |
+| 7-5 stack/register decision | traffic, dispatch/decode, frame bytes, bytecode size, implementation/verification/debug/deopt cost, and end-to-end target |
+| 7-6 calls/closures | approved call-surface manifest; function identity/realm/environment tests; call/frame attribution and product result |
+
+No existing process-global cache or feedback table is recorded here as reusable “unchanged.”
+The runtime semantics may be reused; mutable site state must first gain explicit ownership,
+snapshot/invalidation behavior, and reclamation.
+
+---
+
+## Historical evidence retained as priors
+
+The older plan cited Phase 2–4 findings about property-cache semantics, root boxing, and IL
+call-envelope cost. Those measurements remain valid for the revisions, corpora, and IL path
+recorded in their owning status files. They justify fixtures and questions, not a VM design:
+
+- property and store caches need own/prototype/creation/read-modify-write coverage;
+- allocation share alone does not predict elapsed-time benefit;
+- avoiding boxes depends on where values are materialized and consumed; and
+- the current IL call envelope does not establish the cost of a VM frame.
+
+When 7-0 runs, this section should link the immutable MOD-M1 evidence bundle and record which of
+those priors transferred, failed to transfer, or remained below resolution.

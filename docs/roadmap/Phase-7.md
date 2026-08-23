@@ -1,165 +1,213 @@
-# Phase 7 — VM 2.0: respectable JavaScript performance
+# Phase 7 — VM 2.0: make the approved interpreter shippable
 
-Make the phase-6 interpreter fast enough to ship, **mostly by consuming machinery phases 2
-and 3 already built** rather than by writing new machinery. The catalogue's VM 2.0 stage:
-shapes, inline caches, string interning, array fast paths.
+Establish whether the correct Phase 6 interpreter meets the product profile's performance
+and resource thresholds, then improve only the measured costs. Reuse the JavaScript runtime's
+semantic operations and storage representations, while giving bytecode-local caches and
+feedback explicit realm/function/program ownership.
 
-> The plan half of [`Phase-7.status.md`](Phase-7.status.md) — which records that **no
-> measurement exists yet**, and carries the entry measurement this phase is blocked on.
+The acceptance lane follows the MOD-M9 outcome. Under `execution-only-go`, Phase 7 measures the
+published precompiled-execution product and never treats absence of a runtime source
+compiler as a defect. Under `narrow-runtime-go` or `full-go`, it additionally measures the
+approved source-to-result runtime-compiler path. All three positive outcomes still require
+the same correctness, resource, and independent-oracle discipline for their declared scope.
+
+> The plan half of [`Phase-7.status.md`](Phase-7.status.md). No Phase 7 baseline exists and
+> no item is scheduled.
 > Part of the [performance and benchmark roadmap](Roadmap.md); the four VM phases are
 > [track two](Roadmap.md#track-two--the-vm-tier-phases-69).
 
 ---
 
-## Why this phase is cheaper than it looks
+## What can be reused — and what cannot
 
-**The structures the catalogue's VM 2.0 stage asks for are already in this engine, and they
-are not IL artifacts.** Shapes, inline caches, property maps, the small-number cache, dense
-element storage and string ropes all live in `Broiler.JavaScript.Runtime` and
-`.Storage` — assemblies the VM consumes unchanged. Phase 2 spent an entire campaign making
-them *fire*; a VM that reimplements them would repeat that campaign's opening mistake.
+Shapes, property storage, dense elements, string representations, and the generic semantic
+operations live below the IL emitter and are candidates for reuse. Reusing their behavior is
+important: a bytecode arm that invents a second object model will become a second JavaScript.
 
-| Catalogue row | Already built, by | The VM's work |
-|---|---|---|
-| Hidden classes / shapes | phase 2 (`Runtime/ObjectShape.cs`) | emit property opcodes that carry a cache slot |
-| Monomorphic IC (get) | item 2-1 | consume it at `GetProperty` |
-| Store IC | items 2-1, 2-4 | consume it at `SetProperty` |
-| Method/property indexing | items 2-7, 2-9 | consume the slot index |
-| Array fast path | item P2-3, item 3-0 | element opcodes over dense storage |
-| String fast paths | item P2-4 (ropes) | nothing — it is in the builtins |
-| Allocation avoidance | items P2-1, P2-2, 3-0 | nothing — it is in the runtime |
+Existing emitted-site state is different. Current inline-cache and type-feedback tables use
+process-wide integer site indexes and mutable static storage. Phase 7 must not embed those
+process-global identities in bytecode or serialized artifacts, and it must not share mutable
+entries across realms merely because the generic property operation is shared.
 
-**So this phase is mostly plumbing, and its risk is the opposite of phase 6's**: not that
-the VM diverges semantically, but that it quietly grows a *parallel* copy of a structure the
-IL path already owns. **Consume, do not reimplement.**
+The rule is:
 
-**Owner assemblies:** `Broiler.JavaScript.Portable`, `.Portable.Compiler`, consuming
-`.Runtime` and `.Storage`.
+> Reuse semantic operations and stable runtime representations. Own mutable optimization
+> state with the compiled bytecode program/function or realm, and reclaim it with that owner.
+
+| Runtime facility | VM integration rule |
+|---|---|
+| object shapes and property maps | reuse immutable/stable shape semantics; never serialize a live shape id |
+| property read/store fast paths | allocate **program-relative** cache slots backed by function/program/realm-owned side tables |
+| dense element storage | call the same semantic slow paths, then add a measured direct dense path |
+| interned property names | serialize text; re-intern on load; never persist a process-local `KeyString.Key` |
+| strings, numbers, objects, symbols | use the accepted 6-2 `ValueSlot` ABI and runtime conversions |
+| type feedback | wait for MOD-M6 ownership/snapshot/invalidation/lifetime rules; do not consume the current static table unchanged |
 
 ## Items
 
 | # | Item | Size | State |
 |---|---|---|---|
-| **7-0** | **Profile the VM** — its own baseline, and its ratio to the IL path | M | ❌ **not started; blocks the rest of the phase** |
-| **7-1** | Inline caches at the property opcodes | L | ❌ |
+| **7-0** | **Take the decision-grade VM baseline and set product thresholds** | M | ❌ **not started; blocks optional optimization** |
+| **7-1** | Realm/function-owned property read and store ICs | L | ❌ |
 | **7-2** | Element opcodes over dense storage | M | ❌ |
-| **7-3** | A constant pool with interned property names | S | ❌ |
-| **7-4** | Arithmetic opcodes that box only at the root | L | ❌ |
-| **7-5** | Stack machine or register machine — **decide on 7-0, not on preference** | L–XL | ❌ |
-| **7-6** | Call and closure fast paths | M | ❌ |
+| **7-3** | Constant pool with load-time property-name interning | S–M | ❌ |
+| **7-4** | Numeric `ValueSlot` arithmetic that avoids intermediate boxes | L | ❌ |
+| **7-5** | Stack or register VM — decide from measured traffic and total cost | L–XL | ❌ |
+| **7-6** | Call, construct, and closure fast paths | M–L | ❌ |
 
-### 7-0 · Profile the VM — **the entry measurement**
+### 7-0 · Decision-grade baseline — **the entry measurement**
 
-Nothing in this phase may be designed before it. It must report:
+Use MOD-M1's stable-host, same-machine controls and predeclared decision rule. A fixed
+`--repetitions 3` Octane run is not an acceptance protocol.
 
-1. **The VM's own Octane profile** — all 15 suites, `--repetitions 3`, and a band, exactly
-   as phase 0 requires of the IL path.
-2. **The ratio to the IL path, per suite**, on the same machine at the same time. This is
-   the number that says whether the VM is shippable at all, and it is the only context in
-   which the two paths may be compared. Everywhere else, the VM's competitor is *not running*.
-3. **Where the VM's time goes** — dispatch, operand decode, property operations, arithmetic,
-   calls, allocation. Phase 8 is written against this histogram; so is 7-5.
+Run the supported workload manifest produced by MOD-M1:
 
-**Report allocation beside time.** This campaign twice found the interesting half in the
-column it was not looking at, and a fresh interpreter is exactly where that happens again.
+- representative product first-context, first-script, first-paint, and steady-state cases;
+- the compatible JetStream 3 shell subset and focused engine probes;
+- the accepted conformance/capability surface; and
+- Octane only as historical continuity, never as the sole priority signal.
 
-### 7-1 · Inline caches at the property opcodes
+Report cold and warm modes separately, and separate the pipeline:
 
-Give `GetProperty` / `SetProperty` an inline-cache slot in the bytecode, keyed on
-`ObjectShape`, resolving to the slot index item 2-9 made cheap.
+1. parsing and shared semantic analysis;
+2. bytecode lowering and verification;
+3. deserialization/verification when a cache arm exists;
+4. installation/bootstrap;
+5. execution; and
+6. end-to-end source-to-result or launch-to-product milestone.
 
-**Carry phase 2's findings across rather than re-discovering them.** The engine already
-learned, expensively, that:
+For each mode report wall time/throughput with allocation, GC, peak and steady working set,
+committed/virtual memory, code/package/bytecode size, maximum frame depth, and p50/p95/p99
+where the workload has multiple operations.
 
-- an ordinary property write must **not** destroy the object's shape (P1-1);
-- the cache must cover **prototype** lookups or method calls never hit (P1-2);
-- a store that *creates* its property needs its own entry, or it is **0 hits against
-  600 000 misses** (2-1);
-- `o.x++` and `o.x op= rhs` must go through both caches — they reached **neither** (2-4);
-- statics on a constructor function are a hot path and were a **100% miss** (2-8).
+Use two kinds of platform evidence:
 
-**Every one of those is a test the VM arm must also pass.** They are already written.
+- **diagnostic comparison:** IL and VM on the same CoreCLR machine, same source, same feature
+  profile, and same time window; and
+- **product acceptance:** the published Native AOT VM on every claimed target RID/device,
+  against its absolute product SLO and its previous accepted VM baseline once one exists.
+
+The IL ratio is context, not the product gate on a platform where IL cannot run. Before any
+candidate change, write down the primary metric, minimum relevant effect/equivalence budget,
+guardrail precedence, and target threshold. An interpreter that misses the approved product
+ceiling after the attainable opportunity is priced can be rejected rather than optimized
+indefinitely.
+
+7-0 may collect coarse counts needed to decide whether an item is even plausible. Detailed
+opcode/type/bigram instrumentation belongs to 8-0 and must not contaminate this uninstrumented
+baseline.
+
+### 7-1 · Property inline caches with explicit lifetime
+
+Give constant-key property opcodes a program-relative cache-slot operand. The running
+`BytecodeProgram` or function resolves that operand against a side table owned by the
+program/function or realm. The table starts cold after deserialization and is reclaimed with
+the code/cache entry.
+
+Reuse the runtime's proven property semantics and regression fixtures: own and prototype
+reads, property creation and overwrite stores, constructor statics, read-modify-write,
+accessors, proxies/exotics, private names, nullish failures, and prototype mutation. Do not
+copy a process-global emitted-site index or a warmed IC entry into persisted bytecode.
+
+This item depends on MOD-M6's ownership and independent-context gates whenever shared code,
+multiple contexts, background work, or Workers are in scope. Add tests that load separately
+compiled programs whose first local cache slot is the same number, run them in separate
+realms concurrently, evict them, and verify no answer or retained state crosses owners.
 
 ### 7-2 · Element opcodes over dense storage
 
-P2-3 made a dense element one reference instead of a 32-byte descriptor; 3-0 stopped boxing
-the index. Emit element opcodes that reach both directly rather than through the generic
-property path.
+Use dedicated element opcodes only where 7-0 shows a material population. They must preserve
+generic semantics for sparse arrays, holes, inherited indexes, proxies/exotics, canonical
+numeric keys, typed arrays, detach/grow behavior, and shared-memory restrictions.
 
-### 7-3 · A constant pool with interned property names
+The direct dense path is a fast arm with the generic runtime operation as the semantic
+fallback. Measure its hit rate and absolute operation rate, not merely the fraction of one
+suite.
 
-The catalogue rates string interning ⭐⭐⭐⭐⭐ at low–medium effort. In a VM it is nearly free
-and structural: property names become constant-pool indices at compile time, so the
-interpreter compares references rather than strings, and the IC key is an integer.
+### 7-3 · Constant pool and property-name interning
 
-**S, and it should be built with 6-1's format rather than retrofitted.**
+The Phase 6 format reserves a constant-pool representation, but persistence stores the
+property-name text, not the current process's integer key. Loading verifies the string entry,
+interns it in the current process/realm policy, and stores the resulting runtime key in the
+loaded program's non-serialized resolved-constant table.
 
-### 7-4 · Arithmetic opcodes that box only at the root
+Measure parse/lowering/deserialization time, bytecode bytes, retained strings, and property
+operation cost before accepting compact encodings. The bytecode-cache compatibility contract
+is Phase 8 item 8-6.
 
-**The single most transferable result in this roadmap, and the VM gets it for free if it is
-built in from the start.** Phase 3 measured that a box is minted by the **operator**:
-applying the raw-`double` idea at the local removed 0.36% of the corpus's boxes; applying it
-at the operator removed **54.0%**.
+### 7-4 · Numeric arithmetic through the accepted `ValueSlot` ABI
 
-In a VM, "evaluate each leaf, test for Number, compute raw, box only the root" is not a
-compiler transformation at all — it is **how the arithmetic opcodes are written**. Do it in
-the opcode set; do not add it later.
+Implement arithmetic fast paths against Phase 6's accepted value-slot representation. Test
+operand types at the semantic coercion point, evaluate every operand once in source order,
+compute raw numeric intermediates where the ABI permits, and materialize the JavaScript
+Number at the observable root or storage boundary.
 
-**And carry the caveat:** 73 817 515 of 73 818 646 generic invocations arrive with both
-operands already Numbers, but the compiler's static proof reaches only 0.75% of them. The
-test belongs at run time, in the opcode, not in `PortableCompiler`.
+This is not “free because it is an interpreter.” If the accepted frame representation holds
+only boxed `JSValue` references, the claimed intermediate-box saving does not exist and the
+item must be redesigned or cancelled. Carry the current IL path's order/coercion fixtures
+across and measure absolute avoided allocations plus time.
 
 ### 7-5 · Stack machine or register machine
 
-`PortableInterpreter` is a stack machine. The catalogue rates a register VM "high effect,
-high effort".
+The stack seed does not settle the general VM architecture. Decide only after the accepted
+ABI and 7-0/8-0 evidence report:
 
-**This is the phase's one genuinely open architectural question, and it is exactly the kind
-this campaign has learned not to answer from a catalogue.** Decide it on 7-0's histogram:
-if operand-stack traffic (`Duplicate`, `Pop`, redundant load/store pairs) is a measurable
-share, the conversion is justified; if it is not, a register machine buys a rewrite and
-nothing else.
+- executed push/pop/duplicate/load/store traffic and bytes fetched;
+- dispatch/decode cost and generated JIT/AOT code;
+- frame bytes and GC/reference clearing cost;
+- bytecode size and verification complexity; and
+- compiler, debugger, exception, suspension, deopt, and maintenance cost.
 
-**Precedent from this campaign:** item 3-8a was built complete, with every premise intact,
-and lost on a property of the workload nobody had counted. **Count first.**
+A register rewrite is accepted only if the predeclared end-to-end target and resource
+guardrails pass. Operand traffic having a nonzero count is not sufficient.
 
-### 7-6 · Call and closure fast paths
+### 7-6 · Call, construct, and closure fast paths
 
-A VM call should not pay the IL path's fixed prologue — item 4-5 measured that at **142 ns
-before any argument**, of which ~85% is unattributable from outside the engine. **A VM frame
-is attributable from inside it**, which makes this cheaper here than in phase 4.
+Build on the Phase 6 call/environment ABI and the runtime's semantic call paths. Cover
+ordinary, strict, arrow, bound, constructor, spread, optional, direct-eval, generator/async,
+and host calls that belong to the approved profile. Preserve function identity, realm,
+`this`, `new.target`, home object/private environment, arguments behavior, and stack traces.
 
-Reuse the shadow stack: the activation record is a slot in `CallFrameStack` addressed by a
-`FrameToken`, and an argument-less IL call allocates **0 B** because of it.
+Report the VM frame cost independently from bootstrap, body execution, and host-call cost.
+Do not assume the current IL shadow-stack frame can be reused unchanged as a VM operand/local
+frame; it remains useful for engine stack identity and diagnostics.
 
 ## Order
 
-```
-7-0 profile ← BLOCKS THE PHASE
-  ├→ 7-3 interned constant pool (build with 6-1's format)
-  ├→ 7-4 root-boxing arithmetic  (build with 6-1's opcode set)
-  ├→ 7-1 property ICs → 7-2 element opcodes → 7-6 calls
-  └→ 7-5 register machine — only if 7-0 says operand traffic is measurable
+```text
+Phase 6 accepted scope + MOD-M1 acceptance lanes
+  └→ 7-0 uninstrumented baseline and predeclared thresholds
+       ├→ 7-3 constant-pool resolution, if startup/size evidence supports it
+       ├→ 7-4 numeric ValueSlot path, if the ABI and allocation rate support it
+       ├→ 7-1 owned IC slots → 7-2 dense elements → 7-6 calls
+       └→ 7-5 register-machine decision, only after traffic and total-cost evidence
 ```
 
-7-3 and 7-4 are marked "build with phase 6" deliberately: both are structural, both are
-nearly free at design time, and both are expensive retrofits.
+MOD-M6 can redesign IC/feedback ownership in parallel with the base 7-0 measurement. Items that
+consume mutable site state do not start until its applicable gate is accepted.
 
 ## Exit gate
 
-1. **The dual-arm test262 gate still holds** — 6-8, unchanged. Every item here touches
-   observable behaviour through a cache; phase 2's history says that is where wrong answers
-   come from (2-8 shipped a regression that broke DeltaBlue).
-2. **The VM's Octane run reports its own band**, per phase 0's rules, and a per-suite ratio
-   to the IL path measured on the same machine at the same time.
-3. **A target ratio, set by 7-0 and written down before the work starts.** "Faster than
-   before" is not an exit criterion; phase 2's exit gate is the cautionary tale — it named
-   200× and stayed split on four measurements.
-4. **No structure duplicated from `.Runtime` or `.Storage`.** A reviewer should be able to
-   check this by inspection.
+1. The independent expected-result manifest and the IL/VM differential check remain green
+   for the approved capability surface; serialized reload and Native AOT arms are included
+   where applicable.
+2. The VM meets the product threshold predeclared by 7-0 on every claimed Native AOT
+   RID/device, or the phase records a terminal rejection/narrowing decision.
+3. Every accepted item has paired MOD-M1 evidence on representative workloads, plus allocation,
+   GC, memory, code/package/bytecode-size, and tail-latency guardrails.
+4. Mutable IC/feedback state has explicit semantic ownership and lifetime. Repeated
+   load/run/evict and context create/dispose tests reach the declared memory plateau.
+5. Modern workloads drive acceptance. Octane results, if retained, are labelled historical
+   continuity and cannot override the product/JetStream decision.
 
 ## Dependencies
 
-**Depends on phase 6 in full.** Consumes phase 2's shapes, caches and property maps and
-phase 3's allocation work without modifying them — if the VM needs a change in `.Runtime`,
-that change belongs to the owning phase and must keep the IL arm green.
+- Depends on an accepted positive Phase 6 outcome (`execution-only-go`,
+  `narrow-runtime-go`, or `full-go`) and exit evidence, plus MOD-M1's decision-grade
+  measurement lanes. Runtime-compiler measurements apply only to the latter two outcomes.
+- 7-1 and any feedback-consuming portion depend on MOD-M6 before concurrent contexts, shared
+  compiled artifacts, background tiering, or Workers are advertised.
+- Reuses Runtime/Storage semantics, but changes needed for bytecode ownership stay green on
+  the IL arm and are recorded by their owning architecture/concurrency evidence.
+- Phase 8 depends on this phase's uninstrumented baseline; it may not replace 7-0 with an
+  instrumented histogram run.

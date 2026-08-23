@@ -142,7 +142,8 @@ rewritten again at relay time although an enclosing walk had already rewritten i
 - MandreelLatency and CodeLoad out of the tail — **superseded as a criterion**: neither
   measures what this phase changes. Judge it on the compile probes and on suite wall clock,
   and say which.
-- Everything closes under [`Measurement.md`](Measurement.md), unchanged.
+- Everything closes under the current fail-closed [`Measurement.md`](Measurement.md) gate;
+  historical smoke/band evidence is prioritization evidence until reproduced under MOD-M1.
 
 ## Dependencies
 

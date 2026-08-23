@@ -23,7 +23,7 @@ full — nothing was dropped — but you can now read the plan without reading t
 
 | Subject | Plan | Evidence |
 |---|---|---|
-| **The performance campaign** | [`Roadmap.md`](Roadmap.md) — scope, metrics, sequencing, the optimization catalogue, non-goals, traceability | [`Roadmap.status.md`](Roadmap.status.md) — §0 status in full, §4 where the engine stands |
+| **The performance campaign** | [`Roadmap.md`](Roadmap.md) — scope, metrics, historical campaign crosswalk, optimization catalogue, non-goals, traceability | [`Roadmap.status.md`](Roadmap.status.md) — dated evidence snapshots and cross-phase status; modernization sequencing is owned below |
 | **Phase 0** — establish the baseline | [`Phase-0.md`](Phase-0.md) | [`Phase-0.status.md`](Phase-0.status.md) |
 | **Phase 1** — the front end | [`Phase-1.md`](Phase-1.md) | [`Phase-1.status.md`](Phase-1.status.md) |
 | **Phase 2** — the call and property paths | [`Phase-2.md`](Phase-2.md) | [`Phase-2.status.md`](Phase-2.status.md) |
@@ -31,58 +31,67 @@ full — nothing was dropped — but you can now read the plan without reading t
 | **Phase 4** — speculation | [`Phase-4.md`](Phase-4.md) | [`Phase-4.status.md`](Phase-4.status.md) |
 | **Phase 5** — RegExp | [`Phase-5.md`](Phase-5.md) | [`Phase-5.status.md`](Phase-5.status.md) |
 
-Those are **track one** — the IL execution path, where all the evidence is. **Track two**
-is the VM tier: the optimization catalogue's VM 1.0 → 4.0 staging, written as a plan.
-**None of it is started or scheduled**, and each phase is gated on an entry measurement
-that may cancel it:
+Those are **track one** — the IL execution path, where the campaign's measured history is.
+**Track two** is the possible bytecode path. The numeric portable runtime/compiler seed and
+Native AOT execution-only sample already exist, but **none of the production Phase 6–9
+items has started**. Modernization MOD-M9 must record `no-go`, `execution-only-go`,
+`narrow-runtime-go`, or `full-go`; the first cancels the track and each positive outcome
+funds only its declared capability profile.
 
 | Subject | Plan | Evidence |
 |---|---|---|
-| **Phase 6** — VM 1.0: a correct bytecode interpreter | [`Phase-6.md`](Phase-6.md) | [`Phase-6.status.md`](Phase-6.status.md) — nothing measured |
-| **Phase 7** — VM 2.0: respectable performance | [`Phase-7.md`](Phase-7.md) | [`Phase-7.status.md`](Phase-7.status.md) — nothing measured |
-| **Phase 8** — VM 3.0: a highly optimized interpreter | [`Phase-8.md`](Phase-8.md) | [`Phase-8.status.md`](Phase-8.status.md) — nothing measured |
-| **Phase 9** — VM 4.0: an adaptive two-tier engine | [`Phase-9.md`](Phase-9.md) | [`Phase-9.status.md`](Phase-9.status.md) — nothing measured |
+| **Phase 6** — VM 1.0: capability-profile correctness | [`Phase-6.md`](Phase-6.md) | [`Phase-6.status.md`](Phase-6.status.md) — seed census only; zero production items/measurements |
+| **Phase 7** — VM 2.0: make the approved interpreter shippable | [`Phase-7.md`](Phase-7.md) | [`Phase-7.status.md`](Phase-7.status.md) — no accepted baseline |
+| **Phase 8** — VM 3.0: profile-led optimization and persistence | [`Phase-8.md`](Phase-8.md) | [`Phase-8.status.md`](Phase-8.status.md) — no accepted adaptive/persistence item |
+| **Phase 9** — VM 4.0: optional adaptive IL/bytecode execution | [`Phase-9.md`](Phase-9.md) | [`Phase-9.status.md`](Phase-9.status.md) — no tier/deopt/OSR feasibility decision |
 
 **Why track two exists at all:** Broiler.JS has **no general JavaScript execution path on a
 platform that forbids `System.Reflection.Emit`**. The compiler back end is an IL writer;
 the current portable path is a deliberately limited numeric subset. That is a *capability*
-gap, not a performance one — and separately, phase 6 would create the interpreter frame
-that phase 4's item 4-3 could not find and had to design around. The full argument is
+gap, not a performance one. A future Phase 6 may create a reconstructable frame ABI, but
+deoptimization still requires explicit state, invalidation, materialization, reconstruction,
+and correctness gates in Phase 9. The full argument is
 [`Roadmap.md` § Track two](Roadmap.md#track-two--the-vm-tier-phases-69).
 
-**It is not a speed-up.** Wherever `Reflection.Emit` works, an interpreter is slower than
-IL + RyuJIT. Never put a VM number beside an IL number and call it a win.
+**Capability and performance are separate decisions.** Phase 6 makes no speed claim.
+Startup, throughput, memory, package size, and any IL comparison close independently under
+MOD-M1; do not call a bytecode result a win merely because it runs where IL also runs.
 
-**One more plan gates track two**, and it serves track one's packaging work at the same
-time:
+**The assembly plan gates track two**, while JavaScript concurrency has its own delivery
+pair for modernization MOD-M5–MOD-M7:
 
 | Subject | Plan | Evidence |
 |---|---|---|
 | **The assembly restructure** — backend-neutral foundations / `.IL` / `.Bytecode` / optional packages | [`Assemblies.md`](Assemblies.md) | [`Assemblies.status.md`](Assemblies.status.md) — initial graph work implemented; target-graph and validation work remains |
 | **The `ExpressionCompiler` split** — the restructure's first executable piece | [`AssemblySplit.md`](AssemblySplit.md) | [`AssemblySplit.status.md`](AssemblySplit.status.md) — implementation landed; final validation remains open |
+| **JavaScript concurrency** — bounded compile-ahead, independent-context safety, and Worker agents | [`Concurrency.md`](Concurrency.md) | [`Concurrency.status.md`](Concurrency.status.md) — existing aggregate-repository slices mapped; MOD-M5–MOD-M7 acceptance remains open |
 
-**Why it exists:** the model/emitter split removed the front-end consumers' direct dependency
+**Why the assembly work exists:** the model/emitter split removed the front-end consumers' direct dependency
 on the IL emitter. The remaining restructure must prove an acyclic backend-neutral semantic
 front end, isolate every runtime Emit dependency in the IL profile, preserve consumers, and
 make a bytecode-only Native AOT profile a publish-and-run property.
 
-Cross-cutting and reference documents sit above or beside the two tracks and are not split.
-`Modernization.md` is an orchestration overlay rather than an independent evidence ledger;
-its work records evidence in the owning plan/status pair:
+Cross-cutting orchestration and reference documents sit above or beside the two tracks;
+delivery ownership still uses a plan/status pair. `Modernization.md` is the orchestration
+authority rather than an independent evidence ledger, while `Concurrency.md` is an owning
+delivery plan. Changing evidence belongs in the matching status record:
 
 | | |
 |---|---|
 | [`Modernization.md`](Modernization.md) | **The cross-track execution roadmap.** It orders the audit cleanup, trustworthy baselines, an achievable assembly graph, IL/AOT isolation, package decomposition, bounded compile-ahead, independent-context safety, Workers, profile-led optimization, and the bytecode-VM decision. It owns dependencies and program gates; changing evidence remains in the linked `*.status.md` records. |
-| [`Measurement.md`](Measurement.md) | **The gate, and §3 of the campaign.** What may be *claimed* — repeatability bands, the RID matrix, bootstrap profiles, the boundary around the experimental execution modes — plus the protocol, the conformance gates, the standing measurement lessons (§3.5) and every probe's command line (Appendix A). **It governs everything above.** It is not split because it is *all* rules: it has no status. |
+| [`ModernizationDelivery.md`](ModernizationDelivery.md) | **The separate phased delivery view.** It maps executable increments and handoffs to the authoritative `MOD-M*`, phase, assembly, and concurrency gates without creating another state ledger. |
+| [`Measurement.md`](Measurement.md) | **The gate, and §3 of the campaign.** What may be *claimed* — evidence classes, immutable candidate/control identity, A/A lane validity, practical decision thresholds, exact-row comparison, resource/conformance guardrails, the RID matrix and bootstrap profiles — plus the standing lessons (§3.5) and every probe's command line (Appendix A). **It governs everything above.** It is not split because it is all rules: it has no status. |
+| [`Concurrency.md`](Concurrency.md) | **The JavaScript-local owner for MOD-M5–MOD-M7.** It owns compiler/cache/context safety, optimizer-state lifetime, and Worker-agent acceptance. The aggregate `docs/architecture/multithreading.md` retains integration history and host-level measurements; a host feature recorded there as built is not thereby accepted against MOD-M5–MOD-M7. |
 | [`Component.md`](Component.md) | The engine's non-performance roadmap: closing the supported test262 failure set, expanding host-mode coverage, finishing RegExp backend adoption, and API/package/preview readiness. |
-| [`Archive.md`](Archive.md) | **Both** superseded plans — the engine campaign (P0–P3, phases A–F) and the Octane roadmap (phases 0–5) — merged into `Roadmap.md` on 2026-08-01 and **not back-ported**. Kept for their measurements, their defect narratives, and the scope exclusions later overturned. Where an archive and `Roadmap.md` disagree, `Roadmap.md` is current. |
+| [`Archive.md`](Archive.md) | **Both** superseded plans — the engine campaign (P0–P3, phases A–F) and the Octane roadmap (phases 0–5) — merged into `Roadmap.md` on 2026-08-01 and **not back-ported**. Kept for measurements and defect narratives. Where sources disagree, the owning current phase plan/status pair and `Modernization.md` take precedence over `Roadmap.md`, which takes precedence over the archive. |
 
 ## Where to start
 
 | If you are… | Read |
 |---|---|
-| **planning work that crosses performance, assemblies, AOT, or concurrency** | [`Modernization.md`](Modernization.md) for ordering and stop/go gates, then the linked owning plan and its status record. |
-| **picking up performance work** | [`Roadmap.md`](Roadmap.md) for the sequencing, then the phase's plan document, then [`Measurement.md` §3.5](Measurement.md#35-standing-measurement-lessons) *before* designing a probe. Those lessons exist because the campaign has repeatedly measured the wrong thing in an instructive way. |
+| **planning work that crosses performance, assemblies, AOT, or concurrency** | [`Modernization.md`](Modernization.md) for authority and stop/go gates, [`ModernizationDelivery.md`](ModernizationDelivery.md) for delivery waves, then the linked owning plan and its status record. |
+| **working on compile-ahead, context isolation, or Workers** | [`Concurrency.md`](Concurrency.md), then [`Concurrency.status.md`](Concurrency.status.md). Use the aggregate multithreading document only for integration history and its host-side measurements. |
+| **picking up performance work** | [`Modernization.md`](Modernization.md) for cross-track order, [`Roadmap.md`](Roadmap.md) for the campaign crosswalk, then the owning phase plan/status pair and [`Measurement.md` §3.5](Measurement.md#35-standing-measurement-lessons) *before* designing a probe. |
 | **deciding whether a number may be published** | [`Measurement.md`](Measurement.md), and the answer is usually *not yet*. |
 | **checking a claim** | the matching `*.status.md`. Every figure is attached to the run that produced it. |
 | **reproducing a measurement** | [`Measurement.md` Appendix A](Measurement.md#appendix-a--reproducing-the-measurements) — every probe's command line, and the traps each has already cost somebody. |
@@ -92,26 +101,30 @@ its work records evidence in the owning plan/status pair:
 ## Where open work is recorded
 
 - **Start cross-track audit follow-up at
-  [`Modernization.md` M0](Modernization.md).**
+  [`Modernization.md` MOD-M0](Modernization.md).**
   It reconciles the current graph and item state before structural or concurrency work.
 - **For the existing IL performance campaign**, read the relevant Phase 0–5 plan and then
-  its linked status record. M0 owns the known plan/status drift; until it closes, the status
+  its linked status record. MOD-M0 owns the known plan/status drift; until it closes, the status
   record is the evidence and the plan's stale next action is not an instruction to repeat
   completed work.
 - **For assembly and packaging work**, read [`Assemblies.md`](Assemblies.md),
   [`AssemblySplit.md`](AssemblySplit.md), and their status records. Treat the split as
   implemented with validation remaining, not as unstarted.
-- **Track two — phases 6–9 — remains a capability proposal.** Item 6-0 and modernization
-  phase M9 must produce a terminal go, narrow-go, or no-go before production VM work starts.
-- **For conformance and host capability**, use [`Component.md`](Component.md); M0 assigns a
-  dedicated plan/status pair before JavaScript-local concurrency or Worker implementation
-  begins.
+- **Track two — phases 6–9 — remains a capability proposal beyond the numeric seed.**
+  Modernization MOD-M9 is item 6-0 and must produce exactly one terminal `no-go`,
+  `execution-only-go`, `narrow-runtime-go`, or `full-go` before production VM work starts.
+- **For JavaScript-local concurrency and Worker acceptance**, use
+  [`Concurrency.md`](Concurrency.md) and [`Concurrency.status.md`](Concurrency.status.md).
+  Existing compile-ahead and Worker code in the aggregate repository is mapped there as
+  implemented subsets, not as proof that modernization phases MOD-M5–MOD-M7 have closed.
+- **For conformance and other host capability**, use [`Component.md`](Component.md).
 
 ## Conventions
 
 - **Paths are relative to the `Broiler.JS` root.** Paths into the aggregate repository —
-  `tests/octane/`, `scripts/`, `patches/`, `.github/workflows/` — cannot be linked from a
-  submodule and are written as bare code spans. There are nine.
+  for example `tests/octane/`, `scripts/`, and `.github/workflows/` — cannot be linked from
+  a submodule and are written as bare code spans. Historical `patches/` references describe
+  a retired handoff ledger; no current aggregate `patches/` directory exists.
 - **Section numbering is stable across the split.** §0 and §4 are in `Roadmap.status.md`;
   §1 and §2 are in `Roadmap.md`; §3, §3.5 and Appendix A are in `Measurement.md`;
   Appendix B is in `Roadmap.md`. An existing reference to §3.5 or §4.2a still resolves.

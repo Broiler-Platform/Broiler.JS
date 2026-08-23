@@ -3,31 +3,25 @@
 Project files are the dependency-graph source of truth. This document records the
 intended direction and the cross-assembly seams that a contributor must preserve.
 
-> **The graph below is the one that exists. A replacement is planned and not started:**
-> [`docs/roadmap/Assemblies.md`](../roadmap/Assemblies.md) re-lays the engine as
-> `Broiler.JS.Base` / `.Core` / `.IL` / `.Bytecode` and their satellites, so an application
-> may reference either back end or both — and a **bytecode-only application publishes as
-> Native AOT**.
+> **The first graph change has landed; the wider target remains a hypothesis.**
+> `Broiler.JavaScript.Expressions` now owns the expression model and its built reference
+> closure contains no `System.Reflection.Emit`. `Ast`, `Storage`, `Parser`, `Runtime`, and
+> `Engine` reference that model rather than the emitter. The structural implementation is
+> recorded in [`AssemblySplit.status.md`](../roadmap/AssemblySplit.status.md); its final S-7
+> validation remains open.
 >
-> **The rule that change turns on contradicts the first row of the table below.**
-> `ExpressionCompiler` is described here as the "expression foundation", and it is: it has
-> **no project references**, and `Ast`, `Storage`, `Runtime`, `Parser`, `Engine` and
-> `LinqExpressions` all depend on it. **It is also the IL emitter** — `System.Reflection.Emit`
-> in ~40 files — so *an AST assembly depends on an IL emitter*, and **no subset of this graph
-> runs JavaScript without dynamic code.** That is why `Portable` exists as a separate island.
->
-> **[`docs/roadmap/AssemblySplit.md`](../roadmap/AssemblySplit.md) plans the fix**: separate
-> the expression *model* (≈5 200 lines, no `Reflection.Emit`) from the *emitter* (≈4 600
-> lines, all of it), putting the first at the bottom of the graph and the second above the
-> runtime. It is analyzed file by file, preserves namespaces so no consumer changes, and is
-> verified by identical test262 counts. **Until it lands, treat "backend-neutral" in the
-> table below as an aspiration rather than a property.**
+> This proves an Emit-free bytecode-compiler reference closure, not a complete runnable or
+> Native-AOT engine. `AssemblyCodeCache` and `ILPack` still contain Emit in other profiles,
+> and the original [`Assemblies.md`](../roadmap/Assemblies.md) Base/Core merge sketch is
+> cyclic. The verified project-shell graph in modernization MOD-M2 must replace that sketch
+> before any further assembly move is treated as approved.
 
 ## Layers
 
 | Layer | Main assemblies | Responsibility |
 | --- | --- | --- |
-| Expression foundation | `ExpressionCompiler` | Backend-neutral expression and IL-emission model |
+| Expression foundation | `Expressions` | Backend-neutral expression model; structurally split from the IL emitter |
+| IL-emission foundation | `ExpressionCompiler` | Dynamic-code emitter; optional-backend implementation, not a lower-layer foundation |
 | Syntax and storage | `Ast`, `Storage`, `Parser` | Syntax trees, keys/property storage, scanning and parsing |
 | Runtime | `Runtime` | JavaScript values, arguments, properties, registries, and lower-layer contracts |
 | Engine | `Engine` | Contexts/realms, evaluation, host options, bootstrap, caches, and execution services |
@@ -35,48 +29,48 @@ intended direction and the cross-assembly seams that a contributor must preserve
 | Language features | `BuiltIns`, `Globals`, `Extensions` | ECMAScript objects, global surface, and property/runtime extensions |
 | Host features | `Modules`, `ModuleExtensions`, `Clr`, `Debugger`, `Network`, `NodePollyfill` | Optional host capabilities |
 | Distribution | `All`, `Minimal`, CLI and samples | Package/profile composition and executable hosts |
-| Alternate capability | `Portable`, `Portable.Compiler` | Offline numeric bytecode and reflection-free interpreter |
+| Alternate capability | `Portable`, `Portable.Compiler` | Limited numeric bytecode seed; its compiler now has an Emit-free reference closure |
 
 The graph is not a perfectly linear stack: the current lowering assemblies bridge
 Engine and Runtime, and several host assemblies compose BuiltIns. A new reference is
 acceptable only when it follows ownership and does not force a lower layer to know a
 concrete optional feature.
 
-### The planned layering
+### Boundary hypotheses pending the verified MOD-M2 graph
 
-Fifteen assemblies in five tiers, with **strictly downward** dependencies. Planned, not
-built — [`Assemblies.md`](../roadmap/Assemblies.md) is the plan and its item **A-0** may
-re-scope it.
+The previous fifteen-assembly diagram is retained as a superseded design record in
+[`Assemblies.md`](../roadmap/Assemblies.md). It must not be implemented directly:
 
-| Tier | Assemblies | Rule |
+- merging `Storage` with `Expressions` creates a return edge through `Storage → Ast →
+  Expressions`;
+- merging `Runtime` with `Engine` creates a return edge through `Engine → Parser → Runtime`;
+  and
+- moving all of `Compiler` into an IL assembly would strand binding, early-error, hoisting,
+  scope, and analysis work that the IL and bytecode back ends must share.
+
+The project-shell spike must prove an acyclic graph around these canonical hypotheses:
+
+| Logical boundary | Candidate contents | Rule to prove |
 | --- | --- | --- |
-| 4 · composition | `Broiler.JS.All` (IL + bytecode), `Broiler.JS.Aot` (bytecode only) | The only place a back end is chosen |
-| 3 · host features | `Broiler.JS.Hosting`, `.Clr`, `.Modules`, `.ModuleExtensions`, `.Debugger`, `.Network`, `.NodePolyfill` | **`Hosting` references neither back end** |
-| 2 · back ends | `Broiler.JS.IL` · `Broiler.JS.Bytecode` + `.Bytecode.Compiler` | Mutually optional; both implement a contract declared in `Core` |
-| 1 · semantics | `Broiler.JS.Core`, `Broiler.JS.BuiltIns` + `.Intl` `.Temporal` `.RegExp` | **Must not reference either back end** |
-| 0 · foundation | `Broiler.JS.Base`, `Broiler.JS.Ast`, `Broiler.JS.Parser` | No JavaScript semantics in `Base` |
+| Expression model | `Expressions` | Backend-neutral and Emit-free; already structurally established |
+| Syntax and storage | `Ast`, `Storage` | Remain separate until the real edges prove a safe consolidation |
+| FrontEnd/Semantics | `Parser` plus backend-neutral binding, scope, early-error, hoisting, and analysis code extracted from `Compiler`/lowering | Shared by IL and bytecode; references neither back end |
+| Runtime and engine services | `Runtime`, `Engine` | Remain separate unless project shells prove a consolidation acyclic |
+| IL back end | expression emitter, IL-specific lowering, `AssemblyCodeCache`, and `ILPack` | The only profile allowed to use `System.Reflection.Emit` |
+| Bytecode back end | portable format, compiler, verifier, and interpreter | Depends on shared semantics, never on IL |
+| Composition and features | hosting, built-ins, optional hosts, full/AOT profiles | Back ends are registered explicitly; reduced profiles publish their omissions |
 
-**The rule the whole design turns on:**
-
-> **`Broiler.JS.IL` is the only assembly permitted to reference `System.Reflection.Emit`.**
-> Everything at tier 0 and tier 1 must be `IsAotCompatible` with no trim or AOT warnings, so
-> that an application referencing only the bytecode back end publishes as Native AOT.
-
-Two corollaries that are easy to violate by accident: a back end must be **registered by the
-application, never discovered by assembly or type name** (reflective discovery defeats
-trimming and AOT), and **no assembly should exceed roughly 36 000 lines** — `BuiltIns` is
-64 432 today, which is what the `.Intl` / `.Temporal` / `.RegExp` satellites address.
-
-Architecture tests lock all of this; see item A-8.
+The names are provisional; dependency direction and ownership are the contract. A complete
+source/IL census, project-shell build, architecture tests, and actual bytecode-only
+publish-and-run gate decide whether the hypotheses become the target.
 
 ## Boundary rules
 
-- `ExpressionCompiler` must remain independent of JavaScript runtime types.
-- **Do not add a new dependency on `ExpressionCompiler` from a lower layer.** Every such
-  edge is one the planned split has to remove, and each one makes
-  [`Assemblies.md`](../roadmap/Assemblies.md)'s item A-1 larger. If a lower layer needs the
-  expression *model*, say so in the pull request so the split can account for it; if it
-  needs the *emitter*, it is in the wrong layer.
+- `Expressions` must remain independent of JavaScript runtime types and
+  `System.Reflection.Emit`.
+- **Do not add a dependency on the emitter `ExpressionCompiler` from a lower or shared
+  semantic layer.** If code needs the expression model it belongs against `Expressions`; if
+  it needs emitter types, it belongs in the IL profile.
 - `Ast`, `Storage`, `Parser`, and `Runtime` must not construct concrete built-ins,
   globals, CLR adapters, module hosts, or debuggers.
 - **Built-ins wrap BCL types; they never derive from them.** `JSValue` is the protocol every
@@ -88,7 +82,8 @@ Architecture tests lock all of this; see item A-8.
 - Built-ins belong in `BuiltIns`; host-global registration belongs in `Globals`.
 - Optional hosts should reference the smallest required assemblies instead of using
   `All` internally.
-- `Portable` remains independent of the full runtime and dynamic-code path.
+- The bytecode compiler and interpreter remain independent of the dynamic-code path. Sharing
+  the parser and FrontEnd/Semantics is intended; reaching the IL emitter is not.
 - Nested DateTime, Regex, and Unicode components are implementation dependencies of
   feature code; they must not leak into lower-layer public contracts unnecessarily.
 
@@ -100,12 +95,12 @@ The supported communication mechanisms are:
 - `JavaScriptBootstrap`, `JavaScriptContextBuilder`, and bootstrap profiles;
 - Runtime-owned typed factory delegates populated by feature initializers;
 - `DefaultBuiltInRegistry` extension points;
-- compiler and CLR registration interfaces; and
+- compiler/backend and CLR registration interfaces; and
 - narrowly scoped module-initializer wiring documented in
   [Module initializers and bootstrap](module-initializers.md).
 
-Avoid reflection by assembly/type name in new code. Existing compatibility probing is
-tracked for retirement in the [roadmap](../roadmap/Component.md).
+Avoid reflection by assembly/type name in new code. Existing compatibility probing and the
+whole-tree dynamic-code census are tracked by the [assembly roadmap](../roadmap/Assemblies.md).
 
 ## Changing the graph
 

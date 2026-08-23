@@ -6,7 +6,10 @@ Broiler.JS uses a layered architecture derived from earlier YantraJS concepts bu
 
 1. **Storage and AST foundations**: `Broiler.JavaScript.Storage` and `Broiler.JavaScript.Ast` define reusable primitives with no dependency on concrete built-ins.
 2. **Parsing and runtime model**: `Broiler.JavaScript.Parser` turns source text into AST structures, while `Broiler.JavaScript.Runtime` models JavaScript values and arguments.
-3. **Engine and compiler**: `Broiler.JavaScript.Engine`, `Broiler.JavaScript.ExpressionCompiler`, and `Broiler.JavaScript.Compiler` coordinate execution, compilation, and host contexts.
+3. **Engine and compiler**: `Broiler.JavaScript.Engine` hosts execution;
+   `Broiler.JavaScript.Compiler` performs JavaScript lowering;
+   `Broiler.JavaScript.Expressions` owns the backend-neutral expression model; and
+   `Broiler.JavaScript.ExpressionCompiler` is the dynamic-IL emitter.
 4. **Feature satellites**: `Broiler.JavaScript.BuiltIns`, `Broiler.JavaScript.Globals`, `Broiler.JavaScript.Modules`, `Broiler.JavaScript.ModuleExtensions`, `Broiler.JavaScript.Clr`, `Broiler.JavaScript.Extensions`, and optional host packages add behavior through explicit bootstrap, manifests, module initializers, and registration delegates.
 
 ## Modularity rules
@@ -23,8 +26,9 @@ Broiler.JS uses a layered architecture derived from earlier YantraJS concepts bu
   and why they cannot derive from them:
   [Why the built-ins are not .NET types](builtins-vs-clr-types.md).
 - Active performance, compliance, packaging, and release work is tracked in the
-  [repository roadmap](../roadmap/). Repeatable measurement guidance lives in
-  [acceptance.md](../roadmap/measurement.md).
+  [roadmap index](../roadmap/README.md). Cross-track order is owned by the
+  [modernization roadmap](../roadmap/Modernization.md), and repeatable measurement guidance
+  lives in [Measurement.md](../roadmap/Measurement.md).
 
 ## YantraJS migration status
 

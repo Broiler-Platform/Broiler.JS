@@ -114,4 +114,4 @@ For every gap:
 5. update `test262-failures.txt` and `dashboard.md`.
 
 The active execution order and exit gates are in
-[the repository roadmap](../roadmap/component.md).
+[the repository roadmap](../roadmap/Component.md).

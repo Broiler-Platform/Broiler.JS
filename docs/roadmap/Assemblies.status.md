@@ -1,8 +1,10 @@
 # Assembly restructure — status
 
-**No item has been started.** What follows is a census of the graph as it stands, read off
-the project files and the source tree on 2026-08-07, and it is the evidence
-[`Assemblies.md`](Assemblies.md) is designed against.
+**Current interpretation:** A-1's structural implementation has landed through S-6 and A-3's
+explicit registry slice landed with it; final S-7 validation remains open. The initial A-0
+census below is preserved as a dated snapshot, but its conclusion that the wider plan needed
+no rescope is superseded: the proposed Base and Core folds create project cycles. MOD-M2 must
+produce the replacement graph before further consolidation.
 
 > The evidence half of [`Assemblies.md`](Assemblies.md). **The plan document is the one to
 > act from.** Nothing here is a measurement in [`Measurement.md`](Measurement.md)'s sense —
@@ -16,12 +18,14 @@ the project files and the source tree on 2026-08-07, and it is the evidence
 | | |
 |---|---|
 | Items started | **3** — A-0, A-1, A-3 |
-| Items landed | **2** — **A-0** and **A-1** |
-| Partly landed | **A-3** — its step S-3 is done; re-pointing the rest of tier 0–1 remains |
-| Blocked on | **nothing.** A-0 is answered and did not trigger its re-scope condition |
-| Next | **A-4** — the two `Assembly.Load` probes A-0 found are invisible to the analyzer, which makes them the real blocker |
+| Structurally landed | **A-1 through S-6**; A-3's explicit registration slice |
+| Acceptance open | **A-1/S-7** — pinned test262 and repository validation |
+| Superseded | The initial A-0 no-rescope conclusion and A-5 Core fold |
+| Blocked on | **MOD-M2 verified graph** — project shells must resolve the Base↔Ast and Core↔Parser cycles and establish FrontEnd/Semantics ownership |
+| Next | Finish S-7 independently; then build MOD-M2 shells and a whole-tree/profile-classified Emit, dynamic-code, and name-probing census |
 
-**A-1 has landed.** `Broiler.JavaScript.Expressions` exists, carries the expression model,
+**A-1's structural change has landed; its acceptance has not.**
+`Broiler.JavaScript.Expressions` exists, carries the expression model,
 and **contains no `System.Reflection.Emit`** — verified against the built assembly, not
 against `using` directives. `Ast`, `Storage`, `Parser`, `Runtime` and `Engine` reference it
 instead of the emitter. `LinqExpressions` legitimately needs both, exactly as
@@ -35,16 +39,22 @@ subset of the current graph that runs JavaScript without dynamic code" was the f
 level. That is not yet a running bytecode configuration — that is A-7 — but the edge that
 made it impossible is gone.
 
+**That does not validate the old target diagram.** `Storage → Ast → Expressions` makes the
+proposed `Storage + Expressions` Base merge cyclic; `Engine → Parser → Runtime` makes the
+proposed `Engine + Runtime` Core merge cyclic. In addition, `Compiler` contains shared
+binding/scope/early-error/hoisting/analysis work that cannot be moved wholesale behind an IL
+boundary if bytecode is to share language semantics. These are the MOD-M2 rescope inputs.
+
 ### A-0, sub-question by sub-question
 
 | | Question | Answer |
 |---|---|---|
 | **1** | Is the model/emitter split clean? | **Yes, by building.** Four things symbol analysis missed, none fatal — a real model→emitter back-edge (`LinqExtensions`), two extra file cuts, and ~20 members widened to `public`. `AssemblySplit.status.md` §0 |
 | **2** | What do `Runtime`, `Storage`, `Ast`, `Parser` actually consume? | **Answered by construction** — they compile against `Expressions` alone. Counting types was the proxy; the compiler is the answer |
-| **3** | Can `Broiler.JS.Core` be AOT-clean at all? | **Answered — and the plan does not need re-scoping.** 52 warnings across tier 0–1, only 9 of them the kind no annotation fixes. **But the count understates the work** — see below |
-| **4–5** | `LinqExpressions` split size; the rest | Not started |
+| **3** | Can the proposed shared/runtime profile be AOT-clean? | **Partially answered only.** The dated analyzer census found 52 warning sites across the selected closure, 9 `IL3050`; it was not a whole-program publish and cannot validate the now-superseded Core grouping |
+| **4–5** | `LinqExpressions`/`Compiler` split and the wider graph | **Not answered; MOD-M2 owns it.** Separate shared FrontEnd/Semantics from IL-specific lowering using project shells |
 
-### Sub-question 3 — the decisive number
+### Sub-question 3 — the preliminary analyzer census
 
 Measured 2026-08-07 by building `Broiler.JavaScript.Engine` and its project references with
 `-p:IsAotCompatible=true -p:IsTrimmable=true`, unannotated and unsuppressed. Counts are
@@ -75,21 +85,26 @@ CLR interop rather than the JavaScript object model:
 | `Engine/CoreInternalHelpers.cs` | 4 |
 | `Runtime/JSVariable.cs`, `Engine/JSDynamicMetaData.cs` | 1 each |
 
-**So A-0's re-scope trigger does not fire.** The runtime is *not* deeply reflective for
-reasons unrelated to the emitter; it is reflective at its CLR-interop boundary, which is
-where a JavaScript engine that binds to .NET types is expected to be.
+**Historical interpretation, now narrowed.** This census suggested reflection was
+concentrated at CLR interop; it did not prove the proposed Core merge acyclic or a
+whole-program bytecode/AOT profile clean. MOD-M2 therefore respecifies the graph for independent
+reasons, and A-7 remains the only publish-and-run proof.
 
 ### The caveat that matters more than the number
 
 **Not one of the 52 is `Assembly.Load`, and that is a problem with the measurement, not a
-result.** `Broiler.JavaScript.Engine` contains two name-based assembly probes —
+result.** The original census identified two name-based probes in
+`Broiler.JavaScript.Engine` —
 `Core/JSEngine.cs`'s `TryLoadAssembly` (which even records
 `StartupOptimizationDiagnostics.RecordCompatibilityAssemblyProbe()`) and
 `FastParser/Compiler/DefaultJSCompiler.cs`'s `EnsureCompilerAssemblyLoaded`, which loads
 `"Broiler.JavaScript.Compiler"` by string and runs its module constructor so a
 `[ModuleInitializer]` can register the real pipeline.
 
-**The trim analyzer emits nothing for either.** `Assembly.Load(string)` is a runtime lookup it
+**Those two are examples, not an exhaustive inventory.** Other profiles and generated code
+must be scanned for `Assembly.Load`, `Type.GetType`, `System.Reflection.Emit`, and related
+dynamic-code paths, including `AssemblyCodeCache` and `ILPack`. The trim analyzer emits
+nothing for the two Engine probes: `Assembly.Load(string)` is a runtime lookup it
 cannot see, so **the warning count is a floor, not a ceiling**, and a green analyzer run would
 not mean a working Native AOT publish. This is direct evidence for **A-4 being a blocker
 rather than hygiene**, exactly as [`Assemblies.md`](Assemblies.md) promoted it — and it is why
@@ -104,7 +119,11 @@ Two further limits on this number, stated so it is not over-read:
 
 ---
 
-## The finding that shapes the plan
+## Historical pre-split finding that shaped A-1
+
+> Snapshot from 2026-08-07, retained for provenance. Present-tense statements in this
+> section describe the graph before `Broiler.JavaScript.Expressions` landed; §State above is
+> current.
 
 **`Broiler.JavaScript.ExpressionCompiler` has no project references and six assemblies
 depend on it — including the AST and property storage.**
@@ -242,31 +261,28 @@ decision the engine has already taken at run time.
 | `PortableOpCode` | **20 opcodes**, `double`-only |
 | `IsTrimmable` | already `true` on `Portable` |
 
-**`Portable.Compiler` references `Parser`, which references `ExpressionCompiler`** — so even
-the bytecode compiler transitively depends on the IL emitter today. That edge is exactly what
-A-1 removes, and it is why the AOT gate (A-7) cannot pass before A-1 lands.
+Before A-1, `Portable.Compiler → Parser → ExpressionCompiler` pulled in the IL emitter.
+That edge is now gone, and an architecture test protects the Emit-free portable-compiler
+closure. This is necessary but not sufficient for A-7: it is neither a complete runtime
+profile nor a whole-program Native-AOT publish.
 
 `samples/Broiler.JavaScript.NativeAotSample` sets `PublishAot=true` and is the place A-7's
 gate grows.
 
 ---
 
-## What A-0 must add to this file
+## What the replacement A-0 / MOD-M2 must add to this file
 
-1. ~~**Whether the A-1 split is clean**~~ — **done.** It is, and A-1 has landed;
-   [`AssemblySplit.status.md`](AssemblySplit.status.md) §0 records what broke and how.
-2. ~~**Type-level consumption** for `Ast`, `Storage`, `Runtime`, `Parser`~~ — **moot.**
-   All four compile against `Expressions` alone, which is a stronger answer than the count
-   would have been.
-3. **The AOT warning count for `Runtime` + `Engine` today**, with `IsAotCompatible` and the
-   trim analyzer turned on. **This is the number that decides whether the plan is sound**: if
-   the runtime is deeply reflective for reasons unrelated to the emitter, the requirement
-   needs re-scoping and phases 6–9 need re-pricing. **Still open, and now the only blocker.**
-   The model's half of the answer is 18 warnings, none of them probing — see State above.
-4. **The `LinqExpressions` split** — how much of its 4 306 lines is backend-neutral. A-1
-   established that *some* of it is not: it is the one tier-0/1 assembly that still needs the
-   emitter, because `LinqExpressionsAssemblyInitializer` compiles the trees it builds.
-5. **A price for A-9**, both variants: assembly/package ids only, versus the full namespace
-   rename. **A-1 deliberately did not touch this** — the new project is
-   `Broiler.JavaScript.Expressions`, not `Broiler.JS.Base`, so A-9 remains one undivided
-   breaking change rather than a half-done one.
+1. **A generated project and source-edge graph**, with the two known cycles called out and
+   every proposed consolidation represented by buildable project shells.
+2. **A type/file assignment for FrontEnd/Semantics**, including parser, binding, scope,
+   early errors, hoisting, numeric-local analysis, and shared IR; the bytecode and IL shells
+   must both consume it without referencing each other.
+3. **A whole-tree/profile-classified dynamic-code census**, covering analyzer warnings,
+   `System.Reflection.Emit`, `Assembly.Load`, `Type.GetType`, `AssemblyCodeCache`, `ILPack`,
+   generated source, host assemblies, and composition roots.
+4. **Build and architecture-test results** for full IL, bytecode-only/AOT, and mixed
+   composition. The preliminary 52-warning census remains useful evidence, but not the
+   decision by itself.
+5. **The remaining commercial/compatibility decisions:** evidence-led BuiltIns satellites
+   and both A-9 rename variants. A-1 deliberately preserved current assembly/package names.

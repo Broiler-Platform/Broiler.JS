@@ -12,7 +12,8 @@ Broiler.JS exposes its public API through .NET assemblies rather than a single m
 | `Broiler.JavaScript.Runtime` | Runtime values | `JSValue`, `Arguments`, value factories, and runtime conversion helpers. |
 | `Broiler.JavaScript.Parser` | Source parsing | `FastParser` and parser primitives that produce AST structures. |
 | `Broiler.JavaScript.Ast` | Syntax tree model | Expression, statement, pattern, and misc AST nodes used by parser and compiler projects. |
-| `Broiler.JavaScript.ExpressionCompiler` | Backend-neutral expression/IL model | `BExpression` nodes and compilation backend abstractions used by the JavaScript compiler. |
+| `Broiler.JavaScript.Expressions` | Backend-neutral expression model | `BExpression` nodes, converters, and backend contracts used by the JavaScript compiler and execution back ends. |
+| `Broiler.JavaScript.ExpressionCompiler` | Dynamic-IL emission backend | The `System.Reflection.Emit` implementation; consumers that need only the model should reference `Broiler.JavaScript.Expressions`. |
 | `Broiler.JavaScript.LinqExpressions` | JavaScript expression lowering helpers | Builders that connect runtime values to the expression compiler. |
 | `Broiler.JavaScript.Compiler` | Compilation | `FastCompiler` and compiler services that lower parsed programs into executable forms. |
 | `Broiler.JavaScript.BuiltIns` | ECMAScript built-ins | Built-in object implementations such as `Array`, `Map`, `Set`, `Promise`, `RegExp`, `String`, `Symbol`, and typed arrays. |
@@ -34,7 +35,7 @@ The public API follows assembly boundaries: lower-level projects (`Storage`, `As
 `FullEager` is a comparison/compatibility mode, and `Minimal` intentionally omits
 features. `Broiler.JavaScript.Portable` is not the full engine and must not be presented
 as Native AOT support for general JavaScript. See
-[Performance measurement and execution modes](roadmap/measurement.md).
+[Performance measurement and execution modes](roadmap/Measurement.md).
 
 ## Diagnostics surface
 

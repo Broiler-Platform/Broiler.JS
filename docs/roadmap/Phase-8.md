@@ -1,170 +1,228 @@
-# Phase 8 — VM 3.0: a highly optimized interpreter
+# Phase 8 — VM 3.0: profile-led interpreter optimization and persistence
 
-The catalogue's VM 3.0 stage — type feedback, adaptive opcodes, superinstructions, PGO —
-plus the bytecode cache, which is the one row that makes a VM **beat** the IL path at
-something. **Every item here is gated on a histogram this phase's own 8-0 produces**, and
-none of them may be started from the catalogue's star ratings.
+Optimize the accepted Phase 7 interpreter only from its own measured execution profile.
+Type feedback, quickening, superinstructions, and dispatch layout are gated by item 8-0.
+The bytecode cache is the deliberate exception: its premise is cold startup and repeated
+compilation, so it is gated by MOD-M1 startup evidence and Phase 6's accepted format/verifier,
+not by an opcode execution histogram.
 
-> The plan half of [`Phase-8.status.md`](Phase-8.status.md) — which records that **no
-> measurement exists yet**, and carries the entry measurement this phase is blocked on.
+The measured product boundary follows the MOD-M9 outcome. An `execution-only-go` optimizes and
+caches verified precompiled execution without inventing a runtime compiler. A
+`narrow-runtime-go` or `full-go` may additionally optimize and cache the approved
+source-to-result runtime-compiler path.
+
+> The plan half of [`Phase-8.status.md`](Phase-8.status.md). No VM measurement exists and no
+> item is scheduled.
 > Part of the [performance and benchmark roadmap](Roadmap.md); the four VM phases are
 > [track two](Roadmap.md#track-two--the-vm-tier-phases-69).
 
 ---
 
-## Why this phase is written as a gate rather than a list
+## Why this phase is a gate rather than a catalogue
 
-**This is where a catalogue does the most damage.** The five techniques below are the ones a
-bytecode-VM article ranks highest, and this campaign has now refuted three
-catalogue ⭐⭐⭐⭐⭐ rows on measurement — the call-site cache at literally zero, shapes and ICs
-as *already built and inert*, and unboxed numbers as right about the target and wrong about
-the site four times running.
+Adaptive techniques have permanent format, correctness, memory, and maintenance cost. A
+star rating or another engine's opcode table is not evidence about Broiler.JS. Phase 8 first
+counts the operations and types the accepted VM actually executes, then prices candidates
+with an absolute rate and attainable end-to-end ceiling.
 
-**So the phase's structure is deliberate**: one measurement, then items drawn *from* it.
-Nothing here is scheduled. The item list below is a menu of what 8-0 might justify, with the
-population each would need in order to be worth building.
+Historical IL-path evidence remains useful as a warning: a large allocation share may buy a
+small time result, and a monomorphic share may cover too little total time to justify a new
+tier. It cannot replace the VM's own modern/product workload evidence.
 
-**And one number sizes the whole phase before it starts.** In the IL path, removing **54.0%
-of everything the corpus allocates** bought **3.1% of the time**, and collection is
-1.8–2.0% of the driver. A VM's ratios will differ — that is 8-0's job to establish — but the
-discipline does not: **bid with a rate (ns per operation, ms per GB), never with a share.**
-
-**Owner assemblies:** `Broiler.JavaScript.Portable`, `.Portable.Compiler`, consuming
-`Runtime/TypeFeedback.cs` from item 4-1.
+**Owner boundaries:** bytecode runtime/compiler and accepted Runtime/Storage contracts. Any
+mutable feedback, quickening, or IC state is owned by a bytecode function/program or realm,
+not by a process-global site number, and is reclaimed with that owner under MOD-M6.
 
 ## Items
 
-| # | Item | Size | Justified only if 8-0 shows… | State |
+| # | Item | Size | Entry evidence | State |
 |---|---|---|---|---|
-| **8-0** | **Decompose the VM's execution time** | M | — it is the gate | ❌ **not started; blocks the entire phase** |
-| **8-1** | Type feedback in the VM | M | operations are polymorphic at run time but monomorphic per site | ❌ |
-| **8-2** | Adaptive (quickened) opcodes | L | a measurable share of generic opcodes see one operand type | ❌ |
-| **8-3** | Superinstructions | M | frequent opcode *pairs*, from a measured histogram | ❌ |
-| **8-4** | Dispatch-table layout and opcode ordering | S | dispatch is a measurable share at all | ❌ |
-| **8-5** | PGO the AOT image on real JS workloads | S–M | the AOT image's own code layout costs something | ❌ |
-| **8-6** | **A bytecode cache** | M | startup is the metric anybody cares about — **and it usually is** | ❌ |
+| **8-0** | **Instrument and attribute the accepted VM** | M | Phase 7 uninstrumented baseline | ❌ **not started; blocks 8-1 through 8-5** |
+| **8-1** | Realm/function-owned type feedback | M–L | polymorphism/type population and MOD-M6 ownership | ❌ |
+| **8-2** | Adaptive/quickened opcodes | L | generic opcode/type distribution and mutation/lifetime design | ❌ |
+| **8-3** | Superinstructions | M | measured opcode n-grams and bytecode-size budget | ❌ |
+| **8-4** | Dispatch layout/encoding experiment | S–M | dispatch/decode cost on each claimed JIT/AOT RID | ❌ |
+| **8-5** | PGO the Native AOT VM image | S–M | representative target workload and MOD-M1 AOT lanes | ❌ |
+| **8-6** | **Versioned verified bytecode persistence/cache** | M–L | MOD-M1 cold-startup opportunity and accepted 6-3 format | ❌ **independent of 8-0** |
 
-### 8-0 · Decompose the VM's execution time — **the gate**
+### 8-0 · Instrument and attribute the VM — **the optimization gate**
 
-Phase 7's 7-0 establishes the VM's baseline and its ratio to the IL path. **8-0 is
-different: it attributes that time.** Per suite and in aggregate:
+Phase 7 supplies the uninstrumented end-to-end baseline. Item 8-0 adds separate diagnostic
+builds/runs that collect:
 
-- **dispatch** — the switch, the branch predictor, the loop overhead;
-- **operand decode** — reading the instruction and its operands;
-- **the operations themselves**, split by opcode family: property, element, arithmetic,
-  call, allocation, control flow;
-- **allocation**, reported beside time, per family.
+- executed opcode counts and bytes fetched, per family and workload;
+- operand-type distributions per candidate specialization site;
+- branch/slow-path, IC, element, call, allocation, and completion counts;
+- operand-stack/local traffic and frame high-water marks; and
+- opcode bigram/trigram histograms for superinstruction candidates.
 
-**Then a bigram histogram of executed opcode pairs**, which is 8-3's entire justification and
-costs almost nothing to collect once the loop is instrumented.
+Counters give exact **counts**, not unbiased nanoseconds. Do not time every opcode in the hot
+loop and call the sum an attribution. For every diagnostic run:
 
-**Learn phase 4's lesson about instruments before choosing one.** A sampling profiler does
-**not** decompose this engine: it inflated the driver ~29%, its biggest frame was its own
-rendezvous point, and compiled JavaScript does not symbolicate. A VM is far more tractable —
-the interpreter loop is one method, and counters inside it are exact — so **instrument the
-loop, do not sample it.** That advantage is real and is worth stating: it is the one place
-the VM tier is *easier* to measure than the IL tier.
+1. retain an uninstrumented same-revision control;
+2. report diagnostic overhead and whether instruction/type distributions changed;
+3. use focused differential microbenchmarks or supported runtime/hardware-counter evidence to
+   estimate a cost per candidate operation; and
+4. reconcile candidate ceilings against the uninstrumented end-to-end total.
 
-**Also take the denominator honestly.** Phase 3 and phase 4's headline numbers were computed
-over **7 of 15 suites and never said so**; widened, 65.4% of the boxes were outside the
-seven and Gameboy alone was 1.32× the whole measured corpus. **Run all fifteen.**
+Run the MOD-M1 workload manifest: product scenarios, supported JetStream 3 shell cases, focused
+probes, and relevant conformance fixtures. Octane may remain a historical continuity arm,
+but “all fifteen suites” is not a modern acceptance gate and does not replace unsupported or
+missing product/JetStream rows.
 
-### 8-1 · Type feedback in the VM
+Inspect the generated dispatch on each claimed CoreCLR and Native AOT RID. A dense managed
+`switch` often lowers efficiently, but the plan does not assume a jump table, branch cost, or
+opcode ordering before inspecting/measuring that target.
 
-`Runtime/TypeFeedback.cs` already exists (item 4-1) and records receiver shapes at reads and
-callee identities at calls. **Consume it; do not build a second one.**
+### 8-1 · Type feedback with semantic ownership
 
-**The premise is already measured and it is weaker than it looks:** 93.5% of reads and 96.7%
-of calls are monomorphic by execution weight over seven suites — **80.11% and 86.35% over
-twelve.** Still high enough to found the work, but the phase's own budget should be computed
-against 80%, not 93.5%.
+Do not consume the current static `Runtime/TypeFeedback` tables unchanged. Define feedback
+on a bytecode function/program or realm-owned side table with:
 
-### 8-2 · Adaptive (quickened) opcodes
+- program-relative site identity;
+- snapshot/publication rules for an optimizing consumer;
+- invalidation when code, realm, shape assumptions, or feature/profile inputs change;
+- weak/stable identities for callees so observation does not retain arbitrary functions;
+- eviction/disposal reclamation and memory-plateau tests; and
+- serialized bytecode that contains no warmed feedback or process-local object/shape ids.
 
-`Add` → `AddNumber` after observation, and the same for the property and element families.
-**This is the row the catalogue marks n/a for the IL path** — there are no opcodes to adapt —
-and it is the clearest thing a VM tier makes newly possible.
+This item depends on MOD-M6. It is accepted only if 8-0 identifies a population and a consumer
+with a predeclared end-to-end ceiling; recording feedback without a funded consumer is not a
+shipping feature.
 
-**Its analogue in the IL path was measured and refused.** Item 4-2c specialized arithmetic
-from type feedback and came to **0.119% of the corpus**, net negative at the `+` rate,
-because the failing guard costs **18.567×**. In a VM the guard is cheaper and the baseline
-is slower, so the arithmetic is different — **but 4-2c's population census transfers, and it
-is the population 8-2 has to beat.** Read it before designing this.
+### 8-2 · Adaptive/quickened opcodes
+
+Specialize a generic opcode only where 8-0 shows a stable type population and where the
+accepted 6-2 slot ABI makes the guard/materialization cheaper than the generic path. Every
+quickened form retains an exact generic fallback and a canonical bytecode position for
+exceptions, debugging, serialization, deoptimization, and OSR metadata.
+
+Quickening is mutable execution state, never persisted as authoritative format state. Define
+who may mutate it, how a second context obtains its own state, how it resets, and how
+instrumentation observes generic versus quickened executions. Test guard failure before and
+after realm/shape/prototype changes.
 
 ### 8-3 · Superinstructions
 
-Fuse frequent opcode pairs into one. **Justified only by 8-0's bigram histogram**, and by
-nothing else — the set of pairs worth fusing is a property of the emitted bytecode, so a
-list copied from another engine is a list for another engine's compiler.
+Generate candidates from 8-0's measured n-grams for this compiler and workload manifest.
+For each candidate report executed population, dispatches removed, bytecode/code-size change,
+verifier/debugger/source-map impact, and end-to-end result. Cap the set; every fused opcode is
+a permanent compiler, verifier, interpreter, debugger, and conformance case.
 
-Cap the count. Each fused instruction is a new opcode, a new handler, a new case in the
-dual-arm gate, and a permanent maintenance cost.
+Do not copy a pair list from another VM or infer value from frequency alone. A frequent pair
+whose handlers dominate their own cost may save no measurable time.
 
-### 8-4 · Dispatch-table layout and opcode ordering
+### 8-4 · Dispatch layout and operand encoding
 
-The catalogue rates this "small–medium effect, low effort". **Do it only if 8-0 says
-dispatch is measurable at all**, and expect it not to be: in .NET the `switch` is a jump
-table and the operations behind it are heavy.
+Run only if 8-0 plus generated-code inspection show dispatch or decode is a material cost.
+Compare the plain switch with any supported alternative on each claimed JIT/AOT RID, with
+feature and code-size controls. Include branch misses/instruction-cache evidence where the
+platform exposes it, but accept or reject on the predeclared end-to-end metric and resource
+guardrails.
 
-### 8-5 · PGO the AOT image on real JS workloads
+Operand compactness is principally a cache/startup/package property. Measure verified bytes,
+decode cost, and total launch/execution rather than assuming the smallest encoding wins.
 
-The catalogue's "PGO for the VM itself" — profile-guided optimization of the Native AOT
-image, driven by real JavaScript rather than by a microbenchmark. **Low effort, and it is
-the one item here that needs no new engine code**, only a build pipeline and a
-representative workload.
+### 8-5 · PGO the Native AOT image
 
-**It requires phase 0's 0-8 hardware.** A PGO claim is a performance claim on a release
-configuration, and [`Measurement.md`](Measurement.md) requires the RID matrix.
+Train and publish the actual accepted Native AOT composition with representative JavaScript
+product workloads. Keep training and evaluation corpora separate, record toolchain/profile
+inputs, and compare no-PGO/PGO images on every claimed target lane for startup, steady-state,
+image size, memory, and conformance.
 
-### 8-6 · A bytecode cache — **the item most likely to matter**
+This item changes no JavaScript semantics, but it is still a release-configuration
+performance claim and follows all MOD-M1 controls.
 
-Serialize compiled bytecode and reuse it, so a second run of the same script skips
-compilation entirely.
+### 8-6 · A versioned verified bytecode cache
 
-**This is the one row in the whole catalogue where the VM tier can beat the IL tier**, and
-the campaign has already measured why. Phase 1 found that:
+Persistence is driven by repeated parse/semantic/lowering cost and cold product milestones,
+not by 8-0's execution histogram. It starts only after the Phase 6 format/verifier is accepted
+for persistence and the MOD-M1 paired interval resolves and clears the predeclared practical
+startup threshold.
 
-- **84–99.7% of a script's functions are never invoked** once it has been evaluated;
-- deferring IL emission alone took jQuery to **0.661×**, PdfJS 0.689×, Box2D 0.636×;
-- **CodeLoad — the benchmark that measures exactly this — is 371× off Chromium**, and even
-  after item 1-1's emission half it is 228× and among the worst four scores in the suite.
+#### Persisted identity and invalidation
 
-**Bytecode is serializable in a way emitted IL is not.** Item 1-1's deferral is Broiler.JS
-working around the absence of this row.
+Every artifact has a bounded, checksummed header/manifest containing at least:
 
-**One warning, from phase 0's item 0-5:** `DictionaryCodeCache.Current` is present but
-commented out in the shell's `Program.cs`, and **CodeLoad is only a genuine compile-throughput
-measurement while it stays that way.** A bytecode cache that is live during a CodeLoad run
-turns the benchmark into a measurement of cache lookup, and *nothing in the score will say
-so.* Report cached and uncached runs separately, always.
+- magic, bytecode schema version, engine semantic/cache version, and feature/profile id;
+- source/content hash and every semantic compiler option/cache-key input;
+- host-contract/built-in manifest version and approved optional-satellite composition;
+- section sizes/counts, endianness/encoding rules, and integrity checksum; and
+- producer identity needed for compatibility policy, without treating a branch name as a
+  semantic key.
+
+Property names are serialized as text and re-interned when loaded. Never persist raw
+`KeyString`, shape, IC, type-feedback, function-object, realm, or host-object identities.
+Loaded code receives cold owner-local IC/feedback/quickening state.
+
+#### Safety and lifecycle
+
+- Verify the complete artifact before installation or execution, using 6-3's CFG, stack,
+  handler, suspension, metadata, and resource rules.
+- Fuzz malformed/truncated/oversized artifacts and verify deterministic rejection.
+- Write atomically, recover from partial writes, and define concurrent-reader/writer and
+  eviction behavior.
+- On incompatibility or corruption, fall back to source compilation only for a
+  `narrow-runtime-go` or `full-go` product whose selected profile contains that source; an
+  `execution-only-go` product reports a defined load failure.
+- Bind retained strings, code, side tables, and host captures to the cache entry and prove a
+  repeated load/run/evict plateau.
+
+#### Measurement arms
+
+Report the arms applicable to the selected MOD-M9 outcome without inventing a runtime compiler:
+
+1. for `narrow-runtime-go` and `full-go`, cold source compile + execute and warm source
+   compile + execute with no persisted hit;
+2. for all outcomes, verified artifact/cache hit + execute;
+3. incompatible/corrupt cache fallback for a runtime-compiler profile or the defined
+   `execution-only-go` load failure;
+4. persistence disabled—an uncached source compile for a runtime-compiler profile, or a
+   fresh verification/load of the supplied precompiled artifact for `execution-only-go`;
+   and
+5. offline precompilation time and output size as a separately labelled build/deployment
+   result when they are relevant to the execution-only product.
+
+Keep compile-throughput benchmarks cache-disabled unless their explicit purpose is cache
+lookup/deserialization. The run manifest must identify the arm; a cache hit must never be
+silently reported as compiler throughput.
 
 ## Order
 
+```text
+Phase 7 uninstrumented baseline
+  ├→ 8-0 diagnostic counts + calibrated cost/ceiling
+  │    ├→ 8-1 owned feedback → 8-2 quickening
+  │    ├→ 8-3 superinstructions
+  │    └→ 8-4 dispatch/encoding, 8-5 AOT PGO when their populations exist
+  └→ 8-6 persistence independently
+       (requires accepted 6-3 format/verifier + MOD-M1 startup opportunity, not 8-0)
 ```
-8-0 decompose ← BLOCKS THE PHASE, and chooses which items below exist at all
-  ├→ 8-6 bytecode cache — schedule independently; its justification is startup, not 8-0
-  ├→ 8-1 feedback → 8-2 adaptive opcodes   (only against 4-2c's population)
-  ├→ 8-3 superinstructions                 (only from 8-0's bigram histogram)
-  └→ 8-4 dispatch layout, 8-5 PGO          (only if 8-0 measures them; 8-5 needs 0-8)
-```
-
-**8-6 is the exception and should probably go first.** Its value is startup, its
-justification is already measured in phase 1, and it does not depend on 8-0 at all.
 
 ## Exit gate
 
-1. **Every item cites the 8-0 measurement that justified it**, with a population and a rate.
-   An item that cannot is not built. This is the phase's whole point.
-2. **The dual-arm test262 gate still holds** (6-8). 8-2 in particular changes what an opcode
-   does at run time; that is exactly the surface 4-2a's wrong-answer bug lived on.
-3. **Cached and uncached runs reported separately** wherever 8-6 is live.
-4. **All fifteen suites**, not seven. The corpus error that qualified phases 3 and 4 must not
-   be repeated in a new phase that has the chance to avoid it.
-5. Everything closes under [`Measurement.md`](Measurement.md).
+1. Each of 8-1 through 8-5 cites 8-0's executed population, calibrated cost, attainable
+   ceiling, and predeclared decision rule. A candidate without that evidence is not built.
+2. Item 8-6 instead cites MOD-M1 cold-startup/compile-or-precompiled-load evidence and passes the complete
+   compatibility, verifier, corrupt-input, fallback, atomic-write, and lifecycle gates.
+3. The independent expected-result manifest and IL/VM differential checks remain green on
+   source, cache-round-trip, quickened/unquickened, and claimed Native AOT arms.
+4. Instrumented results report their overhead beside an uninstrumented same-revision control;
+   counts are not presented as direct time attribution.
+5. Paired MOD-M1 evidence includes time with allocation, GC, RSS/working set, bytecode/code/image
+   size, and applicable tail latency on modern/product workloads. Octane is labelled
+   historical continuity.
+6. Every item is accepted, remains explicitly experimental, is deferred, or is removed;
+   failed switches and unused opcode forms do not accumulate indefinitely.
 
 ## Dependencies
 
-Depends on phases 6 and 7. Consumes item 4-1's `TypeFeedback` unchanged. 8-5 depends on
-phase 0's item **0-8**, which is not satisfied on any RID. **Nothing in phase 9 depends on
-this phase** — tier-up needs a correct VM, not a fast one — so 8 and 9 may be re-ordered if
-the AOT platforms turn out to matter less than the tier-up does.
+- Depends on Phase 6 correctness/format evidence for its accepted positive outcome
+  (`execution-only-go`, `narrow-runtime-go`, or `full-go`), Phase 7's uninstrumented
+  baseline, and MOD-M1.
+- Items with mutable feedback, quickening, shared code, or cross-context execution depend on
+  the applicable MOD-M6 ownership/lifetime gates.
+- 8-5 depends on declared Native AOT target lanes. 8-6 depends on an accepted persisted
+  format version but not on 8-0.
+- Phase 9 consumes canonical, immutable bytecode positions and frame metadata. Quickening and
+  peephole work must preserve that identity; a mutable opcode address is not a deopt/OSR key.

@@ -1,40 +1,38 @@
 # Assembly split — `ExpressionCompiler` into model and emitter
 
-Split `Broiler.JavaScript.ExpressionCompiler` into the **expression-tree model** and the
-**IL emitter**, so that the model sits at the bottom of the graph and the emitter sits above
-the runtime. **This is the single change that makes a bytecode-only, Native-AOT
-configuration possible at all**, and it is behaviour-preserving.
+`Broiler.JavaScript.ExpressionCompiler` has been structurally split into the
+**expression-tree model** (`Broiler.JavaScript.Expressions`) and the **IL emitter**. This
+removed the emitter from the portable-compiler reference closure. It is a necessary
+precondition for a bytecode-only Native-AOT configuration, not proof that such a complete
+configuration publishes or runs.
 
-> The plan half of [`AssemblySplit.status.md`](AssemblySplit.status.md), which carries the
-> file-by-file analysis behind every claim here. It is the first executable item of
-> [`Assemblies.md`](Assemblies.md), separated because it is **self-contained, fully
-> analyzed, and can be done on its own** — before any decision about the wider restructure,
-> the VM tier, or the `Broiler.JS.*` rename.
+> **Implementation state:** S-0 through S-6 have landed; S-7 validation remains open. This
+> document preserves the implementation plan. [`AssemblySplit.status.md`](AssemblySplit.status.md)
+> is authoritative for the build's four corrections and current evidence; do not repeat
+> completed structural steps from the historical wording below.
 
 ---
 
 ## Why this is one job and not part of a larger one
 
-`Broiler.JavaScript.ExpressionCompiler` has **no project references at all**, and `Ast`,
-`Storage`, `Runtime`, `Parser`, `Engine` and `LinqExpressions` all depend on it. It contains
-`System.Reflection.Emit` in ~40 files. **An AST assembly depends on an IL emitter**, so no
-subset of the current graph runs JavaScript without dynamic code.
+Before the split, `Broiler.JavaScript.ExpressionCompiler` had **no project references**, and `Ast`,
+`Storage`, `Runtime`, `Parser`, `Engine` and `LinqExpressions` all depended on it. It contained
+`System.Reflection.Emit` in ~40 files. **An AST assembly depended on an IL emitter**, so no
+subset of that graph could parse JavaScript without a dynamic-code dependency.
 
-**Everything else in [`Assemblies.md`](Assemblies.md) is downstream of fixing that**, and
-none of it is needed to fix it. This split:
+The wider assembly work remains downstream of that fix, but its original Base/Core grouping
+is superseded pending MOD-M2's verified graph. The split was scoped to:
 
-- **needs no design decisions** — the file-by-file assignment is already worked out;
-- **changes no behaviour** — it is file moves plus two file cuts;
-- **breaks no consumer** — namespaces are preserved, so no `using` changes anywhere;
-- **is verifiable exactly** — identical test262 counts, manifest by manifest;
-- **pays off immediately**, even if the VM tier is never built: `Broiler.JS.Base` becomes an
-  assembly the trim and AOT analyzers can be pointed at, which is how anyone finds out what
-  the rest of the restructure actually costs.
+- preserve namespaces and consumer `using` directives;
+- separate the expression model from all Emit references at the binary boundary;
+- record every build-forced deviation rather than conceal it as a move; and
+- close only after identical pinned test262 and repository validation in S-7.
 
-## What the analysis found
+## What the original analysis found
 
-Full detail in [`AssemblySplit.status.md`](AssemblySplit.status.md). The three results that
-shape the plan:
+The claims below are preserved inputs. The build corrected the claimed convenience-method
+back-edge, number of cuts, directory counts, and registration premise; read
+[`AssemblySplit.status.md`](AssemblySplit.status.md) §0 before using them.
 
 **1 · The emitter is a closed cluster.** `ILWriter`/`ILTryBlock`/`ILWriterLabel` reference
 only each other; `RuntimeAssembly` nothing; `MethodRepository`, `DeferredMethod` and
@@ -62,7 +60,7 @@ with **both implementations `internal`** — `DynamicMethodExpressionCompilation
 public/internal line. *The engine already has a back-end abstraction; it has one back end's
 worth of implementations behind it.*
 
-## The two decisions to take before starting
+## The two decisions taken for the landed implementation
 
 **Decision 1 — preserve namespaces. Move assembly membership only.**
 
@@ -78,15 +76,15 @@ test262 count, and there is nothing else the change could plausibly have done.
 
 | | Project | Contents |
 |---|---|---|
-| **New** | `Broiler.JavaScript.Expressions` | the model — becomes `Broiler.JS.Base`'s core under [`Assemblies.md`](Assemblies.md)'s A-9 |
-| **Existing, keeps its name** | `Broiler.JavaScript.ExpressionCompiler` | the emitter — becomes `Broiler.JS.IL` under A-9 |
+| **New** | `Broiler.JavaScript.Expressions` | the model — remains a separate boundary unless MOD-M2 proves another acyclic ownership |
+| **Existing, keeps its name** | `Broiler.JavaScript.ExpressionCompiler` | the emitter — candidate for the future IL profile after MOD-M2 |
 
 Extracting *outward* means the emitter's own consumers (`Compiler`, `LinqExpressions`,
 `Engine`) see no project rename at all, and the new assembly is purely additive. **Do not
 combine this with the `Broiler.JS.*` rename** — that is A-9, it is a breaking change to every
 package id, and bundling it would destroy this change's one cheap correctness argument.
 
-## The target
+## The implemented structural target
 
 ```
   BEFORE                                    AFTER
@@ -111,7 +109,7 @@ package id, and bundling it would destroy this change's one cheap correctness ar
 | ~LOC | **≈ 5 200** | **≈ 4 600** |
 | `Reflection.Emit` | **none** | all of it |
 
-## Steps
+## Steps — preserved implementation plan
 
 | # | Step | Size |
 |---|---|---|
@@ -269,14 +267,13 @@ rather than re-baselining.
 
 ## What this unblocks
 
-- **[`Assemblies.md`](Assemblies.md)** — items A-1 and most of A-3 *are* this document. A-5,
-  A-6 and A-7 become reachable; A-0's decisive question (the AOT warning count) gets its
-  first real answer from S-6.
-- **[Phase 6](Phase-6.md)** — `Portable.Compiler` references `Parser`, and `Parser`
-  references `ExpressionCompiler`, so **the bytecode compiler transitively depends on
-  `Reflection.Emit` today.** S-4 removes that edge. After this, an AOT gate can be built and
-  turned green on the *existing* 20 opcodes — proving the packaging before any VM work
-  starts.
+- **[`Assemblies.md`](Assemblies.md)** — A-1's structure and A-3's explicit registration
+  slice landed here. The wider A-5/A-6 shape is now gated by MOD-M2's acyclic graph and shared
+  FrontEnd/Semantics extraction; A-7 remains a publish-and-run gate.
+- **[Phase 6](Phase-6.md)** — the old `Portable.Compiler → Parser → ExpressionCompiler`
+  emitter edge is gone. The portable-compiler closure is Emit-free, so the remaining work
+  can test packaging without duplicating the split; a complete AOT runtime still depends on
+  the revised assembly graph and VM scope decision.
 - **Nothing in phases 0–5**, and it blocks nothing in them. `LambdaRewriter.cs` and
   `DeferredCaptureLayout.cs` — item 1-4's fix and item 1-1's capture layout — are Emit-free
   and move to the model side, so **item 1-1 can be finished before, during or after this

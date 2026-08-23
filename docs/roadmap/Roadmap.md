@@ -1,8 +1,10 @@
 # Broiler.JS performance and benchmark roadmap
 
-The single plan for JavaScript execution speed and the benchmark evidence that
-governs it. It merges two documents that were each correct about half the
-picture:
+The historical optimization catalogue and performance-evidence crosswalk for JavaScript
+execution speed. [`Modernization.md`](Modernization.md) is the current cross-track sequencing
+authority; this document preserves the detailed IL campaign, benchmark rationale, and phase
+verdicts that it coordinates. This catalogue merges two earlier documents that were each
+correct about half the picture:
 
 | Merged from | What it contributed | Where it is now |
 |---|---|---|
@@ -26,11 +28,17 @@ against a plan that now moves with its engine.
 
 - **Owner assemblies:** `Broiler.JavaScript.Runtime`, `.Engine`, `.BuiltIns`,
   `.Storage`, `.Compiler`, `.Parser`, plus `Broiler.Regex` for phase 5.
-- **Acceptance protocol:** unchanged and unchallenged — [`Measurement.md`](Measurement.md)
-  governs what may be *claimed*. **Nothing in this document closes on the numbers it quotes.**
-- **Provenance:** the pinned `Broiler.JS` pointer is **`db4451c2`**, read 2026-08-07 with
-  `git submodule status` rather than from prose. **Read the pointer with the command; never from
-  this line.** **Nine** consecutive readings have now found this sentence stale — `07adeb44`,
+- **Acceptance protocol:** [`Measurement.md`](Measurement.md) governs what may be *claimed*;
+  [`Modernization.md`](Modernization.md) MOD-M1 defines the upgrades still required before a
+  performance milestone is accepted. Historic smoke runs and configured spread bands remain
+  useful evidence, but they are not substitutes for calibrated A/A stability, exact-row
+  comparison, reproducible build identity, resource limits, and semantic-owner conformance.
+  **Nothing in this document closes merely on the numbers it quotes.**
+- **Provenance:** the aggregate repository currently pins `Broiler.JS` at **`7fb17553`**,
+  read 2026-08-22 with `git submodule status`; the long narrative below is the campaign's
+  2026-08-07 provenance history, not a live patch ledger. **Read the current pointer with the
+  command; never from this line.** Earlier readings found this sentence stale — `db4451c2`,
+  `07adeb44`,
   `2ebc0c3c`, `71dda1b7`, `9bf9639b`, `61c8cc65`, `cca39b4d`, `14fa4f10`, `8308df51` and
   `e5dc2610` before it —
   which is a rate rather than an anecdote: **a pointer written into prose is wrong by default**, so
@@ -44,17 +52,10 @@ against a plan that now moves with its engine.
   **`e1ac7289`** and `Broiler.DOM` **`358cf058`** — three of the four had also moved since
   anything here described them. It is why §4.1's and §3.4's figures carry the commit they
   were taken at rather than "the pin".
-- **The one patch open at the last reading has landed, so no `Broiler.JS` patch is open.**
-  `0115`, phase 5's item 2, was recorded here as committed-and-blocked
-  against pin `e5dc2610` — `Broiler-Platform/Broiler.JS` was outside that session's authorized
-  repository set and the git proxy returned 403, which is the signal to fall back to a patch
-  rather than to retry, so the pointer was deliberately not bumped. **The pin has since moved to
-  `db4451c2`, whose subject is that patch's** ("Decide `RegexOptions.Compiled` per pattern by
-  racing both forms"), so it is in the pin. *The check is the one the paragraph below prescribes —
-  match against the submodule log, not against `patches/`.* **Everything this document measures is
-  now in the pin, with nothing applied on top.** `patches/0115-js-per-pattern-regex-compilation-race.patch`
-  and its `patches/README.md` row are consequently **due for deletion under that file's own rule**
-  and have not been deleted here; the row records that it landed.
+- **Current patch handoff:** the aggregate tree has no `patches/` directory and no active
+  `Broiler.JS` patch ledger. The paragraphs below retain the historical `0102`–`0115`
+  handoff trail only so the recorded measurements remain traceable. `0115` landed before
+  `db4451c2`; it is not pending work and must not be scheduled from this narrative.
 - **The ten that were open at the last reading have landed, and checking that is what retired
   them.** `0103`–`0112` were recorded here as pushed-and-blocked against pin `8308df51`; the pin
   has since moved to `e5dc2610`, and **all ten subjects are present in the submodule log**, so the
@@ -111,10 +112,12 @@ against a plan that now moves with its engine.
 
 ## How this directory is organised
 
-**This file is the plan**: the scope the campaign was merged from, the metrics it is judged
-on, the sequencing, the optimization catalogue the sequencing was chosen out of, the
-non-goals, and Appendix B's traceability. It carries a one-line verdict per phase and
-nothing more; every number is somewhere else.
+**This file is the performance-campaign umbrella and historical crosswalk**: the scope the
+campaign was merged from, its measured history, the optimization catalogue, and Appendix
+B's traceability. [`Modernization.md`](Modernization.md) is the current dependency and
+execution authority for modernization work; the individual phase plans remain authoritative
+for their items and exit gates. Where an older table here conflicts with either, follow
+`Modernization.md` and the phase plan and correct this crosswalk in the same change.
 
 > **This directory splits every plan from its evidence.** `X.md` is the plan — what each
 > item is, what to do next, how big it is, and the gate it closes against. `X.status.md` is
@@ -124,7 +127,7 @@ nothing more; every number is somewhere else.
 
 | | Plan | Evidence |
 |---|---|---|
-| **The campaign** | this file | [`Roadmap.status.md`](Roadmap.status.md) — §0 in full, and §4 where the engine stands |
+| **The campaign** | this file | [`Roadmap.status.md`](Roadmap.status.md) — §0 in full, plus §4's dated cross-phase evidence snapshot |
 | **Phase 0** — establish the baseline | [`Phase-0.md`](Phase-0.md) | [`Phase-0.status.md`](Phase-0.status.md) |
 | **Phase 1** — the front end | [`Phase-1.md`](Phase-1.md) | [`Phase-1.status.md`](Phase-1.status.md) |
 | **Phase 2** — the call and property paths | [`Phase-2.md`](Phase-2.md) | [`Phase-2.status.md`](Phase-2.status.md) |
@@ -132,18 +135,20 @@ nothing more; every number is somewhere else.
 | **Phase 4** — speculation | [`Phase-4.md`](Phase-4.md) | [`Phase-4.status.md`](Phase-4.status.md) |
 | **Phase 5** — RegExp | [`Phase-5.md`](Phase-5.md) | [`Phase-5.status.md`](Phase-5.status.md) |
 | | | |
-| **Phase 6** — VM 1.0, a correct bytecode interpreter | [`Phase-6.md`](Phase-6.md) | [`Phase-6.status.md`](Phase-6.status.md) |
-| **Phase 7** — VM 2.0, respectable performance | [`Phase-7.md`](Phase-7.md) | [`Phase-7.status.md`](Phase-7.status.md) |
-| **Phase 8** — VM 3.0, a highly optimized interpreter | [`Phase-8.md`](Phase-8.md) | [`Phase-8.status.md`](Phase-8.status.md) |
-| **Phase 9** — VM 4.0, an adaptive two-tier engine | [`Phase-9.md`](Phase-9.md) | [`Phase-9.status.md`](Phase-9.status.md) |
+| **Phase 6** — VM 1.0, capability-profile correctness | [`Phase-6.md`](Phase-6.md) | [`Phase-6.status.md`](Phase-6.status.md) |
+| **Phase 7** — VM 2.0, make the approved interpreter shippable | [`Phase-7.md`](Phase-7.md) | [`Phase-7.status.md`](Phase-7.status.md) |
+| **Phase 8** — VM 3.0, profile-led optimization and persistence | [`Phase-8.md`](Phase-8.md) | [`Phase-8.status.md`](Phase-8.status.md) |
+| **Phase 9** — VM 4.0, optional adaptive IL/bytecode execution | [`Phase-9.md`](Phase-9.md) | [`Phase-9.status.md`](Phase-9.status.md) |
 | **The assembly restructure** — track two's precondition | [`Assemblies.md`](Assemblies.md) | [`Assemblies.status.md`](Assemblies.status.md) |
 | **The `ExpressionCompiler` split** — its first executable piece, analyzed in full | [`AssemblySplit.md`](AssemblySplit.md) | [`AssemblySplit.status.md`](AssemblySplit.status.md) |
+| **Concurrency and compile-ahead** — ownership, bounded work and Workers | [`Concurrency.md`](Concurrency.md) | [`Concurrency.status.md`](Concurrency.status.md) |
+| **Modernization orchestration** — dependencies and terminal decisions across all tracks | [`Modernization.md`](Modernization.md) | MOD-M0-1 will create the single machine-readable state source at `eng/performance/roadmap-items.json`; it does not exist yet |
 
-**Phases 0–5 are track one**, the IL path, and are where all the evidence is. **Phases 6–9
-are [track two](#track-two--the-vm-tier-phases-69)**, the VM tier — the catalogue's VM
-1.0 → 4.0 staging written as a plan. Track two is **not started and not scheduled**; each of
-its four status documents records exactly that, and carries the entry measurement its phase
-is blocked on.
+**Phases 0–5 are track one**, the IL path, and contain the campaign's measured history.
+**Phases 6–9 are [track two](#track-two--the-vm-tier-phases-69)**, the bytecode path. No
+production VM phase has started. Track two now starts only if MOD-M9 records a terminal
+`execution-only-go`, `narrow-runtime-go`, or `full-go`; `no-go` cancels it. The MOD-M9 ADR
+replaces the older stand-alone 6-0 scoping exercise.
 
 **Three documents are neither**, because they are not phases of this campaign:
 
@@ -161,23 +166,25 @@ then the phase you are working on, plan first.
 
 ## 0. Status — one line per phase
 
-**Last updated 2026-08-07.** One line per phase. **Every one of these is a digest of a
+**Last updated 2026-08-22.** One line per phase. **Every one of these is a digest of a
 paragraph** — the long form, with the measurements each verdict rests on, is
 [`Roadmap.status.md`](Roadmap.status.md), and the item's own section is where
 anything may actually be checked. *Nothing here is closed*; §3 governs what may be claimed.
+Under the current gate, hosted/container timings are smoke or prioritization evidence even
+when historical rows call their spread a satisfied “noise band.”
 
 | Phase | Verdict | Detail |
 |---|---|---|
-| **0** — evidence | **0-1…0-6 ✅, 0-9…0-11 ✅.** 0-6's noise band is satisfied: the committed run carries `--repetitions 3` and **16 of 17 scores are inside the declared 7.5%**. 0-7's BenchmarkDotNet and 0-8's RID matrix remain owed and a container cannot produce either | [phase 0](Phase-0.md) |
-| **1** — compile-time | **1-2 ✅, 1-4 ✅ (3.04× on Mandreel), 1-1's emission half ✅ (CodeLoad 1.099×).** 1-1's deferral mechanism is still open and is the phase's remaining L; it is no longer blocked on an unpriced precondition, and 0 missed sites on 5 157 checked says the layout is sound | [phase 1](Phase-1.md) (item 1-1 included) |
+| **0** — evidence | The historical smoke workflow reports 17/17 scores and a three-repetition spread, but **the modernization acceptance baseline is not yet accepted**: 0-7/0-8 and MOD-M1's A/A calibration, exact-row comparator, effective-settings attestation, reproducible build identity, resource metrics, and conformance bundle remain open | [phase 0](Phase-0.md), [measurement gate](Measurement.md) |
+| **1** — compile-time | **1-2 ✅, 1-4 ✅ (3.04× on Mandreel), 1-1's emission half ✅ (CodeLoad 1.099×).** 1-1's deferral mechanism is still open and is the phase's remaining L; it is no longer blocked on an unpriced precondition, and the measured corpus observed 0 missed sites on 5 157 checked. Semantic fixtures and conformance—not that finite census—remain the soundness gate | [phase 1](Phase-1.md) (item 1-1 included) |
 | **2** — property access | **Every item landed or closed.** The exit criterion splits and stays split on four measurements: **Richards passes at 145×, DeltaBlue fails at 512×** | [phase 2](Phase-2.md) |
 | **3** — arithmetic | **3-0, 3-3, 3-5, 3-6, 3-7 ✅; 3-8 counted and refused as written.** The dual-representation numeric local is **refuted on four populations running**, each measured before it was built. What is left is an XL bidding against 2.6%, and nothing here should be started on a box count again | [phase 3](Phase-3.md), [items 3-1 and 3-8](Phase-3.md) |
 | **4** — tiering | **4-1, 4-2a, 4-2b, 4-3a, 4-3b ✅; 4-2c refuted at 0.119%.** The phase's largest measured target is **4-5 at 6.50% of the corpus**, of which 92% of the bookkeeping is Annex B `caller`/`arguments`; its named fix was priced at 0.20% and refused, and the 1.46% that is left is gated on a soundness question nobody has answered | [phase 4](Phase-4.md) |
 | **5** — regex | **Every item this phase named is closed, item 2 included.** The gate overturned the phase once (`Matcher.cs` is not on the Octane path) and item 2 overturned it again: **the matcher is 4.6–6.5% of what `re.test` costs**, so nothing aimed at matching can move this suite. The remaining target is the **fixed ~2.4 µs and 2 431 B every regex call pays** | [phase 5](Phase-5.md) |
-| **6** — VM 1.0 | ❌ **not started.** A correct bytecode interpreter for the whole language, for platforms that forbid `Reflection.Emit`. Blocked on **6-0**, a scoping measurement that may cancel the track | [phase 6](Phase-6.md) |
-| **7** — VM 2.0 | ❌ **not started.** Make it fast, mostly by *consuming* the shapes, caches and allocation work phases 2 and 3 already built rather than reimplementing them | [phase 7](Phase-7.md) |
-| **8** — VM 3.0 | ❌ **not started.** Adaptive opcodes, superinstructions, PGO — every item gated on **8-0**'s histogram. Plus the **bytecode cache**, the one row where a VM beats the IL path | [phase 8](Phase-8.md) |
-| **9** — VM 4.0 | ❌ **not started.** Tier-up and — the reason the track might be worth it — **the deoptimization item 4-3 could not build**, because there was no interpreter frame to reconstruct | [phase 9](Phase-9.md) |
+| **6** — VM correctness | ❌ **not started.** MOD-M9 must first choose `no-go`, `execution-only-go`, `narrow-runtime-go`, or `full-go`. The landed numeric portable seed and source compiler are evidence for an execution-only island, not general JavaScript or a production runtime-compiler closure | [phase 6](Phase-6.md), [MOD-M9 decision](Modernization.md#mod-m9--make-the-bytecode-vm-a-terminal-capability-profile-decision) |
+| **7** — VM baseline performance | ❌ **not started.** Requires Phase 6's approved capability profile and MOD-M1's uninstrumented baseline. Runtime structures may be reused only through explicit function/realm ownership; process-global mutable caches are not inherited “unchanged” | [phase 7](Phase-7.md) |
+| **8** — persistence and adaptive interpretation | ❌ **not started.** Versioned verified persistence, feedback, quickening, superinstructions and dispatch work are separate, measurement-gated items; each requires a current workload population and concurrency-safe ownership | [phase 8](Phase-8.md) |
+| **9** — optional tiering/deoptimization | ❌ **not started.** An interpreter frame alone does not make deoptimization possible. Tier-up, explicit `DeoptState`, invalidation, reconstruction, OSR and threshold policy require separate feasibility and correctness gates | [phase 9](Phase-9.md) |
 
 ---
 
@@ -230,21 +237,19 @@ section was written with only the first.
 *(Section numbers prefixed **engine** or **Octane** refer to a source document; bare
 `§n.n` refers to this one. Phases are always named, never numbered as sections.)*
 
-### 1.2 Both roadmaps are blocked on the same missing thing
+### 1.2 Both roadmaps exposed the same missing gate; smoke exists, acceptance does not
 
-They describe it differently and it is one gate:
+The source roadmaps described the same evidence gap from two directions. Their concrete
+smoke/tooling debts have since moved: 0-6 regenerated the workflow at the then-current pin,
+0-9 put the probes in a permanent benchmark project, and 0-7 produced a developer-workstation
+run. None is modern acceptance evidence: 0-7 lacks a reproducible source/control bundle, no
+RID has a controlled MOD-M1 lane, and the comparator still lacks exact-row/all-repetition/resource
+failure behavior and effective-setting attestation. The current gap is therefore **0-7/0-8,
+0-11 validation, and MOD-M1**, not an unrun workflow or missing probe home.
 
-- The Octane roadmap's phase 0 owes **a workflow run** — the committed results
-  predate the engine fixes by ~15 hours, so the geomean, the coverage count and the
-  spread all quote a superseded engine.
-- Engine §8.1 owes **acceptance evidence** — no BenchmarkDotNet comparison, no
-  RID-matrix run, and the probes that produced every number in it have no permanent
-  home.
-
-Neither list can be *judged* until both are satisfied, and they satisfy the same
-requirement from two directions. They are merged into **Phase 0**, which is
-consequently the only phase with no engineering in it and the only one that blocks
-everything else.
+Phase 0 now contains real measurement-engineering work. It blocks performance/resource
+closure, while deterministic correctness and architecture evidence keep their independent
+gates.
 
 ---
 
@@ -261,15 +266,14 @@ source documents ended up disagreeing.
 | **Geomean** over all 17 scores | 245 over the 12 that completed | **372** over all 17 | — |
 | **Spread** = worst ÷ best, as ×-slower-than-Chromium | 4 646 / 45 ≈ **103×** | 4 375 / 31.7 ≈ **138×** | **< 5×** |
 | **Against Jint**, geomean of per-benchmark ratios | not measured | **0.644×** | > 1 |
-| **Noise band**, scores outside the declared 7.5% | not measured | **1 / 17** — median spread 3.0% | — |
+| **Observed repeatability smoke**, scores outside the provisional 7.5% harness guard | not measured | **1 / 17** — median three-sample spread 3.0% | — |
 
 The right column is the workflow's own run, so its Chromium and Jint columns were measured on
-the same machine at the same time and the ratios are directly comparable. It is **three
-repetitions per suite**, so unlike every earlier committed run it reports the fourth number as
-well as the first three — which is 0-6's band, and it is the row that decides whether a future
-change to any suite is claimable at all. **It still cannot be differenced against the runs
-above it**, which were single-repetition; the first differenceable pair is this run and the
-next banded one.
+the same machine at the same time and the ratios are directly comparable as descriptive
+cross-engine results. Three repetitions per suite add observed repeatability smoke. They do
+not decide whether a future change is claimable, estimate candidate/control uncertainty, or
+make a later hosted-runner pair attributable. Acceptance requires one separately controlled,
+identity-attested candidate/control session under MOD-M1.
 
 **The spread went up, and that is not a regression.** It is 138× against the superseded run's
 103× because the superseded run had *five suites scoring nothing at all*: a suite that fails
@@ -331,65 +335,69 @@ half in the column it was not looking at.
 > together with the acceptance gate that governs them and Appendix A's command lines. The
 > numbering is unchanged, so an existing reference to §3.1 or §3.5 still resolves.
 >
-> **§4 is [`Roadmap.status.md`](Roadmap.status.md)** — where the engine stands is evidence,
-> not plan.
+> **§4 is [`Roadmap.status.md`](Roadmap.status.md)** — where the engine stood at the recorded
+> snapshot is evidence, not a current sequencing authority.
 
 ---
 
 ## Track two — the VM tier (phases 6–9)
 
-**Phases 0–5 make the IL path faster. Phases 6–9 build a second execution path that can run
-where there is no IL path at all.** They are the catalogue's VM 1.0 → 4.0 staging, taken
-seriously as a plan rather than left as a survey — and they are **not started, not
-scheduled, and gated on a measurement that may cancel them.**
+**Phases 0–5 improve the IL path. Phases 6–9 describe a possible bytecode path for
+deployment profiles where dynamic code is unavailable or for a later, separately justified
+adaptive tier.** No production VM phase has started. Modernization milestone MOD-M9 is now the
+single terminal capability decision: it records `no-go`, `execution-only-go`,
+`narrow-runtime-go`, or `full-go` and closes/replaces the older Phase 6 item 6-0 study.
 
 ### The capability gap
 
 **Broiler.JS today has no general JavaScript execution path on a platform that forbids
-`System.Reflection.Emit`.** `Broiler.JavaScript.ExpressionCompiler` is an IL writer; there
-is no second back end. The AOT-safe path is `Broiler.JavaScript.Portable` — **301 lines, 20
-opcodes, `double`-only**, implementing no part of the JavaScript object model, and
-[`Measurement.md`](Measurement.md) already forbids describing it as Native AOT support for
-the engine.
+`System.Reflection.Emit`.** The repository now contains a small `Broiler.JavaScript.Portable`
+runtime, a separate `Broiler.JavaScript.Portable.Compiler`, and a Native AOT sample. That is
+valuable implementation evidence, but the current portable language is a numeric island and
+the sample exercises precompiled bytecode. It proves neither a general JavaScript runtime nor
+that the parser/compiler closure can compile source inside a Native AOT process.
 
-**And the gap is not only that the VM is small — it is that the graph forbids the fix.**
-`Broiler.JavaScript.ExpressionCompiler` has **no project references at all**, and `Ast`,
-`Storage`, `Runtime`, `Parser`, `Engine` and `LinqExpressions` all depend on it. **An AST
-assembly depends on an IL emitter**, so no subset of the current graph runs JavaScript
-without dynamic code — which is why `Portable` had to be written as a separate island in the
-first place. **[`Assemblies.md`](Assemblies.md) is the precondition that removes that edge**,
-and without it phase 6 would deliver an interpreter that still cannot be published AOT. Its
-first executable piece has its own roadmap — **[`AssemblySplit.md`](AssemblySplit.md)**,
-which is analyzed in full, changes no behaviour, and can be done before any decision about
-the rest.
+**The original impossible dependency edge has been removed.** The expression model now lives
+in the Emit-free `Broiler.JavaScript.Expressions` assembly and the IL emitter remains in
+`Broiler.JavaScript.ExpressionCompiler`; `Parser` no longer has to reference the emitter.
+[`AssemblySplit.status.md`](AssemblySplit.status.md) records that landed state. Validation and
+the larger production boundary are still open: [`Assemblies.md`](Assemblies.md) must prove an
+acyclic graph, a backend-neutral semantic contract, an honest IL boundary, explicit backend
+registration, and separate execution-only versus runtime-compiler AOT closures.
 
 | Phase | Catalogue stage | Delivers | Blocked on |
 |---|---|---|---|
-| [**6**](Phase-6.md) | **VM 1.0** — bytecode, dispatch, fast paths, constant folding, peephole | *Correctness*: the whole language, interpreted, on an AOT-only platform | **6-0**, a scoping measurement — *including whether the IL path can be kept instead, which would cancel the track for the cost of an S* |
-| [**7**](Phase-7.md) | **VM 2.0** — shapes, ICs, string interning, array fast paths | *Usability*: a VM fast enough to ship | **7-0**, the VM's own profile and its ratio to the IL path |
-| [**8**](Phase-8.md) | **VM 3.0** — type feedback, adaptive opcodes, superinstructions, PGO | *Speed*, plus the **bytecode cache** | **8-0**, a per-family attribution and a bigram histogram |
-| [**9**](Phase-9.md) | **VM 4.0** — hotness, tier-up, deopt, OSR | *Adaptivity* — and real deoptimization | **9-0**, whether promotion beats item 1-1's deferral |
+| [**6**](Phase-6.md) | correctness and deployment | A shared production semantic IR, VM value/frame ABI, versioned verified format, vertical interpreter slices, and the capability profile approved by MOD-M9 | a positive MOD-M9 terminal decision plus the applicable MOD-M2/MOD-M3/MOD-M4 graph and packaging gates |
+| [**7**](Phase-7.md) | uninstrumented baseline performance | A shippability decision based on the current product corpus, with function/realm-owned inline-cache state and explicit slow paths | accepted Phase 6 scope, MOD-M1 baseline and MOD-M6 ownership where state is shared or concurrent |
+| [**8**](Phase-8.md) | persistence and measured adaptive interpretation | Independently gated bytecode persistence, feedback, quickening, superinstructions and dispatch improvements | stable verified format, Phase 7 attribution, MOD-M1, and MOD-M6 for shared/adaptive state |
+| [**9**](Phase-9.md) | optional tiering/deoptimization | Independently gated function promotion, explicit deopt-state/reconstruction, and OSR slices whose product value justifies their complexity | `narrow-runtime-go` or `full-go`, a dynamic-code-capable host that requires adaptivity, stable Phase 6 identities/ABI, accepted Phase 7 profile, MOD-M1, and the gate of the selected branch |
 
-### Three things that must be said before anyone starts
+### Four things that must be said before anyone starts
 
-**It is not a speed-up.** Wherever `Reflection.Emit` works, an interpreter is *slower* than
-IL + RyuJIT and nothing in phases 6–8 changes that. **Never put a VM number beside an IL
-number and call it a win** — the VM's competitor is *not running at all*. The one exception
-is 8-6's bytecode cache, which is a startup property.
+**Capability and performance are separate decisions.** Phase 6 may be worthwhile because it
+runs where the IL backend cannot. It closes on correctness, format safety and deployability,
+not on a throughput claim. Startup, steady-state, memory and package-size comparisons remain
+separate MOD-M1 decisions; persistence is not presumed to beat lazy IL compilation.
 
-**It is a second engine, and the risk is a second semantics.** Two mitigations, and no
-others: item 6-2 shares the entire front end — parser, AST, scope analysis, early errors —
-so no construct is resolved twice; and item 6-8 runs test262 on **both** arms and requires
-them to *agree*, built before the first opcode rather than after the last.
+**It is a second backend, and the risk is a second semantics.** Sharing an AST is
+insufficient. The production semantic analysis/lowering boundary must be extracted and the
+IL arm migrated first. Conformance is three-way: pinned expected result, IL result and
+bytecode result. IL/bytecode agreement cannot excuse a shared wrong answer.
 
-**Phases 2, 3 and 4 already did much of VM 2.0's and 3.0's work.** Shapes, inline caches,
-property maps, dense element storage, the small-number cache, ropes, `TypeFeedback` and
-`FunctionTieringController` all live in `.Runtime` and `.Storage` — **they are runtime
-structures, not IL artifacts**, and the VM consumes them unchanged. That is the largest
-single reason this track is cheaper than building an engine from scratch, and **duplicating
-any of them is the failure mode to watch for.**
+**Reuse semantics and immutable structure; do not inherit mutable ownership accidentally.**
+Shapes, property maps, element storage and slow semantic operations can be shared behind
+explicit contracts. Inline caches, feedback, quickening overlays and tier counters must be
+owned by a function/script/realm as appropriate, bounded, generation-aware and safe under
+the concurrency model. Process-global emitted-site indexes are not a bytecode state model.
 
-### What the track pays back into track one
+**A bytecode format is a trust and compatibility boundary once persisted.** Version it,
+verify it before execution, bound every section/resource, define cache keys and atomic
+replacement, reject corrupt/incompatible data, and fuzz the verifier. A runtime-compiler
+profile may fall back to source recompilation; `execution-only-go` must instead fail the bad
+load deterministically and accept a fresh verified precompiled artifact. Do not freeze a
+“whole-language” opcode list before the semantic IR and VM ABI.
+
+### What the track may pay back into track one
 
 **Item 4-3 asked for V8-style deoptimization and was re-specified because it is not
 expressible here** — tier-1 locals are CLR locals of an IL method and `CallFrame` carries no
@@ -398,19 +406,24 @@ contract plus an in-method fallback; the restart contract is sound only under a 
 held by *two unrelated accidents*; and item **4-4 is still deferred** partly behind that
 compromise.
 
-**Phase 6 creates the interpreter frame; item 9-3 is the deoptimization 4-3 was written
-for; item 9-5 retires the compromise.** That argument is independent of the AOT one and
-survives even if 9-0 refuses promotion.
+**Phase 6 can create a reconstructable frame ABI, but that does not itself create
+deoptimization.** Phase 9 must explicitly define `DeoptState`, safepoints, value
+materialization, exception/suspension state, invalidation and reconstruction before any
+**deopt-enabled** configuration ships. Function-level VM→IL promotion is a separate 9-0 →
+9-1 → 9-2 branch with a retained VM fallback, failure/backoff policy, and quiescent
+publication; it does not imply IL→VM reconstruction. Deoptimization is optional work with
+its own correctness and value gate, not an automatic dividend of writing an interpreter
+loop.
 
 ### Sequencing against track one
 
-**The two tracks are independent** — phases 6–9 depend on nothing in 0–5 and block nothing
-in them. That is also the argument for not starting track two yet: **track one has four open
-items** (1-1's deferral, 3-1's storage half, 4-5, and phase 5's item 7), each measured,
-scoped, and far smaller than any item in track two.
-
-**Do 6-0 anyway.** It is an S, it answers whether the track is needed at all, and the answer
-changes how item 1-1 should be finished.
+The tracks do not block routine IL-path fixes, but they are **not dependency-independent**.
+MOD-M9 may perform capability discovery after MOD-M0, then a go outcome requires MOD-M2's shared
+front-end/graph boundary and the applicable MOD-M3/MOD-M4 AOT and packaging gates. Phase 7 requires
+MOD-M1; shared or adaptive state also requires MOD-M6. Phase 9 is narrower still: only
+`narrow-runtime-go` or `full-go` may enter it, and only for a dynamic-code-capable host whose
+product profile requires adaptivity. A `no-go` ends phases 6–9 cleanly. A go outcome adopts
+the reordered phase plans below rather than reviving the old catalogue order.
 
 ---
 
@@ -418,36 +431,43 @@ changes how item 1-1 should be finished.
 
 | Phase | Order within it | Size | Unblocks / expected effect | Exit gate |
 |---|---|---|---|---|
-| **0** | 0-1…0-5 ✅, 0-9…0-11 ✅ → 0-6 workflow run ✅ (17/17 committed, refreshed 2026-08-07) → **0-6's noise band ✅ — the committed CI result now carries `--repetitions 3` and a per-suite spread** → 0-7, 0-8 | — | Everything. 12 → **17 scores** ✅, **known noise band** ✅, and the first evidence any phase A–F can close on | 17/17 ✅, no timeout at the 180 s floor ✅, `comparison.md` reporting the triad ✅, **band on record from the gate machine** ✅ — 16 of 17 scores inside the declared 7.5%, median 3.0%, EarleyBoyer the lone 7.9%. **The declared figure was an assumption `phase0.json` has carried since 0-4 and it is now measured twice — 5 of 13 outside it in a container, 1 of 17 outside it on CI — so what the two runs establish together is that a band does not transfer between machines.** **0-7's BenchmarkDotNet and 0-8's RID matrix are what remain**, and a container cannot produce either |
+| **0** | 0-1…0-5 ✅, 0-9…0-10 ✅, 0-11 mapping implemented/validation open → 0-6 workflow smoke ✅ (17/17 committed, refreshed 2026-08-07; per-suite spread recorded) → 0-7, 0-8 | — | Smoke coverage and permanent probes. The hosted run establishes harness continuity, not a candidate threshold or acceptance lane | 17/17 and no timeout under each suite's effective manifest budget ✅; `comparison.md` triad ✅; provisional spread observed on container/hosted runners ✅ for smoke. **Still open:** 0-11 referential-integrity/test repair; immutable candidate/control comparison with exact rows/all repetitions/resources; controlled win-x64/linux-x64/linux-arm64 lanes with effective CPU-feature/GC attestation; semantic/test262 bundle and durable raw evidence |
 | **1** | 1-2 mitigation ✅ → 1-2 real fix ✅ (all three passes) → **1-4 ✅** → **1-1 emission half ✅** → **1-1's remaining half measured, and the repeated closure rewrite it found is fixed ✅**; the capture mechanism itself is still open → 1-3 measure | 1-4 S, 1-1 remainder L | The two worst scores in the suite; page-load time generally. **1-4 took the Mandreel half (3.04×); 1-1's deferred emission takes 0.64–0.69× off jQuery, PdfJS and Box2D at 1.0009× steady state, and CodeLoad 94.6 → 104.0 (1.099×)**. **The remaining half is now sized rather than inferred**: parse 9.4–13.5% / tree construction 33.6–63.9% / emission 25–57% on the real corpora, over a population that is **84–99.7% never invoked**. What blocks it is not a pre-parser and not `EmitConstant` — the `Box[]` a creation site passes *is* the capture mechanism — but that its indices are decided by `LambdaRewriter` from a tree the deferred body does not have. **That obstacle is now built and priced rather than bounded** (`0101`): the free-name map that makes the layout addressable costs **6.6–12.2%** of body-tree construction as one bottom-up pass, and **up to 47.7%** written per-function, where the walk is superlinear in nesting depth — so the previously recorded 5.4–9.9% *lower bound* was a fair estimate of the right implementation and five-fold low for the obvious one. Mandreel, wide and not deep, is the control that goes the other way (7.8% → 8.8%). The mechanism itself is still unbuilt and still **L**. **And the population that could skip it entirely is now counted, which closes off the cheap way in** (`0102`): a site whose free names resolve to no enclosing binding needs no `Box[]` and could be deferred today, and that is **728 of 5 762 sites, 12.6%** — 39.7% on the flattest corpus and **7.4% on Mandreel**, i.e. worst exactly where the prize is largest. `Dynamic`, the direct-`eval` risk the item leads with, refuses **7 sites of 5 762**. The reading that looked like an opening — Mandreel's 7 605 bound free names being only **165 function-owned**, because a top-level `var` is a global-object property per spec — is refused by the counter built to test it: **`cellBacked` equals `bound` exactly on all six corpora, 15 118 of 15 118**, since this engine gives a program-level binding a CLR local like any other. *A spec-level fact about where a binding lives is not a fact about where the compiler puts it.* **The repeated closure rewrite the measurement found is fixed and is worth 0.782× on jQuery's whole compile and 0.867× on Typescript's, six of six pairs each** | test262 over the four pinned manifests, no new failure **and no new timeout**; MandreelLatency and CodeLoad out of the tail |
 | **2** | 2-0 ✅ → 2-1 ✅ → 2-2 ✅ → 2-4 ✅ → 2-7 ✅ → 2-8 ✅ → **2-9 ✅** (2-3's successor, L); 2-5 and **2-3 closed on measurements**, 2-6 folded into 4-1. **Every item is landed or closed** | M each, 2-9 L | The Richards/DeltaBlue/Box2D cluster | An ownership entry and owned tests **per item**; test262 properties/strict-mode **satisfied** — unchanged at `a6f101cc` plus 2-9; **DeltaBlue and Richards inside 200×** — **measured twice, agreeing: Richards PASSES (183× → 150× after 2-11/2-12 locally; 144.9× in CI), DeltaBlue FAILS (576× → 447× locally; 460× in CI)**, five repetitions per engine on one machine and the committed CI run on another. **2-13 then decomposed the failing half against the third engine and bounded it**: DeltaBlue is 2.83× harder than Richards for Broiler and **2.56× for Jint**, so **1.10× of the gap is Broiler's** (1.118× on the previous run, independently) and closing all of it reaches **362×** against a 200× gate. The criterion is **not reachable by removing a Broiler-specific deficiency**; Broiler is ahead of Jint on DeltaBlue (0.77×) as it is on Richards (0.69×), and the genuinely Broiler-specific suites are MandreelLatency (54.3×), CodeLoad (37.8×) and zlib (12.0×). Read polymorphism is falsified as the cause by Crypto, 73.82% monomorphic and Broiler's best suite against Jint. **2-10 closes as measured**, handing forward a question about the gate |
 | **3** | 3-0 ✅ → **3-3 ✅** → 3-5 ✅ → 3-6 ✅ → 3-7 ✅ → 3-8 ✅ (counted, do not start as written) → **3-1 (85% of the corpus's boxes) → 3-2 (Box2D's 11.6 M), sharing one compiler half, and nothing else until they land** → then *cost* 3-4 | L–XL, 3-8 XL | Uniform lift across arithmetic and allocation-heavy suites. **3-7 closes the static half of the coverage question and 3-8 is what is left**: the widening reached 8 names of 2 920 (224 → 232), because 247 of 3-6's 478 captured names are held by a *hoisting* rule that is correctness rather than policy, and 2 439 are not proven numeric. **3-8 then measured the two numbers this phase never had, and they re-order it.** Number boxing is **41.89% of the corpus's allocation** (2.05 GB of 4.88, and 66.96% of NavierStokes) — so the prize was always large — while the **whole** raw-double local tier, every item from P2-2 onward, removes **0.36% of those boxes**. A box is minted by the operator, not by the local, and 76.4% of the names 3-8 would guard take their value from a property read or a call. **3-1 and 3-2 move to the front**: they unbox the sites that mint the boxes, and they have been ranked behind the locals work since the phase opened on no measurement at all. **Started, and the first count moves the item off storage.** What the generic arithmetic operators are handed at run time had never been measured: **73 817 515 of 73 818 646 invocations arrive with both operands already Numbers — every one but 1 131 — and that population is 86.6% of every box the corpus allocates**, while the compiler's own `both are native` proof reaches **0.75%** of the same invocations. *Compile-time provability reaches 0.75% of the arithmetic; run-time truth reaches 100.00%.* So the shared half is a **run-time-guarded specialization of an arithmetic expression tree** — box only the root — and not the typed backing store the item is written around; a typed store returns to being the live-memory item it always measured as. It also partly reverses 3-8's "do not start as written" without contradicting it: 3-8 priced the guard at the **local** (0.36%), this counts it at the **operator** (86.6%). **The shared half is then built** — evaluate each leaf once, test for Number, compute on raw doubles, box only the root — and removes **10 401 782 boxes of 85 249 783, 12.2% of the corpus's allocation, from 862 sites**, against **0.36% for every previous phase-3 item combined**. Short of the 86.6% ceiling for a reason the per-suite column gives rather than hides: NavierStokes loses 10.1% of its generic invocations and 1.8% of its boxes, EarleyBoyer 99.7% and none, so **most of those two suites' boxes are minted somewhere that is not a binary arithmetic operator** — the next count. Wall clock then measured: **driver 0.981× on six of six ABBA pairs, Crypto 0.912× on six of six**, against controls at 1.005× and 1.006× — so **12.2% of the allocation buys 1.9% of the time**, and no suite is slower. **3-1's own re-measurement then made that stronger.** The element chain decomposes exactly — 0.00 for a raw double, 31.98 for `s = s + a[0]`, 95.99 with a multiply, 159.67 for a read-modify-write — and the element STORE is in none of it: the boxes are minted by the operators, and the read is free today only because what it hands back is already a box. Two things fell out. A numeric literal is **re-boxed on every evaluation** (`a[0] * 1.5` costs two boxes where `a[0] * 2` costs one), measured at **1.2% of requests** and recorded rather than built. And the **bitwise and shift operators had no native form** although the analysis has always typed them — `s = i + 1023` costs 0.00 B/iter and `s = i & 1023` cost 31.84. That half **is built** (`JSNumericOperators`, all six through `ToUint32`, 15 tests on both arms) and takes its shape to **0.00** — **and removes no boxes at all on the corpus**: six suites identical to the digit, and Crypto (42.4 M boxes) differing by less than its own run-to-run variation, measured by running one arm twice. The native form needs both operands native and Crypto's digits live in `this.array[i]`. *Six items have now built machinery array-resident data cannot reach; every one is correct, every one is invisible, and every one is waiting on 3-1*. **3-2 was then measured too, and its one-sentence premise is wrong**: `o.x = 2` allocates **nothing** — a slot store is a reference copy — so `vector.x = 1.5` pays for the **literal**, not the slot, and the slot's own cost shows up only in `o.x = v * 1.5` where the value is a raw double (32 B, the same 32 B for the eleventh time). The field rows match the element rows **to the hundredth** — 31.98 and 96.00 both — so 3-1 and 3-2 are one mechanism with two backends. And 4-1's uncollected "numeric-vs-generic" signal, built at last, splits them exactly: **50.1% of all cache-answered reads hand back a number**, but **98% of those are Box2D's**, while **NavierStokes performs 388 property reads, zero numeric, and mints 29 977 471 boxes**. So **3-1 carries 85% of the corpus's boxes and 3-2 carries Box2D's**, and no work on shape slots reaches the other two suites. **The next count then named every box the corpus mints, and moved the item again.** The compiler's boxing conversion — the only thing a typed store could remove without further operator work — is **5.0% of NavierStokes' requests against 31.0% of Crypto's**, i.e. the two suites are the opposite way round from this item's premise. Chasing the **40.5%** that first pass left unattributed down to **1.0%** found the answer in the operators no census had counted: **`++` and `--` are 30.9% of the corpus's boxing, 51.6% of NavierStokes' and 80.4% of EarleyBoyer's**, and **half of that is `ToNumeric` re-boxing a value that is already a Number** — 17 281 232 requests, 15.4% of all boxing, removable by a guard. **Built, in nine lines**: 17 285 913 requests removed against that prediction (0.03%), **7 050 834 real allocations, 9.4%**, NavierStokes **23.0% of its boxes and 0.906× of its time on six of six pairs**, and the corpus **0.795×** with `0084`. **What did not move is the finding**: EarleyBoyer halved its boxes for 1.002×, because 82 000 a second is not 4 240 000 a second — *a share of a suite's own allocation forecasts nothing, the absolute rate forecasts everything*. **Then the refusal waterfall, which is the count `0084` never took and the largest result the phase has had.** Of 5 396 candidate arithmetic nodes only **862 specialize**; `OrderUnsafe` refuses 1 762 and `NoSavingToMake` 2 718, and those are **one** finding — a left-leaning `a[0]+a[1]+a[2]+a[3]` refuses at the root for order, again at each left child, and its bottom node is then a lone operator with nothing to save. The sub-census names the blocking leaf: **1 028 property reads against 34 element reads**, so the rule this phase assumed was an array problem is an **object-field** one, 984 of them Box2D's. **The fix is that nothing required the leaves to move**: emit each at its own postorder position and put the test where the coercion would have run, and the purity rule has nothing left to protect. **53 353 957 → 6 626 052 generic invocations and 67 795 858 → 31 162 330 boxes — 36 633 528 removed, 54.0% of everything the corpus allocates**, `OrderUnsafe` 1 762 → 0 and `NoSavingToMake` 2 718 → 1 181 untouched. From the pre-`0084` baseline the corpus is **0.366×**. **Driver 0.969× on six of six ABBA pairs, NavierStokes 0.834× and Crypto 0.893× both six of six**, two zero-box controls at 1.002× and 0.999×; Box2D cuts 51% of its own boxes for 1.003× because 861 000/s is not 6 500 000/s, which is `0086`'s lesson holding a second time. *54.0% of the allocation buys 3.1% of the time* — with `0084`'s 12.2% → 1.9%, the third reading of the constant that should size the rest of the phase  **And then the denominator the phase never had**: collection is **1.8–2.0% of the driver**, and of the 768 ms the order-preserving emission removed only **54 ms was collection** — the other 714 ms is the mutator's own allocation work. *A box costs ~14× more to create than to collect*, which makes §Non-goals' "the collector is not the problem" a measurement. At **711 ms per GB** the **0.70 GB of number boxes left is worth ~2.6% of the driver**, so everything remaining here is an XL bidding for under 2% — count the `++`/`--` step's operands before building the typed store, and bid with a rate rather than a share. A sampling profiler was tried and does not decompose this engine: it inflates the driver ~29%, its biggest frame is its own rendezvous point, and compiled JavaScript does not symbolicate  **And the `++`/`--` count is taken**: of 17 282 144 steps, **Element 0, Property 0.3%, LocalSlot 98.1%, Other 0** — the step shares no mechanism with a typed store and belongs to the numeric local. ≈**7.05 M real boxes, 22.6% of what the corpus still allocates**, 6.76 M of it NavierStokes', where one untypable closure variable (`rowSize`) cascades into every `++currentRow`. **Re-opens 3-8**, which priced the guard at the local and measured the tier's *yield* (0.36%); this measures what it *lets through*  **Then scoped**: eight shapes, one per conjunct, rule three suspects out — a nested function declaration is innocent, 3-7's hoisting rule produces a `LocalCell` (NavierStokes: 9 461 760 slots against six cells), and passing the value in only trades `OtherName` for `Parameter`. **One conjunct is left — the analysis will not type a name from outside the function, even one already proven numeric.** Splits into **3-9** (static, import the enclosing scope's conclusion; does *not* reach NavierStokes, whose root is held by 3-7's correctness rule; count its population first) and **3-8a** (run-time, one `IsNumber` test where the value enters) — scoped at **≈115 ms, 0.6% of the driver, an M rather than an XL**. **3-8a was then built complete and closed as a measured regression.** Its population is 26 names, 15 in NavierStokes; the dual representation and all three consumers that can take a raw double are built (the guarded tree's leaf, the element read, the element write), and each moved the number without moving it enough — 1.021×, 1.017×, 1.012×. A counter added **at the read** then settled it: **NavierStokes mints 393 705 boxes reading a speculative local against ≈5 300 removed**, because the 835 584 steps it takes off `Increment` are mostly `x[++i]`, whose result is boxed to be an index either way. *Every premise the item was scoped on survived and the item still lost* — what makes it lose is the read/write ratio of the code it targets, a property of the workload rather than of how many consumers the compiler grows. **Off by default and staying off; §3.5 gains the rule that a representation change is priced by that ratio, counted before the representation is built.** **3-9, the static half of the same split, is closed at a population of ZERO** — 0 names and 0 outer-numeric offers on all seven suites, against 3-8a's 26 from the same call site in the same run — because 3-9 can only import from a name that is both proven numeric and still a raw double despite being captured, which is item 3-7's eight, and none of the eight is read from an assignment inside the function that captures it. *Counted with an instrument proven to discriminate on nine constructed shapes first, and closed for one instrument and no mechanism*. **Then the denominator itself was checked** (§4.2a): the census producing every figure in this row ran **7 of 15 suites**, and widened it reads **90.6 M boxes and 12.93 GB against 31.4 M and 3.13 GB — 65.4% of the boxes outside the seven**, with **Gameboy alone at 41.3 M, 1.32× the whole measured corpus**. `0090`'s GC denominator survives (1.80% against 2.29%); the phase's ranking of its own remainder does not. **Attributing the widened corpus then partly reverses 3-1's move off storage**: conversions go **24.6 M → 69.3 M** with **64.4% of them outside the seven**, and **Gameboy alone mints 26.9 M at 51.0% of its own requests** — more than all seven together — on a `Uint8Array` memory image, which is the shape a typed backing store was written for. **3-1's storage half re-opens as unmeasured rather than refuted** | `test262-arrays`, `test262-binary-data`, and — added by 3-3's `let`/`const` half — `test262-lexical-declarations`; allocation reported per item alongside time **Then the conversion counter was split by emission site over all fifteen suites** (`0103`), and it both retires a suspicion and re-points what is left: **61.79% of 69.3 M conversions are the guarded tree's ROOT box**, the generic fallback arm is **226 of 69.3 M**, and Gameboy — the suite §4.2a re-opened the storage half on — is **28.7% `++`/`--` step**, i.e. item 3-8's population and not the store's. **The next measurement is the root box's CONSUMER**, which is a compile-time attribution rather than another run-time counter. **Then the root's consumer was counted** (`0105`) and it answers the question: **44.36% of the 42.8 M root boxes are consumed by a LOCAL**, 17.91% by an element and 13.14% by a property, so neither storage item is where the remaining boxes go — a proven-numeric local already has a raw `double` home, and a root landing there is one the numeric tier failed to type. **Phase 3's remainder is the numeric-local tier**, which is now the third independent count to say so. **Then the refusals were weighted by execution** (`0106`): the seam hypothesis is refuted at 36 boxes of 18.6 M, and of the 19.0 M boxes consumed by a refused local, **38.41% are cascades with no independent cause** and **36.35% are `ElementRead`** — the conjunct item 3-1's guarded tree already settles at run time. Next measurement: the read/write ratio for that population, before any representation is built (§3.5, and item 3-8a's regression). |
 | **4** | 4-3 design ✅ → **4-1 ✅** (shapes and callees; numeric-vs-generic still open per site — item 3-2 collected the aggregate read share, 50.1%, for a phase 3 ranking) → **4-3a ✅** → **4-3b ✅** → **4-2a ✅** → **4-2b ✅** → **4-2c ✅ refuted** (the arithmetic half priced at 0.119% and closed, the relational lead closed with it at 0.022%, and the whole generic binary-operator surface bounded at 0.475% of the corpus) → **4-5 ✅ unblocked** (44% of a call entry is bookkeeping the engine's own short path skips — **2.85% of the corpus**, the largest measured target left in the phase, and an ablation of eight named operations rather than a profiler) → **4-4 ✅ measured, not started** (its ceiling re-taken over the twelve suites that run is **2.43%**, *larger* than the seven-suite 1.89% — the promotion gate reaches 42.1% of the corpus's JavaScript calls rather than 64.0%, but the never-counted suites are far call-denser per millisecond — while 4-5's surface is **8.06%**, so the ranking holds by 3.3×) | XL | The remaining order of magnitude. **4-1 measured the premise: 93.5% of reads and 96.7% of calls are monomorphic by execution weight, so 4-2 and 4-4 are well-founded** — over **seven** suites. **§4.2a re-took it over twelve and it is 80.11% and 86.35%**, because the census corpus every phase-3 and phase-4 headline is computed over was 7 of 15 and never said so; Mandreel had been aborting the census host with an uncatchable stack overflow, since item 0-2's stack reserve is a property of the *shell* and no benchmark host had it. Fixed, and the number is still high enough to found the phase. 4-3a stated and enforced the restart contract — and found its no-suspendable-bodies condition was held only by two unrelated accidents, two ordinary refactors away from an async function returning a number instead of a Promise. **4-2 then split the same way**: measuring the branch it was told to replace found it produced *wrong answers* — DeltaBlue died on the shipping tier-2 hook — which 4-2a fixes, and 4-2b's specialization takes **44.7% of the corpus's executed reads off the cache path at 0.818× each**, which is **0.83% of suite time**. That number is the phase's own warning: the whole read path is ≤ ~9% of Octane's execution time here and the whole call path ≤ ~5.5%, so **4-4's ceiling is smaller than the phase assumed** | Deopt correctness proven **before** any speculation ships; full test262 matrix **4-5's floor moved 0.100% on the lever `0111` named** (`0104`, `out` parameter, 9 of 12 ABBA pairs) and its 1.46% frame is untouched; the useful residue is that removing two struct copies bought 1.83 ns against a replica's 8.19 ns each, so *a struct copy in the source is not a struct copy in the code*. |
 | **5** | profile ✅ → per-match subject copy on `replace`/`exec` ✅ → single-match `replace` without a builder ✅ (both builtins) → the global case's retained result list ✅ → **`Compiled` per pattern ✅ — built as a race, measured, and shipped switchable with the default off** → ~~then consider compiling `Broiler.Regex`~~ **→ the per-call envelope, which is where the phase's remaining time actually is** | L | RegExp, plus PdfJS and Typescript | Octane regex corpus profiled **before** any rewrite — **satisfied**, and it re-ordered the phase twice. The second re-ordering is item 2's: the matcher is **4.6–6.5%** of a `re.test`, so nothing aimed at matching — the .NET compiler, and by the same argument a compiled `Broiler.Regex` — can move this suite. **The ~2.4 µs and 2 431 B a regex call pays before any matching happens is the item**, and it is unstarted |
-| **A** | **A-0 spike ← may re-scope everything** → **A-1 = [`AssemblySplit.md`](AssemblySplit.md), the model/emitter split** (the unlock; planned in full, S-0…S-7) → A-2 split `BuiltIns` → A-3 back-end contract → A-4 retire reflective discovery → A-5 fold `Core` → A-6 form `Broiler.JS.IL` → **A-7 the AOT gate** → A-8 architecture tests → A-9 rename (last, or never) | L each, A-1 and A-6 **L** | **The requirement itself**: an app references IL, bytecode, or both, and a bytecode-only app publishes Native AOT. Also settles four items `Component.md` owes — trimmed-support scoping, linker warnings, magic-name probing, and whether feature satellites help | A bytecode-only app **publishes with `PublishAot=true`, zero trim/AOT warnings, and runs a script**, in CI; an architecture test asserts **only `Broiler.JS.IL` references `System.Reflection.Emit`**; **test262 counts identical** on the IL path, manifest by manifest — A-1/A-5/A-6 are moves, and anything else means something was not a move; bootstrap profiles' observable surface unchanged |
-| **6** | **6-0 scope ← may cancel the track** → 6-8 dual-arm gate → 6-1 format → 6-2 back end (**XL**) → 6-3 loop → 6-6 exceptions → 6-7 suspension (**XL**) → 6-4 fast/slow paths → 6-5 folding + peephole | **several XL** | A general execution path on platforms that forbid `Reflection.Emit`, where today there is none — and the interpreter frame item 4-3 could not find | test262 on the VM arm with **no failure the IL arm does not also have**; the Native AOT sample runs a **real** script; **no performance claim of any kind** |
-| **7** | **7-0 profile ← blocks the phase** → 7-3 interned pool + 7-4 root-boxing arithmetic (**build with phase 6, not after**) → 7-1 property ICs → 7-2 elements → 7-6 calls → 7-5 register machine *only if 7-0 says operand traffic is measurable* | L–XL | A VM fast enough to ship. Mostly plumbing: it **consumes** phase 2's caches and phase 3's allocation work rather than rebuilding them | The dual-arm gate still holds; the VM reports its own band on all 15 suites; **a target ratio written down before the work starts**; no structure duplicated from `.Runtime`/`.Storage` |
-| **8** | **8-0 decompose ← chooses which items exist at all** → 8-6 bytecode cache (*schedule independently — its case is already measured in phase 1*) → 8-1 feedback → 8-2 adaptive opcodes → 8-3 superinstructions → 8-4 dispatch layout → 8-5 PGO | M–L each | Interpreter speed, and **startup**: 8-6 is the one catalogue row where a VM beats the IL path, and item 1-1's deferral is Broiler.JS working around its absence | **Every item cites the 8-0 measurement that justified it**, with a population and a **rate**; cached and uncached runs reported separately; all fifteen suites |
-| **9** | **9-0 measure ← may cancel 9-1/9-2 while leaving 9-3 justified** → 9-1 hotness → 9-2 promote → **9-3 deoptimize** → 9-5 retire 4-3a's compromise → 9-4 OSR (last, **XL**) | M–XL | Adaptivity — and the payback into track one: **9-3 is the deoptimization 4-3 was specified for**, and item 4-4 should be re-priced once it lands | Deopt correctness proven **before** any tier-up ships, now across the tier boundary; full test262 on **every** tier configuration; tier-up **opt-in**; a threshold sensitivity **curve**, not a point |
+| **A** | **Expression-model/emitter split landed; validation pending** → MOD-M2 dependency census, boundary ADR and fake backend → MOD-M3 honest IL/AOT graph → MOD-M4 hosting/compiler/tool packaging, only where the measured package graph justifies it | M–XL by slice | A maintainable graph in which front-end semantics, execution backends, host composition and optional tools have explicit owners and no accidental dynamic-code edge | Build-proven acyclic graph; source scan plus compiled dependency closure for `System.Reflection.Emit`; explicit backend registration; IL conformance unchanged; separate execution-only and runtime-compiler AOT samples; no new assembly without an API/dependency/startup rationale |
+| **6** | MOD-M9 ADR = 6-0 → independent expected-result harness → shared production semantic IR with IL migrated first → VM value/frame ABI → minimal versioned verified format → vertical interpreter slices → approved hard semantics | **several XL** for `full-go`; an execution-only or deliberately narrow runtime profile is sized from its explicit manifest rather than inheriting the full estimate | The capability profile selected by MOD-M9, without dynamic code | Expected/IL/bytecode conformance for the declared profile; verifier/resource failures are deterministic; each claimed AOT closure publishes and runs its real workload; **no performance claim** |
+| **7** | Uninstrumented MOD-M1 baseline → decompose dispatch/boxing/property/element/call/host/resource costs → add only measured function/realm-owned fast paths → remeasure each slice | L–XL | A shippability decision and a bounded baseline interpreter, not a pre-decided “fast enough” claim | Exact candidate/control rows, A/A-calibrated decision, current product corpus, memory/CPU/startup evidence, conformance unchanged and no global mutable cache ownership |
+| **8** | Choose independently: persistence gate → format/cache safety; feedback → owned sidecars; quickening/superinstructions/dispatch → measured opcode populations; broader PGO only after those results | M–L each | Startup or interpreter improvements whose population and rate are current and explicit | Each item cites its own population, resource budget and MOD-M1 result; cached/uncached and cold/warm paths are separate; verifier/fuzz/corruption behavior follows the selected execution-only or runtime-compiler profile; MOD-M6 for shared state |
+| **9** | After the runtime-capable/dynamic-host gate, branch: 9-0 curve → 9-1 owned state → 9-2 opt-in function promotion; independently 9-3 `DeoptState`/reconstruction → 9-5 restart decision; 9-4 OSR only after validated promotion and its own population/entry-stub spike | M–XL | Optional adaptivity; deopt may replace the limited Phase 4 restart compromise, while promotion does not depend on it | Expected/IL/bytecode/enabled-tier configurations conform; threshold curve and resource/lifecycle bounds for promotion; forced guards only for enabled deopt safepoints; rollback flag; deopt and OSR may each remain a recorded no-go |
 
 **Dependencies.**
 
-- Phase 0 gates every claim in phases 1–5 *and* retroactively gates closing A–F.
+- Phase 0 gates every performance/resource claim in phases 1–5 *and* retroactively gates
+  performance/resource closure of A–F.
 - Phases 1 and 2 are independent of each other and of phase 5, and can run in parallel.
 - 3-2 is cheaper after 2-1.
 - Phase 4 depends on 4-3 (for everything in the phase) and on 4-1 for 4-4's callee feedback — what was 2-6 is now inside 4-1 — and
   benefits from 3-1/3-2 having established unboxed representations to speculate into.
+- Modernization MOD-M9 replaces Phase 6's old 6-0 and may cancel phases 6–9.
+- A go outcome requires MOD-M2/MOD-M3 and the applicable MOD-M4 packaging boundary before Phase 6;
+  Phase 7 and Phase 8 require MOD-M1, while shared/adaptive state also requires MOD-M6. Phase 9
+  additionally requires `narrow-runtime-go` or `full-go`, a dynamic-code-capable host, and an
+  explicit adaptivity requirement.
 
 **The bolded item in each phase is the one to start with**, and in three of the five it
 is not the one that sounds most important: 1-1 over 1-3, 2-1 over 2-2, 4-3 over 4-2.
 Each ordering is argued where the item is described.
 
-**Every phase closes under
-[`Measurement.md`](Measurement.md)**, unchanged: two
-runs inside the configured band, on the release RID matrix, reporting time, allocation
-and working set together, with an `ownership.json` entry naming each item's benchmark
-and semantic owner. **Phases A–F are all *implemented* and none is *closed* for exactly
-this reason.** This plan should not add to that debt.
+**Every performance claim closes under [`Measurement.md`](Measurement.md) and MOD-M1.** The
+decision must fail closed unless exact candidate/control rows pass A/A-calibrated stability,
+the predeclared practical threshold, effective-settings and build-identity attestation,
+semantic-owner conformance, and the required time/allocation/working-set/CPU/resource gates.
+Historic “two runs inside a configured band” evidence is smoke or prioritization evidence,
+not the modern acceptance protocol. **Phases A–F are implemented but not retroactively
+accepted until their relevant gates are reproduced.**
 
 ---
 
@@ -475,22 +495,22 @@ a machine this engine does not have, and are marked **n/a** below. **Their prize
 lost**, because the CLR JIT already performs the equivalent work on the IL: dispatch is
 not a cost when there is no dispatch loop.
 
-> **All nine now have a home, and it is track two.** [Phases 6–9](#track-two--the-vm-tier-phases-69)
-> are this catalogue's VM 1.0 → 4.0 staging written as a plan: compact bytecode, dispatch,
-> peephole and constant folding are phase 6; adaptive opcodes, superinstructions, opcode
-> reordering, the bytecode cache and VM PGO are phase 8. **They are n/a to the engine that
-> ships today and in scope for the tier that does not exist yet** — which is the distinction
-> this section was written to make, and the reason the rows were kept rather than deleted.
+> **These nine rows are candidates, not a funded sequence.** [Phases 6–9](#track-two--the-vm-tier-phases-69)
+> own the corresponding questions only after MOD-M9 records a go outcome. Phase 6 takes the
+> minimal correctness/ABI/verification work; persistence and every adaptive technique are
+> independently population- and rate-gated later. They remain **n/a to the general engine
+> that ships today**, and a generic catalogue entry is not evidence that Broiler.JS should
+> implement one.
 
 The one place the catalogue's assumption does hold is
 **`Broiler.JavaScript.Portable`**, a separate numeric bytecode/interpreter capability for
 offline compilation and Native AOT. It is deliberately tiny — numeric parameters and
 locals, arithmetic, comparisons, assignment, blocks, `if`, `while`, counted `for`, value
 returns — and implements no part of the JavaScript object model. See
-[`Measurement.md`](Measurement.md). Rows marked **n/a** are n/a for the *engine*; **they are live questions in
-phases 6–9, which are exactly that subset growing** — and note the direction of the
-argument: none of those rows is a reason to grow it. The reason is the capability gap, and
-the rows are what the work would consist of once the gap justifies it.
+[`Measurement.md`](Measurement.md). Rows marked **n/a** are n/a for the general engine;
+they become live questions only within the capability profile MOD-M9 approves. None of those
+rows is a reason to grow the numeric seed. The product capability gap is the reason;
+current measurements and the phase gates choose which techniques, if any, follow.
 
 #### Three of the five-star rows have been measured and are worth less than filed
 
@@ -666,20 +686,19 @@ That can make a **massive** difference.
 
 ---
 
-### The staging, and why it survives
+### Historical generic staging — background, not execution order
 
-The optimizations build on each other, in roughly four development stages:
+The source catalogue grouped optimizations into four conventional stages:
 
 | Stage | Features | Goal |
 | --- | --- | --- |
-| **VM 1.0** | Bytecode, dispatch, fast paths, constant folding, peephole | A correct, fast interpreter |
+| **VM 1.0** | Bytecode, dispatch, fast paths, constant folding, peephole | A correct baseline interpreter |
 | **VM 2.0** | Shapes, ICs, string interning, array fast paths | Respectable JS performance |
 | **VM 3.0** | Type feedback, adaptive opcodes, superinstructions, PGO | A highly optimized interpreter |
 | **VM 4.0** | Hotness + IL tier-up, and possibly OSR/deopt | An adaptive JIT engine |
 
-The interesting point: **VM 1–3 stay fully Native AOT compatible.** Only VM 4 uses
-`Reflection.Emit`, and only on platforms where that is permitted. So on iOS one could stay
-at:
+In that generic design, VM 1–3 can avoid dynamic code and VM 4 can use it only on platforms
+where it is permitted. That architectural sketch is:
 
 ```text
 JS → bytecode → highly optimized VM
@@ -697,16 +716,19 @@ hot?
  └─ yes → IL → RyuJIT → native code
 ```
 
-> **This staging is now phases 6–9**, one phase per stage, in
-> [track two](#track-two--the-vm-tier-phases-69).
+> **Do not execute this table as phases 6–9.** The current phase plans deliberately reorder
+> it: MOD-M9 selects a capability profile; Phase 6 establishes shared semantics, ABI,
+> verification and correctness; Phase 7 takes an uninstrumented baseline; Phase 8 evaluates
+> persistence and adaptive interpretation separately; Phase 9 treats tiering/deopt/OSR as
+> optional feasibility work.
 >
 > **How it maps onto the engine that exists.** The AOT boundary is real and the staging
 > is sound; the layers are not the ones drawn. Broiler.JS's *baseline* is already
 > `Reflection.Emit`, so the AOT-safe tier is not "VM 1–3" but
 > `Broiler.JavaScript.Portable`'s numeric subset (above), and the tier-up in phase 4 is
 > IL → **specialized** IL rather than bytecode → IL. What transfers unchanged is the
-> conclusion: **the fallback must stay semantically complete**, which is exactly 4-3a's
-> restart contract, and exactly the rule
+> conclusion: **every promoted path needs a semantically complete fallback**, which is
+> exactly 4-3a's restart contract, and exactly the rule
 > [`Measurement.md`](Measurement.md) states for tiering — *retain the original delegate as
 > the semantic fallback*.
 
@@ -791,9 +813,10 @@ Where each item came from, so existing cross-references still resolve.
 | §4.1 phase E | P2-1, P2-2 (+ engine §6.5 array defects) | — | Implemented, not closed. **P2-2 item 3 shipped a wrong-answer bug**, found and fixed while working 3-3's successor: two writes to a numeric local were invisible to the analysis proving it numeric — a `var` re-declared in a nested statement, and any name bound through an object destructuring pattern. The first returned NaN; the second aborted compilation of the whole script with an unhandled `NotImplementedException`. See 3-3 |
 | §4.1 phase F | P2-3, P2-4, P3 | — | Implemented, not closed |
 | 0-1 … 0-5 | — | 0-1 … 0-5 | Implemented |
-| 0-6 | — | Octane §2.6 | **Owed** |
-| 0-7, 0-8, 0-9 | engine §8.1 acceptance evidence | — | **Owed** |
-| 0-10, 0-11 | engine §8.1, §8.2 | — | Done |
+| 0-6 | — | Octane §2.6 | **Implemented for hosted smoke; not acceptance evidence** |
+| 0-7, 0-8 | engine §8.1 acceptance evidence | — | **0-7 ran without an acceptable result bundle; 0-8 remains owed** |
+| 0-9, 0-10 | engine §8.1, §8.2 | — | Done |
+| 0-11 | engine §8.2 | — | **Mapping implemented; validation repair open** |
 | 1-1 | *excluded by engine §9* | 1-1 | **Emission half landed; capture half open.** Deferring IL generation to first invocation makes all four of the item's named risks vacuous — they are front-end properties and the front end still runs eagerly. jQuery **0.661×**, Box2D 0.636×, PdfJS 0.689×, allocation ~0.52× throughout, steady state **1.0009×**, and **Octane CodeLoad 94.6 → 104.0 (1.099×, 24 samples an arm, 93% pairwise dominance)** — the benchmark the item names, run and passed, though 1.099× is far short of the "large multiple" the item predicts because compilation is only ~27% of what CodeLoad measures. Typescript 1.034× and unexplained. Shipped as `patches/0066` while its push was blocked by a 403; **since applied and pushed — it is commit `9bf9639b`, an ancestor of the pin**. What remains is deferring the parse and tree construction, which needs the capture mechanism |
 | 1-3 | *excluded by engine §9* | 1-3 | Open, and **re-aimed**: the synthetic split (parse 0.5% / tree 11% / emission 89%) does not hold on real source, where deferring *all* nested-body emission removes only 17–36%. 1-3 is a front-end item, and its first task is that split on the corpora |
 | 1-4 | — (found measuring 1-1's premise) | — | **Landed** — the closure rewrite's per-lambda scope was a `List` asked `Contains` per parameter reference, so IL emission was **quadratic in a scope's binding count**. A reference-keyed multiset, list-backed below 32 bindings: **28.5×** on 2 000 top-level declarations, **3.04× on Mandreel** end-to-end (ABBA, six pairs), inside noise on the narrow-scope corpora. Shipped as `patches/0065` while its push was blocked by a 403; **since applied and pushed — it is commit `1070525a`, an ancestor of the pin** |

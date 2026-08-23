@@ -1,15 +1,14 @@
 # Phase 6 — VM 1.0: a correct bytecode interpreter — status
 
-**No measurement exists. Nothing in phase 6 has been built, measured, or attempted.**
+**No Phase 6 item has started. No Phase 6 measurement or general-engine VM result exists.**
 
-> The evidence half of [`Phase-6.md`](Phase-6.md). This file exists so the convention
-> holds across the whole directory — **a plan document is never the place a number lives** —
-> and so the phase's entry measurement has somewhere to land. When the first result arrives,
-> it goes here.
->
-> **Nothing in the plan document may be quoted as a result.** Every figure it cites is
-> borrowed from phases 0-5 and is attributed there. [`Measurement.md`](Measurement.md)
-> governs what may be claimed.
+The numeric portable seed, the landed expression-model/emitter split, and its architecture
+tests predate the approved Phase 6 implementation described in [`Phase-6.md`](Phase-6.md).
+They are prerequisites and starting facts, not partial completion of a general interpreter.
+
+> The evidence half of [`Phase-6.md`](Phase-6.md). A plan statement is not a result;
+> [`Measurement.md`](Measurement.md) governs future performance evidence, and the independent
+> expected-result manifest governs future conformance evidence.
 
 ---
 
@@ -20,53 +19,82 @@
 | Items started | **0** |
 | Items landed | **0** |
 | Measurements taken | **0** |
-| Blocked on | item **6-0 · Scope the target**, which has not been run |
+| Decision state | MOD-M9 has not produced a terminal `no-go`, `execution-only-go`, `narrow-runtime-go`, or `full-go` ADR |
+| Blocked on | **6-0 = the MOD-M9 capability/profile decision**, plus its applicable MOD-M2/MOD-M3/MOD-M4 entry gates |
+| Next action | complete MOD-M9's finite decision bundle; do not begin format or compiler work |
 
-**This phase is not scheduled.** It is written down so the option is specified rather than
-vague, and so the entry measurement below is the first thing anyone doing it would have to
-produce. Track two's justification is argued in
-[`Roadmap.md`](Roadmap.md#track-two--the-vm-tier-phases-69), and **it is an argument, not a
-measurement.**
+A `no-go` marks phases 6–9 cancelled or deferred with a reopening condition. An
+`execution-only-go`, `narrow-runtime-go`, or `full-go` satisfies 6-0 and supplies the
+capability manifest against which this status file will record progress. Only the latter
+two authorize a runtime source compiler; `execution-only-go` authorizes a correct
+precompiled execution product without one.
 
 ---
 
-## The entry measurement — item 6-0
+## Evidence required for 6-0 / MOD-M9
 
-**What 6-0 must report, in writing, before item 6-1 is started:**
+Before 6-1 starts, the terminal ADR must record:
 
-1. **Which platforms actually forbid dynamic code, for this product.** iOS? `PublishAot`
-   with `IsDynamicCodeSupported=false`? WebAssembly? A locked-down embedding? Name them,
-   and say which are required rather than merely interesting.
-2. **What `samples/Broiler.JavaScript.NativeAotSample` can and cannot run today.** It
-   already sets `PublishAot=true`. Establish the current line empirically rather than from
-   this document.
-3. **What surface a real page needs.** Count the constructs the WPT and Octane corpora
-   actually use, and mark which of them `Broiler.JavaScript.Portable`'s twenty opcodes
-   reach. The expected answer is *almost none* — it is a `double`-only expression
-   evaluator — but the count is what sizes item 6-2.
-4. **Whether the IL path can be kept instead.** ReadyToRun, a persisted assembly, an IL
-   interpreter, a different publish configuration. **If any of these reaches the required
-   platforms, phases 6-9 should be abandoned**, and this measurement is what says so.
-5. **Whether generators, async and `eval` are in scope.** Item 6-7 is an XL on its own and
-   the answer changes the phase's deliverable.
+1. required dynamic-code-prohibited platforms and the exact RID/device matrix;
+2. whether the product requires **execution-only precompiled bytecode**, a **runtime source
+   compiler**, or both;
+3. a pinned ECMAScript/module/host/debugger/interop capability manifest, with explicit
+   decisions for `eval`, Function, dynamic import, top-level await, generators, and async;
+4. representative product and modern shell workloads, conformance thresholds, startup,
+   package, memory, and maintenance ceilings;
+5. measured current-IL/startup/compile-ahead alternatives and their terminal disposition;
+6. named owners and precedence when capability, conformance, resource, and maintenance
+   criteria disagree; and
+7. one terminal outcome: `no-go`, `execution-only-go`, `narrow-runtime-go`, or `full-go`.
 
-**Cost of the measurement: S. Cost of skipping it: several XL.**
+This replaces the former duplicate instruction to run a separate Phase 6 scoping study.
 
 ---
 
 ## What is already in the tree
 
-**The current line, read from the tree rather than assumed** (2026-08-07):
+The following is a source census, not a Phase 6 result:
 
-| | |
+| Existing artifact | What it proves | What it does **not** prove |
+|---|---|---|
+| `Broiler.JavaScript.Portable` numeric program and interpreter | immutable numeric bytecode can be validated and executed without dynamic code | JavaScript values, objects, calls, closures, exceptions, modules, eval, async/generators, or host integration |
+| `Broiler.JavaScript.Portable.Compiler` | an offline numeric subset can parse and lower selected statements/expressions | reuse of the production semantic front end or a general runtime compiler |
+| `BytecodeClosureIsEmitFreeTests` | the current portable compiler's loaded Broiler reference closure does not reference the Emit facades | Native AOT publication and execution of that compiler/runtime closure |
+| `Broiler.JavaScript.NativeAotSample` | the **execution-only** numeric interpreter publishes and runs with checked-in generated bytecode | parser/compiler AOT compatibility; it does not reference or invoke `Portable.Compiler` |
+| `Broiler.JavaScript.Expressions` split | `Parser` no longer reaches the IL emitter through the expression model | the final target graph, hosting split, runtime/compiler AOT profile, or full JavaScript support |
+
+The original 2026-08-07 census correctly characterized the portable capability as a
+20-opcode, `double`-only seed and listed the absent object/call/closure/exception/module/
+suspension surface. That historical conclusion remains valid. Its pre-split statement that
+`Portable.Compiler → Parser → ExpressionCompiler` reaches Emit is now superseded by the
+landed model/emitter split and must not be quoted as current state.
+
+### AOT evidence must remain profile-specific
+
+| Gate | Current state | Evidence still required |
+|---|---|---|
+| execution-only numeric smoke | seed exists; not a general-engine claim | publish/run logs for every predeclared preliminary RID, warnings and suppressions inventoried |
+| execution-only approved Phase 6 profile | ❌ not started | verified serialized/precompiled representative programs run on every claimed RID |
+| runtime-compiler approved Phase 6 profile | ❌ not started | published app includes parser + shared semantics + bytecode compiler, compiles source in process, then executes it |
+
+Do not promote the first row into evidence for either later row.
+
+---
+
+## Future evidence ledger
+
+When work is approved, append evidence here without weakening the current `0` state:
+
+| Item | Required evidence before it can be marked validated |
 |---|---|
-| `Broiler.JavaScript.ExpressionCompiler` | `System.Reflection.Emit` in ~20 files — `DynamicMethod`, `ILGenerator`, `ILWriter`. There is no second back end. |
-| `Broiler.JavaScript.Portable` | 301 lines across `PortableInterpreter.cs` and `PortableProgram.cs`. |
-| `Broiler.JavaScript.Portable.Compiler` | 391 lines. |
-| `PortableOpCode` | **20 opcodes**: `PushConstant`, `LoadArgument`, `LoadLocal`, `StoreLocal`, `Duplicate`, `Pop`, `Add`, `Subtract`, `Multiply`, `Divide`, `Remainder`, `LessThan`, `LessThanOrEqual`, `GreaterThan`, `GreaterThanOrEqual`, `Equal`, `NotEqual`, `Jump`, `JumpIfFalse`, `Return`. |
-| The interpreter's shape | a `switch` over `instruction.OpCode` — already the "efficient dispatch" the catalogue's VM 1.0 asks for. |
-| Values | `double` only. No object model, strings, properties, arrays, calls, closures, exceptions, modules, async/generators, host callbacks, `eval`, or runtime compilation. |
+| 6-1 shared semantic IR | IL migration diff, project graph, pinned expected-result manifest before/after, backend-neutral test sink |
+| 6-2 VM ABI | ADR, GC/lifetime tests, frame/resource limits, JIT and Native-AOT representation probes |
+| 6-3 format/verifier | version schema, malformed corpus, fuzz results, bounded-resource and corrupt-input behavior |
+| 6-4 lowering/interpreter | per-slice expected result, IL result, VM result, source and verified round-trip arms |
+| 6-6 completion/unwinding | nested handler/finally matrix and JS↔host exception crossings |
+| 6-7 hard surface | approved capability rows, implementation result or published narrow-profile exclusion |
+| 6-8 conformance | pinned oracle version, supported/unsupported manifest, unexplained shared and VM-only delta count |
+| AOT profiles | source revision, RID/device, publish properties, warnings/suppressions, package closure, runtime output |
 
-**This is a file census, not a measurement**, and it is recorded here so 6-0 starts from
-facts rather than from the roadmap's prose. It establishes the starting point and **nothing
-about feasibility, cost or value.**
+No row may use IL/VM agreement alone as proof of correctness. Both arms must also match the
+independent expected result for every supported case.

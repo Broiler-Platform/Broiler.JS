@@ -5,10 +5,10 @@ speed. Completed compliance campaigns, performance phases, issue triage notes, a
 logs are represented by Git history and regression tests rather than retained as active
 plans.
 
-> One of the four documents in [`docs/roadmap/`](README.md). **Execution speed is
-> [`Roadmap.md`](Roadmap.md)**, which is a plan in its own right and considerably
-> larger than this one; §4 below is the seam between them and carries only the deployment
-> evidence that is not part of it.
+> One of the owning documents indexed by [`docs/roadmap/README.md`](README.md). **Execution
+> speed is cross-referenced by [`Roadmap.md`](Roadmap.md), while cross-track order is owned
+> by [`Modernization.md`](Modernization.md).** Section 4 below is the seam and carries only
+> deployment evidence that is not owned by a performance phase.
 >
 > This file was `docs/roadmap.md` until the 2026-08-07 consolidation.
 
@@ -20,6 +20,9 @@ plans.
 - `eng/performance/phase0.json` and `eng/performance/ownership.json` define performance
   jobs and semantic owners.
 - `Measurement.md` explains how to collect comparable evidence.
+- [`Concurrency.md`](Concurrency.md) owns JavaScript-local compile-ahead, independent-context
+  safety, and Worker-agent acceptance; [`Concurrency.status.md`](Concurrency.status.md)
+  distinguishes implemented aggregate-repository slices from accepted MOD-M5–MOD-M7 outcomes.
 
 Do not duplicate a changing test count here. A roadmap item closes only after a local
 regression, the relevant pinned public-suite run, and an updated dashboard agree.
@@ -45,6 +48,15 @@ not resurrected from those snapshots.
 
 Exit gate: the pinned supported-mode run has no unexpected failures and
 `test262-failures.txt` contains no test paths.
+
+### Immediate correctness gate: `TypedArray.prototype.set`
+
+Modernization MOD-M0-8 records a suspected overlap/offset wrong-answer case in
+`TypedArray.prototype.set`. Reproduce it with the narrowest regression before doing any
+bulk-copy optimization. If it reproduces, correctness is fixed and the focused test plus
+affected test262 shard land first; only then may MOD-M8-5 price an optional fast copy path.
+Failure to reproduce is also recorded with the exact cases tried rather than silently
+removing the item.
 
 ## 2. Expand host-mode coverage
 
@@ -90,7 +102,8 @@ diagnoses the plan has since corrected.
 
 The deployment evidence and product decisions still outstanding are:
 
-- collect repeatable baselines on Windows x64, Linux x64, and Linux Arm64;
+- establish controlled candidate/control acceptance lanes on Windows x64, Linux x64, and
+  Linux Arm64, with lane-specific A/A calibration and effective-setting attestation;
 - exercise x64 with AVX2 enabled and disabled and Arm64 with AdvSimd where claimed;
 - keep allocation, latency, working set, publish bytes, and code size together;
 - resolve or explicitly scope linker warnings before claiming trimmed support;
@@ -108,17 +121,24 @@ a real capability rather than a numeric island. **The magic-name probing in part
 promoted from hygiene to blocker** — reflective discovery defeats Native AOT, so item A-7's
 gate cannot pass while it exists.
 
-No performance change closes on a one-machine smoke result. Use the repeatability and
-semantic gates in `Measurement.md`.
+Compile-ahead, optimizer-state isolation, and Worker agents are similarly routed to
+[`Concurrency.md`](Concurrency.md). The aggregate `docs/architecture/multithreading.md`
+retains cross-component implementation history and measurements, but does not close the
+JavaScript-local MOD-M5–MOD-M7 gates.
+
+No performance change closes on a developer or hosted-runner smoke result. Use MOD-M1 and the
+fail-closed exact-row, A/A, practical-threshold, resource, source-identity, and semantic
+gates in [`Measurement.md`](Measurement.md).
 
 ## 5. API, package, and preview readiness
 
-> **The assembly layout this section governs is being re-laid.** Its first executable piece
-> is [`AssemblySplit.md`](AssemblySplit.md) — splitting `ExpressionCompiler` into model and
-> emitter, analyzed in full and behaviour-preserving.
-> [`Assemblies.md`](Assemblies.md) plans the rest: `Broiler.JS.Base` / `.Core` / `.IL` / `.Bytecode`
-> and their satellites, so that an application may reference either back end or both, and a
-> bytecode-only application publishes as Native AOT. It is not started. Its item **A-9** is
+> **The assembly layout this section governs is being re-laid.** Its first executable piece,
+> [`AssemblySplit.md`](AssemblySplit.md), has structurally landed through S-6: the expression
+> model now lives in `Broiler.JavaScript.Expressions`, while final S-7 validation remains
+> open. [`Assemblies.md`](Assemblies.md) plans the rest, but its original Base/Core merge
+> sketch is superseded pending the verified MOD-M2 graph. The current hypotheses keep a shared
+> FrontEnd/Semantics layer independent of both IL and bytecode lowering and require a
+> bytecode-only publish-and-run Native AOT gate. Item **A-9** is
 > the `Broiler.JavaScript.*` → `Broiler.JS.*` rename, which is a **breaking change to every
 > assembly name and package id** and closes under the rules below.
 

@@ -1,11 +1,19 @@
 # Phase 6 — VM 1.0: a correct bytecode interpreter
 
-**The first phase of a second execution tier.** Phases 0–5 make the IL path faster; phases
-6–9 build a path that can run **where there is no IL path at all**. This one delivers the
-whole language on it, correctly, and says nothing about speed.
+Phase 6 is the first implementation phase of a second execution back end. It starts only
+after [`Modernization.md`](Modernization.md)'s MOD-M9 decision records one of the three positive
+outcomes: `execution-only-go`, `narrow-runtime-go`, or `full-go`. A `no-go` cancels phases
+6–9; it does not leave this phase “open but unscheduled.”
 
-> The plan half of [`Phase-6.status.md`](Phase-6.status.md) — which records that **no
-> measurement exists yet**, and carries the entry measurement this phase is blocked on.
+The deliverable is the JavaScript capability profile approved by that decision, correctly
+executed without dynamic code. An `execution-only-go` funds a correct product that executes
+verified, precompiled bytecode and does **not** require a parser or source compiler at run
+time. A `narrow-runtime-go` additionally funds a deliberately constrained runtime source
+compiler. A `full-go` funds the approved general runtime-compiler surface. Neither narrow
+outcome may be described as general JavaScript support.
+
+> The plan half of [`Phase-6.status.md`](Phase-6.status.md). That status record remains the
+> evidence source and currently records that no phase item has started.
 > Part of the [performance and benchmark roadmap](Roadmap.md); the four VM phases are
 > [track two](Roadmap.md#track-two--the-vm-tier-phases-69).
 
@@ -13,228 +21,229 @@ whole language on it, correctly, and says nothing about speed.
 
 ## Why this exists
 
-**Broiler.JS today has no general JavaScript execution path on a platform that forbids
-`System.Reflection.Emit`.** That is not a performance gap; it is a *capability* gap, and it
-is the only reason to build a bytecode VM into an engine that already emits IL.
+Broiler.JS has no general JavaScript execution path on platforms that prohibit
+`System.Reflection.Emit`. The existing `Broiler.JavaScript.Portable` project is an
+execution-only numeric seed: it proves that a small, immutable bytecode program can run
+without dynamic code, not that the JavaScript compiler/runtime graph or general language
+surface can publish and run under Native AOT.
 
-The evidence is in the tree:
+That is a capability gap first. On platforms where the IL path works, a bytecode tier may
+later reduce startup work or provide a deoptimization target, but those are separate Phase 8
+and Phase 9 decisions. Phase 6 closes on correctness and deployability, not speed.
 
-| | |
-|---|---|
-| The compiler back end | `Broiler.JavaScript.ExpressionCompiler` is an **IL writer** — `DynamicMethod`, `ILGenerator`, `System.Reflection.Emit` in ~20 files. There is no second back end. |
-| The AOT-safe path today | `Broiler.JavaScript.Portable` — **301 lines, 20 opcodes, `double`-only**: `PushConstant`, `LoadArgument`, `LoadLocal`, `StoreLocal`, `Duplicate`, `Pop`, five arithmetic, six comparison, `Jump`, `JumpIfFalse`, `Return`. |
-| What it does **not** implement | The JavaScript object model, strings, properties, arrays, calls, closures, exceptions, modules, async/generators, host callbacks, `eval`, runtime compilation. |
+### 6-0 is the MOD-M9 decision, not a second scoping exercise
 
-**So `Portable` is a numeric expression evaluator, not an engine**, and
-[`Measurement.md`](Measurement.md) already says in as many words that it must not be
-described as Native AOT support for the full engine. Phase 6 is what would make that
-description true.
+MOD-M9's terminal ADR satisfies item 6-0. Do not repeat the study after the implementation has
+been funded. Before any other item starts, the ADR must name:
 
-### The second reason, which is not about AOT at all
+1. required platforms and RIDs, including which actually prohibit dynamic code;
+2. one of the compilation profiles below, or both;
+3. the required ECMAScript, module, host, debugging, and interop capability manifest;
+4. whether `eval`, the Function constructor, dynamic import, top-level await, generators,
+   async functions, and runtime source compilation are supported or intentionally excluded;
+5. conformance and resource thresholds, a maintenance ceiling, and named owners; and
+6. the alternatives considered, including retaining the IL path, persisted IL where
+   supported, and a deliberately narrow portable product.
 
-**Phase 4's item 4-3 was re-specified because this phase does not exist.** V8-style
-deoptimization — bail out mid-function by reconstructing an interpreter frame — is *not
-expressible* in Broiler.JS today, because tier-1 locals are CLR locals of an IL method and
-`CallFrame` carries no JavaScript values. 4-3 became a restart contract plus an in-method
-fallback branch instead, and 4-4 is still gated behind that compromise.
+| MOD-M9 outcome | Profile | Contains at run time | What its AOT gate proves |
+|---|---|---|---|
+| `execution-only-go` | **Bytecode execution-only** | runtime/interpreter plus verified precompiled bytecode; no parser or compiler | the approved precompiled surface executes under Native AOT |
+| `narrow-runtime-go` | **Bytecode runtime-compiler, constrained** | parser, shared semantic front end, bytecode lowering, verifier, runtime, and interpreter for the named subset | approved source is compiled and executed inside the published Native AOT application |
+| `full-go` | **Bytecode runtime-compiler, general** | parser, shared semantic front end, bytecode lowering, verifier, runtime, and interpreter for the approved general surface | approved general source is compiled and executed inside the published Native AOT application |
 
-**A bytecode VM is exactly the interpreter frame 4-3 could not find.** Phase 9 collects
-that; phase 6 is what creates it.
+The current Native AOT sample belongs to the first row. It must not be used as evidence for
+the second until it references and invokes the runtime compiler closure.
 
-### What this phase is *not*
+### The assembly prerequisite has changed
 
-- **Not a speed-up.** On any platform where `Reflection.Emit` works, an interpreter is
-  **slower** than IL + RyuJIT, and nothing in phases 6–8 changes that. Do not put a VM
-  number next to an IL number and call it a win. The VM's competitor is *not running at
-  all*.
-- **Not a second semantics.** The single largest risk here is that the VM becomes a second,
-  subtly different JavaScript. See the exit gate.
+The expression-model/emitter split has landed: `Portable.Compiler` no longer reaches the IL
+emitter through `Parser`. That removes the original impossible edge, but it is not the full
+AOT gate. Phase 6 still waits for the applicable MOD-M2/MOD-M3/MOD-M4 outcomes:
 
-### The precondition: the assembly graph forbids the deliverable
+- an acyclic, build-proven target graph and backend-neutral semantic boundary;
+- explicit backend registration with no magic-name discovery in a portable profile;
+- a real IL boundary for every Emit-using runtime component and tool;
+- backend-neutral hosting contracts separated from CLI/Roslyn/NuGet composition; and
+- a compiler library separated from the optional bytecode command-line tool.
 
-**Building this VM without [`Assemblies.md`](Assemblies.md) first would produce an
-interpreter that still cannot be published Native AOT.** `Broiler.JavaScript.Portable.Compiler`
-references `Parser`, `Parser` references `ExpressionCompiler`, and `ExpressionCompiler` is
-the IL emitter — so the bytecode compiler transitively depends on `System.Reflection.Emit`
-**today**.
-
-**[`AssemblySplit.md`](AssemblySplit.md) removes that edge** — it is items A-0 and A-1,
-planned end to end and already analyzed — and A-7's AOT gate can be built and turned green
-*before* this phase starts — on the existing 20 opcodes, proving the graph rather than the
-engine. **That converts phase 6 from "build a VM and hope the packaging works" into "grow an
-assembly that already publishes."**
-
-**Do A-0 and A-1 before item 6-2.**
-
-**Owner assemblies:** `Broiler.JS.Bytecode` and `Broiler.JS.Bytecode.Compiler` (today
-`Broiler.JavaScript.Portable` and `.Portable.Compiler`; both to grow considerably),
-consuming `Broiler.JS.Base`, `.Ast`, `.Parser`, `.Core` and `.BuiltIns` unchanged.
+Do not hard-code the aspirational `Base`/`Core` merge into this phase. The graph ADR produced
+by MOD-M2 is authoritative.
 
 ## Items
 
 | # | Item | Size | State |
 |---|---|---|---|
-| **6-0** | **Scope the target** — which platforms, which surface, how much of a real page | S | ❌ **not started, and it blocks everything else in this phase** |
-| **6-1** | A bytecode format for the whole language | L | ❌ |
-| **6-2** | A second compiler back end, sharing the front end | **XL** | ❌ |
-| **6-3** | The interpreter loop and its dispatch | M | ❌ |
-| **6-4** | Fast paths and slow paths per opcode | L | ❌ |
-| **6-5** | Constant folding and a bytecode peephole pass | M | ❌ |
-| **6-6** | Exceptions, `try`/`finally` and unwinding | L | ❌ |
-| **6-7** | Generators, async and suspension | **XL** | ❌ |
-| **6-8** | The dual-arm conformance gate | M | ❌ |
+| **6-0** | **Adopt the terminal MOD-M9 capability/profile ADR** | S | ❌ **not started; blocks the phase and may cancel it** |
+| **6-1** | Extract the production shared semantic IR and migrate the IL arm to it | **XL** | ❌ |
+| **6-2** | Specify and prove the VM `ValueSlot`, frame, environment, and call ABI | L–XL | ❌ |
+| **6-3** | Build a versioned bytecode format and verifier | L | ❌ |
+| **6-4** | Add bytecode lowering and the interpreter in vertical semantic slices | **XL** | ❌ |
+| **6-5** | Add correctness-preserving baseline folding and peephole simplification | M | ❌ |
+| **6-6** | Implement abrupt completion, exceptions, `try`/`catch`/`finally`, and unwinding | L–XL | ❌ |
+| **6-7** | Implement the approved hard surface: suspension, modules, eval, debugging, and host interop | **XL** or scoped exclusions | ❌ |
+| **6-8** | Build the independent three-way conformance gate | M | ❌ |
 
-### 6-0 · Scope the target — **do this before anything else**
+### 6-1 · Production shared semantic IR — **before the bytecode ISA**
 
-**The entry measurement, and the phase must not start without it.** Phase 0's rule applies
-in full: this is the largest body of work anywhere in this roadmap, and it is currently
-justified by an argument rather than a number.
+Sharing an AST is not sharing JavaScript semantics. Parsing, early errors, strictness,
+binding, scope and environment layout, hoisting, private names, direct-eval rules, free-name
+analysis, and backend-neutral lowering must have one production implementation.
 
-It must answer, in writing:
+Extract that implementation behind an immutable or explicitly owned IR and migrate the IL
+arm to it first. The IL arm must retain its pinned conformance result before bytecode
+lowering begins. A fake backend from MOD-M2 proves dependency shape; it does not satisfy this
+production gate.
 
-1. **Which platforms actually forbid dynamic code**, for this product — iOS, `PublishAot`
-   with `IsDynamicCodeSupported=false`, WASM, a locked-down host? `samples/Broiler.JavaScript.NativeAotSample`
-   already sets `PublishAot=true`; establish what it can and cannot run today.
-2. **What surface a real page needs.** Take the WPT and Octane corpora and count which
-   constructs appear. A VM that cannot run generators is not a VM anybody can ship.
-3. **Whether the IL path can be kept instead.** Is there a supported configuration —
-   ReadyToRun, a persisted assembly, an interpreter for IL — that reaches these platforms
-   without a second engine? **If yes, phases 6–9 should be abandoned**, and finding that out
-   costs an S rather than several XL.
+The IR must also carry stable function identity and compilation context: source span,
+strict/async/generator flags, lexical and private environment shape, home-object requirements,
+module state, source locations, and cache-key inputs. Phase 9 must not recover these later by
+re-parsing a function as a fresh top-level program.
 
-**Do not proceed to 6-1 until 6-0 has a written answer**, and record it in
-[`Phase-6.status.md`](Phase-6.status.md).
+### 6-2 · The VM value and frame ABI — **before encoding opcodes**
 
-### 6-1 · A bytecode format for the whole language
+The numeric seed uses `double` locals and an operand stack. A general interpreter cannot
+simply replace those with `JSValue[]` and still claim that numeric arithmetic boxes only at
+the root. Decide and prove:
 
-Extend `PortableOpCode` from a 20-opcode `double` machine to a full instruction set:
-values and the constant pool, object and property operations, element operations, calls and
-`new`, closures and environments, the full control-flow set, `try`/`catch`/`finally`,
-iterators and destructuring.
+- the tagged/value-slot representation for Number and managed-reference values;
+- GC rooting and lifetime for operand slots, locals, environments, arguments, and constants;
+- call, construct, tail-call, host-call, and return conventions;
+- frame ownership, recursion/resource limits, and interaction with the engine's shadow stack;
+- completion records and handler state for `return`, `break`, `continue`, and `throw`;
+- heap representation and resumption contract for generators and async functions; and
+- stable source, exception, suspension, debugger, deopt, and OSR safepoints.
 
-**Two decisions to take on a measurement rather than a preference:**
+Use correctness fixtures and focused JIT/Native-AOT representation measurements before
+freezing the format. A representation decision is not accepted because it looks compact.
 
-- **Stack machine or register machine.** `PortableInterpreter` is a stack machine today.
-  The catalogue rates a register VM "high effect, high effort". **Defer this to phase 7's
-  7-5** — build VM 1.0 on the stack machine that exists, and move only if 7-0's profile says
-  operand traffic is the cost.
-- **Operand encoding.** Compactness is a startup and cache property, not a throughput one.
-  Measure it in phase 8, not here.
+### 6-3 · A versioned format and verifier
 
-**Correctness first, and deliberately so:** the whole of phase 8 exists to make this format
-fast. Do not pre-optimize an instruction set that has not run a real program.
+Start with the first end-to-end semantic slice and grow the format with the interpreter.
+Do not enumerate a “whole-language” opcode set in advance of the shared IR and ABI.
 
-### 6-2 · A second compiler back end — **XL, and the one that decides the phase's cost**
+The verifier is a trust boundary even when cache files are locally produced. It must reject
+malformed or resource-hostile programs before execution, covering at least:
 
-A `PortableCompiler` that consumes the **same AST** `FastCompiler` does.
+- magic and schema/semantic version, feature profile, and bounded section sizes;
+- opcode and operand kinds, constant/local/function indexes, and instruction boundaries;
+- reachable and unreachable control-flow validity and consistent stack/value states;
+- exception-region nesting, `finally` continuations, and suspension/resume targets;
+- maximum operand stack, locals, frames, constants, and aggregate allocation; and
+- source/debug/deopt metadata that refers only to valid canonical bytecode positions.
 
-**Share everything above the back end**, and this is not a style preference — it is what
-keeps the two paths one language: the parser, the AST, scope and binding analysis, the
-early-error passes, `NumericLocalAnalysis`, and the hoisting rules. **Fork nothing that
-decides semantics.** Every construct the front end resolves once is a construct the two arms
-cannot disagree about.
+Add malformed-input unit tests and coverage-guided fuzzing. The internal format may evolve
+during Phase 6; compatibility is promised only when a persisted-cache version is accepted.
 
-**Expected cost.** `FastCompiler` plus `.ExpressionCompiler` is the accumulated work of the
-whole engine's history. A second back end is not that large — the semantics are already
-decided — but it is the largest single item in this roadmap and should be sized honestly
-before it is scheduled.
+### 6-4 · Lowering and interpreter — build vertical slices
 
-### 6-3 · The interpreter loop and its dispatch
+For each approved semantic slice:
 
-The catalogue rates dispatch "high effect, low–medium effort". `PortableInterpreter` is
-already a `switch` over `instruction.OpCode`, which in .NET is a jump table.
+`shared IR → bytecode lowering → verification → interpreter slow path → expected-result tests`
 
-**Do not start here.** Dispatch is the row every bytecode-VM article opens with and it is
-worth nothing until the operations behind it are real. Build the loop plainly; phase 8's
-8-0 will say whether dispatch is measurable at all.
+Start with a plain, readable dispatch loop. Do not assume a C# `switch` becomes a jump table
+on every JIT/AOT RID; Phase 8 measures the generated dispatch before changing it. Reuse
+runtime semantic operations where their ownership and AOT closure are valid, but do not
+reuse process-global emitted-site indexes or mutable feedback as bytecode state.
 
-### 6-4 · Fast paths and slow paths
+Fast paths required to make an operation usable may live beside its slow path, but Phase 6
+makes no throughput claim. Optional specialization waits for Phase 7 or Phase 8 evidence.
 
-The one row in the catalogue this campaign has confirmed repeatedly: **fast paths are where
-the wins are.** Per opcode, handle the common operand types inline and push the spec's rare
-cases out of line — the same shape as phase 3's guarded arithmetic tree, and for the same
-reason.
+### 6-5 · Baseline folding and peephole simplification
 
-**Carry phase 3's finding across:** box at the root, not at the leaves. A VM that boxes
-every intermediate will lose to the IL path by a margin no dispatch trick recovers.
+Implement only transformations needed to avoid obviously redundant baseline bytecode, and
+give every transformation an unsimplified control plus exact semantic fixtures. Preserve
+observable evaluation order, coercion, exceptions, source positions, handler regions, and
+canonical safepoint identity. Extensions beyond that baseline wait for Phase 8's measured
+opcode population.
 
-### 6-5 · Constant folding and a bytecode peephole pass
+### 6-6 · Abrupt completion and unwinding
 
-Both are catalogue rows the IL path never needed — the CLR JIT does them. **In a VM they
-have no such backstop.** Fold constants at compile time; run a peephole pass over the emitted
-bytecode. Both are M, both are local, and both should be gated on 8-0's histogram before
-being *extended*.
+Model JavaScript completion records explicitly. A VM must unwind its own operand/local state
+and run `finally` blocks on every applicable exit, including `return`, `break`, `continue`, a
+JavaScript throw, and a host exception crossing VM frames.
 
-### 6-6 · Exceptions, `try`/`finally` and unwinding
+Test both JS↔host directions, nested handlers, return/throw replacement by `finally`, and all
+legal control-flow exits. Exception edges are part of the verifier's control-flow model, not
+an interpreter-only afterthought.
 
-The IL path gets CLR exception handling for free. A VM must model handler ranges, unwind its
-own operand stack, and run `finally` blocks on every exit path including `return` and `break`
-out of `try`.
+### 6-7 · Suspension, modules, eval, debugging, and host interop
 
-**It also has to interoperate**: a host callback that throws a CLR exception through VM
-frames, and a JavaScript `throw` that crosses back into host code, both have to work. Test
-both directions.
+This item implements exactly the hard surface approved by 6-0. A `full-go` cannot silently
+defer it. An `execution-only-go` or `narrow-runtime-go` records every excluded source and
+runtime capability, its deterministic failure mode, and the supported precompilation path
+in the public capability manifest.
 
-### 6-7 · Generators, async and suspension — **XL, and the item to scope early**
+Generators and async functions preserve the VM frame and handler/completion state across
+suspension. Modules preserve live bindings and top-level-await ordering. Direct eval and the
+Function constructor either compile through the runtime-compiler profile with the correct
+lexical context or are explicitly unsupported by the execution-only profile. Stack traces,
+breakpoints, source maps, and host callbacks use the canonical source/bytecode metadata from
+6-2 and 6-3.
 
-The IL path implements suspension with **CLR state machines**. A VM must suspend and resume
-its own frame — which is *easier* in a VM than in IL, and is the one place the VM tier is
-structurally advantaged.
+### 6-8 · The independent conformance gate — **scaffold first**
 
-**But it interacts with everything**: 4-3a's restart contract is sound only if the body has
-no suspendable frames, and that condition was held by two unrelated accidents. Whoever
-builds 6-7 must re-derive that condition for the VM, not inherit it.
+Build the harness and supported-feature manifest before production bytecode expansion. For
+every case it records three facts:
 
-**Scope this during 6-0**, not after 6-2. If generators are out of reach, the phase's
-deliverable is smaller than "the whole language" and the roadmap should say so.
+1. the pinned upstream/fixture expected result;
+2. the IL-arm result; and
+3. the bytecode-arm result.
 
-### 6-8 · The dual-arm conformance gate
+IL/bytecode agreement is a valuable differential check, but it is not the oracle: two arms
+agreeing on the same wrong answer is still a failure. Every unsupported or allowed-failure
+case requires an explicit, reviewed manifest entry. Compare completion type/value and
+observable effects rather than relying only on textual output.
 
-**The single most important item in the phase**, and it should be built early rather than
-last.
-
-Run the pinned test262 manifests on **both** execution paths and **require them to agree** —
-not merely "the VM passes", but *the VM and the IL path produce the same result for every
-test*. Phase 5's item 5 is the model: 15 cases run on both settings and required to agree,
-and they pass on the unmodified engine too.
-
-**Wire it into CI from the first opcode**, so divergence is caught the day it appears rather
-than at the end of an XL.
+Wire supported slices into CI from the first opcode. Run them from source, from a serialized
+round-trip once persistence exists, and through each claimed Native AOT profile.
 
 ## Order
 
-```
-6-0 scope ← BLOCKS EVERYTHING; may cancel the track entirely
-  └→ 6-8 dual-arm gate (build the harness before the engine)
-       └→ 6-1 format → 6-2 back end → 6-3 loop → 6-6 exceptions → 6-7 suspension
-            └→ 6-4 fast/slow paths → 6-5 folding + peephole
+```text
+MOD-M9 ADR = 6-0 scope/profile decision ← may cancel the track
+  └→ 6-8 harness skeleton + independent expected-result manifest
+       └→ 6-1 production shared semantic IR; migrate and validate IL
+            └→ 6-2 ValueSlot/frame/environment/call ABI
+                 └→ 6-3 minimal versioned format + verifier
+                      └→ 6-4 vertical semantic slices
+                           ├→ 6-6 abrupt completion and exceptions
+                           ├→ 6-7 approved suspension/module/eval/debug/host surface
+                           └→ 6-5 baseline simplification, then measured extensions later
 ```
 
-**6-8 before 6-1** is deliberate. A conformance harness written after an XL lands is a
-harness written to agree with whatever was built.
+The harness scaffolding precedes the implementation; its supported manifest grows with each
+vertical slice. The format and interpreter evolve together after the semantic IR and ABI are
+known.
 
 ## Exit gate
 
-1. **The pinned test262 supported-mode run passes on the VM arm**, with **no failure the IL
-   arm does not also have** — the dual-arm gate, not a standalone pass rate.
-2. `samples/Broiler.JavaScript.NativeAotSample` runs a **real script** — one from the WPT or
-   Octane corpus, not a numeric expression — with `PublishAot=true` and dynamic code
-   disabled.
-3. Every construct 6-0 identified as required is executable, or is a **published scope
-   exclusion** with a reason.
-4. **No performance claim of any kind.** Phase 6 closes on correctness. Speed is phase 7,
-   and [`Measurement.md`](Measurement.md) governs both.
+1. The pinned expected-result manifest passes on the IL and bytecode arms for the approved
+   scope; there are no unexplained shared or VM-only failures.
+2. The execution-only AOT application publishes and runs verified precompiled bytecode on
+   every claimed RID. If runtime compilation is approved, a separate application includes
+   the parser/compiler closure, compiles source inside the Native AOT process, and runs it.
+3. Every capability named by 6-0 is executable. An `execution-only-go` or
+   `narrow-runtime-go` also publishes each precise exclusion, its deterministic failure
+   mode, and the supported precompilation/runtime-compilation boundary.
+4. Malformed bytecode, corrupt serialized data, and configured resource-limit cases fail
+   deterministically without executing invalid instructions or allocating past the bound.
+5. The IL arm's semantic result remains at its accepted pre-extraction baseline.
+6. **No performance claim of any kind.** Phase 6 closes on correctness, format safety, and
+   deployability. Phase 7 establishes performance under MOD-M1.
 
 ## Dependencies and risks
 
-- **Depends on [`AssemblySplit.md`](AssemblySplit.md)** (= [`Assemblies.md`](Assemblies.md)'s
-  items A-0 and A-1), without which the phase cannot deliver its headline capability — see
-  the precondition above.
-- **Depends on nothing in phases 0–5**, and blocks nothing in them. The two tracks are
-  independent and can run in parallel — which is also the argument for *not* starting this
-  one until phases 1, 3, 4 and 5 have closed their open items.
-- **Phase 9 depends on this phase entirely.** So, indirectly, does the deoptimization design
-  phase 4 had to work around.
-- **Risk: two engines, one specification.** Mitigated by 6-2 (share the front end) and 6-8
-  (require agreement), and by nothing else. If either is compromised, stop.
-- **Risk: the effort is not recoverable.** 6-0 exists to price that before it is spent.
+- **Depends on MOD-M9/6-0**, MOD-M2's proven graph/front-end contract, MOD-M3's IL/AOT boundary, and the
+  applicable MOD-M4 hosting/package split. The landed model/emitter split is necessary but not
+  sufficient.
+- **Phase 7 depends on this phase's approved scope and exit evidence.** Phase 9 additionally
+  depends on stable frame/safepoint metadata; metadata design here does not promise that
+  deoptimization or OSR is feasible.
+- **Risk: two engines, one specification.** Mitigated by production shared semantics and an
+  independent oracle, not by a shared AST or differential agreement alone.
+- **Risk: an execution-only smoke is presented as a compiler graph gate.** Keep the two AOT
+  profiles, package closures, and evidence bundles separate.
+- **Risk: a format is frozen too early.** Keep it internal/versioned until representative
+  scripts and malformed-input gates pass; persist only an explicitly accepted version.
+- **Risk: the effort is not recoverable.** The MOD-M9 terminal decision and maintenance ceiling
+  exist to price that before several XL items begin.

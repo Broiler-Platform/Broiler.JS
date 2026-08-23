@@ -1,13 +1,14 @@
 # Assembly split — status
 
-**S-0 through S-6 done; S-7 in progress.** `Broiler.JavaScript.Expressions` exists, contains
-no `System.Reflection.Emit`, and the six dependents are re-pointed at it. Sections 0 and 7
+**Structural implementation landed through S-6; S-7 acceptance remains open.**
+`Broiler.JavaScript.Expressions` exists, contains no `System.Reflection.Emit`, and the six
+dependents were re-pointed as recorded below. Sections 0 and 7
 below are the build's findings; sections 1–6 are the symbol analysis
 [`AssemblySplit.md`](AssemblySplit.md) was designed against, run 2026-08-07, **left as
 written so the two can be compared** — §0 lists the four places it was wrong.
 
-> The evidence half of [`AssemblySplit.md`](AssemblySplit.md). **The plan document is the
-> one to act from.**
+> The evidence half of [`AssemblySplit.md`](AssemblySplit.md). Completed structural steps
+> are history, not work to repeat; the current next action is S-7.
 >
 > **Sections 1–6 are symbol analysis, not a build.** They establish that no *reference*
 > crosses the proposed split. They do **not** establish that the two projects compile —
@@ -21,8 +22,8 @@ written so the two can be compared** — §0 lists the four places it was wrong.
 | | |
 |---|---|
 | Steps started | **8 of 8** |
-| Steps landed | **7** — S-0 … S-6 |
-| Blocked on | **S-7 · test262 counts** (running) |
+| Structural steps landed | **7** — S-0 … S-6 |
+| Acceptance open | **S-7 · pinned test262 and repository validation** |
 | Analysis | **complete; four corrections in §0, none fatal** |
 | Decision 1 | taken as written — namespaces preserved, no consumer `using` changed |
 | Decision 2 | **taken as written** — the emitter keeps `Broiler.JavaScript.ExpressionCompiler`; the model is the new `Broiler.JavaScript.Expressions` |
@@ -106,9 +107,8 @@ public surface and the honest price of the split; the alternative was the trapdo
 
 ### What it unblocked, measured rather than asserted
 
-**Every `System.Reflection.Emit` reference in the engine is now in one assembly.** Scanning
-the built output of `Broiler.JavaScript.Portable.Compiler`'s entire reference closure — the
-bytecode compiler, which is what [`Phase-6.md`](Phase-6.md) is waiting on:
+**The `Broiler.JavaScript.Portable.Compiler` reference closure is Emit-free.** Scanning that
+built closure—the bytecode compiler dependency slice relevant to this split—shows:
 
 | Assembly in the closure | `System.Reflection.Emit` |
 |---|---|
@@ -121,6 +121,11 @@ references at all. **That edge is gone**, and
 
 This is not a working AOT configuration — that is [`Assemblies.md`](Assemblies.md)'s A-7 —
 but it is the precondition A-7 could not previously be attempted without.
+
+It is also **not a whole-tree claim**. `AssemblyCodeCache`, `ILPack`, shells, hosts, generated
+source, and other composition profiles remain in A-4/MOD-M2's dynamic-code census. Their Emit
+references must move into the approved IL profile or be explicitly excluded before A-7 can
+pass.
 
 ### Where the emitter reference survives, and why
 
@@ -341,7 +346,7 @@ Exit gate 4 asks for these to be named. Beyond the four file cuts in §0:
 | `ExpressionCompilationBackends.Get` resolves from a registry instead of a `switch` | S-3, as directed. Registration is an explicit call from a `[ModuleInitializer]` in the assembly that owns the implementations — no reflection, no assembly-name probing |
 | `DictionaryCodeCache.Compile` calls `ExpressionCompilationBackends.Get(…).Compile(…)` instead of `CompileWithNestedLambdas(…)` | S-5. Drops one nested `CompilationStack.Run`, which ran inline and is immediately re-entered by the enclosing one |
 | ~20 members widened to `public` | tabulated in §0; the alternative was `InternalsVisibleTo` |
-| `M13_ExpressionCompiler_RemainsMonolithic` rewritten | it asserted the monolith this change removes. M13's "no-go on decomposition" is superseded by [`AssemblySplit.md`](AssemblySplit.md); the test now asserts the split, and `M6`/`M7`'s allowed-reference lists name the model |
+| `M13_ExpressionCompiler_RemainsMonolithic` rewritten | it asserted the monolith this change removes. M13's "no-go on decomposition" is superseded by [`AssemblySplit.md`](AssemblySplit.md); the test now asserts the split, and the legacy validation milestones `M6`/`M7` (not modernization MOD-M6/MOD-M7) have allowed-reference lists that name the model |
 
 **One unrelated repair.** The tree did not build at the commit this branch started from:
 `cece6f2c` ("Update docs") removed `Broiler.JavaScript.Ast`'s only `ProjectReference` while

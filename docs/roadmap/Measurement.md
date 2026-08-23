@@ -5,10 +5,10 @@ which conditions (the gate), the campaign's own protocol and conformance gates (
 standing lessons the campaign has learned about measuring (§3.5), and the command line for
 every probe that produced a number anywhere in this directory (Appendix A).
 
-> One of the four documents in [`docs/roadmap/`](README.md), and the one that governs the
-> other three. [`Roadmap.md`](Roadmap.md) plans the work and quotes measurements
-> throughout; **none of them are claimable under the rules below**, and it says so about
-> itself.
+> The normative measurement document in [`docs/roadmap/`](README.md).
+> [`Roadmap.md`](Roadmap.md) is the campaign crosswalk and quotes measurements throughout;
+> [`Modernization.md`](Modernization.md) owns cross-track execution order. **None of the
+> quoted historic timings are claimable under the rules below**, and both roadmaps say so.
 >
 > **Section numbers are the roadmap's**, unchanged, so an existing reference to §3.1 or
 > §3.5 still resolves — it resolves here. §0, §1, §2 and §4 are in
@@ -16,7 +16,9 @@ every probe that produced a number anywhere in this directory (Appendix A).
 >
 > Consolidated 2026-08-07 from four files: `Broiler.JS/docs/performance.md` (the gate),
 > and the campaign's `protocol.md`, `lessons.md` and `appendix-a-reproducing.md` (§3 and
-> Appendix A). Nothing was rewritten in the merge.
+> Appendix A). The historical evidence and lessons remain intact. The evergreen gate at
+> the top of this file has since been made fail-closed; where historical campaign wording
+> conflicts with it, this gate governs.
 
 ---
 
@@ -26,6 +28,26 @@ Performance changes are accepted only with repeatable measurements and the seman
 tests that own the optimized path. Machine-specific output belongs under the ignored
 `artifacts/performance/` directory, not in Markdown result logs.
 
+### Evidence classes
+
+Every result bundle used for a roadmap or release decision declares exactly one evidence
+class:
+
+- **Smoke** proves that the harness, workload and artifact path work. Developer machines
+  and GitHub-hosted runners may produce smoke evidence. Smoke never accepts or rejects a
+  performance change, even when all repetitions happen to be close.
+- **Prioritization** sizes a population, mechanism or attainable ceiling. It may guide the
+  next experiment but cannot close a performance item.
+- **Acceptance** compares a candidate with an immutable control on a declared controlled
+  lane and passes every rule below. Only acceptance evidence supports a performance or
+  resource claim.
+- **Diagnostic** explains an effect using tracing, sampling, counters or disassembly. A
+  diagnostic run is not a primary timing run unless the instrument's overhead and output
+  fidelity were independently validated for that workload.
+
+Conformance, API and architecture results are not downgraded merely because the machine is
+unsuitable for timing. A deterministic correctness failure remains a failure.
+
 ### Configuration
 
 - Jobs: [`eng/performance/phase0.json`](../../eng/performance/phase0.json)
@@ -33,6 +55,10 @@ tests that own the optimized path. Machine-specific output belongs under the ign
   [`eng/performance/schemas/phase0-result.schema.json`](../../eng/performance/schemas/phase0-result.schema.json)
 - Benchmark/test owners:
   [`eng/performance/ownership.json`](../../eng/performance/ownership.json)
+
+The current `smoke` profile uses a broad 20% wiring guard. The current `baseline` profile
+uses a provisional 7.5% repeatability guard and fresh-process lifecycle samples. Neither
+configured percentage is a candidate acceptance threshold.
 
 ### Collect evidence
 
@@ -42,7 +68,7 @@ Developer wiring check:
 python scripts/performance/collect_phase0.py --profile smoke
 ```
 
-Release-quality local baseline:
+One-arm controlled-host collection:
 
 ```powershell
 dotnet tool install --tool-path artifacts/tools dotnet-trace
@@ -55,6 +81,12 @@ python scripts/performance/collect_phase0.py `
   --rid win-x64
 ```
 
+This command collects one source tree and its same-tree repetitions. It is an input to an
+acceptance comparison, not a candidate/control decision by itself. In particular, the
+current `--enforce-noise` option is only a repeatability wiring guard until it enforces the
+exact-row, all-repetition and all-applicable-metric rules below. Its exit code alone cannot
+accept a change.
+
 Selected IL/JIT disassembly:
 
 ```powershell
@@ -63,26 +95,111 @@ python scripts/performance/collect_phase0.py --profile disassembly
 
 The collector records commit/dirty state, commands, runtime, OS/RID, processor, GC and
 tiering settings, lifecycle samples, BenchmarkDotNet results, package graph, managed
-assembly sizes, and optional publish results. Retain the raw BenchmarkDotNet, EventPipe,
-binary-log, IL, and publish artifacts with release evidence.
+assembly sizes, and optional publish results. An acceptance wrapper must add the complete
+source and dependency identity described below. Retain the raw BenchmarkDotNet, EventPipe,
+binary-log, IL, publish, semantic and comparison artifacts with release evidence.
 
-### Measurement rules
+### Acceptance manifest and source identity
 
-The smoke profile uses a broad 20% repeatability band and only verifies wiring. The
-baseline profile uses a 7.5% cross-run band and fresh-process lifecycle samples.
+Candidate and control are reproducible build inputs, not just two labels. Before either arm
+runs, write one immutable manifest containing:
 
-For an acceptance run:
+- candidate and control commits, recursive submodule commits, and the benchmark/harness
+  commit;
+- a clean-worktree assertion, or a checksummed patch plus a manifest of untracked inputs;
+- resolved package/dependency versions, SDK/runtime identity and relevant generated-source
+  hashes;
+- configuration, target framework, RID, publish properties, bootstrap profile, compiler
+  backend, tiered-compilation/PGO/ReadyToRun settings, GC mode and CPU-feature policy;
+- the pinned corpus revision, exact inclusion/exclusion manifest, and expected result-row
+  identities/metrics; and
+- the primary metric, direction, minimum relevant effect or equivalence budget, paired
+  analysis, resource/semantic guardrails and their precedence.
 
-1. use the same commit, idle physical machine, power plan, RID, CPU feature overrides,
-   GC mode, and publish properties;
-2. keep cold lifecycle results separate from warmed microbenchmarks;
-3. require two runs inside the configured band;
-4. report time, allocation, working set, file count, and publish bytes together; and
-5. run the semantic owner and focused test262 manifests named in
-   `eng/performance/ownership.json`.
+A dirty boolean without the corresponding content is not reproducible evidence. A mutable
+corpus ref such as `master` or `main` is not an acceptance identity. The comparator rejects
+arms whose compatibility fields differ unless that field is the single factor deliberately
+under test.
 
-The release matrix is Windows x64, Linux x64, and Linux Arm64. SIMD claims also require
-x64 with the relevant feature enabled and disabled and an AdvSimd-capable Arm64 host.
+### Stability, resolution and the candidate decision
+
+These quantities must not be used as synonyms:
+
+| Quantity | Meaning | What it decides |
+|---|---|---|
+| **A/A stability envelope** | normal movement of the same build on one lane, calibrated per workload and metric | whether the lane/run is usable |
+| **measurement resolution** | the uncertainty of the paired candidate/control estimate with the predeclared sample plan | whether the observed effect is distinguishable |
+| **minimum relevant effect / equivalence budget** | the smallest product-relevant change worth accepting or the largest regression considered equivalent | accept, reject, equivalent, or below-resolution |
+| **guardrail budget** | maximum allowed correctness, memory, GC, tail-latency, size or compatibility cost | vetoes an otherwise favourable primary metric |
+
+The `baseline` profile's current 7.5% value is a provisional harness repeatability guard,
+not a universal regression threshold. Stability is calibrated on the controlled lane from
+same-build A/A runs and may differ by workload and metric. It is never widened after seeing
+a candidate. Recalibration is a separate control-only change with retained evidence.
+
+For an acceptance comparison:
+
+1. run candidate and control on the same controlled host in a balanced, process-isolated
+   order such as ABBA/BABA; use enough independent pairs for the predeclared analysis and
+   repeat a provisionally qualifying result in a fresh confirmation run before acceptance;
+2. use either a same-binary switch whose disabled arm is proven to have no relevant overhead,
+   or isolated candidate/control builds produced by one harness/toolchain; record which
+   design was used and keep a null control that can invalidate the comparison;
+3. compare the exact expected row set. A missing, duplicate, failed, renamed or incomparable
+   row invalidates the comparison; intersections and partial aggregates never pass;
+4. include every configured repetition in the analysis. Two repetitions are the current
+   wiring minimum, not proof that a lane or effect is decision-grade;
+5. keep cold fresh-process lifecycle results separate from warmed microbenchmarks and keep
+   cached and uncached results separate;
+6. report the primary metric with its paired uncertainty and report applicable allocation,
+   GC, working set/RSS, committed/virtual memory, thread count, tail latency, code/package
+   size and publish metrics as guardrails; and
+7. return exactly one predeclared decision: `accept`, `reject`, `equivalent`,
+   `below-resolution`, or `invalid-run`. `Equivalent` requires the complete paired interval
+   to remain inside the predeclared equivalence budget; an interval crossing the applicable
+   superiority/non-inferiority/equivalence boundary is `below-resolution`. Lane instability
+   produces `invalid-run`, not a wider candidate budget.
+
+### Controlled lanes and effective configuration
+
+The release certification matrix is Windows x64, Linux x64 and Linux Arm64. A narrower claim
+names only the lanes and product profiles actually run; it must not imply unrun coverage.
+SIMD/intrinsic claims additionally require x64 with each relevant feature enabled and
+disabled, plus an AdvSimd-capable Arm64 host. Applicable workstation and server GC arms are
+run separately.
+
+Requested configuration is insufficient. Each measured child reports the effective RID,
+process architecture, GC mode, bootstrap profile, tiering/PGO/ReadyToRun state and relevant
+hardware-intrinsic support. The arm fails when requested and effective values disagree.
+Record CPU model, microcode, logical/physical core topology, memory, OS, power/governor and
+thermal policy with the lane. GitHub-hosted runners remain smoke lanes, not controlled
+acceptance hardware.
+
+### Semantic and compatibility bundle
+
+Every candidate decision resolves its work-item ID through
+[`eng/performance/ownership.json`](../../eng/performance/ownership.json), then runs the named
+semantic owner and focused test262 manifest. Candidate and control results, exact suite pin,
+manifest contents and row-level differences are stored with the comparison. Missing ownership,
+an unrun manifest, a new failure/timeout, or an unexplained bucket movement prevents acceptance.
+Package/startup changes also carry the declared bootstrap surface, public/API/package checks
+and pristine consumer result. Faster initialization with missing globals is a regression.
+
+### Observer effects
+
+Profiled and traced runs are separate matched diagnostic arms. Their elapsed time is not used
+as the primary candidate metric. Measure instrument overhead with an uninstrumented control,
+and verify that the instrument can name the code or event being attributed before using its
+largest row. Prefer exact low-overhead runtime counters when they answer the question. The
+collector's EventPipe scenarios already run in separate child processes; preserve that
+separation.
+
+### Evidence retention
+
+Store schema-versioned, checksummed summaries and raw BenchmarkDotNet, lifecycle, EventPipe,
+build, publish, conformance and comparison artifacts in the durable release evidence store.
+Short-lived CI artifacts are a transport/cache, not the evidence of record. A published
+summary must be regenerable from the retained raw bundle and immutable manifest.
 
 ### Bootstrap profiles
 
@@ -116,20 +233,10 @@ Do not describe it as Native AOT support for the full engine.
 
 ### 3.1 What may be claimed
 
-[`Measurement.md`](Measurement.md) is unchanged
-and unchallenged by this document. To *claim* a performance result:
-
-1. same commit, idle physical machine, power plan, RID, CPU feature overrides, GC
-   mode, and publish properties;
-2. cold lifecycle results kept separate from warmed microbenchmarks;
-3. **two runs inside the configured band** (7.5% for the `baseline` profile, 20% for
-   `smoke`, which only verifies wiring);
-4. time, allocation, working set, file count and publish bytes reported together;
-5. the semantic owner and focused test262 manifests named in
-   [`eng/performance/ownership.json`](../../eng/performance/ownership.json).
-
-Release matrix: **win-x64, linux-x64, linux-arm64.** SIMD claims additionally require
-x64 with the feature enabled and disabled, and an AdvSimd-capable Arm64 host.
+The evergreen gate above is the single normative acceptance protocol; this campaign section
+does not duplicate it. A result is claimable only when its immutable bundle records the
+`accept` decision produced by that protocol. A same-tree run inside 7.5%, a BenchmarkDotNet
+ratio, or a committed Octane score is not sufficient by itself.
 
 For the Octane half of that matrix the Octane Benchmarks workflow
 (`.github/workflows/octane-benchmarks.yml`, in the parent repository) takes a
@@ -137,10 +244,10 @@ For the Octane half of that matrix the Octane Benchmarks workflow
 `windows-latest` and `ubuntu-24.04-arm`. Each writes and commits its own
 `tests/octane/results/<platform>/`, because a score off one machine says nothing
 about another; a locally driven run picks the same directory up from
-`--platform`, defaulting to the host's own RID. That is the *harness* covering the
-matrix, not the matrix being satisfied — §3.1's other conditions (an idle physical
-machine above all) still decide whether a run may be claimed, and a GitHub-hosted
-runner is not one.
+`--platform`, defaulting to the host's own RID. That is the *smoke harness* covering the
+matrix, not acceptance of the matrix. GitHub-hosted results provide coverage, continuity
+and A/A observations; they do not become acceptance evidence merely because all rows fall
+inside the configured harness band.
 
 > **Standing caveat on every number in §4.** The engine campaign's figures come from
 > an ad-hoc in-process harness on a shared 4-core container with 10–15% run-to-run
@@ -158,7 +265,9 @@ A single run tells you whether a suite completes; it does **not** tell you wheth
 score moved — run-to-run variance is comfortably larger than most changes worth
 making. With `--repetitions n` the harness reports the **median** per benchmark plus
 the observed spread `(max − min) / median`, flagging `⚠` anything outside
-`--noise-band` (default 7.5%, matching the `baseline` profile).
+`--noise-band` (default 7.5%, matching the provisional `baseline` harness guard).
+That flag classifies same-run repeatability; it is not an acceptance threshold for a
+candidate delta.
 
 Three properties of that design are load-bearing:
 
@@ -170,8 +279,9 @@ Three properties of that design are load-bearing:
   never an average. Averaging a flake into a pass is the failure mode the harness
   exists to prevent.
 
-Expect the two latency scores to be the noisy ones, and treat that as data — a wide
-band on SplayLatency is itself a pause-distribution result.
+Expect the two latency scores to be among the unstable rows, and treat a wide three-sample
+spread as a signal to investigate. It is not a measured pause distribution. Attribute it to
+pauses only after per-invocation tail-latency and GC/pause diagnostics support that claim.
 
 **Per-suite budgets.** `--timeout` (default 180 s) is a **floor**; a suite that needs
 longer raises its own via `timeoutSec` in
@@ -1073,19 +1183,20 @@ These were paid for once each. They apply to every phase below.
   cause. It cost one grep for what reads the flag. *Before reading engine state through an existing
   accessor, read the accessor — an instrument that mutates is measuring a build nobody ships, and
   the arm it corrupts is the one you are reporting.*
-- **A declared noise band is a configured number until someone measures it — and once it was
-  measured twice, the second measurement corrected the first.** `phase0.json` has carried 7.5%
-  since 0-4 built `--repetitions`, every acceptance rule in this campaign is written against it,
-  and for a long time nothing had ever run the flag that would check it. Run in a container:
+- **Historical lesson: a declared repeatability guard was treated as an acceptance band before
+  the campaign had measured a controlled lane.** `phase0.json` has carried 7.5% since 0-4 built
+  `--repetitions`; older sections wrote acceptance rules against it even though it was only a
+  configured harness value. Run in a container:
   **5 of 13 scores exceed it**, spread 0.4%–15.9%, with **Richards and DeltaBlue among the
-  failures** — the pair phase 2's exit criterion rests on. Run in CI, on the machine the gate
-  actually closes on: **1 of 17 exceeds it**, median 3.0%, and all five of the container's
+  failures** — the pair phase 2's historical exit criterion rests on. Run as hosted-CI smoke:
+  **1 of 17 exceeds it**, median 3.0%, and all five of the container's
   offenders are inside — Richards at **1.9%**, a 5.6× difference on one suite between two
   honest three-repetition runs of the same engine. **Both readings are right about their own
-  machine and neither is right about the other's.** *A tolerance nobody has measured is a
-  preference; a tolerance measured somewhere else is still a preference. Measure the band where
-  the arms are going to run, expect it to be per-suite, and never carry a spread across a
-  machine boundary — including from a development container into an acceptance rule.*
+  machine and neither is an acceptance envelope or resolution estimate.** *Calibrate the
+  workload/metric A/A envelope on the controlled lane where both arms will run, keep the
+  practical decision threshold separate, and never carry a three-sample spread across a
+  machine boundary — including from a development container or hosted runner into an
+  acceptance rule.*
 - **A measurement that decides a *design* has to be re-taken before the design ships, because a
   premise can expire.** Phase 5's item 2 declined to ship a `Compiled` policy on the strength of
   one pattern out of eleven measuring **4.3× slower compiled** — stable across three repetitions,
@@ -1126,15 +1237,16 @@ These were paid for once each. They apply to every phase below.
   system before spending a session inside the numerator** — and prefer a reference that fails the
   way you do (a managed interpreter) over one that does not (a production JIT), because only the
   first can tell a shared difficulty from a private defect.
-- **A shared control moving with the subject is the cheapest check a benchmark delta can get, and
-  this harness has always emitted one.** Between the two committed Octane runs Broiler's geomean
-  reads **351 → 498**, which is a 1.42× improvement if any of it belongs to the engine. Chromium's
-  own geomean moved **57 080 → 74 297** on the same runner over the same two days and Jint's
-  **616 → 820** — three engines moving 1.30–1.42× together, which is a statement about the runner
-  rather than about any of them. Both runs are single-repetition and both say so on their own face,
-  so the disclaimer was already there and the tempting number was still sitting next to it. *When a
-  result ships beside an unchanged reference, difference the reference first; a delta that the
-  control also shows is the machine, and the ratio column exists precisely to divide it out.*
+- **An environmental canary moving with the subject is a cheap warning, not a candidate control.**
+  Between the two committed Octane runs Broiler's geomean reads **351 → 498**, which looks like a
+  1.42× improvement if any of it belongs to the engine. Chromium's geomean moved
+  **57 080 → 74 297** on the same runner over the same two days and Jint's **616 → 820** — three
+  engines moving 1.30–1.42× together, enough to warn that the host changed and the Broiler delta
+  is not attributable. Different engines need not scale equally, so neither reference normalizes
+  the result and the ratio column cannot “divide out” the machine. Both runs are single-repetition
+  and say so. *Use reference-engine movement to invalidate an attribution, never to accept or
+  rescale one; acceptance requires the same-engine null and candidate/control arms in one
+  identity-attested session.*
 - **A number computed over a subset stays wrong in the same direction every time you re-use it, and
   the subset does not announce itself.** §4.2a found three censuses stuck on 7 of Octane's 15 suites
   and fixed the hosts; what it could not fix is every *figure already derived* from them, because a
@@ -1542,7 +1654,8 @@ seven hides both ends.
 iteration, so over 3 M iterations the *off* arm allocates ~192 MB more; run in one process its
 collections are charged to whichever function runs next, and the control — identical code on both
 arms — reads 1.2857× instead of ~1.000. Generate one file per shape, rotate
-`off/on/on/off`, and read the control first: a control outside the noise band invalidates the run.
+`off/on/on/off`, and read the null control first: a control outside the controlled lane's
+predeclared A/A envelope invalidates the run.
 
 **Give `--compile-profile` a corpus name as its fourth argument and run one per process.**
 The corpora share a heap and item 1-1 keeps an un-generated lambda's tree alive, so a corpus
