@@ -55,9 +55,11 @@ class AuditTest262Tests(unittest.TestCase):
             "test/language/negative.js",
             "/*---\nnegative:\n  phase: runtime\n  type: ReferenceError\n---*/\nnotDeclared;\n",
         )
+        # $262.agent is the hook the host does not define; $262.createRealm and the rest
+        # are defined, so only an agent test is host-harness blocked.
         self.write_test(
             "test/language/host-harness.js",
-            "$262.createRealm();\n",
+            "$262.agent.start('while (true) {}');\n",
         )
         self.write_test(
             "test/language/instn-resolve-empty-export_FIXTURE.js",
@@ -74,50 +76,59 @@ class AuditTest262Tests(unittest.TestCase):
         )
 
         self.assertEqual(8, summary["suiteTestsDiscovered"])
-        self.assertEqual(1, summary["unsupportedFlaggedTests"])
-        self.assertEqual({"module": 1}, summary["unsupportedFlagCounts"])
+        # `module` names a host mode rather than an exclusion, so no flag is unsupported.
+        self.assertEqual(0, summary["unsupportedFlaggedTests"])
+        self.assertEqual({}, summary["unsupportedFlagCounts"])
         # Feature metadata never marks a test unsupported, so the Temporal test is
         # script-host-verifiable rather than excluded.
         self.assertEqual(0, summary["unsupportedFeaturedTests"])
         self.assertEqual({}, summary["unsupportedFeatureCounts"])
         self.assertEqual(1, summary["negativeTests"])
         self.assertEqual(1, summary["hostHarnessDependentTests"])
-        self.assertEqual(3, summary["scriptHostExcludedTests"])
+        self.assertEqual(2, summary["scriptHostExcludedTests"])
         self.assertEqual(
-            {"hostHarness": 1, "module": 1, "negative": 1},
+            {"hostHarness": 1, "negative": 1},
             summary["scriptHostBlockerCounts"],
         )
-        self.assertEqual(5, summary["scriptHostVerifiableTests"])
+        # By hook, so the exclusion can be read as the product decision it is.
+        self.assertEqual(
+            {"$262.agent": 1}, summary["hostHarnessBlockerCounts"]
+        )
+        self.assertEqual({"script": 7, "module": 1}, summary["hostModeCounts"])
+        self.assertEqual(6, summary["scriptHostVerifiableTests"])
         self.assertEqual(1, summary["asyncScriptHostVerifiableTests"])
         self.assertEqual(3, summary["manifestEntries"])
         self.assertEqual(3, summary["manifestUniqueTests"])
         self.assertEqual(3, summary["manifestScriptHostVerifiableTests"])
         self.assertEqual(
-            [{"bucket": "test/language", "count": 5}],
+            [{"bucket": "test/language", "count": 6}],
             summary["topLevelCounts"]["scriptHostVerifiable"],
         )
         self.assertEqual(
-            [{"bucket": "test/language", "count": 3}],
+            [{"bucket": "test/language", "count": 2}],
             summary["topLevelCounts"]["excluded"],
         )
         self.assertEqual(
             [
+                {"bucket": "test/language/module.js", "count": 1},
                 {"bucket": "test/language/no-strict.js", "count": 1},
                 {"bucket": "test/language/temporal.js", "count": 1},
             ],
             summary["largestUncoveredScriptHostVerifiableBuckets"],
         )
         self.assertAlmostEqual(3 * 100.0 / 8, summary["manifestCoverageOfSuitePercent"])
-        expected_script_host_coverage = 3 * 100.0 / 5
+        expected_script_host_coverage = 3 * 100.0 / 6
         self.assertAlmostEqual(
             expected_script_host_coverage,
             summary["manifestCoverageOfScriptHostVerifiablePercent"],
         )
 
     def test_manifest_includes_negative_and_unsupported_tests(self) -> None:
+        # CanBlockIsFalse describes an agent that cannot block, which this one can, so the
+        # test does not apply to this host — the remaining shape of an unsupported flag.
         unsupported_path = self.write_test(
-            "test/language/module.js",
-            "/*---\nflags: [module]\n---*/\nexport {};\n",
+            "test/language/cannot-block.js",
+            "/*---\nflags: [CanBlockIsFalse]\n---*/\nAtomics.wait();\n",
         )
         unsupported_feature_path = self.write_test(
             "test/language/temporal.js",
@@ -129,7 +140,7 @@ class AuditTest262Tests(unittest.TestCase):
         )
         host_harness_path = self.write_test(
             "test/language/host-harness.js",
-            "$262.detachArrayBuffer({});\n",
+            "$262.agent.broadcast(new SharedArrayBuffer(4));\n",
         )
 
         repo = Test262Repository("suite-ref", str(self.suite_root))

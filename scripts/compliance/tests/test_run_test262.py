@@ -159,12 +159,310 @@ class RunTest262Tests(unittest.TestCase):
             "// sta harness\n",
             encoding="utf-8",
         )
+        # The real upstream file, because it is the async protocol under test: every
+        # `flags: [async]` case here is assembled with the same $DONE a suite run uses.
+        (self.suite_root / "harness" / "doneprintHandle.js").write_text(
+            "function __consolePrintHandle__(msg) {\n"
+            "  print(msg);\n"
+            "}\n"
+            "\n"
+            "function $DONE(error) {\n"
+            "  if (error) {\n"
+            "    if(typeof error === 'object' && error !== null && 'name' in error) {\n"
+            "      __consolePrintHandle__('Test262:AsyncTestFailure:'"
+            " + error.name + ': ' + error.message);\n"
+            "    } else {\n"
+            "      __consolePrintHandle__('Test262:AsyncTestFailure:Test262Error: '"
+            " + String(error));\n"
+            "    }\n"
+            "  } else {\n"
+            "    __consolePrintHandle__('Test262:AsyncTestComplete');\n"
+            "  }\n"
+            "}\n",
+            encoding="utf-8",
+        )
 
     def write_test(self, relative_path: str, source: str) -> str:
         path = self.suite_root / relative_path
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(source, encoding="utf-8")
         return relative_path
+
+    def run_async_test_with_host_output(
+        self,
+        body: str,
+        stdout: str,
+        returncode: int = 0,
+    ) -> dict[str, object]:
+        """Run one `flags: [async]` test against a host that printed *stdout*."""
+        path = self.write_test(
+            "test/language/async-protocol.js",
+            f"/*---\nflags: [async]\n---*/\n{body}\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+
+        class FakeProcess:
+            def __init__(self, args: list[str]):
+                self.args = args
+                self.pid = 4321
+                self.returncode = returncode
+
+            def communicate(self, *, timeout: float):
+                return stdout, ""
+
+        with mock.patch.object(
+            run_test262.subprocess, "Popen", side_effect=lambda args, **kwargs: FakeProcess(args)
+        ):
+            return run_test262.run_test(repo, TEST_ENGINE_PATH, path, {}, 30.0, 0)
+
+    def test_async_test_passes_only_on_its_completion_marker(self) -> None:
+        result = self.run_async_test_with_host_output(
+            "$DONE();", "Test262:AsyncTestComplete\n"
+        )
+
+        self.assertEqual("passed", result["status"])
+        self.assertEqual("completed", result["asyncCompletion"])
+
+    def test_async_test_that_reports_a_failure_fails(self) -> None:
+        result = self.run_async_test_with_host_output(
+            "$DONE(new Test262Error('deliberate'));",
+            "Test262:AsyncTestFailure:Test262Error: deliberate\n",
+        )
+
+        self.assertEqual("failed", result["status"])
+        self.assertEqual("reportedFailure", result["asyncCompletion"])
+        self.assertIn("deliberate", str(result["reason"]))
+
+    def test_async_test_that_never_calls_done_fails(self) -> None:
+        # The case the completion-value protocol could not see: the host exits 0 having
+        # been told nothing, which is not the same fact as a test that succeeded.
+        result = self.run_async_test_with_host_output("var unsettled = 1;", "")
+
+        self.assertEqual("failed", result["status"])
+        self.assertEqual("neverSettled", result["asyncCompletion"])
+
+    def test_async_test_that_completes_twice_fails(self) -> None:
+        result = self.run_async_test_with_host_output(
+            "$DONE(); $DONE(new Test262Error('after'));",
+            "Test262:AsyncTestComplete\nTest262:AsyncTestFailure:Test262Error: after\n",
+        )
+
+        self.assertEqual("failed", result["status"])
+        self.assertEqual("completedTwice", result["asyncCompletion"])
+        self.assertIn("2 times", str(result["reason"]))
+
+    def test_async_test_that_completes_and_then_dies_fails(self) -> None:
+        result = self.run_async_test_with_host_output(
+            "$DONE(); throw new Test262Error('after');",
+            "Test262:AsyncTestComplete\n",
+            returncode=1,
+        )
+
+        self.assertEqual("failed", result["status"])
+        self.assertEqual("completed", result["asyncCompletion"])
+        self.assertIn("status 1", str(result["reason"]))
+
+    def test_async_program_carries_the_done_harness_and_no_completion_tail(self) -> None:
+        path = self.write_test(
+            "test/language/async-assembly.js",
+            "/*---\nflags: [async]\n---*/\nASYNC_BODY();\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        metadata, body = run_test262.parse_metadata(repo.read_text(path))
+
+        program = run_test262.assemble_test_program(repo, {}, metadata, body)
+
+        self.assertIn("function $DONE(error)", program)
+        self.assertLess(program.index("function $DONE"), program.index("ASYNC_BODY();"))
+        self.assertTrue(program.rstrip().endswith("ASYNC_BODY();"))
+
+    def test_a_test_that_includes_the_done_harness_is_not_given_it_twice(self) -> None:
+        path = self.write_test(
+            "test/language/async-explicit-include.js",
+            "/*---\nflags: [async]\nincludes: [doneprintHandle.js]\n---*/\nASYNC_BODY();\n",
+        )
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        metadata, body = run_test262.parse_metadata(repo.read_text(path))
+
+        program = run_test262.assemble_test_program(repo, {}, metadata, body)
+
+        self.assertEqual(1, program.count("function $DONE(error)"))
+
+    def test_classify_async_completion_reads_each_protocol_outcome(self) -> None:
+        self.assertEqual(
+            ("completed", ""),
+            run_test262.classify_async_completion("Test262:AsyncTestComplete\n"),
+        )
+        self.assertEqual(
+            "reportedFailure",
+            run_test262.classify_async_completion(
+                "Test262:AsyncTestFailure:Test262Error: nope\n"
+            )[0],
+        )
+        self.assertEqual(
+            "neverSettled",
+            run_test262.classify_async_completion("some other output\n")[0],
+        )
+        self.assertEqual(
+            "completedTwice",
+            run_test262.classify_async_completion(
+                "Test262:AsyncTestComplete\nTest262:AsyncTestComplete\n"
+            )[0],
+        )
+        # A test may print before it completes; only the marker lines are read, and a
+        # marker still counts when the host wrote CRLF line endings.
+        self.assertEqual(
+            ("completed", ""),
+            run_test262.classify_async_completion(
+                "chatty output\r\nTest262:AsyncTestComplete\r\n"
+            ),
+        )
+
+    def run_and_capture_command(
+        self, path: str, stdout: str = ""
+    ) -> tuple[list[str], str, dict[str, str]]:
+        """Run one test against a recording host.
+
+        Returns the argv, the program the host was handed, and the contents of every .js
+        file named on the command line — read while the process is "running", because the
+        runner deletes the ones it wrote as soon as it returns.
+        """
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        captured: dict[str, object] = {}
+
+        class FakeProcess:
+            def __init__(self, args: list[str]):
+                self.args = args
+                self.pid = 3141
+                self.returncode = 0
+
+            def communicate(self, *, timeout: float):
+                captured["argv"] = list(self.args)
+                captured["program"] = Path(self.args[-1]).read_text(encoding="utf-8")
+                captured["files"] = {
+                    argument: Path(argument).read_text(encoding="utf-8")
+                    for argument in self.args
+                    if argument.endswith(".js")
+                }
+                return stdout, ""
+
+        with mock.patch.object(
+            run_test262.subprocess,
+            "Popen",
+            side_effect=lambda args, **kwargs: FakeProcess(args),
+        ):
+            result = run_test262.run_test(repo, TEST_ENGINE_PATH, path, {}, 30.0, 0)
+
+        self.assertEqual("passed", result["status"])
+        return (
+            list(captured["argv"]),  # type: ignore[arg-type]
+            str(captured["program"]),
+            dict(captured["files"]),  # type: ignore[arg-type]
+        )
+
+    def test_raw_test_is_handed_its_own_bytes_with_no_harness(self) -> None:
+        # "The test source code must not be modified in any way" — including the metadata
+        # comment, because a hashbang test is about the first two bytes of the file.
+        source = "#!/usr/bin/env broiler\n/*---\nflags: [raw, onlyStrict]\n---*/\nRAW_BODY();\n"
+        path = self.write_test("test/language/raw-test.js", source)
+
+        argv, program, _ = self.run_and_capture_command(path)
+
+        self.assertEqual(source, program)
+        self.assertNotIn("assert harness", program)
+        self.assertNotIn('"use strict";', program)
+        self.assertIn("--script-host", argv)
+        self.assertNotIn("--preload", argv)
+
+    def test_module_test_runs_the_suite_file_with_a_preloaded_harness(self) -> None:
+        path = self.write_test(
+            "test/language/module-test.js",
+            "/*---\nflags: [module, async]\n---*/\nimport './dep_FIXTURE.js';\n$DONE();\n",
+        )
+        (self.suite_root / "test" / "language" / "dep_FIXTURE.js").write_text(
+            "export var dep = 1;\n", encoding="utf-8"
+        )
+
+        argv, program, files = self.run_and_capture_command(
+            path, stdout=f"{run_test262.ASYNC_COMPLETE_MARKER}\n"
+        )
+
+        # The module file itself is what the host is handed, in place: a copy elsewhere
+        # would resolve `./dep_FIXTURE.js` against the wrong directory.
+        self.assertEqual(
+            (self.suite_root / "test" / "language" / "module-test.js").resolve(),
+            Path(argv[-1]).resolve(),
+        )
+        self.assertIn("import './dep_FIXTURE.js';", program)
+        self.assertIn("--module-host", argv)
+        preload = files[argv[argv.index("--preload") + 1]]
+        self.assertIn("// assert harness", preload)
+        self.assertIn("function $DONE(error)", preload)
+        self.assertNotIn("import './dep_FIXTURE.js';", preload)
+
+    def test_module_and_raw_results_record_their_host_mode(self) -> None:
+        module_path = self.write_test(
+            "test/language/mode-module.js", "/*---\nflags: [module]\n---*/\nexport {};\n"
+        )
+        raw_path = self.write_test(
+            "test/language/mode-raw.js", "/*---\nflags: [raw]\n---*/\n1;\n"
+        )
+        script_path = self.write_test("test/language/mode-script.js", "1;\n")
+        repo = run_test262.Test262Repository(TEST_SUITE_REF, str(self.suite_root))
+        engine = RecordingPopen()
+
+        with mock.patch.object(run_test262.subprocess, "Popen", side_effect=engine):
+            results = [
+                run_test262.run_test(repo, TEST_ENGINE_PATH, path, {}, 30.0, 0)
+                for path in (module_path, raw_path, script_path)
+            ]
+
+        self.assertEqual(
+            ["module", "raw", None],
+            [result.get("hostMode") for result in results],
+        )
+        summary = run_test262.build_summary(
+            TEST_SUITE_REF,
+            TEST_ENGINE_PATH,
+            [],
+            [module_path, raw_path, script_path],
+            results,
+            {
+                "selectionMode": "requested",
+                "candidateCount": 3,
+                "selectedCountBeforeSharding": 3,
+                "shardCount": 1,
+                "shardIndex": 0,
+            },
+            30.0,
+            0,
+        )
+
+        self.assertEqual(
+            {
+                "script": 1,
+                "module": 1,
+                "raw": 1,
+            },
+            {
+                mode: counts["selected"]
+                for mode, counts in summary["hostModeSummary"].items()
+            },
+        )
+        self.assertEqual(1, summary["hostModeSummary"]["module"]["passed"])
+
+    def test_only_an_undefined_262_hook_blocks_a_test(self) -> None:
+        supported = run_test262.classify_test(
+            "$262.createRealm(); $262.detachArrayBuffer(b); $262.evalScript('1'); $262.gc();\n"
+        )
+        agent = run_test262.classify_test("$262.agent.start('');\n")
+        html_dda = run_test262.classify_test("var x = $262.IsHTMLDDA;\n")
+
+        self.assertEqual([], supported["hostHarnessBlockers"])
+        self.assertTrue(supported["isScriptHostVerifiable"])
+        self.assertEqual(["$262.agent"], agent["hostHarnessBlockers"])
+        self.assertFalse(agent["isScriptHostVerifiable"])
+        self.assertEqual(["$262.IsHTMLDDA"], html_dda["hostHarnessBlockers"])
 
     def test_run_test_prepends_use_strict_for_only_strict_files(self) -> None:
         path = self.write_test(
@@ -353,7 +651,14 @@ class RunTest262Tests(unittest.TestCase):
             "test/language/c3-temporal.js",
             "/*---\nfeatures: [Temporal]\n---*/\nTemporal.Duration();\n",
         )
-        self.write_test("test/language/host-harness.js", "$262.createRealm();\n")
+        # A $262 hook the host defines is not a blocker; one it does not is.
+        realm_path = self.write_test(
+            "test/language/host-harness.js", "$262.createRealm();\n"
+        )
+        self.write_test(
+            "test/language/host-agent.js",
+            "$262.agent.start('while (true) {}');\n",
+        )
         async_path = self.write_test(
             "test/language/d-async.js",
             "/*---\nflags: [async]\n---*/\n$DONE();\n",
@@ -372,9 +677,19 @@ class RunTest262Tests(unittest.TestCase):
             shard_index=1,
         )
 
-        # Verifiable: a.js, c3-temporal.js, d-async.js (module/negative/host-harness
-        # blocked, fixture excluded). Stable FNV-1a assignment selects shard 1.
-        verifiable = sorted([first_path, temporal_path, async_path])
+        # Verifiable: everything but the negative test, the $262.agent test, and the
+        # fixture — module tests included, because `module` names a host mode this runner
+        # implements. Stable FNV-1a assignment selects shard 1.
+        verifiable = sorted(
+            [
+                first_path,
+                "test/language/c-module.js",
+                "test/language/c2-module-block.js",
+                temporal_path,
+                realm_path,
+                async_path,
+            ]
+        )
         self.assertEqual(
             [
                 path
@@ -384,8 +699,8 @@ class RunTest262Tests(unittest.TestCase):
             selected_paths,
         )
         self.assertEqual("all-script-host-verifiable", selection["selectionMode"])
-        self.assertEqual(7, selection["candidateCount"])
-        self.assertEqual(3, selection["selectedCountBeforeSharding"])
+        self.assertEqual(8, selection["candidateCount"])
+        self.assertEqual(6, selection["selectedCountBeforeSharding"])
         self.assertEqual(2, selection["shardCount"])
         self.assertEqual(1, selection["shardIndex"])
 
@@ -942,7 +1257,7 @@ includes: [assert.js, sta.js]
         self.assertIn("MINIFIED_BODY();", minified_script)
         self.assertNotIn("ORIGINAL_BODY();", minified_script)
 
-    def test_async_minified_body_is_separated_from_unchanged_completion_tail(self) -> None:
+    def test_async_minified_body_runs_after_the_injected_done_harness(self) -> None:
         path = self.write_test(
             "test/language/minified-async.js",
             "/*---\nflags: [async]\n---*/\nORIGINAL_ASYNC_BODY()\n",
@@ -965,16 +1280,15 @@ includes: [assert.js, sta.js]
         self.assertEqual(["original", "terser"], [r["variant"] for r in results])
         minifier_input = minifier.calls[0][0]
         self.assertIn("ORIGINAL_ASYNC_BODY()", minifier_input)
-        self.assertNotIn("globalThis.$DONE", minifier_input)
-        self.assertNotIn("__broilerDonePromise", minifier_input)
+        # Only the test's own body is minified: the $DONE the runner injects is harness,
+        # and mangling the protocol would make the run unreadable rather than the test.
+        self.assertNotIn("function $DONE", minifier_input)
 
         minified_script = engine.scripts[1]
-        setup_index = minified_script.index("const __broilerDonePromise")
+        done_index = minified_script.index("function $DONE")
         body_index = minified_script.index("MINIFIED_ASYNC_BODY()")
-        tail_index = minified_script.index("\n;__broilerDonePromise")
-        self.assertLess(setup_index, body_index)
-        self.assertLess(body_index, tail_index)
-        self.assertTrue(minified_script.endswith(";__broilerDonePromise"))
+        self.assertLess(done_index, body_index)
+        self.assertTrue(minified_script.rstrip().endswith("MINIFIED_ASYNC_BODY()"))
 
     def test_only_strict_variant_minifies_and_executes_under_strict_mode(self) -> None:
         path = self.write_test(
@@ -2147,6 +2461,28 @@ class ReferenceHostTests(unittest.TestCase):
         # here, however happily Node's module wrapper would have swallowed it.
         self.assertFalse(engine.parses("return 1;\n"))
 
+    @unittest.skipUnless(shutil.which("node"), "the reference engine needs Node.js")
+    def test_the_reference_engine_reads_the_same_async_markers(self) -> None:
+        # Both sides of the attribution comparison have to answer the same question the
+        # same way: reference_host.cjs defines the `print` doneprintHandle.js needs, and
+        # an async program that reports a failure — or reports nothing — is not a pass.
+        engine = run_test262.ReferenceEngine("node", 30.0)
+        done = (
+            "function $DONE(error) {\n"
+            "  if (error) { print('Test262:AsyncTestFailure:' + error); }\n"
+            "  else { print('Test262:AsyncTestComplete'); }\n"
+            "}\n"
+        )
+
+        self.assertEqual(
+            "passed", engine.run(f"{done}Promise.resolve().then(() => $DONE());\n", True)
+        )
+        self.assertEqual(
+            "failed",
+            engine.run(f"{done}Promise.resolve().then(() => $DONE('nope'));\n", True),
+        )
+        self.assertEqual("failed", engine.run(f"{done}var unsettled = 1;\n", True))
+
 
 class HostExternsTests(unittest.TestCase):
     """The engine describes its own global surface, and that description becomes externs.
@@ -2255,6 +2591,172 @@ class HostExternsTests(unittest.TestCase):
             ],
             lines[2:],
         )
+
+
+class AsyncProtocolSelfCheckTests(unittest.TestCase):
+    """The fixtures whose subject is the runner, and the check that enforces them.
+
+    Two layers, because they answer different questions: these tests prove the check
+    reports a mismatch when the host behaves differently from the manifest, and the run
+    against a built engine (skipped when there is none) proves the engine and this runner
+    together reach the declared verdict.
+    """
+
+    def setUp(self) -> None:
+        self.temp_directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp_directory.cleanup)
+        self.suite_root = Path(self.temp_directory.name)
+        (self.suite_root / "harness").mkdir(parents=True)
+        for name in ("assert.js", "sta.js", "doneprintHandle.js"):
+            # Content is irrelevant to a host these tests do not run: only the fixture
+            # verdicts are under test here.
+            (self.suite_root / "harness" / name).write_text(
+                f"// {name}\n", encoding="utf-8"
+            )
+        self.suite_repo = run_test262.Test262Repository(
+            TEST_SUITE_REF, str(self.suite_root)
+        )
+        self.fixtures = run_test262.load_self_check_fixtures()
+
+    def _self_check_with_host(self, stdout_for: object) -> dict[str, object]:
+        class FakeProcess:
+            def __init__(self, args: list[str], stdout: str, returncode: int):
+                self.args = args
+                self.pid = 99
+                self.returncode = returncode
+                self._stdout = stdout
+
+            def communicate(self, *, timeout: float):
+                return self._stdout, ""
+
+        def fake_popen(args: list[str], **kwargs: object):
+            stdout, returncode = stdout_for(Path(args[-1]).read_text(encoding="utf-8"))
+            return FakeProcess(args, stdout, returncode)
+
+        with mock.patch.object(run_test262.subprocess, "Popen", side_effect=fake_popen):
+            return run_test262.run_self_check(
+                self.suite_repo, TEST_ENGINE_PATH, timeout_seconds=1.0
+            )
+
+    def test_a_host_that_always_completes_fails_every_fixture_but_the_control(self) -> None:
+        summary = self._self_check_with_host(
+            lambda program: (f"{run_test262.ASYNC_COMPLETE_MARKER}\n", 0)
+        )
+
+        self.assertFalse(summary["ok"])
+        self.assertEqual(len(self.fixtures), summary["checked"])
+        self.assertEqual(1, summary["matched"])
+        self.assertEqual(
+            ["test/async-protocol/completes.js"],
+            [case["path"] for case in summary["cases"] if case["matched"]],
+        )
+
+    def test_a_host_that_behaves_as_declared_matches_every_fixture(self) -> None:
+        # Each fixture's own source decides what this host prints, so the check is being
+        # asked the same question the engine is: does this program report what it did?
+        def stdout_for(program: str) -> tuple[str, int]:
+            if "reports a deliberate failure" in program:
+                return (
+                    f"{run_test262.ASYNC_FAILURE_MARKER_PREFIX}Test262Error: deliberate\n",
+                    0,
+                )
+            if "deliberately untrue" in program:
+                return (
+                    f"{run_test262.ASYNC_FAILURE_MARKER_PREFIX}Test262Error: untrue\n",
+                    0,
+                )
+            if "keeps going after it says it finished" in program:
+                return (
+                    f"{run_test262.ASYNC_COMPLETE_MARKER}\n"
+                    f"{run_test262.ASYNC_FAILURE_MARKER_PREFIX}Test262Error: after\n",
+                    0,
+                )
+            if "throws after reporting completion" in program:
+                return f"{run_test262.ASYNC_COMPLETE_MARKER}\n", 1
+            if "while (true)" in program:
+                raise subprocess.TimeoutExpired(cmd=["dotnet"], timeout=1.0)
+            if "the fixture resolves with its own value" in program:
+                return f"{run_test262.ASYNC_COMPLETE_MARKER}\n", 0
+            return "", 0
+
+        class TimingOutProcess:
+            """Times out once, then answers the post-termination drain as a real one does."""
+
+            pid = 98
+            returncode = None
+
+            def __init__(self) -> None:
+                self.timed_out = False
+
+            def communicate(self, *, timeout: float | None = None):
+                if self.timed_out:
+                    return "", ""
+                self.timed_out = True
+                raise subprocess.TimeoutExpired(cmd=["dotnet"], timeout=1.0)
+
+            def kill(self) -> None:
+                pass
+
+        def fake_popen(args: list[str], **kwargs: object):
+            program = Path(args[-1]).read_text(encoding="utf-8")
+            try:
+                stdout, returncode = stdout_for(program)
+            except subprocess.TimeoutExpired:
+                return TimingOutProcess()
+
+            class FakeProcess:
+                pid = 97
+
+                def __init__(self) -> None:
+                    self.returncode = returncode
+
+                def communicate(self, *, timeout: float):
+                    return stdout, ""
+
+            return FakeProcess()
+
+        with mock.patch.object(run_test262.subprocess, "Popen", side_effect=fake_popen):
+            with mock.patch.object(run_test262, "terminate_process_tree", lambda p: None):
+                summary = run_test262.run_self_check(
+                    self.suite_repo, TEST_ENGINE_PATH, timeout_seconds=1.0
+                )
+
+        self.assertTrue(summary["ok"], summary["cases"])
+        self.assertEqual(len(self.fixtures), summary["matched"])
+
+    def test_every_fixture_file_carries_a_declared_expectation(self) -> None:
+        declared = {str(fixture["path"]) for fixture in self.fixtures}
+        on_disk = {
+            path.relative_to(run_test262.SELF_CHECK_ROOT).as_posix()
+            for path in (run_test262.SELF_CHECK_ROOT / "test").rglob("*.js")
+        }
+
+        self.assertEqual(on_disk, declared)
+        for fixture in self.fixtures:
+            self.assertIn(
+                fixture["status"], {"passed", "failed", "timedOut"}, fixture["path"]
+            )
+
+    def test_the_built_engine_reaches_every_declared_verdict(self) -> None:
+        suite_root = os.environ.get("BROILER_TEST262_SUITE_ROOT", "")
+        engine = os.environ.get("BROILER_JS_DLL", run_test262.DEFAULT_BROILER_DLL)
+        if not suite_root:
+            cached = (
+                run_test262.TEMP_DIRECTORY
+                / "suite-cache"
+                / run_test262.DEFAULT_SUITE_REF
+            )
+            suite_root = str(cached) if (cached / "harness").is_dir() else ""
+        if not suite_root or not Path(engine).is_file():
+            self.skipTest(
+                "needs a built BroilerJS.dll and a local test262 harness "
+                "(BROILER_JS_DLL, BROILER_TEST262_SUITE_ROOT)"
+            )
+
+        repo = run_test262.Test262Repository(run_test262.DEFAULT_SUITE_REF, suite_root)
+        summary = run_test262.run_self_check(repo, engine)
+
+        self.assertTrue(summary["ok"], summary["cases"])
 
 
 if __name__ == "__main__":

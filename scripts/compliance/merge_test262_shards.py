@@ -27,6 +27,11 @@ from pathlib import Path
 from typing import Any, Callable, Iterable
 
 
+# The host modes run_test262.py can execute a file with, mirrored here rather than imported
+# so the merge stays a standalone artifact reader. A result without a hostMode field ran in
+# the script host, which is the mode every test used before the module and raw modes existed.
+SCRIPT_HOST_MODE = "script"
+HOST_MODES = (SCRIPT_HOST_MODE, "module", "raw")
 DEFAULT_PROBLEM_LIMIT = 10
 DEFAULT_BIGGEST_PROBLEM_LIMIT = 3
 DEFAULT_TIMEOUT_LIMIT = 10
@@ -1914,6 +1919,34 @@ def merge(
             ),
         }
 
+    # Per host mode, so a mode that ran nothing is visible instead of being absorbed into a
+    # total the script mode dominates: "every file is executed by an appropriate host mode"
+    # is a claim about each mode on its own.
+    host_mode_summary: dict[str, dict[str, int]] = {}
+    for host_mode in HOST_MODES:
+        mode_results = [
+            result
+            for result in results
+            if str(result.get("hostMode", SCRIPT_HOST_MODE)) == host_mode
+        ]
+        host_mode_summary[host_mode] = {
+            "selected": len(mode_results),
+            "executed": sum(
+                result["status"] in ("passed", "failed", "timedOut")
+                for result in mode_results
+            ),
+            "passed": sum(result["status"] == "passed" for result in mode_results),
+            "failed": sum(result["status"] == "failed" for result in mode_results),
+            "skipped": sum(result["status"] == "skipped" for result in mode_results),
+            "timedOut": sum(
+                result["status"] == "timedOut" for result in mode_results
+            ),
+            "notApplicable": sum(
+                _is_not_applicable(result) for result in mode_results
+            ),
+            "uniquePaths": len({str(result["path"]) for result in mode_results}),
+        }
+
     path_summary = {
         "total": unique_path_count,
         "executed": sum(
@@ -1991,6 +2024,7 @@ def merge(
         "summary": summary,
         "pathSummary": path_summary,
         "variantSummary": variant_summary,
+        "hostModeSummary": host_mode_summary,
         "observedVariants": observed_variants,
         "uniquePathCount": unique_path_count,
         "passedPaths": status_paths["passed"],
@@ -2167,6 +2201,16 @@ def render_issue_markdown(
         f"- Timed-out cases: {summary['timedOut']}",
         f"- Skipped cases: {summary['skipped']}",
         f"- Minifier not-applicable cases: {summary.get('notApplicable', 0)}",
+        (
+            "- Host modes (selected/executed/passed/failed/skipped/timedOut): "
+            + "; ".join(
+                f"{mode} {counts.get('selected', 0)}/{counts.get('executed', 0)}/"
+                f"{counts.get('passed', 0)}/{counts.get('failed', 0)}/"
+                f"{counts.get('skipped', 0)}/{counts.get('timedOut', 0)}"
+                for mode, counts in (merged.get("hostModeSummary") or {}).items()
+            )
+            or "none recorded"
+        ),
         (
             "- Configured variants: "
             + ", ".join(

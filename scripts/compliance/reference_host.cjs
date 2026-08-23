@@ -31,6 +31,18 @@ if (!scriptPath) {
 
 const source = fs.readFileSync(scriptPath, "utf8");
 
+// `print` is a JavaScript-shell global that Node does not have, and test262's async
+// protocol is printed: harness/doneprintHandle.js reports a test's completion by calling it.
+// Without the binding every async program dies of a ReferenceError before it settles, and
+// the reference engine's verdict on an async test would be "cannot run the original either"
+// for reasons that have nothing to do with the test. The engine under test defines the same
+// global in its script host, so both sides of the comparison print through one name.
+if (typeof globalThis.print !== "function") {
+  globalThis.print = function print(...values) {
+    process.stdout.write(values.map(String).join(" ") + "\n");
+  };
+}
+
 // Nothing is caught: a syntax error or an uncaught exception must leave the process with
 // Node's own non-zero exit and Node's own diagnostic, exactly as running the file did.
 if (checkOnly) {

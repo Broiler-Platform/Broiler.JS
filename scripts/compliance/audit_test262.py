@@ -74,6 +74,8 @@ def build_audit_summary(
     unsupported_flag_counts: Counter[str] = Counter()
     unsupported_feature_counts: Counter[str] = Counter()
     blocker_counts: Counter[str] = Counter()
+    host_harness_blocker_counts: Counter[str] = Counter()
+    host_mode_counts: Counter[str] = Counter()
     unsupported_flagged_tests = 0
     unsupported_featured_tests = 0
     negative_tests = 0
@@ -126,6 +128,13 @@ def build_audit_summary(
         if host_harness_blockers:
             host_harness_dependent_tests += 1
             blocker_counts.update(["hostHarness"])
+            # Also by name, because a host-harness exclusion is only a product-scope
+            # decision if it says WHICH hook is missing: `$262.agent` is Worker-agent work
+            # and `$262.IsHTMLDDA` is an engine capability, and one "hostHarness" total
+            # cannot be read as either.
+            host_harness_blocker_counts.update(host_harness_blockers)
+
+        host_mode_counts.update([str(classification["hostMode"])])
 
         if classification["isScriptHostVerifiable"]:
             script_host_verifiable_tests += 1
@@ -165,6 +174,8 @@ def build_audit_summary(
         "unsupportedFeaturedTests": unsupported_featured_tests,
         "unsupportedFeatureCounts": dict(sorted(unsupported_feature_counts.items())),
         "scriptHostBlockerCounts": dict(sorted(blocker_counts.items())),
+        "hostHarnessBlockerCounts": dict(sorted(host_harness_blocker_counts.items())),
+        "hostModeCounts": dict(sorted(host_mode_counts.items())),
         "negativeTests": negative_tests,
         "hostHarnessDependentTests": host_harness_dependent_tests,
         "scriptHostVerifiableTests": script_host_verifiable_tests,
