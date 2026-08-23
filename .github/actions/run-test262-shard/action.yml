@@ -180,6 +180,25 @@ runs:
       shell: bash
       run: dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release --no-restore
 
+    # Before the shard runs, check that a failing async test can fail. The fixtures
+    # deliberately report a failure, never settle, settle twice, and never return; a runner
+    # that scores async tests by exit status alone passes all of them, and no pass rate this
+    # workflow publishes would show it. Runs here because this is where a built engine is.
+    - name: Check the async completion protocol
+      shell: bash
+      env:
+        SUITE_COMMIT: ${{ inputs.suite-commit }}
+        SUITE_ROOT: ${{ inputs.suite-root }}
+        BROILER_DLL: ${{ github.workspace }}/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+      run: |
+        set -euo pipefail
+        python scripts/compliance/run_test262.py \
+          --self-check \
+          --suite-ref "$SUITE_COMMIT" \
+          --suite-root "$SUITE_ROOT" \
+          --broiler-dll "$BROILER_DLL" \
+          --no-summary-stdout
+
     - name: Run test262 ${{ inputs.phase }} shard ${{ inputs.shard-index }}${{ inputs.attempt-suffix }}
       id: test262
       shell: bash
@@ -400,6 +419,17 @@ runs:
                 f"- Variant cases: {summary.get('total', len(summary.get('results') or []))} total; {summary.get('passed', 0)} passed; {summary.get('failed', 0)} failed; {summary.get('skipped', 0)} skipped; {summary.get('timedOut', 0)} timed out",
                 f"- Base-path outcomes: {path_summary.get('total', len(summary.get('expandedPaths') or []))} total; {path_summary.get('passed', 0)} passed; {path_summary.get('failed', 0)} failed; {path_summary.get('skipped', 0)} skipped; {path_summary.get('timedOut', 0)} timed out",
             ])
+            # One line per host mode: a mode that selected nothing, or executed nothing of
+            # what it selected, is a coverage gap that a combined total would hide.
+            for mode, counts in (summary.get("hostModeSummary") or {}).items():
+                lines.append(
+                    f"- Host mode `{mode}`: {counts.get('selected', 0)} selected; "
+                    f"{counts.get('executed', 0)} executed; "
+                    f"{counts.get('passed', 0)} passed; "
+                    f"{counts.get('failed', 0)} failed; "
+                    f"{counts.get('skipped', 0)} skipped; "
+                    f"{counts.get('timedOut', 0)} timed out"
+                )
 
         with Path(os.environ["GITHUB_STEP_SUMMARY"]).open("a", encoding="utf-8") as handle:
             handle.write("\n".join(lines) + "\n")

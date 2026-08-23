@@ -73,35 +73,94 @@ the current specification and the major engines do, and the test does not.
 
 ## Host-coverage gaps
 
-- `$262` host-harness helpers are incomplete.
-- `module` tests need a module-host mode.
-- `raw` tests need raw-harness semantics.
-- Negative-metadata support exists but must be enabled and reported by release runs.
-- **An `async` test cannot currently fail, so its result is not evidence.** The runner
-  injects a `$DONE` that settles a promise and appends it as the script's completion
-  value; `--script-host` evaluates and discards that value, and reports no unhandled
-  rejection, so a rejected `$DONE(error)` and a `$DONE` that is never called both exit 0.
-  The suite has 5581 `async`-flagged files. Measured over a random sample of 200 against
-  the standard marker protocol (a `$DONE` that prints `Test262:AsyncTestComplete` /
-  `Test262:AsyncTestFailure:`, which the runner then requires on stdout): 168 pass either
-  way, 26 report a real assertion failure, and 2 never settle — so on the order of 780
-  currently-counted passes are not passes. Switching protocols is the fix; it is a
-  deliberate, visible correction to the headline number and wants its own change, not a
-  quiet one. Until then, treat `flags: [async]` results as unverified.
+The coverage gaps that made a result untrustworthy — an async test that could not fail,
+and the `$262`, `module` and `raw` files that were reported as skipped — are closed. What
+remains is listed at the end of this section.
 
-  Four engine defects behind that measurement are fixed. A promise reaction whose body is a
-  tail call was dropped entirely; the `let`-head loop scoping described below; and the two
-  that made a call whose ARGUMENTS suspend not be the call the source wrote —
-  `obj.method(await p)` invoked the nested call in its own arguments instead (the receiver
-  and callee temps come from a pool that nested call is handed back, which is only safe
-  while both values sit on the evaluation stack), and an argument list of more than four
-  arguments, or of any length containing a spread, is built as an array initializer that
-  nothing hoisted, so the suspension inside it produced an InvalidProgramException.
-  `assert.sameValue(await p, x)` is the first shape, so those assertions did not execute at
-  all; `Broiler.JavaScript.Integration.Tests/SuspendedCallArgumentTests.cs` covers both.
+- **`async` results follow test262's own marker protocol.** `$DONE` is
+  `harness/doneprintHandle.js`, injected into every `flags: [async]` test the way
+  INTERPRETING.md requires, and it PRINTS `Test262:AsyncTestComplete` or
+  `Test262:AsyncTestFailure:<error>`. The runner reads those markers: no marker is
+  `neverSettled`, two are `completedTwice`, a failure marker is `reportedFailure`, and a
+  file that neither settles nor returns is ended by the per-test timeout. Every one of
+  those is a failure, and the completion kind rides on the result as `asyncCompletion`.
 
-  The measurement above predates those fixes and should be retaken with the marker protocol
-  before the totals here are quoted again.
+  It replaces a completion-value protocol under which an async test could not fail: `$DONE`
+  settled a promise the assembled script ended in, `--script-host` evaluates and discards a
+  script's completion value and reports no unhandled rejection, so `$DONE(error)` and a
+  `$DONE` that was never called both exited 0 and were counted as passes.
+
+  **The correction, measured.** Over a seeded random sample of 400 of the suite's 5487
+  script-goal `async` files (`random.Random(20260823)`, pinned suite ref, Debug script
+  host): 359 pass, 39 report a failure, 2 exit non-zero having never settled. 10.3% of
+  async results were passes that are not passes — on the order of 560 files across the
+  async corpus (95% interval ≈ 400–730). The earlier estimate of ~780 came from a 200-file
+  sample taken before four engine defects were fixed, and is superseded by this one.
+
+  `scripts/compliance/fixtures/async-protocol/` holds the fixtures that keep it honest —
+  deliberately failing, rejecting, never-settling, double-completing, dying-after-completing
+  and never-returning — with the verdict each must produce. `run_test262.py --self-check`
+  runs them against a built engine and every CI shard runs it before the shard.
+
+  **Nothing else moved.** The same seeded 600-file sample of the corpus that neither names
+  a host mode nor reaches a `$262` hook, run under both the old and the new runner and host
+  (`random.Random(19730401)`, `--include-negative`): 37 verdicts changed, all in the
+  intended direction. 33 failures became passes — negative `phase: parse` tests, which the
+  engine had been rejecting correctly and which now match on the SyntaxError they raise —
+  and 4 passes became failures, every one an async test reporting a real assertion failure
+  (`Array.fromAsync` contents, a dynamic import that cannot resolve, a private async
+  generator's `yield*`). No test regressed.
+
+- **`module` and `raw` are host modes, not exclusions.** A module test runs where it sits
+  in the suite under `--module-host`, with its harness handed to `--preload` as a script so
+  `assert` and `$DONE` are globals its module body and its `_FIXTURE.js` imports can see; a
+  raw test is handed the file's own unmodified bytes. Each mode's selected, executed,
+  passed, failed, skipped and timed-out totals are published separately
+  (`hostModeSummary`).
+
+  What the previously-skipped files do when they run (1494 of them: 824 module, 30 raw, 640
+  reaching a `$262` hook; local Debug script host, pinned ref, `--include-negative`, so
+  read it as the shape of the work rather than as a published rate): raw 30/30 pass, the
+  `$262` files 515 pass and 125 do not, module 332 pass and 492 do not. **None of that is
+  host-coverage work** — it is engine work these modes made visible, in five clusters:
+  141 module early errors that do not fire (`dup-bound-names`, `await` as a module
+  identifier, JSON module validation); 109 files whose specifier the parser rejects
+  (`import defer`, import attributes); 52 that hang, nearly all dynamic `import()` of a
+  module that exports a class or function; 22 NullReferenceException crashes in module
+  namespace and ambiguous-export paths; and 12 "invalid program" IL failures on top-level
+  `for await`. The `$262` failures are mostly cross-realm identity and missing-throw cases.
+
+- **`$262` is defined for the hooks this host can answer honestly:** `global`,
+  `createRealm` (a real second realm — the current-context restore is what keeps the caller
+  in its own), `detachArrayBuffer` (via the witness `transfer()` performs), `evalScript` and
+  `gc`. A test is excluded for the hook it names rather than for mentioning `$262`.
+
+- **An uncaught JavaScript error is reported by name.** The host prints
+  `Uncaught <name>: <message>` on stderr and exits 1, so a `negative: phase: parse,
+  type: SyntaxError` test is matched on the type it raised. A SyntaxError raised while
+  compiling carries no JavaScript stack to name it, so every parse-phase negative test used
+  to fail on the diagnostic while rejecting the program exactly as it should.
+
+What is still not covered:
+
+- `$262.agent` (112 files): multi-agent Atomics needs a second agent with its own event
+  loop. Owned by [Concurrency.md](../roadmap/Concurrency.md), not by host coverage.
+- `$262.IsHTMLDDA` (42 files): the engine has no object whose `typeof` is `"undefined"`.
+- `$262.AbstractModuleSource` (8 files): needs module source objects the engine does not
+  implement.
+- Negative-metadata execution is implemented but still opt-in (`--include-negative`);
+  release runs must pass it.
+
+Four engine defects found while measuring the async corpus are fixed. A promise reaction
+whose body is a tail call was dropped entirely; the `let`-head loop scoping described
+below; and the two that made a call whose ARGUMENTS suspend not be the call the source
+wrote — `obj.method(await p)` invoked the nested call in its own arguments instead (the
+receiver and callee temps come from a pool that nested call is handed back, which is only
+safe while both values sit on the evaluation stack), and an argument list of more than four
+arguments, or of any length containing a spread, is built as an array initializer that
+nothing hoisted, so the suspension inside it produced an InvalidProgramException.
+`assert.sameValue(await p, x)` is the first shape, so those assertions did not execute at
+all; `Broiler.JavaScript.Integration.Tests/SuspendedCallArgumentTests.cs` covers both.
 
 ## Gap lifecycle
 

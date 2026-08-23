@@ -284,9 +284,34 @@ artefacts as engine failures. The reference engine's own version and flags ride 
 cross-checked case rather than on the run configuration, because nothing pins a runner's
 Node the way the lockfiles pin the manglers' versions.
 
-Tests requiring `$262` host hooks remain host-harness exclusions. The `module` and `raw`
-flags require separate host modes and are not validated by the ordinary script host.
-Do not count excluded files as passes.
+## Host modes
+
+Every selected file runs in the mode its flags name, and each mode's selected, executed,
+passed, failed, skipped and timed-out totals are reported separately (`hostModeSummary`,
+also in the per-shard and merged CI summaries). A mode that selects files and executes
+none of them is a coverage gap, and one combined total would hide it.
+
+| Flags | Mode | How the file is run |
+| --- | --- | --- |
+| (none) | `script` | Harness and body assembled into one script, handed to `--script-host` |
+| `module` | `module` | The file itself, in place, under `--module-host`, with its harness `--preload`ed as a script so `assert` and `$DONE` are globals a module body and its `_FIXTURE.js` imports can see |
+| `raw` | `raw` | The file's own bytes, unmodified: no harness, no strict directive, metadata comment included |
+
+Module and raw files are never minified: both run as written, and the minifier profiles
+are script profiles.
+
+`flags: [async]` results follow test262's own protocol — `$DONE` prints
+`Test262:AsyncTestComplete` or `Test262:AsyncTestFailure:<error>`, and the runner reads
+those markers. A run that prints neither did not finish and is a failure; two markers are
+a failure; a file that neither settles nor returns is ended by the per-test timeout. The
+fixtures in `scripts/compliance/fixtures/async-protocol/` are the regression for exactly
+that, and `run_test262.py --self-check` runs them before every CI shard.
+
+The remaining host-harness exclusions are the `$262` hooks this host does not define:
+`$262.agent` (multi-agent Atomics, owned by [Concurrency.md](../roadmap/Concurrency.md)),
+`$262.IsHTMLDDA` and `$262.AbstractModuleSource`. A test is excluded for the hook it
+names, so `$262.createRealm`, `detachArrayBuffer`, `evalScript`, `gc` and `global` tests
+run. Do not count excluded files as passes.
 
 ## CI and failure lifecycle
 

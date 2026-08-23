@@ -11,9 +11,11 @@ suite revision.
 | Repository tests | Required; no result is inferred from documentation | `dotnet test Broiler.JS.slnx` |
 | Full test262 script host | Manual sharded original-plus-minified runner (pinned Terser, or Closure Compiler at ADVANCED for ES2026), abnormal-shard retry, provenance-rich merged triage, and an authoritative terminal verdict is implemented | `.github/workflows/test262.yml` |
 | Tracked failures | The generated path list is the current source of truth; documentation does not duplicate its changing count | `scripts/compliance/test262-failures.txt` |
-| Negative metadata | Expected-error handling is implemented and opt-in with `--include-negative` | `scripts/compliance/run_test262.py` |
-| `$262` host tests | Excluded until the required host hooks exist | runner audit JSON |
-| `module` / `raw` | Excluded from the ordinary script host; separate modes are still required | runner audit JSON |
+| Negative metadata | Expected-error handling is implemented and opt-in with `--include-negative`; an uncaught error is reported by its JavaScript name, so a `phase: parse` SyntaxError is matched on the type it is | `scripts/compliance/run_test262.py`, `Broiler.JavaScript/Program.cs` |
+| `async` completion | Marker protocol (`Test262:AsyncTestComplete` / `…Failure:`): explicit success, explicit failure, or the runner's timeout. A test that never settles, settles twice, or reports a failure is a failure | `scripts/compliance/run_test262.py` |
+| Async protocol self-check | Fixtures that must fail — `--self-check` runs them before every CI shard and fails the job on any mismatch | `scripts/compliance/fixtures/async-protocol/` |
+| `$262` host tests | `global`, `createRealm`, `detachArrayBuffer`, `evalScript` and `gc` are defined; a test is excluded only for the hook it needs and does not have (`agent`, `IsHTMLDDA`, `AbstractModuleSource`) | `Broiler.JavaScript/Program.cs`, runner audit JSON |
+| `module` / `raw` | Executed: `module` under `--module-host` with the harness preloaded as a script, `raw` as the file's own unmodified bytes. Per-mode selected/executed/passed/failed/skipped/timed-out totals ride on every report | `scripts/compliance/run_test262.py` (`hostModeSummary`) |
 | Cross-engine scenarios | Repeatable Broiler/Node/engine262 comparison command exists | `scripts/compliance/engine-scenarios.json` |
 
 The active failure clusters and host gaps are summarized in

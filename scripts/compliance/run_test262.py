@@ -39,7 +39,15 @@ DEFAULT_BROILER_DLL = str(
 )
 ALL_SHARDS = -1
 TEMP_DIRECTORY = Path(tempfile.gettempdir()) / "broiler-test262"
-UNSUPPORTED_FLAGS = {"module", "raw"}
+# Flags that name a HOST MODE rather than an exclusion. `module` runs the test file itself
+# under `--module-host` with its harness preloaded as a script; `raw` hands the host the
+# file's own bytes with no harness and no strict directive. Both used to sit in
+# UNSUPPORTED_FLAGS, so the suite's 832 module and 32 raw files were reported as skipped —
+# a coverage gap that reads as a clean run.
+HOST_MODE_FLAGS = {"module", "raw"}
+# Flags whose tests this host cannot execute at all. Empty: every remaining flag is either
+# a host mode above or a property of the test the assembler already honours.
+UNSUPPORTED_FLAGS: set[str] = set()
 # Broiler's single agent can block: Atomics.wait reports a value mismatch or a timeout
 # instead of suspending (there is no second agent, and notify wakes no one), i.e. its
 # [[CanBlock]] is true. Tests guarded by the CanBlockIsFalse flag describe a host whose
@@ -79,9 +87,42 @@ KNOWN_INCORRECT_TESTS: dict[str, str] = {
 USER_AGENT = "Broiler.JS compliance runner"
 DOWNLOAD_TIMEOUT_SECONDS = 120
 MAX_ARCHIVE_SIZE_BYTES = 256 * 1024 * 1024
-HOST_HARNESS_INCLUDE_BLOCKERS = {"doneprintHandle.js"}
-HOST_HARNESS_REFERENCE_PATTERN = re.compile(r"\$262(?:\b|\.)")
+# Harness files a test may include that this host cannot satisfy, named directly rather than
+# by what they reference. Empty: `doneprintHandle.js` was the one entry, and it is now the
+# file this runner INJECTS into every async test (see ASYNC_HARNESS_INCLUDE), so a test that
+# names it explicitly is asking for what the host already provides. The set is kept because
+# the classification contract audit_test262.py shares includes it, and a harness file this
+# host genuinely cannot provide would be added here rather than inferred.
+HOST_HARNESS_INCLUDE_BLOCKERS: set[str] = set()
 HOST_HARNESS_BLOCKER_NAME = "$262"
+# Which $262 hooks (INTERPRETING.md) the script host defines. A test is excluded for the
+# EXACT hook it asks for and cannot have, rather than for mentioning `$262` at all: the
+# blanket rule excluded 802 files, of which only the agent, IsHTMLDDA and
+# AbstractModuleSource cases are genuinely out of reach.
+HOST_262_SUPPORTED_CAPABILITIES = frozenset(
+    {"global", "createRealm", "detachArrayBuffer", "evalScript", "gc"}
+)
+# The hooks that stay absent, with the reason each is a product-scope exclusion rather than
+# a defect. A shape-only stub for any of them would turn an excluded test into one that
+# partially succeeds, which is the failure mode this whole track exists to remove.
+HOST_262_UNSUPPORTED_CAPABILITIES: dict[str, str] = {
+    "agent": (
+        "multi-agent Atomics: needs a second agent with its own event loop, which is "
+        "Worker-agent work (docs/roadmap/Concurrency.md), not a host-harness gap"
+    ),
+    "IsHTMLDDA": (
+        "the [[IsHTMLDDA]] exotic object (an object whose typeof is 'undefined'); the "
+        "engine has no such object and inventing one for the host would not give the "
+        "tests the semantics they check"
+    ),
+    "AbstractModuleSource": (
+        "%AbstractModuleSource%, which needs module source objects the engine does not "
+        "implement"
+    ),
+}
+HOST_262_CAPABILITY_PATTERN = re.compile(
+    r"\$262\s*\.\s*([A-Za-z_$][A-Za-z0-9_$]*)"
+)
 DEFAULT_TEST_TIMEOUT_SECONDS = 30.0
 DEFAULT_MINIFIER_TIMEOUT_SECONDS = 30.0
 TERSER_PROFILE = "test262-safe-mangle-v2"
@@ -269,43 +310,27 @@ MINIFIER_CHANGED_SEMANTICS = "minifier-changed-semantics"
 # different things about the minifier: one read the program and refused it, the other
 # accepted it and then fell over compiling it.
 MINIFIER_INTERNAL_ERROR = "minifier-internal-error"
-ASYNC_DONE_PRELUDE = """
-const __broilerDonePromise = new Promise((resolve, reject) => {
-  let settled = false;
-  globalThis.$DONE = function(error) {
-    if (settled) {
-      reject(new Error("$DONE called multiple times"));
-      return;
-    }
-    settled = true;
-    if (error === undefined) {
-      resolve(undefined);
-      return;
-    }
-    reject(error);
-  };
-});
-""".strip()
-# Node-only tail for the reference run: fail the process when the async test rejects, and
-# when it never settles at all (nothing keeps the loop alive, so Node exits at that point —
-# `settled` is what tells the two apart).
-ASYNC_REFERENCE_EPILOGUE = """
-;(function () {
-  let settled = false;
-  process.exitCode = 1;
-  Promise.resolve(__broilerDonePromise).then(
-    () => { settled = true; process.exitCode = 0; },
-    (error) => {
-      settled = true;
-      process.exitCode = 1;
-      console.error(String((error && error.stack) || error));
-    });
-  process.on("exit", () => {
-    if (!settled)
-      console.error("async test did not call $DONE");
-  });
-})();
-""".strip()
+# test262's own async completion protocol (INTERPRETING.md; harness/doneprintHandle.js). An
+# `flags: [async]` test reports its result by PRINTING exactly one of these markers, so a
+# result is evidence only when the marker is there: a run that prints neither watched the
+# test not finish, whatever the process then exited with.
+#
+# The protocol replaces a completion-value one — `$DONE` settled a promise the assembled
+# script ended in — under which an async test could not fail. `--script-host` evaluates and
+# discards that value and reports no unhandled rejection, so `$DONE(error)` and a `$DONE`
+# that was never called both exited 0 and were counted as passes.
+ASYNC_COMPLETE_MARKER = "Test262:AsyncTestComplete"
+ASYNC_FAILURE_MARKER_PREFIX = "Test262:AsyncTestFailure:"
+# The harness file defining the `$DONE` that prints them. Async tests do not list it — the
+# runner is required to supply it — so assemble_test_program injects it, and the protocol is
+# a property of the run rather than of the file.
+ASYNC_HARNESS_INCLUDE = "doneprintHandle.js"
+# What one async run's printed markers say happened. Only ASYNC_COMPLETED is a pass;
+# the other three are the ways an async test fails, kept apart so a failure says which.
+ASYNC_COMPLETED = "completed"
+ASYNC_REPORTED_FAILURE = "reportedFailure"
+ASYNC_NEVER_SETTLED = "neverSettled"
+ASYNC_COMPLETED_TWICE = "completedTwice"
 
 
 class MinifierError(RuntimeError):
@@ -1230,15 +1255,57 @@ def quoted_source_text(body: str) -> str | None:
     return None
 
 
+SCRIPT_HOST_MODE = "script"
+MODULE_HOST_MODE = "module"
+RAW_HOST_MODE = "raw"
+HOST_MODES = (SCRIPT_HOST_MODE, MODULE_HOST_MODE, RAW_HOST_MODE)
+
+
+def host_mode_for_flags(flags: list[str] | set[str]) -> str:
+    """Which host mode runs a test with these flags.
+
+    `module` wins over `raw`: a module test that also carries `raw` is still a module, and
+    the module host is what decides how the file is parsed.
+    """
+    named = HOST_MODE_FLAGS & set(flags)
+    if "module" in named:
+        return MODULE_HOST_MODE
+    if "raw" in named:
+        return RAW_HOST_MODE
+    return SCRIPT_HOST_MODE
+
+
+def unsupported_262_capabilities(source: str) -> list[str]:
+    """The `$262.<hook>` names in *source* that this host does not define.
+
+    An unknown hook counts as unsupported. The host defines what INTERPRETING.md lists and
+    nothing else, so a name that is in neither set is either a newer hook or a typo, and
+    running the test as if the call would work reports the wrong thing either way.
+    """
+    return sorted(
+        {
+            name
+            for name in HOST_262_CAPABILITY_PATTERN.findall(source)
+            if name not in HOST_262_SUPPORTED_CAPABILITIES
+        }
+    )
+
+
 def classify_test(
     source: str,
     repo: Test262Repository | None = None,
     harness_dependency_cache: dict[str, bool] | None = None,
 ) -> dict[str, object]:
-    """Classify one test262 source file for raw script-host execution.
+    """Classify one test262 source file for execution by one of this host's modes.
 
-    Returns flags, unsupported flag names, optional negative metadata,
-    optional host-harness blockers, and a boolean isScriptHostVerifiable flag.
+    Returns flags, the host mode the flags select, unsupported flag names, optional
+    negative metadata, optional host-harness blockers, and a boolean
+    isScriptHostVerifiable flag.
+
+    A host-harness blocker names the exact `$262` hook the test needs and this host does
+    not define — `$262.agent`, `$262.IsHTMLDDA`, `$262.AbstractModuleSource` — whether the
+    test calls it itself or reaches it through a harness file it includes. Everything else
+    `$262` offers is defined, so mentioning the host object is no longer an exclusion.
     """
     metadata, _ = parse_metadata(source)
     flags = list(metadata["flags"])
@@ -1246,24 +1313,28 @@ def classify_test(
     unsupported_flags = sorted(SKIPPED_FLAGS & set(flags))
     unsupported_features = sorted(UNSUPPORTED_FEATURES & set(features))
     negative = parse_negative_metadata(source)
-    host_harness_blockers: list[str] = []
-    if HOST_HARNESS_REFERENCE_PATTERN.search(source):
-        host_harness_blockers.append(HOST_HARNESS_BLOCKER_NAME)
+    host_harness_blockers = [
+        f"{HOST_HARNESS_BLOCKER_NAME}.{name}"
+        for name in unsupported_262_capabilities(source)
+    ]
     if repo is not None and harness_dependency_cache is not None:
         for include in metadata["includes"]:
             if include not in harness_dependency_cache:
                 if include in HOST_HARNESS_INCLUDE_BLOCKERS:
                     harness_dependency_cache[include] = True
                 else:
-                    harness_dependency_cache[include] = HOST_HARNESS_REFERENCE_PATTERN.search(
-                        repo.read_text(f"harness/{include}")
-                    ) is not None
+                    harness_dependency_cache[include] = bool(
+                        unsupported_262_capabilities(
+                            repo.read_text(f"harness/{include}")
+                        )
+                    )
             if harness_dependency_cache[include]:
                 host_harness_blockers.append(f"include:{include}")
 
     return {
         "flags": flags,
         "features": features,
+        "hostMode": host_mode_for_flags(flags),
         "unsupportedFlags": unsupported_flags,
         "unsupportedFeatures": unsupported_features,
         "negative": negative,
@@ -1477,14 +1548,25 @@ def build_test_process_command(
     script_path: str,
     timeout_seconds: float,
     memory_limit_mb: int,
+    host_mode: str = SCRIPT_HOST_MODE,
+    preload_path: str | None = None,
 ) -> list[str]:
     """Build a test command without using unsafe ``preexec_fn`` callbacks.
 
     On POSIX, a fresh single-threaded Python helper applies resource limits and
     then replaces itself with ``dotnet``. The parent runner may therefore launch
     tests from worker threads without running Python code between fork and exec.
+
+    A module test runs under ``--module-host`` with its harness handed to
+    ``--preload``: a module's declarations are module-scoped, so the harness cannot be
+    concatenated onto it the way a script's is — ``assert`` and ``$DONE`` have to be
+    globals before the module body runs.
     """
-    target = ["dotnet", broiler_dll, "--script-host", script_path]
+    host_option = "--module-host" if host_mode == MODULE_HOST_MODE else "--script-host"
+    target = ["dotnet", broiler_dll, host_option]
+    if preload_path is not None:
+        target.extend(["--preload", preload_path])
+    target.append(script_path)
     if os.name != "posix" or resource is None:
         return target
     return [
@@ -1750,6 +1832,40 @@ def _is_selectable(
     return False
 
 
+def classify_async_completion(stdout: str) -> tuple[str, str]:
+    """Read one async test's completion out of what it printed.
+
+    Returns the completion kind and a human-readable detail. The four kinds are exhaustive
+    because the protocol is: `$DONE()` prints ASYNC_COMPLETE_MARKER, `$DONE(error)` prints
+    ASYNC_FAILURE_MARKER_PREFIX followed by the error, and nothing else prints either.
+
+    Two calls are a failure rather than a first-one-wins pass. INTERPRETING.md gives an
+    async test one completion, and a test that reports twice has run code after the point it
+    claimed to be finished — the outcome the runner recorded is then not the outcome the
+    test reached, which is the property this protocol exists to restore.
+    """
+    completions = 0
+    failures: list[str] = []
+    for line in (stdout or "").splitlines():
+        marker = line.strip()
+        if marker == ASYNC_COMPLETE_MARKER:
+            completions += 1
+        elif marker.startswith(ASYNC_FAILURE_MARKER_PREFIX):
+            failures.append(marker[len(ASYNC_FAILURE_MARKER_PREFIX) :].strip())
+
+    settlements = completions + len(failures)
+    if settlements == 0:
+        return ASYNC_NEVER_SETTLED, "async test printed no completion marker"
+    if settlements > 1:
+        detail = f"$DONE was called {settlements} times"
+        if failures:
+            detail = f"{detail} (reported failure: {failures[0]})"
+        return ASYNC_COMPLETED_TWICE, detail
+    if failures:
+        return ASYNC_REPORTED_FAILURE, failures[0]
+    return ASYNC_COMPLETED, ""
+
+
 def assemble_test_program(
     repo: Test262Repository,
     harness_cache: dict[str, str],
@@ -1778,15 +1894,38 @@ def assemble_test_program(
     parts.extend([harness_text("assert.js"), harness_text("sta.js")])
     for include in metadata["includes"]:
         parts.append(harness_text(include))
-    if is_async:
-        parts.append(ASYNC_DONE_PRELUDE)
+    if is_async and ASYNC_HARNESS_INCLUDE not in metadata["includes"]:
+        # INTERPRETING.md makes doneprintHandle.js an implicit include of every async test:
+        # the file assumes `$DONE` and no async test in the pinned suite lists it. Injected
+        # here rather than in the runner so the reference engine is handed the same program.
+        parts.append(harness_text(ASYNC_HARNESS_INCLUDE))
     parts.append(body)
-    if is_async:
-        # The leading semicolon is an explicit token boundary for a minified
-        # body, independent of its final token and automatic-semicolon rules.
-        parts.append(";__broilerDonePromise")
 
     return "\n".join(parts)
+
+
+def assemble_module_preload(
+    repo: Test262Repository,
+    harness_cache: dict[str, str],
+    metadata: dict[str, list[str]],
+) -> str:
+    """Build the harness script a module test is preloaded with.
+
+    The same harness a script test is assembled with, minus the body: run as a script it
+    puts `assert`, `Test262Error`, `$DONE` and the test's own includes on the global
+    object, where module code can see them. Concatenating them into the module instead
+    would make them module-scoped — invisible to any _FIXTURE.js the test imports, and
+    invisible to `asyncTest`, which asks `globalThis` whether it has an own `$DONE`.
+    """
+    # The flags are dropped deliberately: `onlyStrict` says nothing about a preload (module
+    # code is strict of itself, and a "use strict" here would make the harness strict
+    # instead), and `async` is carried by including doneprintHandle.js below.
+    preload_metadata: dict[str, list[str]] = {
+        "flags": ["async"] if "async" in metadata["flags"] else [],
+        "includes": list(metadata["includes"]),
+        "features": [],
+    }
+    return assemble_test_program(repo, harness_cache, preload_metadata, "")
 
 
 class ReferenceEngine:
@@ -1885,7 +2024,13 @@ class ReferenceEngine:
             handle.write(program)
             return handle.name
 
-    def _invoke(self, arguments: list[str], script_path: str) -> str:
+    def _invoke(self, arguments: list[str], script_path: str) -> tuple[str, str]:
+        """Run the reference host once: (status, stdout).
+
+        stdout is returned because the async protocol is printed rather than returned —
+        this engine is asked the same question about the same program as the engine under
+        test, so it has to read the answer the same way.
+        """
         try:
             process = subprocess.run(
                 [
@@ -1900,34 +2045,42 @@ class ReferenceEngine:
                 timeout=self.timeout_seconds,
             )
         except subprocess.TimeoutExpired:
-            return "timedOut"
+            return "timedOut", ""
         except (OSError, subprocess.SubprocessError) as exc:
             raise ReferenceEngineError(
                 f"Reference engine invocation failed: {exc}"
             ) from exc
-        return "passed" if process.returncode == 0 else "failed"
+        return (
+            "passed" if process.returncode == 0 else "failed",
+            process.stdout or "",
+        )
 
     def parses(self, program: str) -> bool:
         """Whether the reference engine's parser accepts the program as a script."""
         script_path = self._write_program(program)
         try:
-            return self._invoke(["--check"], script_path) == "passed"
+            return self._invoke(["--check"], script_path)[0] == "passed"
         finally:
             os.unlink(script_path)
 
     def run(self, program: str, is_async: bool) -> str:
         """Run one assembled program: "passed", "failed", or "timedOut"."""
-        if is_async:
-            # The shared assembly ends in the $DONE promise as the script's completion
-            # value, which a host that awaits it observes. Node does not, so settle it
-            # here — an async test that rejects or never calls $DONE must not read as a
-            # pass on the side of the comparison that decides attribution.
-            program = f"{program}\n{ASYNC_REFERENCE_EPILOGUE}"
         script_path = self._write_program(program)
         try:
-            return self._invoke([], script_path)
+            status, stdout = self._invoke([], script_path)
         finally:
             os.unlink(script_path)
+        if not is_async or status != "passed":
+            return status
+        # reference_host.cjs defines the `print` doneprintHandle.js needs, so the markers
+        # reach stdout here as they do under the engine under test. An async test that
+        # rejected or never called $DONE must not read as a pass on the side of the
+        # comparison that decides attribution.
+        return (
+            "passed"
+            if classify_async_completion(stdout)[0] == ASYNC_COMPLETED
+            else "failed"
+        )
 
 
 def run_test(
@@ -1943,12 +2096,16 @@ def run_test(
     body_override: str | None = None,
     body_override_includes_strict: bool = False,
 ) -> dict[str, object]:
+    host_mode = SCRIPT_HOST_MODE
+
     def outcome(status: str, **details: object) -> dict[str, object]:
         result: dict[str, object] = {
             "path": path,
             "status": status,
             **details,
         }
+        if host_mode != SCRIPT_HOST_MODE:
+            result["hostMode"] = host_mode
         if variant is not None:
             result["variant"] = variant
         return result
@@ -1961,6 +2118,7 @@ def run_test(
 
     source = repo.read_text(path)
     metadata, body = parse_metadata(source)
+    host_mode = host_mode_for_flags(metadata["flags"])
 
     unsupported = sorted(SKIPPED_FLAGS & set(metadata["flags"]))
     unsupported_features = sorted(UNSUPPORTED_FEATURES & set(metadata["features"]))
@@ -1981,30 +2139,60 @@ def run_test(
             reason="negative metadata test (use --include-negative to run)",
         )
 
-    program = assemble_test_program(
-        repo,
-        harness_cache,
-        metadata,
-        body if body_override is None else body_override,
-        body_includes_strict=body_override_includes_strict,
-    )
+    if host_mode != SCRIPT_HOST_MODE and body_override is not None:
+        return outcome(
+            "skipped",
+            reason=f"{host_mode} tests are run as written; there is no body to substitute",
+        )
 
     TEMP_DIRECTORY.mkdir(parents=True, exist_ok=True)
-    # newline="" for the same reason read_text uses it: the assembled script must reach the
-    # host with the test's original line terminators. Without it Python translates every
-    # "\n" to os.linesep on write, which on Windows turns an LF test into CRLF and a CRLF
-    # test into CR-CRLF — failing the Function.prototype.toString line-terminator tests
-    # (and only those; a CR-only test has no "\n" to translate, so it passed either way).
-    with tempfile.NamedTemporaryFile(
-        "w",
-        suffix=".js",
-        delete=False,
-        dir=TEMP_DIRECTORY,
-        encoding="utf-8",
-        newline="",
-    ) as handle:
-        handle.write(program)
-        script_path = handle.name
+
+    def write_program(program: str) -> str:
+        # newline="" for the same reason read_text uses it: the assembled script must reach
+        # the host with the test's original line terminators. Without it Python translates
+        # every "\n" to os.linesep on write, which on Windows turns an LF test into CRLF and
+        # a CRLF test into CR-CRLF — failing the Function.prototype.toString
+        # line-terminator tests (and only those; a CR-only test has no "\n" to translate).
+        with tempfile.NamedTemporaryFile(
+            "w",
+            suffix=".js",
+            delete=False,
+            dir=TEMP_DIRECTORY,
+            encoding="utf-8",
+            newline="",
+        ) as handle:
+            handle.write(program)
+            return handle.name
+
+    temporary_paths: list[str] = []
+    preload_path: str | None = None
+    if host_mode == MODULE_HOST_MODE:
+        # The module file is handed to the host AS IT SITS IN THE SUITE. A module test
+        # imports its _FIXTURE.js siblings by relative specifier, so a copy anywhere else
+        # resolves them against the wrong directory; its harness travels separately, in
+        # --preload.
+        script_path = str(repo.ensure_local_suite_root() / path)
+        preload_path = write_program(
+            assemble_module_preload(repo, harness_cache, metadata)
+        )
+        temporary_paths.append(preload_path)
+    elif host_mode == RAW_HOST_MODE:
+        # "The test source code must not be modified in any way" (INTERPRETING.md): no
+        # harness, no strict directive, and the metadata comment left where it is — a
+        # hashbang test is about the first two bytes of the file.
+        script_path = write_program(source)
+        temporary_paths.append(script_path)
+    else:
+        script_path = write_program(
+            assemble_test_program(
+                repo,
+                harness_cache,
+                metadata,
+                body if body_override is None else body_override,
+                body_includes_strict=body_override_includes_strict,
+            )
+        )
+        temporary_paths.append(script_path)
 
     try:
         process = subprocess.Popen(
@@ -2013,6 +2201,8 @@ def run_test(
                 script_path,
                 timeout_seconds,
                 memory_limit_mb,
+                host_mode,
+                preload_path,
             ),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -2037,7 +2227,8 @@ def run_test(
                 stderr=stderr or "",
             )
     finally:
-        os.unlink(script_path)
+        for temporary_path in temporary_paths:
+            os.unlink(temporary_path)
 
     if negative is not None:
         # Negative tests expect an error.  If the engine exited with a
@@ -2056,6 +2247,31 @@ def run_test(
         return outcome(
             "failed",
             reason=f"negative test expected {expected_type} but got different error",
+            stdout=stdout,
+            stderr=stderr,
+        )
+
+    if "async" in metadata["flags"]:
+        completion, detail = classify_async_completion(stdout)
+        if process.returncode != 0:
+            # An async test that printed a completion and then died still failed: the marker
+            # says the test finished, the exit status says the host did not.
+            reason = f"async test exited with status {process.returncode}"
+            if completion != ASYNC_NEVER_SETTLED:
+                reason = f"{reason} after {completion}"
+            return outcome(
+                "failed",
+                reason=reason,
+                asyncCompletion=completion,
+                stdout=stdout,
+                stderr=stderr,
+            )
+        if completion == ASYNC_COMPLETED:
+            return outcome("passed", asyncCompletion=completion)
+        return outcome(
+            "failed",
+            reason=f"async test {completion}: {detail}",
+            asyncCompletion=completion,
             stdout=stdout,
             stderr=stderr,
         )
@@ -2139,6 +2355,35 @@ def build_summary(
             ),
         }
 
+    # Per host mode, because "every test262 file is executed by an appropriate host mode or
+    # has a precise product-scope exclusion" is a claim about each mode separately: a module
+    # or raw mode that silently ran nothing would otherwise be invisible inside a total that
+    # the script mode dominates.
+    host_mode_summary: dict[str, dict[str, int]] = {}
+    for mode in HOST_MODES:
+        mode_results = [
+            result
+            for result in results
+            if str(result.get("hostMode", SCRIPT_HOST_MODE)) == mode
+        ]
+        mode_passed = sum(1 for result in mode_results if result["status"] == "passed")
+        mode_failed = sum(1 for result in mode_results if result["status"] == "failed")
+        mode_skipped = sum(1 for result in mode_results if result["status"] == "skipped")
+        mode_timed_out = sum(
+            1 for result in mode_results if result["status"] == "timedOut"
+        )
+        host_mode_summary[mode] = {
+            "selected": len(mode_results),
+            "executed": mode_passed + mode_failed + mode_timed_out,
+            "passed": mode_passed,
+            "failed": mode_failed,
+            "skipped": mode_skipped,
+            "timedOut": mode_timed_out,
+            "notApplicable": sum(
+                1 for result in mode_results if result.get("notApplicable") is True
+            ),
+        }
+
     path_results: dict[str, list[dict[str, object]]] = {}
     for result in results:
         path_results.setdefault(str(result["path"]), []).append(result)
@@ -2199,6 +2444,8 @@ def build_summary(
         "variants": variants,
         "expectedVariantCountPerPath": len(variants),
         "variantSummary": variant_summary,
+        "hostModes": list(HOST_MODES),
+        "hostModeSummary": host_mode_summary,
         "pathSummary": path_summary,
         "candidateCount": selection["candidateCount"],
         "selectedCountBeforeSharding": selection["selectedCountBeforeSharding"],
@@ -2475,6 +2722,22 @@ def run_test_variants_with_metadata(
         skipped = _not_applicable_minified_result(
             path,
             f"original variant is not runnable: {original.get('reason', 'skipped')}",
+            variant=minified_variant,
+        )
+        results.append(
+            _enrich_result(skipped, source_size_bytes, features, flags, 0.0)
+        )
+        return results
+
+    host_mode = host_mode_for_flags(flags)
+    if host_mode != SCRIPT_HOST_MODE:
+        # Both modes run the file as written — a module so its imports resolve against its
+        # own directory, a raw test because "the test source code must not be modified in
+        # any way" — and the minifier profiles are script profiles besides. There is no
+        # minified variant of either that would be evidence about the engine.
+        skipped = _not_applicable_minified_result(
+            path,
+            f"{host_mode} tests run as written and are not minified",
             variant=minified_variant,
         )
         results.append(
@@ -2880,6 +3143,107 @@ def _run_tests_parallel(
     return [result for path_results in results_by_path for result in path_results]
 
 
+SELF_CHECK_ROOT = Path(__file__).with_name("fixtures") / "async-protocol"
+SELF_CHECK_MANIFEST = SELF_CHECK_ROOT / "expected.json"
+SELF_CHECK_TIMEOUT_SECONDS = 10.0
+
+
+class SelfCheckRepository(Test262Repository):
+    """The protocol fixtures' own tests read over the pinned suite's harness.
+
+    The fixtures are tests about the runner, so they have to be assembled by the same code
+    and against the same `assert.js`, `sta.js`, and `doneprintHandle.js` as the corpus —
+    a vendored copy of the harness could drift from the pinned ref, and the fixture suite
+    would then stop being evidence about the run it is checking.
+    """
+
+    def __init__(self, suite_repo: Test262Repository, fixture_root: Path) -> None:
+        super().__init__(suite_repo.suite_ref, str(fixture_root))
+        self.suite_repo = suite_repo
+
+    def read_text(self, path: str) -> str:
+        if path.startswith("harness/"):
+            return self.suite_repo.read_text(path)
+        return super().read_text(path)
+
+
+def load_self_check_fixtures(
+    manifest_path: Path | str = SELF_CHECK_MANIFEST,
+) -> list[dict[str, object]]:
+    """Read the fixture manifest: each entry is one expected runner verdict."""
+    payload = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
+    fixtures = payload.get("fixtures")
+    if not isinstance(fixtures, list) or not fixtures:
+        raise RuntimeError(f"{manifest_path} declares no fixtures")
+    return fixtures
+
+
+def run_self_check(
+    repo: Test262Repository,
+    broiler_dll: str,
+    timeout_seconds: float = SELF_CHECK_TIMEOUT_SECONDS,
+    memory_limit_mb: int = 0,
+    fixture_root: Path | str = SELF_CHECK_ROOT,
+    manifest_path: Path | str = SELF_CHECK_MANIFEST,
+) -> dict[str, object]:
+    """Run the async protocol fixtures and compare each verdict with the manifest.
+
+    This asks the one question a pass rate cannot: does a test that fails come back as a
+    failure? Every fixture but the control passed under the completion-value protocol, so
+    a regression to anything that scores async tests by exit status alone reappears here as
+    a mismatch rather than as a quietly higher number.
+    """
+    fixture_repo = SelfCheckRepository(repo, Path(fixture_root))
+    harness_cache: dict[str, str] = {}
+    cases: list[dict[str, object]] = []
+    for fixture in load_self_check_fixtures(manifest_path):
+        path = str(fixture["path"])
+        expected_status = str(fixture["status"])
+        expected_completion = fixture.get("asyncCompletion")
+        result = run_test(
+            fixture_repo,
+            broiler_dll,
+            path,
+            harness_cache,
+            timeout_seconds,
+            memory_limit_mb,
+        )
+        actual_status = str(result["status"])
+        actual_completion = result.get("asyncCompletion")
+        matched = actual_status == expected_status and (
+            actual_completion == expected_completion
+        )
+        cases.append(
+            {
+                "path": path,
+                "expectedStatus": expected_status,
+                "actualStatus": actual_status,
+                "expectedAsyncCompletion": expected_completion,
+                "actualAsyncCompletion": actual_completion,
+                "matched": matched,
+                "reason": result.get("reason", ""),
+            }
+        )
+        log_progress(
+            f"[self-check] {'ok  ' if matched else 'FAIL'} {path}: "
+            f"expected {expected_status}/{expected_completion}, "
+            f"got {actual_status}/{actual_completion}"
+        )
+
+    mismatched = [case for case in cases if not case["matched"]]
+    return {
+        "selfCheck": "async-protocol",
+        "suiteRef": repo.suite_ref,
+        "broilerDll": broiler_dll,
+        "testTimeoutSeconds": timeout_seconds,
+        "checked": len(cases),
+        "matched": len(cases) - len(mismatched),
+        "mismatched": len(mismatched),
+        "ok": not mismatched,
+        "cases": cases,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Run a pinned test262 subset against Broiler's script host."
@@ -3045,7 +3409,37 @@ def main() -> int:
         action="store_true",
         help="Prioritize historically fragile and recently changed areas to surface regressions earlier",
     )
+    parser.add_argument(
+        "--self-check",
+        action="store_true",
+        help=(
+            "Run the async completion-protocol fixtures instead of the suite and check "
+            "each verdict against scripts/compliance/fixtures/async-protocol/expected.json. "
+            "Exits non-zero on any mismatch: a deliberately failing async test that comes "
+            "back as a pass is a runner defect, and no pass rate can show it."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.self_check:
+        repo = Test262Repository(args.suite_ref, args.suite_root)
+        log_progress(
+            f"Running async protocol self-check against {args.broiler_dll} "
+            f"with the harness of suite ref {args.suite_ref}"
+        )
+        summary = run_self_check(
+            repo,
+            args.broiler_dll,
+            timeout_seconds=min(args.test_timeout_seconds, SELF_CHECK_TIMEOUT_SECONDS),
+            memory_limit_mb=args.memory_limit_mb,
+        )
+        if args.output:
+            Path(args.output).write_text(
+                json.dumps(summary, indent=2) + "\n", encoding="utf-8"
+            )
+        if not args.no_summary_stdout:
+            print(json.dumps(summary, indent=2))
+        return 0 if summary["ok"] else 1
 
     max_workers = args.max_workers
     subset_patterns = parse_semicolon_patterns(args.subset, normalize_paths=True)

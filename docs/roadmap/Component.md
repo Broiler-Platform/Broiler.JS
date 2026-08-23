@@ -60,15 +60,29 @@ removing the item.
 
 ## 2. Expand host-mode coverage
 
-Negative-metadata execution is implemented behind `--include-negative`. The remaining
-structural exclusions are:
+The `script`, `module` and `raw` modes are implemented and each reports its own selected,
+executed, passed, failed, skipped and timed-out totals (`hostModeSummary`, carried through
+the shard merge and both CI summaries). Module tests run in place under `--module-host`
+with their harness preloaded as a script; raw tests are handed the file's own bytes.
+`$262` defines `global`, `createRealm`, `detachArrayBuffer`, `evalScript` and `gc`, and a
+test is excluded for the hook it names rather than for mentioning the host object.
 
-- tests requiring richer `$262` host hooks;
-- `module` tests, which need module-host execution and expected-result handling; and
-- `raw` tests, which need their own harness and host semantics.
+`flags: [async]` results use test262's marker protocol, so an async test can fail; see
+[known-gaps](../compliance/known-gaps.md#host-coverage-gaps) for the measured correction
+and `scripts/compliance/fixtures/async-protocol/` for the fixtures that hold it, run by
+`run_test262.py --self-check` before every CI shard.
 
-Add these modes independently. Each must report selected, skipped, passed, failed, and
-timed-out totals and preserve the upstream metadata in result JSON.
+What is left in this item:
+
+- `$262.agent`, `$262.IsHTMLDDA` and `$262.AbstractModuleSource` are the remaining
+  exclusions; the first is Worker-agent work owned by [`Concurrency.md`](Concurrency.md),
+  and the other two need engine capabilities that do not exist. Each needs a published
+  product decision rather than a host stub.
+- Negative-metadata execution is still opt-in (`--include-negative`). Release workflows
+  must turn it on and publish the totals for the pinned suite revision.
+- The module mode's own failures — module early errors, binding initialisation, and the
+  files that hang — are engine work, not host work, and belong to the language items above
+  and to the aggregate scripts/tasks/modules track.
 
 Exit gate: every test262 file is either executed by an appropriate host mode or has a
 specific, published scope exclusion. Release workflows enable the supported modes by

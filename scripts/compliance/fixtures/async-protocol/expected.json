@@ -1,0 +1,45 @@
+{
+  "description": "Expected runner verdicts for the async completion-protocol fixtures. Each entry is what `run_test262.py --self-check` must report for that fixture; a run that reports anything else is a runner defect, not an engine one.",
+  "fixtures": [
+    {
+      "path": "test/async-protocol/completes.js",
+      "status": "passed",
+      "asyncCompletion": "completed"
+    },
+    {
+      "path": "test/async-protocol/assertion-fails.js",
+      "status": "failed",
+      "asyncCompletion": "reportedFailure"
+    },
+    {
+      "path": "test/async-protocol/rejects.js",
+      "status": "failed",
+      "asyncCompletion": "reportedFailure"
+    },
+    {
+      "path": "test/async-protocol/never-settles.js",
+      "status": "failed",
+      "asyncCompletion": "neverSettled"
+    },
+    {
+      "path": "test/async-protocol/rejection-is-unhandled.js",
+      "status": "failed",
+      "asyncCompletion": "neverSettled"
+    },
+    {
+      "path": "test/async-protocol/completes-twice.js",
+      "status": "failed",
+      "asyncCompletion": "completedTwice"
+    },
+    {
+      "path": "test/async-protocol/throws-after-completing.js",
+      "status": "failed",
+      "asyncCompletion": "completed"
+    },
+    {
+      "path": "test/async-protocol/never-returns.js",
+      "status": "timedOut",
+      "asyncCompletion": null
+    }
+  ]
+}
