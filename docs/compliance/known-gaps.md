@@ -22,17 +22,15 @@ The current failure manifest includes work in these areas:
   the global. The delete tears the binding down, and a closure the eval compiled holds that
   cell directly rather than re-resolving the name. `staging/sm/eval/exhaustive-fun-normalcaller-direct-normalcode`
   passes because the function it deletes through also has an outer binding to fall back to.
-- **`new.target` inside a direct eval nested in eval-compiled code.**
-  `eval("(function(){ return typeof eval('new.target') })()")` is a SyntaxError, because the
-  outer program's "reject new.target" (right for an eval's own top level) reaches the inner
-  call site, which sits inside a function and should allow it.
-- **A Directive Prologue that an empty statement ends after a directive.**
-  `function f(){ 'x'; ; 'use strict'; return typeof this }` runs strict, where the `;` ends
-  the prologue and `'use strict'` is an ordinary expression statement. `function f(){ ;
-  'use strict'; … }` (no directive before the `;`) and `function f(){ 'x'; 0; 'use strict';
-  … }` are both read correctly, so it is the combination that is wrong, and the compiler's
-  own prologue scan (`FastCompiler.HasUseStrictDirective`) stops at the empty statement as
-  it should — the strictness is being decided somewhere else.
+- **A Directive Prologue that an empty statement ends after a directive — fixed.**
+  `function f(){ 'x'; ; 'use strict'; return typeof this }` ran strict, where the `;` ends
+  the prologue and `'use strict'` is an ordinary expression statement. The prologue scan was
+  right and the AST was wrong: a statement that had already ended AT its own `;` consumed a
+  second one, so that empty statement never reached the statement list and the two literals
+  became adjacent directives. `function f(){ 'x'; ; ; 'use strict'; … }` was read correctly
+  because its second `;` survived, which is what made the defect look like a prologue-scan
+  bug. `FastParser.Statement` now consumes the terminator only when the statement did not
+  end on one. No test262 file at the pinned ref covers this; `Track1LanguageTests` does.
 - **Symbol-keyed own properties enumerate in SYMBOL creation order, not PROPERTY creation
   order.** OrdinaryOwnPropertyKeys orders symbol keys "in ascending chronological order of
   property creation"; the symbol map is a sparse map keyed by the symbol's own id, and
@@ -44,10 +42,40 @@ The current failure manifest includes work in these areas:
   needs a per-object record of the order symbol properties were added (the map cannot carry
   it: its enumeration is node-allocation order, which is key-clustered, not insertion order),
   so it is a property-storage change rather than a sort to delete.
-- Array `slice`, `unshift`, `toReversed`, `reduceRight`, and near-maximum length
-  semantics, including Proxy-created results;
-- comment and regular-expression literal lexical edge cases; and
-- labeled/unlabeled `continue` and block-scoped loop bindings.
+- **A parameter, `var`, `let` or catch parameter named `undefined` — fixed.** The compiler
+  folded every identifier named `undefined` to the undefined value, so a binding of that
+  name read as undefined however it had been initialised:
+  `(function (undefined) { return undefined; })(5)` answered undefined. `undefined` is a
+  non-writable non-configurable property of the global object rather than a keyword, so the
+  fold is still taken for a free reference — and not for a name that resolves to a binding,
+  nor under a `with` whose object may supply one. Covered by `Track1LanguageTests`.
+- **`Reflect.set` receiver attributes — fixed.** See
+  [`Phase-2.status.md`](../roadmap/Phase-2.status.md) and
+  `ReflectSetReceiverAttributesTests`, which now pins the correct answer.
+
+Measured against the pinned ref rather than assumed (local Debug host,
+`--include-negative`), these older entries do not currently reproduce:
+
+- **`new.target` inside a direct eval nested in eval-compiled code.**
+  `eval("(function(){ return typeof eval('new.target') })()")` answers `undefined`, and
+  `staging/sm/class/newTargetEval.js` passes. It is in the failure manifest from an older
+  run; confirm against a current CI run before removing the path.
+- **Array `slice`, `unshift`, `toReversed`, `reduceRight` and near-maximum length
+  semantics.** All four directories pass except
+  `slice/create-proto-from-ctor-realm-array.js` (a cross-realm species case).
+- **Comment and regular-expression literal lexical edge cases**, and **labeled/unlabeled
+  `continue` and block-scoped loop bindings.** `test/language/comments`,
+  `test/language/asi` and the `for`/`if`/`while`/`do-while`/`labeled` statement directories
+  pass apart from the early-error cluster below.
+
+What those runs did surface, and what the roadmap's track 1 should carry instead:
+
+- **Early errors that never fire.** `for (const x;;)`, a body `var` shadowing the head's
+  lexical name, a labelled function declaration as a loop body, `export` inside `eval`, and
+  a direct `var` colliding with a global lexical binding are all accepted and RUN — each
+  test reaches its `$DONOTEVALUATE()`. About 30 files across
+  `test/language/statements/{for,if,labeled}`, `test/language/eval-code` and
+  `test/language/global-code`.
 
 Older triage also identified `Intl.DateTimeFormat` range/parts behavior and
 SameValue/Proxy ordering cases. Keep them here only while a current reproduction or

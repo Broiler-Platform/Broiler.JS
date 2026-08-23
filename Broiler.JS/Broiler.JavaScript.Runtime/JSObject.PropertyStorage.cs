@@ -888,6 +888,22 @@ public partial class JSObject
         return SetSymbolOnReceiver(name, value, receiver, JSPropertyAttributes.EnumerableConfigurableValue, throwError);
     }
 
+    /// <summary>
+    /// The attributes CreateDataProperty(O, P, V) gives the property it creates: writable,
+    /// enumerable and configurable (7.3.5, via OrdinaryDefineOwnProperty).
+    /// </summary>
+    /// <remarks>
+    /// The last step of OrdinarySetWithOwnDescriptor — the RECEIVER has no own property —
+    /// is CreateDataProperty, and CreateDataProperty does not consult the base object: the
+    /// property it makes is all-true whatever the base's own property looked like. Passing
+    /// the base's attributes down instead made
+    /// <c>Reflect.set(base, key, value, receiver)</c> give the receiver's new property the
+    /// base property's attributes, so a non-enumerable non-configurable base property
+    /// produced a non-enumerable non-configurable one on an unrelated object.
+    /// </remarks>
+    private const JSPropertyAttributes CreateDataPropertyAttributes =
+        JSPropertyAttributes.EnumerableConfigurableValue;
+
     protected bool SetKeyStringOnReceiver(KeyString name, JSValue value, JSValue receiver, JSPropertyAttributes defaultAttributes, bool throwError)
     {
         if (receiver != null && receiver is not JSObject)
@@ -927,7 +943,7 @@ public partial class JSObject
             // IsExtensible() here would additionally fire a proxy receiver's isExtensible
             // trap, which the spec's OrdinarySetWithOwnDescriptor does NOT (test262 Array
             // reverse/splice length-exceeding-integer-limit-with-proxy).
-            return DefineReceiverDataProperty(target, name, value, defaultAttributes, throwError);
+            return DefineReceiverDataProperty(target, name, value, CreateDataPropertyAttributes, throwError);
         }
 
         var p = target.GetInternalProperty(name, false);
@@ -1011,7 +1027,7 @@ public partial class JSObject
             // IsExtensible() here would additionally fire a proxy receiver's isExtensible
             // trap, which the spec's OrdinarySetWithOwnDescriptor does NOT (test262 Array
             // reverse/splice length-exceeding-integer-limit-with-proxy).
-            return DefineReceiverDataProperty(target, name, value, defaultAttributes, throwError);
+            return DefineReceiverDataProperty(target, name, value, CreateDataPropertyAttributes, throwError);
         }
 
         var p = target.GetInternalProperty(name, false);
@@ -1099,7 +1115,7 @@ public partial class JSObject
             // IsExtensible() here would additionally fire a proxy receiver's isExtensible
             // trap, which the spec's OrdinarySetWithOwnDescriptor does NOT (test262 Array
             // reverse/splice length-exceeding-integer-limit-with-proxy).
-            return DefineReceiverDataProperty(target, name, value, defaultAttributes, throwError);
+            return DefineReceiverDataProperty(target, name, value, CreateDataPropertyAttributes, throwError);
         }
 
         var p = target.GetInternalProperty(name, false);
@@ -1214,7 +1230,7 @@ public partial class JSObject
                 return true;
             }
 
-            var shapeOnlyAttributes = shapeOnly.IsEmpty ? defaultAttributes : shapeOnly.Attributes;
+            var shapeOnlyAttributes = shapeOnly.IsEmpty ? CreateDataPropertyAttributes : shapeOnly.Attributes;
             if (target.TryShapeOnlySetDataProperty(in name, value, shapeOnlyAttributes))
             {
                 target.PropertyChanged?.Invoke(target, (name.Key, uint.MaxValue, null));
@@ -1236,7 +1252,7 @@ public partial class JSObject
                 return true;
             }
 
-            attributes = defaultAttributes;
+            attributes = CreateDataPropertyAttributes;
         }
         else
         {
@@ -1324,7 +1340,7 @@ public partial class JSObject
                 return true;
             }
 
-            attributes = defaultAttributes;
+            attributes = CreateDataPropertyAttributes;
         }
         else
         {

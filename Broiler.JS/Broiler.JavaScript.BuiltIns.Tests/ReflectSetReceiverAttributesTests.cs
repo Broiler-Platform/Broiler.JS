@@ -8,9 +8,9 @@ namespace Broiler.JavaScript.BuiltIns.Tests;
 // true — the TARGET's attributes never carry over, because they describe a different
 // object's property.
 //
-// The engine copies the target's attributes instead. That is recorded as a known gap in
-// docs/performance-roadmap.md (found while implementing P1-1, verified identical on the
-// engine before that change, so it is pre-existing and unrelated to it).
+// The engine copied the target's attributes instead — a known gap until the receiver-create
+// paths in JSObject.PropertyStorage were changed to use CreateDataPropertyAttributes. These
+// tests now pin the correct answer rather than the deviation.
 //
 // These tests exist because test262 does not reach the case at the pinned suite ref:
 // Reflect/set/creates-a-data-descriptor.js exercises the receiver path only with an EMPTY
@@ -30,12 +30,11 @@ public class ReflectSetReceiverAttributesTests
     }
 
     [Fact(Timeout = 600000)]
-    public void KnownGap_ReflectSetCopiesTargetAttributesToTheReceiver()
+    public void ReflectSetGivesTheReceiversNewPropertyTheCreateDataPropertyAttributes()
     {
-        // KNOWN GAP, pinned so it cannot change silently. Expected per spec is
-        // "true,true,true"; the engine reports the target's own attributes instead.
-        // When this is fixed the expectation becomes "true,true,true" and the test
-        // should be renamed.
+        // The target's property is writable, NON-enumerable and NON-configurable; the one
+        // created on the receiver is all-true, because CreateDataProperty does not consult
+        // the target. "true,false,false" is the answer this used to give.
         var result = Eval("""
             var target = {};
             Object.defineProperty(target, 'p', {
@@ -47,7 +46,7 @@ public class ReflectSetReceiverAttributesTests
             [d.writable, d.enumerable, d.configurable].join(',');
             """);
 
-        Assert.Equal("true,false,false", result);
+        Assert.Equal("true,true,true", result);
     }
 
     [Fact(Timeout = 600000)]

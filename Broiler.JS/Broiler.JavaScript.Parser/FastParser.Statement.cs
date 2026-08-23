@@ -54,7 +54,18 @@ partial class FastParser
 
         if (SingleStatement(begin, single, out node))
         {
-            stream.CheckAndConsumeAny(TokenTypes.SemiColon, TokenTypes.LineTerminator);
+            // Consume the statement's terminator — unless the statement already ended AT one,
+            // in which case the next `;` is an EmptyStatement in its own right and belongs to
+            // the statement list. Swallowing it made `'x'; ; 'use strict';` parse as two
+            // adjacent directives, so the empty statement that ENDS a Directive Prologue
+            // vanished and the function ran strict; `'x'; ; ;` kept its second `;` and did
+            // not, which is the shape that made the defect look like a prologue-scan bug.
+            // A line terminator is still consumed either way: it is ASI's, not a statement.
+            if (stream.Previous.Type == TokenTypes.SemiColon)
+                stream.CheckAndConsume(TokenTypes.LineTerminator);
+            else
+                stream.CheckAndConsumeAny(TokenTypes.SemiColon, TokenTypes.LineTerminator);
+
             return true;
         }
 
