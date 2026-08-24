@@ -258,4 +258,61 @@ public class Track1LanguageTests
             ThreeSymbolsInsertedCAB
             + "var t = Object.assign({}, o);"
             + "Reflect.ownKeys(t).filter(k => typeof k === 'symbol').map(s => s.description).join(',')"));
+    // ---- Async and generator bodies run under the strict-mode runtime flag ----
+    //
+    // An async or generator body runs during the rewritten driver's steps, not during the
+    // call that created it, so it did not inherit the strict-mode scope an ordinary call
+    // establishes: a failing [[Set]] inside a 'use strict' async/generator body did not throw
+    // (it silently did nothing), and a strict async function's `this` was the global object
+    // instead of undefined. The body now re-enters the function's own strict flag on each
+    // step, and a strict async function's `this` is left uncoerced.
+
+    private const string FrozenSetInBody =
+        "try { Object.freeze({ x: 1 }).x = 2; r = 'no-throw'; } catch (e) { r = e.name; }";
+
+    [Fact(Timeout = 600000)]
+    public void AFailedStrictSetInAGeneratorBodyThrows()
+        => Assert.Equal("TypeError", Eval(
+            "var r; (function* () { 'use strict'; " + FrozenSetInBody + " })().next(); r"));
+
+    [Fact(Timeout = 600000)]
+    public void AFailedStrictSetInAnAsyncBodyThrows()
+        => Assert.Equal("TypeError", Eval(
+            "var r; (async function () { 'use strict'; " + FrozenSetInBody + " })(); r"));
+
+    // The function inherits strictness from an outer directive too, not only its own.
+    [Fact(Timeout = 600000)]
+    public void AFailedSetInAGeneratorInsideStrictCodeThrows()
+        => Assert.Equal("TypeError", Eval(
+            "'use strict'; var r; (function* () { " + FrozenSetInBody + " })().next(); r"));
+
+    [Fact(Timeout = 600000)]
+    public void AFailedSetInAnAsyncGeneratorBodyThrows()
+        => Assert.Equal("TypeError", Eval(
+            "var r; (async function* () { 'use strict'; " + FrozenSetInBody + " })().next(); r"));
+
+    // The strict effect still applies after a yield resumes the body on a later step.
+    [Fact(Timeout = 600000)]
+    public void AFailedStrictSetAfterAYieldThrows()
+        => Assert.Equal("TypeError", Eval(
+            "var r; var g = (function* () { 'use strict'; yield 1; " + FrozenSetInBody + " })();"
+            + "g.next(); g.next(); r"));
+
+    // A strict async function's `this` is undefined (an ordinary strict function's is), not
+    // the global object a sloppy async function would coerce it to.
+    [Fact(Timeout = 600000)]
+    public void AStrictAsyncFunctionsThisIsUndefined()
+        => Assert.Equal("undefined", Eval(
+            "var r; (async function () { 'use strict'; r = typeof this; })(); r"));
+
+    // Regression guard: a SLOPPY async/generator body keeps lenient [[Set]] semantics.
+    [Fact(Timeout = 600000)]
+    public void AFailedSetInASloppyGeneratorBodyIsSilent()
+        => Assert.Equal("no-throw", Eval(
+            "var r; (function* () { " + FrozenSetInBody + " })().next(); r"));
+
+    [Fact(Timeout = 600000)]
+    public void AFailedSetInASloppyAsyncBodyIsSilent()
+        => Assert.Equal("no-throw", Eval(
+            "var r; (async function () { " + FrozenSetInBody + " })(); r"));
 }

@@ -100,20 +100,16 @@ public class StrictModeFlowTests
     }
 
     [Fact(Timeout = 600000)]
-    public void KnownGap_AsyncAndGeneratorBodiesDoNotEnterRuntimeStrictMode()
+    public void AsyncAndGeneratorBodiesEnterRuntimeStrictMode()
     {
-        // KNOWN GAP, pinned so it cannot change silently. An async or generator body never
-        // enters the runtime strict-mode scope: JSFunction.InvokeFunction wraps ordinary
-        // calls in EnterStrictMode, but the rewritten async/generator drivers do not, so a
-        // failing [[Set]] inside a 'use strict' async or generator body does not throw —
-        // even in the async function's SYNCHRONOUS prefix, before any await, and in a
-        // generator before any yield.
-        //
-        // This predates and is independent of the P0-2 change, which is strictness-neutral
-        // (it only skips redundant AsyncLocal writes and is asserted by the tests above).
-        // Verified identical on the unmodified engine. Tracked in
-        // docs/performance-roadmap.md; when it is fixed, these expectations become
-        // "TypeError" and this test should be renamed.
+        // An async or generator body runs its code during the rewritten driver's steps, not
+        // during the JSFunction.InvokeFunction call that created it, so it does not inherit
+        // the EnterStrictMode scope that ordinary calls establish. ClrGeneratorV2.Next now
+        // re-enters the function's own strict-mode flag around each body step, so a failing
+        // [[Set]] inside a 'use strict' async or generator body throws — in the async
+        // function's SYNCHRONOUS prefix, before any await, and in a generator before any
+        // yield — exactly as an ordinary strict function does. (This was the KnownGap this
+        // test pinned before the fix; the expectations are now "TypeError".)
         var async = Eval("""
             var log = [];
             var frozen = Object.freeze({ x: 1 });
@@ -149,8 +145,8 @@ public class StrictModeFlowTests
             strictFn();
             """);
 
-        Assert.Equal("no-throw", async);
-        Assert.Equal("no-throw", generator);
+        Assert.Equal("TypeError", async);
+        Assert.Equal("TypeError", generator);
         Assert.Equal("TypeError", ordinary);
     }
 
