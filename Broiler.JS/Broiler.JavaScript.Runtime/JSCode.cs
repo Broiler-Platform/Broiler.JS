@@ -9,7 +9,12 @@ public readonly record struct JSCompilationOptions(
     bool ScriptHostMode = false,
     int FeatureFlags = 0,
     ExpressionCompilationBackend Backend = ExpressionCompilationBackend.DynamicMethod,
-    int SemanticVersion = 1);
+    int SemanticVersion = 1,
+    // Whether the source is parsed with the MODULE goal symbol rather than the script one. It
+    // belongs here, and not only in an ambient scope, because it changes what the text MEANS:
+    // `await` is a reserved word in module code, so the same characters are a valid script and an
+    // invalid module. Two compiles that disagree about it must not share a cache entry.
+    bool IsModule = false);
 
 public readonly struct JSCode(
     string location,

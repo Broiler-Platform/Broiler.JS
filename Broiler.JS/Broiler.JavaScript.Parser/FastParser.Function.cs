@@ -50,9 +50,9 @@ partial class FastParser
             // — even though it lexes as an identifier-typed keyword token here.
             // (await/yield remain contextual and are handled above / under strict mode.)
             if (id.Start.IsKeyword
-                && id.Start.Keyword != FastKeywords.await
-                && id.Start.Keyword != FastKeywords.yield
-                && IsDisallowedBindingKeyword(id.Start.Keyword))
+                && (id.Start.Keyword == FastKeywords.await
+                    ? isModuleGoal
+                    : id.Start.Keyword != FastKeywords.yield && IsDisallowedBindingKeyword(id.Start.Keyword)))
                 throw new FastParseException(id.Start, $"'{id.Name}' is a reserved word and cannot be used as a function name");
 
             // BROILER-PATCH: For function declarations, add name to parent scope (hoisted).

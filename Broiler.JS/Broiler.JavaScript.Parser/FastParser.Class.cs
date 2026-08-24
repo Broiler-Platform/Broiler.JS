@@ -37,6 +37,12 @@ partial class FastParser
             {
                 if (!Identitifer(out identifier))
                     throw stream.Unexpected();
+
+                // The class name is a BindingIdentifier, so `await` cannot be one in module code.
+                if (identifier.Start.IsKeyword
+                    && identifier.Start.Keyword == FastKeywords.await
+                    && isModuleGoal)
+                    throw new FastParseException(identifier.Start, "'await' is reserved in module code");
             }
 
             if (stream.CheckAndConsume(FastKeywords.extends))

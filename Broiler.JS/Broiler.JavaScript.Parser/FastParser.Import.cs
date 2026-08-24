@@ -20,6 +20,7 @@ partial class FastParser
             if (!Identitifer(out id))
                 throw stream.Unexpected();
 
+            RejectReservedImportedBinding(id);
             stream.ExpectContextualKeyword(FastKeywords.from);
 
             var literal = ExpectStringLiteral();
@@ -37,6 +38,8 @@ partial class FastParser
 
         if (Identitifer(out id))
         {
+            RejectReservedImportedBinding(id);
+
             if (stream.CheckAndConsume(TokenTypes.Comma))
             {
                 if (stream.CheckAndConsume(TokenTypes.Multiply))
@@ -45,6 +48,8 @@ partial class FastParser
 
                     if (!Identitifer(out all))
                         throw stream.Unexpected();
+
+                    RejectReservedImportedBinding(all);
                 }
                 else if (ImportNames(out var n))
                 {
@@ -70,6 +75,8 @@ partial class FastParser
             {
                 if (!Identitifer(out id))
                     throw stream.Unexpected();
+
+                RejectReservedImportedBinding(id);
             }
 
             stream.ExpectContextualKeyword(FastKeywords.from);
@@ -104,10 +111,13 @@ partial class FastParser
                 {
                     if (!Identitifer(out var asName))
                         throw stream.Unexpected();
+
+                    RejectReservedImportedBinding(asName);
                     list.Add((id.Name, asName.Name));
                 }
                 else
                 {
+                    RejectReservedImportedBinding(id);
                     list.Add((id.Name, id.Name));
                 }
 
@@ -123,6 +133,16 @@ partial class FastParser
             names = list;
             return true;
         }
+    }
+
+    /// <summary>
+    /// An ImportedBinding is a BindingIdentifier, so <c>await</c> cannot be one: an
+    /// ImportDeclaration only appears in module code, where <c>await</c> is reserved.
+    /// </summary>
+    private void RejectReservedImportedBinding(AstIdentifier binding)
+    {
+        if (binding.Start.IsKeyword && binding.Start.Keyword == FastKeywords.await && isModuleGoal)
+            throw new FastParseException(binding.Start, "'await' is reserved in module code");
     }
 
     /// <summary>

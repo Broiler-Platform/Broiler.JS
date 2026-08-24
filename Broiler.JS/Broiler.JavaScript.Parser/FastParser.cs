@@ -38,6 +38,23 @@ public partial class FastParser(FastTokenStream stream) : IParser
 
     private bool inAsyncFunctionBody = false;
 
+    /// <summary>
+    /// True when this compile parses with the MODULE goal symbol rather than the script one.
+    /// </summary>
+    /// <remarks>
+    /// Read once at construction, because the goal is a property of the compile rather than of a
+    /// position within it. It reaches the parser through <see cref="CoreScript"/>'s ambient scope,
+    /// which the host enters from the same resolved <c>JSCompilationOptions</c> that go into the
+    /// code-cache key — so a module and a script with identical text cannot share a compile.
+    /// </remarks>
+    private readonly bool isModuleGoal = Runtime.CoreScript.IsModuleGoal;
+
+    /// <summary>
+    /// Where <c>await</c> may not be a BindingIdentifier: inside an async function body, and —
+    /// since every ModuleItem is parsed <c>[~Await]</c> — anywhere in module code.
+    /// </summary>
+    private bool AwaitIsReservedAsBinding => inAsyncFunctionBody || isModuleGoal;
+
     // Set while parsing the FormalParameters of the current function (cleared on
     // entry to its body and on entry to any nested function's parameters/body). The
     // FormalParameters of a generator must not contain a YieldExpression, and those
