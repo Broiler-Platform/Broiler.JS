@@ -89,12 +89,12 @@ partial class FastCompiler
         if (exportStatement.Members != null)
             return VisitNamedExports(exportStatement, exports, list);
 
-        // `export * from '…'` carries no declaration at all, so the switch below — which reads
-        // Declaration.Type — used to fail with a NullReferenceException rather than any
-        // diagnosable error. It is not implemented; say so deterministically.
-        // (`export * as ns from '…'` DOES carry one, the namespace identifier, and is handled.)
+        // `export * from '…'` carries no declaration at all — the switch below reads
+        // Declaration.Type, which is why this used to die with a NullReferenceException.
+        // (`export * as ns from '…'` DOES carry one, the namespace identifier, and is handled
+        // by the Identifier case.)
         if (exportStatement.ExportAll)
-            throw new FastParseException(exportStatement.Start, "'export * from' is not supported");
+            return VisitExportAll(exportStatement, exports, list);
 
         try
         {
@@ -165,6 +165,31 @@ partial class FastCompiler
         finally
         {
         }
+    }
+
+    /// <summary>
+    /// Compiles <c>export * from '…'</c>: import the source module once, then republish every one
+    /// of its named exports.
+    /// </summary>
+    /// <remarks>
+    /// The names cannot be emitted one by one the way a <c>export { a } from '…'</c> clause's can,
+    /// because which names exist is a property of the source module rather than of this one's
+    /// text — so the copy is a run-time operation over the imported namespace. <c>default</c> is
+    /// excluded there, per the star entry's <c>all-but-default</c> [[ImportName]].
+    /// </remarks>
+    private BExpression VisitExportAll(AstExportStatement exportStatement, FastFunctionScope.VariableScope exports, Sequence<BExpression> list)
+    {
+        var imported = BExpression.Parameter(typeof(JSValue));
+        var import = scope.Top.GetVariable("import");
+        var source = VisitExpression((AstExpression)exportStatement.Source);
+        var args = ArgumentsBuilder.New(JSUndefinedBuilder.Value, source);
+
+        list.Add(BExpression.Assign(
+            imported,
+            BExpression.Yield(JSFunctionBuilder.InvokeFunction(import.Expression, args))));
+        list.Add(JSModuleExportsBuilder.CopyStarExports(imported, exports.Expression));
+
+        return BExpression.Block(imported.AsSequence(), list);
     }
 
     /// <summary>

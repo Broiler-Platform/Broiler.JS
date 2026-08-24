@@ -95,6 +95,9 @@ partial class FastParser
             stream.ExpectContextualKeyword(FastKeywords.from);
 
             var literal = ExpectStringLiteral();
+            // Like the `* as ns` form above: the module has to be imported before its names can be
+            // republished, and that import is awaited.
+            isAsync = true;
             statement = new AstExportStatement(start, null, literal);
             return true;
         }

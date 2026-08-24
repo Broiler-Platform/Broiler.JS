@@ -50,6 +50,7 @@ public class ExportClauseTests
         {
             ["file:///app/dep.js"] = dep,
             ["file:///app/base.js"] = "export const one = 1; export const two = 2;",
+            ["file:///app/withdefault.js"] = "export const named = 5; export default 9;",
         };
 
         using var ctx = new UrlModuleContext(files);
@@ -139,19 +140,34 @@ public class ExportClauseTests
         Assert.Contains("nope", error.Message);
     }
 
-    // `export * from` is not implemented. It used to reach a switch on a declaration it does not
-    // have and die with a NullReferenceException; it now fails deterministically and says why.
-    // (`export * as ns from` is a different production, which does carry an identifier, and works.)
-    [Fact(Timeout = 600000)]
-    public async Task ExportStarFromFailsDeterministically()
-    {
-        var error = await Assert.ThrowsAnyAsync<Exception>(() => Run(
-            "export * from './base.js';",
-            "import * as ns from './dep.js'; globalThis.r = 1;"));
+    // ---- `export * from` republishes the source's named exports ----
 
-        Assert.DoesNotContain("NullReference", error.GetType().Name);
-        Assert.Contains("export * from", error.Message);
-    }
+    [Fact(Timeout = 600000)]
+    public async Task ExportStarFromRepublishesEveryNamedExport()
+        => Assert.Equal("3", await Run(
+            "export * from './base.js';",
+            "import { one, two } from './dep.js'; globalThis.r = one + two;"));
+
+    [Fact(Timeout = 600000)]
+    public async Task ExportStarFromIsVisibleOnTheNamespace()
+        => Assert.Equal("1", await Run(
+            "export * from './base.js';",
+            "import * as ns from './dep.js'; globalThis.r = ns.one;"));
+
+    // A star re-export forwards NAMED exports only — the star entry's [[ImportName]] is
+    // all-but-default — so a barrel file does not inherit the source's default.
+    [Fact(Timeout = 600000)]
+    public async Task ExportStarFromDoesNotForwardTheDefault()
+        => Assert.Equal("undefined", await Run(
+            "export * from './withdefault.js';",
+            "import * as ns from './dep.js'; globalThis.r = typeof ns.default;"));
+
+    // A star re-export composes with the module's own exports.
+    [Fact(Timeout = 600000)]
+    public async Task ExportStarFromComposesWithLocalExports()
+        => Assert.Equal("6", await Run(
+            "export * from './base.js'; const three = 3; export { three };",
+            "import { one, two, three } from './dep.js'; globalThis.r = one + two + three;"));
 
     // A ModuleExportName is an IdentifierName, so the name after `as` may be any reserved word —
     // it is a property of the namespace. But WITHOUT a `from` clause the local name is an
