@@ -82,7 +82,18 @@ partial class FastCompiler
         // A top-level *script* publishes its let/const/class bindings into the global lexical
         // environment so later code that runs in the global environment (notably an indirect eval)
         // can resolve them; an eval program keeps its lexical bindings scoped to the eval.
-        var globalLexicalScopes = !isDirectEvalCompilation && lexicalBindings.Count > 0
+        //
+        // A *module* does neither: it has its own module environment, so its top-level lexical
+        // bindings are module-scoped locals of this compiled body and never enter the realm's shared
+        // global lexical environment. Publishing them there made every module's top-level let/const/
+        // class share one realm-wide slot per name, so a module that declared a top-level `const x`
+        // and, while still running, triggered a transitive import of another module that also declared
+        // a top-level `const x` hit the first module's read-only binding and threw "Cannot assign to
+        // read only variable". (Sibling imports at one level did not collide only because each module
+        // body had returned before the next ran.) Keeping them local is both the fix and the
+        // spec-correct scoping — an indirect eval in the global environment must not see a module's
+        // top-level bindings.
+        var globalLexicalScopes = !isDirectEvalCompilation && !isModuleCompilation && lexicalBindings.Count > 0
             ? new List<FastFunctionScope.VariableScope>(lexicalBindings.Count)
             : null;
         foreach (var lexicalBinding in lexicalBindings)
@@ -422,10 +433,41 @@ partial class FastCompiler
                 case AstExpressionStatement { Expression: AstClassExpression { Identifier: { } identifier, IsDeclaration: true } }:
                     lexicalBindings.Add(identifier.Name.Value);
                     break;
+
+                // `export const x` / `export let x` / `export class C` bind the same module-scoped
+                // lexical name the bare declaration would (ES2024 16.2.3.7 — an ExportDeclaration's
+                // LexicallyScopedDeclarations are the wrapped declaration's). Collect it here so it
+                // is created as a top-level lexical binding of this program scope like any other; a
+                // module then keeps it local (see the globalLexicalScopes note above) instead of
+                // letting it fall through to a global-lexical slot that leaks across modules.
+                case AstExportStatement { Members: null, ExportAll: false, Declaration: { } exported }:
+                    CollectExportedLexicalBindingNames(exported, lexicalBindings);
+                    break;
             }
         }
 
         return lexicalBindings;
+    }
+
+    // The lexical names an `export <declaration>` introduces. Only a `let`/`const` declaration or a
+    // named class declaration binds a lexical name; `export default <expr>`, `export function`, and
+    // an anonymous `export default class` introduce none that a same-named nested declaration could
+    // collide with (a `var`/function is var-scoped, and `*default*` is not a source name), so this
+    // matches exactly the two declaration shapes the bare-statement cases above do.
+    private static void CollectExportedLexicalBindingNames(AstNode exported, HashSet<string> lexicalBindings)
+    {
+        switch (exported)
+        {
+            case AstVariableDeclaration { Kind: FastVariableKind.Let or FastVariableKind.Const } declaration:
+                var declarators = declaration.Declarators.GetFastEnumerator();
+                while (declarators.MoveNext(out var declarator))
+                    CollectBindingNames(declarator.Identifier, lexicalBindings);
+                break;
+
+            case AstClassExpression { Identifier: { } identifier }:
+                lexicalBindings.Add(identifier.Name.Value);
+                break;
+        }
     }
 
     private static void CollectBindingNames(AstExpression expression, HashSet<string> names)

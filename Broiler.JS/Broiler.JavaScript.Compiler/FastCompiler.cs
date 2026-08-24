@@ -47,6 +47,12 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
     private static int _compilationCounter;
     private readonly int compilationId = System.Threading.Interlocked.Increment(ref _compilationCounter);
     private readonly bool isDirectEvalCompilation;
+    // True when this program is compiled under the ES module goal (the ambient the parser reads
+    // for the same reason — see FastParser.isModuleGoal). A module has its own module environment,
+    // so its top-level let/const/class bindings are module-scoped locals, NOT entries in the realm's
+    // shared global lexical environment the way a script's top-level lexicals are. VisitProgram uses
+    // this to skip the global-lexical publishing for a module.
+    private readonly bool isModuleCompilation = Runtime.CoreScript.IsModuleGoal;
     private readonly bool usesDirectEvalLocalVarEnvironment;
     private readonly string[] directEvalBindingNames;
     private readonly string[] directEvalLexicalBindingNames;
