@@ -19,7 +19,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
 {
     string IJSRegExp.Pattern => pattern;
     string IJSRegExp.Flags => flags;
-    Regex IJSRegExp.Value => value;
+    bool IJSRegExp.IsMatch(string input) => IsMatch(input);
 
     internal static bool IsRegExpLike(JSValue value)
     {
@@ -488,26 +488,21 @@ public partial class JSRegExp : JSObject, IJSRegExp
         if (limit == 0)
             return CreateArray();
 
-        // Find the first match.
-        Match match = value.Match(input, 0);
-
-
         var results = CreateArray();
         int startIndex = 0;
-        Match lastMatch = null;
 
-        while (match.Success == true)
+        // Iterate through the active engine (Broiler when the pattern was routed, .NET
+        // otherwise) rather than a .NET Match/NextMatch loop, so a gap pattern splits on
+        // the same matches exec reports. Groups is already the ECMAScript-order capture
+        // array; an unmatched group contributes undefined.
+        foreach (var match in EnumerateMatches(input))
         {
-            // Do not match the an empty substring at the start or end of the string or at the
+            // Do not split on an empty match at the start or end of the string or at the
             // end of the previous match.
             if (match.Length == 0 && (match.Index == 0 || match.Index == input.Length || match.Index == startIndex))
-            {
-                // Find the next match.
-                match = match.NextMatch();
                 continue;
-            }
 
-            // Add the match results to the array.
+            // Add the text preceding this match.
             var element = input.Substring(startIndex, match.Index - startIndex);
             results.AddArrayItem(CreateString(element));
 
@@ -516,24 +511,17 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
             startIndex = match.Index + match.Length;
 
-            for (int i = 1; i < match.Groups.Count; i++)
+            var groups = match.Groups;
+            for (int i = 1; i < groups.Length; i++)
             {
-                var group = match.Groups[i];
-                if (group.Captures.Count == 0)
-                    results.AddArrayItem(JSUndefined.Value);       // Non-capturing groups return "undefined".
-                else
-                    results.AddArrayItem(CreateString(match.Groups[i].Value));
+                var group = groups[i];
+                results.AddArrayItem(group.Success ? CreateString(group.Value) : JSUndefined.Value);
 
                 if (results.Length >= limit)
                     return results;
             }
-
-            // Record the last match.
-            lastMatch = match;
-
-            // Find the next match.
-            match = match.NextMatch();
         }
+
         var ele = input.Substring(startIndex, input.Length - startIndex);
         results.AddArrayItem(CreateString(ele));
         return results;
@@ -553,26 +541,47 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // throws for an object yielding no primitive — not the lenient CLR ToString.
             return Replace(input, replaceFunction.StringValue);
 
-        return value.Replace(input, match =>
+        return ReplaceMatches(input, match =>
         {
-            // Set the deprecated RegExp properties.
-            //this.Engine.RegExp.SetDeprecatedProperties(input, match);
+            var groups = match.Groups;
+            JSValue[] parameters = new JSValue[groups.Length + 2];
+            for (int i = 0; i < groups.Length; i++)
+                parameters[i] = groups[i].Success ? CreateString(groups[i].Value) : JSUndefined.Value;
 
-            JSValue[] parameters = new JSValue[match.Groups.Count + 2];
-            for (int i = 0; i < match.Groups.Count; i++)
-            {
-                if (match.Groups[i].Success == false)
-                    parameters[i] = JSUndefined.Value;
-                else
-                    parameters[i] = CreateString(match.Groups[i].Value);
-            }
-
-            parameters[match.Groups.Count] = CreateNumber(match.Index);
-            parameters[match.Groups.Count + 1] = CreateString(input);
+            parameters[groups.Length] = CreateNumber(match.Index);
+            parameters[groups.Length + 1] = CreateString(input);
 
             var a = new Arguments(NullValue, parameters);
             return replaceFunction.InvokeFunction(a).ToString();
-        }, globalSearch == true ? int.MaxValue : 1);
+        });
+    }
+
+    /// <summary>
+    /// Builds the replacement result: each match up to the global/first-only limit has its
+    /// span replaced by <paramref name="evaluator"/>. Iterates the active engine through
+    /// <see cref="EnumerateMatches"/> — the .NET-agnostic equivalent of
+    /// <c>Regex.Replace(input, evaluator, count)</c> — so a routed pattern replaces on the
+    /// same matches <c>exec</c> reports.
+    /// </summary>
+    private string ReplaceMatches(string input, System.Func<RegexMatchData, string> evaluator)
+    {
+        var limit = globalSearch ? int.MaxValue : 1;
+        var builder = new StringBuilder(input.Length);
+        int last = 0;
+        int done = 0;
+
+        foreach (var match in EnumerateMatches(input))
+        {
+            if (done >= limit)
+                break;
+            builder.Append(input, last, match.Index - last);
+            builder.Append(evaluator(match));
+            last = match.Index + match.Length;
+            done++;
+        }
+
+        builder.Append(input, last, input.Length - last);
+        return builder.ToString();
     }
 
     /// <summary>
@@ -586,15 +595,17 @@ public partial class JSRegExp : JSObject, IJSRegExp
         // Check if the replacement string contains any patterns.
         bool replaceTextContainsPattern = replaceText.IndexOf('$') >= 0;
 
-        // Replace the input string with replaceText, recording the last match found.
-        Match lastMatch = null;
-        string result = value.Replace(input, match =>
+        return ReplaceMatches(input, match =>
         {
-            lastMatch = match;
-
             // If there is no pattern, replace the pattern as is.
             if (replaceTextContainsPattern == false)
                 return replaceText;
+
+            var groups = match.Groups;
+
+            // An unmatched capture substitutes the empty string, matching .NET's Group.Value
+            // for a non-participating group (RegexMatchData reports it as null).
+            string Capture(int n) => groups[n].Success ? groups[n].Value : string.Empty;
 
             // Patterns
             // $$	Inserts a "$".
@@ -627,16 +638,16 @@ public partial class JSRegExp : JSObject, IJSRegExp
                             matchNumber2 = matchNumber1 * 10 + (replaceText[i + 1] - '0');
 
                         // Try the two digit capture first.
-                        if (matchNumber2 > 0 && matchNumber2 < match.Groups.Count)
+                        if (matchNumber2 > 0 && matchNumber2 < groups.Length)
                         {
                             // Two digit capture replacement.
-                            replacementBuilder.Append(match.Groups[matchNumber2].Value);
+                            replacementBuilder.Append(Capture(matchNumber2));
                             i++;
                         }
-                        else if (matchNumber1 > 0 && matchNumber1 < match.Groups.Count)
+                        else if (matchNumber1 > 0 && matchNumber1 < groups.Length)
                         {
                             // Single digit capture replacement.
-                            replacementBuilder.Append(match.Groups[matchNumber1].Value);
+                            replacementBuilder.Append(Capture(matchNumber1));
                         }
                         else
                         {
@@ -657,9 +668,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             }
 
             return replacementBuilder.ToString();
-        }, globalSearch == true ? -1 : 1);
-
-        return result;
+        });
     }
 
     /// <summary>
@@ -818,13 +827,21 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // such as (?<🦊>…) or (?<𝟚the>…) (an ID_Continue-only first character) is a SyntaxError.
             ValidateNamedGroupNames(pattern);
 
-            // Route a JS/.NET gap-feature pattern (look-behind captures/back-refs,
-            // nullable quantifiers, code-point back-references, astral atoms) to the
-            // Broiler.Regex engine, which is correct by construction for these. The
-            // .NET `value` is still built below (the failing semantics only surface at
-            // MATCH time — RegExpBuiltinExec routes through Broiler when this is set,
-            // while split/replace/IsMatch keep using the translated .NET regex).
-            broiler = TryBuildBroilerForGaps(pattern, flags, unicode || unicodeSets);
+            // Route the pattern to the Broiler.Regex engine when it should own it: every
+            // Unicode-mode (u/v) pattern Broiler can build, plus the non-Unicode gap shapes
+            // where .NET is semantically wrong (look-behind captures/back-refs, nullable
+            // quantifiers). Every operation — exec, test, split, replace, IsMatch — dispatches
+            // through RunMatch, which reads Broiler when this is set, so no supported operation
+            // reads the .NET `value` for a routed pattern.
+            broiler = TryRouteToBroiler(pattern, flags, unicode || unicodeSets);
+
+            // The .NET translation below is therefore a convenience, not a requirement, for
+            // a routed pattern: if a transform or `new Regex` cannot represent it, fall back
+            // to a null .NET engine and let Broiler own it (see the inner catch). When
+            // `broiler` is null this is a plain block and any failure still surfaces as a
+            // SyntaxError through the outer handler, exactly as before.
+            try
+            {
 
             // BROILER-PATCH: Transform ES3 empty character classes and forward backreferences
             // for .NET compatibility (tests 89, 90)
@@ -1034,6 +1051,16 @@ public partial class JSRegExp : JSObject, IJSRegExp
                 captureMap = BuildCaptureMapFromBroiler(broiler);
 
             return (compiled, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, normalizedFlags);
+            }
+            catch (Exception ex) when (broiler != null && (ex is JSException || ex is ArgumentException))
+            {
+                // The pattern is routed to Broiler.Regex, which parsed and built it, but the
+                // translator could not represent it for .NET (a transform's "not supported"
+                // SyntaxError, or `new Regex` rejecting the rewritten form). Run without the
+                // .NET engine — `value` is null and every operation reads Broiler.
+                captureMap = BuildCaptureMapFromBroiler(broiler);
+                return (null, globalSearch, ignoreCase, multiline, hasIndices, sticky, unicode, unicodeSets, normalizedFlags);
+            }
         }
         catch (JSException)
         {

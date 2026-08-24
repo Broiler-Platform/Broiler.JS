@@ -135,7 +135,7 @@ public partial class JSAssert : JSFunction
         if (regex is not IJSRegExp match)
             throw new JSException($"Second parameter must be regex");
 
-        if (!match.Value.IsMatch(text.ToString()))
+        if (!match.IsMatch(text.ToString()))
         {
             var msg = !msgObj.IsUndefined ? msgObj.ToString() : $"Regex match failed of {text} with {regex}";
             throw new JSException(msg);

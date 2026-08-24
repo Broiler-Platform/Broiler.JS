@@ -20,13 +20,18 @@ namespace Broiler.JavaScript.BuiltIns.RegExp;
 //     RepeatMatcher abandons an empty iteration, .NET does not, so the match comes
 //     out short (problem 8 — e.g. /(a?b??)*/ on "ab");
 //   * code-point back-references and astral / lone-surrogate atoms under the `u`
-//     flag, where .NET matches per UTF-16 code unit (problems 6 & 7).
+//     flag, where .NET matches per UTF-16 code unit (problems 6 & 7);
+//   * a v-mode class-set expression (`[a&&b]`, `[a--b]`, `[[a][b]]`, `\q{…}`) or a
+//     property escape used as a class member: the translator has to evaluate the set
+//     itself and emit an approximation, and inside `[…]` it can only fall back to
+//     .NET's code-unit-based `\p{Lu}`.
 //
-// Broiler.Regex implements the §22.2.2 continuation-passing matcher directly, so it
-// is correct by construction for exactly these cases. JSRegExp keeps the mature
-// .NET translator as the default engine and routes ONLY gap-feature patterns that
-// Broiler.Regex can fully handle through it (see ShouldRouteToBroiler). Everything
-// else continues to use .NET unchanged, keeping the blast radius minimal.
+// Broiler.Regex implements the §22.2.2 continuation-passing matcher directly, so it is
+// correct by construction for these cases and, more broadly, for the whole Unicode-mode
+// grammar. JSRegExp now routes every u/v pattern Broiler can build, plus the non-Unicode
+// gap shapes above; non-Unicode patterns Broiler does not specifically own stay on the
+// mature — and much faster — .NET translator (see TryRouteToBroiler). Everything routed
+// dispatches through RunMatch, so exec/test/split/replace/IsMatch share one engine.
 public partial class JSRegExp
 {
     // Non-null when this pattern is matched by the Broiler.Regex engine instead of
@@ -37,11 +42,26 @@ public partial class JSRegExp
     /// <summary>
     /// Attempts to build a <see cref="BroilerRegex"/> for <paramref name="pattern"/>
     /// when, and only when, the pattern exercises a JS/.NET semantic gap that
-    /// Broiler.Regex resolves and the translator cannot. Returns null to keep using
-    /// the .NET engine (the pattern is either not a gap case, or uses a Broiler
-    /// feature that is not yet implemented — property escapes, v-mode set ops).
+    /// Broiler.Regex should own. Returns null to keep using the .NET engine, either because
+    /// the pattern is not selected for routing or because Broiler.Regex cannot parse or build
+    /// it (in which case the .NET translator, or a SyntaxError, takes over as before).
     /// </summary>
-    internal static BroilerRegex TryBuildBroilerForGaps(string pattern, string flags, bool unicodeMode)
+    /// <remarks>
+    /// The routing policy differs by mode:
+    /// <list type="bullet">
+    /// <item><b>Unicode (<c>u</c>/<c>v</c>)</b>: route every pattern Broiler can build. This is
+    /// where the .NET translation is most complex and fragile — a standalone <c>\p{…}</c> under
+    /// <c>i</c> throws, in-class case folding (<c>[α-ω]/iu</c> against <c>µ</c>) is missed, and
+    /// astral atoms match per code unit — and where Broiler's code-point-native matching is
+    /// correct by construction. When Broiler cannot build a Unicode pattern the .NET path still
+    /// runs, so its own parser gaps never turn a valid pattern into a failure.</item>
+    /// <item><b>non-Unicode</b>: route only the documented gap shapes. The common non-Unicode
+    /// pattern is often ASCII and often in a hot loop, and the mature .NET engine is far faster
+    /// than this clarity-first interpreter, so it stays the default until Broiler is optimized.
+    /// </item>
+    /// </list>
+    /// </remarks>
+    internal static BroilerRegex TryRouteToBroiler(string pattern, string flags, bool unicodeMode)
     {
         pattern ??= "";
 
@@ -51,9 +71,8 @@ public partial class JSRegExp
         {
             brFlags = RegexFlagsParser.Parse(flags);
             // Re-parse with Broiler so the routing decision sees the real grammar
-            // (not a textual heuristic). A parse failure here — including the
-            // not-yet-implemented \p{…} stub — means Broiler can't own the pattern,
-            // so fall back to the .NET translator.
+            // (not a textual heuristic). A parse failure here means Broiler can't own
+            // the pattern, so fall back to the .NET translator.
             ast = BRegex::Broiler.Regex.Parsing.RegexParser.Parse(pattern, brFlags, out _, out _);
         }
         catch
@@ -61,11 +80,14 @@ public partial class JSRegExp
             return null;
         }
 
-        var scan = new GapScan(unicodeMode);
-        scan.Walk(ast, insideLookbehind: false);
-
-        if (scan.UsesUnsupported || !scan.HasGap)
-            return null;
+        // Outside Unicode mode, keep the .NET default and route only the gap shapes.
+        if (!unicodeMode)
+        {
+            var scan = new GapScan(unicodeMode);
+            scan.Walk(ast, insideLookbehind: false);
+            if (!scan.HasGap)
+                return null;
+        }
 
         try
         {
@@ -78,14 +100,12 @@ public partial class JSRegExp
     }
 
     // Walks a Broiler.Regex AST to decide whether the pattern is a gap case worth
-    // routing (HasGap) and whether it uses a feature Broiler.Regex cannot yet match
-    // correctly (UsesUnsupported — in which case routing is abandoned).
+    // routing (HasGap).
     private sealed class GapScan(bool unicodeMode)
     {
         private readonly bool _unicode = unicodeMode;
 
         public bool HasGap;
-        public bool UsesUnsupported;
 
         public void Walk(RegexNode node, bool insideLookbehind)
         {
@@ -106,10 +126,14 @@ public partial class JSRegExp
                     break;
 
                 case CharClassNode cls:
-                    // v-mode set operations / \q{…} are parsed but not yet evaluated
-                    // by the matcher — never route such a pattern.
-                    if (cls.Set.UsesSetOperations)
-                        UsesUnsupported = true;
+                    // A v-mode class-set expression (`[a&&b]`, `[a--b]`, `[[a][b]]`,
+                    // `\q{…}`) and a property escape used as a class member are both
+                    // shapes the translator cannot hand to .NET as written: it evaluates
+                    // the set itself and emits an approximation, and inside `[…]` it falls
+                    // back to .NET's code-unit-based `\p{Lu}`, which cannot match a
+                    // supplementary-plane member. Broiler.Regex evaluates both directly.
+                    if (cls.Set.UsesSetOperations || cls.Set.UsesPropertyEscape)
+                        HasGap = true;
                     break;
 
                 case GroupNode grp:
@@ -153,7 +177,9 @@ public partial class JSRegExp
             EmptyNode => true,
             CharNode => false,
             AnyCharNode => false,
-            CharClassNode => false,
+            // A v-mode class can hold the empty string (`[\q{}]`), which is the one
+            // character class that matches without advancing.
+            CharClassNode c => c.Set.MatchesEmptyString,
             AnchorNode => true,
             LookaroundNode => true,
             BackreferenceNode => true, // an unset back-reference matches the empty string
@@ -258,7 +284,25 @@ public partial class JSRegExp
     internal RegexMatchData RunMatch(string input, int start)
     {
         if (broiler != null)
-            return FromBroiler(broiler.Match(input, start));
+        {
+            try
+            {
+                return FromBroiler(broiler.Match(input, start));
+            }
+            catch (BRegex::Broiler.Regex.RegexOverflowException)
+            {
+                // Broiler's continuation-passing matcher would recurse past the stack for
+                // this subject (a quantifier over a long input). The .NET engine is
+                // iterative, so fall back to it for this match when the translator could
+                // represent the pattern. When it could not (value is null — a pattern only
+                // Broiler can express), there is nothing to fall back to; report no match
+                // rather than crash. Both are rare: the widened routing pairs Broiler with a
+                // .NET translation for almost every pattern.
+                if (value != null)
+                    return FromNet(value.Match(input, start));
+                return RegexMatchData.NoMatch;
+            }
+        }
 
         // Phase 5, item 2: the pattern's thousandth match is where it becomes worth asking
         // whether `RegexOptions.Compiled` would serve it better, and the only honest way to ask
@@ -270,6 +314,50 @@ public partial class JSRegExp
 
         return FromNet(value.Match(input, start));
     }
+
+    /// <summary>
+    /// Enumerates the non-overlapping matches of this pattern in <paramref name="input"/>
+    /// through the active engine, advancing past an empty match by one code point (a
+    /// surrogate pair under <c>u</c>/<c>v</c>) as §22.2.6.9 iteration requires. This is the
+    /// engine-agnostic equivalent of a .NET <c>Match</c>/<c>NextMatch</c> loop, so a
+    /// Broiler-routed pattern drives <see cref="Split"/> and <see cref="Replace(string,string)"/>
+    /// with the same match data <c>exec</c> sees rather than the .NET translator's — which
+    /// is wrong for exactly the gap patterns that get routed.
+    /// </summary>
+    internal IEnumerable<RegexMatchData> EnumerateMatches(string input)
+    {
+        var pos = 0;
+        while (pos <= input.Length)
+        {
+            var match = RunMatch(input, pos);
+            if (!match.Success)
+                yield break;
+
+            yield return match;
+
+            var next = match.Index + match.Length;
+            if (match.Length == 0)
+            {
+                // Advance one position past an empty match so iteration terminates, keeping
+                // a surrogate pair whole under u/v (the same rule BroilerRegex.Matches uses).
+                next = match.Index + 1;
+                if ((unicode || unicodeSets) && match.Index < input.Length
+                    && char.IsHighSurrogate(input[match.Index])
+                    && match.Index + 1 < input.Length && char.IsLowSurrogate(input[match.Index + 1]))
+                    next++;
+            }
+            pos = next;
+        }
+    }
+
+    /// <summary>
+    /// True when this pattern matches anywhere in <paramref name="input"/>, through the
+    /// active engine. The engine-agnostic replacement for reaching a caller's own
+    /// <c>System.Text.RegularExpressions.Regex.IsMatch</c> off the retired
+    /// <c>IJSRegExp.Value</c>, so a routed pattern answers a match test the same way
+    /// <c>exec</c> does.
+    /// </summary>
+    internal bool IsMatch(string input) => RunMatch(input, 0).Success;
 
     private static RegexMatchData FromBroiler(RegexMatch m)
     {
