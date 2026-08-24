@@ -200,4 +200,62 @@ public class Track1LanguageTests
             "var base = { x: 1 };"
             + "var receiver = Object.preventExtensions({});"
             + "[Reflect.set(base, 'x', 2, receiver), 'x' in receiver].join(',')"));
+
+    // ---- Symbol-keyed own properties enumerate in property-insertion order ----
+    //
+    // OrdinaryOwnPropertyKeys (§10.1.11.1) lists symbol keys last, in the order the property
+    // was ADDED to the object. The symbol map is keyed by the symbol's creation id and does
+    // not record that order, so `getOwnPropertySymbols` sorted by creation id (`a,b,c` for
+    // symbols made in that order however they were assigned) and `Reflect.ownKeys` returned
+    // the map's raw hash order — both wrong. The object now tracks symbol insertion order and
+    // every enumeration path reads it. Symbols are created a,b,c and assigned c,a,b, so the
+    // correct order (c,a,b) differs from both creation order and any hash order.
+
+    private const string ThreeSymbolsInsertedCAB =
+        "var a = Symbol('a'), b = Symbol('b'), c = Symbol('c');"
+        + "var o = {}; o[c] = 1; o[a] = 2; o[b] = 3;";
+
+    [Fact(Timeout = 600000)]
+    public void GetOwnPropertySymbolsUsesInsertionOrder()
+        => Assert.Equal("c,a,b", Eval(
+            ThreeSymbolsInsertedCAB + "Object.getOwnPropertySymbols(o).map(s => s.description).join(',')"));
+
+    [Fact(Timeout = 600000)]
+    public void ReflectOwnKeysUsesInsertionOrderForSymbols()
+        => Assert.Equal("c,a,b", Eval(
+            ThreeSymbolsInsertedCAB
+            + "Reflect.ownKeys(o).filter(k => typeof k === 'symbol').map(s => s.description).join(',')"));
+
+    [Fact(Timeout = 600000)]
+    public void ReflectOwnKeysOrdersIntegersThenStringsThenSymbolsEachInInsertionOrder()
+        => Assert.Equal("0,2,y,x,b,a", Eval(
+            "var a = Symbol('a'), b = Symbol('b');"
+            + "var o = {}; o[b] = 1; o.y = 1; o[2] = 1; o.x = 1; o[0] = 1; o[a] = 1;"
+            + "Reflect.ownKeys(o).map(k => typeof k === 'symbol' ? k.description : k).join(',')"));
+
+    // A deleted symbol that is added again is a NEW property: it goes to the end, not back to
+    // its old slot (same rule as string keys).
+    [Fact(Timeout = 600000)]
+    public void AReaddedSymbolMovesToTheEnd()
+        => Assert.Equal("b,c,a", Eval(
+            "var a = Symbol('a'), b = Symbol('b'), c = Symbol('c');"
+            + "var o = {}; o[a] = 1; o[b] = 2; o[c] = 3; delete o[a]; o[a] = 9;"
+            + "Object.getOwnPropertySymbols(o).map(s => s.description).join(',')"));
+
+    // Redefining an existing symbol key keeps its position.
+    [Fact(Timeout = 600000)]
+    public void RedefiningASymbolKeepsItsPosition()
+        => Assert.Equal("a,b,c", Eval(
+            "var a = Symbol('a'), b = Symbol('b'), c = Symbol('c');"
+            + "var o = {}; o[a] = 1; o[b] = 2; o[c] = 3; Object.defineProperty(o, b, { value: 9 });"
+            + "Object.getOwnPropertySymbols(o).map(s => s.description).join(',')"));
+
+    // Object.assign copies symbol keys in the source's insertion order, so the copy's own
+    // symbol order matches the source's rather than the symbol map's hash order.
+    [Fact(Timeout = 600000)]
+    public void ObjectAssignCopiesSymbolsInInsertionOrder()
+        => Assert.Equal("c,a,b", Eval(
+            ThreeSymbolsInsertedCAB
+            + "var t = Object.assign({}, o);"
+            + "Reflect.ownKeys(t).filter(k => typeof k === 'symbol').map(s => s.description).join(',')"));
 }

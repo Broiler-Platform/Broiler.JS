@@ -298,9 +298,13 @@ public partial class JSObject
                     target.SetPropertyOrThrow(propertyKey, source[key.KeyString]);
             }
 
-            foreach (var (key, property) in source.GetSymbols().AllValues())
+            // §7.3.25 CopyDataProperties copies keys in [[OwnPropertyKeys]] order; the
+            // string/integer keys came from GetAllKeys above, and the symbol keys are copied
+            // here in the source's property-insertion order (not the symbol map's hash order),
+            // so the target's own symbol order matches the source's.
+            foreach (var (key, property) in source.SymbolsInInsertionOrder())
             {
-                if (!property.IsEmpty && property.IsEnumerable && (copiedSymbols == null || !copiedSymbols.Contains(key)))
+                if (property.IsEnumerable && (copiedSymbols == null || !copiedSymbols.Contains(key)))
                     target.SetPropertyOrThrow((JSValue)(GetSymbolByKeyFactory?.Invoke(key)
                         ?? throw new InvalidOperationException($"Unknown symbol key {key}")), source.GetValue(property));
             }
