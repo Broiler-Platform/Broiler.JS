@@ -48,6 +48,14 @@ partial class FastParser
         if (awaitOf && !(inAsyncFunctionBody || (functionDepth == 0 && CoreScript.AllowTopLevelAwait)))
             throw new FastParseException(begin, "for await (... of ...) is only valid in async functions and modules");
 
+        // A top-level `for await` awaits, so the program is async exactly as a top-level
+        // AwaitExpression makes it (see AwaitExpression, which sets the same flag). The flag is
+        // what routes the program through the generator rewrite; without it the program was
+        // compiled straight to IL and the await this loop emits reached the IL generator as a
+        // raw yield node, which it cannot emit (NotImplementedException in VisitYield).
+        if (awaitOf && functionDepth == 0)
+            isAsync = true;
+
         stream.Expect(TokenTypes.BracketStart);
 
         AstNode? beginNode;

@@ -519,4 +519,50 @@ public class Track1LanguageTests
     [InlineData("eval('var g;'); let h = 1; 'ok'")]                            // different names
     public void ValidDirectEvalVarDeclarationsAreStillAccepted(string code)
         => Assert.Equal("ok", Eval(code));
+
+    // ---- A top-level `for await` makes the program async ----
+    //
+    // A program containing a top-level AwaitExpression is marked async by the parser, and that
+    // flag is what routes it through the generator rewrite that implements suspension. A
+    // top-level `for await` awaits just as much, but the for-head only VALIDATED that the
+    // construct was legal there and never set the flag — so the program was compiled straight
+    // to IL and the await the loop desugars to reached the IL generator as a raw yield node it
+    // cannot emit, surfacing as a NotImplementedException (the "invalid program" top-level
+    // `for await` failures in the Test262 module corpus) rather than running.
+
+    private static async Task<string> EvalTopLevelAwait(string code)
+    {
+        using var ctx = new JSContext(options: new JSContextOptions { ScriptHostMode = true });
+        return (await ctx.EvalWithTopLevelAwaitAsync(code)).ToString();
+    }
+
+    [Theory(Timeout = 600000)]
+    [InlineData("6", "var s = 0; for await (const v of [1, 2, 3]) { s += v; } s")]
+    [InlineData("3", "var s = 0; for await (const v of [Promise.resolve(1), Promise.resolve(2)]) { s += v; } s")]
+    [InlineData("3", "async function* g() { yield 1; yield 2; } var s = 0; for await (const v of g()) s += v; s")]
+    [InlineData("6", "var s = 0; { for await (const v of [1, 2, 3]) s += v; } s")]           // nested in a block
+    [InlineData("6", "var s = 0; try { for await (const v of [1, 2, 3]) s += v; } finally {} s")]
+    [InlineData("6", "var s = 0; for await (const v of [1, 2, 3]) { s += await Promise.resolve(v); } s")]
+    public async Task ATopLevelForAwaitRuns(string expected, string code)
+        => Assert.Equal(expected, await EvalTopLevelAwait(code));
+
+    // Guards: the neighbouring forms that already worked must keep working.
+    [Fact(Timeout = 600000)]
+    public async Task APlainTopLevelAwaitStillRuns()
+        => Assert.Equal("7", await EvalTopLevelAwait("var x = await Promise.resolve(7); x"));
+
+    [Fact(Timeout = 600000)]
+    public async Task AForAwaitInsideAnAsyncFunctionStillRuns()
+        => Assert.Equal("6", await EvalTopLevelAwait(
+            "(async function () { var s = 0; for await (const v of [1, 2, 3]) s += v; return s; })()"));
+
+    // `for await` is still a SyntaxError where no await is allowed: an ordinary script's top
+    // level (no top-level-await scope) and a non-async function body.
+    [Fact(Timeout = 600000)]
+    public void AForAwaitInAnOrdinaryScriptIsASyntaxError()
+        => AssertSyntaxError("for await (const v of [1]) {}");
+
+    [Fact(Timeout = 600000)]
+    public void AForAwaitInANonAsyncFunctionIsASyntaxError()
+        => AssertSyntaxError("(function () { for await (const v of [1]) {} })");
 }
