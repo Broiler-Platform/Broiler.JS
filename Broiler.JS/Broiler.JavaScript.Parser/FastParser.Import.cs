@@ -142,9 +142,23 @@ partial class FastParser
 
         while (!stream.CheckAndConsume(TokenTypes.CurlyBracketEnd))
         {
-            // Attribute key can be an identifier or a string literal
+            // AttributeKey : IdentifierName | StringLiteral. The comment already said so; only the
+            // identifier half was implemented, so `with { "type": "json" }` — the quoted form the
+            // proposal's own examples use — was rejected as an unexpected token. An IdentifierName
+            // also admits reserved words, both shapes of them (see FastParser.Export's
+            // ModuleExportName for why there are two).
             StringSpan key;
-            if (Identitifer(out var keyId))
+            var keyToken = stream.Current;
+            if (keyToken.Type == TokenTypes.String)
+            {
+                key = ExpectStringLiteral().StringValue;
+            }
+            else if (keyToken.IsKeyword || IsKeywordPropertyName(keyToken.Type))
+            {
+                stream.Consume();
+                key = keyToken.Span;
+            }
+            else if (Identitifer(out var keyId))
             {
                 key = keyId.Name;
             }

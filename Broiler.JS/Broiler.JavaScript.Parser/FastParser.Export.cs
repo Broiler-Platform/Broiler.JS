@@ -87,6 +87,12 @@ partial class FastParser
                 stream.ExpectContextualKeyword(FastKeywords.from);
 
                 var namespaceSource = ExpectStringLiteral();
+                // An ExportDeclaration with a FromClause takes a WithClause exactly as an
+                // ImportDeclaration does, and all three `from` forms below accept one too. As on
+                // the import side, the attributes are parsed and not yet acted on — nothing reads
+                // AstImportStatement.Attributes either — so this makes valid source compile rather
+                // than claiming the attribute is enforced.
+                ImportAttributes();
                 isAsync = true;
                 statement = new AstExportStatement(start, namespaceIdentifier, namespaceSource);
                 return true;
@@ -95,6 +101,7 @@ partial class FastParser
             stream.ExpectContextualKeyword(FastKeywords.from);
 
             var literal = ExpectStringLiteral();
+            ImportAttributes();
             // Like the `* as ns` form above: the module has to be imported before its names can be
             // republished, and that import is awaited.
             isAsync = true;
@@ -117,6 +124,7 @@ partial class FastParser
             if (stream.CheckAndConsumeContextualKeyword(FastKeywords.from))
             {
                 var reexportSource = ExpectStringLiteral();
+                ImportAttributes();
                 isAsync = true;
                 statement = new AstExportStatement(start, members!, reexportSource, reexportSource.End);
                 return true;
