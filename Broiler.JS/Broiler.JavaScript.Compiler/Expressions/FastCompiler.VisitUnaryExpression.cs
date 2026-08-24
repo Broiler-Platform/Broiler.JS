@@ -91,7 +91,16 @@ partial class FastCompiler
                             if (canDeleteCapturedDirectEvalBinding)
                                 return JSBooleanBuilder.True;
 
+                            // An eval-shadow binding (a name a sloppy direct eval may have introduced
+                            // a deletable `var` under, captured by a nested closure so both share one
+                            // EvalShadowVariable — `eval("var x=1"); var f=()=>x; delete x;`) has no
+                            // statically known deletability: when the eval owns it, `delete` removes
+                            // it and the name re-resolves to the outer binding the shadow forwards to;
+                            // otherwise it targets that outer binding. Defer to DeleteIdentifier,
+                            // which resolves the shadow and tears down only an owned one, rather than
+                            // folding to `false` the way a genuine non-deletable local does.
                             if (!canDeleteCapturedDirectEvalBinding
+                                && !variable.IsEvalShadow
                                 && variable.Expression is not BPropertyExpression { PropertyInfo.Name: nameof(JSVariable.GlobalValue) })
                                 return JSBooleanBuilder.False;
                         }

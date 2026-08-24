@@ -419,4 +419,69 @@ public class Track1LanguageTests
     [InlineData("export { };")]
     public void ExportInAScriptIsASyntaxError(string code)
         => AssertSyntaxError(code);
+
+    // ---- `delete` of an eval-introduced var captured by a closure re-resolves outward ----
+    //
+    // A sloppy direct eval's `var` is a deletable binding of the calling function's variable
+    // environment (EvalDeclarationInstantiation: CreateMutableBinding(name, true)). When a nested
+    // closure captures that name, the compiler binds both the function and the closure to one
+    // shared EvalShadowVariable. `delete` of such a name must remove the eval-introduced binding
+    // so every later read — the function's own and the closure's — re-resolves to the binding the
+    // name would otherwise have (here the program-level `var x`). The compiler folded `delete x`
+    // to a constant `false` (a captured binding read as non-deletable), so the binding survived
+    // and every read still saw the eval's value.
+
+    [Fact(Timeout = 600000)]
+    public void DeleteOfClosureCapturedEvalVarReturnsTrue()
+        => Assert.Equal("true", Eval(
+            "var x = 'global';" +
+            "(function () {" +
+            "  eval(\"var x = 'inner';\");" +
+            "  var read = function () { return x; };" +   // capture forces the shared shadow
+            "  return String(delete x);" +
+            "})()"));
+
+    [Fact(Timeout = 600000)]
+    public void ClosureReadAfterDeletingCapturedEvalVarReresolvesOutward()
+        => Assert.Equal("global", Eval(
+            "var x = 'global';" +
+            "(function () {" +
+            "  eval(\"var x = 'inner';\");" +
+            "  var read = function () { return x; };" +
+            "  delete x;" +
+            "  return read();" +
+            "})()"));
+
+    [Fact(Timeout = 600000)]
+    public void DirectReadAfterDeletingCapturedEvalVarReresolvesOutward()
+        => Assert.Equal("global", Eval(
+            "var x = 'global';" +
+            "(function () {" +
+            "  eval(\"var x = 'inner';\");" +
+            "  var read = function () { return x; };" +   // present so `x` is the captured shadow
+            "  delete x;" +
+            "  return x;" +
+            "})()"));
+
+    // With no outer binding to fall back to, the name is unresolvable after the delete: a read
+    // throws a ReferenceError and `typeof` answers "undefined".
+    [Fact(Timeout = 600000)]
+    public void ClosureReadAfterDeletingCapturedEvalVarWithNoOuterThrows()
+        => Assert.Equal("ReferenceError", Eval(
+            "(function () {" +
+            "  eval(\"var y = 'inner';\");" +
+            "  var read = function () { return y; };" +
+            "  delete y;" +
+            "  try { read(); return 'no throw'; } catch (e) { return e.name; }" +
+            "})()"));
+
+    [Fact(Timeout = 600000)]
+    public void TypeofAfterDeletingCapturedEvalVarWithNoOuterIsUndefined()
+        => Assert.Equal("undefined", Eval(
+            "(function () {" +
+            "  eval(\"var y = 'inner';\");" +
+            "  var read = function () { return typeof y; };" +
+            "  delete y;" +
+            "  return read();" +
+            "})()"));
 }
