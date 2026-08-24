@@ -51,8 +51,15 @@ public class TryBlock
     public Exception PendingError;
 }
 
-public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, Arguments arguments, bool asyncGenerator = false)
+public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, Arguments arguments, bool asyncGenerator = false, bool strict = false)
 {
+    // A generator or async function runs its body during Next (initial priming and every
+    // resume), not during the InvokeFunction call that created it, so the strict-mode runtime
+    // flag the base JSFunction.InvokeFunction would establish is not in effect here. Carry the
+    // function's own strict flag and re-enter it around each body step, so a failed [[Set]]
+    // inside a strict generator/async body throws as it must (§10.1.11 sink, ordinary [[Set]]).
+    private readonly bool strict = strict;
+
     public FrameToken StackItem;
 
     private Exception injectedException = null;
@@ -115,6 +122,10 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
 
     internal void Next(JSValue next, out JSValue value, out bool done)
     {
+        // Run this body step under the function's own strict-mode flag (see `strict`). A
+        // suspension at `yield`/`await` returns out of here and disposes the scope, so the
+        // consumer's code between steps keeps its own strictness; the next step re-enters.
+        using var strictScope = JSEngine.EnterStrictMode(strict);
         try
         {
             NextCore(next, out value, out done);

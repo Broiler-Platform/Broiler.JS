@@ -104,6 +104,13 @@ public partial class JSObject : JSValue
     private ElementArray elements;
     private PropertySequence ownProperties;
     private SAUint32Map<JSProperty> symbols;
+
+    // Insertion order of the symbol keys held in `symbols`. That map is a sparse hash keyed
+    // by the symbol's creation id, which is NOT the order OrdinaryOwnPropertyKeys (§10.1.11.1)
+    // must report — that is the order in which the property was ADDED to this object. Integer
+    // and string keys get their order from `elements` / `ownProperties`; symbols are tracked
+    // here. Null until the first symbol property is added. See SymbolsInInsertionOrder.
+    private List<uint> symbolOrder;
     private ObjectShape objectShape = ObjectShape.Empty;
     private JSValue[] shapeSlots = Array.Empty<JSValue>();
     private long? uid;

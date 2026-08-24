@@ -32,8 +32,160 @@ public static void ValidateProgram(
             throw new FastParseException(program.Start, "Invalid declaration in direct eval code");
         }
 
+        ValidateModuleEarlyErrors(program);
+
         new ControlFlowValidator().Visit(program);
         new StrictModeValidator(inheritStrictMode, directEvalPrivateNames).Visit(program);
+    }
+
+    /// <summary>
+    /// The module early errors that follow from a module's own top level: an ImportedBinding may
+    /// not be declared twice, and a module may have at most one default export.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// ES2024 16.2.1.5: the ImportedBoundNames of a Module must contain no duplicate entries, and
+    /// must not intersect its VarDeclaredNames or LexicallyDeclaredNames. A collision with a
+    /// top-level <c>let</c>/<c>const</c>/class is already caught by the scope machinery (an import
+    /// registers a binding there); a duplicate among the imports themselves, and a collision with
+    /// a hoisted <c>var</c>, were not — so <c>import { a, a } from 'm'</c>,
+    /// <c>import { a, b as a } from 'm'</c>, two import statements binding one name, and
+    /// <c>import { a } from 'm'; var a;</c> were all accepted and run.
+    /// </para>
+    /// <para>
+    /// This needs no module parse goal, which the parser does not have: an ImportDeclaration is
+    /// only ever legal in module code, so a program with none is left alone and the check is inert
+    /// for a script. (The one early error that DOES need the goal is <c>await</c> as an
+    /// identifier, which is reserved from a module's first token, before any import is seen.)
+    /// </para>
+    /// </remarks>
+    private static void ValidateModuleEarlyErrors(AstProgram program)
+    {
+        HashSet<string> importedBoundNames = null;
+        HashSet<string> exportedNames = null;
+
+        var statements = program.Statements.GetFastEnumerator();
+        while (statements.MoveNext(out var statement))
+        {
+            switch (statement)
+            {
+                case AstImportStatement import:
+                    AddImportedBinding(import.Default?.Name, import.Start, ref importedBoundNames);
+                    AddImportedBinding(import.All?.Name, import.Start, ref importedBoundNames);
+
+                    if (import.Members != null)
+                    {
+                        var members = import.Members.GetFastEnumerator();
+                        while (members.MoveNext(out var member))
+                            AddImportedBinding(member.asName, import.Start, ref importedBoundNames);
+                    }
+
+                    break;
+
+                case AstExportStatement export:
+                    CollectExportedNames(export, ref exportedNames);
+                    break;
+            }
+        }
+
+        if (importedBoundNames == null || program.HoistingScope == null)
+            return;
+
+        // VarDeclaredNames ∩ ImportedBoundNames must be empty. The hoisting scope is the right
+        // source for them: a `var` in a nested block still declares a name at the module's top
+        // level, where the import binding lives.
+        var hoisted = program.HoistingScope.GetFastEnumerator();
+        while (hoisted.MoveNext(out var name))
+        {
+            if (importedBoundNames.Contains(name.Value))
+                throw new FastParseException(program.Start, $"Identifier '{name.Value}' has already been declared");
+        }
+    }
+
+    private static void AddImportedBinding(StringSpan? name, FastToken at, ref HashSet<string> importedBoundNames)
+    {
+        if (name == null || name.Value.IsEmpty)
+            return;
+
+        importedBoundNames ??= new HashSet<string>(StringComparer.Ordinal);
+        if (!importedBoundNames.Add(name.Value.Value))
+            throw new FastParseException(at, $"Identifier '{name.Value.Value}' has already been declared");
+    }
+
+    /// <summary>
+    /// Adds the ExportedNames of one ExportDeclaration, rejecting a name a previous one already
+    /// exported (ES2024 16.2.1.5: the ExportedNames of a Module must contain no duplicate
+    /// entries).
+    /// </summary>
+    /// <remarks>
+    /// The rule subsumes the familiar "only one default export" — <c>default</c> is simply an
+    /// exported name, which is why <c>export default 1; export default 2;</c> and
+    /// <c>export { x as default }; export default 2;</c> are the same error rather than two.
+    /// <c>export * from</c> contributes no name here: its set is all-but-default, resolved against
+    /// the source module at run time rather than written in this module's text.
+    /// </remarks>
+    private static void CollectExportedNames(AstExportStatement export, ref HashSet<string> exportedNames)
+    {
+        if (export.IsDefault)
+        {
+            AddExportedName("default", export.Start, ref exportedNames);
+            return;
+        }
+
+        if (export.Members != null)
+        {
+            var members = export.Members.GetFastEnumerator();
+            while (members.MoveNext(out var member))
+                AddExportedName(member.asName.Value, export.Start, ref exportedNames);
+
+            return;
+        }
+
+        // `export * from '…'` — no declaration and no clause.
+        if (export.ExportAll || export.Declaration == null)
+            return;
+
+        // `export * as ns from '…'`: the declaration is the namespace binding's identifier.
+        if (export.Source != null)
+        {
+            if (export.Declaration is AstIdentifier ns)
+                AddExportedName(ns.Name.Value, export.Start, ref exportedNames);
+
+            return;
+        }
+
+        switch (export.Declaration)
+        {
+            case AstVariableDeclaration declaration:
+                var declarators = declaration.Declarators.GetFastEnumerator();
+                while (declarators.MoveNext(out var declarator))
+                {
+                    // A destructuring target binds several names through a pattern; those are
+                    // left to the scope machinery, which already rejects a redeclaration.
+                    if (declarator.Identifier is AstIdentifier declared)
+                        AddExportedName(declared.Name.Value, export.Start, ref exportedNames);
+                }
+
+                break;
+
+            case AstFunctionExpression { Id: { } functionName }:
+                AddExportedName(functionName.Name.Value, export.Start, ref exportedNames);
+                break;
+
+            case AstClassExpression { Identifier: { } className }:
+                AddExportedName(className.Name.Value, export.Start, ref exportedNames);
+                break;
+        }
+    }
+
+    private static void AddExportedName(string name, FastToken at, ref HashSet<string> exportedNames)
+    {
+        if (string.IsNullOrEmpty(name))
+            return;
+
+        exportedNames ??= new HashSet<string>(StringComparer.Ordinal);
+        if (!exportedNames.Add(name))
+            throw new FastParseException(at, $"Duplicate export name '{name}'");
     }
 
     internal static bool IsUseStrictDirectiveLiteral(AstLiteral literal)

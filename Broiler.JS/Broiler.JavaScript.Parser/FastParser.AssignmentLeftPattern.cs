@@ -29,7 +29,7 @@ partial class FastParser
                     || (token.IsKeyword && token.Keyword == FastKeywords.yield && inGeneratorBody)
                     // `await` is a reserved word in async function (and async generator)
                     // bodies, so it cannot be a BindingIdentifier there.
-                    || (token.IsKeyword && token.Keyword == FastKeywords.await && inAsyncFunctionBody)
+                    || (token.IsKeyword && token.Keyword == FastKeywords.await && AwaitIsReservedAsBinding)
                     // `let` is not a valid BoundName of a lexical declaration (let / const /
                     // using), regardless of strict mode — `let let`, `const let`, `using let`.
                     || (token.IsKeyword && token.Keyword == FastKeywords.let && (kind == FastVariableKind.Let || kind == FastVariableKind.Const))
@@ -175,7 +175,7 @@ partial class FastParser
                     var shorthand = left.Start;
                     if (shorthand.IsEscapedReservedWord
                         || (shorthand.IsKeyword && shorthand.Keyword == FastKeywords.yield && inGeneratorBody)
-                        || (shorthand.IsKeyword && shorthand.Keyword == FastKeywords.await && inAsyncFunctionBody)
+                        || (shorthand.IsKeyword && shorthand.Keyword == FastKeywords.await && AwaitIsReservedAsBinding)
                         || (shorthand.IsKeyword && shorthand.Keyword == FastKeywords.let && (kind == FastVariableKind.Let || kind == FastVariableKind.Const))
                         || (shorthand.IsKeyword && shorthand.Keyword != FastKeywords.await && shorthand.Keyword != FastKeywords.yield && IsDisallowedBindingKeyword(shorthand.Keyword)))
                         throw stream.Unexpected();

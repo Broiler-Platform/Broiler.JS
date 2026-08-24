@@ -333,9 +333,9 @@ partial class FastParser
                 // are already rejected as statement starters) is never a legal label,
                 // even though it lexes as an identifier-typed keyword token.
                 if (id.IsKeyword
-                    && id.Keyword != FastKeywords.await
-                    && id.Keyword != FastKeywords.yield
-                    && IsDisallowedBindingKeyword(id.Keyword))
+                    && (id.Keyword == FastKeywords.await
+                        ? isModuleGoal
+                        : id.Keyword != FastKeywords.yield && IsDisallowedBindingKeyword(id.Keyword)))
                     throw stream.Unexpected();
 
                 SkipNewLines();
@@ -459,9 +459,9 @@ partial class FastParser
                         // token here, unlike the `var`/destructuring paths that already
                         // reject it. (await/yield stay contextual and are excluded.)
                         if (catchIdToken.IsKeyword
-                            && catchIdToken.Keyword != FastKeywords.await
-                            && catchIdToken.Keyword != FastKeywords.yield
-                            && IsDisallowedBindingKeyword(catchIdToken.Keyword))
+                            && (catchIdToken.Keyword == FastKeywords.await
+                                ? isModuleGoal
+                                : catchIdToken.Keyword != FastKeywords.yield && IsDisallowedBindingKeyword(catchIdToken.Keyword)))
                             throw stream.Unexpected();
 
                         catchParam = id;

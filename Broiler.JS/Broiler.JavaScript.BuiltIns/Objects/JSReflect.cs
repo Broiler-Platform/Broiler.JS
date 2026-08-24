@@ -181,11 +181,8 @@ public partial class JSReflect : JSObject
         // A Proxy's GetAllKeys already included them via the trap, so skip it.
         if (@object is not JSProxy)
         {
-            foreach (var (key, property) in @object.GetSymbols().AllValues())
+            foreach (var (key, _) in @object.SymbolsInInsertionOrder())
             {
-                if (property.IsEmpty)
-                    continue;
-
                 var symbol = GetSymbolByKeyFactory?.Invoke(key);
                 if (symbol != null)
                     r.Add((JSValue)symbol);

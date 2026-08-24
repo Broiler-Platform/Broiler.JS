@@ -33,7 +33,6 @@ public partial class JSObject
     private static List<JSValue> GetOwnPropertyKeysInListOrder(JSObject @object)
     {
         var keys = new List<JSValue>();
-        List<(uint Key, JSValue Value)> symbolKeys = null;
 
         if (!@object.IsArray)
         {
@@ -53,22 +52,12 @@ public partial class JSObject
             keys.Add(value);
         }
 
-        foreach (var (key, property) in @object.GetSymbols().AllValues())
+        // §10.1.11.1: symbol keys come last, in the order the properties were added.
+        foreach (var (key, _) in @object.SymbolsInInsertionOrder())
         {
-            if (property.IsEmpty)
-                continue;
-
             var symbol = GetSymbolByKeyFactory?.Invoke(key)
                 ?? throw new InvalidOperationException($"Unknown symbol key {key}");
-            symbolKeys ??= [];
-            symbolKeys.Add((key, (JSValue)symbol));
-        }
-
-        if (symbolKeys != null)
-        {
-            symbolKeys.Sort(static (left, right) => left.Key.CompareTo(right.Key));
-            for (var i = 0; i < symbolKeys.Count; i++)
-                keys.Add(symbolKeys[i].Value);
+            keys.Add((JSValue)symbol);
         }
 
         return keys;
@@ -335,9 +324,11 @@ public partial class JSObject
             }
         }
 
-        foreach (var (key, property) in jobj.GetSymbols().AllValues())
+        // Any symbol GetOwnPropertyKeysInListOrder did not already emit (it now emits them all
+        // in insertion order, so this is a guard), still in insertion order.
+        foreach (var (key, _) in jobj.SymbolsInInsertionOrder())
         {
-            if (property.IsEmpty || (emittedSymbols != null && emittedSymbols.Contains(key)))
+            if (emittedSymbols != null && emittedSymbols.Contains(key))
                 continue;
 
             var symbol = GetSymbolByKeyFactory?.Invoke(key)

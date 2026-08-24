@@ -212,7 +212,7 @@ public class JSGeneratorFunctionV2 : JSFunction
             ? a.OverrideThis(CoerceNonStrictThis(a.This))
             : a;
 
-        var generator = JSGeneratorBuilder.CreateFromClrV2(new ClrGeneratorV2(this, @delegate, args, asyncGenerator));
+        var generator = JSGeneratorBuilder.CreateFromClrV2(new ClrGeneratorV2(this, @delegate, args, asyncGenerator, IsStrictMode));
 
         // Priming runs FunctionDeclarationInstantiation (and so the default-parameter
         // initializers) and suspends the body at its start. Per §27.4.10/§27.5.3.x

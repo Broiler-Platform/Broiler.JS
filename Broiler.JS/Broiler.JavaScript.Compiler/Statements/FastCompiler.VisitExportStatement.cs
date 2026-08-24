@@ -66,6 +66,15 @@ partial class FastCompiler
         var declaration = exportStatement.Declaration;
         BExpression left;
 
+        // An ExportDeclaration is only legal in module code (its bindings target the
+        // host-injected `exports` object). In a plain script `exports` is absent, so
+        // an `export` here is an early SyntaxError — the same verdict V8 gives an
+        // export in a non-module. Reject it cleanly rather than dereferencing the
+        // null `exports` below (which previously surfaced as a NullReferenceException,
+        // notably for `export default <expr>`).
+        if (exports == null)
+            throw new FastParseException(exportStatement.Start, "'export' is only valid inside a module");
+
         if (exportStatement.IsDefault)
         {
             var defExports = JSValueBuilder.Index(exports.Expression, KeyOfName("default"));
@@ -73,6 +82,19 @@ partial class FastCompiler
         }
 
         var list = new Sequence<BExpression>();
+
+        // `export { a, b as c }` — with a `from` clause, the names come from that module; without
+        // one, they are LOCAL bindings this module already has, and the clause only publishes
+        // them. Neither form declares anything.
+        if (exportStatement.Members != null)
+            return VisitNamedExports(exportStatement, exports, list);
+
+        // `export * from '…'` carries no declaration at all — the switch below reads
+        // Declaration.Type, which is why this used to die with a NullReferenceException.
+        // (`export * as ns from '…'` DOES carry one, the namespace identifier, and is handled
+        // by the Identifier case.)
+        if (exportStatement.ExportAll)
+            return VisitExportAll(exportStatement, exports, list);
 
         try
         {
@@ -127,11 +149,13 @@ partial class FastCompiler
 
                 case FastNodeType.ClassStatement:
                     var ce = Visit(declaration);
-                    var cd = declaration as AstFunctionExpression;
 
-                    if (cd.Id != null)
+                    // A class declaration is an AstClassExpression, and its name is `Identifier`.
+                    // Casting it to AstFunctionExpression produced null, so reading the name threw
+                    // a NullReferenceException — `export class C {}` never worked at all.
+                    if (declaration is AstClassExpression { Identifier: { } className })
                     {
-                        left = JSValueBuilder.Index(exports.Expression, KeyOfName(cd.Id.Name));
+                        left = JSValueBuilder.Index(exports.Expression, KeyOfName(className.Name));
                         return BExpression.Assign(left, ce);
                     }
 
@@ -143,5 +167,92 @@ partial class FastCompiler
         finally
         {
         }
+    }
+
+    /// <summary>
+    /// Compiles <c>export * from '…'</c>: import the source module once, then republish every one
+    /// of its named exports.
+    /// </summary>
+    /// <remarks>
+    /// The names cannot be emitted one by one the way a <c>export { a } from '…'</c> clause's can,
+    /// because which names exist is a property of the source module rather than of this one's
+    /// text — so the copy is a run-time operation over the imported namespace. <c>default</c> is
+    /// excluded there, per the star entry's <c>all-but-default</c> [[ImportName]].
+    /// </remarks>
+    private BExpression VisitExportAll(AstExportStatement exportStatement, FastFunctionScope.VariableScope exports, Sequence<BExpression> list)
+    {
+        var imported = BExpression.Parameter(typeof(JSValue));
+        var import = scope.Top.GetVariable("import");
+        var source = VisitExpression((AstExpression)exportStatement.Source);
+        var args = ArgumentsBuilder.New(JSUndefinedBuilder.Value, source);
+
+        list.Add(BExpression.Assign(
+            imported,
+            BExpression.Yield(JSFunctionBuilder.InvokeFunction(import.Expression, args))));
+        list.Add(JSModuleExportsBuilder.CopyStarExports(imported, exports.Expression));
+
+        return BExpression.Block(imported.AsSequence(), list);
+    }
+
+    /// <summary>
+    /// Compiles a NamedExports clause: <c>export { a, b as c }</c>, and the same with a
+    /// <c>from</c> clause.
+    /// </summary>
+    /// <remarks>
+    /// Without <c>from</c> each specifier publishes a binding the module already has, so the value
+    /// is read through the binding itself — the clause introduces nothing. A local name with no
+    /// binding is an early error (ES2024 16.2.3: every ReferencedBindings of a NamedExports must
+    /// be declared), which is worth raising here rather than emitting a read of a binding that
+    /// does not exist.
+    /// <para>
+    /// With <c>from</c> the names are not this module's at all: the source module is imported once
+    /// into a temporary and each specifier is copied off it, which is the same shape the
+    /// <c>export * as ns from</c> path above uses.
+    /// </para>
+    /// </remarks>
+    private BExpression VisitNamedExports(AstExportStatement exportStatement, FastFunctionScope.VariableScope exports, Sequence<BExpression> list)
+    {
+        var members = exportStatement.Members!;
+
+        if (exportStatement.Source != null)
+        {
+            var imported = BExpression.Parameter(typeof(JSValue));
+            var import = scope.Top.GetVariable("import");
+            var source = VisitExpression((AstExpression)exportStatement.Source);
+            var args = ArgumentsBuilder.New(JSUndefinedBuilder.Value, source);
+
+            list.Add(BExpression.Assign(
+                imported,
+                BExpression.Yield(JSFunctionBuilder.InvokeFunction(import.Expression, args))));
+
+            var reexported = members.GetFastEnumerator();
+            while (reexported.MoveNext(out var member))
+            {
+                list.Add(BExpression.Assign(
+                    JSValueBuilder.Index(exports.Expression, KeyOfName(member.asName)),
+                    JSValueBuilder.Index(imported, KeyOfName(member.name))));
+            }
+
+            return BExpression.Block(imported.AsSequence(), list);
+        }
+
+        var local = members.GetFastEnumerator();
+        while (local.MoveNext(out var member))
+        {
+            var binding = scope.Top.GetVariable(member.name);
+            if (binding == null)
+            {
+                throw new FastParseException(
+                    exportStatement.Start,
+                    $"Export '{member.name}' is not defined in module");
+            }
+
+            list.Add(BExpression.Assign(
+                JSValueBuilder.Index(exports.Expression, KeyOfName(member.asName)),
+                binding.Expression));
+        }
+
+        // An empty clause — `export {}` — is legal and publishes nothing.
+        return list.Count == 0 ? JSUndefinedBuilder.Value : BExpression.Block(list);
     }
 }

@@ -77,6 +77,35 @@ public class CoreScript
         }
     }
 
+    // Whether the compile now running is parsing with the MODULE goal symbol. Ambient for the
+    // same reason AllowTopLevelAwait is: the parser is several assemblies away from the host and
+    // IJSCompiler.Compile does not carry compilation options. It is set from the resolved
+    // JSCompilationOptions inside Compile's factory, so the flag the parser reads and the flag in
+    // the code-cache key are the same value by construction and cannot drift apart.
+    private static readonly AsyncLocal<int> ModuleGoalDepth = new();
+
+    internal static bool IsModuleGoal => ModuleGoalDepth.Value > 0;
+
+    internal static IDisposable ModuleGoalScope()
+    {
+        ModuleGoalDepth.Value++;
+        return new ModuleGoalScopeToken();
+    }
+
+    private sealed class ModuleGoalScopeToken : IDisposable
+    {
+        private bool disposed;
+
+        public void Dispose()
+        {
+            if (disposed)
+                return;
+
+            disposed = true;
+            ModuleGoalDepth.Value = Math.Max(0, ModuleGoalDepth.Value - 1);
+        }
+    }
+
     private static IJSCompiler _compiler;
 
     /// <summary>
@@ -94,7 +123,8 @@ public class CoreScript
         string location = null,
         IList<string> args = null,
         ICodeCache codeCache = null,
-        JSCompilationOptions? compilationOptions = null)
+        JSCompilationOptions? compilationOptions = null,
+        bool isModule = false)
     {
         try
         {
@@ -105,14 +135,28 @@ public class CoreScript
             // Wrapped here rather than only in each ICodeCache: the factory is the one point
             // every implementation reaches, including a host's own, and it is where the front
             // end starts recursing over the source. A cache *hit* never crosses the boundary.
+            // Resolved once: the options carried in the cache key and the goal the factory
+            // parses under both come from this single value.
+            var options = compilationOptions ?? current.compilationOptions;
+            if (isModule)
+                options = options with { IsModule = true };
+
+            var moduleGoal = options.IsModule;
             var jsc = new JSCode(
                 location,
                 code,
                 args,
                 () => ExpressionCompiler.CompilationStack.Run(
-                    () => compiler.Compile(script, location, args, codeCache),
+                    () =>
+                    {
+                        // Entered around the FACTORY rather than around Compile, so it is
+                        // established exactly when the front end runs: a cache hit never reaches
+                        // here, and never needed to.
+                        using var goal = moduleGoal ? ModuleGoalScope() : null;
+                        return compiler.Compile(script, location, args, codeCache);
+                    },
                     script.Length),
-                compilationOptions ?? current.compilationOptions);
+                options);
             return codeCache.GetOrCreate(in jsc);
         }
         catch (FastParseException ex)

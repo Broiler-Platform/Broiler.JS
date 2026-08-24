@@ -998,6 +998,22 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         globalVars.Put(name.Key) = variable;
     }
 
+    /// <summary>
+    /// EvalDeclarationInstantiation early error: a <c>var</c> or function declared by a direct
+    /// eval whose variable environment is the global environment may not share a name with an
+    /// existing global lexical (<c>let</c>/<c>const</c>/class) binding. <see cref="Register"/>
+    /// enforces this on the ordinary global-var registration path, but a name the eval body also
+    /// treats as a captured lexical skips that registration (it resolves to the lexical), so the
+    /// compiler emits this equivalent check for those names and it lands here.
+    /// </summary>
+    public JSValue EnsureNoGlobalLexicalConflictForEvalVar(in KeyString name)
+    {
+        if (globalVars.TryGetValue(name.Key, out var existing) && existing.IsGlobalLexical)
+            JSException.ThrowSyntaxError($"Identifier '{name}' has already been declared");
+
+        return JSUndefined.Value;
+    }
+
     public JSValue Register(JSVariable variable)
     {
         KeyString name = variable.Name;

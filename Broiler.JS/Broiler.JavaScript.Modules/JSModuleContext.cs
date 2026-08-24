@@ -414,7 +414,10 @@ public class JSModuleContext : JSContext
                 "import",
                 "__fileame",
                 "__dirname"
-            ], codeCache: CodeCache);
+                // Parsed with the module goal symbol, which is what makes `await` a reserved word
+                // here. A .json file is wrapped as CommonJS above and is not module source, so it
+                // keeps the script goal.
+            ], codeCache: CodeCache, isModule: !filePath.EndsWith(".json"));
         }
 
         if (factory(new Arguments(module,

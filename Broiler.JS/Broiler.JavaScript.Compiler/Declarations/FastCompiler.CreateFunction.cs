@@ -489,6 +489,14 @@ partial class FastCompiler
                     replaceContext: cs.Context, replaceScriptInfo: scriptInfo);
 
                 jsf = JSGeneratorFunctionBuilderV2.New(lambda, fxName, code, functionLength, functionDeclaration.Async, primeOnInvoke: true, coerceThis: !isStrictFunction);
+
+                // A strict generator runs its body under the strict-mode runtime flag (a failed
+                // [[Set]] throws, `caller`/`arguments` are poisoned). The flag is carried into
+                // the body's execution by ClrGeneratorV2; setting it on the function is where
+                // that carry begins. `coerceThis` (strict `this` is left undefined) is already
+                // handled above by the builder argument.
+                if (isStrictFunction)
+                    jsf = JSFunctionBuilder.EnableStrictMode(jsf);
             }
             else if (functionDeclaration.Async)
             {
@@ -502,7 +510,17 @@ partial class FastCompiler
                 // mismatch at IL-gen). See LambdaRewriter.rewriteNestedLambdas.
                 ExpressionCompiler.LambdaRewriter.RewriteRootOnly(lambda);
 
-                jsf = JSAsyncFunctionBuilder.Create(JSGeneratorFunctionBuilderV2.New(lambda, fxName, code, functionLength));
+                // An async function runs its body through an inner generator (see
+                // JSAsyncFunction), so the strict flag and the `this` treatment must be set on
+                // THAT generator — its InvokeFunction is what builds the ClrGeneratorV2 whose
+                // Next carries strict mode into the body, and whose coerceThis leaves a strict
+                // async function's `this` undefined rather than coercing it to the global object.
+                var innerGenerator = JSGeneratorFunctionBuilderV2.New(
+                    lambda, fxName, code, functionLength, coerceThis: !isStrictFunction);
+                if (isStrictFunction)
+                    innerGenerator = JSFunctionBuilder.EnableStrictMode(innerGenerator);
+
+                jsf = JSAsyncFunctionBuilder.Create(innerGenerator);
             }
             else
             {

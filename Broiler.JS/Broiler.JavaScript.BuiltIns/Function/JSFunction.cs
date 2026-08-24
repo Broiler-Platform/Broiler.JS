@@ -69,6 +69,39 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     }
 
     /// <summary>
+    /// Re-caches the <see cref="prototype"/> field from what the observable <c>prototype</c>
+    /// property CURRENTLY holds, rather than from the value a write attempted.
+    /// </summary>
+    /// <remarks>
+    /// A write to <c>prototype</c> can be REJECTED — the property is non-writable on a class
+    /// constructor, on a frozen function, and after
+    /// <c>Object.defineProperty(f, 'prototype', { writable: false })</c> — and a rejected write
+    /// leaves the property alone (silently in sloppy mode, with a TypeError in strict mode).
+    /// Caching the attempted value regardless left <c>[[Construct]]</c> building instances on an
+    /// object the property never held, so <c>f.prototype</c> and <c>new f()</c> disagreed, and
+    /// <c>Reflect.construct(f, [])</c> — which reads the property — disagreed with <c>new f()</c>
+    /// on the very same function.
+    /// <para>
+    /// Reading the property back is what makes the two agree for every outcome: a rejected write
+    /// re-caches the unchanged object, an accepted one caches what was stored, and a
+    /// <c>defineProperty</c> that legally replaces the property caches the replacement. It costs
+    /// one own-property lookup per <c>prototype</c> write, which is already off the shape write
+    /// fast paths (see below) and happens about once per class definition.
+    /// </para>
+    /// </remarks>
+    private void SyncPrototypeFieldFromProperty()
+    {
+        var property = GetInternalProperty(KeyStrings.prototype, false);
+        if (property.IsValue)
+            AssignPrototypeField(property.value as JSValue ?? JSUndefined.Value);
+        else if (property.IsEmpty)
+            AssignPrototypeField(JSUndefined.Value);
+
+        // An accessor `prototype` is left alone, exactly as the write paths left it before:
+        // reading it here would invoke a script-supplied getter, which a property write must not do.
+    }
+
+    /// <summary>
     /// Keeps <c>prototype</c> off the shape write fast paths, because writing it has an effect
     /// beyond the property store: it re-caches the <see cref="prototype"/> field above, which is
     /// what <c>[[Construct]]</c> reads.
@@ -610,7 +643,15 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
         set
         {
             if (name.Key == KeyStrings.prototype.Key)
-                AssignPrototypeField(value);
+            {
+                // Cache AFTER the store, from the property itself: this path has no success
+                // result to test, and the store is rejected outright when `prototype` is
+                // non-writable (a class constructor, a frozen function). See
+                // SyncPrototypeFieldFromProperty.
+                base[name] = value;
+                SyncPrototypeFieldFromProperty();
+                return;
+            }
 
             base[name] = value;
         }
@@ -663,11 +704,16 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     public override JSValue DefineProperty(in KeyString name, JSObject pd)
     {
         var result = base.DefineProperty(name, pd);
-        if (result.BooleanValue
+        // [[DefineOwnProperty]] reports success as undefined (the abstract-operation value) and
+        // failure as the boolean false — the same convention the legacy caller/arguments branch
+        // below spells out. Testing `result.BooleanValue` therefore treated every SUCCESSFUL
+        // redefine as a failure, so `Object.defineProperty(f, 'prototype', { value: q })` updated
+        // the observable property while `[[Construct]]` went on using the old object.
+        if (!(result.IsBoolean && !result.BooleanValue)
             && name.Key == KeyStrings.prototype.Key
             && pd.HasProperty(KeyStrings.value.ToJSValue()).BooleanValue)
         {
-            AssignPrototypeField(pd[KeyStrings.value]);
+            SyncPrototypeFieldFromProperty();
         }
         else if (HasLegacyCallerArguments
             && (name.Key == LegacyCallerKey.Key || name.Key == KeyStrings.arguments.Key)

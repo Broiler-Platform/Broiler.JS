@@ -308,6 +308,47 @@ public partial class JSObject
     public ref ElementArray GetElements(bool create = true) => ref elements;
     public ref SAUint32Map<JSProperty> GetSymbols() => ref symbols;
 
+    // ----- Symbol insertion order (§10.1.11.1 OrdinaryOwnPropertyKeys) ---------------------
+    //
+    // The `symbols` map cannot report insertion order on its own, so every write of a symbol
+    // property records the key here and every delete drops it. A key already present keeps its
+    // position (an update does not move it); a key added after a delete lands at the end
+    // (it was dropped on delete, so it is appended fresh) — the same rule PropertySequence
+    // applies to string keys.
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void TrackSymbolInsertion(uint key)
+    {
+        symbolOrder ??= new List<uint>(4);
+        if (!symbolOrder.Contains(key))
+            symbolOrder.Add(key);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void UntrackSymbol(uint key) => symbolOrder?.Remove(key);
+
+    /// <summary>
+    /// The object's live symbol properties in property-insertion order. A live symbol that the
+    /// order record somehow missed — which should not happen — is still returned, after the
+    /// tracked ones, so a key is never dropped from enumeration; only its order would be off.
+    /// </summary>
+    public List<(uint Key, JSProperty Property)> SymbolsInInsertionOrder()
+    {
+        var ordered = new List<(uint, JSProperty)>(symbolOrder?.Count ?? 0);
+        if (symbolOrder != null)
+        {
+            foreach (var key in symbolOrder)
+                if (symbols.TryGetValue(key, out var property) && !property.IsEmpty)
+                    ordered.Add((key, property));
+        }
+
+        foreach (var (key, property) in symbols.AllValues())
+            if (!property.IsEmpty && (symbolOrder == null || !symbolOrder.Contains(key)))
+                ordered.Add((key, property));
+
+        return ordered;
+    }
+
     internal void AllocateElements(uint size)
     {
         size = size > 1024 ? 1024 : size;
@@ -416,6 +457,7 @@ public partial class JSObject
     {
         ref var pr = ref GetSymbols();
         pr.Put(key.Key) = new JSProperty(key.Key, value, attributes);
+        TrackSymbolInsertion(key.Key);
         NotifyNamedPropertyMutation();
     }
 
@@ -425,6 +467,7 @@ public partial class JSObject
     {
         ref var pr = ref GetSymbols();
         pr.Put(key.Key) = new JSProperty(key.Key, getter, setter, getter, attributes);
+        TrackSymbolInsertion(key.Key);
         NotifyNamedPropertyMutation();
     }
 
@@ -507,7 +550,7 @@ public partial class JSObject
         while (properties.MoveNext(out var name, out _))
             keys.Add(new OrdinaryOwnKey(KeyType.String, 0, name));
 
-        foreach (var (symbol, _) in target.symbols.AllValues())
+        foreach (var (symbol, _) in target.SymbolsInInsertionOrder())
             keys.Add(new OrdinaryOwnKey(KeyType.Symbol, symbol, KeyString.Empty));
 
         return keys;
@@ -588,6 +631,7 @@ public partial class JSObject
                     break;
                 case KeyType.Symbol:
                     symbols.Put(key.Index) = JSProperty.Property(key.Index, value);
+                    TrackSymbolInsertion(key.Index);
                     break;
             }
         }
@@ -1480,6 +1524,7 @@ public partial class JSObject
         if (ReferenceEquals(target, this))
         {
             target.symbols.Put(name.Key) = new JSProperty(name.Key, value, attributes);
+            target.TrackSymbolInsertion(name.Key);
             target.NotifyNamedPropertyMutation();
             target.PropertyChanged?.Invoke(target, (uint.MaxValue, uint.MaxValue, name));
             return true;
@@ -1648,6 +1693,7 @@ public partial class JSObject
         }
 
         symbols.Put(key) = ToPropertyPreservingLazyValue(pd, key, in old, preserveCurrentValue);
+        TrackSymbolInsertion(key);
         NotifyNamedPropertyMutation();
         PropertyChanged?.Invoke(this, (uint.MaxValue, uint.MaxValue, name));
         return UndefinedValue;
@@ -1975,6 +2021,7 @@ public partial class JSObject
 
         if (symbols.RemoveAt(symbol.Key))
         {
+            UntrackSymbol(symbol.Key);
             NotifyNamedPropertyMutation();
             PropertyChanged?.Invoke(this, (uint.MaxValue, uint.MaxValue, symbol));
             return BooleanTrue;

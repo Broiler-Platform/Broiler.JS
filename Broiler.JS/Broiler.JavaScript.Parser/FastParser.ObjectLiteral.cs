@@ -319,7 +319,7 @@ partial class FastParser
                 var shorthand = nameToken;
                 if (shorthand.IsEscapedReservedWord
                     || (shorthand.IsKeyword && shorthand.Keyword == FastKeywords.yield && inGeneratorBody)
-                    || (shorthand.IsKeyword && shorthand.Keyword == FastKeywords.await && inAsyncFunctionBody)
+                    || (shorthand.IsKeyword && shorthand.Keyword == FastKeywords.await && AwaitIsReservedAsBinding)
                     || (shorthand.IsKeyword && shorthand.Keyword != FastKeywords.await && shorthand.Keyword != FastKeywords.yield && IsDisallowedBindingKeyword(shorthand.Keyword)))
                     throw stream.Unexpected();
 
