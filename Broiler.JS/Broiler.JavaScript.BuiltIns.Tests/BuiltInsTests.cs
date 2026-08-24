@@ -3759,31 +3759,43 @@ public class BuiltInsTests
         Assert.Throws<JSException>(() => ctx.Eval("0;\n#!/usr/bin/env node\n1;"));
     }
 
+    // EvalDeclarationInstantiation: a direct eval's global `var` may not collide with a global
+    // lexical (`let`/`const`) binding — that is an early SyntaxError, matching V8/SpiderMonkey and
+    // test262's `var-env-global-lex-*` negative tests. These previously asserted the eval `var`
+    // silently shadowing the lexical, which the engine has stopped doing.
     [Fact(Timeout = 600000)]
-    public void Eval_Var_Can_Coexist_With_Global_Let()
+    public void Eval_Var_Colliding_With_Global_Let_Is_SyntaxError()
     {
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
-        var result = ctx.Eval("let value = 1; [eval('var value = 2; value;'), value].join('|');");
-        Assert.Equal("2|1", result.ToString());
+        Assert.Throws<JSException>(() => ctx.Eval("let value = 1; eval('var value = 2; value;'); value;"));
     }
 
     [Fact(Timeout = 600000)]
-    public void Eval_Var_Can_Coexist_With_Global_Const()
+    public void Eval_Var_Colliding_With_Global_Const_Is_SyntaxError()
     {
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
-        var result = ctx.Eval("const value = 1; [eval('var value = 2; value;'), value].join('|');");
-        Assert.Equal("2|1", result.ToString());
+        Assert.Throws<JSException>(() => ctx.Eval("const value = 1; eval('var value = 2; value;'); value;"));
     }
 
+    [Fact(Timeout = 600000)]
+    public void Eval_Var_Colliding_With_Global_Let_Across_Direct_Evals_Is_SyntaxError()
+    {
+        EnsureBuiltInsLoaded();
+        using var ctx = new JSContext();
+        Assert.Throws<JSException>(() => ctx.Eval("let value = 1; eval('var value = 2; value;'); eval('var value = 3; value;'); value;"));
+    }
+
+    // A direct eval `var` that does NOT collide with a global lexical still works: two evals may
+    // each redeclare the same global `var` name (no `let`/`const` of that name exists).
     [Fact(Timeout = 600000)]
     public void Eval_Var_Can_Be_Redeclared_Across_Direct_Evals()
     {
         EnsureBuiltInsLoaded();
         using var ctx = new JSContext();
-        var result = ctx.Eval("let value = 1; [eval('var value = 2; value;'), eval('var value = 3; value;'), value].join('|');");
-        Assert.Equal("2|3|1", result.ToString());
+        var result = ctx.Eval("var value = 1; [eval('var value = 2; value;'), eval('var value = 3; value;'), value].join('|');");
+        Assert.Equal("2|3|3", result.ToString());
     }
 
     [Fact(Timeout = 600000)]

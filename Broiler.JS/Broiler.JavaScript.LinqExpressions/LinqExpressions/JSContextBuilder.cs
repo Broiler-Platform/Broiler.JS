@@ -65,6 +65,7 @@ public class JSContextBuilder
     private static MethodInfo _ResolveWithObject = typeof(JSContext).GetMethod(nameof(JSContext.ResolveWithObject), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _GetWithObjectBindingValue = typeof(JSContext).GetMethod(nameof(JSContext.GetWithObjectBindingValue), [typeof(JSObject), typeof(KeyString).MakeByRefType(), typeof(bool)]);
     private static MethodInfo _EnsureCanDeclareGlobalFunction = typeof(JSContext).GetMethod(nameof(JSContext.EnsureCanDeclareGlobalFunction), [typeof(KeyString).MakeByRefType()]);
+    private static MethodInfo _EnsureNoGlobalLexicalConflictForEvalVar = typeof(JSContext).GetMethod(nameof(JSContext.EnsureNoGlobalLexicalConflictForEvalVar), [typeof(KeyString).MakeByRefType()]);
     private static MethodInfo _DeclareGlobalFunction = typeof(JSContext).GetMethod(nameof(JSContext.DeclareGlobalFunction), [typeof(KeyString).MakeByRefType(), typeof(JSValue)]);
     private static MethodInfo _DeclareGlobalLexical = typeof(JSContext).GetMethod(nameof(JSContext.DeclareGlobalLexical), [typeof(JSVariable)]);
     private static MethodInfo _DeclareGlobalAnnexBFunction = typeof(JSContext).GetMethod(nameof(JSContext.DeclareGlobalAnnexBFunction), [typeof(KeyString).MakeByRefType(), typeof(JSValue)]);
@@ -94,6 +95,7 @@ public class JSContextBuilder
     public static Expression ResolveWithObject(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _ResolveWithObject, key);
     public static Expression GetWithObjectBindingValue(Expression withObject, Expression key, bool strictMode) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _GetWithObjectBindingValue, withObject, key, Expression.Constant(strictMode));
     public static Expression EnsureCanDeclareGlobalFunction(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _EnsureCanDeclareGlobalFunction, key);
+    public static Expression EnsureNoGlobalLexicalConflictForEvalVar(Expression key) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _EnsureNoGlobalLexicalConflictForEvalVar, key);
     public static Expression DeclareGlobalFunction(Expression key, Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeclareGlobalFunction, key, value);
     public static Expression DeclareGlobalLexical(Expression variable) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeclareGlobalLexical, variable);
     public static Expression DeclareGlobalAnnexBFunction(Expression key, Expression value) => Expression.Call(Expression.Convert(Current, typeof(JSContext)), _DeclareGlobalAnnexBFunction, key, value);

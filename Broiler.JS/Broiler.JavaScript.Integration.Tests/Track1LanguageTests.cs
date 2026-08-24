@@ -484,4 +484,39 @@ public class Track1LanguageTests
             "  delete y;" +
             "  return read();" +
             "})()"));
+
+    // ---- A direct eval's global `var`/function may not collide with a global lexical ----
+    //
+    // EvalDeclarationInstantiation: when a direct eval's variable environment is the global
+    // environment, a `var` or hoisted function declaration whose name matches an existing global
+    // lexical binding (a top-level `let`/`const`/class) is an early SyntaxError. The runtime
+    // global-var registration (JSContext.Register) enforced this for an indirect eval, but a
+    // DIRECT eval binds such a name as a captured lexical and skips that registration, so the
+    // check was bypassed and the program ran — the eval's `var` silently aliasing the lexical.
+    // (A function- or block-local lexical of the same name was already caught by the direct-eval
+    // validator's compile-time lexical set; only the global lexical slipped through.)
+
+    [Theory(Timeout = 600000)]
+    [InlineData("let g = 1; eval('var g;'); 'ok'")]
+    [InlineData("const c = 1; eval('var c;'); 'ok'")]
+    [InlineData("class K {} eval('var K;'); 'ok'")]
+    [InlineData("let g = 1; eval('function g(){}'); 'ok'")]      // a function declaration, too
+    [InlineData("let g = 1; eval('var a, g;'); 'ok'")]           // the collision need not be first
+    [InlineData("let g = 1; eval('{ var g; }'); 'ok'")]         // a block `var` still hoists to the global var-env
+    public void ADirectEvalVarCollidingWithAGlobalLexicalIsASyntaxError(string code)
+        => AssertSyntaxError(code);
+
+    // An indirect eval already rejected the same collision — keep it rejected.
+    [Fact(Timeout = 600000)]
+    public void AnIndirectEvalVarCollidingWithAGlobalLexicalStaysASyntaxError()
+        => AssertSyntaxError("let g = 1; (0,eval)('var g;'); 'ok'");
+
+    // Guards: valid neighbours that must still be accepted.
+    [Theory(Timeout = 600000)]
+    [InlineData("(function () { var g = 1; eval('var g;'); return 'ok'; })()")]  // function-local var, not a lexical
+    [InlineData("let g = 1; eval('var h;'); 'ok'")]                              // no collision
+    [InlineData("let g = 1; eval('let g;'); 'ok'")]                             // the eval's own lexical scope
+    [InlineData("eval('var g;'); let h = 1; 'ok'")]                            // different names
+    public void ValidDirectEvalVarDeclarationsAreStillAccepted(string code)
+        => Assert.Equal("ok", Eval(code));
 }

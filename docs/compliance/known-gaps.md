@@ -70,12 +70,20 @@ Measured against the pinned ref rather than assumed (local Debug host,
 
 What those runs did surface, and what the roadmap's track 1 should carry instead:
 
-- **Early errors that never fire.** `for (const x;;)`, a body `var` shadowing the head's
-  lexical name, a labelled function declaration as a loop body, `export` inside `eval`, and
-  a direct `var` colliding with a global lexical binding are all accepted and RUN — each
-  test reaches its `$DONOTEVALUATE()`. About 30 files across
+- **Early errors that never fire — fixed.** `for (const x;;)`, a body `var` shadowing the
+  head's lexical name, a labelled function declaration as a loop body, `export` inside `eval`,
+  and a direct `var` colliding with a lexical binding of the same name — about 30 files across
   `test/language/statements/{for,if,labeled}`, `test/language/eval-code` and
-  `test/language/global-code`.
+  `test/language/global-code`, each of which reaches its `$DONOTEVALUATE()` — are now rejected.
+  The var/lexical collision (in either order and at every scope), the labelled-function loop
+  body, and `export` in script/eval code were the VarDeclaredNames∩LexicallyDeclaredNames,
+  loop-parser and export mechanisms tracked by the roadmap's Track 1. The last member to land
+  was the GLOBAL-lexical half of the collision: a direct eval's global `var`/function colliding
+  with a top-level `let`/`const`/class. `JSContext.Register` rejected it for an indirect eval,
+  but a direct eval binds the name as a captured lexical and skips that registration, so the
+  compiler now emits the equivalent `EnsureNoGlobalLexicalConflictForEvalVar` check in the eval's
+  hoisting prelude. Covered by `Track1LanguageTests`; the `BuiltInsTests` cases that pinned the
+  old shadowing behaviour now assert the SyntaxError.
 
 Older triage also identified `Intl.DateTimeFormat` range/parts behavior and
 SameValue/Proxy ordering cases. Keep them here only while a current reproduction or

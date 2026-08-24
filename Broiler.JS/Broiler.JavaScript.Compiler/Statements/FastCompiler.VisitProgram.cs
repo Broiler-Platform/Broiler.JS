@@ -191,7 +191,19 @@ partial class FastCompiler
                 }
                 else
                     vs.Expression = JSVariableBuilder.Property(vs.Variable);
-                vs.SetInit(JSVariableBuilder.New(g, v.Value));
+
+                // EvalDeclarationInstantiation early error: at the global variable environment a
+                // declared var/function name that collides with a global lexical (let/const/class)
+                // is a SyntaxError. JSContext.Register enforces this on the ordinary registration
+                // path, but a name the eval also treats as a captured lexical skips registration
+                // (SkipRegistration above) and so bypasses that check — a function/block-local
+                // lexical of the same name is caught earlier by direct-eval validation, but a
+                // GLOBAL lexical is not. Seed the binding's construction with the equivalent check
+                // so it runs in the eval's hoisting prelude, before any body statement.
+                var seed = isDirectEvalProgramScope && isDirectEvalLexicalBinding
+                    ? BExpression.Block(JSContextBuilder.EnsureNoGlobalLexicalConflictForEvalVar(KeyOfName(v)), g)
+                    : g;
+                vs.SetInit(JSVariableBuilder.New(seed, v.Value));
             }
         }
 
