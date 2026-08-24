@@ -283,6 +283,15 @@ partial class FastParser
             }
             else if (NonDeclarativeStatement(out statement))
             {
+                // A LabelledStatement whose item is a FunctionDeclaration is never a
+                // legal loop body (`for (…) label: function f(){}`), in either strict
+                // or sloppy mode. SyntaxValidation catches this for a non-lexical head,
+                // but a let/const/using for-in/for-of/C-style head is rewritten by
+                // Desugar below into a synthetic per-iteration block, hiding the raw
+                // labelled statement from the validator — so reject it here, on the
+                // body as written, before that rewrite.
+                ThrowIfLabelledFunctionLoopBody(statement);
+
                 if (newScope && declaration != null && !cStyleUsing)
                     (beginNode, statement, update, test) = Desugar(declaration, new Sequence<AstStatement>(1) { statement }, update, test,
                         cStyle: !@in && !of, bodyContainsContinue: ParsedContinueCount != continuesBeforeBody);
@@ -1114,6 +1123,23 @@ partial class FastParser
             }
 
             return merged;
+        }
+
+        // Rejects a LabelledStatement whose (possibly multiply-labelled) item is a
+        // FunctionDeclaration when it appears as a loop body. `label: function f(){}`
+        // is a legal statement at the top level of a script, block, or function body,
+        // but never as the body of a for/for-in/for-of loop, in either mode.
+        static void ThrowIfLabelledFunctionLoopBody(AstStatement body)
+        {
+            if (body is not AstLabeledStatement)
+                return;
+
+            var current = body;
+            while (current is AstLabeledStatement labeled)
+                current = labeled.Body;
+
+            if (current is AstExpressionStatement { Expression: AstFunctionExpression { IsStatement: true } func })
+                throw new FastParseException(func.Start, "In strict mode code, functions can only be declared at top level or inside a block");
         }
     }
 

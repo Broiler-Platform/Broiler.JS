@@ -66,6 +66,15 @@ partial class FastCompiler
         var declaration = exportStatement.Declaration;
         BExpression left;
 
+        // An ExportDeclaration is only legal in module code (its bindings target the
+        // host-injected `exports` object). In a plain script `exports` is absent, so
+        // an `export` here is an early SyntaxError — the same verdict V8 gives an
+        // export in a non-module. Reject it cleanly rather than dereferencing the
+        // null `exports` below (which previously surfaced as a NullReferenceException,
+        // notably for `export default <expr>`).
+        if (exports == null)
+            throw new FastParseException(exportStatement.Start, "'export' is only valid inside a module");
+
         if (exportStatement.IsDefault)
         {
             var defExports = JSValueBuilder.Index(exports.Expression, KeyOfName("default"));

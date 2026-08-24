@@ -1,4 +1,5 @@
 using Broiler.JavaScript.Engine;
+using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.Integration.Tests;
 
@@ -315,4 +316,107 @@ public class Track1LanguageTests
     public void AFailedSetInASloppyAsyncBodyIsSilent()
         => Assert.Equal("no-throw", Eval(
             "var r; (async function () { " + FrozenSetInBody + " })(); r"));
+
+    // ---- Early SyntaxErrors that the engine used to accept (or crash on) ----
+    //
+    // Three families of parse-time error were not raised. (A) VarDeclaredNames and
+    // LexicallyDeclaredNames of a scope must be disjoint: a `var` and a `let`/`const`/
+    // class/block-function of the same name conflict even when the `var` hoists out of
+    // an inner block, and the check must hold in either declaration order and across a
+    // for-head vs body and a destructured catch param vs body. The engine silently let
+    // the later declaration win. (B) A labelled function declaration is never a legal
+    // loop body; a `let`/`const` for-in/for-of/C-style head hid the labelled statement
+    // behind a per-iteration block, so it slipped past validation. (C) An `export` in a
+    // script (no module `exports` binding) is an early error; `export default <expr>`
+    // dereferenced the absent binding and surfaced a NullReferenceException instead.
+
+    private static void AssertSyntaxError(string code)
+        => Assert.Throws<JSException>(() => Eval(code));
+
+    // (A) A `var` collides with a lexical binding of the same name declared FIRST,
+    // wherever the `var` hoists to.
+    [Theory(Timeout = 600000)]
+    [InlineData("let a; var a;")]
+    [InlineData("const a = 1; var a;")]
+    [InlineData("let a; { var a; }")]
+    [InlineData("{ let a; { var a; } }")]
+    [InlineData("function f() { let a; var a; }")]
+    [InlineData("for (let a of []) { var a; }")]
+    [InlineData("for (let a in {}) { var a; }")]
+    [InlineData("for (let a = 0; false; ) { var a; }")]
+    [InlineData("try {} catch ([a]) { var a; }")]
+    [InlineData("try {} catch ({ a }) { var a; }")]
+    [InlineData("switch (0) { case 1: let a; case 2: var a; }")]
+    public void ALexicalThenVarOfTheSameNameIsASyntaxError(string code)
+        => AssertSyntaxError(code);
+
+    // (A) The same conflict when the `var` is declared FIRST and the lexical second —
+    // even after the `var` has hoisted out of the block the lexical sits in.
+    [Theory(Timeout = 600000)]
+    [InlineData("var a; let a;")]
+    [InlineData("var a; const a = 1;")]
+    [InlineData("{ var a; let a; }")]
+    [InlineData("switch (0) { case 1: var a; case 2: let a; }")]
+    public void AVarThenLexicalOfTheSameNameIsASyntaxError(string code)
+        => AssertSyntaxError(code);
+
+    // (A) A block-nested function declaration is lexical, so it conflicts with a `var`
+    // of the same name in that block (in either order), while two block functions of
+    // one name still coexist in sloppy mode (Annex B 3.3.4).
+    [Theory(Timeout = 600000)]
+    [InlineData("{ function a() {} var a; }")]
+    [InlineData("{ var a; function a() {} }")]
+    public void ABlockFunctionAndVarOfTheSameNameConflict(string code)
+        => AssertSyntaxError(code);
+
+    // (A) Guard against over-rejecting: a `var` and a lexical of the same name in
+    // DIFFERENT scopes, or a `var` deduping against a same-named parameter, are legal.
+    // Each snippet ends in an expression that evaluates to "ok" once it is accepted.
+    [Theory(Timeout = 600000)]
+    [InlineData("var a; { let a; } 'ok'")]
+    [InlineData("{ var a; } { let a; } 'ok'")]
+    [InlineData("{ var a; { let a; } } 'ok'")]
+    [InlineData("(function (a) { var a; return a; })(1); 'ok'")]
+    [InlineData("for (var a of [1]) { var a; } 'ok'")]
+    [InlineData("for (let a of []) { let b; } 'ok'")]
+    [InlineData("try {} catch (e) { var e; } 'ok'")]
+    [InlineData("{ function a() {} function a() {} } 'ok'")]
+    public void ValidVarAndLexicalCombinationsAreStillAccepted(string code)
+        => Assert.Equal("ok", Eval(code));
+
+    // (B) A labelled function declaration as a loop body is an early error for every
+    // loop head, including the `let`/`const` heads whose body is rewritten to a block.
+    [Theory(Timeout = 600000)]
+    [InlineData("for (let x of []) label: function h() {}")]
+    [InlineData("for (const x of []) label: function h() {}")]
+    [InlineData("for (let x in {}) label: function h() {}")]
+    [InlineData("for (let x = 0; false; ) label: function h() {}")]
+    [InlineData("for (var x of []) label: function h() {}")]
+    [InlineData("for (;;) label: function h() {}")]
+    [InlineData("while (0) label: function h() {}")]
+    [InlineData("for (let x of []) a: b: function h() {}")]
+    public void ALabelledFunctionLoopBodyIsASyntaxError(string code)
+        => AssertSyntaxError(code);
+
+    // (B) Guard: a labelled function is fine at statement/block position, and an
+    // ordinary or labelled non-function loop body is unaffected.
+    [Theory(Timeout = 600000)]
+    [InlineData("label: function top() {} 'ok'")]
+    [InlineData("{ label: function b() {} } 'ok'")]
+    [InlineData("for (let x of []) { label: function h() {} } 'ok'")]
+    [InlineData("for (let x of [1]) label: x; 'ok'")]
+    public void ValidLabelledFunctionsAndLoopBodiesAreStillAccepted(string code)
+        => Assert.Equal("ok", Eval(code));
+
+    // (C) An `export` in script code is an early SyntaxError, not a crash — for every
+    // export form, including the `export default <expr>` that used to throw a
+    // NullReferenceException.
+    [Theory(Timeout = 600000)]
+    [InlineData("export default 1;")]
+    [InlineData("export default function g() {}")]
+    [InlineData("export const e = 1;")]
+    [InlineData("export var v = 2;")]
+    [InlineData("export { };")]
+    public void ExportInAScriptIsASyntaxError(string code)
+        => AssertSyntaxError(code);
 }

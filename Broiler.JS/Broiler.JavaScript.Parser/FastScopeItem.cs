@@ -16,6 +16,34 @@ public partial class FastScopeItem(FastNodeType nodeType) : LinkedStackItem<Fast
 
     private List<StringSpan> annexBFunctionNames;
 
+    // The VarDeclaredNames of this scope: every `var`-declared name declared
+    // textually within this scope, including names that hoist up through it
+    // from a nested block/for scope. A name is recorded here as a `var` passes
+    // through this scope on its way to the function/program hoisting scope, so
+    // that a later lexical (let/const/class or block-nested function) declared
+    // directly in THIS scope can be rejected — VarDeclaredNames and
+    // LexicallyDeclaredNames must not intersect at any single scope, even when
+    // the `var` binding itself lives higher up after hoisting.
+    private HashSet<string> varDeclaredNames;
+
+    /// <summary>
+    /// Records <paramref name="name"/> as a VarDeclaredName of this scope (a
+    /// `var` declared in, or hoisted through, this scope).
+    /// </summary>
+    public void MarkVarDeclaredName(string name)
+    {
+        varDeclaredNames ??= [];
+        varDeclaredNames.Add(name);
+    }
+
+    /// <summary>
+    /// Returns true if a `var` of <paramref name="name"/> was declared in or
+    /// hoisted through this scope (i.e. the name is in this scope's
+    /// VarDeclaredNames).
+    /// </summary>
+    public bool HasVarDeclaredName(string name)
+        => varDeclaredNames != null && varDeclaredNames.Contains(name);
+
     /// <summary>
     /// Records a block-nested function declaration name that must be var-hoisted
     /// to this (function/program body) scope per Annex B 3.3.
@@ -113,6 +141,20 @@ public partial class FastScopeItem(FastNodeType nodeType) : LinkedStackItem<Fast
             return;
         }
 
+        // VarDeclaredNames ∩ LexicallyDeclaredNames must be empty at each scope.
+        // A lexical binding (let/const/class, or a block-nested function
+        // declaration) in this scope conflicts with a `var` of the same name
+        // declared in or hoisted through this scope — even one whose binding
+        // hoisted to an enclosing function/program scope, leaving this scope's
+        // Variables map empty. `this` scope's VarDeclaredNames still records it.
+        if (kind is FastVariableKind.Let or FastVariableKind.Const or FastVariableKind.Function
+            && HasVarDeclaredName(name.Value))
+        {
+            if (throwError)
+                throw new FastParseException(token, $"{name} has already been declared");
+            return;
+        }
+
         n = this;
 
         // all `var` variables must be hoisted to
@@ -134,7 +176,30 @@ public partial class FastScopeItem(FastNodeType nodeType) : LinkedStackItem<Fast
             while (it != null)
             {
                 if (it.Variables.TryGetValue(name.Value, out var v))
+                {
+                    // A lexical binding of the same name in a scope this `var`
+                    // hoists through is a VarDeclaredNames ∩ LexicallyDeclaredNames
+                    // conflict (e.g. `let x; { var x; }`, `for (let x of []) { var x; }`,
+                    // `try {} catch ([e]) { var e; }`). Reject it rather than letting
+                    // the `var` silently dedupe against the lexical binding.
+                    if (v.kind is FastVariableKind.Let or FastVariableKind.Const or FastVariableKind.Function)
+                    {
+                        if (throwError)
+                            throw new FastParseException(token, $"{name} has already been declared");
+                        return;
+                    }
+
+                    // Existing `var` or parameter of the same name: dedupe. The
+                    // VarDeclaredName marks recorded below on the way here keep a
+                    // later lexical in an intervening scope in conflict.
                     return;
+                }
+
+                // Record this name as a VarDeclaredName of every scope the `var`
+                // hoists through, so a lexical declared later directly in one of
+                // those scopes is rejected even after the `var` binding has hoisted
+                // past it.
+                it.MarkVarDeclaredName(name.Value);
 
                 // The FunctionExpression scope (which owns the parameters) is the
                 // outermost scope of the current function; checking it lets a `var`
