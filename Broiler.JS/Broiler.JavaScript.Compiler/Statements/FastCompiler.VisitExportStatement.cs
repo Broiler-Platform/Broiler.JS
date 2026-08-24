@@ -149,11 +149,13 @@ partial class FastCompiler
 
                 case FastNodeType.ClassStatement:
                     var ce = Visit(declaration);
-                    var cd = declaration as AstFunctionExpression;
 
-                    if (cd.Id != null)
+                    // A class declaration is an AstClassExpression, and its name is `Identifier`.
+                    // Casting it to AstFunctionExpression produced null, so reading the name threw
+                    // a NullReferenceException — `export class C {}` never worked at all.
+                    if (declaration is AstClassExpression { Identifier: { } className })
                     {
-                        left = JSValueBuilder.Index(exports.Expression, KeyOfName(cd.Id.Name));
+                        left = JSValueBuilder.Index(exports.Expression, KeyOfName(className.Name));
                         return BExpression.Assign(left, ce);
                     }
 
