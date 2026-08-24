@@ -58,6 +58,33 @@ affected test262 shard land first; only then may MOD-M8-5 price an optional fast
 Failure to reproduce is also recorded with the exact cases tried rather than silently
 removing the item.
 
+**It does not reproduce.** The gate is satisfied by pinning the behaviour instead:
+`Broiler.JavaScript.Integration.Tests/TypedArraySetOverlapTests.cs` (21 cases) is the
+narrowest regression the gate asked for, and every case already answers as §23.2.3.26
+requires. The cases tried:
+
+- **Overlap, source and target sharing one buffer with DIFFERENT element types** — the three
+  that actually constrain an implementation, because a naive element-by-element in-place loop
+  reads bytes it has already overwritten and gives a different answer than the
+  clone-the-source-first that SetTypedArrayFromTypedArray specifies. A `Uint16`/`Uint32`/`Int16`
+  source copied over an overlapping `Uint8` target each produced the clone-first answer
+  (`1,2,3,1,3,5,7,8`, `1,2,3,4,1,5,7,8`, `1,2,1,3,5,6,7,8`) and not the naive one
+  (`…,3,3,…`, `…,1,1,…`, `…,1,1,…`). Each test names both answers.
+- **Overlap with the same element type**, shifting forward and backward by one element and by
+  a four-element window at a byte offset; and a typed array set from itself.
+- **Offsets** — a typed-array source and an array-like source at an offset, and a fractional
+  offset truncated toward zero.
+- **Range validation** — a typed source running past the end, an array-like longer than the
+  target, and a negative offset, all `RangeError`; plus the ordering rule that the offset is
+  rejected before any source element is read (an array-like's element getter never runs).
+- **Element conversion** — wrapping into `Int8`, clamping and round-half-to-even into
+  `Uint8Clamped`, float truncation into `Int32`, an array-like hole reading through `undefined`
+  (0 in an integer target, `NaN` in a float one), and BigInt/Number content mixing throwing a
+  `TypeError` in both directions.
+
+So correctness is not blocking, and MOD-M8-5 may price an optional fast copy path — with these
+tests as its guard, since a fast path is exactly what would reintroduce the overlap hazard.
+
 ## 2. Expand host-mode coverage
 
 The `script`, `module` and `raw` modes are implemented and each reports its own selected,
