@@ -1,10 +1,15 @@
-# Phase 7 — VM 2.0: make the approved interpreter shippable — status
+# Phase 7 — Broiler.VM JavaScript profile 2.0: make the approved interpreter shippable — status
 
 **No Phase 7 measurement exists. Nothing in Phase 7 has been built, measured, or attempted.**
 
+This status record covers only the JavaScript built-in profile. Common Broiler.VM
+catalog/composition, execution-session lifecycle, and cross-profile resource-policy evidence
+belongs to `Broiler.VM/docs/roadmap.md`; no such work, and no WebAssembly-profile work, is
+claimed here.
+
 > The evidence half of [`Phase-7.md`](Phase-7.md). Historical IL-path findings cited by the
-> plan remain in their Phase 0–5 status records; they are priors to test against the VM, not
-> measurements of a VM that does not yet exist.
+> plan remain in their Phase 0–5 status records; they are priors to test against the future
+> JavaScript profile, not measurements of an interpreter that does not yet exist.
 
 ---
 
@@ -15,17 +20,23 @@
 | Items started | **0** |
 | Items landed | **0** |
 | Measurements taken | **0** |
-| Blocked on | an MOD-M9 positive outcome (`execution-only-go`, `narrow-runtime-go`, or `full-go`), accepted Phase 6 scope and exit evidence, and MOD-M1 acceptance lanes |
+| Blocked on | a selected Broiler.VM JavaScript composition (`execution-only`, `narrow-runtime-compiler`, or `general-runtime-compiler`), accepted Phase 6 JavaScript scope/exit evidence, accepted Broiler.VM core integration, and MOD-M1 acceptance lanes |
 | Mutable-site work additionally blocked on | applicable MOD-M6 IC/feedback ownership and lifetime gates |
-| Next action after entry gates | item **7-0 · decision-grade uninstrumented VM baseline** |
+| Next action after entry gates | item **7-0 · decision-grade uninstrumented JavaScript-profile baseline** |
 
 The former instruction to begin with a three-repetition, all-fifteen Octane run is
 superseded. Octane remains historical continuity; MOD-M1's supported modern/product workload
 manifest and paired stable-host protocol govern future acceptance.
 
-For `execution-only-go`, unsupported source-compilation modes are recorded as outside the
-approved product profile, not as missing results. A `narrow-runtime-go` or `full-go` adds
+For `execution-only`, unsupported source-compilation modes are recorded as outside the
+approved JavaScript composition, not as missing results. A `narrow-runtime-compiler` or
+`general-runtime-compiler` composition adds
 the applicable in-process source-to-result measurement arms.
+
+A runtime-compiler no-go selects `execution-only`; Phase 7 still measures its declared
+precompiled execution path and does not change Broiler.VM core, WebAssembly, or another
+built-in profile. These compositions are also distinct from `JavaScriptBootstrapProfile`;
+the selected realm bootstrap profile is an orthogonal measurement input.
 
 ---
 
@@ -33,8 +44,9 @@ the applicable in-process source-to-result measurement arms.
 
 Before an optional Phase 7 implementation is designed, record:
 
-1. **Approved capability/profile identity** — execution-only or runtime-compiler, feature
-   manifest, source revision, package closure, and bytecode format version.
+1. **Approved JavaScript execution identity** — Broiler.VM language profile `JavaScript`,
+   deployment/compiler composition, feature manifest, `JavaScriptBootstrapProfile`, source
+   revision, package closure, and JavaScript bytecode format version.
 2. **Uninstrumented end-to-end modes** — cold source compile/run, warm source compile/run,
    precompiled execution, and cache-hit execution when 8-6 exists. Missing modes are marked
    unsupported rather than silently omitted.
@@ -43,8 +55,9 @@ Before an optional Phase 7 implementation is designed, record:
 4. **Representative corpus** — product startup/steady-state cases, supported JetStream 3
    shell cases, focused engine probes, and accepted conformance fixtures. Octane is a
    separately labelled continuity column.
-5. **Two platform views** — same-machine CoreCLR IL/VM diagnostic comparison and actual
-   published Native AOT results on every claimed target RID/device.
+5. **Two platform views** — same-machine CoreCLR IL/JavaScript-profile diagnostic comparison
+   and actual published Native AOT Broiler.VM JavaScript results on every claimed target
+   RID/device.
 6. **Resource evidence beside time** — allocation, GC, peak/steady RSS or working set,
    committed/virtual memory, code/package/bytecode size, frame depth/bytes, and applicable
    p50/p95/p99.
@@ -78,7 +91,8 @@ snapshot/invalidation behavior, and reclamation.
 
 The older plan cited Phase 2–4 findings about property-cache semantics, root boxing, and IL
 call-envelope cost. Those measurements remain valid for the revisions, corpora, and IL path
-recorded in their owning status files. They justify fixtures and questions, not a VM design:
+recorded in their owning status files. They justify fixtures and questions, not a
+JavaScript-profile VM design:
 
 - property and store caches need own/prototype/creation/read-modify-write coverage;
 - allocation share alone does not predict elapsed-time benefit;

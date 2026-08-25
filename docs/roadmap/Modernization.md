@@ -2,8 +2,8 @@
 
 Turn the roadmap audit into an executable program: first make the current state and
 measurement system trustworthy, then establish enforceable assembly and AOT boundaries,
-then add bounded concurrency and profile-led engine work, and only then decide whether a
-second execution engine is justified.
+then add bounded concurrency and profile-led engine work, and only then select how much of
+the JavaScript built-in's source compiler belongs in each Broiler.VM composition.
 
 > This is the **cross-track orchestration authority**. It supersedes conflicting umbrella
 > sequencing or dependency text in [`Roadmap.md`](Roadmap.md), but does not replace the
@@ -28,15 +28,16 @@ This roadmap has six outcomes:
 1. contributors can identify the engine's real current state from one generated index;
 2. performance claims are reproducible against a same-machine, known-good control;
 3. the target assembly graph is buildable, acyclic, baselinable, and compatible;
-4. the IL and Native AOT profiles are enforced by builds rather than prose labels;
+4. the IL and Native AOT compositions are enforced by builds rather than prose labels;
 5. independent JavaScript work can scale without executing one `JSContext` concurrently;
-6. optimization, Workers, shared memory, and a bytecode VM proceed only after their entry
-   measurements justify them.
+6. optimization, Workers, shared memory, and optional JavaScript runtime-compiler/adaptive
+   work proceed only after their entry measurements justify them; Broiler.VM core and the
+   WebAssembly built-in retain their own gates.
 
 The roadmap deliberately combines performance, decomposition, and concurrency. In this
 engine they share the same prerequisites: a backend-neutral semantic front end, explicit
 state ownership, reproducible package and memory baselines, and architecture tests that
-prevent dynamic-code dependencies from leaking back into portable profiles.
+prevent dynamic-code dependencies from leaking back into NativeAOT compositions.
 
 ### Relationship to the existing plans
 
@@ -46,7 +47,7 @@ prevent dynamic-code dependencies from leaking back into portable profiles.
 | [`Roadmap.md`](Roadmap.md) and [`Roadmap.status.md`](Roadmap.status.md) | the historical optimization catalogue, IL campaign crosswalk, and cross-phase performance evidence; this roadmap owns conflicting modernization sequencing |
 | [`Phase-0.md`](Phase-0.md) through [`Phase-5.md`](Phase-5.md) | detailed work on the current IL execution path |
 | [`Assemblies.md`](Assemblies.md), [`AssemblySplit.md`](AssemblySplit.md), and their status records | assembly moves, backend isolation, and the evidence for each graph change |
-| [`Phase-6.md`](Phase-6.md) through [`Phase-9.md`](Phase-9.md) | the detailed bytecode and adaptive-VM design for the capability profile selected by `execution-only-go`, `narrow-runtime-go`, or `full-go`; `no-go` cancels the track |
+| [`Phase-6.md`](Phase-6.md) through [`Phase-9.md`](Phase-9.md) | the JavaScript built-in profile on Broiler.VM: JavaScript lowering/correctness, shippability, profile-led optimization, and optional JavaScript-to-IL adaptivity. Broiler.VM core and the WebAssembly built-in are owned by `Broiler.VM/docs/roadmap.md` in the aggregate repository |
 | [`Component.md`](Component.md) | conformance, host modes, public API, and package readiness; it links the JavaScript concurrency plan into the component roadmap |
 | [`Concurrency.md`](Concurrency.md) and [`Concurrency.status.md`](Concurrency.status.md) | JavaScript-local compile-ahead, independent-context safety, Worker implementation, and their mutable evidence |
 | [`ModernizationDelivery.md`](ModernizationDelivery.md) | the subordinate delivery-wave and handoff view requested by this review; it creates no independent state or sequencing authority |
@@ -74,7 +75,7 @@ the two files may not carry conflicting accountable owners. Required evidence ro
 | MOD-M0 phase reconciliation and MOD-M8 optimization | the matching phase 0–5 plan/status pair and the VM status records when their state is affected |
 | MOD-M1 baseline and MOD-M10 governance | [`Roadmap.status.md`](Roadmap.status.md) plus the immutable raw evidence bundle |
 | MOD-M5–MOD-M7 concurrency and Workers | [`Concurrency.md`](Concurrency.md) and [`Concurrency.status.md`](Concurrency.status.md); aggregate implementation evidence is imported and classified there |
-| MOD-M9 VM decision and any approved implementation | [`Phase-6.status.md`](Phase-6.status.md), then the matching phase 7–9 status record |
+| MOD-M9 JavaScript composition decision and its implementation | [`Phase-6.status.md`](Phase-6.status.md), then the matching phase 7–9 status record; generic VM/WebAssembly evidence stays with Broiler.VM |
 
 ## 2. Program rules
 
@@ -124,9 +125,10 @@ with an accountable maintainer in the generated item index.
 3. **The semantic front end is shared.** Parsing, early errors, binding, hoisting, scope,
    free-name analysis, and backend-neutral lowering are not duplicated between IL and
    bytecode.
-4. **Dynamic code is an explicit profile boundary.** Only the IL profile may transitively
-   reach `System.Reflection.Emit`; portable profiles cannot discover a backend by assembly
-   name.
+4. **Dynamic code is an explicit composition boundary.** A Broiler.VM language profile is
+   not a deployment composition. Only a JavaScript composition that includes the IL back end
+   may transitively reach `System.Reflection.Emit`; NativeAOT compositions cannot discover
+   profiles or back ends by assembly/type name.
 5. **Sequential execution remains available.** Concurrency and tiering have a deterministic
    single-threaded control and a fast disable path.
 6. **Resource use is part of performance.** Time is reported with allocation, GC, working
@@ -151,7 +153,7 @@ flowchart LR
     MOD_M7["MOD-M7 · Workers without shared memory"]
     MOD_M7B["MOD-M7B · Shared memory and Atomics"]
     MOD_M8["MOD-M8 · Profile-led optimization"]
-    MOD_M9["MOD-M9 · Bytecode VM decision"]
+    MOD_M9["MOD-M9 · JavaScript VM composition"]
     MOD_M10["MOD-M10 · Continuous governance"]
 
     MOD_M0 --> MOD_M1
@@ -172,8 +174,8 @@ flowchart LR
     MOD_M3 --> MOD_M9
     MOD_M4 --> MOD_M9
     MOD_M5 --> MOD_M9
-    MOD_M8 -->|"finite VM decision bundle"| MOD_M9
-    MOD_M6 -->|"shared/adaptive VM state only"| MOD_M9
+    MOD_M8 -->|"finite JavaScript composition bundle"| MOD_M9
+    MOD_M6 -->|"shared/adaptive JavaScript state only"| MOD_M9
     MOD_M0 --> MOD_M10
 ```
 
@@ -198,7 +200,7 @@ begins with MOD-M0 and remains active throughout.
 | **MOD-M6** | safe independent-context scaling and reclaimable feedback | L | Runtime, Engine, code cache |
 | **MOD-M7/MOD-M7B** | Workers first; correct shared memory only as a later capability | XL, staged | Engine, Runtime, host integration |
 | **MOD-M8** | current IL engine optimized from profiles, not catalogue labels | continuous S–L items | owning phase/assembly |
-| **MOD-M9** | bytecode VM funded, narrowed, or cancelled explicitly | S–M decision; XL if approved | FrontEnd, backends, product owner |
+| **MOD-M9** | JavaScript built-in selects execution-only or runtime-compiler depth explicitly | S–M decision; XL implementation | FrontEnd, Broiler.VM JavaScript profile, product owner |
 | **MOD-M10** | drift detected automatically | S initially, continuous | docs, CI, release engineering |
 
 ---
@@ -316,7 +318,8 @@ lane instability into a wider post-hoc acceptance threshold.
 
 **Objective.** Replace an aspirational assembly count with an acyclic graph and prove, with
 project shells and a minimal backend test sink, that a shared semantic-front-end boundary is
-feasible. Production bytecode work remains behind MOD-M9's go/no-go decision.
+feasible. Production JavaScript-profile lowering remains behind MOD-M9's composition and
+capability decision; generic Broiler.VM core and WebAssembly-profile work do not.
 
 **Depends on:** MOD-M0. May run alongside MOD-M1.
 
@@ -328,7 +331,7 @@ success if it introduces cycles or hides useful ownership boundaries.
 
 | ID | Work package and next action | Owner area | Size | Evidence target |
 |---|---|---|---:|---|
-| **MOD-M2-1** | Generate current and proposed `ProjectReference` graphs, including transitive closure, target profile, public types, package identity, and forbidden edges. | architecture/tooling | S–M | [`Assemblies.status.md`](Assemblies.status.md) |
+| **MOD-M2-1** | Generate current and proposed `ProjectReference` graphs, including transitive closure, target composition, public types, package identity, and forbidden edges. | architecture/tooling | S–M | [`Assemblies.status.md`](Assemblies.status.md) |
 | **MOD-M2-2** | Re-open A-0 as a real build spike: create target project shells, move no production code, and prove the graph restores and compiles before approving names or merges. | architecture | M | [`Assemblies.status.md`](Assemblies.status.md) |
 | **MOD-M2-3** | Resolve the foundation cycle by preserving Expressions as a bottom model assembly or extracting a smaller Primitives/Model contract. Remove Storage's Ast dependency before considering a fold. | Storage/Ast/Expressions | M | [`Assemblies.status.md`](Assemblies.status.md) and graph ADR |
 | **MOD-M2-4** | Inventory Parser→Runtime type use. Remove or invert the edge if feasible; otherwise preserve the boundary and revise the proposed tiers. Keep Runtime and Engine separate unless an independently measured deployment or startup result justifies a later merge. | Parser/Runtime/Engine | M | [`Assemblies.status.md`](Assemblies.status.md) and graph ADR |
@@ -379,7 +382,7 @@ would add packaging complexity without enforcing a useful contract.
 ## MOD-M3 — Isolate dynamic code and make Native AOT a publish-and-run property
 
 **Objective.** Define the complete IL/reflection boundary, eliminate magic-name backend
-discovery from portable profiles, and prove supported Native AOT capability by executing a
+discovery from NativeAOT compositions, and prove supported Native AOT capability by executing a
 published application.
 
 **Depends on:** MOD-M1 and MOD-M2. Crosswalk: A-3, A-4, A-6, and A-8. MOD-M3-5 is preliminary
@@ -388,33 +391,33 @@ evidence for A-7 and cannot close A-7's representative-script capability gate.
 | ID | Work package and next action | Owner area | Size | Evidence target |
 |---|---|---|---:|---|
 | **MOD-M3-0** | Before publishing, declare the preliminary AOT graph-gate RID matrix from supported Native AOT targets and product needs. A later result may narrow support explicitly, but the candidate cannot choose its RIDs after the run. | product/AOT/CI | S | [`Assemblies.status.md`](Assemblies.status.md) |
-| **MOD-M3-1** | Generate a full census of `Reflection.Emit`, `RequiresDynamicCode`, `RequiresUnreferencedCode`, `Assembly.Load`, assembly-qualified `Type.GetType`, generated/module registration, and equivalent discovery. Classify every site by target profile. | AOT/tooling | M | [`Assemblies.status.md`](Assemblies.status.md) |
+| **MOD-M3-1** | Generate a full census of `Reflection.Emit`, `RequiresDynamicCode`, `RequiresUnreferencedCode`, `Assembly.Load`, assembly-qualified `Type.GetType`, generated/module registration, and equivalent discovery. Classify every site by target composition. | AOT/tooling | M | [`Assemblies.status.md`](Assemblies.status.md) |
 | **MOD-M3-2** | Replace backend and module discovery by string with explicit or generated registration. Keep intentional CLR reflection in an explicitly excluded satellite with reviewed annotations. | Engine/Expressions/Modules | M–L | architecture tests |
 | **MOD-M3-3** | Form the real IL boundary: emitter-specific Compiler code, Linq adapter, `AssemblyCodeCache`, and ILPack all belong below the IL composition. Correct any claim that the front-end split already isolated every Emit use. | IL/CLI packaging | L | [`Assemblies.status.md`](Assemblies.status.md) |
 | **MOD-M3-4** | Assign and resolve every trim/AOT warning. Portable publish output must have zero trim/AOT warnings; any analyzer suppression is separately inventoried with owner, rationale, and reachability proof. | AOT owners | M | analyzer and publish logs |
 | **MOD-M3-5** | Publish and run the current portable numeric sample on every MOD-M3-0 AOT RID with warnings treated as errors. Label this an **execution-only portable-island gate**: it proves the checked-in numeric bytecode runtime closure, not the Parser/bytecode-compiler/Runtime/BuiltIns graph and not full JavaScript Native AOT support. | AOT/CI | M | publish-and-run bundle |
-| **MOD-M3-6** | Add closure tests that fail if portable profiles transitively reach IL, Roslyn, NuGet scripting, ILPack, unapproved reflection, or name-based backend loading. | architecture/CI | S–M | CI architecture suite |
+| **MOD-M3-6** | Add closure tests that fail if NativeAOT compositions transitively reach IL, Roslyn, NuGet scripting, ILPack, unapproved reflection, or name-based backend/profile loading. | architecture/CI | S–M | CI architecture suite |
 
 ### MOD-M3 exit gate
 
-- The dynamic-code/reflection inventory is generated, profile-classified, and has no
+- The dynamic-code/reflection inventory is generated, composition-classified, and has no
   unowned sites.
 - Only shipped/runtime assemblies in the IL boundary reference `System.Reflection.Emit`;
   explicitly allowlisted test/build tools are reported separately.
-- Portable profiles contain no magic-name backend/module discovery.
+- Portable deployment compositions contain no magic-name backend/module discovery.
 - The current supported portable sample publishes **and runs** on every MOD-M3-0 RID with
   zero trim/AOT warnings, and every analyzer suppression is inventoried and justified.
 - CI verifies the transitive closure, analyzer results, publish result, and runtime result.
 - Documentation describes the exact current subset; analyzer cleanliness is never called a
   full JavaScript engine capability.
 
-An `execution-only-go`, `narrow-runtime-go`, or `full-go` in MOD-M9 adds the distinct deployment
-closure and representative script/host surface selected by its capability manifest; a
-full-go also satisfies A-7's general-engine intent. That post-decision work is owned by
-MOD-M9/Phase 6, not by MOD-M3's exit gate.
+The composition selected by MOD-M9 adds the distinct JavaScript deployment closure and
+representative script/host surface named by its capability manifest. A general runtime-compiler
+composition also satisfies A-7's general-engine intent. That JavaScript-profile work is owned by
+MOD-M9/Phase 6, not by MOD-M3's numeric-seed exit gate or by Broiler.VM core.
 
 **Stop rule.** If a supported semantic feature requires unavoidable reflection, narrow and
-document the AOT profile or move the feature to an excluded satellite. Do not silence a
+document the Native AOT composition or move the feature to an excluded satellite. Do not silence a
 warning or add an AOT checkmark in lieu of a working published sample.
 
 ---
@@ -455,8 +458,8 @@ effects remain attributable.
 ### MOD-M4 exit gate
 
 - Every published package restores, builds, and runs from a pristine consumer.
-- Full composition retains its documented global surface and conformance; reduced profiles
-  state every omission.
+- The `Full` bootstrap/package composition retains its documented global surface and
+  conformance; reduced bootstrap/package compositions state every omission.
 - Public/binary compatibility is preserved or an explicit versioned migration is approved.
 - Each new assembly enforces a useful dependency, deployment, AOT, ownership, or testing
   boundary and has an MOD-M1 baseline.
@@ -697,15 +700,18 @@ resolution.
 
 ---
 
-## MOD-M9 — Make the bytecode VM a terminal capability-profile decision
+## MOD-M9 — Select the JavaScript built-in's deployment/compiler composition
 
-**Objective.** Decide whether the product needs no bytecode engine, execution-only portable
-bytecode, a constrained runtime compiler, or a general runtime bytecode engine after the IL
-path, assembly graph, AOT boundary, startup work, and compile-ahead evidence are known.
+**Objective.** Select the exact JavaScript capability and deployment composition that Broiler.JS
+supplies to Broiler.VM after the IL path, assembly graph, AOT boundary, startup work, and
+compile-ahead evidence are known. Broiler.VM itself, JavaScript and WebAssembly as required
+built-in language profiles, and the closed-world NativeAOT registration model are fixed by
+`Broiler.VM/docs/roadmap.md`; this phase no longer decides whether that component or its
+WebAssembly profile exists.
 
 **Initial decision size:** S–M. **Implementation size if approved:** XL and multi-release.
 
-**Depends on:** MOD-M2, MOD-M3, and a finite decision bundle: the MOD-M5 compile-ahead decision, MOD-M4/MOD-M3
+**Depends on:** Broiler.VM's core/profile-contract gate, MOD-M2, MOD-M3, and a finite decision bundle: the MOD-M5 compile-ahead decision, MOD-M4/MOD-M3
 package and AOT evidence, MOD-M8-1 front-end/startup outcome, and MOD-M8-8 current-backend comparison.
 Each must be accepted, deferred, cancelled, or below resolution; MOD-M9 does not wait for the
 continuous remainder of MOD-M8. Crosswalk: item 6-0 and [`Phase-6.md`](Phase-6.md) through
@@ -717,50 +723,55 @@ with concurrent contexts/Workers does.
 |---|---|---|---:|---|
 | **MOD-M9-1** | Before measuring, name the dynamic-code-prohibited platforms and product scenarios, capability must-haves, decision thresholds, staffing/maintenance ceiling, and precedence when capability, conformance, startup, package, and memory criteria disagree. Predeclare whether each scenario needs precompiled execution only, runtime source compilation, or the full dynamic language surface. | product/AOT | S | [`Phase-6.status.md`](Phase-6.status.md) |
 | **MOD-M9-2** | Measure the representative surface and workload after accepted IL/startup work: static and dynamically reached language constructs, `eval`/Function/modules, host APIs, startup, package/code memory, and execution constraints. Use product workloads and pinned conformance manifests; syntax counts over WPT/Octane alone are insufficient. | performance/conformance | M | [`Phase-6.status.md`](Phase-6.status.md) |
-| **MOD-M9-3** | Evaluate supported alternatives such as the IL profile, ReadyToRun/persisted artifacts where applicable, execution-only precompiled bytecode, a deliberately narrow runtime compiler, or a full portable engine. | architecture/product | S–M | [`Phase-6.status.md`](Phase-6.status.md) and decision ADR |
-| **MOD-M9-4** | Verify MOD-M2's contract/test-sink feasibility and price production semantic-front-end extraction without implementing production bytecode lowering before the decision. Price the VM value/frame ABI, GC roots, completion/exception/suspension metadata, runtime-compiler AOT closure, persistence verifier, debugging/host interop, and one explicit deopt-state feasibility slice separately; deopt/OSR cannot justify an AOT capability by assumption. | FrontEnd/backends | M | prototype and estimate |
-| **MOD-M9-5** | Publish one ADR with a terminal `no-go`, `execution-only-go`, `narrow-runtime-go`, or `full-go`, named ownership, conformance/capability manifest, resource thresholds, and maintenance budget. This ADR closes and replaces Phase 6 item 6-0. | product/architecture | S | [`Phase-6.status.md`](Phase-6.status.md) |
+| **MOD-M9-3** | Evaluate the JavaScript composition choices: verified execution-only bytecode with an offline compiler, a deliberately constrained in-process runtime compiler, or the approved general runtime compiler. Compare the IL composition and ReadyToRun/persisted alternatives where applicable without treating them as Broiler.VM core choices. | architecture/product | S–M | [`Phase-6.status.md`](Phase-6.status.md) and decision ADR |
+| **MOD-M9-4** | Verify MOD-M2's contract/test-sink feasibility and price production semantic-front-end extraction without implementing production JavaScript lowering before the decision. Price the JavaScript profile's value/frame ABI, GC roots, completion/exception/suspension metadata, runtime-compiler AOT closure, persistence verifier, debugging/host interop, and one explicit deopt-state feasibility slice separately; deopt/OSR cannot justify an AOT capability by assumption. | FrontEnd/backends | M | prototype and estimate |
+| **MOD-M9-5** | Publish one ADR selecting `execution-only`, `narrow-runtime-compiler`, or `general-runtime-compiler`, with named ownership, conformance/capability manifest, resource thresholds, and maintenance budget. This ADR closes and replaces Phase 6 item 6-0; it cannot cancel Broiler.VM or WebAssembly work. | product/architecture | S | [`Phase-6.status.md`](Phase-6.status.md) |
 
-### Decision outcomes
+### JavaScript composition outcomes
 
-- **No-go.** Use when AOT is not a supported product requirement, the IL path is available
-  on target platforms, or the measured capability benefit does not justify maintaining a
-  second engine. Mark phases 6–9 cancelled or deferred with a reopening condition.
-- **Execution-only-go.** Ship a versioned, verified precompiled-bytecode runtime without a
-  parser/compiler in the deployed closure. Dynamic source compilation, direct eval, and
-  Function construction are unsupported in this profile; a product that requires any of
-  them must select `narrow-runtime-go` or `full-go` and carry the corresponding compiler
-  closure.
-- **Narrow-runtime-go.** Define a constrained runtime compiler, language, and host profile
+- **Execution-only.** Ship the JavaScript profile in a versioned, verified precompiled-bytecode
+  composition without a parser/compiler in the deployed closure. Dynamic source compilation,
+  direct eval, and Function construction are unsupported by this composition; a product that
+  requires any of them must select a runtime-compiler composition and carry the corresponding
+  compiler closure.
+- **Narrow runtime compiler.** Define a constrained runtime compiler, language, and host manifest
   for a specific AOT product. Never describe it as general JavaScript support.
-- **Full-go.** Fund the existing phases with named maintainers. Reorder their execution so a
+- **General runtime compiler.** Fund the approved general JavaScript surface with named
+  maintainers. Reorder its execution so a
   three-way expected/IL/bytecode conformance harness and production shared semantics precede
   format/compiler expansion.
+
+Execution-only is the bounded outcome when an in-process runtime compiler is not justified; a
+runtime-compiler no-go therefore does not cancel the JavaScript executor. If the selected
+JavaScript manifest cannot be delivered within the predeclared correctness, resource, or
+maintenance ceiling, record the blocking evidence and reopening condition without presenting
+the numeric seed as completion. Broiler.VM core and WebAssembly continue under their own gates.
 
 If approved, execute in this order:
 
 1. a three-way conformance harness comparing pinned expected outcomes, IL, and bytecode;
 2. production extraction of backend-neutral semantics/lowered IR, with the IL arm migrated
    and kept conformant before the bytecode arm grows;
-3. a VM ABI ADR for tagged value slots, GC rooting, locals/environments, calls, abrupt
+3. a JavaScript-profile ABI ADR for tagged value slots, GC rooting, locals/environments, calls,
+   abrupt
    completion, exceptions, suspension, source/debug data, resource limits, and explicit
    safepoint/deopt metadata;
 4. a minimal versioned canonical bytecode format and malformed-input verifier designed from
    that IR/ABI, followed by vertical lowering/interpreter slices rather than a whole-language
    opcode catalogue in advance;
 5. correct slow paths, exception/`finally`, generator/async suspension, modules, dynamic
-   compilation/eval as required by the selected capability profile, debugging, and host
-   interop;
-6. separate Native AOT publish-and-run gates for `Bytecode.ExecutionOnly` and, when selected,
-   `Bytecode.RuntimeCompiler`;
+   compilation/eval as required by the selected JavaScript capability manifest, debugging,
+   and host interop;
+6. separate Native AOT publish-and-run gates for the statically registered JavaScript
+   execution-only composition and, when selected, its runtime-compiler composition;
 7. an uninstrumented MOD-M1 baseline on modern/product workloads, followed by attributed Phase 7
    costs; measured function/realm-owned IC sidecars may proceed from that baseline after the
    applicable MOD-M6 ownership gate;
 8. independently gated immutable canonical-bytecode persistence with atomic writes,
    version/cache-key/integrity checks, resource bounds, re-interning, fuzzing, and
-   profile-specific corrupt-input behavior: runtime recompilation only for runtime-compiler
-   profiles, or deterministic load failure plus a fresh verified artifact path for
-   `execution-only-go`;
+   composition-specific corrupt-input fallback: runtime recompilation only for runtime-compiler
+   compositions, or deterministic load failure plus a fresh verified artifact path for
+   the execution-only composition;
 9. calibrated opcode counts/histograms whose observer effect is reported before quickening
    overlays, superinstructions, dispatch experiments, or broader adaptive feedback; and
 10. separately justified function-level tier-up; an independent explicit-`DeoptState`
@@ -769,17 +780,19 @@ If approved, execute in this order:
 
 ### MOD-M9 exit gate
 
-The ADR names target platforms, product requirement, selected deployment/compiler profile,
-representative workloads, capability and conformance manifest, frontend-reuse and VM-ABI
+The ADR names target platforms, product requirement, selected deployment/compiler composition,
+representative workloads, capability and conformance manifest, frontend-reuse and JavaScript-profile ABI
 feasibility evidence, the thresholds and staffing ceiling predeclared in MOD-M9-1, their observed
-results, and one terminal outcome under the predeclared precedence rules. The VM track may
-not remain indefinitely “open but unscheduled.”
+results, and one of the three JavaScript composition outcomes under the predeclared precedence
+rules. The JavaScript built-in may not remain indefinitely “open but unscheduled,” and this ADR
+does not make or cancel the separate WebAssembly decision.
 
-**Stop rule.** Forked semantic analysis is a no-go until the shared boundary is fixed. Do not
-justify a full VM using the capability or size of the existing numeric-only portable subset,
+**Stop rule.** Forked JavaScript semantic analysis is a no-go until the shared boundary is fixed.
+Do not justify a general JavaScript implementation using the capability or size of the existing
+numeric-only portable subset,
 do not use an execution-only AOT smoke as proof of a runtime-compiler closure, and do not
 describe a bytecode interpreter as an IL-path speed-up. Deoptimization and OSR are optional
-JIT-profile investments, not prerequisites for portable execution.
+JavaScript/IL investments, not prerequisites for portable execution and never WebAssembly gates.
 
 ---
 
@@ -822,9 +835,9 @@ drifts from the generated truth.
 | documentation/state | state-source consistency, link and ID lint | generated graph/API references agree | none; no result claims in plan prose |
 | compiler optimization | focused regression, owning pinned test262 manifests, full affected shard | sequential fallback, cache-key compatibility | paired stable-host time plus allocation/GC/code-size guardrails |
 | assembly/package move | repository suite and manifest-by-manifest conformance equivalence | graph, API diff, source/binary consumers, package contents | publish size, startup, loaded files, working set |
-| portable/AOT change | representative program output and explicit capability/conformance manifest | no forbidden transitive edge or magic-name discovery; execution-only and runtime-compiler closures are distinct | analyzer plus actual publish-and-run for each selected profile/RID |
-| bytecode format/cache | source/compile/reload equivalence for runtime-compiler profiles; verified artifact/reload equivalence and defined load failure for execution-only; malformed/corrupt-input and resource-limit tests for both | canonical versioned format, verifier, semantic cache key, atomic replacement, no persisted process-local IDs; fallback follows the selected profile | cold/warm verified load, cache hit, and either corrupt-cache recompilation or execution-only failure/fresh-artifact behavior, plus bytes/RSS |
-| adaptive interpretation/tier-up | expected/IL/VM outcomes, promotion-disabled/success/failure configurations | function/realm-owned state, quiescent publication, canonical bytecode and retained VM fallback | threshold sensitivity, retained code/state, promotion rate, tail latency; separate JIT/AOT profiles |
+| portable/AOT change | representative program output and explicit capability/conformance manifest | no forbidden transitive edge or magic-name discovery; execution-only and runtime-compiler closures are distinct | analyzer plus actual publish-and-run for each selected composition/RID |
+| bytecode format/cache | source/compile/reload equivalence for runtime-compiler compositions; verified artifact/reload equivalence and defined load failure for execution-only; malformed/corrupt-input and resource-limit tests for both | canonical versioned JavaScript-profile format, verifier, semantic cache key, atomic replacement, no persisted process-local IDs; fallback follows the selected composition | cold/warm verified load, cache hit, and either corrupt-cache recompilation or execution-only failure/fresh-artifact behavior, plus bytes/RSS |
+| adaptive interpretation/tier-up | expected/IL/VM outcomes, promotion-disabled/success/failure configurations | function/realm-owned state, quiescent publication, canonical bytecode and retained VM fallback | threshold sensitivity, retained code/state, promotion rate, tail latency; separate dynamic-code-capable and Native AOT compositions |
 | deoptimization/OSR | every forced guard failure for each enabled deopt safepoint; OSR configurations only if separately approved | explicit `DeoptState`/reconstruction for deopt; independent validated loop-entry ABI for OSR | deopt/OSR rate, metadata/code cost, tail latency, and maintenance ceiling |
 | background compilation | exact result, execution/error reporting order, cancellation, per-context peak one | bounded scheduler and realm-neutral artifact proof | background-off/1/2/4/auto critical path, p50/p95/p99, RSS/virtual memory/GC |
 | independent contexts | randomized and soak equivalence to serialized control | realm-owned feedback and reclaimable cache state | scaling, contention, tail latency, memory plateau |
@@ -843,7 +856,7 @@ drifts from the generated truth.
 | **W — Worker-capable** | MOD-M7A | isolated agents work without pretending shared memory is complete |
 | **S — Shared-memory capable** | optional MOD-M7B | the ECMAScript memory model is implemented and stress-validated |
 | **O — Optimized current engine** | accepted MOD-M8 packages | the IL path receives profile-led work first |
-| **V — VM decision** | MOD-M9 | phases 6–9 are funded, narrowed, or closed explicitly |
+| **V — JavaScript VM composition** | MOD-M9 | the JavaScript built-in's execution-only or runtime-compiler surface is explicit; Broiler.VM and WebAssembly remain independently owned |
 | **G — Governed** | MOD-M10 | drift and unsupported claims fail mechanically |
 
 ## 6. Program stop conditions
@@ -855,7 +868,7 @@ Stop and re-plan when any of these occurs:
 - a performance relationship cannot reproduce against its same-machine control;
 - host-wide concurrency is unbounded or a context has more than one executing entrant at a
   time; quiescent migration remains allowed for non-Worker contexts;
-- an AOT profile reaches Emit or undocumented dynamic loading;
+- a Native AOT composition reaches Emit or undocumented dynamic loading;
 - a second backend begins duplicating semantic analysis;
 - mutable optimizer feedback crosses realms without semantic and lifetime proof;
 - a new assembly has no deployment, AOT, ownership, testing, or measurable management value;

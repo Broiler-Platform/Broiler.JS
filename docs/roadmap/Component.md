@@ -151,16 +151,19 @@ The deployment evidence and product decisions still outstanding are:
 - remove legacy magic-name assembly probing after a documented compatibility window;
 - decide whether feature satellites beyond the sample materially improve startup and
   working set; and
-- keep function tiering, tagged-value experiments, and the portable Native AOT subset
-  opt-in until their supported semantics and fallback behavior are release-tested.
+- keep function tiering, tagged-value experiments, and optional JavaScript runtime-compiler/
+  adaptive compositions opt-in until their supported semantics and fallback behavior are
+  release-tested.
 
-**Four of those are now owned by [`Assemblies.md`](Assemblies.md)** rather than tracked here,
-because they turn out to be one piece of work: resolving linker warnings before claiming
-trimmed support, removing legacy magic-name assembly probing, deciding whether feature
-satellites beyond the sample improve startup and working set, and making the portable subset
-a real capability rather than a numeric island. **The magic-name probing in particular is
-promoted from hygiene to blocker** — reflective discovery defeats Native AOT, so item A-7's
-gate cannot pass while it exists.
+**The JavaScript side of four items is now owned by [`Assemblies.md`](Assemblies.md)** rather
+than tracked here: resolving linker warnings before claiming trimmed support, removing legacy
+magic-name assembly probing, deciding whether feature satellites beyond the sample improve
+startup and working set, and exposing an AOT-clean semantics/runtime boundary for the
+JavaScript built-in. Generic profile registration, common execution lifecycle, WebAssembly,
+and the future-built-in gate are owned by `Broiler.VM/docs/roadmap.md` in the aggregate
+repository. **Magic-name probing in particular is promoted from hygiene to blocker** — runtime
+discovery is incompatible with the closed-world NativeAOT composition, so item A-7 cannot pass
+while it exists.
 
 Compile-ahead, optimizer-state isolation, and Worker agents are similarly routed to
 [`Concurrency.md`](Concurrency.md). The aggregate `docs/architecture/multithreading.md`
@@ -179,11 +182,13 @@ gates in [`Measurement.md`](Measurement.md).
 > open. [`Assemblies.md`](Assemblies.md) plans the rest, but its original Base/Core merge
 > sketch is superseded pending the verified MOD-M2 graph. The current hypotheses keep a shared
 > FrontEnd/Semantics layer independent of both IL and bytecode lowering and require a
-> bytecode-only publish-and-run Native AOT gate. Item **A-9** is
+> statically registered Broiler.VM JavaScript execution-only publish-and-run Native AOT gate,
+> kept separate from any runtime-compiler closure. Item **A-9** is
 > the `Broiler.JavaScript.*` → `Broiler.JS.*` rename, which is a **breaking change to every
 > assembly name and package id** and closes under the rules below.
 
-- Keep `../public-api.md` aligned with shipped assemblies and bootstrap profiles.
+- Keep `../public-api.md` aligned with shipped assemblies, JavaScript bootstrap profiles,
+  VM-language-profile terminology, and deployment/compiler compositions.
 - Add pristine-consumer tests for every package intended for external use.
 - Document breaking changes to assembly or bootstrap behavior before release.
 - Run the complete repository, compliance, packaging, trim, and benchmark gates.

@@ -1,10 +1,15 @@
-# Phase 6 — VM 1.0: a correct bytecode interpreter — status
+# Phase 6 — Broiler.VM JavaScript profile 1.0: correct bytecode execution — status
 
-**No Phase 6 item has started. No Phase 6 measurement or general-engine VM result exists.**
+**No Phase 6 item has started. No Phase 6 measurement or general-JavaScript VM result exists.**
 
 The numeric portable seed, the landed expression-model/emitter split, and its architecture
 tests predate the approved Phase 6 implementation described in [`Phase-6.md`](Phase-6.md).
 They are prerequisites and starting facts, not partial completion of a general interpreter.
+
+This is the evidence record for the JavaScript built-in profile only. Common Broiler.VM
+catalog/composition, execution-session lifecycle, and cross-profile resource-policy work is
+owned by `Broiler.VM/docs/roadmap.md`; no such work is claimed here. The WebAssembly and any
+future built-in profile have independent implementation/evidence records.
 
 > The evidence half of [`Phase-6.md`](Phase-6.md). A plan statement is not a result;
 > [`Measurement.md`](Measurement.md) governs future performance evidence, and the independent
@@ -19,19 +24,25 @@ They are prerequisites and starting facts, not partial completion of a general i
 | Items started | **0** |
 | Items landed | **0** |
 | Measurements taken | **0** |
-| Decision state | MOD-M9 has not produced a terminal `no-go`, `execution-only-go`, `narrow-runtime-go`, or `full-go` ADR |
-| Blocked on | **6-0 = the MOD-M9 capability/profile decision**, plus its applicable MOD-M2/MOD-M3/MOD-M4 entry gates |
-| Next action | complete MOD-M9's finite decision bundle; do not begin format or compiler work |
+| Decision state | MOD-M9 has not produced a terminal `execution-only`, `narrow-runtime-compiler`, or `general-runtime-compiler` ADR |
+| Blocked on | **6-0 = adoption of the MOD-M9 JavaScript capability/composition decision**, plus the applicable Broiler.VM core-integration and MOD-M2/MOD-M3/MOD-M4 entry gates |
+| Next action | complete the finite JavaScript-profile decision bundle; do not begin JavaScript format or compiler work |
 
-A `no-go` marks phases 6–9 cancelled or deferred with a reopening condition. An
-`execution-only-go`, `narrow-runtime-go`, or `full-go` satisfies 6-0 and supplies the
-capability manifest against which this status file will record progress. Only the latter
-two authorize a runtime source compiler; `execution-only-go` authorizes a correct
-precompiled execution product without one.
+MOD-M9 selects `execution-only`, `narrow-runtime-compiler`, or
+`general-runtime-compiler` and supplies the capability manifest against which this status
+file will record progress. Only the latter two authorize a runtime source compiler;
+`execution-only` authorizes a correct precompiled JavaScript execution composition without
+one. A runtime-compiler no-go selects `execution-only`; it does not cancel the JavaScript
+executor, Broiler.VM, WebAssembly, or another built-in profile.
+
+These outcomes select a deployment/compiler composition for the Broiler.VM `JavaScript`
+language profile. They are distinct from a
+realm's `JavaScriptBootstrapProfile`, which selects JavaScript built-ins/realization policy
+and cannot serve as execution-only/runtime-compiler or Native AOT evidence.
 
 ---
 
-## Evidence required for 6-0 / MOD-M9
+## Evidence required for 6-0 / the Broiler.VM JavaScript-profile decision
 
 Before 6-1 starts, the terminal ADR must record:
 
@@ -45,7 +56,8 @@ Before 6-1 starts, the terminal ADR must record:
 5. measured current-IL/startup/compile-ahead alternatives and their terminal disposition;
 6. named owners and precedence when capability, conformance, resource, and maintenance
    criteria disagree; and
-7. one terminal outcome: `no-go`, `execution-only-go`, `narrow-runtime-go`, or `full-go`.
+7. one terminal JavaScript composition: `execution-only`, `narrow-runtime-compiler`, or
+   `general-runtime-compiler`.
 
 This replaces the former duplicate instruction to run a separate Phase 6 scoping study.
 
@@ -57,11 +69,11 @@ The following is a source census, not a Phase 6 result:
 
 | Existing artifact | What it proves | What it does **not** prove |
 |---|---|---|
-| `Broiler.JavaScript.Portable` numeric program and interpreter | immutable numeric bytecode can be validated and executed without dynamic code | JavaScript values, objects, calls, closures, exceptions, modules, eval, async/generators, or host integration |
+| `Broiler.JavaScript.Portable` numeric program and interpreter | immutable numeric bytecode can be validated and executed without dynamic code | a Broiler.VM profile integration, JavaScript values, objects, calls, closures, exceptions, modules, eval, async/generators, or host integration |
 | `Broiler.JavaScript.Portable.Compiler` | an offline numeric subset can parse and lower selected statements/expressions | reuse of the production semantic front end or a general runtime compiler |
 | `BytecodeClosureIsEmitFreeTests` | the current portable compiler's loaded Broiler reference closure does not reference the Emit facades | Native AOT publication and execution of that compiler/runtime closure |
 | `Broiler.JavaScript.NativeAotSample` | the **execution-only** numeric interpreter publishes and runs with checked-in generated bytecode | parser/compiler AOT compatibility; it does not reference or invoke `Portable.Compiler` |
-| `Broiler.JavaScript.Expressions` split | `Parser` no longer reaches the IL emitter through the expression model | the final target graph, hosting split, runtime/compiler AOT profile, or full JavaScript support |
+| `Broiler.JavaScript.Expressions` split | `Parser` no longer reaches the IL emitter through the expression model | the final target graph, hosting split, runtime/compiler Native AOT composition, or full JavaScript support |
 
 The original 2026-08-07 census correctly characterized the portable capability as a
 20-opcode, `double`-only seed and listed the absent object/call/closure/exception/module/
@@ -69,13 +81,13 @@ suspension surface. That historical conclusion remains valid. Its pre-split stat
 `Portable.Compiler → Parser → ExpressionCompiler` reaches Emit is now superseded by the
 landed model/emitter split and must not be quoted as current state.
 
-### AOT evidence must remain profile-specific
+### JavaScript AOT evidence must remain composition-specific
 
 | Gate | Current state | Evidence still required |
 |---|---|---|
 | execution-only numeric smoke | seed exists; not a general-engine claim | publish/run logs for every predeclared preliminary RID, warnings and suppressions inventoried |
-| execution-only approved Phase 6 profile | ❌ not started | verified serialized/precompiled representative programs run on every claimed RID |
-| runtime-compiler approved Phase 6 profile | ❌ not started | published app includes parser + shared semantics + bytecode compiler, compiles source in process, then executes it |
+| approved `execution-only` JavaScript composition | ❌ not started | statically composed profile runs verified serialized/precompiled representative programs on every claimed RID |
+| approved runtime-compiler JavaScript composition | ❌ not started | published app includes parser + shared semantics + bytecode compiler, compiles source in process, then executes it through the JavaScript profile |
 
 Do not promote the first row into evidence for either later row.
 
@@ -88,13 +100,13 @@ When work is approved, append evidence here without weakening the current `0` st
 | Item | Required evidence before it can be marked validated |
 |---|---|
 | 6-1 shared semantic IR | IL migration diff, project graph, pinned expected-result manifest before/after, backend-neutral test sink |
-| 6-2 VM ABI | ADR, GC/lifetime tests, frame/resource limits, JIT and Native-AOT representation probes |
-| 6-3 format/verifier | version schema, malformed corpus, fuzz results, bounded-resource and corrupt-input behavior |
+| 6-2 JavaScript-profile ABI | ADR, GC/lifetime tests, frame/resource limits, JIT and Native-AOT representation probes |
+| 6-3 JavaScript format/verifier | version schema, malformed corpus, fuzz results, bounded-resource and corrupt-input behavior |
 | 6-4 lowering/interpreter | per-slice expected result, IL result, VM result, source and verified round-trip arms |
 | 6-6 completion/unwinding | nested handler/finally matrix and JS↔host exception crossings |
-| 6-7 hard surface | approved capability rows, implementation result or published narrow-profile exclusion |
-| 6-8 conformance | pinned oracle version, supported/unsupported manifest, unexplained shared and VM-only delta count |
-| AOT profiles | source revision, RID/device, publish properties, warnings/suppressions, package closure, runtime output |
+| 6-7 hard surface | approved capability rows, implementation result or published narrow-composition exclusion |
+| 6-8 conformance | pinned oracle version, supported/unsupported manifest, unexplained shared and JavaScript-profile-only delta count |
+| AOT JavaScript compositions | source revision, Broiler.VM language-profile id, `JavaScriptBootstrapProfile`, deployment/compiler composition, RID/device, publish properties, warnings/suppressions, package closure, runtime output |
 
-No row may use IL/VM agreement alone as proof of correctness. Both arms must also match the
+No row may use IL/JavaScript-profile agreement alone as proof of correctness. Both arms must also match the
 independent expected result for every supported case.

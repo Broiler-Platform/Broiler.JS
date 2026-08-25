@@ -1,11 +1,17 @@
-# Phase 9 — VM 4.0: optional adaptive IL/bytecode execution — status
+# Phase 9 — Broiler.VM JavaScript profile 4.0: optional JavaScript bytecode↔IL execution — status
 
 **No Phase 9 measurement or feasibility result exists. Nothing in Phase 9 has been built,
 measured, or attempted.**
 
+This is a JavaScript-profile evidence record, not a generic Broiler.VM or WebAssembly
+milestone. Common profile catalog/composition, execution-session lifecycle, and cross-profile
+resource evidence belongs to `Broiler.VM/docs/roadmap.md`; nothing there is claimed complete
+by this zero state.
+
 > The evidence half of [`Phase-9.md`](Phase-9.md). A plan statement is not a result.
 > Historical IL-path figures retained below remain attributed to their Phase 1 and Phase 5
-> status records; they are priors for a future decision, not VM or adaptive-tier results.
+> status records; they are priors for a future JavaScript decision, not profile or
+> adaptive-tier results.
 > [`Measurement.md`](Measurement.md) governs any future performance claim.
 
 ---
@@ -18,16 +24,23 @@ measured, or attempted.**
 | Items landed | **0** |
 | Measurements taken | **0** |
 | Feasibility spikes run | **0** |
-| Outcome gate | `execution-only-go` alone does **not** authorize runtime IL tiering |
-| Blocked on | MOD-M9 `narrow-runtime-go` or `full-go` with a dynamic-code-capable adaptive host profile; accepted Phase 6/7 evidence; MOD-M1 and applicable MOD-M6 gates |
-| First performance action after entry gates | item **9-0 · VM-first promotion decision curve** |
+| Outcome gate | `execution-only` does **not** authorize runtime IL tiering |
+| Blocked on | JavaScript deployment/compiler composition `narrow-runtime-compiler` or `general-runtime-compiler` with a dynamic-code-capable adaptive Broiler.JS host composition; accepted JavaScript Phase 6/7 evidence; MOD-M1 and applicable MOD-M6 gates |
+| First performance action after entry gates | item **9-0 · JavaScript-bytecode-first promotion decision curve** |
 | First deopt action after entry gates | item **9-3 · explicit state-materialization feasibility spike** |
 
-**This phase is not scheduled.** A runtime-capable MOD-M9 outcome is necessary but not
-sufficient: its capability manifest must name a host composition where bytecode and emitted
-IL both exist and adaptivity is a product requirement. An `execution-only-go` remains a
-valid, correct precompiled-execution product and must not be expanded into a runtime compiler
-or IL tier merely to enter this phase.
+**This phase is not scheduled.** A runtime-compiler JavaScript composition is necessary but not
+sufficient. Separately, the approved JavaScript capability manifest must cover the exercised
+semantics, the host composition must include both bytecode and emitted IL, and adaptivity must be
+a product requirement. An `execution-only` composition remains a valid, correct
+precompiled-JavaScript execution composition and must not be expanded into a runtime compiler or
+IL tier merely to enter this phase.
+
+The `execution-only` composition leaves this optional JavaScript↔IL phase closed. A
+runtime-compiler no-go therefore changes neither Broiler.VM core, WebAssembly, nor another
+built-in profile.
+`JavaScriptBootstrapProfile` is an orthogonal realm feature/realization input and is not an
+authorization for dynamic IL adaptivity.
 
 ---
 
@@ -36,9 +49,9 @@ or IL tier merely to enter this phase.
 Use MOD-M1's accepted modern/product manifest, stable-host protocol, and predeclared decision
 rule. The future immutable evidence bundle must compare:
 
-1. VM-only execution;
-2. VM-first plus promotion across a **predeclared threshold curve**, including promotion
-   disabled and failure/backoff controls;
+1. JavaScript-profile bytecode-only execution;
+2. JavaScript-profile bytecode-first plus promotion across a **predeclared threshold curve**,
+   including promotion disabled and failure/backoff controls;
 3. current IL eager compilation where that composition remains supported;
 4. the accepted current-IL lazy/deferred-function path; and
 5. persisted and non-persisted bytecode arms where relevant, labelled explicitly.
@@ -47,7 +60,7 @@ Record first-context, first-script, first-paint/product milestone, and steady-st
 allocation, GC, peak/steady working set, retained source/IR/bytecode/IL, code/package size,
 compile queue/latency, promotion attempts/successes/failures, and applicable p50/p95/p99.
 Separate foreground and any approved background compilation. Native-AOT-only targets are
-VM-only product lanes; do not average them into a dynamic-code tier-up result.
+JavaScript-bytecode-only product lanes; do not average them into a dynamic-code tier-up result.
 
 Before running the curve, record the primary metric, minimum relevant effect or equivalence
 budget, resource-guardrail precedence, retained-code/metadata ceiling, missing-row policy,
@@ -56,7 +69,7 @@ threshold remains below measurement resolution or violates a guardrail, the vali
 to cancel 9-1/9-2.
 
 The independent expected-result manifest is the conformance oracle for every configuration.
-VM/IL agreement alone is a differential check, not proof of correctness.
+JavaScript-profile/IL agreement alone is a differential check, not proof of correctness.
 
 ---
 
@@ -134,7 +147,7 @@ An ordinary function delegate that enters only at function start is not OSR evid
 
 | Item | Required result before it can be marked validated |
 |---|---|
-| 9-0 decision curve | immutable MOD-M1 bundle for VM-only, promotion curve, IL eager/lazy, persistence controls, resources, and predeclared terminal decision |
+| 9-0 decision curve | immutable MOD-M1 bundle for JavaScript bytecode-only, promotion curve, IL eager/lazy, persistence controls, resources, and predeclared terminal decision |
 | 9-1 transition state | owner/lifetime ADR, atomic transition tests, cancellation/backoff, concurrent-context isolation, eviction plateau |
 | 9-2 descriptor promotion | no source reparse, identity/environment fixtures, quiescent publication, bounded fallback, independent-oracle result |
 | 9-3 deoptimization | explicit ABI, canonical-PC mapping, generated live-state spill, forced guard failures, unsupported-safepoint manifest, stop/go decision |
@@ -157,8 +170,8 @@ Phase 1 and Phase 5 status records:
 
 Those values remain tied to their original revisions, corpora, controls, and IL
 implementation. They justify testing unused-function opportunity, accepted IL laziness,
-threshold curves, and retained-code cost. They do **not** establish a present VM population,
-a promotion win, deoptimization feasibility, or OSR value.
+threshold curves, and retained-code cost. They do **not** establish a present JavaScript-interpreter population,
+a JavaScript-profile promotion win, deoptimization feasibility, or OSR value.
 
 When any Phase 9 work begins, append immutable MOD-M1/MOD-M6/conformance evidence here while
 preserving this historical attribution and the current zero state until an item actually

@@ -169,21 +169,22 @@ not a current blocker assertion; any rescheduled work must reproduce them first.
 
 ---
 
-## Track two — bytecode capability exists; production phases are not accepted
+## Track two — JavaScript seed exists; Broiler.VM profile phases are not accepted
 
 The repository now contains more than the old file census recorded: the expression
 model/emitter split has landed, `Broiler.JavaScript.Portable.Compiler` compiles the numeric
 portable subset, and the aggregate product contains compile-ahead and an initial Worker
 slice. Those facts are implementation evidence. They do **not** establish a general
-JavaScript bytecode backend, a runtime-compiler Native AOT closure, accepted VM performance,
-shared-state ownership, or Worker lifecycle/resource completeness.
+JavaScript built-in for Broiler.VM, a runtime-compiler Native AOT closure, accepted VM
+performance, shared-state ownership, or Worker lifecycle/resource completeness. No generic
+Broiler.VM or WebAssembly-profile work is counted in this JavaScript evidence record.
 
 | Phase | Current state | Next authority/gate |
 |---|---|---|
-| [6](Phase-6.status.md) | production phase not started; numeric execution-only seed exists | Modernization MOD-M9 records `no-go`, `execution-only-go`, `narrow-runtime-go`, or `full-go`, replacing old 6-0; go outcomes then require shared semantics, VM ABI, verifier and three-way conformance |
-| [7](Phase-7.status.md) | no accepted uninstrumented baseline or shippability decision | accepted Phase 6 profile plus MOD-M1 exact-row/A/A/resource baseline and MOD-M6 ownership for shared state |
+| [6](Phase-6.status.md) | production JavaScript-profile phase not started; numeric execution-only seed exists | Modernization MOD-M9 selects `execution-only`, `narrow-runtime-compiler`, or `general-runtime-compiler`, replacing old 6-0; implementation then requires the Broiler.VM core contract, shared JavaScript semantics, JavaScript ABI/verifier, and three-way conformance |
+| [7](Phase-7.status.md) | no accepted uninstrumented baseline or shippability decision | accepted Phase 6 JavaScript scope/exit evidence plus MOD-M1 exact-row/A/A/resource baseline and MOD-M6 ownership for shared state |
 | [8](Phase-8.status.md) | no accepted persistence or adaptive optimization item | stable verified format and Phase 7 attribution; persistence, feedback, quickening, superinstructions and dispatch each keep separate population/resource gates |
-| [9](Phase-9.status.md) | no tier-up/deopt/OSR decision; `execution-only-go` would not authorize this phase | `narrow-runtime-go` or `full-go` plus a dynamic-code/adaptivity product gate; then 9-0 is the promotion curve, while 9-3 is the independent `DeoptState`/reconstruction spike and 9-4 branches only from validated function promotion |
+| [9](Phase-9.status.md) | no JavaScript tier-up/deopt/OSR decision; execution-only does not authorize this phase | a runtime-compiler JavaScript composition plus a dynamic-code/adaptivity product gate; then 9-0 is the promotion curve, while 9-3 is the independent `DeoptState`/reconstruction spike and 9-4 branches only from validated function promotion; none gates WebAssembly |
 
 The authoritative detail is in the four phase status files and
 [`Modernization.md`](Modernization.md). Historical 2026-08-07 counts elsewhere in this file

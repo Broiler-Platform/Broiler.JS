@@ -1,7 +1,7 @@
 # Broiler.JS modernization delivery roadmap
 
-A phased delivery plan for turning the performance, assembly, concurrency, and bytecode
-findings into reviewable increments.
+A phased delivery plan for turning the performance, assembly, concurrency, and JavaScript
+execution-profile findings into reviewable increments.
 
 > **Authority rule.** [`Modernization.md`](Modernization.md) owns cross-track dependencies,
 > decisions, and program gates. The owning plan/status pair owns scope and evidence. This
@@ -25,14 +25,17 @@ The program is complete only when Broiler.JS has:
    rows, A/A validity, resource metrics, and semantic guardrails;
 3. an acyclic, build-proven assembly graph with a backend-neutral semantic front end and one
    enforceable IL/dynamic-code boundary;
-4. explicit full-IL, execution-only, and any approved runtime-compiler/AOT compositions;
+4. an explicit full-IL composition and one selected Broiler.VM JavaScript composition:
+   `execution-only`, `narrow-runtime-compiler`, or `general-runtime-compiler`;
 5. bounded parallel work over independent contexts without concurrent execution of one
    `JSContext`;
 6. Worker agents with explicit lifecycle, scheduling, resource, and unsupported-surface
    contracts;
-7. profile-led improvements to the current IL engine before a second execution engine is
-   funded; and
-8. a terminal bytecode capability decision followed only by the phases that decision funds.
+7. profile-led improvements to the current IL engine before optional JavaScript-profile
+   persistence or adaptivity is funded; and
+8. a terminal JavaScript built-in composition decision followed only by the JavaScript work
+   that decision funds. Generic Broiler.VM core and its WebAssembly built-in are separately
+   owned and cannot be cancelled by this roadmap.
 
 Apply these rules in every delivery wave:
 
@@ -46,7 +49,9 @@ Apply these rules in every delivery wave:
   realm-neutral preparation, or explicit Worker agents.
 - A new assembly must enforce a dependency, deployment, AOT, ownership, or test boundary. Size
   alone is not a reason to split.
-- Production bytecode work does not start before the terminal MOD-M9 decision.
+- Production expansion of the JavaScript bytecode profile beyond the existing seed does not
+  start before the terminal MOD-M9 composition decision. Generic Broiler.VM core and the
+  WebAssembly built-in follow `Broiler.VM/docs/roadmap.md`; they are not gated here.
 
 ## 2. Delivery map
 
@@ -62,11 +67,12 @@ DEL-1 + DEL-2 ─┬─> DEL-3 IL/AOT isolation ─> DEL-4 package/AOT evidence
 DEL-5 artifact/shared-state census ─> DEL-6 context safety ─> DEL-7 Workers
 
 DEL-3 + finite DEL-4 evidence + DEL-5 decision
-      + DEL-8 items 1 (front-end/startup) and 8 (backend comparison) ─> DEL-9 VM decision
-DEL-6 ── shared/adaptive-state work only ───────────────────────> DEL-9/10/11
+      + DEL-8 items 1 (front-end/startup) and 8 (backend comparison) ─> DEL-9 JavaScript composition decision
+DEL-6 ── shared/adaptive JavaScript-state work only ───────────> DEL-9/10/11
 
-DEL-9 approved profile + any profile-required DEL-4 boundary ─> DEL-10 VM correctness/baseline
-                                                            └─> profile-applicable DEL-11 branches after their own gates
+Broiler.VM foundation + DEL-9 selected JavaScript composition
+      + any composition-required DEL-4 boundary ─> DEL-10 JavaScript-profile correctness/baseline
+                                                 └─> JavaScript-applicable DEL-11 branches after their own gates
 all accepted product slices ─> DEL-12 release and recertification
 ```
 
@@ -77,7 +83,10 @@ applicable target-graph evidence. DEL-6 starts from DEL-5's accepted artifact/sh
 census and does not wait for compile-ahead to be a performance success. DEL-8 discovery may
 start after DEL-0; acceptance needs DEL-1, boundary-changing slices need DEL-2, and shared-state
 slices need DEL-6. Because DEL-8 is continuous, DEL-9 waits only for the named finite inputs in
-the map, not for every DEL-8 package. DEL-10 and DEL-11 disappear if MOD-M9 records `no-go`.
+the map, not for every DEL-8 package. DEL-9 selects the JavaScript built-in's composition;
+DEL-10 is scoped to that selection and DEL-11 remains a set of independently optional
+JavaScript-profile branches. None of those outcomes cancels or narrows generic Broiler.VM core
+or the WebAssembly built-in owned by `Broiler.VM/docs/roadmap.md`.
 
 ---
 
@@ -219,7 +228,8 @@ production files.
 ### Exit gate
 
 - Project shells and the generated target graph are acyclic and identical.
-- IL and the fake backend consume one neutral contract; bytecode need not reference IL.
+- IL and the fake backend consume one neutral JavaScript semantic contract; a JavaScript
+  Broiler.VM profile adapter need not reference IL.
 - Every proposed merge/split has a compatibility and product-value disposition.
 - Architecture tests enforce all allowed/forbidden edges.
 
@@ -247,7 +257,7 @@ production files.
   warnings.
 - The current full-IL/runtime-compiler-capable composition and the numeric execution-only proof
   are named distinctly in code, packages, docs, and CI; neither is presented as an approved
-  post-MOD-M9 capability profile.
+  post-MOD-M9 JavaScript composition.
 
 ### DEL-4 — Split packages only where the boundary pays
 
@@ -415,20 +425,25 @@ building another execution engine.
 - explicit `accept`, retained opt-in experiment with owner/expiry, `defer`, or `remove` terminal
   state; failed experimental switches do not accumulate.
 
-### DEL-9 — Make the terminal bytecode capability decision
+### DEL-9 — Select the JavaScript built-in composition on Broiler.VM
 
-**Maps to:** MOD-M9 and Phase 6 item 6-0.
+**Maps to:** MOD-M9 and the JavaScript built-in composition gate in
+`Broiler.VM/docs/roadmap.md`.
 
-**Objective:** decide whether product capability justifies a second production backend.
+**Objective:** select how Broiler.JS composes its built-in JavaScript profile with the
+separately owned Broiler.VM foundation. This decision scopes JavaScript source compilation
+and deployment; it does not decide whether generic Broiler.VM core or the WebAssembly
+built-in exists.
 
 ### Finite entry bundle
 
-DEL-9 starts only after DEL-3's predecision IL/AOT evidence, DEL-4's finite package/AOT dispositions,
-DEL-5's compile-ahead decision, DEL-8 item 1's front-end/startup outcome, and DEL-8 item 8's
-current-backend comparison are each accepted, deferred, cancelled, or below resolution.
-It does not wait for continuous DEL-8 work. DEL-6 is additionally required only for a decision
-or follow-on slice that shares artifacts, consumes adaptive IC/type-feedback state, or runs
-with concurrent contexts/Workers.
+DEL-9 starts only after DEL-3's predecision IL/AOT evidence, DEL-4's finite package/AOT
+dispositions, DEL-5's compile-ahead decision, DEL-8 item 1's front-end/startup outcome, and
+DEL-8 item 8's current-backend comparison are each accepted, deferred, cancelled, or below
+resolution. It does not wait for continuous DEL-8 work. DEL-6 is additionally required only
+for a JavaScript decision or follow-on slice that shares artifacts, consumes adaptive
+IC/type-feedback state, or runs with concurrent contexts/Workers. Broiler.VM foundation and
+WebAssembly-profile delivery follow their own entry gates independently.
 
 ### Decision bundle
 
@@ -437,114 +452,143 @@ with concurrent contexts/Workers.
    product workload plus capability/conformance manifest, exclusions, and pass threshold.
 2. Measure current IL, execution-only portable seed, relevant external/managed baselines, and
    supported deployment alternatives without presenting unlike engines as candidate controls.
-3. Price shared semantic-front-end extraction, VM value/frame ABI and GC roots, completion,
-   exceptions/suspension/modules/eval/debugging/host interop, verifier/persistence, AOT closure,
-   and deopt-state feasibility separately.
+3. Verify the required Broiler.VM profile and execution contracts, then price the JavaScript
+   side separately: shared semantic-front-end extraction, value/frame mapping and GC roots,
+   completion, exceptions/suspension/modules/eval/debugging/host interop, profile verification
+   and persistence, AOT closure, and explicit IL-to-VM deopt-state feasibility.
 4. Record exactly one outcome:
-   - `no-go` — close Phases 6–9;
-   - `execution-only-go` — verified precompiled artifacts, no runtime source/eval/Function;
-   - `narrow-runtime-go` — only the declared runtime compiler/language/host manifest; or
-   - `full-go` — the funded general-runtime manifest and maintenance budget.
+   - `execution-only` — verified precompiled JavaScript artifacts, with no runtime source,
+     direct-eval, or Function-constructor compilation;
+   - `narrow-runtime-compiler` — only the declared JavaScript compiler/language/host manifest;
+     or
+   - `general-runtime-compiler` — the declared general JavaScript runtime-compiler manifest
+     and maintenance budget.
 
 ### Exit gate
 
-- One ADR names profile, pinned capability/conformance manifest and threshold,
+- One ADR names the JavaScript composition, pinned capability/conformance manifest and threshold,
   supported/unsupported surface, RIDs, owner, budget, gates, rollback, and recertification
   triggers.
 - The ADR identifies every DEL-4 hosting/compiler/tool boundary required to implement the
-  selected profile, or explicitly records that no additional split is required.
-- Every Phase 6–9 item outside the selected manifest is cancelled or separately gated.
+  selected JavaScript composition, or explicitly records that no additional split is required.
+- Every JavaScript-profile item outside the selected manifest is cancelled or separately
+  gated. The ADR cannot cancel, narrow, or claim completion of generic Broiler.VM core or the
+  WebAssembly built-in.
 - No AOT analyzer/sample result is presented as proof of an untested runtime-compiler closure.
 
-### DEL-10 — Build VM correctness and its uninstrumented baseline, only after a go
+### DEL-10 — Build JavaScript-profile correctness and its uninstrumented baseline
 
-**Maps to:** the selected subset of Phases 6 and 7.
+**Maps to:** the selected JavaScript correctness/baseline work on the Broiler.VM foundation
+owned by `Broiler.VM/docs/roadmap.md`.
 
-**Objective:** establish shared semantics, a reconstructable execution ABI, a verified format,
-and an attributable interpreter baseline before adaptive or persistence work.
+**Objective:** establish shared JavaScript semantics, a reconstructable JavaScript-profile
+value/frame ABI within Broiler.VM's generic lifecycle, a verified JavaScript profile format, and an
+attributable interpreter baseline before JavaScript-profile adaptive or persistence work.
 
 ### Work
 
-1. Implement and validate every profile-required DEL-4 hosting/compiler/tool boundary named by
-   the MOD-M9 ADR; if none is required, retain the proved composition and its recorded no-split
-   decision.
-2. Migrate IL to the shared production semantic IR before bytecode duplicates an analysis.
-3. Specify value/frame ABI, GC roots, environments, completion/unwinding, suspension, debugger,
-   host, and canonical source/bytecode identities.
-4. Build a versioned bounded verifier and minimal vertical opcode slices against an independent
-   expected-result harness.
-5. Complete the selected hard-semantics manifest; unimplemented features fail deterministically.
-6. Publish and run the actual capability/profile manifest on its declared AOT RID matrix; this
-   is the postdecision closure proof that the DEL-3 numeric seed deliberately did not claim.
-7. Take the Phase 7 uninstrumented baseline, then add only measured IC, element, numeric,
-   constant-pool, and call/closure work. Mutable IC or feedback-consuming work starts only
-   after the applicable DEL-6 ownership, snapshot, invalidation, and lifetime gate.
-8. Make Phase 7 item 7-5's explicit stack-machine-versus-register-machine total-cost decision
-   from the accepted ABI, executed traffic, bytes fetched, dispatch/decode and generated-code
-   evidence, frame/GC cost, compiler/verifier/debugger complexity, and code-size/startup budget.
-   If 8-0 evidence is still required, carry the decision forward rather than guessing.
+1. Implement and validate every JavaScript-composition-required DEL-4
+   hosting/compiler/tool boundary named by the MOD-M9 ADR; if none is required, retain the
+   proved composition and its recorded no-split decision.
+2. Migrate IL to the shared production JavaScript semantic IR before JavaScript-profile
+   bytecode duplicates an analysis. Generic VM core does not own ECMAScript semantics.
+3. Specify the JavaScript profile's own value/frame ABI: GC roots, environments,
+   completion/unwinding, suspension, debugger and host state, and canonical source/bytecode
+   identities. Broiler.VM core supplies lifecycle/result/resource contracts, not a universal
+   language value or frame ABI.
+4. Build the JavaScript profile's versioned bounded verifier contributions and minimal
+   vertical opcode slices against an independent expected-result harness, using rather than
+   redefining the Broiler.VM foundation contracts.
+5. Complete the selected JavaScript hard-semantics manifest; unimplemented features fail
+   deterministically.
+6. Publish and run the selected JavaScript capability manifest under the selected deployment/
+   compiler composition on its declared AOT RID matrix; this is the postdecision closure proof
+   that the DEL-3 numeric seed deliberately did not claim.
+7. Take the JavaScript-profile uninstrumented baseline, then add only measured IC, element,
+   numeric, constant-pool, and call/closure work. Mutable IC or feedback-consuming work starts
+   only after the applicable DEL-6 ownership, snapshot, invalidation, and lifetime gate.
+8. Make the JavaScript profile's explicit stack-machine-versus-register-machine total-cost
+   decision from the accepted ABI, executed traffic, bytes fetched, dispatch/decode and
+   generated-code evidence, frame/GC cost, compiler/verifier/debugger complexity, and
+   code-size/startup budget. If the separate diagnostic evidence is still required, carry the
+   decision forward rather than guessing; this decision does not prescribe the WebAssembly
+   profile's execution representation.
 
 ### Exit gate
 
-- Expected/IL/VM outcomes agree for the declared capability manifest.
-- Malformed/resource-exhausting artifacts fail safely and deterministically.
-- The selected AOT composition publishes and runs its real representative workload.
-- The uninstrumented baseline is accepted before persistence or adaptive interpretation begins.
+- Expected, IL, and Broiler.VM JavaScript-profile outcomes agree for the declared capability
+  manifest.
+- Malformed or resource-exhausting JavaScript-profile artifacts fail safely and
+  deterministically through the accepted VM boundary.
+- The selected JavaScript AOT composition publishes and runs its real representative workload.
+- The JavaScript-profile uninstrumented baseline is accepted before its persistence or
+  adaptive-interpretation branches begin.
 
-### DEL-11 — Add persistence, adaptivity, and optional tiering as independent branches
+### DEL-11 — Add optional JavaScript persistence and adaptivity as independent branches
 
-**Maps to:** Phases 8 and 9.
+**Maps to:** the JavaScript-applicable persistence and adaptive work in
+`Broiler.VM/docs/roadmap.md`. Emitted-IL tiering, deoptimization, and OSR are JavaScript-only
+integration branches.
 
-**Objective:** fund only the VM mechanisms whose own populations and product outcomes justify
-their complexity.
+**Objective:** fund only the JavaScript-profile mechanisms whose own populations and product
+outcomes justify their complexity. Generic Broiler.VM mechanisms and WebAssembly-profile work
+remain separately owned and require their own evidence.
 
 ### Branch entry gates
 
-- Phase 8 item 8-6 persistence requires an accepted Phase 6 format/verifier plus a MOD-M1
+- JavaScript-profile persistence requires an accepted profile format/verifier plus a MOD-M1
   cold-start/repeated-compile or precompiled-load opportunity whose paired interval resolves
-  and clears the startup boundary. It is independent of 8-0.
-- Phase 8 items 8-1 through 8-5 require the Phase 7 uninstrumented baseline and 8-0's separate
-  calibrated diagnostic evidence: executed population, attributed cost, attainable ceiling,
-  predeclared decision rule, and measured observer effect.
+  and clears the startup boundary. It is independent of the adaptive-interpreter diagnostic
+  gate.
+- JavaScript-profile feedback, quickening, superinstruction, dispatch, and PGO proposals
+  require the accepted uninstrumented baseline and separate calibrated diagnostic evidence:
+  executed population, attributed cost, attainable ceiling, predeclared decision rule, and
+  measured observer effect.
 - Feedback, quickening, mutable ICs, shared artifacts, concurrent contexts, or background
   installation additionally require the applicable DEL-6 ownership, snapshot, invalidation,
   reclamation, and quiescent-publication gates. This does not block an immutable single-context
   baseline or an otherwise independent persistence experiment.
-- Function promotion, deoptimization, and OSR are eligible only after `narrow-runtime-go` or
-  `full-go`, in a dynamic-code-capable composition with an explicit product adaptivity
-  requirement and the Phase 9 entry evidence. `execution-only-go` authorizes only its
-  profile-applicable persistence and adaptive-interpreter branches, never IL tiering.
+- JavaScript function promotion, deoptimization, and OSR are eligible only after
+  `narrow-runtime-compiler` or `general-runtime-compiler`, in a dynamic-code-capable
+  composition with an explicit product adaptivity requirement and the separate IL-tier entry
+  evidence. `execution-only` authorizes only its composition-applicable persistence and adaptive
+  interpreter branches, never IL tiering. WebAssembly does not enter this JavaScript IL-tier
+  branch.
 
 ### Branches
 
-- **Persistence:** canonical verified format, semantic cache key, checksums/bounds, atomic replace,
-  no process-local IDs. Runtime-compiler profiles may recompile source after a bad cache;
-  execution-only profiles report a defined load failure and accept a fresh verified artifact.
-- **Owned feedback and quickening:** immutable canonical bytecode plus owner-scoped
+- **JavaScript-profile persistence:** canonical verified format, semantic cache key,
+  checksums/bounds, atomic replace, and no process-local IDs. Runtime-compiler compositions
+  may recompile source after a bad cache; execution-only compositions report a defined load
+  failure and accept a fresh verified artifact.
+- **Owned JavaScript feedback and quickening:** immutable canonical bytecode plus owner-scoped
   feedback/quickening sidecars, exact generic fallback, stable
   source/exception/suspension/debugger identity, and measured reset/reclamation.
-- **Superinstructions:** candidates generated from 8-0's measured opcode n-grams, with dispatches
-  removed, bytecode/code-size cost, verifier/debugger/source-map impact, and a capped maintained
-  set.
-- **Dispatch layout and encoding:** plain-switch versus supported alternatives only where 8-0
-  and generated-code inspection identify material dispatch/decode cost on each claimed JIT/AOT
-  RID.
-- **Native AOT PGO:** trained and untrained images from the representative target workload, with
-  training identity, startup, throughput, image size, and generalization guardrails.
-- **Function promotion:** only after Phase 9's own performance gate; measure the threshold curve,
-  use owned state and a compiled-function descriptor, publish at a quiescent boundary, retain
-  the VM fallback, and bound failure/backoff and lifetime resources.
-- **Deoptimization:** run the bounded end-to-end 9-3 state-materialization feasibility spike
-  first. Only a passing spike may fund explicit `DeoptState`, guards, live-value/environment/
-  continuation reconstruction, forced-failure matrix, and restart comparison. Record `no-go`
-  and stop if CLR-live-state materialization or the predeclared code-size, runtime, conformance,
-  or maintenance ceiling fails.
-- **OSR:** only after validated promotion and its own hot-loop population, loop-entry ABI,
-  state mapping, guard behavior, identity, and anti-thrashing gate. It does not depend on
-  deoptimization succeeding.
+- **JavaScript superinstructions:** candidates generated from measured JavaScript opcode
+  n-grams, with dispatches removed, bytecode/code-size cost, verifier/debugger/source-map
+  impact, and a capped maintained set.
+- **JavaScript dispatch layout and encoding:** plain-switch versus supported alternatives only
+  where calibrated evidence and generated-code inspection identify material dispatch/decode
+  cost on each claimed JIT/AOT RID.
+- **JavaScript-profile Native AOT PGO:** trained and untrained images from the representative
+  target workload, with training identity, startup, throughput, image size, and
+  generalization guardrails.
+- **JavaScript function promotion to IL:** only after its own performance gate; measure the
+  threshold curve, use owned state and a compiled-function descriptor, publish at a quiescent
+  boundary, retain the VM fallback, and bound failure/backoff and lifetime resources.
+- **JavaScript IL-to-VM deoptimization:** run the bounded end-to-end state-materialization
+  feasibility spike first. Only a passing spike may fund explicit `DeoptState`, guards,
+  live-value/environment/continuation reconstruction, forced-failure matrix, and restart
+  comparison. Record `no-go` for this branch and stop if CLR-live-state materialization or the
+  predeclared code-size, runtime, conformance, or maintenance ceiling fails.
+- **JavaScript OSR:** only after validated promotion and its own hot-loop population,
+  loop-entry ABI, state mapping, guard behavior, identity, and anti-thrashing gate. It does
+  not depend on deoptimization succeeding.
 
-Each branch may end as accepted, experimental with an owner/expiry, deferred, or no-go. Success
-in one branch is not evidence for another.
+Each JavaScript-profile branch may end as accepted, experimental with an owner/expiry,
+deferred, or no-go. Success in one branch is not evidence for another, and no branch outcome
+changes the existence or support decision of generic Broiler.VM core or the WebAssembly
+built-in.
 
 ### DEL-12 — Release, rollback, and continuous recertification
 
@@ -554,14 +598,17 @@ in one branch is not evidence for another.
 
 1. Keep generated graph, state index, API/package baselines, closure inventories, and supported
    profile manifests in required CI checks.
-2. Require feature switches and a tested rollback path for compile-ahead, adaptive VM state,
-   persistence, tiering, deoptimization, OSR, and Worker exposure.
+2. Require feature switches and a tested rollback path for compile-ahead, adaptive
+   JavaScript-profile state, profile persistence, JavaScript IL tiering, deoptimization, OSR,
+   and Worker exposure.
 3. Re-run the applicable evidence bundle after hardware, OS, microcode, power/thermal policy,
    compiler/runtime/SDK, dependency graph, RID, publish settings, compiler backend, effective
    JIT/tiering/PGO/ReadyToRun/GC/CPU-feature state, bootstrap profile, scheduler, assembly/package
    graph, public API, capability manifest, or harness/corpus revision changes.
-4. Publish support tables for IL, execution-only, any runtime-compiler/AOT profile, Workers, and
-   explicitly unsupported shared-memory/host surfaces.
+4. Publish Broiler.JS support tables for IL, `execution-only`, any selected
+   runtime-compiler/AOT composition, Workers, and explicitly unsupported shared-memory/host
+   surfaces. Link rather than duplicate the separately owned generic Broiler.VM and
+   WebAssembly-profile support records.
 5. Archive delivery narrative after durable decisions move into current architecture/support
    documents; retain raw evidence and ADRs.
 
@@ -591,11 +638,12 @@ in one branch is not evidence for another.
 
 - DEL-2 project shells, cycle resolution, FrontEnd/Semantics and fake-backend contracts;
 - DEL-3 dynamic-code/reflection census and execution-only publish/run matrix;
-- DEL-4's finite package/AOT dispositions required by the VM decision; and
+- DEL-4's finite package/AOT dispositions required by the JavaScript composition decision;
 - DEL-5/DEL-6 compiler/global-state, cache/artifact, context-entry, and reclamation census.
 
 **Handoff:** a build-proven target graph, classified AOT closure, and explicit concurrency
-ownership model. No broad production split or new VM is required in this increment.
+ownership model. No broad production split or production JavaScript-profile expansion is
+required in this increment; generic Broiler.VM delivery remains separately owned.
 
 ### Increment 3 — take the measured decisions
 
@@ -604,10 +652,11 @@ ownership model. No broad production split or new VM is required in this increme
 - record explicit accepted/deferred/cancelled/below-resolution outcomes for MOD-M8-1's
   front-end/startup work and MOD-M8-8's current-backend comparison, then run any other
   highest-value DEL-8 packages through MOD-M1; and
-- assemble the finite DEL-9 decision bundle.
+- assemble the finite DEL-9 JavaScript-composition decision bundle.
 
 **Handoff:** supported Worker/compile-ahead scope, terminal current-engine dispositions, and
-the terminal VM ADR that either closes the bytecode track or funds DEL-10/DEL-11 precisely.
+the terminal JavaScript-composition ADR that scopes DEL-10 and the independently gated DEL-11
+branches precisely, without cancelling or claiming generic Broiler.VM or WebAssembly work.
 
 ## 5. Evidence handoff checklist
 

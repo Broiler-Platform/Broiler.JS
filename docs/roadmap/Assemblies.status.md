@@ -6,6 +6,11 @@ census below is preserved as a dated snapshot, but its conclusion that the wider
 no rescope is superseded: the proposed Base and Core folds create project cycles. MOD-M2 must
 produce the replacement graph before further consolidation.
 
+The later Broiler.VM component decision also supersedes the old sketch's aspirational
+`Broiler.JS.Bytecode`, `.Bytecode.Compiler`, and `.Aot` ownership. This status remains the
+evidence ledger for the Broiler.JS graph only; generic VM/catalog or WebAssembly progress is
+recorded under `Broiler.VM/docs/roadmap.md` and does not change any state below.
+
 > The evidence half of [`Assemblies.md`](Assemblies.md). **The plan document is the one to
 > act from.** Nothing here is a measurement in [`Measurement.md`](Measurement.md)'s sense —
 > a line count and a reference edge are facts about the tree, not results — and nothing here
@@ -87,7 +92,7 @@ CLR interop rather than the JavaScript object model:
 
 **Historical interpretation, now narrowed.** This census suggested reflection was
 concentrated at CLR interop; it did not prove the proposed Core merge acyclic or a
-whole-program bytecode/AOT profile clean. MOD-M2 therefore respecifies the graph for independent
+whole-program bytecode/Native-AOT composition clean. MOD-M2 therefore respecifies the graph for independent
 reasons, and A-7 remains the only publish-and-run proof.
 
 ### The caveat that matters more than the number

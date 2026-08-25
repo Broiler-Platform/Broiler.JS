@@ -1,15 +1,19 @@
-# Assembly restructure — two back ends, one runtime
+# Assembly restructure — one JavaScript semantics stack, explicit execution back ends
 
 Establish a verified, acyclic set of backend-neutral foundations, shared frontend semantics,
-and mutually optional IL and bytecode back ends, so that **an application references the IL
-back end, the bytecode back end, or both** — and a bytecode-only application can be proved by
-publish-and-run evidence under Native AOT.
+and mutually optional IL and Broiler.VM JavaScript execution compositions. An application may
+reference the IL back end, the statically registered Broiler.VM JavaScript built-in, or both;
+a VM-only JavaScript application must be proved by publish-and-run evidence under NativeAOT.
+This plan owns the Broiler.JS graph and JavaScript integration boundary. Generic profile
+registration, common VM lifecycle/resource contracts, WebAssembly, and future built-ins are
+owned by `Broiler.VM/docs/roadmap.md` in the aggregate repository.
 
 > The plan half of [`Assemblies.status.md`](Assemblies.status.md), which carries the current
 > interpretation and dated evidence about the graph. Part of the
 > [performance and benchmark roadmap](Roadmap.md), and **the hard precondition for
-> [track two](Roadmap.md#track-two--the-vm-tier-phases-69)** — phases 6–9 cannot deliver
-> their headline capability without it.
+> [track two](Roadmap.md#track-two--the-vm-tier-phases-69)** — the JavaScript built-in cannot
+> deliver its headline capability without it. Broiler.VM core and WebAssembly do not depend on
+> this JavaScript assembly restructure.
 
 ---
 
@@ -115,6 +119,13 @@ decision the engine has already made at run time.
 > early-error, hoisting, and analysis work needed by both back ends behind the IL boundary.
 > Modernization MOD-M2 must replace this sketch with project shells that build.
 
+> **Ownership changed after this sketch was written.** Its `Broiler.JS.Bytecode`,
+> `.Bytecode.Compiler`, and `.Aot` rows are retained as design history, not proposed package
+> names. The current target puts the language-neutral host/catalog in Broiler.VM and proves an
+> acyclic JavaScript profile/adapter against the smallest Broiler.JS semantic/runtime boundary.
+> Project shells must decide the exact profile/compiler placement; they may not make generic
+> Broiler.VM depend on Broiler.JS or make shared Broiler.JS semantics depend on a concrete VM.
+
 ### Superseded fifteen-assembly sketch
 
 The intended invariant was strictly downward dependencies with only `Broiler.JS.IL`
@@ -123,7 +134,7 @@ permitted to reference `System.Reflection.Emit`; the concrete grouping was not v
 ```
                          ┌──────────────────────────────┐
   tier 4  composition    │ Broiler.JS.All   (IL + BC)   │
-                         │ Broiler.JS.Aot   (BC only)   │  ← the AOT profile
+                         │ Broiler.JS.Aot   (BC only)   │  ← the AOT composition
                          └──────────────┬───────────────┘
                                         │
   tier 3  hosts          Clr · Modules · ModuleExtensions · Debugger · Network · NodePolyfill
@@ -166,9 +177,13 @@ The verified graph may choose different names, but it must test these ownership 
 - extract a backend-neutral **FrontEnd/Semantics** boundary for parsing, binding, scope,
   early errors, hoisting, numeric-local analysis, and any shared IR;
 - put only IL-specific lowering, emission, `AssemblyCodeCache`, and `ILPack` in the IL
-  profile;
-- make bytecode compilation depend on FrontEnd/Semantics and never on IL; and
-- choose a back end only through explicit composition/registration, never name-based load.
+  backend boundary;
+- expose a stable FrontEnd/Semantics contract that JavaScript bytecode lowering can consume
+  without reaching IL or making generic Broiler.VM depend on Broiler.JS;
+- keep the JavaScript profile adapter and optional offline/runtime compiler above the generic
+  Broiler.VM core, with the exact direction proved by project shells; and
+- choose both the JavaScript back end and VM language profiles only through explicit static
+  composition/registration, never name-based load or runtime assembly scanning.
 
 `Broiler.JavaScript.Expressions` is the one structural boundary already established. Every
 other row in the superseded table is a hypothesis until MOD-M2's source-edge census, project
@@ -177,17 +192,19 @@ shells, builds, and architecture tests agree.
 ### The rule that makes the requirement true
 
 > **The verified shared FrontEnd/Semantics and runtime foundations must reference neither
-> concrete back end nor `System.Reflection.Emit`.** Both back ends sit above those shared
-> layers and implement a contract owned at the boundary MOD-M2 proves acyclic.
+> concrete back end nor `System.Reflection.Emit`.** The IL back end and Broiler.VM JavaScript
+> adapter sit above those shared layers. Generic Broiler.VM owns language-profile execution
+> contracts, while MOD-M2 proves the separate JavaScript frontend/artifact handoff is acyclic.
 
 That contract is a generalization of the existing compilation seam: given backend-neutral
 program/semantic artifacts and explicit execution inputs, produce an installable callable
 artifact. Two consequences are easy to get wrong:
 
-- **The back end must be *registered*, not *discovered*.** Any resolution by assembly or
-  type name defeats trimming and Native AOT — and `Component.md` already tracks *legacy
-  magic-name assembly probing* for retirement. **That retirement is now a blocker rather
-  than hygiene.**
+- **The back end and VM language profile must be *registered*, not *discovered*.** Any
+  resolution by assembly or type name defeats trimming and Native AOT — and `Component.md`
+  already tracks *legacy magic-name assembly probing* for retirement. **That retirement is
+  now a blocker rather than hygiene.** Explicit or source-generated static catalogs replace
+  discovery; module-initializer ordering is not a product capability model.
 - **Backend-neutral hosting must not reference either back end.** The moment bootstrap
   hard-references `Broiler.JS.IL`, every consumer references it too. Composition happens in
   tier 4 or in the application.
@@ -202,8 +219,8 @@ artifact. Two consequences are easy to get wrong:
 | **A-3** | Generalize the existing back-end contract at the verified Runtime/FrontEnd boundary | M | revised A-6, phase 6 |
 | **A-4** | Complete a whole-tree reflective/dynamic-code census; retire name-based discovery | M | A-7 |
 | **A-5** | **Superseded:** do not fold `Engine` into `Runtime/Core`; extract FrontEnd/Semantics and size `LinqExpressions` by real edges | M–L | revised A-0 |
-| **A-6** | Form the IL profile from emitter and IL-only lowering after shared semantics are extracted | L | A-7 |
-| **A-7** | **The AOT gate** — a bytecode-only app that publishes and *runs* | M | the requirement |
+| **A-6** | Form the IL back end/composition from emitter and IL-only lowering after shared semantics are extracted | L | A-7 |
+| **A-7** | **The JavaScript AOT gate** — a statically composed Broiler.VM JavaScript app that publishes and *runs* | M | the requirement |
 | **A-8** | Architecture tests that lock the graph | S | keeping it |
 | **A-9** | Rename `Broiler.JavaScript.*` → `Broiler.JS.*` | M–L | — |
 
@@ -219,15 +236,17 @@ It must establish, by building rather than by argument:
 1. **The complete source and project edge graph**, including return edges through `Ast`,
    `Parser`, runtime callbacks, generated code, module initializers, and host composition.
 2. **A shared FrontEnd/Semantics shell** containing every backend-neutral parser, binder,
-   scope, early-error, hoisting, analysis, and IR service required by IL and bytecode.
-3. **Separate IL and bytecode shells** that both compile against shared semantics while the
-   bytecode shell has no IL or `System.Reflection.Emit` closure.
-4. **A profile-classified dynamic-code census**, including `Assembly.Load`, `Type.GetType`,
-   `AssemblyCodeCache`, `ILPack`, generated sources, and satellite/host profiles—not only
+   scope, early-error, hoisting, analysis, and IR service required by IL and JavaScript
+   bytecode lowering.
+3. **Separate IL and Broiler.VM JavaScript integration shells** that both consume shared
+   semantics while the VM shell has no IL or `System.Reflection.Emit` closure and generic
+   Broiler.VM has no Broiler.JS dependency.
+4. **A composition-classified dynamic-code census**, including `Assembly.Load`, `Type.GetType`,
+   `AssemblyCodeCache`, `ILPack`, generated sources, and satellite/host compositions—not only
    analyzer warnings in the portable compiler closure.
-5. **Architecture-testable rules and package roots** for full IL, bytecode-only AOT, and
-   mixed composition. If a shell needs a cycle, redesign the ownership boundary rather than
-   adding a reciprocal reference.
+5. **Architecture-testable rules and package roots** for full IL, Broiler.VM JavaScript-only
+   NativeAOT, and mixed composition, including explicit language-profile registration. If a
+   shell needs a cycle, redesign the ownership boundary rather than adding a reciprocal reference.
 
 **Record the verified graph in [`Assemblies.status.md`](Assemblies.status.md) before A-2,
 A-5, or A-6 moves resume.** A-1's final S-7 validation can close independently.
@@ -293,13 +312,17 @@ contract a full bytecode engine needs. A-3 now owns that generalization at MOD-M
 FrontEnd/Runtime boundary and the re-pointing of shared layers.
 
 **Note for the cache key:** `Backend` participates in it today because two IL back ends
-(`DynamicMethod`, `CollectibleAssembly`) produce different code. A bytecode back end is a
-third value, not a special case — and phase 8's item 8-6 will want to persist that cache,
-so keep the key extensible rather than boolean.
+(`DynamicMethod`, `CollectibleAssembly`) produce different code. The Broiler.VM JavaScript
+compiler/executor is another value, not a special case — and phase 8's item 8-6 will want to
+persist artifacts. Keep the key extensible rather than boolean and include the VM language
+profile ID, JavaScript format version, feature manifest, and composition inputs that affect
+semantics.
 
-**Design it against the bytecode back end, not the IL one.** A contract derived from what
-`FastCompiler` happens to do will encode IL assumptions — the same way the tiering
-scaffolding encoded them and forced item 4-3 to be re-specified.
+**Design it against the Broiler.VM JavaScript handoff, not the IL implementation.** A contract
+derived from what `FastCompiler` happens to do will encode IL assumptions — the same way the
+tiering scaffolding encoded them and forced item 4-3 to be re-specified. This JavaScript
+compiler/back-end seam is not Broiler.VM's language-profile interface: the latter also serves
+WebAssembly and future built-ins and must not expose JavaScript AST, `JSValue`, or realm types.
 
 ### A-4 · Census dynamic code and retire reflective discovery
 
@@ -318,23 +341,25 @@ separate unless the MOD-M2 shells prove another ownership cut acyclic.
 
 Split `LinqExpressions` and `Compiler` by semantic ownership, not directory or current
 backend: binding, scope, early errors, hoisting, numeric-local analysis, and shared IR belong
-in FrontEnd/Semantics; only IL-specific lowering/emission belongs in the IL profile. The
-bytecode compiler consumes the same semantic artifacts rather than referencing IL or
-duplicating frontend behavior.
+in FrontEnd/Semantics; only IL-specific lowering/emission belongs in the IL composition. The
+Broiler.VM JavaScript compiler consumes the same semantic artifacts through the proved handoff
+rather than referencing IL or duplicating frontend behavior. WebAssembly does not consume or
+wait for this JavaScript semantic layer.
 
 ### A-6 · Form `Broiler.JS.IL`
 
-After A-0/A-5 establish shared semantics, form the IL profile from A-1's emitter,
+After A-0/A-5 establish shared semantics, form the IL back end/composition from A-1's emitter,
 IL-specific lowering, `AssemblyCodeCache`, `ILPack`, and only the compiler code proved to be
 backend-specific. Re-point it at A-3's contract.
 
 This is not a wholesale move of `Compiler`: phases 1–5 also built semantic analysis that the
 bytecode path must share. Project shells and dual-backend tests determine the split.
 
-### A-7 · The AOT gate — **the item the requirement reduces to**
+### A-7 · The JavaScript-profile AOT gate — **the item the requirement reduces to**
 
-A sample application that references **only the project set approved by MOD-M2 for the
-bytecode/AOT profile**—never the IL profile—and:
+A sample application that references **only the project set approved by MOD-M2 plus the
+statically registered Broiler.VM JavaScript profile for the JavaScript/AOT composition**—never
+the IL composition—and:
 
 ```xml
 <PublishAot>true</PublishAot>
@@ -343,14 +368,16 @@ bytecode/AOT profile**—never the IL profile—and:
 <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 ```
 
-**It must publish with zero trim/AOT warnings and then *run a real script*** — not a numeric
-expression. `samples/Broiler.JavaScript.NativeAotSample` already sets `PublishAot=true` and
-is the place to grow this.
+**It must publish with zero trim/AOT warnings and then execute the representative JavaScript
+manifest** — not only a numeric expression. `samples/Broiler.JavaScript.NativeAotSample`
+already sets `PublishAot=true`; whether it grows in place or is replaced by a Broiler.VM
+composition sample is decided by the project-shell graph. Execution-only and runtime-compiler
+samples remain separate.
 
 **Wire it into CI as a build gate.** An AOT guarantee that is not checked by a build is a
 comment.
 
-> **What this gate can prove before phase 6 exists.** With today's 20-opcode `Bytecode`, the
+> **What this gate can prove before phase 6 exists.** With today's 20-opcode bytecode, the
 > "real script" is a numeric one and the gate proves only that *the graph* is AOT-clean.
 > **That is worth having on its own** — it is the half that phases 6–9 cannot deliver and
 > this restructure can — and it turns phase 6 from "build a VM and hope the packaging works"
@@ -360,9 +387,12 @@ comment.
 
 Assertions, in the existing architecture-test project:
 
-- **no assembly outside the approved IL profile references `System.Reflection.Emit`**;
+- **no assembly outside the approved IL composition references `System.Reflection.Emit`**;
 - the verified FrontEnd/Semantics and runtime foundations reference neither back end;
 - backend-neutral hosting references neither concrete back end;
+- Broiler.JS contains no runtime assembly scan or name-based activation for a VM profile;
+- the JavaScript adapter is not part of generic Broiler.VM core and WebAssembly has no
+  Broiler.JS dependency; and
 - no assembly exceeds an agreed line or type budget (the check that keeps A-2 from undoing
   itself).
 
@@ -388,7 +418,7 @@ options worth pricing in A-0:
 A-1 structural split landed ──→ S-7 final validation
 
 A-0 / MOD-M2 verified graph
-  ├→ A-5 FrontEnd/Semantics extraction ─→ A-3 backend contract ─→ A-6 IL profile ─┐
+  ├→ A-5 FrontEnd/Semantics extraction ─→ A-3 backend contract ─→ A-6 IL back end ─┐
   ├→ A-4 whole-tree dynamic-code census and discovery retirement ────────────────┤
   ├→ A-2 evidence-led BuiltIns packaging ────────────────────────────────────────┤
   └→ A-8 architecture tests ─────────────────────────────────────────────────────┤
@@ -400,38 +430,41 @@ A-0 / MOD-M2 verified graph
 
 ## Exit gate
 
-1. **A bytecode-only application publishes with `PublishAot=true` and zero trim/AOT
-   warnings, and runs a script** — in CI, on every commit. This is the requirement, stated
-   as a build.
-2. **Architecture tests assert that only the approved IL profile references
+1. **A statically registered Broiler.VM JavaScript execution-only application publishes with
+   `PublishAot=true` and zero trim/AOT warnings, and executes the approved representative
+   manifest** — in CI, on every commit. A runtime-compiler composition, if selected, has a
+   separate publish-and-run gate.
+2. **Architecture tests assert that only the approved IL composition references
    `System.Reflection.Emit`**, that shared FrontEnd/Semantics and runtime foundations
-   reference neither back end, and that the bytecode profile has no IL closure.
+   reference neither back end, and that the Broiler.VM JavaScript composition has no IL closure.
 3. **The pinned test262 manifests are unchanged on the IL path**, manifest by manifest.
    Structural moves preserve the count; semantic extraction additionally passes the
    dual-backend and conformance gates because it is not assumed to be a pure move.
 4. **The bootstrap profiles' observable surface is unchanged.** `Full` still realizes Intl
    and Temporal; `Minimal` is still documented as deliberately non-conformant.
 5. **Pristine-consumer tests for every package intended for external use**, per
-   `Component.md` §5 — and one of them must be the AOT profile.
+   `Component.md` §5 — including each claimed JavaScript NativeAOT composition.
 6. **No performance claim.** This is a packaging change; if it moves a number, that number
    is measured under [`Measurement.md`](Measurement.md) like any other.
 
 ## Dependencies and risks
 
-- **Blocks [phase 6](Phase-6.md)'s headline capability.** A VM in an assembly that transitively
-  references `Reflection.Emit` cannot be published AOT, so phase 6 would deliver an
-  interpreter and not the thing the interpreter is *for*. **Do A-0 and A-1 before phase 6's
-  item 6-2.**
+- **Blocks [phase 6](Phase-6.md)'s JavaScript capability, not Broiler.VM core or
+  WebAssembly.** A JavaScript adapter/compiler that transitively references `Reflection.Emit`
+  cannot serve the NativeAOT composition, so phase 6 would deliver an interpreter and not the
+  thing it is *for*. **Do A-0 and A-1 before phase 6's item 6-2.**
 - **Serves track one too.** `Component.md` §4 and §5 owe trimmed-support scoping, linker
   warning resolution, the magic-name probing retirement, and a decision on whether feature
   satellites improve startup and working set. **A-2 and A-4 are those items**, and A-7
   answers the satellite question with a build rather than an opinion.
 - **Risk: the runtime is reflective for reasons unrelated to the emitter.** The initial
   analyzer census found bounded warning sites but was not a whole-program publish. If the
-  verified shared/runtime profile cannot be made AOT-clean, the requirement needs re-scoping
+  verified shared/runtime JavaScript composition cannot be made AOT-clean, the JavaScript
+  requirement needs re-scoping
   and phases 6–9 need re-pricing.
 - **Risk: treating semantic extraction as a move.** A-1 was mostly structural, but the
   FrontEnd/Semantics split and backend contract can change analysis behavior. Gate them on
   identical IL results plus dual-backend/conformance evidence, not merely a green suite.
-- **Risk: `Broiler.JS.Clr` is inherently reflective** and cannot be in the AOT profile. That
+- **Risk: `Broiler.JS.Clr` is inherently reflective** and cannot be in the NativeAOT
+  composition. That
   is correct and should be stated in `public-api.md` rather than worked around.

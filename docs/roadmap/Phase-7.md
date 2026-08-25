@@ -1,19 +1,31 @@
-# Phase 7 — VM 2.0: make the approved interpreter shippable
+# Phase 7 — Broiler.VM JavaScript profile 2.0: make the approved interpreter shippable
 
-Establish whether the correct Phase 6 interpreter meets the product profile's performance
-and resource thresholds, then improve only the measured costs. Reuse the JavaScript runtime's
-semantic operations and storage representations, while giving bytecode-local caches and
+Establish whether the correct Phase 6 JavaScript interpreter meets its approved capability
+and deployment-composition performance and resource thresholds, then improve only the
+measured costs. Reuse the JavaScript runtime's semantic operations and storage
+representations, while giving bytecode-local caches and
 feedback explicit realm/function/program ownership.
 
-The acceptance lane follows the MOD-M9 outcome. Under `execution-only-go`, Phase 7 measures the
-published precompiled-execution product and never treats absence of a runtime source
-compiler as a defect. Under `narrow-runtime-go` or `full-go`, it additionally measures the
-approved source-to-result runtime-compiler path. All three positive outcomes still require
+This phase owns JavaScript-profile execution evidence and JavaScript-specific optimization
+state. The common Broiler.VM catalog, profile-selection, execution-session lifecycle, and
+cross-profile resource contracts remain owned by `Broiler.VM/docs/roadmap.md`; satisfying
+them is an entry/integration dependency, not work claimed complete here.
+
+The acceptance lane follows the selected Broiler.VM JavaScript composition. Under
+`execution-only`, Phase 7 measures the published precompiled-JavaScript execution
+composition and never treats absence of a runtime source compiler as a defect. Under
+`narrow-runtime-compiler` or `general-runtime-compiler`, it additionally measures the
+approved source-to-result runtime-compiler path. All three compositions still require
 the same correctness, resource, and independent-oracle discipline for their declared scope.
+
+These deployment/compiler compositions are not `JavaScriptBootstrapProfile` values. The latter
+select JavaScript realm built-ins/realization policy and are orthogonal inputs that must be
+recorded in each JavaScript-profile measurement.
 
 > The plan half of [`Phase-7.status.md`](Phase-7.status.md). No Phase 7 baseline exists and
 > no item is scheduled.
-> Part of the [performance and benchmark roadmap](Roadmap.md); the four VM phases are
+> Part of the [performance and benchmark roadmap](Roadmap.md); the four JavaScript-profile
+> VM phases are
 > [track two](Roadmap.md#track-two--the-vm-tier-phases-69).
 
 ---
@@ -47,7 +59,7 @@ The rule is:
 
 | # | Item | Size | State |
 |---|---|---|---|
-| **7-0** | **Take the decision-grade VM baseline and set product thresholds** | M | ❌ **not started; blocks optional optimization** |
+| **7-0** | **Take the decision-grade JavaScript-profile baseline and set product thresholds** | M | ❌ **not started; blocks optional optimization** |
 | **7-1** | Realm/function-owned property read and store ICs | L | ❌ |
 | **7-2** | Element opcodes over dense storage | M | ❌ |
 | **7-3** | Constant pool with load-time property-name interning | S–M | ❌ |
@@ -82,9 +94,11 @@ where the workload has multiple operations.
 
 Use two kinds of platform evidence:
 
-- **diagnostic comparison:** IL and VM on the same CoreCLR machine, same source, same feature
-  profile, and same time window; and
-- **product acceptance:** the published Native AOT VM on every claimed target RID/device,
+- **diagnostic comparison:** IL and JavaScript bytecode on the same CoreCLR machine, same
+  source, same JavaScript capability manifest, same `JavaScriptBootstrapProfile`, and same
+  time window; and
+- **product acceptance:** the published Native AOT Broiler.VM JavaScript composition on every
+  claimed target RID/device,
   against its absolute product SLO and its previous accepted VM baseline once one exists.
 
 The IL ratio is context, not the product gate on a platform where IL cannot run. Before any
@@ -165,7 +179,7 @@ guardrails pass. Operand traffic having a nonzero count is not sufficient.
 
 Build on the Phase 6 call/environment ABI and the runtime's semantic call paths. Cover
 ordinary, strict, arrow, bound, constructor, spread, optional, direct-eval, generator/async,
-and host calls that belong to the approved profile. Preserve function identity, realm,
+and host calls that belong to the approved capability manifest. Preserve function identity, realm,
 `this`, `new.target`, home object/private environment, arguments behavior, and stack traces.
 
 Report the VM frame cost independently from bootstrap, body execution, and host-call cost.
@@ -175,7 +189,7 @@ frame; it remains useful for engine stack identity and diagnostics.
 ## Order
 
 ```text
-Phase 6 accepted scope + MOD-M1 acceptance lanes
+Phase 6 accepted JavaScript scope + Broiler.VM core integration + MOD-M1 acceptance lanes
   └→ 7-0 uninstrumented baseline and predeclared thresholds
        ├→ 7-3 constant-pool resolution, if startup/size evidence supports it
        ├→ 7-4 numeric ValueSlot path, if the ABI and allocation rate support it
@@ -188,10 +202,12 @@ consume mutable site state do not start until its applicable gate is accepted.
 
 ## Exit gate
 
-1. The independent expected-result manifest and the IL/VM differential check remain green
+1. The independent expected-result manifest and the IL/JavaScript-profile differential check
+   remain green
    for the approved capability surface; serialized reload and Native AOT arms are included
    where applicable.
-2. The VM meets the product threshold predeclared by 7-0 on every claimed Native AOT
+2. The Broiler.VM JavaScript profile meets the product threshold predeclared by 7-0 on every
+   claimed Native AOT
    RID/device, or the phase records a terminal rejection/narrowing decision.
 3. Every accepted item has paired MOD-M1 evidence on representative workloads, plus allocation,
    GC, memory, code/package/bytecode-size, and tail-latency guardrails.
@@ -202,9 +218,12 @@ consume mutable site state do not start until its applicable gate is accepted.
 
 ## Dependencies
 
-- Depends on an accepted positive Phase 6 outcome (`execution-only-go`,
-  `narrow-runtime-go`, or `full-go`) and exit evidence, plus MOD-M1's decision-grade
-  measurement lanes. Runtime-compiler measurements apply only to the latter two outcomes.
+- Depends on an accepted Phase 6 JavaScript deployment/compiler composition (`execution-only`,
+  `narrow-runtime-compiler`, or `general-runtime-compiler`) and exit evidence, plus MOD-M1's decision-grade
+  measurement lanes and the accepted Broiler.VM catalog/session integration contract.
+  Runtime-compiler measurements apply only to the latter two compositions. A runtime-compiler
+  no-go selects `execution-only`; Phase 7 still measures that composition without changing
+  the state of Broiler.VM, WebAssembly, or other built-in profiles.
 - 7-1 and any feedback-consuming portion depend on MOD-M6 before concurrent contexts, shared
   compiled artifacts, background tiering, or Workers are advertised.
 - Reuses Runtime/Storage semantics, but changes needed for bytecode ownership stay green on

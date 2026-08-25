@@ -124,7 +124,7 @@ but it is the precondition A-7 could not previously be attempted without.
 
 It is also **not a whole-tree claim**. `AssemblyCodeCache`, `ILPack`, shells, hosts, generated
 source, and other composition profiles remain in A-4/MOD-M2's dynamic-code census. Their Emit
-references must move into the approved IL profile or be explicitly excluded before A-7 can
+references must move into the approved IL backend boundary or be explicitly excluded before A-7 can
 pass.
 
 ### Where the emitter reference survives, and why

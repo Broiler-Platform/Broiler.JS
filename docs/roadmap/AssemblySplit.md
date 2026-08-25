@@ -77,7 +77,7 @@ test262 count, and there is nothing else the change could plausibly have done.
 | | Project | Contents |
 |---|---|---|
 | **New** | `Broiler.JavaScript.Expressions` | the model — remains a separate boundary unless MOD-M2 proves another acyclic ownership |
-| **Existing, keeps its name** | `Broiler.JavaScript.ExpressionCompiler` | the emitter — candidate for the future IL profile after MOD-M2 |
+| **Existing, keeps its name** | `Broiler.JavaScript.ExpressionCompiler` | the emitter — candidate for the future IL backend boundary after MOD-M2 |
 
 Extracting *outward* means the emitter's own consumers (`Compiler`, `LinqExpressions`,
 `Engine`) see no project rename at all, and the new assembly is purely additive. **Do not

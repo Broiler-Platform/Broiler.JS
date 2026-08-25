@@ -32,32 +32,36 @@ full — nothing was dropped — but you can now read the plan without reading t
 | **Phase 5** — RegExp | [`Phase-5.md`](Phase-5.md) | [`Phase-5.status.md`](Phase-5.status.md) |
 
 Those are **track one** — the IL execution path, where the campaign's measured history is.
-**Track two** is the possible bytecode path. The numeric portable runtime/compiler seed and
-Native AOT execution-only sample already exist, but **none of the production Phase 6–9
-items has started**. Modernization MOD-M9 must record `no-go`, `execution-only-go`,
-`narrow-runtime-go`, or `full-go`; the first cancels the track and each positive outcome
-funds only its declared capability profile.
+**Track two** is now the JavaScript built-in profile for Broiler.VM. The generic profile host,
+static built-in catalog, common lifecycle/resource contracts, WebAssembly built-in, and future
+profile-extension gate are owned by `Broiler.VM/docs/roadmap.md` in the aggregate repository.
+The numeric portable runtime/compiler seed and Native AOT execution-only sample already exist,
+but **none of the production Phase 6–9 JavaScript-profile items has started**. Modernization
+MOD-M9 selects the JavaScript deployment/compiler composition—`execution-only`,
+`narrow-runtime-compiler`, or `general-runtime-compiler`—and cannot cancel Broiler.VM or its
+WebAssembly profile.
 
 | Subject | Plan | Evidence |
 |---|---|---|
-| **Phase 6** — VM 1.0: capability-profile correctness | [`Phase-6.md`](Phase-6.md) | [`Phase-6.status.md`](Phase-6.status.md) — seed census only; zero production items/measurements |
-| **Phase 7** — VM 2.0: make the approved interpreter shippable | [`Phase-7.md`](Phase-7.md) | [`Phase-7.status.md`](Phase-7.status.md) — no accepted baseline |
-| **Phase 8** — VM 3.0: profile-led optimization and persistence | [`Phase-8.md`](Phase-8.md) | [`Phase-8.status.md`](Phase-8.status.md) — no accepted adaptive/persistence item |
-| **Phase 9** — VM 4.0: optional adaptive IL/bytecode execution | [`Phase-9.md`](Phase-9.md) | [`Phase-9.status.md`](Phase-9.status.md) — no tier/deopt/OSR feasibility decision |
+| **Phase 6** — JavaScript profile 1.0: correctness | [`Phase-6.md`](Phase-6.md) | [`Phase-6.status.md`](Phase-6.status.md) — seed census only; zero production items/measurements |
+| **Phase 7** — JavaScript profile 2.0: make the approved interpreter shippable | [`Phase-7.md`](Phase-7.md) | [`Phase-7.status.md`](Phase-7.status.md) — no accepted baseline |
+| **Phase 8** — JavaScript profile 3.0: measured optimization and persistence | [`Phase-8.md`](Phase-8.md) | [`Phase-8.status.md`](Phase-8.status.md) — no accepted adaptive/persistence item |
+| **Phase 9** — JavaScript profile 4.0: optional IL/bytecode adaptivity | [`Phase-9.md`](Phase-9.md) | [`Phase-9.status.md`](Phase-9.status.md) — no tier/deopt/OSR feasibility decision |
 
-**Why track two exists at all:** Broiler.JS has **no general JavaScript execution path on a
-platform that forbids `System.Reflection.Emit`**. The compiler back end is an IL writer;
-the current portable path is a deliberately limited numeric subset. That is a *capability*
-gap, not a performance one. A future Phase 6 may create a reconstructable frame ABI, but
+**Why the JavaScript profile exists at all:** Broiler.JS has **no general JavaScript execution
+path on a platform that forbids `System.Reflection.Emit`**. The compiler back end is an IL
+writer; the current portable path is a deliberately limited numeric subset. That is a
+*capability* gap, not a performance one. Broiler.VM being able to execute WebAssembly does not
+close it. A future Phase 6 may create a reconstructable JavaScript frame ABI, but
 deoptimization still requires explicit state, invalidation, materialization, reconstruction,
-and correctness gates in Phase 9. The full argument is
+and correctness gates in the JavaScript-only Phase 9. The historical argument is
 [`Roadmap.md` § Track two](Roadmap.md#track-two--the-vm-tier-phases-69).
 
 **Capability and performance are separate decisions.** Phase 6 makes no speed claim.
 Startup, throughput, memory, package size, and any IL comparison close independently under
 MOD-M1; do not call a bytecode result a win merely because it runs where IL also runs.
 
-**The assembly plan gates track two**, while JavaScript concurrency has its own delivery
+**The assembly plan gates the JavaScript integration**, while JavaScript concurrency has its own delivery
 pair for modernization MOD-M5–MOD-M7:
 
 | Subject | Plan | Evidence |
@@ -68,8 +72,8 @@ pair for modernization MOD-M5–MOD-M7:
 
 **Why the assembly work exists:** the model/emitter split removed the front-end consumers' direct dependency
 on the IL emitter. The remaining restructure must prove an acyclic backend-neutral semantic
-front end, isolate every runtime Emit dependency in the IL profile, preserve consumers, and
-make a bytecode-only Native AOT profile a publish-and-run property.
+front end, isolate every runtime Emit dependency in the IL backend boundary, preserve consumers, and
+make a bytecode-only Native AOT composition a publish-and-run property.
 
 Cross-cutting orchestration and reference documents sit above or beside the two tracks;
 delivery ownership still uses a plan/status pair. `Modernization.md` is the orchestration
@@ -78,7 +82,7 @@ delivery plan. Changing evidence belongs in the matching status record:
 
 | | |
 |---|---|
-| [`Modernization.md`](Modernization.md) | **The cross-track execution roadmap.** It orders the audit cleanup, trustworthy baselines, an achievable assembly graph, IL/AOT isolation, package decomposition, bounded compile-ahead, independent-context safety, Workers, profile-led optimization, and the bytecode-VM decision. It owns dependencies and program gates; changing evidence remains in the linked `*.status.md` records. |
+| [`Modernization.md`](Modernization.md) | **The cross-track execution roadmap.** It orders the audit cleanup, trustworthy baselines, an achievable assembly graph, IL/AOT isolation, package decomposition, bounded compile-ahead, independent-context safety, Workers, profile-led optimization, and the JavaScript VM composition decision. It owns dependencies and program gates; changing evidence remains in the linked `*.status.md` records. |
 | [`ModernizationDelivery.md`](ModernizationDelivery.md) | **The separate phased delivery view.** It maps executable increments and handoffs to the authoritative `MOD-M*`, phase, assembly, and concurrency gates without creating another state ledger. |
 | [`Measurement.md`](Measurement.md) | **The gate, and §3 of the campaign.** What may be *claimed* — evidence classes, immutable candidate/control identity, A/A lane validity, practical decision thresholds, exact-row comparison, resource/conformance guardrails, the RID matrix and bootstrap profiles — plus the standing lessons (§3.5) and every probe's command line (Appendix A). **It governs everything above.** It is not split because it is all rules: it has no status. |
 | [`Concurrency.md`](Concurrency.md) | **The JavaScript-local owner for MOD-M5–MOD-M7.** It owns compiler/cache/context safety, optimizer-state lifetime, and Worker-agent acceptance. The aggregate `docs/architecture/multithreading.md` retains integration history and host-level measurements; a host feature recorded there as built is not thereby accepted against MOD-M5–MOD-M7. |
@@ -110,9 +114,10 @@ delivery plan. Changing evidence belongs in the matching status record:
 - **For assembly and packaging work**, read [`Assemblies.md`](Assemblies.md),
   [`AssemblySplit.md`](AssemblySplit.md), and their status records. Treat the split as
   implemented with validation remaining, not as unstarted.
-- **Track two — phases 6–9 — remains a capability proposal beyond the numeric seed.**
-  Modernization MOD-M9 is item 6-0 and must produce exactly one terminal `no-go`,
-  `execution-only-go`, `narrow-runtime-go`, or `full-go` before production VM work starts.
+- **Track two — phases 6–9 — is the JavaScript built-in beyond the numeric seed.**
+  Modernization MOD-M9 is item 6-0 and must select exactly one `execution-only`,
+  `narrow-runtime-compiler`, or `general-runtime-compiler` JavaScript composition before
+  production JavaScript-profile work starts. Broiler.VM core and WebAssembly use their own plan.
 - **For JavaScript-local concurrency and Worker acceptance**, use
   [`Concurrency.md`](Concurrency.md) and [`Concurrency.status.md`](Concurrency.status.md).
   Existing compile-ahead and Worker code in the aggregate repository is mapped there as

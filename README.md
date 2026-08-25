@@ -82,6 +82,7 @@ aims to pass nearly the full suite, and conformance is tracked continuously in C
 | [Assembly boundaries](docs/architecture/dependencies.md) | Dependency direction and supported cross-assembly seams |
 | [Performance measurement](docs/roadmap/Measurement.md) | Repeatable baselines, bootstrap profiles, and execution-mode boundaries — the gate every performance claim passes |
 | [Performance and benchmark roadmap](docs/roadmap/Roadmap.md) | JavaScript execution speed: phases 0–5, the Octane and probe metrics they are judged on, and the evidence each still owes |
+| [JavaScript VM profile roadmap](docs/roadmap/Phase-6.md) | JavaScript semantics, lowering, verification, execution, and conformance on Broiler.VM; the generic VM host and WebAssembly built-in are owned by `Broiler.VM/docs/roadmap.md` in the aggregate repository |
 | [Contributing built-ins](docs/architecture/contributing-builtins.md) | How to implement new built-in objects |
 | [LogParser usage](logs/README.md) | Shard log summarizer and JSON export |
 | [Contributing](CONTRIBUTING.md) | CI pipeline, test262 workflow, running tests locally |

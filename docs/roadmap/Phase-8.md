@@ -1,19 +1,30 @@
-# Phase 8 — VM 3.0: profile-led interpreter optimization and persistence
+# Phase 8 — Broiler.VM JavaScript profile 3.0: measured optimization and persistence
 
-Optimize the accepted Phase 7 interpreter only from its own measured execution profile.
+Optimize the accepted Phase 7 JavaScript interpreter only from its own measured execution
+profile.
 Type feedback, quickening, superinstructions, and dispatch layout are gated by item 8-0.
 The bytecode cache is the deliberate exception: its premise is cold startup and repeated
 compilation, so it is gated by MOD-M1 startup evidence and Phase 6's accepted format/verifier,
 not by an opcode execution histogram.
 
-The measured product boundary follows the MOD-M9 outcome. An `execution-only-go` optimizes and
-caches verified precompiled execution without inventing a runtime compiler. A
-`narrow-runtime-go` or `full-go` may additionally optimize and cache the approved
+The measured product boundary follows the selected Broiler.VM JavaScript composition. An
+`execution-only` optimizes and caches verified precompiled JavaScript execution without
+inventing a runtime compiler. A `narrow-runtime-compiler` or `general-runtime-compiler` may additionally optimize
+and cache the approved
 source-to-result runtime-compiler path.
 
-> The plan half of [`Phase-8.status.md`](Phase-8.status.md). No VM measurement exists and no
-> item is scheduled.
-> Part of the [performance and benchmark roadmap](Roadmap.md); the four VM phases are
+This phase owns JavaScript-profile persistence and JavaScript-specific adaptive state. The
+common catalog, profile-selection, execution-session lifecycle, and cross-profile resource
+policy remain owned by `Broiler.VM/docs/roadmap.md`. A cache or optimized JavaScript result
+must integrate with those contracts, but this phase does not define them for WebAssembly or
+future built-in profiles. The selected JavaScript deployment/compiler composition is also
+distinct from the Broiler.VM `JavaScript` language-profile identity and from the realm's
+`JavaScriptBootstrapProfile`; all applicable identities belong in measurements and cache keys.
+
+> The plan half of [`Phase-8.status.md`](Phase-8.status.md). No JavaScript-profile measurement
+> exists and no item is scheduled.
+> Part of the [performance and benchmark roadmap](Roadmap.md); the four JavaScript-profile
+> VM phases are
 > [track two](Roadmap.md#track-two--the-vm-tier-phases-69).
 
 ---
@@ -22,14 +33,15 @@ source-to-result runtime-compiler path.
 
 Adaptive techniques have permanent format, correctness, memory, and maintenance cost. A
 star rating or another engine's opcode table is not evidence about Broiler.JS. Phase 8 first
-counts the operations and types the accepted VM actually executes, then prices candidates
+counts the operations and types the accepted JavaScript interpreter actually executes, then prices candidates
 with an absolute rate and attainable end-to-end ceiling.
 
 Historical IL-path evidence remains useful as a warning: a large allocation share may buy a
 small time result, and a monomorphic share may cover too little total time to justify a new
-tier. It cannot replace the VM's own modern/product workload evidence.
+tier. It cannot replace the JavaScript profile's own modern/product workload evidence.
 
-**Owner boundaries:** bytecode runtime/compiler and accepted Runtime/Storage contracts. Any
+**Owner boundaries:** the Broiler.VM JavaScript executor, the Broiler.JS compiler/runtime, and
+accepted Broiler.JS Runtime/Storage contracts. Any
 mutable feedback, quickening, or IC state is owned by a bytecode function/program or realm,
 not by a process-global site number, and is reclaimed with that owner under MOD-M6.
 
@@ -37,15 +49,15 @@ not by a process-global site number, and is reclaimed with that owner under MOD-
 
 | # | Item | Size | Entry evidence | State |
 |---|---|---|---|---|
-| **8-0** | **Instrument and attribute the accepted VM** | M | Phase 7 uninstrumented baseline | ❌ **not started; blocks 8-1 through 8-5** |
+| **8-0** | **Instrument and attribute the accepted JavaScript interpreter** | M | Phase 7 uninstrumented baseline | ❌ **not started; blocks 8-1 through 8-5** |
 | **8-1** | Realm/function-owned type feedback | M–L | polymorphism/type population and MOD-M6 ownership | ❌ |
 | **8-2** | Adaptive/quickened opcodes | L | generic opcode/type distribution and mutation/lifetime design | ❌ |
 | **8-3** | Superinstructions | M | measured opcode n-grams and bytecode-size budget | ❌ |
 | **8-4** | Dispatch layout/encoding experiment | S–M | dispatch/decode cost on each claimed JIT/AOT RID | ❌ |
-| **8-5** | PGO the Native AOT VM image | S–M | representative target workload and MOD-M1 AOT lanes | ❌ |
+| **8-5** | PGO the Native AOT JavaScript-profile image | S–M | representative target workload and MOD-M1 AOT lanes | ❌ |
 | **8-6** | **Versioned verified bytecode persistence/cache** | M–L | MOD-M1 cold-startup opportunity and accepted 6-3 format | ❌ **independent of 8-0** |
 
-### 8-0 · Instrument and attribute the VM — **the optimization gate**
+### 8-0 · Instrument and attribute the JavaScript interpreter — **the optimization gate**
 
 Phase 7 supplies the uninstrumented end-to-end baseline. Item 8-0 adds separate diagnostic
 builds/runs that collect:
@@ -144,7 +156,10 @@ startup threshold.
 
 Every artifact has a bounded, checksummed header/manifest containing at least:
 
-- magic, bytecode schema version, engine semantic/cache version, and feature/profile id;
+- Broiler.VM language-profile id, JavaScript bytecode schema version, engine semantic/cache
+  version, JavaScript capability-manifest id, and deployment/compiler composition;
+- `JavaScriptBootstrapProfile` plus the bootstrap/built-in manifest versions where they affect
+  semantics;
 - source/content hash and every semantic compiler option/cache-key input;
 - host-contract/built-in manifest version and approved optional-satellite composition;
 - section sizes/counts, endianness/encoding rules, and integrity checksum; and
@@ -163,22 +178,23 @@ Loaded code receives cold owner-local IC/feedback/quickening state.
 - Write atomically, recover from partial writes, and define concurrent-reader/writer and
   eviction behavior.
 - On incompatibility or corruption, fall back to source compilation only for a
-  `narrow-runtime-go` or `full-go` product whose selected profile contains that source; an
-  `execution-only-go` product reports a defined load failure.
+  `narrow-runtime-compiler` or `general-runtime-compiler` product whose selected capability
+  manifest contains that source; an
+  `execution-only` product reports a defined load failure.
 - Bind retained strings, code, side tables, and host captures to the cache entry and prove a
   repeated load/run/evict plateau.
 
 #### Measurement arms
 
-Report the arms applicable to the selected MOD-M9 outcome without inventing a runtime compiler:
+Report the arms applicable to the selected JavaScript composition without inventing a runtime compiler:
 
-1. for `narrow-runtime-go` and `full-go`, cold source compile + execute and warm source
+1. for `narrow-runtime-compiler` and `general-runtime-compiler`, cold source compile + execute and warm source
    compile + execute with no persisted hit;
-2. for all outcomes, verified artifact/cache hit + execute;
-3. incompatible/corrupt cache fallback for a runtime-compiler profile or the defined
-   `execution-only-go` load failure;
-4. persistence disabled—an uncached source compile for a runtime-compiler profile, or a
-   fresh verification/load of the supplied precompiled artifact for `execution-only-go`;
+2. for all compositions, verified artifact/cache hit + execute;
+3. incompatible/corrupt cache fallback for a runtime-compiler composition or the defined
+   `execution-only` load failure;
+4. persistence disabled—an uncached source compile for a runtime-compiler composition, or a
+   fresh verification/load of the supplied precompiled artifact for `execution-only`;
    and
 5. offline precompilation time and output size as a separately labelled build/deployment
    result when they are relevant to the execution-only product.
@@ -190,7 +206,7 @@ silently reported as compiler throughput.
 ## Order
 
 ```text
-Phase 7 uninstrumented baseline
+Phase 7 JavaScript-profile uninstrumented baseline
   ├→ 8-0 diagnostic counts + calibrated cost/ceiling
   │    ├→ 8-1 owned feedback → 8-2 quickening
   │    ├→ 8-3 superinstructions
@@ -205,7 +221,8 @@ Phase 7 uninstrumented baseline
    ceiling, and predeclared decision rule. A candidate without that evidence is not built.
 2. Item 8-6 instead cites MOD-M1 cold-startup/compile-or-precompiled-load evidence and passes the complete
    compatibility, verifier, corrupt-input, fallback, atomic-write, and lifecycle gates.
-3. The independent expected-result manifest and IL/VM differential checks remain green on
+3. The independent expected-result manifest and IL/JavaScript-profile differential checks
+   remain green on
    source, cache-round-trip, quickened/unquickened, and claimed Native AOT arms.
 4. Instrumented results report their overhead beside an uninstrumented same-revision control;
    counts are not presented as direct time attribution.
@@ -217,9 +234,11 @@ Phase 7 uninstrumented baseline
 
 ## Dependencies
 
-- Depends on Phase 6 correctness/format evidence for its accepted positive outcome
-  (`execution-only-go`, `narrow-runtime-go`, or `full-go`), Phase 7's uninstrumented
-  baseline, and MOD-M1.
+- Depends on Phase 6 JavaScript correctness/format evidence for its selected composition
+  (`execution-only`, `narrow-runtime-compiler`, or `general-runtime-compiler`), Phase 7's uninstrumented
+  baseline, MOD-M1, and the accepted Broiler.VM catalog/session integration contract. A
+  runtime-compiler no-go selects `execution-only`; it does not affect WebAssembly or any
+  other Broiler.VM profile.
 - Items with mutable feedback, quickening, shared code, or cross-context execution depend on
   the applicable MOD-M6 ownership/lifetime gates.
 - 8-5 depends on declared Native AOT target lanes. 8-6 depends on an accepted persisted

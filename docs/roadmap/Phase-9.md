@@ -1,26 +1,34 @@
-# Phase 9 — VM 4.0: optional adaptive IL/bytecode execution
+# Phase 9 — Broiler.VM JavaScript profile 4.0: optional JavaScript bytecode↔IL execution
 
 Decide whether starting selected work in bytecode and promoting it to IL improves product
 startup/resource use on hosts where dynamic code is permitted. Separately decide whether an
 explicit IL-to-bytecode deoptimization ABI is feasible and valuable. OSR remains a later,
 independent high-risk option.
 
-Phase 9 is not automatically authorized by a Phase 6 VM decision. An `execution-only-go`
-funds a precompiled bytecode product and does not by itself fund runtime IL tiering. A
-`narrow-runtime-go` or `full-go` may enter this phase only when its product/host profile also
-includes a dynamic-code-capable composition and names adaptivity as a requirement.
+This is an optional **JavaScript-profile** phase. It is not a generic Broiler.VM milestone,
+does not apply to the WebAssembly built-in profile, and does not define common profile
+catalog, selection, session-lifecycle, or resource-policy behavior; those are owned by
+`Broiler.VM/docs/roadmap.md`. Every transition here is between Broiler's JavaScript bytecode
+profile and the Broiler.JS dynamic IL arm.
+
+Phase 9 is not automatically authorized by a Phase 6 JavaScript-profile decision. An
+`execution-only` funds a precompiled JavaScript-bytecode composition and does not by
+itself fund runtime IL tiering. A `narrow-runtime-compiler` or `general-runtime-compiler` may
+enter this phase only when its host composition also includes the Broiler.JS IL back end and
+names adaptivity as a requirement.
 
 > The plan half of [`Phase-9.status.md`](Phase-9.status.md). No Phase 9 measurement or
 > feasibility result exists.
-> Part of the [performance and benchmark roadmap](Roadmap.md); the four VM phases are
+> Part of the [performance and benchmark roadmap](Roadmap.md); the four JavaScript-profile
+> VM phases are
 > [track two](Roadmap.md#track-two--the-vm-tier-phases-69).
 
 ---
 
 ## Capability is not adaptivity
 
-Phases 6–8 can provide JavaScript on a platform where IL emission is prohibited. Phase 9
-targets hosts where both approved bytecode and IL compositions exist:
+Phases 6–8 can provide the Broiler.VM JavaScript profile on a platform where IL emission is
+prohibited. Phase 9 targets hosts where both approved bytecode and IL compositions exist:
 
 - **tier-up question:** is VM-first plus promotion better than the accepted current IL
   startup/lazy-compilation path? and
@@ -49,19 +57,19 @@ publication, fallback, and lifetime are the main work.
 
 | # | Item | Size | State |
 |---|---|---|---|
-| **9-0** | **Decide whether VM-first promotion beats accepted current-IL alternatives** | M | ❌ **not started; may cancel 9-1/9-2** |
+| **9-0** | **Decide whether JavaScript-bytecode-first promotion beats accepted current-IL alternatives** | M | ❌ **not started; may cancel 9-1/9-2** |
 | **9-1** | Owner-local hotness counters and promotion state | S–M | ❌ |
 | **9-2** | Promote bytecode → IL from a realm-correct compiled-function descriptor | L | ❌ |
 | **9-3** | **Feasibility spike, then explicit IL → bytecode deoptimization** | L spike; XL implementation | ❌ |
 | **9-4** | OSR entry-stub feasibility and any measured implementation | **XL** | ❌ |
 | **9-5** | Retire or retain the restart compromise after 9-3 evidence | M | ❌ |
 
-### 9-0 · Is VM-first promotion worth it? — **the performance gate**
+### 9-0 · Is JavaScript-bytecode-first promotion worth it? — **the performance gate**
 
 Under MOD-M1, compare on the same accepted modern/product workload manifest:
 
-1. VM-only;
-2. VM-first with promotion enabled over a predeclared threshold curve;
+1. JavaScript bytecode-only;
+2. JavaScript bytecode-first with promotion enabled over a predeclared threshold curve;
 3. current IL eager behavior where still supported;
 4. the accepted current-IL lazy/deferred-function path; and
 5. bytecode persistence/cache arms where relevant, identified explicitly.
@@ -73,7 +81,7 @@ background compilation. Compare the promoted and non-promoted results to the ind
 expected-result manifest, not only to each other.
 
 Use CoreCLR dynamic-code-capable hosts for the tier-up comparison. Native AOT-only targets
-remain VM-only controls; they cannot execute item 9-2 and must not be averaged into a tier-up
+remain JavaScript-bytecode-only controls; they cannot execute item 9-2 and must not be averaged into a tier-up
 claim.
 
 Write the primary product metric, minimum relevant effect/equivalence budget, resource
@@ -160,8 +168,8 @@ terminal decision.
 ## Order
 
 ```text
-runtime-capable Phase 6 outcome + accepted Phase 7 baseline
-  ├→ 9-0 VM-first/promotion decision curve
+runtime-capable JavaScript Phase 6 outcome + accepted JavaScript Phase 7 baseline
+  ├→ 9-0 JavaScript-bytecode-first/promotion decision curve
   │    └→ 9-1 owned transition state → 9-2 descriptor-based promotion
   │                                      └→ 9-4 OSR population + separate entry-stub feasibility
   └→ 9-3 explicit deopt feasibility spike
@@ -179,9 +187,9 @@ population, entry ABI, and fallback behavior remain a separate high-risk decisio
 
 1. Item 9-0 has a predeclared threshold curve and paired MOD-M1 result against the accepted
    current-IL lazy/eager alternatives, with time and resource evidence.
-2. Every enabled tier configuration—VM-only, IL-only, VM+promotion, promotion failure,
+2. Every enabled JavaScript tier configuration—bytecode-only, IL-only, bytecode+promotion, promotion failure,
    deopt where supported, and persisted/non-persisted variants—matches the independent
-   expected-result manifest and has no unexplained IL/VM delta.
+   expected-result manifest and has no unexplained IL/JavaScript-profile delta.
 3. Promotion compiles a realm-correct descriptor, preserves function/environment identity,
    retains a valid fallback, publishes at a quiescent boundary, and reaches a memory plateau
    under its count/byte budgets.
@@ -194,13 +202,16 @@ population, entry ABI, and fallback behavior remain a separate high-risk decisio
 
 ## Dependencies
 
-- Depends on a runtime-capable Phase 6 outcome (`narrow-runtime-go` or `full-go`) that names
+- Depends on a runtime-compiler JavaScript Phase 6 composition (`narrow-runtime-compiler` or
+  `general-runtime-compiler`) that names
   a dynamic-code-capable composition, the shared semantic IR/function descriptor, stable
-  canonical bytecode positions, and Phase 7's accepted baseline. An `execution-only-go`
+  canonical bytecode positions, and Phase 7's accepted baseline. An `execution-only`
   alone does not authorize this phase.
 - Depends on MOD-M1 for performance decisions and MOD-M6 for feedback/hotness ownership, concurrent
   contexts, shared artifacts, background work, and quiescent installation.
 - Does not require optional Phase 8 speed items, but any peephole/quickening/persistence work
   must preserve canonical PCs and metadata compatibility.
-- Pays back into current IL optimization only after 9-3's explicit state-materialization
+- The `execution-only` JavaScript composition leaves this phase closed; a runtime-compiler
+  no-go therefore changes neither Broiler.VM core, WebAssembly, nor another built-in profile.
+- Pays back into current Broiler.JS IL optimization only after 9-3's explicit state-materialization
   gate passes; until then, current restart/in-method fallbacks remain authoritative.
