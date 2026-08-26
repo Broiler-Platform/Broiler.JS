@@ -26,10 +26,24 @@ public class AstExportStatement : AstStatement
     /// </remarks>
     public readonly IFastEnumerable<(StringSpan name, StringSpan asName)>? Members;
 
+    /// <summary>
+    /// The <c>with { … }</c> clause of a re-export, or null when there is none.
+    /// </summary>
+    /// <remarks>
+    /// An ExportDeclaration with a FromClause takes a WithClause exactly as an ImportDeclaration
+    /// does, and it means the same thing: the module named by <see cref="Source"/> is loaded, so the
+    /// attribute constrains that load. It is carried here for the same reason
+    /// <c>AstImportStatement.Attributes</c> is — so the compiler can hand it to the module host,
+    /// which is what makes the attribute enforced rather than parsed and dropped.
+    /// </remarks>
+    public readonly IFastEnumerable<(StringSpan key, AstLiteral value)>? Attributes;
+
     /// <summary>A NamedExports clause, with <paramref name="source"/> for a re-export.</summary>
-    public AstExportStatement(FastToken token, IFastEnumerable<(StringSpan, StringSpan)> members, AstLiteral? source, FastToken end)
+    public AstExportStatement(FastToken token, IFastEnumerable<(StringSpan, StringSpan)> members, AstLiteral? source, FastToken end,
+        IFastEnumerable<(StringSpan, AstLiteral)>? attributes = null)
         : base(token, FastNodeType.ExportStatement, end)
     {
+        Attributes = attributes;
         Members = members;
         Source = source;
         Declaration = null;
@@ -44,8 +58,10 @@ public class AstExportStatement : AstStatement
         Source = null;
     }
 
-    public AstExportStatement(FastToken token, AstNode? argument, AstNode source) : base(token, FastNodeType.ExportStatement, source.End)
+    public AstExportStatement(FastToken token, AstNode? argument, AstNode source,
+        IFastEnumerable<(StringSpan, AstLiteral)>? attributes = null) : base(token, FastNodeType.ExportStatement, source.End)
     {
+        Attributes = attributes;
         Declaration = argument;
         IsDefault = false;
         ExportAll = argument == null;

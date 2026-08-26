@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.Ast.Statements;
+﻿using Broiler.JavaScript.Ast.Misc;
+using Broiler.JavaScript.Ast.Statements;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
@@ -13,7 +14,9 @@ partial class FastCompiler
         var tempRequire = BExpression.Parameter(typeof(JSValue));
         var require = scope.Top.GetVariable("import");
         var source = VisitExpression(importStatement.Source);
-        var args = ArgumentsBuilder.New(JSUndefinedBuilder.Value, source);
+
+        var args = ImportArguments(source, importStatement.Attributes);
+
         var stmts = new Sequence<BExpression>
         {
             BExpression.Assign(tempRequire, BExpression.Yield(JSFunctionBuilder.InvokeFunction(require.Expression, args)))
@@ -63,4 +66,56 @@ partial class FastCompiler
         return importExp;
     }
 
+    /// <summary>
+    /// The argument list for a call to the host's module loader: the specifier, and a static
+    /// declaration's <c>with { … }</c> clause when it has one.
+    /// </summary>
+    /// <remarks>
+    /// Shared by <c>import</c> declarations and by the three <c>export … from</c> forms, which load
+    /// a module for exactly the same reason and take the same clause. The loader's argument list is
+    /// shared with dynamic <c>import()</c>, which puts its runtime options object in slot 1; a static
+    /// declaration has no options object, so its attributes travel in slot 2 and the host validates
+    /// both shapes through one path. Passing them rather than dropping them is what lets
+    /// <c>with { type: 'json' }</c> be enforced instead of parsed and ignored.
+    /// </remarks>
+    private static BExpression ImportArguments(
+        BExpression source, IFastEnumerable<(StringSpan key, AstLiteral value)> attributes)
+    {
+        var pairs = ImportAttributePairs(attributes);
+        return pairs == null
+            ? ArgumentsBuilder.New(JSUndefinedBuilder.Value, source)
+            : ArgumentsBuilder.New(JSUndefinedBuilder.Value,
+                new BExpression[] { source, JSUndefinedBuilder.Value, pairs });
+    }
+
+    /// <summary>
+    /// A static import's attribute clause as a flat JS array of alternating key/value strings, or
+    /// <see langword="null"/> when there is no clause and nothing to pass.
+    /// </summary>
+    /// <remarks>
+    /// Flat rather than an object because every part of it is a string literal the grammar already
+    /// fixed — <c>AttributeKey : IdentifierName | StringLiteral</c> and a StringLiteral value — so
+    /// there is nothing to evaluate and nothing an object would carry that this does not. It also
+    /// keeps the pairs in source order, which is what lets the host report the *first* offending key
+    /// rather than whichever one a property table happened to yield first.
+    /// </remarks>
+    private static BExpression ImportAttributePairs(IFastEnumerable<(StringSpan key, AstLiteral value)> attributes)
+    {
+        if (attributes == null)
+            return null;
+
+        var inits = new Sequence<BElementInit>();
+        var e = attributes.GetFastEnumerator();
+        while (e.MoveNext(out var attribute))
+        {
+            inits.Add(BExpression.ElementInit(JSArrayBuilder._Add,
+                [JSStringBuilder.New(BExpression.Constant(attribute.key.ToString()))]));
+            inits.Add(BExpression.ElementInit(JSArrayBuilder._Add,
+                [JSStringBuilder.New(BExpression.Constant(attribute.value.StringValue.ToString()))]));
+        }
+
+        // `with { }` is legal and means no attributes; it must still be distinguishable from no
+        // clause at all only in that both are unconstrained, so an empty array is fine to skip.
+        return inits.Count == 0 ? null : JSArrayBuilder.New(inits);
+    }
 }

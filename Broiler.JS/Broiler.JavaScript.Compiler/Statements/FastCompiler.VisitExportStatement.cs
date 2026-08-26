@@ -125,7 +125,7 @@ partial class FastCompiler
                         var tempRequire = BExpression.Parameter(typeof(JSValue));
                         var import = scope.Top.GetVariable("import");
                         var source = VisitExpression((AstExpression)exportStatement.Source);
-                        var args = ArgumentsBuilder.New(JSUndefinedBuilder.Value, source);
+                        var args = ImportArguments(source, exportStatement.Attributes);
 
                         return BExpression.Block(
                             tempRequire.AsSequence(),
@@ -184,7 +184,7 @@ partial class FastCompiler
         var imported = BExpression.Parameter(typeof(JSValue));
         var import = scope.Top.GetVariable("import");
         var source = VisitExpression((AstExpression)exportStatement.Source);
-        var args = ArgumentsBuilder.New(JSUndefinedBuilder.Value, source);
+        var args = ImportArguments(source, exportStatement.Attributes);
 
         list.Add(BExpression.Assign(
             imported,
@@ -219,7 +219,7 @@ partial class FastCompiler
             var imported = BExpression.Parameter(typeof(JSValue));
             var import = scope.Top.GetVariable("import");
             var source = VisitExpression((AstExpression)exportStatement.Source);
-            var args = ArgumentsBuilder.New(JSUndefinedBuilder.Value, source);
+            var args = ImportArguments(source, exportStatement.Attributes);
 
             list.Add(BExpression.Assign(
                 imported,

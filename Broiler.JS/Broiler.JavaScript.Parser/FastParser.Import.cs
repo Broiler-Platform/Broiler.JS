@@ -149,6 +149,21 @@ partial class FastParser
     /// Parse optional import attributes: <c>with { key: "value", ... }</c>
     /// (ES2025 §2.3 Import Attributes).
     /// </summary>
+    /// <remarks>
+    /// Two of the three things that can be wrong with a clause are decided here, because on a static
+    /// declaration they are properties of the source rather than of what the specifier turned out to
+    /// name, and both are early errors in a browser:
+    /// <list type="bullet">
+    /// <item>a duplicate key, which the proposal itself makes a Syntax Error; and</item>
+    /// <item>a key outside the vocabulary, where <c>type</c> is the only key the platform
+    /// defines.</item>
+    /// </list>
+    /// The third — whether the <c>type</c> <em>value</em> names a module type, and whether the module
+    /// it resolves to is of that type — is a load-time TypeError, raised by the module host, because
+    /// the answer depends on the module. That split is measured from Chromium rather than chosen: a
+    /// bad key is a SyntaxError there and a bad type value is a TypeError, and a dynamic
+    /// <c>import()</c>, whose keys are a runtime value, reports both as TypeErrors.
+    /// </remarks>
     IFastEnumerable<(StringSpan, AstLiteral)>? ImportAttributes()
     {
         // The `with` keyword is a reserved keyword, so use CheckAndConsume(FastKeywords)
@@ -185,6 +200,20 @@ partial class FastParser
             else
             {
                 throw stream.Unexpected();
+            }
+
+            // `type` is the only attribute key the platform defines. Accepting anything else and
+            // then ignoring it is what this rejects: a page that writes `assert` (the clause's old
+            // spelling) or misspells `type` got silence, and silence from an assertion mechanism is
+            // the one answer it must never give.
+            if (!key.Equals("type"))
+                throw new FastParseException(keyToken, $"Invalid attribute key \"{key}\".");
+
+            var duplicates = list.GetFastEnumerator();
+            while (duplicates.MoveNext(out var seen))
+            {
+                if (seen.Item1.Equals(key))
+                    throw new FastParseException(keyToken, $"Import attribute has duplicate key '{key}'");
             }
 
             // Expect colon separator

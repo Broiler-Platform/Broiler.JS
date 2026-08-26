@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -19,9 +19,15 @@ namespace Broiler.JavaScript.Modules.Tests;
 /// <c>WithClause</c> exactly as an <c>ImportDeclaration</c> does, but none of the three export
 /// <c>from</c> forms accepted one.
 /// <para>
-/// The attributes are parsed and not yet acted on — nothing reads
-/// <c>AstImportStatement.Attributes</c> either — so what this fixes is valid source failing to
-/// compile, not attribute enforcement, which remains a separate capability.
+/// These pin the <b>grammar</b>: which clause shapes compile, and where a clause may appear. What a
+/// clause then <em>means</em> — an unknown key, an unknown module type, a type that does not match
+/// the module — is enforcement, and lives in <see cref="ImportAttributeEnforcementTests"/>.
+/// </para>
+/// <para>
+/// They were originally written against <c>with { type: 'javascript' }</c>, which is not a module
+/// type any platform defines and which enforcement now rejects. Each one keeps exactly what it
+/// pinned — a quoted key, an identifier key, each import and export form — against the one clause
+/// that is valid on a module this host can serve: <c>with { type: 'json' }</c> on a JSON module.
 /// </para>
 /// </remarks>
 public class ModuleAttributeClauseTests
@@ -47,6 +53,7 @@ public class ModuleAttributeClauseTests
         var files = new Dictionary<string, string>
         {
             ["file:///app/dep.js"] = "export const a = 1; export const b = 2; export default 9;",
+            ["file:///app/data.json"] = "{\"a\":1}",
         };
 
         using var ctx = new UrlModuleContext(files);
@@ -57,40 +64,46 @@ public class ModuleAttributeClauseTests
     // ---- AttributeKey may be a StringLiteral, not only an identifier ----
 
     [Theory(Timeout = 600000)]
-    [InlineData("import { a } from './dep.js' with { \"type\": 'javascript' }; globalThis.r = a;")]
-    [InlineData("import { a } from './dep.js' with { type: 'javascript' }; globalThis.r = a;")]
-    [InlineData("import { a } from './dep.js' with { \"type\": 'javascript', \"other\": 'x' }; globalThis.r = a;")]
+    [InlineData("import d from './data.json' with { \"type\": 'json' }; globalThis.r = d.a;")]
+    [InlineData("import d from './data.json' with { type: 'json' }; globalThis.r = d.a;")]
+    [InlineData("import d from './data.json' with { \"type\": \"json\" }; globalThis.r = d.a;")]
     public async Task AnAttributeKeyMayBeAStringOrAnIdentifier(string main)
         => Assert.Equal("1", await Run(main));
 
+    /// <summary>An empty clause is legal and constrains nothing, so it is the one clause a
+    /// JavaScript module can carry.</summary>
+    [Fact(Timeout = 600000)]
+    public async Task AnEmptyClauseIsAccepted()
+        => Assert.Equal("1", await Run("import { a } from './dep.js' with { }; globalThis.r = a;"));
+
     [Fact(Timeout = 600000)]
     public async Task ADefaultImportTakesAttributes()
-        => Assert.Equal("9", await Run(
-            "import d from './dep.js' with { \"type\": 'javascript' }; globalThis.r = d;"));
+        => Assert.Equal("1", await Run(
+            "import d from './data.json' with { \"type\": 'json' }; globalThis.r = d.a;"));
 
     [Fact(Timeout = 600000)]
     public async Task ANamespaceImportTakesAttributes()
         => Assert.Equal("1", await Run(
-            "import * as ns from './dep.js' with { type: 'javascript' }; globalThis.r = ns.a;"));
+            "import * as ns from './data.json' with { type: 'json' }; globalThis.r = ns.default.a;"));
 
     // ---- Every export `from` form takes a WithClause too ----
 
     [Fact(Timeout = 600000)]
     public async Task AReExportClauseTakesAttributes()
         => Assert.Equal("1", await Run(
-            "export { a } from './dep.js' with { type: 'javascript' };"
+            "export { default as d } from './data.json' with { type: 'json' };"
             + "import { a } from './dep.js'; globalThis.r = a;"));
 
     [Fact(Timeout = 600000)]
     public async Task AStarReExportTakesAttributes()
         => Assert.Equal("3", await Run(
-            "export * from './dep.js' with { \"type\": 'javascript' };"
+            "export * from './data.json' with { \"type\": 'json' };"
             + "import { a, b } from './dep.js'; globalThis.r = a + b;"));
 
     [Fact(Timeout = 600000)]
     public async Task AStarAsNamespaceReExportTakesAttributes()
         => Assert.Equal("1", await Run(
-            "export * as ns from './dep.js' with { type: 'javascript' };"
+            "export * as ns from './data.json' with { type: 'json' };"
             + "import { a } from './dep.js'; globalThis.r = a;"));
 
     // A malformed clause is still rejected: the value must be a string literal.

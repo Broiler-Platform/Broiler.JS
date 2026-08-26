@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Statements;
@@ -88,24 +88,23 @@ partial class FastParser
 
                 var namespaceSource = ExpectStringLiteral();
                 // An ExportDeclaration with a FromClause takes a WithClause exactly as an
-                // ImportDeclaration does, and all three `from` forms below accept one too. As on
-                // the import side, the attributes are parsed and not yet acted on — nothing reads
-                // AstImportStatement.Attributes either — so this makes valid source compile rather
-                // than claiming the attribute is enforced.
-                ImportAttributes();
+                // ImportDeclaration does, and all three `from` forms below accept one too. The
+                // clause constrains the load of the module named by the FromClause, so it is
+                // carried to the compiler and handed to the host exactly as an import's is.
+                var namespaceAttrs = ImportAttributes();
                 isAsync = true;
-                statement = new AstExportStatement(start, namespaceIdentifier, namespaceSource);
+                statement = new AstExportStatement(start, namespaceIdentifier, namespaceSource, namespaceAttrs);
                 return true;
             }
 
             stream.ExpectContextualKeyword(FastKeywords.from);
 
             var literal = ExpectStringLiteral();
-            ImportAttributes();
+            var starAttrs = ImportAttributes();
             // Like the `* as ns` form above: the module has to be imported before its names can be
             // republished, and that import is awaited.
             isAsync = true;
-            statement = new AstExportStatement(start, null, literal);
+            statement = new AstExportStatement(start, null, literal, starAttrs);
             return true;
         }
 
@@ -124,9 +123,9 @@ partial class FastParser
             if (stream.CheckAndConsumeContextualKeyword(FastKeywords.from))
             {
                 var reexportSource = ExpectStringLiteral();
-                ImportAttributes();
+                var reexportAttrs = ImportAttributes();
                 isAsync = true;
-                statement = new AstExportStatement(start, members!, reexportSource, reexportSource.End);
+                statement = new AstExportStatement(start, members!, reexportSource, reexportSource.End, reexportAttrs);
                 return true;
             }
 

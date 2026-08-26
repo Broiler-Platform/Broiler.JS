@@ -259,7 +259,8 @@ public class JSModuleContext : JSContext
             if (!name.IsString)
                 throw NewTypeError("import method's parameter must be a string");
 
-            return TaskToPromise(LoadModuleAsync(dirPath, name.StringValue));
+            var type = ValidatedModuleType(a[1], a[2]);
+            return TaskToPromise(LoadModuleAsync(dirPath, name.StringValue, requiredType: type));
         });
 
         newModule.Require = new JSFunction((in Arguments a) =>
@@ -345,6 +346,38 @@ public class JSModuleContext : JSContext
     /// portable code writes it.
     /// </para>
     /// </remarks>
+    /// <summary>The one module type this host implements, and the value <c>with { type: … }</c>
+    /// may name.</summary>
+    private const string JsonModuleType = "json";
+
+    /// <summary>
+    /// Rejects a resolved module whose type is not the one an import attribute asserted.
+    /// </summary>
+    /// <remarks>
+    /// The web checks the assertion against the response's MIME type; this host has no MIME types,
+    /// so it checks the resolved module key, which is the same fact by the only means available —
+    /// the key is what decided the module would be parsed as JSON in the first place, so the check
+    /// and the parse cannot disagree.
+    /// <para>
+    /// The converse is deliberately <b>not</b> enforced: a <c>.json</c> module imported with no
+    /// attribute at all loads. A browser rejects that, because there the attribute defends against a
+    /// server returning JSON where script was expected — a mismatch that cannot arise here, since
+    /// the key resolved locally is itself the type. This context also serves <c>require</c>, where
+    /// no attribute exists at all, so demanding one from <c>import</c> would make the two halves of
+    /// the same host disagree about the same file. Stated as a divergence rather than left to be
+    /// discovered.
+    /// </para>
+    /// </remarks>
+    private void CheckModuleType(string moduleKey, string requiredType)
+    {
+        if (requiredType == JsonModuleType && !IsJsonModule(moduleKey))
+        {
+            throw NewTypeError(
+                $"Failed to load module \"{moduleKey}\": it was imported with " +
+                "type: \"json\" but it is not a JSON module.");
+        }
+    }
+
     private static bool IsJsonModule(string moduleKey) =>
         moduleKey != null && moduleKey.EndsWith(".json", StringComparison.Ordinal);
 
@@ -358,21 +391,121 @@ public class JSModuleContext : JSContext
             ? module.Exports
             : module.Exports[KeyStrings.@default];
 
+    /// <summary>
+    /// The module type an import attribute clause asked for — <c>"json"</c>, or null when no
+    /// <c>type</c> was asserted — after validating the clause itself.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Attributes reach here in one of two shapes and are validated through one path so both report
+    /// the same thing: a dynamic <c>import(specifier, options)</c> passes its runtime options object
+    /// in <paramref name="options"/>, and a static declaration's <c>with { … }</c> clause — all
+    /// string literals the grammar already fixed — arrives in <paramref name="staticPairs"/> as a
+    /// flat array of alternating key/value strings.
+    /// </para>
+    /// <para>
+    /// The clause is checked <b>before the specifier is resolved</b>, which is the order a browser
+    /// uses: an unknown key or an unknown module type is a fault in the source, not in what the
+    /// specifier turned out to name, so it must not depend on whether the module exists. The
+    /// messages are Chromium's own, measured, so a page that matches on them sees what it expects.
+    /// </para>
+    /// </remarks>
+    private string ValidatedModuleType(JSValue options, JSValue staticPairs)
+    {
+        string requested = null;
+
+        if (staticPairs != null && staticPairs.IsArray)
+        {
+            var length = staticPairs.Length;
+            for (var i = 0; i + 1 < length; i += 2)
+            {
+                requested = CheckAttribute(staticPairs[(uint)i].ToString(), staticPairs[(uint)(i + 1)].ToString())
+                    ?? requested;
+            }
+
+            return requested;
+        }
+
+        if (options == null || options.IsUndefined)
+            return null;
+
+        // `import(spec, null)` is rejected too: null is not an object, and a browser says so with
+        // this same message rather than treating it as "no options".
+        if (options is not JSObject || options.IsNull)
+            throw NewTypeError("The second argument to import() must be an object");
+
+        var with = options[(KeyString)"with"];
+        if (with == null || with.IsUndefined)
+            return null;
+
+        if (with is not JSObject || with.IsNull)
+            throw NewTypeError("The 'with' option must be an object");
+
+        // Own enumerable string keys, in the object's own order, so a `with` built at runtime is
+        // read the way any other options bag is.
+        var keys = with.GetAllKeys(showEnumerableOnly: true, inherited: false);
+        while (keys.MoveNext(out var key))
+        {
+            var value = with[key];
+            if (value == null || !value.IsString)
+                throw NewTypeError("Import attribute value must be a string");
+
+            requested = CheckAttribute(key.ToString(), value.StringValue) ?? requested;
+        }
+
+        return requested;
+    }
+
+    /// <summary>
+    /// Validates one attribute, returning the module type it asks for or null when it asks for none.
+    /// </summary>
+    private string CheckAttribute(string key, string value)
+    {
+        // `type` is the only attribute key the platform defines. On a STATIC declaration this can no
+        // longer be reached — the keys are literals, so the parser rejects an unknown one as the
+        // early SyntaxError a browser gives. It is reached from a dynamic `import()`, whose keys are
+        // a runtime value and can only be judged here, and where a browser reports the same thing as
+        // a TypeError.
+        if (key != "type")
+            throw NewTypeError($"Invalid attribute key \"{key}\".");
+
+        // The module-type vocabulary is the platform's, not this host's, so that a page asking for a
+        // type Broiler does not implement is told *that* rather than told it made a typo. `css` is a
+        // real module type and a real capability this engine does not have; the two are different
+        // failures and a page can tell them apart.
+        if (value == JsonModuleType)
+            return JsonModuleType;
+
+        if (value == "css")
+            throw NewTypeError("CSS module scripts are not implemented.");
+
+        throw NewTypeError($"\"{value}\" is not a valid module type.");
+    }
+
     /// <param name="esModule">
     /// Whether the caller is <c>import</c> (the ES view) rather than <c>require</c> (the CommonJS
     /// view). It changes nothing except the shape a JSON module is presented in — see
     /// <see cref="IsJsonModule"/>.
     /// </param>
-    protected virtual async Task<JSValue> LoadModuleAsync(string currentPath, string name, bool esModule = true)
+    /// <param name="requiredType">
+    /// The module type an import attribute asserted, from <see cref="ValidatedModuleType"/>, or null
+    /// when none was. A mismatch is a load failure.
+    /// </param>
+    protected virtual async Task<JSValue> LoadModuleAsync(
+        string currentPath, string name, bool esModule = true, string requiredType = null)
     {
         var relativePath = name;
 
-        // fetch system modules 
+        // fetch system modules
         if (moduleCache.TryGetValue(relativePath, out var m))
+        {
+            CheckModuleType(relativePath, requiredType);
             return ViewOf(m, relativePath, esModule);
+        }
 
         // resolve full name..
         var fullPath = Resolve(currentPath, relativePath) ?? throw NewTypeError($"{relativePath} module not found");
+        CheckModuleType(fullPath, requiredType);
         m = moduleCache.GetOrCreate(fullPath, () =>
         {
             var newModule = new JSModule(this, fullPath);
@@ -384,7 +517,8 @@ public class JSModuleContext : JSContext
                 if (!name.IsString)
                     throw NewTypeError("import method's parameter must be a string");
 
-                return TaskToPromise(LoadModuleAsync(dirPath, name.StringValue));
+                var type = ValidatedModuleType(a[1], a[2]);
+                return TaskToPromise(LoadModuleAsync(dirPath, name.StringValue, requiredType: type));
             });
 
             newModule.Require = new JSFunction((in Arguments a) =>
