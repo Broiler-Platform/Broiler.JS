@@ -268,7 +268,7 @@ public class JSModuleContext : JSContext
             if (!name.IsString)
                 throw NewTypeError("require method's parameter must be a string");
 
-            var result = LoadModuleAsync(dirPath, name.StringValue);
+            var result = LoadModuleAsync(dirPath, name.StringValue, esModule: false);
             return AsyncPump.Run(() => result);
         });
 
@@ -319,13 +319,57 @@ public class JSModuleContext : JSContext
 
     public JSModule Main { get; set; }
 
-    protected virtual async Task<JSValue> LoadModuleAsync(string currentPath, string name)
+    /// <summary>
+    /// Whether a resolved module key names a JSON module. JSON is the one format this context serves
+    /// to <c>import</c> and to <c>require</c> in two different shapes, because the two specifications
+    /// disagree about what a JSON file exports.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// ES2025 gives a JSON module exactly one export, <c>default</c>, holding the parsed value, and no
+    /// named exports. CommonJS <c>require('./x.json')</c> hands back the parsed value itself. Both are
+    /// right for their own caller and they cannot be the same object, so the module *stores* the ES
+    /// namespace — <c>{ default: value }</c> — and the CommonJS view unwraps it.
+    /// </para>
+    /// <para>
+    /// Before this, one wrapper served both: <c>module.exports = &lt;json&gt;</c>. <c>require</c> was
+    /// correct and every <c>import</c> was not — a default import read <c>.default</c> off the parsed
+    /// value and found nothing, so <c>import d from './data.json'</c> was <c>undefined</c> for every
+    /// JSON shape, which made JSON modules unusable.
+    /// </para>
+    /// <para>
+    /// <b>Deviation, deliberate:</b> <c>import { a } from './x.json'</c> used to read <c>a</c> off the
+    /// parsed object and now reads <c>undefined</c>. Per spec it is a link error — a JSON module has no
+    /// named exports — and raising that needs whole-module link analysis this engine does not do, so
+    /// the nearer of the two available answers is taken. Browsers and Node both reject the form, so no
+    /// portable code writes it.
+    /// </para>
+    /// </remarks>
+    private static bool IsJsonModule(string moduleKey) =>
+        moduleKey != null && moduleKey.EndsWith(".json", StringComparison.Ordinal);
+
+    /// <summary>
+    /// The value a loaded module presents to its importer: the module's own exports, except that a
+    /// JSON module's stored ES namespace is unwrapped to the parsed value for a CommonJS
+    /// <c>require</c>.
+    /// </summary>
+    private static JSValue ViewOf(JSModule module, string moduleKey, bool esModule) =>
+        esModule || !IsJsonModule(moduleKey)
+            ? module.Exports
+            : module.Exports[KeyStrings.@default];
+
+    /// <param name="esModule">
+    /// Whether the caller is <c>import</c> (the ES view) rather than <c>require</c> (the CommonJS
+    /// view). It changes nothing except the shape a JSON module is presented in — see
+    /// <see cref="IsJsonModule"/>.
+    /// </param>
+    protected virtual async Task<JSValue> LoadModuleAsync(string currentPath, string name, bool esModule = true)
     {
         var relativePath = name;
 
         // fetch system modules 
         if (moduleCache.TryGetValue(relativePath, out var m))
-            return m.Exports;
+            return ViewOf(m, relativePath, esModule);
 
         // resolve full name..
         var fullPath = Resolve(currentPath, relativePath) ?? throw NewTypeError($"{relativePath} module not found");
@@ -349,7 +393,7 @@ public class JSModuleContext : JSContext
                 if (!name.IsString)
                     throw NewTypeError("require method's parameter must be a string");
 
-                var result = LoadModuleAsync(dirPath, name.StringValue);
+                var result = LoadModuleAsync(dirPath, name.StringValue, esModule: false);
                 return AsyncPump.Run(() => result);
             });
 
@@ -366,7 +410,7 @@ public class JSModuleContext : JSContext
         });
 
         await m.InitAsync();
-        return m.Exports;
+        return ViewOf(m, fullPath, esModule);
     }
 
     /// <summary>
@@ -399,8 +443,16 @@ public class JSModuleContext : JSContext
 
         var code = module.Code;
 
-        if (filePath.EndsWith(".json"))
-            code = $"module.exports = {code};";
+        // A JSON module's ONE export is `default` (ES2025 16.2.1.6.1: a JSON module record has
+        // exactly one export, `default`, and no named exports), so what is stored is the namespace
+        // rather than the parsed value. The CommonJS view unwraps it in LoadModuleAsync; see
+        // IsJsonModule for why the two views have to differ at all.
+        //
+        // Storing the namespace rather than the value is also what lets `null` through: JSModule's
+        // Exports setter refuses null or undefined, so the old `module.exports = null;` wrapper made
+        // a file whose whole content is `null` throw on load rather than import as `null`.
+        if (IsJsonModule(filePath))
+            code = $"module.exports = {{ default: ({code}) }};";
 
         // var factory = FastEval(code, filePath);
         JSFunctionDelegate factory;
@@ -417,7 +469,7 @@ public class JSModuleContext : JSContext
                 // Parsed with the module goal symbol, which is what makes `await` a reserved word
                 // here. A .json file is wrapped as CommonJS above and is not module source, so it
                 // keeps the script goal.
-            ], codeCache: CodeCache, isModule: !filePath.EndsWith(".json"));
+            ], codeCache: CodeCache, isModule: !IsJsonModule(filePath));
         }
 
         if (factory(new Arguments(module,
