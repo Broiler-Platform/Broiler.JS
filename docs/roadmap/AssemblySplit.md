@@ -3,7 +3,7 @@
 `Broiler.JavaScript.ExpressionCompiler` has been structurally split into the
 **expression-tree model** (`Broiler.JavaScript.Expressions`) and the **IL emitter**. This
 removed the emitter from the portable-compiler reference closure. It is a necessary
-precondition for a bytecode-only Native-AOT configuration, not proof that such a complete
+precondition for an AOT-clean configuration, not proof that such a complete
 configuration publishes or runs.
 
 > **Implementation state:** S-0 through S-6 have landed; S-7 validation remains open. This
@@ -186,7 +186,7 @@ there. It is `internal`, so none of this is an API break.
 
 **Note for later:** the enum's two values are IL-specific (`DynamicMethod`,
 `CollectibleAssembly`) and it participates in the runtime's **code-cache key**. A bytecode
-back end is a third value, not a special case, and phase 8's item 8-6 will want to persist
+back end is a third value, not a special case, and any future persistence work would want to persist
 that cache — so keep the key extensible rather than boolean.
 
 ### S-4 · Re-point the six dependent projects
@@ -270,7 +270,7 @@ rather than re-baselining.
 - **[`Assemblies.md`](Assemblies.md)** — A-1's structure and A-3's explicit registration
   slice landed here. The wider A-5/A-6 shape is now gated by MOD-M2's acyclic graph and shared
   FrontEnd/Semantics extraction; A-7 remains a publish-and-run gate.
-- **[Phase 6](Phase-6.md)** — the old `Portable.Compiler → Parser → ExpressionCompiler`
+- **Retired phase 6** — the old `Portable.Compiler → Parser → ExpressionCompiler`
   emitter edge is gone. The portable-compiler closure is Emit-free, so the remaining work
   can test packaging without duplicating the split; a complete AOT runtime still depends on
   the revised assembly graph and VM scope decision.

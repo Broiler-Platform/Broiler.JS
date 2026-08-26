@@ -181,10 +181,6 @@ Broiler.VM or WebAssembly-profile work is counted in this JavaScript evidence re
 
 | Phase | Current state | Next authority/gate |
 |---|---|---|
-| [6](Phase-6.status.md) | production JavaScript-profile phase not started; numeric execution-only seed exists | Modernization MOD-M9 selects `execution-only`, `narrow-runtime-compiler`, or `general-runtime-compiler`, replacing old 6-0; implementation then requires the Broiler.VM core contract, shared JavaScript semantics, JavaScript ABI/verifier, and three-way conformance |
-| [7](Phase-7.status.md) | no accepted uninstrumented baseline or shippability decision | accepted Phase 6 JavaScript scope/exit evidence plus MOD-M1 exact-row/A/A/resource baseline and MOD-M6 ownership for shared state |
-| [8](Phase-8.status.md) | no accepted persistence or adaptive optimization item | stable verified format and Phase 7 attribution; persistence, feedback, quickening, superinstructions and dispatch each keep separate population/resource gates |
-| [9](Phase-9.status.md) | no JavaScript tier-up/deopt/OSR decision; execution-only does not authorize this phase | a runtime-compiler JavaScript composition plus a dynamic-code/adaptivity product gate; then 9-0 is the promotion curve, while 9-3 is the independent `DeoptState`/reconstruction spike and 9-4 branches only from validated function promotion; none gates WebAssembly |
 
 The authoritative detail is in the four phase status files and
 [`Modernization.md`](Modernization.md). Historical 2026-08-07 counts elsewhere in this file

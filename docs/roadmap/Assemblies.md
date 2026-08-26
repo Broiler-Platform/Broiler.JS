@@ -1,19 +1,13 @@
 # Assembly restructure — one JavaScript semantics stack, explicit execution back ends
 
 Establish a verified, acyclic set of backend-neutral foundations, shared frontend semantics,
-and mutually optional IL and Broiler.VM JavaScript execution compositions. An application may
-reference the IL back end, the statically registered Broiler.VM JavaScript built-in, or both;
-a VM-only JavaScript application must be proved by publish-and-run evidence under NativeAOT.
-This plan owns the Broiler.JS graph and JavaScript integration boundary. Generic profile
-registration, common VM lifecycle/resource contracts, WebAssembly, and future built-ins are
-owned by `Broiler.VM/docs/roadmap.md` in the aggregate repository.
+and an execution back end that is isolated behind an explicit boundary. This plan owns this
+component's assembly graph. Broiler.VM is a separate component with no dependency edge to this
+one in either direction.
 
 > The plan half of [`Assemblies.status.md`](Assemblies.status.md), which carries the current
 > interpretation and dated evidence about the graph. Part of the
-> [performance and benchmark roadmap](Roadmap.md), and **the hard precondition for
-> [track two](Roadmap.md#track-two--the-vm-tier-phases-69)** — the JavaScript built-in cannot
-> deliver its headline capability without it. Broiler.VM core and WebAssembly do not depend on
-> this JavaScript assembly restructure.
+> [performance and benchmark roadmap](Roadmap.md).
 
 ---
 
@@ -159,8 +153,8 @@ permitted to reference `System.Reflection.Emit`; the concrete grouping was not v
 | **`Broiler.JS.BuiltIns.Intl`** | `BuiltIns/Intl` | ≈ 8 600 | ✅ |
 | **`Broiler.JS.BuiltIns.RegExp`** | `BuiltIns/RegExp` | ≈ 7 000 | ✅ |
 | **`Broiler.JS.IL`** | `ExpressionCompiler`'s **emitter** half + `Compiler` + `LinqExpressions`' IL part | ≈ 25 000 | ❌ **by design** |
-| **`Broiler.JS.Bytecode`** | `Portable`, grown by [phase 6](Phase-6.md) | 272 → ? | ✅ |
-| **`Broiler.JS.Bytecode.Compiler`** | `Portable.Compiler`, grown by [phase 6](Phase-6.md) | 391 → ? | ✅ |
+| **`Broiler.JS.Bytecode`** | `Portable`, with no further growth planned | 272 → ? | ✅ |
+| **`Broiler.JS.Bytecode.Compiler`** | `Portable.Compiler`, with no further growth planned | 391 → ? | ✅ |
 | **`Broiler.JS.Hosting`** | `Broiler.JavaScript` + `Globals` + `Extensions` | ≈ 6 500 | ✅ |
 | **`Broiler.JS.Clr` / `.Modules` / `.ModuleExtensions` / `.Debugger` / `.Network` / `.NodePolyfill`** | unchanged in role | ≈ 5 000 | mixed — `Clr` is inherently reflective |
 | **`Broiler.JS.All`** | meta-package: IL + Bytecode + every satellite | — | ❌ |
@@ -355,11 +349,10 @@ backend-specific. Re-point it at A-3's contract.
 This is not a wholesale move of `Compiler`: phases 1–5 also built semantic analysis that the
 bytecode path must share. Project shells and dual-backend tests determine the split.
 
-### A-7 · The JavaScript-profile AOT gate — **the item the requirement reduces to**
+### A-7 · The AOT-clean graph gate — **the item the requirement reduces to**
 
-A sample application that references **only the project set approved by MOD-M2 plus the
-statically registered Broiler.VM JavaScript profile for the JavaScript/AOT composition**—never
-the IL composition—and:
+A sample application that references **only the project set approved by MOD-M2 plus the numeric
+bytecode runtime**—never the IL composition—and:
 
 ```xml
 <PublishAot>true</PublishAot>
@@ -368,20 +361,17 @@ the IL composition—and:
 <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 ```
 
-**It must publish with zero trim/AOT warnings and then execute the representative JavaScript
-manifest** — not only a numeric expression. `samples/Broiler.JavaScript.NativeAotSample`
-already sets `PublishAot=true`; whether it grows in place or is replaced by a Broiler.VM
-composition sample is decided by the project-shell graph. Execution-only and runtime-compiler
-samples remain separate.
+**It must publish with zero trim/AOT warnings and then execute its representative workload.**
+`samples/Broiler.JavaScript.NativeAotSample` already sets `PublishAot=true` and is the sample
+this gate grows in place.
 
 **Wire it into CI as a build gate.** An AOT guarantee that is not checked by a build is a
 comment.
 
-> **What this gate can prove before phase 6 exists.** With today's 20-opcode bytecode, the
-> "real script" is a numeric one and the gate proves only that *the graph* is AOT-clean.
-> **That is worth having on its own** — it is the half that phases 6–9 cannot deliver and
-> this restructure can — and it turns phase 6 from "build a VM and hope the packaging works"
-> into "grow an assembly that already publishes."
+> **What this gate proves.** With the 20-opcode bytecode, the "real script" is a numeric one
+> and the gate proves that *the graph* is AOT-clean — that every Emit dependency is isolated
+> in the IL backend and nothing else in the approved project set reaches dynamic code. That is
+> the whole of its value now, and it is worth having on its own.
 
 ### A-8 · Architecture tests that lock the graph
 
@@ -430,13 +420,12 @@ A-0 / MOD-M2 verified graph
 
 ## Exit gate
 
-1. **A statically registered Broiler.VM JavaScript execution-only application publishes with
-   `PublishAot=true` and zero trim/AOT warnings, and executes the approved representative
-   manifest** — in CI, on every commit. A runtime-compiler composition, if selected, has a
-   separate publish-and-run gate.
+1. **An application built from the approved non-IL project set publishes with
+   `PublishAot=true` and zero trim/AOT warnings, and executes its representative workload** —
+   in CI, on every commit.
 2. **Architecture tests assert that only the approved IL composition references
-   `System.Reflection.Emit`**, that shared FrontEnd/Semantics and runtime foundations
-   reference neither back end, and that the Broiler.VM JavaScript composition has no IL closure.
+   `System.Reflection.Emit`**, and that shared FrontEnd/Semantics and runtime foundations
+   reference neither back end.
 3. **The pinned test262 manifests are unchanged on the IL path**, manifest by manifest.
    Structural moves preserve the count; semantic extraction additionally passes the
    dual-backend and conformance gates because it is not assumed to be a pure move.
@@ -449,10 +438,9 @@ A-0 / MOD-M2 verified graph
 
 ## Dependencies and risks
 
-- **Blocks [phase 6](Phase-6.md)'s JavaScript capability, not Broiler.VM core or
-  WebAssembly.** A JavaScript adapter/compiler that transitively references `Reflection.Emit`
-  cannot serve the NativeAOT composition, so phase 6 would deliver an interpreter and not the
-  thing it is *for*. **Do A-0 and A-1 before phase 6's item 6-2.**
+- **This is what makes an AOT-clean composition possible at all.** Anything that
+  transitively references `Reflection.Emit` cannot serve a NativeAOT composition, so the
+  isolation is the precondition for every claim that one publishes and runs.
 - **Serves track one too.** `Component.md` §4 and §5 owe trimmed-support scoping, linker
   warning resolution, the magic-name probing retirement, and a decision on whether feature
   satellites improve startup and working set. **A-2 and A-4 are those items**, and A-7

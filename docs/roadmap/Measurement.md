@@ -214,8 +214,8 @@ summary must be regenerable from the retained raw bundle and immutable manifest.
 Hosts should select a profile explicitly. A smaller package or faster context is not a
 conformance win if required globals are absent.
 
-This is a **JavaScript bootstrap profile**, not a Broiler.VM language profile. In the future
-Broiler.VM terminology, `JavaScript` and `WebAssembly` identify bytecode languages, while
+This is a **JavaScript bootstrap profile**. Elsewhere in the platform `JavaScript` and
+`WebAssembly` identify bytecode languages executed by the separate Broiler.VM component, while
 `execution-only`, `narrow-runtime-compiler`, and `general-runtime-compiler` identify deployment/
 compiler compositions. Record all applicable dimensions separately; a `Full` bootstrap result
 does not by itself say which executor or compiler closure ran.
@@ -232,8 +232,8 @@ not implement the JavaScript object model, strings, properties, arrays, calls, c
 exceptions, modules, async/generators, host callbacks, `eval`, or runtime compilation.
 Do not describe it as Native AOT support for the full engine.
 
-The future Broiler.VM JavaScript built-in is a separate production target governed by
-`Broiler.VM/docs/roadmap.md` and Phases 6–9. Until its own correctness and publish-and-run gates
+A Broiler.VM JavaScript profile is a separate component with its own roadmap and evidence
+ledger, and is not planned here. Until its own correctness and publish-and-run gates
 pass, `Portable` measurements remain numeric-seed evidence. WebAssembly-profile measurements are
 not JavaScript controls and belong in the Broiler.VM evidence set.
 
@@ -333,7 +333,7 @@ evidence. The probe corpus itself is Appendix A.
 Intl/Temporal realization), `FullEager` (the comparison/compatibility profile), or
 `Minimal` (deliberately reduced and non-conformant). Say which one a measurement used:
 a smaller package or faster context is not a win if required globals are absent.
-Also record the executor (`IL` or Broiler.VM `JavaScript`), deployment/compiler composition,
+Also record the executor, deployment/compiler composition,
 VM profile/format/feature versions, and whether the path compiled source, loaded a verified
 artifact, or hit a persisted cache. Do not overload the bootstrap-profile field with them.
 

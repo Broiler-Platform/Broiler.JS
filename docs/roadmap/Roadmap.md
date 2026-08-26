@@ -134,22 +134,15 @@ for their items and exit gates. Where an older table here conflicts with either,
 | **Phase 3** — value representation | [`Phase-3.md`](Phase-3.md) | [`Phase-3.status.md`](Phase-3.status.md) |
 | **Phase 4** — speculation | [`Phase-4.md`](Phase-4.md) | [`Phase-4.status.md`](Phase-4.status.md) |
 | **Phase 5** — RegExp | [`Phase-5.md`](Phase-5.md) | [`Phase-5.status.md`](Phase-5.status.md) |
-| | | |
-| **Phase 6** — JavaScript profile 1.0, correctness | [`Phase-6.md`](Phase-6.md) | [`Phase-6.status.md`](Phase-6.status.md) |
-| **Phase 7** — JavaScript profile 2.0, shippability | [`Phase-7.md`](Phase-7.md) | [`Phase-7.status.md`](Phase-7.status.md) |
-| **Phase 8** — JavaScript profile 3.0, measured optimization and persistence | [`Phase-8.md`](Phase-8.md) | [`Phase-8.status.md`](Phase-8.status.md) |
-| **Phase 9** — JavaScript profile 4.0, optional IL/bytecode adaptivity | [`Phase-9.md`](Phase-9.md) | [`Phase-9.status.md`](Phase-9.status.md) |
-| **The assembly restructure** — track two's precondition | [`Assemblies.md`](Assemblies.md) | [`Assemblies.status.md`](Assemblies.status.md) |
+| **The assembly restructure** — backend and AOT boundaries | [`Assemblies.md`](Assemblies.md) | [`Assemblies.status.md`](Assemblies.status.md) |
 | **The `ExpressionCompiler` split** — its first executable piece, analyzed in full | [`AssemblySplit.md`](AssemblySplit.md) | [`AssemblySplit.status.md`](AssemblySplit.status.md) |
 | **Concurrency and compile-ahead** — ownership, bounded work and Workers | [`Concurrency.md`](Concurrency.md) | [`Concurrency.status.md`](Concurrency.status.md) |
 | **Modernization orchestration** — dependencies and terminal decisions across all tracks | [`Modernization.md`](Modernization.md) | MOD-M0-1 will create the single machine-readable state source at `eng/performance/roadmap-items.json`; it does not exist yet |
 
-**Phases 0–5 are track one**, the IL path, and contain the campaign's measured history.
-**Phases 6–9 are [track two](#track-two--the-vm-tier-phases-69)**, the JavaScript built-in
-profile on Broiler.VM. No production JavaScript-profile phase has started. The generic VM
-host/catalog and WebAssembly built-in are owned by `Broiler.VM/docs/roadmap.md`; MOD-M9 selects
-only the JavaScript `execution-only`, `narrow-runtime-compiler`, or
-`general-runtime-compiler` composition and replaces the older stand-alone 6-0 scoping exercise.
+**Phases 0–5 are the whole campaign**, the IL path, and contain its measured history. The
+former phases 6–9 planned a JavaScript bytecode profile on Broiler.VM; that plan is retired
+from this component, and Broiler.VM is a separate clean-room component whose profiles have
+their own roadmaps.
 
 **Three documents are neither**, because they are not phases of this campaign:
 
@@ -182,10 +175,6 @@ when historical rows call their spread a satisfied “noise band.”
 | **3** — arithmetic | **3-0, 3-3, 3-5, 3-6, 3-7 ✅; 3-8 counted and refused as written.** The dual-representation numeric local is **refuted on four populations running**, each measured before it was built. What is left is an XL bidding against 2.6%, and nothing here should be started on a box count again | [phase 3](Phase-3.md), [items 3-1 and 3-8](Phase-3.md) |
 | **4** — tiering | **4-1, 4-2a, 4-2b, 4-3a, 4-3b ✅; 4-2c refuted at 0.119%.** The phase's largest measured target is **4-5 at 6.50% of the corpus**, of which 92% of the bookkeeping is Annex B `caller`/`arguments`; its named fix was priced at 0.20% and refused, and the 1.46% that is left is gated on a soundness question nobody has answered | [phase 4](Phase-4.md) |
 | **5** — regex | **Every item this phase named is closed, item 2 included.** The gate overturned the phase once (`Matcher.cs` is not on the Octane path) and item 2 overturned it again: **the matcher is 4.6–6.5% of what `re.test` costs**, so nothing aimed at matching can move this suite. The remaining target is the **fixed ~2.4 µs and 2 431 B every regex call pays** | [phase 5](Phase-5.md) |
-| **6** — JavaScript VM correctness | ❌ **not started.** MOD-M9 must select `execution-only`, `narrow-runtime-compiler`, or `general-runtime-compiler`. The landed numeric portable seed and source compiler are evidence for an execution-only island, not the JavaScript built-in or a production runtime-compiler closure; VM core or WebAssembly work cannot close this row | [phase 6](Phase-6.md), [MOD-M9 composition](Modernization.md#mod-m9--select-the-javascript-built-ins-deploymentcompiler-composition) |
-| **7** — VM baseline performance | ❌ **not started.** Requires Phase 6's approved JavaScript capability manifest and MOD-M1's uninstrumented baseline. Runtime structures may be reused only through explicit function/realm ownership; process-global mutable caches are not inherited “unchanged” | [phase 7](Phase-7.md) |
-| **8** — persistence and adaptive interpretation | ❌ **not started.** Versioned verified persistence, feedback, quickening, superinstructions and dispatch work are separate, measurement-gated items; each requires a current workload population and concurrency-safe ownership | [phase 8](Phase-8.md) |
-| **9** — optional tiering/deoptimization | ❌ **not started.** An interpreter frame alone does not make deoptimization possible. Tier-up, explicit `DeoptState`, invalidation, reconstruction, OSR and threshold policy require separate feasibility and correctness gates | [phase 9](Phase-9.md) |
 
 ---
 
@@ -341,85 +330,7 @@ half in the column it was not looking at.
 
 ---
 
-## Track two — the VM tier (phases 6–9)
-
-**Phases 0–5 improve the IL path. Phases 6–9 now describe the JavaScript built-in profile
-for Broiler.VM and its later, separately justified JavaScript/IL adaptive tier.** They do not
-own the generic VM core, WebAssembly execution, or future built-in registration. No production
-JavaScript-profile phase has started. Modernization milestone MOD-M9 selects an
-`execution-only`, `narrow-runtime-compiler`, or `general-runtime-compiler` JavaScript
-composition and closes/replaces the older Phase 6 item 6-0 study; it cannot cancel Broiler.VM
-or WebAssembly.
-
-### The capability gap
-
-**Broiler.JS today has no general JavaScript execution path on a platform that forbids
-`System.Reflection.Emit`.** The repository now contains a small `Broiler.JavaScript.Portable`
-runtime, a separate `Broiler.JavaScript.Portable.Compiler`, and a Native AOT sample. That is
-valuable implementation evidence, but the current portable language is a numeric island and
-the sample exercises precompiled bytecode. It proves neither a general JavaScript runtime nor
-that the parser/compiler closure can compile source inside a Native AOT process.
-
-**The original impossible dependency edge has been removed.** The expression model now lives
-in the Emit-free `Broiler.JavaScript.Expressions` assembly and the IL emitter remains in
-`Broiler.JavaScript.ExpressionCompiler`; `Parser` no longer has to reference the emitter.
-[`AssemblySplit.status.md`](AssemblySplit.status.md) records that landed state. Validation and
-the larger production boundary are still open: [`Assemblies.md`](Assemblies.md) must prove an
-acyclic graph, a backend-neutral semantic contract, an honest IL boundary, explicit backend
-registration, and separate execution-only versus runtime-compiler AOT closures.
-
-| Phase | Catalogue stage | Delivers | Blocked on |
-|---|---|---|---|
-| [**6**](Phase-6.md) | JavaScript correctness and deployment | A shared production JavaScript semantic IR, JavaScript value/frame ABI, JavaScript profile format/verifier, vertical interpreter slices, and the capability manifest approved by MOD-M9 on the Broiler.VM foundation | Broiler.VM core/profile contracts, the MOD-M9 composition decision, and the applicable MOD-M2/MOD-M3/MOD-M4 graph and packaging gates |
-| [**7**](Phase-7.md) | uninstrumented baseline performance | A shippability decision based on the current product corpus, with function/realm-owned inline-cache state and explicit slow paths | accepted Phase 6 scope, MOD-M1 baseline and MOD-M6 ownership where state is shared or concurrent |
-| [**8**](Phase-8.md) | persistence and measured adaptive interpretation | Independently gated bytecode persistence, feedback, quickening, superinstructions and dispatch improvements | stable verified format, Phase 7 attribution, MOD-M1, and MOD-M6 for shared/adaptive state |
-| [**9**](Phase-9.md) | optional JavaScript tiering/deoptimization | Independently gated JavaScript function promotion, explicit deopt-state/reconstruction, and OSR slices whose product value justifies their complexity; none is a WebAssembly or generic-VM gate | a runtime-compiler JavaScript composition, a dynamic-code-capable host that requires adaptivity, stable Phase 6 identities/ABI, accepted Phase 7 baseline/shippability evidence, MOD-M1, and the gate of the selected branch |
-
-### Four things that must be said before anyone starts
-
-**Capability and performance are separate decisions.** Phase 6 may be worthwhile because it
-runs where the IL backend cannot. It closes on correctness, format safety and deployability,
-not on a throughput claim. Startup, steady-state, memory and package-size comparisons remain
-separate MOD-M1 decisions; persistence is not presumed to beat lazy IL compilation.
-
-**It is a second backend, and the risk is a second semantics.** Sharing an AST is
-insufficient. The production semantic analysis/lowering boundary must be extracted and the
-IL arm migrated first. Conformance is three-way: pinned expected result, IL result and
-bytecode result. IL/bytecode agreement cannot excuse a shared wrong answer.
-
-**Reuse semantics and immutable structure; do not inherit mutable ownership accidentally.**
-Shapes, property maps, element storage and slow semantic operations can be shared behind
-explicit contracts. Inline caches, feedback, quickening overlays and tier counters must be
-owned by a function/script/realm as appropriate, bounded, generation-aware and safe under
-the concurrency model. Process-global emitted-site indexes are not a bytecode state model.
-
-**A JavaScript-profile bytecode format is a trust and compatibility boundary once persisted.**
-Qualify its identity by Broiler.VM language-profile ID, format version, and feature manifest. Version it,
-verify it before execution, bound every section/resource, define cache keys and atomic
-replacement, reject corrupt/incompatible data, and fuzz the verifier. A runtime-compiler
-composition may fall back to source recompilation; execution-only must instead fail the bad
-load deterministically and accept a fresh verified precompiled artifact. Do not freeze a
-“whole-language” opcode list before the semantic IR and JavaScript-profile ABI.
-
-### What the track may pay back into track one
-
-**Item 4-3 asked for V8-style deoptimization and was re-specified because it is not
-expressible here** — tier-1 locals are CLR locals of an IL method and `CallFrame` carries no
-JavaScript values, so there is no interpreter frame to reconstruct. It became a restart
-contract plus an in-method fallback; the restart contract is sound only under a condition
-held by *two unrelated accidents*; and item **4-4 is still deferred** partly behind that
-compromise.
-
-**Phase 6 can create a reconstructable frame ABI, but that does not itself create
-deoptimization.** Phase 9 must explicitly define `DeoptState`, safepoints, value
-materialization, exception/suspension state, invalidation and reconstruction before any
-**deopt-enabled** configuration ships. Function-level VM→IL promotion is a separate 9-0 →
-9-1 → 9-2 branch with a retained VM fallback, failure/backoff policy, and quiescent
-publication; it does not imply IL→VM reconstruction. Deoptimization is optional work with
-its own correctness and value gate, not an automatic dividend of writing an interpreter
-loop.
-
-### Sequencing against track one
+## Sequencing against track one
 
 The tracks do not block routine IL-path fixes, but they are **not dependency-independent**.
 MOD-M9 may perform capability discovery after MOD-M0, then the selected JavaScript composition requires MOD-M2's shared

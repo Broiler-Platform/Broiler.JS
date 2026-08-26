@@ -37,12 +37,11 @@ features. `Broiler.JavaScript.Portable` is not the full engine and must not be p
 as Native AOT support for general JavaScript. See
 [Performance measurement and execution modes](roadmap/Measurement.md).
 
-The planned Broiler.VM integration does not change that current support statement.
+No Broiler.VM integration is planned for this component, and none changes that statement.
 `JavaScript` and `WebAssembly` will be VM **language profiles**; execution-only and
 runtime-compiler choices will be deployment/compiler **compositions**; neither is a
 `JavaScriptBootstrapProfile`. Planned package names and APIs remain hypotheses until the
-Broiler.VM graph and Phase 6 gates close. See `Broiler.VM/docs/roadmap.md` in the aggregate
-repository and the [JavaScript Phase 6 plan](roadmap/Phase-6.md).
+this component's assembly and AOT gates close.
 
 ## Diagnostics surface
 

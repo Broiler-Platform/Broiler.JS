@@ -160,7 +160,7 @@ than tracked here: resolving linker warnings before claiming trimmed support, re
 magic-name assembly probing, deciding whether feature satellites beyond the sample improve
 startup and working set, and exposing an AOT-clean semantics/runtime boundary for the
 JavaScript built-in. Generic profile registration, common execution lifecycle, WebAssembly,
-and the future-built-in gate are owned by `Broiler.VM/docs/roadmap.md` in the aggregate
+and the future-built-in gate are owned by the separate Broiler.VM component in the aggregate
 repository. **Magic-name probing in particular is promoted from hygiene to blocker** — runtime
 discovery is incompatible with the closed-world NativeAOT composition, so item A-7 cannot pass
 while it exists.
@@ -181,8 +181,8 @@ gates in [`Measurement.md`](Measurement.md).
 > model now lives in `Broiler.JavaScript.Expressions`, while final S-7 validation remains
 > open. [`Assemblies.md`](Assemblies.md) plans the rest, but its original Base/Core merge
 > sketch is superseded pending the verified MOD-M2 graph. The current hypotheses keep a shared
-> FrontEnd/Semantics layer independent of both IL and bytecode lowering and require a
-> statically registered Broiler.VM JavaScript execution-only publish-and-run Native AOT gate,
+> FrontEnd/Semantics layer independent of the IL backend and require an AOT-clean
+> publish-and-run gate for it,
 > kept separate from any runtime-compiler closure. Item **A-9** is
 > the `Broiler.JavaScript.*` → `Broiler.JS.*` rename, which is a **breaking change to every
 > assembly name and package id** and closes under the rules below.
