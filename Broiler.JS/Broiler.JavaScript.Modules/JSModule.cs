@@ -23,8 +23,13 @@ public partial class JSModule : JSObject
 
     public JSModule(in Arguments a) => throw new NotSupportedException();
 
+    /// <summary>The context that loaded this module, kept so <see cref="Meta"/> can ask it what a
+    /// module key's URL is — the one part of <c>import.meta</c> only the host can answer.</summary>
+    private readonly JSModuleContext moduleContext;
+
     public JSModule(JSModuleContext context, JSObject exports, string name, bool isMain = false) : this(context.ModulePrototype)
     {
+        moduleContext = context;
         filePath = name;
         dirPath = "./";
         this.exports = exports;
@@ -32,6 +37,7 @@ public partial class JSModule : JSObject
 
     internal JSModule(JSModuleContext context, string name, string code = null) : this(context.ModulePrototype)
     {
+        moduleContext = context;
         filePath = name;
         dirPath = System.IO.Path.GetDirectoryName(dirPath);
         Code = code;
@@ -57,6 +63,48 @@ public partial class JSModule : JSObject
                 throw JSEngine.NewTypeError("Exports cannot be set to null or undefined");
 
             exports = value;
+        }
+    }
+
+    private JSObject meta;
+
+    /// <summary>
+    /// The module's <c>import.meta</c> object — what <c>import.meta</c> compiles to a read of.
+    /// </summary>
+    /// <remarks>
+    /// Created once and then stable, because <c>import.meta === import.meta</c> and a module is
+    /// entitled to hang its own state off it: per ES2025 §16.2.1.9 the object is created on first
+    /// access and the same object is returned to every later evaluation in that module. It is an
+    /// ordinary extensible object with a <b>null prototype</b>, so a property a module adds cannot
+    /// be confused with one inherited from <c>Object.prototype</c>.
+    /// <para>
+    /// It carries <c>url</c> and nothing else. <c>import.meta.resolve</c> is deliberately absent,
+    /// and the reason is this context's resolver rather than the amount of code: <see
+    /// cref="JSModuleContext.Resolve"/> is existence-based — it probes the filesystem and returns
+    /// null for a specifier that does not name a file that is there — while
+    /// <c>import.meta.resolve</c> is specified to resolve a specifier to a URL whether or not
+    /// anything is at it. Building it on this resolver would throw for a path that a browser answers,
+    /// which is a wrong answer to a resolution question rather than a missing one; a page can feature
+    /// -detect the absence and cannot detect the wrongness. Making the resolver able to answer
+    /// without loading is its own change. Node's <c>dirname</c>/<c>filename</c> are Node-specific and
+    /// are not part of the web platform's <c>import.meta</c> at all.
+    /// </para>
+    /// </remarks>
+    [JSPrototypeMethod]
+    [JSExport("meta")]
+    public JSValue Meta
+    {
+        get
+        {
+            if (meta != null)
+                return meta;
+
+            meta = new JSObject { BasePrototypeObject = null };
+            var url = moduleContext?.GetModuleUrl(filePath);
+            if (url != null)
+                meta.FastAddValue((KeyString)"url", CreateString(url), JSPropertyAttributes.EnumerableConfigurableValue);
+
+            return meta;
         }
     }
 

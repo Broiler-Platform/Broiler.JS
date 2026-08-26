@@ -422,6 +422,40 @@ public class JSModuleContext : JSContext
     protected virtual string GetModuleDirectory(string fullPath) => Path.GetDirectoryName(fullPath);
 
     /// <summary>
+    /// The absolute URL of a resolved module key — what that module's <c>import.meta.url</c> reports.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Only the host knows what its keys are. The default handles the two forms this context itself
+    /// produces: a key that is already an absolute URI (what a URL-loading host resolves to) is
+    /// reported verbatim, and a filesystem path is converted to a <c>file://</c> URL, because
+    /// <c>import.meta.url</c> is specified as a URL and a bare path is not one. A host with keys of
+    /// another shape overrides this.
+    /// </para>
+    /// <para>
+    /// Returning <see langword="null"/> is meaningful: the module's <c>import.meta</c> then carries
+    /// no <c>url</c> at all rather than an invented one, so a module whose key cannot be expressed as
+    /// a URL reads <c>undefined</c> — which a script can detect — instead of a plausible lie.
+    /// </para>
+    /// </remarks>
+    protected internal virtual string GetModuleUrl(string moduleKey)
+    {
+        if (string.IsNullOrEmpty(moduleKey))
+            return null;
+
+        if (Uri.TryCreate(moduleKey, UriKind.Absolute, out var absolute))
+            return absolute.AbsoluteUri;
+
+        try
+        {
+            return new Uri(Path.GetFullPath(moduleKey)).AbsoluteUri;
+        }
+        catch (ArgumentException) { return null; }
+        catch (NotSupportedException) { return null; }
+        catch (PathTooLongException) { return null; }
+    }
+
+    /// <summary>
     /// Reads the source text of a resolved module whose <see cref="JSModule.Code"/> has not been supplied.
     /// The default reads the file at <see cref="JSModule.filePath"/>; a host that fetches modules over
     /// another transport (e.g. HTTP/data URLs under a content-security policy) overrides this.
