@@ -195,9 +195,19 @@ partial class FastCompiler
         var returnableVar = BExpression.Variable(typeof(IReturnableEnumerator));
         var iterDoneVar = BExpression.Variable(typeof(bool));
 
+        // for-await steps in three pieces so the *async function* awaits the iterator's result:
+        // call next(), await what it returned, then read done/value off the settled record. The
+        // enumerator used to unwrap the promise itself with a blocking wait, which works only while
+        // the promise is already settled — the moment next() returns `something.then(…)`, the job
+        // that would settle it can never run, because the queue that runs it drains on the way out
+        // of the execution the thread is blocked inside. See Runtime/AsyncIterationStep.
+        var asyncStepVar = forOfStatement.IsAwait ? BExpression.Variable(typeof(JSValue)) : null;
+
         var pList = new Sequence<BParameterExpression> { en, returnableVar, iterDoneVar, completionVar };
         if (iterationValueVariable != null)
             pList.Add(iterationValueVariable);
+        if (asyncStepVar != null)
+            pList.Add(asyncStepVar);
 
         var bodyListItems = new Sequence<BExpression>
         {
@@ -207,13 +217,29 @@ partial class FastCompiler
             // iterator "done" while stepping and reading the value so a throw from MoveNext
             // skips the finally/catch close, then clear it once the value is in hand.
             BExpression.Assign(iterDoneVar, BExpression.Constant(true)),
+        };
+
+        if (asyncStepVar != null)
+        {
+            bodyListItems.Add(BExpression.Assign(asyncStepVar, IElementEnumeratorBuilder.AsyncNextRaw(en)));
+            bodyListItems.Add(BExpression.Assign(asyncStepVar, BExpression.Await(asyncStepVar)));
+            // When the settled record says done the iterator finished normally; leave it marked
+            // done so finally does NOT call return().
+            bodyListItems.Add(BExpression.IfThen(
+                IElementEnumeratorBuilder.AsyncStepIsDone(asyncStepVar),
+                BExpression.Goto(s.Break)));
+            bodyListItems.Add(BExpression.Assign(identifier, IElementEnumeratorBuilder.AsyncStepValue(asyncStepVar)));
+        }
+        else
+        {
             // When MoveNext returns false the iterator finished normally;
             // leave it marked done so finally does NOT call return().
-            BExpression.IfThen(
+            bodyListItems.Add(BExpression.IfThen(
                 BExpression.Not(IElementEnumeratorBuilder.MoveNext(en, identifier)),
-                BExpression.Goto(s.Break)),
-            BExpression.Assign(iterDoneVar, BExpression.Constant(false))
-        };
+                BExpression.Goto(s.Break)));
+        }
+
+        bodyListItems.Add(BExpression.Assign(iterDoneVar, BExpression.Constant(false)));
 
         if (forOfStatement.IsAwait)
             bodyListItems.Add(BExpression.Assign(identifier, BExpression.Await(identifier)));

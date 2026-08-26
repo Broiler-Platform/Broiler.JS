@@ -40,12 +40,49 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
         }
     }
 
+    /// <summary>
+    /// Unwraps a promise the iterator handed back, for the two members <c>for await</c> reaches only
+    /// on an abrupt completion — <c>return()</c> and <c>throw()</c>.
+    /// </summary>
+    /// <remarks>
+    /// <b>Only when the promise is already settled.</b> This is a blocking wait on the one thread
+    /// allowed to run this context's JavaScript, so a promise that still needs a job to run could
+    /// never settle here — the queue that would run it drains on the way out of the execution this
+    /// thread is inside. The loop's own stepping no longer comes through here at all: it hands the
+    /// raw result to the async function and lets it await (see <see cref="AsyncIterationStep"/>).
+    /// An unsettled <c>return()</c>/<c>throw()</c> result is left as the promise rather than waited
+    /// for, which loses the closing value but does not hang the agent.
+    /// </remarks>
     private readonly JSValue AwaitIfNeeded(JSValue result)
     {
-        if (awaitResult && result is IJSPromise promise)
+        if (awaitResult && result is IJSPromise promise && promise.Task.IsCompleted)
             return promise.Task.GetAwaiter().GetResult();
 
         return result;
+    }
+
+    /// <summary>
+    /// One step of <c>for await…of</c>: the iterator's own <c>next()</c> result, unexamined, so the
+    /// async function awaits it rather than the host blocking on it.
+    /// </summary>
+    /// <remarks>
+    /// The result is not validated here: for a real async iterator the object that has to be an
+    /// object is what the promise <em>resolves to</em>, so checking it before the await would test
+    /// the wrong value. <see cref="AsyncIterationStep.IsDone"/> checks it afterwards. A throwing
+    /// <c>next()</c> still marks the iterator done, which is what stops IteratorClose calling
+    /// <c>return()</c> on it.
+    /// </remarks>
+    public JSValue AsyncNextRaw()
+    {
+        try
+        {
+            return nextMethod.InvokeFunction(new Arguments(iterator));
+        }
+        catch
+        {
+            done = true;
+            throw;
+        }
     }
 
     private readonly JSValue ValidateIteratorResult(JSValue result, string methodName)
