@@ -6,7 +6,7 @@ census below is preserved as a dated snapshot, but its conclusion that the wider
 no rescope is superseded: the proposed Base and Core folds create project cycles. MOD-M2 must
 produce the replacement graph before further consolidation.
 
-The later Broiler.VM component decision also supersedes the old sketch's aspirational
+The later component split also supersedes the old sketch's aspirational
 `Broiler.JS.Bytecode`, `.Bytecode.Compiler`, and `.Aot` ownership. This status remains the
 evidence ledger for the Broiler.JS graph only; generic VM/catalog or WebAssembly progress is
 recorded under `Broiler.VM/docs/roadmap.md` and does not change any state below.

@@ -3,10 +3,9 @@
 Project files are the dependency-graph source of truth. This document records the
 intended direction and the cross-assembly seams that a contributor must preserve.
 
-This document owns the Broiler.JS side of the future Broiler.VM integration. The generic VM
-runtime/catalog, WebAssembly built-in, and future built-in contract are owned by
-`Broiler.VM/docs/roadmap.md` in the aggregate repository. In this file, *VM language profile*
-means JavaScript or WebAssembly; *JavaScript bootstrap profile* and *deployment/compiler
+This document owns this component's assembly dependency rules. Broiler.VM is a separate
+component with no dependency edge to this one in either direction, and nothing here plans an
+integration with it. In this file, *JavaScript bootstrap profile* and *deployment/compiler
 composition* are separate concepts.
 
 > **The first graph change has landed; the wider target remains a hypothesis.**
@@ -64,7 +63,6 @@ The project-shell spike must prove an acyclic graph around these canonical hypot
 | FrontEnd/Semantics | `Parser` plus backend-neutral binding, scope, early-error, hoisting, and analysis code extracted from `Compiler`/lowering | Shared by IL and bytecode; references neither back end |
 | Runtime and engine services | `Runtime`, `Engine` | Remain separate unless project shells prove a consolidation acyclic |
 | IL back end | expression emitter, IL-specific lowering, `AssemblyCodeCache`, and `ILPack` | The only backend boundary allowed to use `System.Reflection.Emit` |
-| Broiler.VM JavaScript handoff | profile-specific artifact contract, JavaScript runtime adapter, and optional offline/runtime compiler placement | Uses shared JavaScript semantics and the generic Broiler.VM profile contract, never IL; exact project direction is proved by shells |
 | Composition and features | hosting, built-ins, optional hosts, IL and NativeAOT compositions | Back ends and VM language profiles are registered explicitly; reduced compositions publish their omissions |
 
 The names are provisional; dependency direction and ownership are the contract. A complete
@@ -89,10 +87,8 @@ publish-and-run gate decide whether the hypotheses become the target.
 - Built-ins belong in `BuiltIns`; host-global registration belongs in `Globals`.
 - Optional hosts should reference the smallest required assemblies instead of using
   `All` internally.
-- JavaScript bytecode lowering and the Broiler.VM JavaScript adapter remain independent of the
-  dynamic-code path. Sharing the parser and FrontEnd/Semantics is intended; reaching the IL
-  emitter is not. Generic Broiler.VM must not expose JavaScript runtime types, and its
-  WebAssembly profile must not depend on Broiler.JS.
+- The numeric bytecode path remains independent of the dynamic-code path. Sharing the parser
+  and FrontEnd/Semantics is intended; reaching the IL emitter is not.
 - Nested DateTime, Regex, and Unicode components are implementation dependencies of
   feature code; they must not leak into lower-layer public contracts unnecessarily.
 
@@ -105,8 +101,7 @@ The supported communication mechanisms are:
 - Runtime-owned typed factory delegates populated by feature initializers;
 - `DefaultBuiltInRegistry` extension points;
 - compiler/backend and CLR registration interfaces;
-- the statically composed Broiler.VM language-profile descriptor/factory contract described by
-  `Broiler.VM/docs/roadmap.md` in the aggregate repository; and
+- the backend registration contract described above; and
 - narrowly scoped module-initializer wiring documented in
   [Module initializers and bootstrap](module-initializers.md).
 
