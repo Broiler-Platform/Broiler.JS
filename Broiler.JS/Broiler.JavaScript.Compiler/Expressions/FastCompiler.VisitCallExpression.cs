@@ -269,24 +269,37 @@ partial class FastCompiler
             // evaluation requires. The temps come from a pool, and a nested call inside those
             // same arguments is handed the very same two back — which is safe only because
             // ordinary code has both values on the evaluation stack by the time an argument
-            // runs. A suspension anywhere in the argument list ends that: the generator/async
-            // rewrite spills the argument evaluation into statements that run BETWEEN the two
-            // assignments and the invocation, so the nested call's assignment is what this
-            // call then invokes. `obj.hit(await Promise.resolve(1))` called `Promise.resolve`
-            // a second time and dropped the `obj.hit` the source asked for — silently, since
-            // the wrong callee returns a value nobody looks at. Locals declared on this call's
-            // own block cannot be handed to another call, so they cannot be clobbered.
-            // Asked of the enclosing body first, so an ordinary function pays nothing: only a
-            // generator, an async function, or a program with top-level await has a state
-            // machine for a suspension to split, and `Generator` is the scope's own record of
-            // being one. Without it every member call in every script would walk its argument
-            // list looking for an await that cannot be there.
-            var argumentsSuspend = scope.Top.Generator != null
-                && ArgumentEvaluationSuspends(me, arguments);
-            var receiver = argumentsSuspend
+            // runs.
+            //
+            // Inside a generator or async body that is no longer true, because FlattenBlocks
+            // (the generator rewrite's last pass) hoists any operand that compiled to a BLOCK
+            // out to statement level and passes a spilled temp in its place. A nested member
+            // call compiles to exactly such a block — `Assign(recv, target); Assign(callee,
+            // recv[name]); Invoke(callee, …)` — so once it is hoisted, ITS two assignments run
+            // between this call's two assignments and this call's invocation. Sharing the pool
+            // then means the outer call invokes the inner call's callee on the inner call's
+            // receiver: `trace.push(items.join('+'))` re-ran `items.join` and dropped the
+            // `trace.push` the source asked for, silently, because the wrong callee returns a
+            // value nobody looks at. Locals declared on this call's own block cannot be handed
+            // to another call, so they cannot be clobbered.
+            //
+            // The test is made against the COMPILED operands rather than against the source,
+            // because "does this hoist?" is a property of what it compiled to. An operand that
+            // compiled to a bare parameter or a constant emits no statements at all, so there
+            // is nothing FlattenBlocks can hoist out of it and the pool stays safe; anything
+            // else is treated as hoistable. That cannot under-approximate, which an AST-level
+            // scan for `await`/`yield` did: it was written for `obj.hit(await p)` and answered
+            // "no" for the far more common `obj.hit(a.b())`, which needs the same locals for
+            // the same reason and had the same bug.
+            //
+            // Asked of the enclosing body first, so an ordinary function pays nothing: nothing
+            // hoists there, and `Generator` is the scope's own record of having a state machine
+            // at all.
+            var operandsHoist = scope.Top.Generator != null && (spread || MayHoist(name) || MayHoist(args));
+            var receiver = operandsHoist
                 ? BExpression.Parameter(typeof(JSValue), "#recv")
                 : te.Variable;
-            var resolvedMethod = argumentsSuspend
+            var resolvedMethod = operandsHoist
                 ? BExpression.Parameter(typeof(JSValue), "#callee")
                 : te2.Variable;
 
@@ -295,13 +308,21 @@ partial class FastCompiler
             // argument, and a captured closure variable cannot be loaded by address;
             // copy it into a method-local temp (which can) first.
             BExpression invocation;
+            BParameterExpression privateKeyLocal = null;
             if (isPrivateMethodKey)
             {
+                // Pooled like the two above, and clobbered the same way: `this.#a(this.#b())`
+                // in an async body hoists the inner call's key assignment between this one's
+                // and its use. Same remedy — a local on this call's own block.
                 using var keyTemp = scope.Top.GetTempVariable(typeof(KeyString));
+                privateKeyLocal = operandsHoist
+                    ? BExpression.Parameter(typeof(KeyString), "#key")
+                    : null;
+                var key = privateKeyLocal ?? keyTemp.Variable;
                 invocation = BExpression.Block(
                 [
-                    BExpression.Assign(keyTemp.Variable, name),
-                    JSValueBuilder.InvokeMethod(receiver, resolvedMethod, target, keyTemp.Variable, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain),
+                    BExpression.Assign(key, name),
+                    JSValueBuilder.InvokeMethod(receiver, resolvedMethod, target, key, args, spread, me.Coalesce, coalesce, inChain || me.InOptionalChain),
                 ]);
             }
             else
@@ -315,15 +336,18 @@ partial class FastCompiler
                     access: me.AccessCode(), accessProperty: PropertyNameText(me.Property));
             }
 
-            if (argumentsSuspend)
+            if (operandsHoist)
             {
-                invocation = BExpression.Block(
-                    new Sequence<BParameterExpression>
-                    {
-                        (BParameterExpression)receiver,
-                        (BParameterExpression)resolvedMethod,
-                    },
-                    invocation);
+                var locals = new Sequence<BParameterExpression>
+                {
+                    (BParameterExpression)receiver,
+                    (BParameterExpression)resolvedMethod,
+                };
+
+                if (privateKeyLocal != null)
+                    locals.Add(privateKeyLocal);
+
+                invocation = BExpression.Block(locals, invocation);
             }
 
             // A parenthesized optional chain closes its chain at the parens, so the
@@ -442,27 +466,41 @@ partial class FastCompiler
     }
 
     /// <summary>
-    /// Whether anything evaluated AFTER a method call's receiver and callee are read into
-    /// temps — its argument list, and a computed property key, which is read after the
-    /// receiver — contains an `await` or a `yield`.
+    /// Whether a compiled operand of a method call — an argument, or a computed property key —
+    /// might be hoisted out to statement level by the generator rewrite's FlattenBlocks pass.
     /// </summary>
     /// <remarks>
-    /// That window is the one in which a shared temp can be reassigned by a nested call, and
-    /// a suspension is what turns the window from "values already on the evaluation stack"
-    /// into "statements the state machine runs in between". Contains does not descend into a
-    /// nested function or class body, which is right here too: a suspension there belongs to
-    /// that function's own state machine and never splits this call.
+    /// <para>
+    /// Anything evaluated after a method call's receiver and callee are read into temps runs in
+    /// the window where a shared pooled temp can be reassigned under it. In ordinary code that
+    /// window is harmless — the two values are already on the evaluation stack. In a generator
+    /// or async body FlattenBlocks lifts a block-valued operand's statements out as siblings,
+    /// so they run between this call's assignments and its invocation, and a nested member call
+    /// compiles to exactly such a block.
+    /// </para>
+    /// <para>
+    /// The answer is deliberately conservative and deliberately structural. A bare parameter or
+    /// a constant emits no statements, so nothing can be hoisted out of it and the pooled temps
+    /// stay safe; everything else answers "might", which costs two locals and is always correct.
+    /// Approximating in the other direction is what the predicate this replaced did — it looked
+    /// in the source for an `await` or a `yield`, and so missed every ordinary nested call.
+    /// </para>
     /// </remarks>
-    private static bool ArgumentEvaluationSuspends(
-        AstMemberExpression member, IFastEnumerable<AstExpression> arguments)
-    {
-        if (member.Computed && AwaitYieldParameterDetector.Contains(member.Property))
-            return true;
+    private static bool MayHoist(BExpression operand) =>
+        operand != null
+        && operand.NodeType != BExpressionType.Parameter
+        && operand.NodeType != BExpressionType.Constant;
 
-        var e = arguments.GetFastEnumerator();
-        while (e.MoveNext(out var argument))
+    /// <inheritdoc cref="MayHoist(BExpression)"/>
+    private static bool MayHoist(IFastEnumerable<BExpression> operands)
+    {
+        if (operands == null)
+            return false;
+
+        var e = operands.GetFastEnumerator();
+        while (e.MoveNext(out var operand))
         {
-            if (AwaitYieldParameterDetector.Contains(argument))
+            if (MayHoist(operand))
                 return true;
         }
 

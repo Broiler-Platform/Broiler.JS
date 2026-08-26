@@ -2,11 +2,12 @@ using Broiler.JavaScript.Engine;
 
 namespace Broiler.JavaScript.Integration.Tests;
 
-// Regression tests for a call whose ARGUMENTS suspend — `obj.method(await p)`,
-// `f(1, 2, 3, 4, yield x)`, `f(...[await p])`. Ordinary code evaluates a call's operands onto
-// the IL evaluation stack and invokes; a generator or async body cannot, because a suspension
-// splits the method in two, so the rewrite turns those operands into statements that run
-// before the invocation. Two things were relying on the stack:
+// Regression tests for a call inside a generator or async body whose OPERANDS are hoisted out
+// to statement level by the generator rewrite — `obj.method(await p)`, `f(1, 2, 3, 4, yield x)`,
+// `f(...[await p])`, and, just as much, the plain `obj.method(a.b())`. Ordinary code evaluates a
+// call's operands onto the IL evaluation stack and invokes; a generator or async body cannot,
+// because FlattenBlocks lifts any block-valued operand's statements out as siblings and passes a
+// spilled temp in its place. Two things were relying on the stack:
 //
 //   * The receiver and the resolved method live in temps taken from a per-function pool, and
 //     a nested call in the arguments is handed the same two temps back. That is safe while
@@ -16,6 +17,13 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     called `Promise.resolve` again and never called `obj.hit` — silently, because nothing
 //     looks at the wrong callee's return value. docs/compliance/known-gaps.md recorded this
 //     as the largest single contributor to the suite's unverifiable `async` results.
+//
+//     This was first fixed only for operands holding an `await` or a `yield`, which is how it
+//     was found, but the suspension was never the cause — the hoist is. A nested member call
+//     compiles to a block whether or not anything suspends, so `trace.push(items.join('+'))` in
+//     an ordinary `async` function hit the identical bug: it re-ran `items.join` and dropped the
+//     `trace.push`, so the statement vanished with no error and the next one ran normally. The
+//     guard now asks what the operands COMPILED to rather than what the source said.
 //   * An argument list of more than four arguments — or any length once one of them is a
 //     spread — is built as an array initializer, which nothing hoisted. The suspension stayed
 //     between one element's store and the next, which the CLR rejects outright: an
@@ -113,5 +121,80 @@ public class SuspendedCallArgumentTests
             + "var o = { inner: function () { out.push('inner'); return 1; }, "
             + "outer: function () { out.push('outer'); } }; "
             + "(async function () { o.outer(o.inner(await Promise.resolve(0))); "
+            + "globalThis.r = out.join(','); })();"));
+
+    // ---------------------------------------------------------------- no suspension needed
+    //
+    // Everything below holds no `await` and no `yield`. It is the same defect: a nested member
+    // call compiles to a block, the rewrite hoists it, and the pooled receiver/callee temps are
+    // clobbered under the outer call. The guard that only looked for a suspension answered "no"
+    // for all of it.
+
+    /// <summary>
+    /// The smallest reproduction, and the shape that makes this worth more than its size:
+    /// <c>console.log(list.join(', '))</c> inside any <c>async</c> function is a member call
+    /// whose argument is a member call. It recorded <c>1,3</c> — the statement did not run, no
+    /// error was raised, and the statement after it ran normally.
+    /// </summary>
+    [Fact(Timeout = 600000)]
+    public void AMemberCallArgumentToAMemberCallIsNotSkippedInAnAsyncFunction()
+        => Assert.Equal("1,a,3", Drive(
+            "var t = []; (async function () { t.push('1'); var g = ['a']; "
+            + "t.push(g.join('+')); t.push('3'); globalThis.r = t.join(','); })();"));
+
+    [Theory]
+    // The outer call runs, and its value is its own — not the inner call's, which is what the
+    // clobbered callee returned.
+    [InlineData("var r = t.push(g.join('+')); t.push('r=' + r);", "a,r=1")]
+    // Three deep, and two member-call arguments to one call.
+    [InlineData("t.push(String(g.join('+')));", "a")]
+    [InlineData("t.push(g.concat(['b']).join('-'));", "a-b")]
+    [InlineData("t.push(g.join('') + g.slice(0).join(''));", "aa")]
+    // A member call in a computed key, which is read after the receiver and so shares the window.
+    [InlineData("var o = { p: function (v) { t.push(v); } }; o[['p'].join('')](g.join(''));", "a")]
+    // A nested call as the receiver's own expression rather than as an argument.
+    [InlineData("t.push(g.slice(0).join('+'));", "a")]
+    public void ANestedMemberCallDoesNotClobberTheOuterCallInAnAsyncFunction(
+        string statement, string expected)
+        => Assert.Equal(expected, Drive(
+            "var t = []; (async function () { var g = ['a']; " + statement
+            + " globalThis.r = t.join(','); })();"));
+
+    [Fact(Timeout = 600000)]
+    public void TheSameHoldsInAGeneratorAndInAnAsyncArrow()
+    {
+        Assert.Equal("1,a,3", Eval(
+            "var t = []; function* g() { t.push('1'); var a = ['a']; t.push(a.join('+')); "
+            + "t.push('3'); return t.join(','); } var it = g(); '' + it.next().value"));
+        Assert.Equal("1,a,3", Drive(
+            "var t = []; (async () => { t.push('1'); var g = ['a']; t.push(g.join('+')); "
+            + "t.push('3'); globalThis.r = t.join(','); })();"));
+    }
+
+    [Fact(Timeout = 600000)]
+    public void ANestedPrivateMethodCallDoesNotClobberTheOuterPrivateKey()
+        // The private-name key is copied into a pooled temp of its own, and a nested private
+        // call in the arguments reaches it the same way.
+        => Assert.Equal("b", Drive(
+            "var t = []; class C { #b() { return 'b'; } #a(x) { t.push(x); } "
+            + "async go() { this.#a(this.#b()); globalThis.r = t.join(','); } } new C().go();"));
+
+    [Fact(Timeout = 600000)]
+    public void AnOrdinaryFunctionIsUnaffected()
+        // Nothing hoists outside a state machine, so the pooled temps stay correct there and
+        // this path must keep costing nothing.
+        => Assert.Equal("1,a,3", Eval(
+            "var t = []; (function () { t.push('1'); var g = ['a']; t.push(g.join('+')); "
+            + "t.push('3'); })(); t.join(',')"));
+
+    [Fact(Timeout = 600000)]
+    public void EvaluationOrderIsUnchangedWithoutASuspension()
+        // The receiver first, then each argument left to right, then the call — the same order
+        // ArgumentsStillEvaluateInSourceOrderAroundTheSuspension pins with an await in play.
+        => Assert.Equal("recv,a,b,call", Drive(
+            "var out = []; "
+            + "function recv() { out.push('recv'); return { m: function () { out.push('call'); } }; } "
+            + "var s = { arg: function (name, v) { out.push(name); return v; } }; "
+            + "(async function () { recv().m(s.arg('a', 1), s.arg('b', 2)); "
             + "globalThis.r = out.join(','); })();"));
 }
