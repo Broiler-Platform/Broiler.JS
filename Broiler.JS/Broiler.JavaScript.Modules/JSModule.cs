@@ -102,7 +102,7 @@ public partial class JSModule : JSObject
             meta = new JSObject { BasePrototypeObject = null };
             var url = moduleContext?.GetModuleUrl(filePath);
             if (url != null)
-                meta.FastAddValue((KeyString)"url", CreateString(url), JSPropertyAttributes.EnumerableConfigurableValue);
+                meta.FastAddValue("url", CreateString(url), JSPropertyAttributes.EnumerableConfigurableValue);
 
             return meta;
         }
