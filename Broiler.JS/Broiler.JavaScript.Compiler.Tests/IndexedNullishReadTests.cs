@@ -84,10 +84,11 @@ public class IndexedNullishReadTests
 
     // The write twin already threw (SetElementByNumber checks IsNullOrUndefined in
     // ThrowOnFailedElementAssignment); asserted so the read fix is not read as having moved it.
+    // It names the key too, as a browser does — see UndefinedPropertyReadMessageTests.
     [Fact(Timeout = 600000)]
     public void AnIndexedWriteToANullishBase_StillThrows()
     {
-        Assert.Equal("threw: Cannot set properties of undefined", Run("var u; var k = 360; u[k] = 1; return 'ok';"));
+        Assert.Equal("threw: Cannot set properties of undefined (setting '360')", Run("var u; var k = 360; u[k] = 1; return 'ok';"));
     }
 
     // Optional chaining is the one place the read must NOT throw, and it short-circuits before
