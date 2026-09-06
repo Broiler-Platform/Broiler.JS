@@ -1162,9 +1162,36 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// <c>ToString(-0)</c> is <c>"0"</c> — so slot 0 is the key the spec asks for. NaN fails the
     /// first comparison and every infinity fails the second.
     /// </para>
+    /// <para>
+    /// A null or undefined base is sent to the boxed arm before the guard is even consulted; see
+    /// the comment on that test for why the fast arm cannot carry it.
+    /// </para>
     /// </remarks>
     public JSValue GetElementByNumber(double index)
     {
+        // ToObject(base) precedes ToPropertyKey(key) (6.2.5.5), so a null or undefined base has to
+        // throw before the index is looked at at all. The fast arm below cannot express that: it
+        // calls GetValue(uint, ...) directly, and that virtual's base implementation answers
+        // `undefined` for any value with no prototype chain — which is exactly what null and
+        // undefined are. JSUndefined/JSNull override the this[uint] INDEXER to throw, so a
+        // *constant* index (`u[0]`, which lowers to a uint key) always threw; a *variable* one
+        // reaches this method instead, and so `var k = 3; u[k]` silently evaluated to undefined
+        // rather than raising a TypeError — feeding a wrong value onward instead of stopping
+        // the script, which is how it surfaced: minified code carrying on for thousands of
+        // instructions past its first broken load.
+        //
+        // The boxed arm already throws, because its JSValue-keyed GetValue tests IsNullOrUndefined
+        // (and names the key, per DescribeKeyForDiagnostic). Routing a nullish base there rather
+        // than repeating the throw here is what keeps this read's message identical to the one a
+        // variable index reported before the unboxed fast path existed — and identical to what a
+        // browser reports for the same expression. The two reference comparisons cost nothing on
+        // a base that is about to throw anyway.
+        //
+        // The write twin needs no such test: SetElementByNumber routes its failures through
+        // ThrowOnFailedElementAssignment, which checks IsNullOrUndefined itself.
+        if (IsNullOrUndefined)
+            return GetValue(CreateNumber(index), this);
+
         // 2^32-1 is NOT an array index (it is the one canonical numeric string above the range),
         // so the bound is 2^32-2 and the comparison is inclusive.
         if (index >= 0 && index <= 4294967294d)

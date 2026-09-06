@@ -29,12 +29,17 @@ public class UndefinedPropertyReadMessageTests
     // A key held in a variable is what reaches the dynamic path; a literal one is folded into the
     // static read, which has its own (already-naming) message.
     //
-    // Only the string key is covered: a NUMERIC variable key (`var k = 3; u[k]`) does not throw at
-    // all today, it evaluates to undefined. That is a separate defect in the indexed read path,
-    // not something this message change causes or fixes, and it is left for its own change rather
-    // than smuggled in here.
+    // The numeric variable key (`var k = 3; u[k]`) used not to throw at all — it evaluated to
+    // undefined, because an integral in-range index took GetElementByNumber's unboxed arm, which
+    // reached GetValue(uint, ...) rather than the throwing this[uint] indexer. That is fixed in
+    // GetElementByNumber (a nullish base is sent to the boxed arm), so those keys are named here
+    // alongside the string one; IndexedNullishReadTests covers the throwing itself.
     [Theory]
     [InlineData("var u; var k = 'bar'; return u[k];", "Cannot read properties of undefined (reading 'bar')")]
+    [InlineData("var u; var k = 3; return u[k];", "Cannot read properties of undefined (reading '3')")]
+    [InlineData("var u; var k = 0; return u[k];", "Cannot read properties of undefined (reading '0')")]
+    [InlineData("var u; var k = 360; return u[k];", "Cannot read properties of undefined (reading '360')")]
+    [InlineData("var n = null; var k = 3; return n[k];", "Cannot read properties of null (reading '3')")]
     public void PrimitiveKeys_AreNamed(string source, string expected)
     {
         Assert.Equal(expected, MessageOf(source));
