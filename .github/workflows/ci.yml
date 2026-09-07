@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A later push on the same branch cancels the earlier run: what is checked does
+# not change, only how many times an abandoned commit is checked.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    # Named per matrix entry rather than left to the runner label, so the branch
+    # protection context is a sentence and not `ubuntu-latest`. Renaming one of
+    # these renames a required check; update the protection list with it.
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Tests (Linux)
+            os: ubuntu-latest
+
+          # NO WINDOWS LEG, and it is not an oversight. The suites pass on
+          # windows-latest right up to a stack overflow that takes the test host
+          # with it:
+          #
+          #   The active test run was aborted. Reason: Test host process crashed:
+          #   Stack overflow.
+          #     at Broiler.JavaScript.ExpressionCompiler.Expressions.BExpressionVisitor`1...
+          #     at Broiler.JavaScript.ExpressionCompiler.StackGuard`2...
+          #     at ...BExpressionMapVisitor.VisitCall(...)
+          #
+          # The recursion is the same on both platforms; the stack is not. A
+          # Linux thread gets 8 MB by default and a Windows one 1 MB, so only
+          # Windows runs out. The engine already knows this — CompilationStack
+          # exists to run a compilation on a thread created with an explicit
+          # stack size — which points at a test path that compiles on the test
+          # host's own thread instead of renting that one.
+          #
+          # Gating on Linux is worth having now; gating on a leg that cannot go
+          # green is not. Restore this entry once a compilation reached from a
+          # test runs on a stack it was given rather than the one it inherited.
+
+    steps:
+      # Recursive rather than one level: Broiler.Regex carries Broiler.Unicode as
+      # a submodule of its own, and the generated Unicode data is a project
+      # reference, so a single-level checkout does not restore.
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build
+        run: dotnet build Broiler.JS.slnx -c Release --nologo
+
+      # The thirteen xunit suites in the solution, a little over eight thousand
+      # tests. The conformance and benchmark runners under scripts/ are not part
+      # of this: test262 and the performance baselines stay manual workflows,
+      # because a full suite run is not a per-pull-request cost.
+      - name: Test
+        run: dotnet test Broiler.JS.slnx -c Release --nologo --no-build
