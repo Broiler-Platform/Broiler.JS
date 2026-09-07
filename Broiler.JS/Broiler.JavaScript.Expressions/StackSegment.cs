@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Broiler.JavaScript.ExpressionCompiler;
 
@@ -25,6 +26,25 @@ namespace Broiler.JavaScript.ExpressionCompiler;
 /// script host: mitigation on / guard on completes, <em>mitigation off / guard on completes</em>
 /// — which is this class doing the work — mitigation on / guard off completes, and with both off
 /// the process aborts. That last row is what makes the other three mean anything.
+/// </para>
+/// <para>
+/// <strong>A byte threshold alone cannot guard a stack smaller than itself.</strong>
+/// <see cref="SegmentAtBytes"/> is 4 MiB, so on a 1 MiB thread the walk exhausts the thread at
+/// about a quarter of the threshold and the segmenting branch is never reached — the guard is
+/// present, measures correctly, and still rides the stack to the floor. Windows gives an
+/// ordinary thread 1 MiB where Linux gives 8 MiB, which is the whole of why this reproduced on
+/// one platform and not the other: the recursion was identical, the stack was not.
+/// </para>
+/// <para>
+/// What put a walk on such a thread is deferred compilation. A function body compiled on first
+/// call is compiled wherever the CALL happens — the script's own thread — and not inside the
+/// <see cref="CompilationStack"/> boundary that the initial compilation ran on. Under a test
+/// host that thread is the 1 MiB main thread, and
+/// <c>Broiler.JavaScript.Compiler.Tests.DeeplyNestedSourceTests</c> is sized well past what one
+/// survives, so a Windows CI leg died with "Test host process crashed: Stack overflow" inside
+/// <c>BExpressionMapVisitor</c> while the same commit passed on Linux.
+/// <see cref="ShouldSegment"/> now also asks the runtime directly whether a frame still fits,
+/// which is a question that does not depend on knowing how big the stack is.
 /// </para>
 /// </remarks>
 public struct StackSegment
@@ -78,6 +98,32 @@ public struct StackSegment
 
         if (SegmentAtBytes == 0)
             return false;
+
+        // Whatever stack this walk is actually standing on, segment before running off the end
+        // of it. The byte threshold below cannot do that on its own: it is a fixed 4 MiB, and a
+        // walk on a 1 MiB thread exhausts the thread at about a quarter of it, so the branch is
+        // unreachable there and the guard rides the stack to the floor exactly as it did before
+        // it was fixed. That is not hypothetical — see the remarks on this type.
+        //
+        // TryEnsureSufficientExecutionStack asks the runtime the question the threshold is only
+        // approximating: is there room left for another frame. It probes a fixed headroom, which
+        // is far more than the handful of frames between here and RunOnFreshStack, so a walk that
+        // segments on this branch has room to reach the worker it is hopping to.
+        //
+        // NOT ON A POOL THREAD, and this exclusion is load-bearing. Segmenting blocks the thread
+        // it leaves — Continue waits on the worker — and a pool thread that blocks is one the
+        // pool cannot reuse. Applying this probe everywhere made segmentation fire on pool
+        // threads it had never fired on before, and asynchronous module loading then ran out of
+        // threads to make progress on: ImportAttributeEnforcementTests.AMatchingOrEmptyClauseLoads
+        // went from 839 ms to hanging out its whole 600 s timeout. The byte threshold below still
+        // applies on a pool thread, exactly as it did before, so this exclusion takes nothing away
+        // that used to work — it declines to add a blocking hop to the one kind of thread that
+        // cannot afford one.
+        //
+        // The thread this was reported on is not a pool thread: a test host's main thread, and an
+        // embedder's own, both get the probe. That is where deferred compilation put the walk.
+        if (!Thread.CurrentThread.IsThreadPoolThread && !RuntimeHelpers.TryEnsureSufficientExecutionStack())
+            return true;
 
         var consumed = (ulong)(anchor - current);
         return consumed >= (ulong)SegmentAtBytes && consumed <= long.MaxValue;
