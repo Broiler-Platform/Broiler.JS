@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A later push on the same branch cancels the earlier run: what is checked does
+# not change, only how many times an abandoned commit is checked.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    # Named per matrix entry rather than left to the runner label, so the branch
+    # protection context is a sentence and not `ubuntu-latest`. Renaming one of
+    # these renames a required check; update the protection list with it.
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Tests (Linux)
+            os: ubuntu-latest
+          - name: Tests (Windows)
+            os: windows-latest
+
+    steps:
+      # Recursive rather than one level: Broiler.Regex carries Broiler.Unicode as
+      # a submodule of its own, and the generated Unicode data is a project
+      # reference, so a single-level checkout does not restore.
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build
+        run: dotnet build Broiler.JS.slnx -c Release --nologo
+
+      # The thirteen xunit suites in the solution, a little over eight thousand
+      # tests. The conformance and benchmark runners under scripts/ are not part
+      # of this: test262 and the performance baselines stay manual workflows,
+      # because a full suite run is not a per-pull-request cost.
+      - name: Test
+        run: dotnet test Broiler.JS.slnx -c Release --nologo --no-build
