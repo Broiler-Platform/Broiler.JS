@@ -206,10 +206,14 @@ public class M8ValidationTests
                 "docs/compliance/dashboard.md should exist");
             Assert.True(File.Exists(Path.Combine(repoRoot, "docs", "compliance", "known-gaps.md")),
                 "docs/compliance/known-gaps.md should exist");
-            Assert.True(File.Exists(Path.Combine(repoRoot, "docs", "roadmap.md")),
-                "docs/roadmap.md should exist");
-            Assert.True(File.Exists(Path.Combine(repoRoot, "docs", "performance.md")),
-                "docs/performance.md should exist");
+            // Both of these moved in the 2026-08-07 consolidation, and docs/roadmap/README.md
+            // records where: docs/roadmap.md became roadmap/Component.md, docs/performance.md
+            // became roadmap/Measurement.md. The assertion follows the documents rather than
+            // asserting paths that the repository deliberately stopped using.
+            Assert.True(File.Exists(Path.Combine(repoRoot, "docs", "roadmap", "Component.md")),
+                "docs/roadmap/Component.md should exist");
+            Assert.True(File.Exists(Path.Combine(repoRoot, "docs", "roadmap", "Measurement.md")),
+                "docs/roadmap/Measurement.md should exist");
 
             var process = File.ReadAllText(Path.Combine(repoRoot, "docs", "compliance", "process.md"));
             Assert.Contains("test262", process);
@@ -220,9 +224,16 @@ public class M8ValidationTests
             Assert.Contains("`noStrict` files", process);
 
             Assert.Contains("--include-negative", process);
-            Assert.Contains("`module` and `raw`", process);
 
-            var roadmap = File.ReadAllText(Path.Combine(repoRoot, "docs", "roadmap.md"));
+            // The two host modes are now documented as rows of the host-mode table rather than
+            // named together in one sentence, so each is asserted on its own: what matters is
+            // that the document still covers both, not the conjunction it once used.
+            Assert.Contains("`module`", process);
+            Assert.Contains("`raw`", process);
+
+            // docs/roadmap.md became roadmap/Component.md in the 2026-08-07 consolidation; every
+            // assertion below still holds against it unchanged.
+            var roadmap = File.ReadAllText(Path.Combine(repoRoot, "docs", "roadmap", "Component.md"));
             Assert.Contains("Close the supported test262 failure set", roadmap);
             Assert.Contains("Expand host-mode coverage", roadmap);
             Assert.Contains("Finish RegExp backend adoption", roadmap);
@@ -247,7 +258,9 @@ public class M8ValidationTests
             Assert.Contains("scripts/compliance/test262-failures.txt", knownGaps);
             Assert.Contains("Gap lifecycle", knownGaps);
 
-            var performance = File.ReadAllText(Path.Combine(repoRoot, "docs", "performance.md"));
+            // docs/performance.md became roadmap/Measurement.md in the same consolidation; all
+            // four assertions below still hold against it unchanged.
+            var performance = File.ReadAllText(Path.Combine(repoRoot, "docs", "roadmap", "Measurement.md"));
             Assert.Contains("collect_phase0.py", performance);
             Assert.Contains("repeatability", performance);
             Assert.Contains("JavaScriptBootstrapProfile", performance);
