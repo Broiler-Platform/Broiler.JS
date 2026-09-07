@@ -254,8 +254,12 @@ public class NumericIndexKeyTests
         // property 0 of …") and a variable one through the JSValue setter ("Cannot set properties
         // of …"). 3-0 must not swap a variable index onto the other message; that pre-existing
         // difference is not this item's to reconcile.
+        //
+        // The setter arm has since gained the "(setting '0')" clause a browser appends — it names
+        // the key the assignment was for, which is the half this message never said. The two
+        // WORDINGS are still distinct, which is what this test is here to hold.
         Assert.Equal(
-            "Cannot set properties of null|Cannot set properties of undefined",
+            "Cannot set properties of null (setting '0')|Cannot set properties of undefined (setting '0')",
             Eval("""
                 var i = 0;
                 var n = null;

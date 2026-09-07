@@ -29,15 +29,63 @@ public class UndefinedPropertyReadMessageTests
     // A key held in a variable is what reaches the dynamic path; a literal one is folded into the
     // static read, which has its own (already-naming) message.
     //
-    // Only the string key is covered: a NUMERIC variable key (`var k = 3; u[k]`) does not throw at
-    // all today, it evaluates to undefined. That is a separate defect in the indexed read path,
-    // not something this message change causes or fixes, and it is left for its own change rather
-    // than smuggled in here.
+    // The numeric variable key (`var k = 3; u[k]`) used not to throw at all — it evaluated to
+    // undefined, because an integral in-range index took GetElementByNumber's unboxed arm, which
+    // reached GetValue(uint, ...) rather than the throwing this[uint] indexer. That is fixed in
+    // GetElementByNumber (a nullish base is sent to the boxed arm), so those keys are named here
+    // alongside the string one; IndexedNullishReadTests covers the throwing itself.
     [Theory]
     [InlineData("var u; var k = 'bar'; return u[k];", "Cannot read properties of undefined (reading 'bar')")]
+    [InlineData("var u; var k = 3; return u[k];", "Cannot read properties of undefined (reading '3')")]
+    [InlineData("var u; var k = 0; return u[k];", "Cannot read properties of undefined (reading '0')")]
+    [InlineData("var u; var k = 360; return u[k];", "Cannot read properties of undefined (reading '360')")]
+    [InlineData("var n = null; var k = 3; return n[k];", "Cannot read properties of null (reading '3')")]
+    // EVERY primitive renders from its own value, so every primitive is named. The kinds below
+    // were the ones the describer's allowlist used to drop, which left the message emptiest for
+    // the keys a reader can least infer — `u[k]` with `k` false said nothing about `k` at all.
+    [InlineData("var u; var k = true; return u[k];", "Cannot read properties of undefined (reading 'true')")]
+    [InlineData("var u; var k = false; return u[k];", "Cannot read properties of undefined (reading 'false')")]
+    [InlineData("var u; var k; return u[k];", "Cannot read properties of undefined (reading 'undefined')")]
+    [InlineData("var u; var k = null; return u[k];", "Cannot read properties of undefined (reading 'null')")]
+    [InlineData("var u; var k = 1n; return u[k];", "Cannot read properties of undefined (reading '1')")]
+    [InlineData("var n = null; var k = true; return n[k];", "Cannot read properties of null (reading 'true')")]
     public void PrimitiveKeys_AreNamed(string source, string expected)
     {
         Assert.Equal(expected, MessageOf(source));
+    }
+
+    // A Symbol is named the way Symbol.prototype.toString names it. The bare description would be
+    // ambiguous with the string key of the same text, and those are different properties.
+    [Theory]
+    [InlineData("var u; var k = Symbol('s'); return u[k];", "Cannot read properties of undefined (reading 'Symbol(s)')")]
+    [InlineData("var u; var k = Symbol(); return u[k];", "Cannot read properties of undefined (reading 'Symbol()')")]
+    [InlineData("var u; var k = Symbol(''); return u[k];", "Cannot read properties of undefined (reading 'Symbol()')")]
+    [InlineData("var u; var k = Symbol.iterator; return u[k];", "Cannot read properties of undefined (reading 'Symbol(Symbol.iterator)')")]
+    public void ASymbolKey_IsNamedAsASymbol(string source, string expected)
+    {
+        Assert.Equal(expected, MessageOf(source));
+    }
+
+    // The write twin says which property was being set, as a browser does. It named nothing at
+    // all, so `u[k] = v` reported strictly less than the read on the very next line would have.
+    [Theory]
+    [InlineData("var u; var k = 360; u[k] = 1;", "Cannot set properties of undefined (setting '360')")]
+    [InlineData("var u; var k = 1.5; u[k] = 1;", "Cannot set properties of undefined (setting '1.5')")]
+    [InlineData("var u; var k = 'p'; u[k] = 1;", "Cannot set properties of undefined (setting 'p')")]
+    [InlineData("var u; var k = true; u[k] = 1;", "Cannot set properties of undefined (setting 'true')")]
+    [InlineData("var n = null; var k = 360; n[k] = 1;", "Cannot set properties of null (setting '360')")]
+    public void AnAssignmentToANullishBase_NamesTheProperty(string source, string expected)
+    {
+        Assert.Equal(expected, MessageOf(source));
+    }
+
+    // The same rule as the read: an object key is not coerced to describe an assignment either.
+    [Fact(Timeout = 600000)]
+    public void AnObjectKey_IsNotCoercedForTheSettingMessage()
+    {
+        Assert.Equal(
+            "Cannot set properties of undefined",
+            MessageOf("var u; var k = { toString: function(){ throw new Error('key coerced'); } }; u[k] = 1;"));
     }
 
     // An OBJECT key is deliberately left undescribed. GetValue throws before ToPropertyKey because

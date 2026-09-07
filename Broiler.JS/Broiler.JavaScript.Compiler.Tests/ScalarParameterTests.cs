@@ -144,21 +144,19 @@ public class ScalarParameterTests
         => Assert.Equal(expected, Eval(source));
 
     /// <summary>
-    /// A parameter named <c>undefined</c> does not shadow the global, and that is
-    /// <em>pre-existing</em> — it reproduces identically with this item reverted.
+    /// A parameter named <c>undefined</c> shadows the global, like any other parameter (§8.6.2).
     /// </summary>
     /// <remarks>
-    /// Pinned rather than fixed so the deviation is recorded where the next person to widen
-    /// parameter handling will meet it, and so that a fix flips a failing assertion instead of
-    /// passing unnoticed. The expectation below is what the engine does, not what the spec
-    /// says: §8.6.2 binds the parameter like any other, so both should answer <c>1</c> and
-    /// <c>number</c>.
+    /// This was pinned as a known gap — the engine answered <c>undefined</c> for both — with the
+    /// note that a fix should flip the failing assertion rather than pass unnoticed. It has since
+    /// been fixed, and the assertion is flipped here to the spec's answers: the theory now records
+    /// the behaviour rather than the deviation, and no longer fails.
     /// </remarks>
     [Theory]
-    [InlineData("(function (undefined) { return undefined; })(1)", "undefined")]
-    [InlineData("(function (undefined) { return typeof undefined; })(1)", "undefined")]
-    public void KnownGap_AParameterNamedUndefinedDoesNotShadowTheGlobal(string source, string engineAnswer)
-        => Assert.Equal(engineAnswer, Eval(source));
+    [InlineData("(function (undefined) { return undefined; })(1)", "1")]
+    [InlineData("(function (undefined) { return typeof undefined; })(1)", "number")]
+    public void AParameterNamedUndefinedShadowsTheGlobal(string source, string expected)
+        => Assert.Equal(expected, Eval(source));
 
     [Theory]
     // Class bodies are strict and their parameters take the same path.

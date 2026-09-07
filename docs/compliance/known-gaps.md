@@ -49,6 +49,24 @@ The current failure manifest includes work in these areas:
   non-writable non-configurable property of the global object rather than a keyword, so the
   fold is still taken for a free reference — and not for a name that resolves to a binding,
   nor under a `with` whose object may supply one. Covered by `Track1LanguageTests`.
+  `ScalarParameterTests` pinned the old answer as a known gap and now asserts the spec's.
+- **An indexed read off `null` or `undefined` answered `undefined` instead of throwing —
+  fixed.** `var u; var k = 3; u[k]` evaluated to undefined, where 6.2.5.5 has ToObject(base)
+  throw a TypeError before the key is looked at. One shape was affected: an index the compiler
+  can hold unboxed — a numeric local, a loop counter, a constant-folded expression — reaches
+  `JSValue.GetElementByNumber`, whose unboxed arm calls `GetValue(uint, …)` directly, and
+  `JSUndefined`/`JSNull` override the `this[uint]` INDEXER to throw but not that virtual, whose
+  base answers `undefined` for a value with no prototype chain. A constant index, a string key,
+  and a non-integral or out-of-range index all threw throughout, which is why it read as a
+  missing message rather than a missing throw. A nullish base now takes the boxed arm, which
+  throws and names the key. Covered by `IndexedNullishReadTests`.
+- **A nullish property access named only some keys — fixed.** "Cannot read properties of
+  undefined" named a string, number or symbol key and nothing else, so `u[k]` said nothing
+  about `k` when it held a boolean, `null`, `undefined` or a BigInt; the assignment form named
+  no key at all. Every primitive is named now, a symbol as `Symbol(s)`, and a write appends
+  "(setting 'k')" — an object key is still left undescribed rather than coerced, since its
+  `toString`/`@@toPrimitive` is user code the spec does not run here. Covered by
+  `UndefinedPropertyReadMessageTests`.
 - **`Reflect.set` receiver attributes — fixed.** See
   [`Phase-2.status.md`](../roadmap/Phase-2.status.md) and
   `ReflectSetReceiverAttributesTests`, which now pins the correct answer.

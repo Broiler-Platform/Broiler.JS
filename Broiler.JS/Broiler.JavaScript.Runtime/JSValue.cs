@@ -1162,9 +1162,36 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// <c>ToString(-0)</c> is <c>"0"</c> — so slot 0 is the key the spec asks for. NaN fails the
     /// first comparison and every infinity fails the second.
     /// </para>
+    /// <para>
+    /// A null or undefined base is sent to the boxed arm before the guard is even consulted; see
+    /// the comment on that test for why the fast arm cannot carry it.
+    /// </para>
     /// </remarks>
     public JSValue GetElementByNumber(double index)
     {
+        // ToObject(base) precedes ToPropertyKey(key) (6.2.5.5), so a null or undefined base has to
+        // throw before the index is looked at at all. The fast arm below cannot express that: it
+        // calls GetValue(uint, ...) directly, and that virtual's base implementation answers
+        // `undefined` for any value with no prototype chain — which is exactly what null and
+        // undefined are. JSUndefined/JSNull override the this[uint] INDEXER to throw, so a
+        // *constant* index (`u[0]`, which lowers to a uint key) always threw; a *variable* one
+        // reaches this method instead, and so `var k = 3; u[k]` silently evaluated to undefined
+        // rather than raising a TypeError — feeding a wrong value onward instead of stopping
+        // the script, which is how it surfaced: minified code carrying on for thousands of
+        // instructions past its first broken load.
+        //
+        // The boxed arm already throws, because its JSValue-keyed GetValue tests IsNullOrUndefined
+        // (and names the key, per DescribeKeyForDiagnostic). Routing a nullish base there rather
+        // than repeating the throw here is what keeps this read's message identical to the one a
+        // variable index reported before the unboxed fast path existed — and identical to what a
+        // browser reports for the same expression. The two reference comparisons cost nothing on
+        // a base that is about to throw anyway.
+        //
+        // The write twin needs no such test: SetElementByNumber routes its failures through
+        // ThrowOnFailedElementAssignment, which checks IsNullOrUndefined itself.
+        if (IsNullOrUndefined)
+            return GetValue(CreateNumber(index), this);
+
         // 2^32-1 is NOT an array index (it is the one canonical numeric string above the range),
         // so the bound is 2^32-2 and the comparison is inclusive.
         if (index >= 0 && index <= 4294967294d)
@@ -1191,9 +1218,9 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// twin rather than through the indexers, and the failure handling below is the
     /// <c>this[JSValue]</c> setter's, copied deliberately. That is the setter a variable index
     /// used before this item, so keeping it keeps the messages: a null or undefined receiver
-    /// still reports "Cannot set properties of …" rather than the <c>this[uint]</c> override's
-    /// "Cannot set property 0 of …", which is what a *constant* index has always reported. This
-    /// item is not the place to reconcile those two.
+    /// reports "Cannot set properties of … (setting '0')" rather than the <c>this[uint]</c>
+    /// override's "Cannot set property 0 of …", which is what a *constant* index has always
+    /// reported. Both name the key; reconciling the two WORDINGS is still a separate item.
     /// </para>
     /// </remarks>
     public JSValue SetElementByNumber(double index, JSValue value)
@@ -1222,11 +1249,25 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     private void ThrowOnFailedElementAssignment(object key)
     {
         if (IsNullOrUndefined)
-            throw NewTypeError?.Invoke($"Cannot set properties of {this}")
+            throw NewTypeError?.Invoke($"Cannot set properties of {this}{DescribeElementKeyForDiagnostic(key)}")
                 ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
 
         ThrowOnStrictPrimitiveAssignment(key);
     }
+
+    /// <summary>
+    /// Names the element in this method's "Cannot set properties of undefined" message, the way
+    /// <see cref="DescribeKeyForDiagnostic"/> does for a read.
+    /// </summary>
+    /// <remarks>
+    /// The key arrives boxed as <see cref="object"/> because the two call sites hold it as a
+    /// <see cref="uint"/> and as a <see cref="JSValue"/> respectively — but in both cases it is the
+    /// index this method was handed, so it is always a number and always safe to render. The
+    /// JSValue arm still goes through the shared describer, so its object-key guard applies by
+    /// construction rather than by this method being trusted not to need it.
+    /// </remarks>
+    private static string DescribeElementKeyForDiagnostic(object key)
+        => key is JSValue value ? DescribeKeyForDiagnostic(value, setting: true) : $" (setting '{key}')";
 
     public virtual JSValue this[IJSSymbol symbol]
     {
@@ -1247,7 +1288,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
                 return;
 
             if (IsNullOrUndefined)
-                throw NewTypeError?.Invoke($"Cannot set properties of {this}")
+                throw NewTypeError?.Invoke($"Cannot set properties of {this}{DescribeKeyForDiagnostic(key, setting: true)}")
                     ?? new InvalidOperationException("JSValue.NewTypeError delegate is not initialized. Ensure the BuiltIns assembly module initializer has run.");
 
             ThrowOnStrictPrimitiveAssignment(key);
@@ -1301,15 +1342,32 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     /// comes first (6.2.5.5), and an object key's toString/@@toPrimitive is user code that would
     /// then run in an order the spec forbids. So an object key is left undescribed rather than
     /// coerced for a diagnostic.
+    /// <para>
+    /// EVERY primitive is named, which is the whole of the rule: a boolean, <c>null</c>,
+    /// <c>undefined</c> and a BigInt all render from their own value with no user code involved,
+    /// exactly as a string or a number does. Listing only some of them was an allowlist with no
+    /// principle behind it — <c>u[k]</c> with <c>k</c> false reported a bare "Cannot read
+    /// properties of undefined" while <c>k</c> <c>0</c> named the key, so the message got worse
+    /// precisely where a reader could least guess what <c>k</c> held.
+    /// </para>
+    /// <para>
+    /// Testing <see cref="IsObject"/> is what enforces the rule, and it is exact rather than
+    /// approximate: <c>JSObject</c> is the only branch of the hierarchy whose <c>ToString</c> can
+    /// reach user code (<c>JSPrimitiveObject</c> coerces through an overridable
+    /// <c>toString</c>/<c>valueOf</c>, and every function, array and proxy is a JSObject too).
+    /// Everything else deriving from <see cref="JSValue"/> — <c>JSPrimitive</c> and its
+    /// subclasses, <c>JSNull</c>, <c>JSUndefined</c> — renders from its own state. The try/catch
+    /// remains for the base <c>ToString</c>, which throws for a type that overrides neither.
+    /// </para>
     /// </remarks>
-    private static string DescribeKeyForDiagnostic(JSValue key)
+    private static string DescribeKeyForDiagnostic(JSValue key, bool setting = false)
     {
-        if (key == null || !(key.IsString || key.IsNumber || key.IsSymbol))
+        if (key == null || key.IsObject)
             return string.Empty;
 
         try
         {
-            return $" (reading '{key}')";
+            return $" ({(setting ? "setting" : "reading")} '{RenderKeyForDiagnostic(key)}')";
         }
         catch (Exception)
         {
@@ -1317,6 +1375,23 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
             return string.Empty;
         }
     }
+
+    /// <summary>
+    /// The text a primitive key contributes to <see cref="DescribeKeyForDiagnostic"/>.
+    /// </summary>
+    /// <remarks>
+    /// Everything but a Symbol renders as itself. A Symbol has to be spelled the way
+    /// <c>Symbol.prototype.toString</c> spells it — "Symbol(s)", not the bare description —
+    /// because the bare form is ambiguous with the string key <c>"s"</c>, and those are different
+    /// properties. JSSymbol.ToDescriptiveString does this, but it lives in BuiltIns and this
+    /// assembly cannot see it; <see cref="IJSSymbol.DescriptionIsUndefined"/> is on the interface
+    /// for the same reason and distinguishes the two cases <c>ToString()</c> renders identically
+    /// as "" — <c>Symbol()</c> and <c>Symbol("")</c>.
+    /// </remarks>
+    private static string RenderKeyForDiagnostic(JSValue key)
+        => key is IJSSymbol symbol
+            ? (symbol.DescriptionIsUndefined ? "Symbol()" : $"Symbol({key})")
+            : key.ToString();
 
     internal JSValue GetValue(JSValue key, JSValue receiver, bool throwError = true)
     {
