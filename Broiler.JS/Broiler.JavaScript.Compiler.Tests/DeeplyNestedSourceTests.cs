@@ -109,4 +109,62 @@ public class DeeplyNestedSourceTests
 
         Assert.Equal(shallow.GetType(), nested.GetType());
     }
+
+    /// <summary>
+    /// The first fixture again, on a thread with the 1 MiB stack Windows gives an ordinary one.
+    /// </summary>
+    /// <remarks>
+    /// The fixtures above all run on whatever stack the test host happens to provide, which is
+    /// why this class was green on Linux and killed the run on Windows: the guard segments on a
+    /// consumed-bytes threshold of 4 MiB, and a 1 MiB thread is gone at about a quarter of it, so
+    /// the segmenting branch was simply unreachable there. Eight megabytes of Linux stack hid a
+    /// defect that one megabyte of Windows stack did not.
+    /// <para>
+    /// Pinning the stack size here makes the fixture decisive on every platform rather than on
+    /// the one that happened to be smaller, and it does it without touching any process-wide
+    /// setting that xUnit's parallel classes would race on. A body compiled on first call is
+    /// compiled on the thread that CALLS it, so running the call here is what puts the compiler's
+    /// walk on this thread rather than on a CompilationStack worker.
+    /// </para>
+    /// <para>
+    /// Asserted through a captured result rather than by catching: a CLR stack overflow is not a
+    /// catchable exception, so before the fix this did not fail, it aborted the process — which
+    /// is exactly the failure being pinned.
+    /// </para>
+    /// </remarks>
+    [Fact(Timeout = 600000)]
+    public void DeepBinaryExpressionChain_OnAOneMebibyteThread_Compiles()
+    {
+        const int operators = 20_000;
+        const int oneMebibyteStack = 1024 * 1024;
+
+        double result = 0;
+        Exception? failure = null;
+
+        var thread = new Thread(
+            () =>
+            {
+                try
+                {
+                    var source = new StringBuilder("function f() { var a = 1", operators * 2 + 32);
+                    for (var i = 0; i < operators; i++)
+                        source.Append("+1");
+                    source.Append("; return a; } f();");
+
+                    using var ctx = new JSContext();
+                    result = ctx.Eval(source.ToString()).DoubleValue;
+                }
+                catch (Exception ex)
+                {
+                    failure = ex;
+                }
+            },
+            oneMebibyteStack);
+
+        thread.Start();
+
+        Assert.True(thread.Join(TimeSpan.FromMinutes(5)), "the compile did not finish");
+        Assert.Null(failure);
+        Assert.Equal(operators + 1, result);
+    }
 }
