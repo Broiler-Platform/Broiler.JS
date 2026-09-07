@@ -113,10 +113,8 @@ internal sealed class DeferredMethod
             // enough to need it. That is the mechanism 1-2 built for exactly this, and it costs
             // nothing on the shallow trees that are almost all of them.
             DeferredMethodDiagnostics.Forced();
-            var (emitted, _, _) = lambda.CompileToBoundDynamicMethod(
-                methodBuilder: methodBuilder,
-                captureDiagnostics: false,
-                enableJavaScriptTailCalls: enableJavaScriptTailCalls);
+            var (emitted, _, _) = EmitRetryingOnASizedStack(
+                lambda, methodBuilder, enableJavaScriptTailCalls);
 
             Volatile.Write(ref method, emitted);
             // Released here so a forced site retains exactly what an eagerly generated one
@@ -124,6 +122,64 @@ internal sealed class DeferredMethod
             lambda = null;
             methodBuilder = null;
             return emitted;
+        }
+    }
+
+    /// <summary>
+    /// Emits the body on the calling thread, and only if that thread runs out of stack, again on
+    /// a sized one.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This is not the design the comment above rejects. That one hopped to a worker for EVERY
+    /// deferred body and paid the ~180 us handoff per function, which took the repository suite
+    /// from 3.5 minutes to over 20. This pays nothing at all until a walk reports it cannot
+    /// finish — a deep tree, and almost never — so the shallow bodies that are almost all of them
+    /// still compile exactly where they are called, with no handoff.
+    /// </para>
+    /// <para>
+    /// The retry is safe because <c>CompileToBoundDynamicMethod</c> is a function of its inputs:
+    /// it makes a new <c>DynamicMethod</c>, <c>ILGenerator</c> and <c>ILCodeGenerator</c> each
+    /// call, so the abandoned half-emitted method is garbage and nothing more. Inner lambdas the
+    /// first attempt registered are registered again and their first ids orphaned — entries left
+    /// behind, not a wrong answer, since the retry's own emitted code refers to its own ids
+    /// throughout.
+    /// </para>
+    /// <para>
+    /// The unwind cannot be caught closer to where the stack ran out. Catching it needs a frame,
+    /// and the shortage is precisely a shortage of frames; the whole point is to let the stack
+    /// drain all the way back here before doing anything that costs one.
+    /// </para>
+    /// </remarks>
+    private static (System.Reflection.Emit.DynamicMethod, string, string) EmitRetryingOnASizedStack(
+        BLambdaExpression lambda,
+        IMethodBuilder methodBuilder,
+        bool enableJavaScriptTailCalls)
+    {
+        try
+        {
+            return lambda.CompileToBoundDynamicMethod(
+                methodBuilder: methodBuilder,
+                captureDiagnostics: false,
+                enableJavaScriptTailCalls: enableJavaScriptTailCalls);
+        }
+        catch (StackSegmentExhausted)
+        {
+            return CompilationStack.RunOnFreshStack(() =>
+            {
+                var previous = StackSegment.BeginRetry();
+                try
+                {
+                    return lambda.CompileToBoundDynamicMethod(
+                        methodBuilder: methodBuilder,
+                        captureDiagnostics: false,
+                        enableJavaScriptTailCalls: enableJavaScriptTailCalls);
+                }
+                finally
+                {
+                    StackSegment.EndRetry(previous);
+                }
+            });
         }
     }
 

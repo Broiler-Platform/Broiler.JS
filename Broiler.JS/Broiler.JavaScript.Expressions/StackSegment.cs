@@ -78,6 +78,27 @@ public struct StackSegment
     // would otherwise measure the difference between two unrelated stacks and segment at once.
     private nint anchor;
 
+    // Whether this thread is running a retry that a StackSegmentExhausted unwind asked for. Set
+    // by the retry itself, on the sized thread it runs on, so the walk that failed for want of
+    // stack does not throw a second time on the stack that was provided to finish it.
+    [ThreadStatic]
+    private static bool retrying;
+
+    /// <summary>
+    /// Marks this thread as running a retry on a sized stack, returning the previous value for
+    /// <see cref="EndRetry"/> to restore. A compilation worker is reused, so the flag has to be
+    /// unwound rather than simply cleared.
+    /// </summary>
+    public static bool BeginRetry()
+    {
+        var previous = retrying;
+        retrying = true;
+        return previous;
+    }
+
+    /// <summary>Restores what <see cref="BeginRetry"/> returned.</summary>
+    public static void EndRetry(bool previous) => retrying = previous;
+
     /// <summary>
     /// Whether this walk has consumed more stack than <see cref="SegmentAtBytes"/> since it
     /// began, given the address of a local in the caller's frame.
@@ -99,31 +120,23 @@ public struct StackSegment
         if (SegmentAtBytes == 0)
             return false;
 
-        // Whatever stack this walk is actually standing on, segment before running off the end
-        // of it. The byte threshold below cannot do that on its own: it is a fixed 4 MiB, and a
-        // walk on a 1 MiB thread exhausts the thread at about a quarter of it, so the branch is
-        // unreachable there and the guard rides the stack to the floor exactly as it did before
-        // it was fixed. That is not hypothetical — see the remarks on this type.
+        // The byte threshold below cannot guard a stack smaller than itself. It is a fixed 4 MiB,
+        // and a walk on a 1 MiB thread exhausts the thread at about a quarter of it, so on such a
+        // thread the branch is unreachable and the guard rides the stack to the floor — present,
+        // measuring correctly, and useless. See the remarks on this type for how that reached CI.
         //
-        // TryEnsureSufficientExecutionStack asks the runtime the question the threshold is only
-        // approximating: is there room left for another frame. It probes a fixed headroom, which
-        // is far more than the handful of frames between here and RunOnFreshStack, so a walk that
-        // segments on this branch has room to reach the worker it is hopping to.
+        // Asking the runtime removes the dependency on knowing the size. What it does NOT give is
+        // room to act: it reports a shortage with a fixed, small headroom left, and continuing
+        // from here costs frames — an execution-context capture, a closure, a semaphore wait — so
+        // a walk that tried to hop at this point overflowed *while escaping*. Unwinding needs no
+        // frames, so that is what happens instead: the walk abandons, and whoever owns the
+        // operation retries it whole on a sized stack. See StackSegmentExhausted.
         //
-        // NOT ON A POOL THREAD, and this exclusion is load-bearing. Segmenting blocks the thread
-        // it leaves — Continue waits on the worker — and a pool thread that blocks is one the
-        // pool cannot reuse. Applying this probe everywhere made segmentation fire on pool
-        // threads it had never fired on before, and asynchronous module loading then ran out of
-        // threads to make progress on: ImportAttributeEnforcementTests.AMatchingOrEmptyClauseLoads
-        // went from 839 ms to hanging out its whole 600 s timeout. The byte threshold below still
-        // applies on a pool thread, exactly as it did before, so this exclusion takes nothing away
-        // that used to work — it declines to add a blocking hop to the one kind of thread that
-        // cannot afford one.
-        //
-        // The thread this was reported on is not a pool thread: a test host's main thread, and an
-        // embedder's own, both get the probe. That is where deferred compilation put the walk.
-        if (!Thread.CurrentThread.IsThreadPoolThread && !RuntimeHelpers.TryEnsureSufficientExecutionStack())
-            return true;
+        // Suppressed on a retry, which by construction is already running on a sized stack: there
+        // the byte threshold is both reachable and the right rule, and throwing again would be a
+        // loop rather than a guard.
+        if (!retrying && !RuntimeHelpers.TryEnsureSufficientExecutionStack())
+            throw new StackSegmentExhausted();
 
         var consumed = (ulong)(anchor - current);
         return consumed >= (ulong)SegmentAtBytes && consumed <= long.MaxValue;
