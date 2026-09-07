@@ -240,16 +240,27 @@ public partial class JSPromise : JSObject, IJSPromise
             }
         }
 
-        state = PromiseState.Resolved;
-        result = value;
-
-        var thenList = this.thenList;
-        if (thenList != null)
+        Sequence<Reaction> toPost;
+        lock (settleGate)
         {
-            this.thenList = null;
-            foreach (var t in thenList)
-                Post(t);
+            // Re-checked under the gate: the test at the top of this method is only a fast path,
+            // and two threads reaching here would otherwise both transition and both drain.
+            if (state != PromiseState.Pending)
+                return;
+
+            // Result before state, so a reader that sees Resolved cannot read a stale result.
+            result = value;
+            state = PromiseState.Resolved;
+
+            toPost = thenList;
+            thenList = null;
         }
+
+        // Posted outside the gate: a reaction runs user JavaScript, which may re-enter this
+        // promise, and holding the gate across that would deadlock on it.
+        if (toPost != null)
+            foreach (var t in toPost)
+                Post(t);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -258,8 +269,18 @@ public partial class JSPromise : JSObject, IJSPromise
         if (state != PromiseState.Pending)
             return;
 
-        state = PromiseState.Rejected;
-        result = value;
+        Sequence<Reaction> toPost;
+        lock (settleGate)
+        {
+            if (state != PromiseState.Pending)
+                return;
+
+            result = value;
+            state = PromiseState.Rejected;
+
+            toPost = rejectList;
+            rejectList = null;
+        }
 
         pending.TryRemove(promiseID, out var __);
 
@@ -269,17 +290,29 @@ public partial class JSPromise : JSObject, IJSPromise
         if (!isHandled)
             JSPromiseRejectionTracker.Rejected(this, value);
 
-        var rejectList = this.rejectList;
-        if (rejectList != null)
-        {
-            this.rejectList = null;
-            foreach (var t in rejectList)
+        if (toPost != null)
+            foreach (var t in toPost)
                 Post(t);
-        }
     }
 
     private TaskCompletionSource<JSValue> taskCompletion = null;
     private SynchronizationContext sc;
+
+    /// <summary>
+    /// Guards the settle: the state transition and the taking of the reaction lists in
+    /// <see cref="Resolve"/>/<see cref="Reject"/>, against the state test and the registration in
+    /// <see cref="Then"/>. Those two are the pair that must not interleave — see the comment in
+    /// <c>Then</c> for what a stranded reaction costs.
+    /// </summary>
+    /// <remarks>
+    /// A promise is normally settled and observed on one JavaScript thread, which is why this was
+    /// not needed for years. It is not guaranteed: <c>Task</c> is reached from host code — module
+    /// loading awaits a module body's completion promise there — outside the execution scope that
+    /// serialises JavaScript, so a host thread can be inside <c>Then</c> while a job settles the
+    /// same promise. Reactions are posted outside the gate, so a handler that re-enters this
+    /// promise cannot deadlock on it.
+    /// </remarks>
+    private readonly object settleGate = new();
 
     public Task<JSValue> Task
     {
@@ -349,21 +382,30 @@ public partial class JSPromise : JSObject, IJSPromise
         var resolved = new Reaction { Promise = @return, Type = ReactionType.Resolve, Handler = resolve };
         var rejected = new Reaction { Promise = @return, Type = ReactionType.Reject, Handler = fail };
 
-        if (state == PromiseState.Pending)
+        // Registering has to be atomic with the settle, or the reaction is silently stranded:
+        // read Pending here, have Resolve transition and drain the list in between, and the Add
+        // below lands in a list nothing will drain again. Nobody posts the reaction, the
+        // TaskCompletionSource behind `Task` never completes, and an await on it waits for the
+        // rest of the process — a module body's completion promise, above all.
+        Reaction settled = null;
+        lock (settleGate)
         {
-            rejectList ??= [];
-            thenList ??= [];
-            rejectList.Add(rejected);
-            thenList.Add(resolved);
+            if (state == PromiseState.Pending)
+            {
+                rejectList ??= [];
+                thenList ??= [];
+                rejectList.Add(rejected);
+                thenList.Add(resolved);
+            }
+            else
+            {
+                settled = state == PromiseState.Resolved ? resolved : rejected;
+            }
         }
-        else if (state == PromiseState.Resolved)
-        {
-            Post(resolved);
-        }
-        else
-        {
-            Post(rejected);
-        }
+
+        // Outside the gate, for the same reason Resolve posts outside it.
+        if (settled != null)
+            Post(settled);
 
         return @return;
     }
