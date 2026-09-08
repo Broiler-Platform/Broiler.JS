@@ -1,4 +1,56 @@
 <Project>
+
+  <!--
+    CHAIN TO THE PARENT Directory.Build.targets WHEN THERE IS ONE.
+
+    Note that Directory.Build.props beside this file does NOT chain, and should not be read as the
+    precedent for this: it is the ROOT of the props lookup for most of this repository, and the
+    only file here that chains anything is Broiler.JS/Directory.Build.props' own consumer,
+    Broiler.JS/Broiler.JS/Directory.Build.props, which reaches exactly one level. The shape below
+    is copied from a sibling component instead: Broiler.UI/Directory.Build.props does the same
+    thing for props, down to capturing the path in a property first and for the same reason.
+
+    MSBuild stops at the FIRST Directory.Build.targets it finds walking up from a project, and
+    this is the only one in this repository, so it wins for every project here, including the
+    ones in the Broiler.DateTime, Broiler.Regex and Broiler.Unicode submodules. Composed inside
+    an aggregate repository, that meant the aggregate's Directory.Build.targets reached every
+    other component and none of ours.
+
+    WHAT THAT COST. Broiler.Browser decomposes configuration names it invents (Debug-Linux,
+    Release-Windows, Debug-VM and so on) onto a base configuration, because the SDK keys
+    DebugSymbols off `Configuration == 'Debug'` and Optimize off `Configuration == 'Release'` and
+    recognises nothing else. A name neither file recognises compiles UNOPTIMISED and succeeds
+    silently. The copy of that mapping in our own Directory.Build.props covers the four
+    Linux/Windows names it was written for, and cannot know a name invented later: at
+    `Release-VM` this engine's twenty-two projects answered `Optimize=''`. Chaining means we
+    inherit each new name as the consumer adds it, instead of this file going stale once per
+    configuration.
+
+    AND ADDING THE NAMES TO THAT COPY WOULD NOT HAVE BEEN THE SAME FIX. Of the twenty-three
+    projects an aggregate build takes from this tree, four (Broiler.DateTime and the three
+    Unicode projects) resolve their nearest Directory.Build.props to a vendored copy inside
+    their OWN nested submodule, which no edit here reaches. All twenty-three resolve their
+    Directory.Build.targets to this file. That asymmetry is why the repair belongs in this file
+    and is one edit rather than four across four repositories.
+
+    STANDALONE BUILDS ARE UNAFFECTED. With no Directory.Build.targets above this repository,
+    GetPathOfFileAbove returns empty, the Condition is false and nothing is imported. The search
+    starts one directory ABOVE this file, so it cannot find this file and recurse.
+
+    THE PATH IS RESOLVED INTO A PROPERTY FIRST, and that is not a style choice: MSBuild's
+    condition parser cannot read the nested quotes of a two-argument property function inside a
+    Condition attribute, and answers MSB4092 "unexpected token" rather than treating it as a
+    string. A property assignment is not parsed that way, so the call belongs there. The
+    arguments are in BACKTICKS for the same reason one step removed: they are the one string
+    delimiter that never collides with the quoting around them, so the call survives being moved
+    back into an attribute by someone tidying up.
+  -->
+  <PropertyGroup>
+    <BroilerParentBuildTargets>$([MSBuild]::GetPathOfFileAbove(`Directory.Build.targets`, `$(MSBuildThisFileDirectory)../`))</BroilerParentBuildTargets>
+  </PropertyGroup>
+
+  <Import Project="$(BroilerParentBuildTargets)" Condition="'$(BroilerParentBuildTargets)' != ''" />
+
   <!-- Persisted generator output is a diagnostics opt-in. This file is imported after
        project properties, so Configuration and TargetFramework are both available and
        parallel builds cannot share an output directory. -->
