@@ -437,11 +437,51 @@ public static class PropertyInlineCacheSite
         /// </summary>
         private const int MaxDeclinedInstalls = 4;
 
-        private readonly Entry[] entries = new Entry[MaxEntries];
+        /// <summary>
+        /// The published entry set. Built complete, published by one reference store, and never
+        /// written again - so a writer holds either this set or an earlier complete one, and can
+        /// never act on a half-written six-field entry.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Empty is both the cold state and the retired one, which is what lets the hit path below
+        /// test neither. The bound is structural - the array's own length - where the old
+        /// <c>count == MaxEntries</c> check followed by a non-atomic <c>entries[count++]</c> was
+        /// not: two threads could both pass that check at three, and the second wrote past a fixed
+        /// four-element array and left the count at five, so every later store at the site walked
+        /// off the end.
+        /// </para>
+        /// <para>
+        /// <b>Tearing mattered more here than the crash did.</b> <see cref="Entry.FromShape"/>
+        /// discriminates an overwrite from a transition, and a writer that saw the old null
+        /// alongside a transition entry's <see cref="Entry.ShapeId"/> and <see cref="Entry.Slot"/>
+        /// called <see cref="JSObject.TryWriteShapeSlot"/> - which validates the shape id and the
+        /// slot bound but nothing that ties the slot to the key - and wrote a value into another
+        /// property's slot.
+        /// </para>
+        /// </remarks>
+        private Entry[] entries = Array.Empty<Entry>();
+
+        /// <summary>
+        /// The key this site has committed to, or 0 while cold. Read on the fill path only: a hit
+        /// compares <see cref="Entry.Key"/> per entry, so an entry and the key it was built for are
+        /// published together and cannot be observed apart. See the read twin for what keeping them
+        /// separate cost.
+        /// </summary>
         private uint key;
-        private int count;
+
+        /// <summary>
+        /// How many installs this site has declined. Incremented with
+        /// <see cref="Interlocked.Increment(ref int)"/>: two threads that both read three and both
+        /// store four never reach the ceiling, and the site re-probes for the life of the process.
+        /// </summary>
         private int declinedInstalls;
-        private bool megamorphic;
+
+        /// <summary>
+        /// Whether the site is retired. Fill path only; a hit infers it from an empty
+        /// <see cref="entries"/>.
+        /// </summary>
+        private int megamorphic;
 
         /// <param name="site">
         /// This cache's own emission-site index; the read twin's <c>site</c> parameter, and used
@@ -449,11 +489,18 @@ public static class PropertyInlineCacheSite
         /// </param>
         public void Set(int site, JSValue target, in KeyString property, JSValue value)
         {
-            if (!megamorphic && target is JSObject receiver && key == property.Key)
+            // One field load into a local, replacing three. See the read twin for why the bound
+            // being a local array's length is what the range-check phase recognises.
+            var snapshot = Volatile.Read(ref entries);
+            if (target is JSObject receiver)
             {
-                for (var i = 0; i < count; i++)
+                var wanted = property.Key;
+                for (var i = 0; i < snapshot.Length; i++)
                 {
-                    ref readonly var entry = ref entries[i];
+                    ref readonly var entry = ref snapshot[i];
+                    if (entry.Key != wanted)
+                        continue;
+
                     if (entry.FromShape == null)
                     {
                         if (receiver.TryWriteShapeSlot(entry.ShapeId, entry.Slot, in property, value))
@@ -489,7 +536,7 @@ public static class PropertyInlineCacheSite
 
             target[property] = value;
 
-            if (megamorphic || target is not JSObject ordinary || property.Metadata.IsPrivateName)
+            if (Volatile.Read(ref megamorphic) != 0 || target is not JSObject ordinary || property.Metadata.IsPrivateName)
                 return;
 
             // A key that is also an array index names an ELEMENT, which the shape does not
@@ -511,28 +558,61 @@ public static class PropertyInlineCacheSite
             // has nothing worth recording.
             if (!ordinary.TryGetWritableShapeSlot(in property, out var shapeId, out var slot))
             {
-                if (count == 0 && ++declinedInstalls >= MaxDeclinedInstalls)
+                if (Volatile.Read(ref entries).Length == 0
+                    && Interlocked.Increment(ref declinedInstalls) >= MaxDeclinedInstalls)
+                {
                     BecomeMegamorphic();
+                }
+
                 return;
             }
 
-            var overwriteForm = new Entry(shapeId, slot);
+            var overwriteForm = new Entry(property.Key, shapeId, slot);
             var entryToAdd = shapeBeforeStore != null && !ReferenceEquals(shapeBeforeStore, ordinary.TransitionShape)
                 ? DescribeTransition(ordinary, shapeBeforeStore, in property, slot, overwriteForm)
                 : overwriteForm;
 
-            for (var i = 0; i < count; i++)
-                if (entries[i].ShapeId == entryToAdd.ShapeId && entries[i].FromShape == entryToAdd.FromShape)
-                    return;
+            Install(in entryToAdd);
+        }
 
-            if (count == MaxEntries)
+        /// <summary>
+        /// Publishes a new entry array carrying <paramref name="entryToAdd"/>, or declines when this
+        /// site already describes the same (key, shape, source shape).
+        /// </summary>
+        /// <remarks>
+        /// Copy-on-write, and deliberately unlocked; see the read twin's <c>Install</c>. It DECLINES
+        /// on a duplicate where that one refreshes, and the difference is preserved rather than
+        /// tidied: a store entry's guards are the receiver's prototype identity and the prototype
+        /// version, both re-tested at every hit, so a stale one costs a miss and not a wrong answer.
+        /// Changing it is a separate decision from this one.
+        /// </remarks>
+        private void Install(in Entry entryToAdd)
+        {
+            var snapshot = Volatile.Read(ref entries);
+
+            for (var i = 0; i < snapshot.Length; i++)
+            {
+                ref readonly var existing = ref snapshot[i];
+                if (existing.Key == entryToAdd.Key
+                    && existing.ShapeId == entryToAdd.ShapeId
+                    && ReferenceEquals(existing.FromShape, entryToAdd.FromShape))
+                {
+                    return;
+                }
+            }
+
+            if (snapshot.Length >= MaxEntries)
             {
                 BecomeMegamorphic();
                 return;
             }
 
-            entries[count++] = entryToAdd;
-            if (count == 2)
+            var grown = new Entry[snapshot.Length + 1];
+            Array.Copy(snapshot, grown, snapshot.Length);
+            grown[snapshot.Length] = entryToAdd;
+            Volatile.Write(ref entries, grown);
+
+            if (grown.Length == 2)
                 PropertyOptimizationDiagnostics.RecordPolymorphicPromotion();
         }
 
@@ -591,6 +671,7 @@ public static class PropertyInlineCacheSite
             }
 
             return new Entry(
+                property.Key,
                 toShape.Id,
                 slot,
                 fromShape,
@@ -599,11 +680,16 @@ public static class PropertyInlineCacheSite
                 JSObject.PrototypeMutationVersion);
         }
 
+        /// <summary>
+        /// Retires the site: publishes an empty entry array - which is what makes the hit path stop
+        /// answering without testing a flag - and records the transition exactly once.
+        /// </summary>
         private void BecomeMegamorphic()
         {
-            if (megamorphic)
+            if (Interlocked.Exchange(ref megamorphic, 1) != 0)
                 return;
-            megamorphic = true;
+
+            Volatile.Write(ref entries, Array.Empty<Entry>());
             PropertyOptimizationDiagnostics.RecordStoreMegamorphic();
         }
 
@@ -621,7 +707,15 @@ public static class PropertyInlineCacheSite
         /// creation is only correct while the chain supplies nothing for the key.
         /// </para>
         /// </summary>
+        /// <remarks>
+        /// <see cref="Key"/> is carried per entry rather than once per cache so that an entry and the
+        /// key it was built for are published by the same reference store.
+        /// <see cref="JSObject.TryWriteShapeSlot"/> validates by shape id and slot bound and never
+        /// re-derives the key, so an entry reachable under another key writes into another
+        /// property's slot. Grows the struct 40 -> 48 bytes, and the array is at most four elements.
+        /// </remarks>
         private readonly record struct Entry(
+            uint Key,
             int ShapeId,
             int Slot,
             ObjectShape FromShape = null,
@@ -633,10 +727,57 @@ public static class PropertyInlineCacheSite
     private sealed class PropertyInlineCache
     {
         private const int MaxEntries = 4;
-        private readonly Entry[] entries = new Entry[MaxEntries];
+
+        /// <summary>
+        /// The published entry set. Built complete, published by one reference store, and never
+        /// written again - so a reader holds either this set or an earlier complete one, and can
+        /// never observe a half-written six-field entry.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Empty is both the cold state and the retired one. That is deliberate: the hit path below
+        /// tests neither a <c>megamorphic</c> flag nor a <c>count</c>, because a site that must not
+        /// answer carries an array with nothing to answer from and the loop runs zero times.
+        /// </para>
+        /// <para>
+        /// <b>The bound is structural now, where it was arithmetic before.</b> The old shape was
+        /// <c>if (count == MaxEntries) BecomeMegamorphic();</c> followed by a non-atomic
+        /// <c>entries[count++] = entryToAdd;</c>. Two threads could both pass that check at three;
+        /// the second read four, stored five, and threw writing past a fixed four-element array -
+        /// and the five stayed, so every later read of the site walked off the end. The guard was
+        /// <c>==</c> rather than <c>&gt;=</c>, so the fill path never recovered either.
+        /// </para>
+        /// <para>
+        /// <b>Tearing was the quieter and worse half.</b> <see cref="Entry.Holder"/> discriminates
+        /// an own slot from a prototype slot, and a prototype entry's <see cref="Entry.ShapeId"/> is
+        /// the RECEIVER's while its <see cref="Entry.Slot"/> is the HOLDER's - so a reader that saw
+        /// the old null <c>Holder</c> beside those two ran the own arm, matched the receiver's shape
+        /// id by construction, and returned whatever sat in another property's slot.
+        /// <see cref="JSObject.TryReadShapeSlot"/> deliberately does not re-derive the key, so
+        /// nothing downstream could catch it.
+        /// </para>
+        /// </remarks>
+        private Entry[] entries = Array.Empty<Entry>();
+
+        /// <summary>
+        /// The key this site has committed to, or 0 while cold. Read on the fill path only: a hit
+        /// compares <see cref="Entry.Key"/> per entry.
+        /// </summary>
+        /// <remarks>
+        /// <b>Keeping the key beside the entries rather than inside them was a defect of its own,
+        /// and it needed no torn write to fire.</b> Two threads that both find this 0 both write it,
+        /// one wins, and the loser installs an entry built for ITS key under the winner's. A hit
+        /// validates by shape id alone, so that entry answers a read for the winner's key with the
+        /// value of the loser's property. Carried per entry, an entry and its key are published by
+        /// one reference store and cannot be observed apart.
+        /// </remarks>
         private uint key;
-        private int count;
-        private bool megamorphic;
+
+        /// <summary>
+        /// Whether the site is retired. Fill path only; a hit infers it from an empty
+        /// <see cref="entries"/>.
+        /// </summary>
+        private int megamorphic;
 
         /// <param name="site">
         /// This cache's own emission-site index, carried through so a nullish receiver can be
@@ -645,11 +786,20 @@ public static class PropertyInlineCacheSite
         /// </param>
         public JSValue Get(int site, JSValue target, in KeyString property)
         {
-            if (!megamorphic && target is JSObject receiver && key == property.Key)
+            // One field load into a local, replacing three (`megamorphic`, `key`, `count`). The
+            // bound is then a local array's length - the form the range-check phase recognises - and
+            // a local cannot be clobbered by the calls in the body, so neither it nor the array
+            // reference is reloaded per iteration.
+            var snapshot = Volatile.Read(ref entries);
+            if (target is JSObject receiver)
             {
-                for (var i = 0; i < count; i++)
+                var wanted = property.Key;
+                for (var i = 0; i < snapshot.Length; i++)
                 {
-                    ref readonly var entry = ref entries[i];
+                    ref readonly var entry = ref snapshot[i];
+                    if (entry.Key != wanted)
+                        continue;
+
                     if (entry.Holder == null)
                     {
                         if (receiver.TryReadShapeSlot(entry.ShapeId, entry.Slot, out var own))
@@ -672,7 +822,7 @@ public static class PropertyInlineCacheSite
             PropertyOptimizationDiagnostics.RecordCacheMiss();
             if (PropertyOptimizationDiagnostics.Enabled)
             {
-                if (megamorphic)
+                if (Volatile.Read(ref megamorphic) != 0)
                     PropertyOptimizationDiagnostics.RecordMissMegamorphic();
                 else if (target is not JSObject)
                     PropertyOptimizationDiagnostics.RecordMissNonObject();
@@ -693,7 +843,7 @@ public static class PropertyInlineCacheSite
 
             var result = target[property];
 
-            if (megamorphic || target is not JSObject ordinary || property.Metadata.IsPrivateName)
+            if (Volatile.Read(ref megamorphic) != 0 || target is not JSObject ordinary || property.Metadata.IsPrivateName)
                 return result;
 
             // A key that is also an array index names an ELEMENT, which the shape does not
@@ -715,32 +865,7 @@ public static class PropertyInlineCacheSite
                 return result;
             }
 
-            for (var i = 0; i < count; i++)
-                if (entries[i].ShapeId == entryToAdd.ShapeId && entries[i].Holder == entryToAdd.Holder)
-                {
-                    PropertyOptimizationDiagnostics.RecordMissEntryAlreadyPresent();
-
-                    // REFRESH, do not decline. ShapeId and Holder identify the entry, but
-                    // they are not what a hit checks: the prototype version, the receiver's
-                    // prototype identity, and the holder's shape and slot are all guards too,
-                    // and any of them can go stale while these two stay equal. Returning here
-                    // left the stale entry in place with no way back — the site could never
-                    // re-describe it, so it missed on this receiver for the rest of the
-                    // process. entryToAdd was just built from the live receiver, so it is by
-                    // construction the correct replacement.
-                    entries[i] = entryToAdd;
-                    return result;
-                }
-
-            if (count == MaxEntries)
-            {
-                BecomeMegamorphic();
-                return result;
-            }
-
-            entries[count++] = entryToAdd;
-            if (count == 2)
-                PropertyOptimizationDiagnostics.RecordPolymorphicPromotion();
+            Install(in entryToAdd);
             return result;
         }
 
@@ -749,7 +874,7 @@ public static class PropertyInlineCacheSite
         {
             if (receiver.TryGetShapeSlot(in property, out var shapeId, out var slot))
             {
-                entry = new Entry(shapeId, slot, null, null, 0, 0);
+                entry = new Entry(property.Key, shapeId, slot, null, null, 0, 0);
                 return true;
             }
 
@@ -788,7 +913,7 @@ public static class PropertyInlineCacheSite
 
                 if (holder.TryGetShapeSlot(in property, out var holderShapeId, out var holderSlot))
                 {
-                    entry = new Entry(receiverShapeId, holderSlot, holder, receiverPrototype, holderShapeId, version);
+                    entry = new Entry(property.Key, receiverShapeId, holderSlot, holder, receiverPrototype, holderShapeId, version);
                     return true;
                 }
 
@@ -805,11 +930,99 @@ public static class PropertyInlineCacheSite
             return false;
         }
 
+        /// <summary>
+        /// Publishes a new entry array carrying <paramref name="entryToAdd"/>, replacing an entry
+        /// that describes the same (key, shape, holder) or appending one.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Copy-on-write, and deliberately unlocked. Two threads installing at once each build from
+        /// their own snapshot and one reference store wins; the loser's entry is lost, the site
+        /// misses once more, and it installs again. What the copy buys is that a reader never holds
+        /// an array anything is still writing into. A lock here would serialise every miss at a hot
+        /// site across every thread sharing the code, to buy exactness the loser's retry already
+        /// provides.
+        /// </para>
+        /// <para>
+        /// <b>A refresh that rebuilds an IDENTICAL entry publishes nothing</b>, which is what keeps
+        /// this from allocating per read on a site that re-describes in a loop. An own-slot entry
+        /// re-derives the same slot from the same immutable shape every time, so identical is the
+        /// common case; only a guard that genuinely moved costs an array.
+        /// </para>
+        /// </remarks>
+        private void Install(in Entry entryToAdd)
+        {
+            var snapshot = Volatile.Read(ref entries);
+
+            for (var i = 0; i < snapshot.Length; i++)
+            {
+                ref readonly var existing = ref snapshot[i];
+                if (existing.Key != entryToAdd.Key
+                    || existing.ShapeId != entryToAdd.ShapeId
+                    || !ReferenceEquals(existing.Holder, entryToAdd.Holder))
+                {
+                    continue;
+                }
+
+                PropertyOptimizationDiagnostics.RecordMissEntryAlreadyPresent();
+
+                // REFRESH, do not decline. ShapeId and Holder identify the entry, but they are not
+                // what a hit checks: the prototype version, the receiver's prototype identity, and
+                // the holder's shape and slot are all guards too, and any of them can go stale while
+                // these two stay equal. Returning here left the stale entry in place with no way
+                // back - the site could never re-describe it, so it missed on this receiver for the
+                // rest of the process. entryToAdd was just built from the live receiver, so it is by
+                // construction the correct replacement.
+                //
+                // Compared field by field with ReferenceEquals rather than through the record
+                // struct's synthesized Equals, which routes reference fields through
+                // EqualityComparer<JSObject>.Default - a virtual call, and one whose answer would
+                // depend on JSValue's equality surface rather than on identity.
+                if (existing.Slot == entryToAdd.Slot
+                    && ReferenceEquals(existing.ReceiverPrototype, entryToAdd.ReceiverPrototype)
+                    && existing.HolderShapeId == entryToAdd.HolderShapeId
+                    && existing.PrototypeVersion == entryToAdd.PrototypeVersion)
+                {
+                    return;
+                }
+
+                var refreshed = new Entry[snapshot.Length];
+                Array.Copy(snapshot, refreshed, snapshot.Length);
+                refreshed[i] = entryToAdd;
+                Volatile.Write(ref entries, refreshed);
+                return;
+            }
+
+            if (snapshot.Length >= MaxEntries)
+            {
+                BecomeMegamorphic();
+                return;
+            }
+
+            var grown = new Entry[snapshot.Length + 1];
+            Array.Copy(snapshot, grown, snapshot.Length);
+            grown[snapshot.Length] = entryToAdd;
+            Volatile.Write(ref entries, grown);
+
+            if (grown.Length == 2)
+                PropertyOptimizationDiagnostics.RecordPolymorphicPromotion();
+        }
+
+        /// <summary>
+        /// Retires the site: publishes an empty entry array - which is what makes the hit path stop
+        /// answering without testing a flag - and records the transition exactly once.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="Interlocked.Exchange(ref int, int)"/> rather than a read-then-set, because two
+        /// threads that both pass a plain <c>if (megamorphic) return;</c> both count the site, and
+        /// <c>MegamorphicSites</c> is a number <c>InlineCacheMetrics</c> publishes.
+        /// </remarks>
         private void BecomeMegamorphic()
         {
-            if (megamorphic)
+            if (Interlocked.Exchange(ref megamorphic, 1) != 0)
                 return;
-            megamorphic = true;
+
+            Volatile.Write(ref entries, Array.Empty<Entry>());
             PropertyOptimizationDiagnostics.RecordMegamorphic();
         }
 
@@ -819,8 +1032,21 @@ public static class PropertyInlineCacheSite
         /// <see cref="Slot"/> off <see cref="Holder"/>, guarded by the receiver's
         /// <see cref="ShapeId"/>, its <see cref="ReceiverPrototype"/> identity, and
         /// <see cref="PrototypeVersion"/>.
+        /// <para>
+        /// <see cref="Key"/> is carried per entry, not once per cache, so that an entry and the key
+        /// it was built for are published by the same reference store. A hit validates by shape id
+        /// alone - <see cref="JSObject.TryReadShapeSlot"/> deliberately does not re-derive the key -
+        /// so an entry reachable under another key answers with another property's value. It also
+        /// makes the site self-describing if a persisted code cache ever hands the same index to a
+        /// different emission site, which is the case <c>SiteTable.Rent</c> exists for.
+        /// </para>
         /// </summary>
+        /// <remarks>
+        /// Still 40 bytes: two references 16, the long 8, and four 4-byte fields 16. The uint lands
+        /// in what was padding after <see cref="HolderShapeId"/>, so the array does not grow.
+        /// </remarks>
         private readonly record struct Entry(
+            uint Key,
             int ShapeId,
             int Slot,
             JSObject Holder,
