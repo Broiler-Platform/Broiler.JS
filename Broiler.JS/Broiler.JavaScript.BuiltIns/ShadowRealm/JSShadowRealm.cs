@@ -15,10 +15,16 @@ public partial class JSShadowRealm : JSObject
     // realm that created the ShadowRealm.
     private readonly JSContext realm;
 
+    // The context that constructed this ShadowRealm, which the child realm is made from. evaluate asks
+    // the host whether it may compile a string on this context: the child has no EvalEvent subscribers
+    // and nothing forwards them (see Evaluate).
+    private readonly JSContext creatorRealm;
+
     [JSExport(Length = 0)]
     public JSShadowRealm(in Arguments a) : base(JSEngine.NewTargetPrototype)
     {
         var outer = JSEngine.Current as JSContext;
+        creatorRealm = outer;
         try
         {
             realm = new JSContext(
@@ -48,6 +54,19 @@ public partial class JSShadowRealm : JSObject
         var callerRealm = JSEngine.Current as JSContext;
         var evalRealm = shadowRealm.realm;
 
+        // PerformShadowRealmEval asks the host (HostEnsureCanCompileStrings) before it parses, the
+        // same question eval and the Function constructors ask, and it names the ShadowRealm's own
+        // realm. The child context has no EvalEvent subscribers and nothing forwards them, so the event
+        // is raised on the context that constructed this ShadowRealm, which the child realm was made
+        // from. That is the caller whenever the caller built it; a context calling evaluate on another
+        // context's ShadowRealm is answered by that other context. Raised while the caller is still
+        // current and outside both catches below, so a host's refusal is created in the caller realm
+        // and reaches it as the host threw it, rather than rewritten as the parse SyntaxError or the
+        // inner-realm TypeError. A location the host sets is the compile's location, as on every
+        // other route.
+        string location = null;
+        (shadowRealm.creatorRealm ?? callerRealm)?.DispatchEvalEvent(ref sourceText, ref location);
+
         JSValue result;
         var outer = JSEngine.Current as JSContext;
         try
@@ -62,7 +81,7 @@ public partial class JSShadowRealm : JSObject
             JSFunctionDelegate compiled;
             try
             {
-                compiled = CoreScript.Compile(sourceText, codeCache: evalRealm.CodeCache);
+                compiled = CoreScript.Compile(sourceText, location, codeCache: evalRealm.CodeCache);
             }
             catch (Exception)
             {
