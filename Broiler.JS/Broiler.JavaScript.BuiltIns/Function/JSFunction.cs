@@ -1290,14 +1290,6 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
     internal static JSValue CreateDynamicFunction(in Arguments args, string functionKind)
     {
         var len = args.Length;
-        if (len == 0)
-        {
-            // Build from an anonymous function expression so the body gets no
-            // `anonymous` self-binding (CreateDynamicFunction uses OrdinaryFunctionCreate,
-            // not a named function expression), then stamp the spec name/source.
-            var emptyFn = CoreScript.Evaluate($"({functionKind} () {{\n\n}})", "internal");
-            return FinalizeDynamicFunction(emptyFn, $"{functionKind} anonymous(\n) {{\n\n}}");
-        }
 
         JSValue body = null;
         var al = args.Length;
@@ -1318,10 +1310,29 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             }
         }
 
-        var bodyText = body.IsString ? body.StringValue : body.ToString();
+        // An absent body is the empty String.
+        var bodyText = body == null ? string.Empty : body.IsString ? body.StringValue : body.ToString();
+
+        // HostEnsureCanCompileStrings: the host is asked once every argument has been converted and
+        // before anything is parsed, at EVERY arity. The argument-less shortcut below used to return
+        // before this dispatch, so new Function() - and the same call to the async, generator and
+        // async-generator constructors, which share this path - compiled under a host that refuses
+        // dynamic code.
         string location = null;
         var context = JSEngine.Current as IJSExecutionContext;
         context?.DispatchEvalEvent(ref bodyText, ref location);
+
+        // A handler that rewrote the empty body, or set a location, gets the general path below, as it
+        // does at the other dispatch sites.
+        if (len == 0 && string.IsNullOrEmpty(bodyText) && location == null)
+        {
+            // Build from an anonymous function expression so the body gets no
+            // `anonymous` self-binding (CreateDynamicFunction uses OrdinaryFunctionCreate,
+            // not a named function expression), then stamp the spec name/source.
+            var emptyFn = CoreScript.Evaluate($"({functionKind} () {{\n\n}})", "internal");
+            return FinalizeDynamicFunction(emptyFn, $"{functionKind} anonymous(\n) {{\n\n}}");
+        }
+
         var parameterText = string.Join(",", sargs);
 
         // The function is built from an *anonymous* function expression: the spec's
