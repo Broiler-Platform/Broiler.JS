@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
 
   <!-- Broiler NuGet packaging metadata (vendored; do not edit by hand). -->
   <Import Project="$(MSBuildThisFileDirectory)eng\Broiler.Packaging.props" />
@@ -7,9 +7,13 @@
        source generator (consumed as an analyzer) and internal perf/log tools
        whose names don't match the standard tool/test suffixes. -->
   <PropertyGroup>
+    <IsPackable Condition="'$(MSBuildProjectName)' == 'Broiler.JavaScript'">false</IsPackable>
     <IsPackable Condition="'$(MSBuildProjectName)' == 'Broiler.JavaScript.JSClassGenerator'">false</IsPackable>
     <IsPackable Condition="'$(MSBuildProjectName)' == 'JIntPerfTests'">false</IsPackable>
     <IsPackable Condition="'$(MSBuildProjectName)' == 'LogParser'">false</IsPackable>
+    <IsPackable Condition="$(MSBuildProjectName.EndsWith('Sample'))">false</IsPackable>
+    <PackageProjectUrl>https://github.com/Broiler-Platform/Broiler.JS</PackageProjectUrl>
+    <PackageTags>broiler;javascript;ecmascript;compiler;engine</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup>

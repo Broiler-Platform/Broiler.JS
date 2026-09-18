@@ -5,66 +5,72 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  workflow_call:
+    inputs:
+      package-version:
+        description: Resolved preview version for a publish run
+        type: string
+        default: ''
 
 permissions:
   contents: read
+  packages: read
 
-# A later push on the same branch cancels the earlier run: what is checked does
-# not change, only how many times an abandoned commit is checked.
+env:
+  PACKAGE_VERSION: ${{ inputs.package-version }}
+  NuGetPackageSourceCredentials_github: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }};ValidAuthenticationTypes=Basic
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  test:
-    # Named per matrix entry rather than left to the runner label, so the branch
-    # protection context is a sentence and not `ubuntu-latest`. Renaming one of
-    # these renames a required check; update the protection list with it.
-    name: ${{ matrix.name }}
+  build:
+    name: ${{ matrix.os }} / Release
     runs-on: ${{ matrix.os }}
-
     defaults:
       run:
         shell: bash
-
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: Tests (Linux)
-            os: ubuntu-latest
-
-          # Windows earns its place here rather than duplicating the leg above.
-          # An ordinary Windows thread gets 1 MiB where a Linux one gets 8 MiB,
-          # and the compiler's guard segmented only on a fixed 4 MiB of consumed
-          # stack — a threshold a 1 MiB thread can never reach, so the guard rode
-          # that stack to the floor and the test host died with "Test host
-          # process crashed: Stack overflow" inside BExpressionMapVisitor. Eight
-          # megabytes of Linux stack hid the defect; one megabyte of Windows
-          # stack did not. This is the leg that would have caught it.
-          - name: Tests (Windows)
-            os: windows-latest
-
+        os: [ubuntu-latest, windows-latest]
     steps:
-      # Recursive rather than one level: Broiler.Regex carries Broiler.Unicode as
-      # a submodule of its own, and the generated Unicode data is a project
-      # reference, so a single-level checkout does not restore.
       - name: Check out
         uses: actions/checkout@v7
-        with:
-          submodules: recursive
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
-      - name: Build
-        run: dotnet build Broiler.JS.slnx -c Release --nologo
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
 
-      # The thirteen xunit suites in the solution, a little over eight thousand
-      # tests. The conformance and benchmark runners under scripts/ are not part
-      # of this: test262 and the performance baselines stay manual workflows,
-      # because a full suite run is not a per-pull-request cost.
+      - name: Test preview version selection
+        run: node --test eng/resolve-preview-version.test.mjs
+
+      - name: Build
+        run: |
+          args=()
+          if [ -n "$PACKAGE_VERSION" ]; then
+            args+=("-p:Version=$PACKAGE_VERSION" "-p:PackageVersion=$PACKAGE_VERSION")
+          fi
+          dotnet build Broiler.JS.slnx -c Release --nologo "${args[@]}"
+
       - name: Test
-        run: dotnet test Broiler.JS.slnx -c Release --nologo --no-build
+        run: bash ./eng/run-tests.sh Release
+
+      - name: Pack and verify every package
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: ./eng/pack.ps1 -Version $env:PACKAGE_VERSION
+
+      - name: Upload packages
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v7
+        with:
+          name: nuget-packages
+          path: artifacts/*
+          if-no-files-found: error

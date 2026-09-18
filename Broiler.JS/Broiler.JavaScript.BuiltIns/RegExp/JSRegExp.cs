@@ -1,4 +1,4 @@
-﻿using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.Regex;
@@ -1452,13 +1452,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
 
         var namedGroups = new List<(string, List<int>)>(orderedNames.Count);
-        var anyDuplicate = false;
         foreach (var name in orderedNames)
         {
             var idxs = nameToIndices[name];
             namedGroups.Add((name, idxs));
-            if (idxs.Count > 1)
-                anyDuplicate = true;
         }
         map = new CaptureGroupMap(originalNames.ToArray(), namedGroups);
 

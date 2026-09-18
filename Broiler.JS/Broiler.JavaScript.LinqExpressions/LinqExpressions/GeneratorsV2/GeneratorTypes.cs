@@ -209,7 +209,6 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
             v = GetNext(NextJump, LastValue);
             NextJump = v.NextJump;
 
-        ProcessState:
             if (v.HasValue)
             {
                 if (v.IsValueDelegate)

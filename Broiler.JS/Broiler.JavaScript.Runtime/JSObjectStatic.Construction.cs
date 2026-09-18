@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.Concurrent;
 using Broiler.JavaScript.Storage;
 using System;
@@ -30,18 +30,6 @@ public partial class JSObject
         target.PropertyChanged?.Invoke(target, (KeyStrings.length.Key, uint.MaxValue, null));
     }
 
-    private static uint ToUint32(double number)
-    {
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            return 0;
-
-        const double twoPow32 = 4294967296d;
-        var truncated = Math.Truncate(number) % twoPow32;
-        if (truncated < 0)
-            truncated += twoPow32;
-
-        return (uint)truncated;
-    }
 
     private static void DefineArrayProperty(JSObject target, uint index, JSObject descriptor)
     {

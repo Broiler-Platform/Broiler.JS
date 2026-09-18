@@ -139,7 +139,7 @@ internal static class CallPrologueMetrics
                     }
                     finally
                     {
-                        plainStaticFlag = plainStaticFlag;
+                        plainStaticFlag = false;
                     }
                 }
 
