@@ -405,7 +405,7 @@ public partial class JSTemporalDuration : JSObject
         return new JSTemporalDuration(y, mo, w, dd, h, mi, s, ms, us, ns, DurationPrototype);
     }
 
-    private static readonly Regex DurationPattern = new(
+    private static readonly System.Text.RegularExpressions.Regex DurationPattern = new(
         @"^([+-])?[Pp](?:(\d+)[Yy])?(?:(\d+)[Mm])?(?:(\d+)[Ww])?(?:(\d+)[Dd])?(?:[Tt](?:(\d+)(?:[.,](\d{1,9}))?[Hh])?(?:(\d+)(?:[.,](\d{1,9}))?[Mm])?(?:(\d+)(?:[.,](\d{1,9}))?[Ss])?)?$",
         RegexOptions.CultureInvariant);
 

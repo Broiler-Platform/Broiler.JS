@@ -668,7 +668,7 @@ partial class JSRegExp
                 matchesEmpty = true;
                 continue;
             }
-            alternatives.Add(Regex.Escape(str));
+            alternatives.Add(System.Text.RegularExpressions.Regex.Escape(str));
         }
 
         if (ranges.Count > 0)

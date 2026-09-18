@@ -253,7 +253,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
     // Parses "M01".."M13" with an optional trailing "L" leap-month marker (for the non-ISO path).
     private static (int number, bool leap) ParseMonthCodeLeap(string code)
     {
-        var match = Regex.Match(code, @"^M(\d{2})(L?)$");
+        var match = System.Text.RegularExpressions.Regex.Match(code, @"^M(\d{2})(L?)$");
         if (!match.Success)
             throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
         return (int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture), match.Groups[2].Value == "L");
@@ -540,7 +540,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
     private static int MonthFromCode(string code)
     {
-        var match = Regex.Match(code, @"^M(\d{2})$");
+        var match = System.Text.RegularExpressions.Regex.Match(code, @"^M(\d{2})$");
         if (!match.Success)
             throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
 
@@ -701,7 +701,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
     // "197611(18)?" are both valid, but a mixed "1976-1118" is not. Two alternatives (with / without
     // separators) capture the year/month/day under shared names so a mixed form matches neither.
     private const string Year = @"\d{4}|\+\d{6}|-(?!000000)\d{6}";
-    private static readonly Regex YearMonthPattern = new(
+    private static readonly System.Text.RegularExpressions.Regex YearMonthPattern = new(
         @"^(?:(?<y>" + Year + @")-(?<mo>\d{2})(?:-(?<d>\d{2}))?|(?<y>" + Year + @")(?<mo>\d{2})(?<d>\d{2})?)" +
         TemporalIsoString.TimeAndOffsetTail + TemporalIsoString.AnnotationsTail + "$",
         RegexOptions.CultureInvariant);
@@ -750,7 +750,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         return new JSTemporalPlainYearMonth(year, month, 1, calendarId, PlainYearMonthPrototype);
     }
 
-    private static readonly Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
+    private static readonly System.Text.RegularExpressions.Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
 
     private static JSValue RegulateYearMonth(int year, int month, string overflow, string calendarId = "iso8601")
     {

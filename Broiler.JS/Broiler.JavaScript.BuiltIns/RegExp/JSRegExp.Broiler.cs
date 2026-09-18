@@ -1,8 +1,7 @@
-extern alias BRegex;
 using System.Collections.Generic;
-using BRegex::Broiler.Regex;
-using BRegex::Broiler.Regex.Ast;
-using BRegex::Broiler.Regex.Matching;
+using Broiler.Regex;
+using Broiler.Regex.Ast;
+using Broiler.Regex.Matching;
 using NetMatch = System.Text.RegularExpressions.Match;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
@@ -73,7 +72,7 @@ public partial class JSRegExp
             // Re-parse with Broiler so the routing decision sees the real grammar
             // (not a textual heuristic). A parse failure here means Broiler can't own
             // the pattern, so fall back to the .NET translator.
-            ast = BRegex::Broiler.Regex.Parsing.RegexParser.Parse(pattern, brFlags, out _, out _);
+            ast = Broiler.Regex.Parsing.RegexParser.Parse(pattern, brFlags, out _, out _);
         }
         catch
         {
@@ -289,7 +288,7 @@ public partial class JSRegExp
             {
                 return FromBroiler(broiler.Match(input, start));
             }
-            catch (BRegex::Broiler.Regex.RegexOverflowException)
+            catch (Broiler.Regex.RegexOverflowException)
             {
                 // Broiler's continuation-passing matcher would recurse past the stack for
                 // this subject (a quantifier over a long input). The .NET engine is

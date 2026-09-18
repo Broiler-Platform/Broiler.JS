@@ -315,7 +315,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
     private static int MonthFromCode(string code)
     {
-        var match = Regex.Match(code, @"^M(\d{2})$");
+        var match = System.Text.RegularExpressions.Regex.Match(code, @"^M(\d{2})$");
         if (!match.Success)
             throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
 
@@ -465,19 +465,19 @@ public partial class JSTemporalPlainMonthDay : JSObject
         return RegulateMonthDay(month, dayInt, overflow, calendarId, validationYear);
     }
 
-    private static readonly Regex MonthDayPattern = new(
+    private static readonly System.Text.RegularExpressions.Regex MonthDayPattern = new(
         @"^(?:--)?(\d{2})-?(\d{2})(?:\[[^\]]*\])*$",
         RegexOptions.CultureInvariant);
 
     // A full calendar date (with an optional, discarded time tail) from which the month and day are
     // extracted. The date portion may use the extended (YYYY-MM-DD) or basic (YYYYMMDD) form — but
     // not a mix — mirroring TemporalIsoString.DateTimePattern.
-    private static readonly Regex FullDatePattern = new(
+    private static readonly System.Text.RegularExpressions.Regex FullDatePattern = new(
         @"^(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-(?<mo>\d{2})-(?<d>\d{2})|(?<mo>\d{2})(?<d>\d{2}))" +
         TemporalIsoString.TimeAndOffsetTail + TemporalIsoString.AnnotationsTail + "$",
         RegexOptions.CultureInvariant);
 
-    private static readonly Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
+    private static readonly System.Text.RegularExpressions.Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalMonthDayString(string text)
     {

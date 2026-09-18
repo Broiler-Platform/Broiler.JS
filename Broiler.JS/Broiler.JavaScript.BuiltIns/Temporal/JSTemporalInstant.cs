@@ -431,7 +431,7 @@ public partial class JSTemporalInstant : JSObject
     // both the wall clock and the offset are optional, and any trailing RFC 9557 [..] annotations
     // (time-zone and/or key=value) are permitted and ignored here.
     private const string YearField = @"\d{4}|\+\d{6}|-(?!000000)\d{6}";
-    private static readonly Regex InstantPattern = new(
+    private static readonly System.Text.RegularExpressions.Regex InstantPattern = new(
         @"^(?:(?<y>" + YearField + @")-(?<mo>\d{2})-(?<d>\d{2})|(?<y>" + YearField + @")(?<mo>\d{2})(?<d>\d{2}))" +
         @"[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?" +
         @"(?:(?<z>[Zz])|(?<off>(?<osign>[+-])(?<oh>\d{2})(?::?(?<om>\d{2})(?::?(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?)?))" +

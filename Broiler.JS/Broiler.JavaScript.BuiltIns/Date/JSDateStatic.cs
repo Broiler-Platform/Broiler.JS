@@ -112,7 +112,7 @@ partial class JSDate
     //   Date:      YYYY | YYYY-MM | YYYY-MM-DD       (year also expanded ±YYYYYY)
     //   DateTime:  Date 'T' HH:mm[:ss[.sss]] [TimeZone]
     //   TimeZone:  'Z' | ±HH:mm
-    private static readonly Regex EcmaIsoDateTime = new(
+    private static readonly System.Text.RegularExpressions.Regex EcmaIsoDateTime = new(
         @"^([+-]\d{6}|\d{4})(?:-(\d{2})(?:-(\d{2}))?)?(?:T(\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?(Z|[+-]\d{2}:\d{2})?)?$",
         RegexOptions.CultureInvariant);
 

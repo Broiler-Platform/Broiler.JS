@@ -135,7 +135,7 @@ public static class RegexTiering
         /// <see cref="JSRegExp"/> instances is sound — the mutable per-instance state a JS
         /// RegExp has (<c>lastIndex</c>) lives on the object, never on the matcher.
         /// </summary>
-        public Regex Promoted;
+        public System.Text.RegularExpressions.Regex Promoted;
     }
 
     private static readonly ConcurrentDictionary<(string Pattern, RegexOptions Options), PatternVerdict> Verdicts = new();
@@ -149,7 +149,7 @@ public static class RegexTiering
     /// The <see cref="Regex"/> the instance should use from now on — either the one it already
     /// had, or a compiled equivalent that matches identically.
     /// </returns>
-    internal static Regex Decide(Regex interpreted, string input, int start)
+    internal static System.Text.RegularExpressions.Regex Decide(System.Text.RegularExpressions.Regex interpreted, string input, int start)
     {
         // A race is a measurement, and a measurement that throws must not be able to fail the
         // program it is only observing: every arm below is inside the guard.
@@ -205,11 +205,11 @@ public static class RegexTiering
     /// survives. Reconstructing it from <c>JSRegExp.pattern</c> would re-run the translation and
     /// risk racing a <em>different</em> pattern than the one being replaced.
     /// </remarks>
-    private static Regex Build(Regex interpreted)
+    private static System.Text.RegularExpressions.Regex Build(System.Text.RegularExpressions.Regex interpreted)
     {
         try
         {
-            return new Regex(
+            return new System.Text.RegularExpressions.Regex(
                 interpreted.ToString(),
                 interpreted.Options | RegexOptions.Compiled,
                 interpreted.MatchTimeout);
@@ -243,8 +243,8 @@ public static class RegexTiering
     /// </para>
     /// </remarks>
     private static bool CompiledWins(
-        Regex interpreted,
-        Regex compiled,
+        System.Text.RegularExpressions.Regex interpreted,
+        System.Text.RegularExpressions.Regex compiled,
         string input,
         int start,
         out (double InterpretedMs, double CompiledMs, int Rounds) race)

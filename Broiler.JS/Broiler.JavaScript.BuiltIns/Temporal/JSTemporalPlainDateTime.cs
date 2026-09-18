@@ -784,7 +784,7 @@ public partial class JSTemporalPlainDateTime : JSObject
 
     private static int MonthFromCode(string code)
     {
-        var match = Regex.Match(code, @"^M(\d{2})$");
+        var match = System.Text.RegularExpressions.Regex.Match(code, @"^M(\d{2})$");
         if (!match.Success)
             throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
 
@@ -800,7 +800,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     // A well-formed monthCode is "M" + two digits + an optional leap-month "L" marker; this SYNTAX is
     // validated when the field is read (before the year is coerced), so a malformed code is a
     // RangeError ahead of a bad year type, while its calendar SUITABILITY is a later check.
-    private static readonly Regex MonthCodeSyntaxPattern = new(@"^M\d{2}L?$", RegexOptions.CultureInvariant);
+    private static readonly System.Text.RegularExpressions.Regex MonthCodeSyntaxPattern = new(@"^M\d{2}L?$", RegexOptions.CultureInvariant);
 
     private static void ValidateMonthCodeSyntax(string code)
     {
@@ -1054,7 +1054,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     // halves of the date must agree (both separators or neither). The time-of-day and the UTC offset
     // each carry the same consistent-separator rule (TimeCore / OffsetCore), so a mixed form such as
     // "00:0000" or an offset "+00:0000" is rejected.
-    private static readonly Regex DateTimePattern = new(
+    private static readonly System.Text.RegularExpressions.Regex DateTimePattern = new(
         @"^(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-(?<mo>\d{2})-(?<d>\d{2})|(?<mo>\d{2})(?<d>\d{2}))(?:[Tt ]"
         + TemporalIsoString.TimeCore + @"(?:(?<z>[Zz])|" + TemporalIsoString.OffsetCore + @")?)?(?:\[[^\]]*\])*$",
         RegexOptions.CultureInvariant);
@@ -1102,7 +1102,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         return new JSTemporalPlainDateTime(year, month, day, h, mi, s, ms, us, ns, calendarId, PlainDateTimePrototype);
     }
 
-    private static readonly Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
+    private static readonly System.Text.RegularExpressions.Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
 
     private static BigInteger DurationTimeNanosecondsBig(JSTemporalDuration d)
         => (BigInteger)(long)d.HoursValue * 3_600_000_000_000 + (BigInteger)(long)d.MinutesValue * 60_000_000_000

@@ -79,7 +79,7 @@ public static class JSIntl
     // The UTS-35 `unicode_language_subtag` is `alpha{2,3} | alpha{5,8}` — unlike BCP-47 langtag it
     // has NO `extlang` production, so a 3-alpha subtag after the language (e.g. the "els" in
     // "en-els") is not structurally valid and must be rejected.
-    private static readonly Regex StructurallyValidLanguageTagPattern = new(
+    private static readonly System.Text.RegularExpressions.Regex StructurallyValidLanguageTagPattern = new(
         @"^(?:[A-Za-z]{2,3}|[A-Za-z]{5,8})(?:-[A-Za-z]{4})?(?:-(?:[A-Za-z]{2}|\d{3}))?(?:-(?:[0-9A-Za-z]{5,8}|\d[0-9A-Za-z]{3}))*(?:-(?:[0-9A-WY-Za-wy-z](?:-[0-9A-Za-z]{2,8})+))*(?:-x(?:-[0-9A-Za-z]{1,8})+)?$",
         RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
     private static readonly HashSet<string> InvalidGrandfatheredLanguageTags = new(StringComparer.OrdinalIgnoreCase)
@@ -791,7 +791,7 @@ public static class JSIntl
         return array;
     }
 
-    private static readonly Regex UnicodeKeywordTypePattern =
+    private static readonly System.Text.RegularExpressions.Regex UnicodeKeywordTypePattern =
         new(@"^[0-9a-z]{3,8}(?:-[0-9a-z]{3,8})*$", RegexOptions.CultureInvariant);
 
     // True when a (case-insensitive) string is a well-formed Unicode BCP-47 extension
@@ -869,19 +869,19 @@ public static class JSIntl
         // Base-name options.
         if (OptionString(options, LanguageKey) is { } langOpt)
         {
-            if (!Regex.IsMatch(langOpt, "^(?:[A-Za-z]{2,3}|[A-Za-z]{5,8})$", RegexOptions.CultureInvariant))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(langOpt, "^(?:[A-Za-z]{2,3}|[A-Za-z]{5,8})$", RegexOptions.CultureInvariant))
                 throw JSEngine.NewRangeError("Invalid language option");
             language = langOpt.ToLowerInvariant();
         }
         if (OptionString(options, ScriptKey) is { } scriptOpt)
         {
-            if (!Regex.IsMatch(scriptOpt, "^[A-Za-z]{4}$", RegexOptions.CultureInvariant))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(scriptOpt, "^[A-Za-z]{4}$", RegexOptions.CultureInvariant))
                 throw JSEngine.NewRangeError("Invalid script option");
             script = char.ToUpperInvariant(scriptOpt[0]) + scriptOpt[1..].ToLowerInvariant();
         }
         if (OptionString(options, RegionKey) is { } regionOpt)
         {
-            if (!Regex.IsMatch(regionOpt, "^(?:[A-Za-z]{2}|[0-9]{3})$", RegexOptions.CultureInvariant))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(regionOpt, "^(?:[A-Za-z]{2}|[0-9]{3})$", RegexOptions.CultureInvariant))
                 throw JSEngine.NewRangeError("Invalid region option");
             region = regionOpt.ToUpperInvariant();
         }
@@ -896,7 +896,7 @@ public static class JSIntl
             var seen = new HashSet<string>(StringComparer.Ordinal);
             foreach (var sub in subtags)
             {
-                if (!Regex.IsMatch(sub, "^(?:[0-9a-z]{5,8}|[0-9][0-9a-z]{3})$", RegexOptions.CultureInvariant)
+                if (!System.Text.RegularExpressions.Regex.IsMatch(sub, "^(?:[0-9a-z]{5,8}|[0-9][0-9a-z]{3})$", RegexOptions.CultureInvariant)
                     || !seen.Add(sub))
                     throw JSEngine.NewRangeError("Invalid variants option");
             }
@@ -2819,7 +2819,7 @@ public static class JSIntl
     // An offset time-zone identifier: a sign, two-digit hour and an optional two-digit minute, with
     // either a colon or no separator (±HH, ±HHMM, ±HH:MM). No seconds or fractional component is
     // accepted (CreateDateTimeFormat's IsTimeZoneOffsetString is stricter than Temporal's).
-    private static readonly Regex OffsetTimeZonePattern =
+    private static readonly System.Text.RegularExpressions.Regex OffsetTimeZonePattern =
         new(@"^([+-])(\d{2})(?::?(\d{2}))?$", RegexOptions.CultureInvariant);
 
     // Validates and normalizes an offset time-zone identifier to ±HH:MM. Hours are 00-23 and minutes
@@ -4098,11 +4098,11 @@ public sealed class JSIntlDisplayNames : JSObject
                         throw JSEngine.NewRangeError($"Invalid language code: {code}");
                 return JSIntl.ValidateLanguageTag(code);
             case "region":
-                if (Regex.IsMatch(code, "^(?:[A-Za-z]{2}|\\d{3})$", RegexOptions.CultureInvariant))
+                if (System.Text.RegularExpressions.Regex.IsMatch(code, "^(?:[A-Za-z]{2}|\\d{3})$", RegexOptions.CultureInvariant))
                     return code;
                 break;
             case "script":
-                if (Regex.IsMatch(code, "^[A-Za-z]{4}$", RegexOptions.CultureInvariant))
+                if (System.Text.RegularExpressions.Regex.IsMatch(code, "^[A-Za-z]{4}$", RegexOptions.CultureInvariant))
                     return code;
                 break;
             case "currency":
@@ -4110,7 +4110,7 @@ public sealed class JSIntlDisplayNames : JSObject
                     return code.ToUpperInvariant();
                 break;
             case "calendar":
-                if (Regex.IsMatch(code, "^[A-Za-z0-9]{3,8}(?:-[A-Za-z0-9]{3,8})*$", RegexOptions.CultureInvariant))
+                if (System.Text.RegularExpressions.Regex.IsMatch(code, "^[A-Za-z0-9]{3,8}(?:-[A-Za-z0-9]{3,8})*$", RegexOptions.CultureInvariant))
                     return code;
                 break;
             case "dateTimeField":

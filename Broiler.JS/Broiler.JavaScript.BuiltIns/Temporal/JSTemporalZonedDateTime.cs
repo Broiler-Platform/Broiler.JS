@@ -1536,7 +1536,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         return true;
     }
 
-    private static readonly Regex OffsetIdPattern = new(
+    private static readonly System.Text.RegularExpressions.Regex OffsetIdPattern = new(
         @"^([+-])(\d{2})(?::?(\d{2})(?::?(\d{2}))?)?$", RegexOptions.CultureInvariant);
 
     // Named IANA zones resolve through the bundled tz database (Temporal/Tz), so offset and
@@ -1635,7 +1635,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     // A numeric UTC offset used as a *time-zone identifier* must be minute precision (±HH[:MM]) with
     // valid component ranges; a sub-minute (seconds / fractional) offset or an out-of-range component
     // (e.g. the leap-second offset +23:59:60) is not a valid time zone and is rejected by the caller.
-    private static readonly Regex OffsetTimeZoneIdentifierPattern = new(
+    private static readonly System.Text.RegularExpressions.Regex OffsetTimeZoneIdentifierPattern = new(
         @"^([+-])(\d{2})(?::?(\d{2}))?$", RegexOptions.CultureInvariant);
 
     private static bool TryOffsetTimeZoneIdentifier(string id, out long offsetNs)
@@ -1694,7 +1694,7 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     private static int MonthFromCode(string code)
     {
-        var match = Regex.Match(code, @"^M(\d{2})$");
+        var match = System.Text.RegularExpressions.Regex.Match(code, @"^M(\d{2})$");
         if (!match.Success)
             throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
 
@@ -1812,7 +1812,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     // colon-separated (±HH:MM[:SS[.fff]]) or fully unseparated (±HHMM[SS[.fff]]). A mixed form
     // such as "+00:0000" is not a valid UTCOffset (test262 from/offset-string-invalid), so the
     // two forms are spelled as separate alternatives sharing the m/s/f capture names.
-    private static readonly Regex OffsetValuePattern = new(
+    private static readonly System.Text.RegularExpressions.Regex OffsetValuePattern = new(
         @"^(?<sign>[+-])(?<h>\d{2})(?::(?<m>\d{2})(?::(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?|(?<m>\d{2})(?:(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?$",
         RegexOptions.CultureInvariant);
 
@@ -1838,7 +1838,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     // ("1976-11-18") or basic ("19761118") form, and the offset may carry sub-minute precision,
     // including a fractional-seconds part (e.g. +01:35:00.000000000).
     private const string YearField = @"\d{4}|\+\d{6}|-(?!000000)\d{6}";
-    private static readonly Regex ZonedCorePattern = new(
+    private static readonly System.Text.RegularExpressions.Regex ZonedCorePattern = new(
         @"^(?:(?<y>" + YearField + @")-(?<mo>\d{2})-(?<d>\d{2})|(?<y>" + YearField + @")(?<mo>\d{2})(?<d>\d{2}))" +
         // Time and offset must each use a consistent separator style (all ':' or none): "00:0000" or
         // an offset "+00:0000" is rejected. TimeCore covers the wall clock; the offset is spelled out
@@ -1847,7 +1847,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         @"(?:(?<z>[Zz])|(?<off>(?<osign>[+-])(?<oh>\d{2})(?::(?<om>\d{2})(?::(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?|(?<om>\d{2})(?:(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?)?))?)?$",
         RegexOptions.CultureInvariant);
 
-    private static readonly Regex ZonedTrailingAnnotation = new(@"\[(!?)([^\]]*)\]$", RegexOptions.CultureInvariant);
+    private static readonly System.Text.RegularExpressions.Regex ZonedTrailingAnnotation = new(@"\[(!?)([^\]]*)\]$", RegexOptions.CultureInvariant);
 
     // `options` (ZonedDateTime.from) is read *after* the string has been fully parsed and
     // validated — an invalid string is a RangeError before any option getter runs (test262

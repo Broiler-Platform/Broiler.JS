@@ -1,15 +1,15 @@
-﻿extern alias BRegex;
+﻿using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.ExpressionCompiler;
+using Broiler.JavaScript.Runtime;
+using Broiler.Regex;
+using Broiler.Unicode.Properties;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System;
-using Broiler.JavaScript.ExpressionCompiler;
-using Broiler.JavaScript.Runtime;
-using Broiler.JavaScript.Engine.Core;
 using UnicodeEmoji.StringProperties;
-using Broiler.Unicode.Properties;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
 
@@ -281,7 +281,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
     [JSExport]
     public bool unicodeSets;
 
-    internal Regex value;
+    internal System.Text.RegularExpressions.Regex value;
 
     // Matches this instance still has to perform before its pattern is worth a tiering
     // decision (phase 5, item 2). Zero means "never ask": either the mechanism is switched
@@ -800,10 +800,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// Supports ES2025 inline pattern modifiers (§2.6) and duplicate
     /// named capturing groups (§2.7).
     /// </summary>
-    public static (Regex, bool, bool, bool, bool, bool, bool, bool, string) CreateRegex(string pattern, string flags, out CaptureGroupMap captureMap)
+    public static (System.Text.RegularExpressions.Regex, bool, bool, bool, bool, bool, bool, bool, string) CreateRegex(string pattern, string flags, out CaptureGroupMap captureMap)
         => CreateRegex(pattern, flags, out captureMap, out _);
 
-    public static (Regex, bool, bool, bool, bool, bool, bool, bool, string) CreateRegex(string pattern, string flags, out CaptureGroupMap captureMap, out BRegex::Broiler.Regex.BroilerRegex broiler)
+    public static (System.Text.RegularExpressions.Regex, bool, bool, bool, bool, bool, bool, bool, string) CreateRegex(string pattern, string flags, out CaptureGroupMap captureMap, out Broiler.Regex.BroilerRegex broiler)
     {
         captureMap = null;
         broiler = null;
@@ -1041,7 +1041,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // (the earlier transforms only add non-capturing groups / lookarounds).
             pattern = RewriteCaptureGroups(pattern, unicode || unicodeSets, out captureMap);
 
-            var compiled = new Regex(pattern, options);
+            var compiled = new System.Text.RegularExpressions.Regex(pattern, options);
             RegexTieringDiagnostics.RecordPatternBuilt();
 
             // For a Broiler-routed pattern the capture layout that drives exec result
@@ -3883,7 +3883,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             {
                 if (n > 0)
                     sb.Append('|');
-                sb.Append(Regex.Escape(ordered[n]));
+                sb.Append(System.Text.RegularExpressions.Regex.Escape(ordered[n]));
             }
             sb.Append(')');
 

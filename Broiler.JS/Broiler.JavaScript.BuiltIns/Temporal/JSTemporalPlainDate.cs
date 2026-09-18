@@ -525,7 +525,7 @@ public partial class JSTemporalPlainDate : JSObject
 
     private static int MonthFromCode(string code)
     {
-        var match = Regex.Match(code, @"^M(\d{2})$");
+        var match = System.Text.RegularExpressions.Regex.Match(code, @"^M(\d{2})$");
         if (!match.Success)
             throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
 
@@ -542,7 +542,7 @@ public partial class JSTemporalPlainDate : JSObject
     // validated when the field is read (before the year is coerced), so an ill-formed code such as
     // "L99M" / "m1" / "M1" is a RangeError ahead of a bad year type — while a well-formed code's
     // SUITABILITY for the calendar (MonthFromCodeIso) is a separate check made afterwards.
-    private static readonly Regex MonthCodeSyntaxPattern = new(@"^M\d{2}L?$", RegexOptions.CultureInvariant);
+    private static readonly System.Text.RegularExpressions.Regex MonthCodeSyntaxPattern = new(@"^M\d{2}L?$", RegexOptions.CultureInvariant);
 
     private static void ValidateMonthCodeSyntax(string code)
     {
@@ -739,13 +739,13 @@ public partial class JSTemporalPlainDate : JSObject
     }
 
     // The date may use the extended (YYYY-MM-DD) or basic (YYYYMMDD) form, but not a mix.
-    private static readonly Regex DatePattern = new(
+    private static readonly System.Text.RegularExpressions.Regex DatePattern = new(
         @"^(?:(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})-(?<mo>\d{2})-(?<d>\d{2})" +
         @"|(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})(?<mo>\d{2})(?<d>\d{2}))" +
         TemporalIsoString.TimeAndOffsetTail + TemporalIsoString.AnnotationsTail + "$",
         RegexOptions.CultureInvariant);
 
-    private static readonly Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
+    private static readonly System.Text.RegularExpressions.Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
 
     private static JSValue ParseTemporalDateString(string text)
     {

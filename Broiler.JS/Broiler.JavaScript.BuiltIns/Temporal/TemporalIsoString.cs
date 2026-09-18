@@ -81,7 +81,7 @@ internal static class TemporalIsoString
     // a RangeError raised when the field is *read* — before sibling fields like `year` are coerced
     // and before the later, calendar-dependent suitability check (so "L99M" with a Symbol year is a
     // RangeError, while a well-formed "M99L" with a Symbol year is a TypeError from the year first).
-    private static readonly Regex MonthCodeSyntaxPattern =
+    private static readonly System.Text.RegularExpressions.Regex MonthCodeSyntaxPattern =
         new(@"^M\d{2}L?$", RegexOptions.CultureInvariant);
 
     internal static void RequireWellFormedMonthCode(string code, string typeName)
@@ -114,7 +114,7 @@ internal static class TemporalIsoString
 
     // Group 1 captures the critical flag ("!") when present, so a calendar annotation can be
     // classified as critical or not.
-    private static readonly Regex CalendarAnnotationPattern =
+    private static readonly System.Text.RegularExpressions.Regex CalendarAnnotationPattern =
         new(@"\[(!?)u-ca=[^\]]+\]", RegexOptions.CultureInvariant);
 
     // A Temporal / RFC 9557 string may carry more than one calendar (u-ca) annotation only when
@@ -137,9 +137,9 @@ internal static class TemporalIsoString
     // Annotation whose AnnotationKey is lowercase ASCII (a-z then a-z/0-9/-/_) and whose
     // AnnotationValue is one or more '-'-separated alphanumeric components. A malformed key (e.g.
     // the uppercase "U-CA" / "FOO") or value is a RangeError.
-    private static readonly Regex AnnotationBracketPattern = new(@"\[([^\]]*)\]", RegexOptions.CultureInvariant);
-    private static readonly Regex AnnotationKeyPattern = new(@"^[a-z_][a-z0-9_-]*$", RegexOptions.CultureInvariant);
-    private static readonly Regex AnnotationValuePattern = new(@"^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$", RegexOptions.CultureInvariant);
+    private static readonly System.Text.RegularExpressions.Regex AnnotationBracketPattern = new(@"\[([^\]]*)\]", RegexOptions.CultureInvariant);
+    private static readonly System.Text.RegularExpressions.Regex AnnotationKeyPattern = new(@"^[a-z_][a-z0-9_-]*$", RegexOptions.CultureInvariant);
+    private static readonly System.Text.RegularExpressions.Regex AnnotationValuePattern = new(@"^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$", RegexOptions.CultureInvariant);
 
     internal static void RejectMalformedAnnotations(string text)
     {
@@ -191,12 +191,12 @@ internal static class TemporalIsoString
     }
 
     // A numeric UTC offset used as a *time-zone annotation* is restricted to minute precision.
-    private static readonly Regex MinutePrecisionOffsetName = new(@"^[+-]\d{2}(?::?\d{2})?$", RegexOptions.CultureInvariant);
+    private static readonly System.Text.RegularExpressions.Regex MinutePrecisionOffsetName = new(@"^[+-]\d{2}(?::?\d{2})?$", RegexOptions.CultureInvariant);
 
     // A date or date-time. The date portion may use the extended (YYYY-MM-DD) or basic (YYYYMMDD)
     // form — but not a mix — and is validated separately by IsValidDate. Time, fraction, and
     // Z / numeric-offset designators are all optional.
-    private static readonly Regex DateTimePattern = new(
+    private static readonly System.Text.RegularExpressions.Regex DateTimePattern = new(
         @"^(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-(?<mo>\d{2})-(?<d>\d{2})|(?<mo>\d{2})(?<d>\d{2}))" +
         @"(?:[Tt ]" + TimeCore +
         @"(?<offset>[Zz]|" + OffsetCore + @")?)?$",
@@ -204,19 +204,19 @@ internal static class TemporalIsoString
 
     // A bare time-of-day string, optionally prefixed with the time designator and carrying a Z or a
     // numeric offset.
-    private static readonly Regex TimePattern = new(
+    private static readonly System.Text.RegularExpressions.Regex TimePattern = new(
         @"^[Tt]?" + TimeCore +
         @"(?<offset>[Zz]|" + OffsetCore + @")?$",
         RegexOptions.CultureInvariant);
 
-    private static readonly Regex YearMonthPattern = new(
+    private static readonly System.Text.RegularExpressions.Regex YearMonthPattern = new(
         @"^(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})-?(?<mo>\d{2})$", RegexOptions.CultureInvariant);
 
-    private static readonly Regex MonthDayPattern = new(
+    private static readonly System.Text.RegularExpressions.Regex MonthDayPattern = new(
         @"^(?:--)?(?<mo>\d{2})-?(?<d>\d{2})$", RegexOptions.CultureInvariant);
 
     // A trailing [key=value] / [!key=value] / [TimeZone] annotation.
-    private static readonly Regex TrailingAnnotation = new(@"\[(!?)([^\]]*)\]$", RegexOptions.CultureInvariant);
+    private static readonly System.Text.RegularExpressions.Regex TrailingAnnotation = new(@"\[(!?)([^\]]*)\]$", RegexOptions.CultureInvariant);
 
     private struct Parsed
     {
@@ -389,7 +389,7 @@ internal static class TemporalIsoString
 
     // A numeric UTC offset with consistent separators: ±HH, ±HH:MM(:SS(.fff)?)?, or ±HHMM(SS(.fff)?)?.
     // A mixed-separator offset such as "+00:0000" is rejected (the lenient parse pattern accepts it).
-    private static readonly Regex StrictOffsetPattern = new(
+    private static readonly System.Text.RegularExpressions.Regex StrictOffsetPattern = new(
         @"^[+-]\d{2}(:\d{2}(:\d{2}([.,]\d{1,9})?)?|\d{2}(\d{2}([.,]\d{1,9})?)?)?$", RegexOptions.CultureInvariant);
 
     internal static bool IsStrictOffset(string offset) => StrictOffsetPattern.IsMatch(offset);

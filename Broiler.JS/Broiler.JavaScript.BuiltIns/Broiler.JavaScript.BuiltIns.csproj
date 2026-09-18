@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -14,32 +14,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Broiler.Regex" Version="0.1.0-preview.1" />
+    <PackageReference Include="UnicodeCldr.LocaleData" Version="0.1.0-preview.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Broiler.JavaScript.LinqExpressions\Broiler.JavaScript.LinqExpressions.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Extensions\Broiler.JavaScript.Extensions.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.JSClassGenerator\Broiler.JavaScript.JSClassGenerator.csproj" ReferenceOutputAssembly="false" OutputItemType="Analyzer" GlobalPropertiesToRemove="PublishTrimmed;PublishAot;PublishReadyToRun;RuntimeIdentifier;SelfContained" />
     <ProjectReference Include="..\Broiler.JavaScript.Engine\Broiler.JavaScript.Engine.csproj" />
-    <!-- Broiler.Regex: the from-scratch ECMAScript regex engine (issue #923). JSRegExp
-         routes patterns that hit a JS/.NET semantic gap the source-to-source translator
-         into System.Text.RegularExpressions cannot fix (look-behind with captures/
-         back-references, nullable quantifiers, code-point back-references, astral atoms)
-         through this engine. It is dependency-free, so it adds no transitive packages. -->
-    <ProjectReference Include="..\..\Broiler.Regex\Broiler.Regex\Broiler.Regex.csproj">
-      <!-- Expose only via the `BRegex` extern alias: the engine's root namespace
-           `Broiler.Regex` would otherwise shadow System.Text.RegularExpressions.Regex
-           (used unqualified as `Regex` throughout this assembly). The alias is local to
-           this compilation; the project remains public because BuiltIns loads its
-           runtime types and consumers must receive the matching package. -->
-      <Aliases>BRegex</Aliases>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Broiler.Unicode\src\UnicodeEmoji.StringProperties\UnicodeEmoji.StringProperties.csproj" />
-    <ProjectReference Include="..\..\Broiler.Unicode\src\UnicodeProperties\UnicodeProperties.csproj" />
-    <ProjectReference Include="..\..\Broiler.Unicode\src\UnicodeCldr.LocaleData\UnicodeCldr.LocaleData.csproj" />
-    <ProjectReference Include="..\..\Broiler.DateTime\src\Broiler.DateTime\Broiler.DateTime.csproj">
-      <!-- Expose only via the `ExtendedDateTime` extern alias so the submodule's
-           `Broiler.DateTime` namespace does not shadow System.DateTime. The runtime
-           dependency remains visible in the BuiltIns package dependency group. -->
-      <Aliases>ExtendedDateTime</Aliases>
-    </ProjectReference>
   </ItemGroup>
 
 </Project>

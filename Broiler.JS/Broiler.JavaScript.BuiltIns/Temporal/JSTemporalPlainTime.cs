@@ -552,31 +552,31 @@ public partial class JSTemporalPlainTime : JSObject
     // A full date + required separator + time, with an optional Z / numeric-offset designator. The
     // date's fraction-bearing component is the seconds only (the date-only parsers reject minutes/hours
     // fractions). Named groups: h=hour mi=minute s=second f=fraction, "off"=Z/offset designator.
-    private static readonly Regex DateTimeFormPattern = new(
+    private static readonly System.Text.RegularExpressions.Regex DateTimeFormPattern = new(
         @"^(?:\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-\d{2}-\d{2}|\d{2}\d{2})[Tt ]" + StrictTimeCore + OffsetDesignator + "$",
         RegexOptions.CultureInvariant);
 
     // A bare time-of-day (after any leading time designator has been removed), with an optional Z /
     // numeric-offset designator. Same capture groups as DateTimeFormPattern.
-    private static readonly Regex BareTimeFormPattern = new(
+    private static readonly System.Text.RegularExpressions.Regex BareTimeFormPattern = new(
         "^" + StrictTimeCore + OffsetDesignator + "$",
         RegexOptions.CultureInvariant);
 
     // The maximal trailing run of [..] annotations (used to peel annotations off before parsing).
-    private static readonly Regex TrailingAnnotationsPattern = new(@"(?:\[[^\]]*\])*$", RegexOptions.CultureInvariant);
+    private static readonly System.Text.RegularExpressions.Regex TrailingAnnotationsPattern = new(@"(?:\[[^\]]*\])*$", RegexOptions.CultureInvariant);
 
     // Date forms that make a designator-less time string ambiguous: a year-month (YYYY-MM / YYYYMM with
     // a valid month) or a month-day (MM-DD / MMDD / --MM-DD with a valid month and day). Such a string —
     // e.g. "2021-12" (year-month) or "1130" (month-day "Nov 30") — could be intended as a calendar date,
     // so it is rejected as a PlainTime unless prefixed with the time designator "T".
-    private static readonly Regex AmbiguousYearMonthPattern =
+    private static readonly System.Text.RegularExpressions.Regex AmbiguousYearMonthPattern =
         new(@"^(?:\d{4}|\+\d{6}|-\d{6})-?(\d{2})$", RegexOptions.CultureInvariant);
-    private static readonly Regex AmbiguousMonthDayPattern =
+    private static readonly System.Text.RegularExpressions.Regex AmbiguousMonthDayPattern =
         new(@"^(?:--)?(\d{2})-?(\d{2})$", RegexOptions.CultureInvariant);
 
     // A numeric UTC offset: sign, hour, optional minute / second / fractional second. Mirrors the
     // "off" group of the time patterns; used only to range-check the components.
-    private static readonly Regex NumericUtcOffsetPattern = new(
+    private static readonly System.Text.RegularExpressions.Regex NumericUtcOffsetPattern = new(
         @"^[+-](\d{2})(?::?(\d{2})(?::?(\d{2})(?:[.,]\d{1,9})?)?)?$", RegexOptions.CultureInvariant);
 
     private static void ValidateNumericUtcOffset(string offset, string text)

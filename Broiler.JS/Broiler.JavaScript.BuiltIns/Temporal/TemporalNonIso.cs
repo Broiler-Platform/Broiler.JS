@@ -590,7 +590,7 @@ internal static class TemporalNonIso
     // Parses "M01".."M13" with an optional trailing "L" leap-month marker.
     private static (int number, bool leap) ParseMonthCode(string code)
     {
-        var match = Regex.Match(code, @"^M(\d{2})(L?)$");
+        var match = System.Text.RegularExpressions.Regex.Match(code, @"^M(\d{2})(L?)$");
         if (!match.Success)
             throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
         return (int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture), match.Groups[2].Value == "L");
