@@ -9,6 +9,7 @@
          matching lib/ref assembly. -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
     <Description>Dependency-only meta-package for the Broiler JavaScript engine, CLR bridge, compiler, core built-ins, globals, modules, extensions, and debugger. Network and Node polyfills remain optional packages.</Description>
+	<IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
   <ItemGroup>
