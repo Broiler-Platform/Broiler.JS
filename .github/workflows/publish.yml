@@ -1,19 +1,18 @@
 name: Publish
 
+# The only destination is nuget.org. Every published preview number is recorded as a
+# v* tag on this repository, and eng/resolve-preview-version.mjs reads those tags
+# alongside the feed so a number is never handed out twice.
+
 on:
   workflow_dispatch:
     inputs:
-      target:
-        description: Which feed to publish to
-        type: choice
-        options: [github, nuget]
-        default: github
       version-suffix:
         description: 'Optional preview.N (unused and at least the next preview). Empty selects automatically.'
         type: string
         default: ''
       dry-run:
-        description: Validate and attach packages without pushing to the feed
+        description: Validate and attach packages without pushing to nuget.org
         type: boolean
         default: true
   push:
@@ -21,7 +20,6 @@ on:
 
 permissions:
   contents: read
-  packages: read
 
 concurrency:
   group: publish
@@ -34,11 +32,14 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     env:
-      TARGET: ${{ github.event_name == 'push' && 'nuget' || inputs.target }}
       DRY_RUN: ${{ github.event_name == 'push' && 'false' || inputs.dry-run }}
     steps:
+      # Tags are half the version record, so fetch all of them: a missing tag reads
+      # as an unspent preview number and would be handed to a second build.
       - name: Check out
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
@@ -48,7 +49,7 @@ jobs:
         with:
           node-version: '24'
       - name: Require a NuGet.org API key
-        if: env.TARGET == 'nuget' && env.DRY_RUN != 'true'
+        if: env.DRY_RUN != 'true'
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
@@ -60,7 +61,6 @@ jobs:
         id: version
         env:
           VERSION_SUFFIX: ${{ inputs.version-suffix }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node eng/resolve-preview-version.mjs
 
   validate:
@@ -71,49 +71,49 @@ jobs:
       package-version: ${{ needs.version.outputs.version }}
 
   publish:
-    name: Publish to ${{ github.event_name == 'push' && 'nuget' || inputs.target }}
+    name: Publish to nuget.org
     needs: [version, validate]
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      packages: write
+      # Recording the published version as a tag is what keeps the next run's
+      # numbering cumulative, so this job writes one ref and nothing else.
+      contents: write
     env:
-      TARGET: ${{ github.event_name == 'push' && 'nuget' || inputs.target }}
       DRY_RUN: ${{ github.event_name == 'push' && 'false' || inputs.dry-run }}
       PACKAGE_VERSION: ${{ needs.version.outputs.version }}
     steps:
+      - name: Check out
+        uses: actions/checkout@v7
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
-      - name: Check out
-        uses: actions/checkout@v7
       - name: Download validated packages
         uses: actions/download-artifact@v8
         with:
           name: nuget-packages
           path: artifacts
-      - name: Verify consumer restore from the destination feed
+      - name: Verify consumer restore from nuget.org
         shell: pwsh
-        env:
-          NuGetPackageSourceCredentials_github: Username=${{ github.actor }};Password=${{ secrets.GITHUB_TOKEN }};ValidAuthenticationTypes=Basic
-        run: ./eng/verify-feed.ps1 -Target $env:TARGET
-      - name: Push to GitHub Packages
-        if: env.TARGET == 'github' && env.DRY_RUN != 'true'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: >
-          dotnet nuget push 'artifacts/*.nupkg'
-          --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
-          --api-key "$GITHUB_TOKEN" --no-symbols
+        run: ./eng/verify-feed.ps1
+      # --skip-duplicate makes a re-run of a partially pushed set succeed instead of
+      # failing on the packages that already landed.
       - name: Push to NuGet.org
-        if: env.TARGET == 'nuget' && env.DRY_RUN != 'true'
+        if: env.DRY_RUN != 'true'
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: >
           dotnet nuget push 'artifacts/*.nupkg'
           --source https://api.nuget.org/v3/index.json
-          --api-key "$NUGET_API_KEY"
+          --api-key "$NUGET_API_KEY" --skip-duplicate
+      # Pushed with GITHUB_TOKEN, so it does not re-trigger this workflow.
+      - name: Record the published version as a tag
+        if: env.DRY_RUN != 'true' && github.event_name != 'push'
+        run: |
+          git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              tag -a "v$PACKAGE_VERSION" -m "Broiler.JS $PACKAGE_VERSION"
+          git push origin "v$PACKAGE_VERSION"
       - name: Summary
         run: |
           {
@@ -122,7 +122,7 @@ jobs:
             if [ "$DRY_RUN" = "true" ]; then
               echo 'Dry run: validated packages are attached; nothing was pushed.'
             else
-              echo "Published to $TARGET."
+              echo 'Published to nuget.org.'
             fi
             echo
             echo '```'

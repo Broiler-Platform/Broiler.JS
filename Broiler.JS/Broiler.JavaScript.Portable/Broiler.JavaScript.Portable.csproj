@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <Description>Broiler.JS portable numeric runtime: a reflection-free interpreter for pre-compiled portable bytecode, suitable for Native AOT hosts. This is a deliberately limited numeric profile, not the full JavaScript engine.</Description>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <IsTrimmable>true</IsTrimmable>
