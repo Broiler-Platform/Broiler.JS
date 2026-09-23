@@ -57,6 +57,10 @@ try {
             try { [xml] $nuspec = $reader.ReadToEnd() } finally { $reader.Dispose() }
             $manifest = $nuspec.package.metadata
             if ($manifest.id -ne $metadata.PackageId -or $manifest.version -ne $metadata.PackageVersion) { throw "Incorrect identity in $path." }
+            # An unset <Description> is not an error to the SDK: it silently packs the
+            # literal 'Package Description', which is what the nuget.org listing then shows.
+            $description = "$($manifest.description)".Trim()
+            if (!$description -or $description -eq 'Package Description') { throw "Set a <Description> for $($metadata.PackageId)." }
             foreach ($asset in @('README.md', 'icon.png')) {
                 if (!$zip.GetEntry($asset)) { throw "Missing $asset in $path." }
             }

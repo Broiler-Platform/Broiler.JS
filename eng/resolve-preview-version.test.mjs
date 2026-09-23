@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { chooseVersion, readVersions } from './resolve-preview-version.mjs';
+import { chooseVersion, readTags, readVersions } from './resolve-preview-version.mjs';
 
 test('first publish uses the configured preview; later publishes increment numerically', () => {
   assert.equal(chooseVersion('0.1.0-preview.1', []), '0.1.0-preview.1');
@@ -14,17 +14,38 @@ test('configured preview is a floor and other release lines do not affect it', (
   ]), '0.1.0-preview.4');
 });
 
+test('a number spent anywhere is spent everywhere', () => {
+  // nuget.org reports preview.2 while a tag records that preview.3 was already
+  // claimed: the next publish is preview.4, never a second preview.3.
+  assert.equal(chooseVersion('0.1.0-preview.1',
+    ['0.1.0-preview.2', '0.1.0-preview.3']), '0.1.0-preview.4');
+  // Order of the union must not matter.
+  assert.equal(chooseVersion('0.1.0-preview.1',
+    ['0.1.0-preview.3', '0.1.0-preview.2']), '0.1.0-preview.4');
+  // A gap left by a deleted or never-listed version is not reused either.
+  assert.equal(chooseVersion('0.1.0-preview.1',
+    ['0.1.0-preview.1', '0.1.0-preview.7']), '0.1.0-preview.8');
+});
+
 test('only unused previews on the configured release line are accepted', () => {
-  const published = ['0.1.0-preview.1'];
-  assert.equal(chooseVersion('0.1.0-preview.1', published, { suffix: 'preview.3' }), '0.1.0-preview.3');
-  assert.equal(chooseVersion('0.1.0-preview.1', published, { tag: 'v0.1.0-preview.2' }), '0.1.0-preview.2');
+  const used = ['0.1.0-preview.1'];
+  assert.equal(chooseVersion('0.1.0-preview.1', used, { suffix: 'preview.3' }), '0.1.0-preview.3');
+  assert.equal(chooseVersion('0.1.0-preview.1', used, { tag: 'v0.1.0-preview.2' }), '0.1.0-preview.2');
   for (const suffix of ['preview.1', 'rc.2', 'preview.0', 'preview.02', 'preview.2;evil']) {
-    assert.throws(() => chooseVersion('0.1.0-preview.1', published, { suffix }));
+    assert.throws(() => chooseVersion('0.1.0-preview.1', used, { suffix }));
   }
   for (const tag of ['v0.1.0', 'v0.1.0-rc.2', 'v0.2.0-preview.2', 'v0.1.0-preview.1']) {
-    assert.throws(() => chooseVersion('0.1.0-preview.1', published, { tag }));
+    assert.throws(() => chooseVersion('0.1.0-preview.1', used, { tag }));
   }
-  assert.throws(() => chooseVersion('0.1.0', published));
+  assert.throws(() => chooseVersion('0.1.0', used));
+});
+
+test('publish tags are read as versions and a failure is not treated as "no tags"', () => {
+  assert.deepEqual(readTags(() => 'v0.1.0-preview.1\nv0.1.0-preview.2\n'),
+    ['0.1.0-preview.1', '0.1.0-preview.2']);
+  assert.deepEqual(readTags(() => '  v0.1.0-preview.3  \n\n'), ['0.1.0-preview.3']);
+  assert.deepEqual(readTags(() => ''), []);
+  assert.throws(() => readTags(() => { throw new Error('not a git repository'); }));
 });
 
 function fakeFeed(responses) {

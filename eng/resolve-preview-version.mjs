@@ -5,17 +5,31 @@ import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 
+const PREVIEW = /^(\d+\.\d+\.\d+)-preview\.([1-9]\d*)$/i;
+
 function parsePreview(version) {
-  const match = /^(\d+\.\d+\.\d+)-preview\.([1-9]\d*)$/.exec(version);
+  const match = PREVIEW.exec(version);
   if (!match) throw new Error(`Only X.Y.Z-preview.N versions (N >= 1) may be published: '${version}'.`);
   return { prefix: match[1], number: BigInt(match[2]) };
 }
 
-export function chooseVersion(configured, published, { suffix = '', tag = '' } = {}) {
+/**
+ * Pick the next preview number from every number this repository has ever SPENT,
+ * not merely from what nuget.org still serves.
+ *
+ * A preview number is spent the moment a publish run claims it, and it stays spent
+ * afterwards: nuget.org keeps unlisted versions in its flat container but drops
+ * deleted ones, and a run that pushed some packages and then failed leaves the rest
+ * of the set missing from the feed entirely. Reading the feed alone would hand the
+ * same number to a second, different build. So `used` is the union of the feed and
+ * the repository's own v* publish tags, and the answer is one past the highest
+ * number in it - cumulative, and monotonic even across a feed that forgets.
+ */
+export function chooseVersion(configured, used, { suffix = '', tag = '' } = {}) {
   const { prefix, number: floor } = parsePreview(configured);
   let next = floor;
-  for (const version of published) {
-    const match = /^(\d+\.\d+\.\d+)-preview\.([1-9]\d*)$/i.exec(version);
+  for (const version of used) {
+    const match = PREVIEW.exec(version);
     if (match && match[1] === prefix && BigInt(match[2]) >= next) {
       next = BigInt(match[2]) + 1n;
     }
@@ -59,6 +73,16 @@ export async function readVersions(source, packageIds, headers = {}, fetchImpl =
   return results.flat();
 }
 
+/**
+ * The versions this repository's v* tags record. A publish run tags the version it
+ * pushed, so the tags outlive anything the feed stops reporting; the caller must have
+ * fetched them, because an unfetched tag is silently an unspent number.
+ */
+export function readTags(run = execFileSync) {
+  const output = run('git', ['tag', '--list', 'v*'], { cwd: root, encoding: 'utf8' });
+  return output.split('\n').map(line => line.trim()).filter(Boolean).map(tag => tag.replace(/^v/, ''));
+}
+
 function readPackages() {
   const solutions = readdirSync(root).filter(name => name.endsWith('.slnx'));
   if (solutions.length !== 1) throw new Error('Expected exactly one solution.');
@@ -84,26 +108,18 @@ async function main() {
   const configured = packages[0].PackageVersion;
   parsePreview(configured);
   const packageIds = packages.map(p => p.PackageId);
-  const target = process.env.TARGET || 'nuget';
-  if (!['nuget', 'github'].includes(target)) throw new Error(`Unknown target '${target}'.`);
-  // NuGet.org is the baseline even when publishing to GitHub Packages.
-  const published = await readVersions('https://api.nuget.org/v3/index.json', packageIds);
-  if (target === 'github') {
-    const { GITHUB_REPOSITORY_OWNER: owner, GITHUB_ACTOR: actor, GITHUB_TOKEN: token } = process.env;
-    if (!owner || !actor || !token) throw new Error('GitHub feed lookup requires owner, actor, and token.');
-    const authorization = `Basic ${Buffer.from(`${actor}:${token}`).toString('base64')}`;
-    published.push(...await readVersions(
-      `https://nuget.pkg.github.com/${owner}/index.json`, packageIds, { authorization }));
-  }
   const tag = process.env.GITHUB_EVENT_NAME === 'push'
     ? (process.env.GITHUB_REF || '').replace(/^refs\/tags\//, '') : '';
   if (process.env.GITHUB_EVENT_NAME === 'push' && !tag.startsWith('v')) {
     throw new Error('Publishing on push requires a v-prefixed preview tag.');
   }
-  const version = chooseVersion(configured, published, {
-    suffix: process.env.VERSION_SUFFIX || '', tag,
-  });
-  console.log(`Version: ${version} -> ${target} (${packageIds.length} packages; dry-run: ${process.env.DRY_RUN ?? 'true'})`);
+  const published = await readVersions('https://api.nuget.org/v3/index.json', packageIds);
+  // A tag-triggered run is a REQUEST for its own tag's version, so that one tag is not
+  // a number already spent by an earlier run. Every other tag is.
+  const requested = tag.replace(/^v/, '');
+  const used = [...published, ...readTags().filter(version => version !== requested)];
+  const version = chooseVersion(configured, used, { suffix: process.env.VERSION_SUFFIX || '', tag });
+  console.log(`Version: ${version} -> nuget.org (${packageIds.length} packages; dry-run: ${process.env.DRY_RUN ?? 'true'})`);
   if (process.env.GITHUB_OUTPUT) {
     appendFileSync(process.env.GITHUB_OUTPUT,
       `version=${version}\nversion_args=-p:Version=${version} -p:PackageVersion=${version}\n`);
