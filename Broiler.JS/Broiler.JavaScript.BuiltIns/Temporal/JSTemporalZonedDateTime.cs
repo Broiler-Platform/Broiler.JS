@@ -73,14 +73,11 @@ public partial class JSTemporalZonedDateTime : JSObject
         return JSEngine.NewTargetPrototype ?? ZonedDateTimePrototype;
     }
 
-    internal static JSObject ZonedDateTimePrototype
-    {
-        get
-        {
-            var temporal = (JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Temporal")] as JSObject;
-            return (temporal?[KeyStrings.GetOrCreate("ZonedDateTime")] as JSFunction)?.prototype;
-        }
-    }
+    private static readonly KeyString ZonedDateTimeIntrinsicKey = KeyStrings.GetOrCreate("Temporal.ZonedDateTime");
+
+    // %Temporal.ZonedDateTime.prototype% of the current realm, never the prototype of whatever
+    // `globalThis.Temporal.ZonedDateTime` holds now: guest code may replace the namespace or its members.
+    internal static JSObject ZonedDateTimePrototype => Intrinsics.TemporalPrototype(ZonedDateTimeIntrinsicKey);
 
     private static bool IsValid(BigInteger ns) => ns >= MinEpochNanoseconds && ns <= MaxEpochNanoseconds;
 

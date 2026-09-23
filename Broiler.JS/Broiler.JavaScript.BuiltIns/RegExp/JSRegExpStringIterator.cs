@@ -30,7 +30,7 @@ internal sealed class JSRegExpStringIterator : JSObject
     }
 
     private static JSObject GetIteratorPrototype()
-        => ((JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Iterator")] as JSFunction)?.prototype;
+        => Intrinsics.Prototype(KeyStrings.GetOrCreate("Iterator"));
 
     private static JSObject GetPrototype()
     {

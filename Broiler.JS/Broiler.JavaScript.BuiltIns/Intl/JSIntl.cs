@@ -107,13 +107,24 @@ public static class JSIntl
 
     public static JSValue GetIntlObject()
     {
-        if (JSEngine.CurrentContext is JSObject global)
-            return Cache.GetValue(global, static _ => CreateIntlObject());
+        if (JSEngine.CurrentContext is JSContext realm)
+            return GetIntlObject(realm);
 
-        return CreateIntlObject();
+        if (JSEngine.CurrentContext is JSObject global)
+            return Cache.GetValue(global, static _ => CreateIntlObject(null));
+
+        return CreateIntlObject(null);
     }
 
-    private static JSObject CreateIntlObject()
+    // The realm's one Intl namespace object. Creating it records each Intl constructor as the
+    // realm's intrinsic under its qualified name ("Intl.NumberFormat"), which is where the
+    // objects the engine creates without a NewTarget (`Intl.NumberFormat()`, `locale.maximize()`)
+    // take their prototype from (Intrinsics.IntlPrototype) — not from `globalThis.Intl`, which
+    // guest code may replace.
+    internal static JSObject GetIntlObject(JSContext realm)
+        => Cache.GetValue(realm, static global => CreateIntlObject((JSContext)global));
+
+    private static JSObject CreateIntlObject(JSContext realm)
     {
         var intl = new JSObject();
         intl.FastAddValue(DateTimeFormatKey, CreateDateTimeFormatConstructor(), JSPropertyAttributes.ConfigurableValue);
@@ -194,8 +205,32 @@ public static class JSIntl
             JSPropertyAttributes.ConfigurableValue);
         // Intl[@@toStringTag] = "Intl"
         intl.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString("Intl"), JSPropertyAttributes.ConfigurableReadonlyValue);
+
+        if (realm != null)
+        {
+            foreach (var (key, qualifiedName) in IntrinsicConstructorKeys)
+            {
+                if (intl[key] is JSFunction constructor)
+                    realm.RegisterIntrinsic(qualifiedName, constructor, constructor.prototype);
+            }
+        }
+
         return intl;
     }
+
+    private static readonly (KeyString Key, KeyString QualifiedName)[] IntrinsicConstructorKeys =
+    [
+        (DateTimeFormatKey, KeyStrings.GetOrCreate("Intl.DateTimeFormat")),
+        (RelativeTimeFormatKey, KeyStrings.GetOrCreate("Intl.RelativeTimeFormat")),
+        (NumberFormatKey, KeyStrings.GetOrCreate("Intl.NumberFormat")),
+        (CollatorKey, KeyStrings.GetOrCreate("Intl.Collator")),
+        (DisplayNamesKey, KeyStrings.GetOrCreate("Intl.DisplayNames")),
+        (DurationFormatKey, KeyStrings.GetOrCreate("Intl.DurationFormat")),
+        (ListFormatKey, KeyStrings.GetOrCreate("Intl.ListFormat")),
+        (LocaleKey, KeyStrings.GetOrCreate("Intl.Locale")),
+        (PluralRulesKey, KeyStrings.GetOrCreate("Intl.PluralRules")),
+        (SegmenterKey, KeyStrings.GetOrCreate("Intl.Segmenter")),
+    ];
 
     private static JSFunction CreateSimpleConstructor(string name, int length)
         => new((in Arguments a) =>
@@ -3008,12 +3043,15 @@ public class JSIntlRelativeTimeFormat : JSObject
         numeric = JSIntl.GetOption(options, KeyStrings.GetOrCreate("numeric"), ["always", "auto"], false, "always");
     }
 
-    private JSIntlRelativeTimeFormat() : base(CurrentPrototype("RelativeTimeFormat")) { }
+    private JSIntlRelativeTimeFormat() : base(CurrentPrototype()) { }
 
-    private static JSObject CurrentPrototype(string name)
-        => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
-            ? (intl[KeyStrings.GetOrCreate(name)] as JSFunction)?.prototype
-            : null;
+    private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.RelativeTimeFormat");
+
+    // %Intl.RelativeTimeFormat.prototype% of the current realm (Intrinsics.IntlPrototype), never the
+    // prototype of whatever `globalThis.Intl.RelativeTimeFormat` holds now: guest code may replace
+    // the namespace or its members.
+    private static JSObject CurrentPrototype()
+        => Intrinsics.IntlPrototype(IntrinsicKey);
 }
 
 public sealed class JSIntlSegmenter : JSObject
@@ -3048,10 +3086,12 @@ public sealed class JSIntlSegmenter : JSObject
         return new JSIntlSegments(input, segmenter.Granularity);
     }
 
+    private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.Segmenter");
+
+    // %Intl.Segmenter.prototype% of the current realm (Intrinsics.IntlPrototype), never the prototype
+    // of whatever `globalThis.Intl.Segmenter` holds now: guest code may replace the namespace or its members.
     private static JSObject CurrentPrototype()
-        => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
-            ? (intl[KeyStrings.GetOrCreate("Segmenter")] as JSFunction)?.prototype
-            : null;
+        => Intrinsics.IntlPrototype(IntrinsicKey);
 }
 
 /// <summary>
@@ -3723,10 +3763,12 @@ public sealed class JSIntlDurationFormat : JSObject
         return nf.ComputeFormatParts(operand);
     }
 
+    private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.DurationFormat");
+
+    // %Intl.DurationFormat.prototype% of the current realm (Intrinsics.IntlPrototype), never the prototype
+    // of whatever `globalThis.Intl.DurationFormat` holds now: guest code may replace the namespace or its members.
     private static JSObject CurrentPrototype()
-        => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
-            ? (intl[KeyStrings.GetOrCreate("DurationFormat")] as JSFunction)?.prototype
-            : null;
+        => Intrinsics.IntlPrototype(IntrinsicKey);
 
     // ToDurationRecord(input): a String is parsed as an ISO 8601 / Temporal duration (an invalid string
     // is a RangeError), an object's unit fields are read and validated directly, and any other type is a
@@ -4216,10 +4258,12 @@ public sealed class JSIntlLocale : JSObject
         return GetLanguage() == "en" ? "h12" : "h23";
     }
 
+    private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.Locale");
+
+    // %Intl.Locale.prototype% of the current realm (Intrinsics.IntlPrototype), never the prototype
+    // of whatever `globalThis.Intl.Locale` holds now: guest code may replace the namespace or its members.
     private static JSObject CurrentPrototype()
-        => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
-            ? (intl[KeyStrings.GetOrCreate("Locale")] as JSFunction)?.prototype
-            : null;
+        => Intrinsics.IntlPrototype(IntrinsicKey);
 
     private static JSIntlLocale RequireLocale(in Arguments a, string method)
     {
@@ -4601,10 +4645,12 @@ public sealed class JSIntlPluralRules : JSObject
             JSIntl.ReadRoundingOptions(options);
     }
 
+    private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.PluralRules");
+
+    // %Intl.PluralRules.prototype% of the current realm (Intrinsics.IntlPrototype), never the prototype
+    // of whatever `globalThis.Intl.PluralRules` holds now: guest code may replace the namespace or its members.
     private static JSObject CurrentPrototype()
-        => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
-            ? (intl[KeyStrings.GetOrCreate("PluralRules")] as JSFunction)?.prototype
-            : null;
+        => Intrinsics.IntlPrototype(IntrinsicKey);
 
     // ResolvePlural: maps a number to its CLDR plural category using the per-locale
     // rules generated from cldr-json (UnicodeCldr.LocaleData). Non-finite numbers,
@@ -6089,10 +6135,12 @@ public class JSIntlNumberFormat : JSObject
         return result;
     }
 
+    private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.NumberFormat");
+
+    // %Intl.NumberFormat.prototype% of the current realm (Intrinsics.IntlPrototype), never the prototype
+    // of whatever `globalThis.Intl.NumberFormat` holds now: guest code may replace the namespace or its members.
     private static JSObject CurrentPrototype()
-        => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
-            ? (intl[KeyStrings.GetOrCreate("NumberFormat")] as JSFunction)?.prototype
-            : null;
+        => Intrinsics.IntlPrototype(IntrinsicKey);
 }
 
 public class JSIntlCollator : JSObject
@@ -6413,10 +6461,12 @@ public class JSIntlCollator : JSObject
     }
 
 
+    private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.Collator");
+
+    // %Intl.Collator.prototype% of the current realm (Intrinsics.IntlPrototype), never the prototype
+    // of whatever `globalThis.Intl.Collator` holds now: guest code may replace the namespace or its members.
     private static JSObject CurrentPrototype()
-        => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
-            ? (intl[KeyStrings.GetOrCreate("Collator")] as JSFunction)?.prototype
-            : null;
+        => Intrinsics.IntlPrototype(IntrinsicKey);
 }
 
 public class JSIntlDateTimeFormat : JSObject
@@ -7505,10 +7555,12 @@ public class JSIntlDateTimeFormat : JSObject
         numberingSystem = "latn";
     }
 
+    private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.DateTimeFormat");
+
+    // %Intl.DateTimeFormat.prototype% of the current realm (Intrinsics.IntlPrototype), never the prototype
+    // of whatever `globalThis.Intl.DateTimeFormat` holds now: guest code may replace the namespace or its members.
     private static JSObject CurrentPrototype()
-        => (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("Intl")] is JSObject intl
-            ? (intl[KeyStrings.GetOrCreate("DateTimeFormat")] as JSFunction)?.prototype
-            : null;
+        => Intrinsics.IntlPrototype(IntrinsicKey);
 
     private static double TimeClipRange(double number)
     {

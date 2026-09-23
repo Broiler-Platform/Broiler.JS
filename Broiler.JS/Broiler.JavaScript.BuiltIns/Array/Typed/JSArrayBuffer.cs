@@ -111,7 +111,7 @@ public partial class JSArrayBuffer : JSObject
 
     private static JSValue GetSpeciesConstructor(JSArrayBuffer source)
     {
-        var defaultConstructor = (JSEngine.Current as JSObject)?[KeyStrings.ArrayBuffer];
+        var defaultConstructor = Intrinsics.Constructor(KeyStrings.ArrayBuffer);
         var constructor = source[KeyStrings.constructor];
         // SpeciesConstructor: only an undefined "constructor" falls back to the default; any other
         // non-object value (e.g. null or a number) is a TypeError.
@@ -240,8 +240,17 @@ public partial class JSArrayBuffer : JSObject
             throw JSEngine.NewTypeError($"Constructor {name} requires 'new'");
     }
 
-    public JSArrayBuffer(int length) : this() => buffer = new byte[length];
-    public JSArrayBuffer(byte[] buffer) : this() => this.buffer = buffer;
+    public JSArrayBuffer(int length) : this(IntrinsicPrototype()) => buffer = new byte[length];
+    public JSArrayBuffer(byte[] buffer) : this(IntrinsicPrototype()) => this.buffer = buffer;
+
+    // These two constructors are the engine's and the host's AllocateArrayBuffer(%ArrayBuffer%, …):
+    // typed-array allocation, transfer, structured clone and host APIs that hand bytes in. Without
+    // a prototype the generated constructor resolves one from the global `ArrayBuffer` binding,
+    // which guest code may have replaced, deleted or turned into an accessor, so pass the realm's
+    // intrinsic %ArrayBuffer.prototype% instead (JSPromise does the same for %Promise.prototype%).
+    // Null — no realm yet — keeps the generated fallback.
+    private static JSObject IntrinsicPrototype()
+        => (JSEngine.Current as JSContext)?.IntrinsicArrayBufferPrototype;
 
     public override bool BooleanValue => true;
 

@@ -34,6 +34,10 @@ partial class FastParser
         bool pending = false;
         var scope = variableScope.Push(begin, FastNodeType.Block);
 
+        // A CaseBlock's clauses hold StatementLists of their own, not the program's root one, so
+        // an import/export ModuleItem is not legal in one (see RequireModuleItemPosition).
+        caseBlockDepth++;
+
         try
         {
             while (!stream.CheckAndConsume(TokenTypes.CurlyBracketEnd))
@@ -81,6 +85,7 @@ partial class FastParser
         }
         finally
         {
+            caseBlockDepth--;
             scope.Dispose();
         }
 

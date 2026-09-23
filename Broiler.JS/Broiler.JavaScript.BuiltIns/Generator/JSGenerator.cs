@@ -25,6 +25,11 @@ public partial class JSGenerator : JSObject, IJSGenerator
     internal bool done;
     private bool executing;
 
+    // An async generator's queued next/return/throw requests (AsyncGeneratorQueue), and whether
+    // one of them is running — see DriveAsync.
+    private System.Collections.Generic.Queue<(Action<Promise.JSPromise> Start, Promise.JSPromise Promise)> asyncRequests;
+    private bool asyncStepRunning;
+
     public JSGenerator(in Arguments a) : base(JSEngine.NewTargetPrototype) => throw JSEngine.NewTypeError("Generator is not a constructor");
 
     public JSGenerator(IElementEnumerator en, string name) : this()
@@ -53,7 +58,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
     public override string ToString() => $"[object {name}]";
 
     private static JSObject GetIteratorPrototype()
-        => ((JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Iterator")] as JSFunction)?.prototype;
+        => Intrinsics.Prototype(KeyStrings.GetOrCreate("Iterator"));
 
     private static JSObject CreateIteratorPrototype(string name)
         => CreateIteratorPrototype(name, null);
@@ -81,6 +86,13 @@ public partial class JSGenerator : JSObject, IJSGenerator
     public JSValue Return(JSValue value)
     {
         ThrowIfExecuting();
+        // An async `yield*` hands the return to its delegate's return() (see ClrGeneratorV2).
+        if (cg != null && cg.HasAsyncDelegate && !done)
+        {
+            cg.ReceiveAsyncDelegateReturn(value);
+            return Next();
+        }
+
         if (cg != null && cg.HasDelegatedEnumerator)
         {
             try
@@ -171,6 +183,18 @@ public partial class JSGenerator : JSObject, IJSGenerator
     public JSValue Throw(JSValue value)
     {
         ThrowIfExecuting();
+        if (cg != null && cg.HasAsyncDelegate && !done)
+        {
+            // The awaited result of an async `yield*` delegate rejected: the `yield*` throws.
+            // Otherwise the throw goes to the delegate's throw().
+            if (cg.IsAwaitingAsyncDelegate)
+                cg.FailAsyncDelegate(JSException.FromValue(value));
+            else
+                cg.ReceiveAsyncDelegateThrow(value);
+
+            return Next();
+        }
+
         if (cg != null && cg.HasDelegatedEnumerator)
         {
             try
@@ -358,15 +382,88 @@ public partial class JSGenerator : JSObject, IJSGenerator
 
     internal bool IsAsyncGenerator => cg?.IsAsyncGenerator == true;
 
-    // Drives an async generator step (next/return/throw) and resolves the
-    // consumer's promise only at a user `yield` or completion. Internal awaits —
-    // an explicit `await`, and the per-iteration await of `for await` — are awaited
-    // here and the generator is resumed without surfacing them to the consumer. The
-    // suspension kind is carried by ClrGeneratorV2.LastYieldWasAwait, set from
-    // GeneratorState.IsAwait (await vs yield are otherwise both lowered to Yield).
-    // A user yield also awaits its operand (AsyncGeneratorYield) before surfacing,
-    // so `yield <promise>` surfaces the settled value.
+    // Drives an async generator step (next/return/throw) and settles the promise that step
+    // returned only at a user `yield` or completion. Internal awaits — an explicit `await`, and
+    // the per-iteration await of `for await` — are awaited here and the generator is resumed
+    // without surfacing them to the consumer. The suspension kind is carried by
+    // ClrGeneratorV2.LastYieldWasAwait, set from GeneratorState.IsAwait (await vs yield are
+    // otherwise both lowered to Yield). A user yield also awaits its operand
+    // (AsyncGeneratorYield(? Await(value))) before surfacing, so `yield <promise>` surfaces the
+    // settled value.
+    //
+    // Every Await is the spec's: PromiseResolve(%Promise%, value) plus a reaction that resumes the
+    // body in the reaction job itself — one job for a native promise or a plain value, and a
+    // thenable's `then` called in a job of its own. It used to invoke `then` on the awaited value
+    // (observably, and synchronously for a thenable) and queue the resumption as a second job, to
+    // resume at once after a non-thenable, and to settle each step's promise by resolving it
+    // with the next step's promise, which adopted it two jobs late. The step's promise is now one
+    // promise, settled with the iterator result when the body reaches its `yield` or completion.
+    //
+    // Requests are queued (AsyncGeneratorEnqueue): a next/return/throw made while a step is still
+    // running — suspended at an internal await, or from inside the body — waits for that step to
+    // settle and then runs, in order. Without the queue a second `next()` resumed the body at the
+    // first step's pending await with its own argument.
     private JSValue DriveAsync(Func<JSValue> advance)
+        => EnqueueAsyncRequest(promise => DriveAsync(advance, promise));
+
+    private JSValue EnqueueAsyncRequest(Action<Promise.JSPromise> start)
+    {
+        var promise = new Promise.JSPromise(static (_, _) => { });
+        (asyncRequests ??= new()).Enqueue((start, promise));
+        if (!asyncStepRunning)
+            RunNextAsyncRequest();
+
+        return promise;
+    }
+
+    // An async generator's return(value) request. At a yield — a user yield or a value of a
+    // `yield*` delegate — the value is awaited before the body resumes with the return completion,
+    // and a rejection resumes it with a throw instead (AsyncGeneratorUnwrapYieldResumption). A
+    // generator that has not started or has completed awaits the value and completes the request
+    // with it, or rejects it with the rejection (AsyncGeneratorAwaitReturn); the body does not run.
+    private void StartAsyncReturn(JSValue returnValue, Promise.JSPromise promise)
+    {
+        if (!done && cg.IsSuspendedAtYield)
+        {
+            Await(returnValue,
+                settled => DriveAsync(() => Return(settled), promise),
+                error => DriveAsync(() => Throw(error), promise));
+            return;
+        }
+
+        done = true;
+        value = JSUndefined.Value;
+        Await(returnValue,
+            settled => CompleteAsyncStep(promise,
+                NewWithProperties().AddProperty(KeyStrings.value, settled).AddProperty(KeyStrings.done, BooleanTrue)),
+            error => CompleteAsyncStep(promise, error, rejected: true));
+    }
+
+    private void RunNextAsyncRequest()
+    {
+        if (asyncRequests.Count == 0)
+        {
+            asyncStepRunning = false;
+            return;
+        }
+
+        asyncStepRunning = true;
+        var (start, promise) = asyncRequests.Dequeue();
+        start(promise);
+    }
+
+    // Settles the running request's promise and starts the next queued request.
+    private void CompleteAsyncStep(Promise.JSPromise promise, JSValue result, bool rejected = false)
+    {
+        if (rejected)
+            promise.Reject(result);
+        else
+            promise.Resolve(result);
+
+        RunNextAsyncRequest();
+    }
+
+    private void DriveAsync(Func<JSValue> advance, Promise.JSPromise promise)
     {
         JSValue result;
         try
@@ -375,99 +472,132 @@ public partial class JSGenerator : JSObject, IJSGenerator
         }
         catch (Exception ex)
         {
-            return JSEngine.CreateResolvedOrRejectedPromise(JSException.ErrorFrom(ex), false);
+            CompleteAsyncStep(promise, JSException.ErrorFrom(ex), rejected: true);
+            return;
         }
 
-        while (true)
+        // A completion settles the step with the { value, done } iterator-result object.
+        if (done || cg == null)
         {
-            // A completion resolves the consumer promise with the { value, done }
-            // iterator-result object directly.
-            if (done || cg == null)
-                return JSEngine.CreateResolvedOrRejectedPromise(result, true);
-
-            var operand = value ?? JSUndefined.Value;
-            var isThenable = !operand.IsNullOrUndefined && operand[KeyStrings.then].IsFunction;
-
-            if (cg.LastYieldWasAwait)
-            {
-                // Internal await: await `operand`, then resume the generator with the
-                // settled value (a rejection is thrown back in at the await point).
-                if (!isThenable)
-                {
-                    try { result = Next(operand); continue; }
-                    catch (Exception ex) { return JSEngine.CreateResolvedOrRejectedPromise(JSException.ErrorFrom(ex), false); }
-                }
-
-                return AwaitThenable(operand,
-                    settled => DriveAsync(() => Next(settled)),
-                    error => DriveAsync(() => Throw(error)));
-            }
-
-            // User yield (AsyncGeneratorYield): await the yielded value, then surface
-            // the settled value as { value, done:false }; a rejected operand is thrown
-            // back into the generator at the yield point.
-            if (!isThenable)
-                return JSEngine.CreateResolvedOrRejectedPromise(result, true);
-
-            return AwaitThenable(operand,
-                settled => JSEngine.CreateResolvedOrRejectedPromise(
-                    NewWithProperties().AddProperty(KeyStrings.value, settled).AddProperty(KeyStrings.done, BooleanFalse),
-                    true),
-                error => DriveAsync(() => Throw(error)));
+            CompleteAsyncStep(promise, result);
+            return;
         }
+
+        var operand = value ?? JSUndefined.Value;
+
+        // A value of an async `yield*` delegate is surfaced as it is: AsyncGeneratorYield of
+        // IteratorValue(innerResult), with no Await of its own.
+        if (cg.LastYieldWasAsyncDelegateValue)
+        {
+            CompleteAsyncStep(promise,
+                NewWithProperties().AddProperty(KeyStrings.value, operand).AddProperty(KeyStrings.done, BooleanFalse));
+            return;
+        }
+
+        if (cg.LastYieldWasAwait)
+        {
+            // Internal await: resume the generator with the settled value; a rejection is thrown
+            // back in at the await point.
+            Await(operand,
+                settled => DriveAsync(() => Next(settled), promise),
+                error => DriveAsync(() => Throw(error), promise));
+            return;
+        }
+
+        // `yield*` surfaces the delegate's own result object while its value is not a thenable
+        // (see Next), and awaits a thenable value as a yield does.
+        if (cg.DelegatedRawResult != null
+            && (operand.IsNullOrUndefined || !operand[KeyStrings.then].IsFunction))
+        {
+            CompleteAsyncStep(promise, result);
+            return;
+        }
+
+        // User yield (AsyncGeneratorYield): await the yielded value, then settle the step with
+        // { value: settled, done: false }; a rejected operand is thrown back into the generator
+        // at the yield point.
+        Await(operand,
+            settled => CompleteAsyncStep(promise,
+                NewWithProperties().AddProperty(KeyStrings.value, settled).AddProperty(KeyStrings.done, BooleanFalse)),
+            error => DriveAsync(() => Throw(error), promise));
     }
 
-    // Awaits a thenable and resumes the async generator with the settled value/reason; the returned
-    // promise resolves to onFulfilled/onRejected's result.
+    // Await(value) for the async-generator driver: `onFulfilled` / `onRejected` run in the promise
+    // reaction job (see JSAsyncFunction.Activation). An abrupt PromiseResolve — a throwing
+    // `constructor` getter on a native promise — is the Await's own throw, delivered now.
     //
     // Resuming an async generator runs the rest of its body, which is user JavaScript, so where the
-    // resumption is dispatched is the same decision a promise reaction makes — and JSContext.PostJob
-    // owns that decision for the whole engine. This used to make its own: prefer whatever
-    // SynchronizationContext happened to be current, and fall back to ThreadPool.QueueUserWorkItem
-    // when there was none. Those are exactly the two answers JSMicrotaskQueue's remarks record as
-    // wrong, both of which let a second thread into the context; JSPromise.Post and
-    // JSAsyncFunction.ToPromise were moved off them and this was the one site left behind.
-    //
-    // `continuationContext` is captured HERE rather than read inside Queue, matching
-    // JSAsyncFunction: a thenable calls back from wherever its `then` decides, which can be later
-    // and on another thread, and by then the pump this await belongs to is no longer current. It is
-    // passed to PostJob as the `captured` argument, where only an IJSJobPump is trusted.
-    private static JSValue AwaitThenable(JSValue thenable, Func<JSValue, JSValue> onFulfilled, Func<JSValue, JSValue> onRejected)
+    // resumption is dispatched is the same decision a promise reaction makes, and JSContext.PostJob
+    // owns it. The pump is captured HERE, at the await, and handed to the reaction: the awaited
+    // promise may have been created, and may settle, elsewhere.
+    private static void Await(JSValue value, Action<JSValue> onFulfilled, Action<JSValue> onRejected)
     {
+        Promise.JSPromise promise;
+        try
+        {
+            promise = Promise.JSPromise.PromiseResolveIntrinsic(value);
+        }
+        catch (Exception ex)
+        {
+            onRejected(JSException.ErrorFrom(ex));
+            return;
+        }
+
         var continuationContext = SynchronizationContext.Current
             ?? (JSEngine.Current as JSContext)?.synchronizationContext;
-
-        return (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) =>
-        {
-            void Queue(Action action) => JSContext.PostJob(action, continuationContext);
-
-            thenable.InvokeMethod(in KeyStrings.then,
-                CreateFunction((in Arguments a) =>
-                {
-                    var settled = a.Get1();
-                    Queue(() =>
-                    {
-                        try { resolve(onFulfilled(settled)); }
-                        catch (Exception ex) { reject(JSException.JSErrorFrom(ex)); }
-                    });
-                    return JSUndefined.Value;
-                }),
-                CreateFunction((in Arguments a) =>
-                {
-                    var error = a.Get1();
-                    Queue(() =>
-                    {
-                        try { resolve(onRejected(error)); }
-                        catch (Exception ex) { reject(JSException.JSErrorFrom(ex)); }
-                    });
-                    return JSUndefined.Value;
-                }));
-        });
+        promise.AwaitReaction(onFulfilled, onRejected, continuationContext);
     }
 
-    private struct ElementEnumerator(JSGenerator generator) : IElementEnumerator
+    private struct ElementEnumerator(JSGenerator generator) : IElementEnumerator, IAsyncDelegateIterator
     {
         int index = -1;
+
+        // A native async generator as the delegate of `yield*` in an async generator: its own
+        // next/throw/return, each a queued request settling a promise the delegating generator
+        // awaits. Stepping it synchronously, as MoveNext does, surfaced each `await` in its body
+        // as a delegated value and lost its return value.
+        public readonly bool IsAsyncIterator => generator.IsAsyncGenerator;
+
+        public readonly JSValue DelegateNext(JSValue value)
+        {
+            var asyncGenerator = generator;
+            var sent = value ?? JSUndefined.Value;
+            return asyncGenerator.DriveAsync(() => asyncGenerator.Next(sent));
+        }
+
+        public readonly bool TryDelegateThrow(JSValue value, out JSValue result)
+        {
+            var asyncGenerator = generator;
+            var sent = value ?? JSUndefined.Value;
+            result = asyncGenerator.DriveAsync(() => asyncGenerator.Throw(sent));
+            return true;
+        }
+
+        public readonly bool TryDelegateReturn(JSValue value, out JSValue result)
+        {
+            var asyncGenerator = generator;
+            var sent = value ?? JSUndefined.Value;
+            result = asyncGenerator.EnqueueAsyncRequest(promise => asyncGenerator.StartAsyncReturn(sent, promise));
+            return true;
+        }
+
+        // One `for await` step over an async generator: its own next(), which runs the body to its
+        // next `yield` or completion and awaits every `await` on the way, returning the promise of
+        // the step's iterator result for the loop to await. Stepping it synchronously through
+        // MoveNext, as the sync-iterable fallback does, surfaced each `await` in the body — among
+        // them an `await using` disposal — to the loop as an iteration value.
+        public JSValue AsyncNextRaw()
+        {
+            if (generator.IsAsyncGenerator)
+            {
+                var asyncGenerator = generator;
+                return asyncGenerator.DriveAsync(() => asyncGenerator.Next(JSUndefined.Value));
+            }
+
+            return MoveNext(out JSValue value)
+                ? AsyncIterationStep.ValueResult(value)
+                : AsyncIterationStep.DoneResult();
+        }
 
         public bool MoveNext(out JSValue value)
         {
@@ -555,7 +685,7 @@ public partial class JSGenerator : JSObject, IJSGenerator
     {
         var returnValue = a.Get1();
         return IsAsyncGenerator
-            ? DriveAsync(() => Return(returnValue))
+            ? EnqueueAsyncRequest(promise => StartAsyncReturn(returnValue, promise))
             : Return(returnValue);
     }
 

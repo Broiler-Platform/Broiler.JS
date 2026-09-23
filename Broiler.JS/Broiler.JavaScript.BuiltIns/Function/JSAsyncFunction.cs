@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.BuiltIns.Promise;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
@@ -101,113 +102,122 @@ public class JSAsyncFunction
         return asyncFunction;
     }
 
+    /// <summary>
+    /// Runs <paramref name="generator"/> as the body of an async function whose start has already
+    /// happened: it resumes the body now, runs it synchronously up to its first <c>await</c>, and
+    /// returns the promise that settles with the body's completion — AsyncBlockStart.
+    /// </summary>
+    /// <remarks>
+    /// The module linker uses it to execute a module with top-level <c>await</c>, whose body is
+    /// compiled as a generator it has already advanced past the module's instantiation.
+    /// </remarks>
+    public static JSValue ResumeAsyncBody(IJSGenerator generator)
+        => ToPromise(generator ?? throw new ArgumentNullException(nameof(generator)), JSUndefined.Value);
+
     private static JSValue ToPromise(IJSGenerator gen, JSValue lastResult)
     {
-        try
-        {
-            if (!gen.MoveNext(lastResult, out var r))
-            {
-                // §27.7.5.2 (AsyncFunctionStart / AsyncBlockStart): normal completion
-                // resolves the async function's result promise WITH the return value,
-                // which ADOPTS a thenable return value (Promise Resolve Functions read
-                // `then` and, if callable, follow it). CreateResolvedOrRejectedPromise
-                // fulfils with the value directly (no adoption), so
-                //   async function w(){ return new Promise(r => requestAnimationFrame(r)); }
-                // would fulfil w()'s promise with the inner promise as a plain value, and
-                // `await w()` would resume immediately instead of awaiting it to settle.
-                // Route object return values through the adopting resolve (single `then`
-                // read, throwing-`then`-getter handled per spec); primitives are never
-                // thenables, so keep the fast path for them.
-                if (r.IsObject)
-                    return (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) => resolve(r));
+        var activation = new Activation(gen);
+        activation.Step(lastResult, isThrow: false);
+        return activation.Promise;
+    }
 
-                return JSEngine.CreateResolvedOrRejectedPromise(r, true);
+    /// <summary>
+    /// One running async body and its promise: AsyncBlockStart and the Await steps (§27.7.5.3).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The body is a generator that suspends at each <c>await</c> with the awaited value. Await is
+    /// PromiseResolve(%Promise%, value) plus PerformPromiseThen on the result with the resumption
+    /// as its reactions, so the body resumes IN the reaction job: one job after a native promise
+    /// or a plain value settles, and a thenable's <c>then</c> is called in a job of its own
+    /// (NewPromiseResolveThenableJob) rather than at the await.
+    /// </para>
+    /// <para>
+    /// This replaces a driver that invoked <c>then</c> on the awaited value — observably, through
+    /// the current <c>Promise.prototype.then</c>, and synchronously for a thenable — and queued
+    /// the resumption as a job of its own from inside the reaction: two jobs per await where the
+    /// spec takes one. It also made a new promise at every await step and resolved the previous
+    /// step's promise with it, so the function's promise adopted its completion two jobs per step
+    /// late. There is now one promise, resolved with the body's completion value (adopting a
+    /// thenable, as the promise's resolve function does) or rejected with what it threw.
+    /// </para>
+    /// </remarks>
+    private sealed class Activation
+    {
+        private readonly IJSGenerator generator;
+        private readonly Action<JSValue> onFulfilled;
+        private readonly Action<JSValue> onRejected;
+
+        internal readonly JSPromise Promise;
+
+        internal Activation(IJSGenerator generator)
+        {
+            this.generator = generator;
+            Promise = new JSPromise(static (_, _) => { });
+            onFulfilled = value => Step(value, isThrow: false);
+            onRejected = reason => Step(reason, isThrow: true);
+        }
+
+        /// <summary>Resumes the body with a normal or a throw completion and runs it to its next
+        /// <c>await</c> or its end.</summary>
+        internal void Step(JSValue value, bool isThrow)
+        {
+            bool more;
+            JSValue r;
+            try
+            {
+                if (isThrow)
+                {
+                    // IJSGenerator.Throw advances the body itself and hands back its next step as
+                    // an iterator result; that step is what is settled or awaited here. (Resuming
+                    // WITH that result, as an earlier driver did, advanced the body twice.)
+                    var step = generator.Throw(value);
+                    more = !step[KeyStrings.done].BooleanValue;
+                    r = step[KeyStrings.value];
+                }
+                else
+                {
+                    more = generator.MoveNext(value, out r);
+                }
+            }
+            catch (Exception ex)
+            {
+                Promise.Reject(JSException.JSErrorFrom(ex));
+                return;
             }
 
-            // Is the awaited value a thenable (an object with a callable `then`)? A
-            // non-thenable — a primitive, or an object without a `then` method — is
-            // NOT the final result of the async function: `await` of it still
-            // suspends for one microtask tick and then resumes the function with the
-            // value itself, so the continuation after the await (e.g. `(await 1) + 1`)
-            // runs. Previously a non-thenable resolved the whole async function with
-            // the value, discarding everything after the await.
-            var then = r.IsObject ? r[KeyStrings.then] : JSUndefined.Value;
-            var isThenable = then.IsFunction;
+            if (!more)
+            {
+                // Call(promiseCapability.[[Resolve]], undefined, « result »): adopts a thenable
+                // (its `then` read now, called in a job), fulfils with anything else.
+                Promise.Resolve(r);
+                return;
+            }
 
-            // The pump being run on this thread, if any — see JSContext.PostJob case 2. Captured at
-            // the await rather than read at the post, because a thenable resumes from wherever its
-            // `then` decides to call back.
+            Await(r);
+        }
+
+        private void Await(JSValue value)
+        {
+            JSPromise promise;
+            try
+            {
+                // PromiseResolve reads a native promise's `constructor`, which can throw: that is
+                // an abrupt completion of the Await itself, thrown into the body at the await.
+                promise = JSPromise.PromiseResolveIntrinsic(value);
+            }
+            catch (Exception ex)
+            {
+                Step(JSException.JSErrorFrom(ex), isThrow: true);
+                return;
+            }
+
+            // The pump being run on this thread, if any — see JSContext.PostJob case 2. Captured
+            // at the await, because the awaited promise may have been created, and may settle,
+            // elsewhere.
             var continuationContext = SynchronizationContext.Current
                 ?? (JSEngine.Current as JSContext)?.synchronizationContext;
-
-            return (JSValue)JSEngine.CreatePromiseFromDelegate((resolve, reject) =>
-            {
-                // Resuming runs the rest of the async body, which is user JavaScript, so this is
-                // the same dispatch decision a promise reaction makes and it is made in one place.
-                // It used to prefer whatever SynchronizationContext happened to be current, on the
-                // reasoning that a context being pumped is the JavaScript thread — true of the
-                // engine's own pump, false of an arbitrary host's. See JSContext.PostJob.
-                //
-                // `continuationContext` is captured HERE rather than read inside Queue because the
-                // thenable path calls Queue from a `then` callback, which can run later and on
-                // another thread; by then the pump this await belongs to is no longer current.
-                void Queue(Action action) => JSContext.PostJob(action, continuationContext);
-
-                if (!isThenable)
-                {
-                    Queue(() =>
-                    {
-                        try
-                        {
-                            resolve(ToPromise(gen, r));
-                        }
-                        catch (Exception ex)
-                        {
-                            reject(JSException.JSErrorFrom(ex));
-                        }
-                    });
-                    return;
-                }
-
-                r.InvokeMethod(in KeyStrings.then,
-                    JSValue.CreateFunction((in Arguments a) =>
-                    {
-                        var resumeValue = a.Get1();
-                        Queue(() =>
-                        {
-                            try
-                            {
-                                resolve(ToPromise(gen, resumeValue));
-                            }
-                            catch (Exception ex)
-                            {
-                                reject(JSException.JSErrorFrom(ex));
-                            }
-                        });
-                        return JSUndefined.Value;
-                    }),
-                    JSValue.CreateFunction((in Arguments a) =>
-                    {
-                        var thrownValue = a.Get1();
-                        Queue(() =>
-                        {
-                            try
-                            {
-                                var thrownResult = gen.Throw(thrownValue);
-                                resolve(ToPromise(gen, thrownResult));
-                            }
-                            catch (Exception ex)
-                            {
-                                reject(JSException.JSErrorFrom(ex));
-                            }
-                        });
-                        return JSUndefined.Value;
-                    }));
-            });
-        }
-        catch (Exception ex)
-        {
-            return JSEngine.CreateResolvedOrRejectedPromise(JSException.JSErrorFrom(ex), false);
+            promise.AwaitReaction(onFulfilled, onRejected, continuationContext);
         }
     }
 }

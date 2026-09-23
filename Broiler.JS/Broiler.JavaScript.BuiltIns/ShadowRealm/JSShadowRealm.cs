@@ -16,8 +16,8 @@ public partial class JSShadowRealm : JSObject
     private readonly JSContext realm;
 
     // The context that constructed this ShadowRealm, which the child realm is made from. evaluate asks
-    // the host whether it may compile a string on this context: the child has no EvalEvent subscribers
-    // and nothing forwards them (see Evaluate).
+    // the host whether it may compile a string on this context, and the child forwards every question
+    // its own code asks to it (see the constructor).
     private readonly JSContext creatorRealm;
 
     [JSExport(Length = 0)]
@@ -38,6 +38,26 @@ public partial class JSShadowRealm : JSObject
             if (outer != null)
                 JSEngine.CurrentContext = outer;
         }
+
+        // Code running INSIDE the child - an eval, a Function constructor or a nested ShadowRealm's
+        // evaluate - asks the host on the child context, the one its intrinsics belong to. An embedder
+        // never sees that context, so without this its policy would stop at the ShadowRealm boundary:
+        // a handler that let evaluate's own string through would never be asked about the strings that
+        // string compiles. JSD-0030 requires a child realm to inherit its parent's compilation policy
+        // on every route, so each question is forwarded to the creator, and through it to that
+        // context's creator for a nested ShadowRealm. A rewrite by the creator's handler is the
+        // compile's source and location, as on every other route.
+        if (outer != null)
+            realm.EvalEvent += (_, e) => ForwardEvalEvent(outer, e);
+    }
+
+    private static void ForwardEvalEvent(JSContext creator, EvalEventArgs e)
+    {
+        var script = e.Script;
+        var location = e.Location;
+        creator.DispatchEvalEvent(ref script, ref location);
+        e.Script = script;
+        e.Location = location;
     }
 
     [JSExport(Length = 1)]

@@ -629,7 +629,9 @@ partial class FastCompiler
                 // Otherwise `function h(){ var f; eval("function f(){}"); }` leaked `f` to the
                 // global object even though it should merely update h's own `f`.
                 var isLocalVarEnvEval = isDirectEvalCompilation && usesDirectEvalLocalVarEnvironment;
-                if (previousScope.Function == null && isProgramTopLevel && !isStrictEvalProgram && !isLocalVarEnvEval)
+                // A module's top-level function declarations are bindings of its module
+                // environment (InitializeEnvironment), never properties of the global object.
+                if (previousScope.Function == null && isProgramTopLevel && !isStrictEvalProgram && !isLocalVarEnvEval && !isModuleCompilation)
                     jsFVarScope.SetPostInit(JSContextBuilder.DeclareGlobalFunction(KeyOfName(functionName), jsf));
                 else
                     jsFVarScope.SetPostInit(jsf);

@@ -34,8 +34,15 @@ public class FastScanner
     private readonly FastPool pool;
     public readonly StringSpan Text;
     private readonly FastKeywordMap keywords;
+
+    // Annex B.1.1: HTML-like comments exist only in the Script goal. In module code `<!--` and
+    // `-->` are ordinary punctuators (and, where they cannot be, a SyntaxError). Read once, as the
+    // parser reads its own module-goal flag, from the ambient goal of the compile in progress.
+    private readonly bool htmlLikeComments = !Runtime.CoreScript.IsModuleGoal;
     private int position = 0;
 
+    // Positions are 1-based in both coordinates: the first character of every line, not only
+    // of the first one, is column 1 (as in V8 and SpiderMonkey stack traces and error positions).
     private int line = 1;
     private int column = 1;
     private int templateParts = 0;
@@ -59,6 +66,24 @@ public class FastScanner
     {
         var c = Token;
         return new FastParseException(c, $"Unexpected token {c.Type}: {c.Span} at {Location}");
+    }
+
+    /// <summary>
+    /// Reports a string, template or comment that the source does not close, at the position
+    /// where scanning stopped: the line terminator a string literal may not contain, or the end
+    /// of the source.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Unexpected"/> blames <see cref="Token"/>, the last token the scanner produced
+    /// before the one it is reading, so a compile frame built from its start named an earlier
+    /// line than the message's own position whenever the literal began on a later line. The
+    /// token here is placed at the failure, so the frame and the message agree.
+    /// </remarks>
+    private FastParseException Unterminated(string what)
+    {
+        var location = Location;
+        var token = new FastToken(TokenTypes.EOF, Text.Source, null, null, Text.Offset + position, 0, location, location);
+        return new FastParseException(token, $"Unterminated {what} at {location}");
     }
 
     /// <summary>
@@ -261,10 +286,16 @@ public class FastScanner
 
         char ch = Text[position];
 
-        if (ch == '\n')
+        // ECMAScript's LineTerminators are LF, CR, U+2028 and U+2029 (§12.3), and a CRLF pair is
+        // one LineTerminatorSequence. Counting only LF put every position after a lone CR, LS or
+        // PS on the wrong line; the CR of a CRLF is left to the LF so the pair counts once.
+        if (ch is '\n' or '\u2028' or '\u2029'
+            || (ch == '\r' && (position + 1 >= Text.Length || Text[position + 1] != '\n')))
         {
             line++;
-            column = 0;
+            // The character after the terminator is the first of the new line: column 1, as
+            // on line 1. (Resetting to 0 made every line after the first 0-based.)
+            column = 1;
         }
         else
         {
@@ -675,13 +706,13 @@ public class FastScanner
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool IsHtmlOpenCommentStart()
     {
-        return Peek(0) == '<' && Peek(1) == '!' && Peek(2) == '-' && Peek(3) == '-';
+        return htmlLikeComments && Peek(0) == '<' && Peek(1) == '!' && Peek(2) == '-' && Peek(3) == '-';
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private bool IsHtmlCloseCommentStart()
     {
-        if (Peek(0) != '-' || Peek(1) != '-' || Peek(2) != '>')
+        if (!htmlLikeComments || Peek(0) != '-' || Peek(1) != '-' || Peek(2) != '>')
             return false;
 
         return lastToken.Type == TokenTypes.Empty || lastToken.Type == TokenTypes.LineTerminator;
@@ -1101,7 +1132,7 @@ public class FastScanner
                 }
 
                 if (ch == char.MaxValue && AtEnd)
-                    throw Unexpected();
+                    throw Unterminated("template literal");
 
                 if (ScanEscaped(ch, t, deferInvalid: true))
                     continue;
@@ -1534,11 +1565,9 @@ public class FastScanner
                     if (!AtEnd)
                         continue;
 
-                    if (hasLineTerminator)
-                    {
-                        return ReadSymbol(state, TokenTypes.LineTerminator);
-                    }
-                    return ReadToken();
+                    // A MultiLineComment needs its closing `*/` (§12.4); the end of the
+                    // source inside one is a SyntaxError, not the end of the comment.
+                    throw Unterminated("comment");
 
                 case '*':
                     while ((ch = Consume()) == '*') ;
@@ -1548,9 +1577,11 @@ public class FastScanner
                         break;
                     }
                     if (ch == char.MaxValue && AtEnd)
-                    {
-                        break;
-                    }
+                        throw Unterminated("comment");
+                    // The loop's next Consume() steps past this character unseen, so a line
+                    // terminator right after a `*` (`/* *\n */`) must be recorded here.
+                    if (ch.IsLineTerminator())
+                        hasLineTerminator = true;
                     continue;
 
                 default:
@@ -1603,29 +1634,26 @@ public class FastScanner
                 first = Consume();
 
                 if (first == char.MaxValue && AtEnd)
-                    throw Unexpected();
+                    throw Unterminated("string literal");
 
+                // A string literal may not contain a raw LF or CR (§12.9.4: only a
+                // LineContinuation, or since ES2019 a raw U+2028/U+2029, may appear).
+                if (first is '\n' or '\r')
+                    throw Unterminated("string literal");
+
+                // The first unescaped matching quote closes the literal (§12.9.4). A doubled
+                // quote is not an escape — that is the SQL/VB convention — so `'a''b'` is two
+                // adjacent literals, and the second one is scanned as its own token.
                 if (first == start)
                 {
-                    var next = Consume();
-                    if (next == first)
-                    {
-                        t.Append(first);
-                        continue;
-                    }
-                    else
-                    {
-                        break;
-                    }
+                    Consume();
+                    break;
                 }
 
                 if (ScanEscaped(first, t))
                     continue;
 
                 t.Append(first);
-
-                if (first == start)
-                    break;
             } while (true);
 
             return state.Commit(TokenTypes.String, sb.Builder);

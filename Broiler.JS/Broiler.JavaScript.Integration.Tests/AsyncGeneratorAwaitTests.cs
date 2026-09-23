@@ -73,12 +73,16 @@ public class AsyncGeneratorAwaitTests
 
     [Fact(Timeout = 600000)]
     public void ForAwaitTwoIterationsThenDone()
+        // The steps are chained into the script's completion value: Execute pumps jobs only until
+        // that value settles, so nested `.then` calls whose promises it does not wait for could be
+        // cut off, depending on how many jobs each step takes (an await now takes one, as in the
+        // specification, where the async-generator driver used to resume some synchronously).
         => Assert.Equal("A,B|done=true", Drive(
             "var out = []; async function* g(){ for await (var z of ['a','b']) { yield z.toUpperCase(); } }"
             + " var it = g();"
-            + " it.next().then(a => { out.push(a.value);"
-            + "   it.next().then(b => { out.push(b.value);"
-            + "     it.next().then(c => { globalThis.r = out.join(',') + '|done=' + c.done; }); }); });"));
+            + " it.next().then(a => { out.push(a.value); return it.next(); })"
+            + "   .then(b => { out.push(b.value); return it.next(); })"
+            + "   .then(c => { globalThis.r = out.join(',') + '|done=' + c.done; });"));
 
     [Fact(Timeout = 600000)]
     public void NoArgNextResumesWithUndefinedNotStaleAwaitValue()

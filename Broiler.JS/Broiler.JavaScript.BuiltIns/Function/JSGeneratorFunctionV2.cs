@@ -44,7 +44,8 @@ public class JSGeneratorFunctionV2 : JSFunction
         // §27.3.2 / §27.4.2: %GeneratorFunction%.[[Prototype]] and
         // %AsyncGeneratorFunction%.[[Prototype]] are the intrinsic %Function% (the
         // Function constructor), so both are subclasses of Function.
-        if (functionPrototype?[KeyStrings.constructor] is JSObject functionConstructor)
+        // The intrinsic, not `Function.prototype.constructor`, which guest code may replace.
+        if (Intrinsics.Constructor(KeyStrings.Function) is JSObject functionConstructor)
             constructor.BasePrototypeObject = functionConstructor;
         // §27.3.3.2 / §27.4.3.2: the .prototype.constructor property is non-writable
         // (attributes { writable: false, enumerable: false, configurable: true }).
@@ -63,10 +64,14 @@ public class JSGeneratorFunctionV2 : JSFunction
         return prototype;
     }
 
+    private static readonly KeyString GeneratorKey = KeyStrings.GetOrCreate("Generator");
+
+    // %GeneratorFunction.prototype.prototype% (§27.5.1), recorded as the realm's intrinsic when
+    // its class was created — never the prototype of whatever the (non-standard) global
+    // `Generator` binding holds now, which guest code may replace or delete.
     private static JSObject GetGeneratorPrototype(bool asyncGenerator)
     {
-        if ((Engine.Core.JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Generator")] is not JSFunction generatorCtor
-            || generatorCtor.prototype is not JSObject generatorPrototype)
+        if (Intrinsics.Prototype(GeneratorKey) is not JSObject generatorPrototype)
             return null;
 
         if (!asyncGenerator)

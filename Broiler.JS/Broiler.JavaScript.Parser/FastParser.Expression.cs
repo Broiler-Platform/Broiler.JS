@@ -289,8 +289,12 @@ partial class FastParser
             // SyntaxErrors. Without this, NextExpression's `CheckAndConsume(previousType)`
             // would consume the stray literal as if it were an operator and silently
             // drop it. A token of the same kind as this expression's first token is
-            // likewise a stray adjacent primary.
-            if (currentType == token.Type || IsLiteralValueStart(currentType))
+            // likewise a stray adjacent primary, and so is an identifier after ANY
+            // expression: checking only "same kind as the first token" let an expression
+            // that began with a literal, a parenthesis or a unary operator swallow one —
+            // `[1 b]` was the array [1], `f(1 b)` the call f(1), `var [a = 1 b] = []` a
+            // one-element pattern. (`of` in a for-of head is handled above.)
+            if (currentType == token.Type || currentType == TokenTypes.Identifier || IsLiteralValueStart(currentType))
                 throw stream.Unexpected();
         }
 

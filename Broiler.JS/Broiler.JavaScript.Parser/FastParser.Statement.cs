@@ -266,6 +266,7 @@ partial class FastParser
                     return Class(out node);
 
                 case FastKeywords.export:
+                    RequireModuleItemPosition(token, singleContext);
                     return Export(token, out node);
 
                 case FastKeywords.import:
@@ -273,6 +274,7 @@ partial class FastParser
                     // import declarations — fall through to the expression-statement path.
                     if (stream.Next.Type == TokenTypes.BracketStart || stream.Next.Type == TokenTypes.Dot)
                         break;
+                    RequireModuleItemPosition(token, singleContext);
                     return Import(token, out node);
 
                 case FastKeywords.async:
@@ -403,6 +405,14 @@ partial class FastParser
                         break;
 
                     default:
+                        // A LabelledItem is a Statement or a FunctionDeclaration, never a
+                        // ModuleItem, so `l: import ...` / `l: export ...` is a SyntaxError.
+                        if ((current.Keyword == FastKeywords.export
+                                || (current.Keyword == FastKeywords.import
+                                    && stream.Next.Type != TokenTypes.BracketStart
+                                    && stream.Next.Type != TokenTypes.Dot)))
+                            throw new FastParseException(current, $"'{current.Span}' may only appear at the top level of a module");
+
                         if (Statement(out statement))
                         {
                             // Reject generator declarations: label: function* g() {}
@@ -646,6 +656,12 @@ partial class FastParser
             if (!Parameters(out var declarators, TokenTypes.SemiColon, false, FastVariableKind.Const))
                 throw stream.Unexpected();
 
+            // An `await using` outside every function awaits at its block's end, so the program
+            // is async exactly as a top-level AwaitExpression makes it: a module with one is
+            // evaluated as an async module.
+            if (isAsync && functionDepth == 0)
+                this.isAsync = true;
+
             var declaration = new AstVariableDeclaration(start, PreviousToken, declarators, FastVariableKind.Const, true, await: isAsync);
             // Every `using` / `await using` binding requires an initializer (`using x;` is a
             // SyntaxError). for-of ForBindings are handled on the for-head path and exempt.
@@ -653,5 +669,20 @@ partial class FastParser
             statement = declaration;
             return true;
         }
+    }
+
+    /// <summary>
+    /// ImportDeclaration and ExportDeclaration are ModuleItems: they appear only in the
+    /// ModuleItemList of a module, never in a script, a block, a function body or as the body of a
+    /// statement. Anywhere else the keyword is an early SyntaxError.
+    /// </summary>
+    // How many CaseBlocks enclose the statement being parsed. Their clauses are StatementLists
+    // that do not reset atScriptTopLevel (a `using` directly in one is rejected by that flag).
+    private int caseBlockDepth;
+
+    private void RequireModuleItemPosition(FastToken token, bool singleContext)
+    {
+        if (!isModuleGoal || !atScriptTopLevel || singleContext || caseBlockDepth != 0)
+            throw new FastParseException(token, $"'{token.Span}' may only appear at the top level of a module");
     }
 }

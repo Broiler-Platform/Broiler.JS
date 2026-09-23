@@ -31,7 +31,8 @@ public class V8ExceptionDetails
             ExecutionContextId = $"C-{context.ID}";
             StackTrace = new V8StackTrace(context);
             LineNumber = context.CurrentLine;
-            ColumnNumber = context.CurrentColumn;
+            // The engine's columns are 1-based; the DevTools protocol's are 0-based.
+            ColumnNumber = System.Math.Max(0, context.CurrentColumn - 1);
         }
 
         Text = ex.ToString();

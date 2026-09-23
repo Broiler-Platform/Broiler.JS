@@ -13,6 +13,18 @@ partial class FastParser
 
         AstIdentifier id;
 
+        // `import 'specifier';` — an ImportDeclaration with only a ModuleSpecifier. It binds
+        // nothing; it only adds the module to this module's requests, so the module is loaded,
+        // linked and evaluated before this one.
+        if (stream.Current.Type == TokenTypes.String)
+        {
+            var sideEffectSource = ExpectStringLiteral();
+            var sideEffectAttrs = ImportAttributes();
+            ExpectEndOfModuleItem();
+            statement = new AstImportStatement(token, null, null, null, sideEffectSource, sideEffectAttrs);
+            return true;
+        }
+
         if (stream.CheckAndConsume(TokenTypes.Multiply))
         {
             stream.ExpectContextualKeyword(FastKeywords.@as);
@@ -26,7 +38,7 @@ partial class FastParser
             var literal = ExpectStringLiteral();
             var attrs = ImportAttributes();
 
-            isAsync = true;
+            ExpectEndOfModuleItem();
             statement = new AstImportStatement(token, null, id, null, literal, attrs);
 
             return true;
@@ -63,7 +75,7 @@ partial class FastParser
             var literal = ExpectStringLiteral();
             var attrs = ImportAttributes();
 
-            isAsync = true;
+            ExpectEndOfModuleItem();
             statement = new AstImportStatement(token, id, all, names, literal, attrs);
 
             return true;
@@ -84,7 +96,7 @@ partial class FastParser
             var literal = ExpectStringLiteral();
             var attrs = ImportAttributes();
 
-            isAsync = true;
+            ExpectEndOfModuleItem();
             statement = new AstImportStatement(token, id, all, names, literal, attrs);
 
             return true;
@@ -104,6 +116,31 @@ partial class FastParser
 
             while (!stream.CheckAndConsume(TokenTypes.CurlyBracketEnd))
             {
+                // ImportSpecifier : ModuleExportName `as` ImportedBinding. A ModuleExportName
+                // that is a string literal, or a reserved word the scanner types on its own,
+                // can never be a binding, so it must be renamed.
+                var nameToken = stream.Current;
+                if (nameToken.Type == TokenTypes.String || IsKeywordPropertyName(nameToken.Type))
+                {
+                    var importedName = nameToken.Type == TokenTypes.String
+                        ? ModuleExportNameLiteral()
+                        : ConsumeSpan(nameToken);
+                    stream.ExpectContextualKeyword(FastKeywords.@as);
+                    if (!Identitifer(out var renamed))
+                        throw stream.Unexpected();
+
+                    RejectReservedImportedBinding(renamed);
+                    list.Add((importedName, renamed.Name));
+
+                    if (stream.CheckAndConsume(TokenTypes.Comma))
+                        continue;
+
+                    if (stream.CheckAndConsume(TokenTypes.CurlyBracketEnd))
+                        break;
+
+                    throw stream.Unexpected();
+                }
+
                 if (!Identitifer(out var id))
                     throw stream.Unexpected();
 
@@ -135,6 +172,37 @@ partial class FastParser
         }
     }
 
+    private StringSpan ConsumeSpan(FastToken token)
+    {
+        stream.Consume();
+        return token.Span;
+    }
+
+    /// <summary>
+    /// A ModuleExportName written as a string literal. ES2022 16.2.2.1: it is a SyntaxError when
+    /// the string is not well-formed Unicode (it contains a lone surrogate), because an export name
+    /// has to be usable as a property key of every host's namespace object.
+    /// </summary>
+    private StringSpan ModuleExportNameLiteral()
+    {
+        var literal = ExpectStringLiteral();
+        var value = literal.StringValue;
+        for (var i = 0; i < value.Length; i++)
+        {
+            var c = value[i];
+            if (char.IsHighSurrogate(c) && i + 1 < value.Length && char.IsLowSurrogate(value[i + 1]))
+            {
+                i++;
+                continue;
+            }
+
+            if (char.IsSurrogate(c))
+                throw new FastParseException(literal.Start, "A module export name must be well-formed Unicode");
+        }
+
+        return new StringSpan(value);
+    }
+
     /// <summary>
     /// An ImportedBinding is a BindingIdentifier, so <c>await</c> cannot be one: an
     /// ImportDeclaration only appears in module code, where <c>await</c> is reserved.
@@ -143,7 +211,16 @@ partial class FastParser
     {
         if (binding.Start.IsKeyword && binding.Start.Keyword == FastKeywords.await && isModuleGoal)
             throw new FastParseException(binding.Start, "'await' is reserved in module code");
+
+        // Module code is strict code, so a BindingIdentifier may be neither `eval` nor
+        // `arguments`, nor a word reserved in strict mode (ES2024 13.1.1).
+        if (isModuleGoal && IsStrictModeRestrictedBindingName(binding.Name.Value))
+            throw new FastParseException(binding.Start, $"'{binding.Name.Value}' cannot be an imported binding in module code");
     }
+
+    private static bool IsStrictModeRestrictedBindingName(string name) => name is
+        "eval" or "arguments" or "implements" or "interface" or "let" or "package"
+        or "private" or "protected" or "public" or "static" or "yield";
 
     /// <summary>
     /// Parse optional import attributes: <c>with { key: "value", ... }</c>

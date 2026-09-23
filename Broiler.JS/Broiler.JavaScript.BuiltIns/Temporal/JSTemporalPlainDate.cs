@@ -59,14 +59,11 @@ public partial class JSTemporalPlainDate : JSObject
         return JSEngine.NewTargetPrototype ?? PlainDatePrototype;
     }
 
-    internal static JSObject PlainDatePrototype
-    {
-        get
-        {
-            var temporal = (JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Temporal")] as JSObject;
-            return (temporal?[KeyStrings.GetOrCreate("PlainDate")] as JSFunction)?.prototype;
-        }
-    }
+    private static readonly KeyString PlainDateIntrinsicKey = KeyStrings.GetOrCreate("Temporal.PlainDate");
+
+    // %Temporal.PlainDate.prototype% of the current realm, never the prototype of whatever
+    // `globalThis.Temporal.PlainDate` holds now: guest code may replace the namespace or its members.
+    internal static JSObject PlainDatePrototype => Intrinsics.TemporalPrototype(PlainDateIntrinsicKey);
 
     // ── accessors ───────────────────────────────────────────────────────────────
 

@@ -374,7 +374,11 @@ public partial class JSAtomics : JSObject
         if (timeout == 0)
             return WaitAsyncResult(false, new JSString("timed-out"));
 
-        var promise = Task.FromResult<JSValue>(new JSString("timed-out")).ToPromise();
+        // Settled on this thread, so its reactions are ordinary jobs. It was wrapped from a Task,
+        // whose continuation settled it from the thread pool at no fixed point in the job queue.
+        // (No agent can notify this one, and the timeout is not waited for: it reports
+        // "timed-out" at once.)
+        var promise = new JSPromise(new JSString("timed-out"), JSPromise.PromiseState.Resolved);
         return WaitAsyncResult(true, promise);
     }
 

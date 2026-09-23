@@ -483,6 +483,11 @@ partial class FastParser
                 return false;
             }
 
+            // Outside every function an `await using` makes the program async, as a top-level
+            // AwaitExpression does (see Using).
+            if (isAwait && functionDepth == 0)
+                isAsync = true;
+
             var declarator = new VariableDeclarator(new AstIdentifier(bindingToken), null);
             declaration = new AstVariableDeclaration(start, PreviousToken, declarator,
                 FastVariableKind.Const, @using: true, await: isAwait);
@@ -546,6 +551,9 @@ partial class FastParser
             if (!Parameters(out var declarators, TokenTypes.SemiColon, false, FastVariableKind.Const))
                 throw stream.Unexpected();
             considerInOfAsOperators = true;
+
+            if (isAwait && functionDepth == 0)
+                isAsync = true;
 
             declaration = new AstVariableDeclaration(start, PreviousToken, declarators,
                 FastVariableKind.Const, @using: true, await: isAwait);

@@ -36,6 +36,10 @@ public partial class JSPromise : JSObject, IJSPromise
         public JSPromise Promise;
         public ReactionType Type;
         public JSFunctionDelegate Handler;
+
+        // Where the reaction job is dispatched when it is not this promise's own capture: an
+        // Await's resumption, which belongs to the pump the await ran on (see PostJob).
+        public SynchronizationContext Context;
     }
 
     internal PromiseState state = PromiseState.Pending;
@@ -362,6 +366,61 @@ public partial class JSPromise : JSObject, IJSPromise
         return base.ConvertTo(type, out value);
     }
 
+    /// <summary>
+    /// PerformPromiseThen with host reactions: <paramref name="onFulfilled"/> or
+    /// <paramref name="onRejected"/> runs as a promise job when this promise settles, and this
+    /// promise is marked handled. The reactions are the promise's own, so a user-modified
+    /// <c>Promise.prototype.then</c> is never consulted.
+    /// </summary>
+    public void AddReactions(JSFunctionDelegate onFulfilled, JSFunctionDelegate onRejected)
+        => Then(onFulfilled, onRejected);
+
+    /// <summary>
+    /// PromiseResolve(%Promise%, <paramref name="value"/>): a native promise whose
+    /// <c>constructor</c> is the realm's intrinsic %Promise% as is, anything else a new promise
+    /// resolved with it (a thenable's <c>then</c> is then called in a job). The <c>constructor</c>
+    /// read is observable and may throw.
+    /// </summary>
+    internal static JSPromise PromiseResolveIntrinsic(JSValue value)
+    {
+        if (value is JSPromise promise
+            && ReferenceEquals(promise[KeyStrings.constructor], Intrinsics.Constructor(KeyStrings.Promise)))
+            return promise;
+
+        var created = new JSPromise();
+        created.PinIntrinsicPrototype();
+        created.InitPromise();
+        created.Resolve(value);
+        return created;
+    }
+
+    /// <summary>
+    /// The PerformPromiseThen of Await (§27.7.5.3): <paramref name="onFulfilled"/> or
+    /// <paramref name="onRejected"/> runs in the reaction job itself, with no derived promise, and
+    /// the job is dispatched to <paramref name="continuationContext"/> — the pump the await ran
+    /// on — when this promise's own capture is not one.
+    /// </summary>
+    internal void AwaitReaction(Action<JSValue> onFulfilled, Action<JSValue> onRejected, SynchronizationContext continuationContext)
+    {
+        isHandled = true;
+        JSPromiseRejectionTracker.Handled(this);
+
+        var resolved = new Reaction
+        {
+            Type = ReactionType.Resolve,
+            Handler = (in Arguments a) => { onFulfilled(a.Get1()); return JSUndefined.Value; },
+            Context = continuationContext,
+        };
+        var rejected = new Reaction
+        {
+            Type = ReactionType.Reject,
+            Handler = (in Arguments a) => { onRejected(a.Get1()); return JSUndefined.Value; },
+            Context = continuationContext,
+        };
+
+        Register(resolved, rejected);
+    }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal JSValue Then(JSFunctionDelegate resolve, JSFunctionDelegate fail, JSPromise @return = null)
     {
@@ -381,7 +440,12 @@ public partial class JSPromise : JSObject, IJSPromise
 
         var resolved = new Reaction { Promise = @return, Type = ReactionType.Resolve, Handler = resolve };
         var rejected = new Reaction { Promise = @return, Type = ReactionType.Reject, Handler = fail };
+        Register(resolved, rejected);
+        return @return;
+    }
 
+    private void Register(Reaction resolved, Reaction rejected)
+    {
         // Registering has to be atomic with the settle, or the reaction is silently stranded:
         // read Pending here, have Resolve transition and drain the list in between, and the Add
         // below lands in a list nothing will drain again. Nobody posts the reaction, the
@@ -406,11 +470,9 @@ public partial class JSPromise : JSObject, IJSPromise
         // Outside the gate, for the same reason Resolve posts outside it.
         if (settled != null)
             Post(settled);
-
-        return @return;
     }
 
-    private void Post(Reaction reaction) => Post(() =>
+    private void Post(Reaction reaction) => JSContext.PostJob(() =>
     {
         if (reaction.Handler != null)
         {
@@ -428,7 +490,7 @@ public partial class JSPromise : JSObject, IJSPromise
             }
             catch (Exception ex)
             {
-                reaction.Promise.Reject(JSException.JSErrorFrom(ex));
+                reaction.Promise?.Reject(JSException.JSErrorFrom(ex));
             }
         }
         else if (reaction.Type == ReactionType.Resolve)
@@ -439,7 +501,7 @@ public partial class JSPromise : JSObject, IJSPromise
         {
             reaction.Promise?.Reject(result ?? JSUndefined.Value);
         }
-    });
+    }, reaction.Context is IJSJobPump ? reaction.Context : sc);
 
     // A reaction runs user JavaScript, so where it is dispatched decides whether two threads can
     // execute JavaScript in one context at once. JSContext.PostJob owns that decision; the captured

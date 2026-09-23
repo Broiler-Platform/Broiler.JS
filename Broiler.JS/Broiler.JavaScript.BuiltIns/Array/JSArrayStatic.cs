@@ -140,12 +140,8 @@ public partial class JSArray
         if (value is JSProxy proxy)
             return IsArrayValue(proxy.RequireTarget());
 
-        if (JSEngine.CurrentContext is JSObject global
-            && global[KeyStrings.Array] is IJSFunction arrayCtor
-            && ReferenceEquals(value, arrayCtor.Prototype))
-        {
+        if (ReferenceEquals(value, Intrinsics.Prototype(KeyStrings.Array)))
             return true;
-        }
 
         return false;
     }

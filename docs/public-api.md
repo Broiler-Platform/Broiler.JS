@@ -43,6 +43,33 @@ runtime-compiler choices will be deployment/compiler **compositions**; neither i
 `JavaScriptBootstrapProfile`. Planned package names and APIs remain hypotheses until the
 this component's assembly and AOT gates close.
 
+## Public API changes, 2026-09-22 (module semantics, intrinsics, async ordering)
+
+**Removed, and source-breaking for a consumer of the published preview packages.** The old
+module plumbing was replaced by module records, so `JSModuleExports` (`Broiler.JavaScript.Runtime`),
+`ModuleCache` (`Broiler.JavaScript.Modules`) and `JSModuleExportsBuilder`
+(`Broiler.JavaScript.LinqExpressions`) are gone. They exposed an exports bag and a cache flag that
+the specification's module records replace: a module now owns its environment, its namespace object
+and its evaluation state, and nothing outside the engine writes an export.
+
+**Added.** `Broiler.JavaScript.Modules` gains `JSModuleNamespace` (the module namespace exotic
+object), `JSModuleImportBinding` (a live, immutable import binding), `IJSModuleEnvironment`, and the
+`ModuleKind` and `ModuleStatus` enumerations that a host reads to see where a graph stands.
+`Broiler.JavaScript.Runtime` gains `IAsyncDelegateIterator`, which `JSIterator` implements so that
+`yield*` in an async generator can await each step of its delegate.
+
+**Changed, and source-breaking for an external implementer.** `IJSDisposableStack`
+(`Broiler.JavaScript.Runtime`) gains `DisposeStep`, `TakeAwaitValue`, `RecordDisposeError` and
+`CompleteDisposal`, which `await using` needs in order to spend one job per awaited resource;
+`JSDisposableStack` implements them. An implementer of that interface outside this repository has to
+add them.
+
+**Behaviour a consumer can observe without recompiling.** `Promise.resolve` now adopts thenables,
+`await` resumes in the reaction job and so takes one job for a native promise where it used to take
+two, and the debugger's V8 projections report 0-based columns (their line numbers stay 1-based; the
+protocol's are 0-based, and that half of the convention is recorded in
+[known gaps](compliance/known-gaps.md)).
+
 ## Diagnostics surface
 
 | Type | Assembly | Consumer | Notes |

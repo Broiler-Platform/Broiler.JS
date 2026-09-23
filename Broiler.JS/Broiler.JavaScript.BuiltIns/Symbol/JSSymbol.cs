@@ -51,7 +51,7 @@ public partial class JSSymbol: JSPrimitive, IJSSymbol
     // Symbol.prototype already existing. Previously the prototype was hard-wired
     // to Object.prototype, so e.g. `sym[key]` skipped Symbol.prototype entirely.
     protected override JSValue GetPrototype()
-        => ((JSEngine.Current as JSObject)?[Names.Symbol] as JSFunction)?.prototype;
+        => Intrinsics.Prototype(Names.Symbol);
 
     internal static IJSSymbol? FromKey(uint key) => SymbolsByKey.TryGetValue(key, out var symbol) ? symbol : null;
 

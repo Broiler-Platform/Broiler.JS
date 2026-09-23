@@ -133,7 +133,7 @@ public partial class SharedArrayBuffer : JSArrayBuffer
 
     private static JSValue GetSharedSpeciesConstructor(SharedArrayBuffer source)
     {
-        var defaultConstructor = (JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("SharedArrayBuffer")];
+        var defaultConstructor = Intrinsics.Constructor(KeyStrings.GetOrCreate("SharedArrayBuffer"));
         var constructor = source[KeyStrings.constructor];
         // SpeciesConstructor: only an undefined "constructor" falls back to the default; any other
         // non-object value (e.g. null or a number) is a TypeError.
@@ -153,5 +153,10 @@ public partial class SharedArrayBuffer : JSArrayBuffer
     }
 
     // Internal allocation used by slice; not reachable from JS without `new`.
-    private SharedArrayBuffer(int length) : base(length) => isShared = true;
+    // Not base(length): that is AllocateArrayBuffer(%ArrayBuffer%), which takes %ArrayBuffer.prototype%.
+    private SharedArrayBuffer(int length) : base()
+    {
+        buffer = new byte[length];
+        isShared = true;
+    }
 }

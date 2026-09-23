@@ -62,10 +62,9 @@ partial class FastCompiler
         if (!isModuleCompilation)
             throw new FastParseException(astMeta.Start, "Cannot use 'import.meta' outside a module");
 
-        var module = scope.Top.GetVariable("module");
-        if (module?.Expression == null)
+        if (scope.Top.GetVariable(ModuleEnvironmentArgument)?.Expression == null)
             throw JSEngine.NewReferenceError("import.meta is not available: this module has no module record");
 
-        return JSValueBuilder.Index(module.Expression, KeyOfName("meta"));
+        return ModuleImportMeta();
     }
 }

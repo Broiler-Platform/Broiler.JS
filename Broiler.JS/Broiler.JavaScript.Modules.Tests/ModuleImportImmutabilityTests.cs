@@ -9,16 +9,14 @@ using Xunit;
 namespace Broiler.JavaScript.Modules.Tests;
 
 /// <summary>
-/// An imported binding is immutable (ES2024 16.2.1.5 creates it as an immutable binding). Assigning
-/// to one used to silently overwrite the local snapshot; it now throws, the same runtime read-only
-/// TypeError a reassigned <c>const</c> gives in the strict module code.
+/// An imported binding is immutable (ES2024 16.2.1.6.4 creates it with CreateImportBinding as an
+/// immutable indirect binding): assigning to one throws the TypeError that SetMutableBinding
+/// gives for an immutable binding in strict code, and leaves the exporter's binding unchanged.
 /// </summary>
 /// <remarks>
-/// The spec makes assignment to an import an early SyntaxError; this engine cannot raise that phase
-/// without whole-module scope analysis across its deferred function bodies, so it matches its own
-/// <c>const</c> treatment (a runtime read-only write) rather than leaving the write to succeed. The
-/// separate, larger gap — imports are not yet live bindings to the exporter's variable — is recorded
-/// under track 3 in the roadmap.
+/// The assignment is a run-time error, not an early one: the grammar has no early error for
+/// assigning an imported name. Imports are live bindings to the exporter's own binding, so the
+/// write must not reach the exporter — see ModuleSemanticsTests for the live reads.
 /// </remarks>
 public class ModuleImportImmutabilityTests
 {

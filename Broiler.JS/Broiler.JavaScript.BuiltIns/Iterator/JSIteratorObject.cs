@@ -59,7 +59,7 @@ public partial class JSIteratorObject : JSObject
         // A native [[Construct]] keeps its new.target in CurrentNewTarget; a plain call
         // leaves both null.
         var newTarget = JSEngine.NewTarget ?? (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget;
-        var iteratorConstructor = (JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Iterator")];
+        var iteratorConstructor = Intrinsics.Constructor(KeyStrings.GetOrCreate("Iterator"));
 
         if (newTarget == null || newTarget.IsUndefined || ReferenceEquals(newTarget, iteratorConstructor))
             throw JSEngine.NewTypeError("Iterator is not intended to be called as a constructor");
@@ -67,7 +67,7 @@ public partial class JSIteratorObject : JSObject
         // OrdinaryCreateFromConstructor(newTarget, "%Iterator.prototype%"): the resolved
         // prototype is newTarget.prototype, or %Iterator.prototype% when that is absent.
         return JSEngine.NewTargetPrototype
-            ?? ((iteratorConstructor as JSFunction)?.prototype);
+            ?? Intrinsics.Prototype(KeyStrings.GetOrCreate("Iterator"));
     }
 
     internal JSIteratorObject(IElementEnumerator enumerator) : this(HelperPrototype()) => _enumerator = enumerator;
@@ -98,7 +98,7 @@ public partial class JSIteratorObject : JSObject
     }
 
     private static JSObject BaseIteratorPrototype()
-        => ((JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Iterator")] as JSFunction)?.prototype;
+        => Intrinsics.Prototype(KeyStrings.GetOrCreate("Iterator"));
 
     private static JSObject HelperPrototype()
     {
@@ -228,6 +228,12 @@ public partial class JSIteratorObject : JSObject
 
         return new JSIterator(this);
     }
+
+    // Key enumeration (Object.keys / getOwnPropertyNames / for-in) must walk only the object's
+    // own element slots, as JSGenerator's does: the iterator walk above calls next(), so listing
+    // an iterator helper's keys used to advance — and exhaust — the underlying iterator.
+    internal override IElementEnumerator GetOwnIndexedElementEnumerator(bool enumerableOnly = false)
+        => GetOwnElementSlotEnumerator(enumerableOnly);
 
     // ---------------------------------------------------------------
     // Static: Iterator.from  (§2.1.2)

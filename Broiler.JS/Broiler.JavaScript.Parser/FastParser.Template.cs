@@ -12,8 +12,13 @@ partial class FastParser
         stream.Consume();
         var nodes = new Sequence<AstExpression> { new AstLiteral(TokenTypes.TemplatePart, begin) };
 
-        while (!stream.CheckAndConsume(TokenTypes.EOF))
+        while (true)
         {
+            // Only the template's closing part ends it. Reaching the end of the source inside
+            // a substitution (`` `a${1 ``) is truncated input, which used to be accepted.
+            if (stream.Current.Type == TokenTypes.EOF)
+                throw stream.Unexpected();
+
             if (stream.CheckAndConsume(TokenTypes.TemplateEnd, out var end))
             {
                 nodes.Add(new AstLiteral(TokenTypes.TemplatePart, end));

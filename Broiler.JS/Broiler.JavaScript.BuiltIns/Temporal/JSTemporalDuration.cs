@@ -67,14 +67,11 @@ public partial class JSTemporalDuration : JSObject
     }
 
     // The realm's %Temporal.Duration.prototype%, for instances created internally.
-    internal static JSObject DurationPrototype
-    {
-        get
-        {
-            var temporal = (JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Temporal")] as JSObject;
-            return (temporal?[KeyStrings.GetOrCreate("Duration")] as JSFunction)?.prototype;
-        }
-    }
+    private static readonly KeyString DurationIntrinsicKey = KeyStrings.GetOrCreate("Temporal.Duration");
+
+    // %Temporal.Duration.prototype% of the current realm, never the prototype of whatever
+    // `globalThis.Temporal.Duration` holds now: guest code may replace the namespace or its members.
+    internal static JSObject DurationPrototype => Intrinsics.TemporalPrototype(DurationIntrinsicKey);
 
     // ── accessors ───────────────────────────────────────────────────────────────
 

@@ -97,6 +97,11 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     // functions, dynamic import, .then results, Promise.resolve/reject) must use this
     // genuine prototype even after the global `Promise` binding is reassigned.
     public JSObject IntrinsicPromisePrototype { get; private set; }
+    // %ArrayBuffer.prototype% captured at realm init. A buffer the engine or its host mints
+    // (a typed array's own buffer, transfer, structured clone, a host API handing bytes in)
+    // is created by AllocateArrayBuffer(%ArrayBuffer%, …), so it takes this genuine prototype
+    // rather than whatever the global `ArrayBuffer` binding names at that moment.
+    public JSObject IntrinsicArrayBufferPrototype { get; private set; }
     // %RegExp.prototype.exec% captured at realm init, before any user code can run.
     // RegExp.prototype[@@replace] compares the receiver's resolved "exec" against this to
     // decide whether a match result is observable at all: when it is the genuine builtin,
@@ -104,6 +109,15 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
     // of retaining one array per match. Identity against a pristine capture is the only
     // sound form of that test — a value read later could already have been replaced.
     public JSValue IntrinsicRegExpExec { get; private set; } = JSUndefined.Value;
+    // The constructor and prototype of every built-in class this realm's global was given
+    // (%Array% and %Array.prototype%, %TypeError.prototype%, %String.prototype%, …), keyed by the
+    // class's global name and recorded when the class is created. An instance the engine makes
+    // itself (an array literal, a thrown TypeError, a primitive's wrapper) takes its prototype
+    // from here, and a SpeciesConstructor default is the constructor recorded here — the
+    // specification's ArrayCreate, ThrowTypeError, ToObject and SpeciesConstructor(O, %C%) name
+    // the intrinsic — never the current global binding, which guest code may have replaced or
+    // deleted.
+    private readonly Dictionary<uint, (JSObject Constructor, JSObject Prototype)> intrinsics = new();
     public event LogEventHandler Log;
     public event ErrorEventHandler Error;
     public event ConsoleEvent ConsoleEvent;
@@ -1422,7 +1436,9 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
             if (!current.Object.HasProperty(propertyKey).BooleanValue)
                 continue;
 
-            var unscopablesSymbol = this[KeyStrings.Symbol][UnscopablesKey];
+            // %Symbol.unscopables% is read from the intrinsic %Symbol%: the global `Symbol`
+            // binding may have been replaced or deleted by guest code.
+            var unscopablesSymbol = ((JSValue)GetIntrinsicConstructor(KeyStrings.Symbol) ?? this[KeyStrings.Symbol])[UnscopablesKey];
             var unscopables = unscopablesSymbol.IsUndefined
                 ? UndefinedValue
                 : current.Object[unscopablesSymbol];
@@ -1961,6 +1977,12 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         {
             IntrinsicPromisePrototype = promiseProto;
         }
+        // Capture %ArrayBuffer.prototype% for host- and engine-minted buffers (see the property).
+        if (this[KeyStrings.ArrayBuffer] is IJSFunction arrayBufferCtor
+            && arrayBufferCtor.Prototype is JSObject arrayBufferProto)
+        {
+            IntrinsicArrayBufferPrototype = arrayBufferProto;
+        }
         // Capture %RegExp.prototype.exec% for the streaming guard described on the property.
         if (this[KeyStrings.RegExp] is IJSFunction regExpCtor
             && regExpCtor.Prototype is JSObject regExpProto)
@@ -1980,6 +2002,56 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         // propertyIsEnumerable are callable on the top-level `this`.
         BasePrototypeObject = ObjectPrototype;
     }
+
+    /// <summary>
+    /// Records <paramref name="constructor"/> and <paramref name="prototype"/> as this realm's
+    /// intrinsics for the built-in class registered as <paramref name="name"/>: its global name
+    /// (<c>Array</c>), or its qualified name for a class that lives on a namespace object
+    /// (<c>Temporal.PlainDate</c>, <c>Intl.NumberFormat</c>). Called by each generated
+    /// <c>CreateClass</c> that registers its class on a realm, and by the Temporal and Intl
+    /// namespace installers.
+    /// </summary>
+    /// <remarks>
+    /// The first registration of a name wins and the method answers whether this call made it:
+    /// a realm's intrinsics are fixed once recorded, so neither a second <c>CreateClass</c> under
+    /// the same name nor a host class generated under a built-in's name can replace
+    /// %Array.prototype% or %Promise% for the objects the engine creates (the global binding such
+    /// a class installs is ordinary, replaceable guest state). The registry is internal, like its
+    /// readers below: only the engine's own assemblies (see AssemblyInfo's InternalsVisibleTo) —
+    /// the built-ins, their generated classes and the globals — record or read intrinsics; no
+    /// host outside the engine needs either, and a public mutator would let any host code
+    /// rewrite a realm's intrinsics.
+    /// </remarks>
+    internal bool RegisterIntrinsic(in KeyString name, JSObject constructor, JSObject prototype)
+        => intrinsics.TryAdd(name.Key, (constructor, prototype));
+
+    /// <summary>
+    /// This realm's intrinsic prototype for the built-in class registered as
+    /// <paramref name="name"/>, or null when no such class was registered on this realm.
+    /// </summary>
+    internal JSObject GetIntrinsicPrototype(in KeyString name)
+        => intrinsics.TryGetValue(name.Key, out var entry) ? entry.Prototype : null;
+
+    /// <summary>
+    /// This realm's intrinsic constructor for the built-in class registered as
+    /// <paramref name="name"/>, or null when no such class was registered on this realm.
+    /// </summary>
+    internal JSObject GetIntrinsicConstructor(in KeyString name)
+        => intrinsics.TryGetValue(name.Key, out var entry) ? entry.Constructor : null;
+
+    /// <summary>
+    /// The current realm's intrinsic prototype for the built-in class registered as
+    /// <paramref name="name"/>, or null when there is no current realm or it has no such class.
+    /// </summary>
+    internal static JSObject CurrentIntrinsicPrototype(in KeyString name)
+        => (JSEngine.Current as JSContext)?.GetIntrinsicPrototype(name);
+
+    /// <summary>
+    /// The current realm's intrinsic constructor for the built-in class registered as
+    /// <paramref name="name"/>, or null when there is no current realm or it has no such class.
+    /// </summary>
+    internal static JSObject CurrentIntrinsicConstructor(in KeyString name)
+        => (JSEngine.Current as JSContext)?.GetIntrinsicConstructor(name);
 
     public JSValue ResolveBuiltInFeature(BuiltInFeatureId feature)
     {
@@ -2319,8 +2391,18 @@ public class JSContext : JSObject, IJSExecutionContext, IJSFeatureResolver, IDis
         // and that handle is a class, so using it here would put an allocation on every microtask.
         using var realmScope = JSEngine.EnterContext(context);
         using var executionScope = context.microtasks.EnterExecution();
+        Interlocked.Increment(ref context.jobsRun);
         job();
     }
+
+    private long jobsRun;
+
+    /// <summary>
+    /// How many dispatched jobs this context has run. A host that wants to let the jobs a piece of
+    /// work queued run to completion — the module loader, before it reports a module run as done —
+    /// yields to its pump until a turn passes in which this does not move.
+    /// </summary>
+    internal long JobsRun => Interlocked.Read(ref jobsRun);
 
     private static long nextTimeout = 1;
     private static long nextInterval = 1;

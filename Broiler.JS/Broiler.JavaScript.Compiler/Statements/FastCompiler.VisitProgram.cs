@@ -39,33 +39,58 @@ partial class FastCompiler
             ];
 
             var d = scope.Disposable;
+
+            // DisposeResources runs with the block's completion: if the body throws, seed that
+            // error as the pending completion before disposing, so a disposer error wraps it as a
+            // SuppressedError (and a clean disposal re-throws it unchanged). The body error is
+            // caught and recorded — the finally then disposes and throws the resulting (possibly
+            // wrapping) error.
+            var pe = scope.CreateException("#usingBodyError");
+            var seed = d.CallExpression<IJSDisposableStack, Exception, JSValue>(
+                () => (j, e) => j.SeedPendingError(e), pe.Expression);
+
+            // `await using` is only valid where `await` is: an async function's body, or a module's
+            // top level, whose body the module linker runs as an async body too.
+            if (scope.HasAsyncDisposable && (scope.Function?.Async ?? isModuleCompilation))
+            {
+                // An `await using` scope: each Await of the disposal is an `await` of this
+                // function —
+                //   while (d.DisposeStep())
+                //       try { await d.TakeAwaitValue(); } catch (e) { d.RecordDisposeError(e); }
+                //   d.CompleteDisposal();
+                // so it takes one job, as the spec's Await does, and in an async generator it is
+                // an await rather than a yield the consumer would see. A sync-only `using` scope
+                // disposes synchronously (no await), which is spec-correct.
+                var de = scope.CreateException("#usingDisposeError");
+                var disposed = BExpression.Label("usingDisposed");
+                var step = d.CallExpression<IJSDisposableStack, bool>(() => (j) => j.DisposeStep());
+                var awaited = d.CallExpression<IJSDisposableStack, JSValue>(() => (j) => j.TakeAwaitValue());
+                var record = d.CallExpression<IJSDisposableStack, Exception, JSValue>(
+                    () => (j, e) => j.RecordDisposeError(e), de.Expression);
+                var complete = d.CallExpression<IJSDisposableStack, JSValue>(() => (j) => j.CompleteDisposal());
+                var disposal = BExpression.Block(
+                    BExpression.Loop(
+                        BExpression.Block(
+                            BExpression.IfThen(BExpression.Not(step), BExpression.Break(disposed)),
+                            BExpression.TryCatch(BExpression.Await(awaited), BExpression.Catch(de.Variable, record))),
+                        disposed),
+                    complete);
+                // The guarded body is void here: a try whose body has a value (the block's last
+                // expression statement), with awaits in its finally, is lowered by the generator
+                // rewrite into an invalid program.
+                var voidGuardedBody = BExpression.TryCatch(
+                    BExpression.Block(r, BExpression.Empty),
+                    BExpression.Catch(pe.Variable, BExpression.Block(seed, BExpression.Empty)));
+                list.Add(BExpression.TryFinally(voidGuardedBody, disposal));
+
+                return BExpression.Block(new Sequence<BParameterExpression> { scope.Disposable, pe.Variable, de.Variable }, list);
+            }
+
+            var guardedBody = BExpression.TryCatch(r, BExpression.Catch(pe.Variable, seed));
             var dispose = d.CallExpression<IJSDisposableStack, JSValue>(() => (j) => j.Dispose());
-            if ((scope.Function?.Async ?? false) && scope.HasAsyncDisposable)
-            {
-                // An `await using` resource: await the (possibly async) disposal. Only done
-                // when the scope actually has an async-disposed resource — a sync-only
-                // `using` scope disposes synchronously (no await), which is spec-correct and
-                // avoids a Yield inside a try/finally nested in a loop (not yet lowerable by
-                // the async state-machine rewrite).
-                list.Add(BExpression.TryFinally(r, BExpression.Yield(dispose)));
-            }
-            else
-            {
-                // DisposeResources runs with the block's completion: if the body throws,
-                // seed that error as the pending completion before disposing, so a disposer
-                // error wraps it as a SuppressedError (and a clean disposal re-throws it
-                // unchanged). The body error is caught and recorded — the finally then
-                // disposes and throws the resulting (possibly wrapping) error.
-                var pe = scope.CreateException("#usingBodyError");
-                var seed = d.CallExpression<IJSDisposableStack, Exception, JSValue>(
-                    () => (j, e) => j.SeedPendingError(e), pe.Expression);
-                var guardedBody = BExpression.TryCatch(r, BExpression.Catch(pe.Variable, seed));
-                list.Add(BExpression.TryFinally(guardedBody, dispose));
+            list.Add(BExpression.TryFinally(guardedBody, dispose));
 
-                return BExpression.Block(new Sequence<BParameterExpression> { scope.Disposable, pe.Variable }, list);
-            }
-
-            return BExpression.Block(new Sequence<BParameterExpression> { scope.Disposable }, list);
+            return BExpression.Block(new Sequence<BParameterExpression> { scope.Disposable, pe.Variable }, list);
         }
 
         return r;
@@ -100,7 +125,31 @@ partial class FastCompiler
         {
             var lexicalVariable = scope.CreateVariable(new StringSpan(lexicalBinding), null, true, initialize: false);
             globalLexicalScopes?.Add(lexicalVariable);
+
+            // `*default*` is the binding of `export default <expression>` and of an anonymous
+            // default class. It carries no name of its own: the value is named "default" where
+            // the grammar says so (see VisitExportStatement), and a JSVariable with a name would
+            // otherwise name any anonymous function assigned to it after the binding.
+            // A module body is a resumable (generator) body, whose rewrite keeps a binding alive
+            // across the instantiation suspension only when the function scope declares it: a
+            // binding declared solely in the program block is lost to a hoisted function
+            // declaration's closure, which is created in the prologue. Sharing the binding with
+            // the function scope (as a program `var` already is) declares it there too; the
+            // construction is set again afterwards so that, shared, it builds one JSVariable.
+            if (isModuleCompilation)
+            {
+                scope.Parent?.AddExternalVariable(new StringSpan(lexicalBinding), lexicalVariable);
+                lexicalVariable.SetInit(null, initialize: false);
+            }
+
+            if (lexicalBinding == ModuleDefaultBindingName)
+                lexicalVariable.SetInit(JSVariableBuilder.NewUninitialized(string.Empty));
         }
+
+        // A module's import bindings exist before anything in its body runs: the linker creates
+        // them, and the prologue fetches them from the module environment.
+        if (isModuleCompilation)
+            DeclareModuleImportBindings(program, scope);
 
         if (hoistingScope != null)
         {
@@ -172,12 +221,16 @@ partial class FastCompiler
                 // and reads of the var go through the lazy ResolveGlobalVarRead/Index paths
                 // below. Eagerly reading here would observe an existing accessor's getter
                 // (test262 staging/sm/global/bug-320887).
-                var g = isDirectEvalProgramScope
+                // A module's top-level `var` and function bindings belong to its module
+                // environment: they start as undefined and never read or reach the global object.
+                var g = isDirectEvalProgramScope || isModuleCompilation
                     ? JSUndefinedBuilder.Value
                     : JSValueBuilder.Index(top.Context, KeyOfName(v));
                 var vs = scope.CreateVariable(v, null, true);
                 vs.IsLexical = false;
                 vs.IsDeletable = isDirectEvalProgramScope;
+                if (isModuleCompilation)
+                    vs.SkipRegistration = true;
                 if (isDirectEvalProgramScope && isDirectEvalLexicalBinding)
                     vs.SkipRegistration = true;
                 scope.Parent?.AddExternalVariable(v, vs);
@@ -200,6 +253,8 @@ partial class FastCompiler
                             vs.ReadExpression = JSContextBuilder.ResolveGlobalVarRead(KeyOfName(v));
                     }
                 }
+                else if (isModuleCompilation)
+                    vs.Expression = JSVariable.ValueExpression(vs.Variable);
                 else
                     vs.Expression = JSVariableBuilder.Property(vs.Variable);
 
@@ -262,6 +317,11 @@ partial class FastCompiler
         // trailing empty statement's undefined.
         var completionVar = BExpression.Variable(typeof(JSValue), "#programCompletion");
         blockList.Add(BExpression.Assign(completionVar, JSUndefinedBuilder.Value));
+
+        // A module publishes its exported bindings and then suspends: that suspension is the end
+        // of InitializeEnvironment, and the linker resumes the body when the module is evaluated.
+        if (isModuleCompilation)
+            AddModulePrologue(program, scope, blockList);
 
         // Publish the script's top-level lexical bindings (created above, still in their TDZ) into
         // the global lexical environment before any statement runs, so an indirect eval invoked
@@ -440,8 +500,16 @@ partial class FastCompiler
                 // is created as a top-level lexical binding of this program scope like any other; a
                 // module then keeps it local (see the globalLexicalScopes note above) instead of
                 // letting it fall through to a global-lexical slot that leaks across modules.
-                case AstExportStatement { Members: null, ExportAll: false, Declaration: { } exported }:
+                case AstExportStatement { Members: null, ExportAll: false, Declaration: { } exported } export:
                     CollectExportedLexicalBindingNames(exported, lexicalBindings);
+
+                    // `export default <expression>` and `export default class {}` bind the
+                    // lexical `*default*` (ES2024 16.2.3.2 BoundNames), in its TDZ until the
+                    // statement runs. A default function declaration without a name is hoisted
+                    // instead (see DeclareModuleDefaultFunction).
+                    if (export.IsDefault && IsDefaultExportBindingDefault(exported)
+                        && exported is not AstFunctionExpression { IsStatement: true })
+                        lexicalBindings.Add(ModuleDefaultBindingName);
                     break;
             }
         }
@@ -464,7 +532,9 @@ partial class FastCompiler
                     CollectBindingNames(declarator.Identifier, lexicalBindings);
                 break;
 
-            case AstClassExpression { Identifier: { } identifier }:
+            // Only a class DECLARATION binds its name here; `export default (class C {})` is an
+            // expression whose name is visible only inside the class.
+            case AstClassExpression { Identifier: { } identifier, IsDeclaration: true }:
                 lexicalBindings.Add(identifier.Name.Value);
                 break;
         }

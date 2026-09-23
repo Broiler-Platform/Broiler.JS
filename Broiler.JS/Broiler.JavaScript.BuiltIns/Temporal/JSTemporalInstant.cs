@@ -46,14 +46,11 @@ public partial class JSTemporalInstant : JSObject
         return JSEngine.NewTargetPrototype ?? InstantPrototype;
     }
 
-    internal static JSObject InstantPrototype
-    {
-        get
-        {
-            var temporal = (JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Temporal")] as JSObject;
-            return (temporal?[KeyStrings.GetOrCreate("Instant")] as JSFunction)?.prototype;
-        }
-    }
+    private static readonly KeyString InstantIntrinsicKey = KeyStrings.GetOrCreate("Temporal.Instant");
+
+    // %Temporal.Instant.prototype% of the current realm, never the prototype of whatever
+    // `globalThis.Temporal.Instant` holds now: guest code may replace the namespace or its members.
+    internal static JSObject InstantPrototype => Intrinsics.TemporalPrototype(InstantIntrinsicKey);
 
     private static bool IsValid(BigInteger ns) => ns >= MinEpochNanoseconds && ns <= MaxEpochNanoseconds;
 
