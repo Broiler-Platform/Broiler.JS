@@ -759,11 +759,13 @@ public partial class JSJSON : JSObject
             // mid-serialization is not. Integer-indexed keys (stored apart from named ones)
             // come first in ascending order, then named keys in insertion order.
             List<string> snapshot;
-            if (obj is JSProxy)
+            if (obj is JSProxy || obj.HasObservableOwnProperties)
             {
                 // A Proxy exposes its own keys only through the [[OwnPropertyKeys]] and
                 // [[GetOwnProperty]] traps; its internal slot stores nothing. Route it
                 // through EnumerableOwnPropertyNames so the traps drive the key list.
+                // An exotic object such as a module namespace likewise keeps its
+                // properties outside the storage.
                 snapshot = EnumerableOwnPropertyNames(obj);
             }
             else

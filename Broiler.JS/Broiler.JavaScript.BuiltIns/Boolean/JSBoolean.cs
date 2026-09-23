@@ -25,8 +25,7 @@ public partial class JSBoolean : JSPrimitive
         // Boolean.prototype itself has a [[BooleanData]] internal slot whose value
         // is false (§20.3.3), so valueOf/toString invoked on it must succeed.
         if (target is JSObject @object
-            && (JSEngine.Current as JSObject)?[Names.Boolean] is JSFunction booleanConstructor
-            && ReferenceEquals(@object, booleanConstructor.prototype))
+            && ReferenceEquals(@object, Intrinsics.Prototype(Names.Boolean)))
             return False;
 
         throw JSEngine.NewTypeError($"Boolean.prototype.{name} requires that 'this' be a Boolean");
@@ -48,7 +47,7 @@ public partial class JSBoolean : JSPrimitive
             : new JSPrimitiveObject(value);
     }
 
-    protected override JSValue GetPrototype() => ((JSEngine.Current as JSObject)?[Names.Boolean] as JSFunction)?.prototype;
+    protected override JSValue GetPrototype() => Intrinsics.Prototype(Names.Boolean);
 
     public override double DoubleValue => _value ? 1 : 0;
 

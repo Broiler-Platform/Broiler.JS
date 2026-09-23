@@ -59,6 +59,9 @@ public class ImportAttributeEnforcementTests
     {
         ["file:///app/data.json"] = "{\"a\":1}",
         ["file:///app/mod.js"] = "export const x = 1; export default 9;",
+        ["file:///app/reader.cjs"] =
+            "let esm; try { require('./mod.js'); esm = 'loaded'; } catch (e) { esm = e.name; }"
+            + " module.exports = { json: require('./data.json'), esm };",
     };
 
     private static async Task<string> Run(string main)
@@ -174,7 +177,7 @@ public class ImportAttributeEnforcementTests
     [Fact(Timeout = 600000)]
     public async Task AJsonModuleWithNoAttributeStillLoads()
         => Assert.Equal("1|1", await Run(
-            "import d from './data.json'; globalThis.r = d.a + '|' + require('./data.json').a;"));
+            "import d from './data.json'; import r from './reader.cjs'; globalThis.r = d.a + '|' + r.json.a;"));
 
     // ---------------------------------------------------------------- the dynamic form
 
@@ -206,9 +209,11 @@ public class ImportAttributeEnforcementTests
     public async Task ADynamicImportThatAssertsNothingOrAssertsTrulyLoads(string call, string expected)
         => Assert.Equal(expected, await DynamicError(call));
 
-    /// <summary><c>require</c> takes no attributes and is untouched by any of this.</summary>
+    /// <summary><c>require</c> takes no attributes and is untouched by any of this. It exists only
+    /// in CommonJS code, and it loads CommonJS: a file written as an ECMAScript module does not
+    /// parse as one, so requiring it is a SyntaxError.</summary>
     [Fact(Timeout = 600000)]
     public async Task RequireIsUnaffected()
-        => Assert.Equal("{\"a\":1}|9", await Run(
-            "globalThis.r = JSON.stringify(require('./data.json')) + '|' + require('./mod.js').default;"));
+        => Assert.Equal("{\"a\":1}|SyntaxError", await Run(
+            "import r from './reader.cjs'; globalThis.r = JSON.stringify(r.json) + '|' + r.esm;"));
 }

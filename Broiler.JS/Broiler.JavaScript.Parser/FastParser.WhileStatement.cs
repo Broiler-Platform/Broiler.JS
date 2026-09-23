@@ -62,6 +62,9 @@ partial class FastParser
                 stream.SkipNewLines();
 
             var emptyCandidate = stream.Current.Type;
+            if (allowEmpty && emptyCandidate == TokenTypes.EOF && endWith != TokenTypes.SemiColon)
+                throw stream.Unexpected();
+
             if (allowEmpty && stream.CheckAndConsumeAny(endWith, TokenTypes.EOF, TokenTypes.SemiColon))
             {
                 terminator = emptyCandidate;
@@ -81,11 +84,19 @@ partial class FastParser
             // a clause may be written on its own line, and `for (i = 0\n; i < 5\n; i++)` must
             // reach the `;` that follows the newline rather than stopping at the newline with
             // the `;` still unread. (Everywhere else the LineTerminator check below still ends
-            // the sequence, which is what makes ASI work for an ordinary statement.)
-            if (emptyAllowed)
+            // the sequence, which is what makes ASI work for an ordinary statement.) Inside a
+            // computed member's brackets a line terminator is equally insignificant (`a[0\n]`).
+            if (emptyAllowed || endWith == TokenTypes.SquareBracketEnd)
                 stream.SkipNewLines();
 
             var candidate = stream.Current.Type;
+
+            // The end of the source closes a sequence only where a statement may end. Inside
+            // brackets (`a[1`, `while (a`, `case a` with no `:`) it is truncated input, which
+            // used to be accepted as though the closing token had been written.
+            if (candidate == TokenTypes.EOF && endWith != TokenTypes.SemiColon)
+                throw stream.Unexpected();
+
             if (stream.CheckAndConsumeAny(endWith, TokenTypes.EOF, TokenTypes.SemiColon))
             {
                 terminator = candidate;
@@ -100,6 +111,11 @@ partial class FastParser
 
             break;
         } while (true);
+
+        // A computed member access is closed by its `]` and nothing else: `a[1 }` and `a[1;`
+        // used to parse as `a[1]`.
+        if (endWith == TokenTypes.SquareBracketEnd && terminator != TokenTypes.SquareBracketEnd)
+            throw stream.Unexpected();
 
         if (nodes.Count == 0 && !emptyAllowed)
         {

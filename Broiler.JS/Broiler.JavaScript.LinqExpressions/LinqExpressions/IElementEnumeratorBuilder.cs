@@ -44,6 +44,14 @@ public class IElementEnumeratorBuilder
         typeof(AsyncIterationStep).GetMethod(nameof(AsyncIterationStep.Value), [typeof(JSValue)])
         ?? throw new InvalidOperationException("AsyncIterationStep.Value(JSValue) not found");
 
+    private static readonly System.Reflection.MethodInfo AsyncStepAwaitsValueMethod =
+        typeof(AsyncIterationStep).GetMethod(nameof(AsyncIterationStep.AwaitsValue), [typeof(IElementEnumerator)])
+        ?? throw new InvalidOperationException("AsyncIterationStep.AwaitsValue(IElementEnumerator) not found");
+
+    /// <summary>Whether the loop awaits each value (the sync-iterable fallback only).</summary>
+    public static Expression AsyncStepAwaitsValue(Expression enumerator)
+        => Expression.Call(null, AsyncStepAwaitsValueMethod, enumerator);
+
     /// <summary>Reads the settled step result's <c>done</c>.</summary>
     public static Expression AsyncStepIsDone(Expression settledResult)
         => Expression.Call(null, AsyncStepIsDoneMethod, settledResult);

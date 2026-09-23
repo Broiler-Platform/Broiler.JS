@@ -119,6 +119,28 @@ public partial class FastParser(FastTokenStream stream) : IParser
         throw stream.Unexpected();
     }
 
+    /// <summary>
+    /// Parses <paramref name="code"/> with the Module goal symbol: import and export declarations
+    /// are allowed at the top level, <c>await</c> is reserved and allowed at the top level, and the
+    /// module-only early errors apply. <see cref="AstProgram.IsAsync"/> reports whether the module
+    /// contains a top-level <c>await</c> ([[HasTLA]]).
+    /// </summary>
+    /// <exception cref="FastParseException">The text is not a Module.</exception>
+    public static AstProgram ParseModule(in StringSpan code)
+    {
+        using var goal = Runtime.CoreScript.ModuleGoalScope();
+        using var topLevelAwait = Runtime.CoreScript.AllowTopLevelAwaitScope();
+        var pool = new FastPool();
+        try
+        {
+            return new FastParser(new FastTokenStream(pool, code)).ParseProgram();
+        }
+        finally
+        {
+            pool.Dispose();
+        }
+    }
+
     bool EndOfLine()
     {
         var token = stream.Current;

@@ -377,6 +377,54 @@ public partial class JSProxy : JSObject
                 throw JSEngine.NewTypeError("Proxy ownKeys trap must include all keys of a non-extensible target");
         }
 
+        if (target is not JSProxy && target.HasObservableOwnProperties)
+        {
+            // An exotic target (a module namespace) keeps its properties outside the storage:
+            // take targetKeys from its [[OwnPropertyKeys]] and classify each key by its
+            // [[GetOwnProperty]], as §10.5.11 steps 9-16 do.
+            var exoticKeys = target.GetAllKeys(showEnumerableOnly: false, inherited: false);
+            while (exoticKeys.MoveNext(out var hasKey, out var exoticKey, out _))
+            {
+                if (!hasKey)
+                    continue;
+
+                ValidateExoticOwnKey(exoticKey);
+            }
+
+            foreach (var (symbolKey, _) in target.GetSymbols().AllValues())
+            {
+                var symbol = GetSymbolByKeyFactory?.Invoke(symbolKey)
+                    ?? throw new InvalidOperationException($"Unknown symbol key {symbolKey}");
+                ValidateExoticOwnKey((JSValue)symbol);
+            }
+
+            if (!target.IsExtensible() && seenKeys.Count > 0)
+                throw JSEngine.NewTypeError("Proxy ownKeys trap cannot report extra keys for a non-extensible target");
+
+            return;
+        }
+
+        void ValidateExoticOwnKey(JSValue exoticKey)
+        {
+            if (target.GetOwnPropertyDescriptor(exoticKey) is not JSObject descriptor)
+                return;
+
+            var identity = CreateKeyIdentity(exoticKey.ToKey(false));
+            if (!descriptor[KeyStrings.configurable].BooleanValue)
+            {
+                if (!seenKeys.Remove(identity))
+                    throw JSEngine.NewTypeError("Proxy ownKeys trap must include all non-configurable target keys");
+
+                return;
+            }
+
+            if (target.IsExtensible())
+                return;
+
+            if (!seenKeys.Remove(identity))
+                throw JSEngine.NewTypeError("Proxy ownKeys trap must include all keys of a non-extensible target");
+        }
+
         foreach (var (key, property) in target.GetElements().AllValues())
             ValidateOwnKey(CreateKeyIdentity(key), property);
 
@@ -393,6 +441,13 @@ public partial class JSProxy : JSObject
 
     public override JSValue InvokeFunction(in Arguments a)
     {
+        // A Proxy has a [[Call]] internal method only when its target does (ProxyCreate,
+        // §10.5.14), so Call on a proxy of a noncallable target throws TypeError at
+        // IsCallable before any trap runs — an `apply` trap on such a proxy is never
+        // reached, whether through `p()`, `Function.prototype.call.call(p)` or the host.
+        if (!callable)
+            throw JSEngine.NewTypeError("Proxy is not a function");
+
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.apply);
         if (!fx.IsUndefined)

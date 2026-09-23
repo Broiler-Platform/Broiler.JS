@@ -149,6 +149,19 @@ namespace BroilerJS
             return await LoadDelegate(dllFile.FullName);
         }
 
+        // The shell's bundled `.js` modules (modules/inbuilt: buffer, base64-js, ieee754) are
+        // CommonJS files, so an `import` of one gets its `module.exports` as `default` rather
+        // than being compiled as an ECMAScript module that exports nothing.
+        private static readonly string inbuiltModulesDirectory = Path.GetFullPath(
+            Path.Combine(Path.GetDirectoryName(typeof(BroilerJSContext).Assembly.Location) ?? ".", "modules"))
+            + Path.DirectorySeparatorChar;
+
+        protected override bool IsCommonJsModule(string moduleKey)
+            => base.IsCommonJsModule(moduleKey)
+                || (moduleKey != null
+                    && moduleKey.EndsWith(".js", StringComparison.OrdinalIgnoreCase)
+                    && moduleKey.StartsWith(inbuiltModulesDirectory, StringComparison.OrdinalIgnoreCase));
+
         protected override async Task CompileModuleAsync(JSModule module)
         {
 

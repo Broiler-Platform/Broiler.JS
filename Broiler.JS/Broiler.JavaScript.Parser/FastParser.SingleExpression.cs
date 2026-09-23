@@ -91,6 +91,12 @@ partial class FastParser
                         throw stream.Unexpected();
                     return AwaitExpression(out node);
                 }
+
+                // In module code `await` is a reserved word everywhere, so where it is not an
+                // AwaitExpression — no operand at the top level (`await;`), or inside a function
+                // that is not async — it cannot be an IdentifierReference either.
+                if (isModuleGoal)
+                    throw new FastParseException(token, "'await' is reserved in module code");
                 break;
 
             case FastKeywords.super:
@@ -219,12 +225,42 @@ partial class FastParser
                 throw stream.Unexpected();
         }
 
+        // CoverParenthesizedExpressionAndArrowParameterList (§13.2, §15.3). The cover admits `()`,
+        // a trailing comma and a rest element only so that ArrowParameters can be recognised; a
+        // ParenthesizedExpression must also match `( Expression )` (§13.2.1.1), so each of those
+        // forms is an early SyntaxError unless `=>` follows the `)` directly (a line terminator
+        // before `=>` is already an error). Refined as ArrowFormalParameters (§15.1), a rest
+        // element is last, takes no trailing comma and no initializer, and no binding target is
+        // parenthesized, at the top level or inside a pattern (`((a)) => 1`, `([(a)]) => 1`,
+        // `({a: (b)}) => 1`); an initializer's own value may be.
         bool BracketExpression(out AstExpression node)
         {
             node = default;
 
-            if (ExpressionList(out var nodes, out var start, out var end, TokenTypes.BracketEnd))
+            if (ExpressionList(out var nodes, out var start, out var end, TokenTypes.BracketEnd, out var trailingComma))
             {
+                var isArrowParameters = stream.Current.Type == TokenTypes.Lambda;
+                if (nodes.Count == 0 || trailingComma)
+                {
+                    if (!isArrowParameters)
+                        throw new FastParseException(end, "Unexpected token )");
+                }
+
+                var e = nodes.GetFastEnumerator();
+                var index = 0;
+                while (e.MoveNext(out var item))
+                {
+                    var isRest = item.Type == FastNodeType.SpreadElement;
+                    var binding = isRest ? ((AstSpreadElement)item).Argument : item;
+                    if (isRest && (!isArrowParameters || trailingComma || index != nodes.Count - 1))
+                        throw new FastParseException(item.Start, "Unexpected token ...");
+                    if (isRest && binding is AstBinaryExpression { Operator: TokenTypes.Assign, WasParenthesized: false })
+                        throw new FastParseException(binding.Start, "Rest parameter may not have a default initializer");
+                    if (isArrowParameters)
+                        RejectParenthesizedBindingTarget(binding);
+                    index++;
+                }
+
                 if (nodes.Count == 0)
                 {
                     node = new AstEmptyExpression(PreviousToken);
@@ -249,7 +285,7 @@ partial class FastParser
         {
             node = default;
 
-            if (ExpressionList(out var nodes, out var start, out var end, TokenTypes.SquareBracketEnd, true))
+            if (ExpressionList(out var nodes, out var start, out var end, TokenTypes.SquareBracketEnd, out _, true))
             {
                 node = new AstArrayExpression(start, end, nodes);
                 return true;
@@ -258,8 +294,47 @@ partial class FastParser
             return false;
         }
 
-        bool ExpressionList(out IFastEnumerable<AstExpression> node, out FastToken start, out FastToken end, TokenTypes endType, bool allowEmpty = false)
+        // An arrow parameter written as an expression is a binding: no target in it may be
+        // parenthesized (it would be a ParenthesizedExpression, not a BindingIdentifier or
+        // BindingPattern). Walks the targets only: an initializer is an ordinary expression.
+        static void RejectParenthesizedBindingTarget(AstExpression target)
         {
+            if (target == null)
+                return;
+
+            if (target.WasParenthesized)
+                throw new FastParseException(target.Start, "Invalid destructuring assignment target");
+
+            switch (target)
+            {
+                case AstSpreadElement spread:
+                    RejectParenthesizedBindingTarget(spread.Argument);
+                    break;
+                case AstBinaryExpression { Operator: TokenTypes.Assign } assignment:
+                    RejectParenthesizedBindingTarget(assignment.Left);
+                    break;
+                case AstArrayExpression array:
+                    var elements = array.Elements.GetFastEnumerator();
+                    while (elements.MoveNext(out var element))
+                        RejectParenthesizedBindingTarget(element);
+                    break;
+                case AstObjectLiteral literal:
+                    var properties = literal.Properties.GetFastEnumerator();
+                    while (properties.MoveNext(out var property))
+                    {
+                        if (property is AstSpreadElement propertySpread)
+                            RejectParenthesizedBindingTarget(propertySpread.Argument);
+                        else if (property is AstClassProperty { Kind: AstPropertyKind.Data, UsesColon: true } data)
+                            RejectParenthesizedBindingTarget(data.Init);
+                    }
+                    break;
+            }
+        }
+
+        // trailingComma: the list ended with `, )` after at least one element.
+        bool ExpressionList(out IFastEnumerable<AstExpression> node, out FastToken start, out FastToken end, TokenTypes endType, out bool trailingComma, bool allowEmpty = false)
+        {
+            trailingComma = false;
             var begin = stream.Current;
             start = begin;
             stream.Consume();
@@ -290,7 +365,12 @@ partial class FastParser
                 nodes.Add(n);
 
                 if (stream.CheckAndConsume(TokenTypes.Comma))
+                {
+                    trailingComma = stream.CheckAndConsume(endType);
+                    if (trailingComma)
+                        break;
                     continue;
+                }
 
                 if (stream.CheckAndConsume(endType))
                     break;

@@ -179,6 +179,10 @@ namespace BroilerJS
             {
                 var error = exception.Error;
                 var name = error[Broiler.JavaScript.Storage.KeyStrings.GetOrCreate("name")];
+                // An error type with no `name` of its own — test262's Test262Error is one — is
+                // still named by its constructor, which is what a negative test is matched on.
+                if (name.IsUndefined && error[Broiler.JavaScript.Storage.KeyStrings.GetOrCreate("constructor")] is { IsFunction: true } constructor)
+                    name = constructor[Broiler.JavaScript.Storage.KeyStrings.GetOrCreate("name")];
                 var message = error[Broiler.JavaScript.Storage.KeyStrings.GetOrCreate("message")];
                 var describedName = name.IsUndefined ? "Error" : name.ToString();
                 var describedMessage = message.IsUndefined ? exception.Message : message.ToString();

@@ -226,15 +226,10 @@ partial class FastParser
                 // (ASI), `}`, or EOF. Enforcing this rejects an initializer that runs
                 // straight into the next token, e.g. `class { x = await 1 }`, where
                 // `await` is the (bare) identifier and `1` cannot follow it.
-                if (isClass)
-                {
-                    if (!EndOfStatement())
-                        throw stream.Unexpected();
-                }
-                else
-                {
-                    stream.CheckAndConsume(TokenTypes.SemiColon);
-                }
+                // In an object literal (a CoverInitializedName, `({a = 1} = o)`) the definition
+                // list's own comma or `}` must follow; ObjectLiteral checks that.
+                if (isClass && !EndOfStatement())
+                    throw stream.Unexpected();
 
                 return true;
             }
@@ -353,10 +348,18 @@ partial class FastParser
         var nodes = new Sequence<AstNode>();
         SkipNewLines();
 
-        while (!stream.CheckAndConsumeAny(TokenTypes.CurlyBracketEnd, TokenTypes.EOF))
+        while (!stream.CheckAndConsume(TokenTypes.CurlyBracketEnd))
         {
             SkipNewLines();
             var current = stream.Current;
+
+            // An object literal is closed by `}` only; the end of the source is truncated
+            // input (`x = {a`), not an implicitly closed literal.
+            if (current.Type == TokenTypes.EOF)
+                throw stream.Unexpected();
+
+            if (stream.CheckAndConsume(TokenTypes.CurlyBracketEnd))
+                break;
 
             if (stream.CheckAndConsume(TokenTypes.TripleDots))
             {
@@ -377,8 +380,18 @@ partial class FastParser
                 throw stream.Unexpected();
             }
 
+            // PropertyDefinitionList is comma-separated (§13.2.5): after a definition only a
+            // comma or the closing brace may follow. A line terminator is not a separator, and a
+            // method's closing brace does not end the definition list: `{a: 1 b: 2}`, on one line
+            // or two, and `{a() {} b() {}}` are SyntaxErrors. (Class bodies, which have no commas,
+            // are parsed elsewhere.)
             if (stream.CheckAndConsume(TokenTypes.Comma))
                 continue;
+
+            if (stream.CheckAndConsume(TokenTypes.CurlyBracketEnd))
+                break;
+
+            throw stream.Unexpected();
         }
 
         node = new AstObjectLiteral(begin, PreviousToken, nodes);

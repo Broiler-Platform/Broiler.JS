@@ -86,8 +86,11 @@ namespace BroilerJS.Network
         [JSExport]
         public JSValue Text(in Arguments a)
         {
-            return new JSPromise(Task.Run<JSValue>(() =>
-                new JSString(System.Text.Encoding.UTF8.GetString(Buffer))));
+            // Decoded now and settled here, so the promise's reactions are ordinary jobs. It was a
+            // Task.Run whose continuation settled the promise from the thread pool, at a point
+            // unrelated to the job queue (a host that ends when the queue drains could miss it).
+            var text = new JSString(System.Text.Encoding.UTF8.GetString(Buffer));
+            return new JSPromise((resolve, _) => resolve(text));
         }
 
         [JSExport]

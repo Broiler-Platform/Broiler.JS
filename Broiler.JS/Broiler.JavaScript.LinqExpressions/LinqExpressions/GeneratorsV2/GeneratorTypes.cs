@@ -93,6 +93,59 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
 
     internal bool HasDelegatedEnumerator => delegatedEnumerator != null;
 
+    // `yield*` in an async generator over an async iterator (§15.5.5, generatorKind async). Each
+    // call to the delegate's next/throw/return is surfaced as an internal await of its result
+    // (LastYieldWasAwait), and the settled result is read when the driver resumes the body with
+    // it: done completes the `yield*` (or, after return(), the generator), otherwise its value is
+    // surfaced as a yield (LastYieldWasAsyncDelegateValue) that is not awaited again
+    // (AsyncGeneratorYield(? IteratorValue(innerResult))).
+    private IAsyncDelegateIterator asyncDelegate;
+    private AsyncDelegatePending asyncDelegatePending;
+    private AsyncDelegateReceived asyncDelegateReceived;
+    private JSValue asyncDelegateReceivedValue;
+
+    private enum AsyncDelegatePending { None, Step, Return, CloseForThrow, ReturnValue }
+
+    private enum AsyncDelegateReceived { Resume, Next, Throw, Return }
+
+    internal bool HasAsyncDelegate => asyncDelegate != null;
+
+    // The body is suspended at an await of the delegate's result; a rejection of it is thrown
+    // into the body at the `yield*` without calling the delegate's throw().
+    internal bool IsAwaitingAsyncDelegate => asyncDelegatePending != AsyncDelegatePending.None;
+
+    // Set when the surfaced suspension is a value of an async `yield*` delegate.
+    internal bool LastYieldWasAsyncDelegateValue;
+
+    // Routes a throw()/return() request made while an async `yield*` delegate is suspended at its
+    // yield to the delegate on the next step.
+    internal void ReceiveAsyncDelegateThrow(JSValue value)
+    {
+        asyncDelegateReceived = AsyncDelegateReceived.Throw;
+        asyncDelegateReceivedValue = value;
+    }
+
+    internal void ReceiveAsyncDelegateReturn(JSValue value)
+    {
+        asyncDelegateReceived = AsyncDelegateReceived.Return;
+        asyncDelegateReceivedValue = value;
+    }
+
+    // The awaited delegate result rejected: the `yield*` completes with that throw.
+    internal void FailAsyncDelegate(Exception ex)
+    {
+        EndAsyncDelegation();
+        InjectException(ex);
+    }
+
+    private void EndAsyncDelegation()
+    {
+        asyncDelegate = null;
+        asyncDelegatePending = AsyncDelegatePending.None;
+        asyncDelegateReceived = AsyncDelegateReceived.Resume;
+        asyncDelegateReceivedValue = null;
+    }
+
     // A non-zero NextJump means the generator is parked at a `yield` resume point
     // (yield jump ids start at 1). NextJump == 0 is the suspended-start state, where
     // `return()` must complete the generator without running its body.
@@ -144,10 +197,22 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
     {
         GeneratorState v = null;
         LastYieldWasAwait = false;
+        LastYieldWasAsyncDelegateValue = false;
         DelegatedRawResult = null;
         while (true)
         {
-            if (delegatedEnumerator != null)
+            if (asyncDelegate != null)
+            {
+                if (StepAsyncDelegate(ref next, out value))
+                {
+                    done = false;
+                    return;
+                }
+
+                // The delegation ended: resume the body with `next` (the `yield*` value), or with
+                // the exception or return completion StepAsyncDelegate injected.
+            }
+            else if (delegatedEnumerator != null)
             {
                 try
                 {
@@ -215,7 +280,17 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
                 {
                     try
                     {
-                        delegatedEnumerator = GetDelegatedEnumerator(v.Value);
+                        var enumerator = GetDelegatedEnumerator(v.Value);
+                        if (asyncGenerator && enumerator is IAsyncDelegateIterator { IsAsyncIterator: true } asyncIterator)
+                        {
+                            asyncDelegate = asyncIterator;
+                            // The first step sends undefined, whatever resumed the body.
+                            asyncDelegateReceived = AsyncDelegateReceived.Next;
+                            asyncDelegateReceivedValue = JSUndefined.Value;
+                            continue;
+                        }
+
+                        delegatedEnumerator = enumerator;
                         delegatedNeedsInitialNext = true;
                     }
                     catch (Exception ex)
@@ -247,6 +322,133 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
             done = true;
             value = default;
             return;
+        }
+    }
+
+    // One step of an async `yield*`. Returns true with the value to surface — the delegate's
+    // pending result, as an internal await, or a delegated value, as a yield — or false when the
+    // delegation has ended, with `next` set to the `yield*` value or a completion injected.
+    private bool StepAsyncDelegate(ref JSValue next, out JSValue value)
+    {
+        var pending = asyncDelegatePending;
+        if (pending != AsyncDelegatePending.None)
+        {
+            // Resumed with the settled result of the awaited delegate call.
+            asyncDelegatePending = AsyncDelegatePending.None;
+            var settled = next ?? JSUndefined.Value;
+            next = null;
+            value = null;
+            try
+            {
+                switch (pending)
+                {
+                    case AsyncDelegatePending.ReturnValue:
+                        // No return() on the delegate: return completion of Await(received).
+                        EndAsyncDelegation();
+                        InjectException(new GeneratorReturnCompletion(settled));
+                        return false;
+
+                    case AsyncDelegatePending.CloseForThrow:
+                        // AsyncIteratorClose after a throw() the delegate cannot take, then the
+                        // protocol violation.
+                        EndAsyncDelegation();
+                        if (!settled.IsObject)
+                            throw JSValue.NewTypeError("Iterator return result is not an object");
+
+                        throw JSValue.NewTypeError("Iterator does not provide a throw method");
+                }
+
+                if (!settled.IsObject)
+                    throw JSValue.NewTypeError("Iterator result is not an object");
+
+                if (settled[KeyStrings.done].BooleanValue)
+                {
+                    var completion = settled[KeyStrings.value];
+                    EndAsyncDelegation();
+                    if (pending == AsyncDelegatePending.Return)
+                    {
+                        InjectException(new GeneratorReturnCompletion(completion));
+                        return false;
+                    }
+
+                    // The `yield*` expression completes with the delegate's return value.
+                    LastValue = completion;
+                    next = completion;
+                    return false;
+                }
+
+                value = settled[KeyStrings.value];
+                LastYieldWasAsyncDelegateValue = true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                EndAsyncDelegation();
+                InjectException(ex);
+                return false;
+            }
+        }
+
+        // Resumed by a request while the delegate is suspended at its yield (or just started).
+        var received = asyncDelegateReceived;
+        var receivedValue = received == AsyncDelegateReceived.Resume
+            ? next ?? JSUndefined.Value
+            : asyncDelegateReceivedValue ?? JSUndefined.Value;
+        asyncDelegateReceived = AsyncDelegateReceived.Resume;
+        asyncDelegateReceivedValue = null;
+        next = null;
+
+        try
+        {
+            JSValue result;
+            switch (received)
+            {
+                case AsyncDelegateReceived.Throw:
+                    if (asyncDelegate.TryDelegateThrow(receivedValue, out result))
+                    {
+                        asyncDelegatePending = AsyncDelegatePending.Step;
+                    }
+                    else if (asyncDelegate.TryDelegateReturn(JSUndefined.Value, out result))
+                    {
+                        asyncDelegatePending = AsyncDelegatePending.CloseForThrow;
+                    }
+                    else
+                    {
+                        EndAsyncDelegation();
+                        InjectException(JSValue.NewTypeError("Iterator does not provide a throw method"));
+                        value = null;
+                        return false;
+                    }
+                    break;
+
+                case AsyncDelegateReceived.Return:
+                    if (asyncDelegate.TryDelegateReturn(receivedValue, out result))
+                    {
+                        asyncDelegatePending = AsyncDelegatePending.Return;
+                    }
+                    else
+                    {
+                        result = receivedValue;
+                        asyncDelegatePending = AsyncDelegatePending.ReturnValue;
+                    }
+                    break;
+
+                default:
+                    result = asyncDelegate.DelegateNext(receivedValue);
+                    asyncDelegatePending = AsyncDelegatePending.Step;
+                    break;
+            }
+
+            value = result ?? JSUndefined.Value;
+            LastYieldWasAwait = true;
+            return true;
+        }
+        catch (Exception ex)
+        {
+            EndAsyncDelegation();
+            InjectException(ex);
+            value = null;
+            return false;
         }
     }
 

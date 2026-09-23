@@ -27,10 +27,12 @@ namespace Broiler.JavaScript.Modules.Tests;
 /// cannot do.
 /// </para>
 /// <para>
-/// The deliberate deviation is <c>import { a } from './x.json'</c>: per spec a link error, here
-/// <c>undefined</c>, because raising the link error needs whole-module analysis this engine does not
-/// do. It used to read <c>a</c> off the parsed object. Browsers and Node both reject the form, so
-/// nothing portable is losing a behaviour it could rely on.
+/// <c>import { a } from './x.json'</c> is a link-time SyntaxError, as the specification says: the
+/// module has no export named <c>a</c>. (It read <c>undefined</c> while the engine had no linker.)
+/// </para>
+/// <para>
+/// <c>require</c> exists only in CommonJS code, so these tests reach it through a CommonJS module,
+/// <c>reader.cjs</c>, that an ECMAScript module imports.
 /// </para>
 /// </remarks>
 public class JsonModuleTests
@@ -56,6 +58,8 @@ public class JsonModuleTests
         var files = new Dictionary<string, string>
         {
             ["file:///app/data.json"] = json,
+            ["file:///app/reader.cjs"] = "module.exports = require('./data.json');",
+            ["file:///app/named.js"] = "import { a } from './data.json';",
             ["file:///app/main.js"] = main,
         };
 
@@ -102,7 +106,7 @@ public class JsonModuleTests
     [InlineData("null", "null")]
     public async Task RequireStillHandsBackTheParsedValue(string json, string expected)
         => Assert.Equal(expected, await Run(
-            json, "globalThis.r = JSON.stringify(require('./data.json'));"));
+            json, "import v from './reader.cjs'; globalThis.r = JSON.stringify(v);"));
 
     /// <summary>The two views of one file coexist in one module, and neither disturbs the other —
     /// the point of splitting them rather than picking a winner.</summary>
@@ -110,18 +114,17 @@ public class JsonModuleTests
     public async Task BothViewsOfOneFileAgreeOnTheValue()
         => Assert.Equal("{\"a\":1}|{\"a\":1}|true", await Run(
             "{\"a\":1}",
-            "import d from './data.json'; var r = require('./data.json'); "
+            "import d from './data.json'; import r from './reader.cjs'; "
             + "globalThis.r = JSON.stringify(d) + '|' + JSON.stringify(r) + '|' + (d === r);"));
 
     /// <summary>
-    /// The deliberate deviation, pinned so it is a decision rather than a drift: a named import from
-    /// a JSON module is <c>undefined</c> rather than the link error the spec asks for. It used to
-    /// read the property off the parsed object.
+    /// A named import from a JSON module fails to link: the module's only export is
+    /// <c>default</c>.
     /// </summary>
     [Fact(Timeout = 600000)]
-    public async Task ANamedImportFromAJsonModuleIsUndefined()
-        => Assert.Equal("undefined", await Run(
-            "{\"a\":1}", "import { a } from './data.json'; globalThis.r = String(a);"));
+    public async Task ANamedImportFromAJsonModuleIsALinkError()
+        => Assert.Equal("SyntaxError", await Run(
+            "{\"a\":1}", "globalThis.r = await import('./named.js').then(() => 'linked', e => e.name);"));
 
     /// <summary>A JavaScript module is untouched by any of this — the split is JSON-only.</summary>
     [Fact(Timeout = 600000)]

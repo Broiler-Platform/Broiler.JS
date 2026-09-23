@@ -377,14 +377,17 @@ public partial class JSArray : JSObject
     // override assumes specialised element walks are always enumerable, which is
     // not true for arrays.) GetElementEnumerator stays unfiltered because the
     // iterator protocol (for-of / spread) visits every index regardless.
+    // Key enumeration discards the element values, so the walk is key-only: reading an
+    // accessor element here ran its getter while listing keys (see JSObject's ElementEnumerator).
     internal override IElementEnumerator GetOwnIndexedElementEnumerator(bool enumerableOnly = false)
     {
-        return new ElementEnumerator(this, enumerableOnly);
+        return new ElementEnumerator(this, enumerableOnly, keysOnly: true);
     }
 
-    private struct ElementEnumerator(JSArray array, bool enumerableOnly = false) : IElementEnumerator
+    private struct ElementEnumerator(JSArray array, bool enumerableOnly = false, bool keysOnly = false) : IElementEnumerator
     {
         readonly bool enumerableOnly = enumerableOnly;
+        readonly bool keysOnly = keysOnly;
 
         // Array iterators are live (CreateArrayIterator re-reads the length each
         // step): entries pushed during for-of / spread traversal must be visited,
@@ -415,6 +418,8 @@ public partial class JSArray : JSObject
                 {
                     value = property.IsEmpty
                         ? null
+                        : keysOnly
+                        ? JSUndefined.Value
                         : (property.IsValue
                         ? (JSValue)property.value
                         : (property.get is IJSFunction getter

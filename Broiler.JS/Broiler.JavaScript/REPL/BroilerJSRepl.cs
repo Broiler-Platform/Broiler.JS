@@ -14,8 +14,9 @@ namespace BroilerJS.REPL
 
         public BroilerJSRepl(): base(Environment.CurrentDirectory)
         {
+            // `require` loads CommonJS; `import` loads an ECMAScript module and gives its namespace.
             this[KeyStrings.require] = new JSFunction((in Arguments a1) => {
-                var r = this.LoadModuleAsync(System.Environment.CurrentDirectory, a1[0].ToString());
+                var r = this.LoadModuleAsync(System.Environment.CurrentDirectory, a1[0].ToString(), esModule: false);
                 return AsyncPump.Run(() => r);
             });
 

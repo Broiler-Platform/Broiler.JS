@@ -66,7 +66,11 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
                 }
                 else
                 {
-                    sb = sb.AppendLine($"protected override JSValue GetCurrentPrototype() => ((JSEngine.Current as JSObject)?[{classKeyName}] as JSFunction)?.prototype;");
+                    // The realm's intrinsic prototype, recorded when the class was registered on
+                    // its global (see the end of CreateClass). The global binding itself is
+                    // mutable guest state, so it is consulted only for a class the realm never
+                    // registered (one attached to a namespace object, or no current realm).
+                    sb = sb.AppendLine($"protected override JSValue GetCurrentPrototype() => (JSValue)global::Broiler.JavaScript.Engine.JSContext.CurrentIntrinsicPrototype({classKeyName}) ?? ((JSEngine.Current as JSObject)?[{classKeyName}] as JSFunction)?.prototype;");
                 }
 
                 sb = sb.AppendLine($"internal protected {type.Name}(JSObject prototype = null): base(prototype) {{}}");
@@ -218,6 +222,18 @@ internal class ClassGenerator(JSTypeInfo type, JSGeneratorContext gc)
             foreach (var member in type.Members)
             {
                 GenerateMember(sb, member);
+            }
+
+            if (!type.Globals && !type.InternalClass)
+            {
+                // Record the constructor and its final prototype (after the Array/String/Function
+                // replacements above) as the realm's intrinsics for this class name, so instances
+                // the engine creates keep them even after guest code replaces or deletes the
+                // global binding.
+                sb.AppendLine($@"
+                        if (register && context is global::Broiler.JavaScript.Engine.JSContext intrinsicRealm__) {{
+                            intrinsicRealm__.RegisterIntrinsic({classKeyName}, @class, prototype);
+                        }}");
             }
 
             sb.AppendLine("return @class;");

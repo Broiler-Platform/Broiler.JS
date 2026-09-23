@@ -19,7 +19,8 @@ public class V8StackTrace
                 ScriptId = fileName,
                 Url = fileName,
                 LineNumber = line,
-                ColumnNumber = column
+                // The engine's columns are 1-based; the DevTools protocol's are 0-based.
+                ColumnNumber = System.Math.Max(0, column - 1)
             });
         }
 

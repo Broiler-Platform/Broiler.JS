@@ -376,6 +376,13 @@ partial class FastCompiler
                     ? JSContextBuilder.ResolveIdentifier(KeyOfName(identifier.Name))
                     : JSContextBuilder.ResolveIdentifierOrUndefined(KeyOfName(identifier.Name));
 
+            // Module code is not a function body: at its top level `arguments` is an ordinary
+            // free reference (to a global of that name, if any), not an arguments object.
+            if (isModuleCompilation && scope.Top.RootScope.Function == null)
+                return throwIfMissing
+                    ? JSContextBuilder.ResolveIdentifierStrict(KeyOfName(identifier.Name))
+                    : JSContextBuilder.ResolveIdentifierOrUndefined(KeyOfName(identifier.Name));
+
             if (scope.Top.Function?.IsArrowFunction == true
             )
             {

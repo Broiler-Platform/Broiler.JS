@@ -31,7 +31,7 @@ public partial class JSAsyncDisposableStackObject : JSObject
     public JSValue DisposeAsync(in Arguments a)
     {
         if (_disposed)
-            return System.Threading.Tasks.Task.CompletedTask.ToPromise();
+            return new JSPromise(JSUndefined.Value, JSPromise.PromiseState.Resolved);
 
         _disposed = true;
         return DisposableStackShared.DisposeResourcesAsync(_resources);
@@ -44,20 +44,31 @@ public partial class JSAsyncDisposableStackObject : JSObject
         DisposableStackShared.RequireNotDisposed(_disposed);
         var value = a.Get1();
 
-        if (!value.IsNullOrUndefined)
+        if (value.IsNullOrUndefined)
         {
-            // Prefer @@asyncDispose; fall back to @@dispose only when @@asyncDispose is absent.
-            var method = DisposableStackShared.GetDisposeMethod(value, (IJSSymbol)JSSymbol.asyncDispose);
-            if (!method.IsFunction)
-                method = DisposableStackShared.GetDisposeMethod(value, (IJSSymbol)JSSymbol.dispose);
-
-            if (!method.IsFunction)
-                throw JSEngine.NewTypeError("AsyncDisposableStack.prototype.use: value is not async-disposable");
-
-            var resolved = method;
-            _resources.Add(() => resolved.InvokeFunction(new Arguments(value)));
+            // AddDisposableResource with hint async-dispose records null and undefined too, with
+            // an undefined method: disposeAsync still performs an Await for them (needsAwait).
+            _resources.Add(null);
+            return value;
         }
 
+        // Prefer @@asyncDispose; fall back to @@dispose only when @@asyncDispose is absent.
+        var method = DisposableStackShared.GetDisposeMethod(value, (IJSSymbol)JSSymbol.asyncDispose);
+        if (method.IsFunction)
+        {
+            var asyncDispose = method;
+            _resources.Add(() => asyncDispose.InvokeFunction(new Arguments(value)));
+            return value;
+        }
+
+        method = DisposableStackShared.GetDisposeMethod(value, (IJSSymbol)JSSymbol.dispose);
+        if (!method.IsFunction)
+            throw JSEngine.NewTypeError("AsyncDisposableStack.prototype.use: value is not async-disposable");
+
+        // The @@dispose fallback's closure discards what the method returns (a thenable or a
+        // rejected promise returned by it is never awaited) and awaits undefined instead.
+        var dispose = method;
+        _resources.Add(() => DisposableStackShared.CallDisposeFallback(dispose, value));
         return value;
     }
 

@@ -8,7 +8,7 @@ internal sealed class JSSymbolObject(JSSymbol symbol) : JSObject(GetPrototype())
 {
     private readonly JSSymbol symbol = symbol;
 
-    private static JSObject GetPrototype() => ((JSEngine.Current as JSObject)?[KeyStrings.Symbol] as JSFunction)?.prototype;
+    private static JSObject GetPrototype() => Intrinsics.Prototype(KeyStrings.Symbol);
 
     // The wrapped [[SymbolData]]. Exposed directly (rather than via the CLR
     // ValueOf() override) so that abstract operations on the wrapper — relational

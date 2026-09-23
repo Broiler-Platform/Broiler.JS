@@ -39,6 +39,16 @@ public static class AsyncIterationStep
     /// <summary>The value carried by a settled step result.</summary>
     public static JSValue Value(JSValue result) => Validate(result)[KeyStrings.value];
 
+    /// <summary>
+    /// Whether the loop awaits each value: only for the sync-iterable fallback, where the
+    /// async-from-sync wrapper awaits the value before the step settles. A value of a real async
+    /// iterator — an iterator from <c>@@asyncIterator</c> or a native async generator — is the
+    /// loop's value as it is: awaiting it again cost a job per iteration and unwrapped a promise
+    /// the iterator yielded as its value.
+    /// </summary>
+    public static bool AwaitsValue(IElementEnumerator enumerator)
+        => enumerator is not IAsyncDelegateIterator { IsAsyncIterator: true };
+
     /// <summary>The record an exhausted synchronous enumerator reports.</summary>
     public static JSValue DoneResult() => Record(JSUndefined.Value, done: true);
 

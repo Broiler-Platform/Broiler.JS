@@ -52,14 +52,11 @@ public partial class JSTemporalPlainYearMonth : JSObject
         return JSEngine.NewTargetPrototype ?? PlainYearMonthPrototype;
     }
 
-    internal static JSObject PlainYearMonthPrototype
-    {
-        get
-        {
-            var temporal = (JSEngine.Current as JSObject)?[KeyStrings.GetOrCreate("Temporal")] as JSObject;
-            return (temporal?[KeyStrings.GetOrCreate("PlainYearMonth")] as JSFunction)?.prototype;
-        }
-    }
+    private static readonly KeyString PlainYearMonthIntrinsicKey = KeyStrings.GetOrCreate("Temporal.PlainYearMonth");
+
+    // %Temporal.PlainYearMonth.prototype% of the current realm, never the prototype of whatever
+    // `globalThis.Temporal.PlainYearMonth` holds now: guest code may replace the namespace or its members.
+    internal static JSObject PlainYearMonthPrototype => Intrinsics.TemporalPrototype(PlainYearMonthIntrinsicKey);
 
     // ── accessors ───────────────────────────────────────────────────────────────
 

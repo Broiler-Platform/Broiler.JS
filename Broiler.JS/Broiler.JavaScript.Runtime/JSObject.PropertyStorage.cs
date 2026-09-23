@@ -521,6 +521,12 @@ public partial class JSObject
     // so the copy goes through [[OwnPropertyKeys]] / [[GetOwnProperty]] / [[Get]].
     private protected virtual bool UseObservableSpreadCopy => false;
 
+    // True for an exotic object whose own properties are not (all) held in its property storage,
+    // so a reader that must see them (JSON.stringify, a Proxy's ownKeys invariant) goes through
+    // [[OwnPropertyKeys]] / [[GetOwnProperty]] / [[Get]] instead. A String wrapper also copies
+    // observably, but its storage view is complete for those readers.
+    internal bool HasObservableOwnProperties => UseObservableSpreadCopy && this is not JSPrimitiveObject;
+
     private readonly struct OrdinaryOwnKey
     {
         public readonly KeyType Type;
@@ -2142,7 +2148,7 @@ public partial class JSObject
                 return specialized;
         }
 
-        return new ElementEnumerator(this, enumerableOnly);
+        return new ElementEnumerator(this, enumerableOnly, keysOnly: true);
     }
 
     // Walks ONLY the object's own integer-indexed element slots (never an overridden
@@ -2151,7 +2157,7 @@ public partial class JSObject
     // this, so its yielded values are not mistaken for indexed own keys during key
     // enumeration (Object.keys / getOwnPropertyNames / for-in).
     internal IElementEnumerator GetOwnElementSlotEnumerator(bool enumerableOnly = false)
-        => new ElementEnumerator(this, enumerableOnly);
+        => new ElementEnumerator(this, enumerableOnly, keysOnly: true);
 
     public override IElementEnumerator GetIterableEnumerator()
     {
@@ -2209,10 +2215,16 @@ public partial class JSObject
         return GetIterableEnumerator();
     }
 
-    private struct ElementEnumerator(JSObject @object, bool enumerableOnly = false) : IElementEnumerator
+    // keysOnly: the walk serves key enumeration ([[OwnPropertyKeys]] and everything built on
+    // it — Object.keys, getOwnPropertyNames, for-in, a host's own-key listing), whose callers
+    // discard the value. Reading it ran an accessor's getter, a side effect key enumeration
+    // must not have (§10.1.11 OrdinaryOwnPropertyKeys reads no property), so the value is
+    // reported as undefined instead.
+    private struct ElementEnumerator(JSObject @object, bool enumerableOnly = false, bool keysOnly = false) : IElementEnumerator
     {
         ElementArray.ValueEnumerator en = @object.elements.StoredValues().GetEnumerator();
         readonly bool enumerableOnly = enumerableOnly;
+        readonly bool keysOnly = keysOnly;
 
         // Advance to the next stored element, skipping non-enumerable ones when key
         // enumeration requested enumerable-only (Object.keys / for-in).
@@ -2234,7 +2246,7 @@ public partial class JSObject
         {
             if (MoveNextSlot(out var key, out var prop))
             {
-                value = @object.GetValue(prop);
+                value = keysOnly ? UndefinedValue : @object.GetValue(prop);
                 index = key;
                 hasValue = true;
                 return true;

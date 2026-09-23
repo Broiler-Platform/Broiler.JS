@@ -196,24 +196,26 @@ internal static class BuiltInsAssemblyInitializer
         JSObject.CreatePrototype = static obj => new JSPrototype(obj);
 
         // Wire factory delegates for JSError types so Core can create
-        // error instances without referencing the concrete types directly.
+        // error instances without referencing the concrete types directly. An error the engine
+        // throws takes the realm's intrinsic %TypeError.prototype% (etc.), not the prototype of
+        // whatever the global `TypeError` binding names now.
         JSEngine.CreateTypeError = static (message, function, filePath, line) =>
-            new JSException(message, ((JSEngine.CurrentContext as JSObject)?[KeyStrings.TypeError] as IJSFunction)?.Prototype as JSObject,
+            new JSException(message, Intrinsics.Prototype(KeyStrings.TypeError),
                 function: function, filePath: filePath, line: line);
         JSEngine.CreateSyntaxError = static (message, function, filePath, line) =>
-            new JSException(message, ((JSEngine.CurrentContext as JSObject)?[KeyStrings.SyntaxError] as IJSFunction)?.Prototype as JSObject,
+            new JSException(message, Intrinsics.Prototype(KeyStrings.SyntaxError),
                 function: function, filePath: filePath, line: line);
         JSEngine.CreateURIError = static (message, function, filePath, line) =>
-            new JSException(message, ((JSEngine.CurrentContext as JSObject)?[KeyStrings.URIError] as IJSFunction)?.Prototype as JSObject,
+            new JSException(message, Intrinsics.Prototype(KeyStrings.URIError),
                 function: function, filePath: filePath, line: line);
         JSEngine.CreateRangeError = static (message, function, filePath, line) =>
-            new JSException(message, ((JSEngine.CurrentContext as JSObject)?[KeyStrings.RangeError] as IJSFunction)?.Prototype as JSObject,
+            new JSException(message, Intrinsics.Prototype(KeyStrings.RangeError),
                 function: function, filePath: filePath, line: line);
         JSEngine.CreateReferenceError = static (message, function, filePath, line) =>
-            new JSException(message, ((JSEngine.CurrentContext as JSObject)?[KeyStrings.ReferenceError] as IJSFunction)?.Prototype as JSObject,
+            new JSException(message, Intrinsics.Prototype(KeyStrings.ReferenceError),
                 function: function, filePath: filePath, line: line);
         JSEngine.CreateError = static (message, function, filePath, line) =>
-            new JSException(message, ((JSEngine.CurrentContext as JSObject)?[KeyStrings.Error] as IJSFunction)?.Prototype as JSObject,
+            new JSException(message, Intrinsics.Prototype(KeyStrings.Error),
                 function: function, filePath: filePath, line: line);
         JSException.CreateJSError = static (ex, msg) => new JSError(ex, msg);
         JSException.CreateJSErrorWithPrototype = static (ex, prototype) => new JSError(ex, prototype);
@@ -440,13 +442,13 @@ internal static class BuiltInsAssemblyInitializer
             if (value.IsBoolean) return "Boolean";
         }
 
-        if (value is JSObject @object && JSEngine.Current is JSObject global)
+        if (value is JSObject @object)
         {
-            if (global[Names.Number] is JSFunction number && ReferenceEquals(@object, number.prototype))
+            if (ReferenceEquals(@object, Intrinsics.Prototype(Names.Number)))
                 return "Number";
-            if (global[Names.Boolean] is JSFunction boolean && ReferenceEquals(@object, boolean.prototype))
+            if (ReferenceEquals(@object, Intrinsics.Prototype(Names.Boolean)))
                 return "Boolean";
-            if (global[Names.String] is JSFunction @string && ReferenceEquals(@object, @string.prototype))
+            if (ReferenceEquals(@object, Intrinsics.Prototype(Names.String)))
                 return "String";
         }
 
@@ -672,15 +674,27 @@ internal static class BuiltInsAssemblyInitializer
         context.FastAddValue(temporalKey, CreateTemporalObject(context), JSPropertyAttributes.ConfigurableValue);
     }
 
+    // One Temporal namespace per realm, however it is reached: the eager install above, the
+    // lazy feature resolution, or an engine-created Temporal object that needs the realm's
+    // intrinsic prototypes before the (lazy) global was ever read (Intrinsics.NamespacedPrototype).
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSContext, JSObject> TemporalObjects = [];
+
     internal static JSObject CreateTemporalObject(JSContext context)
+        => TemporalObjects.GetValue(context, NewTemporalObject);
+
+    private static JSObject NewTemporalObject(JSContext context)
     {
         var temporal = new JSObject();
 
+        // Each class is recorded as the realm's intrinsic under its qualified name
+        // ("Temporal.PlainDate"): the objects the engine creates take their prototype from there,
+        // not from `globalThis.Temporal.PlainDate`, which guest code may replace.
         void Attach(string name, JSFunction ctor)
         {
             if (ctor.prototype is JSObject proto)
                 SetToStringTag(proto, $"Temporal.{name}");
             temporal.FastAddValue(KeyStrings.GetOrCreate(name), ctor, JSPropertyAttributes.ConfigurableValue);
+            context.RegisterIntrinsic(KeyStrings.GetOrCreate("Temporal." + name), ctor, ctor.prototype);
         }
 
         // Implemented types.

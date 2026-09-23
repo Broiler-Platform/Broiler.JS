@@ -16,7 +16,8 @@ public static void ValidateProgram(
     string sourceText,
     bool inheritStrictMode = false,
     IEnumerable<string> directEvalLexicalBindings = null,
-    IEnumerable<string> directEvalPrivateNames = null)
+    IEnumerable<string> directEvalPrivateNames = null,
+    bool isModule = false)
     {
         if (program.IsAsync && !CoreScript.AllowTopLevelAwait)
             throw new FastParseException(program.Start, "Unexpected await");
@@ -33,6 +34,9 @@ public static void ValidateProgram(
         }
 
         ValidateModuleEarlyErrors(program);
+
+        if (isModule)
+            ValidateModuleDeclaredNames(program);
 
         new ControlFlowValidator().Visit(program);
         new StrictModeValidator(inheritStrictMode, directEvalPrivateNames).Visit(program);
@@ -102,6 +106,148 @@ public static void ValidateProgram(
         }
     }
 
+    /// <summary>
+    /// ES2024 16.2.1.1: the LexicallyDeclaredNames of a Module contain no duplicates and do not
+    /// intersect its VarDeclaredNames. Unlike a script's, a module's top-level function
+    /// declarations are LEXICAL declarations, so two of one name, or one and a <c>var</c> or a
+    /// <c>let</c> of that name, are early SyntaxErrors.
+    /// </summary>
+    private static void ValidateModuleDeclaredNames(AstProgram program)
+    {
+        var lexical = new HashSet<string>(StringComparer.Ordinal);
+
+        void Add(string name, FastToken at)
+        {
+            if (!string.IsNullOrEmpty(name) && !lexical.Add(name))
+                throw new FastParseException(at, $"Identifier '{name}' has already been declared");
+        }
+
+        void AddDeclaration(AstNode declaration, FastToken at)
+        {
+            switch (declaration)
+            {
+                case AstVariableDeclaration { Kind: FastVariableKind.Let or FastVariableKind.Const } lexicalDeclaration:
+                    var names = new List<string>();
+                    var declarators = lexicalDeclaration.Declarators.GetFastEnumerator();
+                    while (declarators.MoveNext(out var declarator))
+                        CollectBoundNames(declarator.Identifier, names);
+
+                    foreach (var name in names)
+                        Add(name, at);
+                    break;
+
+                case AstFunctionExpression { IsStatement: true, Id: { } id }:
+                    Add(id.Name.Value, at);
+                    break;
+
+                case AstClassExpression { IsDeclaration: true, Identifier: { } identifier }:
+                    Add(identifier.Name.Value, at);
+                    break;
+            }
+        }
+
+        var statements = program.Statements.GetFastEnumerator();
+        while (statements.MoveNext(out var statement))
+        {
+            switch (statement)
+            {
+                case AstExpressionStatement { Expression: var expression }:
+                    AddDeclaration(expression, statement.Start);
+                    break;
+
+                case AstExportStatement { Source: null, Members: null, Declaration: { } exported }:
+                    AddDeclaration(exported, statement.Start);
+                    break;
+
+                case AstImportStatement import:
+                    Add(import.Default?.Name.Value, import.Start);
+                    Add(import.All?.Name.Value, import.Start);
+                    if (import.Members != null)
+                    {
+                        var members = import.Members.GetFastEnumerator();
+                        while (members.MoveNext(out var member))
+                            Add(member.asName.Value, import.Start);
+                    }
+                    break;
+
+                default:
+                    AddDeclaration(statement, statement.Start);
+                    break;
+            }
+        }
+
+        if (lexical.Count == 0)
+            return;
+
+        var vars = new VarDeclaredNamesCollector();
+        vars.Visit(program);
+        foreach (var (name, at) in vars.Names)
+        {
+            if (lexical.Contains(name))
+                throw new FastParseException(at, $"Identifier '{name}' has already been declared");
+        }
+    }
+
+    private static void CollectBoundNames(AstExpression target, List<string> names)
+    {
+        switch (target)
+        {
+            case AstIdentifier identifier:
+                names.Add(identifier.Name.Value);
+                break;
+
+            case AstBinaryExpression assignment:
+                CollectBoundNames(assignment.Left, names);
+                break;
+
+            case AstSpreadElement spread:
+                CollectBoundNames(spread.Argument, names);
+                break;
+
+            case AstArrayPattern array:
+                var elements = array.Elements.GetFastEnumerator();
+                while (elements.MoveNext(out var element))
+                {
+                    if (element != null)
+                        CollectBoundNames(element, names);
+                }
+                break;
+
+            case AstObjectPattern @object:
+                var properties = @object.Properties.GetFastEnumerator();
+                while (properties.MoveNext(out var property))
+                    CollectBoundNames(property.Value, names);
+                break;
+        }
+    }
+
+    /// <summary>The VarDeclaredNames of a body: every <c>var</c> outside a nested function or
+    /// class.</summary>
+    private sealed class VarDeclaredNamesCollector : AstReduce
+    {
+        public readonly List<(string Name, FastToken At)> Names = [];
+
+        protected override AstNode VisitVariableDeclaration(AstVariableDeclaration variableDeclaration)
+        {
+            if (variableDeclaration.Kind == FastVariableKind.Var)
+            {
+                var names = new List<string>();
+                var declarators = variableDeclaration.Declarators.GetFastEnumerator();
+                while (declarators.MoveNext(out var declarator))
+                    CollectBoundNames(declarator.Identifier, names);
+
+                foreach (var name in names)
+                    Names.Add((name, variableDeclaration.Start));
+            }
+
+            return variableDeclaration;
+        }
+
+        protected override AstNode VisitFunctionExpression(AstFunctionExpression functionExpression) => functionExpression;
+
+        protected override AstNode VisitClassStatement(AstClassExpression classStatement) => classStatement;
+    }
+
     private static void AddImportedBinding(StringSpan? name, FastToken at, ref HashSet<string> importedBoundNames)
     {
         if (name == null || name.Value.IsEmpty)
@@ -150,6 +296,8 @@ public static void ValidateProgram(
         {
             if (export.Declaration is AstIdentifier ns)
                 AddExportedName(ns.Name.Value, export.Start, ref exportedNames);
+            else if (export.Declaration is AstLiteral { TokenType: TokenTypes.String } stringName)
+                AddExportedName(stringName.StringValue, export.Start, ref exportedNames);
 
             return;
         }

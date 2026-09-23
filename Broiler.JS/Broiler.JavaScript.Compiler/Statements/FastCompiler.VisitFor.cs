@@ -241,8 +241,14 @@ partial class FastCompiler
 
         bodyListItems.Add(BExpression.Assign(iterDoneVar, BExpression.Constant(false)));
 
+        // Only the sync-iterable fallback awaits the value (as the async-from-sync wrapper does);
+        // a value of a real async iterator is not awaited again. The conditional await is void: a
+        // valued conditional around an await is lowered by the generator rewrite into an invalid
+        // program.
         if (forOfStatement.IsAwait)
-            bodyListItems.Add(BExpression.Assign(identifier, BExpression.Await(identifier)));
+            bodyListItems.Add(BExpression.IfThen(
+                IElementEnumeratorBuilder.AsyncStepAwaitsValue(en),
+                BExpression.Block(BExpression.Assign(identifier, BExpression.Await(identifier)), BExpression.Empty)));
 
         bodyListItems.AddRange(perIterationInits);
         bodyListItems.Add(body);

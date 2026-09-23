@@ -23,8 +23,7 @@ internal static class JSNumberExtensions
                 return primitiveObject.value.ToNumber();
 
             if (target is JSObject @object
-                && (JSEngine.Current as JSObject)?[Names.Number] is JSFunction numberConstructor
-                && ReferenceEquals(@object, numberConstructor.prototype))
+                && ReferenceEquals(@object, Intrinsics.Prototype(Names.Number)))
                 return JSNumber.Zero;
 
             throw JSEngine.NewTypeError($"Number.prototype.{name} requires that 'this' be a Number");

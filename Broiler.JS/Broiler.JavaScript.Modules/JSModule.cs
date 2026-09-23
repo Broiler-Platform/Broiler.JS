@@ -7,9 +7,14 @@ using System.Threading.Tasks;
 namespace Broiler.JavaScript.Modules;
 
 /// <summary>
-/// Create and load a module
+/// A module record: one ECMAScript module, CommonJS module, JSON module or host-provided module,
+/// identified by the key the host's <c>Resolve</c> produced.
 /// </summary>
-
+/// <remarks>
+/// It is also the <c>module</c> object a CommonJS module body receives. An ECMAScript module body
+/// never sees it: it receives only its module environment (see <see cref="IJSModuleEnvironment"/>),
+/// which this record implements. The linking and evaluation state lives in JSModule.Record.cs.
+/// </remarks>
 [JSBaseClass("Object")]
 [JSFunctionGenerator("Module", Register = false)]
 public partial class JSModule : JSObject
@@ -27,12 +32,18 @@ public partial class JSModule : JSObject
     /// module key's URL is — the one part of <c>import.meta</c> only the host can answer.</summary>
     private readonly JSModuleContext moduleContext;
 
+    /// <summary>
+    /// A host-provided module whose exports object already exists. An import sees each own
+    /// property of <paramref name="exports"/> as an export of that name, read live, and
+    /// <c>default</c> as the exports object itself unless it has an own <c>default</c>.
+    /// </summary>
     public JSModule(JSModuleContext context, JSObject exports, string name, bool isMain = false) : this(context.ModulePrototype)
     {
         moduleContext = context;
         filePath = name;
         dirPath = "./";
         this.exports = exports;
+        Kind = ModuleKind.Host;
     }
 
     internal JSModule(JSModuleContext context, string name, string code = null) : this(context.ModulePrototype)
@@ -43,27 +54,43 @@ public partial class JSModule : JSObject
         Code = code;
     }
 
+    internal JSModuleContext Context => moduleContext;
+
+    /// <summary>The base this module's own relative specifiers resolve against.</summary>
+    internal string BaseDirectory { get; set; }
+
     [JSPrototypeMethod]
     [JSExport("id")]
     public JSValue Id => CreateString(filePath);
 
     JSValue exports;
 
+    /// <summary>
+    /// What the module exports: the <c>module.exports</c> object of a CommonJS or host module, and
+    /// the module namespace object of an ECMAScript or JSON module once it has been linked.
+    /// </summary>
     [JSPrototypeMethod]
     [JSExport("exports")]
     public JSValue Exports
     {
         get
         {
+            if ((Kind == ModuleKind.SourceText && Status >= ModuleStatus.Linked)
+                || (Kind == ModuleKind.Json && JsonValue != null))
+                return GetNamespace();
+
             return exports;
         }
-        set
-        {
-            if (value == null || value.IsNullOrUndefined)
-                throw JSEngine.NewTypeError("Exports cannot be set to null or undefined");
+        // `module.exports` may be set to any value, null and undefined included, as in Node: it
+        // is the value `require` returns and the `default` export an import sees.
+        set => exports = value ?? JSUndefined.Value;
+    }
 
-            exports = value;
-        }
+    /// <summary>The CommonJS <c>module.exports</c> value, without the namespace view.</summary>
+    internal JSValue CommonJsExports
+    {
+        get => exports;
+        set => exports = value;
     }
 
     private JSObject meta;
@@ -125,33 +152,4 @@ public partial class JSModule : JSObject
     [JSPrototypeMethod]
     [JSExport("compile")]
     public JSValue Compile { get; set; }
-
-    /// <summary>
-    /// Direct (non-marshalled) compile hook. When set, <see cref="InitAsync"/> awaits this .NET task
-    /// instead of invoking the <see cref="Compile"/> JS function, which would marshal the compile task
-    /// into a JS promise and re-await it (<c>Task → IJSPromise → Task</c>). That double-marshal re-posts
-    /// the module body's async continuation off the running event loop, so a body that suspends at a
-    /// top-level <c>await</c> (which every static <c>import</c> desugars to) settles at the first
-    /// suspension and never runs to completion — leaving the module's exports unbound. Awaiting the compile
-    /// task directly keeps the whole init on one pumped loop. Falls back to the JS-function path when null.
-    /// </summary>
-    internal Func<Task> CompileDirect { get; set; }
-
-    internal async Task InitAsync()
-    {
-        if (exports != null)
-            return;
-
-        exports = new JSObject();
-
-        if (CompileDirect != null)
-        {
-            await CompileDirect();
-            return;
-        }
-
-        var result = Compile.InvokeFunction(new Arguments(this));
-        if (result is IJSPromise promise)
-            await promise.Task;
-    }
 }

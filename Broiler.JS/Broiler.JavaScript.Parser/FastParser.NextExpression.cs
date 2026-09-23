@@ -220,6 +220,13 @@ partial class FastParser
 
         if (!SinglePrefixPostfixExpression(out node, out var x, out var b))
         {
+            // A binary operator always has a right operand. Ending the statement here
+            // (`;`, a line break, `}` or the end of the source) used to be read as "no
+            // right operand" and the operator was dropped, so `eval('z +')` evaluated `z`
+            // and `` `\n\n` + ; `` evaluated the template instead of throwing SyntaxError.
+            if (OperatorPrecedence(previousType) != int.MaxValue)
+                throw stream.Unexpected();
+
             if (EndOfStatement())
             {
                 type = TokenTypes.SemiColon;

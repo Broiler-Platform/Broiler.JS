@@ -246,6 +246,44 @@ public class EvalEventDispatchTests
         Assert.Equal("54", Read(ctx, "r"));
     }
 
+    // Code already running inside a ShadowRealm asks on the child context, which no embedder can see or
+    // subscribe to. The child forwards every question to the context that constructed it, so a handler
+    // that lets evaluate's own string through is still asked about each string that string compiles -
+    // eval, the Function constructors and a nested ShadowRealm's evaluate - and a selective refusal
+    // reaches the code inside the child (JSD-0030 follow-up SR-6).
+    [Fact(Timeout = 600000)]
+    public void CodeInsideAShadowRealmAsksTheContextThatConstructedIt()
+    {
+        Load();
+        using var ctx = new JSContext();
+        var seen = Record(ctx);
+        ctx.EvalEvent += (_, e) =>
+        {
+            if (e.Script is "6 * 7" or "return 6 * 7")
+                throw JSEngine.NewSyntaxError(Refusal);
+        };
+
+        ctx.Eval("""
+            var shadowRealm = new ShadowRealm();
+            globalThis.r1 = shadowRealm.evaluate("try { 'compiled:' + (0, eval)('6 * 7'); } catch (e) { e.name + ':' + e.message; }");
+            globalThis.r2 = shadowRealm.evaluate("try { 'compiled:' + Function('return 6 * 7')(); } catch (e) { e.name + ':' + e.message; }");
+            globalThis.r3 = shadowRealm.evaluate("try { 'compiled:' + new ShadowRealm().evaluate('6 * 7'); } catch (e) { e.name + ':' + e.message; }");
+            globalThis.r4 = shadowRealm.evaluate("new ShadowRealm().evaluate(\"(0, eval)('6 * 9')\")");
+            """);
+
+        Assert.Equal($"SyntaxError:{Refusal}", Read(ctx, "r1"));
+        Assert.Equal($"SyntaxError:{Refusal}", Read(ctx, "r2"));
+        Assert.Equal($"SyntaxError:{Refusal}", Read(ctx, "r3"));
+        Assert.Equal("54", Read(ctx, "r4"));
+
+        // Every compile was asked about on the embedder's context, the nested ones included.
+        Assert.All(seen, dispatch => Assert.Same(ctx, dispatch.Context));
+        Assert.Equal(
+            new string?[] { "6 * 7", "return 6 * 7", "6 * 7", "(0, eval)('6 * 9')", "6 * 9" },
+            seen.Select(dispatch => dispatch.Script).Where(script => !script!.StartsWith("try", StringComparison.Ordinal)
+                && !script.StartsWith("new ShadowRealm", StringComparison.Ordinal)));
+    }
+
     // A guard, green before and after: the receiver and argument checks come before the host is asked.
     [Fact(Timeout = 600000)]
     public void ShadowRealmChecksItsReceiverAndArgumentBeforeAskingTheHost()

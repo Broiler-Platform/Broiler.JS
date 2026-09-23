@@ -406,7 +406,7 @@ public partial class JSBigInt : JSPrimitive
 
     public override JSValue TypeOf() => JSConstants.BigInt;
 
-    protected override JSValue GetPrototype() => ((JSEngine.Current as JSObject)?[Names.BigInt] as JSFunction).prototype;
+    protected override JSValue GetPrototype() => Intrinsics.Prototype(Names.BigInt);
 
     internal override PropertyKey ToKey(bool create = true) => (uint)value;
 

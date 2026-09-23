@@ -154,7 +154,7 @@ public partial class JSPromise
     // because finally needs C to drive PromiseResolve for the wrapper functions.
     private static JSValue FinallySpeciesConstructor(JSValue promise)
     {
-        var defaultConstructor = (JSEngine.Current as JSObject)?[KeyStrings.Promise];
+        var defaultConstructor = Intrinsics.Constructor(KeyStrings.Promise);
 
         var constructor = promise[KeyStrings.constructor];
         if (constructor.IsUndefined)

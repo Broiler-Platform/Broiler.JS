@@ -126,9 +126,7 @@ public class ParserTests
     [Fact(Timeout = 600000)]
     public void ParseProgram_ExportNamespaceFrom_Succeeds()
     {
-        var stream = new FastTokenStream(new StringSpan("export * as ns from 'module';"));
-        var parser = new FastParser(stream);
-        var program = parser.ParseProgram();
+        var program = FastParser.ParseModule(new StringSpan("export * as ns from 'module';"));
 
         var statement = Assert.IsType<AstExportStatement>(Assert.Single(program.Statements.ToArray()));
         var identifier = Assert.IsType<AstIdentifier>(statement.Declaration);
@@ -136,7 +134,10 @@ public class ParserTests
         Assert.Equal("ns", identifier.Name.Value);
         Assert.Equal("module", source.StringValue);
         Assert.False(statement.ExportAll);
-        Assert.True(program.IsAsync);
+
+        // A re-export is resolved by the module linker before the module runs; it is not an
+        // `await`, so it does not make the module asynchronous ([[HasTLA]] is false).
+        Assert.False(program.IsAsync);
     }
 
     [Fact(Timeout = 600000)]
@@ -489,9 +490,7 @@ public class ParserTests
     [Fact(Timeout = 600000)]
     public void ParseProgram_StaticImportDeclaration_StillParses()
     {
-        var stream = new FastTokenStream(new StringSpan("import x from './mod.js';"));
-        var parser = new FastParser(stream);
-        var program = parser.ParseProgram();
+        var program = FastParser.ParseModule(new StringSpan("import x from './mod.js';"));
 
         Assert.IsType<AstImportStatement>(Assert.Single(program.Statements.ToArray()));
     }
@@ -805,11 +804,72 @@ public class ParserTests
     [InlineData("export {a as in} from \"m\";")]
     [InlineData("export {a as b, c as null} from \"m\";")]
     public void ParseProgram_ExportSpecifier_AcceptsReservedWordExportName(string source)
-    {
-        var stream = new FastTokenStream(new StringSpan(source));
-        var parser = new FastParser(stream);
+        => Assert.NotNull(FastParser.ParseModule(new StringSpan(source)));
 
-        Assert.NotNull(parser.ParseProgram());
+    /// <summary>
+    /// ImportDeclaration and ExportDeclaration are ModuleItems: a script cannot contain one, and a
+    /// module can contain one only at its top level.
+    /// </summary>
+    [Theory]
+    [InlineData("import x from './mod.js';", false)]
+    [InlineData("export const x = 1;", false)]
+    [InlineData("{ import x from './mod.js'; }", true)]
+    [InlineData("function f() { export const x = 1; }", true)]
+    [InlineData("switch (0) { case 0: export var x; }", true)]
+    [InlineData("l: import './mod.js';", true)]
+    [InlineData("if (true) export var x;", true)]
+    public void ParseProgram_ModuleItems_OnlyAtTheTopLevelOfAModule(string source, bool moduleRejects)
+    {
+        Assert.Throws<FastParseException>(() => new FastParser(new FastTokenStream(new StringSpan(source))).ParseProgram());
+
+        if (moduleRejects)
+            Assert.Throws<FastParseException>(() => FastParser.ParseModule(new StringSpan(source)));
+        else
+            Assert.NotNull(FastParser.ParseModule(new StringSpan(source)));
+    }
+
+    /// <summary>
+    /// The declaration forms of <c>export</c>, each of which a following export must not be
+    /// parsed into, and the string-named and side-effect-only forms of import and export.
+    /// </summary>
+    [Theory]
+    [InlineData("export default function f() {}\nexport const y = 1;")]
+    [InlineData("export default function () {} export const y = 1;")]
+    [InlineData("export default async function f() {} export const y = 1;")]
+    [InlineData("export default function* g() {} export const y = 1;")]
+    [InlineData("export default class C {} export const y = 1;")]
+    [InlineData("export default class {} export const y = 1;")]
+    [InlineData("export async function f() {} export { f as g };")]
+    [InlineData("import './side.js';")]
+    [InlineData("import { \"a b\" as c } from './mod.js';")]
+    [InlineData("export { \"a b\" as \"c d\" } from './mod.js';")]
+    [InlineData("export * as \"ns\" from './mod.js';")]
+    public void ParseModule_DeclarationFormsOfImportAndExport(string source)
+        => Assert.NotNull(FastParser.ParseModule(new StringSpan(source)));
+
+    /// <summary>
+    /// In module code <c>await</c> is reserved: where it is not an AwaitExpression it is a
+    /// SyntaxError, never an IdentifierReference.
+    /// </summary>
+    [Theory]
+    [InlineData("await;")]
+    [InlineData("new await;")]
+    [InlineData("function f() { return await; }")]
+    public void ParseModule_AwaitIsNeverAnIdentifierReference(string source)
+        => Assert.Throws<FastParseException>(() => FastParser.ParseModule(new StringSpan(source)));
+
+    /// <summary>
+    /// HTML-like comments (Annex B.1.1) belong to the Script goal only: in module code
+    /// <c>&lt;!--</c> and <c>--&gt;</c> are punctuators, so these do not parse.
+    /// </summary>
+    [Theory]
+    [InlineData("<!-- a comment in a script")]
+    [InlineData("-->  a comment in a script")]
+    [InlineData("/*\n*/--> a comment in a script")]
+    public void ParseModule_HtmlLikeCommentsAreNotComments(string source)
+    {
+        Assert.NotNull(new FastParser(new FastTokenStream(new StringSpan(source))).ParseProgram());
+        Assert.Throws<FastParseException>(() => FastParser.ParseModule(new StringSpan(source)));
     }
 
     /// <summary>

@@ -8,6 +8,125 @@ when that manifest changes materially.
 
 The current failure manifest includes work in these areas:
 
+- **ECMAScript module semantics — implemented; what remains is listed here.** A module graph
+  is now loaded, linked and evaluated as ES2024 16.2.1.5 specifies (`JSModuleContext`,
+  `JSModule.Record.cs`): every specifier goes through `Resolve` (no raw-specifier cache
+  answer; `module`/`clr` are reached through the default `Resolve`, and a context built with
+  `registerBuiltInModules: false` registers neither); a missing or ambiguous import is a
+  SyntaxError at link time, before any body runs; imports are live, immutable indirect
+  bindings; the namespace is the module namespace exotic object; module environments are
+  instantiated before evaluation, so cycles see hoisted functions and a cross-module TDZ; top-level
+  `await` follows the asynchronous evaluation algorithm, and an evaluation error is cached and
+  rethrown to every later importer. Module code is strict, `this` is `undefined`, top-level
+  `var`/function declarations live in the module environment, and no CommonJS binding is
+  visible — `require`, `module`, `exports`, `__filename` and `__dirname` exist only in a
+  CommonJS module (one loaded by `require`, or a `.cjs` key). Measured on the pinned ref
+  (`--include-negative`, local Release host) over `test/language/{module-code,import,export}`
+  and `test/language/expressions/dynamic-import`: 788 → 1095 of 1667 pass (module-host
+  files 327 → 634 of 755; `module-code` 310 → 580 of 596), no test regressed. The stricter
+  cover grammar (below) brings this to 1097 of 1667 (module-host 636, `module-code` 582).
+  Still failing there:
+  - **`import()` from a script in the test262 `--script-host`** (about 450 files): that host is
+    a plain `JSContext`, which has no module loader, and the runner assembles a script test
+    into a temporary file, where its `_FIXTURE.js` siblings would not resolve anyway. A
+    `JSModuleContext` routes script-code `import()` through its loader; the shell's script
+    host does not use one.
+  - **Proposals not implemented:** `import defer` (92), `import bytes` (5) and text imports (5).
+  - **Top-level `for await`** fails with an "invalid program" IL error (13 files), the
+    generator-rewrite defect the host-coverage notes below already record.
+  - **Parser leniency that is not module-specific:** `yield` as an IdentifierReference in
+    strict code (`parse-err-yield`). (`()` accepted as an expression statement, so that
+    `export default function () {}();` parsed, is fixed: the cover grammar's `()`, trailing
+    comma and rest element are SyntaxErrors unless `=>` follows — `parse-err-invoke-anon-{fun,gen}-decl`
+    now pass.)
+  - **Not covered by a failing file but known:** an anonymous `export default class {}` is
+    named `default` after its definition is evaluated, so its own static initializers still
+    see an empty `name`; a CommonJS module imported from a module exposes only `default`
+    (its `module.exports`), with no named exports detected from its source; and module
+    evaluation settles through the engine's async-function driver. That driver now takes the
+    specification's one job per `await` and settles a single promise (see "Await and
+    async-generator job ordering" below); the jobs an importer takes to resume after it have
+    not been re-measured against the specification.
+  - **One record per key, whichever loader reaches it first.** A `.js` key that `require`
+    loads first becomes a CommonJS record, and a later `import` of it gets only `default`;
+    a key that `import` loads first is an ECMAScript module, and a later `require` of it
+    throws "require() of the ECMAScript module … is not supported". Node decides the kind
+    from the file (extension and `package.json` `type`) instead. So `require()` of an
+    ECMAScript module file is no longer supported: before this change `require('./m.js')` of
+    a file with `export` returned its exports (`.default` for the default export), and now it
+    either parses the file as CommonJS and throws a SyntaxError ("'export' may only appear at
+    the top level of a module") or, if the file was imported first, throws the TypeError
+    above. Node 22+ supports synchronous `require(esm)`.
+  - **The shell's entry file is a module.** `BroilerJS file.js` (without `--script-host`)
+    runs the file as an ECMAScript module, so `require` is not defined there; use `import`,
+    or name a CommonJS file `.cjs`. The shell's bundled `.js` modules (`buffer`,
+    `base64-js`, `ieee754`) are CommonJS: `import b from 'buffer'` gives their
+    `module.exports` (`b.Buffer`), and a named import such as `import { Buffer }` is a link
+    SyntaxError (no named-export detection, as above). Before this change those imports
+    hung.
+
+- **An async body after an awaited rejection — fixed.** The async-function driver resumed a
+  body with `Throw`, which already runs it to its next `await`, and then resumed it again
+  with the iterator result `Throw` returned. After a caught awaited rejection the next `await`
+  produced `{ value, done }` at once instead of waiting, and a second awaited rejection never
+  reached the body's `catch`. A thenable whose `then` threw rejected the function's own promise
+  instead of the `await`. Both are fixed in `JSAsyncFunction`; covered by
+  `AsyncResumeAfterRejectionTests` (and module top-level `await`, which runs on the same driver).
+- **Await and async-generator job ordering — fixed; what remains.** `await` is the spec's
+  Await: PromiseResolve(%Promise%, v) plus a reaction that resumes the body in the reaction
+  job itself, so it takes one job for a native promise or a plain value, never consults
+  `Promise.prototype.then`, and calls a thenable's `then` in a job. The async-function driver
+  used to call `then` on the awaited value (synchronously for a thenable) and queue the
+  resumption as a second job, and resolved a new promise per await step with the next one,
+  which adopted the function's completion two jobs per step late. Async generators use the same
+  Await (an internal `await` of a plain value resumed at once before), settle one promise per
+  request, and queue next/return/throw requests made while a step is running (a second `next()`
+  used to resume the body at the first step's pending `await`). A direct `for await` over an
+  async generator steps it through its (internal) next, so an `await` inside the generator —
+  including an `await using` disposal — is no longer seen by the loop as an iteration value.
+  `yield*` in an async generator over an async iterator (a native async generator, or any
+  iterator from @@asyncIterator) Awaits each next/throw/return result of the delegate and yields
+  its value without awaiting it again, as §15.5.5 does: a native async-generator delegate used to
+  be stepped synchronously, so its awaits and `await using` disposals surfaced as values, its
+  return value was lost and throw() reported a missing `throw` method; any other async
+  iterator's result was read as a record unless its promise had already settled. throw() and
+  return() on the delegating generator reach the delegate's own throw()/return() (a missing
+  `throw` closes the delegate, then throws a TypeError; a missing `return` awaits the value).
+  `return expr` in an async generator awaits `expr`, and return(v) awaits `v` — at a yield,
+  where a rejection is thrown into the body, and on a generator that has not started or has
+  completed, where a rejection rejects the request. `for await` awaits each value only for a sync
+  iterable; a value of an async iterator used to be awaited again (one job per iteration late, and
+  a promise yielded as a value was unwrapped). `await using`: every Await of the disposal is the
+  enclosing function's own (one job each); a resource of null or undefined records needsAwait (an
+  Await(undefined) before a following sync resource or at the end), also for
+  `AsyncDisposableStack.prototype.use(null)`; the block's thrown error is seeded into the
+  disposal, so a disposer error becomes `SuppressedError(disposerError, bodyError)`; the
+  @@dispose fallback's return value is discarded by `AsyncDisposableStack.prototype.use` as
+  well; and a module whose only top-level await is an `await using` is an async module.
+  `Atomics.waitAsync` and `Blob.prototype.text` settle their promises on the calling thread
+  instead of from a thread-pool continuation. Covered by `AsyncJobOrderTests` (expected
+  orderings from the specification, Node 24 as a cross-check) and `ModuleSemanticsTests`.
+  Still open:
+  - `for await` does not call an async generator's `return()` on `break` (its `finally` never
+    runs), and a native async generator used by `for await` or `yield*` skips the observable
+    @@asyncIterator/`next` lookups.
+  - `yield*` over a sync iterable in an async generator keeps the enumerator path instead of an
+    async-from-sync iterator (test262 `yield-star-sync-*` and
+    `yield-promise-reject-next-yield-star-sync-iterator` still fail).
+  - `Array.fromAsync` is a synchronous approximation: it steps its input with the sync iterator
+    protocol and unwraps only already-settled promises, so over an async generator each `await`
+    (and `await using` disposal) in the body becomes an element.
+  - The sync-iterable fallback of `for await` completes one job early on its last (done) step.
+  - Jumps out of protected regions in the async rewrite (unchanged by this work): in an async
+    function a `finally` after a `catch` that returns is skipped, and where the body awaits (or
+    has an `await using`), `continue` out of a `try`/`finally` and `continue` or a labeled
+    `break` out of a `using` / `await using` block skip the `finally` or the disposal.
+  - `new Function('await using x = …')` is accepted (it should be a SyntaxError) and disposes
+    synchronously.
+  - `Atomics.waitAsync` reports "timed-out" at once instead of after the timeout.
+  - Host `Task`-backed promises (CLR interop, `fetch`) settle when the host task completes, as
+    an external event, and only their reactions are jobs; dynamic `import()` settles its
+    promise from the loader's `Task` continuation the same way.
 - **Per-eval compilation cost.** Every direct `eval` compiles a fresh `DynamicMethod`, and
   JITting it is nearly all of the cost of a small eval — ~21 ms in a Release build for a
   body that is one call, where the same text parses in ~15 µs. Three shapes now avoid it:

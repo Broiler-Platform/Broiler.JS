@@ -233,7 +233,7 @@ public partial class JSString : JSPrimitive
         return _keyString.Value != null ? _keyString : (_keyString = KeyStrings.GetOrCreate(value));
     }
 
-    protected override JSValue GetPrototype() => ((JSEngine.Current as JSObject)?[Names.String] as JSFunction).prototype;
+    protected override JSValue GetPrototype() => Intrinsics.Prototype(Names.String);
 
     public JSString(string value) : base() => flat = value;
     public JSString(JSObject prototype, string value) : base(prototype) => flat = value;

@@ -127,10 +127,17 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         var parser = new FastParser(new FastTokenStream(parserPool, code));
         var jScript = parser.ParseProgram();
         parserPool.Dispose();
-        SyntaxValidation.ValidateProgram(jScript, code.Value, directEvalPrivateNames: directEvalPrivateNames);
-        var isStrictProgram = HasUseStrictDirective(jScript);
+        // Module code is strict from its first token, directive or not (ES2024 11.2.2).
+        SyntaxValidation.ValidateProgram(jScript, code.Value, inheritStrictMode: isModuleCompilation,
+            directEvalPrivateNames: directEvalPrivateNames, isModule: isModuleCompilation);
+        // Module code is always strict code (ES2024 11.2.2), with or without a directive.
+        var isStrictProgram = isModuleCompilation || HasUseStrictDirective(jScript);
 
-        using var fx = scope.Push(new FastFunctionScope(pool, null, isAsync: jScript.IsAsync));
+        // A module body is compiled as a resumable body (see the end of this constructor), so it
+        // is suspendable exactly like a top-level-await program even when it has no `await`.
+        var isSuspendableProgram = jScript.IsAsync || isModuleCompilation;
+
+        using var fx = scope.Push(new FastFunctionScope(pool, null, isAsync: isSuspendableProgram));
 
         // Direct eval inside a method/initializer that has a [[HomeObject]] super:
         // expose that super to the eval body so super.x resolves. Capture the
@@ -225,7 +232,7 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
 
         // A top-level-await program is rewritten into a state machine below, so its frame
         // suspends just like a generator body's and must pin whatever it was pushed under.
-        JSContextStackBuilder.Push(sList, lScope, stackItem, BExpression.Constant(location), StringSpanBuilder.Empty, 0, 0, suspendable: jScript.IsAsync,
+        JSContextStackBuilder.Push(sList, lScope, stackItem, BExpression.Constant(location), StringSpanBuilder.Empty, 0, 0, suspendable: isSuspendableProgram,
             code: ScriptInfoBuilder.Code(scriptInfo), codeLength: code.Length);
         sList.Add(ScriptInfoBuilder.Build(scriptInfo, _keyStrings));
 
@@ -256,8 +263,9 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
 
         sList.AddRange(fx.InitList);
 
-        // register globals..
-        foreach (var v in fx.Variables)
+        // register globals.. A module registers nothing: its top-level declarations live in its
+        // own module environment, never on the global object (ES2024 16.2.1.6.4).
+        foreach (var v in isModuleCompilation ? System.Linq.Enumerable.Empty<FastFunctionScope.VariableScope>() : fx.Variables)
         {
             if (v.Variable != null && v.Variable.Type == typeof(JSVariable))
             {
@@ -295,6 +303,28 @@ public partial class FastCompiler : AstMapVisitor<BExpression>
         vList.AddRange(fx.VariableParameters);
 
         script = BExpression.Block(vList, BExpression.TryFinally(BExpression.Block(sList), JSContextStackBuilder.Pop(stackItem, lScope)));
+
+        if (isModuleCompilation)
+        {
+            // A module body is instantiated and evaluated in two steps (ES2024 16.2.1.6.4
+            // InitializeEnvironment, then ExecuteModule), and a linker drives both. It is compiled
+            // as a generator whose first suspension follows the prologue — the hoisted bindings,
+            // the function declarations and the published exports — so the linker instantiates
+            // every module of a graph before any body runs, which is what lets a cycle call a
+            // hoisted function of a module that has not been evaluated yet. Every later
+            // suspension is an `await`, which the linker drives the way an async function's
+            // driver does. Calling the compiled delegate only creates the generator.
+            var moduleBody = GeneratorRewriter.Rewrite("module", script, fx.ReturnLabel, fx.Generator, replaceArgs: fx.Arguments, replaceStackItem: fx.StackItem,
+                replaceContext: fx.Context, replaceScriptInfo: scriptInfo);
+            ExpressionCompiler.LambdaRewriter.RewriteRootOnly(moduleBody);
+
+            var moduleGenerator = JSFunctionBuilder.EnableStrictMode(
+                JSGeneratorFunctionBuilderV2.New(moduleBody, StringSpanBuilder.New("module"), StringSpanBuilder.New(code.Value), coerceThis: false));
+            var moduleArguments = BExpression.Parameter(ArgumentsBuilder.refType, "a");
+
+            Method = BExpression.Lambda<JSFunctionDelegate>("module", JSFunctionBuilder.InvokeFunction(moduleGenerator, moduleArguments), [moduleArguments]);
+            return;
+        }
 
         if (jScript.IsAsync)
         {

@@ -3893,7 +3893,7 @@ public class BuiltInsTests
         using var ctx = new JSContext();
 
         var result = ctx.Eval("""
-            eval('var descriptor = Object.getOwnPropertyDescriptor(globalThis, "f");
+            eval(`var descriptor = Object.getOwnPropertyDescriptor(globalThis, "f");
               var summary = [
                 typeof descriptor.value,
                 descriptor.writable,
@@ -3901,7 +3901,7 @@ public class BuiltInsTests
                 descriptor.configurable
               ].join("|");
               if (true) function f() { return 1; }
-              summary;');
+              summary;`);
             """);
 
         Assert.Equal("undefined|true|true|true", result.ToString());
@@ -3915,7 +3915,7 @@ public class BuiltInsTests
 
         var result = ctx.Eval("""
             [
-              eval('var descriptor = Object.getOwnPropertyDescriptor(globalThis, "f");
+              eval(`var descriptor = Object.getOwnPropertyDescriptor(globalThis, "f");
                 var summary = [
                   typeof descriptor.value,
                   descriptor.writable,
@@ -3923,8 +3923,8 @@ public class BuiltInsTests
                   descriptor.configurable
                 ].join("|");
                 function f() { return 234; }
-                summary;'),
-              (0, eval)('var descriptor = Object.getOwnPropertyDescriptor(globalThis, "g");
+                summary;`),
+              (0, eval)(`var descriptor = Object.getOwnPropertyDescriptor(globalThis, "g");
                 var summary = [
                   typeof descriptor.value,
                   descriptor.writable,
@@ -3932,7 +3932,7 @@ public class BuiltInsTests
                   descriptor.configurable
                 ].join("|");
                 if (true) function g() { return 1; }
-                summary;')
+                summary;`)
             ].join("||")
             """);
 
@@ -8140,7 +8140,7 @@ public class BuiltInsTests
                 };
 
                 for await (var value of iterable) {
-                    values.push(value);
+                    values.push(value instanceof Promise ? 'promise' : value);
                 }
 
                 return values.join('|');
@@ -8149,7 +8149,10 @@ public class BuiltInsTests
             run();
         ");
 
-        Assert.Equal("x|y", asyncFacadeResult.ToString());
+        // An iterator from @@asyncIterator is an async iterator, whatever it returns: for-await
+        // awaits its next() result but not the value in it, so the values are the promises
+        // themselves (as in Node). Only the sync-iterable fallback above awaits each value.
+        Assert.Equal("promise|promise", asyncFacadeResult.ToString());
     }
 
     [Fact(Timeout = 600000)]
@@ -8173,9 +8176,12 @@ public class BuiltInsTests
                     };
                 }
 
+                // The delegate's values are the promises themselves: async yield* yields
+                // IteratorValue(innerResult) without awaiting it, and for-await does not await a
+                // value of an async generator (Node prints [object Promise] for both).
                 var values = [];
                 for await (var value of delegated()) {
-                    values.push(value);
+                    values.push(await value);
                 }
 
                 return values.join('|');

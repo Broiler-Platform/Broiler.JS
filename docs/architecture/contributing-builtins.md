@@ -52,6 +52,26 @@ Available integration points include:
 - `DefaultBuiltInRegistry.AddProto` for attaching a native prototype function; and
 - `BuiltInManifest`/`BuiltInFeatureDescriptor` for explicitly composable features.
 
+### Intrinsic constructors and prototypes
+
+An object the engine creates itself takes the realm's intrinsic prototype, never the
+current value of a global: generated `CreateClass` code records each registered class's
+constructor and prototype on its `JSContext` (`RegisterIntrinsic`), and built-in code reads
+them back through `Intrinsics.Prototype`/`Intrinsics.Constructor`. A class that lives on a
+namespace object instead of the global (the generated Temporal classes, which are
+`Register = false`, and Intl's hand-built constructors in `JSIntl`) is recorded under its
+qualified name (`Temporal.PlainDate`, `Intl.NumberFormat`) by the code that builds the
+namespace, and is read through `Intrinsics.TemporalPrototype` /
+`Intrinsics.IntlPrototype`, which create the realm's one namespace object first when a lazy
+profile has not realized it yet.
+
+The registry is deliberately internal to the engine (`internal` on `JSContext`, visible to
+the engine's own assemblies through `InternalsVisibleTo`): no host outside the engine reads
+or writes it, and a public mutator would let any host code replace a realm's intrinsics.
+The first registration of a name wins, so a second `CreateClass` under the same name, or a
+host class generated under a built-in's name, installs an ordinary global binding without
+changing what the engine creates.
+
 Do not add a new static delegate when an existing manifest, registry, interface, or
 factory contract expresses the dependency. Do not depend on module-initializer order;
 initializers must be safe when assemblies load in a different order.

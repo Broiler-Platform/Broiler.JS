@@ -31,6 +31,26 @@ public interface IJSDisposableStack
     JSValue SeedPendingError(System.Exception bodyException);
 
     /// <summary>
+    /// Runs the disposal of an <c>await using</c> scope up to its next Await: true when the
+    /// compiled code must await <see cref="TakeAwaitValue"/> (and report a rejection through
+    /// <see cref="RecordDisposeError"/>) before calling this again, false once every resource is
+    /// disposed. <see cref="CompleteDisposal"/> then throws the resulting error, if any.
+    /// </summary>
+    bool DisposeStep();
+
+    /// <summary>The value to await after <see cref="DisposeStep"/> returned true.</summary>
+    JSValue TakeAwaitValue();
+
+    /// <summary>
+    /// Records an error from the disposal (a rejected Await) into the pending completion, wrapping
+    /// an earlier one as the <c>suppressed</c> value of a SuppressedError. Returns undefined.
+    /// </summary>
+    JSValue RecordDisposeError(System.Exception exception);
+
+    /// <summary>Throws the pending completion's error, if any. Returns undefined.</summary>
+    JSValue CompleteDisposal();
+
+    /// <summary>
     /// Factory delegate used by the Compiler to create new instances
     /// without referencing the concrete type.
     /// Wired by the BuiltIns assembly via <c>[ModuleInitializer]</c>.

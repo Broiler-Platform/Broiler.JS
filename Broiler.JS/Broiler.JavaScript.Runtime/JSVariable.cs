@@ -209,8 +209,7 @@ public class JSVariable
             // stays deleted so later reads through it keep throwing (test262 eval-code/direct/
             // var-env-func-init-local-new-delete).
             if (!_isInitialized || _deleted)
-                throw (NewReferenceErrorFactory ?? throw new InvalidOperationException("JSVariable.NewReferenceErrorFactory delegate is not initialized. Ensure the Engine assembly module initializer has run."))
-                    (ReferenceErrorMessage);
+                return ReadUnavailable();
 
             return _value;
         }
@@ -235,12 +234,31 @@ public class JSVariable
     public JSValue Assign(JSValue value)
     {
         if (!_isInitialized)
-            throw (NewReferenceErrorFactory ?? throw new InvalidOperationException("JSVariable.NewReferenceErrorFactory delegate is not initialized. Ensure the Engine assembly module initializer has run."))
-                (ReferenceErrorMessage);
+            return AssignUnavailable(value);
 
         Value = value;
         return _value;
     }
+
+    /// <summary>
+    /// The cold half of a read of <see cref="Value"/>: the binding is in its temporal dead zone
+    /// or has been deleted, so the read throws a ReferenceError.
+    /// </summary>
+    /// <remarks>
+    /// Virtual so that a binding which owns no value of its own can answer instead. A module's
+    /// import binding (<see cref="JSModuleImportBinding"/>) is an <i>indirect</i> binding: it is
+    /// never initialized itself, so every read arrives here and is forwarded to the exporting
+    /// module's binding, which is what makes the import live. Keeping the forwarding in the
+    /// uninitialized path leaves the ordinary read a single non-virtual branch.
+    /// </remarks>
+    internal virtual JSValue ReadUnavailable()
+        => throw (NewReferenceErrorFactory ?? throw new InvalidOperationException("JSVariable.NewReferenceErrorFactory delegate is not initialized. Ensure the Engine assembly module initializer has run."))
+            (ReferenceErrorMessage);
+
+    /// <summary>The cold half of <see cref="Assign"/>, for a binding that is not initialized.</summary>
+    internal virtual JSValue AssignUnavailable(JSValue value)
+        => throw (NewReferenceErrorFactory ?? throw new InvalidOperationException("JSVariable.NewReferenceErrorFactory delegate is not initialized. Ensure the Engine assembly module initializer has run."))
+            (ReferenceErrorMessage);
 
     /// <summary>
     /// Reads this binding's value. For an ordinary binding this is just

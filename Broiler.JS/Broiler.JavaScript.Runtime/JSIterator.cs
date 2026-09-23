@@ -2,7 +2,7 @@ using Broiler.JavaScript.Storage;
 
 namespace Broiler.JavaScript.Runtime;
 
-public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementEnumerator, IReturnableEnumerator
+public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementEnumerator, IReturnableEnumerator, IAsyncDelegateIterator
 {
     private uint index = 0;
 
@@ -249,6 +249,37 @@ public struct JSIterator(JSValue iterator, bool awaitResult = false) : IElementE
         }
 
         iteratorResult = ValidateIteratorResult(method.InvokeFunction(new Arguments(iterator, value)), "throw");
+        return true;
+    }
+
+    // An iterator obtained through @@asyncIterator is an async delegate of `yield*`: its results
+    // are awaited by the delegating async generator, not unwrapped here (see IAsyncDelegateIterator).
+    public readonly bool IsAsyncIterator => awaitResult;
+
+    public readonly JSValue DelegateNext(JSValue value)
+        => nextMethod.InvokeFunction(new Arguments(iterator, value ?? JSUndefined.Value));
+
+    public readonly bool TryDelegateThrow(JSValue value, out JSValue result)
+        => TryCallDelegateMethod(KeyStrings.@throw, value, out result);
+
+    public readonly bool TryDelegateReturn(JSValue value, out JSValue result)
+        => TryCallDelegateMethod(KeyStrings.@return, value, out result);
+
+    // GetMethod(iterator, name) then Call: undefined/null means absent, anything else not callable
+    // is a TypeError.
+    private readonly bool TryCallDelegateMethod(KeyString name, JSValue value, out JSValue result)
+    {
+        var method = iterator[name];
+        if (method.IsNullOrUndefined)
+        {
+            result = default;
+            return false;
+        }
+
+        if (!method.IsFunction)
+            throw JSValue.NewTypeError($"Iterator {name} is not a function");
+
+        result = method.InvokeFunction(new Arguments(iterator, value ?? JSUndefined.Value));
         return true;
     }
 

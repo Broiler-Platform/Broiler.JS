@@ -12,7 +12,7 @@ namespace Broiler.JavaScript.BuiltIns.Promise;
 public partial class JSPromise
 {
     private static bool IsDefaultPromiseConstructor(JSValue constructor)
-        => ReferenceEquals(constructor, (JSEngine.Current as JSObject)?[KeyStrings.Promise]);
+        => ReferenceEquals(constructor, Intrinsics.Constructor(KeyStrings.Promise));
 
     private static bool IsConstructor(JSValue value)
         => JSConstructorOperations.IsConstructor(value);
@@ -203,8 +203,15 @@ public partial class JSPromise
         if (value is JSPromise && ReferenceEquals(value[KeyStrings.constructor], constructor))
             return value;
 
+        // Otherwise a new promise resolved WITH x: the resolve function adopts a thenable (reads
+        // `then` now, calls it in a job). Only a primitive can be fulfilled directly. An object
+        // used to be fulfilled directly too, so Promise.resolve(thenable) fulfilled with the
+        // thenable itself — and so did every combinator that routes its inputs through
+        // Call(promiseResolve, C, value).
         if (IsDefaultPromiseConstructor(constructor))
-            return new JSPromise(value, PromiseState.Resolved);
+            return value.IsObject
+                ? new JSPromise((resolve, _) => resolve(value))
+                : new JSPromise(value, PromiseState.Resolved);
 
         return CreatePromiseFromConstructor(constructor, (resolve, _) =>
         {
@@ -307,71 +314,104 @@ public partial class JSPromise
 
     [JSExport("allKeyed", Length = 1)]
     public static JSValue AllKeyed(in Arguments a)
+        => PerformPromiseAllKeyed(a.This, a.Get1(), settled: false);
+
+    // Promise.allKeyed / Promise.allSettledKeyed (await-dictionary proposal,
+    // PerformPromiseAllKeyed). The combinators mirror Promise.all / Promise.allSettled over
+    // an object's own enumerable property keys (strings, then symbols, in [[OwnPropertyKeys]]
+    // order): every value is routed through Call(promiseResolve, C, « value ») and
+    // Invoke(nextPromise, "then", « onFulfilled, onRejected »), and the capability settles
+    // from those reactions — which run as ordinary promise jobs. The result object has a null
+    // [[Prototype]] and lists the keys in input order, whatever order the inputs settle in.
+    //
+    // They previously deferred every element through SynchronizationContext.Post instead: a
+    // post is not a promise job, so a host that ends once its job queue drains could exit
+    // before the capability settled (test262 allKeyed/reject-deferred never settled in
+    // isolation and passed only when a parallel run happened to keep the host alive), and
+    // allSettledKeyed read each input's state synchronously, reporting a still-pending or
+    // later-rejected input as fulfilled.
+    private static JSValue PerformPromiseAllKeyed(JSValue constructor, JSValue promises, bool settled)
     {
-        var input = a.Get1();
-        if (input is not JSObject obj)
-            return CreatePromiseFromConstructor(a.This, (resolve, _) =>
-            {
-                resolve.InvokeFunction(new Arguments(JSUndefined.Value, new JSObject()));
-            });
-
-        var result = new JSObject();
-        var keys = new System.Collections.Generic.List<KeyString>();
-        var en = obj.GetOwnProperties(false).GetEnumerator();
-        while (en.MoveNext(out var key, out var _))
-            keys.Add(key);
-
-        if (keys.Count == 0)
-            return CreatePromiseFromConstructor(a.This, (resolve, _) =>
-            {
-                resolve.InvokeFunction(new Arguments(JSUndefined.Value, new JSObject()));
-            });
-
-        return CreatePromiseFromConstructor(a.This, (resolve, reject) =>
+        return CreatePromiseFromConstructor(constructor, (resolve, reject) =>
         {
-            var sc = (JSEngine.Current as JSContext)?.synchronizationContext ?? System.Threading.SynchronizationContext.Current
-                ?? throw JSEngine.NewTypeError("Cannot use promise without Synchronization Context");
-            int remaining = keys.Count;
-
-            foreach (var key in keys)
+            try
             {
-                var value = obj[key];
-                var capturedKey = key;
+                var promiseResolve = GetPromiseResolve(constructor);
+                if (promises is not JSObject obj)
+                    throw JSEngine.NewTypeError(settled
+                        ? "Promise.allSettledKeyed requires an object"
+                        : "Promise.allKeyed requires an object");
 
-                var resolveElement = new JSFunction((in Arguments args) =>
+                var keys = new System.Collections.Generic.List<JSValue>();
+                var values = new System.Collections.Generic.List<JSValue>();
+                var remaining = 1;
+
+                void Settle()
                 {
-                    var r = args.Get1();
-                    sc.Post((_) =>
+                    if (--remaining != 0)
+                        return;
+
+                    // CreateKeyedPromiseCombinatorResultObject: OrdinaryObjectCreate(null) plus
+                    // CreateDataPropertyOrThrow for each key in input order.
+                    var result = new JSObject { BasePrototypeObject = null };
+                    for (var i = 0; i < keys.Count; i++)
+                        result[keys[i]] = values[i];
+                    resolve.InvokeFunction(new Arguments(JSUndefined.Value, result));
+                }
+
+                var allKeys = Objects.JSReflect.OwnKeys(new Arguments(JSUndefined.Value, obj));
+                for (uint k = 0, count = (uint)allKeys.Length; k < count; k++)
+                {
+                    var key = allKeys[k];
+                    // [[GetOwnProperty]] (through a Proxy's trap): only own enumerable keys.
+                    if (!PropertyIsEnumerable(new Arguments(obj, key)).BooleanValue)
+                        continue;
+
+                    var value = obj[key];
+                    var index = keys.Count;
+                    keys.Add(key);
+                    values.Add(JSUndefined.Value);
+
+                    var nextPromise = promiseResolve.InvokeFunction(new Arguments(constructor, value));
+
+                    var alreadyCalled = false;
+                    JSFunction Element(bool fulfilled) => new((in Arguments args) =>
                     {
-                        result[capturedKey] = r;
-                        remaining--;
-                        if (remaining <= 0)
-                            resolve.InvokeFunction(new Arguments(JSUndefined.Value, result));
-                    }, null);
-                    return JSUndefined.Value;
-                }, "", "function () { [native code] }", length: 1, createPrototype: false);
+                        if (alreadyCalled)
+                            return JSUndefined.Value;
+                        alreadyCalled = true;
 
-                var rejectElement = new JSFunction((in Arguments args) =>
-                {
-                    var v = args.Get1();
-                    sc.Post((o) => reject.InvokeFunction(new Arguments(JSUndefined.Value, o as JSValue)), v);
-                    return JSUndefined.Value;
-                }, "", "function () { [native code] }", length: 1, createPrototype: false);
+                        var x = args.Get1();
+                        if (settled)
+                        {
+                            var entry = new JSObject();
+                            entry[KeyStrings.GetOrCreate("status")] = CreateString(fulfilled ? "fulfilled" : "rejected");
+                            entry[KeyStrings.GetOrCreate(fulfilled ? "value" : "reason")] = x;
+                            x = entry;
+                        }
 
-                if (value is JSPromise p)
-                {
-                    p.Then(resolveElement.Delegate, rejectElement.Delegate);
-                    continue;
+                        values[index] = x;
+                        Settle();
+                        return JSUndefined.Value;
+                    }, "", "function () { [native code] }", length: 1, createPrototype: false);
+
+                    var onFulfilled = Element(fulfilled: true);
+                    // The "all" variant rejects with the capability's own reject function.
+                    var onRejected = settled ? Element(fulfilled: false) : reject;
+
+                    remaining++;
+                    var then = nextPromise[KeyStrings.then];
+                    if (!then.IsFunction)
+                        throw JSEngine.NewTypeError("Promise resolve did not return a thenable");
+
+                    then.InvokeFunction(new Arguments(nextPromise, onFulfilled, onRejected));
                 }
 
-                var then = value[KeyStrings.then];
-                if (then.IsFunction)
-                {
-                    then.InvokeFunction(new Arguments(value, resolveElement, rejectElement));
-                    continue;
-                }
-
-                resolveElement.InvokeFunction(new Arguments(JSUndefined.Value, value));
+                Settle();
+            }
+            catch (JSException ex)
+            {
+                reject.InvokeFunction(new Arguments(JSUndefined.Value, ex.Error ?? JSException.JSErrorFrom(ex)));
             }
         });
     }
@@ -520,39 +560,7 @@ public partial class JSPromise
 
     [JSExport("allSettledKeyed", Length = 1)]
     public static JSValue AllSettledKeyed(in Arguments a)
-    {
-        var input = a.Get1();
-        if (input is not JSObject obj)
-            return CreatePromiseFromConstructor(a.This, (resolve, _) =>
-            {
-                resolve.InvokeFunction(new Arguments(JSUndefined.Value, new JSObject()));
-            });
-
-        var result = new JSObject();
-        var en = obj.GetOwnProperties(false).GetEnumerator();
-        while (en.MoveNext(out var key, out var property))
-        {
-            var value = obj.GetValue(property);
-            var entry = new JSObject();
-            if (value is JSPromise promise && promise.state == PromiseState.Rejected)
-            {
-                entry[KeyStrings.GetOrCreate("status")] = CreateString("rejected");
-                entry[KeyStrings.GetOrCreate("reason")] = promise.result;
-            }
-            else
-            {
-                entry[KeyStrings.GetOrCreate("status")] = CreateString("fulfilled");
-                entry[KeyStrings.GetOrCreate("value")] = value is JSPromise settled ? settled.result : value;
-            }
-
-            result[key] = entry;
-        }
-
-        return CreatePromiseFromConstructor(a.This, (resolve, _) =>
-        {
-            resolve.InvokeFunction(new Arguments(JSUndefined.Value, result));
-        });
-    }
+        => PerformPromiseAllKeyed(a.This, a.Get1(), settled: true);
 
     [JSExport("any", Length = 1)]
     public static JSValue Any(in Arguments a)
@@ -635,11 +643,11 @@ public partial class JSPromise
     }
 
     // Builds an AggregateError whose "errors" property holds the collected
-    // rejection reasons, using the realm's AggregateError constructor so that
-    // the result is `instanceof AggregateError` with the correct prototype.
+    // rejection reasons, using the realm's intrinsic %AggregateError% (not the
+    // mutable global binding) so that the result has the correct prototype.
     private static JSValue NewAggregateError(JSValue errors)
     {
-        var constructor = (JSEngine.CurrentContext as JSObject)?[KeyStrings.GetOrCreate("AggregateError")];
+        var constructor = Intrinsics.Constructor(KeyStrings.GetOrCreate("AggregateError"));
         if (constructor != null && constructor.IsFunction)
             return constructor.CreateInstance(new Arguments(JSUndefined.Value, errors));
 

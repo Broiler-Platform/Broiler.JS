@@ -257,6 +257,9 @@ partial class FastParser
                 if (stream.CheckAndConsume(TokenTypes.SquareBracketEnd))
                     break;
 
+                // BindingElementList is comma-separated: `[a b]` is a SyntaxError, and so is the
+                // same pair on two lines: a line terminator does not separate two elements.
+                throw stream.Unexpected();
             } while (true);
 
             arrayPattern = new AstArrayPattern(begin, PreviousToken, nodes);
