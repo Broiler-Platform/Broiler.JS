@@ -10,7 +10,7 @@ capabilities and CLR integration must be restricted by the embedding application
 > **First-preview status:** The public API and behavior are unstable, breaking changes
 > may occur without notice, and untrusted scripts must not be executed on the assumption
 > that the engine provides isolation. This component is **not human-approved for preview
-> use** while [HUMAN_REVIEW.md](HUMAN_REVIEW.md) remains `PENDING`.
+> use** while [HUMAN_REVIEW.md](https://github.com/Broiler-Platform/Broiler.JS/blob/main/HUMAN_REVIEW.md) remains `PENDING`.
 
 ---
 
@@ -24,7 +24,7 @@ substantially to pursue the goal of near-complete ECMAScript conformance.
 Broiler.JS is maintained independently. It is not an official Yantra JS version,
 continuation, or release, and the Yantra JS authors have not reviewed or endorsed it.
 The upstream name is used only for accurate provenance. See
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+[THIRD_PARTY_NOTICES.md](https://github.com/Broiler-Platform/Broiler.JS/blob/main/THIRD_PARTY_NOTICES.md).
 
 ---
 
@@ -53,7 +53,7 @@ to help is a donation (see below).
 AI-generated or AI-modified implementation must receive source-level review from a real
 developer before a release is described as reviewed. The per-release record must identify
 the exact commit, evidence, findings, scope, and human decision in
-[HUMAN_REVIEW.md](HUMAN_REVIEW.md). Test262 results are valuable conformance evidence,
+[HUMAN_REVIEW.md](https://github.com/Broiler-Platform/Broiler.JS/blob/main/HUMAN_REVIEW.md). Test262 results are valuable conformance evidence,
 but they do not by themselves establish security or safety.
 
 ---
@@ -66,10 +66,10 @@ aims to pass nearly the full suite, and conformance is tracked continuously in C
 
 | Resource | Description |
 |---|---|
-| [Compliance dashboard](docs/compliance/dashboard.md) | Current pass/fail status by feature area |
-| [Known gaps](docs/compliance/known-gaps.md) | Features not yet implemented |
-| [Roadmap](docs/roadmap/) | Every open plan for the engine: the component roadmap, the performance campaign, the acceptance gate, and the optimization catalogue |
-| [Compliance process](docs/compliance/process.md) | How test262 runs are managed in CI |
+| [Compliance dashboard](https://github.com/Broiler-Platform/Broiler.JS/blob/main/docs/compliance/dashboard.md) | Current pass/fail status by feature area |
+| [Known gaps](https://github.com/Broiler-Platform/Broiler.JS/blob/main/docs/compliance/known-gaps.md) | Features not yet implemented |
+| [Roadmap](https://github.com/Broiler-Platform/Broiler.JS/tree/main/docs/roadmap/) | Every open plan for the engine: the component roadmap, the performance campaign, the acceptance gate, and the optimization catalogue |
+| [Compliance process](https://github.com/Broiler-Platform/Broiler.JS/blob/main/docs/compliance/process.md) | How test262 runs are managed in CI |
 
 ---
 
@@ -77,15 +77,16 @@ aims to pass nearly the full suite, and conformance is tracked continuously in C
 
 | Resource | Description |
 |---|---|
-| [Public API reference](docs/public-api.md) | Supported packages, entry points, module boundaries |
-| [Architecture overview](docs/architecture/overview.md) | Engine layers and satellite assemblies |
-| [Assembly boundaries](docs/architecture/dependencies.md) | Dependency direction and supported cross-assembly seams |
-| [Performance measurement](docs/roadmap/Measurement.md) | Repeatable baselines, bootstrap profiles, and execution-mode boundaries — the gate every performance claim passes |
-| [Performance and benchmark roadmap](docs/roadmap/Roadmap.md) | JavaScript execution speed: phases 0–5, the Octane and probe metrics they are judged on, and the evidence each still owes |
-| [JavaScript VM profile roadmap](docs/roadmap/Phase-6.md) | JavaScript semantics, lowering, verification, execution, and conformance on Broiler.VM; the generic VM host and WebAssembly built-in are owned by `Broiler.VM/docs/roadmap.md` in the aggregate repository |
-| [Contributing built-ins](docs/architecture/contributing-builtins.md) | How to implement new built-in objects |
-| [LogParser usage](logs/README.md) | Shard log summarizer and JSON export |
-| [Contributing](CONTRIBUTING.md) | CI pipeline, test262 workflow, running tests locally |
+| [Public API reference](https://github.com/Broiler-Platform/Broiler.JS/blob/main/docs/public-api.md) | Supported packages, entry points, module boundaries |
+| [Architecture overview](https://github.com/Broiler-Platform/Broiler.JS/blob/main/docs/architecture/overview.md) | Engine layers and satellite assemblies |
+| [Assembly boundaries](https://github.com/Broiler-Platform/Broiler.JS/blob/main/docs/architecture/dependencies.md) | Dependency direction and supported cross-assembly seams |
+| [Performance measurement](https://github.com/Broiler-Platform/Broiler.JS/blob/main/docs/roadmap/Measurement.md) | Repeatable baselines, bootstrap profiles, and execution-mode boundaries — the gate every performance claim passes |
+| [Performance and benchmark roadmap](https://github.com/Broiler-Platform/Broiler.JS/blob/main/docs/roadmap/Roadmap.md) | JavaScript execution speed: phases 0–5, the Octane and probe metrics they are judged on, and the evidence each still owes |
+| [JavaScript VM profile roadmap](https://github.com/Broiler-Platform/Broiler.JS/blob/main/docs/roadmap/Phase-6.md) | JavaScript semantics, lowering, verification, execution, and conformance on Broiler.VM; the generic VM host and WebAssembly built-in are owned by `Broiler.VM/docs/roadmap.md` in the aggregate repository |
+| [Contributing built-ins](https://github.com/Broiler-Platform/Broiler.JS/blob/main/docs/architecture/contributing-builtins.md) | How to implement new built-in objects |
+| [Publishing](https://github.com/Broiler-Platform/Broiler.JS/blob/main/docs/publishing.md) | How preview packages are versioned and published to nuget.org |
+| [LogParser usage](https://github.com/Broiler-Platform/Broiler.JS/blob/main/logs/README.md) | Shard log summarizer and JSON export |
+| [Contributing](https://github.com/Broiler-Platform/Broiler.JS/blob/main/CONTRIBUTING.md) | CI pipeline, test262 workflow, running tests locally |
 
 ---
 
@@ -111,7 +112,7 @@ python scripts/compliance/run_test262.py \
   --shard-count 1 --shard-index 0
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full incremental CI workflow.
+See [CONTRIBUTING.md](https://github.com/Broiler-Platform/Broiler.JS/blob/main/CONTRIBUTING.md) for the full incremental CI workflow.
 
 ---
 
@@ -130,9 +131,9 @@ the time needed to keep test262 passing and the project moving forward.
 
 ## License
 
-Broiler.JS is licensed under the [Apache License 2.0](LICENSE).
+Broiler.JS is licensed under the [Apache License 2.0](https://github.com/Broiler-Platform/Broiler.JS/blob/main/LICENSE).
 
 This project is derived in part from [Yantra JS](https://github.com/yantrajs/yantra),
 which is also licensed under the Apache License 2.0. Upstream attribution and independence
-are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The license provides
+are documented in [THIRD_PARTY_NOTICES.md](https://github.com/Broiler-Platform/Broiler.JS/blob/main/THIRD_PARTY_NOTICES.md). The license provides
 the software on an “AS IS” basis, without warranties or conditions.
