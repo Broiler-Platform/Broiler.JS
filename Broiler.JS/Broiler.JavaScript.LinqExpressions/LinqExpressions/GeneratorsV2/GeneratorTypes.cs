@@ -47,8 +47,12 @@ public class TryBlock
     // a `return`) that this region's `finally` must re-raise when it completes normally.
     // Stored per region — not in a single generator-wide field — so that a `finally`
     // nested inside another region's `finally` does not clobber the outer pending
-    // completion while it unwinds (see Throw / UnwindException).
+    // completion while it unwinds (see EndFinally / UnwindException).
     public Exception PendingError;
+
+    // A break/continue that left this region's try or catch block, as the number of its target
+    // in the region's dispatch: the finally runs first, then EndFinally hands the jump back.
+    public int PendingJump;
 }
 
 public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, Arguments arguments, bool asyncGenerator = false, bool strict = false)
@@ -187,7 +191,9 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
         {
             // A return completion — the body's own `return`, or one injected by
             // Generator.prototype.return — unwound through every enclosing `finally`
-            // block without being overridden. The generator completes with it.
+            // block without being overridden. The generator completes with it. It is
+            // normally delivered without being thrown (UnwindException, EndFinally), so
+            // this only catches one that is thrown anyway.
             done = true;
             value = grc.Value ?? JSUndefined.Value;
         }
@@ -482,15 +488,19 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
 
     private GeneratorState GetNext(int nextJump, JSValue lastValue, Exception nextExp = null)
     {
+        // An abrupt completion injected while the body was suspended (throw(), return(), a
+        // rejected await, a return that still has finally blocks to run) is delivered by
+        // unwinding the try regions directly. That is exactly what throwing it into the catch
+        // below would do, without raising a .NET exception for ordinary control flow.
+        var ie = injectedException;
+        if (ie != null)
+        {
+            injectedException = null;
+            return UnwindException(ie, lastValue);
+        }
+
         try
         {
-            var ie = injectedException;
-            if (ie != null)
-            {
-                injectedException = null;
-                throw ie;
-            }
-
             var r = @delegate(this, in arguments, nextJump, lastValue, nextExp);
 
             // this is case of try end and catch end...
@@ -507,8 +517,7 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
             // the same unwinding path as Generator.prototype.return: inject a return
             // completion and let UnwindException run the finally chain. The result is a
             // yield suspension (surfaced), an overriding completion, or — when no finally
-            // overrides — the GeneratorReturnCompletion is re-raised and converted to a
-            // done result at the Next boundary.
+            // overrides — the return itself, once every finally has run (see EndFinally).
             if (r.HasValue && r.NextJump == -1 && HasUnbegunFinally())
             {
                 InjectException(new GeneratorReturnCompletion(r.Value));
@@ -539,41 +548,51 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
 
     // Unwinds <paramref name="ex"/> through the generator's try-region stack, running
     // catch / finally handlers and popping regions that cannot handle it, until one
-    // handles it (a value is produced) or the stack empties (rethrow). This is done
-    // explicitly here rather than relying on outer GetNext frames to catch a rethrow:
-    // on a *direct resume* into a yield suspended inside a try/catch/finally (e.g.
-    // Generator.prototype.return parking a return completion there) there is no outer
-    // frame, so enclosing `finally` blocks would otherwise be skipped.
+    // handles it (a value is produced) or the stack empties (an exception is rethrown;
+    // a return completion completes the generator). This is done explicitly here rather
+    // than relying on outer GetNext frames to catch a rethrow: on a *direct resume* into
+    // a yield suspended inside a try/catch/finally (e.g. Generator.prototype.return
+    // parking a return completion there) there is no outer frame, so enclosing `finally`
+    // blocks would otherwise be skipped.
     private GeneratorState UnwindException(Exception ex, JSValue lastValue)
     {
         while (true)
         {
-            // A region whose own catch or finally is already running cannot handle an
-            // exception raised from within it — pop it and try the enclosing region.
-            if (Root is { } began && (began.CatchBegan || began.FinallyBegan))
+            var root = Root;
+            if (root == null)
+            {
+                // No region is left to run a finally. A return completion ends the generator
+                // with its value (NextCore reads NextJump -1 as done); an exception escapes.
+                if (ex is GeneratorReturnCompletion completion)
+                    return new GeneratorState(completion.Value ?? JSUndefined.Value, -1, false);
+
+                throw ex;
+            }
+
+            // A region whose finally is already running cannot handle a completion raised
+            // from within it — pop it and try the enclosing region.
+            if (root.FinallyBegan)
             {
                 Pop();
                 continue;
             }
 
-            var root = Root;
-            if (root == null)
-                throw ex;
-
             // A user `catch` handles a real exception, but NOT a return completion
             // (Generator.prototype.return only runs `finally` blocks and is invisible
-            // to user catch clauses).
-            if (ex is not GeneratorReturnCompletion && root.Catch > 0)
+            // to user catch clauses), nor one raised inside the catch block itself. Either
+            // way the same try statement's `finally` still runs, below.
+            if (ex is not GeneratorReturnCompletion && root.Catch > 0 && !root.CatchBegan)
                 return GetNext(root.Catch, lastValue, ex);
 
             if (root.Finally > 0)
             {
                 // GetNext(Finally) runs the finally body. If the finally overrides the
                 // completion (its own return / yield) it returns a value; otherwise the
-                // body's trailing Throw(endId) pops this region and re-raises `ex`,
-                // which propagates out (already fully unwound through any inner frames).
-                // The pending completion is recorded on the region itself, so a finally
-                // nested inside this one can carry its own pending completion without
+                // body's trailing EndFinally(endId) pops this region and resumes `ex`: a
+                // return completion comes back as the body's return value, and an exception
+                // is re-raised and propagates out (already fully unwound through any inner
+                // frames). The pending completion is recorded on the region itself, so a
+                // finally nested inside this one can carry its own pending completion without
                 // clobbering this one.
                 root.PendingError = ex;
                 var v = GetNext(root.Finally, lastValue);
@@ -583,9 +602,9 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
                 throw ex;
             }
 
-            // This region cannot handle `ex` (a return completion with no finally, or
-            // a real exception with neither catch nor finally): pop it and unwind at
-            // the enclosing region.
+            // This region cannot handle `ex` (a return completion with no finally, or a
+            // real exception with no finally and no catch that can take it): pop it and
+            // unwind at the enclosing region.
             Pop();
         }
     }
@@ -613,21 +632,86 @@ public class ClrGeneratorV2(JSValue generator, JSGeneratorDelegateV2 @delegate, 
         Root = Root.Parent;
     }
 
-    public void Throw(int end)
+    // The value of the return completion EndFinally found pending, for TakeReturnValue.
+    private JSValue pendingReturnValue;
+
+    /// <summary>
+    /// Ends a finally block that completed normally by resuming the completion that entered it.
+    /// </summary>
+    /// <returns>
+    /// 0 when the finally was entered normally: execution continues after the try statement.
+    /// 1 for a return completion: the region is popped, and the body then returns
+    /// <see cref="TakeReturnValue"/> exactly as a <c>return</c> at this point would, so GetNext
+    /// carries it through any enclosing finally without a .NET exception. 1 + n for a pending
+    /// jump to the region's target n (see <see cref="LeaveTry"/>): the region is popped and the
+    /// body continues the jump. A pending exception is re-thrown.
+    /// </returns>
+    public int EndFinally(int end)
     {
-        // A break/continue executed inside a finally can branch out of inner try
-        // regions without running their normal Pop epilogue, leaving Root pointing at
-        // a stale inner region whose finally already ran. Reconcile by popping such
-        // already-run regions until we reach the region this Throw(end) belongs to.
+        PopFinishedRegions(end);
+        if (Root == null || Root.End != end)
+            return 0;
+
+        var region = Root;
+        if (region.PendingError is { } pending)
+        {
+            Pop();
+            if (pending is GeneratorReturnCompletion completion)
+            {
+                pendingReturnValue = completion.Value ?? JSUndefined.Value;
+                return 1;
+            }
+
+            throw pending;
+        }
+
+        if (region.PendingJump > 0)
+        {
+            Pop();
+            return 1 + region.PendingJump;
+        }
+
+        return 0;
+    }
+
+    /// <summary>
+    /// A break/continue leaving the try or catch block of region <paramref name="end"/>, which
+    /// has a finally: the jump waits in the region while the finally runs, and
+    /// <see cref="EndFinally"/> resumes it once the finally completes normally. (A finally that
+    /// completes abruptly itself overrides the jump, as it would any other completion.)
+    /// </summary>
+    public void LeaveTry(int end, int jump)
+    {
+        PopFinishedRegions(end);
+        if (Root != null && Root.End == end)
+            Root.PendingJump = jump;
+    }
+
+    /// <summary>
+    /// A break/continue leaving region <paramref name="end"/> with no finally to run first: out
+    /// of a try statement without one, or out of the finally block itself, which overrides the
+    /// completion that was pending in it.
+    /// </summary>
+    public void Leave(int end)
+    {
+        PopFinishedRegions(end);
+        if (Root != null && Root.End == end)
+            Pop();
+    }
+
+    // Regions left without their Pop epilogue whose finally has already run cannot be resumed.
+    // Pop them until the region `end` (or one that has not reached its finally) is on top.
+    private void PopFinishedRegions(int end)
+    {
         while (Root != null && Root.End != end && Root.FinallyBegan)
             Pop();
+    }
 
-        if (Root == null || Root.End != end || Root.PendingError == null)
-            return;
-
-        var pending = Root.PendingError;
-        Pop();
-        throw pending;
+    public JSValue TakeReturnValue()
+    {
+        var value = pendingReturnValue;
+        pendingReturnValue = null;
+        return value;
     }
 
     public void BeginFinally()

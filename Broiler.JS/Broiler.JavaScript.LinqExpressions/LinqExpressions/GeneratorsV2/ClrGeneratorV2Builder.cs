@@ -10,7 +10,10 @@ public class ClrGeneratorV2Builder
 {
     private static readonly Type type = typeof(ClrGeneratorV2);
 
-    private static readonly MethodInfo _throw = type.PublicMethod(nameof(ClrGeneratorV2.Throw), typeof(int));
+    private static readonly MethodInfo _endFinally = type.PublicMethod(nameof(ClrGeneratorV2.EndFinally), typeof(int));
+    private static readonly MethodInfo _takeReturnValue = type.PublicMethod(nameof(ClrGeneratorV2.TakeReturnValue));
+    private static readonly MethodInfo _leaveTry = type.PublicMethod(nameof(ClrGeneratorV2.LeaveTry), typeof(int), typeof(int));
+    private static readonly MethodInfo _leave = type.PublicMethod(nameof(ClrGeneratorV2.Leave), typeof(int));
     private static readonly MethodInfo _beginCatch = type.PublicMethod(nameof(ClrGeneratorV2.BeginCatch));
     private static readonly MethodInfo _beginFinally = type.PublicMethod(nameof(ClrGeneratorV2.BeginFinally));
     private static readonly MethodInfo _push = type.PublicMethod(nameof(ClrGeneratorV2.PushTry), typeof(int), typeof(int), typeof(int));
@@ -28,5 +31,8 @@ public class ClrGeneratorV2Builder
     internal static Expression Pop(ParameterExpression pe) => Expression.Call(pe, _pop);
     internal static Expression BeginCatch(ParameterExpression pe) => Expression.Call(pe, _beginCatch);
     internal static Expression BeginFinally(ParameterExpression pe) => Expression.Call(pe, _beginFinally);
-    internal static Expression Throw(ParameterExpression pe, int id) => Expression.Call(pe, _throw, Expression.Constant(id));
+    internal static Expression EndFinally(ParameterExpression pe, int id) => Expression.Call(pe, _endFinally, Expression.Constant(id));
+    internal static Expression TakeReturnValue(ParameterExpression pe) => Expression.Call(pe, _takeReturnValue);
+    internal static Expression LeaveTry(ParameterExpression pe, int id, int jump) => Expression.Call(pe, _leaveTry, Expression.Constant(id), Expression.Constant(jump));
+    internal static Expression Leave(ParameterExpression pe, int id) => Expression.Call(pe, _leave, Expression.Constant(id));
 }

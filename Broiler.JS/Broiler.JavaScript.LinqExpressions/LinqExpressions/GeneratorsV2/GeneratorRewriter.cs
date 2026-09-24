@@ -412,16 +412,30 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
 
         var (endLabel, endId) = GetNextYieldJumpTarget();
 
+        var tryBody = Store(Visit(node.Try));
+        var catchParameter = hasCatch ? Visit(@catch.Parameter) : null;
+        var catchBody = hasCatch ? Store(Visit(@catch.Body)) : null;
+        var finallyBody = hasFinally ? Visit(node.Finally) : null;
+
+        // A break/continue leaving the statement must leave its region the way a CLR `leave`
+        // leaves a try: through the finally, if there is one.
+        var exits = new RegionExitRewriter(pe, endId, finallyLabel, tryBody, catchBody, finallyBody);
+        tryBody = exits.RewriteTryOrCatch(tryBody);
+        if (hasCatch)
+            catchBody = exits.RewriteTryOrCatch(catchBody);
+        if (hasFinally)
+            finallyBody = exits.RewriteFinally(finallyBody);
+
         tryList.AddExpression(ClrGeneratorV2Builder.Push(pe, catchId, finallyId, endId));
-        tryList.AddExpression(Store(Visit(node.Try)));
+        tryList.AddExpression(tryBody);
         tryList.AddExpression(Expression.Goto(hasFinally ? finallyLabel : endLabel));
 
         if (hasCatch)
         {
             tryList.AddExpression(Expression.Label(catchLabel));
             tryList.AddExpression(ClrGeneratorV2Builder.BeginCatch(pe));
-            tryList.AddExpression(Expression.Assign(Visit(@catch.Parameter), exception));
-            tryList.AddExpression(Store(Visit(@catch.Body)));
+            tryList.AddExpression(Expression.Assign(catchParameter, exception));
+            tryList.AddExpression(catchBody);
             tryList.AddExpression(Expression.Empty);
             tryList.AddExpression(Expression.Goto(hasFinally ? finallyLabel : endLabel));
         }
@@ -430,8 +444,29 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
         {
             tryList.AddExpression(Expression.Label(finallyLabel));
             tryList.AddExpression(ClrGeneratorV2Builder.BeginFinally(pe));
-            tryList.AddExpression(Visit(node.Finally));
-            tryList.AddExpression(ClrGeneratorV2Builder.Throw(pe, endId));
+            tryList.AddExpression(finallyBody);
+            // The finally completed normally, so the completion that entered it resumes (see
+            // ClrGeneratorV2.EndFinally): with none pending, execution continues after the try
+            // statement; a pending exception is re-thrown; a pending return completion returns
+            // from the body right here, as a `return` would, for GetNext to carry through any
+            // enclosing finally; a pending jump continues to its target. That last goto leaves
+            // any enclosing try statement too, whose rewrite routes it through its own finally.
+            var pendingReturn = Expression.Label(typeof(void), "pendingReturn");
+            var dispatch = new Sequence<LabelTarget> { endLabel, pendingReturn };
+            var jumps = new Sequence<Expression>();
+            foreach (var target in exits.JumpTargets)
+            {
+                var jump = Expression.Label(typeof(void), "pendingJump");
+                dispatch.Add(jump);
+                jumps.Add(Expression.Label(jump));
+                jumps.Add(Expression.Goto(target));
+            }
+
+            tryList.AddExpression(Expression.JumpSwitch(ClrGeneratorV2Builder.EndFinally(pe, endId), dispatch));
+            tryList.AddExpression(Expression.Label(pendingReturn));
+            tryList.AddExpression(Expression.Return(generatorReturn, GeneratorStateBuilder.New(ClrGeneratorV2Builder.TakeReturnValue(pe), -1)));
+            foreach (var jump in jumps)
+                tryList.AddExpression(jump);
         }
 
         tryList.AddExpression(Expression.Label(endLabel));
@@ -443,5 +478,108 @@ public class GeneratorRewriter(ParameterExpression pe, LabelTarget @return, Para
 
         var b = tryList.Build();
         return b;
+    }
+
+    /// <summary>
+    /// Routes the jumps that leave a lowered try statement: a break, continue or labelled break
+    /// whose target is outside the statement.
+    /// </summary>
+    /// <remarks>
+    /// A try statement that holds a yield is lowered to a try region, and an ordinary goto out of
+    /// it skipped the finally and left the region on the stack, where it later ran that finally
+    /// out of turn or caught an exception thrown outside it. A goto out of the try or catch block
+    /// of a statement with a finally now records its target on the region and runs the finally,
+    /// whose end resumes the jump (see <see cref="ClrGeneratorV2.EndFinally"/>). Any other goto out
+    /// of the statement (from a try/catch without a finally, or from the finally block, whose
+    /// jump overrides the pending completion) first leaves the region. Targets are told apart the
+    /// way FinallyBranchScanner does: a label declared inside the statement is internal.
+    /// </remarks>
+    private sealed class RegionExitRewriter : BExpressionMapVisitor
+    {
+        private readonly ParameterExpression pe;
+        private readonly int endId;
+        private readonly LabelTarget finallyLabel;
+        private readonly HashSet<LabelTarget> internalLabels = [];
+        private bool inFinally;
+
+        // The targets of jumps that wait for the finally, in dispatch order: the jump recorded
+        // as n resumes at JumpTargets[n - 1].
+        public readonly Sequence<LabelTarget> JumpTargets = [];
+
+        public RegionExitRewriter(ParameterExpression pe, int endId, LabelTarget finallyLabel, params Expression[] bodies)
+        {
+            this.pe = pe;
+            this.endId = endId;
+            this.finallyLabel = finallyLabel;
+
+            var labels = new LabelCollector(internalLabels);
+            foreach (var body in bodies)
+            {
+                if (body != null)
+                    labels.Visit(body);
+            }
+        }
+
+        public Expression RewriteTryOrCatch(Expression body)
+        {
+            inFinally = false;
+            return Visit(body);
+        }
+
+        public Expression RewriteFinally(Expression body)
+        {
+            inFinally = true;
+            return Visit(body);
+        }
+
+        protected override Expression VisitGoto(GotoExpression node)
+        {
+            // A goto carrying a value is an expression-level exit, not a statement leaving the try.
+            if (node.Default != null || internalLabels.Contains(node.Target))
+                return base.VisitGoto(node);
+
+            if (inFinally || finallyLabel == null)
+                return Expression.Block(ClrGeneratorV2Builder.Leave(pe, endId), node);
+
+            var jump = 0;
+            var en = JumpTargets.GetFastEnumerator();
+            while (en.MoveNext(out var target, out var i))
+            {
+                if (target == node.Target)
+                {
+                    jump = i + 1;
+                    break;
+                }
+            }
+
+            if (jump == 0)
+            {
+                JumpTargets.Add(node.Target);
+                jump = JumpTargets.Count;
+            }
+
+            return Expression.Block(ClrGeneratorV2Builder.LeaveTry(pe, endId, jump), Expression.Goto(finallyLabel));
+        }
+
+        // A nested function has its own labels and jumps.
+        protected override Expression VisitLambda(LambdaExpression node) => node;
+
+        private sealed class LabelCollector(HashSet<LabelTarget> labels) : BExpressionMapVisitor
+        {
+            protected override Expression VisitLabel(BLabelExpression node)
+            {
+                labels.Add(node.Target);
+                return base.VisitLabel(node);
+            }
+
+            protected override Expression VisitLoop(BLoopExpression node)
+            {
+                labels.Add(node.Break);
+                labels.Add(node.Continue);
+                return base.VisitLoop(node);
+            }
+
+            protected override Expression VisitLambda(LambdaExpression node) => node;
+        }
     }
 }

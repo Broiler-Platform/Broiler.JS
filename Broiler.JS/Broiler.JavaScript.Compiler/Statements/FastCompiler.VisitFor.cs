@@ -1,16 +1,59 @@
 ﻿using Broiler.JavaScript.Ast.Expressions;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Ast.Statements;
+using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.Runtime;
+using System;
+using System.Reflection;
 
 namespace Broiler.JavaScript.Compiler;
 
 
 partial class FastCompiler
 {
+    private static readonly MethodInfo AsyncIteratorReturnMethod = typeof(FastCompiler)
+        .GetMethod(nameof(AsyncIteratorReturn), BindingFlags.NonPublic | BindingFlags.Static, [typeof(IElementEnumerator), typeof(IReturnableEnumerator)])
+        ?? throw new InvalidOperationException("FastCompiler.AsyncIteratorReturn(IElementEnumerator, IReturnableEnumerator) not found");
+    private static readonly MethodInfo AsyncIteratorReturnIgnoringErrorsMethod = typeof(FastCompiler)
+        .GetMethod(nameof(AsyncIteratorReturnIgnoringErrors), BindingFlags.NonPublic | BindingFlags.Static, [typeof(IElementEnumerator), typeof(IReturnableEnumerator)])
+        ?? throw new InvalidOperationException("FastCompiler.AsyncIteratorReturnIgnoringErrors(IElementEnumerator, IReturnableEnumerator) not found");
+    private static readonly MethodInfo CheckAsyncIteratorReturnResultMethod = typeof(FastCompiler)
+        .GetMethod(nameof(CheckAsyncIteratorReturnResult), BindingFlags.NonPublic | BindingFlags.Static, [typeof(JSValue)])
+        ?? throw new InvalidOperationException("FastCompiler.CheckAsyncIteratorReturnResult(JSValue) not found");
+
+    // AsyncIteratorClose up to its await: calls an async iterator's return() and hands back the
+    // result for the loop to await, or null when there is nothing to await. That is when the
+    // iterator has no return(), or is the sync-iterable fallback, closed here as for-of closes it.
+    private static JSValue AsyncIteratorReturn(IElementEnumerator enumerator, IReturnableEnumerator returnable)
+    {
+        if (enumerator is IAsyncDelegateIterator { IsAsyncIterator: true } asyncIterator)
+            return asyncIterator.TryDelegateReturn(JSUndefined.Value, out var result) ? result : null;
+
+        returnable?.Return();
+        return null;
+    }
+
+    private static JSValue AsyncIteratorReturnIgnoringErrors(IElementEnumerator enumerator, IReturnableEnumerator returnable)
+    {
+        try
+        {
+            return AsyncIteratorReturn(enumerator, returnable);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static void CheckAsyncIteratorReturnResult(JSValue result)
+    {
+        if (!result.IsObject)
+            throw JSEngine.NewTypeError("Iterator return result is not an object");
+    }
+
     protected override BExpression VisitForInStatement(AstForInStatement forInStatement, string? label = null)
     {
         FastFunctionScope? tdzScope = null;
@@ -259,21 +302,65 @@ partial class FastCompiler
         // itself throws; return() errors are only observable for non-throw
         // abrupt completions such as break/return.
         var caughtException = scope.Top.CreateException("#forOfIteratorClose");
-        var closeIterator = BExpression.Block(
-            BExpression.IfThen(
-                BExpression.Not(iterDoneVar),
-                BExpression.Block(
-                    BExpression.Call(null, CloseIteratorMethod, returnableVar),
-                    BExpression.Empty)),
-            BExpression.Empty);
-        var closeIteratorAfterThrow = BExpression.Block(
-            BExpression.IfThen(
-                BExpression.Not(iterDoneVar),
-                BExpression.Block(
-                    BExpression.Call(null, CloseIteratorIgnoringErrorsMethod, returnableVar),
-                    BExpression.Assign(iterDoneVar, BExpression.Constant(true)),
-                    BExpression.Empty)),
-            BExpression.Throw(caughtException.Expression));
+        BExpression closeIterator;
+        BExpression closeIteratorAfterThrow;
+        if (forOfStatement.IsAwait)
+        {
+            // for await closes an async iterator with AsyncIteratorClose: the result of its
+            // return() is awaited before the loop's completion goes on, and must be an object.
+            // On a throw completion the throw wins, so an error from return() or a rejection of
+            // its result is dropped, once the result has been awaited all the same.
+            var closeResultVar = BExpression.Variable(typeof(JSValue), "#forAwaitClose");
+            var closeErrorVar = BExpression.Variable(typeof(Exception), "#forAwaitCloseError");
+            pList.Add(closeResultVar);
+            pList.Add(closeErrorVar);
+            closeIterator = BExpression.Block(
+                BExpression.IfThen(
+                    BExpression.Not(iterDoneVar),
+                    BExpression.Block(
+                        BExpression.Assign(closeResultVar, BExpression.Call(null, AsyncIteratorReturnMethod, en, returnableVar)),
+                        BExpression.IfThen(
+                            BExpression.NotEqual(BExpression.Null, closeResultVar),
+                            BExpression.Block(
+                                BExpression.Assign(closeResultVar, BExpression.Await(closeResultVar)),
+                                BExpression.Call(null, CheckAsyncIteratorReturnResultMethod, closeResultVar),
+                                BExpression.Empty)),
+                        BExpression.Empty)),
+                BExpression.Empty);
+            closeIteratorAfterThrow = BExpression.Block(
+                BExpression.IfThen(
+                    BExpression.Not(iterDoneVar),
+                    BExpression.Block(
+                        BExpression.Assign(closeResultVar, BExpression.Call(null, AsyncIteratorReturnIgnoringErrorsMethod, en, returnableVar)),
+                        BExpression.IfThen(
+                            BExpression.NotEqual(BExpression.Null, closeResultVar),
+                            BExpression.Block(
+                                BExpression.TryCatch(
+                                    BExpression.Block(BExpression.Await(closeResultVar), BExpression.Empty),
+                                    BExpression.Catch(closeErrorVar, BExpression.Empty)),
+                                BExpression.Empty)),
+                        BExpression.Assign(iterDoneVar, BExpression.Constant(true)),
+                        BExpression.Empty)),
+                BExpression.Throw(caughtException.Expression));
+        }
+        else
+        {
+            closeIterator = BExpression.Block(
+                BExpression.IfThen(
+                    BExpression.Not(iterDoneVar),
+                    BExpression.Block(
+                        BExpression.Call(null, CloseIteratorMethod, returnableVar),
+                        BExpression.Empty)),
+                BExpression.Empty);
+            closeIteratorAfterThrow = BExpression.Block(
+                BExpression.IfThen(
+                    BExpression.Not(iterDoneVar),
+                    BExpression.Block(
+                        BExpression.Call(null, CloseIteratorIgnoringErrorsMethod, returnableVar),
+                        BExpression.Assign(iterDoneVar, BExpression.Constant(true)),
+                        BExpression.Empty)),
+                BExpression.Throw(caughtException.Expression));
+        }
 
         var loop = BExpression.Loop(bodyList, s.Break, s.Continue);
         var tryFinally = BExpression.TryCatchFinally(
