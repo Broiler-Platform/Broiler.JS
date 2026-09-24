@@ -466,11 +466,18 @@ partial class FastCompiler
                 bodyExpression = JSFunctionBuilder.NormalizeConstructorReturn(
                     bodyExpression, s.ThisExpression, thisIsUninitialized);
 
-            var block = BExpression.Block(
-                vList,
-                BExpression.TryFinally(
-                    bodyExpression,
-                    JSContextStackBuilder.Pop(stackItem, cs.Context)));
+            // A generator or async body gets no frame-pop try/finally. Its frame is left at every
+            // suspension without unwinding, and the JSGenerator step that runs the body already
+            // unwinds the frame stack to the depth it started from (RestoreDepth), however the
+            // body completes. The wrapper also gave every `return` in such a body a finally still
+            // to run, which ClrGeneratorV2 can only honor by unwinding the body's try regions.
+            var block = functionDeclaration.Generator || functionDeclaration.Async
+                ? BExpression.Block(vList, bodyExpression)
+                : BExpression.Block(
+                    vList,
+                    BExpression.TryFinally(
+                        bodyExpression,
+                        JSContextStackBuilder.Pop(stackItem, cs.Context)));
 
             // adding lexical scope pending...
 
