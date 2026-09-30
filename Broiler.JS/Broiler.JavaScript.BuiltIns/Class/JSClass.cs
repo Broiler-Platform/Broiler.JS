@@ -8,6 +8,9 @@ using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.BuiltIns.Class;
 
+// Broiler-AI:           Origin=AI; IP=Low; Security=Critical; Resources=2; Fingerprint=TBF
+// Broiler-Falsified-If: a write to a class constructor's own properties that bypasses the shape tracker is later served stale by an inline cache that trusts SupportsShapeTracking
+// Broiler-Human:        PENDING
 public class JSClass : JSFunction
 {
     /// <summary>
@@ -16,6 +19,9 @@ public class JSClass : JSFunction
     /// class installing <c>prototype</c> and <c>length</c> through <c>FastAddValue</c> instead of
     /// a mutable ref to the property store, which abandoned the layout on the spot.
     /// </summary>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Critical; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: a subclass of JSClass reports shape tracking, so an inline cache serves its statics from shape slots the subclass does not maintain
+    // Broiler-Human:        PENDING
     internal override bool SupportsShapeTracking => GetType() == typeof(JSClass);
 
     internal readonly JSValue super;
@@ -35,6 +41,9 @@ public class JSClass : JSFunction
     // [[Prototype]] at all.
     internal readonly bool hasHeritage;
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: class C extends F {} where F.prototype is a number defines the class instead of throwing a TypeError
+    // Broiler-Human:        PENDING
     internal static JSObject ResolveSuperclassPrototype(JSValue super)
     {
         if (super.IsNull)
@@ -53,8 +62,14 @@ public class JSClass : JSFunction
         throw JSEngine.NewTypeError("Class extends value does not have a valid prototype property");
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: an arrow function or a method definition is accepted as a class heritage
+    // Broiler-Human:        PENDING
     private static bool IsConstructableSuperclass(JSValue value) => JSConstructorOperations.IsConstructor(value);
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: Object.getPrototypeOf(class C {}) is the Object constructor rather than Function.prototype, or C.prototype is writable
+    // Broiler-Human:        PENDING
     public JSClass(JSFunctionDelegate fx, JSValue super, bool hasHeritage, string name = null, string code = null)
         : base(fx ?? (super as JSFunction)?.Delegate ?? empty, name, code)
     {
@@ -91,6 +106,9 @@ public class JSClass : JSFunction
         FastAddValue(KeyStrings.prototype, prototype, JSPropertyAttributes.ReadonlyValue);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: class C { constructor(x, y) {} } reports a length of 0
+    // Broiler-Human:        PENDING
     [EditorBrowsable(EditorBrowsableState.Never)]
     public void AddConstructor(JSFunction fx)
     {
@@ -116,6 +134,9 @@ public class JSClass : JSFunction
         IsOrdinaryUserFunction = fx.IsOrdinaryUserFunction;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: calling a class constructor without new runs its body instead of throwing a TypeError
+    // Broiler-Human:        PENDING
     public override JSValue InvokeFunction(in Arguments a)
     {
         using var realmScope = EnterRealm();
@@ -130,6 +151,9 @@ public class JSClass : JSFunction
     // JSFunction tail-call fast path (which would skip the new.target check).
     protected override bool SupportsTailCallLoop => false;
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+    // Broiler-Falsified-If: Reflect.construct of a class with a newTarget whose prototype property is not an object gives the instance the class's prototype instead of %Object.prototype%
+    // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public override JSValue CreateInstance(in Arguments a)
     {

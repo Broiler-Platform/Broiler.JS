@@ -11,6 +11,9 @@ using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.DataView;
 
+// Broiler-AI:           Origin=AI; IP=Medium; Security=Medium; Resources=4; Fingerprint=TBF
+// Broiler-Falsified-If: a get or set whose index plus element size exceeds the view's current byteLength, after the buffer is resized, shrunk or detached, touches the buffer instead of throwing
+// Broiler-Human:        PENDING
 [JSClassGenerator]
 public partial class DataView : JSObject
 {
@@ -25,6 +28,9 @@ public partial class DataView : JSObject
 
     internal int byteLength => ComputeByteLength();
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: a fixed-length view whose buffer shrank below its byteOffset plus its length reports a nonzero byteLength
+    // Broiler-Human:        PENDING
     private int ComputeByteLength()
     {
         if (buffer.isDetached)
@@ -45,6 +51,9 @@ public partial class DataView : JSObject
 
     // GetViewByteLength after an IsViewOutOfBounds check: a detached or out-of-bounds view
     // throws a TypeError (before the per-access RangeError bounds check).
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: a view whose byteOffset lies past the end of a shrunk or detached buffer returns a length instead of raising a TypeError
+    // Broiler-Human:        PENDING
     private int RequireInBoundsByteLength()
     {
         if (buffer.isDetached)
@@ -63,22 +72,37 @@ public partial class DataView : JSObject
     // Keep exception construction and message formatting out of the successful access
     // path. These helpers are deliberately not inlined; the Phase 0 disassembly job can
     // therefore verify that ordinary DataView reads/writes branch to cold throw blocks.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an access through a view on a detached buffer surfaces as an error other than a JS TypeError
+    // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowDetachedBuffer()
         => throw JSEngine.NewTypeError("Cannot operate on a detached ArrayBuffer");
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an access through an out-of-bounds view surfaces as a RangeError or a CLR exception instead of a JS TypeError
+    // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowOutOfBoundsView()
         => throw JSEngine.NewTypeError("DataView is out of bounds");
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an index past the end of the view surfaces as a TypeError or a CLR exception instead of a JS RangeError
+    // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowOffsetOutOfBounds(int offset)
         => throw JSEngine.NewRangeError($"Offset {offset} is outside the bounds of DataView");
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a set through a view over an immutable buffer surfaces as an error other than a JS TypeError
+    // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static void ThrowImmutableBuffer()
         => throw JSEngine.NewTypeError("Cannot modify a DataView backed by an immutable ArrayBuffer");
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s25.3.2.1; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: new DataView over a detached ArrayBuffer, or one the new.target prototype getter detaches, returns a view or raises a RangeError instead of a TypeError
+    // Broiler-Human:        PENDING
     [JSExport(Length = 1)]
     public DataView(in Arguments a) : this()
     {
@@ -143,6 +167,9 @@ public partial class DataView : JSObject
     // and require the result to be an integer index in [0, 2^53-1]; undefined / NaN map to 0 and a
     // negative or out-of-range value (including ±Infinity) is a RangeError. Returned as a long so the
     // buffer-bounds comparisons happen before the value is narrowed to the int offset/length fields.
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s7.1.22; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: a byteOffset or byteLength of -1 or 2^53 is accepted instead of raising a RangeError, or undefined yields anything but 0
+    // Broiler-Human:        PENDING
     private static long ToIndex(JSValue value)
     {
         if (value == null || value.IsUndefined)
@@ -156,6 +183,9 @@ public partial class DataView : JSObject
         return (long)integer;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a structured-clone copy built from a view's byteOffset and byteLength exposes a different byte range of the cloned buffer than the source view did
+    // Broiler-Human:        PENDING
     public DataView(JSArrayBuffer buffer, int byteOffset, int byteLength) : this()
     {
         this.buffer = buffer;
@@ -163,10 +193,16 @@ public partial class DataView : JSObject
         this.byteOffset = byteOffset;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: the returned span starts anywhere other than the view's byteOffset plus the requested offset
+    // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private Span<byte> BytesAt(int offset, int length)
         => buffer.buffer.AsSpan(byteOffset + offset, length);
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: writing 0x0102 little-endian stores 0x01 as the first byte
+    // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void WriteUInt16(int offset, ushort value, bool littleEndian)
     {
@@ -177,6 +213,9 @@ public partial class DataView : JSObject
             BinaryPrimitives.WriteUInt16BigEndian(bytes, value);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: writing 0x01020304 big-endian stores 0x04 as the first byte
+    // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void WriteUInt32(int offset, uint value, bool littleEndian)
     {
@@ -187,6 +226,9 @@ public partial class DataView : JSObject
             BinaryPrimitives.WriteUInt32BigEndian(bytes, value);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: writing 0x0102030405060708 little-endian stores 0x01 as the first byte
+    // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void WriteUInt64(int offset, ulong value, bool littleEndian)
     {
@@ -205,6 +247,9 @@ public partial class DataView : JSObject
     [JSExport]
     public int ByteLength => RequireInBoundsByteLength();
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: reading byteOffset on a view whose buffer was detached or shrunk below the view returns a number instead of raising a TypeError
+    // Broiler-Human:        PENDING
     [JSExport]
     public int ByteOffset
     {
@@ -215,6 +260,9 @@ public partial class DataView : JSObject
         }
     }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s7.1.22; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: an index above int.MaxValue but below 2^53 is narrowed to a value that passes the per-access bounds check, or an index of -1 is accepted
+    // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static int ToByteOffset(JSValue value)
     {
@@ -243,10 +291,16 @@ public partial class DataView : JSObject
     /// big-endian format. If false or undefined, a big-endian value is read. </param>
     /// <returns> The signed 64-bit integer at the specified byte offset from the start
     /// of the DataView. </returns>
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: getBigInt64 over eight 0xFF bytes returns anything other than -1n
+    // Broiler-Human:        PENDING
     [JSExport(Length = 1)]
     public JSValue GetBigInt64(in Arguments a) => new JSBigInt(GetInt64(in a));
 
     //internal method
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s25.3.1.5; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: an index whose value plus 8 exceeds the view's byteLength is read instead of raising a RangeError
+    // Broiler-Human:        PENDING
     public long GetInt64(in Arguments a)
     {
         var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
@@ -261,10 +315,16 @@ public partial class DataView : JSObject
             : BinaryPrimitives.ReadInt64BigEndian(bytes);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: getBigUint64 over eight 0xFF bytes returns -1n instead of 18446744073709551615n
+    // Broiler-Human:        PENDING
     [JSExport("getBigUint64", Length = 1)]
     public JSValue GetBigUInt64(in Arguments a) => new JSBigInt(new BigInteger((ulong)GetInt64(in a)));
 
     //internal method
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s25.3.1.5; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: an index whose value plus 4 exceeds the view's byteLength is read instead of raising a RangeError
+    // Broiler-Human:        PENDING
     public int GetInt32Int(in Arguments a)
     {
         var @this = this;
@@ -290,6 +350,9 @@ public partial class DataView : JSObject
     /// big-endian format. If false or undefined, a big-endian value is read. </param>
     /// <returns> The 32-bit floating point number at the specified byte offset from the start
     /// of the DataView. </returns>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: the big-endian bytes 3F 80 00 00 read as anything other than 1
+    // Broiler-Human:        PENDING
     [JSExport(Length = 1)]
     public JSValue GetFloat32(in Arguments a)
     {
@@ -301,6 +364,9 @@ public partial class DataView : JSObject
     /// Gets a 16-bit floating point number (half-precision) at the specified byte offset
     /// from the start of the DataView (ES2025 §2.8).
     /// </summary>
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: the big-endian bytes 3C 00 read as anything other than 1, or the bytes BC 00 read as a positive number
+    // Broiler-Human:        PENDING
     [JSExport(Length = 1)]
     public JSValue GetFloat16(in Arguments a)
     {
@@ -319,6 +385,9 @@ public partial class DataView : JSObject
     /// big-endian format. If false or undefined, a big-endian value is read. </param>
     /// <returns> The 64-bit floating point number at the specified byte offset from the start
     /// of the DataView. </returns>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: the big-endian bytes 3F F0 followed by six zero bytes read as anything other than 1
+    // Broiler-Human:        PENDING
     [JSExport(Length = 1)]
     public JSValue GetFloat64(in Arguments a)
     {
@@ -327,6 +396,9 @@ public partial class DataView : JSObject
     }
 
     //internal
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s25.3.1.5; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: the big-endian bytes FF FE yield 65534 instead of -2, or an index whose value plus 2 exceeds the view's byteLength is read
+    // Broiler-Human:        PENDING
     public int GetInt16Int(in Arguments a)
     {
         var @this = this;
@@ -352,6 +424,9 @@ public partial class DataView : JSObject
     /// big-endian format. If false or undefined, a big-endian value is read. </param>
     /// <returns> The signed 16-bit integer at the specified byte offset from the start of the
     /// DataView. </returns>
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: getInt16 over the big-endian bytes 80 00 returns 32768 instead of -32768
+    // Broiler-Human:        PENDING
     [JSExport(Length = 1)]
     public JSValue GetInt16(in Arguments a) => new JSNumber(GetInt16Int(in a));
 
@@ -366,6 +441,9 @@ public partial class DataView : JSObject
     /// big-endian format. If false or undefined, a big-endian value is read. </param>
     /// <returns> The signed 32-bit integer at the specified byte offset from the start
     /// of the DataView. </returns>
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: getInt32 over four 0xFF bytes returns 4294967295 instead of -1
+    // Broiler-Human:        PENDING
     [JSExport(Length = 1)]
     public JSValue GetInt32(in Arguments a) => new JSNumber(GetInt32Int(in a));
 
@@ -378,9 +456,15 @@ public partial class DataView : JSObject
     /// read the data. </param>
     /// <returns> The signed 8-bit integer (byte) at the specified byte offset from the start
     /// of the DataView. </returns>
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: getInt8 over the byte 0x80 returns 128 instead of -128
+    // Broiler-Human:        PENDING
     [JSExport(Length = 1)]
     public JSValue GetInt8(in Arguments a) => new JSNumber(GetInt8Int(in a));
 
+    // Broiler-AI:           Origin=Ported; Spec=ECMA-262 s25.3.1.5; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: an index equal to the view's byteLength is read instead of raising a RangeError
+    // Broiler-Human:        PENDING
     public int GetInt8Int(in Arguments a)
     {
         var @this = this;
@@ -404,6 +488,9 @@ public partial class DataView : JSObject
     /// big-endian format. If false or undefined, a big-endian value is read. </param>
     /// <returns> The unsigned 8-bit integer (byte) at the specified byte offset from the start
     /// of the DataView. </returns>
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: getUint16 over the big-endian bytes FF FE returns -2 instead of 65534
+    // Broiler-Human:        PENDING
     [JSExport(Length = 1)]
     public JSValue GetUint16(in Arguments a) => new JSNumber((ushort)GetInt16Int(in a));
 
@@ -418,6 +505,9 @@ public partial class DataView : JSObject
     /// big-endian format. If false or undefined, a big-endian value is read. </param>
     /// <returns> The unsigned 32-bit integer at the specified byte offset from the start
     /// of the DataView. </returns>
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: getUint32 over four 0xFF bytes returns -1 instead of 4294967295
+    // Broiler-Human:        PENDING
     [JSExport(Length = 1)]
     public JSValue GetUint32(in Arguments a) => new JSNumber((uint)GetInt32Int(in a));
 
@@ -430,6 +520,9 @@ public partial class DataView : JSObject
     /// read the data. </param>
     /// <returns> The unsigned 8-bit integer (byte) at the specified byte offset from the start
     /// of the DataView. </returns>
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: an index equal to the view's byteLength is read instead of raising a RangeError, or the byte 0xFF reads as -1
+    // Broiler-Human:        PENDING
     [JSExport(Length = 1)]
     public JSValue GetUint8(in Arguments a)
     {
@@ -456,12 +549,18 @@ public partial class DataView : JSObject
     // two's-complement 8-byte pattern shared by setBigInt64/setBigUint64. A plain
     // (long)/(ulong) cast on JSBigInt.BigIntValue overflows for magnitudes that do
     // not fit a signed 64-bit integer, so mask the BigInteger directly.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: -1n yields anything other than 0xFFFFFFFFFFFFFFFF, or 2 to the 64th plus 5 yields anything other than 5
+    // Broiler-Human:        PENDING
     private static ulong RawBitsFor(JSValue value)
     {
         var big = value is JSBigInt bigint ? bigint.value : new System.Numerics.BigInteger(value.BigIntValue);
         return (ulong)(big & ((BigInteger.One << 64) - 1));
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=4; Fingerprint=TBF
+    // Broiler-Falsified-If: setBigInt64 with 2^63 stores anything other than 80 followed by seven zero bytes big-endian
+    // Broiler-Human:        PENDING
     [JSExport(Length = 2)]
     public JSValue SetBigInt64(in Arguments a)
     {
@@ -470,6 +569,9 @@ public partial class DataView : JSObject
         return JSUndefined.Value;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=4; Fingerprint=TBF
+    // Broiler-Falsified-If: setBigUint64 with -1n stores anything other than eight 0xFF bytes
+    // Broiler-Human:        PENDING
     [JSExport("setBigUint64", Length = 2)]
     public JSValue SetBigUInt64(in Arguments a)
     {
@@ -478,6 +580,9 @@ public partial class DataView : JSObject
         return JSUndefined.Value;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: setFloat32 with 1 stores anything other than 3F 80 00 00 big-endian
+    // Broiler-Human:        PENDING
     [JSExport(Length = 2)]
     public JSValue SetFloat32(in Arguments a)
     {
@@ -490,6 +595,9 @@ public partial class DataView : JSObject
     /// Stores a 16-bit floating point (half-precision) value at the specified
     /// byte offset from the start of the DataView (ES2025 §2.8).
     /// </summary>
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: setFloat16 with 1 stores anything other than 3C 00 big-endian, or a value halfway between two halves is not rounded to even
+    // Broiler-Human:        PENDING
     [JSExport(Length = 2)]
     public JSValue SetFloat16(in Arguments a)
     {
@@ -500,6 +608,9 @@ public partial class DataView : JSObject
     }
 
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: setFloat64 with 1 stores anything other than 3F F0 followed by six zero bytes big-endian
+    // Broiler-Human:        PENDING
     [JSExport(Length = 2)]
     public JSValue SetFloat64(in Arguments a)
     {
@@ -508,6 +619,9 @@ public partial class DataView : JSObject
         return JSUndefined.Value;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: setInt16 with 65537 stores anything other than 00 01 big-endian
+    // Broiler-Human:        PENDING
     [JSExport(Length = 2)]
     public JSValue SetInt16(in Arguments a)
     {
@@ -516,6 +630,9 @@ public partial class DataView : JSObject
         return JSUndefined.Value;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: setInt32 with 4294967297 stores anything other than 00 00 00 01 big-endian
+    // Broiler-Human:        PENDING
     [JSExport(Length = 2)]
     public JSValue SetInt32(in Arguments a)
     {
@@ -525,6 +642,9 @@ public partial class DataView : JSObject
     }
 
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: setInt8 with -1 stores anything other than 0xFF at the view's byteOffset plus the index
+    // Broiler-Human:        PENDING
     [JSExport(Length = 2)]
     public JSValue SetInt8(in Arguments a)
     {
@@ -535,6 +655,9 @@ public partial class DataView : JSObject
         return JSUndefined.Value;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: setUint16 with -1 stores anything other than FF FF
+    // Broiler-Human:        PENDING
     [JSExport(Length = 2)]
     public JSValue SetUint16(in Arguments a)
     {
@@ -543,6 +666,9 @@ public partial class DataView : JSObject
         return JSUndefined.Value;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: setUint32 with 4294967295 stores anything other than FF FF FF FF
+    // Broiler-Human:        PENDING
     [JSExport(Length = 2)]
     public JSValue SetUint32(in Arguments a)
     {
@@ -551,6 +677,9 @@ public partial class DataView : JSObject
         return JSUndefined.Value;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: setUint8 with 256 stores anything other than 0
+    // Broiler-Human:        PENDING
     [JSExport(Length = 2)]
     public JSValue SetUint8(in Arguments a)
     {
@@ -561,6 +690,9 @@ public partial class DataView : JSObject
         return JSUndefined.Value;
     }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s25.3.1.6; IP=Low; Security=Medium; Resources=4; Fingerprint=TBF
+    // Broiler-Falsified-If: a value whose valueOf shrinks a resizable buffer is still written at an index past the view's new end
+    // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private (int byteOffset, bool littleEndian, DataView dataView, JSValue value) GetSetArgs(in Arguments a, int length, bool bigInt = false)
     {

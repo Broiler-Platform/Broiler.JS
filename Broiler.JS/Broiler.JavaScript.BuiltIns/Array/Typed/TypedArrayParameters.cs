@@ -5,6 +5,9 @@ using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
+// Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+// Broiler-Falsified-If: an offset or length it carries yields a view that indexes past the end of its ArrayBuffer instead of a RangeError at construction
+// Broiler-Human:        PENDING
 public readonly struct TypedArrayParameters
 {
     public readonly JSArrayBuffer buffer;
@@ -16,14 +19,20 @@ public readonly struct TypedArrayParameters
     public readonly JSValue thisArg;
     public readonly JSObject prototype;
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public static TypedArrayParameters From(in Arguments a, int bytesPerElements)
     {
         var (f, map, mapThis) = a.Get3();
         return new TypedArrayParameters(f, map, mapThis, bytesPerElements, GetConstructorPrototype(a.This));
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public static TypedArrayParameters Of(in Arguments a, int bytesPerElements) => new(a.Length, bytesPerElements, GetConstructorPrototype(a.This));
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     private TypedArrayParameters(int length, int bytesPerElements, JSObject prototype)
     {
         buffer = null;
@@ -36,6 +45,8 @@ public readonly struct TypedArrayParameters
         this.prototype = prototype;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     private TypedArrayParameters(JSValue source, JSValue map, JSValue thisArg, int bytesPerElements, JSObject prototype)
     {
         buffer = null;
@@ -48,6 +59,9 @@ public readonly struct TypedArrayParameters
         this.prototype = prototype;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a Uint8Array built from host bytes, such as by Uint8Array.fromHex, while a script constructor is running takes that constructor's prototype instead of Uint8Array.prototype
+    // Broiler-Human:        PENDING
     public TypedArrayParameters(byte[] data, int bytesPerElements)
     {
         buffer = new JSArrayBuffer(data);
@@ -60,6 +74,9 @@ public readonly struct TypedArrayParameters
         prototype = JSEngine.NewTargetPrototype;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: new Float64Array(buffer, 1, len) runs the valueOf of len before throwing the RangeError for the misaligned byteOffset
+    // Broiler-Human:        PENDING
     public TypedArrayParameters(
         in Arguments a, int bytesPerElements)
     {
@@ -119,6 +136,9 @@ public readonly struct TypedArrayParameters
         copyFrom = a1;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a bound TypedArray constructor, whose prototype property is undefined, is rejected with a TypeError instead of falling back to the realm's default typed-array prototype
+    // Broiler-Human:        PENDING
     private static JSObject GetConstructorPrototype(JSValue constructor)
     {
         if (constructor is not IJSFunction)
@@ -130,6 +150,9 @@ public readonly struct TypedArrayParameters
         throw JSEngine.NewTypeError("TypedArray constructor is not a constructor");
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: new Float64Array(2**29) returns a view of length 0 instead of throwing a RangeError, because only the element count and not its byte size is held to 2147483647
+    // Broiler-Human:        PENDING
     private static int ToTypedArrayLength(JSValue value)
     {
         // ToIndex: ToIntegerOrInfinity truncates toward zero FIRST (so -0.1 → -0,

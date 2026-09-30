@@ -7,17 +7,32 @@ using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Array;
 
+// Broiler-AI:           Origin=AI; IP=Medium; Security=Medium; Resources=8; Fingerprint=TBF
+// Broiler-Falsified-If: sort on an array-like whose length is 2^30 allocates a list of 2^30 slots before reading a single element
+// Broiler-Human:        PENDING
 public partial class JSArray
 {
+    // Broiler-AI:           Origin=AI; IP=None; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a Proxy receiver's has trap is not invoked for the probed index
+    // Broiler-Human:        PENDING
     private static bool HasIndexedProperty(JSObject @object, uint index)
         => @object.HasProperty(CreateNumber(index)).BooleanValue;
 
+    // Broiler-AI:           Origin=AI; IP=None; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an accessor at the index yields the getter function instead of the getter's result
+    // Broiler-Human:        PENDING
     private static JSValue GetIndexedValue(JSObject @object, uint index)
         => @object[index];
 
+    // Broiler-AI:           Origin=AI; IP=None; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a write to a non-writable index returns normally instead of raising a TypeError
+    // Broiler-Human:        PENDING
     private static void SetIndexedValue(JSObject @object, uint index, JSValue value)
         => @object.SetValue(index, value, @object, true);
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: deleting a non-configurable index returns normally instead of raising a TypeError
+    // Broiler-Human:        PENDING
     private static void DeleteIndexedValueOrThrow(JSObject @object, uint index)
     {
         if (!@object.Delete(index).BooleanValue)
@@ -28,16 +43,25 @@ public partial class JSArray
     // 32-bit array-index range (up to 2^53-1). Valid array indices (< 2^32-1)
     // keep the fast uint path; larger integer indices are addressed by their
     // canonical numeric property key.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: index 4294967295 is probed through the 32-bit element path and a property stored under that key is reported absent
+    // Broiler-Human:        PENDING
     private static bool HasIndexedProperty(JSObject @object, long index)
         => index < uint.MaxValue
             ? HasIndexedProperty(@object, (uint)index)
             : @object.HasProperty(CreateNumber(index)).BooleanValue;
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: index 4294967295 is read through the 32-bit element path and a property stored under that key comes back undefined
+    // Broiler-Human:        PENDING
     private static JSValue GetIndexedValue(JSObject @object, long index)
         => index < uint.MaxValue
             ? GetIndexedValue(@object, (uint)index)
             : @object[CreateNumber(index)];
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a write at index 4294967295 lands in element storage and is dropped instead of becoming an ordinary property
+    // Broiler-Human:        PENDING
     private static void SetIndexedValue(JSObject @object, long index, JSValue value)
     {
         if (index < uint.MaxValue)
@@ -46,6 +70,9 @@ public partial class JSArray
             @object.SetValue(CreateNumber(index), value, @object, true);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a failed delete at an index of 2^32 or above returns normally instead of raising a TypeError
+    // Broiler-Human:        PENDING
     private static void DeleteIndexedValueOrThrow(JSObject @object, long index)
     {
         if (index < uint.MaxValue)
@@ -54,9 +81,15 @@ public partial class JSArray
             throw JSEngine.NewTypeError($"Cannot delete property {index}");
     }
 
+    // Broiler-AI:           Origin=AI; IP=None; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a length accessor without a setter is replaced by a data property instead of raising a TypeError
+    // Broiler-Human:        PENDING
     private static void SetArrayLikeLength(JSObject @object, long length)
         => @object.SetValue(KeyStrings.length, CreateNumber(length), @object, true);
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: an overlapping copy whose target lies inside the source range reads elements it has already overwritten
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("copyWithin", Length = 2)]
     public static JSValue CopyWithin(in Arguments a)
@@ -127,6 +160,9 @@ public partial class JSArray
     /// <param name="start"> Optional. Start index. Defaults to 0. </param>
     /// <param name="end"> Optional. End index (exclusive). Defaults to the length of the array. </param>
     /// <returns> The array that is being operated on. </returns>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: a negative end argument beyond minus the length fills any element instead of none
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("fill", Length = 1)]
     public static JSValue Fill(in Arguments a)
@@ -156,6 +192,9 @@ public partial class JSArray
         return @this;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: pushing onto an array whose length is 2^32-1 drops the element meant for index 4294967295 instead of storing it before the RangeError
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("push", Length = 1)]
     public static JSValue Push(in Arguments a)
@@ -217,6 +256,9 @@ public partial class JSArray
         return newLength;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: on an array-like of length 2^32 the value returned is not the one stored at index 4294967295
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("pop")]
     public static JSValue Pop(in Arguments a)
@@ -242,6 +284,9 @@ public partial class JSArray
         return element;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: when only the upper index of a pair is present, the lower index is left unset instead of receiving the upper value
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("reverse")]
     public static JSValue Reverse(in Arguments a)
@@ -295,6 +340,9 @@ public partial class JSArray
         return @this;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: shift on an empty sealed array raises a TypeError instead of setting length to 0 and returning undefined
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("shift", Length = 0)]
     public static JSValue Shift(in Arguments a)
@@ -330,6 +378,9 @@ public partial class JSArray
         return first;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=8; Fingerprint=TBF
+    // Broiler-Falsified-If: a null element is moved after all other values without being passed to the comparator or compared as the string null
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("sort", Length = 1)]
     public static JSValue Sort(in Arguments a)
@@ -452,6 +503,9 @@ public partial class JSArray
         return @this;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: inserting two items at index 2147483647 of an array-like whose length is 2147483647 leaves its length negative instead of 2147483649
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("splice", Length = 2)]
     public static JSValue Splice(in Arguments a)
@@ -567,6 +621,9 @@ public partial class JSArray
     // 2^53-1). Mirrors Array.prototype.splice steps 7-19, addressing elements by
     // numeric property key so indices beyond the 32-bit range are honoured
     // rather than rejected with a (spec-incorrect) "array is too long" error.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: a splice whose resulting length exceeds 2^53-1 proceeds instead of raising a TypeError
+    // Broiler-Human:        PENDING
     private static JSValue SpliceLarge(in Arguments a, JSObject @this, long len, long start, long deleteCount, int itemsLength)
     {
         // Step 7: the resulting length must not exceed 2^53-1.
@@ -624,6 +681,9 @@ public partial class JSArray
         return deletedItems;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: unshift with no arguments on an array-like of length 2^53-1 walks the index range instead of only rewriting length
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("unshift", Length = 1)]
     public static JSValue Unshift(in Arguments a)

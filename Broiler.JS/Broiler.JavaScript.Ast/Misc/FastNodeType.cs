@@ -1,5 +1,7 @@
 ﻿namespace Broiler.JavaScript.Ast.Misc;
 
+// Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+// Broiler-Human:        PENDING
 public enum FastNodeType
 {
     Node,

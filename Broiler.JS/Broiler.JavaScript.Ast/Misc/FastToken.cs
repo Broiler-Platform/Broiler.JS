@@ -2,6 +2,9 @@
 
 namespace Broiler.JavaScript.Ast.Misc;
 
+// Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+// Broiler-Falsified-If: a token whose start or length runs past the end of the source gets a Span that reaches beyond the source text instead of the clamped remainder
+// Broiler-Human:        PENDING
 public class FastToken(TokenTypes type, string? source = null, string? cooked = null, string? flags = null,
     int start = 0, int length = 0, in SpanLocation startLocation = default, in SpanLocation endLocation = default,
     double number = 0, bool isKeyword = false, FastKeywords keyword = FastKeywords.none,
@@ -35,7 +38,12 @@ public class FastToken(TokenTypes type, string? source = null, string? cooked = 
     public FastToken? Next;
     public FastToken? Previous;
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=2; Fingerprint=TBF
+    // Broiler-Falsified-If: a reserved word spelled with a Unicode escape sequence and used as a property name resolves to a key other than the unescaped word
+    // Broiler-Human:        PENDING
     public FastToken AsString() => new(TokenTypes.String, Span.Source, CookedText ?? Span.Value, Flags, Span.Offset, Span.Length, Start, End, contextualKeyword: ContextualKeyword);
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=3; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public override string ToString() => $"{Type} {Span}";
 }

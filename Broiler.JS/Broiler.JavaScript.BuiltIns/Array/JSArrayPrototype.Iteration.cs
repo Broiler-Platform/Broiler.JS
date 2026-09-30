@@ -10,10 +10,19 @@ using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Array;
 
+// Broiler-AI:           Origin=AI; IP=Medium; Security=Medium; Resources=8; Fingerprint=TBF
+// Broiler-Falsified-If: flat(Infinity) on an array that contains itself ends the process with a stack overflow instead of raising a catchable error
+// Broiler-Human:        PENDING
 public partial class JSArray
 {
+    // Broiler-AI:           Origin=AI; IP=None; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: the constant differs from 2^53-1, so a push that would take an array-like past 9007199254740991 is not rejected with a TypeError
+    // Broiler-Human:        PENDING
     private const double MaxArrayLikeLength = 9007199254740991d;
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a null or undefined receiver is returned or boxed instead of raising a TypeError
+    // Broiler-Human:        PENDING
     private static JSObject ToArrayLikeObject(JSValue value)
     {
         if (value is JSObject @object)
@@ -25,6 +34,9 @@ public partial class JSArray
         return (JSObject)CreatePrimitiveObject(value);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an @@toPrimitive method is called with a hint other than number, or its object result is accepted instead of raising a TypeError
+    // Broiler-Human:        PENDING
     private static JSValue ToNumberPrimitive(JSValue value)
     {
         if (value is not JSObject @object)
@@ -57,6 +69,9 @@ public partial class JSArray
         throw JSEngine.NewTypeError("Cannot convert object to primitive value");
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: a Symbol value is returned for string conversion instead of raising a TypeError
+    // Broiler-Human:        PENDING
     private static JSValue ThrowIfSymbolToString(JSValue value)
     {
         if (value.IsSymbol)
@@ -65,6 +80,9 @@ public partial class JSArray
         return value;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: for an object without @@toPrimitive, valueOf is called before toString
+    // Broiler-Human:        PENDING
     private static JSValue ToStringPrimitive(JSValue value)
     {
         if (!value.IsObject)
@@ -98,8 +116,14 @@ public partial class JSArray
         throw JSEngine.NewTypeError("Cannot convert object to primitive value");
     }
 
+    // Broiler-AI:           Origin=AI; IP=None; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a Symbol or BigInt argument converts to a number instead of raising a TypeError
+    // Broiler-Human:        PENDING
     private static double ToNumber(JSValue value) => ToNumberPrimitive(value).DoubleValue;
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a length of 2^60 or +Infinity is returned above 9007199254740991 instead of being clamped to it
+    // Broiler-Human:        PENDING
     private static double ToLength(JSValue value)
     {
         if (value == null || value.IsUndefined)
@@ -115,6 +139,9 @@ public partial class JSArray
         return Math.Floor(length);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a finite argument beyond the long range such as 1e300 comes back negative or wrapped instead of saturating at long.MaxValue
+    // Broiler-Human:        PENDING
     private static long ToIntegerOrInfinity(JSValue value, long defaultValue = 0)
     {
         if (value == null || value.IsUndefined)
@@ -133,6 +160,9 @@ public partial class JSArray
         return (long)number;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a length property of 2^32 or more is returned as a wrapped small count instead of uint.MaxValue
+    // Broiler-Human:        PENDING
     private static uint GetArrayLikeLength(JSObject @object)
     {
         var length = ToLength(@object[KeyStrings.length]);
@@ -141,8 +171,14 @@ public partial class JSArray
             : (uint)length;
     }
 
+    // Broiler-AI:           Origin=AI; IP=None; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a length property above 2^53-1 is returned larger than 9007199254740991
+    // Broiler-Human:        PENDING
     private static long GetArrayLikeLengthLong(JSObject @object) => (long)ToLength(@object[KeyStrings.length]);
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a species constructor that returns a primitive has that primitive used as the result instead of raising a TypeError
+    // Broiler-Human:        PENDING
     private static JSObject CreateArraySpecies(JSObject source, long length)
     {
         if (!IsArrayValue(source))
@@ -174,6 +210,9 @@ public partial class JSArray
 
     // ArrayCreate(length): the default array constructor, which rejects a length above the
     // 2^32-1 array-index limit with a RangeError.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+    // Broiler-Falsified-If: a length of exactly 2^32 is accepted and wraps to an empty array instead of raising a RangeError
+    // Broiler-Human:        PENDING
     private static JSArray ArrayCreateChecked(long length)
     {
         if (length < 0 || length > uint.MaxValue)
@@ -182,6 +221,9 @@ public partial class JSArray
         return new JSArray((uint)length);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a Proxy defineProperty trap that returns false leaves the call returning normally instead of raising a TypeError
+    // Broiler-Human:        PENDING
     private static void CreateDataPropertyOrThrow(JSObject target, uint index, JSValue value)
     {
         // CreateDataProperty(O, P, V) is O.[[DefineOwnProperty]](P, {value, writable,
@@ -200,6 +242,9 @@ public partial class JSArray
             throw JSEngine.NewTypeError($"Cannot define property {index}");
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an index present only on the prototype chain is reported absent
+    // Broiler-Human:        PENDING
     private static bool TryGetArrayLikeElement(JSObject @object, uint index, out JSValue value)
     {
         if (!HasIndexedProperty(@object, index))
@@ -215,6 +260,9 @@ public partial class JSArray
     // 64-bit-index overload for array-likes whose length exceeds the 32-bit array
     // index range (up to 2^53-1). Indices past uint.MaxValue are addressed by their
     // canonical numeric property key via the long Has/Get overloads.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an index of 2^32 or above stored under its numeric property key is reported absent
+    // Broiler-Human:        PENDING
     private static bool TryGetArrayLikeElement(JSObject @object, long index, out JSValue value)
     {
         if (!HasIndexedProperty(@object, index))
@@ -232,10 +280,16 @@ public partial class JSArray
     // step from the receiver's "length" property, so shrinking it (arguments.length = 2)
     // ends iteration early and growing it keeps later elements reachable. Real arrays /
     // typed arrays use their own (hole-aware) element enumerator instead.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: iterating an array-like whose length is 2^32-1 or more never ends, because the int step counter wraps and restarts at index 0
+    // Broiler-Human:        PENDING
     private struct ArrayLikeValueEnumerator(JSObject @object) : IElementEnumerator
     {
         private int index = -1;
 
+        // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: shrinking the receiver length to 2 mid-iteration still yields the element stored at index 2
+        // Broiler-Human:        PENDING
         public bool MoveNext(out JSValue value)
         {
             if (++index < GetArrayLikeLength(@object))
@@ -248,6 +302,9 @@ public partial class JSArray
             return false;
         }
 
+        // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: a successful step reports an index different from the position whose value it returned
+        // Broiler-Human:        PENDING
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
         {
             if (MoveNext(out value))
@@ -262,6 +319,9 @@ public partial class JSArray
             return false;
         }
 
+        // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: an exhausted iterator leaves something other than the supplied default in the out value
+        // Broiler-Human:        PENDING
         public bool MoveNextOrDefault(out JSValue value, JSValue @default)
         {
             if (MoveNext(out value))
@@ -271,6 +331,9 @@ public partial class JSArray
             return false;
         }
 
+        // Broiler-AI:           Origin=AI; IP=None; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: an exhausted iterator returns something other than the supplied default
+        // Broiler-Human:        PENDING
         public JSValue NextOrDefault(JSValue @default) => MoveNext(out var value) ? value : @default;
     }
 
@@ -278,10 +341,16 @@ public partial class JSArray
     // entry variants the length is re-read on every step, so an index appended after
     // the iterator is created (but before it is exhausted) remains reachable and an
     // index removed by shrinking "length" ends iteration early.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: after 2^31 steps the int counter wraps and a negative key such as -2147483648 is yielded instead of 2147483648
+    // Broiler-Human:        PENDING
     private struct ArrayLikeKeyEnumerator(JSObject @object) : IElementEnumerator
     {
         private int index = -1;
 
+        // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: after 2^31 steps the int counter wraps and a negative key such as -2147483648 is yielded instead of 2147483648
+        // Broiler-Human:        PENDING
         public bool MoveNext(out JSValue value)
         {
             if (++index < GetArrayLikeLength(@object))
@@ -294,6 +363,9 @@ public partial class JSArray
             return false;
         }
 
+        // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: a successful step reports an index different from the position whose value it returned
+        // Broiler-Human:        PENDING
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
         {
             if (MoveNext(out value))
@@ -308,6 +380,9 @@ public partial class JSArray
             return false;
         }
 
+        // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: an exhausted iterator leaves something other than the supplied default in the out value
+        // Broiler-Human:        PENDING
         public bool MoveNextOrDefault(out JSValue value, JSValue @default)
         {
             if (MoveNext(out value))
@@ -317,13 +392,22 @@ public partial class JSArray
             return false;
         }
 
+        // Broiler-AI:           Origin=AI; IP=None; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: an exhausted iterator returns something other than the supplied default
+        // Broiler-Human:        PENDING
         public JSValue NextOrDefault(JSValue @default) => MoveNext(out var value) ? value : @default;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an entry carries a key that is not the index its value was read from, as happens once the int counter passes 2^31 and turns negative
+    // Broiler-Human:        PENDING
     private struct ArrayLikeEntryEnumerator(JSObject @object) : IElementEnumerator
     {
         private int index = -1;
 
+        // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: an entry carries a key that is not the index its value was read from, as happens once the int counter passes 2^31 and turns negative
+        // Broiler-Human:        PENDING
         public bool MoveNext(out JSValue value)
         {
             // Array iterators are live: per CreateArrayIterator the length is
@@ -342,6 +426,9 @@ public partial class JSArray
             return false;
         }
 
+        // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: a successful step reports an index different from the position whose value it returned
+        // Broiler-Human:        PENDING
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
         {
             if (MoveNext(out value))
@@ -356,6 +443,9 @@ public partial class JSArray
             return false;
         }
 
+        // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: an exhausted iterator leaves something other than the supplied default in the out value
+        // Broiler-Human:        PENDING
         public bool MoveNextOrDefault(out JSValue value, JSValue @default)
         {
             if (MoveNext(out value))
@@ -365,9 +455,15 @@ public partial class JSArray
             return false;
         }
 
+        // Broiler-AI:           Origin=AI; IP=None; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: an exhausted iterator returns something other than the supplied default
+        // Broiler-Human:        PENDING
         public JSValue NextOrDefault(JSValue @default) => MoveNext(out var value) ? value : @default;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: a callable Proxy wrapping a function is rejected with a TypeError instead of being called for each element
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("every", Length = 1)]
     public static JSValue Every(in Arguments a)
@@ -396,6 +492,9 @@ public partial class JSArray
         return JSBoolean.True;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a typed-array receiver gets the generic length-bound iterator instead of the typed-array iterator that throws once the view is out of bounds
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("entries")]
     public new static JSValue Entries(in Arguments a)
@@ -406,6 +505,9 @@ public partial class JSArray
         return new JSGenerator(new ArrayLikeEntryEnumerator(array), "Array Iterator");
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: an element kept by the callback is written at a result index other than the count of elements kept before it
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("filter", Length = 1)]
     public static JSValue Filter(in Arguments a)
@@ -436,6 +538,9 @@ public partial class JSArray
         return r;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: a hole in the array is skipped instead of being passed to the predicate as undefined
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("find", Length = 1)]
     public static JSValue Find(in Arguments a)
@@ -468,6 +573,9 @@ public partial class JSArray
     /// <param name="depth"> The depth level specifying how deep a nested array structure
     /// should be flattened. Defaults to 1. </param>
     /// <returns> A new array with the sub-array elements concatenated into it. </returns>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=8; Fingerprint=TBF
+    // Broiler-Falsified-If: an explicit undefined depth flattens a different number of levels than an omitted depth
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("flat", Length = 0)]
     public static JSValue Flat(in Arguments a)
@@ -498,6 +606,9 @@ public partial class JSArray
     /// <param name="thisArg"> Value to use as this when executing callback. </param>
     /// <returns> A new array with each element being the result of the callback function and
     /// flattened to a depth of 1. </returns>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: an array returned by the mapper is mapped again or flattened by more than one level
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("flatMap", Length = 1)]
     public static JSValue FlatMap(in Arguments a)
@@ -514,9 +625,15 @@ public partial class JSArray
         return result;
     }
 
+    // Broiler-AI:           Origin=AI; IP=None; Security=Medium; Resources=8; Fingerprint=TBF
+    // Broiler-Falsified-If: a nested array's length is not read from that nested array, so a nested Proxy's length trap never fires
+    // Broiler-Human:        PENDING
     private static void FlattenTo(JSObject result, JSObject @this, JSValue callback, JSValue thisArg, int depth, ref uint resultIndex)
         => FlattenTo(result, @this, callback, thisArg, depth, ref resultIndex, GetArrayLikeLength(@this));
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=8; Fingerprint=TBF
+    // Broiler-Falsified-If: a self-containing array flattened with depth Infinity recurses until the process dies with a stack overflow instead of raising a catchable RangeError
+    // Broiler-Human:        PENDING
     private static void FlattenTo(JSObject result, JSObject @this, JSValue callback, JSValue thisArg, int depth, ref uint resultIndex, uint length)
     {
         for (uint i = 0; i < length; i++)
@@ -547,6 +664,9 @@ public partial class JSArray
         }
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: a hole in the array is skipped instead of being passed to the predicate as undefined
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("findIndex", Length = 1)]
     public static JSValue FindIndex(in Arguments a)
@@ -573,6 +693,9 @@ public partial class JSArray
         return JSNumber.MinusOne;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: on an array-like of length 2^32 the value stored at index 4294967295 reaches the predicate as undefined
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("findLast", Length = 1)]
     public static JSValue FindLast(in Arguments a)
@@ -600,6 +723,9 @@ public partial class JSArray
         return JSUndefined.Value;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: on an array-like of length 2^32 the value stored at index 4294967295 reaches the predicate as undefined
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("findLastIndex", Length = 1)]
     public static JSValue FindLastIndex(in Arguments a)
@@ -627,6 +753,9 @@ public partial class JSArray
         return JSNumber.MinusOne;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: a hole in the array is passed to the callback instead of being skipped
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("forEach", Length = 1)]
     public static JSValue ForEach(in Arguments a)
@@ -652,6 +781,9 @@ public partial class JSArray
         return JSUndefined.Value;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a typed-array receiver gets the generic length-bound key iterator instead of the typed-array iterator
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("keys")]
     public new static JSValue Keys(in Arguments a)
@@ -662,6 +794,9 @@ public partial class JSArray
         return new JSGenerator(new ArrayLikeKeyEnumerator(@this), "Array Iterator");
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: a hole in the source becomes a defined element in the result instead of staying a hole
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("map", Length = 1)]
     public static JSValue Map(in Arguments a)
@@ -690,6 +825,9 @@ public partial class JSArray
         return r;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: with no initial value and only holes, the call returns undefined instead of raising a TypeError
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("reduce", Length = 1)]
     public static JSValue Reduce(in Arguments a)
@@ -725,6 +863,9 @@ public partial class JSArray
         return initialValue;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: with no initial value, the last present element is used as the accumulator and also passed to the callback as an item
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("reduceRight", Length = 1)]
     public static JSValue ReduceRight(in Arguments a)
@@ -765,6 +906,9 @@ public partial class JSArray
         return initialValue;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: a hole in the array is passed to the callback instead of being skipped
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("some", Length = 1)]
     public static JSValue Some(in Arguments a)
@@ -790,6 +934,9 @@ public partial class JSArray
         return JSBoolean.False;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: shrinking a mapped arguments object's length during iteration does not end the iteration at the new length
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("values", Length = 0)]
     [Symbol("@@iterator")]

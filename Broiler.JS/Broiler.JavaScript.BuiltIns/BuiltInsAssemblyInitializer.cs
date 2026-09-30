@@ -34,9 +34,15 @@ using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns;
 
+// Broiler-AI:           Origin=AI; IP=Low; Security=High; Resources=8; Fingerprint=TBF
+// Broiler-Falsified-If: a RegExp symbol method installed here indexes the subject string with a lastIndex it has not clamped to the string, and script sees a host IndexOutOfRangeException instead of a spec result
+// Broiler-Human:        PENDING
 internal static class BuiltInsAssemblyInitializer
 {
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=6; Fingerprint=TBF
+    // Broiler-Falsified-If: the Iterator.prototype toStringTag setter gives a frozen object, a non-extensible object or a Proxy a new own property without a TypeError or a call to the defineProperty trap
+    // Broiler-Human:        PENDING
     [ModuleInitializer]
     internal static void Initialize()
     {
@@ -404,6 +410,9 @@ internal static class BuiltInsAssemblyInitializer
     // intentionally excluded: in modern ECMAScript their prototypes are ordinary
     // objects, so a type-based check would mis-tag e.g. RegExp.prototype as
     // "[object RegExp]" instead of "[object Object]".
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: Object.prototype.toString applied to RegExp.prototype or Date.prototype reports "[object RegExp]" or "[object Date]" instead of "[object Object]"
+    // Broiler-Human:        PENDING
     private static string ResolveBuiltinToStringTag(JSValue value)
     {
         // §20.1.3.6 step 14: an object with a [[RegExpMatcher]] internal slot (a real RegExp instance,
@@ -455,6 +464,9 @@ internal static class BuiltInsAssemblyInitializer
         return null;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: structuredClone of a typed array runs a script-defined constructor getter on the source and uses what it returns as the new.target of the clone
+    // Broiler-Human:        PENDING
     private static JSTypedArray CloneTypedArray(JSTypedArray typedArray, JSArrayBuffer clonedBuffer)
     {
         // The (buffer, byteOffset, length) TypedArray constructor takes length in
@@ -499,6 +511,9 @@ internal static class BuiltInsAssemblyInitializer
         }
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: Object.getPrototypeOf(TypeError) or of another native error constructor is not the Error constructor after registration
+    // Broiler-Human:        PENDING
     private static void PatchErrorConstructors(JSContext context)
     {
         PatchErrorConstructor(context, KeyStrings.Error, static (in Arguments a) => new JSError(in a));
@@ -517,6 +532,9 @@ internal static class BuiltInsAssemblyInitializer
         PatchErrorConstructor(context, KeyStrings.GetOrCreate("SuppressedError"), static (in Arguments a) => new JSSuppressedError(in a), errorCtor, 3);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+    // Broiler-Falsified-If: Date.prototype[Symbol.toPrimitive] called with the hint "default" tries valueOf before toString, or accepts a hint other than string, number or default
+    // Broiler-Human:        PENDING
     private static void PatchLegacyDatePrototype(JSContext context)
     {
         static JSValue OrdinaryToPrimitive(JSObject @object, bool preferString)
@@ -632,6 +650,9 @@ internal static class BuiltInsAssemblyInitializer
         prototype.Dirty();
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a realm created through the registration chain lacks one of the patched built-ins, such as RegExp.prototype[Symbol.replace] or Array.prototype[Symbol.unscopables]
+    // Broiler-Human:        PENDING
     private static void PatchCompatibilityBuiltIns(JSContext context)
     {
         PatchStringPrototype(context);
@@ -654,6 +675,9 @@ internal static class BuiltInsAssemblyInitializer
     // Builds the Temporal namespace object and attaches the Temporal.Duration /
     // Temporal.Instant constructors (registered via Register = false so they are NOT
     // globals). Each constructor's prototype carries its "Temporal.X" @@toStringTag.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a bootstrap profile that excludes Temporal still exposes a global Temporal property
+    // Broiler-Human:        PENDING
     private static void PatchTemporal(JSContext context)
     {
         var profile = context.Options.BootstrapProfile;
@@ -677,11 +701,20 @@ internal static class BuiltInsAssemblyInitializer
     // One Temporal namespace per realm, however it is reached: the eager install above, the
     // lazy feature resolution, or an engine-created Temporal object that needs the realm's
     // intrinsic prototypes before the (lazy) global was ever read (Intrinsics.NamespacedPrototype).
+    // Broiler-AI:           Origin=AI; IP=Low; Security=High; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: two realms, such as a ShadowRealm and the realm that created it, receive the same Temporal namespace object, so a prototype patched in one is seen in the other
+    // Broiler-Human:        PENDING
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<JSContext, JSObject> TemporalObjects = [];
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=High; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: the Temporal namespace returned for one realm is the object already handed to a different realm
+    // Broiler-Human:        PENDING
     internal static JSObject CreateTemporalObject(JSContext context)
         => TemporalObjects.GetValue(context, NewTemporalObject);
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an engine-created Temporal object takes its prototype from a replaced globalThis.Temporal.PlainDate instead of the realm intrinsic recorded here
+    // Broiler-Human:        PENDING
     private static JSObject NewTemporalObject(JSContext context)
     {
         var temporal = new JSObject();
@@ -735,6 +768,9 @@ internal static class BuiltInsAssemblyInitializer
     // for the user-facing DisposableStack / AsyncDisposableStack built-ins. The source
     // generator cannot key a [JSExport] on a well-known symbol, so the spec-mandated
     // prototype[@@dispose] === prototype.dispose (same function object) is established here.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: DisposableStack.prototype[Symbol.dispose] is a different function object from DisposableStack.prototype.dispose
+    // Broiler-Human:        PENDING
     private static void PatchDisposableStacks(JSContext context)
     {
         if (context[KeyStrings.GetOrCreate("DisposableStack")] is JSFunction disposableStackCtor
@@ -753,6 +789,8 @@ internal static class BuiltInsAssemblyInitializer
     }
 
     // prototype[symbol] is the same function object as prototype[methodName].
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     private static void AliasSymbolMethod(JSObject prototype, JSSymbol symbol, in KeyString methodName)
     {
         var method = prototype[methodName];
@@ -764,6 +802,9 @@ internal static class BuiltInsAssemblyInitializer
     // two homes but which the source generator emits as distinct copies. Must run after
     // the full registration chain (BuiltIns AND Globals) so both homes exist regardless
     // of module-initializer order — invoked from DefaultBuiltInRegistry.Register.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: Number.parseFloat or Number.parseInt is a different function object from the global parseFloat or parseInt
+    // Broiler-Human:        PENDING
     internal static void PatchNumberConstructor(JSContext context)
     {
         if (context[KeyStrings.Number] is not JSFunction numberCtor)
@@ -782,12 +823,21 @@ internal static class BuiltInsAssemblyInitializer
             numberCtor.FastAddValue(parseIntKey, (JSValue)globalParseInt, JSPropertyAttributes.ConfigurableValue);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: Function.prototype.toString of a function built here is not valid NativeFunction syntax
+    // Broiler-Human:        PENDING
     private static JSFunction CreateNativeFunction(JSFunctionDelegate fx, string name, int length = 0)
         => new(fx, name, $"function {NativeFunctionToStringName(name)}() {{ [native code] }}", length: length, createPrototype: false);
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a getter built here reports a name without the "get " prefix or a length other than 0
+    // Broiler-Human:        PENDING
     private static JSFunction CreateNativeGetter(JSFunctionDelegate fx, string name)
         => new(fx, $"get {name}", $"function get {NativeFunctionToStringName(name)}() {{ [native code] }}", createPrototype: false, length: 0);
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a setter built here reports a name without the "set " prefix or a length other than 1
+    // Broiler-Human:        PENDING
     private static JSFunction CreateNativeSetter(JSFunctionDelegate fx, string name)
         => new(fx, $"set {name}", $"function set {NativeFunctionToStringName(name)}() {{ [native code] }}", createPrototype: false, length: 1);
 
@@ -796,9 +846,15 @@ internal static class BuiltInsAssemblyInitializer
     // name that is neither — notably the legacy RegExp statics "$&", "$+", "$`", "$'" —
     // must be omitted, since the IdentifierName is optional and emitting it verbatim
     // (`function get $&() { [native code] }`) is not valid NativeFunction syntax.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: the getter for RegExp["$&"] prints its property name verbatim inside the native function source text
+    // Broiler-Human:        PENDING
     private static string NativeFunctionToStringName(string name)
         => IsValidNativeFunctionToStringName(name) ? name : string.Empty;
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a name that starts with a digit or contains an ampersand is accepted as an identifier
+    // Broiler-Human:        PENDING
     private static bool IsValidNativeFunctionToStringName(string name)
     {
         if (string.IsNullOrEmpty(name))
@@ -821,6 +877,9 @@ internal static class BuiltInsAssemblyInitializer
         return true;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an existing own property is replaced by the new accessor instead of being left as it was
+    // Broiler-Human:        PENDING
     private static void EnsureAccessorProperty(JSObject target, JSValue key, string name, JSFunctionDelegate getter, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableProperty)
     {
         if (!target.GetOwnPropertyDescriptor(key).IsUndefined)
@@ -829,9 +888,15 @@ internal static class BuiltInsAssemblyInitializer
         target.FastAddProperty(key, CreateNativeGetter(getter, name), null, attributes);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an existing own property is replaced by the new accessor instead of being left as it was
+    // Broiler-Human:        PENDING
     private static void EnsureAccessorProperty(JSObject target, KeyString key, string name, JSFunctionDelegate getter, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableProperty)
         => EnsureAccessorProperty(target, key, name, getter, null, attributes);
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an existing own property is replaced by the new accessor instead of being left as it was
+    // Broiler-Human:        PENDING
     private static void EnsureAccessorProperty(JSObject target, KeyString key, string name, JSFunctionDelegate getter, JSFunctionDelegate setter, JSPropertyAttributes attributes = JSPropertyAttributes.ConfigurableProperty)
     {
         if (!target.GetOwnPropertyDescriptor(JSValue.CreateStringWithKey(key.ToString(), key)).IsUndefined)
@@ -840,6 +905,9 @@ internal static class BuiltInsAssemblyInitializer
         target.FastAddProperty(key, CreateNativeGetter(getter, name), setter == null ? null : CreateNativeSetter(setter, name), attributes);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: one of Array, Promise, Map, Set, RegExp, ArrayBuffer or %TypedArray% lacks a Symbol.species getter after registration
+    // Broiler-Human:        PENDING
     private static void PatchSpeciesConstructors(JSContext context)
     {
         PatchSpeciesConstructor(context, KeyStrings.Array);
@@ -851,6 +919,9 @@ internal static class BuiltInsAssemblyInitializer
         PatchSpeciesConstructor(context, KeyStrings.GetOrCreate("TypedArray"));
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: the installed Symbol.species getter returns the intrinsic constructor instead of its receiver
+    // Broiler-Human:        PENDING
     private static void PatchSpeciesConstructor(JSContext context, KeyString constructorName)
     {
         if (context[constructorName] is not JSObject constructor)
@@ -859,6 +930,9 @@ internal static class BuiltInsAssemblyInitializer
         EnsureAccessorProperty(constructor, JSSymbol.species, "[Symbol.species]", static (in Arguments a) => a.This);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+    // Broiler-Falsified-If: String.prototype.trimLeft or trimRight is a different function object from trimStart or trimEnd
+    // Broiler-Human:        PENDING
     private static void PatchStringPrototype(JSContext context)
     {
         if (context[KeyStrings.String] is not JSFunction stringCtor)
@@ -903,6 +977,9 @@ internal static class BuiltInsAssemblyInitializer
         prototype.Dirty();
     }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s20.5.3.4; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: Error.prototype.toString on an object whose name or message is a Symbol returns text instead of throwing a TypeError
+    // Broiler-Human:        PENDING
     private static void PatchErrorPrototype(JSContext context)
     {
         if (context[KeyStrings.Error] is not JSFunction errorCtor)
@@ -937,6 +1014,9 @@ internal static class BuiltInsAssemblyInitializer
         prototype.Dirty();
     }
 
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 s27.2.5.1; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: Promise.prototype.catch calls the intrinsic then instead of the receiver's own then property
+    // Broiler-Human:        PENDING
     private static void PatchPromisePrototype(JSContext context)
     {
         if (context[KeyStrings.Promise] is not JSFunction promiseCtor)
@@ -951,6 +1031,9 @@ internal static class BuiltInsAssemblyInitializer
         prototype.Dirty();
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=4; Fingerprint=TBF
+    // Broiler-Falsified-If: __lookupGetter__ returns a getter found further up the prototype chain although a nearer own data property of the same name shadows it
+    // Broiler-Human:        PENDING
     private static void PatchObjectPrototype(JSContext context)
     {
         static JSObject CoerceObject(JSValue value)
@@ -1098,6 +1181,9 @@ internal static class BuiltInsAssemblyInitializer
         prototype.Dirty();
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=4; Fingerprint=TBF
+    // Broiler-Falsified-If: Function.prototype[Symbol.hasInstance] called on a bound function ignores its target's own Symbol.hasInstance and answers from the target's prototype chain
+    // Broiler-Human:        PENDING
     private static void PatchFunctionPrototype(JSContext context)
     {
         if (context[KeyStrings.Function] is not JSFunction functionCtor)
@@ -1161,6 +1247,9 @@ internal static class BuiltInsAssemblyInitializer
         }, "[Symbol.hasInstance]", 1), JSPropertyAttributes.ReadonlyValue);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: Object.getOwnPropertyNames(Proxy) still lists "prototype" after registration
+    // Broiler-Human:        PENDING
     private static void PatchProxyConstructor(JSContext context)
     {
         var proxyKey = KeyStrings.GetOrCreate("Proxy");
@@ -1178,6 +1267,9 @@ internal static class BuiltInsAssemblyInitializer
         ownProperties.RemoveAt(KeyStrings.prototype.Key);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: Symbol.prototype.description read on a Symbol wrapper object returns undefined for a symbol created with a description
+    // Broiler-Human:        PENDING
     private static void PatchSymbolPrototype(JSContext context)
     {
         if (context[KeyStrings.Symbol] is not JSFunction symbolCtor)
@@ -1235,6 +1327,9 @@ internal static class BuiltInsAssemblyInitializer
         });
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: Date.prototype carries its own Symbol.toStringTag after registration
+    // Broiler-Human:        PENDING
     private static void PatchDatePrototype(JSContext context)
     {
         if (context[KeyStrings.Date] is not JSFunction dateCtor)
@@ -1246,6 +1341,9 @@ internal static class BuiltInsAssemblyInitializer
         _ = dateCtor;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=High; Resources=8; Fingerprint=TBF
+    // Broiler-Falsified-If: a user exec that leaves lastIndex negative, or above 2^31, after an empty match on a global u-flag RegExp makes RegExp.prototype[Symbol.match] index the subject out of range and throw a host IndexOutOfRangeException
+    // Broiler-Human:        PENDING
     private static void PatchRegExpPrototype(JSContext context)
     {
         if (context[KeyStrings.RegExp] is not JSFunction regExpCtor)
@@ -1989,6 +2087,9 @@ internal static class BuiltInsAssemblyInitializer
     // Reads a legacy RegExp static (RegExp.lastMatch, RegExp.$1, …) from the current
     // realm's match record. Before any successful match the record is empty, so each
     // accessor reports the empty string.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: RegExp.lastMatch or RegExp.$1 read before any successful match in the current realm returns something other than the empty string
+    // Broiler-Human:        PENDING
     private static JSValue LegacyRegExpValue(Func<LegacyRegExpState, string> selector)
     {
         var state = JSEngine.Current?.LegacyRegExp;
@@ -1999,6 +2100,9 @@ internal static class BuiltInsAssemblyInitializer
     // The getter returns the flag's boolean state for a real RegExp instance,
     // undefined when invoked on %RegExp.prototype% itself, and throws otherwise.
     // It is a get-only accessor (no setter) per §22.2.6.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: RegExp.prototype.global read on RegExp.prototype itself throws instead of returning undefined, or read on a plain object returns undefined instead of throwing
+    // Broiler-Human:        PENDING
     private static void PatchRegExpFlagGetter(JSObject prototype, string name, char flag)
     {
         prototype.FastAddProperty(
@@ -2015,6 +2119,9 @@ internal static class BuiltInsAssemblyInitializer
             JSPropertyAttributes.ConfigurableProperty);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an own RegExp.escape that already exists is replaced during registration
+    // Broiler-Human:        PENDING
     private static void EnsureRegExpEscape(JSObject regExpCtor)
     {
         var escapeKey = KeyStrings.GetOrCreate("escape");
@@ -2024,12 +2131,18 @@ internal static class BuiltInsAssemblyInitializer
         regExpCtor.FastAddValue(escapeKey, CreateNativeFunction(JSRegExp.Escape, "escape", 1), JSPropertyAttributes.ConfigurableValue);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: RegExp.lastMatch and its alias RegExp["$&"] are installed with different receiver checks
+    // Broiler-Human:        PENDING
     private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, string alias, JSFunctionDelegate getter, JSFunctionDelegate setter = null)
     {
         PatchLegacyRegExpAccessor(regExpCtor, propertyName, getter, setter);
         PatchLegacyRegExpAccessor(regExpCtor, alias, getter, setter);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: RegExp.lastMatch read through a RegExp subclass constructor or a RegExp instance returns match text instead of throwing a TypeError
+    // Broiler-Human:        PENDING
     private static void PatchLegacyRegExpAccessor(JSObject regExpCtor, string propertyName, JSFunctionDelegate getter, JSFunctionDelegate setter = null)
     {
         // §B.2.4 GetLegacyRegExpStaticProperty / SetLegacyRegExpStaticProperty step 2:
@@ -2058,6 +2171,9 @@ internal static class BuiltInsAssemblyInitializer
         EnsureAccessorProperty(regExpCtor, KeyStrings.GetOrCreate(propertyName), propertyName, GuardedGet, guardedSetter);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: Array.prototype[Symbol.unscopables] has a non-null prototype or is writable
+    // Broiler-Human:        PENDING
     private static void PatchArrayPrototype(JSContext context)
     {
         if (context[KeyStrings.Array] is not JSFunction arrayCtor)
@@ -2084,6 +2200,9 @@ internal static class BuiltInsAssemblyInitializer
     // Note: the change-array-by-copy proposal added toReversed/toSorted/toSpliced to this
     // list but deliberately NOT "with" — "with" is a reserved word and can never name a
     // binding shadowed inside a `with` statement, so it is absent from the spec list.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: the unscopables list names "with" or omits one of the change-array-by-copy methods toReversed, toSorted or toSpliced
+    // Broiler-Human:        PENDING
     private static readonly string[] ArrayUnscopableNames =
     [
         "at", "copyWithin", "entries", "fill", "find", "findIndex",
@@ -2091,6 +2210,8 @@ internal static class BuiltInsAssemblyInitializer
         "keys", "toReversed", "toSorted", "toSpliced", "values"
     ];
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     private static readonly string[] TypedArrayConstructorNames =
     [
         "Int8Array", "Uint8Array", "Uint8ClampedArray",
@@ -2100,6 +2221,9 @@ internal static class BuiltInsAssemblyInitializer
         "Float16Array", "Float32Array", "Float64Array"
     ];
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=4; Fingerprint=TBF
+    // Broiler-Falsified-If: Int8Array.prototype.BYTES_PER_ELEMENT is writable or configurable, or %TypedArray%.prototype.toString is not the Array.prototype.toString function object
+    // Broiler-Human:        PENDING
     private static void PatchTypedArrayBuiltIns(JSContext context)
     {
         if (context[KeyStrings.GetOrCreate("TypedArray")] is not JSFunction typedArrayCtor)
@@ -2187,6 +2311,9 @@ internal static class BuiltInsAssemblyInitializer
         prototype.Dirty();
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: the %TypedArray%.prototype Symbol.toStringTag getter returns a string for a receiver that is not a typed array
+    // Broiler-Human:        PENDING
     private static JSValue GetTypedArrayTag(JSValue value) => value switch
     {
         JSInt8Array => JSValue.CreateString("Int8Array"),
@@ -2204,6 +2331,9 @@ internal static class BuiltInsAssemblyInitializer
         _ => JSUndefined.Value
     };
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: an own Symbol.toStringTag that already exists is overwritten, or the installed one is writable
+    // Broiler-Human:        PENDING
     private static void SetToStringTag(JSObject target, string tag)
     {
         if (!target.GetOwnPropertyDescriptor(JSSymbol.toStringTag).IsUndefined)
@@ -2212,6 +2342,9 @@ internal static class BuiltInsAssemblyInitializer
         target.FastAddValue((IJSSymbol)JSSymbol.toStringTag, JSValue.CreateString(tag), JSPropertyAttributes.ConfigurableReadonlyValue);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: Set.prototype.keys is a different function object from Set.prototype.values after registration
+    // Broiler-Human:        PENDING
     private static void PatchToStringTags(JSContext context)
     {
         // BigInt.prototype[@@toStringTag] = "BigInt"
@@ -2293,6 +2426,9 @@ internal static class BuiltInsAssemblyInitializer
             SetToStringTag(generatorProto, "Generator");
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: Object.getOwnPropertyNames(TypeError) lists an own "constructor" property, so TypeError.constructor is not the Function constructor
+    // Broiler-Human:        PENDING
     private static void PatchErrorConstructor(JSContext context, KeyString key, JSFunctionDelegate factory, JSFunction baseConstructor = null, int length = 1)
     {
         if (context[key] is not JSFunction existing)
@@ -2322,12 +2458,18 @@ internal static class BuiltInsAssemblyInitializer
         context.FastAddValue(key, replacement, JSPropertyAttributes.ConfigurableValue);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: a native constructor reachable from the global object keeps a writable or configurable prototype property after registration
+    // Broiler-Human:        PENDING
     private static void PatchBuiltInConstructorPrototypeDescriptors(JSContext context)
     {
         HashSet<JSObject> visited = [];
         PatchBuiltInConstructorPrototypeDescriptors(context, visited, depth: 2);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: a namespace object that refers back to the global object makes the walk visit the same holder twice or recurse without end
+    // Broiler-Human:        PENDING
     private static void PatchBuiltInConstructorPrototypeDescriptors(JSObject holder, HashSet<JSObject> visited, int depth)
     {
         if (!visited.Add(holder))
@@ -2350,6 +2492,9 @@ internal static class BuiltInsAssemblyInitializer
         }
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a strict-mode assignment to a native constructor's prototype, repeated until an inline cache serves it, replaces the prototype that this write marked read-only
+    // Broiler-Human:        PENDING
     private static void PatchBuiltInConstructorPrototypeDescriptor(JSFunction function)
     {
         if (function.ToDetailString().IndexOf("[native", StringComparison.Ordinal) < 0)

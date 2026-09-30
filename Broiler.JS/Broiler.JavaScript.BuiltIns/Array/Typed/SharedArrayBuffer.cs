@@ -16,9 +16,15 @@ namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 // [JSBaseClass("Object")]: SharedArrayBuffer reuses the JSArrayBuffer C# storage but its
 // JS prototype chain is Object.prototype (it does NOT inherit ArrayBuffer.prototype). The
 // attribute suppresses the generator's default base-class prototype wiring.
+// Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+// Broiler-Falsified-If: slice or grow copies bytes from outside the source buffer's current length, or grow leaves the buffer shorter than it was
+// Broiler-Human:        PENDING
 [JSClassGenerator("SharedArrayBuffer"), JSBaseClass("Object")]
 public partial class SharedArrayBuffer : JSArrayBuffer
 {
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: new SharedArrayBuffer(2147483600) ends in a host OutOfMemoryException surfaced as a plain Error instead of a RangeError, because only lengths above 2147483647 are rejected before the byte array is allocated
+    // Broiler-Human:        PENDING
     [JSExport(Length = 1)]
     public SharedArrayBuffer(in Arguments a) : base()
     {
@@ -49,6 +55,9 @@ public partial class SharedArrayBuffer : JSArrayBuffer
         isShared = true;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: SharedArrayBuffer.prototype.grow or slice called on a plain ArrayBuffer operates on it instead of throwing a TypeError
+    // Broiler-Human:        PENDING
     private static SharedArrayBuffer RequireShared(JSValue value, string methodName)
     {
         if (value is SharedArrayBuffer shared)
@@ -59,21 +68,36 @@ public partial class SharedArrayBuffer : JSArrayBuffer
 
     // A growable SharedArrayBuffer reports its maximum; a non-growable one reports its
     // (immutable) byteLength.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: grow succeeds on a SharedArrayBuffer constructed without a maxByteLength option
+    // Broiler-Human:        PENDING
     internal bool IsGrowable => maxByteLength >= 0;
 
     // get SharedArrayBuffer.prototype.byteLength
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: the byteLength getter reports a size other than the current data block's after a successful grow
+    // Broiler-Human:        PENDING
     [JSExport("byteLength")]
     public int SharedByteLength => buffer.Length;
 
     // get SharedArrayBuffer.prototype.maxByteLength
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: maxByteLength on a non-growable SharedArrayBuffer reports -1 instead of its byteLength
+    // Broiler-Human:        PENDING
     [JSExport("maxByteLength")]
     public int SharedMaxByteLength => IsGrowable ? maxByteLength : buffer.Length;
 
     // get SharedArrayBuffer.prototype.growable
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: growable reports true for a SharedArrayBuffer built without a maxByteLength option
+    // Broiler-Human:        PENDING
     [JSExport("growable")]
     public bool Growable => IsGrowable;
 
     // SharedArrayBuffer.prototype.grow(newLength)
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: growing a buffer whose maxByteLength is 2147483647 to 2147483600 ends in a host OutOfMemoryException surfaced as a plain Error instead of a RangeError
+    // Broiler-Human:        PENDING
     [JSExport("grow", Length = 1)]
     internal JSValue Grow(in Arguments a)
     {
@@ -97,6 +121,9 @@ public partial class SharedArrayBuffer : JSArrayBuffer
     }
 
     // SharedArrayBuffer.prototype.slice(begin, end)
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: a species constructor that returns a SharedArrayBuffer shorter than the requested slice is accepted and the copy runs past the end of that buffer
+    // Broiler-Human:        PENDING
     [JSExport("slice")]
     internal JSValue SharedSlice(in Arguments a)
     {
@@ -131,6 +158,9 @@ public partial class SharedArrayBuffer : JSArrayBuffer
         return target;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a constructor property of null or a number falls back to the intrinsic SharedArrayBuffer instead of throwing a TypeError
+    // Broiler-Human:        PENDING
     private static JSValue GetSharedSpeciesConstructor(SharedArrayBuffer source)
     {
         var defaultConstructor = Intrinsics.Constructor(KeyStrings.GetOrCreate("SharedArrayBuffer"));
@@ -154,6 +184,9 @@ public partial class SharedArrayBuffer : JSArrayBuffer
 
     // Internal allocation used by slice; not reachable from JS without `new`.
     // Not base(length): that is AllocateArrayBuffer(%ArrayBuffer%), which takes %ArrayBuffer.prototype%.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: a buffer made by this constructor is accepted by the ArrayBuffer.prototype accessors instead of being rejected as shared
+    // Broiler-Human:        PENDING
     private SharedArrayBuffer(int length) : base()
     {
         buffer = new byte[length];
