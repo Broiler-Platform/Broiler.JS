@@ -14,9 +14,15 @@ using Broiler.JavaScript.Engine.Core;
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
 
+// Broiler-AI:           Origin=AI; IP=Medium; Security=Medium; Resources=8; Fingerprint=TBF
+// Broiler-Falsified-If: a view whose resizable buffer was shrunk below byteOffset plus its fixed extent still reports a non-zero length, so an element access indexes past the live buffer and raises a CLR exception instead of reading undefined
+// Broiler-Human:        PENDING
 [JSClassGenerator("TypedArray")]
 public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 {
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: a canonical numeric string key such as '-0', '1.5' or 'NaN' is reported as an own property of the typed array
+    // Broiler-Human:        PENDING
     internal protected override bool HasOwnProperty(in PropertyKey key)
     {
         if (key.Type == KeyType.UInt)
@@ -33,6 +39,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return base.HasOwnProperty(in key);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a byteOffset argument of 2**32 + 8 wraps to 8 instead of saturating to int.MaxValue, so the view is created at offset 8 rather than rejected with a RangeError
+    // Broiler-Human:        PENDING
     internal static int ToIntegerOrInfinity(JSValue value, int defaultValue = 0)
     {
         if (value == null || value.IsUndefined)
@@ -58,6 +67,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     [JSExport(Length = 1)]
     private static JSValue From(in Arguments a) => FromShared(in a);
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=4; Fingerprint=TBF
+    // Broiler-Falsified-If: an argument whose valueOf detaches the result's buffer makes a later element write raise a CLR exception instead of being dropped
+    // Broiler-Human:        PENDING
     [JSExport]
     private static JSValue Of(in Arguments a)
     {
@@ -92,6 +104,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     [JSExport]
     internal int length => ComputeLength();
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: a length-tracking view whose byteOffset exceeds the buffer's byte length after a resize reports a negative or non-zero length instead of 0
+    // Broiler-Human:        PENDING
     private int ComputeLength()
     {
         if (buffer == null || buffer.isDetached)
@@ -114,17 +129,26 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return explicitLength;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: byteLength of a fixed-length view left out of bounds by a buffer shrink reports its original extent instead of 0
+    // Broiler-Human:        PENDING
     [JSExport]
     internal int ByteLength => length * bytesPerElement;
 
     // %TypedArray%.prototype.byteOffset: per spec the getter returns +0 when the view is out of bounds
     // (a resizable buffer shrank past it) or its buffer is detached, rather than the stored offset.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: byteOffset of a view whose buffer is detached, or that a shrink left out of bounds, reports the stored offset instead of 0
+    // Broiler-Human:        PENDING
     [JSExport]
     internal int ByteOffset => buffer == null || buffer.isDetached || IsOutOfBounds ? 0 : byteOffset;
 
     // IsTypedArrayOutOfBounds: a view backed by a resizable buffer can be left out of bounds by a
     // shrink — a length-tracking view whose start is past the new end, or a fixed-length view whose
     // extent no longer fits. (A detached buffer is handled separately by ValidateTypedArray.)
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: a fixed-length view over a resizable buffer shrunk to one byte less than byteOffset plus its extent is reported in bounds
+    // Broiler-Human:        PENDING
     internal bool IsOutOfBounds
     {
         get
@@ -141,16 +165,25 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     // IsTypedArrayFixedLength: a length-tracking view, or any view onto a (non-shared) resizable
     // ArrayBuffer, is NOT fixed-length — its element count can change under it — so it can never be made
     // non-extensible. A view onto a fixed-length buffer, or onto a growable *shared* buffer, is fixed.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: a view with an explicit length over a non-shared resizable ArrayBuffer is reported fixed-length, so Object.preventExtensions succeeds on it
+    // Broiler-Human:        PENDING
     internal bool IsFixedLength =>
         !isLengthTracking && !(buffer != null && buffer.IsResizable && !buffer.isShared);
 
     // [[PreventExtensions]] for an integer-indexed exotic object (10.4.5.2): it succeeds only for a
     // fixed-length view, so Object.{preventExtensions,seal,freeze} on a length-tracking / resizable-backed
     // typed array fails (a TypeError, even when the view is currently empty).
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: Object.preventExtensions on a length-tracking typed array makes it non-extensible instead of failing with TypeError
+    // Broiler-Human:        PENDING
     public override bool PreventExtensions() => IsFixedLength && base.PreventExtensions();
 
     // ValidateTypedArray: the receiver's buffer must not be detached and the view must be in bounds;
     // otherwise the method is a TypeError. Called at the start of the %TypedArray%.prototype methods.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a prototype method called on a view whose resizable buffer shrank below its fixed extent proceeds instead of throwing TypeError
+    // Broiler-Human:        PENDING
     internal void ValidateTypedArray(string method)
     {
         if (buffer == null || buffer.isDetached)
@@ -159,11 +192,23 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             throw JSEngine.NewTypeError($"TypedArray.prototype.{method} called on an out-of-bounds TypedArray");
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: the Length property of a typed array whose buffer has been detached reports the element count it had before the detach instead of 0
+    // Broiler-Human:        PENDING
     public override int Length { get => length; set => throw new NotSupportedException(); }
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: a typed array whose buffer is detached reports integer-indexed elements, so the freeze and seal paths treat it as non-empty
+    // Broiler-Human:        PENDING
     public bool HasIntegerIndexedElements => length > 0;
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: new applied to the abstract %TypedArray% intrinsic returns an object instead of throwing TypeError
+    // Broiler-Human:        PENDING
     public JSTypedArray(in Arguments a) : this(JSEngine.NewTargetPrototype) => throw JSEngine.NewTypeError("TypedArray is not a constructor");
 
+    // Broiler-AI:           Origin=AI; IP=Medium; Security=Medium; Resources=8; Fingerprint=TBF
+    // Broiler-Falsified-If: new Float64Array(0x20000001) wraps the element count times the element size to 8 bytes and yields a zero-length out-of-bounds view instead of throwing RangeError
+    // Broiler-Human:        PENDING
     public JSTypedArray(in TypedArrayParameters p): this(p.prototype)
     {
         buffer = p.buffer;
@@ -324,6 +369,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     // AllocateTypedArrayBuffer must allocate len × elementSize bytes, so a length whose byte size
     // cannot fit a data block (e.g. {length: 2**53} or {length: 2**32}) is a RangeError rather than
     // silently wrapping to a smaller count.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an array-like source with length 2**32 is truncated to a smaller element count instead of throwing RangeError
+    // Broiler-Human:        PENDING
     private int ToArrayLikeLength(JSObject arrayLike)
     {
         var number = arrayLike[KeyStrings.length].DoubleValue;
@@ -337,6 +385,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return (int)integer;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: a constructor that returns a typed array backed by a detached buffer is accepted when the requested length is 0 instead of throwing TypeError
+    // Broiler-Human:        PENDING
     internal static JSTypedArray CreateTypedArrayFromConstructor(JSValue constructor, int length)
     {
         var created = constructor.CreateInstance(new JSNumber(length));
@@ -366,6 +417,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     /// as an array-like, and the result is created by calling C with the resolved
     /// length so element coercion matches the receiver's element type.
     /// </summary>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=8; Fingerprint=TBF
+    // Broiler-Falsified-If: an array-like source whose length is 2**32 reaches the target constructor as 2147483647 instead of its ToLength value
+    // Broiler-Human:        PENDING
     internal static JSValue FromShared(in Arguments a)
     {
         var constructor = a.This;
@@ -425,6 +479,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return arrayLikeTarget;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a source whose @@iterator is a non-callable object is treated as an array-like instead of throwing TypeError
+    // Broiler-Human:        PENDING
     private static JSValue GetIteratorMethod(JSValue source)
     {
         // GetMethod(source, @@iterator). GetV performs ToObject(source) first, so a
@@ -442,6 +499,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return method;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a constructor property whose @@species is null yields that constructor property instead of the default intrinsic constructor
+    // Broiler-Human:        PENDING
     internal static JSValue GetSpeciesConstructor(JSTypedArray source)
     {
         var defaultConstructor = source.GetDefaultConstructor();
@@ -470,6 +530,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     /// (possibly hijacked) <c>constructor</c> property, so a throwing
     /// <c>constructor</c> getter must not be triggered here.
     /// </summary>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: toReversed on a typed array whose constructor property has a throwing getter throws instead of returning a copy
+    // Broiler-Human:        PENDING
     internal JSTypedArray CreateSameTypeTypedArray(int length)
         => CreateTypedArrayFromConstructor(GetDefaultConstructor(), length);
 
@@ -486,6 +549,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     /// <c>TA.prototype.constructor</c> (e.g. speciesctor-get-ctor-inherited),
     /// turning the default into <c>undefined</c> and breaking species creation.
     /// </remarks>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: after a script reassigns globalThis.Int8Array, toReversed on an existing Int8Array constructs through the replacement instead of the realm's intrinsic constructor
+    // Broiler-Human:        PENDING
     private JSValue GetDefaultConstructor()
     {
         var kind = GetIntrinsicConstructorName();
@@ -511,6 +577,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     /// The realm-global name of this typed array's intrinsic constructor, keyed
     /// off the concrete element type (never a user-observable property read).
     /// </summary>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a concrete element type maps to the global name of a different element type, such as Uint8ClampedArray to Uint8Array, so its copies take the wrong element kind
+    // Broiler-Human:        PENDING
     private KeyString GetIntrinsicConstructorName() => this switch
     {
         JSInt8Array => KeyStrings.GetOrCreate("Int8Array"),
@@ -528,6 +597,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         _ => KeyString.Empty
     };
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: a non-canonical numeric string such as '1e21', ' 1' or '01' is treated as a numeric index instead of an ordinary property key
+    // Broiler-Human:        PENDING
     private static bool TryGetCanonicalNumericIndex(in KeyString key, out double numericIndex)
     {
         var metadata = key.Metadata;
@@ -550,6 +622,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return new JSNumber(numericIndex).ToString() == text;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: -0, a fractional index or an index equal to the live length is reported as a valid integer index
+    // Broiler-Human:        PENDING
     private bool IsValidIntegerIndex(double numericIndex)
     {
         if (double.IsNaN(numericIndex)
@@ -565,8 +640,14 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return numericIndex >= 0 && numericIndex < length;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a Symbol assigned to the key '-0' of a Float64Array is dropped without throwing TypeError
+    // Broiler-Human:        PENDING
     internal virtual void ValidateElementValue(JSValue value) => _ = (value ?? JSUndefined.Value).DoubleValue;
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: an out-of-range index is reported present when the prototype chain carries a property with the same numeric name
+    // Broiler-Human:        PENDING
     public override JSValue HasProperty(JSValue propertyKey)
     {
         // [[HasProperty]] for an integer-indexed exotic object: a canonical numeric
@@ -588,6 +669,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return base.HasProperty(propertyKey);
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: Object.getOwnPropertyDescriptor on a typed array returns a descriptor for 'length' although length is only an accessor on %TypedArray%.prototype
+    // Broiler-Human:        PENDING
     public override JSValue GetOwnPropertyDescriptor(JSValue name)
     {
         var key = name.ToKey(false);
@@ -625,6 +709,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return base.GetOwnPropertyDescriptor(name);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: Object.defineProperty on an in-bounds index with a value whose valueOf counts its calls records two conversions for one element definition
+    // Broiler-Human:        PENDING
     public override JSValue DefineProperty(uint key, JSObject pd)
     {
         // TypedArray [[DefineOwnProperty]] (ES2021+): for a valid integer index the
@@ -661,6 +748,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return JSUndefined.Value;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: defining the key '-0' or '1.5' on a typed array creates an ordinary own property instead of returning false
+    // Broiler-Human:        PENDING
     public override JSValue DefineProperty(in KeyString name, JSObject pd)
     {
         if (TryGetCanonicalNumericIndex(name, out var numericIndex))
@@ -677,6 +767,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return base.DefineProperty(name, pd);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: reading the key '1.5' or '-0' of a typed array returns a value inherited from the prototype chain instead of undefined
+    // Broiler-Human:        PENDING
     internal protected override JSValue GetValue(KeyString key, JSValue receiver, bool throwError = true)
     {
         // [[Get]] for an integer-indexed exotic object (10.4.5.4): a canonical
@@ -699,6 +792,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     // TryGetElement rather than the indexer. A typed array stores its data in the backing buffer,
     // not the ordinary element map, so the JSObject default would report every index as absent;
     // resolve a valid in-bounds index to its element here (out-of-bounds / detached is "absent").
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: Array.prototype.indexOf applied to a typed array whose buffer is detached reports an element found at index 0
+    // Broiler-Human:        PENDING
     internal override bool TryGetElement(uint i, out JSValue value)
     {
         if (IsValidIntegerIndex(i))
@@ -711,6 +807,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return false;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: assigning to the key '-0' of a typed array a value whose valueOf throws completes silently instead of propagating the exception
+    // Broiler-Human:        PENDING
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
     {
         if (TryGetCanonicalNumericIndex(name, out var numericIndex))
@@ -745,6 +844,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     // is a successful no-op. Returns true when fully handled (the per-type
     // SetValue(uint) returns `result`); false when this is a normal direct write
     // (null receiver or SameValue(O, Receiver)) that should coerce and store.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+    // Broiler-Falsified-If: Reflect.set with a valid index and a plain-object receiver writes the coerced value into the typed array's buffer instead of onto the receiver
+    // Broiler-Human:        PENDING
     private protected bool TrySetForeignReceiver(uint index, JSValue value, JSValue receiver, bool throwError, out bool result)
     {
         if (receiver is null || ReferenceEquals(receiver, this))
@@ -773,10 +875,16 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     // a throwing valueOf propagates when the array is used as a typed-array element).
     public override bool Equals(JSValue value) => ReferenceEquals(this, value);
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=4; Fingerprint=TBF
+    // Broiler-Falsified-If: calling a typed array as a function returns a value instead of throwing TypeError
+    // Broiler-Human:        PENDING
     public override JSValue InvokeFunction(in Arguments a) => throw JSEngine.NewTypeError($"{this} is not a function");
 
     public override bool StrictEquals(JSValue value) => ReferenceEquals(this, value);
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: delete of the key '-0' on a typed array returns false instead of true
+    // Broiler-Human:        PENDING
     public override JSValue Delete(in KeyString key)
     {
         if (TryGetCanonicalNumericIndex(key, out var numericIndex))
@@ -785,8 +893,14 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return base.Delete(key);
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: delete of an in-bounds index returns true instead of false
+    // Broiler-Human:        PENDING
     public override JSValue Delete(uint key) => key < length ? JSBoolean.False : JSBoolean.True;
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=4; Fingerprint=TBF
+    // Broiler-Falsified-If: the CLR string of a typed array whose buffer was detached lists the old elements instead of being empty
+    // Broiler-Human:        PENDING
     public override string ToString()
     {
         var sb = new StringBuilder();
@@ -804,10 +918,19 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
 
     public override string ToDetailString() => ToString();
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: the enumerator it returns yields the element at index 1 first instead of the element at index 0
+    // Broiler-Human:        PENDING
     public override IElementEnumerator GetElementEnumerator() => new ElementEnumerator(this);
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an enumerator created with startIndex 3 yields the element at index 2 or index 4 first
+    // Broiler-Human:        PENDING
     internal IElementEnumerator GetElementEnumerator(int startIndex) => new ElementEnumerator(this, startIndex);
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: the entry yielded for index 2 carries the element stored at a different index
+    // Broiler-Human:        PENDING
     internal IElementEnumerator GetEntries() => new EntryEnumerator(this);
 
     // [[OwnPropertyKeys]] for a typed array is the integer indices followed by the
@@ -816,19 +939,34 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     // GetElementEnumerator, so deferring to it also surfaces extra own properties
     // (e.g. `ta.foo = 1`) to getOwnPropertyNames / for-in / Object.is{Sealed,Frozen}
     // instead of dropping them as an indices-only enumerator did.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: Object.getOwnPropertyNames on a typed array carrying an extra own property foo omits foo or lists it before the integer indices
+    // Broiler-Human:        PENDING
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true) => base.GetAllKeys(showEnumerableOnly, inherited);
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: the key iterator yields an index equal to or greater than the length the array had when the iterator was created
+    // Broiler-Human:        PENDING
     internal JSGenerator GetKeys() => new(new IntKeyEnumerator(length), "Array Iterator");
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a source whose @@iterator is null is iterated instead of being consumed as an array-like
+    // Broiler-Human:        PENDING
     private static bool IsNonIterableArrayLike(JSValue source) =>
         // GetMethod(source, @@iterator) treats a null @@iterator the same as an absent (undefined) one,
         // so a source whose @@iterator is null/undefined is consumed as an array-like, not iterated.
         SymbolIterator == null || source.PropertyOrUndefined(SymbolIterator).IsNullOrUndefined;
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: after the buffer is shrunk mid-iteration the enumerator yields an element at an index at or past the new length
+    // Broiler-Human:        PENDING
     struct ElementEnumerator(JSTypedArray typedArray, int startIndex = 0) : IElementEnumerator
     {
         private int index = startIndex - 1;
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: the reported index differs from the index of the element returned with it
+        // Broiler-Human:        PENDING
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
         {
             if (++this.index < typedArray.length)
@@ -845,6 +983,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             return false;
         }
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: a call after the last element returns true or a value other than undefined
+        // Broiler-Human:        PENDING
         public bool MoveNext(out JSValue value)
         {
             if (++index < typedArray.length)
@@ -857,6 +998,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             return false;
         }
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: a call after the last element yields undefined instead of the supplied default
+        // Broiler-Human:        PENDING
         public bool MoveNextOrDefault(out JSValue value, JSValue @default)
         {
             if (++index < typedArray.length)
@@ -869,6 +1013,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             return false;
         }
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: a call after the last element yields undefined instead of the supplied default
+        // Broiler-Human:        PENDING
         public JSValue NextOrDefault(JSValue @default)
         {
             if (++index < typedArray.length)
@@ -880,10 +1027,16 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         }
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: after the buffer is shrunk mid-iteration the enumerator produces an entry pair for an index at or past the new length
+    // Broiler-Human:        PENDING
     struct EntryEnumerator(JSTypedArray typedArray) : IElementEnumerator
     {
         private int index = -1;
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: the first element of an entry pair differs from the index reported with it
+        // Broiler-Human:        PENDING
         public bool MoveNext(out bool hasValue, out JSValue value, out uint index)
         {
             if (++this.index < typedArray.length)
@@ -900,6 +1053,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             return false;
         }
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: a call after the last element returns true or a value other than undefined
+        // Broiler-Human:        PENDING
         public bool MoveNext(out JSValue value)
         {
             if (++index < typedArray.length)
@@ -912,6 +1068,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             return false;
         }
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: a call after the last element yields undefined instead of the supplied default
+        // Broiler-Human:        PENDING
         public bool MoveNextOrDefault(out JSValue value, JSValue @default)
         {
             if (++index < typedArray.length)
@@ -923,6 +1082,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             value = @default;
             return false;
         }
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: a call after the last element yields undefined instead of the supplied default
+        // Broiler-Human:        PENDING
         public JSValue NextOrDefault(JSValue @default)
         {
             if (++index < typedArray.length)
@@ -934,18 +1096,29 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         }
     }
 
+    // Broiler-AI:           Origin=AI; IP=None; Security=None; Resources=0; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     internal enum ArrayIteratorKind { Key, Value, Entry }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: values() returns an iterator that yields keys, or entries() one that yields bare values
+    // Broiler-Human:        PENDING
     internal JSGenerator GetArrayIterator(ArrayIteratorKind kind) => new(new ArrayIteratorEnumerator(this, kind), "Array Iterator");
 
     // The %ArrayIteratorPrototype%.next semantics for a typed array (CreateArrayIterator): each step
     // re-derives the length from the live buffer and, if the view's buffer is detached or the view has
     // been left out of bounds by a resize, throws a TypeError. A length-tracking view simply yields fewer
     // elements after a shrink (no throw); a fixed-length view that no longer fits throws.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an iterator over a fixed-length view keeps yielding after a buffer shrink leaves the view out of bounds instead of throwing TypeError
+    // Broiler-Human:        PENDING
     sealed class ArrayIteratorEnumerator(JSTypedArray typedArray, ArrayIteratorKind kind) : IElementEnumerator
     {
         private int index = -1;
 
+        // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: a next() call after the buffer is detached mid-iteration returns a result instead of throwing TypeError
+        // Broiler-Human:        PENDING
         private bool Step(out JSValue value, out uint idx)
         {
             if (typedArray.buffer == null || typedArray.buffer.isDetached || typedArray.IsOutOfBounds)
@@ -968,14 +1141,23 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             return false;
         }
 
+        // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: hasValue is reported true for the call that exhausts the iterator
+        // Broiler-Human:        PENDING
         public bool MoveNext(out bool hasValue, out JSValue value, out uint idx)
         {
             hasValue = Step(out value, out idx);
             return hasValue;
         }
 
+        // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: a call after the iterator is exhausted returns true
+        // Broiler-Human:        PENDING
         public bool MoveNext(out JSValue value) => Step(out value, out _);
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: a call after the iterator is exhausted yields undefined instead of the supplied default
+        // Broiler-Human:        PENDING
         public bool MoveNextOrDefault(out JSValue value, JSValue @default)
         {
             if (Step(out value, out _)) return true;
@@ -983,6 +1165,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             return false;
         }
 
+        // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+        // Broiler-Falsified-If: a call after the iterator is exhausted yields undefined instead of the supplied default
+        // Broiler-Human:        PENDING
         public JSValue NextOrDefault(JSValue @default) => Step(out var value, out _) ? value : @default;
     }
 }

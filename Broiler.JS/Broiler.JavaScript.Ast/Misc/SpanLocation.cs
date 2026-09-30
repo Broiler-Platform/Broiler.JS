@@ -5,10 +5,14 @@
 /// first character of every line is column 1. Every ECMAScript LineTerminator (LF, CR, U+2028,
 /// U+2029, with CRLF counted once) starts a new line. Columns count UTF-16 code units.
 /// </summary>
+// Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
+// Broiler-Human:        PENDING
 public readonly struct SpanLocation(int line, int column)
 {
     public readonly int Line = line;
     public readonly int Column = column;
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public override string ToString() => $"{Line}, {Column}";
 }

@@ -5,6 +5,9 @@ using Broiler.JavaScript.ExpressionCompiler.Core;
 namespace Broiler.JavaScript.Ast;
 
 
+// Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=5; Fingerprint=TBF
+// Broiler-Falsified-If: a block built by the public constructor reports a Type other than FastNodeType.Block, so VisitCore dispatches it to a visitor other than VisitBlock
+// Broiler-Human:        PENDING
 public class AstBlock : AstStatement
 {
     public IFastEnumerable<StringSpan>? HoistingScope;
@@ -27,8 +30,14 @@ public class AstBlock : AstStatement
 
     public readonly IFastEnumerable<AstStatement> Statements;
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: the node type argument is not passed to the base, so a derived block such as a program reports FastNodeType.Block and is lowered by VisitBlock
+    // Broiler-Human:        PENDING
     protected AstBlock(FastToken start, FastNodeType type, FastToken end, IFastEnumerable<AstStatement> statements) : base(start, type, end) => Statements = statements;
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: a block built from a statement list exposes a Statements sequence other than the list it was given, dropping or reordering statements before lowering
+    // Broiler-Human:        PENDING
     public AstBlock(FastToken start, FastToken end, IFastEnumerable<AstStatement> list) : base(start, FastNodeType.Block, end) => Statements = list;
 
     public override string ToString() => Statements.Join("\n\t");

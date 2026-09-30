@@ -6,8 +6,14 @@ using Broiler.JavaScript.Runtime;
 
 namespace Broiler.JavaScript.BuiltIns.Array;
 
+// Broiler-AI:           Origin=AI; IP=Medium; Security=Medium; Resources=7; Fingerprint=TBF
+// Broiler-Falsified-If: indexOf or lastIndexOf runs an own accessor element's getter twice while testing one index
+// Broiler-Human:        PENDING
 public partial class JSArray
 {
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: at(-1) on an array-like of length 2^32+1 returns anything but the value stored at index 2^32
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("at", Length = 1)]
     public static JSValue At(in Arguments a)
@@ -23,6 +29,9 @@ public partial class JSArray
         return @this[CreateNumber(index)];
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: includes(undefined) on an array with a hole returns false
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("includes", Length = 1)]
     public static JSValue Includes(in Arguments a)
@@ -53,6 +62,9 @@ public partial class JSArray
 
     // Reads the element at a (possibly > 2^32) index: the fast 32-bit element store when present,
     // otherwise the canonical numeric-string property (so sparse / large-index entries are seen).
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a value stored at index 4294967295 is read through the 32-bit element path and comes back undefined
+    // Broiler-Human:        PENDING
     private static JSValue GetElementByIndex(JSObject @object, long index)
     {
         if (index <= uint.MaxValue - 1 && @object.TryGetElement((uint)index, out var item))
@@ -62,6 +74,9 @@ public partial class JSArray
 
     // Whether the element at a (possibly > 2^32) index exists (own or inherited), used by indexOf /
     // lastIndexOf to skip array holes while still seeing sparse / large-index entries.
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: an own accessor element's getter runs while only the presence of the index is being tested
+    // Broiler-Human:        PENDING
     private static bool HasElementAt(JSObject @object, long index)
     {
         if (index <= uint.MaxValue - 1 && @object.TryGetElement((uint)index, out _))
@@ -69,6 +84,9 @@ public partial class JSArray
         return @object.HasProperty(CreateNumber((double)index)).BooleanValue;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: a hole is reported as a match for undefined instead of being skipped
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("indexOf", Length = 1)]
     public static JSValue IndexOf(in Arguments a)
@@ -102,6 +120,9 @@ public partial class JSArray
         return JSNumber.MinusOne;
     }
 
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
+    // Broiler-Falsified-If: a fromIndex of -Infinity searches any index instead of returning -1
+    // Broiler-Human:        PENDING
     [JSPrototypeMethod]
     [JSExport("lastIndexOf", Length = 1)]
     public static JSValue LastIndexOf(in Arguments a)

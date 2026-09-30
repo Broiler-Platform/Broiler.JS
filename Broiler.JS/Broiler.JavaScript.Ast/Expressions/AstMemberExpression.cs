@@ -2,6 +2,9 @@
 
 namespace Broiler.JavaScript.Ast.Expressions;
 
+// Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=5; Fingerprint=TBF
+// Broiler-Falsified-If: a non-optional link after a `?.` link, the `.c` in `a?.b.c`, is built with InOptionalChain false, so a nullish `a` throws a TypeError instead of yielding undefined
+// Broiler-Human:        PENDING
 public class AstMemberExpression(AstExpression target, AstExpression node, bool computed = false, bool coalesce = false, bool inOptionalChain = false) :
     AstExpression(target.End, FastNodeType.MemberExpression, node.End)
 {
@@ -17,6 +20,8 @@ public class AstMemberExpression(AstExpression target, AstExpression node, bool 
     public readonly bool Coalesce = coalesce;
     public readonly bool InOptionalChain = inOptionalChain || coalesce;
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=5; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public override string ToString()
     {
         if (Computed)

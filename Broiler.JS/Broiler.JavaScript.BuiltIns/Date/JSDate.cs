@@ -4,12 +4,24 @@ using System;
 
 namespace Broiler.JavaScript.BuiltIns.Date;
 
+// Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+// Broiler-Falsified-If: new Date(ms) for an instant inside daylight-saving time reports a getHours value one hour off the local hour implied by getTimezoneOffset
+// Broiler-Human:        PENDING
 [JSFunctionGenerator("Date")]
 public partial class JSDate: JSObject
 {
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: a real time value of 0001-01-01T00:00:00Z is reported as NaN because it equals this sentinel
+    // Broiler-Human:        PENDING
     internal static readonly DateTimeOffset InvalidDate = DateTimeOffset.MinValue;
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: script obtains this shared instance and a setter call on it changes the date every other holder sees
+    // Broiler-Human:        PENDING
     internal static readonly JSDate invalidDate = new(DateTimeOffset.MinValue);
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: an instant inside daylight-saving time is shifted by the zone's standard offset instead of the offset in force at that instant
+    // Broiler-Human:        PENDING
     internal static TimeSpan Local => TimeZoneInfo.Local.BaseUtcOffset;
 
     internal DateTimeOffset value;
@@ -29,10 +41,17 @@ public partial class JSDate: JSObject
 
     public DateTime DateTime => Value.DateTime;
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: the created date carries a prototype other than the one passed in
+    // Broiler-Human:        PENDING
     internal JSDate(JSObject prototype, DateTimeOffset time) : base(prototype) => value = time;
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public JSDate(DateTimeOffset time) : this() => value = time;
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public override string ToDetailString() => value.ToString();
 
     /// <summary>
@@ -40,6 +59,9 @@ public partial class JSDate: JSObject
     /// Uses <see cref="rawTimeMs"/> when set (for dates outside .NET range),
     /// otherwise delegates to <see cref="JSDateStatic.ToJSDate"/>.
     /// </summary>
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: a date holding rawTimeMs returns the .NET sentinel's time instead of rawTimeMs, or an invalid date returns a number
+    // Broiler-Human:        PENDING
     internal double GetTimeMs()
     {
         if (!double.IsNaN(rawTimeMs))
@@ -53,6 +75,9 @@ public partial class JSDate: JSObject
     /// keeping the raw <see cref="rawTimeMs"/> representation when the value falls
     /// outside .NET DateTimeOffset's 1–9999 year range. Returns the stored value.
     /// </summary>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: a time value inside daylight-saving time is stored at the zone's standard offset, so getHours on new Date(ms) is one hour off the local wall-clock hour
+    // Broiler-Human:        PENDING
     internal double SetTimeValue(double ms)
     {
         if (double.IsNaN(ms))
@@ -92,6 +117,9 @@ public partial class JSDate: JSObject
     /// <summary>
     /// Returns true if this date is valid (not NaN / invalid).
     /// </summary>
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: a date set to exactly 0001-01-01T00:00:00Z through SetTimeValue reports itself invalid
+    // Broiler-Human:        PENDING
     internal bool IsValidDate()
     {
         if (!double.IsNaN(rawTimeMs))
@@ -100,6 +128,9 @@ public partial class JSDate: JSObject
         return value != InvalidDate;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a valid Date outside years 1 to 9999, held only in rawTimeMs, converts to a CLR DateTime of 0001-01-01 and the conversion reports success
+    // Broiler-Human:        PENDING
     public override bool ConvertTo(Type type, out object value)
     {
         if (type == typeof(DateTime))

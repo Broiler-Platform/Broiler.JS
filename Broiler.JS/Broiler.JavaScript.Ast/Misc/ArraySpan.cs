@@ -6,10 +6,15 @@ using System.Text;
 
 namespace Broiler.JavaScript.Ast.Misc;
 
+// Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=4; Fingerprint=TBF
+// Broiler-Falsified-If: an index at or past Length returns an element of the backing array instead of throwing, exposing stale entries beyond the span
+// Broiler-Human:        PENDING
 public readonly struct ArraySpan<T>(T[] items, int length) : IEnumerable<T>
 {
     public readonly int Length = length;
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public int Count
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -18,12 +23,17 @@ public readonly struct ArraySpan<T>(T[] items, int length) : IEnumerable<T>
 
     public static ArraySpan<T> Empty;
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Falsified-If: reading the span at index Length returns the backing array's next slot instead of throwing, exposing a stale entry beyond the span
+    // Broiler-Human:        PENDING
     public ref T this[int index]
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => ref items[index];
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=4; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public string Join(string separator = ", ")
     {
         var sb = new StringBuilder();
@@ -39,14 +49,24 @@ public readonly struct ArraySpan<T>(T[] items, int length) : IEnumerable<T>
         return sb.ToString();
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public static ArraySpan<T> From(params T[] items) => new(items, items.Length);
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public Enumerator GetEnumerator() => new(items, Length);
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     IEnumerator IEnumerable.GetEnumerator() => new Enumerator(items, Length);
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     IEnumerator<T> IEnumerable<T>.GetEnumerator() => new Enumerator(items, Length);
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public T FirstOrDefault()
     {
         if (Length == 0)
@@ -55,6 +75,8 @@ public readonly struct ArraySpan<T>(T[] items, int length) : IEnumerable<T>
         return items[0];
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public T LastOrDefault()
     {
         if (Length == 0)
@@ -63,8 +85,13 @@ public readonly struct ArraySpan<T>(T[] items, int length) : IEnumerable<T>
         return items[Length - 1];
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public bool Any() => Length > 0;
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=3; Fingerprint=TBF
+    // Broiler-Falsified-If: ToArray on ArraySpan.Empty or a default instance, whose backing array is null, throws NullReferenceException instead of returning an empty array
+    // Broiler-Human:        PENDING
     public T[] ToArray()
     {
         if (Length == items.Length)
@@ -76,10 +103,14 @@ public readonly struct ArraySpan<T>(T[] items, int length) : IEnumerable<T>
         return copy;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     public struct Enumerator(T[] items, int length) : IEnumerator<T>
     {
         private int index = -1;
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+        // Broiler-Human:        PENDING
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext(out T item)
         {
@@ -93,6 +124,8 @@ public readonly struct ArraySpan<T>(T[] items, int length) : IEnumerable<T>
             return false;
         }
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+        // Broiler-Human:        PENDING
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext(out T item, out int i)
         {
@@ -108,17 +141,29 @@ public readonly struct ArraySpan<T>(T[] items, int length) : IEnumerable<T>
             return false;
         }
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+        // Broiler-Human:        PENDING
         public readonly T Current => items[index];
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
+        // Broiler-Human:        PENDING
         readonly object IEnumerator.Current => items[index];
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=None; Resources=0; Fingerprint=TBF
+        // Broiler-Human:        PENDING
         public readonly void Dispose() { }
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+        // Broiler-Human:        PENDING
         public bool MoveNext() => ++index < length;
 
+        // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
+        // Broiler-Human:        PENDING
         public void Reset() => index = -1;
     }
 
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=3; Fingerprint=TBF
+    // Broiler-Human:        PENDING
     internal void Copy(T[] copy, int start)
     {
         if (Length == 0)
