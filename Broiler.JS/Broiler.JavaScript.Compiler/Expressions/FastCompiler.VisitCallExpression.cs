@@ -190,8 +190,8 @@ partial class FastCompiler
         // §13.3.5 Optional Chains), but the inner MemberExpression still carries a Reference
         // whose base is the `this` value for the surrounding call: `(a?.b)()` must invoke
         // `a.b` with `this = a`, just as `(a.b)()` does. Unwrap the AstOptionalChain wrapper
-        // here so the member-call path threads the correct receiver, and re-apply the chain
-        // boundary's sentinel→undefined conversion to the call result. Without this, the
+        // here so the member-call path threads the correct receiver; InvokeChainBoundaryCall
+        // lowers the call, including where the chain short-circuits. Without this, the
         // outer call falls into the no-this branch below and the function runs with the
         // surrounding `this` (test262 optional-chaining/optional-call-preserves-this).
         var chainBoundary = false;
@@ -261,6 +261,9 @@ partial class FastCompiler
             }
 
             var (args, spread) = VisitArguments(arguments);
+            if (chainBoundary)
+                return InvokeChainBoundaryCall(target, name, isPrivateMethodKey, args, spread, me.Coalesce, coalesce);
+
             using var te = scope.Top.GetTempVariable(typeof(JSValue));
             using var te2 = scope.Top.GetTempVariable(typeof(JSValue));
 
@@ -363,10 +366,7 @@ partial class FastCompiler
                 invocation = BExpression.Block(locals, invocation);
             }
 
-            // A parenthesized optional chain closes its chain at the parens, so the
-            // outer call's result must collapse any in-flight skip sentinel back to
-            // `undefined`.
-            return chainBoundary ? JSValueBuilder.UnwrapOptionalChain(invocation) : invocation;
+            return invocation;
         }
         else
         {
@@ -476,6 +476,82 @@ partial class FastCompiler
             var target = VisitExpression(callee);
             return JSFunctionBuilder.InvokeFunction(target, paramArray, coalesce, inChain);
         }
+    }
+
+    /// <summary>
+    /// A call whose callee is a parenthesised optional chain ending in a member access:
+    /// <c>(o?.m)(…)</c>, <c>(o?.a.m)(…)</c>, <c>(o?.[k])(…)</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Where the chain runs to its end, the method is called on the object it was read from, as the
+    /// member access is still the call's Reference: <c>(o?.m)()</c> runs on <c>o</c>.
+    /// </para>
+    /// <para>
+    /// <b>Where the chain short-circuits, its value is <c>undefined</c>, and that is what is called.</b>
+    /// The parens closed the chain, so nothing is left to skip the call: it throws a <c>TypeError</c>,
+    /// after the arguments are evaluated, because EvaluateCall follows ArgumentListEvaluation. The key of
+    /// a link the chain skipped is not evaluated. This used to go through InvokeMethod's own short-circuit,
+    /// which skipped the call, arguments and all, and answered <c>undefined</c>: <c>(n?.m)(a())</c> with
+    /// <c>n</c> null never ran <c>a()</c> and never threw, where Chromium runs it and throws.
+    /// </para>
+    /// <para>
+    /// <b>A call that is optional itself</b>, <c>(o?.m)?.(…)</c>, short-circuits on a nullish callee
+    /// before its arguments, and that short-circuit belongs to the chain the call opens, which may go on
+    /// past it: <c>(n?.m)?.().c</c> is <c>undefined</c>. So it is left as the skip sentinel, for that
+    /// chain's root to unwrap. The call used to unwrap every sentinel itself, and <c>.c</c> was then read
+    /// off <c>undefined</c>.
+    /// </para>
+    /// <para>
+    /// The receiver, the method and a private name's key are locals of this call's own, as they are for a
+    /// call whose operands the generator rewrite may hoist (see <see cref="MayHoist(BExpression)"/>).
+    /// </para>
+    /// </remarks>
+    private BExpression InvokeChainBoundaryCall(
+        BExpression target,
+        BExpression name,
+        bool isPrivateKey,
+        IFastEnumerable<BExpression> args,
+        bool spread,
+        bool memberCoalesce,
+        bool callCoalesce)
+    {
+        var receiver = BExpression.Parameter(typeof(JSValue), "#recv");
+        var method = BExpression.Parameter(typeof(JSValue), "#callee");
+        var locals = new Sequence<BParameterExpression> { receiver, method };
+        var body = new Sequence<BExpression> { BExpression.Assign(receiver, target) };
+
+        // A private name's key is read by address, as in InvokeMethod: copied into a local first.
+        var key = name;
+        if (isPrivateKey)
+        {
+            var keyLocal = BExpression.Parameter(typeof(KeyString), "#key");
+            locals.Add(keyLocal);
+            body.Add(BExpression.Assign(keyLocal, name));
+            key = keyLocal;
+        }
+
+        // An earlier link short-circuited, or this one is `?.` on a nullish object.
+        BExpression shortCircuited = JSValueBuilder.IsOptionalChainSkip(receiver);
+        if (memberCoalesce)
+            shortCircuited = BExpression.OrElse(shortCircuited, JSValueBuilder.IsNullOrUndefined(receiver));
+
+        body.Add(BExpression.IfThen(
+            shortCircuited,
+            BExpression.Block(
+                BExpression.Assign(receiver, JSUndefinedBuilder.Value),
+                BExpression.Assign(method, JSUndefinedBuilder.Value)),
+            BExpression.Assign(method, JSValueBuilder.Index(receiver, key))));
+
+        BExpression call = JSFunctionBuilder.InvokeFunction(method, ArgumentsBuilder.New(receiver, args, spread));
+        if (callCoalesce)
+        {
+            call = BExpression.Condition(
+                JSValueBuilder.IsNullOrUndefined(method), JSValueBuilder.OptionalChainSkip(), call, typeof(JSValue));
+        }
+
+        body.Add(call);
+        return BExpression.Block(locals, body);
     }
 
     /// <summary>
