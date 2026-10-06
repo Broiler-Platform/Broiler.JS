@@ -296,10 +296,23 @@ partial class FastCompiler
             // hoists there, and `Generator` is the scope's own record of having a state machine
             // at all.
             var operandsHoist = scope.Top.Generator != null && (spread || MayHoist(name) || MayHoist(args));
-            var receiver = operandsHoist
+
+            // A computed key needs no hoist to get into that window, because it is already inside
+            // it in ordinary code. The key is evaluated after the receiver is assigned, but the
+            // invocation reads the receiver back from its temp only afterwards, when it builds
+            // the call's `this` -- unlike an argument, it is not on the evaluation stack yet. So
+            // a nested member call in the key, handed the same pooled pair, leaves its own
+            // receiver there: `M[(F.f(), 'm')]()` called `M.m` with `this` being `F`. That is the
+            // shape a transpiled generator body ends a state with --
+            // `ctx[(done ? next() : 0, 'jumpToEnd')]()` -- so the jump landed on the wrong
+            // object, the state never changed, and the body ran the same state forever. The key
+            // is tested the same conservative way as the operands above.
+            var keyRunsInWindow = me.Computed && MayHoist(name);
+            var ownTemps = operandsHoist || keyRunsInWindow;
+            var receiver = ownTemps
                 ? BExpression.Parameter(typeof(JSValue), "#recv")
                 : te.Variable;
-            var resolvedMethod = operandsHoist
+            var resolvedMethod = ownTemps
                 ? BExpression.Parameter(typeof(JSValue), "#callee")
                 : te2.Variable;
 
@@ -336,7 +349,7 @@ partial class FastCompiler
                     access: me.AccessCode(), accessProperty: PropertyNameText(me.Property));
             }
 
-            if (operandsHoist)
+            if (ownTemps)
             {
                 var locals = new Sequence<BParameterExpression>
                 {
@@ -467,16 +480,22 @@ partial class FastCompiler
 
     /// <summary>
     /// Whether a compiled operand of a method call — an argument, or a computed property key —
-    /// might be hoisted out to statement level by the generator rewrite's FlattenBlocks pass.
+    /// might be hoisted out to statement level by the generator rewrite's FlattenBlocks pass,
+    /// or otherwise run code that takes the call's pooled temps.
     /// </summary>
     /// <remarks>
     /// <para>
     /// Anything evaluated after a method call's receiver and callee are read into temps runs in
     /// the window where a shared pooled temp can be reassigned under it. In ordinary code that
-    /// window is harmless — the two values are already on the evaluation stack. In a generator
-    /// or async body FlattenBlocks lifts a block-valued operand's statements out as siblings,
-    /// so they run between this call's assignments and its invocation, and a nested member call
-    /// compiles to exactly such a block.
+    /// window is harmless for an argument — the two values are already on the evaluation stack.
+    /// In a generator or async body FlattenBlocks lifts a block-valued operand's statements out
+    /// as siblings, so they run between this call's assignments and its invocation, and a nested
+    /// member call compiles to exactly such a block.
+    /// </para>
+    /// <para>
+    /// A computed key is in that window in ordinary code as well, with no hoist: it runs after
+    /// the receiver's assignment and before the invocation reads the receiver back as the call's
+    /// `this`. The same answer serves for it, because "does this emit code" is all it asks.
     /// </para>
     /// <para>
     /// The answer is deliberately conservative and deliberately structural. A bare parameter or
