@@ -10,19 +10,18 @@ name one source.
 
 The [`Publish`](../.github/workflows/publish.yml) workflow is the only supported route.
 
-1. **Dispatch it** from the Actions tab. Leave `version-suffix` empty so the version is
-   resolved automatically, and leave `dry-run` on for a rehearsal.
-2. A **dry run** resolves the version, builds, tests, packs, verifies every package, proves a
-   consumer can restore the set from nuget.org, and attaches the packages as an artifact —
-   without pushing anything.
-3. Re-dispatch with `dry-run` off to push. The same validation runs again against the version
-   that run resolves.
+1. **Rehearse in CI.** There is no dry-run mode in Publish. CI already builds, tests, packs,
+   verifies every package and proves a consumer can restore the set from nuget.org on every
+   push and pull request, attaching the packages as an artifact — without pushing anything.
+2. **Dispatch Publish** from the Actions tab. Leave `version-suffix` empty so the version is
+   resolved automatically. The run validates again against the version it resolves, then
+   pushes.
 
-Pushing a `v0.1.0-preview.N` tag publishes as well, and skips the dry-run default. Use it only
-to publish a specific number; the automatic path is otherwise identical.
+Pushing a `v0.1.0-preview.N` tag publishes as well. Use it only to publish a specific number;
+the automatic path is otherwise identical.
 
-`NUGET_API_KEY` must exist as a repository secret. A non-dry run fails early and loudly if it
-does not, rather than after a full build.
+`NUGET_API_KEY` must exist as a repository secret. A run fails early and loudly if it does
+not, rather than after a full build.
 
 ## How the version is chosen
 
