@@ -11,10 +11,6 @@ on:
         description: 'Optional preview.N (unused and at least the next preview). Empty selects automatically.'
         type: string
         default: ''
-      dry-run:
-        description: Validate and attach packages without pushing to nuget.org
-        type: boolean
-        default: true
   push:
     tags: ['v*']
 
@@ -31,8 +27,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.version.outputs.version }}
-    env:
-      DRY_RUN: ${{ github.event_name == 'push' && 'false' || inputs.dry-run }}
     steps:
       # Tags are half the version record, so fetch all of them: a missing tag reads
       # as an unspent preview number and would be handed to a second build.
@@ -49,7 +43,6 @@ jobs:
         with:
           node-version: '24'
       - name: Require a NuGet.org API key
-        if: env.DRY_RUN != 'true'
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_TOKEN }}
         run: |
@@ -79,7 +72,6 @@ jobs:
       # numbering cumulative, so this job writes one ref and nothing else.
       contents: write
     env:
-      DRY_RUN: ${{ github.event_name == 'push' && 'false' || inputs.dry-run }}
       PACKAGE_VERSION: ${{ needs.version.outputs.version }}
     steps:
       - name: Check out
@@ -99,7 +91,6 @@ jobs:
       # --skip-duplicate makes a re-run of a partially pushed set succeed instead of
       # failing on the packages that already landed.
       - name: Push to NuGet.org
-        if: env.DRY_RUN != 'true'
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_TOKEN }}
         run: >
@@ -108,7 +99,7 @@ jobs:
           --api-key "$NUGET_API_KEY" --skip-duplicate
       # Pushed with GITHUB_TOKEN, so it does not re-trigger this workflow.
       - name: Record the published version as a tag
-        if: env.DRY_RUN != 'true' && github.event_name != 'push'
+        if: github.event_name != 'push'
         run: |
           git -c user.name='github-actions[bot]' \
               -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
@@ -119,11 +110,7 @@ jobs:
           {
             echo "### Broiler.JS $PACKAGE_VERSION"
             echo
-            if [ "$DRY_RUN" = "true" ]; then
-              echo 'Dry run: validated packages are attached; nothing was pushed.'
-            else
-              echo 'Published to nuget.org.'
-            fi
+            echo 'Published to nuget.org.'
             echo
             echo '```'
             ls -1 artifacts
