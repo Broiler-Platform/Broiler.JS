@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine;
@@ -26,6 +27,28 @@ public partial class JSProxy : JSObject
     private readonly bool constructable;
     private bool revoked;
 
+    // Proxy forwarding can recurse entirely in CLR methods, without entering a
+    // JavaScript call frame. Stop before the runtime's last-stack-space check so
+    // JavaScript catch/finally handlers can still call functions and restore the
+    // prototype that caused the recursion. This is a nesting limit, not a ban on
+    // visiting the same proxy again: finite reentrant traps remain valid.
+    private const int MaxOperationDepth = 256;
+    [ThreadStatic]
+    private static int operationDepth;
+
+    private static OperationScope EnterOperation()
+    {
+        if (operationDepth >= MaxOperationDepth || !RuntimeHelpers.TryEnsureSufficientExecutionStack())
+            throw JSEngine.NewRangeError("Maximum call stack size exceeded");
+        operationDepth++;
+        return new OperationScope();
+    }
+
+    private readonly struct OperationScope : IDisposable
+    {
+        public void Dispose() => operationDepth--;
+    }
+
     protected JSProxy((JSObject target, JSObject handler) p) : base((JSEngine.Current as IJSExecutionContext)?.ObjectPrototype)
     {
         var (target, handler) = p;
@@ -49,6 +72,10 @@ public partial class JSProxy : JSObject
 
     internal JSObject RequireTarget()
     {
+        // Also protect target-only callers such as IsArray and proxy unwrapping.
+        if (!RuntimeHelpers.TryEnsureSufficientExecutionStack())
+            throw JSEngine.NewRangeError("Maximum call stack size exceeded");
+
         if (revoked)
             throw JSEngine.NewTypeError("Cannot perform operation on a revoked Proxy");
 
@@ -441,6 +468,7 @@ public partial class JSProxy : JSObject
 
     public override JSValue InvokeFunction(in Arguments a)
     {
+        using var operation = EnterOperation();
         // A Proxy has a [[Call]] internal method only when its target does (ProxyCreate,
         // §10.5.14), so Call on a proxy of a noncallable target throws TypeError at
         // IsCallable before any trap runs — an `apply` trap on such a proxy is never
@@ -461,6 +489,7 @@ public partial class JSProxy : JSObject
 
     public override JSValue CreateInstance(in Arguments a)
     {
+        using var operation = EnterOperation();
         var target = RequireTarget();
         if (!constructable)
             throw JSEngine.NewTypeError("Proxy target is not a constructor");
@@ -496,6 +525,7 @@ public partial class JSProxy : JSObject
 
     public override JSValue DefineProperty(JSValue key, JSObject propertyDescription)
     {
+        using var operation = EnterOperation();
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.defineProperty);
         if (!fx.IsUndefined)
@@ -562,6 +592,7 @@ public partial class JSProxy : JSObject
 
     public override JSValue Delete(JSValue index)
     {
+        using var operation = EnterOperation();
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.deleteProperty);
         if (!fx.IsUndefined)
@@ -585,6 +616,7 @@ public partial class JSProxy : JSObject
 
     public override JSValue GetOwnPropertyDescriptor(JSValue name)
     {
+        using var operation = EnterOperation();
         var target = RequireTarget();
         var fx = GetTrap(GetOwnPropertyDescriptorTrapKey);
         if (fx.IsUndefined)
@@ -639,6 +671,7 @@ public partial class JSProxy : JSObject
 
     internal protected override JSValue GetValue(IJSSymbol key, JSValue receiver, bool throwError = true)
     {
+        using var operation = EnterOperation();
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.get);
         if (!fx.IsUndefined)
@@ -653,6 +686,7 @@ public partial class JSProxy : JSObject
 
     internal protected override JSValue GetValue(KeyString key, JSValue receiver, bool throwError = true)
     {
+        using var operation = EnterOperation();
         // A private member is not a property lookup: it operates on this object's
         // own private elements and never consults the target or a Proxy trap. A
         // proxy that does not itself carry the private name (the common case) fails
@@ -675,6 +709,7 @@ public partial class JSProxy : JSObject
 
     public override JSValue GetValue(uint key, JSValue receiver, bool throwError = true)
     {
+        using var operation = EnterOperation();
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.get);
         if (!fx.IsUndefined)
@@ -689,6 +724,7 @@ public partial class JSProxy : JSObject
 
     internal protected override bool SetValue(KeyString name, JSValue value, JSValue receiver, bool throwError = true)
     {
+        using var operation = EnterOperation();
         // Private member writes bypass the target and the set trap (see GetValue).
         if (IsPrivateName(in name))
             return base.SetValue(name, value, receiver, throwError);
@@ -720,6 +756,7 @@ public partial class JSProxy : JSObject
 
     public override bool SetValue(uint name, JSValue value, JSValue receiver, bool throwError = true)
     {
+        using var operation = EnterOperation();
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.set);
         if (!fx.IsUndefined)
@@ -737,6 +774,7 @@ public partial class JSProxy : JSObject
 
     internal protected override bool SetValue(IJSSymbol name, JSValue value, JSValue receiver, bool throwError = true)
     {
+        using var operation = EnterOperation();
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.set);
         if (!fx.IsUndefined)
@@ -754,6 +792,7 @@ public partial class JSProxy : JSObject
 
     public override JSValue GetPrototypeOf()
     {
+        using var operation = EnterOperation();
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.getPrototypeOf);
         if (!fx.IsUndefined)
@@ -778,6 +817,7 @@ public partial class JSProxy : JSObject
 
     public override JSValue HasProperty(JSValue propertyKey)
     {
+        using var operation = EnterOperation();
         var target = RequireTarget();
         var fx = GetTrap(HasTrapKey);
         if (!fx.IsUndefined)
@@ -799,6 +839,7 @@ public partial class JSProxy : JSObject
 
     public override bool IsExtensible()
     {
+        using var operation = EnterOperation();
         var target = RequireTarget();
         var fx = GetTrap(IsExtensibleTrapKey);
         if (!fx.IsUndefined)
@@ -816,6 +857,7 @@ public partial class JSProxy : JSObject
 
     public override bool PreventExtensions()
     {
+        using var operation = EnterOperation();
         var target = RequireTarget();
         var fx = GetTrap(PreventExtensionsTrapKey);
         if (!fx.IsUndefined)
@@ -846,6 +888,7 @@ public partial class JSProxy : JSObject
 
     public override bool TrySetPrototypeOf(JSValue proto, out string error)
     {
+        using var operation = EnterOperation();
         error = null;
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.setPrototypeOf);
@@ -880,6 +923,7 @@ public partial class JSProxy : JSObject
 
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true)
     {
+        using var operation = EnterOperation();
         var target = RequireTarget();
         var fx = GetTrap(KeyStrings.ownKeys);
         if (!fx.IsUndefined)
