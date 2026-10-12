@@ -26,7 +26,7 @@ file or render a value, because both follow this document.
 | `out` | yes | The expected outcome (section 4) |
 | `class` | yes | `normative`, `impl-defined` or `divergence` (section 5) |
 | `per-engine.<engine>` | for `impl-defined` | That engine's expected outcome |
-| `divergence.<engine>` | for `divergence` | Why that engine is known to differ, with a link to the plan that answers it |
+| `divergence.<engine>` | for `divergence`; allowed on `impl-defined` | Why that engine is known to differ, with a link to the plan that answers it |
 | `prov` | yes | Where the expected outcome comes from, as provenance entries separated by single spaces (section 6) |
 | `script` | yes | One line of JavaScript source, evaluated as a Script by an engine-level runner (section 7) |
 | `note` | no | Free text for a reader; it decides nothing |
@@ -76,6 +76,14 @@ names the recommended alternative where the specification recommends one.
   differ. Each `divergence.<engine>` field names one such engine, with the reason and a link to the
   plan that answers it. A divergence is a classified difference, not an expected value: the engine is
   still compared with `out`.
+
+**An `impl-defined` vector may carry a `divergence.<engine>` field too**, when that engine is known
+not to meet the expectation its own `per-engine.<engine>` field holds: the plan commits the engine to
+it, and the engine does not do it yet. The field needs that `per-engine` field beside it, and it
+classifies the difference exactly as on a `divergence` vector; the vector stays `impl-defined`,
+because the specification still leaves its outcome to the implementation. *(Added 2026-10-12, at
+corpus revision 3, after Broiler.VM's first run found the case; until then the field was allowed on
+`divergence` vectors only.)*
 
 A vector an engine fails is never deleted or reclassified to make it pass. A classification change
 is a dated entry in [REVISIONS.md](REVISIONS.md), in a new corpus revision.
@@ -133,8 +141,8 @@ For a running engine E, a vector's verdict is one of:
 | Verdict | When |
 |---|---|
 | `match` | The rendered outcome equals an alternative of the expected outcome |
-| `classified-divergence` | It differs, and the vector is `divergence` with a `divergence.E` field |
+| `classified-divergence` | It differs, and the vector carries a `divergence.E` field (a `divergence` vector, or an `impl-defined` one, section 5) |
 | `difference` | It differs, and nothing classifies the difference |
 
-A `match` on a `divergence` vector naming E means the divergence no longer holds; the report says so,
+A `match` on a vector whose `divergence.E` field names E means the divergence no longer holds; the report says so,
 and the next corpus revision may retire the field by a dated entry.

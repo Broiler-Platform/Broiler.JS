@@ -20,7 +20,7 @@ public sealed record VectorResult(VectorRecord Vector, string Expected, string R
 {
     /// <summary>A divergence vector this engine now matches: the next revision may retire the field.</summary>
     public bool DivergenceNoLongerHolds(string engine)
-        => Verdict == Verdict.Match && Vector.Class == "divergence" && Vector["divergence." + engine] is not null;
+        => Verdict == Verdict.Match && Vector["divergence." + engine] is not null;
 }
 
 /// <summary>An engine-level runner's view of an engine: evaluate a script in a fresh realm, and render the outcome.</summary>
@@ -52,7 +52,7 @@ public static class VectorRun
         // A fault is the runner's, not the engine's, and no field of a vector can classify it.
         if (rendered.StartsWith("fault: ", StringComparison.Ordinal))
             return Verdict.Difference;
-        if (vector.Class == "divergence" && vector["divergence." + engine] is not null)
+        if (vector.Class is "divergence" or "impl-defined" && vector["divergence." + engine] is not null)
             return Verdict.ClassifiedDivergence;
         return Verdict.Difference;
     }

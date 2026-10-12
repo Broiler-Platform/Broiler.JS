@@ -90,6 +90,31 @@ public class ValidatorTests
         Assert.Contains(validator.Diagnostics, d => d.Code == code);
     }
 
+    /// <summary>
+    /// An impl-defined vector may carry a divergence field only beside the per-engine expectation
+    /// the engine is known not to meet (SCHEMA.md section 5); a normative vector never may.
+    /// </summary>
+    [Fact]
+    public void A_divergence_field_needs_a_divergence_vector_or_the_engine_s_own_expectation()
+    {
+        var implDefined = Home.Corpus.Records.First(r => r.Class == "impl-defined");
+        var withExpectation = new VectorRecord(implDefined.File, [.. implDefined.Fields.Where(f => !f.Key.StartsWith("divergence.", StringComparison.Ordinal)), new VectorField("divergence.broiler-js", "a reason", 0)]);
+        var withoutExpectation = new VectorRecord(implDefined.File, [.. withExpectation.Fields.Where(f => f.Key != "per-engine.broiler-js")]);
+        var normative = Home.Corpus.Records.First(r => r.Class == "normative");
+        var onNormative = new VectorRecord(normative.File, [.. normative.Fields, new VectorField("divergence.broiler-js", "a reason", 0)]);
+
+        Assert.DoesNotContain(Validate(withExpectation), d => d.Code == "misplaced-field");
+        Assert.Contains(Validate(withoutExpectation), d => d.Code == "misplaced-field");
+        Assert.Contains(Validate(onNormative), d => d.Code == "misplaced-field");
+
+        static List<VectorDiagnostic> Validate(VectorRecord record)
+        {
+            var validator = new VectorValidator(Home.Corpus.Sources);
+            validator.Validate(new VectorFile("changed.vectors", [record], []));
+            return validator.Diagnostics;
+        }
+    }
+
     private static List<VectorDiagnostic> ValidateControl(string control)
     {
         var path = Path.Combine(VectorCorpus.Home(), VectorCorpus.ControlsDirectory, control);

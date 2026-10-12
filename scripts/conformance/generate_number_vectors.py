@@ -28,8 +28,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import numref as R  # noqa: E402
 
 # The corpus revision this generator writes, and the revision every vector it generates today was
-# added in. Revision 2 classified differences (number-divergences.txt) and added no vector.
-CORPUS_REVISION = 2
+# added in. Revisions 2 and 3 classified differences (number-divergences.txt) and added no vector.
+CORPUS_REVISION = 3
 FIRST_REVISION = 1
 GENERATOR = "ref:numref@1"
 SPEC = "spec:es2026@0248456c"
@@ -117,9 +117,13 @@ class Corpus:
             record = by_id.get(vector_id)
             if engine not in ENGINES or key not in reasons or record is None:
                 raise SystemExit(f"{path.name}:{number}: '{line}' names no engine, reason or vector")
-            if record["class"] not in ("normative", "divergence") or f"divergence.{engine}" in record:
+            if f"divergence.{engine}" in record or (
+                    record["class"] == "impl-defined" and f"per-engine.{engine}" not in record):
                 raise SystemExit(f"{path.name}:{number}: {vector_id} cannot take this classification")
-            record["class"] = "divergence"
+            # An impl-defined vector stays impl-defined: the field classifies the engine's difference
+            # from its own per-engine expectation (SCHEMA.md section 5).
+            if record["class"] == "normative":
+                record["class"] = "divergence"
             record[f"divergence.{engine}"] = reasons[key]
 
     def write(self, out: Path) -> None:

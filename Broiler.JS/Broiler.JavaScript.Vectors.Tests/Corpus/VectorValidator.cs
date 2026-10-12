@@ -106,8 +106,10 @@ public sealed partial class VectorValidator(VectorSources sources)
 
         foreach (var field in divergences)
         {
-            if (@class != "divergence")
-                Report("misplaced-field", field.Line, $"'{field.Key}' belongs to a divergence vector only");
+            // On an impl-defined vector the field classifies a difference from the engine's own
+            // per-engine expectation, so that expectation must be there (SCHEMA.md section 5).
+            if (@class == "impl-defined" ? record["per-engine." + field.Key["divergence.".Length..]] is null : @class != "divergence")
+                Report("misplaced-field", field.Line, $"'{field.Key}' belongs to a divergence vector, or to an impl-defined one beside its per-engine field");
             if (string.IsNullOrWhiteSpace(field.Value))
                 Report("bad-divergence", field.Line, $"'{field.Key}' gives no reason");
         }
