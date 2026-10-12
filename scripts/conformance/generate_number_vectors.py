@@ -28,8 +28,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import numref as R  # noqa: E402
 
 # The corpus revision this generator writes, and the revision every vector it generates today was
-# added in.
-CORPUS_REVISION = 1
+# added in. Revision 2 classified differences (number-divergences.txt) and added no vector.
+CORPUS_REVISION = 2
 FIRST_REVISION = 1
 GENERATOR = "ref:numref@1"
 SPEC = "spec:es2026@0248456c"

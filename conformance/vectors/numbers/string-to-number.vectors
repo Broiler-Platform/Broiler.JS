@@ -577,7 +577,8 @@ area: numbers
 op: StringToNumber
 in: str:"0xFFFFFFFFFFFFFFFF"
 out: value: f64:0x43F0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0xFFFFFFFFFFFFFFFF")
 since: 1
@@ -1020,7 +1021,8 @@ area: numbers
 op: StringToNumber
 in: str:"0b1000000000000000000000000000000000000000000000000000011"
 out: value: f64:0x4350000000000001
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0b1000000000000000000000000000000000000000000000000000011")
 since: 1
@@ -1110,7 +1112,8 @@ area: numbers
 op: StringToNumber
 in: str:"0b1000000000000000000000000000000000000000000000000000010000000001"
 out: value: f64:0x43E0000000000001
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0b1000000000000000000000000000000000000000000000000000010000000001")
 since: 1
@@ -1200,7 +1203,8 @@ area: numbers
 op: StringToNumber
 in: str:"0b10000000000000000000000000000000000000000000000000000100000000001"
 out: value: f64:0x43F0000000000001
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0b10000000000000000000000000000000000000000000000000000100000000001")
 since: 1
@@ -1290,7 +1294,8 @@ area: numbers
 op: StringToNumber
 in: str:"0b100000000000000000000000000000000000000000000000000001000000000001"
 out: value: f64:0x4400000000000001
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0b100000000000000000000000000000000000000000000000000001000000000001")
 since: 1
@@ -1370,7 +1375,8 @@ area: numbers
 op: StringToNumber
 in: str:"0o377777777777777777"
 out: value: f64:0x433FFFFFFFFFFFFF
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0o377777777777777777")
 since: 1
@@ -1420,7 +1426,8 @@ area: numbers
 op: StringToNumber
 in: str:"0o777777777777777776"
 out: value: f64:0x434FFFFFFFFFFFFF
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0o777777777777777776")
 since: 1
@@ -1560,7 +1567,8 @@ area: numbers
 op: StringToNumber
 in: str:"0o1000000000000000002001"
 out: value: f64:0x43E0000000000001
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0o1000000000000000002001")
 since: 1
@@ -1650,7 +1658,8 @@ area: numbers
 op: StringToNumber
 in: str:"0o2000000000000000004001"
 out: value: f64:0x43F0000000000001
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0o2000000000000000004001")
 since: 1
@@ -1660,7 +1669,8 @@ area: numbers
 op: StringToNumber
 in: str:"0o3777777777777777777776"
 out: value: f64:0x4400000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0o3777777777777777777776")
 since: 1
@@ -1670,7 +1680,8 @@ area: numbers
 op: StringToNumber
 in: str:"0o3777777777777777777777"
 out: value: f64:0x4400000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0o3777777777777777777777")
 since: 1
@@ -1680,7 +1691,8 @@ area: numbers
 op: StringToNumber
 in: str:"0o4000000000000000000000"
 out: value: f64:0x4400000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0o4000000000000000000000")
 since: 1
@@ -1690,7 +1702,8 @@ area: numbers
 op: StringToNumber
 in: str:"0o4000000000000000000001"
 out: value: f64:0x4400000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0o4000000000000000000001")
 since: 1
@@ -1700,7 +1713,8 @@ area: numbers
 op: StringToNumber
 in: str:"0o4000000000000000000002"
 out: value: f64:0x4400000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0o4000000000000000000002")
 since: 1
@@ -1710,7 +1724,8 @@ area: numbers
 op: StringToNumber
 in: str:"0o4000000000000000000003"
 out: value: f64:0x4400000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0o4000000000000000000003")
 since: 1
@@ -1720,7 +1735,8 @@ area: numbers
 op: StringToNumber
 in: str:"0o4000000000000000007777"
 out: value: f64:0x4400000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0o4000000000000000007777")
 since: 1
@@ -1730,7 +1746,8 @@ area: numbers
 op: StringToNumber
 in: str:"0o4000000000000000010000"
 out: value: f64:0x4400000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0o4000000000000000010000")
 since: 1
@@ -1740,7 +1757,8 @@ area: numbers
 op: StringToNumber
 in: str:"0o4000000000000000010001"
 out: value: f64:0x4400000000000001
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0o4000000000000000010001")
 since: 1
@@ -1810,7 +1828,8 @@ area: numbers
 op: StringToNumber
 in: str:"0x1ffffffffffffe"
 out: value: f64:0x433FFFFFFFFFFFFE
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0x1ffffffffffffe")
 since: 1
@@ -1950,7 +1969,8 @@ area: numbers
 op: StringToNumber
 in: str:"0x8000000000000000"
 out: value: f64:0x43E0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0x8000000000000000")
 since: 1
@@ -1960,7 +1980,8 @@ area: numbers
 op: StringToNumber
 in: str:"0x8000000000000001"
 out: value: f64:0x43E0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0x8000000000000001")
 since: 1
@@ -1970,7 +1991,8 @@ area: numbers
 op: StringToNumber
 in: str:"0x8000000000000002"
 out: value: f64:0x43E0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0x8000000000000002")
 since: 1
@@ -1980,7 +2002,8 @@ area: numbers
 op: StringToNumber
 in: str:"0x8000000000000003"
 out: value: f64:0x43E0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0x8000000000000003")
 since: 1
@@ -2000,7 +2023,8 @@ area: numbers
 op: StringToNumber
 in: str:"0x8000000000000400"
 out: value: f64:0x43E0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0x8000000000000400")
 since: 1
@@ -2010,7 +2034,8 @@ area: numbers
 op: StringToNumber
 in: str:"0x8000000000000401"
 out: value: f64:0x43E0000000000001
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0x8000000000000401")
 since: 1
@@ -2020,7 +2045,8 @@ area: numbers
 op: StringToNumber
 in: str:"0xfffffffffffffffe"
 out: value: f64:0x43F0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0xfffffffffffffffe")
 since: 1
@@ -2030,7 +2056,8 @@ area: numbers
 op: StringToNumber
 in: str:"0xffffffffffffffff"
 out: value: f64:0x43F0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0xffffffffffffffff")
 since: 1
@@ -2080,7 +2107,8 @@ area: numbers
 op: StringToNumber
 in: str:"0x100000000000007ff"
 out: value: f64:0x43F0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0x100000000000007ff")
 since: 1
@@ -2090,7 +2118,8 @@ area: numbers
 op: StringToNumber
 in: str:"0x10000000000000800"
 out: value: f64:0x43F0000000000000
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0x10000000000000800")
 since: 1
@@ -2190,7 +2219,8 @@ area: numbers
 op: StringToNumber
 in: str:"0x20000000000001001"
 out: value: f64:0x4400000000000001
-class: normative
+class: divergence
+divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("0x20000000000001001")
 since: 1
@@ -7924,7 +7954,8 @@ area: numbers
 op: StringToNumber
 in: str:"301094790782710476304837677164141360631873913686095050503327423335643834070912290592494794746260557891741098002604381754718590259329814820899866283590862186101238424829025114453198871555153334033772952971964468453850039226584213201077815818639670196578407794413986247768183299420656299315694907192684398821687389512059555471933103287796029690071009099483489990234374e-500"
 out: value: f64:0x240181FE69D2B09B | value: f64:0x240181FE69D2B09C
-class: normative
+class: divergence
+divergence.broiler-js: StringToNumber and parseFloat do not complete for a decimal significand of more than 309 digits with a finite value: the first estimate is +Infinity and the refinement steps one unit in the last place at a time. The runner ends the evaluation at its time limit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("301094790782710476304837677164141360631873913686095050503327423335643834070912290592494794746260557891741098002604381754718590259329814820899866283590862186101238424829025114453198871555153334033772952971964468453850039226584213201077815818639670196578407794413986247768183299420656299315694907192684398821687389512059555471933103287796029690071009099483489990234374e-500")
 note: more than 20 significant digits: RoundMVResult admits either option
@@ -7935,7 +7966,8 @@ area: numbers
 op: StringToNumber
 in: str:"301094790782710476304837677164141360631873913686095050503327423335643834070912290592494794746260557891741098002604381754718590259329814820899866283590862186101238424829025114453198871555153334033772952971964468453850039226584213201077815818639670196578407794413986247768183299420656299315694907192684398821687389512059555471933103287796029690071009099483489990234375e-500"
 out: value: f64:0x240181FE69D2B09B | value: f64:0x240181FE69D2B09C
-class: normative
+class: divergence
+divergence.broiler-js: StringToNumber and parseFloat do not complete for a decimal significand of more than 309 digits with a finite value: the first estimate is +Infinity and the refinement steps one unit in the last place at a time. The runner ends the evaluation at its time limit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("301094790782710476304837677164141360631873913686095050503327423335643834070912290592494794746260557891741098002604381754718590259329814820899866283590862186101238424829025114453198871555153334033772952971964468453850039226584213201077815818639670196578407794413986247768183299420656299315694907192684398821687389512059555471933103287796029690071009099483489990234375e-500")
 note: more than 20 significant digits: RoundMVResult admits either option
@@ -7946,7 +7978,8 @@ area: numbers
 op: StringToNumber
 in: str:"301094790782710476304837677164141360631873913686095050503327423335643834070912290592494794746260557891741098002604381754718590259329814820899866283590862186101238424829025114453198871555153334033772952971964468453850039226584213201077815818639670196578407794413986247768183299420656299315694907192684398821687389512059555471933103287796029690071009099483489990234376e-500"
 out: value: f64:0x240181FE69D2B09B | value: f64:0x240181FE69D2B09C
-class: normative
+class: divergence
+divergence.broiler-js: StringToNumber and parseFloat do not complete for a decimal significand of more than 309 digits with a finite value: the first estimate is +Infinity and the refinement steps one unit in the last place at a time. The runner ends the evaluation at its time limit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("301094790782710476304837677164141360631873913686095050503327423335643834070912290592494794746260557891741098002604381754718590259329814820899866283590862186101238424829025114453198871555153334033772952971964468453850039226584213201077815818639670196578407794413986247768183299420656299315694907192684398821687389512059555471933103287796029690071009099483489990234376e-500")
 note: more than 20 significant digits: RoundMVResult admits either option
@@ -9400,7 +9433,8 @@ area: numbers
 op: StringToNumber
 in: str:"160158486801736820237165041299639180693228307162009130465014977265206195508252799237516204475389669735995906415049524638206192424615779227141643840250850120663506104071927058401660208151550557797538972770893094627199125887972576285373965213446593408067214973607894281812600251294093190055544853541229158116631966083148217180494670643959708206914254572981709203179642630735463049707027002046208030942333756123881941048852001975213014582162365298167111803155742748820558500807128851583292918368492163966200412487694372369371855270812164953875867629249927461544274347010945118503077908108040770430329814699721424631206900812685489654541015624e-890"
 out: value: f64:0x0BA77BF671D95FC8 | value: f64:0x0BA77BF671D95FC9
-class: normative
+class: divergence
+divergence.broiler-js: StringToNumber and parseFloat give NaN for a decimal significand of more than 309 digits with a finite value and an exponent below -308: the estimate divides +Infinity by +Infinity. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("160158486801736820237165041299639180693228307162009130465014977265206195508252799237516204475389669735995906415049524638206192424615779227141643840250850120663506104071927058401660208151550557797538972770893094627199125887972576285373965213446593408067214973607894281812600251294093190055544853541229158116631966083148217180494670643959708206914254572981709203179642630735463049707027002046208030942333756123881941048852001975213014582162365298167111803155742748820558500807128851583292918368492163966200412487694372369371855270812164953875867629249927461544274347010945118503077908108040770430329814699721424631206900812685489654541015624e-890")
 note: more than 20 significant digits: RoundMVResult admits either option
@@ -9411,7 +9445,8 @@ area: numbers
 op: StringToNumber
 in: str:"160158486801736820237165041299639180693228307162009130465014977265206195508252799237516204475389669735995906415049524638206192424615779227141643840250850120663506104071927058401660208151550557797538972770893094627199125887972576285373965213446593408067214973607894281812600251294093190055544853541229158116631966083148217180494670643959708206914254572981709203179642630735463049707027002046208030942333756123881941048852001975213014582162365298167111803155742748820558500807128851583292918368492163966200412487694372369371855270812164953875867629249927461544274347010945118503077908108040770430329814699721424631206900812685489654541015625e-890"
 out: value: f64:0x0BA77BF671D95FC8 | value: f64:0x0BA77BF671D95FC9
-class: normative
+class: divergence
+divergence.broiler-js: StringToNumber and parseFloat give NaN for a decimal significand of more than 309 digits with a finite value and an exponent below -308: the estimate divides +Infinity by +Infinity. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("160158486801736820237165041299639180693228307162009130465014977265206195508252799237516204475389669735995906415049524638206192424615779227141643840250850120663506104071927058401660208151550557797538972770893094627199125887972576285373965213446593408067214973607894281812600251294093190055544853541229158116631966083148217180494670643959708206914254572981709203179642630735463049707027002046208030942333756123881941048852001975213014582162365298167111803155742748820558500807128851583292918368492163966200412487694372369371855270812164953875867629249927461544274347010945118503077908108040770430329814699721424631206900812685489654541015625e-890")
 note: more than 20 significant digits: RoundMVResult admits either option
@@ -9422,7 +9457,8 @@ area: numbers
 op: StringToNumber
 in: str:"160158486801736820237165041299639180693228307162009130465014977265206195508252799237516204475389669735995906415049524638206192424615779227141643840250850120663506104071927058401660208151550557797538972770893094627199125887972576285373965213446593408067214973607894281812600251294093190055544853541229158116631966083148217180494670643959708206914254572981709203179642630735463049707027002046208030942333756123881941048852001975213014582162365298167111803155742748820558500807128851583292918368492163966200412487694372369371855270812164953875867629249927461544274347010945118503077908108040770430329814699721424631206900812685489654541015626e-890"
 out: value: f64:0x0BA77BF671D95FC8 | value: f64:0x0BA77BF671D95FC9
-class: normative
+class: divergence
+divergence.broiler-js: StringToNumber and parseFloat give NaN for a decimal significand of more than 309 digits with a finite value and an exponent below -308: the estimate divides +Infinity by +Infinity. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("160158486801736820237165041299639180693228307162009130465014977265206195508252799237516204475389669735995906415049524638206192424615779227141643840250850120663506104071927058401660208151550557797538972770893094627199125887972576285373965213446593408067214973607894281812600251294093190055544853541229158116631966083148217180494670643959708206914254572981709203179642630735463049707027002046208030942333756123881941048852001975213014582162365298167111803155742748820558500807128851583292918368492163966200412487694372369371855270812164953875867629249927461544274347010945118503077908108040770430329814699721424631206900812685489654541015626e-890")
 note: more than 20 significant digits: RoundMVResult admits either option
@@ -9651,7 +9687,8 @@ area: numbers
 op: StringToNumber
 in: str:"74817827728417809430150468093514973457002436393018929351148210347993236643225570511778274174092559380271726555774978477016918604994916525015955418018230689020629062801286688301195642817518293965311584624893748287507509896543308240359773013602372734306860124313750187010579356809371242649350277455182526533114327250464783513431179848304952504598145942392842066454229725769934762566851428304305082641556454545249501352705238037695033909367354569122446843864102524252652405956525243374563169338872017835964706225809987248599458963588628809486658391867341076630903984323595068417489528656005859374e-825"
 out: value: f64:0x0FBDBC66D3213B21 | value: f64:0x0FBDBC66D3213B22
-class: normative
+class: divergence
+divergence.broiler-js: StringToNumber and parseFloat give NaN for a decimal significand of more than 309 digits with a finite value and an exponent below -308: the estimate divides +Infinity by +Infinity. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("74817827728417809430150468093514973457002436393018929351148210347993236643225570511778274174092559380271726555774978477016918604994916525015955418018230689020629062801286688301195642817518293965311584624893748287507509896543308240359773013602372734306860124313750187010579356809371242649350277455182526533114327250464783513431179848304952504598145942392842066454229725769934762566851428304305082641556454545249501352705238037695033909367354569122446843864102524252652405956525243374563169338872017835964706225809987248599458963588628809486658391867341076630903984323595068417489528656005859374e-825")
 note: more than 20 significant digits: RoundMVResult admits either option
@@ -9662,7 +9699,8 @@ area: numbers
 op: StringToNumber
 in: str:"74817827728417809430150468093514973457002436393018929351148210347993236643225570511778274174092559380271726555774978477016918604994916525015955418018230689020629062801286688301195642817518293965311584624893748287507509896543308240359773013602372734306860124313750187010579356809371242649350277455182526533114327250464783513431179848304952504598145942392842066454229725769934762566851428304305082641556454545249501352705238037695033909367354569122446843864102524252652405956525243374563169338872017835964706225809987248599458963588628809486658391867341076630903984323595068417489528656005859375e-825"
 out: value: f64:0x0FBDBC66D3213B21 | value: f64:0x0FBDBC66D3213B22
-class: normative
+class: divergence
+divergence.broiler-js: StringToNumber and parseFloat give NaN for a decimal significand of more than 309 digits with a finite value and an exponent below -308: the estimate divides +Infinity by +Infinity. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("74817827728417809430150468093514973457002436393018929351148210347993236643225570511778274174092559380271726555774978477016918604994916525015955418018230689020629062801286688301195642817518293965311584624893748287507509896543308240359773013602372734306860124313750187010579356809371242649350277455182526533114327250464783513431179848304952504598145942392842066454229725769934762566851428304305082641556454545249501352705238037695033909367354569122446843864102524252652405956525243374563169338872017835964706225809987248599458963588628809486658391867341076630903984323595068417489528656005859375e-825")
 note: more than 20 significant digits: RoundMVResult admits either option
@@ -9673,7 +9711,8 @@ area: numbers
 op: StringToNumber
 in: str:"74817827728417809430150468093514973457002436393018929351148210347993236643225570511778274174092559380271726555774978477016918604994916525015955418018230689020629062801286688301195642817518293965311584624893748287507509896543308240359773013602372734306860124313750187010579356809371242649350277455182526533114327250464783513431179848304952504598145942392842066454229725769934762566851428304305082641556454545249501352705238037695033909367354569122446843864102524252652405956525243374563169338872017835964706225809987248599458963588628809486658391867341076630903984323595068417489528656005859376e-825"
 out: value: f64:0x0FBDBC66D3213B21 | value: f64:0x0FBDBC66D3213B22
-class: normative
+class: divergence
+divergence.broiler-js: StringToNumber and parseFloat give NaN for a decimal significand of more than 309 digits with a finite value and an exponent below -308: the estimate divides +Infinity by +Infinity. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-stringtonumber spec:es2026@0248456c#sec-roundmvresult ucd:17.0.0/PropList.txt ref:numref@1
 script: Number("74817827728417809430150468093514973457002436393018929351148210347993236643225570511778274174092559380271726555774978477016918604994916525015955418018230689020629062801286688301195642817518293965311584624893748287507509896543308240359773013602372734306860124313750187010579356809371242649350277455182526533114327250464783513431179848304952504598145942392842066454229725769934762566851428304305082641556454545249501352705238037695033909367354569122446843864102524252652405956525243374563169338872017835964706225809987248599458963588628809486658391867341076630903984323595068417489528656005859376e-825")
 note: more than 20 significant digits: RoundMVResult admits either option

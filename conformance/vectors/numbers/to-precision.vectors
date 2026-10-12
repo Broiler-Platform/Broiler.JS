@@ -3852,7 +3852,8 @@ area: numbers
 op: Number.prototype.toPrecision
 in: f64:0x3FF0000000000000 f64:0x4059200000000000
 out: value: str:"1.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-class: normative
+class: divergence
+divergence.broiler-js: Number.prototype.toPrecision refuses a precision of 100.5, which ToIntegerOrInfinity makes 100, with a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 prov: spec:es2026@0248456c#sec-number.prototype.toprecision ref:numref@1
 script: $f64(0x3FF00000, 0x00000000).toPrecision(100.5)
 note: truncated to 100

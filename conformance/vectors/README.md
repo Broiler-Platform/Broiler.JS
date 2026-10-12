@@ -53,7 +53,8 @@ creates the shared folder; the corpus does not move.
    `observed:` an engine.
 2. **A generated area is regenerated, not edited.** The number area is written by
    `scripts/conformance/generate_number_vectors.py`; its test fails when the committed files differ
-   from what the generator writes.
+   from what the generator writes. Its classifications are the generator's input too:
+   `scripts/conformance/number-divergences.txt` lists each divergence by vector, engine and reason.
 3. **A change raises the corpus revision** and adds a dated row to [`REVISIONS.md`](REVISIONS.md).
    New vectors carry the new revision in `since`. Identifiers are never reused.
 4. **The first run of each engine classifies every difference**, as milestone SJL-1.5 asks:

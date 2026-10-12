@@ -196,6 +196,12 @@ class GeneratorTests(unittest.TestCase):
             for name in produced:
                 self.assertEqual((committed / name).read_bytes(), (Path(scratch) / name).read_bytes(), name)
 
+    def test_the_generator_writes_the_revision_REVISIONS_md_ends_at(self) -> None:
+        revisions = (REPOSITORY / "conformance" / "vectors" / "REVISIONS.md").read_text(encoding="utf-8")
+        rows = [int(line.split("|")[1]) for line in revisions.splitlines() if line[:2] == "| " and line.split("|")[1].strip().isdigit()]
+        self.assertEqual(list(range(1, len(rows) + 1)), rows)
+        self.assertEqual(generator.CORPUS_REVISION, rows[-1])
+
 
 if __name__ == "__main__":
     unittest.main()
