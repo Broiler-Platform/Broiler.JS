@@ -61,6 +61,8 @@ public class EngineRunTests
             Assert.Empty(mutated.Diagnostics);
             var after = VectorRun.RunEngine(mutated.Files.Single(f => f.Path == file).Records, mutated.Prelude, Engine);
 
+            WriteReport(after, mutated, ".negative-control.tsv");
+
             var changed = after.Zip(before).Where(pair => pair.First.Verdict != pair.Second.Verdict).Select(pair => pair.First).ToList();
             var control = Assert.Single(changed);
             Assert.Equal(target.Id, control.Vector.Id);
@@ -121,12 +123,19 @@ public class EngineRunTests
             File.Copy(file, Path.Combine(destination, Path.GetRelativePath(source, file)));
     }
 
-    private static void WriteReport(IReadOnlyList<VectorResult> results, VectorCorpus corpus)
+    /// <summary>
+    /// Writes a report where <see cref="ReportVariable"/> says; the negative control's goes beside it,
+    /// its extension replaced by <paramref name="suffix"/>.
+    /// </summary>
+    private static void WriteReport(IReadOnlyList<VectorResult> results, VectorCorpus corpus, string? suffix = null)
     {
         var target = Environment.GetEnvironmentVariable(ReportVariable);
         if (string.IsNullOrEmpty(target))
             return;
-        var repository = Path.GetFullPath(Path.Combine(corpus.Root, "..", ".."));
-        File.WriteAllText(Path.IsPathRooted(target) ? target : Path.Combine(repository, target), VectorRun.Report(results, Engine.Name, corpus.Sources));
+        var repository = Path.GetFullPath(Path.Combine(VectorCorpus.Home(), "..", ".."));
+        var path = Path.IsPathRooted(target) ? target : Path.Combine(repository, target);
+        if (suffix is not null)
+            path = Path.ChangeExtension(path, null) + suffix;
+        File.WriteAllText(path, VectorRun.Report(results, Engine.Name, corpus.Sources));
     }
 }
