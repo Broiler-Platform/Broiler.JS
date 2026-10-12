@@ -68,6 +68,9 @@ Useful filters:
 - `*PromiseBenchmarks*` for promise callback dispatch through `Execute`.
 - `*BuiltInHeavyBenchmarks*` for RegExp, Intl, Temporal, and Date loops.
 - `*JIntSmokeBenchmarks*` for the repo-local JInt/Dromaeo smoke scripts.
+- `*NumberConversionBenchmarks*` for the shared JavaScript libraries pilot's measurement:
+  number to string, string to number and numeric literal values, each with its control. See
+  below.
 - `*Phase5TieringBenchmarks*` for baseline versus promoted numeric reductions with
   numeric and mixed-type inputs; `*Phase5TaggedValueFeasibilityBenchmarks*` compares
   reference-backed `JSValue` scalar reads with the isolated eight-byte prototype.
@@ -95,3 +98,24 @@ is exact and says whether a shape is *eligible*, the bytes say what that eligibi
 *worth*. A site reporting zero scalar bindings and the same bytes as an eligible one is an
 item with no prize; the pair is the only way to tell that from a probe that never reached
 the change.
+
+## The shared libraries pilot's workloads
+
+`NumberConversionBenchmarks` holds the workloads Broiler.JS's measurement of milestone SJL-3 of
+the shared JavaScript libraries programme is taken over: `ToString`, `ToNumber` and `Literals`,
+each with a control that is the same program minus the conversions. They were committed with
+their rule, `docs/evidence/sjl-3-001/decision-rule.md` part B, at milestone SJL-0, before any code
+that rule judges existed, and **they are not changed afterwards**: a change would change the
+population the rule was written over. The rule fixes the arms, the rotation, the repetitions, the
+A/A lane and the comparison; nothing here does.
+
+```bash
+dotnet Broiler.JavaScript.Engine.Benchmarks.dll --number-conversion-answers
+BROILER_BENCHMARK_PROFILE=baseline dotnet Broiler.JavaScript.Engine.Benchmarks.dll --filter '*NumberConversionBenchmarks*' --buildTimeout 1800
+```
+
+`--number-conversion-answers` prints each workload's answer and the process's effective
+configuration as one JSON object; the rule checks both before and after every run. Each answer
+counts the conversions its workload completed rather than their results, so a correction the
+cut-over makes does not change it. **No figure from these workloads belongs anywhere but an
+evidence bundle**: `docs/evidence/sjl-0-001/` holds the base reading.
