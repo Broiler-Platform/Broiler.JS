@@ -14,3 +14,7 @@ Broiler.ECMAScript/** text eol=lf
 Broiler.ECMAScript.slnf text eol=lf
 # Rule SL10's witness for CRLF line endings must keep its CRs, so it alone is stored as-is.
 Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/witnesses/SL10-crlf-line-endings.cs.witness -text
+
+# CI job logs retained in an evidence bundle are kept byte for byte as GitHub Actions served them;
+# the Windows jobs' logs have CRLF line endings.
+docs/evidence/*/ci/*.log -text

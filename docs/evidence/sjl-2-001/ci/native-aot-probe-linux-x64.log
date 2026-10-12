@@ -1,0 +1,249 @@
+﻿2026-10-12T19:24:42.2066429Z Current runner version: '2.337.0'
+2026-10-12T19:24:42.2088656Z ##[group]Runner Image Provisioner
+2026-10-12T19:24:42.2089818Z Hosted Compute Agent
+2026-10-12T19:24:42.2090340Z Version: 20261002.596
+2026-10-12T19:24:42.2090837Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-12T19:24:42.2091490Z Build Date: 2026-10-02T22:28:27Z
+2026-10-12T19:24:42.2092030Z Worker ID: {5a410983-24d0-4b1d-9c6a-236cf3c45463}
+2026-10-12T19:24:42.2092617Z Region: westus3
+2026-10-12T19:24:42.2093106Z Cloud: Azure
+2026-10-12T19:24:42.2093546Z ##[endgroup]
+2026-10-12T19:24:42.2095022Z ##[group]Operating System
+2026-10-12T19:24:42.2095540Z Ubuntu
+2026-10-12T19:24:42.2096075Z 24.04.5
+2026-10-12T19:24:42.2096508Z LTS
+2026-10-12T19:24:42.2096930Z ##[endgroup]
+2026-10-12T19:24:42.2097417Z ##[group]Runner Image
+2026-10-12T19:24:42.2097905Z Image: ubuntu-24.04
+2026-10-12T19:24:42.2098360Z Version: 20261004.327.1
+2026-10-12T19:24:42.2099486Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-12T19:24:42.2100810Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-12T19:24:42.2101596Z ##[endgroup]
+2026-10-12T19:24:42.2102594Z ##[group]GITHUB_TOKEN Permissions
+2026-10-12T19:24:42.2104626Z Contents: read
+2026-10-12T19:24:42.2105106Z Metadata: read
+2026-10-12T19:24:42.2105651Z ##[endgroup]
+2026-10-12T19:24:42.2107397Z Secret source: Actions
+2026-10-12T19:24:42.2108267Z Cache mode: write
+2026-10-12T19:24:42.2109003Z Prepare workflow directory
+2026-10-12T19:24:42.2468480Z Prepare all required actions
+2026-10-12T19:24:42.2507589Z Getting action download info
+2026-10-12T19:24:42.5663524Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-12T19:24:42.8418592Z Download action repository 'actions/setup-dotnet@v6' (SHA:a98b56852c35b8e3190ac28c8c2271da59106c68)
+2026-10-12T19:24:43.6376746Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+2026-10-12T19:24:44.5045987Z Complete job name: Native AOT probe (linux-x64)
+2026-10-12T19:24:44.5640098Z ##[group]Run actions/checkout@v7
+2026-10-12T19:24:44.5640745Z with:
+2026-10-12T19:24:44.5641045Z   repository: Broiler-Platform/Broiler.JS
+2026-10-12T19:24:44.5643580Z   token: ***
+2026-10-12T19:24:44.5644003Z   ssh-strict: true
+2026-10-12T19:24:44.5644281Z   ssh-user: git
+2026-10-12T19:24:44.5644567Z   persist-credentials: true
+2026-10-12T19:24:44.5644870Z   clean: true
+2026-10-12T19:24:44.5645156Z   sparse-checkout-cone-mode: true
+2026-10-12T19:24:44.5645473Z   fetch-depth: 1
+2026-10-12T19:24:44.5645739Z   fetch-tags: false
+2026-10-12T19:24:44.5646015Z   show-progress: true
+2026-10-12T19:24:44.5646300Z   lfs: false
+2026-10-12T19:24:44.5646569Z   submodules: false
+2026-10-12T19:24:44.5646850Z   set-safe-directory: true
+2026-10-12T19:24:44.5647168Z   allow-unsafe-pr-checkout: false
+2026-10-12T19:24:44.5647640Z ##[endgroup]
+2026-10-12T19:24:44.6437973Z Syncing repository: Broiler-Platform/Broiler.JS
+2026-10-12T19:24:44.6440507Z ##[group]Getting Git version info
+2026-10-12T19:24:44.6441273Z Working directory is '/home/runner/work/Broiler.JS/Broiler.JS'
+2026-10-12T19:24:44.6442278Z [command]/usr/bin/git version
+2026-10-12T19:24:44.6849256Z git version 2.55.0
+2026-10-12T19:24:44.6870977Z ##[endgroup]
+2026-10-12T19:24:44.6878506Z Temporarily overriding HOME='/home/runner/work/_temp/d282ab4e-289f-490b-8be2-db82b4ccce40' before making global git config changes
+2026-10-12T19:24:44.6880002Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-12T19:24:44.6883831Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Broiler.JS/Broiler.JS
+2026-10-12T19:24:44.6932789Z Deleting the contents of '/home/runner/work/Broiler.JS/Broiler.JS'
+2026-10-12T19:24:44.6935765Z ##[group]Determining repository object format
+2026-10-12T19:24:44.6937146Z ##[endgroup]
+2026-10-12T19:24:44.6938194Z ##[group]Initializing the repository
+2026-10-12T19:24:44.6942175Z [command]/usr/bin/git init /home/runner/work/Broiler.JS/Broiler.JS
+2026-10-12T19:24:44.7071953Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-12T19:24:44.7073995Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-12T19:24:44.7083853Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-12T19:24:44.7084552Z hint: call:
+2026-10-12T19:24:44.7084920Z hint:
+2026-10-12T19:24:44.7085419Z hint: 	git config --global init.defaultBranch <name>
+2026-10-12T19:24:44.7085971Z hint:
+2026-10-12T19:24:44.7086495Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-12T19:24:44.7087326Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-12T19:24:44.7087973Z hint:
+2026-10-12T19:24:44.7088361Z hint: 	git branch -m <name>
+2026-10-12T19:24:44.7088791Z hint:
+2026-10-12T19:24:44.7089361Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-12T19:24:44.7090303Z Initialized empty Git repository in /home/runner/work/Broiler.JS/Broiler.JS/.git/
+2026-10-12T19:24:44.7093938Z [command]/usr/bin/git remote add origin https://github.com/Broiler-Platform/Broiler.JS
+2026-10-12T19:24:44.7152584Z ##[endgroup]
+2026-10-12T19:24:44.7156018Z ##[group]Disabling automatic garbage collection
+2026-10-12T19:24:44.7156604Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-12T19:24:44.7188251Z ##[endgroup]
+2026-10-12T19:24:44.7188875Z ##[group]Setting up auth
+2026-10-12T19:24:44.7189262Z Removing SSH command configuration
+2026-10-12T19:24:44.7194408Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-12T19:24:44.7225036Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-12T19:24:44.8136081Z Removing HTTP extra header
+2026-10-12T19:24:44.8141133Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-12T19:24:44.8177350Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-12T19:24:44.8375978Z Removing includeIf entries pointing to credentials config files
+2026-10-12T19:24:44.8380179Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-12T19:24:44.8414802Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-12T19:24:44.8618623Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-e58c3291-5df9-45a6-bbb9-33e565f4f36a.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-12T19:24:44.8675257Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/.git.path /home/runner/work/_temp/git-credentials-e58c3291-5df9-45a6-bbb9-33e565f4f36a.config
+2026-10-12T19:24:44.8705373Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-e58c3291-5df9-45a6-bbb9-33e565f4f36a.config
+2026-10-12T19:24:44.8743044Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-e58c3291-5df9-45a6-bbb9-33e565f4f36a.config
+2026-10-12T19:24:44.8776181Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-e58c3291-5df9-45a6-bbb9-33e565f4f36a.config
+2026-10-12T19:24:44.8805913Z ##[endgroup]
+2026-10-12T19:24:44.8806585Z ##[group]Fetching the repository
+2026-10-12T19:24:44.8813125Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +29be10177cabcfbe0b9cdbd0978adb2b2226d2d1:refs/remotes/origin/main
+2026-10-12T19:24:49.3760367Z From https://github.com/Broiler-Platform/Broiler.JS
+2026-10-12T19:24:49.3761093Z  * [new ref]         29be10177cabcfbe0b9cdbd0978adb2b2226d2d1 -> origin/main
+2026-10-12T19:24:49.3768826Z [command]/usr/bin/git branch --list --remote origin/main
+2026-10-12T19:24:49.3797596Z   origin/main
+2026-10-12T19:24:49.3805320Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+2026-10-12T19:24:49.3831299Z 29be10177cabcfbe0b9cdbd0978adb2b2226d2d1
+2026-10-12T19:24:49.3834846Z ##[endgroup]
+2026-10-12T19:24:49.3835321Z ##[group]Determining the checkout info
+2026-10-12T19:24:49.3840958Z ##[endgroup]
+2026-10-12T19:24:49.3851045Z [command]/usr/bin/git sparse-checkout disable
+2026-10-12T19:24:49.4918175Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-12T19:24:49.4954752Z ##[group]Checking out the ref
+2026-10-12T19:24:49.4958731Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-12T19:24:49.9814888Z Switched to a new branch 'main'
+2026-10-12T19:24:49.9818428Z branch 'main' set up to track 'origin/main'.
+2026-10-12T19:24:49.9889286Z ##[endgroup]
+2026-10-12T19:24:49.9914509Z [command]/usr/bin/git log -1 --format=%H
+2026-10-12T19:24:49.9924276Z 29be10177cabcfbe0b9cdbd0978adb2b2226d2d1
+2026-10-12T19:24:50.0216197Z ##[group]Run actions/setup-dotnet@v6
+2026-10-12T19:24:50.0216593Z with:
+2026-10-12T19:24:50.0216837Z   dotnet-version: 10.0.x
+2026-10-12T19:24:50.0217129Z   cache: false
+2026-10-12T19:24:50.0217381Z ##[endgroup]
+2026-10-12T19:24:50.1297447Z [command]/home/runner/work/_actions/actions/setup-dotnet/v6/externals/install-dotnet.sh --skip-non-versioned-files --runtime dotnet --channel LTS
+2026-10-12T19:24:50.4171028Z dotnet-install: .NET Core Runtime with version '10.0.12' is already installed.
+2026-10-12T19:24:50.4196170Z [command]/home/runner/work/_actions/actions/setup-dotnet/v6/externals/install-dotnet.sh --skip-non-versioned-files --channel 10.0
+2026-10-12T19:24:50.6512407Z dotnet-install: .NET Core SDK with version '10.0.401' is already installed.
+2026-10-12T19:24:50.6671996Z ##[group]Run set -o pipefail
+2026-10-12T19:24:50.6672343Z [36;1mset -o pipefail[0m
+2026-10-12T19:24:50.6672846Z [36;1mdotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -r linux-x64 --nologo 2>&1 | tee probe-publish.log[0m
+2026-10-12T19:24:50.6673477Z [36;1m# Warnings are errors already; this states the zero the exit clause asks for.[0m
+2026-10-12T19:24:50.6674141Z [36;1mif grep -E "warning [A-Z]+[0-9]+" probe-publish.log; then[0m
+2026-10-12T19:24:50.6674472Z [36;1m  echo "::error::the Native AOT publish reported a warning"[0m
+2026-10-12T19:24:50.6674730Z [36;1m  exit 1[0m
+2026-10-12T19:24:50.6674890Z [36;1mfi[0m
+2026-10-12T19:24:50.6675213Z [36;1mpublish=Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish[0m
+2026-10-12T19:24:50.6675633Z [36;1mif ls "$publish"/*.dll >/dev/null 2>&1; then[0m
+2026-10-12T19:24:50.6675970Z [36;1m  echo "::error::the publish directory holds a managed assembly"[0m
+2026-10-12T19:24:50.6676292Z [36;1m  exit 1[0m
+2026-10-12T19:24:50.6676460Z [36;1mfi[0m
+2026-10-12T19:24:50.6965478Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-12T19:24:50.6965817Z env:
+2026-10-12T19:24:50.6966017Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-12T19:24:50.6966239Z ##[endgroup]
+2026-10-12T19:24:53.8795075Z   Determining projects to restore...
+2026-10-12T19:24:56.4446417Z   Restored /home/runner/work/Broiler.JS/Broiler.JS/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/Broiler.ECMAScript.Conformance.csproj (in 1.78 sec).
+2026-10-12T19:24:56.4466901Z   Restored /home/runner/work/Broiler.JS/Broiler.JS/Broiler.ECMAScript/Broiler.ECMAScript.Probe/Broiler.ECMAScript.Probe.csproj (in 1.78 sec).
+2026-10-12T19:24:56.4469282Z   Restored /home/runner/work/Broiler.JS/Broiler.JS/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 1.78 sec).
+2026-10-12T19:25:00.5025876Z   Broiler.ECMAScript.Algorithms -> /home/runner/work/Broiler.JS/Broiler.JS/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+2026-10-12T19:25:00.6620936Z   Broiler.ECMAScript.Conformance -> /home/runner/work/Broiler.JS/Broiler.JS/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/bin/Release/net10.0/Broiler.ECMAScript.Conformance.dll
+2026-10-12T19:25:01.3676423Z   Broiler.ECMAScript.Probe -> /home/runner/work/Broiler.JS/Broiler.JS/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/Broiler.ECMAScript.Probe.dll
+2026-10-12T19:25:01.7607123Z   Generating native code
+2026-10-12T19:25:08.2854067Z   Broiler.ECMAScript.Probe -> /home/runner/work/Broiler.JS/Broiler.JS/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish/
+2026-10-12T19:25:08.4035056Z ##[group]Run ./Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish/Broiler.ECMAScript.Probe conformance/vectors --report probe-aot.tsv
+2026-10-12T19:25:08.4036013Z [36;1m./Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish/Broiler.ECMAScript.Probe conformance/vectors --report probe-aot.tsv[0m
+2026-10-12T19:25:08.4092317Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-12T19:25:08.4092599Z env:
+2026-10-12T19:25:08.4092787Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-12T19:25:08.4093001Z ##[endgroup]
+2026-10-12T19:25:08.5615350Z Broiler.ECMAScript.Probe: corpus revision 3, 10 files, 10132 vectors, 0 failures
+2026-10-12T19:25:08.6212669Z ##[group]Run dotnet build Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release --nologo
+2026-10-12T19:25:08.6213224Z [36;1mdotnet build Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release --nologo[0m
+2026-10-12T19:25:08.6214097Z [36;1mdotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll conformance/vectors --report probe-jit.tsv[0m
+2026-10-12T19:25:08.6214626Z [36;1mcmp probe-aot.tsv probe-jit.tsv[0m
+2026-10-12T19:25:08.6271021Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-12T19:25:08.6271334Z env:
+2026-10-12T19:25:08.6271518Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-12T19:25:08.6271731Z ##[endgroup]
+2026-10-12T19:25:09.2184378Z   Determining projects to restore...
+2026-10-12T19:25:09.8857131Z   Restored /home/runner/work/Broiler.JS/Broiler.JS/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/Broiler.ECMAScript.Conformance.csproj (in 257 ms).
+2026-10-12T19:25:09.8858716Z   Restored /home/runner/work/Broiler.JS/Broiler.JS/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 257 ms).
+2026-10-12T19:25:09.8860138Z   Restored /home/runner/work/Broiler.JS/Broiler.JS/Broiler.ECMAScript/Broiler.ECMAScript.Probe/Broiler.ECMAScript.Probe.csproj (in 257 ms).
+2026-10-12T19:25:10.0758899Z   Broiler.ECMAScript.Algorithms -> /home/runner/work/Broiler.JS/Broiler.JS/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+2026-10-12T19:25:10.2519376Z   Broiler.ECMAScript.Conformance -> /home/runner/work/Broiler.JS/Broiler.JS/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/bin/Release/net10.0/Broiler.ECMAScript.Conformance.dll
+2026-10-12T19:25:10.4531939Z   Broiler.ECMAScript.Probe -> /home/runner/work/Broiler.JS/Broiler.JS/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll
+2026-10-12T19:25:10.4729127Z 
+2026-10-12T19:25:10.4735491Z Build succeeded.
+2026-10-12T19:25:10.4736271Z     0 Warning(s)
+2026-10-12T19:25:10.4736544Z     0 Error(s)
+2026-10-12T19:25:10.4737318Z 
+2026-10-12T19:25:10.4737516Z Time Elapsed 00:00:01.58
+2026-10-12T19:25:11.0109506Z Broiler.ECMAScript.Probe: corpus revision 3, 10 files, 10132 vectors, 0 failures
+2026-10-12T19:25:11.0309594Z ##[group]Run actions/upload-artifact@v7
+2026-10-12T19:25:11.0309983Z with:
+2026-10-12T19:25:11.0310254Z   name: native-aot-probe-linux-x64
+2026-10-12T19:25:11.0310680Z   path: probe-publish.log
+probe-aot.tsv
+probe-jit.tsv
+
+2026-10-12T19:25:11.0311086Z   if-no-files-found: warn
+2026-10-12T19:25:11.0311579Z   compression-level: 6
+2026-10-12T19:25:11.0311852Z   overwrite: false
+2026-10-12T19:25:11.0312127Z   include-hidden-files: false
+2026-10-12T19:25:11.0312427Z   archive: true
+2026-10-12T19:25:11.0312679Z env:
+2026-10-12T19:25:11.0312926Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-12T19:25:11.0313235Z ##[endgroup]
+2026-10-12T19:25:11.2194529Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-10-12T19:25:11.2276908Z The least common ancestor is /home/runner/work/Broiler.JS/Broiler.JS. This will be the root directory of the artifact
+2026-10-12T19:25:11.2304582Z With the provided path, there will be 3 files uploaded
+2026-10-12T19:25:11.2365208Z Artifact name is valid!
+2026-10-12T19:25:11.2384496Z Root directory input is valid!
+2026-10-12T19:25:11.5567624Z Uploading artifact: native-aot-probe-linux-x64.zip
+2026-10-12T19:25:11.5627543Z Beginning upload of artifact content to blob storage
+2026-10-12T19:25:12.0264754Z Uploaded bytes 265479
+2026-10-12T19:25:12.0822469Z Finished uploading artifact content to blob storage!
+2026-10-12T19:25:12.0824327Z SHA256 digest of uploaded artifact is e3aa2c5699af6b66dc4b8cd1ca0bd1137b4b6c99bae8a85575aefd5fb99f860c
+2026-10-12T19:25:12.0825308Z Finalizing artifact upload
+2026-10-12T19:25:12.4398467Z Artifact native-aot-probe-linux-x64 successfully finalized. Artifact ID 11769090046
+2026-10-12T19:25:12.4399701Z Artifact native-aot-probe-linux-x64 has been successfully uploaded! Final size is 265479 bytes. Artifact ID is 11769090046
+2026-10-12T19:25:12.4400923Z Artifact download URL: https://github.com/Broiler-Platform/Broiler.JS/actions/runs/38297460269/artifacts/11769090046
+2026-10-12T19:25:12.4577627Z Post job cleanup.
+2026-10-12T19:25:12.5754151Z Post job cleanup.
+2026-10-12T19:25:12.6766088Z [command]/usr/bin/git version
+2026-10-12T19:25:12.6824271Z git version 2.55.0
+2026-10-12T19:25:12.6863340Z Temporarily overriding HOME='/home/runner/work/_temp/9267b219-8771-4920-9305-ce45a9687e6b' before making global git config changes
+2026-10-12T19:25:12.6865097Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-12T19:25:12.6877776Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Broiler.JS/Broiler.JS
+2026-10-12T19:25:12.6933759Z Removing SSH command configuration
+2026-10-12T19:25:12.6934696Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-12T19:25:12.6977818Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-12T19:25:12.7244290Z Removing HTTP extra header
+2026-10-12T19:25:12.7250056Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-12T19:25:12.7300889Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-12T19:25:12.7569441Z Removing includeIf entries pointing to credentials config files
+2026-10-12T19:25:12.7570348Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-12T19:25:12.7624871Z includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/.git.path
+2026-10-12T19:25:12.7635987Z includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/.git/worktrees/*.path
+2026-10-12T19:25:12.7636858Z includeif.gitdir:/github/workspace/.git.path
+2026-10-12T19:25:12.7637555Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-12T19:25:12.7644934Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/.git.path
+2026-10-12T19:25:12.7680513Z /home/runner/work/_temp/git-credentials-e58c3291-5df9-45a6-bbb9-33e565f4f36a.config
+2026-10-12T19:25:12.7733168Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-e58c3291\-5df9\-45a6\-bbb9\-33e565f4f36a\.config
+2026-10-12T19:25:12.7795494Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/.git/worktrees/*.path
+2026-10-12T19:25:12.7820001Z /home/runner/work/_temp/git-credentials-e58c3291-5df9-45a6-bbb9-33e565f4f36a.config
+2026-10-12T19:25:12.7875573Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-e58c3291\-5df9\-45a6\-bbb9\-33e565f4f36a\.config
+2026-10-12T19:25:12.7894755Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-12T19:25:12.7933084Z /github/runner_temp/git-credentials-e58c3291-5df9-45a6-bbb9-33e565f4f36a.config
+2026-10-12T19:25:12.7953501Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-e58c3291\-5df9\-45a6\-bbb9\-33e565f4f36a\.config
+2026-10-12T19:25:12.8001775Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-12T19:25:12.8030319Z /github/runner_temp/git-credentials-e58c3291-5df9-45a6-bbb9-33e565f4f36a.config
+2026-10-12T19:25:12.8033051Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-e58c3291\-5df9\-45a6\-bbb9\-33e565f4f36a\.config
+2026-10-12T19:25:12.8074189Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-12T19:25:12.8286224Z Removing credentials config '/home/runner/work/_temp/git-credentials-e58c3291-5df9-45a6-bbb9-33e565f4f36a.config'
+2026-10-12T19:25:12.8432768Z Cleaning up orphan processes
+2026-10-12T19:25:12.8678033Z Terminate orphan process: pid (2302) (dotnet)
+2026-10-12T19:25:12.8698498Z Terminate orphan process: pid (2327) (VBCSCompiler)
