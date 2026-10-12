@@ -312,23 +312,35 @@ def main(argv: list[str] | None = None) -> int:
 
     vectors = covering_vectors(args.corpus)
     differences = args.run / "differences.tsv.gz"
-    with gzip.open(differences, "rt", encoding="utf-8", newline="\n") as stream:
-        header = stream.readline()
-        assert header.startswith("operation\t"), header
-        lines = stream.readlines()
-    chunks = [lines[i:i + 2000] for i in range(0, len(lines), 2000)]
+    source_lines = 0
+
+    def chunks():
+        """The listing in chunks of 2,000 lines, read as the pool asks, never whole."""
+        nonlocal source_lines
+        with gzip.open(differences, "rt", encoding="utf-8", newline="\n") as stream:
+            header = stream.readline()
+            assert header.startswith("operation\t"), header
+            chunk: list[str] = []
+            for line in stream:
+                chunk.append(line)
+                source_lines += 1
+                if len(chunk) == 2000:
+                    yield chunk
+                    chunk = []
+            if chunk:
+                yield chunk
 
     counts: Counter[tuple[str, str, str, str]] = Counter()
     examples: dict[tuple[str, str, str, str], list[tuple[str, ...]]] = defaultdict(list)
     listing = hashlib.sha256()
     total = 0
     out_path = args.run / "classification.tsv.gz"
-    with open(out_path, "wb") as raw, gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as gz:
+    with open(out_path, "wb") as raw, gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0, compresslevel=6) as gz:
         head = "operation\tclass\tline\tparameter\tinput\tS\tvariant\tresult\treference\tlabel\treason\tvector\n"
         gz.write(head.encode("utf-8"))
         listing.update(head.encode("utf-8"))
         with multiprocessing.Pool(args.jobs, initializer=sys.set_int_max_str_digits, initargs=(0,)) as pool:
-            for rows in pool.imap(classify_chunk, chunks, chunksize=1):
+            for rows in pool.imap(classify_chunk, chunks(), chunksize=1):
                 for row in rows:
                     row = list(row)
                     if row[9] == "b":
@@ -356,7 +368,7 @@ def main(argv: list[str] | None = None) -> int:
             source.update(block)
 
     summary = {
-        "differences": {"file": "differences.tsv.gz", "lines": len(lines), "sha256": source.hexdigest()},
+        "differences": {"file": "differences.tsv.gz", "lines": source_lines, "sha256": source.hexdigest()},
         "classification": {"file": "classification.tsv.gz", "lines": total, "sha256": listing.hexdigest()},
         "unclassified": sum(c for k, c in counts.items() if k[2] == "unclassified"),
         "groups": [{"operation": k[0], "variant": k[1], "class": k[2], "reason": k[3], "count": c}
@@ -365,7 +377,7 @@ def main(argv: list[str] | None = None) -> int:
     (args.run / "classification.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
 
     report = ["# Reference-arm comparison: classification", "",
-              f"Differences listed: {len(lines)} inputs; variant differences classified: {total}; "
+              f"Differences listed: {source_lines} inputs; variant differences classified: {total}; "
               f"unclassified: {summary['unclassified']}.", ""]
     for key, count in sorted(counts.items()):
         report.append(f"## {key[0]} / {key[1]} / class {key[2]} / {key[3]}: {count}")

@@ -29,7 +29,7 @@ Each entry has the headings **Added**, **Changed**, **Observable changes** and *
     the caller's width limit, and every refusal as a `Failure` with a message identifier;
   - `NumericKeys`: `TryParseArrayIndex` and `IsCanonicalNumericString`.
 
-  Every number vector of corpus revision 3 passes at library level. Ryu (Apache-2.0) is ported for
+  Every number vector of corpus revision 4 passes at library level. Ryu (Apache-2.0) is ported for
   the shortest radix-10 digits; see `THIRD_PARTY_NOTICES.md`.
 
 ### Changed
