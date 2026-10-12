@@ -1,0 +1,7 @@
+# The shared conformance vectors use LF line endings by their schema (conformance/vectors/SCHEMA.md,
+# section 1), and the validator refuses a line that ends in CR. A checkout that converted them to
+# CRLF - Git for Windows' default, core.autocrlf=true - would make every vector file unreadable, and
+# the generator's test compares the committed corpus with what it writes byte for byte. So the corpus
+# and its generator's inputs are checked out with LF everywhere.
+conformance/** text eol=lf
+scripts/conformance/** text eol=lf
