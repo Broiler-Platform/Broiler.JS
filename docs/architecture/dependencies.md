@@ -3,10 +3,18 @@
 Project files are the dependency-graph source of truth. This document records the
 intended direction and the cross-assembly seams that a contributor must preserve.
 
-This document owns this component's assembly dependency rules. Broiler.VM is a separate
-component with no dependency edge to this one in either direction, and nothing here plans an
-integration with it. In this file, *JavaScript bootstrap profile* and *deployment/compiler
-composition* are separate concepts.
+This document owns this component's assembly dependency rules. **No dependency edge runs between
+this engine and Broiler.VM in either direction.** The shared JavaScript libraries this repository
+hosts (`Broiler.ECMAScript.*`, planned in [`SharedLibraries.md`](../roadmap/SharedLibraries.md)) are consumed by
+Broiler.VM's JavaScript profile family as well as by this engine, and they reference neither engine.
+In this file, *JavaScript bootstrap profile* and *deployment/compiler composition* are separate
+concepts.
+
+*Revised 2026-10-12, at milestone SJL-0 of the shared JavaScript libraries programme (decisions
+SJL-D-1 and SJL-D-9, taken on 2026-10-11). The paragraph read: "Broiler.VM is a separate component
+with no dependency edge to this one in either direction, and nothing here plans an integration with
+it." The engines still share no edge; what changed is that libraries built here, which belong to
+neither engine, have a Broiler.VM consumer.*
 
 > **The first graph change has landed; the wider target remains a hypothesis.**
 > `Broiler.JavaScript.Expressions` now owns the expression model and its built reference
@@ -60,7 +68,7 @@ The project-shell spike must prove an acyclic graph around these canonical hypot
 | --- | --- | --- |
 | Expression model | `Expressions` | Backend-neutral and Emit-free; already structurally established |
 | Syntax and storage | `Ast`, `Storage` | Remain separate until the real edges prove a safe consolidation |
-| FrontEnd/Semantics | `Parser` plus backend-neutral binding, scope, early-error, hoisting, and analysis code extracted from `Compiler`/lowering | Shared by IL and bytecode; references neither back end |
+| FrontEnd/Semantics | `Parser` plus backend-neutral binding, scope, early-error, hoisting, and analysis code extracted from `Compiler`/lowering | Shared by IL and bytecode; references neither back end. **It becomes the shared frontend, `Broiler.ECMAScript.Frontend`**, consumed by both of this engine's back ends (the IL compiler and the portable compiler) and by Broiler.VM's lowering; the programme's SJL-12 to SJL-15 deliver it *(revised 2026-10-12)* |
 | Runtime and engine services | `Runtime`, `Engine` | Remain separate unless project shells prove a consolidation acyclic |
 | IL back end | expression emitter, IL-specific lowering, `AssemblyCodeCache`, and `ILPack` | The only backend boundary allowed to use `System.Reflection.Emit` |
 | Composition and features | hosting, built-ins, optional hosts, IL and NativeAOT compositions | Back ends and VM language profiles are registered explicitly; reduced compositions publish their omissions |
@@ -89,8 +97,17 @@ publish-and-run gate decide whether the hypotheses become the target.
   `All` internally.
 - The numeric bytecode path remains independent of the dynamic-code path. Sharing the parser
   and FrontEnd/Semantics is intended; reaching the IL emitter is not.
-- Nested DateTime, Regex, and Unicode components are implementation dependencies of
-  feature code; they must not leak into lower-layer public contracts unnecessarily.
+- The Regex and Unicode components are **published packages**, not nested components:
+  `BuiltIns` references `Broiler.Regex` and `Broiler.Unicode.Cldr.LocaleData`, and receives
+  `Broiler.Unicode.Properties` and `Broiler.Unicode.Emoji.StringProperties` through `Broiler.Regex`'s
+  package dependencies, calling both directly as well. They are
+  implementation dependencies of feature code and must not leak into lower-layer public contracts
+  unnecessarily. No project references `Broiler.DateTime`. *(Corrected 2026-10-12: this bullet read
+  "Nested DateTime, Regex, and Unicode components are implementation dependencies of feature code;
+  they must not leak into lower-layer public contracts unnecessarily.")*
+- A shared `Broiler.ECMAScript.*` library references no `Broiler.JavaScript.*` project or package
+  and nothing in Broiler.VM (the programme's rule SL1); this engine references it as any consumer
+  does.
 
 ## Cross-assembly seams
 

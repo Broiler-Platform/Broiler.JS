@@ -201,9 +201,17 @@ two largest directories in the assembly:
 | `Temporal/` | **12 597** | `DateTime`, `DateTimeOffset`, `TimeZoneInfo`, `System.Globalization.Calendar` |
 | `Intl/` | **8 612** | `System.Globalization` — `CultureInfo`, `NumberFormatInfo`, ICU |
 
-**They are 21 209 lines, a third of the assembly**, and `BuiltIns` reaches its own vendored
-`Broiler.DateTime` and `UnicodeCldr.LocaleData` for them rather than the BCL. Three reasons
-that is defensible, and one that is not:
+**They are 21 209 lines, a third of the assembly**, and `BuiltIns` implements them over its own
+data rather than the BCL: it references the published `Broiler.Unicode.Cldr.LocaleData` package for
+locale data, and no project references `Broiler.DateTime`. Three reasons that is defensible, and one
+that is not:
+
+*(Corrected 2026-10-12, at milestone SJL-0 of the shared JavaScript libraries programme. The sentence
+read: "`BuiltIns` reaches its own vendored `Broiler.DateTime` and `UnicodeCldr.LocaleData` for them
+rather than the BCL." Neither is vendored: the locale data is a package reference, and
+`Broiler.DateTime` is not referenced. The line counts are this section's own and were not re-taken.
+Where the algorithms and the data of these two directories go next is planned in
+[`SharedLibraries.md`](../roadmap/SharedLibraries.md).)*
 
 - **Spec-exactness.** `Temporal` is a specification with its own arithmetic, calendars and
   ambiguity-resolution rules. `DateTime` is not a partial implementation of it; it is a
