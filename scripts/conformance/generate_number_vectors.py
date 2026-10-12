@@ -29,8 +29,9 @@ import numref as R  # noqa: E402
 
 # The corpus revision this generator writes, and the revision most of its vectors were added in.
 # Revisions 2 and 3 classified differences (number-divergences.txt) and added no vector; revision 4
-# appended the parseInt vectors of revision_4_vectors, after every vector of revision 1.
-CORPUS_REVISION = 4
+# appended the parseInt vectors of revision_4_vectors, after every vector of revision 1; revision 5
+# retired divergences (number-divergences.txt) and added no vector.
+CORPUS_REVISION = 5
 FIRST_REVISION = 1
 GENERATOR = "ref:numref@1"
 SPEC = "spec:es2026@0248456c"

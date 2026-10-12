@@ -64,7 +64,7 @@ profile. They are not part of the `Broiler.JavaScript.*` set above and do not sh
 
 | Package | State | Public surface |
 | --- | --- | --- |
-| `Broiler.ECMAScript.Algorithms` | Contract types only, `0.1.0-preview.1` the first version the stream will publish | `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit`, `DepthLimit` |
+| `Broiler.ECMAScript.Algorithms` | `0.1.0-preview.1`, the first version the stream will publish; this engine's `Parser`, `Runtime`, `BuiltIns` and `Storage` reference it | The contract types `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`; the number-conversion area, namespace `Broiler.ECMAScript.Numbers`: `NumberText`, `NumberParsing`, `NumericLiterals`, `NumericKeys` |
 | `Broiler.ECMAScript.Conformance` | Test-only; not packed at this version | The corpus reader, the validator, the engine-level and library-level runners and their report |
 
 **Their compatibility promise is stronger than this engine's**, and it is enforced rather than stated
@@ -87,7 +87,51 @@ profile. They are not part of the `Broiler.JavaScript.*` set above and do not sh
 - **Binary compatibility inside a major version is mandatory**, because a process that hosts both
   engines loads one copy of each shared assembly.
 
-*Added 2026-10-12, at milestone SJL-2.13, as the paragraph above said it would be.*
+*Added 2026-10-12, at milestone SJL-2.13, as the paragraph above said it would be. Revised 2026-10-12,
+at milestone SJL-3.5, when the number area moved in and this engine took its reference: the table's
+first row read "| `Broiler.ECMAScript.Algorithms` | Contract types only, `0.1.0-preview.1` the first
+version the stream will publish | `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit`,
+`DepthLimit` |".*
+
+## Public API changes, 2026-10-12 (number conversion moves to `Broiler.ECMAScript.Algorithms`)
+
+Milestone SJL-3.5 of the shared JavaScript libraries programme moves every number conversion out of
+this engine into the shared library, and applies decision SJL-D-25 to each public member it empties:
+(a) a forwarder for a member that downstream consumers or tests use, (b) an obsolete forwarder for the
+rest, and (c) removal only with a recorded consumer check. The observable corrections are in
+[`Broiler.JS/CHANGELOG.md`](../Broiler.JS/CHANGELOG.md).
+
+**The consumer check.** The two downstream consumers the decision names were searched for every
+member below at their heads on 2026-10-12: `Broiler.JSeal` at `ebb5e6ac0ed8921e224d822e6aa7d26404a3a079`
+and `Broiler.HtmlBridge` at `07dfca062edfcdd3a631700c978329bc231b4e2a`. Neither uses any of them
+(JSeal calls `JSGlobalStatic.StructuredClone` and reads `KeyStrings` constants, neither of which
+changes). No test of this repository calls them either.
+
+| Member | Assembly | Disposition | What it does now |
+| --- | --- | --- | --- |
+| `NumberParser.CoerceToNumber(in StringSpan)` | `Runtime` | (a) forwarder | `NumberParsing.StringToNumber`; its callers in the engine (`EngineAssemblyInitializer`, `ClrProxy`, `JSString`, `JSNumber`) keep calling it |
+| `NumberParser.TryCoerceToUInt32(in StringSpan, out uint)` | `Runtime` | (a) forwarder | Its own logic, unchanged, over `CoerceToNumber` |
+| `NumberParser.TryGetArrayIndex(in StringSpan, out uint)` | `Runtime` | (a) forwarder | `NumericKeys.TryParseArrayIndex` |
+| `JSNumberPrototype.DecimalToBase(double, int)` (declared on `JSNumber`) | `BuiltIns` | (b) obsolete forwarder, removed in the next major version | `NumberText.ToRadixString`: the shortest digits, no longer up to 1,100 fraction digits; a radix outside 2 to 36 throws `ArgumentOutOfRangeException` |
+| `JSNumberPrototype.DecimalToArbitrarySystem(long, int)` (declared on `JSNumber`) | `BuiltIns` | (b) obsolete forwarder, removed in the next major version | `NumberText.ToRadixString` of the value as a double, so a value beyond 2^53 is rounded to the nearest double first; its Stack Overflow-derived body is gone |
+| `JSNumber.ParseFloat(in Arguments)`, `JSNumber.ParseInt(in Arguments)` | `BuiltIns` | (c) removed, after the consumer check above | The generated copies of `Number.parseFloat` and `Number.parseInt`, which `BuiltInsAssemblyInitializer.PatchNumberConstructor` already replaced with the global functions; `JSGlobalStatic.ParseFloat` and `ParseInt` (`Globals`) are the one pair left |
+| `JSStringExtensions.JSTrim(this string)`, `JSTrim(this JSValue)` | `Extensions` | (b) obsolete forwarder, removed in the next major version | `NumberParsing.TrimStrWhiteSpace`: the specification's white space, where it trimmed .NET's (which holds U+0085 and not U+FEFF). The `parseInt` pair that called it is gone, and nothing in the engine calls it |
+| `JSBigInt(string)` constructor | `BuiltIns` | kept, behaviour narrowed | Reads exactly a BigInt literal's source text, its `n` included, after an optional `-`, through `NumericLiterals.Evaluate`; it accepted surrounding white space, a `+` and no suffix before. Its one caller is the compiled BigInt literal |
+
+**Removed internal and private members**, with no public surface: `Parser`'s `NumberCoercion` class;
+`NumberParser`'s `ParseFloat`, `ParseInt`, `ParseCore`, `ParseCoreStatus`, `integerPowersOfTen`,
+`ParseHex`, `ParseOctal`, `ParseBinary`, `IsWhiteSpaceOrLineTerminator`, `RefineEstimate`,
+`AddUlps` and `ScaleToInteger`; the `JSValue.NumberToECMAString` delegate and its installation in
+`BuiltInsAssemblyInitializer`; `JSNumber.ToECMAString` and `RoundTrippable`; `JSNumberPrototype`'s
+`RoundScaled`, `ToExactFraction`, `ExactSignificantDigits`, `Compare10Pow`,
+`ShortestSignificantDigits` and `FormatExponential`; `FastCompiler`'s `FormatNumericPropertyName`,
+`BigIntLiteralToValue` and `ParseBigIntRadix`; `JSBigInt.TryParseBigIntLiteral`; `JSString`'s
+`trimCharacters`; and `KeyStrings`' own array-index and canonical-numeric tests, which call the shared
+`NumericKeys` now.
+
+**Compatibility.** Source-breaking only for a caller of `JSNumber.ParseFloat` or `JSNumber.ParseInt`,
+which the check found none of. `Broiler.JavaScript.Parser`, `.Runtime`, `.BuiltIns` and `.Storage`
+gain a dependency on `Broiler.ECMAScript.Algorithms`, whose own compatibility promise is above.
 
 ## Public API changes, 2026-09-22 (module semantics, intrinsics, async ordering)
 

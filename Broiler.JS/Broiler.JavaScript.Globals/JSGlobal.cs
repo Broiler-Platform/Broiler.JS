@@ -15,6 +15,7 @@ using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Compiler;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.Globals;
 
@@ -182,56 +183,21 @@ public partial class JSGlobalStatic
             ? JSValue.BooleanTrue
             : JSValue.BooleanFalse;
 
+    // The one parseFloat/parseInt pair: Number.parseFloat and Number.parseInt are these same
+    // function objects (BuiltInsAssemblyInitializer.PatchNumberConstructor). The values are the
+    // shared library's (SJL-3.5).
     [JSExport("parseFloat", Length = 1)]
-    public static JSValue ParseFloat(in Arguments a)
-    {
-        var result = NumberParser.ParseFloat(a.Get1().StringValue);
-        return JSValue.CreateNumber(result);
-    }
+    public static JSValue ParseFloat(in Arguments a) => JSValue.CreateNumber(NumberParsing.ParseFloat(a.Get1().StringValue));
 
     [JSExport("parseInt", Length = 2)]
     public static JSValue ParseInt(in Arguments a)
     {
-        var nan = JSValue.NumberNaN;
-
-        if (a.Length <= 0)
-            return nan;
-
-        var p = a.Get1();
-
-        // §19.2.5 parseInt(string, radix): inputString is ToString(string) BEFORE parsing,
-        // even for a Number argument — so parseInt(Infinity) parses "Infinity" → NaN,
-        // parseInt(1e21) parses "1e+21" → 1, and parseInt(-0) parses "0" → +0. Returning
-        // the number verbatim skipped that conversion (test262: parseInt/S15.1.2.2_A1_T2).
-        if (p.IsNull || p.IsUndefined)
-            return nan;
-
-        var text = p.JSTrim();
-        if (text.Length == 0)
-            return nan;
-
-        var radix = 0;
-        if (a.Length > 1)
-        {
-            var (_, a1) = a.Get2();
-            if (a1.IsNull || a1.IsUndefined)
-            {
-                radix = 0;
-            }
-            else
-            {
-                var n = a1.DoubleValue;
-                if (!double.IsNaN(n))
-                {
-                    radix = a1.IntValue;
-                    if (radix < 0 || radix == 1 || radix > 36)
-                        return nan;
-                }
-            }
-        }
-
-        var d = NumberParser.ParseInt(text.Trim(), radix, false);
-        return JSValue.CreateNumber(d);
+        // §19.2.5 parseInt(string, radix): ToString(string) first, even for a Number argument -
+        // parseInt(Infinity) parses "Infinity", parseInt(1e21) parses "1e+21", parseInt(null, 36)
+        // parses "null" - and then ToInt32(radix), once, where undefined and NaN are 0.
+        var text = a.Get1().StringValue;
+        var radix = JSNumericOperators.ToInt32(a.GetAt(1).DoubleValue);
+        return JSValue.CreateNumber(NumberParsing.ParseInt(text, radix));
     }
 
     [JSExport("unescape", Length = 1)]

@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.ExpressionCompiler;
+﻿using Broiler.ECMAScript.Numbers;
+using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Ast.Misc;
 using System;
 using System.Globalization;
@@ -151,7 +152,7 @@ public partial class JSString : JSPrimitive
         if (Runtime.ArithmeticOperandDiagnostics.Enabled)
             Runtime.ArithmeticOperandDiagnostics.RecordRawDoubleOperand(false);
 
-        return Concat(NumberToECMAString(value));
+        return Concat(NumberText.ToString(value));
     }
 
     public override JSValue AddValue(string value) => Concat(value);

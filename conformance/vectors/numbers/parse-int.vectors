@@ -664,8 +664,7 @@ area: numbers
 op: parseInt
 in: str:"\u0085123" undefined
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: parseInt trims U+0085 (NEXT LINE) as white space; it is neither WhiteSpace nor LineTerminator, so no digit follows and the result is NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("\u0085123")
 since: 1
@@ -675,8 +674,7 @@ area: numbers
 op: parseInt
 in: str:"\u0085123" int:0
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: parseInt trims U+0085 (NEXT LINE) as white space; it is neither WhiteSpace nor LineTerminator, so no digit follows and the result is NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("\u0085123", 0)
 since: 1
@@ -686,8 +684,7 @@ area: numbers
 op: parseInt
 in: str:"\u0085123" int:2
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: parseInt trims U+0085 (NEXT LINE) as white space; it is neither WhiteSpace nor LineTerminator, so no digit follows and the result is NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("\u0085123", 2)
 since: 1
@@ -697,8 +694,7 @@ area: numbers
 op: parseInt
 in: str:"\u0085123" int:8
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: parseInt trims U+0085 (NEXT LINE) as white space; it is neither WhiteSpace nor LineTerminator, so no digit follows and the result is NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("\u0085123", 8)
 since: 1
@@ -708,8 +704,7 @@ area: numbers
 op: parseInt
 in: str:"\u0085123" int:10
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: parseInt trims U+0085 (NEXT LINE) as white space; it is neither WhiteSpace nor LineTerminator, so no digit follows and the result is NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("\u0085123", 10)
 since: 1
@@ -719,8 +714,7 @@ area: numbers
 op: parseInt
 in: str:"\u0085123" int:16
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: parseInt trims U+0085 (NEXT LINE) as white space; it is neither WhiteSpace nor LineTerminator, so no digit follows and the result is NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("\u0085123", 16)
 since: 1
@@ -730,8 +724,7 @@ area: numbers
 op: parseInt
 in: str:"\u0085123" int:36
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: parseInt trims U+0085 (NEXT LINE) as white space; it is neither WhiteSpace nor LineTerminator, so no digit follows and the result is NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("\u0085123", 36)
 since: 1

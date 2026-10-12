@@ -1,3 +1,4 @@
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.Storage;
 using System;
@@ -56,7 +57,6 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
     internal static Func<JSObject, int, bool> IsFeatureEnabledFactory;
     internal static Func<JSValue, object, bool, object> ForceConvertHelper;
     internal static Func<Expression, JSValue, DynamicMetaObject> CreateDynamicMetaObject;
-    internal static Func<double, string> NumberToECMAString;
     internal static Func<JSValue, IJSPrototype> CreatePrototypeObject;
     internal static Func<IPropertyAccessor, JSValue, JSValue> InvokePropertyGetter;
 
@@ -733,7 +733,7 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         if (AddsNumerically(self))
             return CreateNumber(self.DoubleValue + value);
 
-        return CreateString(self.StringValue + NumberToECMAString(value));
+        return CreateString(self.StringValue + NumberText.ToString(value));
     }
 
     /// <summary>

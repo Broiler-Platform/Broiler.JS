@@ -1,3 +1,5 @@
+using Broiler.ECMAScript;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.Ast.Misc;
 using System;
 using System.Runtime.CompilerServices;
@@ -1785,6 +1787,9 @@ public class FastScanner
         return codePoint.FromCodePoint();
     }
 
+    /// <summary>The BigInt width a scanned literal is checked against: none, so only its form is checked.</summary>
+    private static readonly LengthLimit NoBigIntWidth = new(0);
+
     private FastToken ReadNumber(State state, char first)
     {
         void ConsumeDigits(bool hex = false, bool binary = false, bool octal = false)
@@ -1818,9 +1823,23 @@ public class FastScanner
             var p = Peek();
             if (p != char.MaxValue && p.IsIdentifierStart() && p != '$' && p != '@')
                 throw Unexpected(); // identifier start after numeric literal
-            return type == TokenTypes.BigInt
-                ? s.Commit(TokenTypes.BigInt)
-                : s.Commit(TokenTypes.Number, true);
+
+            // The value is the shared library's (SJL-3.5), which also refuses what the digit scan
+            // above lets through: a legacy octal integer followed by a fraction (`07.5`) or by the
+            // BigInt suffix (`01n`). Strictness is the compiler's to rule on, so the scan is sloppy.
+            // A BigInt's value is the compiler's to build: here its form is only checked, against a
+            // width of zero, which every shape error is refused before.
+            var status = NumericLiterals.Evaluate(s.Scanned(), strict: false, NoBigIntWidth, out var literal, out _);
+            if (type == TokenTypes.BigInt)
+            {
+                if (status == ResultStatus.Malformed)
+                    throw Unexpected();
+                return s.Commit(TokenTypes.BigInt);
+            }
+
+            if (status != ResultStatus.Completed)
+                throw Unexpected();
+            return s.Commit(TokenTypes.Number, literal.Number);
         }
 
         // The `0x`/`0b`/`0o` radix prefixes can only begin the integer part. For a
@@ -1918,20 +1937,22 @@ public class FastScanner
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public FastToken Commit(TokenTypes type, bool parseNumber)
+        public FastToken Commit(TokenTypes type, double number)
         {
             var cp = scanner.position;
             var start = scanner.Text.Offset + position;
             var location = scanner.Location;
-            double number = 0;
-            if (parseNumber)
-            {
-                var span = new StringSpan(scanner.Text.Source, start, cp - start);
-                number = NumberCoercion.CoerceToNumber(span);
-            }
             var token = new FastToken(type, scanner.Text.Source, null, null, start, cp - start, this.start, location, number: number);
             scanner = null;
             return token;
+        }
+
+        /// <summary>The source text from where this state was pushed to where the scanner is.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly ReadOnlySpan<char> Scanned()
+        {
+            var start = scanner.Text.Offset + position;
+            return scanner.Text.Source.AsSpan(start, scanner.position - start);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
