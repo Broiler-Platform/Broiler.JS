@@ -1,0 +1,9 @@
+  Determining projects to restore...
+  Restored /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Probe/Broiler.ECMAScript.Probe.csproj (in 390 ms).
+  Restored /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/Broiler.ECMAScript.Conformance.csproj (in 390 ms).
+  Restored /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 390 ms).
+  Broiler.ECMAScript.Algorithms -> /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Conformance -> /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/bin/Release/net10.0/Broiler.ECMAScript.Conformance.dll
+  Broiler.ECMAScript.Probe -> /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/Broiler.ECMAScript.Probe.dll
+  Generating native code
+  Broiler.ECMAScript.Probe -> /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish/

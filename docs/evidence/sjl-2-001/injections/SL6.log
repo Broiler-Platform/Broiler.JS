@@ -1,0 +1,49 @@
+# SL6: a public member added to the algorithms library without its baseline (the API-baseline drift control of SJL-2.12)
+# Injected into Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Limits.cs; the test is SL6_The_public_API_matches.
+
+## Injected
+
+$ dotnet build /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/Broiler.ECMAScript.Architecture.Tests.csproj -c Release --nologo -v:q
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.86
+exit 0
+
+$ dotnet test /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/Broiler.ECMAScript.Architecture.Tests.csproj -c Release --no-build --nologo --filter FullyQualifiedName~SL6_The_public_API_matches
+Test run for /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+  Failed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL6_The_public_API_matches_the_baseline_in_both_directions [26 ms]
+  Error Message:
+   Assert.Empty() Failure: Collection was not empty
+Collection: ["Broiler.ECMAScript.Algorithms has public API the b"···]
+  Stack Trace:
+     at Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL6_The_public_API_matches_the_baseline_in_both_directions() in /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/SharedRuleTests.cs:line 268
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 26 ms - Broiler.ECMAScript.Architecture.Tests.dll (net10.0)
+[xUnit.net 00:00:00.26]     Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL6_The_public_API_matches_the_baseline_in_both_directions [FAIL]
+exit 1
+
+## Reverted
+
+$ dotnet build /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/Broiler.ECMAScript.Architecture.Tests.csproj -c Release --nologo -v:q
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.95
+exit 0
+
+$ dotnet test /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/Broiler.ECMAScript.Architecture.Tests.csproj -c Release --no-build --nologo --filter FullyQualifiedName~SL6_The_public_API_matches
+Test run for /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 29 ms - Broiler.ECMAScript.Architecture.Tests.dll (net10.0)
+exit 0
+
+# Result: injected exit 1 (must be non-zero), reverted exit 0 (must be zero)

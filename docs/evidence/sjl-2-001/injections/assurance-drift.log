@@ -1,0 +1,44 @@
+# The assurance gate's drift control (SJL-2.12): the tool's check over the shared folder, clean, then
+# with an unannotated unit injected into Limits.cs, then with an annotated unit's body changed under
+# its recorded fingerprint, then reverted.
+
+## Clean
+
+$ dotnet /home/user/Broiler.Code/src/Broiler.Code.Review.Cli/bin/Release/net10.0/Broiler.Code.Review.Cli.dll assurance check --root Broiler.ECMAScript
+Broiler.ECMAScript: no violations.
+exit 0
+
+## An unannotated unit
+
+$ dotnet /home/user/Broiler.Code/src/Broiler.Code.Review.Cli/bin/Release/net10.0/Broiler.Code.Review.Cli.dll assurance check --root Broiler.ECMAScript
+::error file=Broiler.ECMAScript.Algorithms/Limits.cs,line=92::J1 Broiler.ECMAScript.Algorithms/Limits.cs(92): Broiler.ECMAScript.DepthLimit.Unreviewed is relevant and carries no assurance annotation%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance list --root Broiler.JS/Broiler.ECMAScript prints what the unit needs, and dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance insert --root Broiler.JS/Broiler.ECMAScript --assessments <file.json> writes an assessment (or write an EXEMPT= block where the configuration allows one)
+::error file=Broiler.ECMAScript.Algorithms/Limits.cs,line=94::J1 Broiler.ECMAScript.Algorithms/Limits.cs(94): Broiler.ECMAScript.DepthLimit.Unreviewed.Twice(int) is relevant and carries no assurance annotation%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance list --root Broiler.JS/Broiler.ECMAScript prints what the unit needs, and dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance insert --root Broiler.JS/Broiler.ECMAScript --assessments <file.json> writes an assessment (or write an EXEMPT= block where the configuration allows one)
+::error file=Broiler.ECMAScript.Algorithms/Limits.cs,line=6::J5 Broiler.ECMAScript.Algorithms/Limits.cs(6) is not what the generator would write.%0A  on disk:   // Relevant units:   6%0A  generated: // Relevant units:   8%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript
+::error file=CODE-ASSURANCE.md,line=19::J5 CODE-ASSURANCE.md(19) is not what the generator would write.%0A  on disk:   | Code units | 157 |%0A  generated: | Code units | 159 |%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript
+::error file=assurance.manifest.json,line=26::J5 assurance.manifest.json(26) is not what the generator would write.%0A  on disk:       { "file": "Broiler.ECMAScript.Algorithms/Limits.cs", "fingerprint": "D06C6A" },%0A  generated:     { "file": "Broiler.ECMAScript.Algorithms/Limits.cs", "fingerprint": "E9E31C" },%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript
+::error file=HUMAN_REVIEW.md,line=8::J5 HUMAN_REVIEW.md(8) is not what the generator would write.%0A  on disk:   > **Status: PENDING.** Human-reviewed: 0 of 111 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`%0A  generated: > **Status: PENDING.** Human-reviewed: 0 of 113 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript
+::error file=Broiler.ECMAScript.Algorithms/Limits.cs,line=92::J7 Broiler.ECMAScript.Algorithms/Limits.cs: Broiler.ECMAScript.DepthLimit.Unreviewed is a code unit in the product tree and assurance.manifest.json does not cover it, so nothing records a change to it%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript
+::error file=Broiler.ECMAScript.Algorithms/Limits.cs,line=94::J7 Broiler.ECMAScript.Algorithms/Limits.cs: Broiler.ECMAScript.DepthLimit.Unreviewed.Twice(int) is a code unit in the product tree and assurance.manifest.json does not cover it, so nothing records a change to it%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript
+::error file=Broiler.ECMAScript.Algorithms/Limits.cs::J7 Broiler.ECMAScript.Algorithms/Limits.cs is recorded in assurance.manifest.json as file fingerprint D06C6A and the current file computes E9E31C%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript
+Broiler.ECMAScript: 9 violations: J1 2, J5 4, J7 3.
+exit 1
+
+## A body changed under its fingerprint
+
+$ dotnet /home/user/Broiler.Code/src/Broiler.Code.Review.Cli/bin/Release/net10.0/Broiler.Code.Review.Cli.dll assurance check --root Broiler.ECMAScript
+::error file=Broiler.ECMAScript.Algorithms/Limits.cs,line=55::J3 Broiler.ECMAScript.Algorithms/Limits.cs(55): Broiler.ECMAScript.LengthLimit.Admits(long) records Fingerprint=CD14A4 and the current code computes 7F03FB%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript
+::error file=Broiler.ECMAScript.Algorithms/Limits.cs,line=52::J5 Broiler.ECMAScript.Algorithms/Limits.cs(52) is not what the generator would write.%0A  on disk:       // Broiler-AI:           Origin=AI; Spec=SJL architecture s4; IP=Low; Security=High; Resources=1; Fingerprint=CD14A4%0A  generated:     // Broiler-AI:           Origin=AI; Spec=SJL architecture s4; IP=Low; Security=High; Resources=1; Fingerprint=7F03FB%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript
+::error file=assurance.manifest.json,line=26::J5 assurance.manifest.json(26) is not what the generator would write.%0A  on disk:       { "file": "Broiler.ECMAScript.Algorithms/Limits.cs", "fingerprint": "D06C6A" },%0A  generated:     { "file": "Broiler.ECMAScript.Algorithms/Limits.cs", "fingerprint": "C30BB1" },%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript
+::error file=HUMAN_REVIEW.md,line=116::J5 HUMAN_REVIEW.md(116) is not what the generator would write.%0A  on disk:   - `Broiler.ECMAScript.LengthLimit.Admits(long)` in `Broiler.ECMAScript.Algorithms/Limits.cs` - Security=High, Spec=SJL architecture s4, `CD14A4`, PENDING%0A  generated: - `Broiler.ECMAScript.LengthLimit.Admits(long)` in `Broiler.ECMAScript.Algorithms/Limits.cs` - Security=High, Spec=SJL architecture s4, `7F03FB`, PENDING%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript
+::error file=Broiler.ECMAScript.Algorithms/Limits.cs,line=55::J7 Broiler.ECMAScript.Algorithms/Limits.cs: Broiler.ECMAScript.LengthLimit.Admits(long) is recorded in assurance.manifest.json as CD14A4 and the current code computes 7F03FB%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript
+::error file=Broiler.ECMAScript.Algorithms/Limits.cs::J7 Broiler.ECMAScript.Algorithms/Limits.cs is recorded in assurance.manifest.json as file fingerprint D06C6A and the current file computes C30BB1%0A  Run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript
+Broiler.ECMAScript: 6 violations: J3 1, J5 3, J7 2.
+exit 1
+
+## Reverted
+
+$ dotnet /home/user/Broiler.Code/src/Broiler.Code.Review.Cli/bin/Release/net10.0/Broiler.Code.Review.Cli.dll assurance check --root Broiler.ECMAScript
+Broiler.ECMAScript: no violations.
+exit 0
+
+# Result: clean 0, unannotated 1, stale 1, reverted 0 (0, non-zero, non-zero, 0)

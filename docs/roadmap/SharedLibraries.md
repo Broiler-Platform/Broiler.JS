@@ -18,9 +18,15 @@ policy.
 
 ## Current state
 
-The decisions are taken, the records are being filed, and no shared code exists. Milestone SJL-0 is
-in progress in both repositories; every other milestone is not started. See
+The decisions are taken and their records filed. The shared conformance corpus exists, with this
+engine's runners over it (SJL-1), and so does the shared folder, `Broiler.ECMAScript/`, with its
+conventions, its rules, its version stream and its Native AOT probe (SJL-2); no algorithm has moved
+into it, and no engine consumes a shared package. See
 [`SharedLibraries.status.md`](SharedLibraries.status.md).
+
+*(Corrected 2026-10-12, at milestone SJL-2. It read: "The decisions are taken, the records are being
+filed, and no shared code exists. Milestone SJL-0 is in progress in both repositories; every other
+milestone is not started.")*
 
 ## What this repository hosts
 

@@ -1,0 +1,21 @@
+$ ls Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish
+total 5272
+-rw-r--r-- 1 root root   12332 Oct 12 17:12 Broiler.ECMAScript.Algorithms.pdb
+-rw-r--r-- 1 root root    7834 Oct 12 17:12 Broiler.ECMAScript.Algorithms.xml
+-rw-r--r-- 1 root root   21976 Oct 12 17:12 Broiler.ECMAScript.Conformance.pdb
+-rw-r--r-- 1 root root   44393 Oct 12 17:12 Broiler.ECMAScript.Conformance.xml
+-rwxr-xr-x 1 root root 1858216 Oct 12 17:13 Broiler.ECMAScript.Probe
+-rwxr-xr-x 1 root root 3443960 Oct 12 17:13 Broiler.ECMAScript.Probe.dbg
+
+$ Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish/Broiler.ECMAScript.Probe conformance/vectors --report probe-aot.tsv
+Broiler.ECMAScript.Probe: corpus revision 3, 10 files, 10132 vectors, 0 failures
+exit 0
+
+$ dotnet Broiler.ECMAScript.Probe.dll conformance/vectors --report probe-jit.tsv
+Broiler.ECMAScript.Probe: corpus revision 3, 10 files, 10132 vectors, 0 failures
+exit 0
+
+$ cmp probe-aot.tsv probe-jit.tsv
+identical
+563d43c66e087673ceb30a40b36a7a021fba675a15811745882c6ebfbbf475b7  probe-aot.tsv
+563d43c66e087673ceb30a40b36a7a021fba675a15811745882c6ebfbbf475b7  probe-jit.tsv
