@@ -410,8 +410,9 @@ public class SharedRuleTests
         var text = SharedTree.SourceFiles("*").Where(static p => !p.EndsWith(".png", StringComparison.Ordinal)).ToList();
         Assert.Empty(text.SelectMany(static p => SharedRules.SL10LineEndings(SharedTree.Relative(p), File.ReadAllBytes(p))));
 
-        var attributes = File.ReadAllText(Path.Combine(SharedTree.Root, ".gitattributes"));
-        Assert.Contains("\nBroiler.ECMAScript/** text eol=lf\n", attributes, StringComparison.Ordinal);
+        // Read by line: Git checks .gitattributes out with the platform's line endings.
+        var attributes = File.ReadAllLines(Path.Combine(SharedTree.Root, ".gitattributes"));
+        Assert.Contains("Broiler.ECMAScript/** text eol=lf", attributes);
     }
 
     [Fact]
