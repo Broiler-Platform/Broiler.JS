@@ -9,6 +9,20 @@ execution-profile findings into reviewable increments.
 > creates no second state ledger. If wording conflicts, follow `Modernization.md`,
 > [`Measurement.md`](Measurement.md), and the owning plan/status pair.
 
+> **Revision, 2026-10-12: no Broiler.VM JavaScript composition is delivered from this engine.**
+> Outcome 4's selected Broiler.VM JavaScript composition, outcome 7's JavaScript-profile clause,
+> outcome 8, the delivery rule on MOD-M9, the map's DEL-9, DEL-10 and DEL-11 lines with the
+> paragraph's sentences on them, DEL-2's exit bullet on a Broiler.VM profile adapter, and the second
+> and third increments' JavaScript-composition items still planned a JavaScript composition on
+> Broiler.VM built from this engine. That plan was retired from this component with MOD-M9 (see
+> [`README.md`](README.md)), and this document has no DEL-9, DEL-10 or DEL-11 section. What
+> Broiler.VM's JavaScript profile takes from this repository is now set by the shared JavaScript
+> libraries programme, whose decisions were taken on 2026-10-11: libraries hosted here that name
+> neither engine, planned in [`SharedLibraries.md`](SharedLibraries.md). The FrontEnd/Semantics
+> boundary DEL-2 proves becomes the shared frontend that Broiler.VM consumes as a package. Each
+> withdrawn passage is marked where it stands and kept as history; outcome 4's full-IL composition
+> stands.
+
 The `DEL-*` labels below are work-breakdown labels, not replacements for `MOD-M*`, phase,
 assembly, or validation IDs. Every implementation change cites its authoritative item and
 updates the owning status evidence in the same change.
@@ -27,15 +41,18 @@ The program is complete only when Broiler.JS has:
    enforceable IL/dynamic-code boundary;
 4. an explicit full-IL composition and one selected Broiler.VM JavaScript composition:
    `execution-only`, `narrow-runtime-compiler`, or `general-runtime-compiler`;
+   *(The Broiler.VM JavaScript composition: withdrawn 2026-10-12, see the revision under the
+   authority rule. The full-IL composition stands.)*
 5. bounded parallel work over independent contexts without concurrent execution of one
    `JSContext`;
 6. Worker agents with explicit lifecycle, scheduling, resource, and unsupported-surface
    contracts;
 7. profile-led improvements to the current IL engine before optional JavaScript-profile
-   persistence or adaptivity is funded; and
+   persistence or adaptivity is funded; *(the JavaScript-profile clause: withdrawn 2026-10-12, see
+   the revision under the authority rule)* and
 8. a terminal JavaScript built-in composition decision followed only by the JavaScript work
    that decision funds. Generic Broiler.VM core and its WebAssembly built-in are separately
-   owned and cannot be cancelled by this roadmap.
+   owned and cannot be cancelled by this roadmap. *(Withdrawn 2026-10-12: see the revision under the authority rule.)*
 
 Apply these rules in every delivery wave:
 
@@ -52,6 +69,7 @@ Apply these rules in every delivery wave:
 - Production expansion of the JavaScript bytecode profile beyond the existing seed does not
   start before the terminal MOD-M9 composition decision. Generic Broiler.VM core and the
   WebAssembly built-in follow `Broiler.VM/docs/roadmap.md`; they are not gated here.
+  *(Withdrawn 2026-10-12: see the revision under the authority rule.)*
 
 ## 2. Delivery map
 
@@ -87,6 +105,8 @@ the map, not for every DEL-8 package. DEL-9 selects the JavaScript built-in's co
 DEL-10 is scoped to that selection and DEL-11 remains a set of independently optional
 JavaScript-profile branches. None of those outcomes cancels or narrows generic Broiler.VM core
 or the WebAssembly built-in owned by `Broiler.VM/docs/roadmap.md`.
+*(The map's DEL-9, DEL-10 and DEL-11 lines, and this paragraph's sentences on DEL-9 to DEL-11:
+withdrawn 2026-10-12, see the revision under the authority rule.)*
 
 ---
 
@@ -229,7 +249,9 @@ production files.
 
 - Project shells and the generated target graph are acyclic and identical.
 - IL and the fake backend consume one neutral JavaScript semantic contract; a JavaScript
-  Broiler.VM profile adapter need not reference IL.
+  Broiler.VM profile adapter need not reference IL. *(The Broiler.VM profile adapter: withdrawn
+  2026-10-12, see the revision under the authority rule. The contract's consumers are this engine's
+  back ends, and Broiler.VM's lowering through the shared frontend package.)*
 - Every proposed merge/split has a compatibility and product-value disposition.
 - Architecture tests enforce all allowed/forbidden edges.
 
@@ -474,6 +496,7 @@ building another execution engine.
 - DEL-2 project shells, cycle resolution, FrontEnd/Semantics and fake-backend contracts;
 - DEL-3 dynamic-code/reflection census and execution-only publish/run matrix;
 - DEL-4's finite package/AOT dispositions required by the JavaScript composition decision;
+  *(Withdrawn 2026-10-12: see the revision under the authority rule.)*
 - DEL-5/DEL-6 compiler/global-state, cache/artifact, context-entry, and reclamation census.
 
 **Handoff:** a build-proven target graph, classified AOT closure, and explicit concurrency
@@ -487,11 +510,13 @@ required in this increment; generic Broiler.VM delivery remains separately owned
 - record explicit accepted/deferred/cancelled/below-resolution outcomes for MOD-M8-1's
   front-end/startup work and MOD-M8-8's current-backend comparison, then run any other
   highest-value DEL-8 packages through MOD-M1; and
-- assemble the finite DEL-9 JavaScript-composition decision bundle.
+- assemble the finite DEL-9 JavaScript-composition decision bundle. *(Withdrawn 2026-10-12: see the revision under the authority rule.)*
 
 **Handoff:** supported Worker/compile-ahead scope, terminal current-engine dispositions, and
 the terminal JavaScript-composition ADR that scopes DEL-10 and the independently gated DEL-11
 branches precisely, without cancelling or claiming generic Broiler.VM or WebAssembly work.
+*(The JavaScript-composition ADR: withdrawn 2026-10-12, see the revision under the authority
+rule.)*
 
 ## 5. Evidence handoff checklist
 

@@ -1,0 +1,59 @@
+namespace Broiler.JavaScript.Extensions
+{
+    public static class ClrProxyExtensions
+    {
+        public static bool TryGetClrEnumerator(this Broiler.JavaScript.Runtime.JSValue value, System.Type type, out object clrObject) { }
+    }
+    public static class JSObjectExtensions
+    {
+        public static Broiler.JavaScript.Runtime.JSObject AddProperty(this Broiler.JavaScript.Runtime.JSObject target, Broiler.JavaScript.Runtime.IJSSymbol key, Broiler.JavaScript.Runtime.JSValue value, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 25) { }
+        public static Broiler.JavaScript.Runtime.JSObject AddProperty(this Broiler.JavaScript.Runtime.JSObject target, Broiler.JavaScript.Runtime.JSValue name, Broiler.JavaScript.Runtime.JSValue value, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 25) { }
+        public static Broiler.JavaScript.Runtime.JSObject AddProperty(this Broiler.JavaScript.Runtime.JSObject target, in Broiler.JavaScript.Storage.KeyString key, Broiler.JavaScript.Runtime.JSValue value, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 25) { }
+        public static Broiler.JavaScript.Runtime.JSObject AddProperty(this Broiler.JavaScript.Runtime.JSObject target, uint key, Broiler.JavaScript.Runtime.JSValue value, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 25) { }
+        public static Broiler.JavaScript.Runtime.JSObject AddProperty(this Broiler.JavaScript.Runtime.JSObject target, Broiler.JavaScript.Runtime.IJSSymbol key, Broiler.JavaScript.Runtime.JSValue getter, Broiler.JavaScript.Runtime.JSValue setter, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 26) { }
+        public static Broiler.JavaScript.Runtime.JSObject AddProperty(this Broiler.JavaScript.Runtime.JSObject target, Broiler.JavaScript.Runtime.JSValue name, Broiler.JavaScript.Runtime.JSValue getter, Broiler.JavaScript.Runtime.JSValue setter, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 26) { }
+        public static Broiler.JavaScript.Runtime.JSObject AddProperty(this Broiler.JavaScript.Runtime.JSObject target, in Broiler.JavaScript.Storage.KeyString key, Broiler.JavaScript.Runtime.JSValue getter, Broiler.JavaScript.Runtime.JSValue setter, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 26) { }
+        public static Broiler.JavaScript.Runtime.JSObject AddProperty(this Broiler.JavaScript.Runtime.JSObject target, uint key, Broiler.JavaScript.Runtime.JSValue getter, Broiler.JavaScript.Runtime.JSValue setter, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 26) { }
+    }
+    public static class JSObjectFastPropertyExtensions
+    {
+        public static void FastAddGetter(Broiler.JavaScript.Runtime.JSObject target, Broiler.JavaScript.Runtime.IJSSymbol key, Broiler.JavaScript.Runtime.JSValue getter, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 10) { }
+        public static void FastAddGetter(Broiler.JavaScript.Runtime.JSObject target, Broiler.JavaScript.Runtime.JSValue key, Broiler.JavaScript.Runtime.JSValue getter, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 10) { }
+        public static void FastAddGetter(Broiler.JavaScript.Runtime.JSObject target, Broiler.JavaScript.Storage.KeyString key, Broiler.JavaScript.Runtime.JSValue getter, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 10) { }
+        public static void FastAddGetter(Broiler.JavaScript.Runtime.JSObject target, uint key, Broiler.JavaScript.Runtime.JSValue getter, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 10) { }
+        public static void FastAddSetter(Broiler.JavaScript.Runtime.JSObject target, Broiler.JavaScript.Runtime.IJSSymbol key, Broiler.JavaScript.Runtime.JSValue setter, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 10) { }
+        public static void FastAddSetter(Broiler.JavaScript.Runtime.JSObject target, Broiler.JavaScript.Runtime.JSValue key, Broiler.JavaScript.Runtime.JSValue setter, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 10) { }
+        public static void FastAddSetter(Broiler.JavaScript.Runtime.JSObject target, Broiler.JavaScript.Storage.KeyString key, Broiler.JavaScript.Runtime.JSValue setter, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 10) { }
+        public static void FastAddSetter(Broiler.JavaScript.Runtime.JSObject target, uint key, Broiler.JavaScript.Runtime.JSValue setter, Broiler.JavaScript.Storage.JSPropertyAttributes attributes = 10) { }
+    }
+    public static class JSPropertyExtensions
+    {
+        public static Broiler.JavaScript.Runtime.JSValue GetValue(this Broiler.JavaScript.Runtime.JSValue target, in Broiler.JavaScript.Storage.JSProperty p) { }
+        public static Broiler.JavaScript.Runtime.JSValue ToJSValue(this in Broiler.JavaScript.Storage.JSProperty px) { }
+    }
+    public static class JSStringExtensions
+    {
+        public static string JSTrim(this Broiler.JavaScript.Runtime.JSValue text) { }
+        public static string JSTrim(this string text) { }
+        public static string Left(this string value, int max) { }
+    }
+    public static class MarshalExtensions
+    {
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(this System.Type type) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(this bool value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(this byte value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(this double value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(this float value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(this int value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(this object value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(this short value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(this string value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(this uint value) { }
+    }
+    public static class StringSpanExtensions
+    {
+        public static void Append(this System.Text.StringBuilder sb, in Broiler.JavaScript.Ast.Misc.StringSpan span) { }
+        public static string ToSnakeCase(this Broiler.JavaScript.Ast.Misc.StringSpan text, string prefix = "") { }
+        public static Broiler.JavaScript.Ast.Misc.StringSpan ToStringSpan(this string text, int offset, int length) { }
+    }
+}

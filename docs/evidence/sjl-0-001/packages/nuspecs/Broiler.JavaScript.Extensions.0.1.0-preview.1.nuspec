@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Broiler.JavaScript.Extensions</id>
+    <version>0.1.0-preview.1</version>
+    <authors>Broiler contributors</authors>
+    <license type="expression">Apache-2.0</license>
+    <licenseUrl>https://licenses.nuget.org/Apache-2.0</licenseUrl>
+    <icon>icon.png</icon>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/Broiler-Platform/Broiler.JS</projectUrl>
+    <description>Broiler.JS runtime and property helpers: the optional fast-property and host extension helpers used by the higher engine layers.</description>
+    <copyright>Copyright (c) Broiler contributors</copyright>
+    <tags>broiler javascript ecmascript compiler engine</tags>
+    <repository type="git" url="https://github.com/Broiler-Platform/broiler.js" commit="44a214dc5b04a5c8db556dc9b57894beaeb20d0c" />
+    <dependencies>
+      <group targetFramework="net10.0">
+        <dependency id="Broiler.JavaScript.Engine" version="0.1.0-preview.1" exclude="Build,Analyzers" />
+        <dependency id="Broiler.JavaScript.LinqExpressions" version="0.1.0-preview.1" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

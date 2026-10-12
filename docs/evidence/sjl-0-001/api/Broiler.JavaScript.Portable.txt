@@ -1,0 +1,46 @@
+namespace Broiler.JavaScript.Portable
+{
+    public readonly struct PortableInstruction : System.IEquatable<Broiler.JavaScript.Portable.PortableInstruction>
+    {
+        public PortableInstruction(Broiler.JavaScript.Portable.PortableOpCode OpCode, int Operand = 0, double Number = 0) { }
+        public double Number { get; init; }
+        public Broiler.JavaScript.Portable.PortableOpCode OpCode { get; init; }
+        public int Operand { get; init; }
+    }
+    public static class PortableInterpreter
+    {
+        public static double Execute(Broiler.JavaScript.Portable.PortableProgram program, System.ReadOnlySpan<double> arguments) { }
+    }
+    public enum PortableOpCode : byte
+    {
+        PushConstant = 0,
+        LoadArgument = 1,
+        LoadLocal = 2,
+        StoreLocal = 3,
+        Duplicate = 4,
+        Pop = 5,
+        Add = 6,
+        Subtract = 7,
+        Multiply = 8,
+        Divide = 9,
+        Remainder = 10,
+        LessThan = 11,
+        LessThanOrEqual = 12,
+        GreaterThan = 13,
+        GreaterThanOrEqual = 14,
+        Equal = 15,
+        NotEqual = 16,
+        Jump = 17,
+        JumpIfFalse = 18,
+        Return = 19,
+    }
+    public sealed class PortableProgram
+    {
+        public PortableProgram(string name, int parameterCount, int localCount, int maximumStack, Broiler.JavaScript.Portable.PortableInstruction[] instructions) { }
+        public System.ReadOnlySpan<Broiler.JavaScript.Portable.PortableInstruction> Instructions { get; }
+        public int LocalCount { get; }
+        public int MaximumStack { get; }
+        public string Name { get; }
+        public int ParameterCount { get; }
+    }
+}

@@ -1,0 +1,100 @@
+namespace Broiler.JavaScript.Clr
+{
+    public static class ClrModule
+    {
+        public static Broiler.JavaScript.Runtime.JSObject Default;
+        public static Broiler.JavaScript.Runtime.JSValue Temp1 { get; set; }
+        public static Broiler.JavaScript.Runtime.JSValue GetClass(in Broiler.JavaScript.Runtime.Arguments a) { }
+        public static Broiler.JavaScript.Runtime.JSValue ToBool(in Broiler.JavaScript.Runtime.Arguments a) { }
+        public static Broiler.JavaScript.Runtime.JSValue ToDateTime(in Broiler.JavaScript.Runtime.Arguments a) { }
+        public static Broiler.JavaScript.Runtime.JSValue ToInt32(in Broiler.JavaScript.Runtime.Arguments a) { }
+        public static Broiler.JavaScript.Runtime.JSValue ToString(in Broiler.JavaScript.Runtime.Arguments a) { }
+    }
+    public class ClrProxy : Broiler.JavaScript.Runtime.JSObject
+    {
+        public override bool BooleanValue { get; }
+        public override double DoubleValue { get; }
+        [System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "Key",
+                "value"})]
+        public override System.Collections.Generic.IEnumerable<System.ValueTuple<string, Broiler.JavaScript.Runtime.JSValue>> Entries { get; }
+        public object Target { get; }
+        public override bool ConvertTo(System.Type type, out object value) { }
+        public override bool Equals(Broiler.JavaScript.Runtime.JSValue value) { }
+        public override Broiler.JavaScript.Runtime.IElementEnumerator GetAsyncIterableEnumerator() { }
+        public override Broiler.JavaScript.Runtime.IElementEnumerator GetElementEnumerator() { }
+        public override Broiler.JavaScript.Runtime.IElementEnumerator GetIterableEnumerator() { }
+        public override Broiler.JavaScript.Runtime.JSValue GetValue(uint key, Broiler.JavaScript.Runtime.JSValue receiver, bool throwError = true) { }
+        public override bool SetValue(uint name, Broiler.JavaScript.Runtime.JSValue value, Broiler.JavaScript.Runtime.JSValue receiver, bool throwError = true) { }
+        public override bool StrictEquals(Broiler.JavaScript.Runtime.JSValue value) { }
+        public override string ToString() { }
+        public static Broiler.JavaScript.Runtime.JSValue From(Broiler.JavaScript.Runtime.IJavaScriptObject value) { }
+        public static Broiler.JavaScript.Clr.ClrProxy From(System.DateTimeOffset value) { }
+        public static Broiler.JavaScript.Clr.ClrProxy From(bool value) { }
+        public static Broiler.JavaScript.Clr.ClrProxy From(int value) { }
+        public static Broiler.JavaScript.Runtime.JSValue From(object value) { }
+        public static Broiler.JavaScript.Clr.ClrProxy From(string value) { }
+        public static Broiler.JavaScript.Runtime.JSValue From(object value, Broiler.JavaScript.Runtime.JSObject prototype) { }
+        public static System.Func<TInput, Broiler.JavaScript.Runtime.JSValue> GetDelegate<TInput>() { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(Broiler.JavaScript.Runtime.IElementEnumerator en) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(Broiler.JavaScript.Runtime.IJavaScriptObject javaScriptObject) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(System.Collections.Generic.IEnumerable<Broiler.JavaScript.Runtime.JSValue> en) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(System.DateTime value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(System.DateTimeOffset value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(System.Threading.Tasks.Task task) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(System.Threading.Tasks.Task<Broiler.JavaScript.Runtime.JSValue> task) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(bool value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(byte value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(double value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(float value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(in Broiler.JavaScript.Ast.Misc.StringSpan value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(int value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(long value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(object value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(sbyte value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(short value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(string value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(uint value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(ulong value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal(ushort value) { }
+        public static Broiler.JavaScript.Runtime.JSValue Marshal<T>(System.Threading.Tasks.Task<T> task) { }
+    }
+    public class ClrType : Broiler.JavaScript.BuiltIns.Function.JSFunction
+    {
+        public readonly System.Type Type;
+        public override bool ConvertTo(System.Type type, out object value) { }
+        public Broiler.JavaScript.Runtime.JSValue Create(in Broiler.JavaScript.Runtime.Arguments a) { }
+        public Broiler.JavaScript.BuiltIns.Function.JSFunction CreateConstuctorDelegate(System.Reflection.ConstructorInfo c) { }
+        public Broiler.JavaScript.Runtime.JSValue GetConstructor(in Broiler.JavaScript.Runtime.Arguments a) { }
+        public Broiler.JavaScript.Runtime.JSValue GetMethod(in Broiler.JavaScript.Runtime.Arguments a) { }
+        public Broiler.JavaScript.Runtime.JSValue MakeGenericType(in Broiler.JavaScript.Runtime.Arguments a) { }
+        public static Broiler.JavaScript.Clr.ClrType From(System.Type type) { }
+        public static Broiler.JavaScript.Runtime.JSFunctionDelegate JSValueFactoryDelegate(Broiler.JavaScript.Clr.ClrType.JSValueFactory fx, Broiler.JavaScript.Runtime.JSObject prototype) { }
+        public delegate object JSValueFactory(in Broiler.JavaScript.Runtime.Arguments a);
+    }
+    public sealed class DefaultClrInterop : Broiler.JavaScript.Runtime.IClrInterop
+    {
+        public static readonly Broiler.JavaScript.Clr.DefaultClrInterop Instance;
+        public DefaultClrInterop() { }
+        public Broiler.JavaScript.Runtime.JSValue GetClrType(System.Type type) { }
+        public Broiler.JavaScript.Runtime.JSValue Marshal(object value) { }
+        public bool TryUnwrapClrObject(Broiler.JavaScript.Runtime.JSValue value, out object clrObject) { }
+    }
+    public static class DelegateHelper
+    {
+        public static Broiler.JavaScript.Runtime.JSFunctionDelegate CreateGetter<T, TRet>(System.Reflection.MethodInfo m) { }
+        public static Broiler.JavaScript.Runtime.JSFunctionDelegate CreateJSValueGetter<T>(System.Reflection.MethodInfo m) { }
+        public static Broiler.JavaScript.Runtime.JSFunctionDelegate CreateJSValueSetter<T>(System.Reflection.MethodInfo m) { }
+        public static Broiler.JavaScript.Runtime.JSFunctionDelegate CreateMethod(System.Reflection.MethodInfo method) { }
+        public static Broiler.JavaScript.Runtime.JSFunctionDelegate CreatePropertyGetter(System.Reflection.PropertyInfo property) { }
+        public static Broiler.JavaScript.Runtime.JSFunctionDelegate CreatePropertySetter(System.Reflection.PropertyInfo property) { }
+        public static Broiler.JavaScript.Runtime.JSFunctionDelegate CreateSetter<T, TInput>(System.Reflection.MethodInfo m) { }
+        public static Broiler.JavaScript.Runtime.JSFunctionDelegate Method<T>(System.Reflection.MethodInfo m)
+            where T :  class { }
+        public delegate Broiler.JavaScript.Runtime.JSValue StaticDelegate<T>(T target, in Broiler.JavaScript.Runtime.Arguments a);
+    }
+    public abstract class JSClrObject<T> : Broiler.JavaScript.Runtime.JSObject
+    {
+        public JSClrObject() { }
+    }
+}

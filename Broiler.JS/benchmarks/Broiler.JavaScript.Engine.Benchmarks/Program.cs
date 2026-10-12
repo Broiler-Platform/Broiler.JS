@@ -183,6 +183,12 @@ public static class Program
             return;
         }
 
+        if (args.Length == 1 && args[0] == "--number-conversion-answers")
+        {
+            NumberConversionBenchmarks.WriteAnswers();
+            return;
+        }
+
         BenchmarkSwitcher
             .FromTypes([
                 typeof(ContextStartupBenchmarks),
@@ -206,6 +212,7 @@ public static class Program
                 typeof(PromiseBenchmarks),
                 typeof(BuiltInHeavyBenchmarks),
                 typeof(JIntSmokeBenchmarks),
+                typeof(NumberConversionBenchmarks),
             ])
             .Run(args, BenchmarkConfiguration.Create());
     }

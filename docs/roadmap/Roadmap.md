@@ -332,6 +332,17 @@ half in the column it was not looking at.
 
 ## Sequencing against track one
 
+> **Revision, 2026-10-12: the JavaScript composition on Broiler.VM is withdrawn from this plan.** The
+> paragraph below, rows 6 to 9 of the sequencing table, the dependency bullets on MOD-M9 and the
+> selected JavaScript composition, and the catalogue's two notes that hand questions to phases 6–9
+> after MOD-M9 still planned a JavaScript bytecode profile on Broiler.VM, built from this engine. That
+> plan was already retired from this component (see [`README.md`](README.md)), and MOD-M9 with it.
+> What Broiler.VM's JavaScript profile takes from this repository is now set by the shared JavaScript
+> libraries programme, whose decisions were taken on 2026-10-11: libraries this repository hosts that
+> name neither engine, planned in [`SharedLibraries.md`](SharedLibraries.md), and not a composition of
+> this engine. The withdrawn text is kept as history and marked where it stands. Track one's own
+> sequencing, phases 0 to 5 and A, is unchanged.
+
 The tracks do not block routine IL-path fixes, but they are **not dependency-independent**.
 MOD-M9 may perform capability discovery after MOD-M0, then the selected JavaScript composition requires MOD-M2's shared
 front-end/graph boundary and the applicable MOD-M3/MOD-M4 AOT and packaging gates. Phase 7 requires
@@ -340,6 +351,7 @@ a runtime-compiler composition may enter it, and only for a dynamic-code-capable
 product composition requires adaptivity. A runtime-compiler no-go selects execution-only; it
 does not end the JavaScript executor, Broiler.VM, or WebAssembly. The selected outcome adopts
 the reordered JavaScript phase plans below rather than reviving the old catalogue order.
+*(Withdrawn 2026-10-12: see the revision under "Sequencing against track one".)*
 
 ---
 
@@ -354,10 +366,10 @@ the reordered JavaScript phase plans below rather than reviving the old catalogu
 | **4** | 4-3 design ✅ → **4-1 ✅** (shapes and callees; numeric-vs-generic still open per site — item 3-2 collected the aggregate read share, 50.1%, for a phase 3 ranking) → **4-3a ✅** → **4-3b ✅** → **4-2a ✅** → **4-2b ✅** → **4-2c ✅ refuted** (the arithmetic half priced at 0.119% and closed, the relational lead closed with it at 0.022%, and the whole generic binary-operator surface bounded at 0.475% of the corpus) → **4-5 ✅ unblocked** (44% of a call entry is bookkeeping the engine's own short path skips — **2.85% of the corpus**, the largest measured target left in the phase, and an ablation of eight named operations rather than a profiler) → **4-4 ✅ measured, not started** (its ceiling re-taken over the twelve suites that run is **2.43%**, *larger* than the seven-suite 1.89% — the promotion gate reaches 42.1% of the corpus's JavaScript calls rather than 64.0%, but the never-counted suites are far call-denser per millisecond — while 4-5's surface is **8.06%**, so the ranking holds by 3.3×) | XL | The remaining order of magnitude. **4-1 measured the premise: 93.5% of reads and 96.7% of calls are monomorphic by execution weight, so 4-2 and 4-4 are well-founded** — over **seven** suites. **§4.2a re-took it over twelve and it is 80.11% and 86.35%**, because the census corpus every phase-3 and phase-4 headline is computed over was 7 of 15 and never said so; Mandreel had been aborting the census host with an uncatchable stack overflow, since item 0-2's stack reserve is a property of the *shell* and no benchmark host had it. Fixed, and the number is still high enough to found the phase. 4-3a stated and enforced the restart contract — and found its no-suspendable-bodies condition was held only by two unrelated accidents, two ordinary refactors away from an async function returning a number instead of a Promise. **4-2 then split the same way**: measuring the branch it was told to replace found it produced *wrong answers* — DeltaBlue died on the shipping tier-2 hook — which 4-2a fixes, and 4-2b's specialization takes **44.7% of the corpus's executed reads off the cache path at 0.818× each**, which is **0.83% of suite time**. That number is the phase's own warning: the whole read path is ≤ ~9% of Octane's execution time here and the whole call path ≤ ~5.5%, so **4-4's ceiling is smaller than the phase assumed** | Deopt correctness proven **before** any speculation ships; full test262 matrix **4-5's floor moved 0.100% on the lever `0111` named** (`0104`, `out` parameter, 9 of 12 ABBA pairs) and its 1.46% frame is untouched; the useful residue is that removing two struct copies bought 1.83 ns against a replica's 8.19 ns each, so *a struct copy in the source is not a struct copy in the code*. |
 | **5** | profile ✅ → per-match subject copy on `replace`/`exec` ✅ → single-match `replace` without a builder ✅ (both builtins) → the global case's retained result list ✅ → **`Compiled` per pattern ✅ — built as a race, measured, and shipped switchable with the default off** → ~~then consider compiling `Broiler.Regex`~~ **→ the per-call envelope, which is where the phase's remaining time actually is** | L | RegExp, plus PdfJS and Typescript | Octane regex corpus profiled **before** any rewrite — **satisfied**, and it re-ordered the phase twice. The second re-ordering is item 2's: the matcher is **4.6–6.5%** of a `re.test`, so nothing aimed at matching — the .NET compiler, and by the same argument a compiled `Broiler.Regex` — can move this suite. **The ~2.4 µs and 2 431 B a regex call pays before any matching happens is the item**, and it is unstarted |
 | **A** | **Expression-model/emitter split landed; validation pending** → MOD-M2 dependency census, boundary ADR and fake backend → MOD-M3 honest IL/AOT graph → MOD-M4 hosting/compiler/tool packaging, only where the measured package graph justifies it | M–XL by slice | A maintainable graph in which front-end semantics, execution backends, host composition and optional tools have explicit owners and no accidental dynamic-code edge | Build-proven acyclic graph; source scan plus compiled dependency closure for `System.Reflection.Emit`; explicit backend registration; IL conformance unchanged; separate execution-only and runtime-compiler AOT samples; no new assembly without an API/dependency/startup rationale |
-| **6** | MOD-M9 ADR = 6-0 → independent expected-result harness → shared production semantic IR with IL migrated first → JavaScript value/frame ABI → minimal versioned JavaScript profile format/verifier → vertical interpreter slices → approved hard semantics | **several XL** for a general runtime compiler; execution-only or deliberately narrow runtime compilation is sized from its explicit manifest rather than inheriting the full estimate | The JavaScript capability selected by MOD-M9 on the Broiler.VM core, without dynamic code | Expected/IL/VM conformance for the declared JavaScript manifest; verifier/resource failures are deterministic; each claimed static AOT composition publishes and runs its real workload; **no performance claim** |
-| **7** | Uninstrumented MOD-M1 baseline → decompose dispatch/boxing/property/element/call/host/resource costs → add only measured function/realm-owned fast paths → remeasure each slice | L–XL | A shippability decision and a bounded baseline interpreter, not a pre-decided “fast enough” claim | Exact candidate/control rows, A/A-calibrated decision, current product corpus, memory/CPU/startup evidence, conformance unchanged and no global mutable cache ownership |
-| **8** | Choose independently: persistence gate → format/cache safety; feedback → owned sidecars; quickening/superinstructions/dispatch → measured opcode populations; broader PGO only after those results | M–L each | Startup or interpreter improvements whose population and rate are current and explicit | Each item cites its own population, resource budget and MOD-M1 result; cached/uncached and cold/warm paths are separate; verifier/fuzz/corruption behavior follows the selected execution-only or runtime-compiler composition; MOD-M6 for shared state |
-| **9** | After the runtime-capable/dynamic-host gate, branch: 9-0 curve → 9-1 owned state → 9-2 opt-in function promotion; independently 9-3 `DeoptState`/reconstruction → 9-5 restart decision; 9-4 OSR only after validated promotion and its own population/entry-stub spike | M–XL | Optional adaptivity; deopt may replace the limited Phase 4 restart compromise, while promotion does not depend on it | Expected/IL/bytecode/enabled-tier configurations conform; threshold curve and resource/lifecycle bounds for promotion; forced guards only for enabled deopt safepoints; rollback flag; deopt and OSR may each remain a recorded no-go |
+| **6** *(withdrawn 2026-10-12)* | MOD-M9 ADR = 6-0 → independent expected-result harness → shared production semantic IR with IL migrated first → JavaScript value/frame ABI → minimal versioned JavaScript profile format/verifier → vertical interpreter slices → approved hard semantics | **several XL** for a general runtime compiler; execution-only or deliberately narrow runtime compilation is sized from its explicit manifest rather than inheriting the full estimate | The JavaScript capability selected by MOD-M9 on the Broiler.VM core, without dynamic code | Expected/IL/VM conformance for the declared JavaScript manifest; verifier/resource failures are deterministic; each claimed static AOT composition publishes and runs its real workload; **no performance claim** |
+| **7** *(withdrawn 2026-10-12)* | Uninstrumented MOD-M1 baseline → decompose dispatch/boxing/property/element/call/host/resource costs → add only measured function/realm-owned fast paths → remeasure each slice | L–XL | A shippability decision and a bounded baseline interpreter, not a pre-decided “fast enough” claim | Exact candidate/control rows, A/A-calibrated decision, current product corpus, memory/CPU/startup evidence, conformance unchanged and no global mutable cache ownership |
+| **8** *(withdrawn 2026-10-12)* | Choose independently: persistence gate → format/cache safety; feedback → owned sidecars; quickening/superinstructions/dispatch → measured opcode populations; broader PGO only after those results | M–L each | Startup or interpreter improvements whose population and rate are current and explicit | Each item cites its own population, resource budget and MOD-M1 result; cached/uncached and cold/warm paths are separate; verifier/fuzz/corruption behavior follows the selected execution-only or runtime-compiler composition; MOD-M6 for shared state |
+| **9** *(withdrawn 2026-10-12)* | After the runtime-capable/dynamic-host gate, branch: 9-0 curve → 9-1 owned state → 9-2 opt-in function promotion; independently 9-3 `DeoptState`/reconstruction → 9-5 restart decision; 9-4 OSR only after validated promotion and its own population/entry-stub spike | M–XL | Optional adaptivity; deopt may replace the limited Phase 4 restart compromise, while promotion does not depend on it | Expected/IL/bytecode/enabled-tier configurations conform; threshold curve and resource/lifecycle bounds for promotion; forced guards only for enabled deopt safepoints; rollback flag; deopt and OSR may each remain a recorded no-go |
 
 **Dependencies.**
 
@@ -369,11 +381,13 @@ the reordered JavaScript phase plans below rather than reviving the old catalogu
   benefits from 3-1/3-2 having established unboxed representations to speculate into.
 - Modernization MOD-M9 replaces Phase 6's old 6-0 and selects JavaScript capability depth;
   it cannot cancel Broiler.VM core or WebAssembly.
+  *(Withdrawn 2026-10-12: see the revision under "Sequencing against track one".)*
 - The selected JavaScript composition requires Broiler.VM's core/profile contract,
   MOD-M2/MOD-M3, and the applicable MOD-M4 packaging boundary before Phase 6;
   Phase 7 and Phase 8 require MOD-M1, while shared/adaptive state also requires MOD-M6. Phase 9
   additionally requires a runtime-compiler composition, a dynamic-code-capable host, and an
   explicit adaptivity requirement.
+  *(Withdrawn 2026-10-12: see the revision under "Sequencing against track one".)*
 
 **The bolded item in each phase is the one to start with**, and in three of the five it
 is not the one that sounds most important: 1-1 over 1-3, 2-1 over 2-2, 4-3 over 4-2.
@@ -419,6 +433,7 @@ not a cost when there is no dispatch loop.
 > independently population- and rate-gated later. They remain **n/a to the general engine
 > that ships today**, and a generic catalogue entry is not evidence that Broiler.JS should
 > implement one.
+> *(Withdrawn 2026-10-12: see the revision under "Sequencing against track one".)*
 
 The one place the catalogue's assumption does hold is
 **`Broiler.JavaScript.Portable`**, a separate numeric bytecode/interpreter capability for
@@ -638,7 +653,7 @@ hot?
 > it: MOD-M9 selects a JavaScript capability manifest and deployment/compiler composition; Phase 6 establishes shared semantics, ABI,
 > verification and correctness; Phase 7 takes an uninstrumented baseline; Phase 8 evaluates
 > persistence and adaptive interpretation separately; Phase 9 treats tiering/deopt/OSR as
-> optional feasibility work.
+> optional feasibility work. *(Withdrawn 2026-10-12: see the revision under "Sequencing against track one".)*
 >
 > **How it maps onto the engine that exists.** The AOT boundary is real and the staging
 > is sound; the layers are not the ones drawn. Broiler.JS's *baseline* is already

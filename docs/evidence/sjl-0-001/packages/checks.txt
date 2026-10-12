@@ -1,0 +1,23 @@
+ok   Broiler.JavaScript.All.0.1.0-preview.1
+ok   Broiler.JavaScript.Ast.0.1.0-preview.1
+ok   Broiler.JavaScript.BuiltIns.0.1.0-preview.1
+ok   Broiler.JavaScript.Clr.0.1.0-preview.1
+ok   Broiler.JavaScript.Compiler.0.1.0-preview.1
+ok   Broiler.JavaScript.Debugger.0.1.0-preview.1
+ok   Broiler.JavaScript.Engine.0.1.0-preview.1
+ok   Broiler.JavaScript.ExpressionCompiler.0.1.0-preview.1
+ok   Broiler.JavaScript.Expressions.0.1.0-preview.1
+ok   Broiler.JavaScript.Extensions.0.1.0-preview.1
+ok   Broiler.JavaScript.Globals.0.1.0-preview.1
+ok   Broiler.JavaScript.LinqExpressions.0.1.0-preview.1
+ok   Broiler.JavaScript.Minimal.0.1.0-preview.1
+ok   Broiler.JavaScript.ModuleExtensions.0.1.0-preview.1
+ok   Broiler.JavaScript.Modules.0.1.0-preview.1
+ok   Broiler.JavaScript.Parser.0.1.0-preview.1
+ok   Broiler.JavaScript.Portable.Compiler.0.1.0-preview.1
+ok   Broiler.JavaScript.Portable.0.1.0-preview.1
+ok   Broiler.JavaScript.Runtime.0.1.0-preview.1
+ok   Broiler.JavaScript.Storage.0.1.0-preview.1
+ok   one package version across packages: ['0.1.0-preview.1']
+ok   package ids are unique
+ok   one package per packable project (20 archives)

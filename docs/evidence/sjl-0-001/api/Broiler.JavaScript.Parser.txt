@@ -1,0 +1,208 @@
+namespace Broiler.JavaScript.Parser
+{
+    public static class CharExtensions { }
+    public class DisposableList : System.IDisposable
+    {
+        public DisposableList() { }
+        public void Dispose() { }
+        public void Register(System.IDisposable d) { }
+    }
+    public class Error : System.Exception
+    {
+        public int Column;
+        public string Description;
+        public int Index;
+        public int LineNumber;
+        public string Name;
+        public Error(string message) { }
+    }
+    public class ErrorHandler
+    {
+        public readonly System.Collections.Generic.List<Broiler.JavaScript.Parser.Error> Errors;
+        public bool Tolerant;
+        public ErrorHandler() { }
+        public void TolerateError(int index, int line, int col, string description) { }
+        public static void ThrowError(int index, int line, int col, string description) { }
+    }
+    public class FastKeywordMap
+    {
+        protected FastKeywordMap() { }
+        public static Broiler.JavaScript.Parser.FastKeywordMap Instance { get; }
+        public virtual bool IsKeyword(in Broiler.JavaScript.Ast.Misc.StringSpan key, out Broiler.JavaScript.Ast.Misc.FastKeywords keyword) { }
+    }
+    public class FastList<T> : System.Collections.Generic.ICollection<T>, System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IList<T>, System.Collections.IEnumerable, System.IDisposable
+    {
+        public FastList(Broiler.JavaScript.Parser.FastPool pool) { }
+        public FastList(Broiler.JavaScript.Parser.FastPool pool, int size) { }
+        public int Count { get; }
+        public bool IsReadOnly { get; }
+        public T this[int index] { get; set; }
+        public void Add(T item) { }
+        public bool Any() { }
+        public void Clear() { }
+        public bool Contains(T item) { }
+        public void CopyTo(T[] array, int arrayIndex) { }
+        public void Dispose() { }
+        public Broiler.JavaScript.Parser.FastList<T>.FastEnumerator GetEnumerator() { }
+        public Broiler.JavaScript.Parser.FastList<T>.ReverseEnumerator GetReverseEnumerator() { }
+        public int IndexOf(T item) { }
+        public void Insert(int index, T item) { }
+        public T[] Release() { }
+        public bool Remove(T item) { }
+        public void RemoveAt(int index) { }
+        public Broiler.JavaScript.Ast.Misc.ArraySpan<T> ToSpan() { }
+        public struct FastEnumerator : System.Collections.Generic.IEnumerator<T>, System.Collections.IEnumerator, System.IDisposable
+        {
+            public FastEnumerator(Broiler.JavaScript.Parser.FastList<T> list) { }
+            public T Current { get; }
+            public void Dispose() { }
+            public bool MoveNext() { }
+            public bool MoveNext(out T item) { }
+            public void Reset() { }
+        }
+        public struct ReverseEnumerator
+        {
+            public ReverseEnumerator(Broiler.JavaScript.Parser.FastList<T> list) { }
+            public bool MoveNext(out T item) { }
+        }
+    }
+    public class FastParser : Broiler.JavaScript.Parser.IParser
+    {
+        public readonly Broiler.JavaScript.Parser.FastScope variableScope;
+        public FastParser(Broiler.JavaScript.Parser.FastTokenStream stream) { }
+        public Broiler.JavaScript.Parser.FastParser.StreamLocation Location { get; }
+        public Broiler.JavaScript.Ast.Misc.FastToken PreviousToken { get; }
+        public Broiler.JavaScript.Parser.FastParser.StreamLocation BeginUndo() { }
+        public Broiler.JavaScript.Ast.Expressions.AstExpression Combine(Broiler.JavaScript.Ast.Expressions.AstExpression left, Broiler.JavaScript.Ast.Misc.TokenTypes type, Broiler.JavaScript.Ast.Expressions.AstExpression right, Broiler.JavaScript.Ast.Misc.TokenTypes next = 10) { }
+        public Broiler.JavaScript.Ast.AstLiteral ExpectStringLiteral() { }
+        public bool Export(Broiler.JavaScript.Ast.Misc.FastToken start, out Broiler.JavaScript.Ast.Statements.AstStatement statement) { }
+        public bool NonDeclarativeStatement(out Broiler.JavaScript.Ast.Statements.AstStatement statement) { }
+        public Broiler.JavaScript.Ast.AstProgram ParseProgram() { }
+        public static Broiler.JavaScript.Ast.AstProgram ParseModule(in Broiler.JavaScript.Ast.Misc.StringSpan code) { }
+        public readonly struct StreamLocation
+        {
+            public readonly Broiler.JavaScript.Ast.Misc.FastToken Token;
+            public StreamLocation(Broiler.JavaScript.Parser.FastParser parser, Broiler.JavaScript.Ast.Misc.FastToken token) { }
+            public bool Reset() { }
+        }
+    }
+    public class FastPool
+    {
+        public FastPool() { }
+        public T[] AllocateArray<T>(int size) { }
+        public Broiler.JavaScript.Parser.FastList<T> AllocateList<T>() { }
+        public Broiler.JavaScript.Parser.FastList<T> AllocateList<T>(int size) { }
+        public Broiler.JavaScript.Parser.FastStack<T> AllocateStack<T>() { }
+        public void Dispose() { }
+        public Broiler.JavaScript.Parser.FastPool.Scope NewScope() { }
+        public void ReleaseArray<T>(T[] item) { }
+        public static void Free<T>(Broiler.JavaScript.Parser.FastList<T> list) { }
+        public class Scope : Broiler.JavaScript.Parser.DisposableList
+        {
+            public Scope(Broiler.JavaScript.Parser.FastPool pool) { }
+            public Broiler.JavaScript.Parser.FastList<T> AllocateList<T>(int size = 0) { }
+            public Broiler.JavaScript.Parser.FastPool.Scope NewScope() { }
+        }
+    }
+    public class FastScanner
+    {
+        public readonly Broiler.JavaScript.Ast.Misc.StringSpan Text;
+        public bool YieldIsKeyword;
+        public FastScanner(Broiler.JavaScript.Parser.FastPool pool, in Broiler.JavaScript.Ast.Misc.StringSpan text, Broiler.JavaScript.Parser.FastKeywordMap keywords = null) { }
+        public Broiler.JavaScript.Ast.Misc.SpanLocation Location { get; }
+        public Broiler.JavaScript.Ast.Misc.FastToken Token { get; }
+        public void ConsumeToken() { }
+        public Broiler.JavaScript.Parser.FastScanner.State Push() { }
+        public System.Exception Unexpected() { }
+        public struct State
+        {
+            public State(Broiler.JavaScript.Parser.FastScanner scanner, int position) { }
+            public Broiler.JavaScript.Ast.Misc.FastToken Commit(Broiler.JavaScript.Ast.Misc.TokenTypes type, bool parseNumber) { }
+            public Broiler.JavaScript.Ast.Misc.FastToken Commit(Broiler.JavaScript.Ast.Misc.TokenTypes type, System.Text.StringBuilder builder = null, bool cookedInvalid = false) { }
+            public Broiler.JavaScript.Ast.Misc.FastToken Commit(Broiler.JavaScript.Ast.Misc.TokenTypes type, string cooked, string flags) { }
+            public void Dispose() { }
+            public void Reset() { }
+        }
+    }
+    public class FastScope : Broiler.JavaScript.ExpressionCompiler.Core.LinkedStack<Broiler.JavaScript.Parser.FastScopeItem>
+    {
+        public FastScope() { }
+        public Broiler.JavaScript.Parser.FastScopeItem Push(Broiler.JavaScript.Ast.Misc.FastToken token, Broiler.JavaScript.Ast.Misc.FastNodeType nodeType) { }
+    }
+    public class FastScopeItem : Broiler.JavaScript.ExpressionCompiler.Core.LinkedStackItem<Broiler.JavaScript.Parser.FastScopeItem>
+    {
+        public bool IsArrow;
+        public readonly Broiler.JavaScript.Ast.Misc.FastNodeType NodeType;
+        public FastScopeItem(Broiler.JavaScript.Ast.Misc.FastNodeType nodeType) { }
+        public void AddAnnexBName(in Broiler.JavaScript.Ast.Misc.StringSpan name) { }
+        public void AddVariable(Broiler.JavaScript.Ast.Misc.FastToken token, in Broiler.JavaScript.Ast.Misc.StringSpan name, Broiler.JavaScript.Ast.FastVariableKind kind = 3, bool throwError = true) { }
+        public bool DeclaresVariable(in Broiler.JavaScript.Ast.Misc.StringSpan name) { }
+        public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.StringSpan> GetAnnexBNames() { }
+        public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Misc.StringSpan> GetVariables() { }
+        public bool HasLexicalBinding(in Broiler.JavaScript.Ast.Misc.StringSpan name) { }
+        public bool HasVarDeclaredName(string name) { }
+        public void MarkVarDeclaredName(string name) { }
+    }
+    public readonly struct FastStack<T>
+    {
+        public FastStack(Broiler.JavaScript.Parser.FastPool pool) { }
+        public int Count { get; }
+        public bool IsEmpty { get; }
+        public T Peek { get; }
+        public void Clear() { }
+        public T Pop() { }
+        public void Push(T item) { }
+    }
+    public readonly struct FastStringBuilder
+    {
+        public readonly System.Text.StringBuilder Builder;
+        public FastStringBuilder(Broiler.JavaScript.Parser.FastPool pool, System.Text.StringBuilder sb) { }
+        public void Clear() { }
+        public override string ToString() { }
+    }
+    public class FastTokenStream
+    {
+        public readonly Broiler.JavaScript.Parser.FastKeywordMap Keywords;
+        public readonly Broiler.JavaScript.Parser.FastPool Pool;
+        public FastTokenStream(in Broiler.JavaScript.Ast.Misc.StringSpan text, Broiler.JavaScript.Parser.FastKeywordMap keywords = null) { }
+        public FastTokenStream(Broiler.JavaScript.Parser.FastPool pool, in Broiler.JavaScript.Ast.Misc.StringSpan text, Broiler.JavaScript.Parser.FastKeywordMap keywords = null) { }
+        public Broiler.JavaScript.Ast.Misc.FastToken Current { get; }
+        public Broiler.JavaScript.Ast.Misc.FastToken Next { get; }
+        public Broiler.JavaScript.Ast.Misc.FastToken Previous { get; }
+        public bool YieldIsKeyword { set; }
+        public bool CheckAndConsume(Broiler.JavaScript.Ast.Misc.FastKeywords keyword) { }
+        public bool CheckAndConsume(Broiler.JavaScript.Ast.Misc.TokenTypes type) { }
+        public bool CheckAndConsume(Broiler.JavaScript.Ast.Misc.TokenTypes type, out Broiler.JavaScript.Ast.Misc.FastToken token) { }
+        public bool CheckAndConsume(Broiler.JavaScript.Ast.Misc.TokenTypes type1, Broiler.JavaScript.Ast.Misc.TokenTypes type2, out Broiler.JavaScript.Ast.Misc.FastToken token1, out Broiler.JavaScript.Ast.Misc.FastToken token2) { }
+        public bool CheckAndConsumeAny(Broiler.JavaScript.Ast.Misc.TokenTypes type1, Broiler.JavaScript.Ast.Misc.TokenTypes type2) { }
+        public bool CheckAndConsumeAny(Broiler.JavaScript.Ast.Misc.TokenTypes type1, Broiler.JavaScript.Ast.Misc.TokenTypes type2, Broiler.JavaScript.Ast.Misc.TokenTypes type3) { }
+        public bool CheckAndConsumeAny(Broiler.JavaScript.Ast.Misc.TokenTypes type1, Broiler.JavaScript.Ast.Misc.TokenTypes type2, Broiler.JavaScript.Ast.Misc.TokenTypes type3, Broiler.JavaScript.Ast.Misc.TokenTypes type4) { }
+        public bool CheckAndConsumeContextualKeyword(Broiler.JavaScript.Ast.Misc.FastKeywords keyword) { }
+        public bool CheckAndConsumeNoLineTerminator(Broiler.JavaScript.Ast.Misc.TokenTypes type) { }
+        public bool CheckAndConsumeWithLineTerminator(Broiler.JavaScript.Ast.Misc.TokenTypes type) { }
+        public bool CheckAndConsumeWithLineTerminator(Broiler.JavaScript.Ast.Misc.TokenTypes type1, Broiler.JavaScript.Ast.Misc.TokenTypes type2) { }
+        public Broiler.JavaScript.Ast.Misc.FastToken Consume() { }
+        public Broiler.JavaScript.Ast.Misc.FastToken Expect(Broiler.JavaScript.Ast.Misc.FastKeywords type) { }
+        public Broiler.JavaScript.Ast.Misc.FastToken Expect(Broiler.JavaScript.Ast.Misc.TokenTypes type) { }
+        public Broiler.JavaScript.Ast.Misc.FastToken ExpectContextualKeyword(Broiler.JavaScript.Ast.Misc.FastKeywords type) { }
+        public bool Reset(Broiler.JavaScript.Ast.Misc.FastToken position) { }
+        public Broiler.JavaScript.Parser.FastTokenStream.Marker SkipNewLines() { }
+        public override string ToString() { }
+        public Broiler.JavaScript.Runtime.CancellableDisposableAction UndoMark() { }
+        public readonly struct Marker
+        {
+            public readonly bool LinesSkipped;
+            public Marker(Broiler.JavaScript.Parser.FastTokenStream stream, Broiler.JavaScript.Ast.Misc.FastToken index, bool linesSkipped) { }
+            public void Undo() { }
+        }
+    }
+    public interface IParser
+    {
+        Broiler.JavaScript.Ast.AstProgram ParseProgram();
+    }
+    public static class QueueExtensions
+    {
+        public static TValue GetOrCreate<TKey, TValue>(this System.Collections.Generic.IDictionary<TKey, TValue> dictionary, TKey key, System.Func<TKey, TValue> factory) { }
+        public static bool TryDequeue<T>(this System.Collections.Generic.Queue<T> queue, out T value) { }
+    }
+}

@@ -37,11 +37,24 @@ features. `Broiler.JavaScript.Portable` is not the full engine and must not be p
 as Native AOT support for general JavaScript. See
 [Performance measurement and execution modes](roadmap/Measurement.md).
 
-No Broiler.VM integration is planned for this component, and none changes that statement.
-`JavaScript` and `WebAssembly` will be VM **language profiles**; execution-only and
-runtime-compiler choices will be deployment/compiler **compositions**; neither is a
-`JavaScriptBootstrapProfile`. Planned package names and APIs remain hypotheses until the
-this component's assembly and AOT gates close.
+**No Broiler.VM integration of this engine is planned**: no package of this engine references
+Broiler.VM, and Broiler.VM references none of this engine's packages. What is planned is the
+**shared JavaScript libraries** this repository will host, `Broiler.ECMAScript.Algorithms`,
+`.Intl`, `.Frontend` and the test-only `.Conformance`, which name neither engine and which both this
+engine and Broiler.VM's JavaScript profile consume ([`SharedLibraries.md`](roadmap/SharedLibraries.md)).
+They version separately from the `Broiler.JavaScript.*` packages, and their compatibility promise -
+semantic versioning, an API baseline and package validation against the last published version,
+which none of this engine's current packages has - is added here at the programme's milestone SJL-2.
+`JavaScript` and `WebAssembly` are Broiler.VM **language profiles**; execution-only and
+runtime-compiler choices are deployment/compiler **compositions**; neither is a
+`JavaScriptBootstrapProfile`.
+
+*Revised 2026-10-12, at milestone SJL-0 of the shared JavaScript libraries programme. The paragraph
+read: "No Broiler.VM integration is planned for this component, and none changes that statement.
+`JavaScript` and `WebAssembly` will be VM **language profiles**; execution-only and runtime-compiler
+choices will be deployment/compiler **compositions**; neither is a `JavaScriptBootstrapProfile`.
+Planned package names and APIs remain hypotheses until the this component's assembly and AOT gates
+close."*
 
 ## Public API changes, 2026-09-22 (module semantics, intrinsics, async ordering)
 

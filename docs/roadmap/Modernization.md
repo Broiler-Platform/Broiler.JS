@@ -120,7 +120,12 @@ with an accountable maintainer in the generated item index.
    initialization, or API difference is a regression regardless of throughput.
 3. **The semantic front end is shared.** Parsing, early errors, binding, hoisting, scope,
    free-name analysis, and backend-neutral lowering are not duplicated between IL and
-   bytecode.
+   bytecode. **Nor are they duplicated between this engine and Broiler.VM's JavaScript
+   profile family**: the shared frontend, `Broiler.ECMAScript.Frontend`, hosted in this
+   repository and naming neither engine, is consumed by this engine's IL and portable
+   compilers and by Broiler.VM's lowering (the shared JavaScript libraries programme's
+   SJL-12 to SJL-15, planned in [`SharedLibraries.md`](SharedLibraries.md)). *(Extended
+   2026-10-12, at the programme's milestone SJL-0, under decision SJL-D-1 of 2026-10-11.)*
 4. **Dynamic code is an explicit composition boundary.** A Broiler.VM language profile is
    not a deployment composition. Only a JavaScript composition that includes the IL back end
    may transitively reach `System.Reflection.Emit`; NativeAOT compositions cannot discover
@@ -322,11 +327,11 @@ success if it introduces cycles or hides useful ownership boundaries.
 |---|---|---|---:|---|
 | **MOD-M2-1** | Generate current and proposed `ProjectReference` graphs, including transitive closure, target composition, public types, package identity, and forbidden edges. | architecture/tooling | S–M | [`Assemblies.status.md`](Assemblies.status.md) |
 | **MOD-M2-2** | Re-open A-0 as a real build spike: create target project shells, move no production code, and prove the graph restores and compiles before approving names or merges. | architecture | M | [`Assemblies.status.md`](Assemblies.status.md) |
-| **MOD-M2-3** | Resolve the foundation cycle by preserving Expressions as a bottom model assembly or extracting a smaller Primitives/Model contract. Remove Storage's Ast dependency before considering a fold. | Storage/Ast/Expressions | M | [`Assemblies.status.md`](Assemblies.status.md) and graph ADR |
-| **MOD-M2-4** | Inventory Parser→Runtime type use. Remove or invert the edge if feasible; otherwise preserve the boundary and revise the proposed tiers. Keep Runtime and Engine separate unless an independently measured deployment or startup result justifies a later merge. | Parser/Runtime/Engine | M | [`Assemblies.status.md`](Assemblies.status.md) and graph ADR |
-| **MOD-M2-5** | Specify a backend-neutral `FrontEnd`/`Semantics` boundary for early errors, binding, scopes, hoisting, free-name and numeric-local analysis, and shared lowering. Prove the shape with project shells and a minimal fake/test backend; produce a priced extraction plan without migrating production bytecode. | Parser/Compiler | M–L | build spike, semantic fixtures |
+| **MOD-M2-3** | Resolve the foundation cycle by preserving Expressions as a bottom model assembly or extracting a smaller Primitives/Model contract. Remove Storage's Ast dependency before considering a fold. *Cross-referenced 2026-10-12: this item is part of the in-place frontend preparation of the shared JavaScript libraries programme's SJL-12 ([`SharedLibraries.md`](SharedLibraries.md)), whose exit clauses its milestone file holds.* | Storage/Ast/Expressions | M | [`Assemblies.status.md`](Assemblies.status.md) and graph ADR |
+| **MOD-M2-4** | Inventory Parser→Runtime type use. Remove or invert the edge if feasible; otherwise preserve the boundary and revise the proposed tiers. Keep Runtime and Engine separate unless an independently measured deployment or startup result justifies a later merge. *Cross-referenced 2026-10-12: this item is part of the in-place frontend preparation of the shared JavaScript libraries programme's SJL-12 ([`SharedLibraries.md`](SharedLibraries.md)), whose exit clauses its milestone file holds.* | Parser/Runtime/Engine | M | [`Assemblies.status.md`](Assemblies.status.md) and graph ADR |
+| **MOD-M2-5** | Specify a backend-neutral `FrontEnd`/`Semantics` boundary for early errors, binding, scopes, hoisting, free-name and numeric-local analysis, and shared lowering. Prove the shape with project shells and a minimal fake/test backend; produce a priced extraction plan without migrating production bytecode. *Cross-referenced 2026-10-12: this item is part of the in-place frontend preparation of the shared JavaScript libraries programme's SJL-12 ([`SharedLibraries.md`](SharedLibraries.md)), whose exit clauses its milestone file holds.* | Parser/Compiler | M–L | build spike, semantic fixtures |
 | **MOD-M2-6** | Prove the LinqExpressions registration/compilation cut with a project-shell or file/type dependency spike. MOD-M3-3 owns the production move. | LinqExpressions/IL | S–M | graph and build evidence |
-| **MOD-M2-7** | Design the backend contract against IL and the minimal test sink without exposing `DynamicMethod`, reflection-emitter, or realm-captured assumptions. Specify cache-key inputs; production bytecode adoption remains conditional on MOD-M9. | Compiler backends/Runtime | M | contract tests |
+| **MOD-M2-7** | Design the backend contract against IL and the minimal test sink without exposing `DynamicMethod`, reflection-emitter, or realm-captured assumptions. Specify cache-key inputs. *(Revised 2026-10-12: the sentence ended "; production bytecode adoption remains conditional on MOD-M9". MOD-M9 is retired and no production bytecode back end is planned here; Broiler.VM's lowering consumes the shared frontend package, not this contract. See [`SharedLibraries.md`](SharedLibraries.md).)* | Compiler backends/Runtime | M | contract tests |
 | **MOD-M2-8** | Create a project/assembly/package/namespace identity matrix, including intentional spelling repairs and type-forwarding decisions. | packaging/API | M | compatibility baseline |
 | **MOD-M2-9** | Add architecture tests for acyclicity, tier direction, optional satellites, bytecode→IL prohibition, the one allowed Emit owner, public API, and assembly budgets. | architecture/CI | M | CI architecture suite |
 
@@ -340,7 +345,7 @@ These are hypotheses to prove in MOD-M2, not pre-approved names:
 | **Ast** | syntax tree and syntax-only helpers | avoids pulling storage or runtime into parsing |
 | **Parser** | text-to-Ast and syntax diagnostics | separately baselinable front-end cost |
 | **Storage** | property-name and storage mechanics above the shared model | remains separate until its Ast edge is removed or isolated |
-| **FrontEnd/Semantics** | binding, scope, hoisting, early errors, shared analyses and lowered IR | gives an approved VM one semantics source without beginning VM work in MOD-M2 |
+| **FrontEnd/Semantics** | binding, scope, hoisting, early errors, shared analyses and lowered IR | gives this engine's back ends one semantics source, and becomes the shared frontend `Broiler.ECMAScript.Frontend` that Broiler.VM's lowering also consumes (SJL-12 to SJL-15, [`SharedLibraries.md`](SharedLibraries.md)) *(revised 2026-10-12; the cell read "gives an approved VM one semantics source without beginning VM work in MOD-M2")* |
 | **Runtime** | values, objects, shapes, caches, job/runtime contracts | clearer state ownership and independent-context baseline |
 | **Engine** | contexts, realms, bootstrap, execution coordination | keeps embedding/lifecycle separate from the object model |
 | **BuiltIns and satellites** | core ECMAScript built-ins plus independently optional Temporal, Intl, and RegExp candidates | makes optional deployment cost measurable without changing core semantics |

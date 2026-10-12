@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Broiler.JavaScript.Portable</id>
+    <version>0.1.0-preview.1</version>
+    <authors>Broiler contributors</authors>
+    <license type="expression">Apache-2.0</license>
+    <licenseUrl>https://licenses.nuget.org/Apache-2.0</licenseUrl>
+    <icon>icon.png</icon>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/Broiler-Platform/Broiler.JS</projectUrl>
+    <description>Broiler.JS portable numeric runtime: a reflection-free interpreter for pre-compiled portable bytecode, suitable for Native AOT hosts. This is a deliberately limited numeric profile, not the full JavaScript engine.</description>
+    <copyright>Copyright (c) Broiler contributors</copyright>
+    <tags>broiler javascript ecmascript compiler engine</tags>
+    <repository type="git" url="https://github.com/Broiler-Platform/broiler.js" commit="44a214dc5b04a5c8db556dc9b57894beaeb20d0c" />
+    <dependencies>
+      <group targetFramework="net10.0" />
+    </dependencies>
+  </metadata>
+</package>

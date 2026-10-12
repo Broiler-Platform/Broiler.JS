@@ -41,6 +41,18 @@ roadmap that does not depend on this one. The four phase documents recorded zero
 zero measurements, so retiring them lost no evidence. Modernization MOD-M9, which existed only to
 select a deployment composition for that profile, is retired with them.
 
+**The shared JavaScript libraries are planned here, and they are not a bytecode track.** The shared
+JavaScript libraries programme, whose decisions were taken on 2026-10-11 and whose plan and ledger
+are in the Broiler.VM repository under `Broiler.VM/docs/javascript-shared-libraries/`, gives each
+language algorithm, data set and source front end one implementation that both engines consume. This
+repository hosts those libraries, the `Broiler.ECMAScript.*` packages, which reference neither engine.
+Broiler.JS's half is planned in [`SharedLibraries.md`](SharedLibraries.md), with its evidence in
+[`SharedLibraries.status.md`](SharedLibraries.status.md). The paragraph above stands: no bytecode
+tier is planned here, and nothing here plans or gates Broiler.VM's JavaScript profile. *(Added
+2026-10-12, at the programme's milestone SJL-0. The paragraph above said the profile's roadmap "does
+not depend on this one"; it now depends on libraries hosted in this repository, though not on this
+engine or on this engine's roadmap.)*
+
 **This engine remains the IL engine.** It continues to gain language features, conformance work,
 and fixes on its own schedule, and its performance ceiling is the IL path's. There is no longer a
 planned bytecode tier here, so any further speed comes from track one under MOD-M1 rather than
@@ -71,6 +83,7 @@ delivery plan. Changing evidence belongs in the matching status record:
 | [`ModernizationDelivery.md`](ModernizationDelivery.md) | **The separate phased delivery view.** It maps executable increments and handoffs to the authoritative `MOD-M*`, phase, assembly, and concurrency gates without creating another state ledger. |
 | [`Measurement.md`](Measurement.md) | **The gate, and §3 of the campaign.** What may be *claimed* — evidence classes, immutable candidate/control identity, A/A lane validity, practical decision thresholds, exact-row comparison, resource/conformance guardrails, the RID matrix and bootstrap profiles — plus the standing lessons (§3.5) and every probe's command line (Appendix A). **It governs everything above.** It is not split because it is all rules: it has no status. |
 | [`Concurrency.md`](Concurrency.md) | **The JavaScript-local owner for MOD-M5–MOD-M7.** It owns compiler/cache/context safety, optimizer-state lifetime, and Worker-agent acceptance. The aggregate `docs/architecture/multithreading.md` retains integration history and host-level measurements; a host feature recorded there as built is not thereby accepted against MOD-M5–MOD-M7. |
+| [`SharedLibraries.md`](SharedLibraries.md) | **Broiler.JS's half of the shared JavaScript libraries programme**, with its evidence in [`SharedLibraries.status.md`](SharedLibraries.status.md). The libraries this repository hosts for both engines, the programme's decisions as they apply here, and one item per programme milestone. The programme's own roadmap, ledger and decision register are in `Broiler.VM/docs/javascript-shared-libraries/`. *(Added 2026-10-12.)* |
 | [`Component.md`](Component.md) | The engine's non-performance roadmap: closing the supported test262 failure set, expanding host-mode coverage, finishing RegExp backend adoption, and API/package/preview readiness. |
 | [`Archive.md`](Archive.md) | **Both** superseded plans — the engine campaign (P0–P3, phases A–F) and the Octane roadmap (phases 0–5) — merged into `Roadmap.md` on 2026-08-01 and **not back-ported**. Kept for measurements and defect narratives. Where sources disagree, the owning current phase plan/status pair and `Modernization.md` take precedence over `Roadmap.md`, which takes precedence over the archive. |
 
@@ -107,6 +120,9 @@ delivery plan. Changing evidence belongs in the matching status record:
   Existing compile-ahead and Worker code in the aggregate repository is mapped there as
   implemented subsets, not as proof that modernization phases MOD-M5–MOD-M7 have closed.
 - **For conformance and other host capability**, use [`Component.md`](Component.md).
+- **For the shared JavaScript libraries** (`Broiler.ECMAScript.*`), use
+  [`SharedLibraries.md`](SharedLibraries.md) and [`SharedLibraries.status.md`](SharedLibraries.status.md).
+  The programme's milestone files hold every exit gate in full. *(Added 2026-10-12.)*
 
 ## Conventions
 

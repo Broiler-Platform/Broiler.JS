@@ -1,0 +1,68 @@
+[test262] Starting test262 run for suite ref ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e using local suite root <suite>/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+[test262] Selected 6052 runnable test(s) for shard 7/8 from 48360 selected file(s) and 53194 candidate path(s) using mode all-script-host-verifiable.
+[test262] Using Broiler script host at Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+[test262] Running 6052 test(s) for shard 7/8.
+[test262] Per-test timeout is 30s; POSIX memory cap is disabled.
+[test262] Each path will run as original and terser variants (test262-safe-mangle-v2, version 5.50.0).
+[test262] A failing minified case is cross-checked against node v22.22.0 before it counts as an engine failure. It accepts --harmony-temporal --harmony-shadow-realm --harmony-intl-duration-format --js-float16array, so it can speak about those features.
+[test262] Using 4 parallel worker(s).
+[test262] Failure 1 at test/annexB/language/global-code/script-decl-lex-collision.js [original]
+[test262] Failure 2 at test/annexB/language/global-code/script-decl-lex-collision.js [terser]
+[test262] Failure 3 at test/built-ins/Array/fromAsync/async-iterable-input-does-not-await-input.js [original]
+[test262] Failure 4 at test/built-ins/Array/fromAsync/async-iterable-input-does-not-await-input.js [terser]
+[test262] Failure 5 at test/built-ins/Array/fromAsync/asyncitems-bigint.js [original]
+[test262] Failure 6 at test/built-ins/Array/fromAsync/asyncitems-bigint.js [terser]
+[test262] Failure 7 at test/built-ins/Array/fromAsync/mapfn-async-arraylike.js [original]
+[test262] Failure 8 at test/built-ins/Array/fromAsync/mapfn-async-arraylike.js [terser]
+[test262] Failure 9 at test/built-ins/Array/fromAsync/mapfn-async-throws-close-async-iterator.js [original]
+[test262] Failure 10 at test/built-ins/Array/fromAsync/mapfn-async-throws-close-async-iterator.js [terser]
+[test262] Failure 11 at test/built-ins/Array/fromAsync/mapfn-result-awaited-once-per-iteration.js [original]
+[test262] Failure 12 at test/built-ins/Array/fromAsync/mapfn-result-awaited-once-per-iteration.js [terser]
+[test262] Failure 13 at test/built-ins/Array/fromAsync/mapfn-sync-throws-close-sync-iterator.js [original]
+[test262] Failure 14 at test/built-ins/Array/fromAsync/mapfn-sync-throws-close-sync-iterator.js [terser]
+[test262] Failure 15 at test/built-ins/Array/fromAsync/sync-iterable-with-rejecting-thenable-rejects.js [original]
+[test262] Failure 16 at test/built-ins/Array/fromAsync/sync-iterable-with-rejecting-thenable-rejects.js [terser]
+[test262] Failure 17 at test/built-ins/Array/fromAsync/this-constructor-with-unsettable-element-closes-sync-iterator.js [original]
+[test262] Failure 18 at test/built-ins/Array/fromAsync/this-constructor-with-unsettable-element-closes-sync-iterator.js [terser]
+[test262] Failure 19 at test/built-ins/Array/proto-from-ctor-realm-two.js [original]
+[test262] Failure 20 at test/built-ins/Array/proto-from-ctor-realm-two.js [terser]
+[test262] Failure 21 at test/built-ins/ArrayBuffer/prototype/sliceToImmutable/this-becomes-detached.js [original]
+[test262] Failure 22 at test/built-ins/ArrayBuffer/prototype/sliceToImmutable/this-becomes-detached.js [terser]
+[test262] Failure 23 at test/built-ins/AsyncDisposableStack/proto-from-ctor-realm.js [original]
+[test262] Failure 24 at test/built-ins/AsyncDisposableStack/proto-from-ctor-realm.js [terser]
+[test262] Failure 25 at test/built-ins/AsyncDisposableStack/prototype/disposeAsync/this-not-object-rejects.js [original]
+[test262] Failure 26 at test/built-ins/AsyncDisposableStack/prototype/disposeAsync/this-not-object-rejects.js [terser]
+[test262] Failure 27 at test/built-ins/AsyncFromSyncIteratorPrototype/throw/iterator-result-poisoned-value.js [original]
+[test262] Failure 28 at test/built-ins/AsyncFromSyncIteratorPrototype/throw/iterator-result-poisoned-value.js [terser]
+[test262] Failure 29 at test/built-ins/AsyncGeneratorFunction/proto-from-ctor-realm-prototype.js [original]
+[test262] Failure 30 at test/built-ins/AsyncGeneratorFunction/proto-from-ctor-realm-prototype.js [terser]
+[test262] Completed 605/6052 path(s), 1210 variant case(s) (passed=1165, failed=30, skipped=15, timedOut=0).
+[test262] Failure 31 at test/built-ins/DataView/detached-buffer.js [original]
+[test262] Failure 32 at test/built-ins/DataView/detached-buffer.js [terser]
+[test262] Failure 33 at test/built-ins/Error/proto-from-ctor-realm.js [original]
+[test262] Failure 34 at test/built-ins/Error/proto-from-ctor-realm.js [terser]
+[test262] Failure 35 at test/built-ins/Map/proto-from-ctor-realm.js [original]
+[test262] Failure 36 at test/built-ins/Map/proto-from-ctor-realm.js [terser]
+[test262] Completed 1210/6052 path(s), 2420 variant case(s) (passed=2359, failed=36, skipped=25, timedOut=0).
+[test262] Failure 37 at test/built-ins/Proxy/get-fn-realm-recursive.js [original]
+[test262] Failure 38 at test/built-ins/Proxy/get-fn-realm-recursive.js [terser]
+[test262] Completed 1815/6052 path(s), 3630 variant case(s) (passed=3567, failed=38, skipped=25, timedOut=0).
+[test262] Completed 2420/6052 path(s), 4840 variant case(s) (passed=4776, failed=38, skipped=26, timedOut=0).
+[test262] Failure 39 at test/built-ins/TypedArrayConstructors/ctors-bigint/buffer-arg/proto-from-ctor-realm.js [original]
+[test262] Failure 40 at test/built-ins/TypedArrayConstructors/ctors-bigint/buffer-arg/proto-from-ctor-realm.js [terser]
+[test262] Failure 41 at test/built-ins/TypedArrayConstructors/ctors/buffer-arg/proto-from-ctor-realm.js [original]
+[test262] Failure 42 at test/built-ins/TypedArrayConstructors/ctors/buffer-arg/proto-from-ctor-realm.js [terser]
+[test262] Failure 43 at test/built-ins/TypedArrayConstructors/internals/DefineOwnProperty/tonumber-value-detached-buffer.js [original]
+[test262] Failure 44 at test/built-ins/TypedArrayConstructors/internals/DefineOwnProperty/tonumber-value-detached-buffer.js [terser]
+[test262] Failure 45 at test/built-ins/WeakMap/proto-from-ctor-realm.js [original]
+[test262] Failure 46 at test/built-ins/WeakMap/proto-from-ctor-realm.js [terser]
+[test262] Completed 3025/6052 path(s), 6050 variant case(s) (passed=5978, failed=46, skipped=26, timedOut=0).
+[test262] Completed 3630/6052 path(s), 7260 variant case(s) (passed=7184, failed=46, skipped=30, timedOut=0).
+[test262] Failure 47 at test/language/expressions/async-generator/named-yield-star-sync-throw.js [original]
+[test262] Failure 48 at test/language/expressions/async-generator/named-yield-star-sync-throw.js [terser]
+[test262] Failure 49 at test/language/expressions/async-generator/yield-star-sync-throw.js [original]
+[test262] Failure 50 at test/language/expressions/async-generator/yield-star-sync-throw.js [terser]
+[test262] Failure 51 at test/language/expressions/class/async-gen-method/yield-star-sync-throw.js [original]
+[test262] Failure 52 at test/language/expressions/class/async-gen-method/yield-star-sync-throw.js [terser]
+[test262] Failure 53 at test/language/expressions/class/elements/async-gen-private-method/yield-star-sync-throw.js [original]
+[test262] Failure 54 at test/language/expressions/class/elements/async-gen-private-method/yield-star-sync-throw.js [terser]
