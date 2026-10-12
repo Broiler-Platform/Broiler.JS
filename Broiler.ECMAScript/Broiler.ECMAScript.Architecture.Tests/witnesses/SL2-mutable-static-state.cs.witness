@@ -1,0 +1,26 @@
+// SL2 witness: every kind of state convention 7 refuses, one per member. Rule SL2 must report each.
+using System;
+using System.Collections.Generic;
+using System.Threading;
+
+namespace Witness;
+
+public static class AmbientState
+{
+    public static int Calls;
+
+    public static readonly int[] Table = [1, 2, 3];
+
+    public static readonly Dictionary<string, int> Cache = new();
+
+    public static string Mode { get; set; } = "strict";
+
+    [ThreadStatic]
+    private static int depth;
+
+    private static readonly ThreadLocal<int> Scratch = new();
+
+    private static readonly AsyncLocal<int> Flow = new();
+
+    public static int Use() => depth + Scratch.Value + Flow.Value;
+}

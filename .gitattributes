@@ -5,3 +5,12 @@
 # and its generator's inputs are checked out with LF everywhere.
 conformance/** text eol=lf
 scripts/conformance/** text eol=lf
+
+# The shared JavaScript libraries (Broiler.ECMAScript/, milestone SJL-2.10) are stored with LF line
+# endings everywhere: code may move between this repository and Broiler.VM, whose rule J6 and whose
+# assurance fingerprints read the text as stored, and the shared rule SL10 refuses a CR. The engine's
+# own folders keep whatever they have; some of them are CRLF or mixed today.
+Broiler.ECMAScript/** text eol=lf
+Broiler.ECMAScript.slnf text eol=lf
+# Rule SL10's witness for CRLF line endings must keep its CRs, so it alone is stored as-is.
+Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/witnesses/SL10-crlf-line-endings.cs.witness -text

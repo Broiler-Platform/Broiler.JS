@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The shared conformance vectors' reader, validator and runners (architecture section 1's
+    "Broiler.ECMAScript.Conformance", test-only). The corpus itself lives at conformance/vectors/
+    in this repository; this library never reads it from disk. Its callers hand it the bytes of
+    each file, so it holds to convention 8 (no I/O) like every other shared library, and it runs
+    unchanged inside the Native AOT probe (milestone SJL-2.14), in Broiler.JS's JIT test project
+    and in any other runner.
+
+    It is not packed: nothing outside this repository consumes it as a package at this version.
+  -->
+  <PropertyGroup>
+    <RootNamespace>Broiler.ECMAScript.Conformance</RootNamespace>
+    <AssemblyName>Broiler.ECMAScript.Conformance</AssemblyName>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+</Project>

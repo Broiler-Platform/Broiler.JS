@@ -1,0 +1,171 @@
+name: Shared libraries
+
+# The shared JavaScript libraries' own gate (Broiler.ECMAScript/, milestones SJL-2.11 to SJL-2.14),
+# run on every change, as convention 12 asks of the Native AOT probe:
+#   - the folder builds under its conventions and its tests pass, the SL rules among them;
+#   - the Native AOT probe publishes with Broiler.VM's root settings and no warning, runs the whole
+#     vector corpus, and gives the report the same probe gives under the JIT;
+#   - the Broiler Code Assurance check holds the folder to its generated artefacts (rule SL8);
+#   - the shared version stream packs, passes package validation, and restores in a pristine
+#     consumer from an isolated cache.
+# Publish-shared calls it with a resolved version before anything is pushed.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      package-version:
+        description: Resolved version of the shared stream for a publish run
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shared-${{ github.workflow }}-${{ github.ref }}-${{ inputs.package-version }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and SL rules (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      # Rule SL7 runs the corpus generator.
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Build
+        run: dotnet build Broiler.ECMAScript.slnf -c Release --nologo
+      - name: Test, the SL rules among them
+        run: dotnet test Broiler.ECMAScript.slnf -c Release --no-build --nologo
+      - name: The corpus generator's own tests
+        run: python -m unittest discover -s scripts/conformance/tests -v
+
+  native-aot-probe:
+    name: Native AOT probe (${{ matrix.rid }})
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            rid: linux-x64
+            executable: Broiler.ECMAScript.Probe
+          - os: windows-latest
+            rid: win-x64
+            executable: Broiler.ECMAScript.Probe.exe
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - name: Publish with Native AOT
+        run: |
+          set -o pipefail
+          dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -r ${{ matrix.rid }} --nologo 2>&1 | tee probe-publish.log
+          # Warnings are errors already; this states the zero the exit clause asks for.
+          if grep -E "warning [A-Z]+[0-9]+" probe-publish.log; then
+            echo "::error::the Native AOT publish reported a warning"
+            exit 1
+          fi
+          publish=Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/${{ matrix.rid }}/publish
+          if ls "$publish"/*.dll >/dev/null 2>&1; then
+            echo "::error::the publish directory holds a managed assembly"
+            exit 1
+          fi
+      - name: Run the corpus under Native AOT
+        run: ./Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/${{ matrix.rid }}/publish/${{ matrix.executable }} conformance/vectors --report probe-aot.tsv
+      - name: Run the corpus under the JIT, and compare
+        run: |
+          dotnet build Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release --nologo
+          dotnet Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll conformance/vectors --report probe-jit.tsv
+          cmp probe-aot.tsv probe-jit.tsv
+      - name: Keep the logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: native-aot-probe-${{ matrix.rid }}
+          path: |
+            probe-publish.log
+            probe-aot.tsv
+            probe-jit.tsv
+          if-no-files-found: warn
+
+  assurance:
+    name: Assurance check (SL8)
+    runs-on: ubuntu-latest
+    steps:
+      # The assurance tool lives in Broiler.Code. The two are checked out side by side, the layout
+      # Broiler.ECMAScript/assurance.config.json's regenerateCommand names.
+      - name: Check out Broiler.JS
+        uses: actions/checkout@v7
+        with:
+          path: Broiler.JS
+      - name: Check out Broiler.Code
+        uses: actions/checkout@v7
+        with:
+          repository: Broiler-Platform/Broiler.Code
+          path: Broiler.Code
+          token: ${{ secrets.BROILER_CODE_TOKEN || github.token }}
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - name: Check the shared folder against its generated artefacts
+        run: dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript
+
+  pack:
+    name: Pack, validate and restore the shared stream (dry run)
+    runs-on: ubuntu-latest
+    env:
+      PACKAGE_VERSION: ${{ inputs.package-version }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      # Package validation runs inside pack (EnablePackageValidation); a first version is validated
+      # without a baseline, a later one against the last published version.
+      - name: Pack the shared stream
+        shell: pwsh
+        run: ./eng/pack.ps1 -ProjectSet Shared -Version $env:PACKAGE_VERSION -Output artifacts/shared
+      - name: Restore the set in an isolated cache, nuget.org for everything else
+        shell: pwsh
+        run: ./eng/verify-feed.ps1 -Packages artifacts/shared
+      - name: Restore and run a pristine consumer from a local feed alone
+        run: python scripts/packaging/test_pristine_consumer.py --set shared ${PACKAGE_VERSION:+--version "$PACKAGE_VERSION"}
+      - name: Upload packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: shared-packages
+          path: artifacts/shared/*
+          if-no-files-found: error

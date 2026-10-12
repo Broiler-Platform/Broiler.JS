@@ -1,0 +1,11 @@
++ dotnet pack /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj -c Release -p:IncludeSymbols=false --output <temporary>/feed -p:Version=0.0.1-probe.1 -p:PackageVersion=0.0.1-probe.1
+  Determining projects to restore...
+  Restored /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 278 ms).
+  Broiler.ECMAScript.Algorithms -> /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Successfully created package '<temporary>/feed/Broiler.ECMAScript.Algorithms.0.0.1-probe.1.nupkg'.
++ dotnet restore --configfile <temporary>/NuGet.Config --no-http-cache
+  Determining projects to restore...
+  Restored <temporary>/consumer/Consumer.csproj (in 319 ms).
++ dotnet run -c Release --no-restore
+pristine-consumer: Broiler.ECMAScript contract types
+Validated Broiler.ECMAScript.Algorithms 0.0.1-probe.1 from a local feed in an isolated cache

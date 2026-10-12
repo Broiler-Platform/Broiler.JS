@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
-"""Pack the runtime graph, restore it into a clean consumer, and execute JavaScript."""
+"""Pack a package set, restore it into a clean consumer, and run it.
+
+The engine set (the default) packs the runtime graph of Broiler.JavaScript.All and executes
+JavaScript. The shared set (--set shared) packs every packable project of Broiler.ECMAScript.slnf,
+the shared libraries' own version stream, and runs a consumer of their contract types; the restore
+maps the Broiler.ECMAScript prefix to the local feed alone, so a package that only nuget.org could
+supply fails it."""
 
 from __future__ import annotations
 
 import argparse
 import html
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -15,6 +22,13 @@ import zipfile
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_PROJECT = REPOSITORY_ROOT / "Broiler.JS" / "Broiler.JavaScript.All" / "Broiler.JavaScript.All.csproj"
+SHARED_FILTER = REPOSITORY_ROOT / "Broiler.ECMAScript.slnf"
+SHARED_PREFIX = "Broiler.ECMAScript."
+
+# The packages Broiler.JavaScript.BuiltIns declares, as its project file references them. This list
+# named Broiler.DateTime and Broiler.Unicode.Properties until 2026-10-12, which BuiltIns no longer
+# references; it now names what the project does (repaired at milestone SJL-2.13).
+BUILT_INS_DEPENDENCIES = {"Broiler.Regex", "Broiler.Unicode.Cldr.LocaleData"}
 
 
 def run(arguments: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> None:
@@ -88,12 +102,116 @@ def is_multi_targeted(project: Path) -> bool:
     )
 
 
+def evaluate(project: Path, configuration: str, version: str | None, *names: str) -> dict[str, str]:
+    arguments = ["dotnet", "msbuild", str(project), "-nologo", f"-p:Configuration={configuration}"]
+    if version:
+        arguments += [f"-p:Version={version}", f"-p:PackageVersion={version}"]
+    arguments += [f"-getProperty:{name}" for name in names]
+    output = subprocess.run(arguments, cwd=REPOSITORY_ROOT, check=True, capture_output=True, text=True).stdout
+    return json.loads(output)["Properties"]
+
+
+def shared_consumer(arguments: argparse.Namespace) -> int:
+    """Pack the shared set, restore it from a local feed alone, and run a consumer of its contract types."""
+    filter_document = json.loads(SHARED_FILTER.read_text(encoding="utf-8"))
+    projects = [REPOSITORY_ROOT / path for path in filter_document["solution"]["projects"]]
+    temporary = Path(tempfile.mkdtemp(prefix="broiler-pristine-shared-"))
+    feed = temporary / "feed"
+    consumer = temporary / "consumer"
+    feed.mkdir()
+    consumer.mkdir()
+    try:
+        packed: list[tuple[str, str]] = []
+        for project in projects:
+            properties = evaluate(project, arguments.configuration, arguments.version, "IsPackable", "PackageId", "PackageVersion")
+            if properties["IsPackable"].lower() != "true":
+                continue
+            pack = ["dotnet", "pack", str(project), "-c", arguments.configuration, "-p:IncludeSymbols=false", "--output", str(feed)]
+            if arguments.version:
+                pack += [f"-p:Version={arguments.version}", f"-p:PackageVersion={arguments.version}"]
+            run(pack, cwd=REPOSITORY_ROOT)
+            packed.append((properties["PackageId"], properties["PackageVersion"]))
+        if not packed:
+            raise RuntimeError("Broiler.ECMAScript.slnf has no packable project")
+        identities = {package_identity(path) for path in feed.glob("*.nupkg")}
+        if identities != set(packed):
+            raise RuntimeError(f"packed {sorted(identities)}, expected {sorted(packed)}")
+
+        references = "\n".join(
+            f'    <PackageReference Include="{html.escape(package_id)}" Version="[{html.escape(version)}]" />'
+            for package_id, version in sorted(packed))
+        (consumer / "Consumer.csproj").write_text(
+            f"""<Project Sdk=\"Microsoft.NET.Sdk\">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+{references}
+  </ItemGroup>
+</Project>
+""",
+            encoding="utf-8",
+        )
+        (consumer / "Program.cs").write_text(
+            """using System;
+using Broiler.ECMAScript;
+
+ulong charged = 0;
+WorkCharge meter = units => charged += units;
+meter(2);
+var failure = new Failure(ResultStatus.Malformed, 3, "number.malformed-exponent");
+var limit = new LengthLimit(8);
+if (charged != 2 || failure.Position != 3 || !limit.Admits(8) || limit.Admits(9) || new DepthLimit(1).Admits(2))
+    throw new InvalidOperationException("the contract types do not behave as documented");
+Console.WriteLine("pristine-consumer: Broiler.ECMAScript contract types");
+""",
+            encoding="utf-8",
+        )
+        (temporary / "NuGet.Config").write_text(
+            f"""<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key=\"shared-local\" value=\"{html.escape(str(feed))}\" />
+    <add key=\"nuget.org\" value=\"https://api.nuget.org/v3/index.json\" />
+  </packageSources>
+  <packageSourceMapping>
+    <clear />
+    <packageSource key=\"shared-local\"><package pattern=\"{SHARED_PREFIX}*\" /></packageSource>
+    <packageSource key=\"nuget.org\"><package pattern=\"*\" /></packageSource>
+  </packageSourceMapping>
+</configuration>
+""",
+            encoding="utf-8",
+        )
+        clean_environment = os.environ.copy()
+        clean_environment["NUGET_PACKAGES"] = str(temporary / "packages")
+        run(["dotnet", "restore", "--configfile", str(temporary / "NuGet.Config"), "--no-http-cache"], cwd=consumer, env=clean_environment)
+        run(["dotnet", "run", "-c", "Release", "--no-restore"], cwd=consumer, env=clean_environment)
+        print(f"Validated {', '.join(f'{i} {v}' for i, v in sorted(packed))} from a local feed in an isolated cache")
+        return 0
+    finally:
+        if arguments.keep:
+            print(f"Retained: {temporary}")
+        else:
+            import shutil
+
+            shutil.rmtree(temporary, ignore_errors=True)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--set", choices=["engine", "shared"], default="engine", help="The package set to pack and consume")
     parser.add_argument("--project", type=Path, default=DEFAULT_PROJECT)
     parser.add_argument("--configuration", default="Release")
+    parser.add_argument("--version", help="The shared set's version to pack, for example 0.0.1-probe.1")
     parser.add_argument("--keep", action="store_true", help="Retain the temporary consumer directory")
     arguments = parser.parse_args()
+
+    if arguments.set == "shared":
+        return shared_consumer(arguments)
 
     project = arguments.project.resolve()
     if not project.exists():
@@ -135,11 +253,7 @@ def main() -> int:
         built_ins_package = next(
             path for (package_id, _), path in identities.items() if package_id == "Broiler.JavaScript.BuiltIns"
         )
-        missing_runtime_dependencies = {
-            "Broiler.Regex",
-            "Broiler.DateTime",
-            "Broiler.Unicode.Properties",
-        } - package_dependencies(built_ins_package)
+        missing_runtime_dependencies = BUILT_INS_DEPENDENCIES - package_dependencies(built_ins_package)
         if missing_runtime_dependencies:
             raise RuntimeError(
                 f"BuiltIns package is missing runtime dependencies: {sorted(missing_runtime_dependencies)}"

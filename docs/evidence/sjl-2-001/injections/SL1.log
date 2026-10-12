@@ -1,0 +1,31 @@
+# SL1: the algorithms library references an engine project
+# Injected into Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj; the test is SL1_No_shared_library.
+
+## Injected
+
+$ dotnet test /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/Broiler.ECMAScript.Architecture.Tests.csproj -c Release --no-build --nologo --filter FullyQualifiedName~SL1_No_shared_library
+Test run for /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+  Failed Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL1_No_shared_library_references_an_engine_Broiler_VM_or_a_package_outside_the_allow_list [38 ms]
+  Error Message:
+   Assert.Empty() Failure: Collection was not empty
+Collection: ["Broiler.ECMAScript.Algorithms references the proje"···]
+  Stack Trace:
+     at Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL1_No_shared_library_references_an_engine_Broiler_VM_or_a_package_outside_the_allow_list() in /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/SharedRuleTests.cs:line 47
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 38 ms - Broiler.ECMAScript.Architecture.Tests.dll (net10.0)
+[xUnit.net 00:00:00.23]     Broiler.ECMAScript.Architecture.Tests.SharedRuleTests.SL1_No_shared_library_references_an_engine_Broiler_VM_or_a_package_outside_the_allow_list [FAIL]
+exit 1
+
+## Reverted
+
+$ dotnet test /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/Broiler.ECMAScript.Architecture.Tests.csproj -c Release --no-build --nologo --filter FullyQualifiedName~SL1_No_shared_library
+Test run for /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     1, Skipped:     0, Total:     1, Duration: 37 ms - Broiler.ECMAScript.Architecture.Tests.dll (net10.0)
+exit 0
+
+# Result: injected exit 1 (must be non-zero), reverted exit 0 (must be zero)

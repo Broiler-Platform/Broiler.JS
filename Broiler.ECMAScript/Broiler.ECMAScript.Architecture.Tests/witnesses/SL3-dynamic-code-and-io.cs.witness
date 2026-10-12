@@ -1,0 +1,30 @@
+// SL3 witness: dynamic code, hidden machinery, I/O and an environment read (convention 8). Rule SL3
+// must report each.
+using System;
+using System.IO;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+namespace Witness;
+
+public static partial class HiddenMachinery
+{
+    [ModuleInitializer]
+    internal static void Register() { }
+
+    public static object? ByName(string name) => Activator.CreateInstance(Type.GetType(name)!);
+
+    public static Type Closed(Type open, Type argument) => open.MakeGenericType(argument);
+
+    public static Array Values(Type enumType) => Enum.GetValues(enumType);
+
+    public static object? Invoke(MethodInfo method) => method.Invoke(null, null);
+
+    public static string Data(string path) => File.ReadAllText(path);
+
+    public static string? Setting() => Environment.GetEnvironmentVariable("BROILER_MODE");
+
+    [DllImport("libc", EntryPoint = "getpid")]
+    public static extern int ProcessId();
+}

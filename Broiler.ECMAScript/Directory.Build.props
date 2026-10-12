@@ -1,0 +1,59 @@
+<Project>
+  <!--
+    THE SHARED LIBRARIES' BUILD, AND WHY IT DOES NOT INHERIT THE ENGINE'S.
+
+    The projects below this folder are the shared JavaScript libraries of the programme
+    Broiler.VM/docs/javascript-shared-libraries/ describes (milestone SJL-2.10): libraries both
+    engines consume, which reference neither. This file is the nearest Directory.Build.props for
+    them, so MSBuild never reads the repository root's, and that is deliberate. The root's file
+    suppresses some twenty warnings for the engine's sake and adds the engine's compiler toolset to
+    every project; the conventions of these libraries suppress nothing.
+
+    What it does take from the root is the canonical packaging metadata (authors, licence, icon,
+    README, symbols, deterministic builds and Source Link), imported first so that everything after
+    it wins. NoWarn is then set, not appended to: the packaging file suppresses the XML-documentation
+    warnings for the engine's benefit, and here a public member without its documentation - where
+    it cites the clause it implements (convention 15) - is an error.
+
+    The conventions are Broiler.ECMAScript/docs/conventions.md. Rule SL5 holds the AOT and trim
+    properties below to every shared library and SL10 the absence of preprocessor directives.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)..\eng\Broiler.Packaging.props" />
+
+  <!-- The shared packages' own version stream (decision SJL-D-3), apart from the engine's lockstep
+       version in the packaging file: eng/pack.ps1 -ProjectSet Shared packs it, and
+       eng/resolve-preview-version.mjs resolves it against the ecmascript-v* tags. -->
+  <PropertyGroup>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionSuffix>preview.1</VersionSuffix>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn></NoWarn>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <Deterministic>true</Deterministic>
+    <PackageProjectUrl>https://github.com/Broiler-Platform/Broiler.JS</PackageProjectUrl>
+    <PackageTags>broiler;ecmascript;javascript;shared</PackageTags>
+  </PropertyGroup>
+
+  <!-- Every shared library, and the test-only code the Native AOT probe runs, is held to the
+       trim, AOT and single-file analyzers. A project that is not a library (a test project or the
+       probe executable itself) clears these in its own file. -->
+  <PropertyGroup>
+    <IsAotCompatible>true</IsAotCompatible>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+
+  <!-- A shared package's README is this folder's, not the engine's: the packaging file packs the
+       repository root's README.md, which describes Broiler.JS. The notices stay the root's, whose
+       shared-libraries section covers these packages. -->
+  <ItemGroup Condition="'$(IsPackable)' == 'true'">
+    <None Remove="$(MSBuildThisFileDirectory)..\eng\..\README.md" />
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" Visible="false" />
+  </ItemGroup>
+</Project>

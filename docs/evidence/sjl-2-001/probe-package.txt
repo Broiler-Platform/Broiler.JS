@@ -1,0 +1,40 @@
+Broiler.ECMAScript.Algorithms 0.0.1-probe.1, packed from Broiler.JS a84a0b4ccd9497d9a6cea03e64030e7c5ab6b0ad with ContinuousIntegrationBuild=true
+
+contentHash (NuGet, base64 SHA-512 of the .nupkg):
+CCmUoN1rNXwTk7vTwNB3OoLDh2uk/zn3QRT4qfnnwBklqRKKcrS3sxxqUVBFW5Rv9el1OYl+e4OMnx230TvIrQ==
+
+sha256 of the .nupkg:
+fa47374e1a7462304e2efd20504d13617eb88beed77fa3f5cb3ede25de360122
+
+nuspec:
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Broiler.ECMAScript.Algorithms</id>
+    <version>0.0.1-probe.1</version>
+    <authors>Broiler contributors</authors>
+    <license type="expression">Apache-2.0</license>
+    <licenseUrl>https://licenses.nuget.org/Apache-2.0</licenseUrl>
+    <icon>icon.png</icon>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/Broiler-Platform/Broiler.JS</projectUrl>
+    <description>The language algorithms shared by the Broiler JavaScript engines. This version holds the contract types only: the WorkCharge metering delegate, the ResultStatus enumeration and the limit records every shared operation uses.</description>
+    <copyright>Copyright (c) Broiler contributors</copyright>
+    <tags>broiler ecmascript javascript shared</tags>
+    <repository type="git" url="https://github.com/Broiler-Platform/broiler.js" branch="refs/heads/claude/busy-lamport-m3yprr" commit="a84a0b4ccd9497d9a6cea03e64030e7c5ab6b0ad" />
+    <dependencies>
+      <group targetFramework="net10.0" />
+    </dependencies>
+  </metadata>
+</package>
+
+contents:
+_rels/.rels 492
+Broiler.ECMAScript.Algorithms.nuspec 1163
+README.md 3171
+THIRD_PARTY_NOTICES.md 1777
+icon.png 22842
+lib/net10.0/Broiler.ECMAScript.Algorithms.dll 9728
+lib/net10.0/Broiler.ECMAScript.Algorithms.xml 7834
+[Content_Types].xml 644
+package/services/metadata/core-properties/nuget.psmdcp 885

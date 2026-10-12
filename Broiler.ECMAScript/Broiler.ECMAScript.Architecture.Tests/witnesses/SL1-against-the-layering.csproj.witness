@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- SL1 witness, read as Broiler.ECMAScript.Algorithms: two references the layering does not give
+       the algorithms library. It is data-free and references the base class library only, so a
+       component package (Broiler.Regex is allowed to the frontend, not here) and another shared
+       library are both against the direction of architecture section 1. -->
+  <ItemGroup>
+    <PackageReference Include="Broiler.Regex" />
+    <PackageReference Include="System.Text.Json" />
+    <ProjectReference Include="..\Broiler.ECMAScript.Conformance\Broiler.ECMAScript.Conformance.csproj" />
+  </ItemGroup>
+</Project>

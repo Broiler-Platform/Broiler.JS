@@ -1,0 +1,7 @@
+Broiler.ECMAScript: 12 covered files (0 not covered), 157 code units, 111 relevant, 46 exempt
+  Annotated:       111 of 111 (100%)
+  Human-reviewed:  0 of 111 (0%)
+  Human line:      111 PENDING, 0 STALE
+  States:          NEW 0, AI_ASSESSED 0, HUMAN_PENDING 111, HUMAN_APPROVED_PENDING_FINGERPRINT 0, VERIFIED 0, STALE 0, EXEMPT 46
+  Security:        None 0, Low 103, Medium 6, High 2, Critical 0, not assessed 0
+  Generate:        nothing to write

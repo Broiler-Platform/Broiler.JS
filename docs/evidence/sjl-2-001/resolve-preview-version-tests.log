@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: first publish uses the configured preview; later publishes increment numerically
+ok 1 - first publish uses the configured preview; later publishes increment numerically
+  ---
+  duration_ms: 2.239637
+  type: 'test'
+  ...
+# Subtest: configured preview is a floor and other release lines do not affect it
+ok 2 - configured preview is a floor and other release lines do not affect it
+  ---
+  duration_ms: 0.241368
+  type: 'test'
+  ...
+# Subtest: a number spent anywhere is spent everywhere
+ok 3 - a number spent anywhere is spent everywhere
+  ---
+  duration_ms: 0.198203
+  type: 'test'
+  ...
+# Subtest: only unused previews on the configured release line are accepted
+ok 4 - only unused previews on the configured release line are accepted
+  ---
+  duration_ms: 0.570768
+  type: 'test'
+  ...
+# Subtest: publish tags are read as versions and a failure is not treated as "no tags"
+ok 5 - publish tags are read as versions and a failure is not treated as "no tags"
+  ---
+  duration_ms: 1.426641
+  type: 'test'
+  ...
+# Subtest: all packages contribute, including a partially published newer preview
+ok 6 - all packages contribute, including a partially published newer preview
+  ---
+  duration_ms: 51.489421
+  type: 'test'
+  ...
+# Subtest: feed failures and malformed responses stop publication
+ok 7 - feed failures and malformed responses stop publication
+  ---
+  duration_ms: 3.699814
+  type: 'test'
+  ...
+# Subtest: each stream reads only its own tags, by its own prefix
+ok 8 - each stream reads only its own tags, by its own prefix
+  ---
+  duration_ms: 0.348281
+  type: 'test'
+  ...
+# Subtest: a tag-requested version must carry the stream prefix
+ok 9 - a tag-requested version must carry the stream prefix
+  ---
+  duration_ms: 0.434485
+  type: 'test'
+  ...
+# Subtest: the streams partition the projects: the shared filter, and everything else
+ok 10 - the streams partition the projects: the shared filter, and everything else
+  ---
+  duration_ms: 0.923851
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 162.024079

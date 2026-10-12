@@ -1,0 +1,121 @@
+name: Publish shared libraries
+
+# Publishes the shared JavaScript libraries' packages (Broiler.ECMAScript.*) to nuget.org, their own
+# version stream (decision SJL-D-3): resolved by eng/resolve-preview-version.mjs with
+# PROJECT_SET=shared against nuget.org and this repository's ecmascript-v* tags, never the engine's
+# v* tags. The engine's packages are Publish's, and nothing here packs them.
+#
+# Only X.Y.Z-preview.N is ever resolved, so a probe pre-release (X.Y.Z-probe.N, packed for
+# Broiler.VM's committed feed) can never be pushed from here. No reservation of the Broiler.ECMAScript
+# prefix on nuget.org is required (decision SJL-D-2, revised 2026-10-12).
+
+on:
+  workflow_dispatch:
+    inputs:
+      version-suffix:
+        description: 'Optional preview.N (unused and at least the next preview). Empty selects automatically.'
+        type: string
+        default: ''
+  push:
+    tags: ['ecmascript-v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-shared
+  cancel-in-progress: false
+
+jobs:
+  version:
+    name: Resolve the shared stream's version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Require a NuGet.org API key
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_TOKEN }}
+        run: |
+          if [ -z "$NUGET_API_KEY" ]; then
+            echo "::error::Publishing to nuget.org needs the NUGET_TOKEN repository secret."
+            exit 1
+          fi
+      - name: Resolve version
+        id: version
+        env:
+          PROJECT_SET: shared
+          VERSION_SUFFIX: ${{ inputs.version-suffix }}
+        run: node eng/resolve-preview-version.mjs
+
+  validate:
+    name: Validate and pack
+    needs: version
+    uses: ./.github/workflows/shared-libraries.yml
+    # The assurance job checks out Broiler.Code with BROILER_CODE_TOKEN when the repository has one.
+    secrets: inherit
+    with:
+      package-version: ${{ needs.version.outputs.version }}
+
+  publish:
+    name: Publish to nuget.org
+    needs: [version, validate]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      PACKAGE_VERSION: ${{ needs.version.outputs.version }}
+      PACKAGE_TAG: ${{ needs.version.outputs.tag }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+      - name: Download validated packages
+        uses: actions/download-artifact@v8
+        with:
+          name: shared-packages
+          path: artifacts/shared
+      - name: Verify consumer restore from nuget.org
+        shell: pwsh
+        run: ./eng/verify-feed.ps1 -Packages artifacts/shared
+      - name: Push to NuGet.org
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_TOKEN }}
+        run: >
+          dotnet nuget push 'artifacts/shared/*.nupkg'
+          --source https://api.nuget.org/v3/index.json
+          --api-key "$NUGET_API_KEY" --skip-duplicate
+      - name: Record the published version as a tag
+        if: github.event_name != 'push'
+        run: |
+          git -c user.name='github-actions[bot]' \
+              -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+              tag -a "$PACKAGE_TAG" -m "Broiler.ECMAScript $PACKAGE_VERSION"
+          git push origin "$PACKAGE_TAG"
+      - name: Summary
+        run: |
+          {
+            echo "### Broiler.ECMAScript $PACKAGE_VERSION"
+            echo
+            echo 'Published to nuget.org.'
+            echo
+            echo '```'
+            ls -1 artifacts/shared
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -56,6 +56,39 @@ choices will be deployment/compiler **compositions**; neither is a `JavaScriptBo
 Planned package names and APIs remain hypotheses until the this component's assembly and AOT gates
 close."*
 
+## The shared libraries' packages (`Broiler.ECMAScript.*`)
+
+The shared JavaScript libraries live in [`Broiler.ECMAScript/`](../Broiler.ECMAScript/README.md),
+apart from this engine's projects, and are consumed by this engine and by Broiler.VM's JavaScript
+profile. They are not part of the `Broiler.JavaScript.*` set above and do not share its version.
+
+| Package | State | Public surface |
+| --- | --- | --- |
+| `Broiler.ECMAScript.Algorithms` | Contract types only, `0.1.0-preview.1` the first version the stream will publish | `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit`, `DepthLimit` |
+| `Broiler.ECMAScript.Conformance` | Test-only; not packed at this version | The corpus reader, the validator, the engine-level and library-level runners and their report |
+
+**Their compatibility promise is stronger than this engine's**, and it is enforced rather than stated
+([the conventions](../Broiler.ECMAScript/docs/conventions.md), 16):
+
+- **Semantic versioning.** A public API removal or a binary-breaking change is a major version; a
+  new API is a minor version; a correction toward the specification is a minor version with its own
+  changelog entry under "Observable changes"; a data-version change is a minor version with its own
+  entry under "Data". The changelog is [`Broiler.ECMAScript/CHANGELOG.md`](../Broiler.ECMAScript/CHANGELOG.md),
+  with the headings Added, Changed, Observable changes and Data in every entry.
+- **An API baseline, compared in both directions.** Each library's public types and members, read
+  from its built assembly, are committed as `PublicAPI.txt` beside its project file. Rule SL6 fails
+  the build's tests on anything public the baseline does not record and on anything the baseline
+  records that no longer exists. An intended change regenerates the baseline
+  (`BROILER_ECMASCRIPT_UPDATE_API=1 dotnet test Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests`)
+  and is reviewed as the API change it is.
+- **Package validation** runs in every pack (`EnablePackageValidation`). Until a first version is
+  published it runs without a baseline; from then on `PackageValidationBaselineVersion` names the
+  last published version, and a binary-breaking change fails the pack.
+- **Binary compatibility inside a major version is mandatory**, because a process that hosts both
+  engines loads one copy of each shared assembly.
+
+*Added 2026-10-12, at milestone SJL-2.13, as the paragraph above said it would be.*
+
 ## Public API changes, 2026-09-22 (module semantics, intrinsics, async ordering)
 
 **Removed, and source-breaking for a consumer of the published preview packages.** The old

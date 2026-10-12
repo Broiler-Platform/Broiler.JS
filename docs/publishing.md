@@ -6,6 +6,52 @@ no internal feed, and no per-feed switch anywhere in the build: `NuGet.config`,
 [`eng/resolve-preview-version.mjs`](../eng/resolve-preview-version.mjs) and the workflows all
 name one source.
 
+## Two version streams
+
+This repository publishes two sets of packages, each with its own version, tags and workflow
+(decision SJL-D-3 of the shared JavaScript libraries programme):
+
+| Stream | Projects | Version | Tags | Workflow |
+|---|---|---|---|---|
+| **Engine** | every project of `Broiler.JS.slnx` outside `Broiler.ECMAScript/` | `X.Y.Z-preview.N`, lockstep, floor in `eng/Broiler.Packaging.props` | `v*` | [`Publish`](../.github/workflows/publish.yml) |
+| **Shared** | the projects of `Broiler.ECMAScript.slnf`, the `Broiler.ECMAScript.*` packages | `X.Y.Z-preview.N`, floor in `Broiler.ECMAScript/Directory.Build.props` | `ecmascript-v*` | [`Publish shared libraries`](../.github/workflows/publish-shared.yml) |
+
+Each stream is packed by `eng/pack.ps1 -ProjectSet Engine` or `-ProjectSet Shared` and resolved by
+`eng/resolve-preview-version.mjs` with `PROJECT_SET=engine` or `PROJECT_SET=shared`, which reads
+nuget.org and that stream's tags only. A shared release does not move the engine's version, and an
+engine release does not move the shared packages' - the alternative, lockstep, would bump
+Broiler.VM's dependencies on every engine release whether or not a shared library changed.
+
+Everything below describes the engine stream; the shared stream works the same way, with two
+differences. *(Revised 2026-10-12, when the owner withdrew the prefix reservation and decision
+SJL-D-2 was revised: the sentence said "three differences", and the first read "**The
+`Broiler.ECMAScript` prefix must be reserved on nuget.org before anything under it is published**
+(decision SJL-D-2; the programme's governance, section 8), which also guards against dependency
+confusion. Reserving it is an application a release owner makes to nuget.org, and no workflow can
+make it. **It is owed: it has not been made on this date.** When it is granted, the release owner
+sets the repository variable `ECMASCRIPT_PREFIX_RESERVED` to `true`; until then `Publish shared
+libraries` refuses to run." No reservation is required, and the workflow no longer reads that
+variable.)*
+
+- **Its dry run is [`Shared libraries`](../.github/workflows/shared-libraries.yml)**, on every push
+  and pull request: it builds the folder and runs its rules, publishes and runs the Native AOT probe,
+  runs the assurance check, packs the stream with package validation, restores it in an isolated
+  cache as `eng/verify-feed.ps1` does, and runs a pristine consumer
+  (`scripts/packaging/test_pristine_consumer.py --set shared`) from a local feed alone.
+- **A probe pre-release is packed, never published.** `eng/pack.ps1 -ProjectSet Shared` also accepts
+  `X.Y.Z-probe.N`, which the resolver never produces, so `Publish shared libraries` cannot push one.
+  `0.0.1-probe.1` of `Broiler.ECMAScript.Algorithms`, the contract types alone, was packed at
+  milestone SJL-2.13 for Broiler.VM's admission probe and reaches Broiler.VM through that
+  repository's committed feed; its version is below every version the stream will publish, so it
+  can never shadow one.
+
+The shared packages' compatibility promise (the API baseline, package validation, the changelog
+headings) is in [`public-api.md`](public-api.md).
+
+*Added 2026-10-12, at milestone SJL-2.13. Until then this document described one stream: "Every
+package in the solution ships at one version, in lockstep", which remains true of the engine
+stream.*
+
 ## Running a publish
 
 The [`Publish`](../.github/workflows/publish.yml) workflow is the only supported route.
@@ -26,8 +72,10 @@ not, rather than after a full build.
 ## How the version is chosen
 
 `VersionPrefix`/`VersionSuffix` in [`eng/Broiler.Packaging.props`](../eng/Broiler.Packaging.props)
-set the **floor** — the lowest version a publish may use. Every package in the solution ships
-at one version, in lockstep; `eng/pack.ps1` refuses a set whose versions disagree.
+set the **floor** — the lowest version a publish may use. Every package of the engine stream ships
+at one version, in lockstep; `eng/pack.ps1` refuses a set whose versions disagree. *(Revised
+2026-10-12, at milestone SJL-2.13: "Every package in the solution ships at one version" became "Every
+package of the engine stream", when the shared stream was added.)*
 
 The number actually published is one past the highest preview number this repository has ever
 **spent**, which is the union of two records:

@@ -1,0 +1,11 @@
+// SL5 witness: a source that silences the trim analyzer instead of being trimmable. Rule SL5 finds
+// the attribute in metadata and the inventory scan finds it in the text.
+using System.Diagnostics.CodeAnalysis;
+
+namespace Witness;
+
+public static class Suppressed
+{
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "a witness")]
+    public static string Name(object value) => value.GetType().Name;
+}

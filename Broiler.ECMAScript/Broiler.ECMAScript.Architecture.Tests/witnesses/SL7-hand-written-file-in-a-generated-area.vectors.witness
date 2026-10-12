@@ -1,0 +1,14 @@
+# SL7 witness: a vector file written by hand into the generated number area. Rule SL7 compares the
+# area with what scripts/conformance/generate_number_vectors.py writes, so a file the generator does
+# not write is reported, as an edited one is.
+schema: 1
+
+id: numbers/hand-written/0001
+area: numbers
+op: Number::toString
+in: f64:0x3FF0000000000000
+out: value: str:"1"
+class: normative
+prov: ref:numref@1
+script: String(1)
+since: 1

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The tests of the Conformance library: the reader, the typed values, the validator over the
+    corpus and its negative controls, and the library-level runner. Engine-neutral; Broiler.JS's
+    engine-level run stays in Broiler.JS/Broiler.JavaScript.Vectors.Tests.
+  -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- A test project is not a library the Native AOT probe runs; xunit discovers by reflection. -->
+    <IsAotCompatible>false</IsAotCompatible>
+    <IsTrimmable>false</IsTrimmable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Broiler.ECMAScript.Conformance\Broiler.ECMAScript.Conformance.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\runners\CorpusDirectory.cs" Link="CorpusDirectory.cs" />
+  </ItemGroup>
+</Project>
