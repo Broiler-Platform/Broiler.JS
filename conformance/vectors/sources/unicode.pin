@@ -1,0 +1,12 @@
+# The Unicode Character Database file the corpus's `ucd:` provenance names.
+#
+# `ucd:17.0.0/PropList.txt` is this file. The number area's whitespace set (StrWhiteSpaceChar) takes
+# its Space_Separator members from the White_Space lines whose general category is Zs. It is the file
+# Broiler.VM pins (Broiler.VM/src/tests/unicode/pins/unicode.pin, rule N22), named here by the same
+# digest. The generator re-derives the set from it when given --proplist and refuses a file whose
+# digest differs.
+
+version 17.0.0
+file PropList.txt
+bytes 145465
+sha256 130dcddcaadaf071008bdfce1e7743e04fdfbc910886f017d9f9ac931d8c64dd

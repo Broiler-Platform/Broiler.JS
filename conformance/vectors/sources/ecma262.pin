@@ -1,0 +1,16 @@
+# The specification edition the corpus's `spec:` provenance names.
+#
+# Every `spec:es2026@0248456c#<clause-id>` entry is a clause of this document. It is the edition
+# Broiler.VM's JavaScript profile archives (Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/specification/,
+# rule N14), named here by the same revision and digest so the corpus and that profile read one text.
+# The corpus does not archive a copy; the two commands below verify one.
+#
+#   sha256sum Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/specification/ecma-262-es2026-spec.html
+#   curl -sS https://raw.githubusercontent.com/tc39/ecma262/0248456c758431e4bb8e5d26333ff1865123c9cd/spec.html | sha256sum
+
+standard ECMA-262, 17th edition (ES2026)
+source tc39/ecma262
+revision 0248456c758431e4bb8e5d26333ff1865123c9cd
+document spec.html
+bytes 2978793
+sha256 ce7bc30174061fd8d212270b81cf6511661180c1e174f6911d10ced0581527b0

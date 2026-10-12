@@ -13,6 +13,7 @@
     <Project Path="Broiler.JS/Broiler.JavaScript.Portable.Tests/Broiler.JavaScript.Portable.Tests.csproj" />
     <Project Path="Broiler.JS/Broiler.JavaScript.Runtime.Tests/Broiler.JavaScript.Runtime.Tests.csproj" />
     <Project Path="Broiler.JS/Broiler.JavaScript.Storage.Tests/Broiler.JavaScript.Storage.Tests.csproj" />
+    <Project Path="Broiler.JS/Broiler.JavaScript.Vectors.Tests/Broiler.JavaScript.Vectors.Tests.csproj" />
   </Folder>
   <Folder Name="/Benchmarks/">
     <Project Path="Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Broiler.JavaScript.Engine.Benchmarks.csproj" />

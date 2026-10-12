@@ -1,0 +1,73 @@
+Test run for <repo>/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+<repo>/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.07]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.14]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.14]   Starting:    Broiler.JavaScript.Vectors.Tests
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_malformed_or_non_canonical_value_is_refused(text: "f64:0xFFF8000000000000", code: "bad-double") [5 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_malformed_or_non_canonical_value_is_refused(text: "int:+1", code: "bad-value") [1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_malformed_or_non_canonical_value_is_refused(text: "f64:0x3FF000000000000", code: "bad-double") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_malformed_or_non_canonical_value_is_refused(text: "bool:1", code: "bad-value") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_malformed_or_non_canonical_value_is_refused(text: "bigint:007", code: "bad-value") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_malformed_or_non_canonical_value_is_refused(text: "bigint:-0", code: "bad-value") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_malformed_or_non_canonical_value_is_refused(text: "str:\"\\x41\"", code: "bad-string") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_malformed_or_non_canonical_value_is_refused(text: "f64:0x7FF8000000000001", code: "bad-double") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_malformed_or_non_canonical_value_is_refused(text: "f64:0x3ff0000000000000", code: "bad-double") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_malformed_or_non_canonical_value_is_refused(text: "1.5", code: "bad-value") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_malformed_or_non_canonical_value_is_refused(text: "str:\"a", code: "bad-string") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.Alternatives_are_read_value_by_value_so_a_string_may_hold_the_separator [15 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.Rendering_writes_every_NaN_and_both_zeros_by_their_canonical_bits [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_canonical_value_is_accepted(text: "f64:0x7FF8000000000000") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_canonical_value_is_accepted(text: "bool:true") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_canonical_value_is_accepted(text: "str:\"\\\"\\\\\"") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_canonical_value_is_accepted(text: "f64:0x8000000000000000") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_canonical_value_is_accepted(text: "bigint:0") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_canonical_value_is_accepted(text: "str:\"\"") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_canonical_value_is_accepted(text: "null") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_canonical_value_is_accepted(text: "undefined") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_canonical_value_is_accepted(text: "int:36") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_canonical_value_is_accepted(text: "f64:0x3FF0000000000000") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_canonical_value_is_accepted(text: "str:\"a | b\"") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_canonical_value_is_accepted(text: "bigint:-123") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.TypedValueTests.A_string_has_one_written_form [1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_changed_field_of_a_real_vector_is_refused(key: "since", value: "0", code: "bad-since") [295 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_changed_field_of_a_real_vector_is_refused(key: "id", value: "Numbers/x", code: "bad-id") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_changed_field_of_a_real_vector_is_refused(key: "out", value: "error: Oops", code: "bad-outcome") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_changed_field_of_a_real_vector_is_refused(key: "prov", value: "ucd:16.0.0/PropList.txt", code: "bad-provenance") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_changed_field_of_a_real_vector_is_refused(key: "in", value: "f64:0x3FF0000000000000  int:1", code: "bad-value") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_changed_field_of_a_real_vector_is_refused(key: "prov", value: "observed:broiler-vm", code: "engine-observed") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_changed_field_of_a_real_vector_is_refused(key: "out", value: "value: 1", code: "bad-value") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_changed_field_of_a_real_vector_is_refused(key: "area", value: "number", code: "bad-area") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_changed_field_of_a_real_vector_is_refused(key: "class", value: "optional", code: "bad-class") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_changed_field_of_a_real_vector_is_refused(key: "prov", value: "spec:es2026@deadbeef#sec-x", code: "bad-provenance") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_negative_control_is_refused_for_its_stated_reason(control: "engine-observed.vectors") [1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_negative_control_is_refused_for_its_stated_reason(control: "no-schema.vectors") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_negative_control_is_refused_for_its_stated_reason(control: "bad-class.vectors") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_negative_control_is_refused_for_its_stated_reason(control: "divergence-without-engine.vectors") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_negative_control_is_refused_for_its_stated_reason(control: "impl-defined-without-expectation.vectors") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_negative_control_is_refused_for_its_stated_reason(control: "missing-field.vectors") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_negative_control_is_refused_for_its_stated_reason(control: "future-revision.vectors") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_negative_control_is_refused_for_its_stated_reason(control: "duplicate-id.vectors") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_negative_control_is_refused_for_its_stated_reason(control: "unknown-key.vectors") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_negative_control_is_refused_for_its_stated_reason(control: "duplicate-key.vectors") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_negative_control_is_refused_for_its_stated_reason(control: "bad-double.vectors") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_negative_control_is_refused_for_its_stated_reason(control: "bad-string.vectors") [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.LibraryRunTests.Every_vector_s_inputs_decode [321 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.Every_vector_has_a_source_independent_of_both_engines [35 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.The_controls_README_lists_every_control [12 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_vector_whose_only_provenance_is_engine_observed_is_refused [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.A_divergence_field_needs_a_divergence_vector_or_the_engine_s_own_expectation [6 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.ValidatorTests.The_corpus_validates [< 1 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.LibraryRunTests.Against_the_empty_library_every_vector_is_not_implemented [49 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way [5 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm [420 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [4 m 44 s]
+[xUnit.net 00:05:06.93]   Finished:    Broiler.JavaScript.Vectors.Tests
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_negative_control_is_reported_as_an_unclassified_difference [15 s]
+
+Test Run Successful.
+Total tests: 59
+     Passed: 59
+ Total time: 5.1237 Minutes
+exit 0

@@ -1,0 +1,11 @@
+bundle: sjl-1-001 (Broiler.JS)
+collected: 2026-10-12
+repository: Broiler-Platform/broiler.js, branch claude/busy-lamport-m3yprr
+judged run: corpus revision 3, introduced by commit 593f2c5bce1f055025864af2b7ec38ee6f2f835a and read from conformance/vectors/; the runner is the test project at the bundle's own commit, which is 593f2c5 plus three things: this directory, the plan ledger's row, and the change to EngineRunTests.cs that writes the negative control's report beside the run's. The corpus is byte-identical to 593f2c5's
+corpus content sha256: b86ee85ea4487b42c19a8aa84a68ec652aa414ce4982a2f1c2f16244838c67bd over the 16 files of conformance/vectors/ without controls/ (sorted "path LF sha256 LF" lines, paths below conformance/vectors/); Broiler.VM's src/tests/vectors/pins/vectors.pin names the same digest
+first run: corpus revision 1 at commit 966140ad694570467ad21975f23047d0d6f0c1ce, run-revision-1.tsv.gz
+second revision: corpus revision 2 at commit 9b0f2dde58712ad49a0c9dcf2a385c3d328ccd47, the revision Broiler.VM's first run read
+runner: Broiler.JS/Broiler.JavaScript.Vectors.Tests, built in Release; each vector in a fresh JSContext(experimentalFeatures: JavaScriptFeatureFlags.AllExperimentalEs2026) of the default composition (Broiler.JavaScript.All), evaluated in a child process of the test assembly with a 5 s limit per vector
+sdk: .NET SDK 10.0.401, runtime Microsoft.NETCore.App 10.0.12
+reference computation: Python 3.13.16 (scripts/conformance/numref.py and its tests)
+machine: Linux 6.18.44 x86-64, Intel Xeon @ 2.10GHz, 4 cores, a cloud container

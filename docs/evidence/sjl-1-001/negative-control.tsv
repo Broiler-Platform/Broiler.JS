@@ -1,0 +1,9 @@
+# engine: broiler-js
+# corpus revision: 3
+# vectors: 280
+# match: 279
+# classified-divergence: 0
+# difference: 1
+# not-implemented: 0
+# divergence no longer holds: 0
+numbers/to-fixed/0001	normative	value: str:"00"	value: str:"0"	difference

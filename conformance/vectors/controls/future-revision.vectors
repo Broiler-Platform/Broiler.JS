@@ -1,0 +1,11 @@
+schema: 1
+
+id: numbers/control/0001
+area: numbers
+op: Number::toString
+in: f64:0x3FF0000000000000
+out: value: str:"1"
+class: normative
+prov: spec:es2026@0248456c#sec-numeric-types-number-tostring
+script: String($f64(0x3FF00000, 0x00000000))
+since: 999

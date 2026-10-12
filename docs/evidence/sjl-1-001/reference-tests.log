@@ -1,0 +1,22 @@
+test_to_exponential (test_numref.DigitMethodTests.test_to_exponential) ... ok
+test_to_fixed (test_numref.DigitMethodTests.test_to_fixed) ... ok
+test_to_precision (test_numref.DigitMethodTests.test_to_precision) ... ok
+ok
+test_the_generator_writes_the_revision_REVISIONS_md_ends_at (test_numref.GeneratorTests.test_the_generator_writes_the_revision_REVISIONS_md_ends_at) ... ok
+test_early_errors (test_numref.LiteralTests.test_early_errors) ... ok
+test_values (test_numref.LiteralTests.test_values) ... ok
+test_every_admissible_value_round_trips (test_numref.NumberToStringTests.test_every_admissible_value_round_trips) ... ok
+test_known_answers (test_numref.NumberToStringTests.test_known_answers) ... ok
+test_radix_10_recommendation_agrees_with_cpython (test_numref.NumberToStringTests.test_radix_10_recommendation_agrees_with_cpython) ... ok
+test_the_smallest_subnormal_admits_every_one_digit_string_that_rounds_to_it (test_numref.NumberToStringTests.test_the_smallest_subnormal_admits_every_one_digit_string_that_rounds_to_it) ... ok
+test_from_fraction_agrees_with_cpython_division (test_numref.RoundingTests.test_from_fraction_agrees_with_cpython_division) ... ok
+test_ties_round_to_even (test_numref.RoundingTests.test_ties_round_to_even) ... ok
+test_to_fraction_is_exact (test_numref.RoundingTests.test_to_fraction_is_exact) ... ok
+test_non_decimal_strings_are_exact (test_numref.StringTests.test_non_decimal_strings_are_exact) ... ok
+test_parse_float (test_numref.StringTests.test_parse_float) ... ok
+test_parse_int (test_numref.StringTests.test_parse_int) ... ok
+test_round_mv_result_admits_both_options_beyond_20_digits (test_numref.StringTests.test_round_mv_result_admits_both_options_beyond_20_digits) ... ok
+test_short_decimal_strings_agree_with_cpython (test_numref.StringTests.test_short_decimal_strings_agree_with_cpython) ... ok
+test_white_space (test_numref.StringTests.test_white_space) ... ok
+Ran 20 tests in 12.869s
+OK
