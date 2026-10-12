@@ -66,6 +66,11 @@ covered by `Broiler.JavaScript.BuiltIns.Tests/SharedNumberConversionTests.cs`.
   format's spellings, were classified as canonical numeric strings, so a typed array ignored them as
   keys; they are ordinary property keys now (`SharedNumberConversionTests`).
 
+- **A Number equals a String through ToNumber only.** Three fast paths of `==` compared .NET's text of
+  the number with the string, so `NaN == "NaN"` and `"NaN" == NaN` were `true`; they are `false`
+  (ECMA-262 §7.2.14; `SharedNumberConversionTests`). The search for surviving duplicates of the area
+  (bundle sjl-3-001, milestone SJL-3.7) found them.
+
 **Not corrected here.** A `NonOctalDecimalIntegerLiteral` (`08`, `09.5`) in strict mode code is still
 accepted (`strict-non-octal-decimal`, `numbers/literal/0082`, `0084`, `0088` and `0090`): strictness
 is the compiler's, and item SJL-14 answers it.

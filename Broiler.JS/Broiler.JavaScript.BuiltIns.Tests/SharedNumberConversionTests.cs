@@ -126,6 +126,19 @@ public class SharedNumberConversionTests
     public void Literal_values_are_correctly_rounded(string expression, string expected)
         => Assert.Equal(expected, Eval("String(" + expression + ")"));
 
+    // Number == String is ToNumber of the string (ECMA-262 7.2.14), never a comparison of .NET's text of
+    // the number: NaN equals nothing. Each form the compiler emits: a literal on either side, and neither.
+    [Theory]
+    [InlineData("var n = NaN; n == 'NaN'", "false")]
+    [InlineData("var s = 'NaN'; s == NaN", "false")]
+    [InlineData("var n = NaN, s = 'NaN'; n == s", "false")]
+    [InlineData("var n = NaN, s = 'NaN'; s == n", "false")]
+    [InlineData("var n = 1e21; n == '1E+21'", "true")]
+    [InlineData("var s = ' 0x10 '; s == 16", "true")]
+    [InlineData("var n = 0.1; n == '.1'", "true")]
+    public void Number_equals_string_through_ToNumber(string source, string expected)
+        => Assert.Equal(expected, Eval("String((function () { " + source.Replace("; ", "; return ", StringComparison.Ordinal) + "; })())"));
+
     // A canonical numeric string is Number::toString's: "1e+21" is one, "1E+21" (.NET's "R") is not.
     [Theory]
     [InlineData("var t = new Float64Array(1); t['1e+21'] = 5; String(t['1e+21'])", "undefined")]

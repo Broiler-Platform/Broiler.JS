@@ -465,8 +465,9 @@ public sealed partial class JSNumber : JSPrimitive
                 return true;
         }
 
-        // Added for this TC ExpressionTests.cs Assert.AreEqual(true, Evaluate("2 == [2]"));
-        if (ToString() == value.ToString())
+        // Added for this TC ExpressionTests.cs Assert.AreEqual(true, Evaluate("2 == [2]")). A string is
+        // decided above, by ToNumber, and never here: comparing the texts made NaN == "NaN" true.
+        if (value is not JSString && ToString() == value.ToString())
             return true;
 
         return false;
@@ -514,7 +515,9 @@ public sealed partial class JSNumber : JSPrimitive
 
     public override bool EqualsLiteral(double value) => this.value == value;
 
-    public override bool EqualsLiteral(string value) => this.value.ToString() == value || this.value == NumberParser.CoerceToNumber(value);
+    // Number == String is number == ToNumber(string) (ECMA-262 7.2.14 step 4). Comparing .NET's text
+    // of the number made NaN == "NaN" true.
+    public override bool EqualsLiteral(string value) => this.value == NumberParser.CoerceToNumber(value);
 
     public override bool StrictEqualsLiteral(double value) => this.value == value;
 
