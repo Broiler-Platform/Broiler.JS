@@ -1,0 +1,21 @@
+package	version	project	nupkg sha256	entries
+Broiler.JavaScript.All	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj	f70a9e4270eaf0647af00ea714997ad237f5b7c2b76f2b880b659b4d995ade78	7
+Broiler.JavaScript.Ast	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj	2b5c14201db53c1abfc2b0a5a2d6b01e491504be961b49f312460146f8bfa49d	9
+Broiler.JavaScript.BuiltIns	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj	65b62275c37b24f28a8f27773afd9557f0547ea08d0c252580d61a2200c747f4	9
+Broiler.JavaScript.Clr	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Clr/Broiler.JavaScript.Clr.csproj	c86782a390bb86505b98942d33f77acef51f00a1d3ac3537b57aa579e68a8ffe	9
+Broiler.JavaScript.Compiler	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj	8e9e51e8d606140e942f4bb60ed3141cfb64d2c7daa828ffcc024688e7abcb32	9
+Broiler.JavaScript.Debugger	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Debugger/Broiler.JavaScript.Debugger.csproj	2b37d24c7cef917d0139facf1f7d05d08a676988ff9543b32ca446266c4458a7	9
+Broiler.JavaScript.Engine	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj	17fb889a6b61ea626954d9696a3ba10f55c44e875fc9f132720915a3a957c444	9
+Broiler.JavaScript.ExpressionCompiler	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj	d3182b4907361d914368f6728944f9d22f3766cfa0986867b9480658f1ceb5ab	9
+Broiler.JavaScript.Expressions	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj	3c18e80eea97bcf857ca74af3cdd3029f3647d8602feb9d592b64ab0604a1532	9
+Broiler.JavaScript.Extensions	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Extensions/Broiler.JavaScript.Extensions.csproj	3bfa2ffc36000fb8791e60d51f8d1c989dfd9beb072764d60772e41de89ee3ce	9
+Broiler.JavaScript.Globals	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Globals/Broiler.JavaScript.Globals.csproj	1923263dd5553286bb92d87e9268171bb3a2c0481468e34d8e0924f6bad77020	9
+Broiler.JavaScript.LinqExpressions	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.LinqExpressions/Broiler.JavaScript.LinqExpressions.csproj	7da9eafcc1669f8ff26f09a0e3c37b36afb6f186c87ddc3628ca4be4029d2ee4	9
+Broiler.JavaScript.Minimal	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Minimal/Broiler.JavaScript.Minimal.csproj	e7561d280cf808a98f0ef6475903ff34dec9d2a72145fe96291b1c9065d657bf	7
+Broiler.JavaScript.ModuleExtensions	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.ModuleExtensions/Broiler.JavaScript.ModuleExtensions.csproj	78e72fa7a3538d06014201e42b85b2d196d19d904c935619b8daaed4885dec17	9
+Broiler.JavaScript.Modules	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Modules/Broiler.JavaScript.Modules.csproj	fed7058928626b317f8f97fa966074999662779904afc5373b87a90bd8fd5ab1	9
+Broiler.JavaScript.Parser	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj	d2504daae25cbe04fbd8cf85daffe67defeea28eb7d14e954b002e41a3b29d28	9
+Broiler.JavaScript.Portable.Compiler	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Portable.Compiler/Broiler.JavaScript.Portable.Compiler.csproj	414138347cd5d6b28f9a8e58d56dd899dd9055bc4988ed5ae29903042e38aefc	10
+Broiler.JavaScript.Portable	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Portable/Broiler.JavaScript.Portable.csproj	c098d1c5d12e69b981cc37a866aab503e4f9af1a20d3e7fac32248a2e09623f3	9
+Broiler.JavaScript.Runtime	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj	0780bbc6d3639858a7d0bb649a026f69b7bffe62600213798e7c49e64b4cba35	9
+Broiler.JavaScript.Storage	0.1.0-preview.1	Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj	c2aa9d285dafcb6b598a9ca7215fd1540534f85b4e5d99208039a665d201dcd5	9

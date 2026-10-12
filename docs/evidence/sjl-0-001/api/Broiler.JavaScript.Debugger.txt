@@ -1,0 +1,255 @@
+namespace Broiler.JavaScript.Debugger
+{
+    public class AsyncQueue<T> : System.IDisposable
+    {
+        public AsyncQueue() { }
+        public void Dispose() { }
+        public void Enqueue(T item) { }
+        [System.Runtime.CompilerServices.AsyncIteratorStateMachine(typeof(Broiler.JavaScript.Debugger.AsyncQueue<T>.<Process>d__6))]
+        public System.Collections.Generic.IAsyncEnumerable<T> Process() { }
+    }
+    public class DelayTask
+    {
+        public DelayTask(int timeInMS, System.Threading.CancellationToken token) { }
+        public void Cancel() { }
+        public void OnTimer(object a) { }
+        public static System.Threading.Tasks.Task<bool> For(System.TimeSpan timeout, System.Threading.CancellationToken token) { }
+        public static System.Threading.Tasks.Task<bool> For(int timeoutMS, System.Threading.CancellationToken token) { }
+    }
+    public static class HashExtensions
+    {
+        public static string ComputeHash(this System.Security.Cryptography.HashAlgorithm alg, string text) { }
+    }
+    public class IncomingMessage
+    {
+        public IncomingMessage() { }
+        [System.Text.Json.Serialization.JsonPropertyName("id")]
+        public long ID { get; set; }
+        [System.Text.Json.Serialization.JsonPropertyName("method")]
+        public string Method { get; set; }
+        [System.Text.Json.Serialization.JsonPropertyName("params")]
+        public System.Text.Json.Nodes.JsonNode Params { get; set; }
+    }
+    public delegate System.Threading.Tasks.Task<string> MessageProcessor(long id, System.Text.Json.Nodes.JsonNode p);
+    public class V8CallFrame
+    {
+        public V8CallFrame() { }
+        public int ColumnNumber { get; set; }
+        public string FunctionName { get; set; }
+        public int LineNumber { get; set; }
+        public string ScriptId { get; set; }
+        public string Url { get; set; }
+    }
+    public class V8Debugger : Broiler.JavaScript.Debugger.V8ProtocolObject
+    {
+        public V8Debugger(Broiler.JavaScript.Debugger.V8InspectorProtocol inspectorContext) { }
+        public object Enable() { }
+        public Broiler.JavaScript.Debugger.V8ReturnValue GetScriptSource(Broiler.JavaScript.Debugger.V8Debugger.GetScriptSourceArgs a) { }
+        public static object SetAsyncCallStackDepth(Broiler.JavaScript.Debugger.V8Debugger.SetAsyncCallStackDepthParams p) { }
+        public static object SetPauseOnExceptions(Broiler.JavaScript.Debugger.V8Debugger.SetPauseOnExceptionsParams p) { }
+        public class GetScriptSourceArgs
+        {
+            public GetScriptSourceArgs() { }
+            public string ScriptId { get; set; }
+        }
+        public class ScriptParsed : Broiler.JavaScript.Debugger.V8ProtocolEvent
+        {
+            public ScriptParsed() { }
+            public long ExecutionContextId { get; set; }
+            public bool HasSourceURL { get; set; }
+            public string Hash { get; set; }
+            public int Length { get; set; }
+            public string ScriptId { get; set; }
+            public string ScriptLanguage { get; set; }
+            public string Url { get; set; }
+        }
+        public class SetAsyncCallStackDepthParams
+        {
+            public SetAsyncCallStackDepthParams() { }
+        }
+        public class SetPauseOnExceptionsParams
+        {
+            public SetPauseOnExceptionsParams() { }
+            public string State { get; set; }
+        }
+    }
+    public class V8ExceptionDetails
+    {
+        public V8ExceptionDetails(System.Exception ex, Broiler.JavaScript.Engine.JSContext context = null) { }
+        public int ColumnNumber { get; set; }
+        public Broiler.JavaScript.Debugger.V8RemoteObject Exception { get; set; }
+        public int ExceptionId { get; set; }
+        public string ExecutionContextId { get; set; }
+        public int LineNumber { get; set; }
+        public string ScriptId { get; set; }
+        public Broiler.JavaScript.Debugger.V8StackTrace StackTrace { get; set; }
+        public string Text { get; set; }
+        public string Url { get; set; }
+    }
+    public abstract class V8InspectorProtocol : Broiler.JavaScript.Engine.JSDebugger, System.IDisposable
+    {
+        public System.Collections.Generic.Dictionary<long, Broiler.JavaScript.Engine.JSContext> Contexts;
+        public System.Collections.Generic.Dictionary<string, Broiler.JavaScript.Runtime.JSFunctionDelegate> InjectedScripts;
+        public System.Collections.Generic.Dictionary<string, string> Scripts;
+        public V8InspectorProtocol() { }
+        public string ID { get; }
+        public abstract System.Threading.Tasks.Task ConnectAsync();
+        public abstract void Dispose();
+        public System.Threading.Tasks.Task OnMessageReceived(Broiler.JavaScript.Debugger.IncomingMessage e) { }
+        public override void ReportException(Broiler.JavaScript.Runtime.JSValue error) { }
+        public override void ScriptParsed(long contextId, string code, string codeFilePath) { }
+        public void Send(Broiler.JavaScript.Debugger.V8ProtocolEvent e) { }
+        public abstract void SendMessage(string message);
+        public static Broiler.JavaScript.Debugger.MessageProcessor Create<T, RT>(Broiler.JavaScript.Debugger.V8ProtocolObject p, System.Reflection.MethodInfo m) { }
+        public static Broiler.JavaScript.Debugger.MessageProcessor CreateAsync<T, RT>(System.Reflection.MethodInfo m) { }
+        public static Broiler.JavaScript.Debugger.MessageProcessor CreateEmpty<RT>(Broiler.JavaScript.Debugger.V8ProtocolObject p, System.Reflection.MethodInfo m) { }
+        public static Broiler.JavaScript.Debugger.MessageProcessor CreateEmptyAsync<RT>(System.Reflection.MethodInfo m) { }
+        public static Broiler.JavaScript.Debugger.V8InspectorProtocol CreateInverseProxy(System.Uri uri) { }
+    }
+    public class V8PropertyDescriptor
+    {
+        public V8PropertyDescriptor(Broiler.JavaScript.BuiltIns.JSPrototype prototypeChain) { }
+        public V8PropertyDescriptor(string name, Broiler.JavaScript.Runtime.JSValue v, in Broiler.JavaScript.Storage.JSProperty p, bool isOwn = false) { }
+        public bool Configurable { get; set; }
+        public bool Enumerable { get; set; }
+        public Broiler.JavaScript.Debugger.V8RemoteObject Get { get; set; }
+        public bool IsOwn { get; set; }
+        public string Name { get; set; }
+        public Broiler.JavaScript.Debugger.V8RemoteObject Set { get; set; }
+        public Broiler.JavaScript.Debugger.V8RemoteObject Value { get; set; }
+        public bool WasThrown { get; set; }
+        public bool Writable { get; set; }
+    }
+    public abstract class V8ProtocolEvent
+    {
+        protected V8ProtocolEvent() { }
+    }
+    public class V8ProtocolObject
+    {
+        protected readonly Broiler.JavaScript.Debugger.V8InspectorProtocol inspectorContext;
+        public V8ProtocolObject(Broiler.JavaScript.Debugger.V8InspectorProtocol inspectorContext) { }
+    }
+    public class V8RemoteObject
+    {
+        public V8RemoteObject(Broiler.JavaScript.Runtime.JSValue v) { }
+        public V8RemoteObject(string v) { }
+        public string ClassName { get; set; }
+        public string Description { get; set; }
+        public string ObjectId { get; set; }
+        public string SubType { get; set; }
+        public string Type { get; set; }
+        public object Value { get; set; }
+        public static System.Collections.Generic.List<Broiler.JavaScript.Debugger.V8RemoteObject> From(in Broiler.JavaScript.Runtime.Arguments a) { }
+        public static Broiler.JavaScript.Runtime.JSValue From(string id) { }
+    }
+    public class V8ReturnValue
+    {
+        public V8ReturnValue() { }
+        public V8ReturnValue(System.Exception ex, Broiler.JavaScript.Engine.JSContext c = null) { }
+        public Broiler.JavaScript.Debugger.V8ExceptionDetails ExceptionDetails { get; set; }
+        public string Id { get; set; }
+        public object Result { get; set; }
+        public string ScriptId { get; set; }
+        public string ScriptSource { get; set; }
+        public static Broiler.JavaScript.Debugger.V8ReturnValue op_Implicit(Broiler.JavaScript.Runtime.JSValue result) { }
+        public static Broiler.JavaScript.Debugger.V8ReturnValue op_Implicit(System.Exception ex) { }
+    }
+    public class V8Runtime : Broiler.JavaScript.Debugger.V8ProtocolObject
+    {
+        public V8Runtime(Broiler.JavaScript.Debugger.V8InspectorProtocol inspectorContext) { }
+        public Broiler.JavaScript.Debugger.V8ReturnValue CallFunctionOn(Broiler.JavaScript.Debugger.V8Runtime.CallFunctionOnParams a) { }
+        public Broiler.JavaScript.Debugger.V8ReturnValue CompileScript(Broiler.JavaScript.Debugger.V8Runtime.CompileScriptParams a) { }
+        public object Enable() { }
+        public Broiler.JavaScript.Debugger.V8ReturnValue Evaluate(Broiler.JavaScript.Debugger.V8Runtime.EvaluateParams a) { }
+        public Broiler.JavaScript.Debugger.V8ReturnValue GetIsolateId() { }
+        public Broiler.JavaScript.Debugger.V8ReturnValue RunScript(Broiler.JavaScript.Debugger.V8Runtime.RunScriptArgs a) { }
+        public static Broiler.JavaScript.Debugger.V8ReturnValue GetProperties(Broiler.JavaScript.Debugger.V8Runtime.GetPropertiesParams args) { }
+        public class CallArgument
+        {
+            public CallArgument() { }
+            public string ObjectId { get; set; }
+            public string UnserializableValue { get; set; }
+            public object Value { get; set; }
+            public Broiler.JavaScript.Runtime.JSValue ToJSValue() { }
+        }
+        public class CallFunctionOnParams
+        {
+            public CallFunctionOnParams() { }
+            public System.Collections.Generic.List<Broiler.JavaScript.Debugger.V8Runtime.CallArgument> Arguments { get; set; }
+            public bool AwaitPromise { get; set; }
+            public long ExecutionContextId { get; set; }
+            public string FunctionDeclaration { get; set; }
+            public string ObjectGroup { get; set; }
+            public string ObjectId { get; set; }
+            public bool ReturnByValue { get; set; }
+            public bool Silent { get; set; }
+            public bool UserGesture { get; set; }
+        }
+        public class CompileScriptParams
+        {
+            public CompileScriptParams() { }
+            public long ExecutionContextId { get; set; }
+            public string Expression { get; set; }
+            public bool PersistScript { get; set; }
+            public string SourceUrl { get; set; }
+        }
+        public class ConsoleApiCalled : Broiler.JavaScript.Debugger.V8ProtocolEvent
+        {
+            public ConsoleApiCalled(string id, Broiler.JavaScript.Engine.JSContext context, string type, in Broiler.JavaScript.Runtime.Arguments a) { }
+            public System.Collections.Generic.List<Broiler.JavaScript.Debugger.V8RemoteObject> Args { get; set; }
+            public string ExecutionContextId { get; set; }
+            public Broiler.JavaScript.Debugger.V8StackTrace StackTrace { get; set; }
+            public long Timestamp { get; set; }
+            public string Type { get; set; }
+        }
+        public class EvaluateParams
+        {
+            public EvaluateParams() { }
+            public bool AwaitPromise { get; set; }
+            public long ContextId { get; set; }
+            public string Expression { get; set; }
+            public bool IncludeCommandLineAPI { get; set; }
+            public string ObjectGroup { get; set; }
+            public bool ReturnByValue { get; set; }
+            public bool Silent { get; set; }
+            public bool ThrowOnSideEffect { get; set; }
+            public bool UserGesture { get; set; }
+        }
+        public class ExecutionContextCreated : Broiler.JavaScript.Debugger.V8ProtocolEvent
+        {
+            public ExecutionContextCreated() { }
+            public Broiler.JavaScript.Debugger.V8Runtime.ExecutionContextDescription Context { get; set; }
+        }
+        public class ExecutionContextDescription
+        {
+            public ExecutionContextDescription() { }
+            public long Id { get; set; }
+            public string Name { get; set; }
+            public string Origin { get; set; }
+            public string UniqueId { get; set; }
+        }
+        public class GetPropertiesParams
+        {
+            public GetPropertiesParams() { }
+            public string ObjectId { get; set; }
+            public bool ownProperties { get; set; }
+        }
+        public class RunScriptArgs
+        {
+            public RunScriptArgs() { }
+            public bool AwaitPromise { get; set; }
+            public long ExecutionContextId { get; set; }
+            public bool GeneratePreview { get; set; }
+            public bool IncludeCommandLineAPI { get; set; }
+            public string ObjectGroup { get; set; }
+            public bool ReturnByValue { get; set; }
+            public string ScriptId { get; set; }
+            public bool Silent { get; set; }
+        }
+    }
+    public class V8StackTrace
+    {
+        public V8StackTrace(Broiler.JavaScript.Engine.JSContext context) { }
+        public System.Collections.Generic.List<Broiler.JavaScript.Debugger.V8CallFrame> CallFrames { get; set; }
+    }
+}

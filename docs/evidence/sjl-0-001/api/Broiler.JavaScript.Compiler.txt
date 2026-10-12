@@ -1,0 +1,440 @@
+namespace Broiler.JavaScript.Compiler
+{
+    public static class AnonymousProgramDump
+    {
+        public const string EnvironmentVariable = "BROILER_JS_DUMP_PROGRAMS";
+        public static string Directory { get; set; }
+        public static bool Enabled { get; }
+        public static void Write(string name, string source) { }
+    }
+    public static class CallResultNumericLocals
+    {
+        public const string EnvironmentVariable = "BROILER_JS_CALL_RESULT_NUMERIC_LOCALS";
+        public static bool Enabled { get; set; }
+    }
+    public static class CapturedNumericLocals
+    {
+        public const string EnvironmentVariable = "BROILER_JS_CAPTURED_NUMERIC_LOCALS";
+        public static bool Enabled { get; set; }
+    }
+    public static class CompilerSpecializationDiagnostics
+    {
+        public static void Reset() { }
+        public static Broiler.JavaScript.Compiler.CompilerSpecializationSnapshot Snapshot() { }
+    }
+    public readonly struct CompilerSpecializationSnapshot : System.IEquatable<Broiler.JavaScript.Compiler.CompilerSpecializationSnapshot>
+    {
+        public CompilerSpecializationSnapshot(
+                    long ScalarLocals,
+                    long NumericLocals,
+                    long MixedNumericComparisons,
+                    long BoxedNumericComparisons,
+                    long HoistedNames,
+                    long[] NumericRejections,
+                    long NumericCandidatesOffered,
+                    long NumericCandidatesRejected,
+                    long NumericCandidatesDropped,
+                    long NumericCandidatesSurviving,
+                    long[] NumericDropCauses,
+                    long SpeculativeNumericTrees,
+                    long SpeculativeNumericGuards,
+                    long[] NumericTreeRefusals,
+                    long[] NumericTreeOrderBlockers,
+                    long SpeculativeNumericCandidates,
+                    long SpeculativeNumericLocalsEmitted,
+                    long ImportedOuterNumericCandidates,
+                    long ImportedOuterNumericOffers,
+                    long[] DeferralRefusals,
+                    long DeferralFreeNames,
+                    long DeferralBoundFreeNames,
+                    long DeferralFunctionOwnedFreeNames,
+                    long DeferralCellBackedFreeNames) { }
+        public long BoxedNumericComparisons { get; init; }
+        public long DeferralBoundFreeNames { get; init; }
+        public long DeferralCellBackedFreeNames { get; init; }
+        public long DeferralFreeNames { get; init; }
+        public long DeferralFunctionOwnedFreeNames { get; init; }
+        public long[] DeferralRefusals { get; init; }
+        public long HoistedNames { get; init; }
+        public long ImportedOuterNumericCandidates { get; init; }
+        public long ImportedOuterNumericOffers { get; init; }
+        public long MixedNumericComparisons { get; init; }
+        public long NumericCandidatesDropped { get; init; }
+        public long NumericCandidatesOffered { get; init; }
+        public long NumericCandidatesRejected { get; init; }
+        public long NumericCandidatesSurviving { get; init; }
+        public long[] NumericDropCauses { get; init; }
+        public long NumericLocals { get; init; }
+        public long[] NumericRejections { get; init; }
+        public long[] NumericTreeOrderBlockers { get; init; }
+        public long[] NumericTreeRefusals { get; init; }
+        public long ScalarLocals { get; init; }
+        public long SpeculativeNumericCandidates { get; init; }
+        public long SpeculativeNumericGuards { get; init; }
+        public long SpeculativeNumericLocalsEmitted { get; init; }
+        public long SpeculativeNumericTrees { get; init; }
+    }
+    public static class DeferrableFunctions
+    {
+        public const string EnvironmentVariable = "BROILER_JS_DEFER_TREE_COUNT";
+        public static bool Counting { get; set; }
+    }
+    public enum DeferralRefusal
+    {
+        CaptureFree = 0,
+        Dynamic = 1,
+        CapturesEnclosingBinding = 2,
+    }
+    public static class DeferredTreeCompilation
+    {
+        public const string EnvironmentVariable = "BROILER_JS_DEFER_TREE";
+        public static int RetainedCount { get; }
+        public static bool Retaining { get; set; }
+        public static Broiler.JavaScript.Compiler.DeferredTreeCompilation.Comparison Recompile() { }
+        public static void Reset() { }
+        public static bool SameStructurally(string eager, string reentered) { }
+        public static bool SameUpToCounters(string eager, string reentered) { }
+        public readonly struct Comparison : System.IEquatable<Broiler.JavaScript.Compiler.DeferredTreeCompilation.Comparison>
+        {
+            public Comparison(int SitesBefore, int SitesAfter, int Total, int Reproduced, int Structural, int Threw, int Exhausted, int EagerReusedASite, int OtherDivergence, string FirstDifference, string FirstStructuralDifference, string FirstOrdinalDivergence) { }
+            public int EagerReusedASite { get; init; }
+            public int Exhausted { get; init; }
+            public string FirstDifference { get; init; }
+            public string FirstOrdinalDivergence { get; init; }
+            public string FirstStructuralDifference { get; init; }
+            public int OtherDivergence { get; init; }
+            public int Reproduced { get; init; }
+            public int SitesAfter { get; init; }
+            public int SitesBefore { get; init; }
+            public int Structural { get; init; }
+            public int Threw { get; init; }
+            public int Total { get; init; }
+        }
+    }
+    public static class DirectEvalSupport
+    {
+        public static Broiler.JavaScript.Runtime.JSValue Execute(
+                    Broiler.JavaScript.Runtime.Arguments arguments,
+                    Broiler.JavaScript.Runtime.JSValue callee,
+                    Broiler.JavaScript.Runtime.JSValue @this,
+                    Broiler.JavaScript.Engine.FrameToken activationOwner,
+                    bool inheritStrictMode,
+                    bool disallowArgumentsDeclaration,
+                    string[] lexicalBindings,
+                    Broiler.JavaScript.Runtime.JSVariable[] capturedBindings,
+                    Broiler.JavaScript.Runtime.JSVariable[] shadowedBindings,
+                    string[] capturedLexicalBindingNames,
+                    string[] parameterBindings,
+                    string[] privateNamesInScope,
+                    bool allowSuperProperty,
+                    bool allowSuperCall,
+                    bool useActivationBinding = false,
+                    Broiler.JavaScript.Runtime.JSValue directEvalSuper = null,
+                    bool inFieldInitializer = false,
+                    bool rejectNewTarget = false,
+                    Broiler.JavaScript.Runtime.JSValue directEvalSuperConstructor = null,
+                    Broiler.JavaScript.Runtime.JSVariable directEvalThisBinding = null,
+                    string[] evalVarEnvNames = null,
+                    Broiler.JavaScript.Runtime.JSValue directEvalNewTarget = null,
+                    string[] catchParameterNames = null,
+                    bool tailCall = false) { }
+        public static bool ValidateIndirectEval(string text) { }
+    }
+    public static class ElementReadNumericLocals
+    {
+        public const string EnvironmentVariable = "BROILER_JS_ELEMENT_READ_NUMERIC_LOCALS";
+        public static bool Enabled { get; set; }
+    }
+    public class FastCompiler : Broiler.JavaScript.Ast.AstMapVisitor<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression>
+    {
+        public FastCompiler(in Broiler.JavaScript.Ast.Misc.StringSpan code, string location = null, System.Collections.Generic.IList<string> argsList = null, Broiler.JavaScript.Runtime.ICodeCache codeCache = null) { }
+        public Broiler.JavaScript.Compiler.LoopScope LoopScope { get; }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression<Broiler.JavaScript.Runtime.JSFunctionDelegate> Method { get; }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression KeyOfName(in Broiler.JavaScript.Ast.Misc.StringSpan name) { }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression KeyOfName(string name) { }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression KeyOfPrivateName(in Broiler.JavaScript.Ast.Misc.StringSpan name) { }
+        [return: System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "isString",
+                "isNumber",
+                "exp"})]
+        public System.ValueTuple<bool, bool, Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> ToNativeExpression(Broiler.JavaScript.Ast.Expressions.AstExpression ast) { }
+        [return: System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "args",
+                "hasSpread"})]
+        protected System.ValueTuple<Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression>, bool> VisitArguments(Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> arguments) { }
+        protected Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitArguments(Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression? thisArg, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> arguments, Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression? newTarget = null) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitArrayExpression(Broiler.JavaScript.Ast.Expressions.AstArrayExpression arrayExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitArrayPattern(Broiler.JavaScript.Ast.Patterns.AstArrayPattern arrayPattern) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitAwaitExpression(Broiler.JavaScript.Ast.Expressions.AstAwaitExpression node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitBinaryExpression(Broiler.JavaScript.Ast.Expressions.AstBinaryExpression binaryExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitBlock(Broiler.JavaScript.Ast.AstBlock block) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitBreakStatement(Broiler.JavaScript.Ast.Statements.AstBreakStatement breakStatement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitCallExpression(Broiler.JavaScript.Ast.Expressions.AstCallExpression callExpression) { }
+        protected Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitCallExpression(Broiler.JavaScript.Ast.Expressions.AstExpression callee, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.Expressions.AstExpression> arguments, bool coalesce = false, bool inChain = false) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitClassStatement(Broiler.JavaScript.Ast.Statements.AstClassExpression classStatement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitConditionalExpression(Broiler.JavaScript.Ast.Expressions.AstConditionalExpression conditionalExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitContinueStatement(Broiler.JavaScript.Ast.Statements.AstContinueStatement continueStatement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitDebuggerStatement(Broiler.JavaScript.Ast.Statements.AstDebuggerStatement debuggerStatement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitDoWhileStatement(Broiler.JavaScript.Ast.Statements.AstDoWhileStatement doWhileStatement, string label = null) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitEmptyExpression(Broiler.JavaScript.Ast.Expressions.AstEmptyExpression emptyExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitExportStatement(Broiler.JavaScript.Ast.Statements.AstExportStatement exportStatement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitExpressionStatement(Broiler.JavaScript.Ast.Statements.AstExpressionStatement expressionStatement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitForInStatement(Broiler.JavaScript.Ast.Statements.AstForInStatement forInStatement, string? label = null) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitForOfStatement(Broiler.JavaScript.Ast.Statements.AstForOfStatement forOfStatement, string? label = null) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitForStatement(Broiler.JavaScript.Ast.Statements.AstForStatement forStatement, string? label = null) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitFunctionExpression(Broiler.JavaScript.Ast.Expressions.AstFunctionExpression functionExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitIdentifier(Broiler.JavaScript.Ast.AstIdentifier identifier) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitIfStatement(Broiler.JavaScript.Ast.Statements.AstIfStatement ifStatement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitImportCall(Broiler.JavaScript.Ast.Expressions.AstImportCall node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitImportStatement(Broiler.JavaScript.Ast.Statements.AstImportStatement importStatement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitLabeledStatement(Broiler.JavaScript.Ast.Statements.AstLabeledStatement labeledStatement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitLiteral(Broiler.JavaScript.Ast.AstLiteral literal) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitMemberExpression(Broiler.JavaScript.Ast.Expressions.AstMemberExpression memberExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitMeta(Broiler.JavaScript.Ast.AstMeta astMeta) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitNewExpression(Broiler.JavaScript.Ast.Expressions.AstNewExpression newExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitObjectLiteral(Broiler.JavaScript.Ast.AstObjectLiteral objectExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitObjectPattern(Broiler.JavaScript.Ast.Patterns.AstObjectPattern objectPattern) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitOptionalChain(Broiler.JavaScript.Ast.Expressions.AstOptionalChain node) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitProgram(Broiler.JavaScript.Ast.AstProgram program) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitReturnStatement(Broiler.JavaScript.Ast.Statements.AstReturnStatement returnStatement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitSequenceExpression(Broiler.JavaScript.Ast.Expressions.AstSequenceExpression sequenceExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitSpreadElement(Broiler.JavaScript.Ast.AstSpreadElement spreadElement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitSuper(Broiler.JavaScript.Ast.AstSuper super) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitSwitchStatement(Broiler.JavaScript.Ast.Statements.AstSwitchStatement switchStatement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitTaggedTemplateExpression(Broiler.JavaScript.Ast.Expressions.AstTaggedTemplateExpression template) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitTemplateExpression(Broiler.JavaScript.Ast.Expressions.AstTemplateExpression templateExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitThrowStatement(Broiler.JavaScript.Ast.Statements.AstThrowStatement throwStatement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitTryStatement(Broiler.JavaScript.Ast.Statements.AstTryStatement tryStatement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitUnaryExpression(Broiler.JavaScript.Ast.Expressions.AstUnaryExpression unaryExpression) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitVariableDeclaration(Broiler.JavaScript.Ast.AstVariableDeclaration variableDeclaration) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitWhileStatement(Broiler.JavaScript.Ast.Statements.AstWhileStatement whileStatement, string label = null) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitWithStatement(Broiler.JavaScript.Ast.Statements.AstWithStatement withStatement) { }
+        protected override Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression VisitYieldExpression(Broiler.JavaScript.Ast.Expressions.AstYieldExpression yieldExpression) { }
+        public static Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression ToJSValueExpression(Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression exp) { }
+    }
+    public class FastFunctionScope : Broiler.JavaScript.ExpressionCompiler.Core.LinkedStackItem<Broiler.JavaScript.Compiler.FastFunctionScope>
+    {
+        public readonly System.Collections.Generic.List<Broiler.JavaScript.Compiler.FastFunctionScope.VariableScope> EvalShadows;
+        public Broiler.JavaScript.ExpressionCompiler.Core.LinkedStack<Broiler.JavaScript.Compiler.LoopScope> Loop;
+        public readonly Broiler.JavaScript.Compiler.FastFunctionScope RootScope;
+        public readonly Broiler.JavaScript.Compiler.FastFunctionScope TopScope;
+        public FastFunctionScope(Broiler.JavaScript.Compiler.FastFunctionScope p) { }
+        public FastFunctionScope(Broiler.JavaScript.Parser.FastPool pool, Broiler.JavaScript.Ast.Expressions.AstFunctionExpression fx, Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression previousThis = null, Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression super = null, bool isAsync = false, Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.AstClassProperty> memberInits = null, Broiler.JavaScript.Compiler.FastFunctionScope previous = null, string[] directEvalPrivateNames = null, System.Collections.Generic.IReadOnlyDictionary<Broiler.JavaScript.Ast.AstClassProperty, Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> computedMemberNames = null, bool thisIsUninitialized = false, Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression previousNewTarget = null) { }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression Arguments { get; }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression ArgumentsExpression { get; }
+        public System.Collections.Generic.IReadOnlyDictionary<Broiler.JavaScript.Ast.AstClassProperty, Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> AutoAccessorBackingKeys { get; set; }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression Awaiter { get; set; }
+        public bool CanScalarReplaceLocals { get; }
+        public System.Collections.Generic.IReadOnlySet<string> CapturedByHoistedFunctions { get; }
+        public System.Collections.Generic.IReadOnlySet<string> CapturedByNestedFunctions { get; }
+        public System.Collections.Generic.IReadOnlyDictionary<Broiler.JavaScript.Ast.AstClassProperty, Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> ComputedMemberNames { get; set; }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression Context { get; }
+        public string[] CurrentDirectEvalParameterBindings { get; set; }
+        public string[] DirectEvalPrivateNames { get; }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression Disposable { get; }
+        public Broiler.JavaScript.Ast.Expressions.AstFunctionExpression Function { get; }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression Generator { get; set; }
+        public bool HasAsyncDisposable { get; set; }
+        public bool HasDisposable { get; }
+        public bool HasNestedFunctions { get; }
+        public bool HasOuterFunctionCaptures { get; }
+        public bool InParameterInitializer { get; set; }
+        public System.Collections.Generic.IEnumerable<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> InitList { get; }
+        public System.Collections.Generic.IEnumerable<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> InitOnlyList { get; }
+        public bool IsEvalShadowBoundary { get; }
+        public bool IsFunctionScope { get; }
+        public bool IsRoot { get; }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression this[string name] { get; }
+        public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.Ast.AstClassProperty> MemberInits { get; set; }
+        public bool MentionsArguments { get; }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression NewTargetExpression { get; set; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, Broiler.JavaScript.Runtime.NumericLocalMiss> NumericLocalMisses { get; }
+        public System.Collections.Generic.IReadOnlySet<string> NumericLocals { get; }
+        public System.Collections.Generic.IEnumerable<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> PostInitList { get; }
+        public System.Collections.Generic.IReadOnlyList<Broiler.JavaScript.Compiler.PrivateInstanceElement> PrivateInstanceElements { get; set; }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BLabelTarget ReturnLabel { get; }
+        public System.Collections.Generic.IReadOnlySet<string> SpeculativeNumericLocals { get; }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression StackItem { get; }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression Super { get; set; }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression SuperConstructor { get; set; }
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression ThisExpression { get; }
+        public System.Collections.Generic.IEnumerable<Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression> VariableParameters { get; }
+        public System.Collections.Generic.IEnumerable<Broiler.JavaScript.Compiler.FastFunctionScope.VariableScope> Variables { get; }
+        public Broiler.JavaScript.Compiler.FastFunctionScope.VariableScope CreateEvalShadow(in Broiler.JavaScript.Ast.Misc.StringSpan name, Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression outerVariable, bool outerIsGlobal) { }
+        public Broiler.JavaScript.Compiler.FastFunctionScope.VariableScope CreateException(string name) { }
+        public Broiler.JavaScript.Compiler.FastFunctionScope.VariableScope CreateVariable(in Broiler.JavaScript.Ast.Misc.StringSpan name, Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression init = null, bool newScope = false, System.Type type = null, bool initialize = true) { }
+        public System.Collections.Generic.IEnumerable<string> GetDirectEvalLexicalBindingNames(bool excludeSimpleCatchBindings = false) { }
+        public System.Collections.Generic.IEnumerable<string> GetImmediateCatchParameterNames() { }
+        public System.Collections.Generic.IEnumerable<string> GetImmediateVarEnvNames() { }
+        public Broiler.JavaScript.Compiler.FastFunctionScope.VariableScope GetTempVariable(System.Type type = null) { }
+        public Broiler.JavaScript.Compiler.FastFunctionScope.VariableScope GetVariable(in Broiler.JavaScript.Ast.Misc.StringSpan name, bool createClosure = true) { }
+        public System.Collections.Generic.IEnumerable<Broiler.JavaScript.Compiler.FastFunctionScope.VariableScope> GetVisibleVariables() { }
+        public System.Collections.Generic.IEnumerable<Broiler.JavaScript.Compiler.FastFunctionScope.VariableScope> GetWithFallbackVariables() { }
+        public bool TryGetOwnVariable(in Broiler.JavaScript.Ast.Misc.StringSpan name, out Broiler.JavaScript.Compiler.FastFunctionScope.VariableScope variable) { }
+        public class VariableScope : System.IDisposable
+        {
+            public VariableScope() { }
+            public bool Create { get; }
+            public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression EvalCaptureExpression { get; }
+            public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression Expression { get; }
+            public bool InUse { get; }
+            public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression Init { get; }
+            public bool IsDeletable { get; }
+            public bool IsEvalShadow { get; }
+            public bool IsLexical { get; }
+            public bool IsSimpleCatchBinding { get; }
+            public bool IsTemp { get; }
+            public string Name { get; }
+            public Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression NumericStorage { get; }
+            public Broiler.JavaScript.Ast.Expressions.AstFunctionExpression OwnerFunction { get; }
+            public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression PostInit { get; }
+            public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression ReadExpression { get; }
+            public bool SkipRegistration { get; }
+            public Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression SpeculativeNumericFlag { get; }
+            public Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression SpeculativeNumericStorage { get; }
+            public Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression SpeculativeSlot { get; }
+            public Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression Variable { get; }
+            public void Dispose() { }
+            public void SetInit(Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression exp, bool initialize = true) { }
+            public void SetPostInit(Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression exp) { }
+        }
+    }
+    public sealed class FreeNameScan
+    {
+        public readonly System.Collections.Generic.HashSet<string> Free;
+        public readonly System.Collections.Generic.List<string> FreeInOrder;
+        public FreeNameScan() { }
+        public bool Dynamic { get; }
+        public bool SelfNameReferenced { get; }
+        public static System.Collections.Generic.Dictionary<Broiler.JavaScript.Ast.Expressions.AstFunctionExpression, Broiler.JavaScript.Compiler.FreeNameScan> ForProgram(Broiler.JavaScript.Ast.AstNode root) { }
+        public static Broiler.JavaScript.Compiler.FreeNameScan Of(Broiler.JavaScript.Ast.Expressions.AstFunctionExpression function) { }
+    }
+    public static class ImportedOuterNumerics
+    {
+        public const string EnvironmentVariable = "BROILER_JS_OUTER_NUMERIC_COUNT";
+        public static bool Counting { get; set; }
+    }
+    public static class ListOfExpressionsExtensions
+    {
+        public static Broiler.JavaScript.ExpressionCompiler.Core.Sequence<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> ConvertToInteger(this Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> source) { }
+        public static Broiler.JavaScript.ExpressionCompiler.Core.Sequence<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> ConvertToInteger(this Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> source, Broiler.JavaScript.Parser.FastPool.Scope scope) { }
+        public static Broiler.JavaScript.Runtime.SparseList<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> ConvertToJSValue(this System.Collections.Generic.IList<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> source) { }
+        public static Broiler.JavaScript.ExpressionCompiler.Core.Sequence<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> ConvertToJSValue(this Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> source, Broiler.JavaScript.Parser.FastPool.Scope scope) { }
+        public static Broiler.JavaScript.Runtime.SparseList<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> ConvertToNumber(this System.Collections.Generic.IList<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> source) { }
+        public static Broiler.JavaScript.ExpressionCompiler.Core.Sequence<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> ConvertToNumber(this Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> source, Broiler.JavaScript.Parser.FastPool.Scope scope) { }
+        public static Broiler.JavaScript.Runtime.SparseList<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> ConvertToString(this System.Collections.Generic.IList<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> source) { }
+        public static Broiler.JavaScript.ExpressionCompiler.Core.Sequence<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> ConvertToString(this Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerable<Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression> source, Broiler.JavaScript.Parser.FastPool.Scope scope) { }
+    }
+    public class LoopScope : Broiler.JavaScript.ExpressionCompiler.Core.LinkedStackItem<Broiler.JavaScript.Compiler.LoopScope>
+    {
+        public readonly Broiler.JavaScript.ExpressionCompiler.Expressions.BLabelTarget Break;
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BParameterExpression CompletionVariable;
+        public readonly Broiler.JavaScript.ExpressionCompiler.Expressions.BLabelTarget Continue;
+        public readonly bool IsSwitch;
+        public readonly string Name;
+        public LoopScope(Broiler.JavaScript.ExpressionCompiler.Expressions.BLabelTarget breakTarget, Broiler.JavaScript.ExpressionCompiler.Expressions.BLabelTarget continueTarget, bool isSwitch = false, string name = null) { }
+        public Broiler.JavaScript.Compiler.LoopScope Get(string name) { }
+    }
+    public static class NativeBitwiseOperators
+    {
+        public const string EnvironmentVariable = "BROILER_JS_NATIVE_BITWISE";
+        public static bool Enabled { get; set; }
+    }
+    public enum NumericDropCause
+    {
+        DroppedCandidate = 0,
+        Parameter = 1,
+        PropertyRead = 2,
+        ElementRead = 3,
+        CallResult = 4,
+        OtherName = 5,
+        NonNumericLiteral = 6,
+        UnhandledOperator = 7,
+        Other = 8,
+    }
+    public enum NumericLocalRejection
+    {
+        Accepted = 0,
+        DirectEvalRoot = 1,
+        FunctionNotScalarReplaceable = 2,
+        NotInAFunction = 3,
+        ArgumentsOrEval = 4,
+        CapturedByNestedFunction = 5,
+        CapturedByHoistedFunction = 6,
+        LexicalOutsideFunctionBody = 7,
+        NotProvenNumeric = 8,
+    }
+    public static class NumericLocalSpecialization
+    {
+        public const string EnvironmentVariable = "BROILER_JS_NUMERIC_LOCALS";
+        public static bool Enabled { get; set; }
+    }
+    public static class NumericSpeculation
+    {
+        public const string EnvironmentVariable = "BROILER_JS_NUMERIC_SPECULATION";
+        public static bool Enabled { get; set; }
+    }
+    public enum NumericTreeOrderBlocker
+    {
+        ElementRead = 0,
+        PropertyRead = 1,
+        CallResult = 2,
+        OtherName = 3,
+        Other = 4,
+    }
+    public static class NumericTreeOrdering
+    {
+        public const string EnvironmentVariable = "BROILER_JS_NUMERIC_TREE_ORDER";
+        public static bool Enabled { get; set; }
+    }
+    public enum NumericTreeRefusal
+    {
+        Specialized = 0,
+        AlreadyNative = 1,
+        WithOrEvalShadow = 2,
+        NoSavingToMake = 3,
+        OrderUnsafe = 4,
+        TooManyLeaves = 5,
+        StringLeaf = 6,
+        NothingToGuard = 7,
+        Unbuildable = 8,
+    }
+    public static class ParameterNumericLocals
+    {
+        public const string EnvironmentVariable = "BROILER_JS_PARAMETER_NUMERIC_LOCALS";
+        public static bool Enabled { get; set; }
+    }
+    public sealed class PrivateInstanceElement
+    {
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression Getter;
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression Key;
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression Method;
+        public Broiler.JavaScript.ExpressionCompiler.Expressions.BExpression Setter;
+        public PrivateInstanceElement() { }
+    }
+    public static class PropertyReadNumericLocals
+    {
+        public const string EnvironmentVariable = "BROILER_JS_PROPERTY_READ_NUMERIC_LOCALS";
+        public static bool Enabled { get; set; }
+    }
+    public class SharedParserStringMap<T>
+    {
+        public SharedParserStringMap() { }
+        [System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "Key",
+                "Value"})]
+        public Broiler.JavaScript.ExpressionCompiler.Core.IFastEnumerator<System.ValueTuple<Broiler.JavaScript.Ast.Misc.StringSpan, T>> AllValues { get; }
+        public T this[Broiler.JavaScript.Ast.Misc.StringSpan& name] { get; set; }
+        public bool TryGetValue(in Broiler.JavaScript.Ast.Misc.StringSpan name, out T value) { }
+    }
+    public static class SpeculativeNumericLocals
+    {
+        public const string EnvironmentVariable = "BROILER_JS_SPECULATIVE_NUMERIC_COUNT";
+        public static bool Counting { get; set; }
+    }
+    public static class SpeculativeNumericLocals2
+    {
+        public const string EnvironmentVariable = "BROILER_JS_SPECULATIVE_NUMERIC_LOCALS";
+        public static bool Enabled { get; set; }
+    }
+}

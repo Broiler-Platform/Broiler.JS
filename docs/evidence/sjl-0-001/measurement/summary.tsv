@@ -1,0 +1,4 @@
+workload	runs B	runs B-again	Q(B) ns	Q(B-again) ns	|Q(B)-Q(B-again)| ns	E(B) ns	reading
+ToString	7	7	198835313.3	195711600.0	3123713.3	192350790.7	recorded
+ToNumber	7	7	34392928.7	34360773.4	32155.2	26142049.7	recorded
+Literals	7	7	1749021.6	1835588.6	86566.9	51178.9	below resolution

@@ -12,7 +12,7 @@ Created 2026-10-12, at milestone SJL-0.
 
 | Item | Implemented evidence | State | Next decisive action |
 |---|---|---|---|
-| **SJL-0** | The revisions and this plan pair, filed on 2026-10-12; the decision-rule files `docs/evidence/sjl-1-001/decision-rule.md`, `docs/evidence/sjl-3-001/decision-rule.md` and `docs/evidence/sjl-3-001/reference-arms.md`; bundle [`docs/evidence/sjl-0-001/`](../evidence/sjl-0-001/README.md) | **In progress** | See the bundle's README for what it retains and what it excludes |
+| **SJL-0** | Clause 8: the revisions and this plan pair, filed on 2026-10-12 in `a69eeca`. Clause 10: the decision-rule files [`docs/evidence/sjl-1-001/decision-rule.md`](../evidence/sjl-1-001/decision-rule.md), [`docs/evidence/sjl-3-001/decision-rule.md`](../evidence/sjl-3-001/decision-rule.md) and [`docs/evidence/sjl-3-001/reference-arms.md`](../evidence/sjl-3-001/reference-arms.md), with the comparison script and the measurement's workloads, in `1410079`, before any code they judge; they hold no figure. Clause 11: [`SharedLibraries.md`](SharedLibraries.md), "The decisions this plan carries". Clause 9: bundle [`docs/evidence/sjl-0-001/`](../evidence/sjl-0-001/README.md), which retains test262 per path, the package contents and nuspecs, an interim public API listing and the pilot's base measurement at base commit `44a214dc`, and names what it excludes | **In progress** | Clauses 8 to 11 are met on retained records and the bundle, and none is accepted: no second holder exists to review them. The programme's clauses in Broiler.VM and in the component repositories are read by the programme's ledger, not here |
 | **SJL-1** | None | **Not started** | The vector schema and validator |
 | **SJL-2** | None | **Not started** | The shared folder and its conventions |
 | **SJL-3** | The base: bundle `sjl-0-001`. The rules: `docs/evidence/sjl-3-001/` | **Not started** | The algorithms library's number area, after SJL-1 and SJL-2 |
@@ -29,7 +29,7 @@ Every decision of the programme was taken on 2026-10-11. This repository's recor
 
 | Decision | Recorded here by |
 |---|---|
-| SJL-D-1, SJL-D-2, SJL-D-3, SJL-D-5, SJL-D-6, SJL-D-9, SJL-D-14, SJL-D-16, SJL-D-17, SJL-D-18, SJL-D-23 | [`SharedLibraries.md`](SharedLibraries.md), "The decisions this plan carries", filed 2026-10-12 |
+| SJL-D-1 to SJL-D-6, SJL-D-9, SJL-D-14, SJL-D-16, SJL-D-17, SJL-D-18, SJL-D-23 | [`SharedLibraries.md`](SharedLibraries.md), "The decisions this plan carries", filed 2026-10-12 |
 | SJL-D-3's publishing rules | `docs/publishing.md`, at SJL-2.13 (not yet) |
 | SJL-D-12's `Ast` and `Parser` disposition, SJL-D-25's public-type dispositions | [`docs/public-api.md`](../public-api.md), at SJL-3.5, each area and SJL-14.4 (not yet) |
 | SJL-D-15, SJL-D-19 to SJL-D-22, SJL-D-24 | The area records of SJL-4, SJL-6, SJL-8 and SJL-9 (not yet) |

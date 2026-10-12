@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="PublicApiGenerator" Version="11.4.6" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.Clr/Broiler.JavaScript.Clr.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.Debugger/Broiler.JavaScript.Debugger.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.Extensions/Broiler.JavaScript.Extensions.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.Globals/Broiler.JavaScript.Globals.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.LinqExpressions/Broiler.JavaScript.LinqExpressions.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.ModuleExtensions/Broiler.JavaScript.ModuleExtensions.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.Modules/Broiler.JavaScript.Modules.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.Portable.Compiler/Broiler.JavaScript.Portable.Compiler.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.Portable/Broiler.JavaScript.Portable.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj" />
+    <ProjectReference Include="<tree>/Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj" />
+  </ItemGroup>
+</Project>
