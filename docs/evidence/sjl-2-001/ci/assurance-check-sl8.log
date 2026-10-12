@@ -1,0 +1,290 @@
+﻿2026-10-12T19:24:41.9329007Z Current runner version: '2.337.0'
+2026-10-12T19:24:41.9365061Z ##[group]Runner Image Provisioner
+2026-10-12T19:24:41.9366376Z Hosted Compute Agent
+2026-10-12T19:24:41.9367337Z Version: 20261002.596
+2026-10-12T19:24:41.9368459Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-12T19:24:41.9369676Z Build Date: 2026-10-02T22:28:27Z
+2026-10-12T19:24:41.9370741Z Worker ID: {d9bcd246-a698-4fa8-a4a1-bc6710d2e03c}
+2026-10-12T19:24:41.9372163Z Region: eastus
+2026-10-12T19:24:41.9373384Z Cloud: Azure
+2026-10-12T19:24:41.9374363Z ##[endgroup]
+2026-10-12T19:24:41.9376756Z ##[group]Operating System
+2026-10-12T19:24:41.9377811Z Ubuntu
+2026-10-12T19:24:41.9378675Z 24.04.5
+2026-10-12T19:24:41.9379594Z LTS
+2026-10-12T19:24:41.9380502Z ##[endgroup]
+2026-10-12T19:24:41.9381431Z ##[group]Runner Image
+2026-10-12T19:24:41.9382567Z Image: ubuntu-24.04
+2026-10-12T19:24:41.9383827Z Version: 20261004.327.1
+2026-10-12T19:24:41.9386085Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-12T19:24:41.9388795Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-12T19:24:41.9390592Z ##[endgroup]
+2026-10-12T19:24:41.9392538Z ##[group]GITHUB_TOKEN Permissions
+2026-10-12T19:24:41.9395528Z Contents: read
+2026-10-12T19:24:41.9396521Z Metadata: read
+2026-10-12T19:24:41.9397538Z ##[endgroup]
+2026-10-12T19:24:41.9400668Z Secret source: Actions
+2026-10-12T19:24:41.9402210Z Cache mode: write
+2026-10-12T19:24:41.9403814Z Prepare workflow directory
+2026-10-12T19:24:41.9885569Z Prepare all required actions
+2026-10-12T19:24:41.9939967Z Getting action download info
+2026-10-12T19:24:42.1850663Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-12T19:24:42.2955340Z Download action repository 'actions/setup-dotnet@v6' (SHA:a98b56852c35b8e3190ac28c8c2271da59106c68)
+2026-10-12T19:24:42.5973369Z Complete job name: Assurance check (SL8)
+2026-10-12T19:24:42.6851286Z ##[group]Run actions/checkout@v7
+2026-10-12T19:24:42.6852209Z with:
+2026-10-12T19:24:42.6852658Z   path: Broiler.JS
+2026-10-12T19:24:42.6853389Z   repository: Broiler-Platform/Broiler.JS
+2026-10-12T19:24:42.6857208Z   token: ***
+2026-10-12T19:24:42.6857656Z   ssh-strict: true
+2026-10-12T19:24:42.6858107Z   ssh-user: git
+2026-10-12T19:24:42.6858566Z   persist-credentials: true
+2026-10-12T19:24:42.6859076Z   clean: true
+2026-10-12T19:24:42.6859552Z   sparse-checkout-cone-mode: true
+2026-10-12T19:24:42.6860098Z   fetch-depth: 1
+2026-10-12T19:24:42.6860548Z   fetch-tags: false
+2026-10-12T19:24:42.6861013Z   show-progress: true
+2026-10-12T19:24:42.6861488Z   lfs: false
+2026-10-12T19:24:42.6861920Z   submodules: false
+2026-10-12T19:24:42.6862391Z   set-safe-directory: true
+2026-10-12T19:24:42.6863144Z   allow-unsafe-pr-checkout: false
+2026-10-12T19:24:42.6863998Z ##[endgroup]
+2026-10-12T19:24:42.7899545Z Syncing repository: Broiler-Platform/Broiler.JS
+2026-10-12T19:24:42.7903374Z ##[group]Getting Git version info
+2026-10-12T19:24:42.7904957Z Working directory is '/home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS'
+2026-10-12T19:24:42.7906776Z [command]/usr/bin/git version
+2026-10-12T19:24:42.7981463Z git version 2.55.0
+2026-10-12T19:24:42.8008960Z ##[endgroup]
+2026-10-12T19:24:42.8021160Z Temporarily overriding HOME='/home/runner/work/_temp/6223279a-0f29-4100-aa6f-28a75f4ea1e6' before making global git config changes
+2026-10-12T19:24:42.8023199Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-12T19:24:42.8029223Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS
+2026-10-12T19:24:42.8076595Z ##[group]Determining repository object format
+2026-10-12T19:24:42.8078356Z ##[endgroup]
+2026-10-12T19:24:42.8079112Z ##[group]Initializing the repository
+2026-10-12T19:24:42.8083776Z [command]/usr/bin/git init /home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS
+2026-10-12T19:24:42.8209612Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-12T19:24:42.8211427Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-12T19:24:42.8213875Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-12T19:24:42.8215524Z hint: call:
+2026-10-12T19:24:42.8216490Z hint:
+2026-10-12T19:24:42.8217508Z hint: 	git config --global init.defaultBranch <name>
+2026-10-12T19:24:42.8218685Z hint:
+2026-10-12T19:24:42.8220046Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-12T19:24:42.8222094Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-12T19:24:42.8223805Z hint:
+2026-10-12T19:24:42.8224672Z hint: 	git branch -m <name>
+2026-10-12T19:24:42.8225647Z hint:
+2026-10-12T19:24:42.8227024Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-12T19:24:42.8229463Z Initialized empty Git repository in /home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/.git/
+2026-10-12T19:24:42.8241463Z [command]/usr/bin/git remote add origin https://github.com/Broiler-Platform/Broiler.JS
+2026-10-12T19:24:42.8292193Z ##[endgroup]
+2026-10-12T19:24:42.8294085Z ##[group]Disabling automatic garbage collection
+2026-10-12T19:24:42.8295853Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-12T19:24:42.8333015Z ##[endgroup]
+2026-10-12T19:24:42.8334279Z ##[group]Setting up auth
+2026-10-12T19:24:42.8335187Z Removing SSH command configuration
+2026-10-12T19:24:42.8338847Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-12T19:24:42.8374153Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-12T19:24:42.8751169Z Removing HTTP extra header
+2026-10-12T19:24:42.8758717Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-12T19:24:42.8798081Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-12T19:24:42.9046808Z Removing includeIf entries pointing to credentials config files
+2026-10-12T19:24:42.9053431Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-12T19:24:42.9090691Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-12T19:24:42.9373861Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-8bddcfec-bd27-41a1-b6e7-86f2efbbe673.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-12T19:24:42.9428248Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/.git.path /home/runner/work/_temp/git-credentials-8bddcfec-bd27-41a1-b6e7-86f2efbbe673.config
+2026-10-12T19:24:42.9471791Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-8bddcfec-bd27-41a1-b6e7-86f2efbbe673.config
+2026-10-12T19:24:42.9521102Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/Broiler.JS/.git.path /github/runner_temp/git-credentials-8bddcfec-bd27-41a1-b6e7-86f2efbbe673.config
+2026-10-12T19:24:42.9564984Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/Broiler.JS/.git/worktrees/*.path /github/runner_temp/git-credentials-8bddcfec-bd27-41a1-b6e7-86f2efbbe673.config
+2026-10-12T19:24:42.9603539Z ##[endgroup]
+2026-10-12T19:24:42.9605559Z ##[group]Fetching the repository
+2026-10-12T19:24:42.9613505Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +29be10177cabcfbe0b9cdbd0978adb2b2226d2d1:refs/remotes/origin/main
+2026-10-12T19:24:47.1685667Z From https://github.com/Broiler-Platform/Broiler.JS
+2026-10-12T19:24:47.1688105Z  * [new ref]         29be10177cabcfbe0b9cdbd0978adb2b2226d2d1 -> origin/main
+2026-10-12T19:24:47.1699439Z [command]/usr/bin/git branch --list --remote origin/main
+2026-10-12T19:24:47.1729083Z   origin/main
+2026-10-12T19:24:47.1738641Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+2026-10-12T19:24:47.1768458Z 29be10177cabcfbe0b9cdbd0978adb2b2226d2d1
+2026-10-12T19:24:47.1780289Z ##[endgroup]
+2026-10-12T19:24:47.1781691Z ##[group]Determining the checkout info
+2026-10-12T19:24:47.1783814Z ##[endgroup]
+2026-10-12T19:24:47.1786279Z [command]/usr/bin/git sparse-checkout disable
+2026-10-12T19:24:47.1842012Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-12T19:24:47.1880575Z ##[group]Checking out the ref
+2026-10-12T19:24:47.1885121Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-12T19:24:47.7589078Z Switched to a new branch 'main'
+2026-10-12T19:24:47.7593305Z branch 'main' set up to track 'origin/main'.
+2026-10-12T19:24:47.7614322Z ##[endgroup]
+2026-10-12T19:24:47.7668952Z [command]/usr/bin/git log -1 --format=%H
+2026-10-12T19:24:47.7700282Z 29be10177cabcfbe0b9cdbd0978adb2b2226d2d1
+2026-10-12T19:24:47.8044114Z ##[group]Run actions/checkout@v7
+2026-10-12T19:24:47.8044503Z with:
+2026-10-12T19:24:47.8044802Z   repository: Broiler-Platform/Broiler.Code
+2026-10-12T19:24:47.8045155Z   path: Broiler.Code
+2026-10-12T19:24:47.8048075Z   token: ***
+2026-10-12T19:24:47.8048340Z   ssh-strict: true
+2026-10-12T19:24:47.8048596Z   ssh-user: git
+2026-10-12T19:24:47.8048870Z   persist-credentials: true
+2026-10-12T19:24:47.8049156Z   clean: true
+2026-10-12T19:24:47.8049427Z   sparse-checkout-cone-mode: true
+2026-10-12T19:24:47.8049745Z   fetch-depth: 1
+2026-10-12T19:24:47.8050017Z   fetch-tags: false
+2026-10-12T19:24:47.8050345Z   show-progress: true
+2026-10-12T19:24:47.8050608Z   lfs: false
+2026-10-12T19:24:47.8050870Z   submodules: false
+2026-10-12T19:24:47.8051132Z   set-safe-directory: true
+2026-10-12T19:24:47.8051432Z   allow-unsafe-pr-checkout: false
+2026-10-12T19:24:47.8051757Z ##[endgroup]
+2026-10-12T19:24:47.8935802Z Syncing repository: Broiler-Platform/Broiler.Code
+2026-10-12T19:24:47.8942252Z ##[group]Getting Git version info
+2026-10-12T19:24:47.8943737Z Working directory is '/home/runner/work/Broiler.JS/Broiler.JS/Broiler.Code'
+2026-10-12T19:24:47.8997643Z [command]/usr/bin/git version
+2026-10-12T19:24:47.9047993Z git version 2.55.0
+2026-10-12T19:24:47.9073789Z ##[endgroup]
+2026-10-12T19:24:47.9084887Z Temporarily overriding HOME='/home/runner/work/_temp/78493a59-4c64-4d35-9dc5-c80887806765' before making global git config changes
+2026-10-12T19:24:47.9086189Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-12T19:24:47.9092042Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Broiler.JS/Broiler.JS/Broiler.Code
+2026-10-12T19:24:47.9127791Z ##[group]Determining repository object format
+2026-10-12T19:24:48.1267007Z ##[endgroup]
+2026-10-12T19:24:48.1268096Z ##[group]Initializing the repository
+2026-10-12T19:24:48.1276218Z [command]/usr/bin/git init /home/runner/work/Broiler.JS/Broiler.JS/Broiler.Code
+2026-10-12T19:24:48.1355413Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-12T19:24:48.1356856Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-12T19:24:48.1359841Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-12T19:24:48.1360913Z hint: call:
+2026-10-12T19:24:48.1361558Z hint:
+2026-10-12T19:24:48.1362284Z hint: 	git config --global init.defaultBranch <name>
+2026-10-12T19:24:48.1363386Z hint:
+2026-10-12T19:24:48.1364428Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-12T19:24:48.1365559Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-12T19:24:48.1366314Z hint:
+2026-10-12T19:24:48.1366748Z hint: 	git branch -m <name>
+2026-10-12T19:24:48.1367248Z hint:
+2026-10-12T19:24:48.1367970Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-12T19:24:48.1369693Z Initialized empty Git repository in /home/runner/work/Broiler.JS/Broiler.JS/Broiler.Code/.git/
+2026-10-12T19:24:48.1372072Z [command]/usr/bin/git remote add origin https://github.com/Broiler-Platform/Broiler.Code
+2026-10-12T19:24:48.1418040Z ##[endgroup]
+2026-10-12T19:24:48.1418896Z ##[group]Disabling automatic garbage collection
+2026-10-12T19:24:48.1422120Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-12T19:24:48.1465435Z ##[endgroup]
+2026-10-12T19:24:48.1466308Z ##[group]Setting up auth
+2026-10-12T19:24:48.1466945Z Removing SSH command configuration
+2026-10-12T19:24:48.1472981Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-12T19:24:48.1517271Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-12T19:24:48.1765802Z Removing HTTP extra header
+2026-10-12T19:24:48.1771494Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-12T19:24:48.1823981Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-12T19:24:48.2054020Z Removing includeIf entries pointing to credentials config files
+2026-10-12T19:24:48.2059754Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-12T19:24:48.2100071Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-12T19:24:48.2332020Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-0a4aebf7-cd43-402c-814b-7bb1e7039d5e.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-12T19:24:48.2376521Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.Code/.git.path /home/runner/work/_temp/git-credentials-0a4aebf7-cd43-402c-814b-7bb1e7039d5e.config
+2026-10-12T19:24:48.2413421Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.Code/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-0a4aebf7-cd43-402c-814b-7bb1e7039d5e.config
+2026-10-12T19:24:48.2450869Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/Broiler.Code/.git.path /github/runner_temp/git-credentials-0a4aebf7-cd43-402c-814b-7bb1e7039d5e.config
+2026-10-12T19:24:48.2487482Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/Broiler.Code/.git/worktrees/*.path /github/runner_temp/git-credentials-0a4aebf7-cd43-402c-814b-7bb1e7039d5e.config
+2026-10-12T19:24:48.2521348Z ##[endgroup]
+2026-10-12T19:24:48.2522152Z ##[group]Determining the default branch
+2026-10-12T19:24:48.2523516Z Retrieving the default branch name
+2026-10-12T19:24:48.5004168Z Default branch 'main'
+2026-10-12T19:24:48.5005917Z ##[endgroup]
+2026-10-12T19:24:48.5006739Z ##[group]Fetching the repository
+2026-10-12T19:24:48.5012305Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +refs/heads/main:refs/remotes/origin/main
+2026-10-12T19:24:48.9492235Z From https://github.com/Broiler-Platform/Broiler.Code
+2026-10-12T19:24:48.9493296Z  * [new branch]      main       -> origin/main
+2026-10-12T19:24:48.9498677Z ##[endgroup]
+2026-10-12T19:24:48.9499424Z ##[group]Determining the checkout info
+2026-10-12T19:24:48.9500293Z ##[endgroup]
+2026-10-12T19:24:48.9506390Z [command]/usr/bin/git sparse-checkout disable
+2026-10-12T19:24:48.9562996Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-12T19:24:48.9605213Z ##[group]Checking out the ref
+2026-10-12T19:24:48.9610205Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-10-12T19:24:48.9881107Z Switched to a new branch 'main'
+2026-10-12T19:24:48.9882472Z branch 'main' set up to track 'origin/main'.
+2026-10-12T19:24:48.9890869Z ##[endgroup]
+2026-10-12T19:24:48.9944172Z [command]/usr/bin/git log -1 --format=%H
+2026-10-12T19:24:48.9976494Z 55bb1ddb514ae7b1fd2a7c2dd14019895c896cc5
+2026-10-12T19:24:49.0169350Z ##[group]Run actions/setup-dotnet@v6
+2026-10-12T19:24:49.0169688Z with:
+2026-10-12T19:24:49.0169901Z   dotnet-version: 10.0.x
+2026-10-12T19:24:49.0170147Z   cache: false
+2026-10-12T19:24:49.0170348Z ##[endgroup]
+2026-10-12T19:24:49.1556291Z [command]/home/runner/work/_actions/actions/setup-dotnet/v6/externals/install-dotnet.sh --skip-non-versioned-files --runtime dotnet --channel LTS
+2026-10-12T19:24:49.3917842Z dotnet-install: .NET Core Runtime with version '10.0.12' is already installed.
+2026-10-12T19:24:49.3944158Z [command]/home/runner/work/_actions/actions/setup-dotnet/v6/externals/install-dotnet.sh --skip-non-versioned-files --channel 10.0
+2026-10-12T19:24:49.5665502Z dotnet-install: .NET Core SDK with version '10.0.401' is already installed.
+2026-10-12T19:24:49.5834561Z ##[group]Run dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript
+2026-10-12T19:24:49.5835675Z [36;1mdotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript[0m
+2026-10-12T19:24:49.6094724Z shell: /usr/bin/bash -e {0}
+2026-10-12T19:24:49.6095101Z env:
+2026-10-12T19:24:49.6095364Z   DOTNET_ROOT: /usr/share/dotnet
+2026-10-12T19:24:49.6095703Z ##[endgroup]
+2026-10-12T19:25:07.4210978Z Broiler.ECMAScript: no violations.
+2026-10-12T19:25:07.4754447Z Post job cleanup.
+2026-10-12T19:25:07.6633324Z Post job cleanup.
+2026-10-12T19:25:07.7605637Z [command]/usr/bin/git version
+2026-10-12T19:25:07.7669241Z git version 2.55.0
+2026-10-12T19:25:07.7714369Z Temporarily overriding HOME='/home/runner/work/_temp/74660caf-6e45-4d97-9145-daea92299eef' before making global git config changes
+2026-10-12T19:25:07.7716165Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-12T19:25:07.7719107Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Broiler.JS/Broiler.JS/Broiler.Code
+2026-10-12T19:25:07.7758507Z Removing SSH command configuration
+2026-10-12T19:25:07.7765930Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-12T19:25:07.7808327Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-12T19:25:07.8087053Z Removing HTTP extra header
+2026-10-12T19:25:07.8093141Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-12T19:25:07.8134155Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-12T19:25:07.8485518Z Removing includeIf entries pointing to credentials config files
+2026-10-12T19:25:07.8486834Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-12T19:25:07.8548820Z includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.Code/.git.path
+2026-10-12T19:25:07.8550490Z includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.Code/.git/worktrees/*.path
+2026-10-12T19:25:07.8551915Z includeif.gitdir:/github/workspace/Broiler.Code/.git.path
+2026-10-12T19:25:07.8553411Z includeif.gitdir:/github/workspace/Broiler.Code/.git/worktrees/*.path
+2026-10-12T19:25:07.8560540Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.Code/.git.path
+2026-10-12T19:25:07.8597828Z /home/runner/work/_temp/git-credentials-0a4aebf7-cd43-402c-814b-7bb1e7039d5e.config
+2026-10-12T19:25:07.8667812Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.Code/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-0a4aebf7\-cd43\-402c\-814b\-7bb1e7039d5e\.config
+2026-10-12T19:25:07.8675294Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.Code/.git/worktrees/*.path
+2026-10-12T19:25:07.8722225Z /home/runner/work/_temp/git-credentials-0a4aebf7-cd43-402c-814b-7bb1e7039d5e.config
+2026-10-12T19:25:07.8794991Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.Code/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-0a4aebf7\-cd43\-402c\-814b\-7bb1e7039d5e\.config
+2026-10-12T19:25:07.8847978Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/Broiler.Code/.git.path
+2026-10-12T19:25:07.8873956Z /github/runner_temp/git-credentials-0a4aebf7-cd43-402c-814b-7bb1e7039d5e.config
+2026-10-12T19:25:07.8934701Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/Broiler.Code/.git.path \/github\/runner_temp\/git\-credentials\-0a4aebf7\-cd43\-402c\-814b\-7bb1e7039d5e\.config
+2026-10-12T19:25:07.9017088Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/Broiler.Code/.git/worktrees/*.path
+2026-10-12T19:25:07.9020918Z /github/runner_temp/git-credentials-0a4aebf7-cd43-402c-814b-7bb1e7039d5e.config
+2026-10-12T19:25:07.9102371Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/Broiler.Code/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-0a4aebf7\-cd43\-402c\-814b\-7bb1e7039d5e\.config
+2026-10-12T19:25:07.9107178Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-12T19:25:07.9471662Z Removing credentials config '/home/runner/work/_temp/git-credentials-0a4aebf7-cd43-402c-814b-7bb1e7039d5e.config'
+2026-10-12T19:25:07.9670379Z Post job cleanup.
+2026-10-12T19:25:08.0653486Z [command]/usr/bin/git version
+2026-10-12T19:25:08.0702457Z git version 2.55.0
+2026-10-12T19:25:08.0787644Z Temporarily overriding HOME='/home/runner/work/_temp/0619e580-13e3-4140-9b85-8f9df10c47ae' before making global git config changes
+2026-10-12T19:25:08.0815779Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-12T19:25:08.0833911Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS
+2026-10-12T19:25:08.0875245Z Removing SSH command configuration
+2026-10-12T19:25:08.0883587Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-12T19:25:08.0955578Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-12T19:25:08.1441034Z Removing HTTP extra header
+2026-10-12T19:25:08.1442519Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-12T19:25:08.1524829Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-12T19:25:08.1958064Z Removing includeIf entries pointing to credentials config files
+2026-10-12T19:25:08.1959393Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-12T19:25:08.2023788Z includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/.git.path
+2026-10-12T19:25:08.2024996Z includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/.git/worktrees/*.path
+2026-10-12T19:25:08.2026244Z includeif.gitdir:/github/workspace/Broiler.JS/.git.path
+2026-10-12T19:25:08.2027152Z includeif.gitdir:/github/workspace/Broiler.JS/.git/worktrees/*.path
+2026-10-12T19:25:08.2029200Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/.git.path
+2026-10-12T19:25:08.2053341Z /home/runner/work/_temp/git-credentials-8bddcfec-bd27-41a1-b6e7-86f2efbbe673.config
+2026-10-12T19:25:08.2078498Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-8bddcfec\-bd27\-41a1\-b6e7\-86f2efbbe673\.config
+2026-10-12T19:25:08.2135679Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/.git/worktrees/*.path
+2026-10-12T19:25:08.2173858Z /home/runner/work/_temp/git-credentials-8bddcfec-bd27-41a1-b6e7-86f2efbbe673.config
+2026-10-12T19:25:08.2214233Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-8bddcfec\-bd27\-41a1\-b6e7\-86f2efbbe673\.config
+2026-10-12T19:25:08.2246877Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/Broiler.JS/.git.path
+2026-10-12T19:25:08.2286229Z /github/runner_temp/git-credentials-8bddcfec-bd27-41a1-b6e7-86f2efbbe673.config
+2026-10-12T19:25:08.2304968Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/Broiler.JS/.git.path \/github\/runner_temp\/git\-credentials\-8bddcfec\-bd27\-41a1\-b6e7\-86f2efbbe673\.config
+2026-10-12T19:25:08.2339349Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/Broiler.JS/.git/worktrees/*.path
+2026-10-12T19:25:08.2370104Z /github/runner_temp/git-credentials-8bddcfec-bd27-41a1-b6e7-86f2efbbe673.config
+2026-10-12T19:25:08.2379836Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/Broiler.JS/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-8bddcfec\-bd27\-41a1\-b6e7\-86f2efbbe673\.config
+2026-10-12T19:25:08.2435965Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-12T19:25:08.2767561Z Removing credentials config '/home/runner/work/_temp/git-credentials-8bddcfec-bd27-41a1-b6e7-86f2efbbe673.config'
+2026-10-12T19:25:08.2984198Z Cleaning up orphan processes
+2026-10-12T19:25:08.3362334Z Terminate orphan process: pid (2640) (dotnet)
+2026-10-12T19:25:08.3393039Z Terminate orphan process: pid (2641) (dotnet)
+2026-10-12T19:25:08.3431413Z Terminate orphan process: pid (2690) (VBCSCompiler)
