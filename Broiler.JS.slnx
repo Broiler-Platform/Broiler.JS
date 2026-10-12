@@ -5,6 +5,7 @@
     <Project Path="Broiler.ECMAScript/Broiler.ECMAScript.Probe/Broiler.ECMAScript.Probe.csproj" />
   </Folder>
   <Folder Name="/Shared/Tests/">
+    <Project Path="Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Broiler.ECMAScript.Algorithms.Tests.csproj" />
     <Project Path="Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/Broiler.ECMAScript.Architecture.Tests.csproj" />
     <Project Path="Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/Broiler.ECMAScript.Conformance.Tests.csproj" />
   </Folder>

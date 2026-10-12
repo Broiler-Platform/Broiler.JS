@@ -322,6 +322,8 @@ public class SharedRuleTests
             scratch.Delete(recursive: true);
         }
 
+        WhiteSpaceTable();
+
         static Dictionary<string, byte[]> Read(string directory) =>
             Directory.EnumerateFiles(directory, "*.vectors").ToDictionary(static p => Path.GetFileName(p), File.ReadAllBytes, StringComparer.Ordinal);
     }
@@ -369,6 +371,32 @@ public class SharedRuleTests
 
     // ---------------------------------------------------------------------------------------------
 
+    /// <summary>SL7's second generated area: the Space_Separator table of the algorithms library's white-space set.</summary>
+    private static void WhiteSpaceTable()
+    {
+        var source = File.ReadAllBytes(Path.Combine(SharedTree.Folder, "Broiler.ECMAScript.Algorithms", "Numbers", "StrWhiteSpace.cs"));
+        var committed = new Dictionary<string, byte[]>(StringComparer.Ordinal) { ["StrWhiteSpace.cs table"] = SharedRules.GeneratedRegion(source) };
+        var scratch = Directory.CreateTempSubdirectory("sl7-white-space-");
+        try
+        {
+            var written = Path.Combine(scratch.FullName, "table.txt");
+            Tools.Python(Path.Combine(SharedTree.Root, "scripts", "conformance", "generate_white_space_table.py"), ["--out", written]);
+            var generated = new Dictionary<string, byte[]>(StringComparer.Ordinal) { ["StrWhiteSpace.cs table"] = File.ReadAllBytes(written) };
+            Assert.NotEmpty(generated["StrWhiteSpace.cs table"]);
+            Assert.Empty(SharedRules.SL7(committed, generated));
+
+            // The witness: one byte of the committed table changed by hand.
+            var changed = (byte[])committed["StrWhiteSpace.cs table"].Clone();
+            changed[10] ^= 1;
+            var violations = SharedRules.SL7(new Dictionary<string, byte[]>(StringComparer.Ordinal) { ["StrWhiteSpace.cs table"] = changed }, generated).ToList();
+            Assert.Contains("StrWhiteSpace.cs table differs from what the generator writes", violations);
+        }
+        finally
+        {
+            scratch.Delete(recursive: true);
+        }
+    }
+
     /// <summary>One run of the corpus through a library: the corpus read and validated afresh, then the library-level runner's report.</summary>
     private static string Run(IVectorLibrary library)
     {
@@ -383,12 +411,17 @@ public class SharedRuleTests
     [Fact]
     public async Task SL9_Two_runs_and_two_threads_over_the_corpus_give_identical_output()
     {
-        string[] sequential = [Run(new EchoLibrary()), Run(new EchoLibrary())];
-        var threads = await Task.WhenAll(Task.Run(() => Run(new EchoLibrary())), Task.Run(() => Run(new EchoLibrary())));
-        string[] runs = [.. sequential, .. threads];
+        // The echo library exercises the decoder and the renderer on every vector; the algorithms
+        // library is the library convention 6 binds, from milestone SJL-3.
+        foreach (var library in new IVectorLibrary[] { new EchoLibrary(), new AlgorithmsLibrary() })
+        {
+            string[] sequential = [Run(library), Run(library)];
+            var threads = await Task.WhenAll(Task.Run(() => Run(library)), Task.Run(() => Run(library)));
+            string[] runs = [.. sequential, .. threads];
 
-        Assert.Empty(SharedRules.SL9(runs));
-        Assert.True(runs[0].Length > 10_000, "the runs are over the whole corpus");
+            Assert.Empty(SharedRules.SL9(runs));
+            Assert.True(runs[0].Length > 10_000, "the runs are over the whole corpus");
+        }
     }
 
     [Fact]

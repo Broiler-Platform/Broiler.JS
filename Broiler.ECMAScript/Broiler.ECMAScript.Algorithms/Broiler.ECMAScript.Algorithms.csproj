@@ -4,17 +4,22 @@
     conversion, numerics, text, Date, the Temporal core and the time-zone algorithms, data-free,
     referencing the base class library only (architecture section 2).
 
-    AT THIS VERSION IT HOLDS THE CONTRACT TYPES ONLY - the metering delegate, the status
-    enumeration and the limit records of the contract conventions - and no algorithm. It is the
-    probe package of milestone SJL-2.13, packed as a pre-release that reaches Broiler.VM through
-    its committed feed and is never published to nuget.org. Milestone SJL-3 moves the first
-    algorithms in.
+    It holds the contract types of the conventions (the metering delegate, the status enumeration
+    and the limit records) and, from milestone SJL-3, its first area: number conversion
+    (Broiler.ECMAScript.Numbers) - Number::toString at every radix, toFixed, toExponential and
+    toPrecision, StringToNumber, parseInt and parseFloat, numeric literal values, the array-index
+    and canonical numeric key tests, and the StrWhiteSpaceChar set. Its preview pre-releases reach
+    Broiler.VM through that repository's committed feed (decision SJL-D-4 (c)).
   -->
   <PropertyGroup>
     <RootNamespace>Broiler.ECMAScript</RootNamespace>
     <AssemblyName>Broiler.ECMAScript.Algorithms</AssemblyName>
     <PackageId>Broiler.ECMAScript.Algorithms</PackageId>
-    <Description>The language algorithms shared by the Broiler JavaScript engines. This version holds the contract types only: the WorkCharge metering delegate, the ResultStatus enumeration and the limit records every shared operation uses.</Description>
+    <Description>The language algorithms shared by the Broiler JavaScript engines: number conversion (Number::toString at every radix, toFixed, toExponential, toPrecision, StringToNumber, parseInt, parseFloat, numeric literal values, numeric keys and the string white-space set), with the WorkCharge metering delegate, the ResultStatus enumeration and the limit records every shared operation uses.</Description>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- The tests recompute the internal tables (ShortestDecimal's multipliers) and call the internal steps directly. -->
+    <InternalsVisibleTo Include="Broiler.ECMAScript.Algorithms.Tests" />
+  </ItemGroup>
 </Project>

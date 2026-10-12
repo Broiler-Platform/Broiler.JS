@@ -1,14 +1,28 @@
 using System.Linq;
+using Broiler.ECMAScript.Runners;
 using Xunit;
 
 namespace Broiler.ECMAScript.Conformance.Tests;
 
 /// <summary>
-/// The library-level runner. It has no library to call until milestone SJL-3, so it runs against an
-/// empty one, and every vector's outcome is "not implemented".
+/// The library-level runner: against an empty library every vector is "not implemented", and
+/// against <c>Broiler.ECMAScript.Algorithms</c> (from milestone SJL-3) every number vector passes.
 /// </summary>
 public class LibraryRunTests
 {
+    [Fact]
+    public void Every_number_vector_passes_against_the_algorithms_library()
+    {
+        var vectors = Home.Corpus.Records.Where(static v => v["area"] == "numbers").ToList();
+        var results = LibraryRun.Run(vectors, new AlgorithmsLibrary());
+
+        Assert.NotEmpty(vectors);
+        var differences = results.Where(static r => r.Verdict != Verdict.Match)
+            .Select(static r => r.Vector.Id + " " + r.Vector["op"] + " in: " + r.Vector["in"] + " expected: " + r.Expected + " got: " + r.Rendered)
+            .ToList();
+        Assert.True(differences.Count == 0, differences.Count + " differences:\n" + string.Join("\n", differences.Take(60)));
+    }
+
     [Fact]
     public void Against_the_empty_library_every_vector_is_not_implemented()
     {

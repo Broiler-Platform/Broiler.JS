@@ -13,15 +13,15 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 12 |
+| Files scanned | 23 |
 | Files not covered | 0 |
-| Files carrying an annotation | 12 |
-| Code units | 157 |
-| Relevant | 111 |
-| Exempt by predicate | 46 |
-| Annotated | 111 of 111 (100%) |
-| Human reviewed | 0 of 111 (0%) |
-| Unverified | 111 |
+| Files carrying an annotation | 23 |
+| Code units | 289 |
+| Relevant | 231 |
+| Exempt by predicate | 58 |
+| Annotated | 231 of 231 (100%) |
+| Human reviewed | 0 of 231 (0%) |
+| Unverified | 231 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 111 |
+| HUMAN_PENDING | 231 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 46 |
+| EXEMPT | 58 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
 | None | 0 |
-| Low | 111 |
+| Low | 231 |
 | Medium | 0 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,9 +51,9 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 0 |
-| Low | 103 |
-| Medium | 6 |
-| High | 2 |
+| Low | 106 |
+| Medium | 117 |
+| High | 8 |
 | Critical | 0 |
 | *not annotated* | 0 |
 
@@ -62,20 +62,26 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Metric | Value |
 |---|---:|
 | Maximum | 9 / 10 |
-| Average over annotated units | 1.6 / 10 |
-| Units scored | 111 |
+| Average over annotated units | 1.5 / 10 |
+| Units scored | 231 |
 
 ## High-security review areas
 
 - `Broiler.ECMAScript.LengthLimit.Admits(long)` in `Broiler.ECMAScript.Algorithms/Limits.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.DepthLimit.Admits(int)` in `Broiler.ECMAScript.Algorithms/Limits.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Numbers.BigNumber.ShiftLeft(int)` in `Broiler.ECMAScript.Algorithms/Numbers/BigNumber.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Numbers.NumberParsing.StringToNumber(ReadOnlySpan<char>, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Numbers/NumberParsing.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Numbers.NumberParsing.ParseInt(ReadOnlySpan<char>, int, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Numbers/NumberParsing.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Numbers.NumberParsing.Integer(ReadOnlySpan<char>, int)` in `Broiler.ECMAScript.Algorithms/Numbers/NumberParsing.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Numbers.NumericLiterals.Evaluate(ReadOnlySpan<char>, bool, LengthLimit, out NumericLiteral, out Failure, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Numbers/NumericLiterals.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Numbers.NumericLiterals.BigInt(ReadOnlySpan<char>, int, NumericLiteralForm, LengthLimit, WorkCharge?, out NumericLiteral, out Failure)` in `Broiler.ECMAScript.Algorithms/Numbers/NumericLiterals.cs` - Security=High, human line PENDING
 
 ## Falsification criteria
 
 | Metric | Value |
 |---|---:|
-| Units carrying a criterion | 2 |
-| Units required to carry one | 2 |
+| Units carrying a criterion | 8 |
+| Units required to carry one | 8 |
 | Required and missing | 0 |
 
 A `Broiler-Falsified-If:` line states, at the declaration, the observation that would make
@@ -98,12 +104,12 @@ that the rule is reviewable in one place rather than in several hundred.
 |---|---:|
 | TrivialPropertyOrAccessor | 13 |
 | ParameterAssigningConstructor | 0 |
-| TrivialExpressionBodiedMember | 1 |
+| TrivialExpressionBodiedMember | 2 |
 | CompilerSuppliedRecordOrEnumMember | 9 |
 | DelegatingOverrideOrOperator | 0 |
 | InsideAssemblyMarker | 0 |
-| FieldDeclaringStorage | 3 |
-| EnumMemberOfADeclaredVocabulary | 20 |
+| FieldDeclaringStorage | 5 |
+| EnumMemberOfADeclaredVocabulary | 29 |
 | DeclaredInSource | 0 |
 
 ## Per-unit exemptions
@@ -127,14 +133,14 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `assurance.manifest.json` lists **every** code unit in the 2 covered assemblies -
-157 of them, exempt and relevant alike - with the fingerprint of its declaration.
+289 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as
 trivial is no longer invisible: a semantic change to one moves a value in a generated file
 the check compares byte for byte. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript` holds the manifest to the tree.
 
-Beside the units it lists **every covered file** - 12 of them - with a
+Beside the units it lists **every covered file** - 23 of them - with a
 fingerprint over the complete token stream of its compilation unit. A unit entry exists only
 for a declaration kind the scanner enumerates, and an enumeration is a whitelist: an
 `[assembly: ...]` attribute is a member of nothing and can be in no unit at all.

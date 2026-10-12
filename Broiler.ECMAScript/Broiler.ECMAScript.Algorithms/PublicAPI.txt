@@ -33,6 +33,60 @@ Broiler.ECMAScript.LengthLimit.ToString() method virtual System.String
 Broiler.ECMAScript.LengthLimit.get_Maximum() method System.Int64
 Broiler.ECMAScript.LengthLimit.op_Equality(Broiler.ECMAScript.LengthLimit, Broiler.ECMAScript.LengthLimit) method static System.Boolean
 Broiler.ECMAScript.LengthLimit.op_Inequality(Broiler.ECMAScript.LengthLimit, Broiler.ECMAScript.LengthLimit) method static System.Boolean
+Broiler.ECMAScript.Numbers.NumberParsing static class
+Broiler.ECMAScript.Numbers.NumberParsing.IsStrWhiteSpaceChar(System.Char) method static System.Boolean
+Broiler.ECMAScript.Numbers.NumberParsing.ParseFloat(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.WorkCharge) method static System.Double
+Broiler.ECMAScript.Numbers.NumberParsing.ParseInt(System.ReadOnlySpan`1<System.Char>, System.Int32, Broiler.ECMAScript.WorkCharge) method static System.Double
+Broiler.ECMAScript.Numbers.NumberParsing.StringToNumber(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.WorkCharge) method static System.Double
+Broiler.ECMAScript.Numbers.NumberParsing.TrimStrWhiteSpace(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.Numbers.TrimEnds) method static System.ReadOnlySpan`1<System.Char>
+Broiler.ECMAScript.Numbers.NumberParsing.UnicodeVersion field static const System.String = "17.0.0"
+Broiler.ECMAScript.Numbers.NumberText static class
+Broiler.ECMAScript.Numbers.NumberText.MaximumLength field static const System.Int32 = 26
+Broiler.ECMAScript.Numbers.NumberText.ToExponential(System.Double) method static System.String
+Broiler.ECMAScript.Numbers.NumberText.ToExponential(System.Double, System.Int32) method static System.String
+Broiler.ECMAScript.Numbers.NumberText.ToFixed(System.Double, System.Int32) method static System.String
+Broiler.ECMAScript.Numbers.NumberText.ToPrecision(System.Double, System.Int32) method static System.String
+Broiler.ECMAScript.Numbers.NumberText.ToRadixString(System.Double, System.Int32) method static System.String
+Broiler.ECMAScript.Numbers.NumberText.ToString(System.Double) method static System.String
+Broiler.ECMAScript.Numbers.NumberText.TryFormat(System.Double, System.Span`1<System.Char>, System.Int32&) method static System.Boolean
+Broiler.ECMAScript.Numbers.NumericKeys static class
+Broiler.ECMAScript.Numbers.NumericKeys.IsCanonicalNumericString(System.ReadOnlySpan`1<System.Char>, System.Double&) method static System.Boolean
+Broiler.ECMAScript.Numbers.NumericKeys.MaximumArrayIndex field static const System.UInt32 = 4294967294
+Broiler.ECMAScript.Numbers.NumericKeys.TryParseArrayIndex(System.ReadOnlySpan`1<System.Char>, System.UInt32&) method static System.Boolean
+Broiler.ECMAScript.Numbers.NumericLiteral struct : System.IEquatable`1<Broiler.ECMAScript.Numbers.NumericLiteral>
+Broiler.ECMAScript.Numbers.NumericLiteral..ctor(Broiler.ECMAScript.Numbers.NumericLiteralKind, Broiler.ECMAScript.Numbers.NumericLiteralForm, System.Double, System.Numerics.BigInteger) method System.Void
+Broiler.ECMAScript.Numbers.NumericLiteral.Deconstruct(Broiler.ECMAScript.Numbers.NumericLiteralKind&, Broiler.ECMAScript.Numbers.NumericLiteralForm&, System.Double&, System.Numerics.BigInteger&) method System.Void
+Broiler.ECMAScript.Numbers.NumericLiteral.Equals(Broiler.ECMAScript.Numbers.NumericLiteral) method System.Boolean
+Broiler.ECMAScript.Numbers.NumericLiteral.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Numbers.NumericLiteral.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Numbers.NumericLiteral.ToString() method virtual System.String
+Broiler.ECMAScript.Numbers.NumericLiteral.get_BigInt() method System.Numerics.BigInteger
+Broiler.ECMAScript.Numbers.NumericLiteral.get_Form() method Broiler.ECMAScript.Numbers.NumericLiteralForm
+Broiler.ECMAScript.Numbers.NumericLiteral.get_Kind() method Broiler.ECMAScript.Numbers.NumericLiteralKind
+Broiler.ECMAScript.Numbers.NumericLiteral.get_Number() method System.Double
+Broiler.ECMAScript.Numbers.NumericLiteral.op_Equality(Broiler.ECMAScript.Numbers.NumericLiteral, Broiler.ECMAScript.Numbers.NumericLiteral) method static System.Boolean
+Broiler.ECMAScript.Numbers.NumericLiteral.op_Inequality(Broiler.ECMAScript.Numbers.NumericLiteral, Broiler.ECMAScript.Numbers.NumericLiteral) method static System.Boolean
+Broiler.ECMAScript.Numbers.NumericLiteral.set_BigInt(System.Numerics.BigInteger) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Numbers.NumericLiteral.set_Form(Broiler.ECMAScript.Numbers.NumericLiteralForm) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Numbers.NumericLiteral.set_Kind(Broiler.ECMAScript.Numbers.NumericLiteralKind) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Numbers.NumericLiteral.set_Number(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Numbers.NumericLiteralForm enum
+Broiler.ECMAScript.Numbers.NumericLiteralForm.Decimal = 0
+Broiler.ECMAScript.Numbers.NumericLiteralForm.LegacyOctal = 2
+Broiler.ECMAScript.Numbers.NumericLiteralForm.NonDecimal = 1
+Broiler.ECMAScript.Numbers.NumericLiteralForm.NonOctalDecimal = 3
+Broiler.ECMAScript.Numbers.NumericLiteralForm.value__ field System.Int32
+Broiler.ECMAScript.Numbers.NumericLiteralKind enum
+Broiler.ECMAScript.Numbers.NumericLiteralKind.BigInt = 1
+Broiler.ECMAScript.Numbers.NumericLiteralKind.Number = 0
+Broiler.ECMAScript.Numbers.NumericLiteralKind.value__ field System.Int32
+Broiler.ECMAScript.Numbers.NumericLiterals static class
+Broiler.ECMAScript.Numbers.NumericLiterals.Evaluate(System.ReadOnlySpan`1<System.Char>, System.Boolean, Broiler.ECMAScript.LengthLimit, Broiler.ECMAScript.Numbers.NumericLiteral&, Broiler.ECMAScript.Failure&, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.TrimEnds enum
+Broiler.ECMAScript.Numbers.TrimEnds.Both = 3
+Broiler.ECMAScript.Numbers.TrimEnds.End = 2
+Broiler.ECMAScript.Numbers.TrimEnds.Start = 1
+Broiler.ECMAScript.Numbers.TrimEnds.value__ field System.Int32
 Broiler.ECMAScript.ResultStatus enum
 Broiler.ECMAScript.ResultStatus.Completed = 0
 Broiler.ECMAScript.ResultStatus.LimitExceeded = 2

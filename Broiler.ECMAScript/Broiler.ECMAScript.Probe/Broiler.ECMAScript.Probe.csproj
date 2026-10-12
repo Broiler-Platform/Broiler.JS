@@ -27,5 +27,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\runners\CorpusDirectory.cs" Link="CorpusDirectory.cs" />
+    <Compile Include="..\runners\AlgorithmsLibrary.cs" Link="AlgorithmsLibrary.cs" />
   </ItemGroup>
 </Project>

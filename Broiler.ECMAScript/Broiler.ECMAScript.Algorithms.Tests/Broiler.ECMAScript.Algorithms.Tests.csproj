@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The tests of the algorithms library: each operation's edges and preconditions, properties over
+    random doubles, the exact recomputation of its precomputed tables, and - from milestone SJL-3.3 -
+    the reference-arm comparison of bundle sjl-3-001's rule, whose arms are test-only copies of both
+    engines' pre-cut-over implementations kept here and never anywhere else. JIT only: the Native AOT
+    probe runs the vectors, not these.
+  -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- A test project is not a library the Native AOT probe runs; xunit discovers by reflection. -->
+    <IsAotCompatible>false</IsAotCompatible>
+    <IsTrimmable>false</IsTrimmable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- The assembly's entry point is the reference-arm comparison (ReferenceArms/Program.cs); the
+         test host loads the assembly and never calls it. -->
+    <GenerateProgramFile>false</GenerateProgramFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
+  </ItemGroup>
+</Project>

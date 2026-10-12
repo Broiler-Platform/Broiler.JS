@@ -13,11 +13,13 @@ namespace Broiler.ECMAScript.Probe;
 /// every verdict against what that library is expected to give, and exits 0 only when all hold.
 /// </summary>
 /// <remarks>
-/// Until milestone SJL-3 moves the first algorithm, the library it runs is the empty one, whose
-/// every answer is <c>status: not-implemented</c>, and the contract types of the algorithms
-/// library are exercised directly. What the probe proves at this milestone is that the reader, the
-/// validator, the runner, the report and the contract types compile into a Native AOT image under
-/// Broiler.VM's root settings and run there over the whole corpus.
+/// From milestone SJL-3 the library it runs is <c>Broiler.ECMAScript.Algorithms</c>, through the
+/// runners' <c>AlgorithmsLibrary</c>: every number vector must match, and a vector of any area the
+/// library does not implement yet must be "not implemented". The contract types are exercised
+/// directly as well. What the probe proves is that the library, the reader, the validator, the
+/// runner and the report compile into a Native AOT image under Broiler.VM's root settings and give
+/// there, over the whole corpus, the answers they give under the JIT. Until SJL-3 it ran the empty
+/// library, whose every answer was <c>status: not-implemented</c>.
 /// </remarks>
 internal static class Program
 {
@@ -44,16 +46,19 @@ internal static class Program
         if (corpus.Records.Count == 0)
             failures.Add("corpus: no vector was read from " + root);
 
-        var results = LibraryRun.Run(corpus.Records, new EmptyLibrary());
+        // Every area the algorithms library implements must pass; every other area is not implemented.
+        var library = new AlgorithmsLibrary();
+        var results = LibraryRun.Run(corpus.Records, library);
         foreach (var result in results)
         {
-            if (result.Verdict != Verdict.NotImplemented)
-                failures.Add(result.Vector.Id + ": the empty library gave " + VectorRun.Name(result.Verdict));
+            var implemented = result.Vector["area"] == "numbers";
+            if (implemented ? result.Verdict != Verdict.Match : result.Verdict != Verdict.NotImplemented)
+                failures.Add(result.Vector.Id + ": " + library.Name + " gave " + VectorRun.Name(result.Verdict));
         }
 
         // A second run, over the same corpus, must give the same report (rule SL9's question, asked again under Native AOT).
-        var report = VectorRun.Report(results, "empty", corpus.Sources);
-        if (report != VectorRun.Report(LibraryRun.Run(corpus.Records, new EmptyLibrary()), "empty", corpus.Sources))
+        var report = VectorRun.Report(results, library.Name, corpus.Sources);
+        if (report != VectorRun.Report(LibraryRun.Run(corpus.Records, library), library.Name, corpus.Sources))
             failures.Add("the report of a second run differs from the first");
 
         failures.AddRange(ContractTypes.Check());

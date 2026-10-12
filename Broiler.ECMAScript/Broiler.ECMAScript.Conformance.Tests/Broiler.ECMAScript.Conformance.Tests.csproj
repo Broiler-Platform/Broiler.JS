@@ -19,9 +19,11 @@
     <PackageReference Include="coverlet.collector" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
     <ProjectReference Include="..\Broiler.ECMAScript.Conformance\Broiler.ECMAScript.Conformance.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\runners\CorpusDirectory.cs" Link="CorpusDirectory.cs" />
+    <Compile Include="..\runners\AlgorithmsLibrary.cs" Link="AlgorithmsLibrary.cs" />
   </ItemGroup>
 </Project>
