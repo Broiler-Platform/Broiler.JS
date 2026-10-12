@@ -55,10 +55,13 @@ the test assembly), which the rule's witness test refuses on every run; the regi
   this repository and so runs in CI rather than in the test project.
 - **The assurance record is all `PENDING`.** [`assurance-status.txt`](assurance-status.txt): every
   relevant unit annotated, none human-reviewed. No record here claims a review.
-- **The prefix reservation is owed.** Reserving `Broiler.ECMAScript` on nuget.org is an application a
-  release owner makes, and it has not been made. `Publish shared libraries` refuses to run until the
-  repository variable `ECMASCRIPT_PREFIX_RESERVED` records it ([`docs/publishing.md`](../../publishing.md)).
-  Nothing has been published, and the probe pre-release never will be.
+- **No prefix reservation is owed.** Nothing has been published, and the probe pre-release never will
+  be. *(Revised 2026-10-12, after collection, when the owner withdrew the reservation and decision
+  SJL-D-2 was revised. The bullet read: "**The prefix reservation is owed.** Reserving
+  `Broiler.ECMAScript` on nuget.org is an application a release owner makes, and it has not been
+  made. `Publish shared libraries` refuses to run until the repository variable
+  `ECMASCRIPT_PREFIX_RESERVED` records it." The workflow no longer reads that variable; see
+  [`docs/publishing.md`](../../publishing.md).)*
 - **The resolver's tests** are [`resolve-preview-version-tests.log`](resolve-preview-version-tests.log),
   the three new ones among them: each stream reads only its own tags, a tag-requested version must
   carry its stream's prefix, and the streams partition the projects.

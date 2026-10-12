@@ -5,12 +5,9 @@ name: Publish shared libraries
 # PROJECT_SET=shared against nuget.org and this repository's ecmascript-v* tags, never the engine's
 # v* tags. The engine's packages are Publish's, and nothing here packs them.
 #
-# Two guards stand before the push:
-#   - the Broiler.ECMAScript prefix must be reserved on nuget.org first (decision SJL-D-2; governance
-#     section 8). A release owner applies for the reservation, which nobody can do from a workflow, and
-#     records it by setting the repository variable ECMASCRIPT_PREFIX_RESERVED to 'true';
-#   - only X.Y.Z-preview.N is ever resolved, so a probe pre-release (X.Y.Z-probe.N, packed for
-#     Broiler.VM's committed feed) can never be pushed from here.
+# Only X.Y.Z-preview.N is ever resolved, so a probe pre-release (X.Y.Z-probe.N, packed for
+# Broiler.VM's committed feed) can never be pushed from here. No reservation of the Broiler.ECMAScript
+# prefix on nuget.org is required (decision SJL-D-2, revised 2026-10-12).
 
 on:
   workflow_dispatch:
@@ -49,11 +46,6 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: '24'
-      - name: Require the prefix reservation
-        if: vars.ECMASCRIPT_PREFIX_RESERVED != 'true'
-        run: |
-          echo "::error::The Broiler.ECMAScript prefix is not recorded as reserved on nuget.org. Reserve it, then set the repository variable ECMASCRIPT_PREFIX_RESERVED to 'true'."
-          exit 1
       - name: Require a NuGet.org API key
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_TOKEN }}
