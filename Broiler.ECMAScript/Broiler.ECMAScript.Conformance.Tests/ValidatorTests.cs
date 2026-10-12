@@ -1,11 +1,19 @@
-using Broiler.JavaScript.Vectors.Tests.Corpus;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Broiler.ECMAScript.Runners;
+using Xunit;
 
-namespace Broiler.JavaScript.Vectors.Tests;
+namespace Broiler.ECMAScript.Conformance.Tests;
 
 /// <summary>The corpus in its home, loaded and validated once for every test that reads it.</summary>
 public static class Home
 {
-    private static readonly Lazy<VectorCorpus> Loaded = new(() => VectorCorpus.Load(VectorCorpus.Home()));
+    /// <summary>conformance/vectors/ in this repository, found from the test assembly's directory.</summary>
+    public static string Root { get; } = CorpusDirectory.Home(AppContext.BaseDirectory);
+
+    private static readonly Lazy<VectorCorpus> Loaded = new(() => CorpusDirectory.Load(Root));
 
     public static VectorCorpus Corpus => Loaded.Value;
 }
@@ -32,7 +40,7 @@ public class ValidatorTests
     public static TheoryData<string> Controls()
     {
         var data = new TheoryData<string>();
-        foreach (var path in Directory.EnumerateFiles(Path.Combine(VectorCorpus.Home(), VectorCorpus.ControlsDirectory), "*.vectors").Order(StringComparer.Ordinal))
+        foreach (var path in Directory.EnumerateFiles(Path.Combine(Home.Root, VectorCorpus.ControlsDirectory), "*.vectors").Order(StringComparer.Ordinal))
             data.Add(Path.GetFileName(path));
         return data;
     }
@@ -54,7 +62,7 @@ public class ValidatorTests
     [Fact]
     public void The_controls_README_lists_every_control()
     {
-        var directory = Path.Combine(VectorCorpus.Home(), VectorCorpus.ControlsDirectory);
+        var directory = Path.Combine(Home.Root, VectorCorpus.ControlsDirectory);
         var readme = File.ReadAllText(Path.Combine(directory, "README.md"));
         foreach (var path in Directory.EnumerateFiles(directory, "*.vectors"))
             Assert.Contains($"| `{Path.GetFileName(path)}` |", readme);
@@ -107,7 +115,7 @@ public class ValidatorTests
         Assert.Contains(Validate(withoutExpectation), d => d.Code == "misplaced-field");
         Assert.Contains(Validate(onNormative), d => d.Code == "misplaced-field");
 
-        static List<VectorDiagnostic> Validate(VectorRecord record)
+        static IReadOnlyList<VectorDiagnostic> Validate(VectorRecord record)
         {
             var validator = new VectorValidator(Home.Corpus.Sources);
             validator.Validate(new VectorFile("changed.vectors", [record], []));
@@ -115,11 +123,11 @@ public class ValidatorTests
         }
     }
 
-    private static List<VectorDiagnostic> ValidateControl(string control)
+    private static IReadOnlyList<VectorDiagnostic> ValidateControl(string control)
     {
-        var path = Path.Combine(VectorCorpus.Home(), VectorCorpus.ControlsDirectory, control);
+        var name = VectorCorpus.ControlsDirectory + "/" + control;
         var validator = new VectorValidator(Home.Corpus.Sources);
-        validator.Validate(VectorReader.Read(path, VectorCorpus.ControlsDirectory + "/" + control));
+        validator.Validate(VectorReader.Read(CorpusDirectory.Read(Home.Root, name).Content.Span, name));
         return validator.Diagnostics;
     }
 }

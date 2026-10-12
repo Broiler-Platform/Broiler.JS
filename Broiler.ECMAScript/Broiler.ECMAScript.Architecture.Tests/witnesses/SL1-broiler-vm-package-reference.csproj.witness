@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- SL1 witness, read as Broiler.ECMAScript.Algorithms: a shared library that references a package
+       of Broiler.VM. Nothing in Broiler.VM is referenced by a shared library; a charging hook is
+       defined neutrally (WorkCharge) rather than reusing IVmMeter. -->
+  <ItemGroup>
+    <PackageReference Include="Broiler.VM.Abstractions" />
+  </ItemGroup>
+</Project>

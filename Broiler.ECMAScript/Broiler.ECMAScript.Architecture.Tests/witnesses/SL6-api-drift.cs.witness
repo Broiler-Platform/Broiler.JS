@@ -1,0 +1,15 @@
+// SL6 witness: an assembly whose public API has drifted from its baseline in both directions, read
+// against SL6-api-drift.PublicAPI.txt.witness. Overflow is new and not in the baseline; the baseline
+// records a Malformed member this enumeration no longer has.
+namespace Witness;
+
+public enum Status
+{
+    Completed = 0,
+    Overflow = 3,
+}
+
+public static class Api
+{
+    public static Status Run(int input) => input < 0 ? Status.Overflow : Status.Completed;
+}

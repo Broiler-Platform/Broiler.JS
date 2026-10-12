@@ -1,0 +1,11 @@
+// SL8 witness: an assurance configuration that leaves a shared library out of coverage, uses the
+// owning component's narrower exemption predicate and permits preprocessor directives.
+{
+  "schema": 1,
+  "component": "Broiler.ECMAScript",
+  "projects": [
+    "Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj"
+  ],
+  "exemptionPredicate": "owning-component",
+  "forbidDirectives": false
+}

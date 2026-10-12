@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The Native AOT probe of milestone SJL-2.14 and convention 12: an executable published with the
+    settings of Broiler.VM's composition roots - Native AOT, full trimming, invariant globalization,
+    system resource keys and warnings as errors - that runs the library-level vector runner over
+    the whole corpus. It proves that the shared libraries, and the test code that judges them,
+    compile into a Native AOT image with no warning and give there the answers they give under the
+    JIT. The reference arms stay in the JIT test projects and are never part of it.
+
+    Rule SL5 evaluates these properties; the shared-libraries workflow publishes and runs it on
+    every change to the folder.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Broiler.ECMAScript.Probe</RootNamespace>
+    <AssemblyName>Broiler.ECMAScript.Probe</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PublishAot>true</PublishAot>
+    <TrimMode>full</TrimMode>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
+    <ProjectReference Include="..\Broiler.ECMAScript.Conformance\Broiler.ECMAScript.Conformance.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\runners\CorpusDirectory.cs" Link="CorpusDirectory.cs" />
+  </ItemGroup>
+</Project>

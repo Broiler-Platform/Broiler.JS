@@ -1,0 +1,7 @@
+# The baseline SL6-api-drift.cs.witness is read against.
+Witness.Api static class
+Witness.Api.Run(System.Int32) method static Witness.Status
+Witness.Status enum
+Witness.Status.Completed = 0
+Witness.Status.Malformed = 1
+Witness.Status.value__ field System.Int32

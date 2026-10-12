@@ -1,7 +1,13 @@
-# Pack every shipping project, including providers excluded from solution builds.
+# Pack one version stream's shipping projects (decision SJL-D-3: two streams in one repository).
+#   -ProjectSet Engine  every project of the solution outside Broiler.ECMAScript/: the engine's packages,
+#                       at one X.Y.Z-preview.N version, tagged v*.
+#   -ProjectSet Shared  the projects of Broiler.ECMAScript.slnf: the shared libraries' packages, at their own
+#                       version, tagged ecmascript-v*. X.Y.Z-probe.N is accepted here too, for a probe
+#                       pre-release that is packed for a committed feed and never published (milestone SJL-2.13).
 [CmdletBinding()]
 param(
     [ValidateSet('Debug', 'Release')][string] $Configuration = 'Release',
+    [ValidateSet('Engine', 'Shared')][string] $ProjectSet = 'Engine',
     [string] $Version,
     [string] $Output = 'artifacts'
 )
@@ -12,18 +18,29 @@ try {
     $solution = @(Get-ChildItem -File -Filter *.slnx)
     if ($solution.Count -ne 1) { throw 'Expected exactly one solution.' }
     [xml] $xml = Get-Content -Raw $solution[0].FullName
+    $sharedFolder = 'Broiler.ECMAScript/'
+    if ($ProjectSet -eq 'Shared') {
+        $filter = Get-Content -Raw 'Broiler.ECMAScript.slnf' | ConvertFrom-Json
+        $paths = @($filter.solution.projects)
+        foreach ($path in $paths) {
+            if (!$path.StartsWith($sharedFolder)) { throw "The shared filter names $path, outside $sharedFolder." }
+        }
+    } else {
+        $paths = @($xml.SelectNodes('//Project[@Path]') | ForEach-Object { $_.Path } | Where-Object { !$_.Replace('\', '/').StartsWith($sharedFolder) })
+    }
     $properties = @("-p:Configuration=$Configuration")
     if ($Version) {
-        if ($Version -notmatch '^\d+\.\d+\.\d+-preview\.[1-9]\d*$') { throw 'Expected X.Y.Z-preview.N.' }
+        $pattern = if ($ProjectSet -eq 'Shared') { '^\d+\.\d+\.\d+-(preview|probe)\.[1-9]\d*$' } else { '^\d+\.\d+\.\d+-preview\.[1-9]\d*$' }
+        if ($Version -notmatch $pattern) { throw "Expected X.Y.Z-preview.N$(if ($ProjectSet -eq 'Shared') { ' or X.Y.Z-probe.N' })." }
         $properties += "-p:Version=$Version", "-p:PackageVersion=$Version"
     }
     $packages = @(
-        foreach ($project in $xml.SelectNodes('//Project[@Path]')) {
-            $result = & dotnet msbuild $project.Path -nologo @properties '-getProperty:IsPackable,PackageId,PackageVersion,IncludeBuildOutput,IncludeSymbols'
-            if ($LASTEXITCODE -ne 0) { throw "Cannot evaluate $($project.Path)." }
+        foreach ($path in $paths) {
+            $result = & dotnet msbuild $path -nologo @properties '-getProperty:IsPackable,PackageId,PackageVersion,IncludeBuildOutput,IncludeSymbols'
+            if ($LASTEXITCODE -ne 0) { throw "Cannot evaluate $path." }
             $metadata = ($result -join "`n" | ConvertFrom-Json).Properties
             if ($metadata.IsPackable -eq 'true') {
-                [pscustomobject]@{ Project = $project.Path; Metadata = $metadata }
+                [pscustomobject]@{ Project = $path; Metadata = $metadata }
             }
         }
     )
@@ -76,5 +93,5 @@ try {
             }
         } finally { $zip.Dispose() }
     }
-    Write-Host "Verified $($packages.Count) packages at $($packages[0].Metadata.PackageVersion)."
+    Write-Host "Verified $($packages.Count) $ProjectSet packages at $($packages[0].Metadata.PackageVersion)."
 } finally { Pop-Location }

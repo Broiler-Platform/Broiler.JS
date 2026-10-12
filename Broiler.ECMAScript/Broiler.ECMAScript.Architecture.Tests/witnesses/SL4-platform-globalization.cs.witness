@@ -1,0 +1,31 @@
+// SL4 witness: answers that come from the platform's culture, time zone, Unicode data, regular
+// expressions or clock (convention 9). Rule SL4 must report each.
+using System;
+using System.Globalization;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace Witness;
+
+public static class PlatformDependent
+{
+    public static bool Matches(string text) => Regex.IsMatch(text, "^[0-9]+$");
+
+    public static string Composed(string text) => text.Normalize(NormalizationForm.FormC);
+
+    public static string Upper(string text) => text.ToUpper();
+
+    public static bool Letter(char c) => char.IsLetter(c);
+
+    public static string Number(double value) => value.ToString(CultureInfo.CurrentCulture);
+
+    public static double Parse(string text) => double.Parse(text);
+
+    public static int Find(string text) => text.IndexOf("x");
+
+    public static string Format(int value) => $"{value}";
+
+    public static DateTime Now() => DateTime.Now;
+
+    public static TimeSpan Offset() => TimeZoneInfo.Local.BaseUtcOffset;
+}

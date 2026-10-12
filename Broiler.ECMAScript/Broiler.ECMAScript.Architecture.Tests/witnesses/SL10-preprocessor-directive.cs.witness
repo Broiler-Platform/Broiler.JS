@@ -1,0 +1,16 @@
+// SL10 witness: preprocessor directives, which convention 17 and Broiler.VM's rule J6 forbid in code
+// that may move between the repositories. Rule SL10 must report each one.
+namespace Witness;
+
+public static class Conditional
+{
+#if DEBUG
+    public static bool Debug => true;
+#else
+    public static bool Debug => false;
+#endif
+
+#pragma warning disable CS0618
+    public static int Value => 1;
+#pragma warning restore CS0618
+}

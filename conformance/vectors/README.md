@@ -29,7 +29,9 @@ rule for its own engine is [`docs/evidence/sjl-1-001/decision-rule.md`](../../do
 ## Running it
 
 ```bash
-# The validator and Broiler.JS's engine-level runner are tests of one project:
+# The reader, the validator and the library-level runner are the shared Conformance library's tests:
+dotnet test Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests -c Release
+# Broiler.JS's engine-level runner:
 dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release
 # With a report of every vector's verdict, as a bundle retains it (a path relative to the
 # repository, or absolute):
@@ -39,9 +41,19 @@ python3 scripts/conformance/generate_number_vectors.py --proplist <UCD 17.0.0 Pr
 python3 -m unittest discover -s scripts/conformance/tests
 ```
 
-The reader and validator are engine-neutral and live, for now, in the Broiler.JS test project beside
-the runner. They move into the test-only `Broiler.ECMAScript.Conformance` package when milestone SJL-2
-creates the shared folder; the corpus does not move.
+The reader, the validator and both runners' engine-neutral parts are the test-only
+`Broiler.ECMAScript.Conformance` library in the shared folder,
+[`Broiler.ECMAScript/`](../../Broiler.ECMAScript/README.md). It takes each file's bytes from its
+caller and reads nothing from disk, so the same code runs in the shared tests, in Broiler.JS's
+engine-level runner and in the Native AOT probe. It is not packed at this version. The corpus does
+not move.
+
+*(Revised 2026-10-12, at milestone SJL-2.10, when the shared folder was created. It read: "The
+reader and validator are engine-neutral and live, for now, in the Broiler.JS test project beside the
+runner. They move into the test-only `Broiler.ECMAScript.Conformance` package when milestone SJL-2
+creates the shared folder; the corpus does not move." The first two commands above read "# The
+validator and Broiler.JS's engine-level runner are tests of one project:" and "dotnet test
+Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release".)*
 
 ## How a vector is added, reviewed and retired
 

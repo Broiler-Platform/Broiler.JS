@@ -6,7 +6,7 @@ using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Storage;
-using Broiler.JavaScript.Vectors.Tests.Corpus;
+using Broiler.ECMAScript.Conformance;
 
 namespace Broiler.JavaScript.Vectors.Tests.Runners;
 

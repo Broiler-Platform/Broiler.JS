@@ -1,6 +1,8 @@
-using Broiler.JavaScript.Vectors.Tests.Corpus;
+using System;
+using System.Linq;
+using Xunit;
 
-namespace Broiler.JavaScript.Vectors.Tests;
+namespace Broiler.ECMAScript.Conformance.Tests;
 
 public class TypedValueTests
 {

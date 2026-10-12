@@ -1,0 +1,7 @@
+// SL10 witness: a source stored with CRLF line endings. It is stored as-is (-text in .gitattributes),
+// and rule SL10 must report the CR.
+namespace Witness;
+
+public static class Windows
+{
+}

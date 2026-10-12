@@ -1,0 +1,103 @@
+{
+  "$comment": [
+    "The rules of group SL, the shared JavaScript libraries' own (governance section 3.2 of the programme in",
+    "Broiler.VM/docs/javascript-shared-libraries/), in Broiler.VM's register shape: each row states the rule,",
+    "names the test that asserts it and the witness it is shown refusing, and has a status. RuleRegisterTests",
+    "holds this file to the tests and the witnesses on disk in both directions. Broiler.VM's gates rely on these",
+    "rules being Active here, so a regression is visible in this repository's ledger rather than only downstream.",
+    "No row carries a run figure; the bundle that retains a run carries its figures."
+  ],
+  "milestone": "SJL-2",
+  "rules": [
+    {
+      "id": "SL1",
+      "status": "Active",
+      "statement": "No shared project references an engine project or package, anything in Broiler.VM, or a package outside the shared allow-list (Broiler.Unicode, Broiler.Regex, and each other in the direction of architecture section 1). Every library has a row in the layering table, so a new library cannot pass by being unknown.",
+      "evidence": "Each shared library's project file (ProjectReference and PackageReference), its restore (obj/project.assets.json, every package resolved directly or transitively, the SDK's own ILLink package aside) and its built assembly's AssemblyRef table",
+      "nonVacuousWhen": "Two libraries are read in all three places, and the layering table names each. The assembly half is shown refusing this test assembly, which references xunit and both libraries.",
+      "test": "SL1_No_shared_library_references_an_engine_Broiler_VM_or_a_package_outside_the_allow_list",
+      "witness": "witnesses/SL1-engine-project-reference.csproj.witness, witnesses/SL1-broiler-vm-package-reference.csproj.witness, witnesses/SL1-against-the-layering.csproj.witness"
+    },
+    {
+      "id": "SL2",
+      "status": "Active",
+      "statement": "No shared library declares a mutable static field, a static array or a static field of a mutable collection type, a settable static property, a [ThreadStatic] field, or names AsyncLocal or ThreadLocal. Broiler.VM's rule N12, applied to every shared library (convention 7). Compiler-generated types and fields - lambda caches, closures, private implementation details - are the compiler's, and are left out.",
+      "evidence": "The Field, Property and CustomAttribute tables, and the TypeRef table, of every shared library's built assembly",
+      "nonVacuousWhen": "The Conformance library declares static data, frozen and immutable, which the rule reads and passes; the witness declares one member of each refused kind and every one is reported.",
+      "test": "SL2_No_shared_library_holds_mutable_static_state",
+      "witness": "witnesses/SL2-mutable-static-state.cs.witness"
+    },
+    {
+      "id": "SL3",
+      "status": "Active",
+      "statement": "No shared library reaches anything on Broiler.VM's B5, B5b and B5c lists (dynamic loading, reflection invocation, Reflection.Emit, LambdaExpression.Compile, native-library and function-pointer marshalling, method preparation, platform invoke, module initializers), generic instantiation over a run-time Type, the Type-taking Enum readers, dynamic, reflection-based serialization, file, network or process I/O, or an environment read (convention 8). The Native AOT probe, an executable that reads the corpus from disk, is held to every clause except I/O.",
+      "evidence": "The MemberRef, TypeRef, AssemblyRef, CustomAttribute and ImplMap tables of every shared library's built assembly",
+      "nonVacuousWhen": "Both libraries' tables are read; the witness reaches each refused kind once and every one is reported, and read as the probe it still fails on everything but I/O.",
+      "test": "SL3_No_shared_library_reaches_dynamic_code_hidden_machinery_IO_or_the_environment",
+      "witness": "witnesses/SL3-dynamic-code-and-io.cs.witness"
+    },
+    {
+      "id": "SL4",
+      "status": "Active",
+      "statement": "No shared library uses a platform globalization or regular-expression API (convention 9): System.Text.RegularExpressions, any System.Globalization type but NumberFormatInfo.InvariantInfo and NumberStyles, TimeZoneInfo, the clock, string normalization, platform casing, char and Rune classification beyond ASCII, a string comparison that defaults to the current culture, or a number parsed, formatted, converted or interpolated without a format provider.",
+      "evidence": "The TypeRef and MemberRef tables of every shared library's built assembly, member references read with their parameter types so that an ordinal overload is told from a culture-sensitive one",
+      "nonVacuousWhen": "The Conformance library formats and parses numbers through NumberFormatInfo.InvariantInfo and compares strings ordinally, and the rule reads those references and passes them; the witness uses each refused kind once and every one is reported. ONE STATED LIMIT: a parameterless ToString() on a number is not refused, because every record's generated ToString reaches it; it is a review obligation of convention 6.",
+      "test": "SL4_No_shared_library_uses_platform_globalization_regular_expressions_or_a_culture",
+      "witness": "witnesses/SL4-platform-globalization.cs.witness"
+    },
+    {
+      "id": "SL5",
+      "status": "Active",
+      "statement": "IsAotCompatible and IsTrimmable hold for every shared library, with the trim, AOT and single-file analyzers on and warnings as errors, and nothing suppressed: no NoWarn beyond the SDK's own 1701 and 1702, no WarningsNotAsErrors, no SuppressTrimAnalysisWarnings, no UnconditionalSuppressMessage. An inventory in the shape of Broiler.VM's N36, Broiler.ECMAScript/docs/suppressions.md, lists every suppression in the folder by file and says None when there is none. The Native AOT probe is evaluated with Broiler.VM's root settings (PublishAot, full trimming, InvariantGlobalization, UseSystemResourceKeys, warnings as errors), and CI publishes it and runs the whole corpus with it (convention 12).",
+      "evidence": "Each shared library's and the probe's properties as MSBuild evaluates them, every built library's CustomAttribute table, and the text of every source and project file in the folder; the probe's publish and run in the shared-libraries workflow",
+      "nonVacuousWhen": "Two libraries and the probe are evaluated with every import applied, so a property set in Directory.Build.props and undone in a project file is seen; the witness project sets every analyzer on and suppresses one warning, and is refused for that alone.",
+      "test": "SL5_Every_shared_library_and_the_probe_hold_to_AOT_and_trimming_with_nothing_suppressed",
+      "witness": "witnesses/SL5-library-suppresses-a-trim-warning.csproj.witness, witnesses/SL5-source-suppresses-a-trim-warning.cs.witness"
+    },
+    {
+      "id": "SL6",
+      "status": "Active",
+      "statement": "The public API of every shared library matches its committed baseline, <Project>/PublicAPI.txt, in both directions: nothing public exists that the baseline does not record, and the baseline records nothing that does not exist. Package validation is enabled for every packed library and, once a first version is published, runs against it (convention 16).",
+      "evidence": "The public types and members of every shared library's built assembly, read from metadata, against its PublicAPI.txt; each packed library's evaluated EnablePackageValidation",
+      "nonVacuousWhen": "Both libraries have non-empty listings; the witness has drifted from its baseline once in each direction and both are reported, and nothing else is.",
+      "test": "SL6_The_public_API_matches_the_baseline_in_both_directions",
+      "witness": "witnesses/SL6-api-drift.cs.witness, witnesses/SL6-api-drift.PublicAPI.txt.witness"
+    },
+    {
+      "id": "SL7",
+      "status": "Active",
+      "statement": "Generated data is byte-identical to what its generator writes from its pinned inputs. No shared library carries data at this milestone (decision SJL-D-6 (c)), so the generated area this rule holds is the conformance corpus's number area, conformance/vectors/numbers/, against scripts/conformance/generate_number_vectors.py; each data generator a later milestone adds is added here.",
+      "evidence": "The committed files of each generated area against what its generator writes into a scratch directory, file by file and byte for byte, in both directions",
+      "nonVacuousWhen": "The generator runs and writes every number-area file; the witness adds a hand-written file to the area and changes one byte of a generated one, and both are reported.",
+      "test": "SL7_Generated_data_is_byte_identical_to_what_its_generator_writes",
+      "witness": "witnesses/SL7-hand-written-file-in-a-generated-area.vectors.witness"
+    },
+    {
+      "id": "SL8",
+      "status": "Active",
+      "statement": "Every relevant unit of every shared library carries a Broiler Code Assurance annotation and the generated artefacts are current, from the folder's first commit (decision SJL-D-5 (a)). The folder is its own assurance component, Broiler.ECMAScript/assurance.config.json, covering every shared library under the strict exemption predicate with preprocessor directives forbidden, and CI runs the assurance tool's check over it and fails on drift.",
+      "evidence": "Broiler.ECMAScript/assurance.config.json against the shared libraries; the manifest's files array against every library source; the shared-libraries workflow; and the assurance tool's check, which that workflow runs",
+      "nonVacuousWhen": "Both libraries are covered and every one of their source files is in the manifest; the witness configuration leaves a library out, uses the narrower predicate and permits directives, and each is reported. The unit-level half is the tool's own check, watched failing on an injected unannotated unit in bundle sjl-2-001.",
+      "test": "SL8_The_assurance_scheme_covers_every_shared_library_and_CI_gates_on_it",
+      "witness": "witnesses/SL8-config-omits-a-library.json.witness"
+    },
+    {
+      "id": "SL9",
+      "status": "Active",
+      "statement": "Determinism: two runs, and two concurrent threads, over the whole vector corpus give identical output - the corpus read and validated afresh each time and run through the library-level runner, its report compared as text (conventions 6 and 10).",
+      "evidence": "Four runs of the corpus, two sequential and two on concurrent threads, through a library that decodes and re-renders every vector's input",
+      "nonVacuousWhen": "Each run reads every vector file and runs every vector; the witness library answers from a counter and two runs through it differ.",
+      "test": "SL9_Two_runs_and_two_threads_over_the_corpus_give_identical_output",
+      "witness": "NondeterministicLibraryWitness in Broiler.ECMAScript.Architecture.Tests.dll"
+    },
+    {
+      "id": "SL10",
+      "status": "Active",
+      "statement": "No source in the shared folder holds a preprocessor directive, and no file in it holds a CR; .gitattributes gives the folder LF line endings (convention 17).",
+      "evidence": "Every .cs file of the folder parsed with Roslyn, its directive trivia read; the bytes of every file of the folder outside build output and the witnesses; .gitattributes",
+      "nonVacuousWhen": "Every source of every shared project is parsed and every file read; the witnesses hold a conditional region and a pragma, each directive reported by line, and a file stored with CRLF, which .gitattributes keeps as-is.",
+      "test": "SL10_No_shared_source_holds_a_preprocessor_directive_or_a_CR",
+      "witness": "witnesses/SL10-preprocessor-directive.cs.witness, witnesses/SL10-crlf-line-endings.cs.witness"
+    }
+  ]
+}

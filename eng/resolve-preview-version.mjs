@@ -7,6 +7,19 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 
 const PREVIEW = /^(\d+\.\d+\.\d+)-preview\.([1-9]\d*)$/i;
 
+/**
+ * The repository's two version streams (decision SJL-D-3). Each has its own projects, its own tag
+ * prefix and so its own record of spent numbers: the engine's packages are tagged v*, the shared
+ * libraries' ecmascript-v*, and neither stream's tags are read as the other's. `git tag --list v*`
+ * cannot match an ecmascript-v tag, because a glob is anchored at the start of the name.
+ */
+export const STREAMS = {
+  engine: { tagPrefix: 'v', solutionFilter: null },
+  shared: { tagPrefix: 'ecmascript-v', solutionFilter: 'Broiler.ECMAScript.slnf' },
+};
+
+const SHARED_FOLDER = 'Broiler.ECMAScript/';
+
 function parsePreview(version) {
   const match = PREVIEW.exec(version);
   if (!match) throw new Error(`Only X.Y.Z-preview.N versions (N >= 1) may be published: '${version}'.`);
@@ -25,7 +38,7 @@ function parsePreview(version) {
  * the repository's own v* publish tags, and the answer is one past the highest
  * number in it - cumulative, and monotonic even across a feed that forgets.
  */
-export function chooseVersion(configured, used, { suffix = '', tag = '' } = {}) {
+export function chooseVersion(configured, used, { suffix = '', tag = '', tagPrefix = 'v' } = {}) {
   const { prefix, number: floor } = parsePreview(configured);
   let next = floor;
   for (const version of used) {
@@ -36,7 +49,10 @@ export function chooseVersion(configured, used, { suffix = '', tag = '' } = {}) 
   }
 
   const automatic = `${prefix}-preview.${next}`;
-  const requested = tag ? tag.replace(/^v/, '') : suffix ? `${prefix}-${suffix}` : automatic;
+  if (tag && !tag.startsWith(tagPrefix)) {
+    throw new Error(`The tag '${tag}' does not start with this stream's prefix '${tagPrefix}'.`);
+  }
+  const requested = tag ? tag.slice(tagPrefix.length) : suffix ? `${prefix}-${suffix}` : automatic;
   const preview = parsePreview(requested);
   if (preview.prefix !== prefix || preview.number < next) {
     throw new Error(`Requested '${requested}' must use ${prefix} and be at least '${automatic}'.`);
@@ -78,17 +94,31 @@ export async function readVersions(source, packageIds, headers = {}, fetchImpl =
  * pushed, so the tags outlive anything the feed stops reporting; the caller must have
  * fetched them, because an unfetched tag is silently an unspent number.
  */
-export function readTags(run = execFileSync) {
-  const output = run('git', ['tag', '--list', 'v*'], { cwd: root, encoding: 'utf8' });
-  return output.split('\n').map(line => line.trim()).filter(Boolean).map(tag => tag.replace(/^v/, ''));
+export function readTags(run = execFileSync, tagPrefix = 'v') {
+  const output = run('git', ['tag', '--list', `${tagPrefix}*`], { cwd: root, encoding: 'utf8' });
+  return output.split('\n').map(line => line.trim()).filter(Boolean)
+    .filter(tag => tag.startsWith(tagPrefix)).map(tag => tag.slice(tagPrefix.length));
 }
 
-function readPackages() {
-  const solutions = readdirSync(root).filter(name => name.endsWith('.slnx'));
+/** The projects of a stream: the shared solution filter's, or every other project of the solution. */
+export function streamProjects(stream, read = path => readFileSync(resolve(root, path), 'utf8'), list = () => readdirSync(root)) {
+  if (stream.solutionFilter) {
+    const projects = JSON.parse(read(stream.solutionFilter)).solution.projects;
+    for (const project of projects) {
+      if (!project.startsWith(SHARED_FOLDER)) throw new Error(`${stream.solutionFilter} names ${project}, outside ${SHARED_FOLDER}.`);
+    }
+    return projects;
+  }
+  const solutions = list().filter(name => name.endsWith('.slnx'));
   if (solutions.length !== 1) throw new Error('Expected exactly one solution.');
-  const solution = readFileSync(resolve(root, solutions[0]), 'utf8');
+  const solution = read(solutions[0]);
+  return [...solution.matchAll(/<Project\s+Path="([^"]+)"/g)].map(match => match[1])
+    .filter(project => !project.replace(/\\/g, '/').startsWith(SHARED_FOLDER));
+}
+
+function readPackages(stream) {
   const packages = [];
-  for (const [, project] of solution.matchAll(/<Project\s+Path="([^"]+)"/g)) {
+  for (const project of streamProjects(stream)) {
     const output = execFileSync('dotnet', [
       'msbuild', project, '-nologo', '-p:Configuration=Release',
       '-getProperty:IsPackable,PackageId,PackageVersion',
@@ -104,25 +134,28 @@ function readPackages() {
 }
 
 async function main() {
-  const packages = readPackages();
+  const name = process.env.PROJECT_SET || 'engine';
+  const stream = STREAMS[name];
+  if (!stream) throw new Error(`PROJECT_SET must be one of ${Object.keys(STREAMS).join(', ')}: '${name}'.`);
+  const packages = readPackages(stream);
   const configured = packages[0].PackageVersion;
   parsePreview(configured);
   const packageIds = packages.map(p => p.PackageId);
   const tag = process.env.GITHUB_EVENT_NAME === 'push'
     ? (process.env.GITHUB_REF || '').replace(/^refs\/tags\//, '') : '';
-  if (process.env.GITHUB_EVENT_NAME === 'push' && !tag.startsWith('v')) {
-    throw new Error('Publishing on push requires a v-prefixed preview tag.');
+  if (process.env.GITHUB_EVENT_NAME === 'push' && !tag.startsWith(stream.tagPrefix)) {
+    throw new Error(`Publishing the ${name} stream on push requires a ${stream.tagPrefix}-prefixed preview tag.`);
   }
   const published = await readVersions('https://api.nuget.org/v3/index.json', packageIds);
   // A tag-triggered run is a REQUEST for its own tag's version, so that one tag is not
   // a number already spent by an earlier run. Every other tag is.
-  const requested = tag.replace(/^v/, '');
-  const used = [...published, ...readTags().filter(version => version !== requested)];
-  const version = chooseVersion(configured, used, { suffix: process.env.VERSION_SUFFIX || '', tag });
-  console.log(`Version: ${version} -> nuget.org (${packageIds.length} packages; dry-run: ${process.env.DRY_RUN ?? 'true'})`);
+  const requested = tag.slice(stream.tagPrefix.length);
+  const used = [...published, ...readTags(execFileSync, stream.tagPrefix).filter(version => version !== requested)];
+  const version = chooseVersion(configured, used, { suffix: process.env.VERSION_SUFFIX || '', tag, tagPrefix: stream.tagPrefix });
+  console.log(`Version: ${version} -> nuget.org (${name} stream, ${packageIds.length} packages; dry-run: ${process.env.DRY_RUN ?? 'true'})`);
   if (process.env.GITHUB_OUTPUT) {
     appendFileSync(process.env.GITHUB_OUTPUT,
-      `version=${version}\nversion_args=-p:Version=${version} -p:PackageVersion=${version}\n`);
+      `version=${version}\ntag=${stream.tagPrefix}${version}\nversion_args=-p:Version=${version} -p:PackageVersion=${version}\n`);
   }
 }
 

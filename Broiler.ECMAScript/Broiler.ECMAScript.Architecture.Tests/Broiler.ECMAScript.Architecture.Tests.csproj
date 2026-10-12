@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The shared libraries' own architecture rules, SL1 to SL10 (governance section 3.2 of the
+    programme; milestone SJL-2.11), with a register in Broiler.VM's shape: rules.register.json
+    states each rule, the test that asserts it and the witness it is shown refusing.
+
+    The rules read compiled metadata and project files rather than loading what they judge, as
+    Broiler.VM's group B does: loading an assembly would run what rule SL3 exists to find. The
+    libraries are referenced so that their build output is beside this assembly, and nothing here
+    calls them. Witness sources are compiled in memory with Roslyn and read the same way.
+  -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <IsAotCompatible>false</IsAotCompatible>
+    <IsTrimmable>false</IsTrimmable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
+    <ProjectReference Include="..\Broiler.ECMAScript.Conformance\Broiler.ECMAScript.Conformance.csproj" />
+    <!-- Built first, read from its own output: an executable is not referenced as an assembly. -->
+    <ProjectReference Include="..\Broiler.ECMAScript.Probe\Broiler.ECMAScript.Probe.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\runners\CorpusDirectory.cs" Link="CorpusDirectory.cs" />
+    <None Include="rules.register.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

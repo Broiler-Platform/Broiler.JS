@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- SL1 witness, read as Broiler.ECMAScript.Algorithms: a shared library that references an engine
+       project. The shared libraries reference neither engine (architecture section 1, property 1). -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Broiler.JS\Broiler.JavaScript.Runtime\Broiler.JavaScript.Runtime.csproj" />
+  </ItemGroup>
+</Project>

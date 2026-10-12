@@ -1,4 +1,5 @@
-using Broiler.JavaScript.Vectors.Tests.Corpus;
+using Broiler.ECMAScript.Conformance;
+using Broiler.ECMAScript.Runners;
 using Broiler.JavaScript.Vectors.Tests.Runners;
 
 namespace Broiler.JavaScript.Vectors.Tests;
@@ -22,7 +23,7 @@ public class EngineRunTests
         var corpus = Home.Corpus;
         Assert.Empty(corpus.Diagnostics);
         var vectors = corpus.Records.ToList();
-        var results = VectorRun.RunEngine(vectors, corpus.Prelude, Engine);
+        var results = VectorRun.RunEngine(vectors, Home.Prelude, Engine);
         WriteReport(results, corpus);
 
         Assert.Equal(vectors.Count, results.Count);
@@ -41,15 +42,14 @@ public class EngineRunTests
     public void The_negative_control_is_reported_as_an_unclassified_difference()
     {
         const string file = "numbers/to-fixed.vectors";
-        var home = Home.Corpus;
-        var original = home.Files.Single(f => f.Path == file).Records;
-        var before = VectorRun.RunEngine(original, home.Prelude, Engine);
+        var original = Home.Corpus.Files.Single(f => f.Path == file).Records;
+        var before = VectorRun.RunEngine(original, Home.Prelude, Engine);
         var target = before.First(r => r.Verdict == Verdict.Match && r.Vector.Class == "normative").Vector;
 
         var copy = Directory.CreateTempSubdirectory("broiler-vectors-control-");
         try
         {
-            CopyDirectory(home.Root, copy.FullName);
+            CopyDirectory(Home.Root, copy.FullName);
             var path = Path.Combine(copy.FullName, file);
             var text = File.ReadAllText(path);
             var line = $"out: {target.Out}\n";
@@ -57,9 +57,9 @@ public class EngineRunTests
             var at = text.IndexOf(line, start, StringComparison.Ordinal);
             File.WriteAllText(path, text[..at] + $"out: {Mutate(target.Out)}\n" + text[(at + line.Length)..]);
 
-            var mutated = VectorCorpus.Load(copy.FullName);
+            var mutated = CorpusDirectory.Load(copy.FullName);
             Assert.Empty(mutated.Diagnostics);
-            var after = VectorRun.RunEngine(mutated.Files.Single(f => f.Path == file).Records, mutated.Prelude, Engine);
+            var after = VectorRun.RunEngine(mutated.Files.Single(f => f.Path == file).Records, CorpusDirectory.Prelude(copy.FullName), Engine);
 
             WriteReport(after, mutated, ".negative-control.tsv");
 
@@ -132,7 +132,7 @@ public class EngineRunTests
         var target = Environment.GetEnvironmentVariable(ReportVariable);
         if (string.IsNullOrEmpty(target))
             return;
-        var repository = Path.GetFullPath(Path.Combine(VectorCorpus.Home(), "..", ".."));
+        var repository = Path.GetFullPath(Path.Combine(Home.Root, "..", ".."));
         var path = Path.IsPathRooted(target) ? target : Path.Combine(repository, target);
         if (suffix is not null)
             path = Path.ChangeExtension(path, null) + suffix;

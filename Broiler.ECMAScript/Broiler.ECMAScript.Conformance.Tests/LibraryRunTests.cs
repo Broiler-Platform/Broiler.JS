@@ -1,6 +1,7 @@
-using Broiler.JavaScript.Vectors.Tests.Runners;
+using System.Linq;
+using Xunit;
 
-namespace Broiler.JavaScript.Vectors.Tests;
+namespace Broiler.ECMAScript.Conformance.Tests;
 
 /// <summary>
 /// The library-level runner. It has no library to call until milestone SJL-3, so it runs against an
@@ -22,5 +23,18 @@ public class LibraryRunTests
     public void Every_vector_s_inputs_decode()
     {
         Assert.All(Home.Corpus.Records, vector => Assert.NotEmpty(LibraryRun.Inputs(vector)));
+    }
+
+    [Fact]
+    public void The_report_counts_every_verdict_and_lists_every_vector()
+    {
+        var results = LibraryRun.Run(Home.Corpus.Records, new EmptyLibrary());
+        var lines = VectorRun.Report(results, "empty", Home.Corpus.Sources).Split('\n');
+
+        Assert.Equal("# engine: empty", lines[0]);
+        Assert.Equal("# corpus revision: " + Home.Corpus.Sources.Revision, lines[1]);
+        Assert.Equal("# not-implemented: " + results.Count, lines[6]);
+        Assert.Equal("id\tclass\texpected\trendered\tverdict", lines[8]);
+        Assert.Equal(results.Count, lines.Skip(9).Count(line => line.Length > 0));
     }
 }

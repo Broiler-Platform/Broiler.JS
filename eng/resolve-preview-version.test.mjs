@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { chooseVersion, readTags, readVersions } from './resolve-preview-version.mjs';
+import { STREAMS, chooseVersion, readTags, readVersions, streamProjects } from './resolve-preview-version.mjs';
 
 test('first publish uses the configured preview; later publishes increment numerically', () => {
   assert.equal(chooseVersion('0.1.0-preview.1', []), '0.1.0-preview.1');
@@ -79,4 +79,34 @@ test('feed failures and malformed responses stop publication', async () => {
     throw new Error('Network unavailable');
   }));
   await assert.rejects(readVersions('https://feed/index.json', ['Core'], {}, async () => Response.json({})));
+});
+
+test('each stream reads only its own tags, by its own prefix', () => {
+  // The shared stream's tags are ecmascript-v*; git is asked for that prefix, and a name that does
+  // not carry it is not read as a version even if the runner returns one.
+  let asked;
+  const shared = readTags((program, args) => { asked = args; return 'ecmascript-v0.1.0-preview.2\nv0.1.0-preview.9\n'; }, 'ecmascript-v');
+  assert.deepEqual(asked, ['tag', '--list', 'ecmascript-v*']);
+  assert.deepEqual(shared, ['0.1.0-preview.2']);
+  assert.deepEqual(readTags(() => 'v0.1.0-preview.3\n'), ['0.1.0-preview.3']);
+});
+
+test('a tag-requested version must carry the stream prefix', () => {
+  const prefix = STREAMS.shared.tagPrefix;
+  assert.equal(chooseVersion('0.1.0-preview.1', [], { tag: 'ecmascript-v0.1.0-preview.1', tagPrefix: prefix }), '0.1.0-preview.1');
+  assert.throws(() => chooseVersion('0.1.0-preview.1', [], { tag: 'v0.1.0-preview.1', tagPrefix: prefix }));
+  assert.throws(() => chooseVersion('0.1.0-preview.1', [], { tag: 'ecmascript-v0.1.0-probe.1', tagPrefix: prefix }));
+});
+
+test('the streams partition the projects: the shared filter, and everything else', () => {
+  const files = {
+    'Broiler.JS.slnx': '<Solution><Project Path="Broiler.ECMAScript/A/A.csproj" /><Project Path="Broiler.JS/B/B.csproj" /></Solution>',
+    'Broiler.ECMAScript.slnf': JSON.stringify({ solution: { path: 'Broiler.JS.slnx', projects: ['Broiler.ECMAScript/A/A.csproj'] } }),
+  };
+  const read = path => files[path];
+  const list = () => Object.keys(files);
+  assert.deepEqual(streamProjects(STREAMS.engine, read, list), ['Broiler.JS/B/B.csproj']);
+  assert.deepEqual(streamProjects(STREAMS.shared, read, list), ['Broiler.ECMAScript/A/A.csproj']);
+  files['Broiler.ECMAScript.slnf'] = JSON.stringify({ solution: { projects: ['Broiler.JS/B/B.csproj'] } });
+  assert.throws(() => streamProjects(STREAMS.shared, read, list));
 });
