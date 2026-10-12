@@ -1,0 +1,44 @@
+# SJL-3.2: the comparison rules are in force, checked before any code of SJL-3.3 to SJL-3.5 exists
+# Checked 2026-10-12T19:45Z at b7a2a3ffa41b73c2a082d139435c20472bd8dc6a (main).
+
+$ git log --format="%H %s" -- <each file the rules commit or name>
+## docs/evidence/sjl-3-001/decision-rule.md
+1410079e4808ca7fc10677ef996a95b77e571a11 SJL-0.9: Broiler.JS's predeclared comparison rules, before any code they judge
+blob at HEAD: 545069af1db02e72d48be5f24a677aed1db393c8
+blob at 1410079: 545069af1db02e72d48be5f24a677aed1db393c8
+## docs/evidence/sjl-3-001/reference-arms.md
+1410079e4808ca7fc10677ef996a95b77e571a11 SJL-0.9: Broiler.JS's predeclared comparison rules, before any code they judge
+blob at HEAD: 394d4380e6ac68bdd48b7e5c0cb5f758bd10acd5
+blob at 1410079: 394d4380e6ac68bdd48b7e5c0cb5f758bd10acd5
+## scripts/compliance/compare_test262_paths.py
+1410079e4808ca7fc10677ef996a95b77e571a11 SJL-0.9: Broiler.JS's predeclared comparison rules, before any code they judge
+blob at HEAD: e951dd478a858ac06c4178c28164325b06506d00
+blob at 1410079: e951dd478a858ac06c4178c28164325b06506d00
+## scripts/compliance/tests/test_compare_test262_paths.py
+1410079e4808ca7fc10677ef996a95b77e571a11 SJL-0.9: Broiler.JS's predeclared comparison rules, before any code they judge
+blob at HEAD: 9c4795c9f3a0a1b0deb67e4d16145fbd1258421e
+blob at 1410079: 9c4795c9f3a0a1b0deb67e4d16145fbd1258421e
+## Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/NumberConversionBenchmarks.cs
+1410079e4808ca7fc10677ef996a95b77e571a11 SJL-0.9: Broiler.JS's predeclared comparison rules, before any code they judge
+blob at HEAD: d1e1a9e1d70f133f40b92d857a80f5a8cd8fabb8
+blob at 1410079: d1e1a9e1d70f133f40b92d857a80f5a8cd8fabb8
+## Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs
+1410079e4808ca7fc10677ef996a95b77e571a11 SJL-0.9: Broiler.JS's predeclared comparison rules, before any code they judge
+44a214dc5b04a5c8db556dc9b57894beaeb20d0c Update Nuget-Packages
+blob at HEAD: a0eb050d1d1f8eb97605739eff51b7906d123a93
+blob at 1410079: a0eb050d1d1f8eb97605739eff51b7906d123a93
+## Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/BenchmarkConfiguration.cs
+44a214dc5b04a5c8db556dc9b57894beaeb20d0c Update Nuget-Packages
+blob at HEAD: 0a3258b78b35ed0ce64b6f159ac686f6349d2c93
+blob at 1410079: 0a3258b78b35ed0ce64b6f159ac686f6349d2c93
+
+$ git merge-base --is-ancestor 1410079 HEAD; echo $?
+0
+
+## No number-conversion code exists in the shared library yet: its sources at HEAD
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Failure.cs
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Limits.cs
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/ResultStatus.cs
+Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/WorkCharge.cs
