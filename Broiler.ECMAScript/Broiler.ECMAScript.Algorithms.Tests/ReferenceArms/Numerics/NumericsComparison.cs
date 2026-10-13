@@ -159,7 +159,7 @@ internal sealed class NumericsComparison(NumericsPopulation population, IReadOnl
         string.Join('\t',
             operation.Name, input.Class, input.Line.ToString(CultureInfo.InvariantCulture),
             Render.Listed(input.Detail + (input.Text is { } text && input.Class != "R1M" ? "|" + text : string.Empty)),
-            Render.Listed(input.Raw), variant.Arm + ":" + variant.Name, Render.Listed(shared), Render.Listed(result));
+            Render.Listed(input.Raw), variant.Arm + ":" + variant.Name, Render.ListedResult(shared), Render.ListedResult(result));
 
     /// <summary>Runs one implementation, rendering an engine's error by its kind and any other exception by its type.</summary>
     public static string Safe(Func<NumericsInput, string> run, NumericsInput input)

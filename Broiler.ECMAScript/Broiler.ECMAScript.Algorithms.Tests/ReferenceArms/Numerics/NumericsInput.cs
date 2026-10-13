@@ -116,6 +116,13 @@ internal static class Render
         var digest = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
         return "len:" + text.Length.ToString(CultureInfo.InvariantCulture) + ":sha256:" + digest;
     }
+
+    /// <summary>A result as the listing writes it: as <see cref="Listed"/>, its charge kept in view.</summary>
+    public static string ListedResult(string text)
+    {
+        var bar = text.LastIndexOf("|charge:", StringComparison.Ordinal);
+        return bar < 0 || text.Length <= ListedLength ? Listed(text) : Listed(text[..bar]) + text[bar..];
+    }
 }
 
 /// <summary>A meter that sums what it is charged, for S and for arm V alike.</summary>
