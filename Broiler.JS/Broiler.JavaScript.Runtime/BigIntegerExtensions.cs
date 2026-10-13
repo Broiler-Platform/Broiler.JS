@@ -1,11 +1,42 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 
 namespace Broiler.JavaScript.Runtime;
 
 public static class BigIntegerExtensions
 {
-    // FromDouble, a Number's exact integer, had no caller and is deleted (SJL-4.5): a Number becomes a
-    // BigInt through the shared library's BigIntMath.FromIntegralNumber, after JSBigInt's RangeError.
+    /// <summary>
+    /// Returns a new instance BigInteger structure from a 64-bit double precision floating
+    /// point value.
+    /// </summary>
+    /// <param name="value"> A 64-bit double precision floating point value. </param>
+    /// <returns> The corresponding BigInteger value. </returns>
+    public static BigInteger FromDouble(this double value)
+    {
+        long bits = BitConverter.DoubleToInt64Bits(value);
+
+        // Extract the base-2 exponent.
+        var base2Exponent = (int)((bits & 0x7FF0000000000000) >> 52) - 1023;
+
+        // Extract the mantissa.
+        long mantissa = bits & 0xFFFFFFFFFFFFF;
+        if (base2Exponent > -1023)
+        {
+            mantissa |= 0x10000000000000;
+            base2Exponent -= 52;
+        }
+        else
+        {
+            // Denormals.
+            base2Exponent -= 51;
+        }
+
+        // Extract the sign bit.
+        if (bits < 0)
+            mantissa = -mantissa;
+
+        return new BigInteger(mantissa).LeftShift(base2Exponent);
+    }
 
     /// <summary>
     /// Shifts a BigInteger value a specified number of bits to the left.

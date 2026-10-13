@@ -60,7 +60,10 @@ public partial class JSBigInt : JSPrimitive
     public override long BigIntValue => (long)value;
 
     // A BigInt's Number (Number(value), 21.1.1.1 step 2.a) is the shared library's
-    // BigIntMath.ToNumber, the nearest double with ties to even (SJL-4.5).
+    // BigIntMath.ToNumber, the nearest double with ties to even (SJL-4.5). The public member stays
+    // as a forwarder (decision SJL-D-25 (b)).
+    [Obsolete("Use Broiler.ECMAScript.Numbers.BigIntMath.ToNumber, which this forwards to. To be removed in the next major version.")]
+    public static double ToNumber(BigInteger v) => BigIntMath.ToNumber(v, null);
 
     // BigInt(value) (21.2.1.1): ToPrimitive with the number hint; a Number is NumberToBigInt, whose
     // RangeError for a Number that is not integral is the engine's and whose integer is the shared
