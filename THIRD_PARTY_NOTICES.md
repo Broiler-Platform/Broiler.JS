@@ -15,11 +15,11 @@ in source files, package metadata, or accompanying notices.
 ## The shared JavaScript libraries (`Broiler.ECMAScript.*`)
 
 The packages built from [`Broiler.ECMAScript/`](Broiler.ECMAScript/README.md) carry this file. They
-contain one piece of third-party code, named below, and no data:
+contain two pieces of third-party code, named below, and no data:
 
-- `Broiler.ECMAScript.Algorithms` holds the contract types and the number-conversion area written
-  for the shared libraries programme, Apache-2.0, and no code derived from Yantra JS. Its one
-  third-party component is **Ryu**, below.
+- `Broiler.ECMAScript.Algorithms` holds the contract types, the number-conversion area and the
+  numerics area written for the shared libraries programme, Apache-2.0, and no code derived from
+  Yantra JS. Its third-party components are **Ryu** and **fdlibm**, below.
 - **Ryu** ([github.com/ulfjack/ryu](https://github.com/ulfjack/ryu)), Copyright 2018 Ulf Adams, used
   under the Apache License, Version 2.0 (the project is offered under that licence or the Boost
   Software License 1.0, at the user's choice). `Broiler.ECMAScript.Algorithms/Numbers/ShortestDecimal.cs`
@@ -27,9 +27,21 @@ contain one piece of third-party code, named below, and no data:
   copied from it: they were computed for this library, and the library's tests
   (`ShortestDecimalTableTests`) recompute every entry exactly. The Apache License text is in
   [`LICENSE`](LICENSE).
+- **fdlibm** 5.3, as FreeBSD's `msun` keeps it (`lib/msun/src/s_expm1.c` and `s_log1p.c`), Copyright
+  (C) 1993 by Sun Microsystems, Inc., under the notice it carries (SPDX `SunPro`):
+  `Broiler.ECMAScript.Algorithms/Numbers/Fdlibm.cs` ports `expm1` and `log1p` to C#, and keeps the
+  notice in its source. The notice reads:
+
+  > Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+  >
+  > Developed at SunPro, a Sun Microsystems, Inc. business.
+  > Permission to use, copy, modify, and distribute this
+  > software is freely granted, provided that this notice
+  > is preserved.
 - The number area's other routines that are not written from the specification are ported from
   Broiler.VM, the programme's other engine, under the same licence and by the same contributors
-  (`FixedDigits.cs`, from `JsRealm.Number`; the BigInt literal ceiling, from `JsParser.TryBigIntValue`).
+  (`FixedDigits.cs`, from `JsRealm.Number`; the BigInt literal ceiling, from `JsParser.TryBigIntValue`;
+  and, at milestone SJL-4.3, the BigInt kernel `BigIntMath.cs` and `BigIntText.cs`, from `JsBigInt`).
   Each records its origin in its assurance annotation.
 - `Broiler.ECMAScript.Conformance` (not packed) holds the conformance corpus's reader, validator and
   runners, written for the programme. The corpus it reads, `conformance/vectors/`, takes its expected
@@ -54,4 +66,9 @@ carry this file. At this version they contain no third-party code and no data:",
 read "`Broiler.ECMAScript.Algorithms` holds the contract types written for the shared libraries
 programme, Apache-2.0, and no code derived from Yantra JS or from any other project."* Revised again
 2026-10-12, at milestone SJL-3.5: the bullet on `Broiler.ECMAScript.Algorithms.Tests` was added, and
-no other text changed.
+no other text changed. Revised again 2026-10-13, at milestone SJL-4.3, when the numerics area moved in:
+the section's second sentence read "They contain one piece of third-party code, named below, and no
+data:"; the first bullet read "holds the contract types and the number-conversion area written for the
+shared libraries programme" and ended "Its one third-party component is **Ryu**, below."; the bullet on
+the code ported from Broiler.VM ended at "from `JsParser.TryBigIntValue`)."; and the bullet on fdlibm
+was added.

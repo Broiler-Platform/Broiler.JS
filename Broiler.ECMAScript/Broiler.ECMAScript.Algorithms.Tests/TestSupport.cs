@@ -37,11 +37,14 @@ internal static class ExactRadix
         return negative ? -value : value;
     }
 
-    /// <summary>The double nearest numerator / denominator, ties to even.</summary>
+    /// <summary>The double nearest numerator / denominator (the denominator positive), ties to even.</summary>
     public static double Nearest(BigInteger numerator, BigInteger denominator)
     {
         if (numerator.IsZero)
             return 0;
+
+        if (numerator.Sign < 0)
+            return -Nearest(-numerator, denominator);
 
         // Scale so the quotient has 64 or 65 bits, then keep 53 (fewer below the normal range).
         var log = (long)numerator.GetBitLength() - (long)denominator.GetBitLength();

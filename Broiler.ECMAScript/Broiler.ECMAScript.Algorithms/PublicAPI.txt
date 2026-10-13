@@ -33,6 +33,83 @@ Broiler.ECMAScript.LengthLimit.ToString() method virtual System.String
 Broiler.ECMAScript.LengthLimit.get_Maximum() method System.Int64
 Broiler.ECMAScript.LengthLimit.op_Equality(Broiler.ECMAScript.LengthLimit, Broiler.ECMAScript.LengthLimit) method static System.Boolean
 Broiler.ECMAScript.LengthLimit.op_Inequality(Broiler.ECMAScript.LengthLimit, Broiler.ECMAScript.LengthLimit) method static System.Boolean
+Broiler.ECMAScript.Numbers.BigIntMath static class
+Broiler.ECMAScript.Numbers.BigIntMath.Add(System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.AsIntN(System.UInt64, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.AsUintN(System.UInt64, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.BitwiseAnd(System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.BitwiseNot(System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.BitwiseOr(System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.BitwiseXor(System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.CompareToNumber(System.Numerics.BigInteger, System.Double, Broiler.ECMAScript.WorkCharge) method static System.Int32
+Broiler.ECMAScript.Numbers.BigIntMath.Divide(System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.FromIntegralNumber(System.Double) method static System.Numerics.BigInteger
+Broiler.ECMAScript.Numbers.BigIntMath.LeafCost(System.Int32) method static System.UInt64
+Broiler.ECMAScript.Numbers.BigIntMath.LeftShift(System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.LinearCost(System.Int32) method static System.UInt64
+Broiler.ECMAScript.Numbers.BigIntMath.Multiply(System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.Negate(System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.Power(System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.ProductCost(System.Int32, System.Int32) method static System.UInt64
+Broiler.ECMAScript.Numbers.BigIntMath.Remainder(System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.SignedRightShift(System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.Subtract(System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntMath.ToNumber(System.Numerics.BigInteger, Broiler.ECMAScript.WorkCharge) method static System.Double
+Broiler.ECMAScript.Numbers.BigIntMath.Words(System.Numerics.BigInteger) method static System.Int32
+Broiler.ECMAScript.Numbers.BigIntMath.WordsOf(System.Int64) method static System.Int32
+Broiler.ECMAScript.Numbers.BigIntPolicy struct : System.IEquatable`1<Broiler.ECMAScript.Numbers.BigIntPolicy>
+Broiler.ECMAScript.Numbers.BigIntPolicy..ctor(System.Int64) method System.Void
+Broiler.ECMAScript.Numbers.BigIntPolicy.Admits(System.Numerics.BigInteger) method System.Boolean
+Broiler.ECMAScript.Numbers.BigIntPolicy.Equals(Broiler.ECMAScript.Numbers.BigIntPolicy) method System.Boolean
+Broiler.ECMAScript.Numbers.BigIntPolicy.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Numbers.BigIntPolicy.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Numbers.BigIntPolicy.RepresentationLimit field static const System.Int64 = 2147483647
+Broiler.ECMAScript.Numbers.BigIntPolicy.ToString() method virtual System.String
+Broiler.ECMAScript.Numbers.BigIntPolicy.get_MaximumBits() method System.Int64
+Broiler.ECMAScript.Numbers.BigIntPolicy.get_Unbounded() method static Broiler.ECMAScript.Numbers.BigIntPolicy
+Broiler.ECMAScript.Numbers.BigIntPolicy.op_Equality(Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.Numbers.BigIntPolicy) method static System.Boolean
+Broiler.ECMAScript.Numbers.BigIntPolicy.op_Inequality(Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.Numbers.BigIntPolicy) method static System.Boolean
+Broiler.ECMAScript.Numbers.BigIntText static class
+Broiler.ECMAScript.Numbers.BigIntText.StringToBigInt(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.Numbers.BigIntPolicy, Broiler.ECMAScript.WorkCharge, System.Numerics.BigInteger&, System.Int32&) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.BigIntText.ToString(System.Numerics.BigInteger, System.Int32, Broiler.ECMAScript.WorkCharge) method static System.String
+Broiler.ECMAScript.Numbers.ExactRounding static class
+Broiler.ECMAScript.Numbers.ExactRounding.ApplyUnsignedRoundingMode(System.Numerics.BigInteger, System.Numerics.BigInteger, System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.UnsignedRoundingMode) method static System.Numerics.BigInteger
+Broiler.ECMAScript.Numbers.ExactRounding.GetUnsignedRoundingMode(Broiler.ECMAScript.Numbers.RoundingMode, System.Boolean) method static Broiler.ECMAScript.Numbers.UnsignedRoundingMode
+Broiler.ECMAScript.Numbers.ExactRounding.Negate(Broiler.ECMAScript.Numbers.RoundingMode) method static Broiler.ECMAScript.Numbers.RoundingMode
+Broiler.ECMAScript.Numbers.ExactRounding.RoundNumberToIncrement(System.Numerics.BigInteger, System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.RoundingMode) method static System.Numerics.BigInteger
+Broiler.ECMAScript.Numbers.ExactRounding.RoundNumberToIncrementAsIfPositive(System.Numerics.BigInteger, System.Numerics.BigInteger, System.Numerics.BigInteger, Broiler.ECMAScript.Numbers.RoundingMode) method static System.Numerics.BigInteger
+Broiler.ECMAScript.Numbers.ExactRounding.ToDouble(System.Numerics.BigInteger, System.Numerics.BigInteger) method static System.Double
+Broiler.ECMAScript.Numbers.ExactRounding.TryParseRoundingMode(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.Numbers.RoundingMode&) method static System.Boolean
+Broiler.ECMAScript.Numbers.Float16 static class
+Broiler.ECMAScript.Numbers.Float16.CanonicalNaN field static const System.UInt16 = 32256
+Broiler.ECMAScript.Numbers.Float16.Decode(System.UInt16) method static System.Double
+Broiler.ECMAScript.Numbers.Float16.Encode(System.Double, Broiler.ECMAScript.Numbers.Float16NanPolicy) method static System.UInt16
+Broiler.ECMAScript.Numbers.Float16.Round(System.Double) method static System.Double
+Broiler.ECMAScript.Numbers.Float16NanPolicy enum
+Broiler.ECMAScript.Numbers.Float16NanPolicy.Canonical = 0
+Broiler.ECMAScript.Numbers.Float16NanPolicy.PreservePayload = 1
+Broiler.ECMAScript.Numbers.Float16NanPolicy.value__ field System.Int32
+Broiler.ECMAScript.Numbers.IntegerConversions static class
+Broiler.ECMAScript.Numbers.IntegerConversions.MaximumSafeInteger field static const System.Int64 = 9007199254740991
+Broiler.ECMAScript.Numbers.IntegerConversions.ToBigInt64(System.Numerics.BigInteger) method static System.Int64
+Broiler.ECMAScript.Numbers.IntegerConversions.ToBigUint64(System.Numerics.BigInteger) method static System.UInt64
+Broiler.ECMAScript.Numbers.IntegerConversions.ToInt16(System.Double) method static System.Int16
+Broiler.ECMAScript.Numbers.IntegerConversions.ToInt32(System.Double) method static System.Int32
+Broiler.ECMAScript.Numbers.IntegerConversions.ToInt8(System.Double) method static System.SByte
+Broiler.ECMAScript.Numbers.IntegerConversions.ToIntegerOrInfinity(System.Double) method static System.Double
+Broiler.ECMAScript.Numbers.IntegerConversions.ToLength(System.Double) method static System.Int64
+Broiler.ECMAScript.Numbers.IntegerConversions.ToUint16(System.Double) method static System.UInt16
+Broiler.ECMAScript.Numbers.IntegerConversions.ToUint32(System.Double) method static System.UInt32
+Broiler.ECMAScript.Numbers.IntegerConversions.ToUint8(System.Double) method static System.Byte
+Broiler.ECMAScript.Numbers.IntegerConversions.ToUint8Clamp(System.Double) method static System.Byte
+Broiler.ECMAScript.Numbers.IntegerConversions.TryToIndex(System.Double, System.Int64&) method static System.Boolean
+Broiler.ECMAScript.Numbers.MathKernels static class
+Broiler.ECMAScript.Numbers.MathKernels.Cbrt(System.Double) method static System.Double
+Broiler.ECMAScript.Numbers.MathKernels.Expm1(System.Double) method static System.Double
+Broiler.ECMAScript.Numbers.MathKernels.Hypot(System.ReadOnlySpan`1<System.Double>) method static System.Double
+Broiler.ECMAScript.Numbers.MathKernels.Log1p(System.Double) method static System.Double
+Broiler.ECMAScript.Numbers.MathKernels.Power(System.Double, System.Double) method static System.Double
+Broiler.ECMAScript.Numbers.MathKernels.Round(System.Double) method static System.Double
 Broiler.ECMAScript.Numbers.NumberParsing static class
 Broiler.ECMAScript.Numbers.NumberParsing.IsStrWhiteSpaceChar(System.Char) method static System.Boolean
 Broiler.ECMAScript.Numbers.NumberParsing.ParseFloat(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.WorkCharge) method static System.Double
@@ -82,11 +159,33 @@ Broiler.ECMAScript.Numbers.NumericLiteralKind.Number = 0
 Broiler.ECMAScript.Numbers.NumericLiteralKind.value__ field System.Int32
 Broiler.ECMAScript.Numbers.NumericLiterals static class
 Broiler.ECMAScript.Numbers.NumericLiterals.Evaluate(System.ReadOnlySpan`1<System.Char>, System.Boolean, Broiler.ECMAScript.LengthLimit, Broiler.ECMAScript.Numbers.NumericLiteral&, Broiler.ECMAScript.Failure&, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Numbers.PreciseSum sealed class
+Broiler.ECMAScript.Numbers.PreciseSum..ctor() method System.Void
+Broiler.ECMAScript.Numbers.PreciseSum.Add(System.Double) method System.Void
+Broiler.ECMAScript.Numbers.PreciseSum.Result() method System.Double
+Broiler.ECMAScript.Numbers.RoundingMode enum
+Broiler.ECMAScript.Numbers.RoundingMode.Ceil = 0
+Broiler.ECMAScript.Numbers.RoundingMode.Expand = 2
+Broiler.ECMAScript.Numbers.RoundingMode.Floor = 1
+Broiler.ECMAScript.Numbers.RoundingMode.HalfCeil = 4
+Broiler.ECMAScript.Numbers.RoundingMode.HalfEven = 8
+Broiler.ECMAScript.Numbers.RoundingMode.HalfExpand = 6
+Broiler.ECMAScript.Numbers.RoundingMode.HalfFloor = 5
+Broiler.ECMAScript.Numbers.RoundingMode.HalfTrunc = 7
+Broiler.ECMAScript.Numbers.RoundingMode.Trunc = 3
+Broiler.ECMAScript.Numbers.RoundingMode.value__ field System.Int32
 Broiler.ECMAScript.Numbers.TrimEnds enum
 Broiler.ECMAScript.Numbers.TrimEnds.Both = 3
 Broiler.ECMAScript.Numbers.TrimEnds.End = 2
 Broiler.ECMAScript.Numbers.TrimEnds.Start = 1
 Broiler.ECMAScript.Numbers.TrimEnds.value__ field System.Int32
+Broiler.ECMAScript.Numbers.UnsignedRoundingMode enum
+Broiler.ECMAScript.Numbers.UnsignedRoundingMode.HalfEven = 4
+Broiler.ECMAScript.Numbers.UnsignedRoundingMode.HalfInfinity = 3
+Broiler.ECMAScript.Numbers.UnsignedRoundingMode.HalfZero = 2
+Broiler.ECMAScript.Numbers.UnsignedRoundingMode.Infinity = 1
+Broiler.ECMAScript.Numbers.UnsignedRoundingMode.Zero = 0
+Broiler.ECMAScript.Numbers.UnsignedRoundingMode.value__ field System.Int32
 Broiler.ECMAScript.ResultStatus enum
 Broiler.ECMAScript.ResultStatus.Completed = 0
 Broiler.ECMAScript.ResultStatus.LimitExceeded = 2
