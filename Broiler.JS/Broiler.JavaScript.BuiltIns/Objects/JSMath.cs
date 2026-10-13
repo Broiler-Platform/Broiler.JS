@@ -282,6 +282,14 @@ public partial class JSMath : JSObject
         return new JSNumber(MathKernels.Hypot(numbers));
     }
 
+    /// <summary>The hypotenuse of two Numbers: the shared library's <c>MathKernels.Hypot</c> (SJL-4.5).</summary>
+    /// <remarks>
+    /// A public member nothing in the engine calls, kept as an obsolete forwarder (decision SJL-D-25
+    /// (b)); its pairwise body is gone.
+    /// </remarks>
+    [Obsolete("Use Broiler.ECMAScript.Numbers.MathKernels.Hypot, which this forwards to. To be removed in the next major version.")]
+    public static double Hypot(double number1, double number2) => MathKernels.Hypot([number1, number2]);
+
     [JSExport]
     public static JSValue Imul(in Arguments args)
     {
