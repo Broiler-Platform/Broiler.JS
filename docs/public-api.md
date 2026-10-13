@@ -64,7 +64,7 @@ profile. They are not part of the `Broiler.JavaScript.*` set above and do not sh
 
 | Package | State | Public surface |
 | --- | --- | --- |
-| `Broiler.ECMAScript.Algorithms` | `0.1.0-preview.1`, the first version the stream will publish; this engine's `Parser`, `Runtime`, `BuiltIns` and `Storage` reference it | The contract types `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`; the number-conversion area, namespace `Broiler.ECMAScript.Numbers`: `NumberText`, `NumberParsing`, `NumericLiterals`, `NumericKeys` |
+| `Broiler.ECMAScript.Algorithms` | `0.1.0-preview.1` published; `0.2.0`, with the numerics area, the next version (Broiler.VM's committed feed holds its `0.2.0-preview.1`); this engine's `Parser`, `Runtime`, `BuiltIns`, `Storage` and `Expressions` reference it | The contract types `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`; the number-conversion area, namespace `Broiler.ECMAScript.Numbers`: `NumberText`, `NumberParsing`, `NumericLiterals`, `NumericKeys`; and the numerics area, in the same namespace: `IntegerConversions`, `Float16`, `MathKernels`, `PreciseSum`, `ExactRounding` with `RoundingMode` and `UnsignedRoundingMode`, `BigIntMath`, `BigIntText` and `BigIntPolicy` |
 | `Broiler.ECMAScript.Conformance` | Test-only; not packed at this version | The corpus reader, the validator, the engine-level and library-level runners and their report |
 
 **Their compatibility promise is stronger than this engine's**, and it is enforced rather than stated
@@ -91,7 +91,60 @@ profile. They are not part of the `Broiler.JavaScript.*` set above and do not sh
 at milestone SJL-3.5, when the number area moved in and this engine took its reference: the table's
 first row read "| `Broiler.ECMAScript.Algorithms` | Contract types only, `0.1.0-preview.1` the first
 version the stream will publish | `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit`,
-`DepthLimit` |".*
+`DepthLimit` |".* *Revised again 2026-10-13, at milestone SJL-4.5, when the numerics area moved in: the
+row's second cell read "`0.1.0-preview.1`, the first version the stream will publish; this engine's
+`Parser`, `Runtime`, `BuiltIns` and `Storage` reference it", and its third cell ended at
+"`NumericKeys`".*
+
+## Public API changes, 2026-10-13 (numerics move to `Broiler.ECMAScript.Algorithms`)
+
+Milestone SJL-4.5 moves the numerics area into the shared library, version `0.2.0`: the integer
+conversions and Float16, the Math kernels, the exact rounding of Temporal and Intl, and the BigInt
+kernel. It applies decision SJL-D-25 to each public member the move empties, as the number-conversion
+move above did. No public member is removed, so the decision's consumer check is not needed. The
+observable corrections are in [`Broiler.JS/CHANGELOG.md`](../Broiler.JS/CHANGELOG.md).
+
+| Member | Assembly | Disposition | What it does now |
+| --- | --- | --- | --- |
+| `JSNumericOperators.ToInt32(double)`, `ToUint32(double)` | `Runtime` | (a) forwarder | `IntegerConversions.ToInt32` and `ToUint32` |
+| `JSValue.IntValue`, `JSValue.UIntValue` | `Runtime` | (a) forwarder | `IntegerConversions.ToInt32` and `ToUint32` of `DoubleValue`; still virtual |
+| `JSValue.IntegerValue` | `Runtime` | kept | `IntegerConversions.ToIntegerOrInfinity` of `DoubleValue`, saturated to `int` as before. No specification path reads it any more: each calls the library |
+| `JSMath.Hypot(double, double)` | `BuiltIns` | (b) obsolete forwarder, removed in the next major version | `MathKernels.Hypot` of the two values, within one unit in the last place |
+| `JSBigInt.ToNumber(BigInteger)` | `BuiltIns` | (b) obsolete forwarder, removed in the next major version | `BigIntMath.ToNumber`, the nearest double, ties to even, as before |
+| `BigIntegerExtensions.FromDouble(this double)` | `Runtime` | kept, unchanged | It had no caller in the engine before the move. Its contract, the floor of any double, is not the library's `FromIntegralNumber`, which takes an integral, finite Number, so it is no forwarder |
+| `JSMath.Round`, `Pow`, `Hypot(in Arguments)`, `Cbrt`, `Expm1`, `Log1p`, `F16round`, `SumPrecise` | `BuiltIns` | kept, bodies replaced | Adapters over `MathKernels`, `Float16.Round` and `PreciseSum` |
+| `BExpression.Power(BExpression, BExpression)` | `Expressions` | kept, emission changed | Emits a call to `MathKernels.Power`, where it emitted `Math.Pow`; `LinqConverter.VisitPower` (protected) goes through it |
+| The `JSBigInt` constructor function (`Constructor(in Arguments)`), operators and conversions (`Negate`, `Increment`, `Decrement`, `BitwiseNot`, `BitwiseAnd`, `BitwiseOr`, `BitwiseXor`, `LeftShift`, `RightShift`, `Multiply`, `Subtract`, `Power`, `ToString`, `ToDetailString`, `AddValue`, `EqualsLiteral`) | `BuiltIns` | kept, bodies replaced | Adapters over `BigIntMath` and `BigIntText`; a result past the representation is a `RangeError` |
+| `JSBigInt.CreateInstance(in Arguments)` override | `BuiltIns` | override removed | The base member answers, so `new (1n)()` is a `TypeError`, where the override returned `0n`. Binary-compatible: a caller binds to the base virtual member |
+
+**Removed internal and private members**, with no public surface:
+
+- *Integer conversions:* the `ToIndex`, `ToLength` and `ToIntegerOrInfinity` helpers of the Array,
+  typed-array, `ArrayBuffer`, `DataView`, Atomics, JSON, Proxy, Number, RegExp, String, Date and Intl
+  built-ins, now adapters under names that are not the abstract operations' (such as `IntegerOf`,
+  `LengthOf` and `IndexArgument`), and their own narrowing in Atomics and the typed arrays' element
+  writers.
+- *Math kernels:* the bodies of `JSMath.Round` and `Pow`, both `Hypot` overloads' arithmetic,
+  `CorrectlyRoundedCbrt`, the bodies of `Expm1` and `Log1p`, `SumPrecise`'s kernel with `TwoSum`,
+  `SameNonFinite`, `Two1023`, `Two53` and `MaxUlp`, and `JSValue.Power`'s special cases over
+  `Math.Pow`; the compiled `**` (`BExpression.Power`, `LinqConverter.VisitPower`, `LambdaConverter`'s
+  power node) calls `MathKernels.Power`.
+- *Exact rounding:* `TemporalRoundingOptions`' `NormalizeRoundingMode`, `NegateRoundingMode`,
+  `UnsignedRoundingMode`, `ApplyRoundingPicksEnd`, `RoundToIncrement` and
+  `RoundToIncrementAsIfPositive`; `JSTemporalDuration`'s second `NormalizeRoundingMode` and
+  `RoundToIncrement`, `RatioToDouble` and `NearestDouble`; `JSTemporalZonedDateTime`'s
+  `UnsignedRoundingMode`, `ApplyRoundingPicksEnd` and `RoundOffsetToMinute`; and
+  `JSIntlNumberFormat`'s `UnsignedRoundingMode`, `GetUnsignedRoundingMode` and `RoundRatio`. The
+  internal `JSIntlNumberFormatResolved.RoundingMode` is the library's `RoundingMode`, beside a new
+  `RoundingModeName` that `resolvedOptions()` reports.
+- *BigInt:* `JSBigInt`'s `NumberToBigInt`, `TryStringToBigInt`, `IsStrWhiteSpaceOnly`,
+  `TryParseBigIntString`, `TryParsePrefixedDigits`, `BigIntegerToRadixString`, `Shift` and
+  `ToBitsIndex`, and `JSBigIntExtensions.CompareToNumber` (an internal class). `JSBigInt.ToBigInt`
+  and `Coerce` are internal and call the library.
+
+**Compatibility.** Binary-compatible: every public member is kept, as itself or as a forwarder.
+`Broiler.JavaScript.Expressions` gains a dependency on `Broiler.ECMAScript.Algorithms`, beside
+`Parser`, `Runtime`, `BuiltIns` and `Storage`; that package's own compatibility promise is above.
 
 ## Public API changes, 2026-10-12 (number conversion moves to `Broiler.ECMAScript.Algorithms`)
 

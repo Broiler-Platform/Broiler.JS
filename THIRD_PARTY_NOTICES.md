@@ -56,8 +56,12 @@ contain two pieces of third-party code, named below, and no data:
   method forwards to the shared library. The project also holds, under `ReferenceArms/Numerics/`, the
   reference arms of bundle `docs/evidence/sjl-4-001`: test-only copies of both engines' numerics code
   at their SJL-3 merges, held and retired the same way. Arm J is this engine's code, as above; arm V is
-  Broiler.VM's, under the same licence and by the same contributors. Neither copies fdlibm or any
-  other third-party code.
+  Broiler.VM's, under the same licence and by the same contributors. Arm J's `SumPrecise` says it
+  ports the reference algorithm of the TC39 `Math.sumPrecise` proposal
+  ([github.com/tc39/proposal-math-sum](https://github.com/tc39/proposal-math-sum)), Shewchuk's exact
+  addition as CPython's `math.fsum` uses it; since milestone SJL-4.5 that copy is the only one in this
+  repository (see the engine's section below), and the shared library's `PreciseSum` is written from
+  the clause, not from that code. Neither arm copies fdlibm.
 
 Code that later moves into a shared library records its origin unit by unit, and code whose licence
 is share-alike or unclear is rewritten from the specification rather than moved (the programme's
@@ -77,4 +81,21 @@ shared libraries programme" and ended "Its one third-party component is **Ryu**,
 the code ported from Broiler.VM ended at "from `JsParser.TryBigIntValue`)."; and the bullet on fdlibm
 was added. Revised again the same day, later in milestone SJL-4.3: the bullet on
 `Broiler.ECMAScript.Algorithms.Tests` ended at "the engine's own method forwards to the shared
-library.", and its last three sentences, on bundle `sjl-4-001`'s arms, were added.
+library.", and its last three sentences, on bundle `sjl-4-001`'s arms, were added. Revised again
+2026-10-13, at milestone SJL-4.5: the bullet's last sentence read "Neither copies fdlibm or any other
+third-party code.", which overlooked arm J's `SumPrecise`.
+
+## Sources the engine's own code cites
+
+- `JSMath.Clz32` (`Broiler.JavaScript.BuiltIns`) links Jurassic's `MathObject.cs`
+  ([github.com/paulbartrum/jurassic](https://github.com/paulbartrum/jurassic), MIT License, Copyright
+  (c) 2015 Paul Bartrum) as a reference. Its body is `ToUint32` and a leading-zero count, and carries
+  no Jurassic code. `UriHelper` (`Broiler.JavaScript.Runtime`) links Jurassic's `GlobalObject.cs` the
+  same way; whether its code derives from it is not recorded here yet.
+- `JSMath.SumPrecise` said, until milestone SJL-4.5, that it ported the reference algorithm of the
+  TC39 `Math.sumPrecise` proposal named above. That code is deleted from the engine: the sum is the
+  shared library's `PreciseSum`, written from the clause. The test-only arm J keeps a copy until
+  SJL-16.
+
+*Added 2026-10-13, at milestone SJL-4.5, as the shared libraries plan said it would be: the plan's
+numerics record found that the notices named neither citation.*
