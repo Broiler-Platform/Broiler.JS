@@ -63,7 +63,7 @@ Broiler.ECMAScript.Numbers.BigIntPolicy.Admits(System.Numerics.BigInteger) metho
 Broiler.ECMAScript.Numbers.BigIntPolicy.Equals(Broiler.ECMAScript.Numbers.BigIntPolicy) method System.Boolean
 Broiler.ECMAScript.Numbers.BigIntPolicy.Equals(System.Object) method virtual System.Boolean
 Broiler.ECMAScript.Numbers.BigIntPolicy.GetHashCode() method virtual System.Int32
-Broiler.ECMAScript.Numbers.BigIntPolicy.RepresentationLimit field static const System.Int64 = 2147483647
+Broiler.ECMAScript.Numbers.BigIntPolicy.RepresentationLimit field static const System.Int64 = 2147483520
 Broiler.ECMAScript.Numbers.BigIntPolicy.ToString() method virtual System.String
 Broiler.ECMAScript.Numbers.BigIntPolicy.get_MaximumBits() method System.Int64
 Broiler.ECMAScript.Numbers.BigIntPolicy.get_Unbounded() method static Broiler.ECMAScript.Numbers.BigIntPolicy

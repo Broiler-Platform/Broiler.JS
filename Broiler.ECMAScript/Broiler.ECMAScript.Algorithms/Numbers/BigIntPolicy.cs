@@ -39,17 +39,28 @@ namespace Broiler.ECMAScript.Numbers;
 /// <see cref="RepresentationLimit"/> bits: no operation builds a wider value, so no .NET exception
 /// reaches a script.
 /// </para>
+/// <para>
+/// <b>The representation's limit is below .NET's</b>. A <see cref="BigInteger"/> holds at most
+/// <c>Array.MaxLength / 32</c> 32-bit words, 2^31 - 64 bits of magnitude, and throws
+/// <see cref="OverflowException"/> past it. An operation may compute a value up to four bits wider
+/// than its policy before it refuses it - the product of two negative powers of two whose widths
+/// <see cref="BigIntMath.Multiply"/> admits, or the mask <see cref="BigIntMath.AsUintN"/> builds - so
+/// the limit stays 64 bits below .NET's.
+/// </para>
 /// </remarks>
 // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=BE9B4E
 // Broiler-Falsified-If: a value exactly MaximumBits wide is refused, or one a bit wider is admitted
 // Broiler-Human:        PENDING
 public readonly record struct BigIntPolicy
 {
-    /// <summary>The widest value the library builds under any policy: 2^31 - 1 bits.</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=426F36
-    // Broiler-Falsified-If: an operation under any policy builds a value wider than 2^31 - 1 bits, so a .NET size exception can reach a script
+    /// <summary>
+    /// The widest value the library builds under any policy: 2^31 - 128 bits, 64 below the widest
+    /// a .NET <see cref="BigInteger"/> holds.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.6.2; IP=Low; Security=High; Resources=1; Fingerprint=CDE036
+    // Broiler-Falsified-If: an operation under any policy computes a value, final or intermediate, wider than a .NET BigInteger holds, so a .NET OverflowException can reach a script
     // Broiler-Human:        PENDING
-    public const long RepresentationLimit = int.MaxValue;
+    public const long RepresentationLimit = (1L << 31) - 128;
 
     /// <summary>Creates a policy.</summary>
     /// <param name="maximumBits">The widest admitted value, from 1 to <see cref="RepresentationLimit"/>.</param>

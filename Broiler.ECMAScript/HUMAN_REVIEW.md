@@ -173,8 +173,8 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a left shift the widths prove too wide is computed before it is refused, or a right shift past the value's width answers other than 0n or -1n
 - `Broiler.ECMAScript.Numbers.BigIntPolicy` in `Broiler.ECMAScript.Algorithms/Numbers/BigIntPolicy.cs` - Security=High, Spec=ECMA-262 6.1.6.2, `BE9B4E`, PENDING
   - Falsified if: a value exactly MaximumBits wide is refused, or one a bit wider is admitted
-- `Broiler.ECMAScript.Numbers.BigIntPolicy.RepresentationLimit` in `Broiler.ECMAScript.Algorithms/Numbers/BigIntPolicy.cs` - Security=High, Spec=ECMA-262 6.1.6.2, `426F36`, PENDING
-  - Falsified if: an operation under any policy builds a value wider than 2^31 - 1 bits, so a .NET size exception can reach a script
+- `Broiler.ECMAScript.Numbers.BigIntPolicy.RepresentationLimit` in `Broiler.ECMAScript.Algorithms/Numbers/BigIntPolicy.cs` - Security=High, Spec=ECMA-262 6.1.6.2, `CDE036`, PENDING
+  - Falsified if: an operation under any policy computes a value, final or intermediate, wider than a .NET BigInteger holds, so a .NET OverflowException can reach a script
 - `Broiler.ECMAScript.Numbers.BigIntPolicy.BigIntPolicy(long)` in `Broiler.ECMAScript.Algorithms/Numbers/BigIntPolicy.cs` - Security=High, Spec=ECMA-262 6.1.6.2, `998980`, PENDING
   - Falsified if: a width below 1 or above RepresentationLimit makes a policy
 - `Broiler.ECMAScript.Numbers.BigIntPolicy.Unbounded` in `Broiler.ECMAScript.Algorithms/Numbers/BigIntPolicy.cs` - Security=High, Spec=ECMA-262 6.1.6.2, `42A7C2`, PENDING

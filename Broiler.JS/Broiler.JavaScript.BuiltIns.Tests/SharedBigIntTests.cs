@@ -90,9 +90,14 @@ public class SharedBigIntTests
 
     // A result past the representation is the kernel's over-width status, a RangeError, never a .NET
     // exception: a left shift by 2^31 - 1 raised one, and BigInt.asUintN of a negative value at a width
-    // of 2^31 or more computed its modulus as 1 << (int)bits, answering 0n, 7n or dividing by zero.
+    // of 2^31 or more computed its modulus as 1 << (int)bits, answering 0n, 7n or dividing by zero. The
+    // representation is 2^31 - 128 bits, below .NET's 2^31 - 64: the last three, between the two, raised
+    // an OverflowException while the library's limit was 2^31 - 1.
     [Theory]
     [InlineData("1n << 2147483647n")]
+    [InlineData("1n << 2147483600n")]
+    [InlineData("(-1n) << 2147483646n")]
+    [InlineData("BigInt.asUintN(2147483600, -1n)")]
     [InlineData("1n << (2n ** 64n)")]
     [InlineData("1n >> -(2n ** 64n)")]
     [InlineData("2n ** (2n ** 64n)")]

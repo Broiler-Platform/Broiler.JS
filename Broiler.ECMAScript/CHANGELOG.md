@@ -39,7 +39,14 @@ Packed as `0.2.0-preview.1`: a new API is a minor version.
 
 ### Changed
 
-None.
+- `BigIntPolicy.RepresentationLimit` is 2^31 - 128 bits, no longer 2^31 - 1 (2026-10-13, milestone
+  SJL-4.5, after the `0.2.0-preview.1` pack that Broiler.VM's committed feed holds). A .NET
+  `BigInteger` holds at most 2^31 - 64 bits and throws `OverflowException` past them, so under
+  `BigIntPolicy.Unbounded` an operation whose result was between the two widths threw instead of
+  answering `LimitExceeded`: `1n << 2147483600n`, `(-1n) << 2147483646n` and
+  `BigInt.asUintN(2147483600, -1n)` among them. An operation computes at most four bits past its
+  policy before it refuses, so the new limit leaves 64 bits of room. Broiler.JS found it at its
+  cut-over, which passes `Unbounded`; a policy of 2^20 bits, Broiler.VM's, never came near it.
 
 ### Observable changes
 

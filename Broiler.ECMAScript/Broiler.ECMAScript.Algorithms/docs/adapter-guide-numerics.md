@@ -248,7 +248,7 @@ past the largest double's rounding range (Temporal's `DivideTimeDuration` is thi
 ```csharp
 public readonly record struct BigIntPolicy(long maximumBits)   // 1 to RepresentationLimit
 {
-    public const long RepresentationLimit = int.MaxValue;
+    public const long RepresentationLimit = (1L << 31) - 128;
     public static BigIntPolicy Unbounded { get; }
     public long MaximumBits { get; }
     public bool Admits(BigInteger value);
@@ -304,7 +304,10 @@ a non-integral or non-finite Number for `FromIntegralNumber`, a non-finite Numbe
 - **Limits:** the policy bounds every result's width, `BigInteger.GetBitLength` (the two's-complement
   length without the sign bit: under a policy of 2^20 bits, `-(2n ** 1048576n)` is admitted and
   `2n ** 1048576n` is not). An operation whose operands already prove the result too wide refuses
-  before it allocates. No policy builds a value wider than `RepresentationLimit` bits.
+  before it allocates. No policy builds a value wider than `RepresentationLimit` bits, 2^31 - 128:
+  a .NET `BigInteger` holds at most 2^31 - 64 bits and throws `OverflowException` past them, and an
+  operation computes at most four bits past its policy before it refuses, so under
+  `BigIntPolicy.Unbounded` every over-width result is `LimitExceeded` and never a .NET exception.
 
 ### What the caller does with each status
 

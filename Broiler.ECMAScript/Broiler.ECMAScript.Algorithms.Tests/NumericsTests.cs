@@ -405,6 +405,44 @@ public class NumericsTests
     }
 
     [Fact]
+    public void BigInt_operations_under_Unbounded_never_reach_a_NET_size_exception()
+    {
+        // .NET's BigInteger holds 2^31 - 64 bits of magnitude and throws OverflowException past them;
+        // the widest value an operation computes before refusing is four bits past its policy.
+        const long limit = BigIntPolicy.RepresentationLimit;
+        Assert.Equal(limit + 4, (BigInteger.One << (int)(limit + 3)).GetBitLength());
+
+        // Each of these built a value past .NET's limit while RepresentationLimit was 2^31 - 1.
+        var policy = BigIntPolicy.Unbounded;
+        Assert.Equal(ResultStatus.LimitExceeded, BigIntMath.LeftShift(BigInteger.One, 2147483600, policy, null, out _));
+        Assert.Equal(ResultStatus.LimitExceeded, BigIntMath.LeftShift(BigInteger.MinusOne, 2147483646, policy, null, out _));
+        Assert.Equal(ResultStatus.LimitExceeded, BigIntMath.AsUintN(2147483600, BigInteger.MinusOne, policy, null, out _));
+
+        AtTheEdge(policy, limit);
+    }
+
+    // Values of 2^31 bits are 256 MiB each; each step drops the last one before it builds the next.
+    private static void AtTheEdge(BigIntPolicy policy, long limit)
+    {
+        Assert.Equal(ResultStatus.Completed, BigIntMath.LeftShift(BigInteger.One, limit - 1, policy, null, out var top));
+        Assert.Equal(limit, top.GetBitLength());
+        Assert.Equal(ResultStatus.LimitExceeded, BigIntMath.Add(top, top, policy, null, out _));
+        top = BigInteger.Zero;
+
+        Assert.Equal(ResultStatus.Completed, BigIntMath.LeftShift(BigInteger.MinusOne, limit, policy, null, out var negative));
+        Assert.Equal(limit, negative.GetBitLength());
+        Assert.Equal(ResultStatus.LimitExceeded, BigIntMath.Negate(negative, policy, null, out _));
+        Assert.Equal(ResultStatus.LimitExceeded, BigIntMath.Subtract(negative, BigInteger.One, policy, null, out _));
+        negative = BigInteger.Zero;
+
+        Assert.Equal(ResultStatus.Completed, BigIntMath.AsUintN((ulong)limit, BigInteger.MinusOne, policy, null, out var mask));
+        Assert.Equal(limit, mask.GetBitLength());
+        Assert.Equal(ResultStatus.LimitExceeded, BigIntMath.Add(mask, BigInteger.One, policy, null, out _));
+        Assert.Equal(ResultStatus.Completed, BigIntMath.BitwiseNot(mask, policy, null, out var complement));
+        Assert.Equal(limit + 1, BigInteger.Abs(complement).GetBitLength());
+    }
+
+    [Fact]
     public void BigInt_charges_are_Broiler_VM_s_units()
     {
         ulong total = 0;
