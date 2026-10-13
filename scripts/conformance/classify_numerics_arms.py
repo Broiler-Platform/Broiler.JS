@@ -273,11 +273,13 @@ def reference(operation: str, variant: str, klass: str, line: int, detail: str, 
     if operation.startswith("ApplyUnsignedRoundingMode"):
         num, den, r1, r2 = (signed_hex(f) for f in raw.split(" "))
         value = Fraction(num, den)
+        # The clause asserts r1 < x < r2 once x = r1 is answered; an exact upper end is itself, which is
+        # what NudgeToCalendarUnit's progress of 1 answers before the call.
         if operation.endswith("one step"):
-            return exactly(integer(N.apply_unsigned_rounding_mode(value, r1, r2, head)))
+            return exactly(integer(r2 if value == r2 else N.apply_unsigned_rounding_mode(value, r1, r2, head)))
         name, sign = head.split("/")
         mode = N.unsigned_rounding_mode(name, sign == "negative")
-        return exactly(str(N.apply_unsigned_rounding_mode(value, r1, r2, mode) == r2))
+        return exactly(str(value == r2 or N.apply_unsigned_rounding_mode(value, r1, r2, mode) == r2))
     if operation.startswith("RoundNumberToIncrement"):
         num, den, inc = (signed_hex(f) for f in raw.split(" "))
         if operation == "RoundNumberToIncrementAsIfPositive":
@@ -413,7 +415,7 @@ def reason_for(operation: str, variant: str, arm_value: str, verdict: Verdict, r
     if operation.startswith("Math.") or operation == "Number::exponentiate":
         if arm_value == "NaN":
             return "answers NaN where the clause gives a Number"
-        if verdict.shown.startswith("f64:") and " " not in verdict.shown:
+        if verdict.exact is not None:
             return "misses the clause's special case or exact result"
         if operation in ("Math.expm1", "Math.log1p"):
             return "is more than one unit in the last place from the exact value near zero"

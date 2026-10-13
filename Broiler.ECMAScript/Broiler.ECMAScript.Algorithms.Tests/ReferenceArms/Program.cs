@@ -27,7 +27,7 @@ internal static class Program
         if (args.Length == 0 || args[0] is not ("compare" or "compare-numerics"))
         {
             Console.Error.WriteLine("usage: compare --population DIR --out DIR [--limit LINES] [--operations NAME,NAME]");
-            Console.Error.WriteLine("       compare-numerics --population DIR --out DIR [--limit LINES] [--operations NAME|NAME] [--negative-control]");
+            Console.Error.WriteLine("       compare-numerics --population DIR --out DIR [--limit LINES] [--operations NAME|NAME]");
             return 2;
         }
 
@@ -38,7 +38,7 @@ internal static class Program
         }
 
         if (args[0] == "compare-numerics")
-            return CompareNumerics(Option, args.Contains("--negative-control"));
+            return CompareNumerics(Option);
 
         var population = new Population(Option("--population") ?? throw new ArgumentException("--population is required"));
         var output = Option("--out") ?? throw new ArgumentException("--out is required");
@@ -53,14 +53,14 @@ internal static class Program
     /// Bundle sjl-4-001's comparison. The operation names hold commas, so a filter separates them with
     /// "|"; a filtered run, like a limited one, is void.
     /// </summary>
-    private static int CompareNumerics(Func<string, string?> option, bool negativeControl)
+    private static int CompareNumerics(Func<string, string?> option)
     {
         var population = new Numerics.NumericsPopulation(option("--population") ?? throw new ArgumentException("--population is required"));
         var output = option("--out") ?? throw new ArgumentException("--out is required");
         long? limit = option("--limit") is { } text ? long.Parse(text, CultureInfo.InvariantCulture) : null;
         var names = option("--operations")?.Split('|');
         var operations = Numerics.NumericsArms.Operations.Where(o => names is null || names.Contains(o.Name)).ToList();
-        new Numerics.NumericsComparison(population, operations, limit, names is not null, Console.Out).Run(output, negativeControl);
+        new Numerics.NumericsComparison(population, operations, limit, names is not null, Console.Out).Run(output);
         return 0;
     }
 }

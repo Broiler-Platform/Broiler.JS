@@ -316,6 +316,14 @@ public class NumericsTests
         Assert.Equal(new BigInteger(-10), ExactRounding.RoundNumberToIncrementAsIfPositive(-15, 1, 10, RoundingMode.HalfExpand));
         Assert.Equal(RoundingMode.HalfFloor, ExactRounding.Negate(RoundingMode.HalfCeil));
 
+        // An exact end is itself under every mode, the upper one included (milestone SJL-4.3's
+        // reference-arm comparison found the upper end answered by the lower under "zero").
+        foreach (var unsigned in Enum.GetValues<UnsignedRoundingMode>())
+        {
+            Assert.Equal(new BigInteger(20), ExactRounding.ApplyUnsignedRoundingMode(20, 1, 10, 20, unsigned));
+            Assert.Equal(new BigInteger(10), ExactRounding.ApplyUnsignedRoundingMode(10, 1, 10, 20, unsigned));
+        }
+
         // A window wider than one step, as NudgeToCalendarUnit applies one: 15 of [10, 20] at half-even is 20 (20 / 10 is even).
         Assert.Equal(new BigInteger(20), ExactRounding.ApplyUnsignedRoundingMode(15, 1, 10, 20, UnsignedRoundingMode.HalfEven));
         // 7 / 2 and 5 / 2 are ties of increment 1: half-even takes 4 and 2.

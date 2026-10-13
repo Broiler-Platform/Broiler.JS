@@ -434,7 +434,9 @@ internal static class NumericsArms
             Render.Int(ExactRounding.ApplyUnsignedRoundingMode(i.X, i.Y, i.Z, i.W, (UnsignedRoundingMode)i.Parameter));
         yield return new("ApplyUnsignedRoundingMode, one step", ["R1W"], Step,
         [
-            new("V", "JsTemporalCore.ApplyUnsigned", static i => Render.Int(V.JsTemporalCore.ApplyUnsigned(i.X, i.Y, i.Z, (V.JsTemporalCore.Unsigned)i.Parameter)), SApply),
+            // Its engine calls it with r1 the quotient's floor (RoundToIncrement), so never at the upper end.
+            new("V", "JsTemporalCore.ApplyUnsigned", static i => Render.Int(V.JsTemporalCore.ApplyUnsigned(i.X, i.Y, i.Z, (V.JsTemporalCore.Unsigned)i.Parameter)), SApply,
+                static i => i.Z == BigInteger.Divide(i.X, i.Y)),
             // RoundRatio rounds a non-negative a / b to an integer: the window [floor, floor + 1].
             new("J", "JSIntlNumberFormat.RoundRatio", static i => Render.Int(J.JSIntlNumberFormat.RoundRatio(i.X, i.Y, (J.JSIntlNumberFormat.UnsignedRoundingMode)i.Parameter)), SApply,
                 static i => i.Z == BigInteger.Divide(i.X, i.Y)),
@@ -463,7 +465,9 @@ internal static class NumericsArms
         }
         yield return new("ApplyUnsignedRoundingMode, a window", ["R1W"], Window,
         [
-            new("V", "JsTemporalCore.RoundsToSecond", static i => V.JsTemporalCore.RoundsToSecond(i.X, i.Y, i.Z, i.W, VMode(i.Parameter), i.Parameter2 == 1).ToString(), SWindow),
+            // Broiler.VM's NudgeToCalendarUnit: a progress of the whole span rounds up without the call.
+            new("V", "JsTemporal.Durations' NudgeToCalendarUnit with JsTemporalCore.RoundsToSecond", static i =>
+                (i.X == i.W * i.Y || V.JsTemporalCore.RoundsToSecond(i.X, i.Y, i.Z, i.W, VMode(i.Parameter), i.Parameter2 == 1)).ToString(), SWindow),
             new("J", "JSTemporalZonedDateTime's NudgeToCalendarUnit with ApplyRoundingPicksEnd",
                 static i => JNudge(i, J.JSTemporalZonedDateTime.ApplyRoundingPicksEnd, J.JSTemporalZonedDateTime.UnsignedRoundingMode).ToString(), SWindow),
             new("J", "JSTemporalPlainDate's NudgeToCalendarUnit with TemporalRoundingOptions.ApplyRoundingPicksEnd",
@@ -578,8 +582,11 @@ internal static class NumericsArms
             new("V", "JsBigInt.TryParseStringInteger", static i =>
             {
                 var meter = new Meter();
+                // True with no value is a value past the ceiling, reported with its sign (the member's contract).
                 var ok = V.JsBigInt.TryParseStringInteger(i.Text!, meter.Charge, out var value, out var sign);
-                var result = ok ? Render.Big(value!.Value) : sign != 0 ? Render.RangeError + ":" + sign.ToString(CultureInfo.InvariantCulture) : Render.Undefined;
+                var result = !ok ? Render.Undefined
+                    : value is null ? Render.RangeError + ":" + sign.ToString(CultureInfo.InvariantCulture)
+                    : Render.Big(value.Value);
                 return Render.Charged(result, meter.Total);
             }, static i =>
             {

@@ -232,7 +232,9 @@ above never sees one.
 
 ### Result
 
-The rounded multiple, exactly; ties are decided exactly. `RoundNumberToIncrementAsIfPositive` rounds
+The rounded multiple, exactly; ties are decided exactly. An exact end is itself under every mode,
+the upper one included, which the clause leaves to its callers *(added 2026-10-13, later the same
+day, with the library's correction)*. `RoundNumberToIncrementAsIfPositive` rounds
 every value as a positive one, as an instant rounds. `ToDouble` is the Number nearest the ratio, ties
 to even, over the whole range: subnormals included, +0 for a zero numerator, and an infinity at or
 past the largest double's rounding range (Temporal's `DivideTimeDuration` is this conversion).

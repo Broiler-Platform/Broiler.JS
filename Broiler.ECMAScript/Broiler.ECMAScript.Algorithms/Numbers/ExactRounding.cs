@@ -115,7 +115,7 @@ public static class ExactRounding
     /// <param name="mode">The unsigned mode.</param>
     /// <returns><paramref name="lower"/> or <paramref name="upper"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">A precondition does not hold.</exception>
-    // Broiler-AI:           Origin=AI; Spec=Temporal 13.26; IP=Low; Security=Medium; Resources=1; Fingerprint=D8ECA1
+    // Broiler-AI:           Origin=AI; Spec=Temporal 13.26; IP=Low; Security=Medium; Resources=1; Fingerprint=E31002
     // Broiler-Human:        PENDING
     public static BigInteger ApplyUnsignedRoundingMode(
         BigInteger numerator, BigInteger denominator, BigInteger lower, BigInteger upper, UnsignedRoundingMode mode)
@@ -133,6 +133,11 @@ public static class ExactRounding
 
         if (below.IsZero)
             return lower;
+
+        // An exact end is itself under every mode: the clause asserts r1 < x < r2 once x = r1 is
+        // answered, and its callers answer x = r2 (NudgeToCalendarUnit's progress of 1) before calling.
+        if (above.IsZero)
+            return upper;
 
         switch (mode)
         {

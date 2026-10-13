@@ -34,7 +34,7 @@ internal sealed class NumericsComparison(NumericsPopulation population, IReadOnl
 {
     private const int ChunkLines = 4096;
 
-    public void Run(string outputDirectory, bool negativeControl)
+    public void Run(string outputDirectory)
     {
         Directory.CreateDirectory(outputDirectory);
         NumericsArms.DrawnFrom = population.Values.Length - NumericsArms.B1Drawn;
@@ -86,8 +86,6 @@ internal sealed class NumericsComparison(NumericsPopulation population, IReadOnl
 
                                 var s = sharedResults[sharedIndex[v]] ??= Safe(variant.Shared, input);
                                 var result = Safe(variant.Run, input);
-                                if (negativeControl)
-                                    result = NegativeControl.Mutate(operation.Name, variant, input, result);
                                 counts[at, 3 * v]++;
                                 if (!string.Equals(result, s, StringComparison.Ordinal))
                                 {
@@ -145,7 +143,6 @@ internal sealed class NumericsComparison(NumericsPopulation population, IReadOnl
             ["revision"] = "docs/evidence/sjl-4-001/reference-arms-revised-2026-10-13.md",
             ["void"] = limit is not null || filtered,
             ["lineLimit"] = limit,
-            ["negativeControl"] = negativeControl,
             ["seconds"] = Math.Round(started.Elapsed.TotalSeconds),
             ["population"] = File.Exists(manifest) ? JsonDocument.Parse(File.ReadAllText(manifest)).RootElement : null,
             ["notImplemented"] = NumericsArms.NotImplemented.Select(static n => new Dictionary<string, string> { ["arm"] = n.Arm, ["operation"] = n.Operation, ["reason"] = n.Reason }).ToList(),
@@ -176,35 +173,5 @@ internal sealed class NumericsComparison(NumericsPopulation population, IReadOnl
         {
             return "exception:" + exception.GetType().Name;
         }
-    }
-}
-
-/// <summary>
-/// The rule's negative controls: a copy of arm V with one charge changed for one input of B1, and a
-/// copy of arm J with one result changed for one input of N1. Each is run once, with
-/// <c>--negative-control</c>; the comparison must report each as a difference, and classifies
-/// nothing.
-/// </summary>
-internal static class NegativeControl
-{
-    /// <summary>The input of B1P whose charge arm V's copy changes: the first pair.</summary>
-    public const long ChargedLine = 0;
-
-    /// <summary>The input of N1 whose result arm J's copy changes: a drawn double.</summary>
-    public const long ResultLine = 20000;
-
-    public static string Mutate(string operation, NumericsVariant variant, NumericsInput input, string result)
-    {
-        if (operation == "BigInt::add" && variant.Arm == "V" && input.Class == "B1P" && input.Line == ChargedLine)
-        {
-            var bar = result.LastIndexOf("|charge:", StringComparison.Ordinal);
-            var charge = ulong.Parse(result[(bar + 8)..], CultureInfo.InvariantCulture);
-            return result[..bar] + "|charge:" + (charge + 1).ToString(CultureInfo.InvariantCulture);
-        }
-
-        if (operation == "ToInt32" && variant.Name == "JSValue.IntValue" && input.Class == "N1" && input.Line == ResultLine)
-            return Render.Int(J.JSValue.IntValue(input.A) + 1L);
-
-        return result;
     }
 }
