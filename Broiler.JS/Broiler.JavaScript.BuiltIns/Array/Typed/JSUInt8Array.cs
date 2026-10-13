@@ -4,6 +4,7 @@ using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Engine;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
@@ -35,10 +36,11 @@ public partial class JSUInt8Array : JSTypedArray
         if (TrySetForeignReceiver(index, value, receiver, throwError, out var foreign))
             return foreign;
 
-        var intValue = (value ?? JSUndefined.Value).IntValue;
+        var number = (value ?? JSUndefined.Value).DoubleValue;
         if (index >= length)
             return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)
-        buffer.buffer[byteOffset + index] = (byte)(uint)intValue;
+        // ToUint8 is the shared library's (SJL-4.5).
+        buffer.buffer[byteOffset + index] = IntegerConversions.ToUint8(number);
         return true;
     }
 

@@ -2,6 +2,7 @@
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using System.Text;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.String;
 
@@ -20,7 +21,8 @@ public partial class JSString
         for (var ai = 0; ai < al; ai++)
         {
             var ch = a.GetAt(ai);
-            sb.Append((char)ch.IntValue);
+            // ToUint16 is the shared library's (SJL-4.5).
+            sb.Append((char)IntegerConversions.ToUint16(ch.DoubleValue));
         }
 
         return new JSString(sb.ToString());

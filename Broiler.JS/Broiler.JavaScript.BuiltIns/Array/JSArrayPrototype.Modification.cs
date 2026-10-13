@@ -100,9 +100,9 @@ public partial class JSArray
         // int cast would truncate to -1 (so e.g. copyWithin(Infinity, 0) wrongly copied a value). An
         // undefined `end` (whether passed explicitly or omitted) defaults to the length.
         var length = GetArrayLikeLengthLong(@this);
-        var relTarget = ToIntegerOrInfinity(t);
-        var relStart = ToIntegerOrInfinity(s);
-        var relEnd = ToIntegerOrInfinity(a.GetAt(2), length);
+        var relTarget = IntegerOf(t);
+        var relStart = IntegerOf(s);
+        var relEnd = IntegerOf(a.GetAt(2), length);
 
         long target = relTarget < 0 ? Math.Max(length + relTarget, 0) : Math.Min(relTarget, length);
         long start = relStart < 0 ? Math.Max(length + relStart, 0) : Math.Min(relStart, length);
@@ -171,8 +171,8 @@ public partial class JSArray
         var (value, start, end) = a.Get3();
 
         var len = GetArrayLikeLengthLong(@this);
-        var relativeStart = ToIntegerOrInfinity(start);
-        var relativeEnd = ToIntegerOrInfinity(end, len);
+        var relativeStart = IntegerOf(start);
+        var relativeEnd = IntegerOf(end, len);
 
         var startIndex = relativeStart < 0 ? Math.Max(len + relativeStart, 0) : Math.Min(relativeStart, len);
         var endIndex = relativeEnd < 0 ? Math.Max(len + relativeEnd, 0) : Math.Min(relativeEnd, len);
@@ -518,10 +518,10 @@ public partial class JSArray
         var @this = ToArrayLikeObject(a.This);
 
         long start = a.TryGetAt(0, out var startP)
-            ? ToIntegerOrInfinity(startP)
+            ? IntegerOf(startP)
             : 0;
         var deleteCount = a.TryGetAt(1, out var deleteCountP)
-            ? ToIntegerOrInfinity(deleteCountP)
+            ? IntegerOf(deleteCountP)
             : (a.Length == 0 ? 0 : long.MaxValue);
 
         if (@this.IsSealedOrFrozen())

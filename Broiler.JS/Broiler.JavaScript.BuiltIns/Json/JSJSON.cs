@@ -80,20 +80,10 @@ public partial class JSJSON : JSObject
         throw JSEngine.NewTypeError("Cannot convert object to primitive value");
     }
 
-    private static long ToLength(JSValue value)
-    {
-        if (value == null || value.IsUndefined)
-            return 0;
-
-        var length = ToNumberPrimitive(value).DoubleValue;
-        if (double.IsNaN(length) || length <= 0)
-            return 0;
-
-        if (double.IsPositiveInfinity(length) || length >= MaxArrayLikeLength)
-            return (long)MaxArrayLikeLength;
-
-        return (long)Math.Floor(length);
-    }
+    // LengthOfArrayLike's ToLength (§7.1.20): this engine's ToNumber, then the shared library's
+    // IntegerConversions.ToLength (SJL-4.5).
+    private static long LengthOf(JSValue value)
+        => value == null || value.IsUndefined ? 0 : IntegerConversions.ToLength(ToNumberPrimitive(value).DoubleValue);
 
     private static long GetArrayLength(JSObject valueObject)
     {
@@ -103,7 +93,7 @@ public partial class JSJSON : JSObject
         if (valueObject is JSProxy proxy && proxy.IsArray && !proxy.HasTrap(KeyStrings.get))
             return GetArrayLength(proxy.Target);
 
-        return ToLength(valueObject[KeyStrings.length]);
+        return LengthOf(valueObject[KeyStrings.length]);
     }
 
     // Builds the PropertyList from an array replacer per JSON.stringify step 5.b.

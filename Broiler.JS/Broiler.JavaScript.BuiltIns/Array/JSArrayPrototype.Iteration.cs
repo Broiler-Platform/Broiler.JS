@@ -7,6 +7,7 @@ using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.Array;
 
@@ -121,43 +122,26 @@ public partial class JSArray
     // Broiler-Human:        PENDING
     private static double ToNumber(JSValue value) => ToNumberPrimitive(value).DoubleValue;
 
+    // LengthOfArrayLike's ToLength (§7.1.20): this engine's ToNumber, then the shared library's
+    // IntegerConversions.ToLength (SJL-4.5).
     // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
     // Broiler-Falsified-If: a length of 2^60 or +Infinity is returned above 9007199254740991 instead of being clamped to it
     // Broiler-Human:        PENDING
-    private static double ToLength(JSValue value)
-    {
-        if (value == null || value.IsUndefined)
-            return 0;
+    private static double LengthOf(JSValue value)
+        => value == null || value.IsUndefined ? 0 : IntegerConversions.ToLength(ToNumber(value));
 
-        var length = ToNumber(value);
-        if (double.IsNaN(length) || length <= 0)
-            return 0;
-
-        if (double.IsPositiveInfinity(length) || length >= MaxArrayLikeLength)
-            return MaxArrayLikeLength;
-
-        return Math.Floor(length);
-    }
-
+    // ToIntegerOrInfinity (§7.1.5): this engine's ToNumber, then the shared library's operation,
+    // with the infinities held as long.MinValue and long.MaxValue for the callers' clamps (SJL-4.5).
     // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
     // Broiler-Falsified-If: a finite argument beyond the long range such as 1e300 comes back negative or wrapped instead of saturating at long.MaxValue
     // Broiler-Human:        PENDING
-    private static long ToIntegerOrInfinity(JSValue value, long defaultValue = 0)
+    private static long IntegerOf(JSValue value, long defaultValue = 0)
     {
         if (value == null || value.IsUndefined)
             return defaultValue;
 
-        var number = ToNumber(value);
-        if (double.IsNaN(number) || number == 0)
-            return 0;
-
-        if (double.IsPositiveInfinity(number))
-            return long.MaxValue;
-
-        if (double.IsNegativeInfinity(number))
-            return long.MinValue;
-
-        return (long)number;
+        var integer = IntegerConversions.ToIntegerOrInfinity(ToNumber(value));
+        return integer >= long.MaxValue ? long.MaxValue : integer <= long.MinValue ? long.MinValue : (long)integer;
     }
 
     // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
@@ -165,7 +149,7 @@ public partial class JSArray
     // Broiler-Human:        PENDING
     private static uint GetArrayLikeLength(JSObject @object)
     {
-        var length = ToLength(@object[KeyStrings.length]);
+        var length = LengthOf(@object[KeyStrings.length]);
         return length >= uint.MaxValue
             ? uint.MaxValue
             : (uint)length;
@@ -174,7 +158,7 @@ public partial class JSArray
     // Broiler-AI:           Origin=AI; IP=None; Security=Medium; Resources=1; Fingerprint=TBF
     // Broiler-Falsified-If: a length property above 2^53-1 is returned larger than 9007199254740991
     // Broiler-Human:        PENDING
-    private static long GetArrayLikeLengthLong(JSObject @object) => (long)ToLength(@object[KeyStrings.length]);
+    private static long GetArrayLikeLengthLong(JSObject @object) => (long)LengthOf(@object[KeyStrings.length]);
 
     // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
     // Broiler-Falsified-If: a species constructor that returns a primitive has that primitive used as the result instead of raising a TypeError
@@ -590,7 +574,8 @@ public partial class JSArray
         // omitted argument (test262 flat/non-numeric-depth-should-not-throw). A negative or
         // other non-positive depth means "do not flatten", handled by FlattenTo's depth > 0 gate.
         var depthArg = a[0];
-        int depth = depthArg == null || depthArg.IsUndefined ? 1 : depthArg.IntegerValue;
+        var depthNumber = depthArg == null || depthArg.IsUndefined ? 1 : IntegerConversions.ToIntegerOrInfinity(depthArg.DoubleValue);
+        int depth = depthNumber >= int.MaxValue ? int.MaxValue : depthNumber <= 0 ? 0 : (int)depthNumber;
         var result = CreateArraySpecies(@this, 0);
         uint resultIndex = 0;
         FlattenTo(result, @this, null, null, depth, ref resultIndex, length);

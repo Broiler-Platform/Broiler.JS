@@ -2,6 +2,7 @@
 using System;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
@@ -46,10 +47,11 @@ public partial class JSInt16Array : JSTypedArray
         if (TrySetForeignReceiver(index, value, receiver, throwError, out var foreign))
             return foreign;
 
-        var intValue = (value ?? JSUndefined.Value).IntValue;
+        var number = (value ?? JSUndefined.Value).DoubleValue;
         if (index >= length)
             return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)
-        BitConverter.TryWriteBytes(buffer.buffer.AsSpan(byteOffset + (int)index * 2, 2), (short)intValue);
+        // ToInt16 is the shared library's (SJL-4.5).
+        BitConverter.TryWriteBytes(buffer.buffer.AsSpan(byteOffset + (int)index * 2, 2), IntegerConversions.ToInt16(number));
         return true;
     }
 

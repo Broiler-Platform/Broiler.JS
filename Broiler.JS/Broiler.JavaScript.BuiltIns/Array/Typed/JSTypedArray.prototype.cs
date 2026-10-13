@@ -8,6 +8,7 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
@@ -20,25 +21,18 @@ partial class JSTypedArray
     // indices read as undefined rather than truncating the iteration.
     private JSValue ReadElement(int k) => k < length ? this[(uint)k] : JSUndefined.Value;
 
-    // §7.1.5 ToIntegerOrInfinity: truncate toward zero, with ±Infinity mapped to
+    // §7.1.5 ToIntegerOrInfinity, the shared library's (SJL-4.5), with ±Infinity held as the
     // long.MaxValue / long.MinValue sentinels. Unlike IntValue (which is ToUint32 and
     // collapses Infinity to 0), this preserves the infinite magnitude so index callers
     // clamp it correctly — e.g. indexOf(x, Infinity) is past the end, not index 0
     // (test262 TypedArray/prototype/{indexOf,lastIndexOf}/fromIndex-infinity).
-    private static long ToIntegerOrInfinityIndex(JSValue value, long defaultValue = 0)
+    private static long LongIntegerOf(JSValue value, long defaultValue = 0)
     {
         if (value == null || value.IsUndefined)
             return defaultValue;
 
-        var number = value.DoubleValue;
-        if (double.IsNaN(number) || number == 0)
-            return 0;
-        if (double.IsPositiveInfinity(number))
-            return long.MaxValue;
-        if (double.IsNegativeInfinity(number))
-            return long.MinValue;
-
-        return (long)number;
+        var integer = IntegerConversions.ToIntegerOrInfinity(value.DoubleValue);
+        return integer >= long.MaxValue ? long.MaxValue : integer <= long.MinValue ? long.MinValue : (long)integer;
     }
 
     // Resolves a relative index (per copyWithin/slice clamping): a negative value counts
@@ -78,9 +72,9 @@ partial class JSTypedArray
         // offsets from the end (negative) or the length (positive). An undefined/absent
         // end defaults to len, and an infinite argument clamps to the array bound rather
         // than collapsing to 0 (test262 copyWithin/{undefined-end,non-negative-out-of-bounds-end}).
-        var target = ClampRelativeIndex(ToIntegerOrInfinityIndex(t), len);
-        var start = ClampRelativeIndex(ToIntegerOrInfinityIndex(s), len);
-        var end = ClampRelativeIndex(a.TryGetAt(2, out var e) ? ToIntegerOrInfinityIndex(e, len) : len, len);
+        var target = ClampRelativeIndex(LongIntegerOf(t), len);
+        var start = ClampRelativeIndex(LongIntegerOf(s), len);
+        var end = ClampRelativeIndex(a.TryGetAt(2, out var e) ? LongIntegerOf(e, len) : len, len);
 
         // Calculate the number of values to copy.
         int count = Math.Min(end - start, len - target);
@@ -160,8 +154,9 @@ partial class JSTypedArray
         // primitive below performs no further conversion.
         var numericValue = IsBigIntArray(this) ? (JSValue)JSBigInt.Coerce(value) : new JSNumber(value.DoubleValue);
 
-        var relativeStart = start.AsInt32OrDefault();
-        var relativeEnd = end.AsInt32OrDefault(len);
+        // ToIntegerOrInfinity, not ToInt32: fill(v, 0, Infinity) fills to the end (SJL-4.5).
+        var relativeStart = IntegerOf(start);
+        var relativeEnd = IntegerOf(end, len);
 
         // §23.2.3.10 step 10-12: after every argument has been coerced (value / start / end),
         // re-validate that the typed array is still in bounds — a `valueOf` on a resizable
@@ -279,7 +274,7 @@ partial class JSTypedArray
     {
         ValidateTypedArray("at");
         var len = Length;
-        var relativeIndex = ToIntegerOrInfinity(a.Get1());
+        var relativeIndex = IntegerOf(a.Get1());
         long index = relativeIndex >= 0 ? relativeIndex : (long)len + relativeIndex;
 
         if (index < 0 || index >= len)
@@ -389,7 +384,7 @@ partial class JSTypedArray
 
         // ToIntegerOrInfinity (not ToInt32): a +Infinity fromIndex is past the end → false, and
         // -Infinity clamps to the start.
-        var startIndex = ToIntegerOrInfinity(fromIndex);
+        var startIndex = IntegerOf(fromIndex);
         if (startIndex >= n)
             return JSBoolean.False;
         if (startIndex < 0)
@@ -424,7 +419,7 @@ partial class JSTypedArray
         // §23.2.3.13: fromIndex is ToIntegerOrInfinity. +Infinity is past the end (-1);
         // -Infinity (and any offset before the start) clamps the search start to 0
         // (test262 indexOf/fromIndex-infinity).
-        var from = ToIntegerOrInfinityIndex(fromIndex);
+        var from = LongIntegerOf(fromIndex);
         if (from >= n)
         {
             return JSNumber.MinusOne;
@@ -487,7 +482,7 @@ partial class JSTypedArray
         // §23.2.3.17: fromIndex (when present) is ToIntegerOrInfinity, else len-1.
         // +Infinity clamps to the last index; -Infinity (or an offset before -length)
         // leaves nothing to search (test262 lastIndexOf/fromIndex-infinity).
-        var from = a.Length == 2 ? ToIntegerOrInfinityIndex(fromIndex) : (long)n - 1;
+        var from = a.Length == 2 ? LongIntegerOf(fromIndex) : (long)n - 1;
 
         // Coercing fromIndex (ToIntegerOrInfinity) may run user code that resizes the
         // backing resizable buffer, leaving this fixed-length view out of bounds — every
@@ -628,7 +623,7 @@ partial class JSTypedArray
     {
         ValidateTypedArray("set");
         var (source, offset) = a.Get2();
-        var relativeStart = ToIntegerOrInfinity(offset);
+        var relativeStart = IntegerOf(offset);
         // The target length is captured before the source is measured: a source `length` getter (or a
         // length-tracking source) may resize the target's backing buffer, but the bounds check below
         // still uses the length the view had on entry.
@@ -687,7 +682,7 @@ partial class JSTypedArray
         // SetTypedArrayFromArrayLike: read source.length (a getter may resize the target's buffer),
         // bounds-check against the captured target length, then copy element by element via [[Get]]
         // (so a source Proxy / accessor source is observed correctly).
-        var srcLength = (long)ToIntegerOrInfinity(source[KeyStrings.length]);
+        var srcLength = (long)IntegerOf(source[KeyStrings.length]);
         if (srcLength + relativeStart > length)
             throw JSEngine.NewRangeError("Offset is out of bounds");
 
@@ -705,8 +700,8 @@ partial class JSTypedArray
         // The source length is captured once, before coercion. ToIntegerOrInfinity coerces start/end
         // (valueOf, strings, booleans, NaN→0); an undefined end (explicit or absent) defaults to len.
         var srcLen = Length;
-        var begin = ToIntegerOrInfinity(a.GetAt(0), 0);
-        var end = ToIntegerOrInfinity(a.GetAt(1), srcLen);
+        var begin = IntegerOf(a.GetAt(0), 0);
+        var end = IntegerOf(a.GetAt(1), srcLen);
 
         begin = begin < 0 ? Math.Max(srcLen + begin, 0) : Math.Min(begin, srcLen);
         end = end < 0 ? Math.Max(srcLen + end, 0) : Math.Min(end, srcLen);
@@ -847,8 +842,8 @@ partial class JSTypedArray
 
         // ToIntegerOrInfinity coerces start/end (valueOf, strings, booleans, NaN→0); an undefined end
         // (explicit or absent) defaults to srcLength, not 0.
-        var begin = ToIntegerOrInfinity(a.GetAt(0), 0);
-        var end = ToIntegerOrInfinity(a.GetAt(1), srcLength);
+        var begin = IntegerOf(a.GetAt(0), 0);
+        var end = IntegerOf(a.GetAt(1), srcLength);
 
         begin = begin < 0 ? Math.Max(srcLength + begin, 0) : Math.Min(begin, srcLength);
         end = end < 0 ? Math.Max(srcLength + end, 0) : Math.Min(end, srcLength);

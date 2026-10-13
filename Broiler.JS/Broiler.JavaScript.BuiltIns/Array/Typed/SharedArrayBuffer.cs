@@ -33,7 +33,7 @@ public partial class SharedArrayBuffer : JSArrayBuffer
         // throwing new.target `get prototype` is never observed.
         RequireConstructor("SharedArrayBuffer");
 
-        long length = ToBufferLengthLong(a.Get1(), 0);
+        long length = LongByteLengthOf(a.Get1(), 0);
         long requestedMaxByteLength = ToMaxByteLengthOptionLong(a.GetAt(1));
 
         if (requestedMaxByteLength >= 0 && length > requestedMaxByteLength)
@@ -106,7 +106,7 @@ public partial class SharedArrayBuffer : JSArrayBuffer
         if (!source.IsGrowable)
             throw JSEngine.NewTypeError("SharedArrayBuffer.prototype.grow: buffer is not growable");
 
-        int newByteLength = ToBufferLength(a.Get1(), 0);
+        int newByteLength = ByteLengthOf(a.Get1(), 0);
 
         // A SharedArrayBuffer may only grow: a request below the current length, or above
         // the maximum, is a RangeError.
@@ -132,8 +132,8 @@ public partial class SharedArrayBuffer : JSArrayBuffer
         int len = source.buffer.Length;
         var (beginVal, endVal) = a.Get2();
 
-        int begin = ToIntegerOrInfinity(beginVal, 0);
-        int end = ToIntegerOrInfinity(endVal, len);
+        int begin = IntegerOf(beginVal, 0);
+        int end = IntegerOf(endVal, len);
 
         if (begin < 0) begin = Math.Max(len + begin, 0);
         else begin = Math.Min(begin, len);

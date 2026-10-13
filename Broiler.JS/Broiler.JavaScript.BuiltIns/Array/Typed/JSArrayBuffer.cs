@@ -5,6 +5,7 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
@@ -57,56 +58,43 @@ public partial class JSArrayBuffer : JSObject
         throw JSEngine.NewTypeError("Cannot convert object to primitive value");
     }
 
-    internal static int ToIntegerOrInfinity(JSValue value, int defaultValue)
+    // ToIntegerOrInfinity (§7.1.5): this engine's ToNumber, then the shared library's operation, held
+    // within int for the callers' clamps (SJL-4.5).
+    internal static int IntegerOf(JSValue value, int defaultValue)
     {
         if (value == null || value.IsUndefined)
             return defaultValue;
 
-        var number = ToNumberPrimitive(value).DoubleValue;
-        if (double.IsNaN(number) || number == 0)
-            return 0;
-
-        if (double.IsPositiveInfinity(number))
-            return int.MaxValue;
-
-        if (double.IsNegativeInfinity(number))
-            return int.MinValue;
-
-        return (int)number;
+        var integer = IntegerConversions.ToIntegerOrInfinity(ToNumberPrimitive(value).DoubleValue);
+        return integer >= int.MaxValue ? int.MaxValue : integer <= int.MinValue ? int.MinValue : (int)integer;
     }
 
-    internal static int ToBufferLength(JSValue value, int defaultValue)
+    internal static int ByteLengthOf(JSValue value, int defaultValue)
     {
-        var n = ToBufferLengthLong(value, defaultValue);
-        // ToBufferLength is used for callers that allocate immediately (resize, slice, …) where
+        var n = LongByteLengthOf(value, defaultValue);
+        // ByteLengthOf is used for callers that allocate immediately (resize, slice, …) where
         // exceeding the host's byte-array bound is a RangeError at the point of use; for the
         // ArrayBuffer / SharedArrayBuffer constructors this check must instead happen AFTER
         // OrdinaryCreateFromConstructor has fired NewTarget's prototype getter, so they call
-        // ToBufferLengthLong directly and gate the int.MaxValue check themselves.
+        // LongByteLengthOf directly and gate the int.MaxValue check themselves.
         if (n > int.MaxValue)
             throw JSEngine.NewRangeError("ArrayBuffer allocation failed");
         return (int)n;
     }
 
-    // ToIndex (ECMA-262 §7.1.22) — accepts up to 2^53-1 per spec, returning a long so the caller
-    // can defer the host-side byte-array bound (Array.MaxLength ≈ int.MaxValue) to the actual
-    // CreateByteDataBlock step (test262 ArrayBuffer/data-allocation-after-object-creation).
-    internal static long ToBufferLengthLong(JSValue value, long defaultValue)
+    // ToIndex (ECMA-262 §7.1.22) — the shared library's range rule (SJL-4.5), which accepts up to
+    // 2^53-1 and truncates a fraction in (-1, 0) to 0; the RangeError is this engine's. It returns a
+    // long so the caller can defer the host-side byte-array bound (Array.MaxLength ≈ int.MaxValue) to
+    // the actual CreateByteDataBlock step (test262 ArrayBuffer/data-allocation-after-object-creation).
+    internal static long LongByteLengthOf(JSValue value, long defaultValue)
     {
         if (value == null || value.IsUndefined)
             return defaultValue;
 
-        // ToIntegerOrInfinity truncates toward zero FIRST, so a fractional value in (-1, 0)
-        // (e.g. -0.5) becomes -0 → 0 rather than a RangeError; only then is the sign / upper
-        // bound (2^53-1) checked on the resulting integer.
-        var number = Math.Truncate(ToNumberPrimitive(value).DoubleValue);
-        if (double.IsNaN(number) || number == 0)
-            return 0;
-
-        if (number < 0 || number > 9007199254740991d)
+        if (!IntegerConversions.TryToIndex(ToNumberPrimitive(value).DoubleValue, out var index))
             throw JSEngine.NewRangeError("Invalid ArrayBuffer length");
 
-        return (long)number;
+        return index;
     }
 
     private static JSValue GetSpeciesConstructor(JSArrayBuffer source)
@@ -163,7 +151,7 @@ public partial class JSArrayBuffer : JSObject
         // host-side data-block allocation check (length must fit a host byte array) is deferred
         // until after that read, since OrdinaryCreateFromConstructor precedes CreateByteDataBlock
         // in the spec (test262 ArrayBuffer/data-allocation-after-object-creation).
-        long length = ToBufferLengthLong(a.Get1(), 0);
+        long length = LongByteLengthOf(a.Get1(), 0);
         long requestedMaxByteLength = ToMaxByteLengthOptionLong(a.GetAt(1));
 
         if (requestedMaxByteLength >= 0 && length > requestedMaxByteLength)
@@ -207,7 +195,7 @@ public partial class JSArrayBuffer : JSObject
         if (maxByteLengthValue.IsUndefined)
             return -1;
 
-        return ToBufferLength(maxByteLengthValue, 0);
+        return ByteLengthOf(maxByteLengthValue, 0);
     }
 
     // The long-returning variant used by the constructors so the int.MaxValue gate (host
@@ -221,7 +209,7 @@ public partial class JSArrayBuffer : JSObject
         if (maxByteLengthValue.IsUndefined)
             return -1;
 
-        return ToBufferLengthLong(maxByteLengthValue, 0);
+        return LongByteLengthOf(maxByteLengthValue, 0);
     }
 
     /// <summary>
@@ -362,7 +350,7 @@ public partial class JSArrayBuffer : JSObject
         if (!source.IsResizable)
             throw JSEngine.NewTypeError("ArrayBuffer.prototype.resize: buffer is not resizable");
 
-        int newByteLength = ToBufferLength(a.Get1(), 0);
+        int newByteLength = ByteLengthOf(a.Get1(), 0);
 
         if (source.isDetached)
             throw JSEngine.NewTypeError("Cannot resize a detached ArrayBuffer");
@@ -407,7 +395,7 @@ public partial class JSArrayBuffer : JSObject
         // immutable validation: the spec performs the argument conversion first, so
         // its side effects must run even when the method ultimately throws.
         int newLength = a.Length > 0
-            ? ToBufferLength(a.Get1(), source.buffer.Length)
+            ? ByteLengthOf(a.Get1(), source.buffer.Length)
             : source.buffer.Length;
 
         if (source.isDetached)
@@ -441,7 +429,7 @@ public partial class JSArrayBuffer : JSObject
         // Coerce newLength (ToIndex, may invoke valueOf) BEFORE the detached /
         // immutable validation, matching the spec evaluation order.
         int newLength = a.Length > 0
-            ? ToBufferLength(a.Get1(), source.buffer.Length)
+            ? ByteLengthOf(a.Get1(), source.buffer.Length)
             : source.buffer.Length;
 
         if (source.isDetached)
@@ -473,8 +461,8 @@ public partial class JSArrayBuffer : JSObject
         int len = source.buffer.Length;
         var (beginVal, endVal) = a.Get2();
 
-        int begin = ToIntegerOrInfinity(beginVal, 0);
-        int end = ToIntegerOrInfinity(endVal, len);
+        int begin = IntegerOf(beginVal, 0);
+        int end = IntegerOf(endVal, len);
 
         if (begin < 0) begin = Math.Max(len + begin, 0);
         else begin = Math.Min(begin, len);
@@ -517,8 +505,8 @@ public partial class JSArrayBuffer : JSObject
         int len = source.buffer.Length;
         var (beginVal, endVal) = a.Get2();
 
-        int begin = ToIntegerOrInfinity(beginVal, 0);
-        int end = ToIntegerOrInfinity(endVal, len);
+        int begin = IntegerOf(beginVal, 0);
+        int end = IntegerOf(endVal, len);
 
         if (begin < 0) begin = Math.Max(len + begin, 0);
         else begin = Math.Min(begin, len);

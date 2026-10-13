@@ -20,7 +20,7 @@ public partial class JSArray
     {
         var @this = ToArrayLikeObject(a.This);
         var length = GetArrayLikeLengthLong(@this);
-        var relativeIndex = ToIntegerOrInfinity(a[0]);
+        var relativeIndex = IntegerOf(a[0]);
         var index = relativeIndex >= 0 ? relativeIndex : length + relativeIndex;
 
         if (index < 0 || index >= length)
@@ -45,7 +45,7 @@ public partial class JSArray
         if (length == 0)
             return JSBoolean.False;
 
-        long fromIndex = ToIntegerOrInfinity(a[1]);
+        long fromIndex = IntegerOf(a[1]);
         if (fromIndex < 0)
             fromIndex = fromIndex < -length ? 0 : fromIndex + length;
         if (fromIndex < 0)
@@ -100,7 +100,7 @@ public partial class JSArray
         if (length == 0)
             return JSNumber.MinusOne;
 
-        long fromIndex = ToIntegerOrInfinity(a[1]);
+        long fromIndex = IntegerOf(a[1]);
 
         if (fromIndex < 0)
             fromIndex = fromIndex < -length ? 0 : fromIndex + length;
@@ -141,7 +141,7 @@ public partial class JSArray
         long start;
         if (a.TryGetAt(1, out var value))
         {
-            var n = ToIntegerOrInfinity(value);
+            var n = IntegerOf(value);
             start = n >= 0 ? Math.Min(n, length - 1) : length + n;
         }
         else

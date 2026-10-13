@@ -1,6 +1,7 @@
 using Broiler.JavaScript.ExpressionCompiler;
 using System;
 using System.Numerics;
+using Broiler.ECMAScript.Numbers;
 using System.Threading.Tasks;
 using Broiler.JavaScript.BuiltIns.Array.Typed;
 using Broiler.JavaScript.BuiltIns.BigInt;
@@ -73,7 +74,7 @@ public partial class JSAtomics : JSObject
     private static int ValidateAtomicAccess(JSTypedArray typedArray, JSValue requestIndex)
     {
         var length = typedArray.length;
-        var accessIndex = ToIndex(requestIndex);
+        var accessIndex = IndexArgument(requestIndex);
         if (accessIndex >= length)
             throw JSEngine.NewRangeError("Atomics access index is out of bounds");
 
@@ -91,55 +92,40 @@ public partial class JSAtomics : JSObject
             throw JSEngine.NewRangeError("Atomics access index is out of bounds");
     }
 
-    private static int ToIndex(JSValue value)
+    // ToIndex (§7.1.22): this engine's ToNumber (valueOf runs once for an object), then the shared
+    // library's range rule (SJL-4.5); an index past int.MaxValue is out of every array's bounds.
+    private static int IndexArgument(JSValue value)
     {
         if (value == null || value.IsUndefined)
             return 0;
 
-        var number = value.DoubleValue; // ToNumber (invokes valueOf once for an object)
-        var integer = double.IsNaN(number) ? 0 : Math.Truncate(number);
-
-        if (integer < 0 || integer > 9007199254740991d)
+        if (!IntegerConversions.TryToIndex(value.DoubleValue, out var index) || index > int.MaxValue)
             throw JSEngine.NewRangeError("Invalid atomic access index");
 
-        if (integer > int.MaxValue)
-            throw JSEngine.NewRangeError("Invalid atomic access index");
-
-        return (int)integer;
+        return (int)index;
     }
 
-    // ToIntegerOrInfinity → low bits of the element; ToInt32(±Infinity)/NaN is 0, so an
-    // out-of-long operand collapses to 0 just as the element write would.
-    private static long ToIntegerOperand(JSValue value)
-    {
-        var number = value.DoubleValue;
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            return 0;
+    // An integer element's bits, in the low 32 bits of a uint: NumericToRawBytes of a Number, which is
+    // ToInt8 ... ToUint32 of it, the shared library's (SJL-4.5). Every Number kind's bits are the low
+    // bits of ToUint32's, so the arithmetic below is on those, modulo the element's width.
+    private static uint ElementBits(double number) => IntegerConversions.ToUint32(number);
 
-        var integer = Math.Truncate(number);
-        if (integer >= long.MaxValue) return long.MaxValue;
-        if (integer <= long.MinValue) return long.MinValue;
-        return (long)integer;
-    }
-
-    private static long TruncateToElement(ElementKind kind, long value) => kind switch
+    // The element value a kind reads its low bits as.
+    private static double ElementValue(ElementKind kind, uint bits) => kind switch
     {
-        ElementKind.Int8 => (sbyte)value,
-        ElementKind.Uint8 => (byte)value,
-        ElementKind.Int16 => (short)value,
-        ElementKind.Uint16 => (ushort)value,
-        ElementKind.Int32 => (int)value,
-        ElementKind.Uint32 => (uint)value,
-        _ => value,
+        ElementKind.Int8 => IntegerConversions.ToInt8(bits),
+        ElementKind.Uint8 => IntegerConversions.ToUint8(bits),
+        ElementKind.Int16 => IntegerConversions.ToInt16(bits),
+        ElementKind.Uint16 => IntegerConversions.ToUint16(bits),
+        ElementKind.Int32 => IntegerConversions.ToInt32(bits),
+        _ => bits,
     };
 
-    private static BigInteger TruncateToBigElement(ElementKind kind, BigInteger value)
-    {
-        var masked = value & ((BigInteger.One << 64) - 1);
-        if (kind == ElementKind.BigInt64 && masked >= (BigInteger.One << 63))
-            masked -= BigInteger.One << 64;
-        return masked;
-    }
+    // A BigInt kind's 64 bits: ToBigUint64 of the value, and the BigInt the kind reads them as.
+    private static ulong BigElementBits(BigInteger value) => IntegerConversions.ToBigUint64(value);
+
+    private static BigInteger BigElementValue(ElementKind kind, ulong bits)
+        => kind == ElementKind.BigInt64 ? new BigInteger(unchecked((long)bits)) : new BigInteger(bits);
 
     // ── Read-modify-write (add/sub/and/or/xor/exchange) ─────────────────────────
 
@@ -149,30 +135,33 @@ public partial class JSAtomics : JSObject
         var index = ValidateAtomicAccess(typedArray, a.GetAt(1));
         var operand = a.GetAt(2) ?? JSUndefined.Value;
 
+        // AtomicReadModifyWrite works on the element's raw bytes: the operand's bits and the old
+        // value's, combined modulo the element's width (SJL-4.5). Nothing passes through a double
+        // wider than the element, so an operand of 2**53 or 2**63 wraps as ToInt32 wraps it.
         if (IsBigIntKind(kind))
         {
-            var v = JSBigInt.Coerce(operand).value;
-            RevalidateAtomicAccess(typedArray, index);
-
-            var old = ((JSBigInt)typedArray.GetValue((uint)index, typedArray)).value;
-            var result = ApplyBig(op, old, v);
-            typedArray.SetValue((uint)index, new JSBigInt(result), typedArray);
-            return new JSBigInt(old);
-        }
-        else
-        {
-            var v = ToIntegerOperand(operand);
+            var v = BigElementBits(JSBigInt.Coerce(operand).value);
             RevalidateAtomicAccess(typedArray, index);
 
             var oldValue = typedArray.GetValue((uint)index, typedArray);
-            var old = (long)oldValue.DoubleValue;
-            var result = ApplyInt(op, old, v);
-            typedArray.SetValue((uint)index, new JSNumber(result), typedArray);
+            var result = Apply(op, BigElementBits(((JSBigInt)oldValue).value), v);
+            typedArray.SetValue((uint)index, new JSBigInt(BigElementValue(kind, result)), typedArray);
+            return oldValue;
+        }
+        else
+        {
+            var v = ElementBits(IntegerConversions.ToIntegerOrInfinity(operand.DoubleValue));
+            RevalidateAtomicAccess(typedArray, index);
+
+            var oldValue = typedArray.GetValue((uint)index, typedArray);
+            var result = (uint)Apply(op, ElementBits(oldValue.DoubleValue), v);
+            typedArray.SetValue((uint)index, new JSNumber(ElementValue(kind, result)), typedArray);
             return oldValue;
         }
     }
 
-    private static long ApplyInt(BinaryOp op, long old, long v) => op switch
+    // The operation on raw bits, modulo 2**64; the element keeps the low bits of its width.
+    private static ulong Apply(BinaryOp op, ulong old, ulong v) => unchecked(op switch
     {
         BinaryOp.Add => old + v,
         BinaryOp.Sub => old - v,
@@ -181,18 +170,7 @@ public partial class JSAtomics : JSObject
         BinaryOp.Xor => old ^ v,
         BinaryOp.Exchange => v,
         _ => old,
-    };
-
-    private static BigInteger ApplyBig(BinaryOp op, BigInteger old, BigInteger v) => op switch
-    {
-        BinaryOp.Add => old + v,
-        BinaryOp.Sub => old - v,
-        BinaryOp.And => old & v,
-        BinaryOp.Or => old | v,
-        BinaryOp.Xor => old ^ v,
-        BinaryOp.Exchange => v,
-        _ => old,
-    };
+    });
 
     [JSExport("add", Length = 3)]
     public static JSValue Add(in Arguments a) => AtomicReadModifyWrite(in a, BinaryOp.Add);
@@ -226,21 +204,21 @@ public partial class JSAtomics : JSObject
             var replacement = JSBigInt.Coerce(a.GetAt(3) ?? JSUndefined.Value).value;
             RevalidateAtomicAccess(typedArray, index);
 
-            var old = ((JSBigInt)typedArray.GetValue((uint)index, typedArray)).value;
-            if (old == TruncateToBigElement(kind, expected))
+            var oldValue = typedArray.GetValue((uint)index, typedArray);
+            if (BigElementBits(((JSBigInt)oldValue).value) == BigElementBits(expected))
                 typedArray.SetValue((uint)index, new JSBigInt(replacement), typedArray);
 
-            return new JSBigInt(old);
+            return oldValue;
         }
         else
         {
-            var expected = ToIntegerOperand(a.GetAt(2) ?? JSUndefined.Value);
-            var replacement = ToIntegerOperand(a.GetAt(3) ?? JSUndefined.Value);
+            // The expected value's raw bytes are compared with the element's (SJL-4.5).
+            var expected = IntegerConversions.ToIntegerOrInfinity((a.GetAt(2) ?? JSUndefined.Value).DoubleValue);
+            var replacement = IntegerConversions.ToIntegerOrInfinity((a.GetAt(3) ?? JSUndefined.Value).DoubleValue);
             RevalidateAtomicAccess(typedArray, index);
 
             var oldValue = typedArray.GetValue((uint)index, typedArray);
-            var old = (long)oldValue.DoubleValue;
-            if (old == TruncateToElement(kind, expected))
+            if (ElementValue(kind, ElementBits(expected)) == oldValue.DoubleValue)
                 typedArray.SetValue((uint)index, new JSNumber(replacement), typedArray);
 
             return oldValue;
@@ -276,13 +254,10 @@ public partial class JSAtomics : JSObject
         {
             // store returns 𝔽(ToIntegerOrInfinity(value)) — the integral Number, even
             // though the element only keeps its low bits.
-            var number = operand.DoubleValue;
-
-            // ToIntegerOrInfinity normalizes -0 (and any value in (-1, 0) that
-            // truncates to zero) to +0, so the returned Number must never be -0.
-            // Adding +0 turns -0.0 into +0.0 per IEEE-754 and leaves all other
-            // values unchanged (test262 Atomics/store/expected-return-value-negative-zero).
-            var integer = double.IsNaN(number) ? 0d : Math.Truncate(number) + 0d;
+            // ToIntegerOrInfinity, the shared library's (SJL-4.5), normalizes -0 (and any value in
+            // (-1, 0) that truncates to zero) to +0, so the returned Number is never -0
+            // (test262 Atomics/store/expected-return-value-negative-zero).
+            var integer = IntegerConversions.ToIntegerOrInfinity(operand.DoubleValue);
             RevalidateAtomicAccess(typedArray, index);
             var stored = new JSNumber(integer);
             typedArray.SetValue((uint)index, stored, typedArray);
@@ -295,8 +270,7 @@ public partial class JSAtomics : JSObject
     [JSExport("isLockFree", Length = 1)]
     public static JSValue IsLockFree(in Arguments a)
     {
-        var number = (a.GetAt(0) ?? JSUndefined.Value).DoubleValue;
-        var size = double.IsNaN(number) ? 0 : Math.Truncate(number);
+        var size = IntegerConversions.ToIntegerOrInfinity((a.GetAt(0) ?? JSUndefined.Value).DoubleValue);
         return size is 1 or 2 or 4 or 8 ? BooleanTrue : BooleanFalse;
     }
 
@@ -318,7 +292,7 @@ public partial class JSAtomics : JSObject
         if (kind == ElementKind.BigInt64)
             expectedBig = JSBigInt.Coerce(a.GetAt(2) ?? JSUndefined.Value).value;
         else
-            expected = (long)(int)ToIntegerOperand(a.GetAt(2) ?? JSUndefined.Value);
+            expected = IntegerConversions.ToInt32((a.GetAt(2) ?? JSUndefined.Value).DoubleValue);
 
         // ToNumber(timeout) is coerced (for its side effects) even though a single agent
         // cannot block: there is no other agent to notify it.
@@ -328,8 +302,8 @@ public partial class JSAtomics : JSObject
 
         var current = typedArray.GetValue((uint)index, typedArray);
         bool matches = kind == ElementKind.BigInt64
-            ? ((JSBigInt)current).value == TruncateToBigElement(kind, expectedBig)
-            : (long)current.DoubleValue == TruncateToElement(kind, expected);
+            ? BigElementBits(((JSBigInt)current).value) == BigElementBits(expectedBig)
+            : (long)current.DoubleValue == expected;
 
         // A mismatch returns immediately; a match would block until notified, but with no
         // other agent it can only time out.
@@ -355,7 +329,7 @@ public partial class JSAtomics : JSObject
         if (kind == ElementKind.BigInt64)
             expectedBig = JSBigInt.Coerce(a.GetAt(2) ?? JSUndefined.Value).value;
         else
-            expected = (long)(int)ToIntegerOperand(a.GetAt(2) ?? JSUndefined.Value);
+            expected = IntegerConversions.ToInt32((a.GetAt(2) ?? JSUndefined.Value).DoubleValue);
 
         // q = ToNumber(timeout); a NaN timeout means +∞, otherwise it is clamped to ≥ 0.
         var q = (a.GetAt(3) ?? JSUndefined.Value).DoubleValue;
@@ -365,8 +339,8 @@ public partial class JSAtomics : JSObject
 
         var current = typedArray.GetValue((uint)index, typedArray);
         bool matches = kind == ElementKind.BigInt64
-            ? ((JSBigInt)current).value == TruncateToBigElement(kind, expectedBig)
-            : (long)current.DoubleValue == TruncateToElement(kind, expected);
+            ? BigElementBits(((JSBigInt)current).value) == BigElementBits(expectedBig)
+            : (long)current.DoubleValue == expected;
 
         if (!matches)
             return WaitAsyncResult(false, new JSString("not-equal"));

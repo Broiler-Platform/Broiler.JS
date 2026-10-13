@@ -380,52 +380,38 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
 
     public abstract JSValue TypeOf();
 
-    public virtual int IntValue => unchecked((int)ToUint32(DoubleValue));
+    // ToInt32 (§7.1.6) and ToUint32 (§7.1.7) are the shared library's (SJL-4.5).
+    public virtual int IntValue => IntegerConversions.ToInt32(DoubleValue);
 
-    // ToUint32 (§7.1.6) / ToInt32 (§7.1.5): NaN, ±0 and ±∞ map to 0; every other
-    // value is truncated toward zero and reduced modulo 2^32. The fast path covers
-    // finite values inside the signed 64-bit range, where (long) truncates exactly
-    // and the low 32 bits are the result. Values outside that range (including ±∞,
-    // which .NET converts to long.MaxValue/MinValue rather than wrapping) take the
-    // floating-point modulo path.
-    internal static uint ToUint32(double d)
-    {
-        const double TwoPow32 = 4294967296.0;
-        if (d >= -9.2233720368547758E18 && d < 9.2233720368547758E18)
-            return unchecked((uint)((long)d << 32 >> 32));
-
-        if (!double.IsFinite(d))
-            return 0;
-
-        var num = Math.Truncate(d) % TwoPow32;
-        if (num < 0)
-            num += TwoPow32;
-
-        return (uint)num;
-    }
+    // ToUint32 (§7.1.7): the shared library's IntegerConversions.ToUint32, kept under this name for
+    // the engine's callers (SJL-4.5).
+    internal static uint ToUint32(double d) => IntegerConversions.ToUint32(d);
 
     /// <summary>
     /// Integer value restricts value within int.MaxValue and
     /// more than int.MaxValue is returned as int.MaxValue
     /// </summary>
+    /// <remarks>
+    /// A public member kept as it was (decision SJL-D-25): the shared library's ToIntegerOrInfinity
+    /// (§7.1.5), saturated to <see cref="int"/>. No specification path of this engine reads it since
+    /// SJL-4.5; each calls the library's operation and clamps as its clause says.
+    /// </remarks>
     public virtual int IntegerValue
     {
         get
         {
-            var v = DoubleValue;
-            if (v > 2147483647.0)
-                return 2147483647;
-#pragma warning disable 1718
-            if (v != v)
-                return 0;
-#pragma warning restore 1718
-            return (int)v;
+            var integer = IntegerConversions.ToIntegerOrInfinity(DoubleValue);
+            if (integer >= int.MaxValue)
+                return int.MaxValue;
+            if (integer <= int.MinValue)
+                return int.MinValue;
+            return (int)integer;
         }
     }
 
     public virtual long BigIntValue => (long)(ulong)DoubleValue;
 
-    public virtual uint UIntValue => ToUint32(DoubleValue);
+    public virtual uint UIntValue => IntegerConversions.ToUint32(DoubleValue);
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public IJSPrototype prototypeChain;

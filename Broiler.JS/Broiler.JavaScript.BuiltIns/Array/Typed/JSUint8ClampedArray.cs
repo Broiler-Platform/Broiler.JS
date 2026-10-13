@@ -2,6 +2,7 @@
 using System;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
@@ -48,25 +49,8 @@ public partial class JSUint8ClampedArray : JSTypedArray
         double number = (value ?? JSUndefined.Value).DoubleValue;
         if (index >= length)
             return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)
-        // This algorithm is defined as ToUint8Clamp in the spec.
-        int result;
-        if (number <= 0)
-            result = 0;
-        else if (number >= 255)
-            result = 255;
-        else
-        {
-            var f = Math.Floor(number);
-            if (f + 0.5 < number)
-                result = (int)f + 1;
-            else if (number < f + 0.5)
-                result = (int)f;
-            else if ((int)f % 2 == 0)
-                result = (int)f;
-            else
-                result = (int)f + 1;
-        }
-        buffer.buffer[byteOffset + index] = (byte)result;
+        // ToUint8Clamp is the shared library's (SJL-4.5).
+        buffer.buffer[byteOffset + index] = IntegerConversions.ToUint8Clamp(number);
         return true;
     }
 
