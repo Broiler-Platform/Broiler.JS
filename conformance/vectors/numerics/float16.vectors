@@ -3094,7 +3094,7 @@ since: 6
 
 id: numerics/encode-nan/0001
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN 7FF8000000000000"
 out: value: bool:true
 class: normative
@@ -3105,7 +3105,7 @@ since: 6
 
 id: numerics/encode-nan/0002
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN FFF8000000000000"
 out: value: bool:true
 class: normative
@@ -3116,7 +3116,7 @@ since: 6
 
 id: numerics/encode-nan/0003
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN 7FF0000000000001"
 out: value: bool:true
 class: normative
@@ -3127,7 +3127,7 @@ since: 6
 
 id: numerics/encode-nan/0004
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN FFF0000000000001"
 out: value: bool:true
 class: normative
@@ -3138,7 +3138,7 @@ since: 6
 
 id: numerics/encode-nan/0005
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN 7FF4000000000000"
 out: value: bool:true
 class: normative
@@ -3149,7 +3149,7 @@ since: 6
 
 id: numerics/encode-nan/0006
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN 7FF8000000000001"
 out: value: bool:true
 class: normative
@@ -3160,7 +3160,7 @@ since: 6
 
 id: numerics/encode-nan/0007
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN 7FF8040000000000"
 out: value: bool:true
 class: normative
@@ -3171,7 +3171,7 @@ since: 6
 
 id: numerics/encode-nan/0008
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN 7FFC000000000000"
 out: value: bool:true
 class: normative
@@ -3182,7 +3182,7 @@ since: 6
 
 id: numerics/encode-nan/0009
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN 7FFFFFFFFFFFFFFF"
 out: value: bool:true
 class: normative
@@ -3193,7 +3193,7 @@ since: 6
 
 id: numerics/encode-nan/0010
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN FFFFFFFFFFFFFFFF"
 out: value: bool:true
 class: normative
@@ -3204,7 +3204,7 @@ since: 6
 
 id: numerics/encode-nan/0011
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN 7FF0040000000000"
 out: value: bool:true
 class: normative
@@ -3215,7 +3215,7 @@ since: 6
 
 id: numerics/encode-nan/0012
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN 7FFA5A5A5A5A5A5A"
 out: value: bool:true
 class: normative
@@ -3226,7 +3226,7 @@ since: 6
 
 id: numerics/encode-nan/0013
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN FFF55AA55AA55AA5"
 out: value: bool:true
 class: normative
@@ -3237,7 +3237,7 @@ since: 6
 
 id: numerics/encode-nan/0014
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN 7FF0000000000400"
 out: value: bool:true
 class: normative
@@ -3248,7 +3248,7 @@ since: 6
 
 id: numerics/encode-nan/0015
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN 7FF00000003FF000"
 out: value: bool:true
 class: normative
@@ -3259,7 +3259,7 @@ since: 6
 
 id: numerics/encode-nan/0016
 area: numerics
-op: Float16 encode
+op: Float16 encode is a NaN
 in: str:"NaN 7FF000FFC0000000"
 out: value: bool:true
 class: normative

@@ -14658,7 +14658,7 @@ since: 6
 
 id: numerics/policy/0001
 area: numerics
-op: BigInt::add
+op: BigInt::add (width policy)
 in: str:"bigint:2^1048575-1 bigint:2^1048575"
 out: value: bigint:18446744073709551615
 class: normative
@@ -14669,7 +14669,7 @@ since: 6
 
 id: numerics/policy/0002
 area: numerics
-op: BigInt::add
+op: BigInt::add (width policy)
 in: str:"bigint:2^1048575 bigint:2^1048575"
 out: value: bigint:18446744073709551616
 class: impl-defined
@@ -14682,7 +14682,7 @@ since: 6
 
 id: numerics/policy/0003
 area: numerics
-op: BigInt::subtract
+op: BigInt::subtract (width policy)
 in: str:"bigint:-(2^1048576) bigint:1"
 out: value: bigint:-18446744073709551617
 class: impl-defined
@@ -14695,7 +14695,7 @@ since: 6
 
 id: numerics/policy/0004
 area: numerics
-op: BigInt::leftShift
+op: BigInt::leftShift (width policy)
 in: str:"bigint:-1 bigint:1048576"
 out: value: bigint:-18446744073709551616
 class: normative
@@ -14706,7 +14706,7 @@ since: 6
 
 id: numerics/policy/0005
 area: numerics
-op: BigInt::leftShift
+op: BigInt::leftShift (width policy)
 in: str:"bigint:1 bigint:1048575"
 out: value: bigint:9223372036854775808
 class: normative
@@ -14717,7 +14717,7 @@ since: 6
 
 id: numerics/policy/0006
 area: numerics
-op: BigInt::leftShift
+op: BigInt::leftShift (width policy)
 in: str:"bigint:1 bigint:1048576"
 out: value: bigint:18446744073709551616
 class: impl-defined
@@ -14730,7 +14730,7 @@ since: 6
 
 id: numerics/policy/0007
 area: numerics
-op: BigInt::multiply
+op: BigInt::multiply (width policy)
 in: str:"bigint:2^524287 bigint:2^524288"
 out: value: bigint:9223372036854775808
 class: normative
@@ -14741,7 +14741,7 @@ since: 6
 
 id: numerics/policy/0008
 area: numerics
-op: BigInt::multiply
+op: BigInt::multiply (width policy)
 in: str:"bigint:2^524288 bigint:2^524288"
 out: value: bigint:18446744073709551616
 class: impl-defined
@@ -14754,7 +14754,7 @@ since: 6
 
 id: numerics/policy/0009
 area: numerics
-op: BigInt::multiply
+op: BigInt::multiply (width policy)
 in: str:"bigint:-(2^524288) bigint:2^524288"
 out: value: bigint:-18446744073709551616
 class: normative
@@ -14765,7 +14765,7 @@ since: 6
 
 id: numerics/policy/0010
 area: numerics
-op: BigInt::exponentiate
+op: BigInt::exponentiate (width policy)
 in: str:"bigint:2 bigint:1048575"
 out: value: bigint:9223372036854775808
 class: normative
@@ -14776,7 +14776,7 @@ since: 6
 
 id: numerics/policy/0011
 area: numerics
-op: BigInt::exponentiate
+op: BigInt::exponentiate (width policy)
 in: str:"bigint:2 bigint:1048576"
 out: value: bigint:18446744073709551616
 class: impl-defined
@@ -14789,7 +14789,7 @@ since: 6
 
 id: numerics/policy/0012
 area: numerics
-op: BigInt::exponentiate
+op: BigInt::exponentiate (width policy)
 in: str:"bigint:-2 bigint:1048575"
 out: value: bigint:-9223372036854775808
 class: normative
@@ -14800,7 +14800,7 @@ since: 6
 
 id: numerics/policy/0013
 area: numerics
-op: BigInt::bitwiseNOT
+op: BigInt::bitwiseNOT (width policy)
 in: str:"bigint:2^1048576-1"
 out: value: bigint:-18446744073709551616
 class: normative
@@ -14811,7 +14811,7 @@ since: 6
 
 id: numerics/policy/0014
 area: numerics
-op: BigInt::bitwiseOR
+op: BigInt::bitwiseOR (width policy)
 in: str:"bigint:2^1048575 bigint:2^1048575-1"
 out: value: bigint:18446744073709551615
 class: normative
@@ -14822,7 +14822,7 @@ since: 6
 
 id: numerics/policy/0015
 area: numerics
-op: BigInt.asUintN
+op: BigInt.asUintN (width policy)
 in: str:"int:1048576 bigint:-1"
 out: value: bigint:18446744073709551615
 class: normative
@@ -14833,7 +14833,7 @@ since: 6
 
 id: numerics/policy/0016
 area: numerics
-op: BigInt.asUintN
+op: BigInt.asUintN (width policy)
 in: str:"int:1048577 bigint:-1"
 out: value: bigint:18446744073709551615
 class: impl-defined
@@ -14846,7 +14846,7 @@ since: 6
 
 id: numerics/policy/0017
 area: numerics
-op: BigInt.asIntN
+op: BigInt.asIntN (width policy)
 in: str:"int:1048577 bigint:-1"
 out: value: bigint:-1
 class: normative
@@ -14857,7 +14857,7 @@ since: 6
 
 id: numerics/policy/0018
 area: numerics
-op: StringToBigInt
+op: StringToBigInt (width policy)
 in: str:"0x followed by 262144 digits F"
 out: value: bigint:18446744073709551615
 class: divergence
@@ -14869,7 +14869,7 @@ since: 6
 
 id: numerics/policy/0019
 area: numerics
-op: StringToBigInt
+op: StringToBigInt (width policy)
 in: str:"0x1 followed by 262144 digits 0"
 out: value: bigint:18446744073709551616
 class: impl-defined
@@ -14883,7 +14883,7 @@ since: 6
 
 id: numerics/policy/0020
 area: numerics
-op: BigInt::leftShift
+op: BigInt::leftShift (width policy)
 in: str:"bigint:1 bigint:2^64"
 out: value: bool:true
 class: impl-defined
@@ -14896,7 +14896,7 @@ since: 6
 
 id: numerics/policy/0021
 area: numerics
-op: BigInt::signedRightShift
+op: BigInt::signedRightShift (width policy)
 in: str:"bigint:1 bigint:-(2^64)"
 out: value: bool:true
 class: impl-defined
@@ -14909,7 +14909,7 @@ since: 6
 
 id: numerics/policy/0022
 area: numerics
-op: BigInt::exponentiate
+op: BigInt::exponentiate (width policy)
 in: str:"bigint:2 bigint:2^64"
 out: value: bool:true
 class: impl-defined
@@ -14923,7 +14923,7 @@ since: 6
 
 id: numerics/policy/0023
 area: numerics
-op: BigInt::multiply
+op: BigInt::multiply (width policy)
 in: str:"bigint:2^(2^31) bigint:2^(2^31)"
 out: value: bool:true
 class: impl-defined

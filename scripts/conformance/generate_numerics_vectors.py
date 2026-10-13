@@ -24,6 +24,8 @@ from fractions import Fraction
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+# A vector writes BigInts of up to 70,000 bits in decimal, past CPython's default conversion limit.
+sys.set_int_max_str_digits(0)
 
 import numericsref as N  # noqa: E402
 import numref as R  # noqa: E402
@@ -31,8 +33,9 @@ from generate_number_vectors import double_expression, f64, js_string_literal, s
 
 # The corpus revision this generator writes, and the revision its vectors were added in. Revision 7
 # classified the area's first runs (numerics-divergences.txt) and rebuilt one vector's input
-# (big_literal).
-CORPUS_REVISION = 7
+# (big_literal); revision 8 named the operations and inputs so that each vector's op and in decide its
+# outcome, as the library-level runner reads them.
+CORPUS_REVISION = 8
 FIRST_REVISION = 6
 GENERATOR = "ref:numericsref@1"
 SPEC = "spec:es2026@0248456c"
@@ -388,7 +391,7 @@ def float16_vectors(corpus: Corpus) -> None:
     for bits in NAN_PAYLOADS:
         x = double_expression(bits)
         corpus.add(file, "encode-nan", record(
-            "Float16 encode", f"str:\"NaN {bits:016X}\"", boolean(True),
+            "Float16 encode is a NaN", f"str:\"NaN {bits:016X}\"", boolean(True),
             clause("sec-numerictorawbytes", "sec-rawbytestonumeric"), NAN_TEST.format(x=x),
             "a NaN is written as some binary16 NaN encoding; which one is the implementation's (NumericToRawBytes "
             "step 1.b), and encode-nan-bits vectors pin each engine's choice"))
@@ -607,7 +610,7 @@ def sum_precise_vectors(corpus: Corpus, file: str) -> None:
                               ("int:1", "error: TypeError", "Math.sumPrecise(1)"),
                               ("undefined", "error: TypeError", "Math.sumPrecise()"),
                               ("null", "error: TypeError", "Math.sumPrecise(null)")):
-        corpus.add(file, "sumprecise-items", record("Math.sumPrecise", text, out, clause("sec-math.sumprecise"), script,
+        corpus.add(file, "sumprecise-items", record("Math.sumPrecise argument", text, out, clause("sec-math.sumprecise"), script,
                                                     "the items argument: a String is iterable, and an element that is not a "
                                                     "Number throws a TypeError"))
     corpus.add(file, "sumprecise-items", record("Math.sumPrecise", f"{f64(N.double(1))} str:\"2\"", "error: TypeError",
@@ -821,12 +824,12 @@ def policy_vectors(corpus: Corpus, file: str) -> None:
     for op, inputs, script, value, widest in cases:
         width = N.bit_width(widest)
         if width <= m:
-            corpus.add(file, "policy", record(op, f"str:\"{inputs}\"", bigint(value), POLICY_CLAUSES[op], script,
+            corpus.add(file, "policy", record(f"{op} (width policy)", f"str:\"{inputs}\"", bigint(value), POLICY_CLAUSES[op], script,
                                               f"a value of {width} bits, at or below Broiler.VM's ceiling; the script shifts "
                                               "the result down to show its top bits"))
         else:
             corpus.add(file, "policy", record(
-                op, f"str:\"{inputs}\"", bigint(value), POLICY_CLAUSES[op], script,
+                f"{op} (width policy)", f"str:\"{inputs}\"", bigint(value), POLICY_CLAUSES[op], script,
                 f"a value of {width} bits, past Broiler.VM's ceiling of {m}: the specification has no width limit, so out "
                 f"holds its value; Broiler.VM refuses it under {VM_POLICY}, and Broiler.JS computes it under {JS_POLICY}",
                 js=bigint(value), vm="error: RangeError"))
@@ -838,7 +841,7 @@ def policy_vectors(corpus: Corpus, file: str) -> None:
     ]
     for op, inputs, script in astronomical:
         corpus.add(file, "policy", record(
-            op, f"str:\"{inputs}\"", boolean(True), POLICY_CLAUSES[op], script,
+            f"{op} (width policy)", f"str:\"{inputs}\"", boolean(True), POLICY_CLAUSES[op], script,
             "a value of 2^32 bits or more: out holds the specification's answer; " + LIMIT,
             js="error: RangeError", vm="error: RangeError"))
 
@@ -866,12 +869,14 @@ def text_vectors(corpus: Corpus) -> None:
             script = f"{big_literal(value)}.toString({radix})"
             text = N.bigint_to_string(value, radix)
             note = None
+            op = "BigInt::toString"
             if len(text) > 8000:
                 script = f"(function () {{ var s = {script}; return s.length + \":\" + s.slice(0, 40) + \":\" + s.slice(-40); }})()"
                 text = f"{len(text)}:{text[:40]}:{text[-40:]}"
                 note = "the script shows the text's length, its first 40 and its last 40 characters"
+                op = "BigInt::toString, length and ends"
             corpus.add(file, "tostring-long", record(
-                "BigInt::toString", f"str:\"{bits} bits\" int:{radix}", f"value: {string_value(text)}",
+                op, f"bigint:{value} int:{radix}", f"value: {string_value(text)}",
                 clause("sec-numeric-types-bigint-tostring"), script, note))
     whitespace = sorted(R.STR_WHITE_SPACE)
     for code in whitespace:
@@ -933,7 +938,7 @@ def asintn_vectors(corpus: Corpus) -> None:
                     # The value 2^bits + value: its top 64 bits show it, or it is beyond any representation.
                     if bits <= VM_MAXIMUM_BITS:
                         result = function(bits, value)
-                        corpus.add(file, group, record(f"BigInt.{name}", inputs, bigint(result >> (bits - 64)), cid,
+                        corpus.add(file, group, record(f"BigInt.{name}, top 64 bits", inputs, bigint(result >> (bits - 64)), cid,
                                                        f"BigInt.{name}({bits}, {big_literal(value)}) >> {bits - 64}n",
                                                        "the script shows the top 64 bits of the result"))
                     else:

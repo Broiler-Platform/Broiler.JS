@@ -3574,7 +3574,7 @@ since: 6
 
 id: numerics/asuintn/0179
 area: numerics
-op: BigInt.asUintN
+op: BigInt.asUintN, top 64 bits
 in: int:1048575 bigint:-1
 out: value: bigint:18446744073709551615
 class: normative
@@ -3615,7 +3615,7 @@ since: 6
 
 id: numerics/asuintn/0181
 area: numerics
-op: BigInt.asUintN
+op: BigInt.asUintN, top 64 bits
 in: int:1048575 bigint:-5
 out: value: bigint:18446744073709551615
 class: normative
@@ -3656,7 +3656,7 @@ since: 6
 
 id: numerics/asuintn/0183
 area: numerics
-op: BigInt.asUintN
+op: BigInt.asUintN, top 64 bits
 in: int:1048575 bigint:-9223372036854775808
 out: value: bigint:18446744073709551615
 class: normative
@@ -3717,7 +3717,7 @@ since: 6
 
 id: numerics/asuintn/0186
 area: numerics
-op: BigInt.asUintN
+op: BigInt.asUintN, top 64 bits
 in: int:1048575 bigint:-18446744073709551616
 out: value: bigint:18446744073709551615
 class: normative
@@ -3758,7 +3758,7 @@ since: 6
 
 id: numerics/asuintn/0188
 area: numerics
-op: BigInt.asUintN
+op: BigInt.asUintN, top 64 bits
 in: int:1048575 bigint:-10715086071862673209484250490600018105614048117055336074437503883703510511249361224931983788156958581275946729175531468251871452856923140435984577574698574803934567774824230985421074605062371141877954182153046474983581941267398767559165543946077062914571196477686542167660429831652624386837205668069377
 out: value: bigint:18446744073709551615
 class: normative
@@ -3839,7 +3839,7 @@ since: 6
 
 id: numerics/asuintn/0192
 area: numerics
-op: BigInt.asUintN
+op: BigInt.asUintN, top 64 bits
 in: int:1048575 bigint:-2188001954460460762
 out: value: bigint:18446744073709551615
 class: normative
@@ -3900,7 +3900,7 @@ since: 6
 
 id: numerics/asuintn/0195
 area: numerics
-op: BigInt.asUintN
+op: BigInt.asUintN, top 64 bits
 in: int:1048576 bigint:-1
 out: value: bigint:18446744073709551615
 class: normative
@@ -3941,7 +3941,7 @@ since: 6
 
 id: numerics/asuintn/0197
 area: numerics
-op: BigInt.asUintN
+op: BigInt.asUintN, top 64 bits
 in: int:1048576 bigint:-5
 out: value: bigint:18446744073709551615
 class: normative
@@ -3982,7 +3982,7 @@ since: 6
 
 id: numerics/asuintn/0199
 area: numerics
-op: BigInt.asUintN
+op: BigInt.asUintN, top 64 bits
 in: int:1048576 bigint:-9223372036854775808
 out: value: bigint:18446744073709551615
 class: normative
@@ -4043,7 +4043,7 @@ since: 6
 
 id: numerics/asuintn/0202
 area: numerics
-op: BigInt.asUintN
+op: BigInt.asUintN, top 64 bits
 in: int:1048576 bigint:-18446744073709551616
 out: value: bigint:18446744073709551615
 class: normative
@@ -4084,7 +4084,7 @@ since: 6
 
 id: numerics/asuintn/0204
 area: numerics
-op: BigInt.asUintN
+op: BigInt.asUintN, top 64 bits
 in: int:1048576 bigint:-10715086071862673209484250490600018105614048117055336074437503883703510511249361224931983788156958581275946729175531468251871452856923140435984577574698574803934567774824230985421074605062371141877954182153046474983581941267398767559165543946077062914571196477686542167660429831652624386837205668069377
 out: value: bigint:18446744073709551615
 class: normative
@@ -4165,7 +4165,7 @@ since: 6
 
 id: numerics/asuintn/0208
 area: numerics
-op: BigInt.asUintN
+op: BigInt.asUintN, top 64 bits
 in: int:1048576 bigint:-2188001954460460762
 out: value: bigint:18446744073709551615
 class: normative

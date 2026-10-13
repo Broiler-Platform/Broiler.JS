@@ -18634,7 +18634,7 @@ since: 6
 
 id: numerics/sumprecise-items/0001
 area: numerics
-op: Math.sumPrecise
+op: Math.sumPrecise argument
 in: str:""
 out: value: f64:0x8000000000000000
 class: normative
@@ -18645,7 +18645,7 @@ since: 6
 
 id: numerics/sumprecise-items/0002
 area: numerics
-op: Math.sumPrecise
+op: Math.sumPrecise argument
 in: str:"1"
 out: error: TypeError
 class: normative
@@ -18656,7 +18656,7 @@ since: 6
 
 id: numerics/sumprecise-items/0003
 area: numerics
-op: Math.sumPrecise
+op: Math.sumPrecise argument
 in: int:1
 out: error: TypeError
 class: normative
@@ -18667,7 +18667,7 @@ since: 6
 
 id: numerics/sumprecise-items/0004
 area: numerics
-op: Math.sumPrecise
+op: Math.sumPrecise argument
 in: undefined
 out: error: TypeError
 class: normative
@@ -18678,7 +18678,7 @@ since: 6
 
 id: numerics/sumprecise-items/0005
 area: numerics
-op: Math.sumPrecise
+op: Math.sumPrecise argument
 in: null
 out: error: TypeError
 class: normative
