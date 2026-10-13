@@ -24,6 +24,7 @@ rule for its own engine is [`docs/evidence/sjl-1-001/decision-rule.md`](../../do
 | [`prelude.js`](prelude.js) | What a runner evaluates in each fresh realm before a vector's script |
 | [`sources/`](sources/) | The pins of the specification edition and the Unicode data the provenance names |
 | `numbers/` | The number area: `Number::toString` at every radix, `toFixed`, `toExponential`, `toPrecision`, `StringToNumber`, `parseFloat`, `parseInt`, numeric literal values, and array-index and canonical numeric keys |
+| `numerics/` | The numerics area: the integer conversions, Float16, the Math kernels each engine implements itself, the rounding modes (through Temporal), and BigInt arithmetic, text, `asIntN`, `asUintN` and its conversion to and comparison with Number |
 | [`controls/`](controls/README.md) | Malformed files the validator must refuse. **Not part of the corpus.** |
 
 ## Running it
@@ -36,8 +37,9 @@ dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release
 # With a report of every vector's verdict, as a bundle retains it (a path relative to the
 # repository, or absolute):
 BROILER_VECTORS_REPORT=vectors-report.tsv dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release
-# Regenerating the number area, and the reference computation's own tests:
+# Regenerating the number and numerics areas, and the reference computations' own tests:
 python3 scripts/conformance/generate_number_vectors.py --proplist <UCD 17.0.0 PropList.txt> --out conformance/vectors/numbers
+python3 scripts/conformance/generate_numerics_vectors.py --out conformance/vectors/numerics
 python3 -m unittest discover -s scripts/conformance/tests
 ```
 
@@ -94,5 +96,6 @@ Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release".)*
   the generator), the argument edges and exact ties of each method, and the inputs Broiler.VM's
   differential probes and Broiler.JS's round-trip tests exercise. Those probes' and tests' answers are
   never used.
+- **The numerics area** (revision 6) follows the same rule: its inputs are milestone SJL-4.2's populations, with seeded random values (SplitMix64, the seeds in the generator), and every expected value is `scripts/conformance/numericsref.py`'s, in exact arithmetic. Its rounding vectors run through Temporal, which the pinned ECMA-262 edition does not contain, so their provenance is that computation alone; the generator names the proposal's operations it follows.
 - **test262.** No vector of revision 1 is derived from a test262 test. A vector that is will cite the
   test with `test262:<path>`, and the corpus will then carry test262's licence notice.

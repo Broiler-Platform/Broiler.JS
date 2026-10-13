@@ -139,6 +139,21 @@ part of it:
   `SumPrecise` ports the `Math.sumPrecise` proposal's reference algorithm; the third-party notices name
   neither, and SJL-4.5 corrects that when the kernel moves.
 
+**Numerics vectors (SJL-4.2), 2026-10-13.** Corpus revision 6 adds the area's vectors
+(`conformance/vectors/numerics/`). Where the specification leaves a result to the implementation, a
+vector's `per-engine.broiler-js` expectation is this plan's, and this is what the plan commits this
+engine to:
+
+- **A Float16 NaN keeps its payload.** This engine does not normalise: a NaN is written quiet, with
+  its sign and the ten most significant bits of the double's payload, which is what its `(Half)`
+  conversion does today and what it passes the shared `Float16.Encode` as its NaN policy at SJL-4.5.
+- **The approximated Math results are the library's**, as JSD-0067 decision 5 states them: `cbrt`
+  correctly rounded; `expm1` and `log1p` within one unit in the last place; `hypot` within one unit in
+  the last place until the library states its bound; and `**` and `Math.pow`'s general case,
+  `System.Math.Pow`'s, pinned only where every approximation gives one result.
+- **A BigInt past any representation is a `RangeError`**, as decision SJL-D-15 (a) has it, never a .NET
+  exception or a wrong value.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
