@@ -29,8 +29,10 @@ import numericsref as N  # noqa: E402
 import numref as R  # noqa: E402
 from generate_number_vectors import double_expression, f64, js_string_literal, splitmix64, string_value  # noqa: E402
 
-# The corpus revision this generator writes, and the revision its vectors were added in.
-CORPUS_REVISION = 6
+# The corpus revision this generator writes, and the revision its vectors were added in. Revision 7
+# classified the area's first runs (numerics-divergences.txt) and rebuilt one vector's input
+# (big_literal).
+CORPUS_REVISION = 7
 FIRST_REVISION = 6
 GENERATOR = "ref:numericsref@1"
 SPEC = "spec:es2026@0248456c"
@@ -72,10 +74,26 @@ def alternatives(values: tuple[int, ...]) -> str:
     return " | ".join(number(v) for v in values)
 
 
+# The widest BigInt literal a vector writes. Broiler.VM's wide manifest admits no BigInt literal wider
+# than 65,536 bits, a limit of its compiler and not of the area, so a wider value is built from pieces
+# (corpus revision 7).
+LITERAL_BITS = 32768
+
+
 def big_literal(value: int) -> str:
-    """A BigInt literal: decimal below 2^64, hexadecimal above, parenthesised when negative."""
+    """A BigInt literal: decimal below 2^64, hexadecimal above, parenthesised when negative, and built
+    from shifted pieces of LITERAL_BITS bits when it is wider than twice that."""
     magnitude = abs(value)
-    text = f"{magnitude}n" if magnitude < 1 << 64 else f"0x{magnitude:X}n"
+    if magnitude.bit_length() > 2 * LITERAL_BITS:
+        pieces = []
+        while magnitude:
+            pieces.append(magnitude & ((1 << LITERAL_BITS) - 1))
+            magnitude >>= LITERAL_BITS
+        text = f"0x{pieces[-1]:X}n"
+        for piece in reversed(pieces[:-1]):
+            text = f"(({text} << {LITERAL_BITS}n) | 0x{piece:X}n)"
+    else:
+        text = f"{magnitude}n" if magnitude < 1 << 64 else f"0x{magnitude:X}n"
     return f"(-{text})" if value < 0 else text
 
 

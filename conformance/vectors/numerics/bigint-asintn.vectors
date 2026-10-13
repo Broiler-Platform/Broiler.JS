@@ -4232,6 +4232,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(4294967296, (-1n)) > 0n
 note: a value of 4294967296 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -4275,6 +4276,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(4294967296, (-5n)) > 0n
 note: a value of 4294967296 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -4318,6 +4320,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(4294967296, (-9223372036854775808n)) > 0n
 note: a value of 4294967296 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -4381,6 +4384,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(4294967296, (-0x10000000000000000n)) > 0n
 note: a value of 4294967296 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -4424,6 +4428,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(4294967296, (-0x10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001n)) > 0n
 note: a value of 4294967296 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -4507,6 +4512,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(4294967296, (-2188001954460460762n)) > 0n
 note: a value of 4294967296 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -4570,6 +4576,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(4294967297, (-1n)) > 0n
 note: a value of 4294967297 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -4613,6 +4620,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(4294967297, (-5n)) > 0n
 note: a value of 4294967297 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -4656,6 +4664,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(4294967297, (-9223372036854775808n)) > 0n
 note: a value of 4294967297 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -4719,6 +4728,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(4294967297, (-0x10000000000000000n)) > 0n
 note: a value of 4294967297 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -4762,6 +4772,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(4294967297, (-0x10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001n)) > 0n
 note: a value of 4294967297 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -4845,6 +4856,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(4294967297, (-2188001954460460762n)) > 0n
 note: a value of 4294967297 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -4908,6 +4920,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(9007199254740991, (-1n)) > 0n
 note: a value of 9007199254740991 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -4951,6 +4964,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(9007199254740991, (-5n)) > 0n
 note: a value of 9007199254740991 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -4994,6 +5008,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(9007199254740991, (-9223372036854775808n)) > 0n
 note: a value of 9007199254740991 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -5057,6 +5072,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(9007199254740991, (-0x10000000000000000n)) > 0n
 note: a value of 9007199254740991 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -5100,6 +5116,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(9007199254740991, (-0x10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001n)) > 0n
 note: a value of 9007199254740991 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
@@ -5183,6 +5200,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
 prov: spec:es2026@0248456c#sec-bigint.asuintn ref:numericsref@1
 script: BigInt.asUintN(9007199254740991, (-2188001954460460762n)) > 0n
 note: a value of 9007199254740991 bits: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)

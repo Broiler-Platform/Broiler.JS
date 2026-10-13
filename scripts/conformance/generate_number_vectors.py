@@ -31,8 +31,8 @@ import numref as R  # noqa: E402
 # Revisions 2 and 3 classified differences (number-divergences.txt) and added no vector; revision 4
 # appended the parseInt vectors of revision_4_vectors, after every vector of revision 1; revisions 5
 # and 6 retired divergences (number-divergences.txt) and added no vector to this area (revision 6
-# added the numerics area, which generate_numerics_vectors.py writes).
-CORPUS_REVISION = 6
+# added the numerics area, which generate_numerics_vectors.py writes, and revision 7 classified it).
+CORPUS_REVISION = 7
 FIRST_REVISION = 1
 GENERATOR = "ref:numref@1"
 SPEC = "spec:es2026@0248456c"

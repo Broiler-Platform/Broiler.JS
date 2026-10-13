@@ -14607,7 +14607,8 @@ area: numerics
 op: BigInt::exponentiate
 in: bigint:1 bigint:18446744073709551616
 out: value: bigint:1
-class: normative
+class: divergence
+divergence.broiler-js: BigInt exponentiation converts the exponent to a 32-bit integer, so an exponent of 2^31 or more raises a .NET OverflowException that escapes the engine, where 1n, -1n and 0n have their exact powers and any other base is a RangeError at the representation's limit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the BigInt kernel; the correction of Power's 32-bit exponent).
 prov: spec:es2026@0248456c#sec-numeric-types-bigint-exponentiate ref:numericsref@1
 script: 1n ** 0x10000000000000000n
 since: 6
@@ -14617,7 +14618,8 @@ area: numerics
 op: BigInt::exponentiate
 in: bigint:-1 bigint:18446744073709551616
 out: value: bigint:1
-class: normative
+class: divergence
+divergence.broiler-js: BigInt exponentiation converts the exponent to a 32-bit integer, so an exponent of 2^31 or more raises a .NET OverflowException that escapes the engine, where 1n, -1n and 0n have their exact powers and any other base is a RangeError at the representation's limit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the BigInt kernel; the correction of Power's 32-bit exponent).
 prov: spec:es2026@0248456c#sec-numeric-types-bigint-exponentiate ref:numericsref@1
 script: (-1n) ** 0x10000000000000000n
 since: 6
@@ -14627,7 +14629,8 @@ area: numerics
 op: BigInt::exponentiate
 in: bigint:-1 bigint:18446744073709551617
 out: value: bigint:-1
-class: normative
+class: divergence
+divergence.broiler-js: BigInt exponentiation converts the exponent to a 32-bit integer, so an exponent of 2^31 or more raises a .NET OverflowException that escapes the engine, where 1n, -1n and 0n have their exact powers and any other base is a RangeError at the representation's limit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the BigInt kernel; the correction of Power's 32-bit exponent).
 prov: spec:es2026@0248456c#sec-numeric-types-bigint-exponentiate ref:numericsref@1
 script: (-1n) ** 0x10000000000000001n
 since: 6
@@ -14637,7 +14640,8 @@ area: numerics
 op: BigInt::exponentiate
 in: bigint:0 bigint:18446744073709551616
 out: value: bigint:0
-class: normative
+class: divergence
+divergence.broiler-js: BigInt exponentiation converts the exponent to a 32-bit integer, so an exponent of 2^31 or more raises a .NET OverflowException that escapes the engine, where 1n, -1n and 0n have their exact powers and any other base is a RangeError at the representation's limit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the BigInt kernel; the correction of Power's 32-bit exponent).
 prov: spec:es2026@0248456c#sec-numeric-types-bigint-exponentiate ref:numericsref@1
 script: 0n ** 0x10000000000000000n
 since: 6
@@ -14856,7 +14860,8 @@ area: numerics
 op: StringToBigInt
 in: str:"0x followed by 262144 digits F"
 out: value: bigint:18446744073709551615
-class: normative
+class: divergence
+divergence.broiler-js: StringToBigInt does not complete within the runner's limit for a hexadecimal text of 262,144 digits, because each digit multiplies the whole value. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the BigInt kernel's parse replaces TryParsePrefixedDigits).
 prov: spec:es2026@0248456c#sec-stringtobigint ref:numericsref@1
 script: BigInt("0x" + "F".repeat(262144)) >> 1048512n
 note: a value of 1048576 bits, at or below Broiler.VM's ceiling; the script shifts the result down to show its top bits
@@ -14870,6 +14875,7 @@ out: value: bigint:18446744073709551616
 class: impl-defined
 per-engine.broiler-js: value: bigint:18446744073709551616
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: StringToBigInt does not complete within the runner's limit for a hexadecimal text of 262,144 digits, because each digit multiplies the whole value. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the BigInt kernel's parse replaces TryParsePrefixedDigits).
 prov: spec:es2026@0248456c#sec-stringtobigint ref:numericsref@1
 script: BigInt("0x1" + "0".repeat(262144)) >> 1048512n
 note: a value of 1048577 bits, past Broiler.VM's ceiling of 1048576: the specification has no width limit, so out holds its value; Broiler.VM refuses it under Broiler.VM's BigInt width policy (JsBigInt.MaximumBits, 2^20 bits by BigInteger.GetBitLength), which JSD-0067 decision 3 keeps, and Broiler.JS computes it under Broiler.JS's unbounded BigInt width policy (decision SJL-D-15 (a))
@@ -14909,6 +14915,7 @@ out: value: bool:true
 class: impl-defined
 per-engine.broiler-js: error: RangeError
 per-engine.broiler-vm: error: RangeError
+divergence.broiler-js: BigInt exponentiation converts the exponent to a 32-bit integer, so an exponent of 2^31 or more raises a .NET OverflowException that escapes the engine, where 1n, -1n and 0n have their exact powers and any other base is a RangeError at the representation's limit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the BigInt kernel; the correction of Power's 32-bit exponent).
 prov: spec:es2026@0248456c#sec-numeric-types-bigint-exponentiate ref:numericsref@1
 script: (2n ** (2n ** 64n)) > 0n
 note: a value of 2^32 bits or more: out holds the specification's answer; the specification's value cannot be represented by any engine; each plan answers a RangeError at its representation's limit (JSD-0067 decision 2, Broiler.JS SharedLibraries.md SJL-4.5)
