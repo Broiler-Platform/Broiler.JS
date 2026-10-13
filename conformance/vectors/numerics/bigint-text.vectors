@@ -5996,8 +5996,7 @@ area: numerics
 op: ToPropertyKey
 in: bigint:1099511627776
 out: value: str:"1099511627776"
-class: divergence
-divergence.broiler-js: A BigInt property key beyond 2^32 - 1 or below 0 raises a .NET OverflowException that escapes the engine, where the key is the BigInt's decimal text. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of BigInt property keys beyond 2^32 - 1 and below 0).
+class: normative
 prov: spec:es2026@0248456c#sec-topropertykey spec:es2026@0248456c#sec-numeric-types-bigint-tostring ref:numericsref@1
 script: var o = {}; o[2n ** 40n] = 1; Object.keys(o)[0]
 since: 6
@@ -6007,8 +6006,7 @@ area: numerics
 op: ToPropertyKey
 in: bigint:18446744073709551617
 out: value: str:"18446744073709551617"
-class: divergence
-divergence.broiler-js: A BigInt property key beyond 2^32 - 1 or below 0 raises a .NET OverflowException that escapes the engine, where the key is the BigInt's decimal text. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of BigInt property keys beyond 2^32 - 1 and below 0).
+class: normative
 prov: spec:es2026@0248456c#sec-topropertykey spec:es2026@0248456c#sec-numeric-types-bigint-tostring ref:numericsref@1
 script: var o = {}; o[2n ** 64n + 1n] = 1; Object.keys(o)[0]
 since: 6
@@ -6018,8 +6016,7 @@ area: numerics
 op: ToPropertyKey
 in: bigint:-1099511627776
 out: value: str:"-1099511627776"
-class: divergence
-divergence.broiler-js: A BigInt property key beyond 2^32 - 1 or below 0 raises a .NET OverflowException that escapes the engine, where the key is the BigInt's decimal text. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of BigInt property keys beyond 2^32 - 1 and below 0).
+class: normative
 prov: spec:es2026@0248456c#sec-topropertykey spec:es2026@0248456c#sec-numeric-types-bigint-tostring ref:numericsref@1
 script: var o = {}; o[-(2n ** 40n)] = 1; Object.keys(o)[0]
 since: 6
@@ -6039,8 +6036,7 @@ area: numerics
 op: ToPropertyKey
 in: bigint:4294967296
 out: value: f64:0x0000000000000000
-class: divergence
-divergence.broiler-js: A BigInt property key beyond 2^32 - 1 or below 0 raises a .NET OverflowException that escapes the engine, where the key is the BigInt's decimal text. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of BigInt property keys beyond 2^32 - 1 and below 0).
+class: normative
 prov: spec:es2026@0248456c#sec-topropertykey spec:es2026@0248456c#sec-numeric-types-bigint-tostring ref:numericsref@1
 script: var a = []; a[2n ** 32n] = 1; a.length
 since: 6
@@ -6060,8 +6056,7 @@ area: numerics
 op: ToPropertyKey
 in: bigint:1180591620717411303424
 out: value: f64:0x401C000000000000
-class: divergence
-divergence.broiler-js: A BigInt property key beyond 2^32 - 1 or below 0 raises a .NET OverflowException that escapes the engine, where the key is the BigInt's decimal text. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of BigInt property keys beyond 2^32 - 1 and below 0).
+class: normative
 prov: spec:es2026@0248456c#sec-topropertykey spec:es2026@0248456c#sec-numeric-types-bigint-tostring ref:numericsref@1
 script: var o = {}; o[2n ** 70n] = 7; o["1180591620717411303424"]
 since: 6

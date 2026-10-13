@@ -5367,8 +5367,7 @@ area: numerics
 op: Number::exponentiate
 in: f64:0x3FF0000000000000 f64:0x7FF8000000000000
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: 1 ** NaN gives 1 on the generic and the numeric paths, and 1 ** Infinity and 1 ** -Infinity written as literals give 1, where each is NaN: the generic JSValue.Power lacks the NaN-exponent case and the compiled paths emit Math.Pow. Math.pow gives NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of 1 ** NaN on every path and the cases of 1 to an infinity on the compiled paths).
+class: normative
 prov: spec:es2026@0248456c#sec-numeric-types-number-exponentiate ref:numericsref@1
 script: $f64(0x3FF00000, 0x00000000) ** $f64(0x7FF80000, 0x00000000)
 since: 6
@@ -5378,8 +5377,7 @@ area: numerics
 op: Number::exponentiate
 in: f64:0x3FF0000000000000 f64:0x7FF8000000000000
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: 1 ** NaN gives 1 on the generic and the numeric paths, and 1 ** Infinity and 1 ** -Infinity written as literals give 1, where each is NaN: the generic JSValue.Power lacks the NaN-exponent case and the compiled paths emit Math.Pow. Math.pow gives NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of 1 ** NaN on every path and the cases of 1 to an infinity on the compiled paths).
+class: normative
 prov: spec:es2026@0248456c#sec-numeric-types-number-exponentiate ref:numericsref@1
 script: (+$f64(0x3FF00000, 0x00000000)) ** (+$f64(0x7FF80000, 0x00000000))
 since: 6
@@ -5389,8 +5387,7 @@ area: numerics
 op: Number::exponentiate
 in: f64:0x3FF0000000000000 f64:0x7FF8000000000000
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: 1 ** NaN gives 1 on the generic and the numeric paths, and 1 ** Infinity and 1 ** -Infinity written as literals give 1, where each is NaN: the generic JSValue.Power lacks the NaN-exponent case and the compiled paths emit Math.Pow. Math.pow gives NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of 1 ** NaN on every path and the cases of 1 to an infinity on the compiled paths).
+class: normative
 prov: spec:es2026@0248456c#sec-numeric-types-number-exponentiate ref:numericsref@1
 script: 1 ** NaN
 since: 6
@@ -5430,8 +5427,7 @@ area: numerics
 op: Number::exponentiate
 in: f64:0x3FF0000000000000 f64:0x7FF0000000000000
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: 1 ** NaN gives 1 on the generic and the numeric paths, and 1 ** Infinity and 1 ** -Infinity written as literals give 1, where each is NaN: the generic JSValue.Power lacks the NaN-exponent case and the compiled paths emit Math.Pow. Math.pow gives NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of 1 ** NaN on every path and the cases of 1 to an infinity on the compiled paths).
+class: normative
 prov: spec:es2026@0248456c#sec-numeric-types-number-exponentiate ref:numericsref@1
 script: 1 ** Infinity
 since: 6
@@ -5471,8 +5467,7 @@ area: numerics
 op: Number::exponentiate
 in: f64:0x3FF0000000000000 f64:0xFFF0000000000000
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: 1 ** NaN gives 1 on the generic and the numeric paths, and 1 ** Infinity and 1 ** -Infinity written as literals give 1, where each is NaN: the generic JSValue.Power lacks the NaN-exponent case and the compiled paths emit Math.Pow. Math.pow gives NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of 1 ** NaN on every path and the cases of 1 to an infinity on the compiled paths).
+class: normative
 prov: spec:es2026@0248456c#sec-numeric-types-number-exponentiate ref:numericsref@1
 script: 1 ** (-Infinity)
 since: 6
@@ -15045,8 +15040,6 @@ out: value: f64:0x402E000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x402E000000000000
 per-engine.broiler-vm: value: f64:0x402E000000000000
-divergence.broiler-js: Math.hypot of three or more arguments is computed pairwise, rounding at each step, and is more than a unit in the last place from the exact value on some inputs, a hypotenuse that is itself a double included (Math.hypot(2, 10, 11) is not 15). Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's hypot moves to the library, JSD-0067 decision 5).
-divergence.broiler-vm: Math.hypot scales by the largest argument in one pass and is more than a unit in the last place from the exact value on some inputs, a hypotenuse that is itself a double included (Math.hypot(2, 10, 11) is not 15). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.hypot ref:numericsref@1
 script: Math.hypot($f64(0x40000000, 0x00000000), $f64(0x40240000, 0x00000000), $f64(0x40260000, 0x00000000))
 note: implementation-approximated; out is correctly rounded. JSD-0067 decision 5 computes it with scaling and a compensated sum and has the library state its bound; until it does, both expectations are within one unit in the last place: either double bracketing the exact value
@@ -15060,8 +15053,6 @@ out: value: f64:0x7EAE000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x7EAE000000000000
 per-engine.broiler-vm: value: f64:0x7EAE000000000000
-divergence.broiler-js: Math.hypot of three or more arguments is computed pairwise, rounding at each step, and is more than a unit in the last place from the exact value on some inputs, a hypotenuse that is itself a double included (Math.hypot(2, 10, 11) is not 15). Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's hypot moves to the library, JSD-0067 decision 5).
-divergence.broiler-vm: Math.hypot scales by the largest argument in one pass and is more than a unit in the last place from the exact value on some inputs, a hypotenuse that is itself a double included (Math.hypot(2, 10, 11) is not 15). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.hypot ref:numericsref@1
 script: Math.hypot($f64(0x7E800000, 0x00000000), $f64(0x7EA40000, 0x00000000), $f64(0x7EA60000, 0x00000000))
 note: implementation-approximated; out is correctly rounded. JSD-0067 decision 5 computes it with scaling and a compensated sum and has the library state its bound; until it does, both expectations are within one unit in the last place: either double bracketing the exact value
@@ -15075,8 +15066,6 @@ out: value: f64:0x01AE000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x01AE000000000000
 per-engine.broiler-vm: value: f64:0x01AE000000000000
-divergence.broiler-js: Math.hypot of three or more arguments is computed pairwise, rounding at each step, and is more than a unit in the last place from the exact value on some inputs, a hypotenuse that is itself a double included (Math.hypot(2, 10, 11) is not 15). Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's hypot moves to the library, JSD-0067 decision 5).
-divergence.broiler-vm: Math.hypot scales by the largest argument in one pass and is more than a unit in the last place from the exact value on some inputs, a hypotenuse that is itself a double included (Math.hypot(2, 10, 11) is not 15). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.hypot ref:numericsref@1
 script: Math.hypot($f64(0x01800000, 0x00000000), $f64(0x01A40000, 0x00000000), $f64(0x01A60000, 0x00000000))
 note: implementation-approximated; out is correctly rounded. JSD-0067 decision 5 computes it with scaling and a compensated sum and has the library state its bound; until it does, both expectations are within one unit in the last place: either double bracketing the exact value
@@ -15090,8 +15079,6 @@ out: value: f64:0x7FCE000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x7FCE000000000000
 per-engine.broiler-vm: value: f64:0x7FCE000000000000
-divergence.broiler-js: Math.hypot of three or more arguments is computed pairwise, rounding at each step, and is more than a unit in the last place from the exact value on some inputs, a hypotenuse that is itself a double included (Math.hypot(2, 10, 11) is not 15). Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's hypot moves to the library, JSD-0067 decision 5).
-divergence.broiler-vm: Math.hypot scales by the largest argument in one pass and is more than a unit in the last place from the exact value on some inputs, a hypotenuse that is itself a double included (Math.hypot(2, 10, 11) is not 15). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.hypot ref:numericsref@1
 script: Math.hypot($f64(0x7FA00000, 0x00000000), $f64(0x7FC40000, 0x00000000), $f64(0x7FC60000, 0x00000000))
 note: implementation-approximated; out is correctly rounded. JSD-0067 decision 5 computes it with scaling and a compensated sum and has the library state its bound; until it does, both expectations are within one unit in the last place: either double bracketing the exact value
@@ -15313,8 +15300,6 @@ out: value: f64:0x400DEEEA11683F49
 class: impl-defined
 per-engine.broiler-js: value: f64:0x400DEEEA11683F49 | value: f64:0x400DEEEA11683F4A
 per-engine.broiler-vm: value: f64:0x400DEEEA11683F49 | value: f64:0x400DEEEA11683F4A
-divergence.broiler-js: Math.hypot of three or more arguments is computed pairwise, rounding at each step, and is more than a unit in the last place from the exact value on some inputs, a hypotenuse that is itself a double included (Math.hypot(2, 10, 11) is not 15). Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's hypot moves to the library, JSD-0067 decision 5).
-divergence.broiler-vm: Math.hypot scales by the largest argument in one pass and is more than a unit in the last place from the exact value on some inputs, a hypotenuse that is itself a double included (Math.hypot(2, 10, 11) is not 15). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.hypot ref:numericsref@1
 script: Math.hypot($f64(0x3FF00000, 0x00000000), $f64(0x40000000, 0x00000000), $f64(0x40080000, 0x00000000))
 note: implementation-approximated; out is correctly rounded. JSD-0067 decision 5 computes it with scaling and a compensated sum and has the library state its bound; until it does, both expectations are within one unit in the last place: either double bracketing the exact value
@@ -15586,7 +15571,6 @@ out: value: f64:0x3FE0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3FE0000000000000
 per-engine.broiler-vm: value: f64:0x3FE0000000000000
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x3FC00000, 0x00000000))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15600,7 +15584,6 @@ out: value: f64:0xBFE0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBFE0000000000000
 per-engine.broiler-vm: value: f64:0xBFE0000000000000
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0xBFC00000, 0x00000000))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15614,8 +15597,6 @@ out: value: f64:0x29A0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x29A0000000000000
 per-engine.broiler-vm: value: f64:0x29A0000000000000
-divergence.broiler-js: Math.cbrt is not correctly rounded: it chooses among neighbours of the platform's root by a test in double arithmetic, and can be a unit in the last place away, an exact cube root included. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's cbrt moves to the library, JSD-0067 decision 5).
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x00000000, 0x00000008))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15629,8 +15610,6 @@ out: value: f64:0xA9A0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0xA9A0000000000000
 per-engine.broiler-vm: value: f64:0xA9A0000000000000
-divergence.broiler-js: Math.cbrt is not correctly rounded: it chooses among neighbours of the platform's root by a test in double arithmetic, and can be a unit in the last place away, an exact cube root included. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's cbrt moves to the library, JSD-0067 decision 5).
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x80000000, 0x00000008))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15670,7 +15649,6 @@ out: value: f64:0x3FF428A2F98D728B
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3FF428A2F98D728B
 per-engine.broiler-vm: value: f64:0x3FF428A2F98D728B
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x40000000, 0x00000000))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15684,7 +15662,6 @@ out: value: f64:0xBFF428A2F98D728B
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBFF428A2F98D728B
 per-engine.broiler-vm: value: f64:0xBFF428A2F98D728B
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0xC0000000, 0x00000000))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15724,7 +15701,6 @@ out: value: f64:0x40013C484138704F
 class: impl-defined
 per-engine.broiler-js: value: f64:0x40013C484138704F
 per-engine.broiler-vm: value: f64:0x40013C484138704F
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x40240000, 0x00000000))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15738,7 +15714,6 @@ out: value: f64:0xC0013C484138704F
 class: impl-defined
 per-engine.broiler-js: value: f64:0xC0013C484138704F
 per-engine.broiler-vm: value: f64:0xC0013C484138704F
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0xC0240000, 0x00000000))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15804,8 +15779,6 @@ out: value: f64:0x2990000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x2990000000000000
 per-engine.broiler-vm: value: f64:0x2990000000000000
-divergence.broiler-js: Math.cbrt is not correctly rounded: it chooses among neighbours of the platform's root by a test in double arithmetic, and can be a unit in the last place away, an exact cube root included. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's cbrt moves to the library, JSD-0067 decision 5).
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x00000000, 0x00000001))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15819,8 +15792,6 @@ out: value: f64:0xA990000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0xA990000000000000
 per-engine.broiler-vm: value: f64:0xA990000000000000
-divergence.broiler-js: Math.cbrt is not correctly rounded: it chooses among neighbours of the platform's root by a test in double arithmetic, and can be a unit in the last place away, an exact cube root included. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's cbrt moves to the library, JSD-0067 decision 5).
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x80000000, 0x00000001))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15834,7 +15805,6 @@ out: value: f64:0x554428A2F98D728B
 class: impl-defined
 per-engine.broiler-js: value: f64:0x554428A2F98D728B
 per-engine.broiler-vm: value: f64:0x554428A2F98D728B
-divergence.broiler-js: Math.cbrt is not correctly rounded: it chooses among neighbours of the platform's root by a test in double arithmetic, and can be a unit in the last place away, an exact cube root included. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's cbrt moves to the library, JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x7FEFFFFF, 0xFFFFFFFF))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15848,7 +15818,6 @@ out: value: f64:0xD54428A2F98D728B
 class: impl-defined
 per-engine.broiler-js: value: f64:0xD54428A2F98D728B
 per-engine.broiler-vm: value: f64:0xD54428A2F98D728B
-divergence.broiler-js: Math.cbrt is not correctly rounded: it chooses among neighbours of the platform's root by a test in double arithmetic, and can be a unit in the last place away, an exact cube root included. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's cbrt moves to the library, JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0xFFEFFFFF, 0xFFFFFFFF))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15914,7 +15883,6 @@ out: value: f64:0x2ADC83F02FA9A73F
 class: impl-defined
 per-engine.broiler-js: value: f64:0x2ADC83F02FA9A73F
 per-engine.broiler-vm: value: f64:0x2ADC83F02FA9A73F
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x00B6A4A8, 0x69FF838A))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15928,8 +15896,6 @@ out: value: f64:0xCE3332736F92D1A7
 class: impl-defined
 per-engine.broiler-js: value: f64:0xCE3332736F92D1A7
 per-engine.broiler-vm: value: f64:0xCE3332736F92D1A7
-divergence.broiler-js: Math.cbrt is not correctly rounded: it chooses among neighbours of the platform's root by a test in double arithmetic, and can be a unit in the last place away, an exact cube root included. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's cbrt moves to the library, JSD-0067 decision 5).
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0xEABBA2A7, 0x0875DBA9))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15956,7 +15922,6 @@ out: value: f64:0x3D26BE4FC4DA47F5
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3D26BE4FC4DA47F5
 per-engine.broiler-vm: value: f64:0x3D26BE4FC4DA47F5
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x3796FA27, 0x9966AB02))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15970,7 +15935,6 @@ out: value: f64:0xBB90F9B152E17424
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBB90F9B152E17424
 per-engine.broiler-vm: value: f64:0xBB90F9B152E17424
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0xB2D31BAB, 0x779DA535))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -15984,7 +15948,6 @@ out: value: f64:0x412506C07D268D38
 class: impl-defined
 per-engine.broiler-js: value: f64:0x412506C07D268D38
 per-engine.broiler-vm: value: f64:0x412506C07D268D38
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x439227F8, 0x0004F124))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -16024,7 +15987,6 @@ out: value: f64:0x3B52E038FF88056A
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3B52E038FF88056A
 per-engine.broiler-vm: value: f64:0x3B52E038FF88056A
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x321A4571, 0x7A45B49E))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -16077,8 +16039,6 @@ out: value: f64:0x3DD8D7DB0428571B
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3DD8D7DB0428571B
 per-engine.broiler-vm: value: f64:0x3DD8D7DB0428571B
-divergence.broiler-js: Math.cbrt is not correctly rounded: it chooses among neighbours of the platform's root by a test in double arithmetic, and can be a unit in the last place away, an exact cube root included. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's cbrt moves to the library, JSD-0067 decision 5).
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x39ADF268, 0x238D64B4))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -16092,7 +16052,6 @@ out: value: f64:0x45F0585008281A51
 class: impl-defined
 per-engine.broiler-js: value: f64:0x45F0585008281A51
 per-engine.broiler-vm: value: f64:0x45F0585008281A51
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x51F10EB0, 0xF0AF2864))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -16119,8 +16078,6 @@ out: value: f64:0xB312BD43D9ADE363
 class: impl-defined
 per-engine.broiler-js: value: f64:0xB312BD43D9ADE363
 per-engine.broiler-vm: value: f64:0xB312BD43D9ADE363
-divergence.broiler-js: Math.cbrt is not correctly rounded: it chooses among neighbours of the platform's root by a test in double arithmetic, and can be a unit in the last place away, an exact cube root included. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's cbrt moves to the library, JSD-0067 decision 5).
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x9959B489, 0x1D8B31FF))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -16160,7 +16117,6 @@ out: value: f64:0xB5A456EEC8F754AD
 class: impl-defined
 per-engine.broiler-js: value: f64:0xB5A456EEC8F754AD
 per-engine.broiler-vm: value: f64:0xB5A456EEC8F754AD
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0xA1106F3A, 0x4948D927))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -16174,7 +16130,6 @@ out: value: f64:0x32946CDB3E3985FA
 class: impl-defined
 per-engine.broiler-js: value: f64:0x32946CDB3E3985FA
 per-engine.broiler-vm: value: f64:0x32946CDB3E3985FA
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x17E0A498, 0x54CDD284))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -16188,7 +16143,6 @@ out: value: f64:0xC66D83CAF989FEB1
 class: impl-defined
 per-engine.broiler-js: value: f64:0xC66D83CAF989FEB1
 per-engine.broiler-vm: value: f64:0xC66D83CAF989FEB1
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0xD3691BC4, 0xCD6E305B))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -16202,7 +16156,6 @@ out: value: f64:0x4AAFBEB7531B5455
 class: impl-defined
 per-engine.broiler-js: value: f64:0x4AAFBEB7531B5455
 per-engine.broiler-vm: value: f64:0x4AAFBEB7531B5455
-divergence.broiler-vm: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.cbrt ref:numericsref@1
 script: Math.cbrt($f64(0x602F3DB4, 0x7944879C))
 note: implementation-approximated; both plans take the correctly rounded cube root (JSD-0067 decision 5)
@@ -16318,7 +16271,6 @@ out: value: f64:0x3FD22D78F0FA061A
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3FD22D78F0FA0619 | value: f64:0x3FD22D78F0FA061A
 per-engine.broiler-vm: value: f64:0x3FD22D78F0FA0619 | value: f64:0x3FD22D78F0FA061A
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3FD00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16345,7 +16297,6 @@ out: value: f64:0x3FA040AC0224FD93
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3FA040AC0224FD93 | value: f64:0x3FA040AC0224FD94
 per-engine.broiler-vm: value: f64:0x3FA040AC0224FD93 | value: f64:0x3FA040AC0224FD94
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3FA00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16359,7 +16310,6 @@ out: value: f64:0xBF9F8152AEE9450E
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBF9F8152AEE9450D | value: f64:0xBF9F8152AEE9450E
 per-engine.broiler-vm: value: f64:0xBF9F8152AEE9450D | value: f64:0xBF9F8152AEE9450E
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBFA00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16373,7 +16323,6 @@ out: value: f64:0x3F5002002AAD5577
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3F5002002AAD5577 | value: f64:0x3F5002002AAD5578
 per-engine.broiler-vm: value: f64:0x3F5002002AAD5577 | value: f64:0x3F5002002AAD5578
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3F500000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16387,7 +16336,6 @@ out: value: f64:0xBF4FFC0055500044
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBF4FFC0055500044 | value: f64:0xBF4FFC0055500045
 per-engine.broiler-vm: value: f64:0xBF4FFC0055500044 | value: f64:0xBF4FFC0055500045
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBF500000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16401,7 +16349,6 @@ out: value: f64:0x3F4001000AAB0002
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3F4001000AAB0002 | value: f64:0x3F4001000AAB0003
 per-engine.broiler-vm: value: f64:0x3F4001000AAB0002 | value: f64:0x3F4001000AAB0003
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3F400000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16415,7 +16362,6 @@ out: value: f64:0xBF3FFE001554AAAF
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBF3FFE001554AAAE | value: f64:0xBF3FFE001554AAAF
 per-engine.broiler-vm: value: f64:0xBF3FFE001554AAAE | value: f64:0xBF3FFE001554AAAF
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBF400000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16429,7 +16375,6 @@ out: value: f64:0x3EB00000800002AB
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3EB00000800002AA | value: f64:0x3EB00000800002AB
 per-engine.broiler-vm: value: f64:0x3EB00000800002AA | value: f64:0x3EB00000800002AB
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3EB00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16443,7 +16388,6 @@ out: value: f64:0xBEAFFFFF00000555
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBEAFFFFF00000555 | value: f64:0xBEAFFFFF00000556
 per-engine.broiler-vm: value: f64:0xBEAFFFFF00000555 | value: f64:0xBEAFFFFF00000556
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBEB00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16457,7 +16401,6 @@ out: value: f64:0x3E40000001000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3E40000001000000 | value: f64:0x3E40000001000001
 per-engine.broiler-vm: value: f64:0x3E40000001000000 | value: f64:0x3E40000001000001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3E400000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16471,7 +16414,6 @@ out: value: f64:0xBE3FFFFFFE000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBE3FFFFFFE000000 | value: f64:0xBE3FFFFFFE000001
 per-engine.broiler-vm: value: f64:0xBE3FFFFFFE000000 | value: f64:0xBE3FFFFFFE000001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBE400000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16485,7 +16427,6 @@ out: value: f64:0x3E10000000200000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3E10000000200000 | value: f64:0x3E10000000200001
 per-engine.broiler-vm: value: f64:0x3E10000000200000 | value: f64:0x3E10000000200001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3E100000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16499,7 +16440,6 @@ out: value: f64:0xBE0FFFFFFFC00000
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBE0FFFFFFFC00000 | value: f64:0xBE0FFFFFFFC00001
 per-engine.broiler-vm: value: f64:0xBE0FFFFFFFC00000 | value: f64:0xBE0FFFFFFFC00001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBE100000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16513,7 +16453,6 @@ out: value: f64:0x3D70000000000800
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3D70000000000800 | value: f64:0x3D70000000000801
 per-engine.broiler-vm: value: f64:0x3D70000000000800 | value: f64:0x3D70000000000801
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3D700000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16527,7 +16466,6 @@ out: value: f64:0xBD6FFFFFFFFFF000
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBD6FFFFFFFFFF000 | value: f64:0xBD6FFFFFFFFFF001
 per-engine.broiler-vm: value: f64:0xBD6FFFFFFFFFF000 | value: f64:0xBD6FFFFFFFFFF001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBD700000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16554,7 +16492,6 @@ out: value: f64:0xBCAFFFFFFFFFFFFF
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBCAFFFFFFFFFFFFF | value: f64:0xBCB0000000000000
 per-engine.broiler-vm: value: f64:0xBCAFFFFFFFFFFFFF | value: f64:0xBCB0000000000000
-divergence.broiler-js: Math.expm1 and Math.log1p are more than a unit in the last place from the exact value on some inputs: the Kahan-style correction gives -1.00075 for Math.expm1(-745) and an infinity just below expm1's overflow threshold. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's expm1 and log1p move to the library, JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBCB00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16568,7 +16505,6 @@ out: value: f64:0x3CA0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3CA0000000000000 | value: f64:0x3CA0000000000001
 per-engine.broiler-vm: value: f64:0x3CA0000000000000 | value: f64:0x3CA0000000000001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3CA00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16595,7 +16531,6 @@ out: value: f64:0x3C30000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3C30000000000000 | value: f64:0x3C30000000000001
 per-engine.broiler-vm: value: f64:0x3C30000000000000 | value: f64:0x3C30000000000001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3C300000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16609,7 +16544,6 @@ out: value: f64:0xBC30000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBC2FFFFFFFFFFFFF | value: f64:0xBC30000000000000
 per-engine.broiler-vm: value: f64:0xBC2FFFFFFFFFFFFF | value: f64:0xBC30000000000000
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBC300000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16623,7 +16557,6 @@ out: value: f64:0x39B0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x39B0000000000000 | value: f64:0x39B0000000000001
 per-engine.broiler-vm: value: f64:0x39B0000000000000 | value: f64:0x39B0000000000001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x39B00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16637,7 +16570,6 @@ out: value: f64:0xB9B0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0xB9AFFFFFFFFFFFFF | value: f64:0xB9B0000000000000
 per-engine.broiler-vm: value: f64:0xB9AFFFFFFFFFFFFF | value: f64:0xB9B0000000000000
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xB9B00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16651,7 +16583,6 @@ out: value: f64:0x20B0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x20B0000000000000 | value: f64:0x20B0000000000001
 per-engine.broiler-vm: value: f64:0x20B0000000000000 | value: f64:0x20B0000000000001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x20B00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16665,7 +16596,6 @@ out: value: f64:0xA0B0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0xA0AFFFFFFFFFFFFF | value: f64:0xA0B0000000000000
 per-engine.broiler-vm: value: f64:0xA0AFFFFFFFFFFFFF | value: f64:0xA0B0000000000000
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xA0B00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16679,7 +16609,6 @@ out: value: f64:0x0010000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x0010000000000000 | value: f64:0x0010000000000001
 per-engine.broiler-vm: value: f64:0x0010000000000000 | value: f64:0x0010000000000001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x00100000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16693,7 +16622,6 @@ out: value: f64:0x8010000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x800FFFFFFFFFFFFF | value: f64:0x8010000000000000
 per-engine.broiler-vm: value: f64:0x800FFFFFFFFFFFFF | value: f64:0x8010000000000000
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x80100000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16707,7 +16635,6 @@ out: value: f64:0x0000000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x0000000000000001 | value: f64:0x0000000000000002
 per-engine.broiler-vm: value: f64:0x0000000000000001 | value: f64:0x0000000000000002
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x00000000, 0x00000001))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16721,7 +16648,6 @@ out: value: f64:0x8000000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x8000000000000000 | value: f64:0x8000000000000001
 per-engine.broiler-vm: value: f64:0x8000000000000000 | value: f64:0x8000000000000001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x80000000, 0x00000001))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16787,7 +16713,6 @@ out: value: f64:0xBFF0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBFEFFFFFFFFFFFFF | value: f64:0xBFF0000000000000
 per-engine.broiler-vm: value: f64:0xBFEFFFFFFFFFFFFF | value: f64:0xBFF0000000000000
-divergence.broiler-js: Math.expm1 and Math.log1p are more than a unit in the last place from the exact value on some inputs: the Kahan-style correction gives -1.00075 for Math.expm1(-745) and an infinity just below expm1's overflow threshold. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's expm1 and log1p move to the library, JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xC0874800, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16814,7 +16739,6 @@ out: value: f64:0x7FEFE9CE5C4C52B4
 class: impl-defined
 per-engine.broiler-js: value: f64:0x7FEFE9CE5C4C52B4 | value: f64:0x7FEFE9CE5C4C52B5
 per-engine.broiler-vm: value: f64:0x7FEFE9CE5C4C52B4 | value: f64:0x7FEFE9CE5C4C52B5
-divergence.broiler-js: Math.expm1 and Math.log1p are more than a unit in the last place from the exact value on some inputs: the Kahan-style correction gives -1.00075 for Math.expm1(-745) and an infinity just below expm1's overflow threshold. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's expm1 and log1p move to the library, JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x40862E3D, 0x70A3D70A))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16841,7 +16765,6 @@ out: value: f64:0x3EE4F8BC681CDFB6
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3EE4F8BC681CDFB5 | value: f64:0x3EE4F8BC681CDFB6
 per-engine.broiler-vm: value: f64:0x3EE4F8BC681CDFB5 | value: f64:0x3EE4F8BC681CDFB6
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3EE4F8B5, 0x88E368F1))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16855,7 +16778,6 @@ out: value: f64:0xBEE4F8AEA9ACF2C9
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBEE4F8AEA9ACF2C9 | value: f64:0xBEE4F8AEA9ACF2CA
 per-engine.broiler-vm: value: f64:0xBEE4F8AEA9ACF2C9 | value: f64:0xBEE4F8AEA9ACF2CA
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBEE4F8B5, 0x88E368F1))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16869,7 +16791,6 @@ out: value: f64:0xBD76D3313B847151
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBD76D3313B847151 | value: f64:0xBD76D3313B847152
 per-engine.broiler-vm: value: f64:0xBD76D3313B847151 | value: f64:0xBD76D3313B847152
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBD76D331, 0x3B848199))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16883,7 +16804,6 @@ out: value: f64:0xBC601B7E37785B4B
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBC601B7E37785B4A | value: f64:0xBC601B7E37785B4B
 per-engine.broiler-vm: value: f64:0xBC601B7E37785B4A | value: f64:0xBC601B7E37785B4B
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBC601B7E, 0x37785B4B))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16897,7 +16817,6 @@ out: value: f64:0xBE3D7AEFDB6BE8F8
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBE3D7AEFDB6BE8F8 | value: f64:0xBE3D7AEFDB6BE8F9
 per-engine.broiler-vm: value: f64:0xBE3D7AEFDB6BE8F8 | value: f64:0xBE3D7AEFDB6BE8F9
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBE3D7AEF, 0xDD1E73A9))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16911,7 +16830,6 @@ out: value: f64:0x3EA1BA2BE7039DFE
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3EA1BA2BE7039DFE | value: f64:0x3EA1BA2BE7039DFF
 per-engine.broiler-vm: value: f64:0x3EA1BA2BE7039DFE | value: f64:0x3EA1BA2BE7039DFF
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3EA1BA2B, 0x987351AE))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16925,7 +16843,6 @@ out: value: f64:0x3F1351817DC99421
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3F1351817DC99420 | value: f64:0x3F1351817DC99421
 per-engine.broiler-vm: value: f64:0x3F1351817DC99420 | value: f64:0x3F1351817DC99421
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3F135152, 0xD7FA496C))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16965,7 +16882,6 @@ out: value: f64:0xBDBEB7E84CE65BBA
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBDBEB7E84CE65BB9 | value: f64:0xBDBEB7E84CE65BBA
 per-engine.broiler-vm: value: f64:0xBDBEB7E84CE65BB9 | value: f64:0xBDBEB7E84CE65BBA
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBDBEB7E8, 0x4CE83389))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -16992,7 +16908,6 @@ out: value: f64:0xBD6F923E9A58A350
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBD6F923E9A58A350 | value: f64:0xBD6F923E9A58A351
 per-engine.broiler-vm: value: f64:0xBD6F923E9A58A350 | value: f64:0xBD6F923E9A58A351
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBD6F923E, 0x9A58B2E3))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17006,7 +16921,6 @@ out: value: f64:0x3DB3C0CF858C593C
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3DB3C0CF858C593C | value: f64:0x3DB3C0CF858C593D
 per-engine.broiler-vm: value: f64:0x3DB3C0CF858C593C | value: f64:0x3DB3C0CF858C593D
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3DB3C0CF, 0x858B9624))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17020,8 +16934,6 @@ out: value: f64:0x3EBFCB5BBEC926C2
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3EBFCB5BBEC926C1 | value: f64:0x3EBFCB5BBEC926C2
 per-engine.broiler-vm: value: f64:0x3EBFCB5BBEC926C1 | value: f64:0x3EBFCB5BBEC926C2
-divergence.broiler-js: Math.expm1 and Math.log1p are more than a unit in the last place from the exact value on some inputs: the Kahan-style correction gives -1.00075 for Math.expm1(-745) and an infinity just below expm1's overflow threshold. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's expm1 and log1p move to the library, JSD-0067 decision 5).
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3EBFCB59, 0xC5586F30))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17074,7 +16986,6 @@ out: value: f64:0xBEFB56A89970D806
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBEFB56A89970D805 | value: f64:0xBEFB56A89970D806
 per-engine.broiler-vm: value: f64:0xBEFB56A89970D805 | value: f64:0xBEFB56A89970D806
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBEFB56BF, 0xF4B2A3A9))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17101,7 +17012,6 @@ out: value: f64:0xBC962FE5ED12F713
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBC962FE5ED12F712 | value: f64:0xBC962FE5ED12F713
 per-engine.broiler-vm: value: f64:0xBC962FE5ED12F712 | value: f64:0xBC962FE5ED12F713
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBC962FE5, 0xED12F713))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17141,7 +17051,6 @@ out: value: f64:0xBF5086F2E32698A8
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBF5086F2E32698A7 | value: f64:0xBF5086F2E32698A8
 per-engine.broiler-vm: value: f64:0xBF5086F2E32698A7 | value: f64:0xBF5086F2E32698A8
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBF508915, 0x8C446453))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17155,7 +17064,6 @@ out: value: f64:0x3DDC116DF1C56162
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3DDC116DF1C56162 | value: f64:0x3DDC116DF1C56163
 per-engine.broiler-vm: value: f64:0x3DDC116DF1C56162 | value: f64:0x3DDC116DF1C56163
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3DDC116D, 0xF1BF39C0))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17169,7 +17077,6 @@ out: value: f64:0xBDA7EB38F71A9F84
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBDA7EB38F71A9F83 | value: f64:0xBDA7EB38F71A9F84
 per-engine.broiler-vm: value: f64:0xBDA7EB38F71A9F83 | value: f64:0xBDA7EB38F71A9F84
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0xBDA7EB38, 0xF71B2E8B))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17183,7 +17090,6 @@ out: value: f64:0x3C613FB3159B3BB2
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3C613FB3159B3BB2 | value: f64:0x3C613FB3159B3BB3
 per-engine.broiler-vm: value: f64:0x3C613FB3159B3BB2 | value: f64:0x3C613FB3159B3BB3
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.expm1 ref:numericsref@1
 script: Math.expm1($f64(0x3C613FB3, 0x159B3BB2))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17507,7 +17413,6 @@ out: value: f64:0x3CA0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3C9FFFFFFFFFFFFF | value: f64:0x3CA0000000000000
 per-engine.broiler-vm: value: f64:0x3C9FFFFFFFFFFFFF | value: f64:0x3CA0000000000000
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0x3CA00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17534,7 +17439,6 @@ out: value: f64:0x3C30000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3C2FFFFFFFFFFFFF | value: f64:0x3C30000000000000
 per-engine.broiler-vm: value: f64:0x3C2FFFFFFFFFFFFF | value: f64:0x3C30000000000000
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0x3C300000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17548,7 +17452,6 @@ out: value: f64:0xBC30000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBC30000000000000 | value: f64:0xBC30000000000001
 per-engine.broiler-vm: value: f64:0xBC30000000000000 | value: f64:0xBC30000000000001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0xBC300000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17562,7 +17465,6 @@ out: value: f64:0x39B0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x39AFFFFFFFFFFFFF | value: f64:0x39B0000000000000
 per-engine.broiler-vm: value: f64:0x39AFFFFFFFFFFFFF | value: f64:0x39B0000000000000
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0x39B00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17576,7 +17478,6 @@ out: value: f64:0xB9B0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0xB9B0000000000000 | value: f64:0xB9B0000000000001
 per-engine.broiler-vm: value: f64:0xB9B0000000000000 | value: f64:0xB9B0000000000001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0xB9B00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17590,7 +17491,6 @@ out: value: f64:0x20B0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x20AFFFFFFFFFFFFF | value: f64:0x20B0000000000000
 per-engine.broiler-vm: value: f64:0x20AFFFFFFFFFFFFF | value: f64:0x20B0000000000000
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0x20B00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17604,7 +17504,6 @@ out: value: f64:0xA0B0000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0xA0B0000000000000 | value: f64:0xA0B0000000000001
 per-engine.broiler-vm: value: f64:0xA0B0000000000000 | value: f64:0xA0B0000000000001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0xA0B00000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17618,7 +17517,6 @@ out: value: f64:0x0010000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x000FFFFFFFFFFFFF | value: f64:0x0010000000000000
 per-engine.broiler-vm: value: f64:0x000FFFFFFFFFFFFF | value: f64:0x0010000000000000
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0x00100000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17632,7 +17530,6 @@ out: value: f64:0x8010000000000000
 class: impl-defined
 per-engine.broiler-js: value: f64:0x8010000000000000 | value: f64:0x8010000000000001
 per-engine.broiler-vm: value: f64:0x8010000000000000 | value: f64:0x8010000000000001
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0x80100000, 0x00000000))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17659,7 +17556,6 @@ out: value: f64:0x8000000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x8000000000000001 | value: f64:0x8000000000000002
 per-engine.broiler-vm: value: f64:0x8000000000000001 | value: f64:0x8000000000000002
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0x80000000, 0x00000001))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17719,7 +17615,6 @@ out: value: f64:0x3EE4F8AEA9AE7317
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3EE4F8AEA9AE7316 | value: f64:0x3EE4F8AEA9AE7317
 per-engine.broiler-vm: value: f64:0x3EE4F8AEA9AE7316 | value: f64:0x3EE4F8AEA9AE7317
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0x3EE4F8B5, 0x88E368F1))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17733,7 +17628,6 @@ out: value: f64:0xBEE4F8BC681E6006
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBEE4F8BC681E6005 | value: f64:0xBEE4F8BC681E6006
 per-engine.broiler-vm: value: f64:0xBEE4F8BC681E6005 | value: f64:0xBEE4F8BC681E6006
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0xBEE4F8B5, 0x88E368F1))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17799,7 +17693,6 @@ out: value: f64:0xBD76D3313B8491E1
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBD76D3313B8491E0 | value: f64:0xBD76D3313B8491E1
 per-engine.broiler-vm: value: f64:0xBD76D3313B8491E0 | value: f64:0xBD76D3313B8491E1
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0xBD76D331, 0x3B848199))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17813,7 +17706,6 @@ out: value: f64:0xBC601B7E37785B4B
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBC601B7E37785B4B | value: f64:0xBC601B7E37785B4C
 per-engine.broiler-vm: value: f64:0xBC601B7E37785B4B | value: f64:0xBC601B7E37785B4C
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0xBC601B7E, 0x37785B4B))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17827,7 +17719,6 @@ out: value: f64:0xBE3D7AEFDED0FE5A
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBE3D7AEFDED0FE59 | value: f64:0xBE3D7AEFDED0FE5A
 per-engine.broiler-vm: value: f64:0xBE3D7AEFDED0FE59 | value: f64:0xBE3D7AEFDED0FE5A
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0xBE3D7AEF, 0xDD1E73A9))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17841,7 +17732,6 @@ out: value: f64:0x3EA1BA2B49E30816
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3EA1BA2B49E30816 | value: f64:0x3EA1BA2B49E30817
 per-engine.broiler-vm: value: f64:0x3EA1BA2B49E30816 | value: f64:0x3EA1BA2B49E30817
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0x3EA1BA2B, 0x987351AE))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17855,7 +17745,6 @@ out: value: f64:0x3F135124330C4384
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3F135124330C4383 | value: f64:0x3F135124330C4384
 per-engine.broiler-vm: value: f64:0x3F135124330C4383 | value: f64:0x3F135124330C4384
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0x3F135152, 0xD7FA496C))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17895,7 +17784,6 @@ out: value: f64:0xBDBEB7E84CEA0B58
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBDBEB7E84CEA0B58 | value: f64:0xBDBEB7E84CEA0B59
 per-engine.broiler-vm: value: f64:0xBDBEB7E84CEA0B58 | value: f64:0xBDBEB7E84CEA0B59
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0xBDBEB7E8, 0x4CE83389))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17919,8 +17807,6 @@ out: value: f64:0xBD6F923E9A58C276
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBD6F923E9A58C275 | value: f64:0xBD6F923E9A58C276
 per-engine.broiler-vm: value: f64:0xBD6F923E9A58C275 | value: f64:0xBD6F923E9A58C276
-divergence.broiler-js: Math.expm1 and Math.log1p are more than a unit in the last place from the exact value on some inputs: the Kahan-style correction gives -1.00075 for Math.expm1(-745) and an infinity just below expm1's overflow threshold. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's expm1 and log1p move to the library, JSD-0067 decision 5).
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0xBD6F923E, 0x9A58B2E3))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17934,7 +17820,6 @@ out: value: f64:0x3DB3C0CF858AD30C
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3DB3C0CF858AD30B | value: f64:0x3DB3C0CF858AD30C
 per-engine.broiler-vm: value: f64:0x3DB3C0CF858AD30B | value: f64:0x3DB3C0CF858AD30C
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0x3DB3C0CF, 0x858B9624))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17948,7 +17833,6 @@ out: value: f64:0x3EBFCB57CBE7F664
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3EBFCB57CBE7F664 | value: f64:0x3EBFCB57CBE7F665
 per-engine.broiler-vm: value: f64:0x3EBFCB57CBE7F664 | value: f64:0x3EBFCB57CBE7F665
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0x3EBFCB59, 0xC5586F30))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -17998,7 +17882,6 @@ out: value: f64:0xBEFB56D7501C5821
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBEFB56D7501C5820 | value: f64:0xBEFB56D7501C5821
 per-engine.broiler-vm: value: f64:0xBEFB56D7501C5820 | value: f64:0xBEFB56D7501C5821
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0xBEFB56BF, 0xF4B2A3A9))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -18025,7 +17908,6 @@ out: value: f64:0xBC962FE5ED12F713
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBC962FE5ED12F713 | value: f64:0xBC962FE5ED12F714
 per-engine.broiler-vm: value: f64:0xBC962FE5ED12F713 | value: f64:0xBC962FE5ED12F714
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0xBC962FE5, 0xED12F713))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -18062,7 +17944,6 @@ out: value: f64:0xBF508B38C2BAC562
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBF508B38C2BAC561 | value: f64:0xBF508B38C2BAC562
 per-engine.broiler-vm: value: f64:0xBF508B38C2BAC561 | value: f64:0xBF508B38C2BAC562
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0xBF508915, 0x8C446453))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -18076,7 +17957,6 @@ out: value: f64:0x3DDC116DF1B9121E
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3DDC116DF1B9121D | value: f64:0x3DDC116DF1B9121E
 per-engine.broiler-vm: value: f64:0x3DDC116DF1B9121D | value: f64:0x3DDC116DF1B9121E
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0x3DDC116D, 0xF1BF39C0))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -18090,7 +17970,6 @@ out: value: f64:0xBDA7EB38F71BBD92
 class: impl-defined
 per-engine.broiler-js: value: f64:0xBDA7EB38F71BBD92 | value: f64:0xBDA7EB38F71BBD93
 per-engine.broiler-vm: value: f64:0xBDA7EB38F71BBD92 | value: f64:0xBDA7EB38F71BBD93
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0xBDA7EB38, 0xF71B2E8B))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -18104,7 +17983,6 @@ out: value: f64:0x3C613FB3159B3BB2
 class: impl-defined
 per-engine.broiler-js: value: f64:0x3C613FB3159B3BB1 | value: f64:0x3C613FB3159B3BB2
 per-engine.broiler-vm: value: f64:0x3C613FB3159B3BB1 | value: f64:0x3C613FB3159B3BB2
-divergence.broiler-vm: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
 prov: spec:es2026@0248456c#sec-math.log1p ref:numericsref@1
 script: Math.log1p($f64(0x3C613FB3, 0x159B3BB2))
 note: implementation-approximated; out is correctly rounded, and both plans commit to within one unit in the last place over the whole domain (JSD-0067 decision 5): either double bracketing the exact value
@@ -18205,8 +18083,7 @@ area: numerics
 op: Math.sumPrecise
 in: f64:0x7FE1CCF385EBC8A0 f64:0xFFE1CCF385EBC8A0 f64:0x0000000000000001
 out: value: f64:0x0000000000000001
-class: divergence
-divergence.broiler-vm: Math.sumPrecise scales its terms when the largest is huge, which flushes a tiny term to zero: Math.sumPrecise([1e308, -1e308, 5e-324]) is 0. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (the PreciseSum accumulator, JSD-0067 decision 5).
+class: normative
 prov: spec:es2026@0248456c#sec-math.sumprecise ref:numericsref@1
 script: Math.sumPrecise([$f64(0x7FE1CCF3, 0x85EBC8A0), $f64(0xFFE1CCF3, 0x85EBC8A0), $f64(0x00000000, 0x00000001)])
 since: 6
@@ -18376,8 +18253,7 @@ area: numerics
 op: Math.sumPrecise
 in: f64:0x7FE1CCF385EBC8A0 f64:0x7FE1CCF385EBC8A0 f64:0x7FE1CCF385EBC8A0 f64:0xFFE1CCF385EBC8A0 f64:0xFFE1CCF385EBC8A0 f64:0xFFE1CCF385EBC8A0 f64:0x0000000000000001
 out: value: f64:0x0000000000000001
-class: divergence
-divergence.broiler-vm: Math.sumPrecise scales its terms when the largest is huge, which flushes a tiny term to zero: Math.sumPrecise([1e308, -1e308, 5e-324]) is 0. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (the PreciseSum accumulator, JSD-0067 decision 5).
+class: normative
 prov: spec:es2026@0248456c#sec-math.sumprecise ref:numericsref@1
 script: Math.sumPrecise([$f64(0x7FE1CCF3, 0x85EBC8A0), $f64(0x7FE1CCF3, 0x85EBC8A0), $f64(0x7FE1CCF3, 0x85EBC8A0), $f64(0xFFE1CCF3, 0x85EBC8A0), $f64(0xFFE1CCF3, 0x85EBC8A0), $f64(0xFFE1CCF3, 0x85EBC8A0), $f64(0x00000000, 0x00000001)])
 since: 6
