@@ -48,7 +48,7 @@ partial class JSNumber
             if (double.IsNaN(this.value))
                 return false;
 
-            return bigint.value.CompareToNumber(this.value) > 0;
+            return JSBigInt.OrderAgainstNumber(bigint.value, this.value) > 0;
         }
 
         return base.Less(value);
@@ -66,7 +66,7 @@ partial class JSNumber
             if (double.IsNaN(this.value))
                 return false;
 
-            return bigint.value.CompareToNumber(this.value) >= 0;
+            return JSBigInt.OrderAgainstNumber(bigint.value, this.value) >= 0;
         }
 
         return base.LessOrEqual(value);
@@ -84,7 +84,7 @@ partial class JSNumber
             if (double.IsNaN(this.value))
                 return false;
 
-            return bigint.value.CompareToNumber(this.value) < 0;
+            return JSBigInt.OrderAgainstNumber(bigint.value, this.value) < 0;
         }
 
         return base.Greater(value);
@@ -102,7 +102,7 @@ partial class JSNumber
             if (double.IsNaN(this.value))
                 return false;
 
-            return bigint.value.CompareToNumber(this.value) <= 0;
+            return JSBigInt.OrderAgainstNumber(bigint.value, this.value) <= 0;
         }
 
         return base.GreaterOrEqual(value);
@@ -118,7 +118,7 @@ partial class JSNumber
             // @@toPrimitive receives the "number" hint rather than "default".
             value = value is JSObject @object ? @object.ToNumberPrimitive() : value;
             return value is JSBigInt bigint
-                ? new JSNumber(JSBigInt.ToNumber(bigint.value))
+                ? new JSNumber(BigIntMath.ToNumber(bigint.value, null))
                 : new JSNumber(value.DoubleValue);
         }
 
