@@ -1,0 +1,73 @@
+# SJL-3.7 deletion check, Broiler.JS at ef6769322b2189d413f1c3649df3e7aa6aaffcda: every member of the area's deletion list
+# (Broiler.VM docs/javascript-shared-libraries/areas/numbers.md section 7), searched as a whole word
+# in the engine's product sources (Broiler.JS/, test projects, benchmarks and samples excluded),
+# with git grep -w. A member listed with no line is absent.
+
+## NumberCoercion
+
+## ParseCore
+
+## ParseCoreStatus
+
+## integerPowersOfTen
+
+## ParseHex
+
+## ParseOctal
+
+## ParseBinary
+
+## IsWhiteSpaceOrLineTerminator
+
+## RefineEstimate
+
+## AddUlps
+
+## ScaleToInteger
+
+## ToECMAString
+
+## RoundTrippable
+
+## NumberToECMAString
+
+## RoundScaled
+
+## ToExactFraction
+
+## ExactSignificantDigits
+
+## Compare10Pow
+
+## ShortestSignificantDigits
+
+## FormatExponential
+
+## BigIntLiteralToValue
+
+## ParseBigIntRadix
+
+## TryParseBigIntLiteral
+
+## trimCharacters
+
+# deleted members absent: 24 of 24
+
+## NumberParser's declarations: the private ParseInt and ParseFloat bodies are on the list
+Broiler.JS/Broiler.JavaScript.Runtime/NumberParser.cs:12:    // this class keeps only its public members, as forwarders (decision SJL-D-25).
+Broiler.JS/Broiler.JavaScript.Runtime/NumberParser.cs:14:    public static bool TryCoerceToUInt32(in StringSpan input, out uint value) {
+Broiler.JS/Broiler.JavaScript.Runtime/NumberParser.cs:59:    public static bool TryGetArrayIndex(in StringSpan input, out uint value) => NumericKeys.TryParseArrayIndex(input.AsSpan(), out value);
+Broiler.JS/Broiler.JavaScript.Runtime/NumberParser.cs:65:    public static double CoerceToNumber(in StringSpan input) => NumberParsing.StringToNumber(input.AsSpan());
+
+## The kept public members (forwarders, SJL-D-25): CoerceToNumber, TryCoerceToUInt32, TryGetArrayIndex, DecimalToBase, DecimalToArbitrarySystem, JSTrim
+Broiler.JS/Broiler.JavaScript.Runtime/NumberParser.cs:65:    public static double CoerceToNumber(in StringSpan input) => NumberParsing.StringToNumber(input.AsSpan());
+Broiler.JS/Broiler.JavaScript.Runtime/NumberParser.cs:14:    public static bool TryCoerceToUInt32(in StringSpan input, out uint value) {
+Broiler.JS/Broiler.JavaScript.Runtime/NumberParser.cs:59:    public static bool TryGetArrayIndex(in StringSpan input, out uint value) => NumericKeys.TryParseArrayIndex(input.AsSpan(), out value);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumberPrototype.cs:286:    public static string DecimalToBase(double number, int radix) => NumberText.ToRadixString(number, radix);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumberPrototype.cs:293:    public static string DecimalToArbitrarySystem(long decimalNumber, int radix) => NumberText.ToRadixString(decimalNumber, radix);
+Broiler.JS/Broiler.JavaScript.Extensions/JSStringExtensions.cs:16:    public static string JSTrim(this string text) => NumberParsing.TrimStrWhiteSpace(text, TrimEnds.Both).ToString();
+Broiler.JS/Broiler.JavaScript.Extensions/JSStringExtensions.cs:22:    public static string JSTrim(this JSValue text) => NumberParsing.TrimStrWhiteSpace(text.StringValue, TrimEnds.Both).ToString();
+
+## The parseInt/parseFloat wrapper pairs: JSExport declarations of parseInt and parseFloat
+Broiler.JS/Broiler.JavaScript.Globals/JSGlobal.cs:189:    [JSExport("parseFloat", Length = 1)]
+Broiler.JS/Broiler.JavaScript.Globals/JSGlobal.cs:192:    [JSExport("parseInt", Length = 2)]
