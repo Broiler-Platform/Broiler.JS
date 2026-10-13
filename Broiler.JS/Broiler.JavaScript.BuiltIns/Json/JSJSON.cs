@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.Ast.Misc;
+﻿using Broiler.ECMAScript.Numbers;
+using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Null;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -653,10 +654,10 @@ public partial class JSJSON : JSObject
         {
             case JSNumber n:
                 // Non-finite numbers (NaN, ±Infinity) serialize as null (SerializeJSONProperty step 9).
-                // Otherwise use the spec Number::toString (ToECMAString) so negative zero
+                // Otherwise use the spec Number::toString (NumberText.ToString) so negative zero
                 // serializes as "0" (ToString(-0) is "0") and large/small magnitudes use
                 // ECMAScript scientific notation rather than .NET's "R" formatting.
-                sb.Write(double.IsFinite(n.value) ? JSNumber.ToECMAString(n.value) : "null");
+                sb.Write(double.IsFinite(n.value) ? NumberText.ToString(n.value) : "null");
                 return;
 
             case JSString str:

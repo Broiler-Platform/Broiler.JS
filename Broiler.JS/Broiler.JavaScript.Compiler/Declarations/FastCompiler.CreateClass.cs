@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Broiler.ECMAScript;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.ExpressionCompiler.Expressions;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using Broiler.JavaScript.Ast.Statements;
@@ -13,29 +15,15 @@ namespace Broiler.JavaScript.Compiler;
 
 partial class FastCompiler
 {
-    private static string FormatNumericPropertyName(double value)
-    {
-        if (double.IsNaN(value))
-            return nameof(double.NaN);
-
-        if (value == 0)
-            return "0";
-
-        if (value > 0 && (uint)value == value)
-            return ((uint)value).ToString();
-
-        return JSValue.NumberToECMAString(value);
-    }
-
     private static string FormatLiteralPropertyName(AstLiteral literal)
     {
         if (literal.TokenType == TokenTypes.String)
             return literal.StringValue;
 
         if (literal.TokenType == TokenTypes.BigInt)
-            return BigIntLiteralToValue(literal.StringValue).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return BigIntLiteralValue(literal.StringValue).ToString(System.Globalization.CultureInfo.InvariantCulture);
 
-        return FormatNumericPropertyName(literal.NumericValue);
+        return NumberText.ToString(literal.NumericValue);
     }
 
     private BExpression GetLiteralPropertyKey(AstLiteral literal)
@@ -73,7 +61,7 @@ partial class FastCompiler
     // `4294967295` resolve to the same slot).
     private BExpression BigIntPropertyKey(string literalText)
     {
-        var value = BigIntLiteralToValue(literalText);
+        var value = BigIntLiteralValue(literalText);
         // 4294967295 (uint.MaxValue) is not an array index — it names the string property
         // "4294967295" — so exclude it from the integer-key fast path (see GetLiteralPropertyKey).
         if (value >= 0 && value < uint.MaxValue)
@@ -83,40 +71,13 @@ partial class FastCompiler
     }
 
     // A BigInt literal property name uses the canonical value of its numeric part
-    // (`0n` → 0, `0x10n` → 16); the `n` suffix only marks the literal as a BigInt.
-    // Handles every radix prefix and `_` separators.
-    private static System.Numerics.BigInteger BigIntLiteralToValue(string literalText)
+    // (`0n` → 0, `0x10n` → 16); the `n` suffix only marks the literal as a BigInt. The value is
+    // the shared library's (SJL-3.5), of a literal the scanner has already checked; Broiler.JS sets
+    // no width on a BigInt literal beyond the source's own length.
+    private static System.Numerics.BigInteger BigIntLiteralValue(string literalText)
     {
-        var text = literalText.Trim();
-        if (text.EndsWith('n'))
-            text = text[..^1];
-        text = text.Replace("_", "");
-
-        System.Numerics.BigInteger value;
-        if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-            value = ParseBigIntRadix(text.AsSpan(2), 16);
-        else if (text.StartsWith("0o", StringComparison.OrdinalIgnoreCase))
-            value = ParseBigIntRadix(text.AsSpan(2), 8);
-        else if (text.StartsWith("0b", StringComparison.OrdinalIgnoreCase))
-            value = ParseBigIntRadix(text.AsSpan(2), 2);
-        else
-            value = text.Length == 0
-                ? System.Numerics.BigInteger.Zero
-                : System.Numerics.BigInteger.Parse(text, System.Globalization.CultureInfo.InvariantCulture);
-
-        return value;
-    }
-
-    private static System.Numerics.BigInteger ParseBigIntRadix(ReadOnlySpan<char> digits, int radix)
-    {
-        System.Numerics.BigInteger value = System.Numerics.BigInteger.Zero;
-        foreach (var c in digits)
-        {
-            int d = c <= '9' ? c - '0' : char.ToLowerInvariant(c) - 'a' + 10;
-            value = value * radix + d;
-        }
-
-        return value;
+        NumericLiterals.Evaluate(literalText, strict: false, new LengthLimit(long.MaxValue), out var literal, out _);
+        return literal.BigInt;
     }
 
     private static string GetPropertyFunctionName(AstClassProperty property, string prefix = null)

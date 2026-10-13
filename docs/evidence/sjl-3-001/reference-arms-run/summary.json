@@ -1,0 +1,1181 @@
+{
+  "rule": "docs/evidence/sjl-3-001/reference-arms.md",
+  "void": false,
+  "lineLimit": null,
+  "seconds": 1390,
+  "stepCap": 1024,
+  "population": {
+    "rule": "docs/evidence/sjl-3-001/reference-arms.md",
+    "generator": "scripts/conformance/generate_reference_population.py",
+    "reference": "scripts/conformance/numref.py",
+    "seeds": {
+      "D6": "0x534a4c332d303031",
+      "T1": "0x534a4c332d303032",
+      "T2": "0x534a4c332d303033"
+    },
+    "classes": {
+      "D1": {
+        "file": "D1.txt.gz",
+        "count": 13,
+        "sha256": "9e45622bb00f42e1f68a82c9220ca3e0456602da762af58f1afb78f1332e6625",
+        "what": "special values at both signs, and NaN"
+      },
+      "D2": {
+        "file": "D2.txt.gz",
+        "count": 6294,
+        "sha256": "791c8dfd14925821471d5950538858ca25e241937e5561920bbed1f60eeb605b",
+        "what": "powers of two with their neighbours"
+      },
+      "D3": {
+        "file": "D3.txt.gz",
+        "count": 1896,
+        "sha256": "de0b4b658a5301f46c8b4158cd3376d07c1b4c88b59fc5ab00fb3c68bfeb84c3",
+        "what": "doubles nearest the powers of ten with their neighbours"
+      },
+      "D4": {
+        "file": "D4.txt.gz",
+        "count": 34,
+        "sha256": "1d7fd80215f911c6e0aa00113faeb85b0379eff4645e9a2821f64d664637a3e0",
+        "what": "the doubles nearest 1e21 and 1e-7 with eight on each side"
+      },
+      "D5": {
+        "file": "D5.txt.gz",
+        "count": 258,
+        "sha256": "1037b8f22949f3ad8f03af1c012bd6677721c73556ae6d21d9a1f6f7a0157497",
+        "what": "64 doubles on each side of 2^53 and 2^64"
+      },
+      "D6": {
+        "file": "D6.txt.gz",
+        "count": 1048576,
+        "sha256": "1b1890ef90ad7910415a639c1e1ab50a8ca33277622d7a2fb8693d56aad3459e",
+        "what": "1048576 SplitMix64 doubles, seed 0x534a4c332d303031"
+      },
+      "T1": {
+        "file": "T1.txt.gz",
+        "count": 6464,
+        "sha256": "8a8235b85d34ae97123738910e6472586c7499bbfd174cb7b927ee2e7cb8dbf6",
+        "what": "toFixed ties, seed 0x534a4c332d303032"
+      },
+      "T2": {
+        "file": "T2.txt.gz",
+        "count": 6400,
+        "sha256": "7d0c3242e683bc3d7493616c961c917378d991c568904231f6a27beab6e3e203",
+        "what": "toExponential and toPrecision ties, seed 0x534a4c332d303033"
+      },
+      "P1": {
+        "file": "P1.txt.gz",
+        "count": 6342408,
+        "sha256": "618b814fda3b475daa150ac5ba5402fbb2d306a5bbc1b8fb2bd62c66228549d6",
+        "what": "the shortest strings of D1 to D6\u0027s finite doubles, both notations, three signs"
+      },
+      "P2": {
+        "file": "P2.txt.gz",
+        "count": 909238,
+        "sha256": "52bb55391f9bb528a22d7290b29330d7570e82ce00636dd3e50ba6c2670fd4fc",
+        "what": "rounding boundaries: midpoints, truncated and one unit either side"
+      },
+      "P3": {
+        "file": "P3.txt.gz",
+        "count": 154812,
+        "sha256": "533be5b473dddf853b2c74072894ff8509f0d1dacbf4144bde7e7c96f3058226",
+        "what": "integers around 2^53 and 2^64, and halfway cases, in every radix"
+      },
+      "P4": {
+        "file": "P4.txt.gz",
+        "count": 262144,
+        "sha256": "ab70a06d7f643e1bde16e80c64b6c041289b14502c1b4dc2e08525f197399da2",
+        "what": "every UTF-16 code unit alone, before, after and around \u00221\u0022"
+      },
+      "P5": {
+        "file": "P5.txt.gz",
+        "count": 193,
+        "sha256": "34a180c0c0d63500b6e7c45501743454c38c4ea9bd01536169f41d4338ff9224",
+        "what": "the grammar\u0027s edges"
+      },
+      "L1": {
+        "file": "L1.txt.gz",
+        "count": 2791742,
+        "sha256": "074d86d19c22f8020a80025b9c59bec4bbffb1583a1a7845c46d58ebaada37aa",
+        "what": "literal texts: the admitted strings of P1 to P3, legacy, separator and BigInt forms"
+      },
+      "K1": {
+        "file": "K1.txt.gz",
+        "count": 8510,
+        "sha256": "2c2d953bc82b0efad0d5fdea4402ad030b9e45fb58d51ee3e38255bf4782d36d",
+        "what": "keys: the canonical numeric strings of D1 to D5, and the listed edges"
+      }
+    }
+  },
+  "notImplemented": [
+    {
+      "arm": "J",
+      "operation": "CanonicalNumericString",
+      "reason": "no member of arm J\u0027s list implements CanonicalNumericIndexString; at the base it is Storage/KeyStrings, which the rule does not copy"
+    },
+    {
+      "arm": "V",
+      "operation": "ArrayIndex",
+      "reason": "no member of arm V\u0027s list implements the array-index test; at the base it is JsObject.IsArrayIndex, which the rule does not copy"
+    },
+    {
+      "arm": "V",
+      "operation": "CanonicalNumericString",
+      "reason": "no member of arm V\u0027s list implements CanonicalNumericIndexString; at the base it is JsRealm.Object.ObjectIsCanonicalNumeric, which the rule does not copy"
+    },
+    {
+      "arm": "J",
+      "operation": "NumericLiteral refusals",
+      "reason": "arm J\u0027s literal copies (NumberCoercion and the two BigInt readers) read tokens the scanner has already accepted, and the scanner is not in arm J\u0027s list; J is called for the literal texts S completes, and its refusals are not compared"
+    },
+    {
+      "arm": "J",
+      "operation": "TryCoerceToUInt32",
+      "reason": "copied with NumberParser but called for no operation: it answers whether ToNumber of a string is an integer below 2^32 - 1, which no clause the rule names defines, and it has no caller at the base"
+    }
+  ],
+  "operations": [
+    {
+      "operation": "Number::toString",
+      "class": "D1",
+      "lines": 13,
+      "S": 13,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumber.ToECMAString",
+          "ran": 13,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToJsString",
+          "ran": 13,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsParser.NumberText",
+          "ran": 13,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "Number::toString",
+      "class": "D2",
+      "lines": 6294,
+      "S": 6294,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumber.ToECMAString",
+          "ran": 6294,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToJsString",
+          "ran": 6294,
+          "differ": 2
+        },
+        {
+          "arm": "V",
+          "variant": "JsParser.NumberText",
+          "ran": 6294,
+          "differ": 2
+        }
+      ]
+    },
+    {
+      "operation": "Number::toString",
+      "class": "D3",
+      "lines": 1896,
+      "S": 1896,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumber.ToECMAString",
+          "ran": 1896,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToJsString",
+          "ran": 1896,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsParser.NumberText",
+          "ran": 1896,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "Number::toString",
+      "class": "D4",
+      "lines": 34,
+      "S": 34,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumber.ToECMAString",
+          "ran": 34,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToJsString",
+          "ran": 34,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsParser.NumberText",
+          "ran": 34,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "Number::toString",
+      "class": "D5",
+      "lines": 258,
+      "S": 258,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumber.ToECMAString",
+          "ran": 258,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToJsString",
+          "ran": 258,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsParser.NumberText",
+          "ran": 258,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "Number::toString",
+      "class": "D6",
+      "lines": 1048576,
+      "S": 1048576,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumber.ToECMAString",
+          "ran": 1048576,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToJsString",
+          "ran": 1048576,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsParser.NumberText",
+          "ran": 1048576,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "Number::toString(radix)",
+      "class": "D1",
+      "lines": 13,
+      "S": 455,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToString",
+          "ran": 455,
+          "differ": 242
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToRadixString",
+          "ran": 455,
+          "differ": 166
+        }
+      ]
+    },
+    {
+      "operation": "Number::toString(radix)",
+      "class": "D2",
+      "lines": 6294,
+      "S": 220290,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToString",
+          "ran": 220290,
+          "differ": 194602
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToRadixString",
+          "ran": 220290,
+          "differ": 164362
+        }
+      ]
+    },
+    {
+      "operation": "Number::toString(radix)",
+      "class": "D3",
+      "lines": 1896,
+      "S": 66360,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToString",
+          "ran": 66360,
+          "differ": 58744
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToRadixString",
+          "ran": 66360,
+          "differ": 50107
+        }
+      ]
+    },
+    {
+      "operation": "Number::toString(radix)",
+      "class": "D4",
+      "lines": 34,
+      "S": 1190,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToString",
+          "ran": 1190,
+          "differ": 1071
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToRadixString",
+          "ran": 1190,
+          "differ": 857
+        }
+      ]
+    },
+    {
+      "operation": "Number::toString(radix)",
+      "class": "D5",
+      "lines": 258,
+      "S": 9030,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToString",
+          "ran": 9030,
+          "differ": 4480
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToRadixString",
+          "ran": 9030,
+          "differ": 3798
+        }
+      ]
+    },
+    {
+      "operation": "Number::toString(radix)",
+      "class": "D6:16384",
+      "lines": 16384,
+      "S": 573440,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToString",
+          "ran": 573440,
+          "differ": 512652
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToRadixString",
+          "ran": 573440,
+          "differ": 442047
+        }
+      ]
+    },
+    {
+      "operation": "toFixed",
+      "class": "D1",
+      "lines": 13,
+      "S": 1313,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToFixed",
+          "ran": 1313,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberFixedText",
+          "ran": 1313,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toFixed",
+      "class": "D2",
+      "lines": 6294,
+      "S": 635694,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToFixed",
+          "ran": 635694,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberFixedText",
+          "ran": 635694,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toFixed",
+      "class": "D3",
+      "lines": 1896,
+      "S": 191496,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToFixed",
+          "ran": 191496,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberFixedText",
+          "ran": 191496,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toFixed",
+      "class": "D4",
+      "lines": 34,
+      "S": 3434,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToFixed",
+          "ran": 3434,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberFixedText",
+          "ran": 3434,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toFixed",
+      "class": "D5",
+      "lines": 258,
+      "S": 26058,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToFixed",
+          "ran": 26058,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberFixedText",
+          "ran": 26058,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toFixed",
+      "class": "D6",
+      "lines": 1048576,
+      "S": 105906176,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToFixed",
+          "ran": 105906176,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberFixedText",
+          "ran": 105906176,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toFixed",
+      "class": "T1",
+      "lines": 6464,
+      "S": 652864,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToFixed",
+          "ran": 652864,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberFixedText",
+          "ran": 652864,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toExponential",
+      "class": "D1",
+      "lines": 13,
+      "S": 1326,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToExponential",
+          "ran": 1326,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberExponentialText",
+          "ran": 1326,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toExponential",
+      "class": "D2",
+      "lines": 6294,
+      "S": 641988,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToExponential",
+          "ran": 641988,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberExponentialText",
+          "ran": 641988,
+          "differ": 46
+        }
+      ]
+    },
+    {
+      "operation": "toExponential",
+      "class": "D3",
+      "lines": 1896,
+      "S": 193392,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToExponential",
+          "ran": 193392,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberExponentialText",
+          "ran": 193392,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toExponential",
+      "class": "D4",
+      "lines": 34,
+      "S": 3468,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToExponential",
+          "ran": 3468,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberExponentialText",
+          "ran": 3468,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toExponential",
+      "class": "D5",
+      "lines": 258,
+      "S": 26316,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToExponential",
+          "ran": 26316,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberExponentialText",
+          "ran": 26316,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toExponential",
+      "class": "D6",
+      "lines": 1048576,
+      "S": 106954752,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToExponential",
+          "ran": 106954752,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberExponentialText",
+          "ran": 106954752,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toExponential",
+      "class": "T2",
+      "lines": 6400,
+      "S": 652800,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToExponential",
+          "ran": 652800,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberExponentialText",
+          "ran": 652800,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toPrecision",
+      "class": "D1",
+      "lines": 13,
+      "S": 1300,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToPrecision",
+          "ran": 1300,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberPrecisionText",
+          "ran": 1300,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toPrecision",
+      "class": "D2",
+      "lines": 6294,
+      "S": 629400,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToPrecision",
+          "ran": 629400,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberPrecisionText",
+          "ran": 629400,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toPrecision",
+      "class": "D3",
+      "lines": 1896,
+      "S": 189600,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToPrecision",
+          "ran": 189600,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberPrecisionText",
+          "ran": 189600,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toPrecision",
+      "class": "D4",
+      "lines": 34,
+      "S": 3400,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToPrecision",
+          "ran": 3400,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberPrecisionText",
+          "ran": 3400,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toPrecision",
+      "class": "D5",
+      "lines": 258,
+      "S": 25800,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToPrecision",
+          "ran": 25800,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberPrecisionText",
+          "ran": 25800,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toPrecision",
+      "class": "D6",
+      "lines": 1048576,
+      "S": 104857600,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToPrecision",
+          "ran": 104857600,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberPrecisionText",
+          "ran": 104857600,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "toPrecision",
+      "class": "T2",
+      "lines": 6400,
+      "S": 640000,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToPrecision",
+          "ran": 640000,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.NumberPrecisionText",
+          "ran": 640000,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "StringToNumber",
+      "class": "P1",
+      "lines": 6342408,
+      "S": 6342408,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "NumberParser.CoerceToNumber",
+          "ran": 6342408,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToNumber",
+          "ran": 6342408,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "StringToNumber",
+      "class": "P2",
+      "lines": 909238,
+      "S": 909238,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "NumberParser.CoerceToNumber",
+          "ran": 909238,
+          "differ": 155493
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToNumber",
+          "ran": 909238,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "StringToNumber",
+      "class": "P3",
+      "lines": 154812,
+      "S": 154812,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "NumberParser.CoerceToNumber",
+          "ran": 154812,
+          "differ": 4587
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToNumber",
+          "ran": 154812,
+          "differ": 2973
+        }
+      ]
+    },
+    {
+      "operation": "StringToNumber",
+      "class": "P4",
+      "lines": 262144,
+      "S": 262144,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "NumberParser.CoerceToNumber",
+          "ran": 262144,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToNumber",
+          "ran": 262144,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "StringToNumber",
+      "class": "P5",
+      "lines": 193,
+      "S": 193,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "NumberParser.CoerceToNumber",
+          "ran": 193,
+          "differ": 24
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ToNumber",
+          "ran": 193,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "parseFloat",
+      "class": "P1",
+      "lines": 6342408,
+      "S": 6342408,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "NumberParser.ParseFloat",
+          "ran": 6342408,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ParseFloat",
+          "ran": 6342408,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "parseFloat",
+      "class": "P2",
+      "lines": 909238,
+      "S": 909238,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "NumberParser.ParseFloat",
+          "ran": 909238,
+          "differ": 155493
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ParseFloat",
+          "ran": 909238,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "parseFloat",
+      "class": "P3",
+      "lines": 154812,
+      "S": 154812,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "NumberParser.ParseFloat",
+          "ran": 154812,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ParseFloat",
+          "ran": 154812,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "parseFloat",
+      "class": "P4",
+      "lines": 262144,
+      "S": 262144,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "NumberParser.ParseFloat",
+          "ran": 262144,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ParseFloat",
+          "ran": 262144,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "parseFloat",
+      "class": "P5",
+      "lines": 193,
+      "S": 193,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "NumberParser.ParseFloat",
+          "ran": 193,
+          "differ": 24
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ParseFloat",
+          "ran": 193,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "parseInt",
+      "class": "P1",
+      "lines": 6342408,
+      "S": 228326688,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSGlobal.ParseInt",
+          "ran": 228326688,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ParseInt",
+          "ran": 228326688,
+          "differ": 25938747
+        }
+      ]
+    },
+    {
+      "operation": "parseInt",
+      "class": "P3",
+      "lines": 154812,
+      "S": 5573232,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSGlobal.ParseInt",
+          "ran": 5573232,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ParseInt",
+          "ran": 5573232,
+          "differ": 1590752
+        }
+      ]
+    },
+    {
+      "operation": "parseInt",
+      "class": "P4",
+      "lines": 262144,
+      "S": 9437184,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSGlobal.ParseInt",
+          "ran": 9437184,
+          "differ": 72
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ParseInt",
+          "ran": 9437184,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "parseInt",
+      "class": "P5",
+      "lines": 193,
+      "S": 6948,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSGlobal.ParseInt",
+          "ran": 6948,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.ParseInt",
+          "ran": 6948,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "NumericLiteral",
+      "class": "L1",
+      "lines": 2791742,
+      "S": 5652860,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "NumberCoercion and the BigInt readers",
+          "ran": 5626635,
+          "differ": 8352
+        },
+        {
+          "arm": "V",
+          "variant": "SliceTokenizer and JsParser.TryBigIntValue",
+          "ran": 5652860,
+          "differ": 5950
+        }
+      ]
+    },
+    {
+      "operation": "ArrayIndex",
+      "class": "K1",
+      "lines": 8510,
+      "S": 8510,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "NumberParser.TryGetArrayIndex",
+          "ran": 8510,
+          "differ": 0
+        }
+      ]
+    },
+    {
+      "operation": "CanonicalNumericString",
+      "class": "K1",
+      "lines": 8510,
+      "S": 8510,
+      "variants": []
+    },
+    {
+      "operation": "StrWhiteSpaceChar",
+      "class": "P4:single",
+      "lines": 65536,
+      "S": 65536,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "NumberParser.IsWhiteSpaceOrLineTerminator",
+          "ran": 65536,
+          "differ": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSStringPrototype.trimCharacters",
+          "ran": 65536,
+          "differ": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormat.IsWhiteSpace",
+          "ran": 65536,
+          "differ": 0
+        }
+      ]
+    }
+  ]
+}

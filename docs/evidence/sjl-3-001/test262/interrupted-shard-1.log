@@ -1,0 +1,23 @@
+[test262] Starting test262 run for suite ref ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e using local suite root <suite>/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+[test262] Selected 6064 runnable test(s) for shard 2/8 from 48360 selected file(s) and 53194 candidate path(s) using mode all-script-host-verifiable.
+[test262] Using Broiler script host at Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+[test262] Running 6064 test(s) for shard 2/8.
+[test262] Per-test timeout is 30s; POSIX memory cap is disabled.
+[test262] Each path will run as original and terser variants (test262-safe-mangle-v2, version 5.50.0).
+[test262] A failing minified case is cross-checked against node v22.22.0 before it counts as an engine failure. It accepts --harmony-temporal --harmony-shadow-realm --harmony-intl-duration-format --js-float16array, so it can speak about those features.
+[test262] Using 4 parallel worker(s).
+[test262] Failure 1 at test/built-ins/AggregateError/proto-from-ctor-realm.js [original]
+[test262] Failure 2 at test/built-ins/AggregateError/proto-from-ctor-realm.js [terser]
+[test262] Failure 3 at test/built-ins/Array/fromAsync/asyncitems-arraylike-too-long.js [original]
+[test262] Failure 4 at test/built-ins/Array/fromAsync/asyncitems-arraylike-too-long.js [terser]
+[test262] Failure 5 at test/built-ins/Array/fromAsync/sync-iterable-with-thenable-then-method-err.js [original]
+[test262] Failure 6 at test/built-ins/Array/fromAsync/sync-iterable-with-thenable-then-method-err.js [terser]
+[test262] Failure 7 at test/built-ins/Array/fromAsync/this-constructor-with-readonly-elements.js [original]
+[test262] Failure 8 at test/built-ins/Array/fromAsync/this-constructor-with-readonly-elements.js [terser]
+[test262] Failure 9 at test/built-ins/ArrayBuffer/proto-from-ctor-realm.js [original]
+[test262] Failure 10 at test/built-ins/ArrayBuffer/proto-from-ctor-realm.js [terser]
+[test262] Failure 11 at test/built-ins/AsyncDisposableStack/prototype/disposeAsync/this-does-not-have-internal-asyncdisposablestate-rejects.js [original]
+[test262] Failure 12 at test/built-ins/AsyncDisposableStack/prototype/disposeAsync/this-does-not-have-internal-asyncdisposablestate-rejects.js [terser]
+[test262] Completed 606/6064 path(s), 1212 variant case(s) (passed=1191, failed=12, skipped=9, timedOut=0).
+[test262] Failure 13 at test/built-ins/Function/proto-from-ctor-realm-prototype.js [original]
+[test262] Failure 14 at test/built-ins/Function/proto-from-ctor-realm-prototype.js [terser]

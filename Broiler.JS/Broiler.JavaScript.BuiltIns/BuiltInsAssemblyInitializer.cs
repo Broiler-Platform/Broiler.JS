@@ -123,7 +123,6 @@ internal static class BuiltInsAssemblyInitializer
         JSValue.NumberPositiveInfinity = JSNumber.PositiveInfinity;
         JSValue.NumberNegativeInfinity = JSNumber.NegativeInfinity;
         JSValue.CreateNumber = JSNumber.Create;
-        JSValue.NumberToECMAString = JSNumber.ToECMAString;
         JSValue.IsPositiveZeroCheck = JSNumber.IsPositiveZero;
         JSValue.IsNegativeZeroCheck = JSNumber.IsNegativeZero;
 
@@ -811,8 +810,8 @@ internal static class BuiltInsAssemblyInitializer
             return;
 
         // Number.parseFloat and Number.parseInt are the SAME built-in function objects
-        // as the global parseFloat / parseInt (spec 21.1.2.12-13), so alias the global
-        // ones onto the constructor rather than keeping the distinct generated copies.
+        // as the global parseFloat / parseInt (spec 21.1.2.12-13), so the global ones are
+        // installed on the constructor too; since SJL-3.5 they are the only pair.
         var parseFloatKey = KeyStrings.GetOrCreate("parseFloat");
         var parseIntKey = KeyStrings.GetOrCreate("parseInt");
 

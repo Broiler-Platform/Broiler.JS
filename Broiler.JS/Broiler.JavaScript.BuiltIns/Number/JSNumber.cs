@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.ExpressionCompiler;
+﻿using Broiler.ECMAScript.Numbers;
+using Broiler.JavaScript.ExpressionCompiler;
 using System;
 using System.Runtime.CompilerServices;
 using System.Globalization;
@@ -93,7 +94,7 @@ public sealed partial class JSNumber : JSPrimitive
         if (n > 0 && n < uint.MaxValue && ((uint)n) == n)
             return (uint)n;
 
-        var text = NumberToECMAString(n);
+        var text = NumberText.ToString(n);
         if (!create)
         {
             if (KeyStrings.TryGet(text, out var k))
@@ -364,120 +365,7 @@ public sealed partial class JSNumber : JSPrimitive
         return false;
     }
 
-    public override string ToString() => ToECMAString(value);
-
-    /// <summary>
-    /// ECMAScript-compliant Number::toString(x) per ECMA-262 § 6.1.6.1.20.
-    /// Produces the shortest decimal representation that round-trips through
-    /// IEEE 754 double-precision, formatted using ECMAScript rules for when
-    /// to use decimal vs scientific notation.
-    /// </summary>
-    /// <summary>
-    /// The shortest decimal string that reads back as <paramref name="value"/> exactly, which is what
-    /// Number::toString is defined to produce: the digits are chosen so that no shorter string denotes
-    /// the same Number.
-    /// </summary>
-    /// <remarks>
-    /// <c>"R"</c> alone does not give it. The specifier is documented as unreliable and, for 2**-25, it
-    /// drops the seventeenth significant digit: .NET renders <c>2.980232238769531E-08</c>, which parses
-    /// back as a DIFFERENT double (0x1.fffffffffffffp-26 rather than 0x1.0p-25). So <c>String(2**-25)</c>
-    /// answered a number that is not the one it was asked about, and a page round-tripping a value
-    /// through a string - a hash, a serialized payload, a cache key - got a different value back than it
-    /// put in. The short form is verified by parsing and only widened to 17 digits when it fails, so
-    /// every value that already round-trips keeps its shortest form: <c>String(0.1)</c> stays
-    /// <c>"0.1"</c> rather than becoming <c>"0.10000000000000001"</c>.
-    /// </remarks>
-    internal static string RoundTrippable(double value)
-    {
-        var shortest = value.ToString("R", CultureInfo.InvariantCulture);
-        return double.TryParse(shortest, NumberStyles.Float, CultureInfo.InvariantCulture, out var reparsed)
-            && reparsed.Equals(value)
-                ? shortest
-                : value.ToString("G17", CultureInfo.InvariantCulture);
-    }
-
-    internal static string ToECMAString(double value)
-    {
-        if (double.IsNaN(value))
-            return "NaN";
-
-        if (double.IsPositiveInfinity(value))
-            return "Infinity";
-
-        if (double.IsNegativeInfinity(value))
-            return "-Infinity";
-
-        if (value == 0.0)
-            return "0";
-
-        if (value < 0)
-            return "-" + ToECMAString(-value);
-
-        // Get the round-trip representation using InvariantCulture
-        // to ensure '.' as decimal separator.
-        string repr = RoundTrippable(value);
-
-        // Parse repr into significand digits and base-10 exponent
-        // such that value = significand × 10^exp  (significand is an integer string).
-        int eIdx = repr.IndexOf('E');
-        string intMantissa;
-        int exp = 0;
-
-        if (eIdx >= 0)
-        {
-            intMantissa = repr.Substring(0, eIdx);
-            exp = int.Parse(repr.AsSpan(eIdx + 1), CultureInfo.InvariantCulture);
-        }
-        else
-        {
-            intMantissa = repr;
-        }
-
-        int dotIdx = intMantissa.IndexOf('.');
-        if (dotIdx >= 0)
-        {
-            int fracLen = intMantissa.Length - dotIdx - 1;
-            intMantissa = string.Concat(intMantissa.AsSpan(0, dotIdx), intMantissa.AsSpan(dotIdx + 1));
-            exp -= fracLen;
-        }
-
-        // Remove leading zeros (e.g., from "0.001" → "0001")
-        intMantissa = intMantissa.TrimStart('0');
-        if (intMantissa.Length == 0) return "0";
-
-        // Remove trailing zeros and adjust exponent
-        // e.g., "420" exp=0 → "42" exp=1
-        int origLen = intMantissa.Length;
-        intMantissa = intMantissa.TrimEnd('0');
-        exp += origLen - intMantissa.Length;
-
-        // Now: value = int(intMantissa) × 10^exp
-        // ECMAScript spec defines:
-        //   s = int(intMantissa), k = intMantissa.Length
-        //   n = exp + k   (so that s × 10^(n-k) = value)
-        int k = intMantissa.Length;
-        int n = exp + k;
-
-        // Step 6: If k ≤ n ≤ 21 → integer with trailing zeros
-        if (k <= n && n <= 21)
-            return intMantissa + new string('0', n - k);
-
-        // Step 7: If 0 < n ≤ 21 → decimal (n < k here since step 6 handled n ≥ k)
-        if (0 < n && n <= 21)
-            return intMantissa.Substring(0, n) + "." + intMantissa.Substring(n);
-
-        // Step 8: If -5 ≤ n ≤ 0 → "0.000...digits"
-        if (-5 <= n && n <= 0)
-            return "0." + new string('0', -n) + intMantissa;
-
-        // Steps 9-10: Scientific notation
-        int expVal = n - 1;
-        string expStr = (expVal >= 0 ? "+" : "") + expVal.ToString(CultureInfo.InvariantCulture);
-        if (k == 1)
-            return intMantissa + "e" + expStr;
-
-        return intMantissa[0] + "." + intMantissa.Substring(1) + "e" + expStr;
-    }
+    public override string ToString() => NumberText.ToString(value);
 
     public override string ToLocaleString(string format, CultureInfo culture) => value.ToString(format, culture.NumberFormat);
 
@@ -509,10 +397,10 @@ public sealed partial class JSNumber : JSPrimitive
             value = po.value;
 
         if (value is JSString @string)
-            return new JSString(ToECMAString(this.value) + @string.ToString());
+            return new JSString(NumberText.ToString(this.value) + @string.ToString());
 
         if (value is JSObject @object)
-            return new JSString(ToECMAString(this.value) + @object.StringValue);
+            return new JSString(NumberText.ToString(this.value) + @object.StringValue);
 
         return Create(this.value + value.DoubleValue);
     }
@@ -525,7 +413,7 @@ public sealed partial class JSNumber : JSPrimitive
         return Create(this.value + value);
     }
 
-    public override JSValue AddValue(string value) => new JSString(ToECMAString(this.value) + value);
+    public override JSValue AddValue(string value) => new JSString(NumberText.ToString(this.value) + value);
 
     public override int GetHashCode() => (int)value;
     public override bool Equals(object obj)
@@ -577,8 +465,9 @@ public sealed partial class JSNumber : JSPrimitive
                 return true;
         }
 
-        // Added for this TC ExpressionTests.cs Assert.AreEqual(true, Evaluate("2 == [2]"));
-        if (ToString() == value.ToString())
+        // Added for this TC ExpressionTests.cs Assert.AreEqual(true, Evaluate("2 == [2]")). A string is
+        // decided above, by ToNumber, and never here: comparing the texts made NaN == "NaN" true.
+        if (value is not JSString && ToString() == value.ToString())
             return true;
 
         return false;
@@ -626,7 +515,9 @@ public sealed partial class JSNumber : JSPrimitive
 
     public override bool EqualsLiteral(double value) => this.value == value;
 
-    public override bool EqualsLiteral(string value) => this.value.ToString() == value || this.value == NumberParser.CoerceToNumber(value);
+    // Number == String is number == ToNumber(string) (ECMA-262 7.2.14 step 4). Comparing .NET's text
+    // of the number made NaN == "NaN" true.
+    public override bool EqualsLiteral(string value) => this.value == NumberParser.CoerceToNumber(value);
 
     public override bool StrictEqualsLiteral(double value) => this.value == value;
 

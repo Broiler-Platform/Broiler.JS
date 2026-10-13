@@ -66,9 +66,9 @@
     {
       "id": "SL7",
       "status": "Active",
-      "statement": "Generated data is byte-identical to what its generator writes from its pinned inputs. No shared library carries data at this milestone (decision SJL-D-6 (c)), so the generated area this rule holds is the conformance corpus's number area, conformance/vectors/numbers/, against scripts/conformance/generate_number_vectors.py; each data generator a later milestone adds is added here.",
-      "evidence": "The committed files of each generated area against what its generator writes into a scratch directory, file by file and byte for byte, in both directions",
-      "nonVacuousWhen": "The generator runs and writes every number-area file; the witness adds a hand-written file to the area and changes one byte of a generated one, and both are reported.",
+      "statement": "Generated data is byte-identical to what its generator writes from its pinned inputs. The generated areas are the conformance corpus's number area, conformance/vectors/numbers/, against scripts/conformance/generate_number_vectors.py, and, from SJL-3, the Space_Separator table of Broiler.ECMAScript.Algorithms' string white-space set - the lines between the BEGIN and END generated markers of Numbers/StrWhiteSpace.cs - against scripts/conformance/generate_white_space_table.py; each data generator a later milestone adds is added here. (Revised 2026-10-12, at SJL-3.3, when the algorithms library took its first table. The second sentence read: \"No shared library carries data at this milestone (decision SJL-D-6 (c)), so the generated area this rule holds is the conformance corpus's number area, conformance/vectors/numbers/, against scripts/conformance/generate_number_vectors.py; each data generator a later milestone adds is added here.\")",
+      "evidence": "The committed files of each generated area against what its generator writes into a scratch directory, file by file and byte for byte, in both directions; for the white-space table, the marked region of the source file against the generator's output",
+      "nonVacuousWhen": "The generator runs and writes every number-area file; the witness adds a hand-written file to the area and changes one byte of a generated one, and both are reported. The table generator writes a non-empty table, and one byte changed in the committed region is reported.",
       "test": "SL7_Generated_data_is_byte_identical_to_what_its_generator_writes",
       "witness": "witnesses/SL7-hand-written-file-in-a-generated-area.vectors.witness"
     },
@@ -85,8 +85,8 @@
       "id": "SL9",
       "status": "Active",
       "statement": "Determinism: two runs, and two concurrent threads, over the whole vector corpus give identical output - the corpus read and validated afresh each time and run through the library-level runner, its report compared as text (conventions 6 and 10).",
-      "evidence": "Four runs of the corpus, two sequential and two on concurrent threads, through a library that decodes and re-renders every vector's input",
-      "nonVacuousWhen": "Each run reads every vector file and runs every vector; the witness library answers from a counter and two runs through it differ.",
+      "evidence": "Four runs of the corpus, two sequential and two on concurrent threads, through a library that decodes and re-renders every vector's input, and four more through Broiler.ECMAScript.Algorithms by the runners' AlgorithmsLibrary (from SJL-3.3)",
+      "nonVacuousWhen": "Each run reads every vector file and runs every vector, through both libraries; the witness library answers from a counter and two runs through it differ.",
       "test": "SL9_Two_runs_and_two_threads_over_the_corpus_give_identical_output",
       "witness": "NondeterministicLibraryWitness in Broiler.ECMAScript.Architecture.Tests.dll"
     },

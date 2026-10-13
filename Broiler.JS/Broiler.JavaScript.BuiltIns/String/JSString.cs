@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.ExpressionCompiler;
+﻿using Broiler.ECMAScript.Numbers;
+using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Ast.Misc;
 using System;
 using System.Globalization;
@@ -151,7 +152,7 @@ public partial class JSString : JSPrimitive
         if (Runtime.ArithmeticOperandDiagnostics.Enabled)
             Runtime.ArithmeticOperandDiagnostics.RecordRawDoubleOperand(false);
 
-        return Concat(NumberToECMAString(value));
+        return Concat(NumberText.ToString(value));
     }
 
     public override JSValue AddValue(string value) => Concat(value);
@@ -364,10 +365,11 @@ public partial class JSString : JSPrimitive
                     return true;
                 return false;
 
+            // String == Number is ToNumber(string) == number (ECMA-262 7.2.14 step 5): the string's
+            // StringToNumber, which DoubleValue is. Comparing .NET's text of the number made
+            // "NaN" == NaN true.
             case JSValue number
-                when number.IsNumber
-                    && (DoubleValue == number.DoubleValue
-                        || this.value.CompareTo(number.DoubleValue.ToString()) == 0):
+                when number.IsNumber && DoubleValue == number.DoubleValue:
                 return true;
 
             case JSValue boolVal when boolVal.IsBoolean && DoubleValue == (boolVal.BooleanValue ? 1D : 0D):
@@ -377,7 +379,7 @@ public partial class JSString : JSPrimitive
         return false;
     }
 
-    public override bool EqualsLiteral(double value) => DoubleValue == value || this.value.CompareTo(value.ToString()) == 0;
+    public override bool EqualsLiteral(double value) => DoubleValue == value;
 
     public override bool EqualsLiteral(string value) => this.value.Equals(value);
 

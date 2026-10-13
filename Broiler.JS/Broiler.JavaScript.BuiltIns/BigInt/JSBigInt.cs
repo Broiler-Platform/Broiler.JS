@@ -1,4 +1,6 @@
-﻿using Broiler.JavaScript.ExpressionCompiler;
+﻿using Broiler.ECMAScript;
+using Broiler.ECMAScript.Numbers;
+using Broiler.JavaScript.ExpressionCompiler;
 using System;
 using System.Globalization;
 using System.Numerics;
@@ -129,7 +131,7 @@ public partial class JSBigInt : JSPrimitive
         var text = f.ToString();
         // StringToBigInt of an empty or whitespace-only string is 0n, not an error
         // (e.g. BigInt(""), new BigInt64Array([""])).
-        if (f.IsString && string.IsNullOrWhiteSpace(text))
+        if (f.IsString && IsStrWhiteSpaceOnly(text))
             return new JSBigInt(BigInteger.Zero);
         if (!TryParseBigIntString(text, out var v))
             throw (f.IsString || f.IsObject)
@@ -152,11 +154,20 @@ public partial class JSBigInt : JSPrimitive
     }
 
     public JSBigInt(BigInteger value) => this.value = value;
+    // The value of a BigInt literal's source text, `n` included, after the "-" the compiler folds
+    // into a negated literal (`-5n`). The value is the shared library's (SJL-3.5); Broiler.JS sets
+    // no width on a BigInt literal beyond the source's own length.
     public JSBigInt(string stringValue)
     {
-        if (!TryParseBigIntLiteral(stringValue, out var n))
+        var text = stringValue.AsSpan();
+        var negative = !text.IsEmpty && text[0] == '-';
+        if (negative)
+            text = text[1..];
+
+        if (NumericLiterals.Evaluate(text, strict: false, new LengthLimit(long.MaxValue), out var literal, out _) != ResultStatus.Completed
+            || literal.Kind != NumericLiteralKind.BigInt)
             throw JSEngine.NewTypeError($"{stringValue} is not a valid big integer");
-        value = n;
+        value = negative ? -literal.BigInt : literal.BigInt;
     }
 
     // StringToBigInt (ECMA-262 §7.1.14): an empty or whitespace-only string maps to 0n;
@@ -165,7 +176,7 @@ public partial class JSBigInt : JSPrimitive
     // so abstract equality treats it as not-equal and relational comparison as incomparable.
     internal static bool TryStringToBigInt(string value, out BigInteger result)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (IsStrWhiteSpaceOnly(value))
         {
             result = BigInteger.Zero;
             return true;
@@ -174,9 +185,12 @@ public partial class JSBigInt : JSPrimitive
         return TryParseBigIntString(value, out result);
     }
 
+    // StringToBigInt trims StrWhiteSpaceChar, the shared library's set (SJL-3.5), not .NET's.
+    private static bool IsStrWhiteSpaceOnly(string value) => NumberParsing.TrimStrWhiteSpace(value, TrimEnds.Both).IsEmpty;
+
     private static bool TryParseBigIntString(string value, out BigInteger result)
     {
-        var text = value.Trim();
+        var text = NumberParsing.TrimStrWhiteSpace(value, TrimEnds.Both).ToString();
         if (text.Length == 0 || text.Contains('_') || text.EndsWith('n'))
         {
             result = default;
@@ -207,31 +221,6 @@ public partial class JSBigInt : JSPrimitive
             return TryParsePrefixedDigits(text.AsSpan(2), 8, 1, out result);
 
         return BigInteger.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out result);
-    }
-
-    private static bool TryParseBigIntLiteral(string value, out BigInteger result)
-    {
-        var text = value.Trim().TrimEnd('n').Replace("_", "");
-        var sign = 1;
-
-        if (text.StartsWith("+", StringComparison.Ordinal))
-            text = text[1..];
-        else if (text.StartsWith("-", StringComparison.Ordinal))
-        {
-            sign = -1;
-            text = text[1..];
-        }
-
-        if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-            return TryParsePrefixedDigits(text.AsSpan(2), 16, sign, out result);
-
-        if (text.StartsWith("0b", StringComparison.OrdinalIgnoreCase))
-            return TryParsePrefixedDigits(text.AsSpan(2), 2, sign, out result);
-
-        if (text.StartsWith("0o", StringComparison.OrdinalIgnoreCase))
-            return TryParsePrefixedDigits(text.AsSpan(2), 8, sign, out result);
-
-        return BigInteger.TryParse(sign < 0 ? "-" + text : text, out result);
     }
 
     private static bool TryParsePrefixedDigits(ReadOnlySpan<char> digits, int numberBase, int sign, out BigInteger result)
@@ -671,7 +660,7 @@ public partial class JSBigInt : JSPrimitive
                 // StringToBigInt: empty/whitespace-only strings are 0n; an
                 // otherwise unparseable string is a SyntaxError, not a TypeError.
                 var text = str.ToString();
-                if (string.IsNullOrWhiteSpace(text))
+                if (IsStrWhiteSpaceOnly(text))
                     return BigInteger.Zero;
                 if (!TryParseBigIntString(text, out var parsed))
                     throw JSEngine.NewSyntaxError($"Cannot convert {text} to a BigInt");

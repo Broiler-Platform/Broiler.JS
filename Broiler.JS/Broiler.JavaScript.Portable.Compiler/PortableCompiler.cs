@@ -97,11 +97,15 @@ public sealed class PortableCompiler
         output.AppendLine("        {");
         foreach (var instruction in program.Instructions)
         {
+            // A constant is written as its IEEE-754 bits, not as text: .NET's "R" does not read back
+            // as the same double for every value (2**-25 renders as the double below it), and no C#
+            // literal spells NaN, the infinities or -0.
+            var bits = BitConverter.DoubleToUInt64Bits(instruction.Number);
             output.Append("            new(PortableOpCode.").Append(instruction.OpCode);
-            if (instruction.Operand != 0 || instruction.Number != 0)
+            if (instruction.Operand != 0 || bits != 0)
                 output.Append(", ").Append(instruction.Operand);
-            if (instruction.Number != 0)
-                output.Append(", ").Append(instruction.Number.ToString("R", CultureInfo.InvariantCulture));
+            if (bits != 0)
+                output.Append(", System.BitConverter.UInt64BitsToDouble(0x").Append(bits.ToString("X16", CultureInfo.InvariantCulture)).Append("UL)");
             output.AppendLine("),");
         }
         output.AppendLine("        });");

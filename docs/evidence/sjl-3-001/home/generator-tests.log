@@ -1,0 +1,47 @@
+$ /usr/bin/python3 -m unittest discover -s scripts/conformance/tests -v
+# cwd <tree>; started 2026-10-13T06:59:12Z; exit 0
+keys.vectors: 60 vectors
+literals.vectors: 352 vectors
+number-to-string-radix.vectors: 1341 vectors
+number-to-string.vectors: 5038 vectors
+parse-float.vectors: 1016 vectors
+parse-int.vectors: 383 vectors
+string-to-number.vectors: 1016 vectors
+to-exponential.vectors: 275 vectors
+to-fixed.vectors: 280 vectors
+to-precision.vectors: 380 vectors
+# stderr
+test_to_exponential (test_numref.DigitMethodTests.test_to_exponential) ... ok
+test_to_fixed (test_numref.DigitMethodTests.test_to_fixed) ... ok
+test_to_precision (test_numref.DigitMethodTests.test_to_precision) ... ok
+test_the_committed_corpus_is_what_the_generator_writes (test_numref.GeneratorTests.test_the_committed_corpus_is_what_the_generator_writes) ... note: --proplist not given; the Zs set was not re-derived from the pinned file
+ok
+test_the_generator_writes_the_revision_REVISIONS_md_ends_at (test_numref.GeneratorTests.test_the_generator_writes_the_revision_REVISIONS_md_ends_at) ... ok
+test_early_errors (test_numref.LiteralTests.test_early_errors) ... ok
+test_values (test_numref.LiteralTests.test_values) ... ok
+test_every_admissible_value_round_trips (test_numref.NumberToStringTests.test_every_admissible_value_round_trips) ... ok
+test_known_answers (test_numref.NumberToStringTests.test_known_answers) ... ok
+test_radix_10_recommendation_agrees_with_cpython (test_numref.NumberToStringTests.test_radix_10_recommendation_agrees_with_cpython) ... ok
+test_the_smallest_subnormal_admits_every_one_digit_string_that_rounds_to_it (test_numref.NumberToStringTests.test_the_smallest_subnormal_admits_every_one_digit_string_that_rounds_to_it) ... ok
+test_from_fraction_agrees_with_cpython_division (test_numref.RoundingTests.test_from_fraction_agrees_with_cpython_division) ... ok
+test_ties_round_to_even (test_numref.RoundingTests.test_ties_round_to_even) ... ok
+test_to_fraction_is_exact (test_numref.RoundingTests.test_to_fraction_is_exact) ... ok
+test_non_decimal_strings_are_exact (test_numref.StringTests.test_non_decimal_strings_are_exact) ... ok
+test_parse_float (test_numref.StringTests.test_parse_float) ... ok
+test_parse_int (test_numref.StringTests.test_parse_int) ... ok
+test_round_mv_result_admits_both_options_beyond_20_digits (test_numref.StringTests.test_round_mv_result_admits_both_options_beyond_20_digits) ... ok
+test_short_decimal_strings_agree_with_cpython (test_numref.StringTests.test_short_decimal_strings_agree_with_cpython) ... ok
+test_white_space (test_numref.StringTests.test_white_space) ... ok
+test_d1_holds_the_specials_at_both_signs_and_nan (test_reference_population.ClassTests.test_d1_holds_the_specials_at_both_signs_and_nan) ... ok
+test_d2_and_d3_hold_each_power_with_its_neighbours (test_reference_population.ClassTests.test_d2_and_d3_hold_each_power_with_its_neighbours) ... ok
+test_d6_skips_nan_draws_without_counting_them (test_reference_population.ClassTests.test_d6_skips_nan_draws_without_counting_them) ... ok
+test_escaping_survives_every_code_unit (test_reference_population.ClassTests.test_escaping_survives_every_code_unit) ... ok
+test_p2_strings_bracket_the_midpoint (test_reference_population.ClassTests.test_p2_strings_bracket_the_midpoint) ... ok
+test_t1_values_are_exact_ties_at_their_digit_count (test_reference_population.ClassTests.test_t1_values_are_exact_ties_at_their_digit_count) ... ok
+test_t2_values_have_one_more_significant_digit_than_their_precision_ending_in_5 (test_reference_population.ClassTests.test_t2_values_have_one_more_significant_digit_than_their_precision_ending_in_5) ... ok
+test_the_published_reference_outputs (test_reference_population.SplitMix64Tests.test_the_published_reference_outputs) ... ok
+
+----------------------------------------------------------------------
+Ran 28 tests in 14.692s
+
+OK

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Broiler.ECMAScript.Numbers;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -609,17 +610,7 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             return true;
         }
 
-        var text = key.Value.Value;
-        if (text == "-0")
-        {
-            numericIndex = -0.0;
-            return true;
-        }
-
-        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out numericIndex))
-            return false;
-
-        return new JSNumber(numericIndex).ToString() == text;
+        return NumericKeys.IsCanonicalNumericString(key.Value.Value, out numericIndex);
     }
 
     // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF

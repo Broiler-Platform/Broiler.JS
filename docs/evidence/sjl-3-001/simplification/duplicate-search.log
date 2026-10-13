@@ -1,0 +1,72 @@
+# SJL-3.7 search for a surviving intra-engine duplicate of the number area, Broiler.JS at ef6769322b2189d413f1c3649df3e7aa6aaffcda:
+# every construct that converts between numbers and text, rounds by powers of ten, or classifies
+# white space with a table other than the library's, in the engine's product sources (as above).
+# pattern: double\.(Try)?Parse\(|decimal\.(Try)?Parse\(|\.ToString\("(R|G17|E[0-9]*|F[0-9]*|N[0-9]*)"|0123456789abcdefghijklmnopqrstuvwxyz|Math\.Pow\(10|char\.IsWhiteSpace|string\.IsNullOrWhiteSpace|\.Trim\(\)|BigInteger\.(Try)?Parse\(|NumberStyles\.(Float|AllowExponent|HexNumber)
+# hits: 66; each is reviewed in the bundle's README
+
+Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs:134:                if (!char.IsWhiteSpace(*start))
+Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs:161:                if (!char.IsWhiteSpace(*start))
+Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs:215:    public bool IsNullOrWhiteSpace() => Source == null || string.IsNullOrWhiteSpace(Value);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Array/JSArray.Template.cs:93:                var bits = long.Parse(encoded.AsSpan(position, 16), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:211:            return BigInteger.TryParse(text, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out result);
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:223:        return BigInteger.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out result);
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:589:        const string digits = "0123456789abcdefghijklmnopqrstuvwxyz";
+Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:50:        if (!decimal.TryParse(text, out var v))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:61:        if (!decimal.TryParse(v, out var n))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:209:        return new JSString(nv.ToString("F0"));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Error/JSError.cs:44:            if (string.IsNullOrWhiteSpace(file))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Function/JSFunction.cs:380:        tieringLocation = string.IsNullOrWhiteSpace(location) ? "tiered-function.js" : location;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:3698:        return ns / Math.Pow(10, exponent);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4926:        s = s.Trim();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4971:        var n = digits.Length == 0 ? BigInteger.Zero : BigInteger.Parse(digits, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5119:        while (start < text.Length && char.IsWhiteSpace(text[start]))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5122:        while (end > start && char.IsWhiteSpace(text[end - 1]))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5185:        var mantissa = absX == 0 ? 0 : absX / Math.Pow(10, exponent);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5194:            mantissa = absX / Math.Pow(10, exponent);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5304:                    reduced = absX / Math.Pow(10, exp);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5348:        if (Math.Pow(10, m) > v)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5350:        else if (Math.Pow(10, m + 1) <= v)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5363:        var fixedStr = rounded.ToString("F" + clamped, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5398:        if (Math.Pow(10, magnitude) > absX)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5400:        else if (Math.Pow(10, magnitude + 1) <= absX)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6337:            if (char.IsWhiteSpace(c) || char.IsPunctuation(c) || char.IsSymbol(c))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:554:            else if (order.Length == 1 && separator == null && !char.IsWhiteSpace(c))
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:123:        if (char.IsWhiteSpace(c) || c == '\uFEFF' || c == '\u2028' || c == '\u2029')
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:2007:                    if (!int.TryParse(name.AsSpan(i + 1, close - (i + 1)), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var cp) || cp > 0x10FFFF
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:2015:                        !int.TryParse(name.AsSpan(i, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var unit))
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:2021:                        && int.TryParse(name.AsSpan(i + 3, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var trail)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:415:        double G(int i) => match.Groups[i].Success ? double.Parse(match.Groups[i].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:457:        var numerator = BigInteger.Parse(digits, CultureInfo.InvariantCulture) * unitNs;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:23:    private static readonly BigInteger MaxEpochNanoseconds = BigInteger.Parse("8640000000000000000000");
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:467:            fractionNs = BigInteger.Parse(digits, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:490:                offsetFractionNs = BigInteger.Parse(match.Groups["of"].Value.PadRight(9, '0'), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:26:        BigInteger.Parse("8640000086400000000000");
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:29:    private static readonly BigInteger MaxEpochNanoseconds = BigInteger.Parse("8640000000000000000000");
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.DeferredBody.cs:575:            var left = i < a.Length ? a[i].Trim() : "<end>";
+Broiler.JS/Broiler.JavaScript.Compiler/Declarations/FastCompiler.DeferredBody.cs:576:            var right = i < b.Length ? b[i].Trim() : "<end>";
+Broiler.JS/Broiler.JavaScript.Compiler/DirectEvalSupport.cs:52:                    if (string.IsNullOrWhiteSpace(excludedName))
+Broiler.JS/Broiler.JavaScript.Compiler/DirectEvalSupport.cs:61:                if (string.IsNullOrWhiteSpace(name))
+Broiler.JS/Broiler.JavaScript.Compiler/DirectEvalSupport.cs:201:                    if (string.IsNullOrWhiteSpace(declaredBinding))
+Broiler.JS/Broiler.JavaScript.Debugger/V8InspectorProtocol.cs:171:                                                                                                            HasSourceURL = !string.IsNullOrWhiteSpace(code
+Broiler.JS/Broiler.JavaScript.Engine/EngineAssemblyInitializer.cs:88:                if (string.IsNullOrWhiteSpace(file))
+Broiler.JS/Broiler.JavaScript.Engine/JavaScriptBootstrapProfile.cs:33:        if (string.IsNullOrWhiteSpace(name))
+Broiler.JS/Broiler.JavaScript.Expressions/Utils.cs:30:        if (!string.IsNullOrWhiteSpace(stdIn))
+Broiler.JS/Broiler.JavaScript.JSClassGenerator/JSGeneratorContext.cs:122:        if (string.IsNullOrWhiteSpace(BaseJSClassName))
+Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:295:        uniqueModuleID ??= Guid.NewGuid().ToString("N") + ".js";
+Broiler.JS/Broiler.JavaScript.Network/KeyValueStore.cs:83:            if (string.IsNullOrWhiteSpace(name))
+Broiler.JS/Broiler.JavaScript.Network/KeyValueStore.cs:99:            if (string.IsNullOrWhiteSpace(name))
+Broiler.JS/Broiler.JavaScript.Network/KeyValueStore.cs:147:            if (string.IsNullOrWhiteSpace(name))
+Broiler.JS/Broiler.JavaScript.Network/KeyValueStore.cs:159:            if (string.IsNullOrWhiteSpace(name))
+Broiler.JS/Broiler.JavaScript.Network/KeyValueStore.cs:182:            if (string.IsNullOrWhiteSpace(name))
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:377:        // .NET reclassified it out of White_Space so char.IsWhiteSpace returns false
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:379:        while (char.IsWhiteSpace(first) || first == '﻿')
+Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs:24:        if (string.IsNullOrWhiteSpace(source))
+Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs:80:        if (string.IsNullOrWhiteSpace(namespaceName) || string.IsNullOrWhiteSpace(typeName))
+Broiler.JS/Broiler.JavaScript.Portable/PortableProgram.cs:47:        if (string.IsNullOrWhiteSpace(name))
+Broiler.JS/Broiler.JavaScript.Runtime/NullishAccess.cs:321:            if (char.IsWhiteSpace(c))
+Broiler.JS/Broiler.JavaScript/AssemblyCodeCache.cs:257:            metadata.GetOrAddDocumentName(string.IsNullOrWhiteSpace(sourcePath) ? "script.js" : sourcePath),
+Broiler.JS/Broiler.JavaScript/BroilerJSContext.cs:52:            name = name.Split(',')[0].Trim();
+Broiler.JS/Broiler.JavaScript/BroilerJSContext.cs:276:            return text.Substring(0, index).Trim();
+Broiler.JS/Broiler.JavaScript/REPL/InteractivePrompt.cs:227:                        while (tempPosition-- > 0 && !string.IsNullOrWhiteSpace(input[tempPosition].ToString()))
+Broiler.JS/Broiler.JavaScript/Utils/PackageManager.cs:36:                Package = tokens[0].Trim();
+Broiler.JS/Broiler.JavaScript/Utils/PackageManager.cs:37:                Version = tokens[1].Trim().ToLower();

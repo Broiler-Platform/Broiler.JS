@@ -5,9 +5,11 @@
 //    two of its files also carry System.Reflection.Metadata code (MIT, .NET Foundation) that
 //    their own comments cite.
 //  - DateParser.cs keeps Jint's (BSD-2-Clause) date format lists and parse order, UriHelper.cs
-//    keeps Jurassic's (MIT) URI decoder, NuGetMetadataReferenceResolver.cs is dotnet-script's
-//    (MIT) resolver, and JSNumberPrototype.DecimalToArbitrarySystem is the Stack Overflow answer
-//    its comment links (CC BY-SA 3.0).
+//    keeps Jurassic's (MIT) URI decoder, and NuGetMetadataReferenceResolver.cs is dotnet-script's
+//    (MIT) resolver. JSNumberPrototype.cs kept a Stack Overflow answer (CC BY-SA 3.0) in
+//    DecimalToArbitrarySystem until the shared libraries' milestone SJL-3.5 (2026-10-12) replaced
+//    that body with a call to Broiler.ECMAScript.Algorithms; the file is now the import's alone.
+//    The answer's only copy is now the test-only reference arm J (THIRD_PARTY_NOTICES.md).
 //  - Every other entry is a file that exists since the Yantra JS import (commits 87dced06 and
 //    08fa43d6, followed through later renames and the ExpressionCompiler split). It names the
 //    upstream as LICENSE's NOTICE and THIRD_PARTY_NOTICES.md do. Files added later carry the
@@ -56,7 +58,7 @@
     {"glob": "Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors", "2013 Sebastien Ros"], "license": "Apache-2.0 AND BSD-2-Clause"},
     {"glob": "Broiler.JS/Broiler.JavaScript.Runtime/UriHelper.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors", "2015 Paul Bartrum"], "license": "Apache-2.0 AND MIT"},
     {"glob": "Broiler.JS/Broiler.JavaScript/NuGetMetadataReferenceResolver.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors", "2016 Filip W"], "license": "Apache-2.0 AND MIT"},
-    {"glob": "Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumberPrototype.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors", "2012 Pavel Vladov"], "license": "Apache-2.0 AND CC-BY-SA-3.0"},
+    {"glob": "Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumberPrototype.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors"], "license": "Apache-2.0"},
     {"glob": "Broiler.JS/Broiler.JavaScript.Ast/AstBlock.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors"], "license": "Apache-2.0"},
     {"glob": "Broiler.JS/Broiler.JavaScript.Ast/AstClassProperty.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors"], "license": "Apache-2.0"},
     {"glob": "Broiler.JS/Broiler.JavaScript.Ast/AstExpressionExtensions.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors"], "license": "Apache-2.0"},
@@ -594,7 +596,6 @@
     {"glob": "Broiler.JS/Broiler.JavaScript.Parser/FastTokenStream.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors"], "license": "Apache-2.0"},
     {"glob": "Broiler.JS/Broiler.JavaScript.Parser/GlobalUsings.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors"], "license": "Apache-2.0"},
     {"glob": "Broiler.JS/Broiler.JavaScript.Parser/IParser.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors"], "license": "Apache-2.0"},
-    {"glob": "Broiler.JS/Broiler.JavaScript.Parser/NumberCoercion.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors"], "license": "Apache-2.0"},
     {"glob": "Broiler.JS/Broiler.JavaScript.Parser/QueueExtensions.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors"], "license": "Apache-2.0"},
     {"glob": "Broiler.JS/Broiler.JavaScript.Parser/RegExpValidator.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors"], "license": "Apache-2.0"},
     {"glob": "Broiler.JS/Broiler.JavaScript.Runtime/Arguments.cs", "copyright": ["2026 Broiler Platform contributors", "Yantra JS contributors"], "license": "Apache-2.0"},

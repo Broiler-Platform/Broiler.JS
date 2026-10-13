@@ -664,8 +664,7 @@ area: numbers
 op: parseInt
 in: str:"\u0085123" undefined
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: parseInt trims U+0085 (NEXT LINE) as white space; it is neither WhiteSpace nor LineTerminator, so no digit follows and the result is NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("\u0085123")
 since: 1
@@ -675,8 +674,7 @@ area: numbers
 op: parseInt
 in: str:"\u0085123" int:0
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: parseInt trims U+0085 (NEXT LINE) as white space; it is neither WhiteSpace nor LineTerminator, so no digit follows and the result is NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("\u0085123", 0)
 since: 1
@@ -686,8 +684,7 @@ area: numbers
 op: parseInt
 in: str:"\u0085123" int:2
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: parseInt trims U+0085 (NEXT LINE) as white space; it is neither WhiteSpace nor LineTerminator, so no digit follows and the result is NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("\u0085123", 2)
 since: 1
@@ -697,8 +694,7 @@ area: numbers
 op: parseInt
 in: str:"\u0085123" int:8
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: parseInt trims U+0085 (NEXT LINE) as white space; it is neither WhiteSpace nor LineTerminator, so no digit follows and the result is NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("\u0085123", 8)
 since: 1
@@ -708,8 +704,7 @@ area: numbers
 op: parseInt
 in: str:"\u0085123" int:10
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: parseInt trims U+0085 (NEXT LINE) as white space; it is neither WhiteSpace nor LineTerminator, so no digit follows and the result is NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("\u0085123", 10)
 since: 1
@@ -719,8 +714,7 @@ area: numbers
 op: parseInt
 in: str:"\u0085123" int:16
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: parseInt trims U+0085 (NEXT LINE) as white space; it is neither WhiteSpace nor LineTerminator, so no digit follows and the result is NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("\u0085123", 16)
 since: 1
@@ -730,8 +724,7 @@ area: numbers
 op: parseInt
 in: str:"\u0085123" int:36
 out: value: f64:0x7FF8000000000000
-class: divergence
-divergence.broiler-js: parseInt trims U+0085 (NEXT LINE) as white space; it is neither WhiteSpace nor LineTerminator, so no digit follows and the result is NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("\u0085123", 36)
 since: 1
@@ -4142,3 +4135,102 @@ prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref
 script: parseInt("3w5e11264sidd", 36)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
 since: 1
+
+id: numbers/parse-int/0375
+area: numbers
+op: parseInt
+in: str:"147573952589676429313" undefined
+out: value: f64:0x4420000000000000 | value: f64:0x4420000000000001
+class: normative
+prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
+script: parseInt("147573952589676429313")
+note: more than 20 significant digits at radix 10: either value is admitted
+since: 4
+
+id: numbers/parse-int/0376
+area: numbers
+op: parseInt
+in: str:"147573952589676429313" int:0
+out: value: f64:0x4420000000000000 | value: f64:0x4420000000000001
+class: normative
+prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
+script: parseInt("147573952589676429313", 0)
+note: more than 20 significant digits at radix 10: either value is admitted
+since: 4
+
+id: numbers/parse-int/0377
+area: numbers
+op: parseInt
+in: str:"147573952589676429313" int:10
+out: value: f64:0x4420000000000000 | value: f64:0x4420000000000001
+class: normative
+prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
+script: parseInt("147573952589676429313", 10)
+note: more than 20 significant digits at radix 10: either value is admitted
+since: 4
+
+id: numbers/parse-int/0378
+area: numbers
+op: parseInt
+in: str:"-295147905179352858625" undefined
+out: value: f64:0xC430000000000000 | value: f64:0xC430000000000001
+class: normative
+prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
+script: parseInt("-295147905179352858625")
+note: more than 20 significant digits at radix 10: either value is admitted
+since: 4
+
+id: numbers/parse-int/0379
+area: numbers
+op: parseInt
+in: str:"-295147905179352858625" int:0
+out: value: f64:0xC430000000000000 | value: f64:0xC430000000000001
+class: normative
+prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
+script: parseInt("-295147905179352858625", 0)
+note: more than 20 significant digits at radix 10: either value is admitted
+since: 4
+
+id: numbers/parse-int/0380
+area: numbers
+op: parseInt
+in: str:"-295147905179352858625" int:10
+out: value: f64:0xC430000000000000 | value: f64:0xC430000000000001
+class: normative
+prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
+script: parseInt("-295147905179352858625", 10)
+note: more than 20 significant digits at radix 10: either value is admitted
+since: 4
+
+id: numbers/parse-int/0381
+area: numbers
+op: parseInt
+in: str:"  1208925819614629308923905" undefined
+out: value: f64:0x44F0000000000000 | value: f64:0x44F0000000000001
+class: normative
+prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
+script: parseInt("  1208925819614629308923905")
+note: more than 20 significant digits at radix 10: either value is admitted
+since: 4
+
+id: numbers/parse-int/0382
+area: numbers
+op: parseInt
+in: str:"  1208925819614629308923905" int:0
+out: value: f64:0x44F0000000000000 | value: f64:0x44F0000000000001
+class: normative
+prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
+script: parseInt("  1208925819614629308923905", 0)
+note: more than 20 significant digits at radix 10: either value is admitted
+since: 4
+
+id: numbers/parse-int/0383
+area: numbers
+op: parseInt
+in: str:"  1208925819614629308923905" int:10
+out: value: f64:0x44F0000000000000 | value: f64:0x44F0000000000001
+class: normative
+prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
+script: parseInt("  1208925819614629308923905", 10)
+note: more than 20 significant digits at radix 10: either value is admitted
+since: 4

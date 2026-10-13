@@ -1,15 +1,27 @@
-using Broiler.JavaScript.Ast.Misc;
+// REFERENCE ARM J: a test-only copy of Broiler.JS's implementation before the cut-over, for the
+// reference-arm comparison of bundle sjl-3-001 (docs/evidence/sjl-3-001/reference-arms.md). It is
+// never referenced outside this test project, and it is retired at SJL-16.
+//
+// Copied from Broiler.JS at 44a214dc (bundle sjl-0-001's base):
+//   Broiler.JS/Broiler.JavaScript.Parser/NumberCoercion.cs
+//     blob 78360e1da8915f5d1fb40fe368c8f8fa747467f7: the whole class
+//
+// Changes from the source:
+//   - line endings normalised to LF where the source has CRLF, as rule SL10 requires of the shared folder;
+//   - the namespace; CoerceToNumber takes the string a StringSpan (an engine type) carries, and `input.AsSpan()` reads it;
+//   - `char[] rented` annotated nullable for this project's nullable context; no result changes.
+
 using System;
 using System.Buffers;
 using System.Globalization;
 using System.Numerics;
 
-namespace Broiler.JavaScript.Parser;
+namespace Broiler.ECMAScript.Algorithms.Tests.ReferenceArms.J;
 
 /// <summary>Allocation-free parsing for the scanner's validated numeric tokens.</summary>
 internal static class NumberCoercion
 {
-    internal static double CoerceToNumber(in StringSpan input)
+    internal static double CoerceToNumber(string input)
     {
         var text = input.AsSpan();
         if (text.IsEmpty)
@@ -90,7 +102,7 @@ internal static class NumberCoercion
 
     private static double ParseSeparatedDecimal(ReadOnlySpan<char> text)
     {
-        char[] rented = null;
+        char[]? rented = null;
         Span<char> buffer = text.Length <= 256
             ? stackalloc char[text.Length]
             : (rented = ArrayPool<char>.Shared.Rent(text.Length));

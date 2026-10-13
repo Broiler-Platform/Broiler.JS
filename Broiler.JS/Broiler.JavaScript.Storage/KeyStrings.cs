@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.Ast.Misc;
 
 namespace Broiler.JavaScript.Storage;
@@ -230,27 +231,11 @@ public static class KeyStrings
             StableOrdinalHash(text));
     }
 
-    private static bool TryGetArrayIndex(ReadOnlySpan<char> text, out uint value)
-    {
-        value = 0;
-        if (text.IsEmpty)
-            return false;
-        if (text[0] == '0')
-            return text.Length == 1;
-
-        ulong parsed = 0;
-        foreach (var ch in text)
-        {
-            if (ch is < '0' or > '9')
-                return false;
-            parsed = parsed * 10 + (uint)(ch - '0');
-            if (parsed >= uint.MaxValue)
-                return false;
-        }
-
-        value = (uint)parsed;
-        return true;
-    }
+    // Array indices and canonical numeric strings are the shared library's definitions (SJL-3.5).
+    // The library's canonical test is Number::toString's own: the .NET "R" format this used
+    // writes 1E+21 and 1E-07, so "1E+21" was taken for a canonical numeric string and "1e+21"
+    // was not.
+    private static bool TryGetArrayIndex(ReadOnlySpan<char> text, out uint value) => NumericKeys.TryParseArrayIndex(text, out value);
 
     private static bool TryGetCanonicalNumericIndex(
         string text,
@@ -263,32 +248,8 @@ public static class KeyStrings
             value = arrayIndex;
             return true;
         }
-        if (text == "-0")
-        {
-            value = -0.0;
-            return true;
-        }
-        if (text == "NaN")
-        {
-            value = double.NaN;
-            return true;
-        }
-        if (text == "Infinity" || text == "+Infinity")
-        {
-            value = double.PositiveInfinity;
-            return text[0] != '+';
-        }
-        if (text == "-Infinity")
-        {
-            value = double.NegativeInfinity;
-            return true;
-        }
-        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
-            return false;
 
-        // Covers the overwhelmingly common canonical integer/decimal forms. Typed arrays
-        // retain their exact runtime formatter check for exponent spellings not matched here.
-        return value.ToString("R", CultureInfo.InvariantCulture) == text;
+        return NumericKeys.IsCanonicalNumericString(text, out value);
     }
 
     private static int StableOrdinalHash(string text)

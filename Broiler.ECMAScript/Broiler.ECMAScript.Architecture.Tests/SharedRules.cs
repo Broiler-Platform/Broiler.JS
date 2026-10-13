@@ -425,6 +425,20 @@ internal static class SharedRules
     // SL7: generated data is what its generator writes.
 
     /// <summary>Compares a generated area as committed with what its generator writes, file by file and byte for byte.</summary>
+    /// <summary>The bytes between a source file's BEGIN and END generated markers: the lines a generator writes into a hand-written file.</summary>
+    internal static byte[] GeneratedRegion(byte[] source)
+    {
+        var text = System.Text.Encoding.UTF8.GetString(source);
+        var begin = text.IndexOf("// BEGIN generated", StringComparison.Ordinal);
+        var end = text.IndexOf("// END generated", StringComparison.Ordinal);
+        if (begin < 0 || end < begin)
+            return [];
+
+        var start = text.IndexOf('\n', begin) + 1;
+        var stop = text.LastIndexOf('\n', end) + 1;
+        return System.Text.Encoding.UTF8.GetBytes(text[start..stop]);
+    }
+
     internal static IEnumerable<string> SL7(IReadOnlyDictionary<string, byte[]> committed, IReadOnlyDictionary<string, byte[]> generated)
     {
         foreach (var name in committed.Keys.Order(StringComparer.Ordinal))

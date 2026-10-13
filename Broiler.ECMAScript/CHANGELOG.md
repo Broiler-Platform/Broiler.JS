@@ -17,7 +17,20 @@ Each entry has the headings **Added**, **Changed**, **Observable changes** and *
 ### Added
 
 - `Broiler.ECMAScript.Algorithms`: the contract types of the conventions, `WorkCharge`,
-  `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`, and no algorithm.
+  `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`.
+- `Broiler.ECMAScript.Algorithms`: the number-conversion area, namespace
+  `Broiler.ECMAScript.Numbers` (milestone SJL-3.3; adapter guide
+  [`docs/adapter-guide-numbers.md`](Broiler.ECMAScript.Algorithms/docs/adapter-guide-numbers.md)):
+  - `NumberText`: `Number::toString` at radix 10 (`ToString`, `TryFormat`) and at every radix from 2
+    to 36 (`ToRadixString`), and the digits of `toFixed`, `toExponential` and `toPrecision`;
+  - `NumberParsing`: `StringToNumber`, `ParseFloat` and `ParseInt`, correctly rounded at every
+    radix, and the `StrWhiteSpaceChar` set (`IsStrWhiteSpaceChar`, `TrimStrWhiteSpace`);
+  - `NumericLiterals.Evaluate`: the value of a numeric literal in every form, BigInt literals under
+    the caller's width limit, and every refusal as a `Failure` with a message identifier;
+  - `NumericKeys`: `TryParseArrayIndex` and `IsCanonicalNumericString`.
+
+  Every number vector of corpus revision 4 passes at library level. Ryu (Apache-2.0) is ported for
+  the shortest radix-10 digits; see `THIRD_PARTY_NOTICES.md`.
 
 ### Changed
 
@@ -25,11 +38,14 @@ None.
 
 ### Observable changes
 
-None.
+None: the area is new in this stream. What each engine observes at its cut-over is listed in that
+engine's own records (Broiler.JS's changelog; Broiler.VM's JSC entries).
 
 ### Data
 
-None.
+- Unicode 17.0.0 (`NumberParsing.UnicodeVersion`): the `Space_Separator` members of the
+  `StrWhiteSpaceChar` set, generated from the pinned `PropList.txt` by
+  `scripts/conformance/generate_white_space_table.py` (convention 13, revised 2026-10-12).
 
 ## 0.0.1-probe.1 — not published
 

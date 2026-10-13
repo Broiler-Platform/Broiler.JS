@@ -1,0 +1,102 @@
+{
+  "rule": "docs/evidence/sjl-3-001/reference-arms.md",
+  "generator": "scripts/conformance/generate_reference_population.py",
+  "reference": "scripts/conformance/numref.py",
+  "seeds": {
+    "D6": "0x534a4c332d303031",
+    "T1": "0x534a4c332d303032",
+    "T2": "0x534a4c332d303033"
+  },
+  "classes": {
+    "D1": {
+      "file": "D1.txt.gz",
+      "count": 13,
+      "sha256": "9e45622bb00f42e1f68a82c9220ca3e0456602da762af58f1afb78f1332e6625",
+      "what": "special values at both signs, and NaN"
+    },
+    "D2": {
+      "file": "D2.txt.gz",
+      "count": 6294,
+      "sha256": "791c8dfd14925821471d5950538858ca25e241937e5561920bbed1f60eeb605b",
+      "what": "powers of two with their neighbours"
+    },
+    "D3": {
+      "file": "D3.txt.gz",
+      "count": 1896,
+      "sha256": "de0b4b658a5301f46c8b4158cd3376d07c1b4c88b59fc5ab00fb3c68bfeb84c3",
+      "what": "doubles nearest the powers of ten with their neighbours"
+    },
+    "D4": {
+      "file": "D4.txt.gz",
+      "count": 34,
+      "sha256": "1d7fd80215f911c6e0aa00113faeb85b0379eff4645e9a2821f64d664637a3e0",
+      "what": "the doubles nearest 1e21 and 1e-7 with eight on each side"
+    },
+    "D5": {
+      "file": "D5.txt.gz",
+      "count": 258,
+      "sha256": "1037b8f22949f3ad8f03af1c012bd6677721c73556ae6d21d9a1f6f7a0157497",
+      "what": "64 doubles on each side of 2^53 and 2^64"
+    },
+    "D6": {
+      "file": "D6.txt.gz",
+      "count": 1048576,
+      "sha256": "1b1890ef90ad7910415a639c1e1ab50a8ca33277622d7a2fb8693d56aad3459e",
+      "what": "1048576 SplitMix64 doubles, seed 0x534a4c332d303031"
+    },
+    "T1": {
+      "file": "T1.txt.gz",
+      "count": 6464,
+      "sha256": "8a8235b85d34ae97123738910e6472586c7499bbfd174cb7b927ee2e7cb8dbf6",
+      "what": "toFixed ties, seed 0x534a4c332d303032"
+    },
+    "T2": {
+      "file": "T2.txt.gz",
+      "count": 6400,
+      "sha256": "7d0c3242e683bc3d7493616c961c917378d991c568904231f6a27beab6e3e203",
+      "what": "toExponential and toPrecision ties, seed 0x534a4c332d303033"
+    },
+    "P1": {
+      "file": "P1.txt.gz",
+      "count": 6342408,
+      "sha256": "618b814fda3b475daa150ac5ba5402fbb2d306a5bbc1b8fb2bd62c66228549d6",
+      "what": "the shortest strings of D1 to D6's finite doubles, both notations, three signs"
+    },
+    "P2": {
+      "file": "P2.txt.gz",
+      "count": 909238,
+      "sha256": "52bb55391f9bb528a22d7290b29330d7570e82ce00636dd3e50ba6c2670fd4fc",
+      "what": "rounding boundaries: midpoints, truncated and one unit either side"
+    },
+    "P3": {
+      "file": "P3.txt.gz",
+      "count": 154812,
+      "sha256": "533be5b473dddf853b2c74072894ff8509f0d1dacbf4144bde7e7c96f3058226",
+      "what": "integers around 2^53 and 2^64, and halfway cases, in every radix"
+    },
+    "P4": {
+      "file": "P4.txt.gz",
+      "count": 262144,
+      "sha256": "ab70a06d7f643e1bde16e80c64b6c041289b14502c1b4dc2e08525f197399da2",
+      "what": "every UTF-16 code unit alone, before, after and around \"1\""
+    },
+    "P5": {
+      "file": "P5.txt.gz",
+      "count": 193,
+      "sha256": "34a180c0c0d63500b6e7c45501743454c38c4ea9bd01536169f41d4338ff9224",
+      "what": "the grammar's edges"
+    },
+    "L1": {
+      "file": "L1.txt.gz",
+      "count": 2791742,
+      "sha256": "074d86d19c22f8020a80025b9c59bec4bbffb1583a1a7845c46d58ebaada37aa",
+      "what": "literal texts: the admitted strings of P1 to P3, legacy, separator and BigInt forms"
+    },
+    "K1": {
+      "file": "K1.txt.gz",
+      "count": 8510,
+      "sha256": "2c2d953bc82b0efad0d5fdea4402ad030b9e45fb58d51ee3e38255bf4782d36d",
+      "what": "keys: the canonical numeric strings of D1 to D5, and the listed edges"
+    }
+  }
+}

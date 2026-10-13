@@ -73,6 +73,34 @@ width at SJL-4; SJL-D-19's providers at SJL-6; SJL-D-20 and SJL-D-21 at SJL-8; S
 at SJL-9; SJL-D-11 and SJL-D-12 at SJL-12, with SJL-D-12's `Ast` and `Parser` disposition at SJL-14;
 SJL-D-7, SJL-D-8 and SJL-D-13 are Broiler.VM's alone, and ask nothing of this repository.
 
+## Area verdicts
+
+Each area milestone's first work package applies the programme's extraction gate (conditions X1 to X7
+of `Broiler.VM/docs/javascript-shared-libraries/roadmap.md` section 5) and files the verdict twice: as a
+JSD in Broiler.VM's JavaScript profile series, and here.
+
+**Number conversion (SJL-3.1), filed 2026-10-12: accepted.** Broiler.VM's record is
+`Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0065-number-conversion-moves-to-the-shared-algorithms-library.md`
+(JSD-0065), which states each condition. This repository's part of it:
+
+- **The correspondence was re-derived** at this repository's `b7a2a3f`. Every file the area design
+  (`Broiler.VM/docs/javascript-shared-libraries/areas/numbers.md`) names is byte-identical there to
+  `44a214dc`, the revision the design read. Every difference SJL-1's run found is classified in
+  `scripts/conformance/number-divergences.txt`; the ones the shared operations correct are listed in
+  `CHANGELOG.md` at SJL-3.5, under decision SJL-D-16 (a), and the literal-scanning ones stay with
+  SJL-14.
+- **The deletion list gains two members** the design did not name: `Storage/KeyStrings`'
+  `TryGetArrayIndex` and `TryGetCanonicalNumericIndex`, which classify every interned key with a second
+  copy of the array-index test and a canonical-numeric test that reads .NET's `"R"` format. They become
+  calls to the shared key operations, so `Broiler.JavaScript.Storage` references the library beside
+  `Parser`, `Runtime` and `BuiltIns`. Without that, the engine would keep an intra-engine duplicate of
+  the area, which SJL-3's exit clause 14 refuses.
+- **Decision SJL-D-10 (a)** is applied in the library: each parsing operation takes a nullable
+  `WorkCharge` and charges the input's length in UTF-16 code units, in blocks, before reading it.
+  This engine has no budget, and its adapters pass none.
+- **The non-standard extensions stay here** (SJL-D-17): the `m` literal suffix, `Number.prototype.clz`
+  and `toLocaleString`'s .NET format strings. None is a shared operation.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

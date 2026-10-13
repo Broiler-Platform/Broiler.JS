@@ -27,9 +27,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import numref as R  # noqa: E402
 
-# The corpus revision this generator writes, and the revision every vector it generates today was
-# added in. Revisions 2 and 3 classified differences (number-divergences.txt) and added no vector.
-CORPUS_REVISION = 3
+# The corpus revision this generator writes, and the revision most of its vectors were added in.
+# Revisions 2 and 3 classified differences (number-divergences.txt) and added no vector; revision 4
+# appended the parseInt vectors of revision_4_vectors, after every vector of revision 1; revision 5
+# retired divergences (number-divergences.txt) and added no vector.
+CORPUS_REVISION = 5
 FIRST_REVISION = 1
 GENERATOR = "ref:numref@1"
 SPEC = "spec:es2026@0248456c"
@@ -88,7 +90,7 @@ class Corpus:
         self.files: dict[str, list[dict[str, str]]] = {}
         self.ids: set[str] = set()
 
-    def add(self, file: str, area_id: str, record: dict[str, str]) -> None:
+    def add(self, file: str, area_id: str, record: dict[str, str], since: int = FIRST_REVISION) -> None:
         records = self.files.setdefault(file, [])
         vector_id = f"numbers/{area_id}/{len([r for r in records if r['id'].startswith(f'numbers/{area_id}/')]) + 1:04d}"
         assert vector_id not in self.ids
@@ -96,7 +98,7 @@ class Corpus:
         full = {"id": vector_id, "area": "numbers"}
         full.update(record)
         full.setdefault("class", "normative")
-        full["since"] = str(FIRST_REVISION)
+        full["since"] = str(since)
         records.append(full)
 
     def classify(self, path: Path) -> None:
@@ -526,6 +528,26 @@ def number_vectors(corpus: Corpus) -> None:
         corpus.add("parse-float.vectors", "parse-float", record)
 
 
+def parse_int_record(s: str, radix: int | None) -> dict[str, str]:
+    result = R.parse_int(s, radix)
+    argument = "" if radix is None else f", {radix}"
+    record = {"op": "parseInt", "in": f"{string_value(s)} {'undefined' if radix is None else f'int:{radix}'}",
+              "out": value_out([f64(b) for b in result.values]),
+              "prov": f"{SPEC}#sec-parseint-string-radix {UCD} {GENERATOR}",
+              "script": f"parseInt({js_string_literal(s)}{argument})"}
+    if result.approximated:
+        exact = value_out([f64(result.values[-1] if len(result.values) == 1 else result.values[0])])
+        record["class"] = "impl-defined"
+        record["out"] = exact
+        for engine in ENGINES:
+            record[f"per-engine.{engine}"] = exact
+        record["note"] = ("the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-"
+                          "approximated integer; both engines' plans require the exact value (SJL-3.3)")
+    elif len(result.values) > 1:
+        record["note"] = "more than 20 significant digits at radix 10: either value is admitted"
+    return record
+
+
 def parse_int_vectors(corpus: Corpus) -> None:
     cases: list[tuple[str, int | None]] = []
     for s in ["0", "-0", "+0", "1", "-1", "123", "  123", "\u00a0123", "\ufeff123", "\u0085123", "123abc", "abc",
@@ -548,23 +570,19 @@ def parse_int_vectors(corpus: Corpus) -> None:
         if (s, radix) in seen:
             continue
         seen.add((s, radix))
-        result = R.parse_int(s, radix)
-        argument = "" if radix is None else f", {radix}"
-        record = {"op": "parseInt", "in": f"{string_value(s)} {'undefined' if radix is None else f'int:{radix}'}",
-                  "out": value_out([f64(b) for b in result.values]),
-                  "prov": f"{SPEC}#sec-parseint-string-radix {UCD} {GENERATOR}",
-                  "script": f"parseInt({js_string_literal(s)}{argument})"}
-        if result.approximated:
-            exact = value_out([f64(result.values[-1] if len(result.values) == 1 else result.values[0])])
-            record["class"] = "impl-defined"
-            record["out"] = exact
-            for engine in ENGINES:
-                record[f"per-engine.{engine}"] = exact
-            record["note"] = ("the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-"
-                              "approximated integer; both engines' plans require the exact value (SJL-3.3)")
-        elif len(result.values) > 1:
-            record["note"] = "more than 20 significant digits at radix 10: either value is admitted"
-        corpus.add("parse-int.vectors", "parse-int", record)
+        corpus.add("parse-int.vectors", "parse-int", parse_int_record(s, radix))
+
+
+def revision_4_vectors(corpus: Corpus) -> None:
+    """Corpus revision 4: radix-10 parseInt strings of more than 20 significant digits on which the
+    two options the clause admits - every digit, or the first 20 and zeros - round to different
+    doubles. Revision 1's long strings all round to one double either way, so no vector held both
+    options at radix 10; bundle sjl-3-001's reference-arm comparison found the difference such a
+    string makes. Each is 2^e + 2^(e-53) + 1, just above the midpoint between 2^e and the next
+    double, and dropping its last digit puts it below; e = 67, 68 and 80."""
+    for s in ("147573952589676429313", "-295147905179352858625", "  1208925819614629308923905"):
+        for radix in (None, 0, 10):
+            corpus.add("parse-int.vectors", "parse-int", parse_int_record(s, radix), since=4)
 
 
 # --------------------------------------------------------------------------------------------------
@@ -690,6 +708,7 @@ def main(argv: list[str] | None = None) -> int:
     parse_int_vectors(corpus)
     literal_vectors(corpus)
     key_vectors(corpus)
+    revision_4_vectors(corpus)
     corpus.classify(DIVERGENCES)
     corpus.write(args.out)
     for name, records in sorted(corpus.files.items()):

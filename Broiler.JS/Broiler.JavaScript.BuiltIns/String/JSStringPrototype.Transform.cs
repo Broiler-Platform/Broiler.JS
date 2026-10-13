@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Text;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
@@ -237,43 +238,23 @@ public partial class JSString
         return result.ToString();
     }
 
-    private static readonly char[] trimCharacters = [
-        // Whitespace
-        '\x09', '\x0B', '\x0C', '\x20', '\xA0', '\xFEFF',
-
-        // Unicode space separator (Zs). U+180E (MONGOLIAN VOWEL SEPARATOR) is
-        // deliberately excluded: it was reclassified from Zs to Cf (Format) in
-        // Unicode 6.3, so it is no longer WhiteSpace and must not be trimmed.
-        '\u1680', '\u2000', '\u2001',
-        '\u2002', '\u2003', '\u2004', '\u2005',
-        '\u2006', '\u2007', '\u2008', '\u2009',
-        '\u200A', '\u202F', '\u205F', '\u3000', 
-
-        // Line terminators
-        '\x0A', '\x0D', '\u2028', '\u2029',
-    ];
-
     [JSPrototypeMethod]
     [JSExport("trim")]
-    internal static JSValue Trim(in Arguments a)
-    {
-        var @this = a.This.AsString();
-        return new JSString(@this.Trim(trimCharacters));
-    }
+    internal static JSValue Trim(in Arguments a) => new JSString(TrimString(a.This.AsString(), TrimEnds.Both));
 
     [JSPrototypeMethod]
     [JSExport("trimEnd")]
-    internal static JSValue TrimEnd(in Arguments a)
-    {
-        var @this = a.This.AsString();
-        return new JSString(@this.TrimEnd(trimCharacters));
-    }
+    internal static JSValue TrimEnd(in Arguments a) => new JSString(TrimString(a.This.AsString(), TrimEnds.End));
 
     [JSPrototypeMethod]
     [JSExport("trimStart")]
-    internal static JSValue TrimStart(in Arguments a)
+    internal static JSValue TrimStart(in Arguments a) => new JSString(TrimString(a.This.AsString(), TrimEnds.Start));
+
+    // TrimString (ECMA-262 22.1.3.32.1) over the shared white-space set (SJL-3.5), which is
+    // generated from the pinned Unicode data; a string with nothing to trim is returned as is.
+    private static string TrimString(string text, TrimEnds ends)
     {
-        var @this = a.This.AsString();
-        return new JSString(@this.TrimStart(trimCharacters));
+        var trimmed = NumberParsing.TrimStrWhiteSpace(text, ends);
+        return trimmed.Length == text.Length ? text : trimmed.ToString();
     }
 }

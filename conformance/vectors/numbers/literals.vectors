@@ -918,7 +918,6 @@ op: NumericLiteral
 in: str:"07.5" bool:false
 out: error: SyntaxError
 class: divergence
-divergence.broiler-js: 07.5 is read as the one literal 7.5; 07 is a LegacyOctalIntegerLiteral, and the .5 that follows it makes the script a SyntaxError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-14 (Broiler.JS on the shared syntax library).
 divergence.broiler-vm: 07.5 is read as the one literal 7.5, in sloppy and in strict code; 07 is a LegacyOctalIntegerLiteral, and the .5 that follows it makes the script a SyntaxError. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-13-shared-syntax-and-vm.md, SJL-13.3 (Broiler.VM's wide path on the shared syntax library).
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 07.5
@@ -1060,8 +1059,7 @@ area: numbers
 op: NumericLiteral
 in: str:"1e" bool:false
 out: error: SyntaxError
-class: divergence
-divergence.broiler-js: A literal whose exponent has no digits (1e) evaluates to NaN instead of being a SyntaxError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-14 (Broiler.JS on the shared syntax library).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 1e
 since: 1
@@ -1071,8 +1069,7 @@ area: numbers
 op: NumericLiteral
 in: str:"1e" bool:true
 out: error: SyntaxError
-class: divergence
-divergence.broiler-js: A literal whose exponent has no digits (1e) evaluates to NaN instead of being a SyntaxError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-14 (Broiler.JS on the shared syntax library).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 1e
 since: 1
@@ -1382,8 +1379,7 @@ area: numbers
 op: NumericLiteral
 in: str:"01n" bool:false
 out: error: SyntaxError
-class: divergence
-divergence.broiler-js: A BigInt literal with a leading zero (01n, 08n) is accepted; the grammar has no such literal, and the script is a SyntaxError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-14 (Broiler.JS on the shared syntax library).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 01n
 since: 1
@@ -1393,8 +1389,7 @@ area: numbers
 op: NumericLiteral
 in: str:"01n" bool:true
 out: error: SyntaxError
-class: divergence
-divergence.broiler-js: A BigInt literal with a leading zero (01n, 08n) is accepted; the grammar has no such literal, and the script is a SyntaxError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-14 (Broiler.JS on the shared syntax library).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 01n
 since: 1
@@ -1404,8 +1399,7 @@ area: numbers
 op: NumericLiteral
 in: str:"08n" bool:false
 out: error: SyntaxError
-class: divergence
-divergence.broiler-js: A BigInt literal with a leading zero (01n, 08n) is accepted; the grammar has no such literal, and the script is a SyntaxError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-14 (Broiler.JS on the shared syntax library).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 08n
 since: 1
@@ -1415,8 +1409,7 @@ area: numbers
 op: NumericLiteral
 in: str:"08n" bool:true
 out: error: SyntaxError
-class: divergence
-divergence.broiler-js: A BigInt literal with a leading zero (01n, 08n) is accepted; the grammar has no such literal, and the script is a SyntaxError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-14 (Broiler.JS on the shared syntax library).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 08n
 since: 1
@@ -1466,8 +1459,7 @@ area: numbers
 op: NumericLiteral
 in: str:".5n" bool:false
 out: error: SyntaxError
-class: divergence
-divergence.broiler-js: A BigInt suffix after a fraction (.5n) is a TypeError when evaluated, where the n is an IdentifierStart immediately after a NumericLiteral and the script is a SyntaxError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-14 (Broiler.JS on the shared syntax library).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: .5n
 since: 1
@@ -1477,8 +1469,7 @@ area: numbers
 op: NumericLiteral
 in: str:".5n" bool:true
 out: error: SyntaxError
-class: divergence
-divergence.broiler-js: A BigInt suffix after a fraction (.5n) is a TypeError when evaluated, where the n is an IdentifierStart immediately after a NumericLiteral and the script is a SyntaxError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-14 (Broiler.JS on the shared syntax library).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; .5n
 since: 1
@@ -2148,8 +2139,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0x3fffffffffffff" bool:false
 out: value: f64:0x4350000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0x3fffffffffffff
 since: 1
@@ -2159,8 +2149,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0x3fffffffffffff" bool:true
 out: value: f64:0x4350000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0x3fffffffffffff
 since: 1
@@ -2170,8 +2159,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0b111111111111111111111111111111111111111111111111111111" bool:false
 out: value: f64:0x4350000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0b111111111111111111111111111111111111111111111111111111
 since: 1
@@ -2181,8 +2169,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0b111111111111111111111111111111111111111111111111111111" bool:true
 out: value: f64:0x4350000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0b111111111111111111111111111111111111111111111111111111
 since: 1
@@ -2192,8 +2179,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0o777777777777777777" bool:false
 out: value: f64:0x4350000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0o777777777777777777
 since: 1
@@ -2203,8 +2189,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0o777777777777777777" bool:true
 out: value: f64:0x4350000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0o777777777777777777
 since: 1
@@ -2474,8 +2459,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0x40000000000003" bool:false
 out: value: f64:0x4350000000000001
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0x40000000000003
 since: 1
@@ -2485,8 +2469,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0x40000000000003" bool:true
 out: value: f64:0x4350000000000001
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0x40000000000003
 since: 1
@@ -2496,8 +2479,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0x7fffffffffffffff" bool:false
 out: value: f64:0x43E0000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0x7fffffffffffffff
 since: 1
@@ -2507,8 +2489,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0x7fffffffffffffff" bool:true
 out: value: f64:0x43E0000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0x7fffffffffffffff
 since: 1
@@ -2518,8 +2499,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0b111111111111111111111111111111111111111111111111111111111111111" bool:false
 out: value: f64:0x43E0000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0b111111111111111111111111111111111111111111111111111111111111111
 since: 1
@@ -2529,8 +2509,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0b111111111111111111111111111111111111111111111111111111111111111" bool:true
 out: value: f64:0x43E0000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0b111111111111111111111111111111111111111111111111111111111111111
 since: 1
@@ -2540,8 +2519,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0o777777777777777777777" bool:false
 out: value: f64:0x43E0000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0o777777777777777777777
 since: 1
@@ -2551,8 +2529,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0o777777777777777777777" bool:true
 out: value: f64:0x43E0000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0o777777777777777777777
 since: 1
@@ -2843,7 +2820,6 @@ op: NumericLiteral
 in: str:"0x8000000000000401" bool:false
 out: value: f64:0x43E0000000000001
 class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 divergence.broiler-vm: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0x8000000000000401
@@ -2855,7 +2831,6 @@ op: NumericLiteral
 in: str:"0x8000000000000401" bool:true
 out: value: f64:0x43E0000000000001
 class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 divergence.broiler-vm: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0x8000000000000401
@@ -2866,8 +2841,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0xffffffffffffffff" bool:false
 out: value: f64:0x43F0000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0xffffffffffffffff
 since: 1
@@ -2877,8 +2851,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0xffffffffffffffff" bool:true
 out: value: f64:0x43F0000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0xffffffffffffffff
 since: 1
@@ -2888,8 +2861,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0b1111111111111111111111111111111111111111111111111111111111111111" bool:false
 out: value: f64:0x43F0000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0b1111111111111111111111111111111111111111111111111111111111111111
 since: 1
@@ -2899,8 +2871,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0b1111111111111111111111111111111111111111111111111111111111111111" bool:true
 out: value: f64:0x43F0000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0b1111111111111111111111111111111111111111111111111111111111111111
 since: 1
@@ -2910,8 +2881,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0o1777777777777777777777" bool:false
 out: value: f64:0x43F0000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0o1777777777777777777777
 since: 1
@@ -2921,8 +2891,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0o1777777777777777777777" bool:true
 out: value: f64:0x43F0000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0o1777777777777777777777
 since: 1
@@ -3193,7 +3162,6 @@ op: NumericLiteral
 in: str:"0x10000000000000801" bool:false
 out: value: f64:0x43F0000000000001
 class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 divergence.broiler-vm: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0x10000000000000801
@@ -3205,7 +3173,6 @@ op: NumericLiteral
 in: str:"0x10000000000000801" bool:true
 out: value: f64:0x43F0000000000001
 class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 divergence.broiler-vm: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0x10000000000000801
@@ -3216,8 +3183,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0x1ffffffffffffffff" bool:false
 out: value: f64:0x4400000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0x1ffffffffffffffff
 since: 1
@@ -3227,8 +3193,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0x1ffffffffffffffff" bool:true
 out: value: f64:0x4400000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0x1ffffffffffffffff
 since: 1
@@ -3238,8 +3203,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0b11111111111111111111111111111111111111111111111111111111111111111" bool:false
 out: value: f64:0x4400000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0b11111111111111111111111111111111111111111111111111111111111111111
 since: 1
@@ -3249,8 +3213,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0b11111111111111111111111111111111111111111111111111111111111111111" bool:true
 out: value: f64:0x4400000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0b11111111111111111111111111111111111111111111111111111111111111111
 since: 1
@@ -3260,8 +3223,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0o3777777777777777777777" bool:false
 out: value: f64:0x4400000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0o3777777777777777777777
 since: 1
@@ -3271,8 +3233,7 @@ area: numbers
 op: NumericLiteral
 in: str:"0o3777777777777777777777" bool:true
 out: value: f64:0x4400000000000000
-class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0o3777777777777777777777
 since: 1
@@ -3563,7 +3524,6 @@ op: NumericLiteral
 in: str:"0x20000000000001001" bool:false
 out: value: f64:0x4400000000000001
 class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 divergence.broiler-vm: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: 0x20000000000001001
@@ -3575,7 +3535,6 @@ op: NumericLiteral
 in: str:"0x20000000000001001" bool:true
 out: value: f64:0x4400000000000001
 class: divergence
-divergence.broiler-js: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, item SJL-3 (the number-conversion cut-over).
 divergence.broiler-vm: A hexadecimal, octal or binary integer beyond 2^53, as a literal or a string, is not converted to the nearest double with ties to even. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-literals-numeric-literals spec:es2026@0248456c#sec-numericvalue spec:es2026@0248456c#sec-static-semantics-mv spec:es2026@0248456c#sec-roundmvresult ref:numref@1
 script: "use strict"; 0x20000000000001001

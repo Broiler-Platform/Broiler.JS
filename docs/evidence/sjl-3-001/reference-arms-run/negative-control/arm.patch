@@ -1,0 +1,16 @@
+diff --git a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/J/JSNumber.cs b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/J/JSNumber.cs
+index 78ce517..fe23a3a 100644
+--- a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/J/JSNumber.cs
++++ b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/J/JSNumber.cs
+@@ -50,6 +50,11 @@ internal static class JSNumber
+ 
+     internal static string ToECMAString(double value)
+     {
++        // NEGATIVE CONTROL (bundle sjl-3-001's reference-arm rule): one result of D1 deliberately changed,
++        // for one run, then removed. The smallest normal double's string with its exponent off by one.
++        if (BitConverter.DoubleToUInt64Bits(value) == 0x0010000000000000UL)
++            return "2.2250738585072014e-307";
++
+         if (double.IsNaN(value))
+             return "NaN";
+ 

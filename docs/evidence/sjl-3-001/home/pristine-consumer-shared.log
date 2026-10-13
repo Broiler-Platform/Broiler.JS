@@ -1,0 +1,13 @@
+$ /usr/bin/python3 scripts/packaging/test_pristine_consumer.py --set shared --version 0.1.0-preview.1
+# cwd <tree>; started 2026-10-13T06:59:43Z; exit 0
++ dotnet pack <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj -c Release -p:IncludeSymbols=false --output /tmp/broiler-pristine-shared-kzqo4km2/feed -p:Version=0.1.0-preview.1 -p:PackageVersion=0.1.0-preview.1
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Successfully created package '/tmp/broiler-pristine-shared-kzqo4km2/feed/Broiler.ECMAScript.Algorithms.0.1.0-preview.1.nupkg'.
++ dotnet restore --configfile /tmp/broiler-pristine-shared-kzqo4km2/NuGet.Config --no-http-cache
+  Determining projects to restore...
+  Restored /tmp/broiler-pristine-shared-kzqo4km2/consumer/Consumer.csproj (in 357 ms).
++ dotnet run -c Release --no-restore
+pristine-consumer: Broiler.ECMAScript contract types
+Validated Broiler.ECMAScript.Algorithms 0.1.0-preview.1 from a local feed in an isolated cache

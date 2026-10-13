@@ -1,0 +1,7 @@
+Number::toString D1: 13 lines, 13 inputs, J:JSNumber.ToECMAString 2 of 13 differ, V:JsNumberFormat.ToJsString 0 of 13 differ, V:JsParser.NumberText 0 of 13 differ (0.0 s)
+Number::toString D2: 6294 lines, 6294 inputs, J:JSNumber.ToECMAString 1 of 6294 differ, V:JsNumberFormat.ToJsString 2 of 6294 differ, V:JsParser.NumberText 2 of 6294 differ (0.1 s)
+Number::toString D3: 1896 lines, 1896 inputs, J:JSNumber.ToECMAString 0 of 1896 differ, V:JsNumberFormat.ToJsString 0 of 1896 differ, V:JsParser.NumberText 0 of 1896 differ (0.0 s)
+Number::toString D4: 34 lines, 34 inputs, J:JSNumber.ToECMAString 0 of 34 differ, V:JsNumberFormat.ToJsString 0 of 34 differ, V:JsParser.NumberText 0 of 34 differ (0.0 s)
+Number::toString D5: 258 lines, 258 inputs, J:JSNumber.ToECMAString 0 of 258 differ, V:JsNumberFormat.ToJsString 0 of 258 differ, V:JsParser.NumberText 0 of 258 differ (0.0 s)
+Number::toString D6: 1048576 lines, 1048576 inputs, J:JSNumber.ToECMAString 0 of 1048576 differ, V:JsNumberFormat.ToJsString 0 of 1048576 differ, V:JsParser.NumberText 0 of 1048576 differ (2.8 s)
+exit 0

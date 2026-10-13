@@ -13,7 +13,7 @@ The programme that creates them is owned in the Broiler.VM repository, under
 
 | Package | Holds | State |
 |---|---|---|
-| `Broiler.ECMAScript.Algorithms` | The language algorithms: number conversion, numerics, text, Date, the Temporal core, the time-zone algorithms. Data-free; references the base class library only. | **Contract types only**: the `WorkCharge` meter, `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`. Milestone SJL-3 moves the first algorithms in. |
+| `Broiler.ECMAScript.Algorithms` | The language algorithms: number conversion, numerics, text, Date, the Temporal core, the time-zone algorithms. References the base class library only, and carries no data but the white-space set's generated `Space_Separator` table. | The contract types (`WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit`, `DepthLimit`) and **the number-conversion area** of milestone SJL-3 (`Broiler.ECMAScript.Numbers`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-numbers.md)). |
 | `Broiler.ECMAScript.Conformance` | The shared conformance vectors' reader, validator and runners. Test-only. | Not packed at this version; the corpus itself is [`conformance/vectors/`](../conformance/vectors/README.md). |
 
 Further libraries (the frontend, Intl, the data generators) are added by the milestones that create
@@ -23,8 +23,13 @@ them.
 
 - **Specification:** the ECMA-262 commit `conformance/vectors/sources/ecma262.pin` names.
 - **Unicode:** the version `conformance/vectors/sources/unicode.pin` names.
-- **Data:** none. No shared package carries data (decision SJL-D-6 (c)); each engine embeds the
-  tables a shared generator writes.
+- **Data:** the white-space set's `Space_Separator` members, Unicode 17.0.0
+  (`NumberParsing.UnicodeVersion`), generated into the algorithms library from the pinned
+  `PropList.txt`, which the number area's design places there. The data areas of SJL-7 onward ship
+  no data in a shared package (decision SJL-D-6 (c)); each engine embeds the tables a shared
+  generator writes. *(Revised 2026-10-12, at SJL-3.3. The bullet read: "**Data:** none. No shared
+  package carries data (decision SJL-D-6 (c)); each engine embeds the tables a shared generator
+  writes.")*
 
 ## Conventions
 
