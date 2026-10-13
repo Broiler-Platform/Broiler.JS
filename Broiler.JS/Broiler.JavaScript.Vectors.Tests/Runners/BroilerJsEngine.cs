@@ -23,17 +23,32 @@ namespace Broiler.JavaScript.Vectors.Tests.Runners;
 /// is ended and the next vector starts a new one. Every vector still gets a fresh realm of its own,
 /// in whichever process evaluates it.
 /// </para>
+/// <para>
+/// <b>When the clock starts.</b> A new process loads and compiles the engine before it can evaluate
+/// anything, and on a loaded machine that alone can take longer than <see cref="Limit"/>. The child
+/// therefore evaluates one script of its own in a realm of its own, then says
+/// <see cref="ReadySignal"/>, and a vector's clock starts only after that; the start has a limit of
+/// its own, <see cref="StartLimit"/>, and a process that is not ready by then is the runner's fault,
+/// not the engine's result.
+/// </para>
 /// </remarks>
 public sealed class BroilerJsEngine : IVectorEngine, IDisposable
 {
     /// <summary>The argument that makes this assembly's entry point a vector evaluator.</summary>
     public const string ChildSwitch = "--evaluate-vectors";
 
+    /// <summary>The child's first line, once the engine is loaded and has evaluated a script.</summary>
+    public const string ReadySignal = "ready";
+
     /// <summary>
-    /// How long one vector may run. The corpus's slowest vectors complete in well under a second, so
-    /// only an evaluation that does not terminate reaches it.
+    /// How long one vector may run, from the moment it is written to a ready child. The corpus's
+    /// slowest vectors complete in well under a second, so only an evaluation that does not
+    /// terminate reaches it.
     /// </summary>
     public static readonly TimeSpan Limit = TimeSpan.FromSeconds(5);
+
+    /// <summary>How long a new child may take to start, load the engine and say it is ready.</summary>
+    public static readonly TimeSpan StartLimit = TimeSpan.FromMinutes(2);
 
     private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false);
 
@@ -51,7 +66,9 @@ public sealed class BroilerJsEngine : IVectorEngine, IDisposable
 
         lock (gate)
         {
-            var process = Child(prelude);
+            if (Child(prelude) is not { } process)
+                return BroilerJsRealm.Fault($"the evaluating process was not ready within {StartLimit.TotalSeconds:0} s");
+
             process.StandardInput.WriteLine(script);
             process.StandardInput.Flush();
             var answer = process.StandardOutput.ReadLineAsync();
@@ -77,7 +94,7 @@ public sealed class BroilerJsEngine : IVectorEngine, IDisposable
             Stop();
     }
 
-    private Process Child(string prelude)
+    private Process? Child(string prelude)
     {
         if (child is { HasExited: false } && childPrelude == prelude)
             return child;
@@ -104,7 +121,13 @@ public sealed class BroilerJsEngine : IVectorEngine, IDisposable
 
         child = Process.Start(start) ?? throw new InvalidOperationException("the evaluating process did not start");
         childPrelude = prelude;
-        return child;
+
+        var ready = child.StandardOutput.ReadLineAsync();
+        if (ready.Wait(StartLimit) && ready.Result == ReadySignal)
+            return child;
+
+        Stop();
+        return null;
     }
 
     private void Stop()
@@ -135,8 +158,9 @@ public sealed class BroilerJsEngine : IVectorEngine, IDisposable
     }
 
     /// <summary>
-    /// The child's loop: the prelude from the file named on the command line, then one script per
-    /// line of standard input, each answered by one rendered outcome per line of standard output.
+    /// The child's loop: the prelude from the file named on the command line, one script of its own
+    /// and <see cref="ReadySignal"/>, then one script per line of standard input, each answered by one
+    /// rendered outcome per line of standard output.
     /// </summary>
     public static int Serve(string preludePath)
     {
@@ -145,6 +169,9 @@ public sealed class BroilerJsEngine : IVectorEngine, IDisposable
         Console.SetOut(TextWriter.Null);
         using var input = new StreamReader(Console.OpenStandardInput(), Utf8);
         using var output = new StreamWriter(Console.OpenStandardOutput(), Utf8) { AutoFlush = true, NewLine = "\n" };
+        // Loads and compiles the engine in a realm no vector sees, so no vector's clock pays for it.
+        BroilerJsRealm.Evaluate(prelude, "0");
+        output.WriteLine(ReadySignal);
         while (input.ReadLine() is { } script)
             output.WriteLine(BroilerJsRealm.Evaluate(prelude, script));
         return 0;
