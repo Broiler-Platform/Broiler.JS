@@ -4809,7 +4809,7 @@ public class JSIntlNumberFormat : JSObject
         // A BigInt operand is converted via its exact magnitude (BigIntValue truncates to Int64 and
         // overflows for large values); ToNumber gives the nearest double.
         var x = value != null && value.IsBigInt
-            ? BigInt.JSBigInt.ToNumber(((BigInt.JSBigInt)value).value)
+            ? Broiler.ECMAScript.Numbers.BigIntMath.ToNumber(((BigInt.JSBigInt)value).value, null)
             : (value ?? JSUndefined.Value).DoubleValue;
 
         // ECMA-402 ToIntlMathematicalValue: a string or BigInt operand is formatted from its

@@ -21,7 +21,7 @@ partial class FastCompiler
             return literal.StringValue;
 
         if (literal.TokenType == TokenTypes.BigInt)
-            return BigIntLiteralValue(literal.StringValue).ToString(System.Globalization.CultureInfo.InvariantCulture);
+            return BigIntText.ToString(BigIntLiteralValue(literal.StringValue), 10, null);
 
         return NumberText.ToString(literal.NumericValue);
     }
@@ -56,9 +56,9 @@ partial class FastCompiler
     }
 
     // Builds the property-key expression for a BigInt literal property name. The key
-    // is the value's canonical decimal string; a value that fits in a uint is emitted
-    // as an integer key, mirroring the numeric-literal path (so `4294967295n` and
-    // `4294967295` resolve to the same slot).
+    // is the value's canonical decimal string, BigInt::toString (the shared library's
+    // BigIntText, SJL-4.5); a value that is an array index is emitted as an integer key,
+    // mirroring the numeric-literal path (so `4294967295n` and `4294967295` resolve to the same slot).
     private BExpression BigIntPropertyKey(string literalText)
     {
         var value = BigIntLiteralValue(literalText);
@@ -67,7 +67,7 @@ partial class FastCompiler
         if (value >= 0 && value < uint.MaxValue)
             return BExpression.Constant((uint)value);
 
-        return KeyOfName(value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        return KeyOfName(BigIntText.ToString(value, 10, null));
     }
 
     // A BigInt literal property name uses the canonical value of its numeric part
