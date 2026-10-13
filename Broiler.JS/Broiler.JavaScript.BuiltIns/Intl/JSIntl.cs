@@ -14,6 +14,7 @@ using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using UnicodeCldr.LocaleData;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.Intl;
 
@@ -1316,15 +1317,10 @@ public static class JSIntl
             return result;
 
         // ToLength(Get(O, "length")): ToNumber (a Symbol length throws a TypeError via DoubleValue),
-        // truncate toward zero, then clamp a negative result to 0 — so a negative length yields an empty
-        // list and the indexed getters are never read (rather than wrapping the negative into a uint).
-        var lengthNumber = lengthValue.DoubleValue;
-        var lengthInteger = double.IsNaN(lengthNumber) ? 0 : Math.Truncate(lengthNumber);
-        if (lengthInteger < 0)
-            lengthInteger = 0;
-        else if (lengthInteger > 4294967295d)
-            lengthInteger = 4294967295d;
-        var length = (uint)lengthInteger;
+        // then the shared library's ToLength (SJL-4.5), so a negative length yields an empty list and
+        // the indexed getters are never read (rather than wrapping the negative into a uint).
+        var lengthInteger = IntegerConversions.ToLength(lengthValue.DoubleValue);
+        var length = lengthInteger > uint.MaxValue ? uint.MaxValue : (uint)lengthInteger;
         HashSet<string> seen = null;
         for (uint i = 0; i < length; i++)
         {
@@ -3186,9 +3182,8 @@ public sealed class JSIntlSegments : JSObject
         if (a.This is not JSIntlSegments segments)
             throw JSEngine.NewTypeError("%Segments.prototype%.containing called on incompatible receiver");
 
-        // ToInteger(index): ToNumber then NaN/±0 → 0, otherwise truncate toward zero.
-        var number = a.Get1().DoubleValue;
-        var n = double.IsNaN(number) ? 0 : Math.Truncate(number);
+        // ToIntegerOrInfinity(index): ToNumber, then the shared library's operation (SJL-4.5).
+        var n = IntegerConversions.ToIntegerOrInfinity(a.Get1().DoubleValue);
 
         if (n < 0 || n >= segments._input.Length)
             return JSUndefined.Value;
