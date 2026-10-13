@@ -1,4 +1,5 @@
 #nullable enable
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.ExpressionCompiler.Core;
 using System;
 using System.CodeDom.Compiler;
@@ -156,15 +157,20 @@ public abstract class BExpression(BExpressionType nodeType, Type type)
 
     public static BExpression UnsignedRightShift(BExpression left, BExpression right) => new BBinaryExpression(left, BOperator.UnsignedRightShift, right);
 
+    /// <summary>
+    /// <c>Number::exponentiate</c> (ECMA-262 6.1.6.1.3), the method every emitted <c>**</c> on two
+    /// doubles calls: the shared library's <c>MathKernels.Power</c> (SJL-4.5), never <c>Math.Pow</c>,
+    /// whose IEEE 754 <c>pow</c> answers 1 for <c>1 ** NaN</c> and <c>(-1) ** ±Infinity</c>.
+    /// </summary>
+    internal static readonly MethodInfo NumberExponentiate =
+        typeof(MathKernels).GetMethod(nameof(MathKernels.Power), [typeof(double), typeof(double)])!;
+
+    /// <summary><c>**</c> on two doubles: a call to <see cref="NumberExponentiate"/>.</summary>
     public static BExpression Power(BExpression left, BExpression right)
     {
-        //return new BBinaryExpression(left, BOperator.Power, right);
-        var m = typeof(Math).GetMethod(nameof(Math.Pow));
-        // return BExpression.Binary(Visit(node.Left), BOperator.Power, Visit(node.Right));
-
         left = left.Type == typeof(double) ? left : Convert(left, typeof(double));
         right = right.Type == typeof(double) ? right : Convert(right, typeof(double));
-        return Call(null, m, left, right);
+        return Call(null, NumberExponentiate, left, right);
     }
 
     public static BBoxExpression Box(BExpression target) => new(target);
