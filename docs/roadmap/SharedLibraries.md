@@ -101,6 +101,44 @@ JSD in Broiler.VM's JavaScript profile series, and here.
 - **The non-standard extensions stay here** (SJL-D-17): the `m` literal suffix, `Number.prototype.clz`
   and `toLocaleString`'s .NET format strings. None is a shared operation.
 
+**Numerics (SJL-4.1), filed 2026-10-13: all four sub-areas accepted.** Broiler.VM's record is
+`Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0067-numerics-move-to-the-shared-algorithms-library.md`
+(JSD-0067), which states each condition for integer conversions and Float16, the Math kernels, exact
+rounding and the BigInt kernel, each on its own; its input, the correspondence from code with every
+member by file and line, is `Broiler.VM/docs/evidence/sjl-4-001/correspondence.md`. This repository's
+part of it:
+
+- **The correspondence was read from code**, at this repository's `4899f9c`, because the area has no
+  vectors yet; SJL-4.2's vectors confirm it. It found far more copies of the area here than the design
+  named: about thirteen more `ToIndex`, `ToLength` and `ToIntegerOrInfinity` helpers, Atomics' own
+  narrowing and BigInt arithmetic, `JSDate.CoercedIntValue`, a second `Math.Pow` emitter, about eleven
+  copies of the rounding modes across Temporal and Intl, and BigInt text, comparison and key paths
+  outside `JSBigInt`'s named members. Each joins the deletion list, and SJL-4.5 removes or forwards it.
+- **The corrections**, each listed in `CHANGELOG.md` at SJL-4.5 under decision SJL-D-16 (a): `1 ** NaN`
+  on every path and the ±1-to-an-infinity cases on the compiled fast paths; Atomics' operands beyond
+  2^53; `%TypedArray%.prototype.fill`'s range; the typed-array constructor's conversion order;
+  `%TypedArray%.from`'s length; a Date setter's argument; `String.prototype.endsWith`'s undefined
+  position; the scientific and compact notations' rounding mode; `NudgeToCalendarUnit`'s window;
+  `Duration.prototype.total`'s double rounding; the culture-dependent BigInt text; `Power`'s 32-bit
+  exponent and a shift's .NET exceptions; `asUintN` at very large widths; the compiled `==` between a
+  BigInt and a Number literal; BigInt property keys beyond 2^32 - 1 and below 0; and `ToBigInt`'s hint
+  and Number refusal in the typed arrays. The Intl mathematical value and the Temporal consumers'
+  quantities are wrong here too, and stay with SJL-9 and SJL-10, which the milestone leaves them to.
+- **Decision SJL-D-15 (a) is recorded here**, as the decision names this record: this engine passes
+  the BigInt kernel the unbounded width policy and a no-op meter, and maps the kernel's over-width
+  status to `RangeError` at the representation's limit, never to a .NET exception. The kernel keeps
+  Broiler.VM's charging units (JSD-0067, decision 3), which costs nothing here, where no meter is
+  passed.
+- **Decision SJL-D-25 applies to the public members the area empties**: `JSNumericOperators.ToInt32`
+  and `ToUint32` stay as forwarders, and the public, saturating `IntegerValue` stays as a member that
+  forwards to the library's `ToIntegerOrInfinity` and saturates as it does today; every specification
+  path that used it calls the library instead. `docs/public-api.md` records each at SJL-4.5.
+- **Not shared, and staying here:** `Math.fround`, `clz32`, `imul`, `max`, `min` and `sign`, whose
+  result the platform already gives; `Math.random`'s single generator; `Math.sumPrecise`'s feature
+  flag; typed arrays' host byte order. `JSMath.Clz32`'s comment cites Jurassic's `MathObject.cs`, and
+  `SumPrecise` ports the `Math.sumPrecise` proposal's reference algorithm; the third-party notices name
+  neither, and SJL-4.5 corrects that when the kernel moves.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
