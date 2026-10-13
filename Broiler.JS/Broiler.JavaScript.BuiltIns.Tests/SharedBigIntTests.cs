@@ -173,6 +173,27 @@ public class SharedBigIntTests
     public void ToBigInt_refuses_a_Number_and_a_text_that_is_not_an_integer(string expression, string expected)
         => Assert.Equal(expected, Throws(expression));
 
+    // A BigInt64Array or BigUint64Array element, a DataView's BigInt setter and Atomics on a BigInt array
+    // convert their value with ToBigInt too, so a Number is a TypeError and the hint is the number hint;
+    // they called BigInt(value), which converts a Number.
+    [Theory]
+    [InlineData("new BigInt64Array([1])", "TypeError")]
+    [InlineData("new BigUint64Array(1).fill(1)", "TypeError")]
+    [InlineData("var a = new BigInt64Array(1); a[0] = 1", "TypeError")]
+    [InlineData("BigInt64Array.from([1])", "TypeError")]
+    [InlineData("new DataView(new ArrayBuffer(8)).setBigInt64(0, 1)", "TypeError")]
+    [InlineData("new DataView(new ArrayBuffer(8)).setBigUint64(0, { valueOf() { return 1; } })", "TypeError")]
+    [InlineData("Atomics.add(new BigInt64Array(1), 0, 1)", "TypeError")]
+    [InlineData("Atomics.store(new BigUint64Array(1), 0, 1.5)", "TypeError")]
+    public void A_BigInt_element_refuses_a_Number(string expression, string expected)
+        => Assert.Equal(expected, Throws(expression));
+
+    [Theory]
+    [InlineData("String(new BigInt64Array([{ [Symbol.toPrimitive](hint) { return hint === 'number' ? 1n : 2n; } }]))", "1")]
+    [InlineData("String(new BigUint64Array(['0x10', true]))", "16,1")]
+    public void A_BigInt_element_converts_with_the_number_hint(string expression, string expected)
+        => Assert.Equal(expected, Eval(expression));
+
     [Theory]
     [InlineData("BigInt(2 ** 64)", "18446744073709551616")]
     [InlineData("BigInt(-0)", "0")]

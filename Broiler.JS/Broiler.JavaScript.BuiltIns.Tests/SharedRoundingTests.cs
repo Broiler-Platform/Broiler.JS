@@ -53,12 +53,15 @@ public class SharedRoundingTests
         => Assert.Equal(expected, Format(options, value));
 
     // The compact notation rounds its reduced value x × 10^-exponent exactly, under roundingMode,
-    // where Math.Round rounded it away from zero.
+    // where Math.Round rounded it away from zero. 1.15's exact value is below 1.15, so it rounds to 1.1,
+    // as the standard notation rounds it; 1150 is exact, and its reduced value 1.15 rounds to 1.2.
     [Theory]
     [InlineData("{notation: 'compact', roundingMode: 'floor'}", "1990", "1.9K")]
     [InlineData("{notation: 'compact', roundingMode: 'floor'}", "-1910", "-2K")]
     [InlineData("{notation: 'compact', roundingMode: 'trunc'}", "-1990", "-1.9K")]
     [InlineData("{notation: 'compact', roundingMode: 'halfEven'}", "1250", "1.2K")]
+    [InlineData("{notation: 'compact'}", "1.15", "1.1")]
+    [InlineData("{notation: 'compact'}", "1150", "1.2K")]
     public void The_compact_notation_follows_the_rounding_mode(string options, string value, string expected)
         => Assert.Equal(expected, Format(options, value));
 
