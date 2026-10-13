@@ -22,7 +22,7 @@ of the same name for its own half, judged by its own rule; neither bundle reads 
 | Evidence bundle | SJL-3-001 (Broiler.JS's) |
 | Base | Bundle [`sjl-0-001`](../sjl-0-001/README.md)'s base commit, `44a214dc`, and its retained runs |
 | After | `ef67693`: the cut-over (`93df3fd`) and the two corrections the duplicate search of SJL-3.7 found (`b598028`, `ef67693`). Every run of this bundle is taken from a clean checkout of it, except the test262 run, taken from `b598028`, whose shell binaries are those of `ef67693` (section 5) |
-| Rule commit | `1410079`, an ancestor of the after commit; the rule, the comparison script and the workloads are unchanged between the two (`identity.txt`, pending) |
+| Rule commit | `1410079`, an ancestor of the after commit; the rule, the comparison script and the workloads are unchanged between the two ([`identity.txt`](identity.txt)) |
 | Shared package | `Broiler.ECMAScript.Algorithms` `0.1.0-preview.1`, the version Broiler.VM's committed feed holds, packed from `93df3fd`; its sources are unchanged at `ef67693` |
 | Shared vectors | `conformance/vectors/numbers` at corpus revision 5 ([`REVISIONS.md`](../../../conformance/vectors/REVISIONS.md)) |
 | RID | `linux-x64`, one machine, four logical processors |
@@ -31,28 +31,41 @@ of the same name for its own half, judged by its own rule; neither bundle reads 
 
 | Clause | What it asks | Where | State |
 |---|---|---|---|
-| 1 | The library under the conventions; SL1 to SL10, the API baseline and package validation pass; the Native AOT probe runs the vectors | section 3, `home/` | pending |
-| 2 | Every number vector passes at library level; every reference-arm difference classified | section 3; [`reference-arms-run/`](reference-arms-run/README.md) | the reference arms: **MET**, at corpus revision 4; the library-level vectors pending |
+| 1 | The library under the conventions; SL1 to SL10, the API baseline and package validation pass; the Native AOT probe runs the vectors | section 3, `home/` | **Met** at `ef67693` |
+| 2 | Every number vector passes at library level; every reference-arm difference classified | section 3; [`reference-arms-run/`](reference-arms-run/README.md) | **Met**: every vector of corpus revision 5 at library level; the reference arms MET at revision 4 |
 | 3 | A preview package on Broiler.VM's committed feed | Broiler.VM's `eng/packages/` and its pin, which names `93df3fd` | **Done** at SJL-3.3 |
 | 4 | `Parser`, `Runtime` and `BuiltIns` reference the library; every member of the deletion list absent; every disposition applied | section 8; [`docs/public-api.md`](../../public-api.md) | the deletion list: **every member absent**; the references and dispositions are in the cut-over commit |
 | 5 | Test262 per path: no path passing at the base fails after; every improvement listed | section 5 | pending (the run is being taken) |
-| 6 | Engine-level vectors pass; every correction in the changelog | section 4; [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md) | pending at `ef67693` |
-| 7 | The pristine consumer and package checks; the measurement meets its rule | sections 6 and 7 | pending; the measurement is void on this machine (section 7) |
+| 6 | Engine-level vectors pass; every correction in the changelog | section 4; [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md) | **Met**: no difference, four classified divergences SJL-14 answers |
+| 7 | The pristine consumer and package checks; the measurement meets its rule | sections 3, 6 and 7 | the consumers and package checks: **met**; the measurement pending, and void on this machine (section 7) |
 | 14 | Each adapter's review finds no algorithm; no intra-engine duplicate of the area survives | section 8 | **reviewed**: no algorithm in an adapter, and no duplicate after `ef67693` |
 
 ## 3. The home: the library at the after commit
 
-Pending: the shared filter's tests (SL1 to SL10, the library-level vectors, the API baseline), the
-corpus generator's own tests, the Native AOT probe published and run against the JIT, and the shared
-set packed with package validation and restored by a pristine consumer, into `home/`. The
-reference-arm comparison of clause 2 is [`reference-arms-run/`](reference-arms-run/README.md),
+From a clean checkout of `ef67693`, into [`home/`](home/):
+
+| Check | Result | Where |
+|---|---|---|
+| The shared filter's tests, built in Release | **274 passed, none failed**: SL1 to SL10 each in both directions and the register holding them `Active`, the API baseline in both directions and package validation on for every packed shared library (SL6), the generated data byte-identical to its generator (SL7), the area's own tests, and `Every_number_vector_passes_against_the_algorithms_library` | [`home/tests.log`](home/tests.log) |
+| The corpus generator's own tests | 28, OK | [`home/generator-tests.log`](home/generator-tests.log) |
+| The Native AOT probe, `linux-x64` | published with no warning; the publish directory holds no managed assembly; the image ran every vector of corpus revision 5, **10,141 matches**, and its report is byte-identical to the same probe's under the JIT | [`home/probe-publish-linux-x64.log`](home/probe-publish-linux-x64.log), [`home/probe-run-linux-x64.log`](home/probe-run-linux-x64.log), [`home/probe-report-aot.tsv.gz`](home/probe-report-aot.tsv.gz) |
+| The shared set at `0.1.0-preview.1` | packed with package validation, restored from a local feed alone into an isolated cache, and its consumer run | [`home/pristine-consumer-shared.log`](home/pristine-consumer-shared.log) |
+
+The reference-arm comparison of clause 2 is [`reference-arms-run/`](reference-arms-run/README.md),
 classified at corpus revision 4: MET.
 
 ## 4. Engine-level vectors
 
-Pending at `ef67693`. Corpus revision 5 retired every `divergence.broiler-js` field the cut-over
-corrected; [`engine/retired-divergences.tsv`](engine/retired-divergences.tsv) lists each retired
-vector under its reason, and the changelog lists each correction.
+**No difference.** [`engine/vectors-revision-5.tsv.gz`](engine/vectors-revision-5.tsv.gz) and
+[`engine/vectors-tests.log`](engine/vectors-tests.log): `Broiler.JavaScript.Vectors.Tests` at
+`ef67693` over corpus revision 5, **10,141 vectors: 10,137 match, 4 classified divergences, 0
+differences**. The four are `numbers/literal/0082`, `0084`, `0088` and `0090`, a
+`NonOctalDecimalIntegerLiteral` accepted in strict mode code (`strict-non-octal-decimal`), which the
+changelog lists as not corrected here and SJL-14 answers. Corpus revision 5 retired every
+`divergence.broiler-js` field the cut-over corrected;
+[`engine/retired-divergences.tsv`](engine/retired-divergences.tsv) lists each retired vector under its
+reason, and the changelog lists each correction. The rows are byte-identical to the run taken at the
+cut-over's commit.
 
 ## 5. Test262 per path (rule part A)
 
@@ -64,8 +77,10 @@ loads, and the bundle will show the shell's binaries rebuilt at `ef67693` hashin
 
 ## 6. The pristine consumer
 
-Pending: the engine set packed and restored by a pristine consumer
-(`scripts/packaging/test_pristine_consumer.py`), into `engine/`.
+**Met.** [`engine/pristine-consumer.log`](engine/pristine-consumer.log): the runtime graph of
+`Broiler.JavaScript.All` packed from `ef67693` into 18 local packages, the shared
+`Broiler.ECMAScript.Algorithms` among them, restored into a clean consumer and run: it executed
+JavaScript and printed its answer.
 
 ## 7. The measurement sub-bundle (rule part B)
 
