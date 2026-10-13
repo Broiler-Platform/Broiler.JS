@@ -1732,19 +1732,9 @@ public abstract partial class JSValue : IDynamicMetaObjectProvider, IPropertyAcc
         if (!ReferenceEquals(self, this))
             return self.Power(a);
 
-        var v = self.DoubleValue;
-        var a1 = a.DoubleValue;
-
-        if (a1 == 0)
-            return NumberOne;
-
-        if (a1 == double.PositiveInfinity || a1 == double.NegativeInfinity)
-        {
-            if (v == 1 || v == -1)
-                return NumberNaN;
-        }
-
-        return CreateNumber(Math.Pow(v, a1));
+        // Number::exponentiate (ECMA-262 6.1.6.1.3) is the shared library's (SJL-4.5), the one entry
+        // for ** and Math.pow on every path; the compiled routes emit the same call (BExpression.Power).
+        return CreateNumber(MathKernels.Power(self.DoubleValue, a.DoubleValue));
     }
 
     internal virtual bool TryGetValue(uint i, out JSProperty value)

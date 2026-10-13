@@ -15,4 +15,11 @@
     <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
+  <!-- The emitted ** calls the shared library's Number::exponentiate, MathKernels.Power (SJL-4.5).
+       The library references nothing of the engine (rule SL1), so the model stays the bottom of the
+       engine's own graph, and it is AOT- and trim-compatible like this assembly. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -96,17 +96,8 @@ public partial class LinqConverter
     protected override BExpression VisitParameter(ParameterExpression node) => parameters[node];
     protected override BExpression VisitPostDecrementAssign(UnaryExpression node) => throw new NotImplementedException();
     protected override BExpression VisitPostIncrementAssign(UnaryExpression node) => throw new NotImplementedException();
-    protected override BExpression VisitPower(BinaryExpression node)
-    {
-        var m = typeof(Math).GetMethod(nameof(Math.Pow));
-        var left = Visit(node.Left);
-        var right = Visit(node.Right);
-
-        left = left.Type == typeof(double) ? left : BExpression.Convert(left, typeof(double));
-        right = right.Type == typeof(double) ? right : BExpression.Convert(right, typeof(double));
-
-        return BExpression.Call(null, m, left, right);
-    }
+    // Number::exponentiate is the shared library's MathKernels.Power (SJL-4.5), as BExpression.Power emits it.
+    protected override BExpression VisitPower(BinaryExpression node) => BExpression.Power(Visit(node.Left), Visit(node.Right));
     protected override BExpression VisitPowerAssign(BinaryExpression node) => throw new NotImplementedException();
     protected override BExpression VisitPreDecrementAssign(UnaryExpression node) => throw new NotImplementedException();
     protected override BExpression VisitPreIncrementAssign(UnaryExpression node) => throw new NotImplementedException();
