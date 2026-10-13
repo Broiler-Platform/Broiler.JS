@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -446,7 +447,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (!(smallestUnit == "nanosecond" && increment == 1))
         {
             // `since` negates the operands, so it negates the rounding mode, rounds, then negates back.
-            var mode = sign == -1 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode;
+            var mode = sign == -1 ? ExactRounding.Negate(roundingMode) : roundingMode;
 
             if (smallestUnit is "year" or "month" or "week" or "day")
             {
@@ -482,7 +483,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     private (double, double, double, double, double, double, double, double, double, double) RoundTimeDifference(
         long years, long months, long weeks, long days,
         double h, double mi, double s, double ms, double us, double ns,
-        string largestUnit, string smallestUnit, int increment, string roundingMode)
+        string largestUnit, string smallestUnit, int increment, RoundingMode roundingMode)
     {
         const long NsPerDayL = NanosecondsPerDay;
         long unitNs = smallestUnit switch
@@ -504,12 +505,12 @@ public partial class JSTemporalPlainDateTime : JSObject
             // A time largestUnit has no date part: fold the whole-day component into the total, round
             // it, and balance from largestUnit downward.
             var total = (BigInteger)days * NsPerDayL + timeNs;
-            var roundedTotal = TemporalRoundingOptions.RoundToIncrement(total, unitNs, roundingMode);
+            var roundedTotal = ExactRounding.RoundNumberToIncrement(total, BigInteger.One, unitNs, roundingMode);
             var (th, tm, ts, tms, tus, tns) = BalanceTime(roundedTotal, largestUnit);
             return (0, 0, 0, 0, th, tm, ts, tms, tus, tns);
         }
 
-        var rounded = TemporalRoundingOptions.RoundToIncrement(timeNs, unitNs, roundingMode);
+        var rounded = ExactRounding.RoundNumberToIncrement(timeNs, BigInteger.One, unitNs, roundingMode);
 
         // Calendar largestUnit: carry any whole days the rounding spilled into the date part.
         var carryDays = (long)(rounded / NsPerDayL);
@@ -541,8 +542,8 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (At("microsecond")) { usv = t / 1_000; t %= 1_000; }
         // ℝ→𝔽 nearest double (ties to even), not .NET's truncating (double)BigInteger
         // (#818 Problems 18/19).
-        double S(BigInteger v) => sgn * JSTemporalDuration.NearestDouble(v);
-        return (S(hr), S(mn), S(sc), S(msv), S(usv), sgn * JSTemporalDuration.NearestDouble(t));
+        double S(BigInteger v) => sgn * ExactRounding.ToDouble(v, BigInteger.One);
+        return (S(hr), S(mn), S(sc), S(msv), S(usv), sgn * ExactRounding.ToDouble(t, BigInteger.One));
     }
 
     [JSExport("round", Length = 1)]
@@ -553,14 +554,14 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (unit == "day")
         {
             var total = TimeNanoseconds();
-            var roundedDays = (long)TemporalRoundingOptions.RoundToIncrement(total, NanosecondsPerDay, roundingMode) / NanosecondsPerDay;
+            var roundedDays = (long)ExactRounding.RoundNumberToIncrement(total, BigInteger.One, NanosecondsPerDay, roundingMode) / NanosecondsPerDay;
             var epoch = DaysFromCivil(isoYear, isoMonth, isoDay) + roundedDays;
             var (ry, rm, rd) = CivilFromDays(epoch);
             return Create((int)ry, (int)rm, (int)rd, 0, 0, 0, 0, 0, 0, calendarId, PlainDateTimePrototype);
         }
 
         var unitNs = UnitNanoseconds(unit) * increment;
-        var rounded = (long)TemporalRoundingOptions.RoundToIncrement(TimeNanoseconds(), unitNs, roundingMode);
+        var rounded = (long)ExactRounding.RoundNumberToIncrement(TimeNanoseconds(), BigInteger.One, unitNs, roundingMode);
         var dayspill = rounded / NanosecondsPerDay;
         var wrapped = rounded - dayspill * NanosecondsPerDay;
         var ep = DaysFromCivil(isoYear, isoMonth, isoDay) + dayspill;
@@ -591,7 +592,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         // roundingMode, then smallestUnit.
         var showCalendar = ReadCalendarName(options);
         var digits = TemporalRoundingOptions.GetFractionalSecondDigits(o);
-        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, RoundingMode.Trunc);
 
         var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
         string smallestUnit = null;
@@ -632,7 +633,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         var wrapped = TimeNanoseconds();
         if (incrementNs > 1)
         {
-            var rounded = (long)TemporalRoundingOptions.RoundToIncrement(TimeNanoseconds(), incrementNs, roundingMode);
+            var rounded = (long)ExactRounding.RoundNumberToIncrement(TimeNanoseconds(), BigInteger.One, incrementNs, roundingMode);
             var dayspill = FloorDiv(rounded, NanosecondsPerDay);
             wrapped = rounded - dayspill * NanosecondsPerDay;
             var (cy, cm, cd) = CivilFromDays(DaysFromCivil(isoYear, isoMonth, isoDay) + dayspill);
@@ -844,10 +845,10 @@ public partial class JSTemporalPlainDateTime : JSObject
     // smallestUnit (spec order), validates that largestUnit is not finer than smallestUnit and that a
     // sub-day smallestUnit's increment divides its unit evenly, and resolves the defaults
     // (smallestUnit "nanosecond"; largestUnit = the larger of "day" and smallestUnit).
-    private static (string largestUnit, string smallestUnit, int increment, string roundingMode) ReadDifferenceSettings(JSValue options)
+    private static (string largestUnit, string smallestUnit, int increment, RoundingMode roundingMode) ReadDifferenceSettings(JSValue options)
     {
         if (options == null || options.IsUndefined)
-            return ("day", "nanosecond", 1, "trunc");
+            return ("day", "nanosecond", 1, RoundingMode.Trunc);
         if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
 
@@ -862,7 +863,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         }
 
         var increment = TemporalRoundingOptions.GetRoundingIncrement(o);
-        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, RoundingMode.Trunc);
 
         var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
         var smallestUnit = smallestRaw.IsUndefined ? "nanosecond" : NormalizeUnit(smallestRaw.StringValue);
@@ -1272,11 +1273,11 @@ public partial class JSTemporalPlainDateTime : JSObject
         _ => 1,
     };
 
-    private static (string unit, int increment, string roundingMode) ReadRoundTo(JSValue roundTo)
+    private static (string unit, int increment, RoundingMode roundingMode) ReadRoundTo(JSValue roundTo)
     {
         string smallestUnit;
         var increment = 1;
-        var roundingMode = "halfExpand";
+        var roundingMode = RoundingMode.HalfExpand;
 
         if (roundTo.IsString) smallestUnit = roundTo.ToString();
         else if (roundTo is JSObject obj)
@@ -1286,7 +1287,7 @@ public partial class JSTemporalPlainDateTime : JSObject
             // is validated against the unit, so a bad increment is reported only after every
             // option getter has fired (test262 round/options-read-before-algorithmic-validation).
             increment = TemporalRoundingOptions.GetRoundingIncrement(obj);
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(obj, "halfExpand");
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(obj, RoundingMode.HalfExpand);
 
             var unitValue = obj[KeyStrings.GetOrCreate("smallestUnit")];
             if (unitValue.IsUndefined)
