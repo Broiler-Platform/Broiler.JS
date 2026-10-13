@@ -10,7 +10,10 @@ person holds every role (the programme's EX-30, recorded in Broiler.VM). **Revie
 here has been read by anyone but its author.
 
 **State:** collection in progress. Nothing here is a verdict until its section says so. **Taken:** the
-engine-level vectors of SJL-4.2 (section 1). The rest is added as SJL-4.3 to SJL-4.6 take it. Broiler.VM
+engine-level vectors of SJL-4.2 (section 1) and the reference-arm comparison of SJL-4.3 (section 2). The
+rest is added as SJL-4.4 to SJL-4.6 take it. *(Revised 2026-10-13, at SJL-4.3. The sentences read:
+"**Taken:** the engine-level vectors of SJL-4.2 (section 1). The rest is added as SJL-4.3 to SJL-4.6
+take it.")* Broiler.VM
 keeps its own bundle of the same name for its own half, judged by its own rule; neither bundle reads the
 other's runs.
 
@@ -32,3 +35,24 @@ The 54 differences, under the reasons of
 5 hypotenuses, 5 `expm1` and `log1p` results, and 2 hexadecimal StringToBigInt texts of 262,144 digits
 that do not complete within the runner's five seconds. Every one is answered by SJL-4.5. Four
 differences between the engines that the area verdict did not classify are Broiler.VM's JSD-0068.
+
+## 2. The reference-arm comparison (SJL-4.3)
+
+**MET**, under [`reference-arms.md`](reference-arms.md) as revised before any run by
+[`reference-arms-revised-2026-10-13.md`](reference-arms-revised-2026-10-13.md):
+[`reference-arms-run/`](reference-arms-run/README.md). S, the numerics area of
+`Broiler.ECMAScript.Algorithms`, was run against test-only copies of both engines' code at their SJL-3
+merges (arm J, Broiler.JS `4899f9c`; arm V, Broiler.VM `a04b2e5`). The run covered the rule's
+population of doubles, binary16 patterns, Math inputs, precise sums, exact roundings and BigInts, and
+its charges.
+
+- **Every difference is classified.** Of 8,064,422 differences, 7,259,262 are corrections and 805,160
+  are approximations both admitted, each covered by an `impl-defined` vector of corpus revision 6.
+- **Arm V's BigInt charges equal S's on every input**, as JSD-0067 decision 3 requires.
+- **The first run found a defect of S**, an exact upper end rounded down under "zero", and one of the
+  comparison's entry points. Both were fixed and the whole comparison run again; both runs are retained.
+- **Both negative controls were reported.**
+
+What the corrections say about each engine is in [`reference-arms-run/README.md`](reference-arms-run/README.md)
+section 3; SJL-4.4 and SJL-4.5 list the observable ones with their cut-overs.
+

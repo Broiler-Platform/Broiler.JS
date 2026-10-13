@@ -1,0 +1,15 @@
+diff --git a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/JSValue.cs b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/JSValue.cs
+index ad21338..6514e2c 100644
+--- a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/JSValue.cs
++++ b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/J/JSValue.cs
+@@ -30,7 +30,9 @@ namespace Broiler.ECMAScript.Algorithms.Tests.ReferenceArms.Numerics.J;
+ /// <summary>JSValue's integer conversions and its Number exponentiation.</summary>
+ internal static class JSValue
+ {
+-    internal static int IntValue(double DoubleValue) => unchecked((int)ToUint32(DoubleValue));
++    // NEGATIVE CONTROL (bundle sjl-4-001): one more for N1's line 20000, the double 0x3B7A97058FA14BF6.
++    internal static int IntValue(double DoubleValue) =>
++        BitConverter.DoubleToUInt64Bits(DoubleValue) == 0x3B7A97058FA14BF6 ? unchecked((int)ToUint32(DoubleValue)) + 1 : unchecked((int)ToUint32(DoubleValue));
+ 
+     // ToUint32 (§7.1.6) / ToInt32 (§7.1.5): NaN, ±0 and ±∞ map to 0; every other
+     // value is truncated toward zero and reduced modulo 2^32. The fast path covers

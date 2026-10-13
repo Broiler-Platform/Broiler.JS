@@ -168,6 +168,29 @@ classifies them and keeps the verdict. For this engine it corrects one reading a
 too, and SJL-4.5 corrects every path. It also refutes the verdict's reading that the library adopts this
 engine's `expm1`, which is not accurate across the range: the library implements its own.
 
+**The implementation (SJL-4.3), 2026-10-13.** The numerics area is in `Broiler.ECMAScript.Algorithms`
+(`2b0a16b`), with its adapter guide, and the shared stream moves to `0.2.0`. Corpus revision 8 gives 72
+vectors the operation and inputs that decide them, so that the library-level runner can read them, and
+every numerics vector the library answers passes at library level. The reference-arm comparison is met
+under [`reference-arms.md`](../evidence/sjl-4-001/reference-arms.md) as revised before any run
+(bundle `sjl-4-001` section 2). Its first run found one defect of the library, which was corrected
+before the run that met the rule: an exact value at a rounding window's upper end was rounded down
+under "zero". For this engine, the comparison's corrections are what SJL-4.5 answers:
+
+- Atomics' operands are saturated to 64 bits before they wrap;
+- the ToIntegerOrInfinity, ToLength and ToIndex helpers give −0, saturate at their types' bounds, or
+  refuse indices the clause admits;
+- BigInt powers with a huge exponent throw a .NET overflow, and `asUintN` wraps or divides by zero at
+  very large widths;
+- a rational's nearest double is not rounded once, and an integer at the overflow threshold gives the
+  largest double instead of the infinity;
+- BigInt text follows the process's culture;
+- a BigInt compared with a literal Number is compared through a double;
+- `expm1` and `log1p` are more than a unit in the last place out near zero.
+
+The comparison admits this engine's `cbrt`, `hypot` and the rest of `expm1` and `log1p` as
+approximations, which the library's bounds replace.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

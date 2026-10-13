@@ -1,0 +1,14 @@
+diff --git a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/V/JsBigInt.cs b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/V/JsBigInt.cs
+index 11bfbf6..f0c2374 100644
+--- a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/V/JsBigInt.cs
++++ b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Numerics/V/JsBigInt.cs
+@@ -298,6 +298,9 @@ internal sealed class JsBigInt : IEquatable<JsBigInt>
+     internal static JsBigInt? Add(JsBigInt left, JsBigInt right, Action<ulong> charge)
+     {
+         charge(LinearCost(Math.Max(left.Words, right.Words)));
++        // NEGATIVE CONTROL (bundle sjl-4-001): one charge more for B1P's first pair, 2^3277 + 1 and 2^4021 - 1.
++        if (left.Value == (BigInteger.One << 3277) + 1 && right.Value == (BigInteger.One << 4021) - 1)
++            charge(1);
+         return Bounded(left.Value + right.Value);
+     }
+ 

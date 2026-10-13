@@ -1,0 +1,9 @@
+commit 45e4db8ddb7a13f0531de383c8586a0c1c677aaa
+started 2026-10-13T20:10:51Z
+finished 2026-10-13T20:49:00Z
+classified with scripts/conformance/classify_numerics_arms.py at 45e4db8, 2026-10-13T20:49:13Z to 20:54:12Z
+negative controls at 45e4db8 with negative-control/arm-v.patch and arm-j.patch, 2026-10-13T20:54Z
+sdk 10.0.401
+kernel Linux 6.18.44-fc-v114
+processors 4
+memory 15 GiB
