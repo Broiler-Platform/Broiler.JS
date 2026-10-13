@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Null;
@@ -483,7 +484,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         // options-read-before-algorithmic-validation).
         var showCalendar = ReadCalendarName(options);
         var digits = -1; // "auto"
-        var roundingMode = "trunc";
+        var roundingMode = RoundingMode.Trunc;
         string smallestUnit = null;
         var showOffset = true;
         var timeZoneNameMode = "auto";
@@ -501,7 +502,7 @@ public partial class JSTemporalZonedDateTime : JSObject
                     _ => throw JSEngine.NewRangeError($"Temporal: invalid offset display option \"{offset.StringValue}\""),
                 };
 
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(o, RoundingMode.Trunc);
 
             // Coerce smallestUnit to a string now (firing its toString); defer the
             // time-unit validation until after timeZoneName is read, so a date smallestUnit
@@ -544,7 +545,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         // Round the instant to the requested precision, then resolve the wall clock / offset from the
         // rounded instant. The epoch count is rounded as if non-negative so the direction never
         // depends on the sign (toString/negative-zoneddatetime-rounding, toString/rounding-direction).
-        var rounded = TemporalRoundingOptions.RoundToIncrementAsIfPositive(epochNanoseconds, incrementNs, roundingMode);
+        var rounded = ExactRounding.RoundNumberToIncrementAsIfPositive(epochNanoseconds, BigInteger.One, incrementNs, roundingMode);
         if (!IsValid(rounded))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime.toString: result is out of range");
 
@@ -587,7 +588,7 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         string smallestUnit;
         var increment = 1;
-        var roundingMode = "halfExpand";
+        var roundingMode = RoundingMode.HalfExpand;
         if (roundTo.IsString)
             smallestUnit = roundTo.StringValue;
         else if (roundTo is JSObject obj)
@@ -598,7 +599,7 @@ public partial class JSTemporalZonedDateTime : JSObject
             // the smallestUnit still observes every option getter first (test262
             // round/options-read-before-algorithmic-validation).
             increment = TemporalRoundingOptions.GetRoundingIncrement(obj);
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(obj, "halfExpand");
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(obj, RoundingMode.HalfExpand);
             var unitValue = obj[KeyStrings.GetOrCreate("smallestUnit")];
             if (unitValue.IsUndefined)
                 throw JSEngine.NewRangeError("Temporal.ZonedDateTime.round requires a smallestUnit");
@@ -637,7 +638,7 @@ public partial class JSTemporalZonedDateTime : JSObject
             var tomorrowStart = StartOfDayEpochNs(timeZoneId, (int)ty, (int)tm, (int)td);
             if (!IsValid(tomorrowStart)) throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is out of range");
             var dayLengthNs = tomorrowStart - dayStart;
-            var rounded = TemporalRoundingOptions.RoundToIncrement(epochNanoseconds - dayStart, dayLengthNs, roundingMode);
+            var rounded = ExactRounding.RoundNumberToIncrement(epochNanoseconds - dayStart, BigInteger.One, dayLengthNs, roundingMode);
             var epoch = dayStart + rounded;
             if (!IsValid(epoch)) throw JSEngine.NewRangeError("Temporal.ZonedDateTime: out of range");
             return new JSTemporalZonedDateTime(epoch, timeZoneId, calendarId, ZonedDateTimePrototype);
@@ -656,7 +657,7 @@ public partial class JSTemporalZonedDateTime : JSObject
             "microsecond" => 1_000L,
             _ => 1L, // nanosecond
         } * increment;
-        var roundedNs = (long)TemporalRoundingOptions.RoundToIncrement(wallNs, unitNs, roundingMode);
+        var roundedNs = (long)ExactRounding.RoundNumberToIncrement(wallNs, BigInteger.One, unitNs, roundingMode);
         var dayspill = FloorDiv(roundedNs, NanosecondsPerDay);
         var wrapped = roundedNs - (long)dayspill * NanosecondsPerDay;
         var (ny, nm, nd) = CivilFromDays(DaysFromCivil(l.y, l.mo, l.d) + (long)dayspill);
@@ -973,7 +974,7 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         // `since` is `-(until)`, so it rounds the (this→other) difference with the negated mode and
         // negates the result below — matching the PlainDate/PlainDateTime difference.
-        var diffMode = sign < 0 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode;
+        var diffMode = sign < 0 ? ExactRounding.Negate(roundingMode) : roundingMode;
         JSTemporalDuration result;
         if (IsTimeUnit(largestUnit))
         {
@@ -1011,10 +1012,10 @@ public partial class JSTemporalZonedDateTime : JSObject
     // difference rounded to smallestUnit × increment (with the caller's — for "since", negated —
     // rounding mode), then balanced from `largestUnit` down.
     private static JSTemporalDuration DifferenceTimeOnly(BigInteger ns1, BigInteger ns2, string largestUnit,
-        string smallestUnit, int increment, string roundingMode)
+        string smallestUnit, int increment, RoundingMode roundingMode)
     {
         var unitNs = (BigInteger)TimeUnitNanoseconds(smallestUnit) * increment;
-        var rounded = TemporalRoundingOptions.RoundToIncrement(ns2 - ns1, unitNs, roundingMode);
+        var rounded = ExactRounding.RoundNumberToIncrement(ns2 - ns1, BigInteger.One, unitNs, roundingMode);
         return BalanceTimeDuration(rounded, largestUnit);
     }
 
@@ -1033,7 +1034,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     // calendar date difference, correcting the intermediate date until the residual real time
     // runs in the same direction as the overall difference (which absorbs DST offset shifts).
     private JSTemporalDuration DifferenceCalendar(BigInteger ns1, BigInteger ns2, string largestUnit,
-        string smallestUnit = "nanosecond", int increment = 1, string roundingMode = "trunc")
+        string smallestUnit = "nanosecond", int increment = 1, RoundingMode roundingMode = RoundingMode.Trunc)
     {
         if (ns1 == ns2)
             return new JSTemporalDuration(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, JSTemporalDuration.DurationPrototype);
@@ -1146,7 +1147,7 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         // ℝ→𝔽 nearest double (ties to even), not .NET's truncating (double)BigInteger
         // (#818 Problems 18/19).
-        double S(BigInteger v) => sign * JSTemporalDuration.NearestDouble(v);
+        double S(BigInteger v) => sign * ExactRounding.ToDouble(v, BigInteger.One);
         return new JSTemporalDuration(0, 0, 0, 0, S(hours), S(minutes), S(seconds), S(millis), S(micros), S(nanos),
             JSTemporalDuration.DurationPrototype);
     }
@@ -1162,10 +1163,10 @@ public partial class JSTemporalZonedDateTime : JSObject
     // increment divides its unit evenly. The defaults are smallestUnit "nanosecond" and largestUnit
     // = the larger of "hour" and smallestUnit. (The rounding the options request is validated here
     // but, like the PlainDate/PlainDateTime difference, not yet applied to the result.)
-    private static (string largestUnit, string smallestUnit, int increment, string roundingMode) ReadZonedDifferenceSettings(JSValue options)
+    private static (string largestUnit, string smallestUnit, int increment, RoundingMode roundingMode) ReadZonedDifferenceSettings(JSValue options)
     {
         if (options == null || options.IsUndefined)
-            return ("hour", "nanosecond", 1, "trunc");
+            return ("hour", "nanosecond", 1, RoundingMode.Trunc);
         if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal.ZonedDateTime difference options must be an object or undefined");
 
@@ -1174,7 +1175,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (largestUnit == "auto") largestUnit = null;
 
         var increment = TemporalRoundingOptions.GetRoundingIncrement(o);
-        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, RoundingMode.Trunc);
 
         var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
         var smallestUnit = smallestRaw.IsUndefined ? "nanosecond" : TemporalRoundingOptions.NormalizeAnyUnit(smallestRaw.StringValue, allowAuto: false);
@@ -1448,28 +1449,26 @@ public partial class JSTemporalZonedDateTime : JSObject
     // A minute-precision offset string (no sub-minute component) uses the match-minutes behaviour —
     // a candidate matches when it equals the explicit offset after being rounded to the nearest minute
     // (half away from zero) — so Africa/Monrovia's -00:44:30 offset is matched by the string "-00:45".
-    // The matched candidate (the real instant's offset), not the rounded value, is returned.
+    // The matched candidate (the real instant's offset), not the rounded value, is returned. The
+    // rounding is RoundNumberToIncrement(offsetNs, 60e9, "halfExpand"), the shared library's (the
+    // engine's own RoundOffsetToMinute was removed at milestone SJL-4.5).
     private static bool TryMatchZoneOffset(List<long> candidates, long explicitOffset, bool matchMinutes, out long matched)
     {
         foreach (var candidate in candidates)
         {
             if (candidate == explicitOffset) { matched = candidate; return true; }
-            if (matchMinutes && RoundOffsetToMinute(candidate) == explicitOffset) { matched = candidate; return true; }
+            if (matchMinutes
+                && ExactRounding.RoundNumberToIncrement(candidate, BigInteger.One, NanosecondsPerMinute, RoundingMode.HalfExpand) == explicitOffset)
+            {
+                matched = candidate;
+                return true;
+            }
         }
         matched = 0;
         return false;
     }
 
-    // RoundNumberToIncrement(offsetNs, 60e9, "halfExpand"): round to the nearest whole minute, with
-    // ties rounded away from zero.
-    private static long RoundOffsetToMinute(long offsetNs)
-    {
-        const long minute = 60_000_000_000L;
-        var q = offsetNs / minute;
-        var r = offsetNs % minute;
-        if (Math.Abs(r) * 2 >= minute) q += Math.Sign(offsetNs);
-        return q * minute;
-    }
+    private const long NanosecondsPerMinute = 60_000_000_000L;
 
     private (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) Local()
     {

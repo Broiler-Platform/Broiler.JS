@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
@@ -140,7 +141,7 @@ public partial class JSTemporalInstant : JSObject
 
         var largestUnit = "auto";
         var smallestUnit = "nanosecond";
-        var roundingMode = "trunc";
+        var roundingMode = RoundingMode.Trunc;
         var increment = 1;
 
         if (optionsArg != null && !optionsArg.IsUndefined)
@@ -156,7 +157,7 @@ public partial class JSTemporalInstant : JSObject
                 largestUnit = TemporalRoundingOptions.NormalizeAnyUnit(lu.StringValue, allowAuto: true);
 
             increment = TemporalRoundingOptions.GetRoundingIncrement(options);
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, "trunc");
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, RoundingMode.Trunc);
 
             var su = options[KeyStrings.GetOrCreate("smallestUnit")];
             if (!su.IsUndefined)
@@ -189,7 +190,7 @@ public partial class JSTemporalInstant : JSObject
         // requested mode is equivalent to negating both the mode and the rounded result.
         var diff = (target.epochNanoseconds - epochNanoseconds) * sign;
         var unitNs = (BigInteger)UnitNanoseconds(smallestUnit) * increment;
-        var rounded = TemporalRoundingOptions.RoundToIncrement(diff, unitNs, roundingMode);
+        var rounded = ExactRounding.RoundNumberToIncrement(diff, BigInteger.One, unitNs, roundingMode);
         return BalanceTimeDuration(rounded, largestUnit);
     }
 
@@ -212,7 +213,7 @@ public partial class JSTemporalInstant : JSObject
         // Each component is the ℝ→𝔽 nearest double (ties to even), not .NET's
         // (double)BigInteger which truncates toward zero — observable for the very large
         // components a near-limit difference produces (#818 Problems 18/19).
-        double S(BigInteger v) => sign * JSTemporalDuration.NearestDouble(v);
+        double S(BigInteger v) => sign * ExactRounding.ToDouble(v, BigInteger.One);
         return new JSTemporalDuration(0, 0, 0, 0, S(hours), S(minutes), S(seconds), S(millis), S(micros), S(nanos),
             JSTemporalDuration.DurationPrototype);
     }
@@ -226,7 +227,7 @@ public partial class JSTemporalInstant : JSObject
 
         string smallestUnit;
         var increment = 1;
-        var roundingMode = "halfExpand";
+        var roundingMode = RoundingMode.HalfExpand;
 
         if (roundTo.IsString)
         {
@@ -237,7 +238,7 @@ public partial class JSTemporalInstant : JSObject
             // The increment and mode are read before smallestUnit, matching the spec ordering
             // (so a bad roundingIncrement / roundingMode is reported before "missing smallestUnit").
             increment = TemporalRoundingOptions.GetRoundingIncrement(options);
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, "halfExpand");
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, RoundingMode.HalfExpand);
 
             var su = options[KeyStrings.GetOrCreate("smallestUnit")];
             if (su.IsUndefined)
@@ -260,7 +261,7 @@ public partial class JSTemporalInstant : JSObject
         TemporalRoundingOptions.ValidateRoundingIncrement(increment, dayUnits, inclusive: true);
 
         var unitNs = (BigInteger)UnitNanoseconds(smallestUnit) * increment;
-        var rounded = TemporalRoundingOptions.RoundToIncrementAsIfPositive(epochNanoseconds, unitNs, roundingMode);
+        var rounded = ExactRounding.RoundNumberToIncrementAsIfPositive(epochNanoseconds, BigInteger.One, unitNs, roundingMode);
         if (!IsValid(rounded))
             throw JSEngine.NewRangeError("Temporal.Instant.round: result is out of range");
 
@@ -279,7 +280,7 @@ public partial class JSTemporalInstant : JSObject
     {
         var optionsArg = a.GetAt(0);
         var digits = -1; // "auto"
-        var roundingMode = "trunc";
+        var roundingMode = RoundingMode.Trunc;
         string smallestUnit = null;
         string timeZoneId = null;
 
@@ -294,7 +295,7 @@ public partial class JSTemporalInstant : JSObject
             // smallestUnit such as "month" is rejected only after timeZone has been read
             // (test262 Instant/prototype/toString options-read-before-algorithmic-validation).
             digits = TemporalRoundingOptions.GetFractionalSecondDigits(options);
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, "trunc");
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, RoundingMode.Trunc);
 
             // Coerce smallestUnit to a string now (firing its toString); defer the
             // time-unit validation until after timeZone is read.
@@ -332,7 +333,7 @@ public partial class JSTemporalInstant : JSObject
         else if (digits == -1) { precision = -1; incrementNs = 1; }
         else { precision = digits; incrementNs = TemporalRoundingOptions.Pow10(9 - digits); }
 
-        var rounded = TemporalRoundingOptions.RoundToIncrementAsIfPositive(epochNanoseconds, incrementNs, roundingMode);
+        var rounded = ExactRounding.RoundNumberToIncrementAsIfPositive(epochNanoseconds, BigInteger.One, incrementNs, roundingMode);
         if (!IsValid(rounded))
             throw JSEngine.NewRangeError("Temporal.Instant.toString: result is out of range");
 

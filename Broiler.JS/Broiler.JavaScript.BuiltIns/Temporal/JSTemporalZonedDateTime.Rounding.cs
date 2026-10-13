@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 
@@ -67,7 +68,7 @@ public partial class JSTemporalZonedDateTime
         return result;
     }
 
-    internal JSValue RoundDurationRelative(JSTemporalDuration d, string smallestUnit, string largestUnit, long increment, string roundingMode)
+    internal JSValue RoundDurationRelative(JSTemporalDuration d, string smallestUnit, string largestUnit, long increment, RoundingMode roundingMode)
     {
         var target = AddDurationEpochNs(d);
         var diff = DifferenceInternal(epochNanoseconds, target, largestUnit);
@@ -84,16 +85,17 @@ public partial class JSTemporalZonedDateTime
         {
             var sign = InternalDurationSign(diff) < 0 ? -1 : 1;
             var o = Local();
-            var n = NudgeToCalendarUnit(sign, diff, epochNanoseconds, target, o, 1, unit, "trunc");
+            var n = NudgeToCalendarUnit(sign, diff, epochNanoseconds, target, o, 1, unit, RoundingMode.Trunc);
             return n.total!.Value;
         }
 
         // A time unit: the whole elapsed nanoseconds (date part is zero for a time-unit largestUnit)
-        // divided by the unit length. Round the EXACT rational once (RatioToDouble) rather than
-        // converting both operands to double and dividing, which rounds twice and can be one ULP off
-        // (test262 Duration/prototype/total/relativeto-total-of-each-unit "hours"/"minutes").
+        // divided by the unit length. Round the EXACT rational once (the shared library's
+        // ExactRounding.ToDouble, which replaced the engine's RatioToDouble at milestone SJL-4.5)
+        // rather than converting both operands to double and dividing, which rounds twice and can be
+        // one ULP off (test262 Duration/prototype/total/relativeto-total-of-each-unit "hours"/"minutes").
         var totalNs = diff.Time + (BigInteger)diff.Days * NanosecondsPerDay;
-        return JSTemporalDuration.RatioToDouble(totalNs, TimeUnitNs(unit));
+        return ExactRounding.ToDouble(totalNs, TimeUnitNs(unit));
     }
 
     // The signed difference between two instants in this zone as an InternalDuration. For a time-unit
@@ -148,7 +150,7 @@ public partial class JSTemporalZonedDateTime
     // ── RoundRelativeDuration ───────────────────────────────────────────────────
 
     private InternalDuration RoundRelativeDuration(InternalDuration dur, BigInteger originEpochNs, BigInteger destEpochNs,
-        string largestUnit, long increment, string smallestUnit, string roundingMode)
+        string largestUnit, long increment, string smallestUnit, RoundingMode roundingMode)
     {
         var irregular = IsCalendarUnit(smallestUnit) || smallestUnit == "day";
         var sign = InternalDurationSign(dur) < 0 ? -1 : 1;
@@ -185,7 +187,7 @@ public partial class JSTemporalZonedDateTime
     }
 
     private NudgeResult NudgeToCalendarUnit(int sign, in InternalDuration dur, BigInteger originEpochNs, BigInteger destEpochNs,
-        (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) o, long increment, string unit, string roundingMode)
+        (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) o, long increment, string unit, RoundingMode roundingMode)
     {
         var didExpand = false;
         var w = ComputeNudgeWindow(sign, dur, originEpochNs, o, increment, unit, false);
@@ -199,24 +201,19 @@ public partial class JSTemporalZonedDateTime
             didExpand = true;
         }
 
-        var numerator = destEpochNs - w.StartEpochNs;
-        var denominator = w.EndEpochNs - w.StartEpochNs;
-        var absNum = BigInteger.Abs(numerator);
-        var absDen = BigInteger.Abs(denominator);
+        // progress = (dest − start) / (end − start) and total = r1 + progress × increment × sign, exactly.
+        var progressed = BigInteger.Abs(destEpochNs - w.StartEpochNs);
+        var span = BigInteger.Abs(w.EndEpochNs - w.StartEpochNs);
+        var (totalNumerator, totalDenominator) = TemporalRoundingOptions.NudgeTotal(w.R1, increment, sign, progressed, span);
 
-        bool isEnd;
-        if (numerator.IsZero) isEnd = false;
-        else if (absNum == absDen) isEnd = true;
-        else
-        {
-            var cmp = (absNum * 2).CompareTo(absDen);
-            var even = (Math.Abs(w.R1) / increment) % 2 == 0;
-            isEnd = ApplyRoundingPicksEnd(cmp, even, UnsignedRoundingMode(roundingMode, sign < 0));
-        }
+        // A progress of 1 is the window's end; any other progress is rounded over the window
+        // [|r1|, |r2|] by the shared library's ApplyUnsignedRoundingMode.
+        var isEnd = progressed == span
+            || TemporalRoundingOptions.NudgeRoundsToEnd(totalNumerator, totalDenominator, w.R1, w.R2, sign, roundingMode);
 
-        double? total = null;
-        if (increment == 1 && !absDen.IsZero)
-            total = (double)w.R1 + sign * (double)absNum / (double)absDen;
+        // The total is the exact ratio's nearest double, rounded once (the shared library's
+        // ExactRounding.ToDouble), not r1 plus a separately rounded fraction.
+        double? total = increment == 1 ? ExactRounding.ToDouble(totalNumerator, totalDenominator) : null;
 
         didExpand = didExpand || isEnd;
         var chosen = isEnd ? w.EndDur : w.StartDur;
@@ -243,7 +240,7 @@ public partial class JSTemporalZonedDateTime
         {
             case "year":
             {
-                var years = dur.Years / increment * increment;
+                var years = TruncateToIncrement(dur.Years, increment);
                 r1 = additionalShift ? years + increment * sign : years;
                 r2 = r1 + increment * sign;
                 startDur = (r1, 0, 0, 0); endDur = (r2, 0, 0, 0);
@@ -251,7 +248,7 @@ public partial class JSTemporalZonedDateTime
             }
             case "month":
             {
-                var months = dur.Months / increment * increment;
+                var months = TruncateToIncrement(dur.Months, increment);
                 r1 = additionalShift ? months + increment * sign : months;
                 r2 = r1 + increment * sign;
                 startDur = (dur.Years, r1, 0, 0); endDur = (dur.Years, r2, 0, 0);
@@ -262,7 +259,7 @@ public partial class JSTemporalZonedDateTime
                 var (ws_y, ws_mo, ws_d) = AddISODate(o.y, o.mo, o.d, dur.Years, dur.Months, 0, 0, "constrain");
                 var (we_y, we_mo, we_d) = CivilFromDays(DaysFromCivil(ws_y, ws_mo, ws_d) + dur.Days);
                 var until = DifferenceISODate(ws_y, ws_mo, ws_d, (int)we_y, (int)we_mo, (int)we_d, "week");
-                var weeks = (dur.Weeks + (long)until.weeks) / increment * increment;
+                var weeks = TruncateToIncrement(dur.Weeks + (long)until.weeks, increment);
                 r1 = weeks;
                 r2 = r1 + increment * sign;
                 startDur = (dur.Years, dur.Months, r1, 0); endDur = (dur.Years, dur.Months, r2, 0);
@@ -270,7 +267,7 @@ public partial class JSTemporalZonedDateTime
             }
             default: // "day"
             {
-                var days = dur.Days / increment * increment;
+                var days = TruncateToIncrement(dur.Days, increment);
                 r1 = days;
                 r2 = r1 + increment * sign;
                 startDur = (dur.Years, dur.Months, dur.Weeks, r1); endDur = (dur.Years, dur.Months, dur.Weeks, r2);
@@ -286,8 +283,12 @@ public partial class JSTemporalZonedDateTime
         return new NudgeWindow(r1, r2, startEpochNs, endEpochNs, startDur, endDur);
     }
 
+    // RoundNumberToIncrement(units, increment, "trunc"), the shared library's: the window's r1.
+    private static long TruncateToIncrement(long units, long increment)
+        => (long)ExactRounding.RoundNumberToIncrement(units, BigInteger.One, increment, RoundingMode.Trunc);
+
     private NudgeResult NudgeToZonedTime(int sign, in InternalDuration dur,
-        (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) o, long increment, string unit, string largestUnit, string roundingMode)
+        (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) o, long increment, string unit, string largestUnit, RoundingMode roundingMode)
     {
         // When the largest unit is itself a time unit the result is expressed purely as
         // time (the date difference was already projected onto the elapsed nanoseconds by
@@ -296,7 +297,7 @@ public partial class JSTemporalZonedDateTime
         if (IsTimeUnit(largestUnit))
         {
             var unitNsTime = (BigInteger)TimeUnitNs(unit) * increment;
-            var roundedTime = TemporalRoundingOptions.RoundToIncrement(dur.Time, unitNsTime, roundingMode);
+            var roundedTime = ExactRounding.RoundNumberToIncrement(dur.Time, BigInteger.One, unitNsTime, roundingMode);
             var (ty, tm, td) = AddISODate(o.y, o.mo, o.d, dur.Years, dur.Months, dur.Weeks, dur.Days, "constrain");
             var startNsTime = EpochNsForLocal(ty, tm, td, o.h, o.mi, o.s, o.ms, o.us, o.ns);
             return new NudgeResult(
@@ -314,7 +315,7 @@ public partial class JSTemporalZonedDateTime
             throw JSEngine.NewRangeError("Temporal.Duration: time zone returned inconsistent Instants");
 
         var unitNs = (BigInteger)TimeUnitNs(unit) * increment;
-        var rounded = TemporalRoundingOptions.RoundToIncrement(dur.Time, unitNs, roundingMode);
+        var rounded = ExactRounding.RoundNumberToIncrement(dur.Time, BigInteger.One, unitNs, roundingMode);
         var beyond = rounded - daySpan;
         // The rounded time rolls into the next day when it reaches OR passes the day length.
         // Reaching it exactly (beyond == 0) must still roll here: largestUnit is always a
@@ -340,7 +341,7 @@ public partial class JSTemporalZonedDateTime
         if (didRoundBeyondDay)
         {
             dayDelta = sign;
-            roundedFinal = TemporalRoundingOptions.RoundToIncrement(beyond, unitNs, roundingMode);
+            roundedFinal = ExactRounding.RoundNumberToIncrement(beyond, BigInteger.One, unitNs, roundingMode);
             nudgedEpochNs = endEpochNs + roundedFinal;
         }
         else
@@ -403,32 +404,9 @@ public partial class JSTemporalZonedDateTime
         return result;
     }
 
-    // ── rounding-mode helpers ───────────────────────────────────────────────────
-
-    private static string UnsignedRoundingMode(string mode, bool negative) => mode switch
-    {
-        "ceil" => negative ? "zero" : "infinity",
-        "floor" => negative ? "infinity" : "zero",
-        "expand" => "infinity",
-        "trunc" => "zero",
-        "halfCeil" => negative ? "half-zero" : "half-infinity",
-        "halfFloor" => negative ? "half-infinity" : "half-zero",
-        "halfExpand" => "half-infinity",
-        "halfTrunc" => "half-zero",
-        "halfEven" => "half-even",
-        _ => "half-infinity",
-    };
-
-    // Given cmp = sign(2·|numerator| − |denominator|), whether to pick the END (r2) boundary.
-    private static bool ApplyRoundingPicksEnd(int cmp, bool even, string unsignedMode) => unsignedMode switch
-    {
-        "zero" => false,
-        "infinity" => true,
-        "half-zero" => cmp > 0,
-        "half-infinity" => cmp >= 0,
-        "half-even" => cmp > 0 || (cmp == 0 && !even),
-        _ => false,
-    };
+    // The engine's private copies of GetUnsignedRoundingMode and ApplyUnsignedRoundingMode
+    // (UnsignedRoundingMode and ApplyRoundingPicksEnd) were removed at milestone SJL-4.5: the nudge
+    // above rounds through the shared library's ExactRounding (TemporalRoundingOptions.NudgeRoundsToEnd).
 
     // ── TemporalDurationFromInternal ────────────────────────────────────────────
 
@@ -475,7 +453,7 @@ public partial class JSTemporalZonedDateTime
 
         // ℝ→𝔽 nearest double (ties to even) for the BigInteger components, not .NET's
         // truncating (double)BigInteger (#818 Problems 18/19).
-        double S(BigInteger v) => sign * JSTemporalDuration.NearestDouble(v);
+        double S(BigInteger v) => sign * ExactRounding.ToDouble(v, BigInteger.One);
         return new JSTemporalDuration(
             x.Years, x.Months, x.Weeks, x.Days,
             S(hours), S(minutes), S(seconds), S(milliseconds), S(microseconds), S(nanoseconds),

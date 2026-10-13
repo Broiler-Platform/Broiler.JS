@@ -13,8 +13,9 @@ namespace Broiler.JavaScript.BuiltIns.Tests;
 // toward zero — so the microseconds component of a near-2^64 ns difference came out as
 // -18446744073709548 (a multiple of 4 below the value) instead of the IEEE
 // round-to-nearest -18446744073709552 (= ℝ(𝔽(-18446744073709551))) the spec prescribes.
-// The Instant / PlainDateTime / ZonedDateTime balancers now use the existing ties-to-even
-// NearestDouble helper, matching JSTemporalDuration's own balancer.
+// The Instant / PlainDateTime / ZonedDateTime balancers now use the ties-to-even nearest double,
+// matching JSTemporalDuration's own balancer (the engine's NearestDouble helper at the time; since
+// milestone SJL-4.5 the shared library's ExactRounding.ToDouble).
 public class Issue818DurationFloat64Tests
 {
     private static string Eval(string code)
