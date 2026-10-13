@@ -30,6 +30,30 @@ public sealed class PortableCompilerTests
         Assert.Contains("PortableOpCode.JumpIfFalse", PortableCompiler.EmitCSharp(program, "Sample", "Generated"));
     }
 
+    // 2**-25 and the double below it share .NET's "R" text, 2.980232238769531E-08, which reads back
+    // as the second: the emitted constant is the value's bits, exact for every double.
+    [Fact(Timeout = 600000)]
+    public void EmittedConstantsAreTheValuesBits()
+    {
+        var program = new PortableCompiler().Compile("function f() { return 2.9802322387695312e-8; }");
+        var emitted = PortableCompiler.EmitCSharp(program, "Sample", "Generated");
+
+        Assert.Equal(Math.Pow(2, -25), PortableInterpreter.Execute(program, []));
+        Assert.Contains("System.BitConverter.UInt64BitsToDouble(0x3E60000000000000UL)", emitted);
+        Assert.DoesNotContain("E-08", emitted);
+    }
+
+    [Fact(Timeout = 600000)]
+    public void AnInfiniteConstantIsEmittedAsCompilableCSharp()
+    {
+        var program = new PortableCompiler().Compile("function f() { return 1e400; }");
+        var emitted = PortableCompiler.EmitCSharp(program, "Sample", "Generated");
+
+        Assert.Equal(double.PositiveInfinity, PortableInterpreter.Execute(program, []));
+        Assert.Contains("System.BitConverter.UInt64BitsToDouble(0x7FF0000000000000UL)", emitted);
+        Assert.DoesNotContain("Infinity", emitted);
+    }
+
     [Fact(Timeout = 600000)]
     public void UnsupportedObjectSurfaceIsRejectedAtOfflineCompileTime()
     {
