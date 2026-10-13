@@ -1,0 +1,209 @@
+# shell rebuild check 2026-10-13T10:52:13Z
+# the run's binaries, as built at b5980286905754807600f9381db5b168fd16c6b0, against the driver's hashes
+same as shell-binaries.sha256
+# changed between the two commits:
+#    .../PortableCompiler.cs                            | 10 ++++++---
+#    .../PortableCompilerTests.cs                       | 24 ++++++++++++++++++++++
+#    Broiler.JS/CHANGELOG.md                            |  6 ++++++
+#    3 files changed, 37 insertions(+), 3 deletions(-)
+
+## 0-b598028: checkout b598028 (0 changed file(s)), dotnet build -c Release --no-incremental 
+build exit 0
+binaries: 39; informational version of BroilerJS.dll: 0.0.0.0
+against the run's binaries: every binary hashes alike
+
+## 1-ef67693: checkout ef67693 (0 changed file(s)), dotnet build -c Release --no-incremental 
+build exit 0
+binaries: 39; informational version of BroilerJS.dll: 0.0.0.0
+against the run's binaries: differing:
+  Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Storage.dll
+  BroilerJS.dll
+
+## 2-ef67693-no-commit: checkout ef67693 (0 changed file(s)), dotnet build -c Release --no-incremental -p:EnableSourceControlManagerQueries=false -p:EnableSourceLink=false
+build exit 0
+binaries: 39; informational version of BroilerJS.dll: 0.0.0.0
+
+## 3-b598028-no-commit: checkout b598028 (0 changed file(s)), dotnet build -c Release --no-incremental -p:EnableSourceControlManagerQueries=false -p:EnableSourceLink=false
+build exit 0
+binaries: 39; informational version of BroilerJS.dll: 0.0.0.0
+
+## 2 against 3, neither stamped with its commit: differing:
+  BroilerJS.dll
+# hashes, 0-b598028:
+#   ba5c19ca9f8286e87d6e5b24c67fe863e88056b00f551fa40cc90f8231cee5ee  Broiler.ECMAScript.Algorithms.dll
+#   e32221b2861773f23f97b0d714c3db85c064be1b96404b6a8c3cee75d7f834c9  Broiler.JavaScript.Ast.dll
+#   1a47d58ff89927f574a269194abca05d2b3e7493087ab7bef73c569c428c6e66  Broiler.JavaScript.BuiltIns.dll
+#   9e331e76a29b0134d62aaf2e71925a17c2e35d3a6d4c82729d18d4072bc5f01a  Broiler.JavaScript.Clr.dll
+#   4d470208bd888a2983b858de668c541caa1122ced4b51cbddd8d93f7095010b0  Broiler.JavaScript.Compiler.dll
+#   6deecb9b9b349a3d4310262459228db461b562a989242a5a764771085d1a13dc  Broiler.JavaScript.Engine.dll
+#   f3cb3790ae7daa303fcde986eba2b913c0184be881d489c16a8b708b71b5061a  Broiler.JavaScript.ExpressionCompiler.dll
+#   fedf94e5e91c69ec132444e65ec1d736c24067bc0dfe2950d454cd730996b435  Broiler.JavaScript.Expressions.dll
+#   316c178efeca40f368cd5cd9328cc0add455d867e6a1f1ad87f5b8180d41fd5d  Broiler.JavaScript.Extensions.dll
+#   99e66c635ef0c0e3f1bf6f41903bae0ed6efd16fe5662be1b40ed154f64cd823  Broiler.JavaScript.Globals.dll
+#   9c997f314cdddcdab68ad6329a80e33032dc866997f8aef3bf7b1a6b411e8f33  Broiler.JavaScript.LinqExpressions.dll
+#   d9cec70dbf1e0edf62eb7e90eb954cc382cec07ea5e1ea0d7c7fb3aa1299159d  Broiler.JavaScript.Modules.dll
+#   702f4bfb3ef944f070ed56ae181e8fdfd735b2ca540eeeaea01fc9ba3ecc5722  Broiler.JavaScript.Parser.dll
+#   97c79f9f26c42d21e691d94918d2e60ebbfa4f56a78952e896ccb373d544e6c4  Broiler.JavaScript.Runtime.dll
+#   c6e09fb4b22da8df3d29cdf57816c2fb5c22dcccbae979aa4da2e80237777e3f  Broiler.JavaScript.Storage.dll
+#   b6d4b0f744a061b750c1189acf716a82f3fff70a5c9025c73434764c387b6325  Broiler.Regex.dll
+#   fad332af4ffc5fd9da4bb3f0a07b585b4bf40722522fdc82e48ba62ad9f94786  Broiler.Unicode.Properties.dll
+#   6fe9ac2ad2d5936a87794169f435bbf89058927064ab25bb3608d79787b58a82  BroilerJS.dll
+#   ceacdf532dfbb331c891e06309eedf7419666392b4177232a75918cb3fc397c7  Microsoft.CodeAnalysis.CSharp.Scripting.dll
+#   54142770a00e594942ee8923726ea49126303d0c523932886c2417eb66dc07f8  Microsoft.CodeAnalysis.CSharp.dll
+#   af71e61724ea0e7eaff8d3715181cfb3fe90145b3402609a9457b069ee60a4ca  Microsoft.CodeAnalysis.Scripting.dll
+#   ad857f1ce7f8e26c2722ade705fac3f90502a47590c14075df1327210f10b1ef  Microsoft.CodeAnalysis.dll
+#   3a39ec75b47ea48175fe0586dc7513bb4f56423d2946662b8dac24afde925d8f  Microsoft.Extensions.DependencyModel.dll
+#   22c649f75fce5be7c7ccda8880473b634ef69ecf33f5d1ab8ad892caf47d5a07  Newtonsoft.Json.dll
+#   240cfa1fa508c20bb7267cf7c2f43093194d659753fa31458f5e114db28b5b71  NuGet.Client.dll
+#   bd9a3a075369a741caed06225184e47e570e358c6e370af9249c54c6428de050  NuGet.Common.dll
+#   f43ad708ee86a0fea604ec4c1ac35e1027d57b7c71f8babd38b2a21251447e3d  NuGet.Configuration.dll
+#   c4c10560a61d5831db9499cdb70de4a7a854a44b888ada39f95dc5a72116721b  NuGet.ContentModel.dll
+#   675d8b9eee1d05a08463b3c2beadfb2ebcc5aa9d180d1337e872e2e401a745c2  NuGet.Frameworks.dll
+#   877fb2cce84627006aeb3dba39d50ed1bf33d0cf32f4268d3255ae6d9c33ac4b  NuGet.Packaging.dll
+#   5a9b57d85b1f84864752816d61f69d839b7ffaac658a97710dcef6c5ec2081f0  NuGet.Protocol.dll
+#   f7710f1980bc6170a46659c7be5ee0ccceba6c635f55a84874f500dc6a5b18e2  NuGet.Repositories.dll
+#   df35ea858ff2728d8f709a6f744c0d530cd7b8e88612ed1a21cac4b934c2e420  NuGet.Resolver.dll
+#   d6d378e3906f92d1c169a7e4a7fe867733a6f3ac48bbbd9020c018d275fee39c  NuGet.RuntimeModel.dll
+#   00a062c48b6c19b8c2a424553c6295c8f111ff1a8060874334cdf5aa91eddb6f  NuGet.Versioning.dll
+#   e2352938ed4f664f770a5c98ef067cb145304456d014d2c311d725c95c8a21a9  System.Security.Cryptography.Pkcs.dll
+#   5e04d6cff3b6fe9706908970cd594861f0c08b3824f7827b2331b5f4fcee1bd1  System.Security.Cryptography.ProtectedData.dll
+#   8250a77c32f283e24035406ed8dce934f68d353154d646bde03468881c0879e3  UnicodeCldr.LocaleData.dll
+#   d3db8abaa3bf41536752acd89ef08795f0855f6db78035d9b5eafde9abfec268  UnicodeEmoji.StringProperties.dll
+# hashes, 1-ef67693:
+#   07cc752c02849720a47a9e7863f0ac45ecfdc728798c5dbe0d9c6bdb7bd10e45  Broiler.ECMAScript.Algorithms.dll
+#   a8b0dd6050c4f66d1aa27c305376cbc832817f0d9cd0add71fa9021d4bd201a9  Broiler.JavaScript.Ast.dll
+#   81b0852e3f4bc5fba37f2b6130141c2cc715abffd046b2304672fed72b550674  Broiler.JavaScript.BuiltIns.dll
+#   6b55a87b90de13575e0ba3fe193afcbdd97ffe07621985d18670255958eac126  Broiler.JavaScript.Clr.dll
+#   7828e1ef8b4082212c9be0b2fe33d02fa31afd4465b5fd13571bb338897acab3  Broiler.JavaScript.Compiler.dll
+#   0ca3c85fa566d49406113d6254cc79bf33ab6d9fd8aeb43f30de635ebab89b23  Broiler.JavaScript.Engine.dll
+#   12b6b4e6201cfac1e9425dc6a89ba07ef1db46691cb80757ed765a78dc0dcf03  Broiler.JavaScript.ExpressionCompiler.dll
+#   a626faf525d08bb04533107ca7ecceeb245fd444c30434abc8b44c8713aaf331  Broiler.JavaScript.Expressions.dll
+#   6ce61a6819082e419c17afc4d0c8417e2f179c4cec8702142eaa4e1fdd4b8a7c  Broiler.JavaScript.Extensions.dll
+#   b6f1f9223873ef9646df8dcf86c7fd388bcd0645788538b15bb97fbe591b7b38  Broiler.JavaScript.Globals.dll
+#   0472edbabea71330026f7a5045ecbe04013e65ab31882aab3ce9f0824c18cdda  Broiler.JavaScript.LinqExpressions.dll
+#   496b3c4f221c23a350456f17da381acec33e7e2a879ea0991f7102badcc18844  Broiler.JavaScript.Modules.dll
+#   b2d2671bdd532d9bcaba7754df4a65f2e029fc8d416697611d691f1b50bd262c  Broiler.JavaScript.Parser.dll
+#   25fa55bd5a6f9c2f31efde805b152cfc2b82aefb82cbacc15b8f922c2a784ef4  Broiler.JavaScript.Runtime.dll
+#   357097ac7172544361b42716f74af4119889fb39653b114d0c91697fc4c8acc6  Broiler.JavaScript.Storage.dll
+#   b6d4b0f744a061b750c1189acf716a82f3fff70a5c9025c73434764c387b6325  Broiler.Regex.dll
+#   fad332af4ffc5fd9da4bb3f0a07b585b4bf40722522fdc82e48ba62ad9f94786  Broiler.Unicode.Properties.dll
+#   af101cffd651ad88a6d36195a41c08e178a95291159a253c46d4b42841686f3e  BroilerJS.dll
+#   ceacdf532dfbb331c891e06309eedf7419666392b4177232a75918cb3fc397c7  Microsoft.CodeAnalysis.CSharp.Scripting.dll
+#   54142770a00e594942ee8923726ea49126303d0c523932886c2417eb66dc07f8  Microsoft.CodeAnalysis.CSharp.dll
+#   af71e61724ea0e7eaff8d3715181cfb3fe90145b3402609a9457b069ee60a4ca  Microsoft.CodeAnalysis.Scripting.dll
+#   ad857f1ce7f8e26c2722ade705fac3f90502a47590c14075df1327210f10b1ef  Microsoft.CodeAnalysis.dll
+#   3a39ec75b47ea48175fe0586dc7513bb4f56423d2946662b8dac24afde925d8f  Microsoft.Extensions.DependencyModel.dll
+#   22c649f75fce5be7c7ccda8880473b634ef69ecf33f5d1ab8ad892caf47d5a07  Newtonsoft.Json.dll
+#   240cfa1fa508c20bb7267cf7c2f43093194d659753fa31458f5e114db28b5b71  NuGet.Client.dll
+#   bd9a3a075369a741caed06225184e47e570e358c6e370af9249c54c6428de050  NuGet.Common.dll
+#   f43ad708ee86a0fea604ec4c1ac35e1027d57b7c71f8babd38b2a21251447e3d  NuGet.Configuration.dll
+#   c4c10560a61d5831db9499cdb70de4a7a854a44b888ada39f95dc5a72116721b  NuGet.ContentModel.dll
+#   675d8b9eee1d05a08463b3c2beadfb2ebcc5aa9d180d1337e872e2e401a745c2  NuGet.Frameworks.dll
+#   877fb2cce84627006aeb3dba39d50ed1bf33d0cf32f4268d3255ae6d9c33ac4b  NuGet.Packaging.dll
+#   5a9b57d85b1f84864752816d61f69d839b7ffaac658a97710dcef6c5ec2081f0  NuGet.Protocol.dll
+#   f7710f1980bc6170a46659c7be5ee0ccceba6c635f55a84874f500dc6a5b18e2  NuGet.Repositories.dll
+#   df35ea858ff2728d8f709a6f744c0d530cd7b8e88612ed1a21cac4b934c2e420  NuGet.Resolver.dll
+#   d6d378e3906f92d1c169a7e4a7fe867733a6f3ac48bbbd9020c018d275fee39c  NuGet.RuntimeModel.dll
+#   00a062c48b6c19b8c2a424553c6295c8f111ff1a8060874334cdf5aa91eddb6f  NuGet.Versioning.dll
+#   e2352938ed4f664f770a5c98ef067cb145304456d014d2c311d725c95c8a21a9  System.Security.Cryptography.Pkcs.dll
+#   5e04d6cff3b6fe9706908970cd594861f0c08b3824f7827b2331b5f4fcee1bd1  System.Security.Cryptography.ProtectedData.dll
+#   8250a77c32f283e24035406ed8dce934f68d353154d646bde03468881c0879e3  UnicodeCldr.LocaleData.dll
+#   d3db8abaa3bf41536752acd89ef08795f0855f6db78035d9b5eafde9abfec268  UnicodeEmoji.StringProperties.dll
+# hashes, 2-ef67693-no-commit:
+#   745ed4486de396c2e0b4f7fb38fe12468c8bb12525090a793f771c384f5daaef  Broiler.ECMAScript.Algorithms.dll
+#   c87d1217e4d03b943c2360f4aa4d905cb3656007750bcb55dd71417dd5c13193  Broiler.JavaScript.Ast.dll
+#   9f283634b840bb38d9bbcfa05126e8c57a789b9726d4e93d131c67f81834bbff  Broiler.JavaScript.BuiltIns.dll
+#   833c9434d7022b188d405991bd9f9736bee523e32b1e50a0ad91ea7a1a3bdacb  Broiler.JavaScript.Clr.dll
+#   ecac9308164d824575a8745bcf3a98784fb22c36cfd28033b7a09347f2b1bdb7  Broiler.JavaScript.Compiler.dll
+#   986d08380221e35d57359e1cd701c6059435657ca3640cf36cf210c4dcc37c4e  Broiler.JavaScript.Engine.dll
+#   dd07e21b519122199720fcc117f0871a02795bcda0f280ffd85dcc24e64fff39  Broiler.JavaScript.ExpressionCompiler.dll
+#   a1587b5627bfd2b0d0e604cd07c2f9b6c7d783b33d24b7518841b55e3cd2a18b  Broiler.JavaScript.Expressions.dll
+#   f302e397fc6faec8dd71131b651666035049b429f6156385e3ed197f3b4d8d31  Broiler.JavaScript.Extensions.dll
+#   2f7bbee5794cf80e75d2695e33b092371f3dd77caf7939e6ef4a76bfcbbb7a6f  Broiler.JavaScript.Globals.dll
+#   61e1237dd88995430fc45e946b4de0d3b3a0ec069d71d739242e563e9c0b134d  Broiler.JavaScript.LinqExpressions.dll
+#   502cc60d78b204beb84234030a5df272f4a21f9fa12fb34d73157bdded6fe2b7  Broiler.JavaScript.Modules.dll
+#   cb6e60aed576281cba6824a653e71d408f2fe1762fa283617f35a09d4278b843  Broiler.JavaScript.Parser.dll
+#   8c82c1b2566da4f9b9ed1f38523eaa90a83ac192700c0e1be4c89904555f1cf2  Broiler.JavaScript.Runtime.dll
+#   74f546dc01b6da62f70884da97ee48447302829815164c0a4ba062de1346f096  Broiler.JavaScript.Storage.dll
+#   b6d4b0f744a061b750c1189acf716a82f3fff70a5c9025c73434764c387b6325  Broiler.Regex.dll
+#   fad332af4ffc5fd9da4bb3f0a07b585b4bf40722522fdc82e48ba62ad9f94786  Broiler.Unicode.Properties.dll
+#   df7a5cd99f7cd0d73fc12fe19d94aa62fce4527b8ce82e4f4c3c1f6a47675b94  BroilerJS.dll
+#   ceacdf532dfbb331c891e06309eedf7419666392b4177232a75918cb3fc397c7  Microsoft.CodeAnalysis.CSharp.Scripting.dll
+#   54142770a00e594942ee8923726ea49126303d0c523932886c2417eb66dc07f8  Microsoft.CodeAnalysis.CSharp.dll
+#   af71e61724ea0e7eaff8d3715181cfb3fe90145b3402609a9457b069ee60a4ca  Microsoft.CodeAnalysis.Scripting.dll
+#   ad857f1ce7f8e26c2722ade705fac3f90502a47590c14075df1327210f10b1ef  Microsoft.CodeAnalysis.dll
+#   3a39ec75b47ea48175fe0586dc7513bb4f56423d2946662b8dac24afde925d8f  Microsoft.Extensions.DependencyModel.dll
+#   22c649f75fce5be7c7ccda8880473b634ef69ecf33f5d1ab8ad892caf47d5a07  Newtonsoft.Json.dll
+#   240cfa1fa508c20bb7267cf7c2f43093194d659753fa31458f5e114db28b5b71  NuGet.Client.dll
+#   bd9a3a075369a741caed06225184e47e570e358c6e370af9249c54c6428de050  NuGet.Common.dll
+#   f43ad708ee86a0fea604ec4c1ac35e1027d57b7c71f8babd38b2a21251447e3d  NuGet.Configuration.dll
+#   c4c10560a61d5831db9499cdb70de4a7a854a44b888ada39f95dc5a72116721b  NuGet.ContentModel.dll
+#   675d8b9eee1d05a08463b3c2beadfb2ebcc5aa9d180d1337e872e2e401a745c2  NuGet.Frameworks.dll
+#   877fb2cce84627006aeb3dba39d50ed1bf33d0cf32f4268d3255ae6d9c33ac4b  NuGet.Packaging.dll
+#   5a9b57d85b1f84864752816d61f69d839b7ffaac658a97710dcef6c5ec2081f0  NuGet.Protocol.dll
+#   f7710f1980bc6170a46659c7be5ee0ccceba6c635f55a84874f500dc6a5b18e2  NuGet.Repositories.dll
+#   df35ea858ff2728d8f709a6f744c0d530cd7b8e88612ed1a21cac4b934c2e420  NuGet.Resolver.dll
+#   d6d378e3906f92d1c169a7e4a7fe867733a6f3ac48bbbd9020c018d275fee39c  NuGet.RuntimeModel.dll
+#   00a062c48b6c19b8c2a424553c6295c8f111ff1a8060874334cdf5aa91eddb6f  NuGet.Versioning.dll
+#   e2352938ed4f664f770a5c98ef067cb145304456d014d2c311d725c95c8a21a9  System.Security.Cryptography.Pkcs.dll
+#   5e04d6cff3b6fe9706908970cd594861f0c08b3824f7827b2331b5f4fcee1bd1  System.Security.Cryptography.ProtectedData.dll
+#   8250a77c32f283e24035406ed8dce934f68d353154d646bde03468881c0879e3  UnicodeCldr.LocaleData.dll
+#   d3db8abaa3bf41536752acd89ef08795f0855f6db78035d9b5eafde9abfec268  UnicodeEmoji.StringProperties.dll
+# hashes, 3-b598028-no-commit:
+#   745ed4486de396c2e0b4f7fb38fe12468c8bb12525090a793f771c384f5daaef  Broiler.ECMAScript.Algorithms.dll
+#   c87d1217e4d03b943c2360f4aa4d905cb3656007750bcb55dd71417dd5c13193  Broiler.JavaScript.Ast.dll
+#   9f283634b840bb38d9bbcfa05126e8c57a789b9726d4e93d131c67f81834bbff  Broiler.JavaScript.BuiltIns.dll
+#   833c9434d7022b188d405991bd9f9736bee523e32b1e50a0ad91ea7a1a3bdacb  Broiler.JavaScript.Clr.dll
+#   ecac9308164d824575a8745bcf3a98784fb22c36cfd28033b7a09347f2b1bdb7  Broiler.JavaScript.Compiler.dll
+#   986d08380221e35d57359e1cd701c6059435657ca3640cf36cf210c4dcc37c4e  Broiler.JavaScript.Engine.dll
+#   dd07e21b519122199720fcc117f0871a02795bcda0f280ffd85dcc24e64fff39  Broiler.JavaScript.ExpressionCompiler.dll
+#   a1587b5627bfd2b0d0e604cd07c2f9b6c7d783b33d24b7518841b55e3cd2a18b  Broiler.JavaScript.Expressions.dll
+#   f302e397fc6faec8dd71131b651666035049b429f6156385e3ed197f3b4d8d31  Broiler.JavaScript.Extensions.dll
+#   2f7bbee5794cf80e75d2695e33b092371f3dd77caf7939e6ef4a76bfcbbb7a6f  Broiler.JavaScript.Globals.dll
+#   61e1237dd88995430fc45e946b4de0d3b3a0ec069d71d739242e563e9c0b134d  Broiler.JavaScript.LinqExpressions.dll
+#   502cc60d78b204beb84234030a5df272f4a21f9fa12fb34d73157bdded6fe2b7  Broiler.JavaScript.Modules.dll
+#   cb6e60aed576281cba6824a653e71d408f2fe1762fa283617f35a09d4278b843  Broiler.JavaScript.Parser.dll
+#   8c82c1b2566da4f9b9ed1f38523eaa90a83ac192700c0e1be4c89904555f1cf2  Broiler.JavaScript.Runtime.dll
+#   74f546dc01b6da62f70884da97ee48447302829815164c0a4ba062de1346f096  Broiler.JavaScript.Storage.dll
+#   b6d4b0f744a061b750c1189acf716a82f3fff70a5c9025c73434764c387b6325  Broiler.Regex.dll
+#   fad332af4ffc5fd9da4bb3f0a07b585b4bf40722522fdc82e48ba62ad9f94786  Broiler.Unicode.Properties.dll
+#   696802f29ace631fe23a52f6ddcf7ad82060f46315a1a6fdeafa6241a911b30e  BroilerJS.dll
+#   ceacdf532dfbb331c891e06309eedf7419666392b4177232a75918cb3fc397c7  Microsoft.CodeAnalysis.CSharp.Scripting.dll
+#   54142770a00e594942ee8923726ea49126303d0c523932886c2417eb66dc07f8  Microsoft.CodeAnalysis.CSharp.dll
+#   af71e61724ea0e7eaff8d3715181cfb3fe90145b3402609a9457b069ee60a4ca  Microsoft.CodeAnalysis.Scripting.dll
+#   ad857f1ce7f8e26c2722ade705fac3f90502a47590c14075df1327210f10b1ef  Microsoft.CodeAnalysis.dll
+#   3a39ec75b47ea48175fe0586dc7513bb4f56423d2946662b8dac24afde925d8f  Microsoft.Extensions.DependencyModel.dll
+#   22c649f75fce5be7c7ccda8880473b634ef69ecf33f5d1ab8ad892caf47d5a07  Newtonsoft.Json.dll
+#   240cfa1fa508c20bb7267cf7c2f43093194d659753fa31458f5e114db28b5b71  NuGet.Client.dll
+#   bd9a3a075369a741caed06225184e47e570e358c6e370af9249c54c6428de050  NuGet.Common.dll
+#   f43ad708ee86a0fea604ec4c1ac35e1027d57b7c71f8babd38b2a21251447e3d  NuGet.Configuration.dll
+#   c4c10560a61d5831db9499cdb70de4a7a854a44b888ada39f95dc5a72116721b  NuGet.ContentModel.dll
+#   675d8b9eee1d05a08463b3c2beadfb2ebcc5aa9d180d1337e872e2e401a745c2  NuGet.Frameworks.dll
+#   877fb2cce84627006aeb3dba39d50ed1bf33d0cf32f4268d3255ae6d9c33ac4b  NuGet.Packaging.dll
+#   5a9b57d85b1f84864752816d61f69d839b7ffaac658a97710dcef6c5ec2081f0  NuGet.Protocol.dll
+#   f7710f1980bc6170a46659c7be5ee0ccceba6c635f55a84874f500dc6a5b18e2  NuGet.Repositories.dll
+#   df35ea858ff2728d8f709a6f744c0d530cd7b8e88612ed1a21cac4b934c2e420  NuGet.Resolver.dll
+#   d6d378e3906f92d1c169a7e4a7fe867733a6f3ac48bbbd9020c018d275fee39c  NuGet.RuntimeModel.dll
+#   00a062c48b6c19b8c2a424553c6295c8f111ff1a8060874334cdf5aa91eddb6f  NuGet.Versioning.dll
+#   e2352938ed4f664f770a5c98ef067cb145304456d014d2c311d725c95c8a21a9  System.Security.Cryptography.Pkcs.dll
+#   5e04d6cff3b6fe9706908970cd594861f0c08b3824f7827b2331b5f4fcee1bd1  System.Security.Cryptography.ProtectedData.dll
+#   8250a77c32f283e24035406ed8dce934f68d353154d646bde03468881c0879e3  UnicodeCldr.LocaleData.dll
+#   d3db8abaa3bf41536752acd89ef08795f0855f6db78035d9b5eafde9abfec268  UnicodeEmoji.StringProperties.dll
+
+# restored: checkout b598028, the run's binaries put back
+same as shell-binaries.sha256
+# end 2026-10-13T10:54:01Z

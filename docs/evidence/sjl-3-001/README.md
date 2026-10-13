@@ -21,7 +21,7 @@ of the same name for its own half, judged by its own rule; neither bundle reads 
 |---|---|
 | Evidence bundle | SJL-3-001 (Broiler.JS's) |
 | Base | Bundle [`sjl-0-001`](../sjl-0-001/README.md)'s base commit, `44a214dc`, and its retained runs |
-| After | `ef67693`: the cut-over (`93df3fd`) and the two corrections the duplicate search of SJL-3.7 found (`b598028`, `ef67693`). Every run of this bundle is taken from a clean checkout of it, except the test262 run, taken from `b598028`, whose shell binaries are those of `ef67693` (section 5) |
+| After | `ef67693`: the cut-over (`93df3fd`) and the two corrections the duplicate search of SJL-3.7 found (`b598028`, `ef67693`). Every run of this bundle is taken from a clean checkout of it, except the test262 run, taken from `b598028`, whose shell `ef67693` builds identically but for the commit each assembly is stamped with (section 5) |
 | Rule commit | `1410079`, an ancestor of the after commit; the rule, the comparison script and the workloads are unchanged between the two ([`identity.txt`](identity.txt)) |
 | Shared package | `Broiler.ECMAScript.Algorithms` `0.1.0-preview.1`, the version Broiler.VM's committed feed holds, packed from `93df3fd`; its sources are unchanged at `ef67693` |
 | Shared vectors | `conformance/vectors/numbers` at corpus revision 5 ([`REVISIONS.md`](../../../conformance/vectors/REVISIONS.md)) |
@@ -35,7 +35,7 @@ of the same name for its own half, judged by its own rule; neither bundle reads 
 | 2 | Every number vector passes at library level; every reference-arm difference classified | section 3; [`reference-arms-run/`](reference-arms-run/README.md) | **Met**: every vector of corpus revision 5 at library level; the reference arms MET at revision 4 |
 | 3 | A preview package on Broiler.VM's committed feed | Broiler.VM's `eng/packages/` and its pin, which names `93df3fd` | **Done** at SJL-3.3 |
 | 4 | `Parser`, `Runtime` and `BuiltIns` reference the library; every member of the deletion list absent; every disposition applied | section 8; [`docs/public-api.md`](../../public-api.md) | the deletion list: **every member absent**; the references and dispositions are in the cut-over commit |
-| 5 | Test262 per path: no path passing at the base fails after; every improvement listed | section 5 | pending (the run is being taken) |
+| 5 | Test262 per path: no path passing at the base fails after; every improvement listed | section 5, [`test262/`](test262/) | **Met**: part A MET, no row of 96,720 changed |
 | 6 | Engine-level vectors pass; every correction in the changelog | section 4; [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md) | **Met**: no difference, four classified divergences SJL-14 answers |
 | 7 | The pristine consumer and package checks; the measurement meets its rule | sections 3, 6 and 7 | the consumers and package checks: **met**; the measurement pending, and void on this machine (section 7) |
 | 14 | Each adapter's review finds no algorithm; no intra-engine duplicate of the area survives | section 8 | **reviewed**: no algorithm in an adapter, and no duplicate after `ef67693` |
@@ -69,11 +69,62 @@ cut-over's commit.
 
 ## 5. Test262 per path (rule part A)
 
-Pending. The after run is taken shard by shard in the base's configuration (its `drive.sh` is
-retained when it is imported); a restart of the machine interrupted shard 1, which was run again from
-its start with the same binaries, and the interrupted shard's log is retained beside the run, as the
-base retained its own. The run's shell was built at `b598028`; `ef67693` changes no assembly the shell
-loads, and the bundle will show the shell's binaries rebuilt at `ef67693` hashing the same.
+**MET.** [`test262/comparison.json`](test262/comparison.json) and
+[`test262/comparison.log`](test262/comparison.log): the after run against bundle sjl-0-001's base
+run, through `scripts/compliance/compare_test262_paths.py` as the rule committed it, with each run's
+timed-out rows replaced by their re-runs and the classification file
+[`test262/classifications.json`](test262/classifications.json) read. **96,720 rows (48,360 paths, each
+in both variants): none changed.** No row is a regression and none needed a class, so the
+classification file is empty and the comparison used no entry of it.
+
+| Part A's condition | This run |
+|---|---|
+| Both runs complete | eight of eight shards reported in each, no incomplete shard, no configuration failure, one suite revision, `ccaac100` ([`test262/merge.log`](test262/merge.log); the base's in sjl-0-001) |
+| The script finds them comparable | yes, exit 0; the fields it records and does not compare are the same in both: .NET SDK 10.0.401, four workers, eight shards, Linux, X64 |
+| No row passing at the base fails, times out or is skipped after | none |
+| Every changed verdict in C1, C3 or C5, and listed | no verdict changed |
+
+**The after run.** [`test262/drive.sh`](test262/drive.sh) took it at `b598028`, in the base's
+configuration with four workers per shard, shard after shard from 2026-10-12 22:42 to 2026-10-13
+10:12 ([`test262/drive.log`](test262/drive.log)). The machine restarted twice. The first restart cut
+shard 1 short; it was run again from its start with the same binaries, re-hashed before the resume
+([`test262/interrupted-shard-1.log`](test262/interrupted-shard-1.log),
+[`test262/shell-binaries.before-resume.sha256`](test262/shell-binaries.before-resume.sha256)). The
+second came after shard 7 had ended, while the driver's merge was running; that merge wrote nothing,
+and the same command was then run separately, as the drive log records. The merged totals, which do
+not decide part A: 94,227 variant cases passed, 1,254 failed, 2 timed out and 1,237 skipped.
+
+**Timeouts.** One path timed out in both variants in both runs:
+`test/staging/sm/regress/regress-1507322-deep-weakmap.js`. Re-run alone with one worker at each run's
+commit, it timed out again each time ([`test262/rerun-timeouts.json`](test262/rerun-timeouts.json) and
+its log; the base's in sjl-0-001). The comparison replaced each row with its re-run, so these rows
+compare timed out against timed out.
+
+**The shell.** The run's shell was built at `b598028`. The after commit, `ef67693`, changes
+`PortableCompiler.cs`, its tests and the changelog, none of which the shell loads. Before the run
+ended, this section said that "the bundle will show the shell's binaries rebuilt at `ef67693` hashing
+the same". A plain rebuild cannot show that, because every first-party assembly carries its commit:
+the SDK's informational version (`+<commit>`), SourceLink's PDB identity, and in `BroilerJS.dll`
+Nerdbank.GitVersioning's version and commit id.
+[`test262/shell-rebuild/shell-rebuild.log`](test262/shell-rebuild/shell-rebuild.log), written by
+[`shell-rebuild.sh`](test262/shell-rebuild/shell-rebuild.sh), rebuilds the shell four times in the
+directory the run built it in:
+
+| Build | Result |
+|---|---|
+| `b598028`, as the run built it | all 39 binaries hash as the run's (`shell-binaries.sha256`) |
+| `ef67693`, as the run built it | the 16 first-party assemblies differ; `BroilerJS.dll` reads `+ef6769322b` |
+| `ef67693` and `b598028`, with the source-control queries off, so that neither is stamped with its commit | **all 39 hash alike** |
+
+So `ef67693` builds the run's shell exactly, except for the commit each assembly names. Two earlier
+attempts are retained beside the log, each with its script and log. The first pinned only the source
+revision and differed in the PDBs. The second left Nerdbank.GitVersioning on, and `BroilerJS.dll`
+alone differed.
+
+**A stopped run.** A first after run, at the cut-over commit `93df3fd`, started on 2026-10-12 and was
+stopped about eleven minutes into shard 0. The duplicate search had found `b598028`'s defect, and that
+run would have been taken without its fix. It reported no shard. What it left is retained in
+[`test262/stopped-at-93df3fd/`](test262/stopped-at-93df3fd/) and decides nothing.
 
 ## 6. The pristine consumer
 

@@ -1,0 +1,26 @@
+self-check start 2026-10-12T22:42:50Z
+self-check exit 0
+shard 0 start 2026-10-12T22:43:06Z
+shard 0 exit 1 2026-10-12T23:31:35Z
+shard 1 start 2026-10-12T23:31:35Z
+RESUMED 2026-10-13T04:41:48Z after a worker restart interrupted shard 1 at 23:36Z: same script, same binaries (shell-binaries.sha256 re-checked before the resume); shard 0 is kept, shard 1 runs again from its start; the interrupted shard's log is interrupted-shard-1.log
+self-check start 2026-10-13T04:41:48Z
+self-check exit 0
+shard 0 already done
+shard 1 start 2026-10-13T04:42:09Z
+shard 1 exit 1 2026-10-13T05:35:56Z
+shard 2 start 2026-10-13T05:35:56Z
+shard 2 exit 1 2026-10-13T06:33:12Z
+shard 3 start 2026-10-13T06:33:12Z
+shard 3 exit 1 2026-10-13T07:22:43Z
+shard 4 start 2026-10-13T07:22:43Z
+shard 4 exit 1 2026-10-13T08:04:54Z
+shard 5 start 2026-10-13T08:04:54Z
+shard 5 exit 1 2026-10-13T08:47:04Z
+shard 6 start 2026-10-13T08:47:04Z
+shard 6 exit 1 2026-10-13T09:30:20Z
+shard 7 start 2026-10-13T09:30:20Z
+shard 7 exit 1 2026-10-13T10:12:59Z
+(the machine restarted at about 10:21Z, during the driver's merge, which had started at shard 7's exit and wrote nothing; the merge below was run separately, by the same command, from 2026-10-13T10:23:03Z)
+merge exit 0 2026-10-13T10:47:05Z
+DONE
