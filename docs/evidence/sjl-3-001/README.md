@@ -11,9 +11,12 @@ unchanged at SJL-3.2 ([`rules-in-force.log`](rules-in-force.log)). **Collected b
 Broiler.JS maintainer; one person holds every role (the programme's EX-30, recorded in Broiler.VM).
 **Reviewer:** none, and nothing here has been read by anyone but its author.
 
-**State:** collection in progress. Each run is added as it is taken, and the table of section 2 says
-which have been; nothing here is a verdict until its section says so. Broiler.VM keeps its own bundle
-of the same name for its own half, judged by its own rule; neither bundle reads the other's runs.
+**State:** collected. Every run this bundle names is taken, and section 2's table says what each
+clause reads; clause 7's measurement half is void on this machine and stays open. Broiler.VM keeps its
+own bundle of the same name for its own half, judged by its own rule; neither bundle reads the
+other's runs. *(Revised 2026-10-13, when the last run was added. The paragraph began: "**State:**
+collection in progress. Each run is added as it is taken, and the table of section 2 says which have
+been; nothing here is a verdict until its section says so.")*
 
 ## 1. Identity
 
@@ -37,7 +40,7 @@ of the same name for its own half, judged by its own rule; neither bundle reads 
 | 4 | `Parser`, `Runtime` and `BuiltIns` reference the library; every member of the deletion list absent; every disposition applied | section 8; [`docs/public-api.md`](../../public-api.md) | the deletion list: **every member absent**; the references and dispositions are in the cut-over commit |
 | 5 | Test262 per path: no path passing at the base fails after; every improvement listed | section 5, [`test262/`](test262/) | **Met**: part A MET, no row of 96,720 changed |
 | 6 | Engine-level vectors pass; every correction in the changelog | section 4; [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md) | **Met**: no difference, four classified divergences SJL-14 answers |
-| 7 | The pristine consumer and package checks; the measurement meets its rule | sections 3, 6 and 7 | the consumers and package checks: **met**; the measurement pending, and void on this machine (section 7) |
+| 7 | The pristine consumer and package checks; the measurement meets its rule | sections 3, 6 and 7 | the consumers and package checks: **met**; the measurement **void** on this machine, so this half is open (section 7) |
 | 14 | Each adapter's review finds no algorithm; no intra-engine duplicate of the area survives | section 8 | **reviewed**: no algorithm in an adapter, and no duplicate after `ef67693` |
 
 ## 3. The home: the library at the after commit
@@ -135,11 +138,16 @@ JavaScript and printed its answer.
 
 ## 7. The measurement sub-bundle (rule part B)
 
-Pending, and **void on this machine whatever its figures**: part B judges only a controlled lane, and
-this container is not one ([`Measurement.md`](../../roadmap/Measurement.md), "Controlled lanes and
-effective configuration"), so clause 7's measurement half stays open until a controlled lane runs it.
-The runs are still taken, three arms rotated, for what the condition and the configuration checks
-show.
+**Void, as this section said before the run it would be: clause 7's measurement half stays open.**
+Part B judges only a controlled lane, and this container is not one
+([`Measurement.md`](../../roadmap/Measurement.md), "Controlled lanes and effective configuration").
+[`measurement/`](measurement/README.md) holds the run anyway: three arms rotated, seven repetitions,
+taken on 2026-10-13 from 12:53 to 14:24 on the otherwise idle machine. Clauses 2 to 4 hold on it:
+every answer and configuration check equals arm B's first, all 21 runs completed all six workloads,
+and none reports issues. Clause 5's arithmetic holds for `ToString` and `ToNumber` and **does not
+for `Literals`**, where A is slower than B by more than the A/A difference. The sub-bundle's README
+gives the figures and reads them as smoke: no claim, and the first thing a controlled lane should
+look at.
 
 ## 8. The simplification check (SJL-3.7)
 
