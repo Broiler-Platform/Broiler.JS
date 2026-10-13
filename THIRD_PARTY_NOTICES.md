@@ -53,7 +53,11 @@ contain two pieces of third-party code, named below, and no data:
   `JSNumberPrototype.DecimalToArbitrarySystem` is a **Stack Overflow answer** its comment links
   (question 923771), Copyright 2012 Pavel Vladov, under the Creative Commons Attribution-ShareAlike 3.0
   licence. Since milestone SJL-3.5 that copy is the only one in this repository: the engine's own
-  method forwards to the shared library.
+  method forwards to the shared library. The project also holds, under `ReferenceArms/Numerics/`, the
+  reference arms of bundle `docs/evidence/sjl-4-001`: test-only copies of both engines' numerics code
+  at their SJL-3 merges, held and retired the same way. Arm J is this engine's code, as above; arm V is
+  Broiler.VM's, under the same licence and by the same contributors. Neither copies fdlibm or any
+  other third-party code.
 
 Code that later moves into a shared library records its origin unit by unit, and code whose licence
 is share-alike or unclear is rewritten from the specification rather than moved (the programme's
@@ -71,4 +75,6 @@ the section's second sentence read "They contain one piece of third-party code, 
 data:"; the first bullet read "holds the contract types and the number-conversion area written for the
 shared libraries programme" and ended "Its one third-party component is **Ryu**, below."; the bullet on
 the code ported from Broiler.VM ended at "from `JsParser.TryBigIntValue`)."; and the bullet on fdlibm
-was added.
+was added. Revised again the same day, later in milestone SJL-4.3: the bullet on
+`Broiler.ECMAScript.Algorithms.Tests` ended at "the engine's own method forwards to the shared
+library.", and its last three sentences, on bundle `sjl-4-001`'s arms, were added.
