@@ -154,6 +154,20 @@ engine to:
 - **A BigInt past any representation is a `RangeError`**, as decision SJL-D-15 (a) has it, never a .NET
   exception or a wrong value.
 
+**The first runs (SJL-4.2), 2026-10-13.** Each engine's first engine-level run on revision 6 is
+classified at revision 7, and both engines then classify every vector. SJL-4.5 answers every one of
+this engine's differences: as corrections listed in `CHANGELOG.md`, BigInt powers past a 32-bit
+exponent, `asUintN` at very large widths, BigInt property keys beyond 2^32 - 1, `1 ** NaN` and the
+cases of 1 to an infinity, `expm1` and `log1p` beyond any approximation, and a hexadecimal
+`StringToBigInt` whose time grows with the square of its digits; and, by the library's bounds, `cbrt`,
+`hypot` and the rest of `expm1` and `log1p`. Four differences between
+the engines were not in the area verdict's classification, which fires the verdict's first falsifier;
+Broiler.VM's `JSD-0068` (`Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0068-the-numerics-vectors-find-what-x2-did-not-classify.md`)
+classifies them and keeps the verdict. For this engine it corrects one reading above, that the cases of
+1 to an infinity are wrong "on the compiled fast paths": `1 ** Infinity` written as literals is 1 here
+too, and SJL-4.5 corrects every path. It also refutes the verdict's reading that the library adopts this
+engine's `expm1`, which is not accurate across the range: the library implements its own.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
