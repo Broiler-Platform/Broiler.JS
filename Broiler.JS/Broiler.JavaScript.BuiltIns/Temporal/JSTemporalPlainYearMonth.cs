@@ -504,21 +504,13 @@ public partial class JSTemporalPlainYearMonth : JSObject
     private static int ToIntegerWithTruncation(JSValue value)
     {
         if (value == null || value.IsUndefined) return 0;
-        var number = value.DoubleValue;
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            throw JSEngine.NewRangeError("Temporal.PlainYearMonth: component must be finite");
-        return (int)Math.Truncate(number);
+        return (int)TemporalRoundingOptions.ToIntegerWithTruncation(value, "Temporal.PlainYearMonth: component must be finite");
     }
 
     // The constructor's required isoYear/isoMonth arguments are coerced with ToNumber first, so an
     // absent / undefined argument (NaN) is a RangeError rather than silently defaulting to 0.
     private static int ToIntegerWithTruncationArgument(JSValue value)
-    {
-        var number = value == null ? double.NaN : value.DoubleValue;
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            throw JSEngine.NewRangeError("Temporal.PlainYearMonth: component must be finite");
-        return (int)Math.Truncate(number);
-    }
+        => (int)TemporalRoundingOptions.ToIntegerWithTruncation(value ?? JSUndefined.Value, "Temporal.PlainYearMonth: component must be finite");
 
     // ToPositiveIntegerWithTruncation: the `month` field must be a positive integer (≥ 1) regardless
     // of the overflow option — only the upper bound is subject to constrain/reject.

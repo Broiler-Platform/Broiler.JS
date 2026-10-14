@@ -1,5 +1,6 @@
 ﻿using Broiler.JavaScript.BuiltIns.RegExp;
 using System;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Symbol;
@@ -145,7 +146,7 @@ public partial class JSString
         // returned -1 \u2014 "not found" for a string that is always found.
         var start = double.IsNaN(fromIndex)
             ? length
-            : fromIndex <= 0 ? 0 : fromIndex >= length ? length : (int)fromIndex;
+            : Clamp(IntegerConversions.ToIntegerOrInfinity(fromIndex), length);
 
         // StringLastIndexOf: the largest k <= start with k + searchLength <= length that matches.
         var lastPossible = Math.Min(start, length - search.Length);

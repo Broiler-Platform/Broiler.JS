@@ -42,7 +42,7 @@ public partial class JSDate
 
         try
         {
-            value = date.AddDays(-date.Day + diffValue);
+            value = date.AddDays(-date.Day + IntegerComponent(diffValue));
         }
         catch (ArgumentOutOfRangeException)
         {
@@ -80,7 +80,7 @@ public partial class JSDate
                 || double.IsNaN(dv) || double.IsInfinity(dv))
                 return new JSNumber(SetTimeValue(double.NaN));
 
-            double newDate = JSDateMath.MakeDate(JSDateMath.MakeDay(Math.Truncate(year), Math.Truncate(mv), Math.Truncate(dv)), JSDateMath.TimeWithinDay(t));
+            double newDate = JSDateMath.MakeDate(JSDateMath.MakeDay(year, mv, dv), JSDateMath.TimeWithinDay(t));
             return new JSNumber(SetTimeValue(JSDateMath.TimeClip(JSDateMath.UTC(newDate))));
         }
 
@@ -126,17 +126,18 @@ public partial class JSDate
             || (dayGiven && !double.IsFinite(dayCoerced)))
             return new JSNumber(SetTimeValue(double.NaN));
 
+        var yearInteger = IntegerComponent(year);
         var month = monthGiven ? IntegerComponent(monthCoerced) : curMonth0;
         var day = dayGiven ? IntegerComponent(dayCoerced) : curDay;
 
         // For years that .NET DateTimeOffset can handle (1–9999), use the fast path.
-        if (year >= 1 && year <= 9999)
+        if (yearInteger >= 1 && yearInteger <= 9999)
         {
             rawTimeMs = double.NaN; // clear any raw override
 
             try
             {
-                date = new DateTimeOffset((int)year, 1, 1, curHour, curMin, curSec, curMs, value.Offset);
+                date = new DateTimeOffset((int)yearInteger, 1, 1, curHour, curMin, curSec, curMs, value.Offset);
                 // Apply the month offset before the day offset: ECMAScript MakeDay
                 // resolves the (year, month) to the first of that month and then adds
                 // (date - 1) days, so day overflow rolls into the next month. Doing
@@ -161,7 +162,7 @@ public partial class JSDate
         // For year 0 or negative years, use ECMAScript date math directly.
         // This handles the proleptic Gregorian calendar correctly.
         double timeWithinDay = JSDateMath.MakeTime(curHour, curMin, curSec, curMs);
-        double dayValue = JSDateMath.MakeDay(Math.Truncate(year), month, day);
+        double dayValue = JSDateMath.MakeDay(yearInteger, month, day);
         double utcMs = JSDateMath.UTC(JSDateMath.MakeDate(dayValue, timeWithinDay));
         double result = JSDateMath.TimeClip(utcMs);
 
@@ -227,7 +228,7 @@ public partial class JSDate
         try
         {
             date = new DateTimeOffset(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second, 0, date.Offset);
-            date = date.AddMilliseconds(_millis);
+            date = date.AddMilliseconds(IntegerComponent(_millis));
             value = date;
         }
         catch (ArgumentOutOfRangeException)
@@ -385,7 +386,8 @@ public partial class JSDate
             return JSNumber.NaN;
         }
 
-        var year = (long)Math.Truncate(yearValue);
+        // MakeFullYear: the two-digit test is on the year's ToIntegerOrInfinity.
+        var year = IntegerComponent(yearValue);
         if (year >= 0 && year <= 99)
             year += 1900;
 
@@ -430,7 +432,7 @@ public partial class JSDate
             var offset = date.Offset;
             var utc = date.ToUniversalTime();
 
-            utc = utc.AddDays(-utc.Day + _date);
+            utc = utc.AddDays(-utc.Day + IntegerComponent(_date));
             value = utc.ToOffset(offset);
         }
         catch (ArgumentOutOfRangeException)
@@ -473,9 +475,9 @@ public partial class JSDate
             return new JSNumber(SetTimeValue(double.NaN));
         }
 
-        // Pass the truncated-but-full-magnitude doubles to MakeDay (which guards the
-        // out-of-range case); a (long) cast would wrap a huge year such as MAX_VALUE.
-        double newDay = JSDateMath.MakeDay(Math.Truncate(yearValue), Math.Truncate(monthValue), Math.Truncate(dayValue));
+        // Pass the full-magnitude doubles to MakeDay, which takes their ToIntegerOrInfinity and
+        // guards the out-of-range case; a (long) cast would wrap a huge year such as MAX_VALUE.
+        double newDay = JSDateMath.MakeDay(yearValue, monthValue, dayValue);
         double newDate = JSDateMath.MakeDate(newDay, JSDateMath.TimeWithinDay(t));
         return new JSNumber(SetTimeValue(JSDateMath.TimeClip(newDate)));
     }
@@ -530,7 +532,7 @@ public partial class JSDate
         try
         {
             utc = new DateTimeOffset(utc.Year, utc.Month, utc.Day, utc.Hour, utc.Minute, utc.Second, 0, utc.Offset);
-            utc = utc.AddMilliseconds(_millis);
+            utc = utc.AddMilliseconds(IntegerComponent(_millis));
 
             value = utc.ToOffset(offset);
         }

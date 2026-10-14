@@ -37,8 +37,6 @@ public delegate JSValue JsonParserReceiverWithSource((JSObject holder, string ke
 [JSClassGenerator("JSON"), JSInternalObject]
 public partial class JSJSON : JSObject
 {
-    private const double MaxArrayLikeLength = 9007199254740991d;
-
     private sealed class JSObjectReferenceComparer : IEqualityComparer<JSObject>
     {
         internal static readonly JSObjectReferenceComparer Instance = new();
@@ -461,12 +459,12 @@ public partial class JSJSON : JSObject
 
                 if (space.IsNumber)
                 {
-                    // step 6.a: space = min(10, ToIntegerOrInfinity(space)); step 6.b:
-                    // a gap shorter than one space yields the empty String (compact output).
-                    var n = space.DoubleValue;
-                    var count = double.IsNaN(n) ? 0 : (int)Math.Min(10, Math.Truncate(n));
+                    // step 6.a: space = min(10, ToIntegerOrInfinity(space)), the shared library's
+                    // (SJL-4.5); step 6.b: a gap shorter than one space yields the empty String
+                    // (compact output).
+                    var count = Math.Min(10, IntegerConversions.ToIntegerOrInfinity(space.DoubleValue));
                     if (count >= 1)
-                        indent = new string(' ', count);
+                        indent = new string(' ', (int)count);
                 }
                 else if (space.IsString)
                 {

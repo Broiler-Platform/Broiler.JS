@@ -75,7 +75,8 @@ public partial class JSString
         var rawObject = raw as JSObject ?? JSObject.CreatePrimitiveObject(raw) as JSObject
             ?? throw new InvalidOperationException("CreatePrimitiveObject returned a non-object value.");
 
-        var len = rawObject.Length;
+        // literalCount = LengthOfArrayLike(literals), whose ToLength is the shared library's (SJL-4.5).
+        var len = JSObject.LengthOfArrayLike(rawObject);
         if (len <= 0)
             return new JSString(string.Empty);
 

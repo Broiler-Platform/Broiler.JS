@@ -1,4 +1,5 @@
 using System;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
@@ -218,17 +219,11 @@ public partial class JSShadowRealm : JSObject
             JSEngine.CurrentContext = outer;
         }
 
+        // CopyNameAndLength step 3.b: max(ToIntegerOrInfinity(targetLen), 0), the shared library's
+        // ToIntegerOrInfinity (SJL-4.5), which keeps +∞ and takes -∞ and NaN to 0 as the clause does.
         double length = 0;
         if (lengthValue.IsNumber)
-        {
-            var d = lengthValue.DoubleValue;
-            if (double.IsPositiveInfinity(d))
-                length = double.PositiveInfinity;
-            else if (double.IsNegativeInfinity(d) || double.IsNaN(d))
-                length = 0;
-            else
-                length = Math.Max(Math.Truncate(d), 0);
-        }
+            length = Math.Max(IntegerConversions.ToIntegerOrInfinity(lengthValue.DoubleValue), 0);
 
         var name = nameValue.IsString ? nameValue.StringValue : string.Empty;
 

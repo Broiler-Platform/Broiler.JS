@@ -1,3 +1,4 @@
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
@@ -145,7 +146,11 @@ public partial class JSSet : JSObject
         var numSize = sizeValue.DoubleValue;
         if (double.IsNaN(numSize))
             throw JSEngine.NewTypeError($"Set.prototype.{methodName} requires a Set or set-like object argument");
-        if (numSize < 0)
+
+        // intSize = ToIntegerOrInfinity(numSize), the shared library's (SJL-4.5); the sign test is
+        // intSize's, so a size in (-1, 0) is 0 rather than a RangeError.
+        var intSize = IntegerConversions.ToIntegerOrInfinity(numSize);
+        if (intSize < 0)
             throw JSEngine.NewRangeError($"Set.prototype.{methodName} requires the set-like object's size to be non-negative");
 
         var hasMethod = other["has"];
@@ -157,7 +162,7 @@ public partial class JSSet : JSObject
             throw JSEngine.NewTypeError($"Set.prototype.{methodName} requires a Set or set-like object argument");
 
         return new SetLikeRecord(
-            double.IsPositiveInfinity(numSize) ? int.MaxValue : (int)numSize,
+            intSize >= int.MaxValue ? int.MaxValue : (int)intSize,
             value => hasMethod.Call(other, value).BooleanValue,
             () =>
             {

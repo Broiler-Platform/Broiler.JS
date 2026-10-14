@@ -487,11 +487,7 @@ public partial class JSTemporalPlainDate : JSObject
         if (value == null || value.IsUndefined)
             return 0;
 
-        var number = value.DoubleValue; // ToNumber (throws TypeError for BigInt/Symbol)
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            throw JSEngine.NewRangeError("Temporal.PlainDate: date component must be finite");
-
-        return (int)Math.Truncate(number);
+        return (int)TemporalRoundingOptions.ToIntegerWithTruncation(value, "Temporal.PlainDate: date component must be finite");
     }
 
     // The PlainDate constructor's positional arguments are required: each is coerced with
@@ -499,13 +495,7 @@ public partial class JSTemporalPlainDate : JSObject
     // a non-numeric string — is a RangeError rather than silently defaulting to 0. (The field-bag
     // overload above keeps the undefined→0 shortcut for optional fields.)
     private static int ToIntegerWithTruncationArgument(JSValue value)
-    {
-        var number = value == null ? double.NaN : value.DoubleValue; // ToNumber (TypeError for BigInt/Symbol)
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            throw JSEngine.NewRangeError("Temporal.PlainDate: date component must be finite");
-
-        return (int)Math.Truncate(number);
-    }
+        => (int)TemporalRoundingOptions.ToIntegerWithTruncation(value ?? JSUndefined.Value, "Temporal.PlainDate: date component must be finite");
 
     // Resolves a calendar argument to a canonical id. A missing calendar defaults to iso8601;
     // anything else is a calendar-identifier String (a non-String is a TypeError, an unknown

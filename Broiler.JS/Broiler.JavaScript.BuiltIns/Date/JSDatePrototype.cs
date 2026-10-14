@@ -131,12 +131,12 @@ public partial class JSDate
             return;
         }
 
-        // ToIntegerOrInfinity (truncate toward zero), NOT ToUint32 — the latter's
-        // modulo-2^32 reduction wraps a huge year such as Number.MAX_VALUE into range
+        // ToIntegerOrInfinity (the shared library's, through IntegerComponent), NOT ToUint32 — the
+        // latter's modulo-2^32 reduction wraps a huge year such as Number.MAX_VALUE into range
         // (MAX_VALUE mod 2^32 == 0 → year 1900) so the DateTimeOffset fast path below
         // would succeed with the wrong year instead of producing NaN.
-        double yearD = Math.Truncate(yD), monthD = Math.Truncate(moD), dayD = Math.Truncate(dD),
-            hoursD = Math.Truncate(hD), minutesD = Math.Truncate(miD), secondsD = Math.Truncate(sD), millisD = Math.Truncate(msD);
+        double yearD = IntegerComponent(yD), monthD = IntegerComponent(moD), dayD = IntegerComponent(dD),
+            hoursD = IntegerComponent(hD), minutesD = IntegerComponent(miD), secondsD = IntegerComponent(sD), millisD = IntegerComponent(msD);
         yearD = yearD >= 0 && yearD < 100 ? yearD + 1900 : yearD;
 
         // A component too large to reduce losslessly to a 32-bit int cannot use the

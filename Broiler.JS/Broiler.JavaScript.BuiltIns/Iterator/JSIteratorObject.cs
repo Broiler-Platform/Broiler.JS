@@ -1,4 +1,5 @@
 using System;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Function;
@@ -599,14 +600,15 @@ public partial class JSIteratorObject : JSObject
         try
         {
             // Iterator.prototype.{take,drop}: ToNumber(limit) — a NaN limit is a RangeError. Otherwise
-            // ToIntegerOrInfinity truncates toward zero *before* the sign check, so a value in (-1, 0]
-            // such as -0.9 or -0 becomes 0 (valid) rather than being rejected as negative. A strictly
-            // negative integer is a RangeError; +∞ means "no limit", clamped here to int.MaxValue.
+            // ToIntegerOrInfinity (the shared library's, SJL-4.5) truncates toward zero *before* the
+            // sign check, so a value in (-1, 0] such as -0.9 or -0 becomes 0 (valid) rather than being
+            // rejected as negative. A strictly negative integer is a RangeError; +∞ means "no limit",
+            // clamped here to int.MaxValue.
             var number = limitValue.DoubleValue;
             if (double.IsNaN(number))
                 throw JSEngine.NewRangeError($"{methodName} requires a non-negative number");
 
-            var integer = Math.Truncate(number);
+            var integer = IntegerConversions.ToIntegerOrInfinity(number);
             if (integer < 0)
                 throw JSEngine.NewRangeError($"{methodName} requires a non-negative number");
 

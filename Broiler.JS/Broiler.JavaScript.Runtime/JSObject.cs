@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.ExpressionCompiler;
+﻿using Broiler.ECMAScript.Numbers;
+using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Storage;
 using System;
 using System.Collections.Generic;
@@ -754,6 +755,19 @@ public partial class JSObject : JSValue
             ownp.Put(KeyStrings.length, CreateNumber(value));
             PropertyChanged?.Invoke(this, (KeyStrings.length.Key, uint.MaxValue, null));
         }
+    }
+
+    // LengthOfArrayLike (§7.3.18): ToLength(? Get(obj, "length")), with the shared library's ToLength
+    // (SJL-4.5). Length above is not that operation (it reads an own "length" only, and wraps one of
+    // 2^31 or more), so the specification's callers, CreateListFromArrayLike and String.raw, use this;
+    // a length past what this engine's int-indexed lists hold is a RangeError, not a shorter list.
+    internal static int LengthOfArrayLike(JSObject obj)
+    {
+        var length = IntegerConversions.ToLength(obj[KeyStrings.length].DoubleValue);
+        if (length > int.MaxValue)
+            throw NewRangeError("Invalid array-like length");
+
+        return (int)length;
     }
 
     private JSValue ToPrimitive(bool preferString)

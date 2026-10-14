@@ -79,17 +79,25 @@ internal static class TemporalRoundingOptions
         return mode;
     }
 
+    // ToIntegerWithTruncation (Temporal): ToNumber (a Symbol or a BigInt raises the TypeError), a
+    // RangeError with the caller's message for NaN and the infinities, then ToIntegerOrInfinity, the
+    // shared library's (SJL-4.5). Each caller keeps its own narrowing of the integer.
+    internal static double ToIntegerWithTruncation(JSValue value, string message)
+    {
+        var number = value.DoubleValue;
+        if (double.IsNaN(number) || double.IsInfinity(number))
+            throw JSEngine.NewRangeError(message);
+
+        return IntegerConversions.ToIntegerOrInfinity(number);
+    }
+
     // GetRoundingIncrementOption: ToIntegerWithTruncation, then a 1 … 10^9 range check.
     internal static int GetRoundingIncrement(JSObject options)
     {
         var v = options[KeyStrings.GetOrCreate("roundingIncrement")];
         if (v.IsUndefined) return 1;
 
-        var n = v.DoubleValue; // ToNumber: a Symbol raises a TypeError here.
-        if (double.IsNaN(n) || double.IsInfinity(n))
-            throw JSEngine.NewRangeError("Temporal: roundingIncrement must be a finite number");
-
-        var increment = Math.Truncate(n);
+        var increment = ToIntegerWithTruncation(v, "Temporal: roundingIncrement must be a finite number");
         if (increment < 1 || increment > 1_000_000_000)
             throw JSEngine.NewRangeError("Temporal: roundingIncrement out of range");
         return (int)increment;

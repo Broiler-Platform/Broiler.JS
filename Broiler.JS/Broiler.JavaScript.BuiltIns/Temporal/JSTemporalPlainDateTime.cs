@@ -755,10 +755,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     {
         if (value == null || value.IsUndefined)
             return 0;
-        var number = value.DoubleValue;
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            throw JSEngine.NewRangeError("Temporal.PlainDateTime: component must be finite");
-        return (int)Math.Truncate(number);
+        return (int)TemporalRoundingOptions.ToIntegerWithTruncation(value, "Temporal.PlainDateTime: component must be finite");
     }
 
     // The constructor's required date arguments (isoYear/isoMonth/isoDay) are coerced with
@@ -766,12 +763,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     // RangeError rather than silently defaulting to 0 (which is only correct for the optional time
     // components handled by the overload above).
     private static int ToIntegerWithTruncationArgument(JSValue value)
-    {
-        var number = value == null ? double.NaN : value.DoubleValue;
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            throw JSEngine.NewRangeError("Temporal.PlainDateTime: component must be finite");
-        return (int)Math.Truncate(number);
-    }
+        => (int)TemporalRoundingOptions.ToIntegerWithTruncation(value ?? JSUndefined.Value, "Temporal.PlainDateTime: component must be finite");
 
     private static string CanonicalizeCalendar(JSValue calendar)
     {

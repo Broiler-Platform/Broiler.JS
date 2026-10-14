@@ -70,8 +70,6 @@ public class BinaryOperation : SwitchExpression
 {
     public static Expression Assign(Expression left, Expression right, TokenTypes assignmentOperator)
     {
-        var oneF = Expression.Constant(0x1F);
-
         switch (assignmentOperator)
         {
             case TokenTypes.Assign:
@@ -81,16 +79,6 @@ public class BinaryOperation : SwitchExpression
                 return Assign(left, JSValueBuilder.Add(left, right));
         }
 
-        var leftDouble = JSValueBuilder.DoubleValue(left);
-        var rightDouble = JSValueBuilder.DoubleValue(right);
-
-        var leftInt = JSValueBuilder.IntValue(left);
-        var rightInt = JSValueBuilder.IntValue(right);
-
-        var leftUInt = Expression.Convert(leftDouble, typeof(uint));
-        var rightUInt = Expression.Convert(rightDouble, typeof(uint));
-
-        // convert to double...
         return assignmentOperator switch
         {
             TokenTypes.AssignSubtract => Assign(left, JSValueBuilder.Subtract(left, right)),
