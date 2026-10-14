@@ -34,6 +34,15 @@ arm's result, the reference, the class and the reason; a field longer than 256 c
 length. report.md gives per operation, variant, class and reason the count and the first --examples
 differences in full. classification.json gives the counts and the SHA-256 of both listings' uncompressed
 text.
+
+Revised 2026-10-14, after the first judged run and before the run that judges, because this script could not
+read the comparison's own listing of a long field. The comparison writes a field longer than 4,096 characters
+as `len:<length>:sha256:<digest>`, its UTF-16 length and the SHA-256 of its UTF-8 text. This script had read
+such an input as no input ("the input was shortened in the listing", unclassified), and compared such a
+result of S with the reference's full text, which never matched ("S is not the reference's", class (c)).
+Now a shortened input is read from the population's file at its line, and is used only when its length and
+digest are the listed ones. A shortened result is compared with the reference shortened the same way.
+Nothing else changed. bundle sjl-5-001's reference-arms-run/README.md section 5 gives the first run's counts.
 """
 
 from __future__ import annotations
@@ -121,9 +130,26 @@ def json_structure(value: T.JsonValue) -> str:
     return "{" + ",".join(string(k) + ":" + json_structure(v) for k, v in ordered) + "}"
 
 
+def is_shortened(listed: str) -> bool:
+    return listed.startswith("len:") and ":sha256:" in listed
+
+
 def field(listed: str) -> str | None:
     """A listed field's text, or None when the comparison shortened it to its length and digest."""
-    return None if listed.startswith("len:") and ":sha256:" in listed else unescape(listed)
+    return None if is_shortened(listed) else unescape(listed)
+
+
+def shortened(text: str) -> str:
+    """A text as the comparison lists it when it is longer than its listing length: the length in UTF-16 code
+    units and the SHA-256 of the UTF-8 text, a lone surrogate written as U+FFFD, as .NET's encoder writes it."""
+    units = len(text.encode("utf-16-le", "surrogatepass")) // 2
+    data = text.encode("utf-16-le", "surrogatepass").decode("utf-16-le", "replace").encode("utf-8")
+    return f"len:{units}:sha256:{hashlib.sha256(data).hexdigest()}"
+
+
+def agrees(listed_value: str, ref: str) -> bool:
+    """Whether a listed result is the reference's, reading a shortened result against the reference shortened alike."""
+    return listed_value == (shortened(ref) if is_shortened(listed_value) else ref)
 
 
 def charged(listed: str) -> tuple[str, str | None]:
@@ -149,6 +175,14 @@ class Inputs:
             with gzip.open(population / f"{name}.txt.gz", "rt", encoding="utf-8", newline="\n") as stream:
                 return stream.read().split("\n")[:-1]
         self.fillers = [unescape(line) for line in lines("P1F")]
+        self.lines = lines
+        self.classes: dict[str, list[str]] = {}
+
+    def line(self, cls: str, number: int) -> str:
+        """A population line as the comparison read it, for an input it listed shortened."""
+        if cls not in self.classes:
+            self.classes[cls] = self.lines(cls)
+        return self.classes[cls][number]
 
     def text(self, cls: str, raw: str) -> str:
         if cls == "U1C":
@@ -294,15 +328,18 @@ def row_of(operation: str, variant: str, text: str, detail: str, arm_value: str,
 
 
 def classify(row: list[str], inputs: Inputs) -> tuple[str, str, str]:
-    operation, cls, _line, detail_listed, raw_listed, variant, s_listed, arm_listed = row
+    operation, cls, line, detail_listed, raw_listed, variant, s_listed, arm_listed = row
     detail = field(detail_listed) or detail_listed
     raw = field(raw_listed)
+    if raw is None:
+        candidate = inputs.line(cls, int(line))
+        raw = candidate if shortened(candidate) == raw_listed else None
     if variant.startswith("S:"):
         return "(c)", "S under another maximum length differs from S under arm J's policy", "-"
     s_value, s_charge = charged(s_listed)
     arm_value, arm_charge = charged(arm_listed)
     if raw is None:
-        return "unclassified", "the input was shortened in the listing", "-"
+        return "unclassified", "the listed input is not the population's line", "-"
     if s_value == arm_value and s_charge != arm_charge:
         return "unclassified", f"charges differ: S {s_charge}, arm {arm_charge}", "-"
     text = raw if operation in ("RelativeIndex", "JSON gap", "ToBase64", "ToHex") else inputs.text(cls, raw)
@@ -312,11 +349,11 @@ def classify(row: list[str], inputs: Inputs) -> tuple[str, str, str]:
         return "unclassified", f"the reference cannot judge the input: {type(exception).__name__}", "-"
     if ref is None:
         return "unclassified", "no reference for the operation", "-"
-    if s_value == ref and arm_value != ref:
+    if agrees(s_value, ref) and not agrees(arm_value, ref):
         arm = variant.split(":", 1)[0]
         engine = "Broiler.VM" if arm == "V" else "Broiler.JS"
         return "(a)", f"correction of {engine}: S is the reference's; " + row_of(operation, variant, text, detail, arm_value, ref), ref
-    if s_value != ref:
+    if not agrees(s_value, ref):
         return "(c)", "S is not the reference's", ref
     return "unclassified", "S and the arm are both the reference's, yet differ", ref
 
