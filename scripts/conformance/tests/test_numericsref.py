@@ -3,6 +3,7 @@ from __future__ import annotations
 from fractions import Fraction
 from pathlib import Path
 import math
+import platform
 import random
 import struct
 import sys
@@ -30,6 +31,15 @@ def double(pattern: int) -> float:
 
 def magnitude_distance(a: int, b: int) -> int:
     return abs((a & ~R.SIGN_BIT) - (b & ~R.SIGN_BIT))
+
+
+# How far the platform's C library may be from a correctly rounded result. glibc documents expm1,
+# log1p and pow within one unit in the last place and cbrt within a few; other C libraries document
+# no bound, and the Windows runtime's expm1 is two units off at 1.46e-15. Off glibc the cross-check
+# is coarser, and still refuses a reference that is wrong rather than misrounded.
+GLIBC = platform.libc_ver()[0] == "glibc"
+LIBM_ULPS = 1 if GLIBC else 8
+CBRT_ULPS = 3 if GLIBC else 8
 
 
 class FormatTests(unittest.TestCase):
@@ -148,17 +158,17 @@ class MathTests(unittest.TestCase):
         self.assertEqual(R.POSITIVE_INFINITY, N.hypot([R.MAX_FINITE, R.MAX_FINITE]).correct)
 
     def test_transcendental_functions_are_within_the_c_library_s_error(self) -> None:
-        # The C library promises about one unit in the last place; the reference is correctly rounded,
-        # so the two differ by a unit at most (cbrt: a few units, which glibc's error reaches).
+        # The reference is correctly rounded, so the two differ by the C library's error at most: a unit
+        # in the last place under glibc (cbrt: a few), and the coarser LIBM_ULPS elsewhere.
         rng = random.Random(0x534A4C36)
         for _ in range(1500):
             x = rng.uniform(-50, 50) * 10.0 ** rng.randint(-20, 1)
-            self.assertLessEqual(magnitude_distance(N.expm1(bits(x)).correct, bits(math.expm1(x))), 1, x)
-            self.assertLessEqual(magnitude_distance(N.log1p(bits(abs(x))).correct, bits(math.log1p(abs(x)))), 1, x)
-            self.assertLessEqual(magnitude_distance(N.cbrt(bits(x)).correct, bits(math.cbrt(x))), 3, x)
+            self.assertLessEqual(magnitude_distance(N.expm1(bits(x)).correct, bits(math.expm1(x))), LIBM_ULPS, x)
+            self.assertLessEqual(magnitude_distance(N.log1p(bits(abs(x))).correct, bits(math.log1p(abs(x)))), LIBM_ULPS, x)
+            self.assertLessEqual(magnitude_distance(N.cbrt(bits(x)).correct, bits(math.cbrt(x))), CBRT_ULPS, x)
             y = rng.uniform(-30, 30)
             self.assertLessEqual(magnitude_distance(N.exponentiate(bits(abs(x) + 0.01), bits(y)).correct,
-                                                    bits(math.pow(abs(x) + 0.01, y))), 1, (x, y))
+                                                    bits(math.pow(abs(x) + 0.01, y))), LIBM_ULPS, (x, y))
 
     def test_cube_roots_bracket_their_value(self) -> None:
         rng = random.Random(0x534A4C37)
