@@ -291,13 +291,15 @@ before SJL-3 is met, which the programme's ledger records. This repository's par
 need and this engine's validator refused. No text vector carries a `per-engine.broiler-js` expectation:
 the only results the area leaves to the implementation are the two pads at Broiler.VM's string ceiling,
 which hold that engine's. Each engine's first engine-level run on revision 11 is classified at revision
-12, and both engines then classify every vector. This engine's 42 differences confirm the rows of the
+12, and both engines then classify every vector. This engine's differences confirm the rows of the
 correspondence listed above, B1 to B4, J1 to J3, J6, J7, P5, S2 and S3, and SJL-5.5 answers each of them.
 They refute J4 (above). P4, X1 and X2 have no vector: the vectors pad no further than 2^24 + 1 and test
 neither `split` nor string search. J5's three vectors match because the run was on Linux, whose line
-ending is LF. Broiler.VM's five differences are its rows P1, P2 and
-S1, which SJL-5.4 answers. Every difference the runs found is one the area verdict classified, so its
-falsifier does not fire. The runs are retained in [`sjl-5-001/engine/`](../evidence/sjl-5-001/engine/).
+ending is LF. Broiler.VM's differences are its rows P1, P2 and S1, which SJL-5.4 answers. Every
+difference the runs found is one the area verdict classified, so its falsifier does not fire. The runs are
+retained in [`sjl-5-001/engine/`](../evidence/sjl-5-001/engine/). *(Revised 2026-10-14: the paragraph
+gave the number of differences each engine's run found, which this plan does not hold; the bundle and
+`conformance/vectors/REVISIONS.md` give them.)*
 
 ## Invariants
 
