@@ -1,0 +1,53 @@
+# SJL-4.6 search for a surviving intra-engine duplicate of the numerics area, Broiler.JS at 2e0f88573d1ccc481126db867a534bbda0699d8f:
+# every construct that approximates a Math function the shared library computes, converts binary16
+# or a BigInt by the platform, rounds by a mode spelled as a string or by the platform's midpoint
+# rule, or writes the 32-bit wrap out, in the engine's product sources (Broiler.JS/, test projects,
+# benchmarks and samples excluded).
+# pattern: Math\.(Pow|Cbrt|Round|Truncate)\(|double\.(ExpM1|LogP1)|\(Half\)|\bHalf\.|BitConverter\.(HalfToUInt16Bits|UInt16BitsToHalf)|MidpointRounding|"half(Expand|Even|Trunc|Ceil|Floor)"|BigInteger\.(Pow|Parse|TryParse)\(|4294967296|unchecked\(\(int\)\(uint\)
+# hits: 45; each is reviewed in the bundle's README
+
+Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/JSTypedArray.cs:614:            || Math.Truncate(numericIndex) != numericIndex)
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:77:            if (!double.IsFinite(number.value) || Math.Truncate(number.value) != number.value)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2291:        // GetOption(options, "roundingMode", string, « the nine names », "halfExpand"): the property
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2295:        var roundingModeName = roundingModeValue.IsUndefined ? "halfExpand" : roundingModeValue.StringValue;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:3702:        return ns / Math.Pow(10, exponent);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:3720:        var scale = BigInteger.Pow(10, exponent);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:3834:            if (double.IsNaN(numericValue) || double.IsInfinity(numericValue) || Math.Truncate(numericValue) != numericValue)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:3855:        const double twoPow32 = 4294967296d; // 2^32
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4752:    public string RoundingModeName { get; set; } = "halfExpand";
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4968:        var n = digits.Length == 0 ? BigInteger.Zero : BigInteger.Parse(digits, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4971:            num = n * BigInteger.Pow(10, e10);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4975:            den = BigInteger.Pow(10, -e10);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5185:        // (9.99 -> 10 in scientific, 999.9 -> 1000 in engineering, under "halfExpand"). Whether it does
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5212:            den *= BigInteger.Pow(10, exponent);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5214:            num *= BigInteger.Pow(10, -exponent);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5319:                    reduced = absX / Math.Pow(10, exp);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5321:                    den *= BigInteger.Pow(10, exp);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5365:        if (Math.Pow(10, m) > v)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5367:        else if (Math.Pow(10, m + 1) <= v)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5420:    // ("halfExpand" when absent) and the value's sign. The engine's own UnsignedRoundingMode
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5450:            ? num.CompareTo(BigInteger.Pow(10, k) * den)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5451:            : (num * BigInteger.Pow(10, -k)).CompareTo(den);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5462:        var value = num * BigInteger.Pow(10, maxFrac);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5492:        if (k >= 0) { a = num * BigInteger.Pow(10, k); b = den; }
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5493:        else { a = num; b = den * BigInteger.Pow(10, -k); }
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:125:        var minutes = (int)(Math.Round(offsetMs / 60000.0));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:468:            return CreateDecimal(Math.Truncate(first.DecimalValue));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:471:        var r = new JSNumber(Math.Truncate(d));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:315:        if (Math.Truncate(number) != number)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:355:        if (Math.Abs(years) >= 4294967296d || Math.Abs(months) >= 4294967296d || Math.Abs(weeks) >= 4294967296d)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:458:        var numerator = BigInteger.Parse(digits, CultureInfo.InvariantCulture) * unitNs;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:459:        var denominator = BigInteger.Pow(10, digits.Length);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:24:    private static readonly BigInteger MaxEpochNanoseconds = BigInteger.Parse("8640000000000000000000");
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:75:        if (double.IsNaN(ms) || double.IsInfinity(ms) || Math.Truncate(ms) != ms)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:470:            fractionNs = BigInteger.Parse(digits, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:493:                offsetFractionNs = BigInteger.Parse(match.Groups["of"].Value.PadRight(9, '0'), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:27:        BigInteger.Parse("8640000086400000000000");
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:30:    private static readonly BigInteger MaxEpochNanoseconds = BigInteger.Parse("8640000000000000000000");
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1455:    // rounding is RoundNumberToIncrement(offsetNs, 60e9, "halfExpand"), the shared library's (the
+Broiler.JS/Broiler.JavaScript.Runtime/FunctionTiering.cs:339:                && limit == Math.Truncate(limit))
+Broiler.JS/Broiler.JavaScript.Runtime/TaggedValuePrototype.cs:32:            && value == Math.Truncate(value))
+Broiler.JS/Broiler.JavaScript.Runtime/TaggedValuePrototype.cs:53:        ? unchecked((int)(uint)(bits & PayloadMask))
+Broiler.JS/CHANGELOG.md:119:    `"halfEven"` is `1.2K`, where it was `1.3K`; -1910 with `"floor"` is `-2K`, and -1990 with `"trunc"`
+Broiler.JS/CHANGELOG.md:124:    largestUnit: "months", roundingIncrement: 2, roundingMode: "halfTrunc", relativeTo: "2023-01-01" })`
+Broiler.JS/CHANGELOG.md:182:with `"halfEven"` is `01:20`, where the specification gives `01:00`); that is the Temporal consumer's
