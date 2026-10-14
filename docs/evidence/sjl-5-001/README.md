@@ -65,4 +65,13 @@ Corpus revision 12 classifies the 42, each under the row of bundle `sjl-5-001`'s
 as the specification gives them (`text/parse-number/0001`, `0002`). The plan's record of the corrections
 says so in a dated correction. Rows P4, X1 and X2 have no vector, and row J5's three vectors match because
 the run was on Linux. Every difference is one the area verdict classified, so its falsifier does not
-fire. The run on revision 12 is added to this section when it is taken.
+fire. *(Revised 2026-10-14, when the run on revision 12 was taken. The paragraph ended: "The run on
+revision 12 is added to this section when it is taken.")*
+
+**Every vector of corpus revision 12 has a classified result in this engine.** At `9ae67ee`, which carries
+revision 12 ([`engine/run-revision-12.log`](engine/run-revision-12.log),
+[`engine/run-revision-12.tsv.gz`](engine/run-revision-12.tsv.gz)): **42,943 vectors, 42,897 match, 46
+classified divergences, 0 unclassified differences**, and the runner's four tests pass. The 46 are the 42
+fields above and the number area's 4. The negative control
+([`engine/negative-control-revision-12.tsv`](engine/negative-control-revision-12.tsv)) moves
+`numbers/to-fixed/0001`'s verdict alone, to a difference.
