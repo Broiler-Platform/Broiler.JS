@@ -170,6 +170,12 @@ repository's `01209c4`, before the cut-over, and after it.
   - **A String's Intl mathematical value trims the specification's white space**: with 20 fraction
     digits, `format("\uFEFF0.1")` is `0.1`, where U+FEFF stopped the decimal reading and the text was
     read as the Number 0.1 (`0.10000000000000000555`).
+- *The typed arrays' copies of the same element type* (2026-10-14; `SharedIntegerConversionTests`, run
+  against `b598028`, SJL-4's base, and after `bc2d663`):
+  - **`slice`, `copyWithin` and the constructor given a typed array keep a `Float32Array`'s signalling
+    NaN**: `0x7F800001` stays `0x7F800001`, where it was quieted to `0x7FC00001`, because each element
+    went through a double. They move bytes, as the specification asks, and `set` already did. test262's
+    `staging/sm/TypedArray/slice-bitwise-same.js`, which failed at the base, passes.
 
 **Implementation-defined, and changed.** `Math.f16round(NaN)` and a NaN read from a `Float16Array` or
 with `DataView.prototype.getFloat16` are the platform's quiet NaN, where they kept the binary16 value's

@@ -152,14 +152,18 @@ public class SharedIntegerConversionTests
     // set, and the constructor's InitializeTypedArrayFromTypedArray), so a binary16 NaN keeps its sign
     // and payload, as a binary32 one does, where a NaN read as a value is the platform's. The cut-over
     // had made slice and copyWithin copy through the value, which test262's
-    // TypedArray/prototype/slice/bit-precision.js found. slice's bytes go forwards, as the
-    // specification's loop does, even when the result shares the source's buffer.
+    // TypedArray/prototype/slice/bit-precision.js found; and at the base a binary32 signalling NaN
+    // came out quieted, which staging/sm/TypedArray/slice-bitwise-same.js checks. slice's bytes go
+    // forwards, as the specification's loop does, even when the result shares the source's buffer.
     [Theory]
     [InlineData("var u = new Uint16Array([0x7E01, 0xFE00]); String(new Uint16Array(new Float16Array(u.buffer).slice().buffer))", "32257,65024")]
     [InlineData("var u = new Uint16Array([0x7E01, 0xFE00, 0, 0]); new Float16Array(u.buffer).copyWithin(2, 0); String(u)", "32257,65024,32257,65024")]
     [InlineData("var u = new Uint16Array([0x7E01, 0xFE00]); var b = new Float16Array(2); b.set(new Float16Array(u.buffer)); String(new Uint16Array(b.buffer))", "32257,65024")]
     [InlineData("var u = new Uint16Array([0x7E01, 0xFE00]); String(new Uint16Array(new Float16Array(new Float16Array(u.buffer)).buffer))", "32257,65024")]
     [InlineData("var u = new Uint32Array([0x7FC00001]); String(new Uint32Array(new Float32Array(u.buffer).slice().buffer))", "2143289345")]
+    [InlineData("var u = new Uint32Array([0x7F800001, 0xFFBFFFFF]); String(new Uint32Array(new Float32Array(u.buffer).slice().buffer))", "2139095041,4290772991")]
+    [InlineData("var u = new Uint32Array([0x7F800001, 0, 0]); new Float32Array(u.buffer).copyWithin(2, 0, 1); String(u)", "2139095041,0,2139095041")]
+    [InlineData("var u = new Uint32Array([0x7F800001]); String(new Uint32Array(new Float32Array(new Float32Array(u.buffer)).buffer))", "2139095041")]
     [InlineData("String(new Uint8Array([1, 2, 3, 4, 5]).copyWithin(1, 0, 3))", "1,1,2,3,5")]
     [InlineData("String(new Uint8Array([1, 2, 3, 4, 5]).copyWithin(0, 2))", "3,4,5,4,5")]
     [InlineData("var a = new Int16Array(new ArrayBuffer(12), 2, 4); a.set([1, 2, 3, 4]); String(a.copyWithin(1, 0, 3))", "1,1,2,3")]
