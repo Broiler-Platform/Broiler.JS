@@ -1,0 +1,9 @@
+[test262] Running async protocol self-check against Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll with the harness of suite ref ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+[test262] [self-check] ok   test/async-protocol/completes.js: expected passed/completed, got passed/completed
+[test262] [self-check] ok   test/async-protocol/assertion-fails.js: expected failed/reportedFailure, got failed/reportedFailure
+[test262] [self-check] ok   test/async-protocol/rejects.js: expected failed/reportedFailure, got failed/reportedFailure
+[test262] [self-check] ok   test/async-protocol/never-settles.js: expected failed/neverSettled, got failed/neverSettled
+[test262] [self-check] ok   test/async-protocol/rejection-is-unhandled.js: expected failed/neverSettled, got failed/neverSettled
+[test262] [self-check] ok   test/async-protocol/completes-twice.js: expected failed/completedTwice, got failed/completedTwice
+[test262] [self-check] ok   test/async-protocol/throws-after-completing.js: expected failed/completed, got failed/completed
+[test262] [self-check] ok   test/async-protocol/never-returns.js: expected timedOut/None, got timedOut/None

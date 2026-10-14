@@ -23,6 +23,30 @@ public class LibraryRunTests
         Assert.True(differences.Count == 0, differences.Count + " differences:\n" + string.Join("\n", differences.Take(60)));
     }
 
+    /// <summary>
+    /// Every numerics vector passes against the library (milestone SJL-4.3), but those the library
+    /// does not answer: the operations it does not share (<c>fround</c>, <c>clz32</c>, <c>imul</c>,
+    /// property keys), whose vectors are engine-level, and the width-policy vectors, which pin each
+    /// engine's policy and give their operands as descriptions.
+    /// </summary>
+    [Fact]
+    public void Every_numerics_vector_passes_against_the_algorithms_library()
+    {
+        var vectors = Home.Corpus.Records.Where(static v => v["area"] == "numerics").ToList();
+        var results = LibraryRun.Run(vectors, new AlgorithmsLibrary());
+
+        Assert.NotEmpty(vectors);
+        var differences = results.Where(static r => r.Verdict == Verdict.Difference)
+            .Select(static r => r.Vector.Id + " " + r.Vector["op"] + " in: " + r.Vector["in"] + " expected: " + r.Expected + " got: " + r.Rendered)
+            .ToList();
+        Assert.True(differences.Count == 0, differences.Count + " differences:\n" + string.Join("\n", differences.Take(60)));
+
+        var engineLevel = results.Where(static r => r.Verdict == Verdict.NotImplemented).Select(static r => r.Vector).ToList();
+        Assert.All(engineLevel, static v => Assert.True(
+            v["op"] is "Math.fround" or "Math.clz32" or "Math.imul" or "ToPropertyKey" || v["op"]!.EndsWith(" (width policy)", System.StringComparison.Ordinal),
+            v.Id + " is not answered by the library"));
+    }
+
     [Fact]
     public void Against_the_empty_library_every_vector_is_not_implemented()
     {

@@ -1323,8 +1323,7 @@ area: numbers
 op: Number::toString
 in: f64:0x0410000000000000
 out: value: str:"4.1045368012983761e-289" | value: str:"4.1045368012983762e-289" | value: str:"4.1045368012983763e-289" | value: str:"4.1045368012983764e-289" | value: str:"4.1045368012983765e-289" | value: str:"4.1045368012983766e-289" | value: str:"4.1045368012983767e-289"
-class: divergence
-divergence.broiler-vm: Number::toString at radix 10 gives 16 digits that do not round-trip where the shortest digits that do are 17. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-numeric-types-number-tostring ref:numref@1
 script: String($f64(0x04100000, 0x00000000))
 note: the last digit is not uniquely determined (step 5); recommended 4.1045368012983762e-289
@@ -11091,8 +11090,7 @@ area: numbers
 op: Number::toString
 in: f64:0x3E60000000000000
 out: value: str:"2.9802322387695311e-8" | value: str:"2.9802322387695312e-8" | value: str:"2.9802322387695313e-8" | value: str:"2.9802322387695314e-8" | value: str:"2.9802322387695315e-8"
-class: divergence
-divergence.broiler-vm: Number::toString at radix 10 gives 16 digits that do not round-trip where the shortest digits that do are 17. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-numeric-types-number-tostring ref:numref@1
 script: String($f64(0x3E600000, 0x00000000))
 note: the last digit is not uniquely determined (step 5); recommended 2.9802322387695312e-8

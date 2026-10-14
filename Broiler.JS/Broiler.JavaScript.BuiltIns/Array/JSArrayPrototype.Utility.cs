@@ -106,9 +106,9 @@ public partial class JSArray
     {
         var @this = ToArrayLikeObject(a.This);
         var length = GetArrayLikeLengthLong(@this);
-        var relativeStart = a.TryGetAt(0, out var start) ? ToIntegerOrInfinity(start) : 0;
+        var relativeStart = a.TryGetAt(0, out var start) ? IntegerOf(start) : 0;
         var relativeEnd = a.TryGetAt(1, out var end)
-            ? (end.IsUndefined ? length : ToIntegerOrInfinity(end, length))
+            ? (end.IsUndefined ? length : IntegerOf(end, length))
             : length;
 
         var actualStart = relativeStart < 0
@@ -302,7 +302,7 @@ public partial class JSArray
         long len = GetArrayLikeLengthLong(source);
 
         long relativeStart = a.TryGetAt(0, out var startArg)
-            ? ToIntegerOrInfinity(startArg)
+            ? IntegerOf(startArg)
             : 0;
         long actualStart = relativeStart < 0
             ? Math.Max(len + relativeStart, 0)
@@ -317,7 +317,7 @@ public partial class JSArray
             actualSkipCount = len - actualStart;
         else
         {
-            var dc = ToIntegerOrInfinity(a[1]);
+            var dc = IntegerOf(a[1]);
             actualSkipCount = Math.Min(Math.Max(dc, 0), len - actualStart);
         }
 
@@ -357,7 +357,7 @@ public partial class JSArray
 
         var len = (uint)length;
         var (indexArg, value) = a.Get2();
-        var relativeIndex = ToIntegerOrInfinity(indexArg);
+        var relativeIndex = IntegerOf(indexArg);
         long actualIndex = relativeIndex >= 0 ? (long)relativeIndex : len + relativeIndex;
 
         if (actualIndex < 0 || actualIndex >= len)

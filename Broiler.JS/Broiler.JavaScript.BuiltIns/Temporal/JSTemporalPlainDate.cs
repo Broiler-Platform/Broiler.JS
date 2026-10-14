@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -344,7 +345,7 @@ public partial class JSTemporalPlainDate : JSObject
         {
             // The rounding mode is negated for "since" (the operands are negated), then the rounded
             // result is negated back below.
-            var mode = sign == -1 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode;
+            var mode = sign == -1 ? ExactRounding.Negate(roundingMode) : roundingMode;
             (years, months, weeks, days) = DifferenceISODateRounded(self.y, self.m, self.d, othr.y, othr.m, othr.d,
                 largestUnit, smallestUnit, increment, mode);
         }
@@ -486,11 +487,7 @@ public partial class JSTemporalPlainDate : JSObject
         if (value == null || value.IsUndefined)
             return 0;
 
-        var number = value.DoubleValue; // ToNumber (throws TypeError for BigInt/Symbol)
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            throw JSEngine.NewRangeError("Temporal.PlainDate: date component must be finite");
-
-        return (int)Math.Truncate(number);
+        return (int)TemporalRoundingOptions.ToIntegerWithTruncation(value, "Temporal.PlainDate: date component must be finite");
     }
 
     // The PlainDate constructor's positional arguments are required: each is coerced with
@@ -498,13 +495,7 @@ public partial class JSTemporalPlainDate : JSObject
     // a non-numeric string — is a RangeError rather than silently defaulting to 0. (The field-bag
     // overload above keeps the undefined→0 shortcut for optional fields.)
     private static int ToIntegerWithTruncationArgument(JSValue value)
-    {
-        var number = value == null ? double.NaN : value.DoubleValue; // ToNumber (TypeError for BigInt/Symbol)
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            throw JSEngine.NewRangeError("Temporal.PlainDate: date component must be finite");
-
-        return (int)Math.Truncate(number);
-    }
+        => (int)TemporalRoundingOptions.ToIntegerWithTruncation(value ?? JSUndefined.Value, "Temporal.PlainDate: date component must be finite");
 
     // Resolves a calendar argument to a canonical id. A missing calendar defaults to iso8601;
     // anything else is a calendar-identifier String (a non-String is a TypeError, an unknown
@@ -593,10 +584,10 @@ public partial class JSTemporalPlainDate : JSObject
     // with a smallestUnit/increment beyond "day"/1 is validated here but not yet applied — see TODO.)
     private static readonly string[] DateUnits = ["year", "month", "week", "day"];
 
-    private static (string largestUnit, string smallestUnit, int increment, string roundingMode) ReadDifferenceSettings(JSValue options)
+    private static (string largestUnit, string smallestUnit, int increment, RoundingMode roundingMode) ReadDifferenceSettings(JSValue options)
     {
         if (options == null || options.IsUndefined)
-            return ("day", "day", 1, "trunc");
+            return ("day", "day", 1, RoundingMode.Trunc);
         if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
 
@@ -608,7 +599,7 @@ public partial class JSTemporalPlainDate : JSObject
         if (largestUnit == "auto") largestUnit = null;
 
         var increment = TemporalRoundingOptions.GetRoundingIncrement(o);
-        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, RoundingMode.Trunc);
 
         var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
         var smallestUnit = smallestRaw.IsUndefined ? null : TemporalRoundingOptions.NormalizeAnyUnit(smallestRaw.StringValue, allowAuto: false);
@@ -920,7 +911,7 @@ public partial class JSTemporalPlainDate : JSObject
     // largestUnit-balanced difference is returned unchanged. Shared with Temporal.PlainYearMonth.
     internal static (double years, double months, double weeks, double days) DifferenceISODateRounded(
         int sy, int sm, int sd, int ey, int em, int ed,
-        string largestUnit, string smallestUnit, int increment, string roundingMode)
+        string largestUnit, string smallestUnit, int increment, RoundingMode roundingMode)
     {
         var (years, months, weeks, days) = DifferenceISODate(sy, sm, sd, ey, em, ed, largestUnit);
         if (smallestUnit == "day" && increment == 1)
@@ -939,7 +930,7 @@ public partial class JSTemporalPlainDate : JSObject
     internal static (long y, long mo, long w, long d) RoundDateTimeDateDifference(
         int sy, int sm, int sd, long years, long months, long weeks, long days,
         int ey, int em, int ed, long startTimeNs, long destTimeNs,
-        string largestUnit, string smallestUnit, int increment, string roundingMode)
+        string largestUnit, string smallestUnit, int increment, RoundingMode roundingMode)
         => RoundDateDifference(sy, sm, sd, years, months, weeks, days, ey, em, ed,
             largestUnit, smallestUnit, increment, roundingMode, startTimeNs, destTimeNs);
 
@@ -958,7 +949,7 @@ public partial class JSTemporalPlainDate : JSObject
     // then roll an expanded unit up toward largestUnit.
     private static (long y, long mo, long w, long d) RoundDateDifference(
         int sy, int sm, int sd, long years, long months, long weeks, long days,
-        int ey, int em, int ed, string largestUnit, string smallestUnit, int increment, string roundingMode,
+        int ey, int em, int ed, string largestUnit, string smallestUnit, int increment, RoundingMode roundingMode,
         long startTimeNs = 0, long destTimeNs = 0)
     {
         const long NsPerDay = 86_400_000_000_000;
@@ -971,16 +962,20 @@ public partial class JSTemporalPlainDate : JSObject
         var sign = fullDestNs > aNs ? 1 : fullDestNs < aNs ? -1 : 0;
         if (sign == 0) return (0, 0, 0, 0);
 
+        // r1 is RoundNumberToIncrement(units, increment, "trunc"), the shared library's.
+        long TruncateToIncrement(long units)
+            => (long)ExactRounding.RoundNumberToIncrement(units, System.Numerics.BigInteger.One, increment, RoundingMode.Trunc);
+
         long r1;
         (long y, long mo, long w, long d) startDur, endDur;
         switch (smallestUnit)
         {
             case "year":
-                r1 = years / increment * increment;
+                r1 = TruncateToIncrement(years);
                 startDur = (r1, 0, 0, 0); endDur = (r1 + increment * sign, 0, 0, 0);
                 break;
             case "month":
-                r1 = months / increment * increment;
+                r1 = TruncateToIncrement(months);
                 startDur = (years, r1, 0, 0); endDur = (years, r1 + increment * sign, 0, 0);
                 break;
             case "week":
@@ -991,12 +986,12 @@ public partial class JSTemporalPlainDate : JSObject
                 var (wey, wem, wed) = CivilFromDays(afterYM + days);
                 var until = DifferenceISODate((int)wy, (int)wm, (int)wd, (int)wey, (int)wem, (int)wed, "week");
                 var totalWeeks = weeks + (long)until.weeks;
-                r1 = totalWeeks / increment * increment;
+                r1 = TruncateToIncrement(totalWeeks);
                 startDur = (years, months, r1, 0); endDur = (years, months, r1 + increment * sign, 0);
                 break;
             }
             default: // day
-                r1 = days / increment * increment;
+                r1 = TruncateToIncrement(days);
                 startDur = (years, months, weeks, r1); endDur = (years, months, weeks, r1 + (long)increment * sign);
                 break;
         }
@@ -1058,21 +1053,14 @@ public partial class JSTemporalPlainDate : JSObject
             }
         }
 
-        var numerator = fullDestNs - startNs;
-        var denominator = endNs - startNs;
-        var absNum = System.Numerics.BigInteger.Abs(numerator);
-        var absDen = System.Numerics.BigInteger.Abs(denominator);
-
-        bool isEnd;
-        if (numerator == 0) isEnd = false;
-        else if (absNum == absDen) isEnd = true;
-        else
-        {
-            var cmp = (absNum * 2).CompareTo(absDen);
-            var even = Math.Abs(r1) / increment % 2 == 0;
-            isEnd = TemporalRoundingOptions.ApplyRoundingPicksEnd(cmp, even,
-                TemporalRoundingOptions.UnsignedRoundingMode(roundingMode, sign < 0));
-        }
+        // NudgeToCalendarUnit: progress = (dest − start) / (end − start), total = r1 + progress ×
+        // increment × sign. A progress of 1 is the window's end; any other progress is rounded over the
+        // window [|r1|, |r2|] by the shared library's ApplyUnsignedRoundingMode.
+        var progressed = System.Numerics.BigInteger.Abs(fullDestNs - startNs);
+        var span = System.Numerics.BigInteger.Abs(endNs - startNs);
+        var (totalNumerator, totalDenominator) = TemporalRoundingOptions.NudgeTotal(r1, increment, sign, progressed, span);
+        var isEnd = progressed == span
+            || TemporalRoundingOptions.NudgeRoundsToEnd(totalNumerator, totalDenominator, r1, r1 + (long)increment * sign, sign, roundingMode);
 
         didExpand = didExpand || isEnd;
         var chosen = isEnd ? endDur : startDur;

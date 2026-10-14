@@ -40,25 +40,19 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         return base.HasOwnProperty(in key);
     }
 
+    // ToIntegerOrInfinity (§7.1.5): this engine's ToNumber, then the shared library's operation, held
+    // within int for the callers' clamps; an absent or undefined argument is the clause's default
+    // (SJL-4.5).
     // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
-    // Broiler-Falsified-If: a byteOffset argument of 2**32 + 8 wraps to 8 instead of saturating to int.MaxValue, so the view is created at offset 8 rather than rejected with a RangeError
+    // Broiler-Falsified-If: an argument of 2**32 + 8 wraps to 8 instead of saturating to int.MaxValue
     // Broiler-Human:        PENDING
-    internal static int ToIntegerOrInfinity(JSValue value, int defaultValue = 0)
+    internal static int IntegerOf(JSValue value, int defaultValue = 0)
     {
         if (value == null || value.IsUndefined)
             return defaultValue;
 
-        var number = value.DoubleValue;
-        if (double.IsNaN(number) || number == 0)
-            return 0;
-
-        if (double.IsPositiveInfinity(number) || number > int.MaxValue)
-            return int.MaxValue;
-
-        if (double.IsNegativeInfinity(number) || number < int.MinValue)
-            return int.MinValue;
-
-        return (int)Math.Truncate(number);
+        var integer = IntegerConversions.ToIntegerOrInfinity(value.DoubleValue);
+        return integer >= int.MaxValue ? int.MaxValue : integer <= int.MinValue ? int.MinValue : (int)integer;
     }
 
     // %TypedArray%.from and %TypedArray%.of are defined once on the %TypedArray%
@@ -331,7 +325,14 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         explicitLength = len;
         buffer = new JSArrayBuffer(len * bytesPerElement);
 
-        if (copyByIndex)
+        if (source is JSTypedArray sameType && sameType.GetType() == GetType() && (p.map == null || p.map.IsUndefined))
+        {
+            // InitializeTypedArrayFromTypedArray step 11: the same element type clones the bytes, so
+            // each element keeps its bit-level encoding (a NaN's sign and payload among them).
+            if (len > 0)
+                System.Array.Copy(sameType.buffer.buffer, sameType.byteOffset, buffer.buffer, 0, len * bytesPerElement);
+        }
+        else if (copyByIndex)
         {
             for (uint i = 0; i < length; i++)
             {
@@ -375,21 +376,18 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
     // Broiler-Human:        PENDING
     private int ToArrayLikeLength(JSObject arrayLike)
     {
-        var number = arrayLike[KeyStrings.length].DoubleValue;
-        var integer = double.IsNaN(number) ? 0 : Math.Truncate(number);
-        if (integer < 0)
-            integer = 0;
-
-        if (integer > 9007199254740991.0 || (long)integer * bytesPerElement > int.MaxValue)
+        // ToLength is the shared library's (SJL-4.5); the allocation limit is this engine's.
+        var length = IntegerConversions.ToLength(arrayLike[KeyStrings.length].DoubleValue);
+        if (length * bytesPerElement > int.MaxValue)
             throw JSEngine.NewRangeError("Invalid typed array length");
 
-        return (int)integer;
+        return (int)length;
     }
 
     // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=7; Fingerprint=TBF
     // Broiler-Falsified-If: a constructor that returns a typed array backed by a detached buffer is accepted when the requested length is 0 instead of throwing TypeError
     // Broiler-Human:        PENDING
-    internal static JSTypedArray CreateTypedArrayFromConstructor(JSValue constructor, int length)
+    internal static JSTypedArray CreateTypedArrayFromConstructor(JSValue constructor, long length)
     {
         var created = constructor.CreateInstance(new JSNumber(length));
         if (created is not JSTypedArray typedArray)
@@ -465,9 +463,9 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
             return target;
         }
 
-        // Array-like path: ToLength(Get(source, "length")); a missing length is 0.
-        var rawLength = ToIntegerOrInfinity(source[KeyStrings.length]);
-        var length = rawLength < 0 ? 0 : rawLength;
+        // Array-like path: ToLength(Get(source, "length")), the shared library's (SJL-4.5); a missing
+        // length is 0, and the constructor is asked for the whole length, 2**32 included.
+        var length = IntegerConversions.ToLength(source[KeyStrings.length].DoubleValue);
 
         var arrayLikeTarget = CreateTypedArrayFromConstructor(constructor, length);
         for (var k = 0; k < length; k++)

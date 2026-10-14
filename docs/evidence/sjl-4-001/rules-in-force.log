@@ -1,0 +1,28 @@
+# SJL-4: the comparison rules are in force, checked before any code of SJL-4.3 to SJL-4.5 exists
+# Checked 2026-10-13T17:41Z at 112a5da7dc1dbbf5e79997e9fd446277edc22510 (claude/busy-lamport-m3yprr), against the rule commit 1eb526206ed43a1fd47c61a04965f777aead22f0.
+
+$ git log --format="%H %s" -- <each file the rules commit or name>
+## docs/evidence/sjl-4-001/decision-rule.md
+1eb526206ed43a1fd47c61a04965f777aead22f0 SJL-4.1: the numerics area's verdict here, SJL-D-15's record, and bundle sjl-4-001's rules
+blob at HEAD: 1a3e4032ab74eec4f85d6277269f6bedb8404928
+blob at 1eb5262: 1a3e4032ab74eec4f85d6277269f6bedb8404928
+## docs/evidence/sjl-4-001/reference-arms.md
+1eb526206ed43a1fd47c61a04965f777aead22f0 SJL-4.1: the numerics area's verdict here, SJL-D-15's record, and bundle sjl-4-001's rules
+blob at HEAD: 17dd9eabd1169d871228de220ed233b3ce537c80
+blob at 1eb5262: 17dd9eabd1169d871228de220ed233b3ce537c80
+## scripts/compliance/compare_test262_paths.py
+1410079e4808ca7fc10677ef996a95b77e571a11 SJL-0.9: Broiler.JS's predeclared comparison rules, before any code they judge
+blob at HEAD: e951dd478a858ac06c4178c28164325b06506d00
+blob at 1eb5262: e951dd478a858ac06c4178c28164325b06506d00
+## scripts/compliance/tests/test_compare_test262_paths.py
+1410079e4808ca7fc10677ef996a95b77e571a11 SJL-0.9: Broiler.JS's predeclared comparison rules, before any code they judge
+blob at HEAD: 9c4795c9f3a0a1b0deb67e4d16145fbd1258421e
+blob at 1eb5262: 9c4795c9f3a0a1b0deb67e4d16145fbd1258421e
+## scripts/compliance/run_test262.py
+44a214dc5b04a5c8db556dc9b57894beaeb20d0c Update Nuget-Packages
+blob at HEAD: af4f3d99f5c113d9b96c006680320b6d894710d6
+blob at 1eb5262: af4f3d99f5c113d9b96c006680320b6d894710d6
+## scripts/compliance/merge_test262_shards.py
+44a214dc5b04a5c8db556dc9b57894beaeb20d0c Update Nuget-Packages
+blob at HEAD: d5131f9eba3d790236b713f04a3d57e4269e7140
+blob at 1eb5262: d5131f9eba3d790236b713f04a3d57e4269e7140

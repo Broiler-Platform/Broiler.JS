@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
@@ -117,7 +118,7 @@ public partial class JSTemporalDuration
         string smallestUnit = null;
         string largestUnit = "auto";
         var increment = 1d;
-        var roundingMode = "halfExpand";
+        var roundingMode = RoundingMode.HalfExpand;
         JSTemporalZonedDateTime relZoned = null;
         JSTemporalPlainDate relDate = null;
 
@@ -145,18 +146,15 @@ public partial class JSTemporalDuration
             {
                 // GetRoundingIncrementOption: ToIntegerWithTruncation(value) truncates a
                 // non-integer toward zero (so 2.5 -> 2) and only NaN / ±Infinity or an
-                // out-of-range [1, 1e9] result is a RangeError.
-                var n = inc.DoubleValue;
-                if (double.IsNaN(n) || double.IsInfinity(n))
-                    throw JSEngine.NewRangeError("Temporal.Duration.round: invalid roundingIncrement");
-                n = Math.Truncate(n);
+                // out-of-range [1, 1e9] result is a RangeError. GetRoundingIncrement computes the
+                // same, but with its own messages; these are round's.
+                var n = TemporalRoundingOptions.ToIntegerWithTruncation(inc, "Temporal.Duration.round: invalid roundingIncrement");
                 if (n < 1 || n > 1_000_000_000)
                     throw JSEngine.NewRangeError("Temporal.Duration.round: invalid roundingIncrement");
                 increment = n;
             }
 
-            var rm = obj[KeyStrings.GetOrCreate("roundingMode")];
-            if (!rm.IsUndefined) roundingMode = NormalizeRoundingMode(rm.StringValue);
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(obj, RoundingMode.HalfExpand);
 
             var su = obj[KeyStrings.GetOrCreate("smallestUnit")];
             if (!su.IsUndefined) smallestUnit = NormalizeUnit(su.StringValue, allowAuto: false);
@@ -222,7 +220,7 @@ public partial class JSTemporalDuration
         // 8.64×10^20 ns) overflows Int64, which silently corrupted the rounding modulus and left
         // the duration unrounded (test262 round/roundingincrement-days-large, -non-integer).
         var unitNs = (BigInteger)TimeUnitNanoseconds(smallestUnit) * (long)increment;
-        var rounded = RoundToIncrement(TimePlusDaysNanoseconds(), unitNs, roundingMode);
+        var rounded = ExactRounding.RoundNumberToIncrement(TimePlusDaysNanoseconds(), BigInteger.One, unitNs, roundingMode);
         return BalanceFromNanoseconds(rounded, largestUnit);
     }
 
@@ -272,11 +270,11 @@ public partial class JSTemporalDuration
         var totalNs = TimePlusDaysNanoseconds();
         var unitNs = TimeUnitNanoseconds(unit);
         // DivideNormalizedTimeDuration computes total = TotalNanoseconds / divisor on EXACT
-        // mathematical values, then 𝔽(): the single ℝ→𝔽 rounding of the exact rational. Rounding
-        // the integer part and the fraction separately and adding them (NearestDouble(whole) +
-        // (double)remainder/(double)unitNs) rounds three times and can be one ULP off
+        // mathematical values, then 𝔽(): the single ℝ→𝔽 rounding of the exact rational, which is the
+        // shared library's ExactRounding.ToDouble. Rounding the integer part and the fraction
+        // separately and adding them rounds three times and can be one ULP off
         // (test262 Duration/prototype/total/precision-exact-mathematical-values-6/7).
-        return new JSNumber(RatioToDouble(totalNs, unitNs));
+        return new JSNumber(ExactRounding.ToDouble(totalNs, unitNs));
     }
 
     // ── relativeTo (PlainDate) calendar rounding ──────────────────────────────────
@@ -586,14 +584,14 @@ public partial class JSTemporalDuration
         RejectRelativeDateTimeRange(endNs);
     }
 
-    private JSValue RoundRelative(JSTemporalPlainDate r, string smallestUnit, string largestUnit, long increment, string roundingMode)
+    private JSValue RoundRelative(JSTemporalPlainDate r, string smallestUnit, string largestUnit, long increment, RoundingMode roundingMode)
     {
         var (endNs, startNs, startEpoch) = RelativeEndpoints(r);
         ValidateRelativeEndpoints(startNs, endNs);
 
         if (smallestUnit is "year" or "month")
         {
-            var roundedUnits = (long)NudgeCalendarUnit(r, endNs, startNs, smallestUnit == "year", increment, roundingMode);
+            var roundedUnits = NudgeCalendarUnit(r, endNs, startNs, smallestUnit == "year", increment, roundingMode);
 
             // When the largest and smallest unit coincide, the rounded duration is exactly
             // `roundedUnits` of that unit. Re-deriving it via AddCalendarDate + DiffCalendarDate
@@ -642,14 +640,14 @@ public partial class JSTemporalDuration
                 JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, anchorYears, anchorMonths, 0, 0);
             var anchorNs = (BigInteger)JSTemporalPlainDate.EpochDaysFor(ay, amo, ad) * NanosecondsPerDay;
             var weekNs = 7 * (BigInteger)NanosecondsPerDay;
-            var roundedWeeks = (long)(RoundToIncrement(endNs - anchorNs, weekNs * increment, roundingMode) / weekNs);
+            var roundedWeeks = (long)(ExactRounding.RoundNumberToIncrement(endNs - anchorNs, BigInteger.One, weekNs * increment, roundingMode) / weekNs);
             return new JSTemporalDuration(anchorYears, anchorMonths, roundedWeeks, 0, 0, 0, 0, 0, 0, 0, DurationPrototype);
         }
 
         // BigInteger span: a large day increment (1e7+ days) overflows Int64 here too — see the
         // matching non-relative path (test262 round/roundingincrement-days-large with PlainDate).
         var smallestNs = (BigInteger)TimeUnitNanoseconds(smallestUnit) * increment;
-        var roundedNs = RoundToIncrement(endNs - startNs, smallestNs, roundingMode);
+        var roundedNs = ExactRounding.RoundNumberToIncrement(endNs - startNs, BigInteger.One, smallestNs, roundingMode);
 
         if (UnitIndex(largestUnit) <= UnitIndex("week"))
         {
@@ -672,19 +670,22 @@ public partial class JSTemporalDuration
 
         if (unit is "year" or "month")
         {
-            var (whole, sign, progress, unitLen) = CalendarNudgeBounds(r, endNs, startNs, unit == "year");
-            if (unitLen.IsZero) return whole;
-            // total = whole + sign*progress/unitLen as a single ℝ→𝔽 rounding of the exact
-            // rational, not whole plus a separately rounded fraction (#818 Problem 8).
-            return RatioToDouble((BigInteger)whole * unitLen + sign * progress, unitLen);
+            var (r1, _, sign, progressed, span) = CalendarNudgeWindow(r, endNs, startNs, unit == "year", 1);
+            if (sign == 0) return 0;
+            // total = r1 + progress × sign as a single ℝ→𝔽 rounding of the exact rational (the
+            // shared library's ExactRounding.ToDouble), not r1 plus a separately rounded fraction
+            // (#818 Problem 8).
+            var (numerator, denominator) = TemporalRoundingOptions.NudgeTotal(r1, 1, sign, progressed, span);
+            return ExactRounding.ToDouble(numerator, denominator);
         }
 
         var unitNs = unit == "week" ? 7 * (BigInteger)NanosecondsPerDay : TimeUnitNanoseconds(unit);
         // The total is the nearest double to the EXACT rational (endNs − startNs)/unitNs. Converting
         // each BigInteger to double first and then dividing rounds twice and can be off by one ULP
-        // (test262 Duration/prototype/total/relativeto-total-of-each-unit "weeks"); RatioToDouble
-        // rounds the exact ratio once, matching the spec and the ZonedDateTime total path.
-        return RatioToDouble(endNs - startNs, unitNs);
+        // (test262 Duration/prototype/total/relativeto-total-of-each-unit "weeks"); the shared
+        // library's ExactRounding.ToDouble rounds the exact ratio once, matching the spec and the
+        // ZonedDateTime total path.
+        return ExactRounding.ToDouble(endNs - startNs, unitNs);
     }
 
     // Bubbles smaller calendar units up into larger ones so the date difference uses the maximal
@@ -719,58 +720,64 @@ public partial class JSTemporalDuration
         return (y, mo, w, d);
     }
 
-    // Rounds the (fractional) number of year/month units from relativeTo to the duration's end to a
-    // whole multiple of `increment` under `roundingMode`.
-    private static BigInteger NudgeCalendarUnit(JSTemporalPlainDate r, BigInteger endNs, BigInteger startNs,
-        bool isYear, long increment, string roundingMode)
+    // NudgeToCalendarUnit for a year or month smallestUnit: the number of those units from relativeTo
+    // to the duration's end, rounded to a multiple of `increment` under `roundingMode` over the
+    // increment's window [r1, r2] (not linearly inside one unit: a two-month increment of P1M from
+    // 2023-01-01 is measured over January and February together). A progress of 1 is the window's end;
+    // any other progress is rounded by the shared library's ApplyUnsignedRoundingMode.
+    private static long NudgeCalendarUnit(JSTemporalPlainDate r, BigInteger endNs, BigInteger startNs,
+        bool isYear, long increment, RoundingMode roundingMode)
     {
-        var (whole, sign, progress, unitLen) = CalendarNudgeBounds(r, endNs, startNs, isYear);
-        if (unitLen.IsZero) return 0;
-        var num = (BigInteger)(long)whole * unitLen + sign * progress;
-        var rounded = RoundToIncrement(num, unitLen * increment, roundingMode);
-        return rounded / unitLen;
+        var (r1, r2, sign, progressed, span) = CalendarNudgeWindow(r, endNs, startNs, isYear, increment);
+        if (sign == 0) return 0;
+        if (progressed == span) return r2;
+
+        var (numerator, denominator) = TemporalRoundingOptions.NudgeTotal(r1, increment, sign, progressed, span);
+        return TemporalRoundingOptions.NudgeRoundsToEnd(numerator, denominator, r1, r2, sign, roundingMode) ? r2 : r1;
     }
 
-    // The whole-unit count toward the end, the direction sign, and the |end − floorBoundary| /
-    // |ceilBoundary − floorBoundary| nanosecond spans that locate the end between the two surrounding
-    // calendar boundaries.
-    private static (double whole, int sign, BigInteger progress, BigInteger unitLen) CalendarNudgeBounds(
-        JSTemporalPlainDate r, BigInteger endNs, BigInteger startNs, bool isYear)
+    // ComputeNudgeWindow for a year or month unit: r1 is the whole units from relativeTo toward the
+    // end, truncated to a multiple of `increment` (RoundNumberToIncrement with "trunc", the shared
+    // library's), and r2 = r1 + increment × sign; `progressed` and `span` are the |end − start| and
+    // |windowEnd − start| nanosecond spans that locate the end inside the window.
+    private static (long r1, long r2, int sign, BigInteger progressed, BigInteger span) CalendarNudgeWindow(
+        JSTemporalPlainDate r, BigInteger endNs, BigInteger startNs, bool isYear, long increment)
     {
         var sign = endNs > startNs ? 1 : (endNs < startNs ? -1 : 0);
-        if (sign == 0) return (0, 0, BigInteger.Zero, BigInteger.Zero);
+        if (sign == 0) return (0, 0, 0, BigInteger.Zero, BigInteger.Zero);
 
         var (ey, em, ed) = JSTemporalPlainDate.DateFromEpochDays((long)FloorDivBig(endNs, NanosecondsPerDay));
         var diff = JSTemporalPlainDate.DiffCalendarDate(r.isoYear, r.isoMonth, r.isoDay, ey, em, ed, isYear ? "year" : "month");
-        var w = (long)(isYear ? diff.years : diff.months);
+        var units = (long)(isYear ? diff.years : diff.months);
 
-        BigInteger BoundaryNs(long units)
+        BigInteger BoundaryNs(long count)
         {
             var (ay, am, ad) = isYear
-                ? JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, units, 0, 0, 0)
-                : JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, 0, units, 0, 0);
+                ? JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, count, 0, 0, 0)
+                : JSTemporalPlainDate.AddCalendarDate(r.isoYear, r.isoMonth, r.isoDay, 0, count, 0, 0);
             return (BigInteger)JSTemporalPlainDate.EpochDaysFor(ay, am, ad) * NanosecondsPerDay;
         }
 
-        var floorNs = BoundaryNs(w);
-        var ceilNs = BoundaryNs(w + sign);
+        var r1 = (long)ExactRounding.RoundNumberToIncrement(units, BigInteger.One, increment, RoundingMode.Trunc);
+        var windowStartNs = BoundaryNs(r1);
+        var windowEndNs = BoundaryNs(r1 + increment * sign);
 
         // Window shift (spec NudgeToCalendarUnit "additional shift"): the calendar's month-end
-        // clamping can place the end OUTSIDE the [floor, ceil] window — e.g. from 2020-01-31 the
-        // 1-month difference clamps to 2020-02-29 so DiffCalendarDate yields 0 months, yet the
-        // duration's end is past that boundary. Shift the window one unit toward the end so the
-        // fractional progress is measured against the correct surrounding boundaries.
+        // clamping can place the end OUTSIDE the window — e.g. from 2020-01-31 the 1-month
+        // difference clamps to 2020-02-29 so DiffCalendarDate yields 0 months, yet the duration's
+        // end is past that boundary. Shift the window one increment toward the end so the progress
+        // is measured against the correct surrounding boundaries.
         var inBounds = sign == 1
-            ? floorNs <= endNs && endNs <= ceilNs
-            : ceilNs <= endNs && endNs <= floorNs;
+            ? windowStartNs <= endNs && endNs <= windowEndNs
+            : windowEndNs <= endNs && endNs <= windowStartNs;
         if (!inBounds)
         {
-            w += sign;
-            floorNs = ceilNs;
-            ceilNs = BoundaryNs(w + sign);
+            r1 += increment * sign;
+            windowStartNs = windowEndNs;
+            windowEndNs = BoundaryNs(r1 + increment * sign);
         }
 
-        return (w, sign, BigInteger.Abs(endNs - floorNs), BigInteger.Abs(ceilNs - floorNs));
+        return (r1, r1 + increment * sign, sign, BigInteger.Abs(endNs - windowStartNs), BigInteger.Abs(windowEndNs - windowStartNs));
     }
 
     // Splits a signed sub-day nanosecond count into time components that all share its sign.
@@ -823,101 +830,21 @@ public partial class JSTemporalDuration
         }
         var nanos = ns;
 
-        double S(BigInteger v) => sign * NearestDouble(v);
+        double S(BigInteger v) => sign * ExactRounding.ToDouble(v, BigInteger.One);
         double rDays = S(days), rHours = S(hours), rMinutes = S(minutes), rSeconds = S(seconds),
             rMillis = S(millis), rMicros = S(micros), rNanos = S(nanos);
 
         // TemporalDurationFromInternal: each component is turned into a float64-representable integer,
-        // and the assembled duration must still be valid — NearestDouble can round a large component
+        // and the assembled duration must still be valid — the nearest double can round a large component
         // up past the maximum time-duration limit, which is then a RangeError (test262 round/
         // result-out-of-range, round/out-of-range-when-converting-from-normalized-duration).
         RejectDuration(0, 0, 0, rDays, rHours, rMinutes, rSeconds, rMillis, rMicros, rNanos);
         return new JSTemporalDuration(0, 0, 0, rDays, rHours, rMinutes, rSeconds, rMillis, rMicros, rNanos, DurationPrototype);
     }
 
-    // Converts a non-negative integer to the nearest IEEE-754 double (ties to even), matching
-    // ECMAScript's ℝ→𝔽 — unlike .NET's (double)BigInteger, which truncates toward zero. The two agree
-    // for magnitudes below 2^53 (where every integer is representable); they differ only for the very
-    // large components a near-limit Temporal.Duration can produce, where rounding a component up may
-    // push the duration over the maximum (then rejected as a RangeError).
-    internal static double NearestDouble(BigInteger v)
-    {
-        var neg = v.Sign < 0;
-        var a = BigInteger.Abs(v);
-        var lo = (double)a; // .NET truncates toward zero, so lo ≤ a
-        if (double.IsInfinity(lo)) return neg ? double.NegativeInfinity : double.PositiveInfinity;
-
-        var loBig = new BigInteger(lo);
-        double chosen;
-        if (loBig == a)
-        {
-            chosen = lo;
-        }
-        else
-        {
-            var hi = Math.BitIncrement(lo);
-            if (double.IsInfinity(hi)) return neg ? -lo : lo;
-            var dLo = a - loBig;
-            var dHi = new BigInteger(hi) - a;
-            chosen = dLo < dHi ? lo
-                : dHi < dLo ? hi
-                : (BitConverter.DoubleToInt64Bits(lo) & 1) == 0 ? lo : hi; // tie → even
-        }
-        return neg ? -chosen : chosen;
-    }
-
-    // The nearest double to the exact rational num/den (den > 0), rounded once — unlike
-    // computing the integer and fractional parts as separate doubles, which rounds twice
-    // and can land on the adjacent double (#818 Problem 8). The numerator is shifted left
-    // so the integer quotient carries far more than 53 significant bits; the sub-unit
-    // remainder is then well below the rounding position, so NearestDouble of the shifted
-    // quotient (scaled back by the same power of two) is correctly rounded.
-    internal static double RatioToDouble(BigInteger num, BigInteger den)
-    {
-        if (num.IsZero)
-            return 0.0;
-
-        const int shift = 256;
-        var scaled = (num << shift) / den;
-        return Math.ScaleB(NearestDouble(scaled), -shift);
-    }
-
-    private static string NormalizeRoundingMode(string mode) => mode switch
-    {
-        "ceil" or "floor" or "expand" or "trunc"
-            or "halfCeil" or "halfFloor" or "halfExpand" or "halfTrunc" or "halfEven" => mode,
-        _ => throw JSEngine.NewRangeError($"Temporal.Duration: invalid roundingMode \"{mode}\""),
-    };
-
-    // RoundNumberToIncrement: rounds `value` to a multiple of `increment` per `roundingMode`.
-    private static BigInteger RoundToIncrement(BigInteger value, BigInteger increment, string roundingMode)
-    {
-        if (increment <= 1 && roundingMode is "halfExpand" or "trunc") return value;
-
-        var quotient = BigInteger.DivRem(value, increment, out var remainder);
-        if (remainder == 0) return value;
-
-        var sign = value.Sign; // remainder has the same sign as value here
-        var absRem2 = BigInteger.Abs(remainder) * 2;
-        var absInc = BigInteger.Abs(increment);
-
-        bool roundUp = roundingMode switch
-        {
-            "trunc" => false,
-            "expand" => true,
-            "ceil" => sign > 0,
-            "floor" => sign < 0,
-            "halfExpand" => absRem2 >= absInc,
-            "halfTrunc" => absRem2 > absInc,
-            "halfCeil" => sign > 0 ? absRem2 >= absInc : absRem2 > absInc,
-            "halfFloor" => sign < 0 ? absRem2 >= absInc : absRem2 > absInc,
-            "halfEven" => absRem2 > absInc || (absRem2 == absInc && !BigInteger.Abs(quotient).IsEven),
-            _ => absRem2 >= absInc,
-        };
-
-        if (roundUp)
-            quotient += sign >= 0 ? 1 : -1;
-
-        return quotient * increment;
-    }
+    // The engine's own rounding helpers (NearestDouble, RatioToDouble, a second NormalizeRoundingMode
+    // and RoundToIncrement) were removed at milestone SJL-4.5: an integer's or a ratio's nearest double
+    // is the shared library's ExactRounding.ToDouble, correctly rounded over the whole range (a ratio
+    // near 2^800 no longer overflows to Infinity); the option read is TemporalRoundingOptions'; and
+    // RoundNumberToIncrement is ExactRounding.RoundNumberToIncrement.
 }

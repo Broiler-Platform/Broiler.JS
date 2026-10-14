@@ -1,0 +1,173 @@
+# The divergence.broiler-js and divergence.broiler-vm fields corpus revision 9 retires: every numerics
+# vector Broiler.JS matches after milestone SJL-4.5's cut-over (Broiler.JS/CHANGELOG.md lists the
+# corrections) and every one Broiler.VM matches after milestone SJL-4.4's (its JSD-0069 lists them), under
+# the reason scripts/conformance/numerics-divergences.txt gave it at revision 8. The reasons' text follows
+# the table.
+engine	reason	vector
+broiler-js	js-bigint-power-exponent	numerics/exponentiate/0349
+broiler-js	js-bigint-power-exponent	numerics/exponentiate/0350
+broiler-js	js-bigint-power-exponent	numerics/exponentiate/0351
+broiler-js	js-bigint-power-exponent	numerics/exponentiate/0352
+broiler-js	js-bigint-hex-parse	numerics/policy/0018
+broiler-js	js-bigint-hex-parse	numerics/policy/0019
+broiler-js	js-bigint-power-exponent	numerics/policy/0022
+broiler-js	js-asuintn-wide	numerics/asuintn/0211
+broiler-js	js-asuintn-wide	numerics/asuintn/0213
+broiler-js	js-asuintn-wide	numerics/asuintn/0215
+broiler-js	js-asuintn-wide	numerics/asuintn/0218
+broiler-js	js-asuintn-wide	numerics/asuintn/0220
+broiler-js	js-asuintn-wide	numerics/asuintn/0224
+broiler-js	js-asuintn-wide	numerics/asuintn/0227
+broiler-js	js-asuintn-wide	numerics/asuintn/0229
+broiler-js	js-asuintn-wide	numerics/asuintn/0231
+broiler-js	js-asuintn-wide	numerics/asuintn/0234
+broiler-js	js-asuintn-wide	numerics/asuintn/0236
+broiler-js	js-asuintn-wide	numerics/asuintn/0240
+broiler-js	js-asuintn-wide	numerics/asuintn/0243
+broiler-js	js-asuintn-wide	numerics/asuintn/0245
+broiler-js	js-asuintn-wide	numerics/asuintn/0247
+broiler-js	js-asuintn-wide	numerics/asuintn/0250
+broiler-js	js-asuintn-wide	numerics/asuintn/0252
+broiler-js	js-asuintn-wide	numerics/asuintn/0256
+broiler-js	js-bigint-key	numerics/property-key/0001
+broiler-js	js-bigint-key	numerics/property-key/0002
+broiler-js	js-bigint-key	numerics/property-key/0003
+broiler-js	js-bigint-key	numerics/property-key/0005
+broiler-js	js-bigint-key	numerics/property-key/0007
+broiler-js	js-pow-one-nan	numerics/exponentiate/0128
+broiler-js	js-pow-one-nan	numerics/exponentiate-numeric/0128
+broiler-js	js-pow-one-nan	numerics/exponentiate-literal/0098
+broiler-js	js-pow-one-nan	numerics/exponentiate-literal/0099
+broiler-js	js-pow-one-nan	numerics/exponentiate-literal/0100
+broiler-js	js-hypot-pairwise	numerics/hypot/0051
+broiler-js	js-hypot-pairwise	numerics/hypot/0052
+broiler-js	js-hypot-pairwise	numerics/hypot/0053
+broiler-js	js-hypot-pairwise	numerics/hypot/0054
+broiler-js	js-hypot-pairwise	numerics/hypot/0071
+broiler-js	js-cbrt-rounding	numerics/cbrt/0012
+broiler-js	js-cbrt-rounding	numerics/cbrt/0013
+broiler-js	js-cbrt-rounding	numerics/cbrt/0026
+broiler-js	js-cbrt-rounding	numerics/cbrt/0027
+broiler-js	js-cbrt-rounding	numerics/cbrt/0028
+broiler-js	js-cbrt-rounding	numerics/cbrt/0029
+broiler-js	js-cbrt-rounding	numerics/cbrt/0035
+broiler-js	js-cbrt-rounding	numerics/cbrt/0046
+broiler-js	js-cbrt-rounding	numerics/cbrt/0049
+broiler-js	js-expm1-log1p	numerics/expm1/0025
+broiler-js	js-expm1-log1p	numerics/expm1/0042
+broiler-js	js-expm1-log1p	numerics/expm1/0044
+broiler-js	js-expm1-log1p	numerics/expm1/0059
+broiler-js	js-expm1-log1p	numerics/log1p/0057
+broiler-vm	vm-hypot-rounding	numerics/hypot/0051
+broiler-vm	vm-hypot-rounding	numerics/hypot/0052
+broiler-vm	vm-hypot-rounding	numerics/hypot/0053
+broiler-vm	vm-hypot-rounding	numerics/hypot/0054
+broiler-vm	vm-hypot-rounding	numerics/hypot/0071
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0010
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0011
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0012
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0013
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0016
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0017
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0020
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0021
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0026
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0027
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0034
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0035
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0037
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0038
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0039
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0042
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0046
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0047
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0049
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0052
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0053
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0054
+broiler-vm	vm-cbrt-rounding	numerics/cbrt/0055
+broiler-vm	vm-expm1-log1p	numerics/expm1/0008
+broiler-vm	vm-expm1-log1p	numerics/expm1/0010
+broiler-vm	vm-expm1-log1p	numerics/expm1/0011
+broiler-vm	vm-expm1-log1p	numerics/expm1/0012
+broiler-vm	vm-expm1-log1p	numerics/expm1/0013
+broiler-vm	vm-expm1-log1p	numerics/expm1/0014
+broiler-vm	vm-expm1-log1p	numerics/expm1/0015
+broiler-vm	vm-expm1-log1p	numerics/expm1/0016
+broiler-vm	vm-expm1-log1p	numerics/expm1/0017
+broiler-vm	vm-expm1-log1p	numerics/expm1/0018
+broiler-vm	vm-expm1-log1p	numerics/expm1/0019
+broiler-vm	vm-expm1-log1p	numerics/expm1/0020
+broiler-vm	vm-expm1-log1p	numerics/expm1/0021
+broiler-vm	vm-expm1-log1p	numerics/expm1/0022
+broiler-vm	vm-expm1-log1p	numerics/expm1/0023
+broiler-vm	vm-expm1-log1p	numerics/expm1/0026
+broiler-vm	vm-expm1-log1p	numerics/expm1/0028
+broiler-vm	vm-expm1-log1p	numerics/expm1/0029
+broiler-vm	vm-expm1-log1p	numerics/expm1/0030
+broiler-vm	vm-expm1-log1p	numerics/expm1/0031
+broiler-vm	vm-expm1-log1p	numerics/expm1/0032
+broiler-vm	vm-expm1-log1p	numerics/expm1/0033
+broiler-vm	vm-expm1-log1p	numerics/expm1/0034
+broiler-vm	vm-expm1-log1p	numerics/expm1/0035
+broiler-vm	vm-expm1-log1p	numerics/expm1/0036
+broiler-vm	vm-expm1-log1p	numerics/expm1/0037
+broiler-vm	vm-expm1-log1p	numerics/expm1/0046
+broiler-vm	vm-expm1-log1p	numerics/expm1/0047
+broiler-vm	vm-expm1-log1p	numerics/expm1/0048
+broiler-vm	vm-expm1-log1p	numerics/expm1/0049
+broiler-vm	vm-expm1-log1p	numerics/expm1/0050
+broiler-vm	vm-expm1-log1p	numerics/expm1/0051
+broiler-vm	vm-expm1-log1p	numerics/expm1/0052
+broiler-vm	vm-expm1-log1p	numerics/expm1/0055
+broiler-vm	vm-expm1-log1p	numerics/expm1/0057
+broiler-vm	vm-expm1-log1p	numerics/expm1/0058
+broiler-vm	vm-expm1-log1p	numerics/expm1/0059
+broiler-vm	vm-expm1-log1p	numerics/expm1/0063
+broiler-vm	vm-expm1-log1p	numerics/expm1/0065
+broiler-vm	vm-expm1-log1p	numerics/expm1/0068
+broiler-vm	vm-expm1-log1p	numerics/expm1/0069
+broiler-vm	vm-expm1-log1p	numerics/expm1/0070
+broiler-vm	vm-expm1-log1p	numerics/expm1/0071
+broiler-vm	vm-expm1-log1p	numerics/log1p/0026
+broiler-vm	vm-expm1-log1p	numerics/log1p/0028
+broiler-vm	vm-expm1-log1p	numerics/log1p/0029
+broiler-vm	vm-expm1-log1p	numerics/log1p/0030
+broiler-vm	vm-expm1-log1p	numerics/log1p/0031
+broiler-vm	vm-expm1-log1p	numerics/log1p/0032
+broiler-vm	vm-expm1-log1p	numerics/log1p/0033
+broiler-vm	vm-expm1-log1p	numerics/log1p/0034
+broiler-vm	vm-expm1-log1p	numerics/log1p/0035
+broiler-vm	vm-expm1-log1p	numerics/log1p/0037
+broiler-vm	vm-expm1-log1p	numerics/log1p/0042
+broiler-vm	vm-expm1-log1p	numerics/log1p/0043
+broiler-vm	vm-expm1-log1p	numerics/log1p/0048
+broiler-vm	vm-expm1-log1p	numerics/log1p/0049
+broiler-vm	vm-expm1-log1p	numerics/log1p/0050
+broiler-vm	vm-expm1-log1p	numerics/log1p/0051
+broiler-vm	vm-expm1-log1p	numerics/log1p/0052
+broiler-vm	vm-expm1-log1p	numerics/log1p/0055
+broiler-vm	vm-expm1-log1p	numerics/log1p/0057
+broiler-vm	vm-expm1-log1p	numerics/log1p/0058
+broiler-vm	vm-expm1-log1p	numerics/log1p/0059
+broiler-vm	vm-expm1-log1p	numerics/log1p/0063
+broiler-vm	vm-expm1-log1p	numerics/log1p/0065
+broiler-vm	vm-expm1-log1p	numerics/log1p/0068
+broiler-vm	vm-expm1-log1p	numerics/log1p/0069
+broiler-vm	vm-expm1-log1p	numerics/log1p/0070
+broiler-vm	vm-expm1-log1p	numerics/log1p/0071
+broiler-vm	vm-sum-precise-flush	numerics/sumprecise/0010
+broiler-vm	vm-sum-precise-flush	numerics/sumprecise/0027
+#
+# js-asuintn-wide: BigInt.asUintN converts a width of 2^32 or more to a 32-bit integer, so the modulus is wrong, giving a wrong value, or zero, raising a .NET DivideByZeroException, where the result of a negative value is past any representation and a RangeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of asUintN at very large widths).
+# js-bigint-hex-parse: StringToBigInt does not complete within the runner's limit for a hexadecimal text of 262,144 digits, because each digit multiplies the whole value. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the BigInt kernel's parse replaces TryParsePrefixedDigits).
+# js-bigint-key: A BigInt property key beyond 2^32 - 1 or below 0 raises a .NET OverflowException that escapes the engine, where the key is the BigInt's decimal text. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of BigInt property keys beyond 2^32 - 1 and below 0).
+# js-bigint-power-exponent: BigInt exponentiation converts the exponent to a 32-bit integer, so an exponent of 2^31 or more raises a .NET OverflowException that escapes the engine, where 1n, -1n and 0n have their exact powers and any other base is a RangeError at the representation's limit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the BigInt kernel; the correction of Power's 32-bit exponent).
+# js-cbrt-rounding: Math.cbrt is not correctly rounded: it chooses among neighbours of the platform's root by a test in double arithmetic, and can be a unit in the last place away, an exact cube root included. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's cbrt moves to the library, JSD-0067 decision 5).
+# js-expm1-log1p: Math.expm1 and Math.log1p are more than a unit in the last place from the exact value on some inputs: the Kahan-style correction gives -1.00075 for Math.expm1(-745) and an infinity just below expm1's overflow threshold. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's expm1 and log1p move to the library, JSD-0067 decision 5).
+# js-hypot-pairwise: Math.hypot of three or more arguments is computed pairwise, rounding at each step, and is more than a unit in the last place from the exact value on some inputs, a hypotenuse that is itself a double included (Math.hypot(2, 10, 11) is not 15). Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (JSMath's hypot moves to the library, JSD-0067 decision 5).
+# js-pow-one-nan: 1 ** NaN gives 1 on the generic and the numeric paths, and 1 ** Infinity and 1 ** -Infinity written as literals give 1, where each is NaN: the generic JSValue.Power lacks the NaN-exponent case and the compiled paths emit Math.Pow. Math.pow gives NaN. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-4.5 (the correction of 1 ** NaN on every path and the cases of 1 to an infinity on the compiled paths).
+# vm-cbrt-rounding: Math.cbrt snaps the platform's root only when it cubes back exactly, so it is not correctly rounded: it can be a unit in the last place away, an exact cube root included (Math.cbrt(0.125) is 0.49999999999999994). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
+# vm-expm1-log1p: Math.expm1 and Math.log1p compute exp(x) - 1 and log(x + 1), which is what double.ExpM1 and double.LogP1 do on .NET 10, so they lose their significant digits near zero: below 2^-53 the result is 0, and elsewhere it can be far more than a unit in the last place from the exact value. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
+# vm-hypot-rounding: Math.hypot scales by the largest argument in one pass and is more than a unit in the last place from the exact value on some inputs, a hypotenuse that is itself a double included (Math.hypot(2, 10, 11) is not 15). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (JSD-0067 decision 5).
+# vm-sum-precise-flush: Math.sumPrecise scales its terms when the largest is huge, which flushes a tiny term to zero: Math.sumPrecise([1e308, -1e308, 5e-324]) is 0. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.4 (the PreciseSum accumulator, JSD-0067 decision 5).

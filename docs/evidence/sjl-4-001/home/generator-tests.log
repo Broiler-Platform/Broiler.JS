@@ -1,0 +1,89 @@
+$ /usr/bin/python3 -m unittest discover -s scripts/conformance/tests -v
+# cwd <tree>; started 2026-10-14T13:07:32Z; exit 0
+bigint-arithmetic.vectors: 1488 vectors
+bigint-asintn.vectors: 526 vectors
+bigint-number.vectors: 514 vectors
+bigint-text.vectors: 605 vectors
+float16.vectors: 2823 vectors
+integer-conversions.vectors: 1039 vectors
+math.vectors: 1745 vectors
+rounding.vectors: 3753 vectors
+keys.vectors: 60 vectors
+literals.vectors: 352 vectors
+number-to-string-radix.vectors: 1341 vectors
+number-to-string.vectors: 5038 vectors
+parse-float.vectors: 1016 vectors
+parse-int.vectors: 383 vectors
+string-to-number.vectors: 1016 vectors
+to-exponential.vectors: 275 vectors
+to-fixed.vectors: 280 vectors
+to-precision.vectors: 380 vectors
+# stderr
+test_every_binary16_midpoint_is_a_double_and_the_top_one_is_the_overflow_threshold (test_numerics_population.ClassTests.test_every_binary16_midpoint_is_a_double_and_the_top_one_is_the_overflow_threshold) ... ok
+test_the_bigint_values_and_the_trivial_operand_pairs (test_numerics_population.ClassTests.test_the_bigint_values_and_the_trivial_operand_pairs) ... ok
+test_the_nan_patterns_cover_sign_quiet_bit_and_payload_bits (test_numerics_population.ClassTests.test_the_nan_patterns_cover_sign_quiet_bit_and_payload_bits) ... ok
+test_the_special_set_reads_two_to_the_53_plus_one_as_its_neighbours (test_numerics_population.ClassTests.test_the_special_set_reads_two_to_the_53_plus_one_as_its_neighbours) ... ok
+test_the_ties_are_exact (test_numerics_population.ClassTests.test_the_ties_are_exact) ... ok
+test_windows_are_non_negative_and_start_at_a_multiple_of_their_width (test_numerics_population.ClassTests.test_windows_are_non_negative_and_start_at_a_multiple_of_their_width) ... ok
+test_as_int_n_and_as_uint_n (test_numericsref.BigIntTests.test_as_int_n_and_as_uint_n) ... ok
+test_division_truncates_and_remainder_takes_the_dividend_s_sign (test_numericsref.BigIntTests.test_division_truncates_and_remainder_takes_the_dividend_s_sign) ... ok
+test_number_conversion_ties_to_even (test_numericsref.BigIntTests.test_number_conversion_ties_to_even) ... ok
+test_shifts_floor (test_numericsref.BigIntTests.test_shifts_floor) ... ok
+test_text_and_parse (test_numericsref.BigIntTests.test_text_and_parse) ... ok
+test_the_width_is_get_bit_length_s (test_numericsref.BigIntTests.test_the_width_is_get_bit_length_s) ... ok
+test_big_int64 (test_numericsref.ConversionTests.test_big_int64) ... ok
+test_clamp_rounds_ties_to_even (test_numericsref.ConversionTests.test_clamp_rounds_ties_to_even) ... ok
+test_integer_or_infinity_length_and_index (test_numericsref.ConversionTests.test_integer_or_infinity_length_and_index) ... ok
+test_modular_conversions (test_numericsref.ConversionTests.test_modular_conversions) ... ok
+test_binary16_and_binary32_agree_with_cpython (test_numericsref.FormatTests.test_binary16_and_binary32_agree_with_cpython) ... ok
+test_every_binary16_decodes_exactly (test_numericsref.FormatTests.test_every_binary16_decodes_exactly) ... ok
+test_nan_preserving_encoding_keeps_sign_and_top_payload (test_numericsref.FormatTests.test_nan_preserving_encoding_keeps_sign_and_top_payload) ... ok
+test_ties_round_to_even_and_overflow (test_numericsref.FormatTests.test_ties_round_to_even_and_overflow) ... ok
+test_the_committed_corpus_is_what_the_generator_writes (test_numericsref.GeneratorTests.test_the_committed_corpus_is_what_the_generator_writes) ... ok
+test_the_generator_writes_the_revision_REVISIONS_md_ends_at (test_numericsref.GeneratorTests.test_the_generator_writes_the_revision_REVISIONS_md_ends_at) ... ok
+test_clz32_and_imul (test_numericsref.MathTests.test_clz32_and_imul) ... ok
+test_cube_roots_bracket_their_value (test_numericsref.MathTests.test_cube_roots_bracket_their_value) ... ok
+test_near_zero (test_numericsref.MathTests.test_near_zero) ... ok
+test_round (test_numericsref.MathTests.test_round) ... ok
+test_scaled_hypotenuses_are_exact (test_numericsref.MathTests.test_scaled_hypotenuses_are_exact) ... ok
+test_special_powers (test_numericsref.MathTests.test_special_powers) ... ok
+test_square_root_agrees_with_cpython (test_numericsref.MathTests.test_square_root_agrees_with_cpython) ... ok
+test_sum_precise_agrees_with_fsum_and_its_states (test_numericsref.MathTests.test_sum_precise_agrees_with_fsum_and_its_states) ... ok
+test_transcendental_functions_are_within_the_c_library_s_error (test_numericsref.MathTests.test_transcendental_functions_are_within_the_c_library_s_error) ... ok
+test_as_if_positive_and_negation (test_numericsref.RoundingModeTests.test_as_if_positive_and_negation) ... ok
+test_every_mode_at_a_tie_and_off_it (test_numericsref.RoundingModeTests.test_every_mode_at_a_tie_and_off_it) ... ok
+test_half_even_looks_at_the_quotient (test_numericsref.RoundingModeTests.test_half_even_looks_at_the_quotient) ... ok
+test_to_exponential (test_numref.DigitMethodTests.test_to_exponential) ... ok
+test_to_fixed (test_numref.DigitMethodTests.test_to_fixed) ... ok
+test_to_precision (test_numref.DigitMethodTests.test_to_precision) ... ok
+test_the_committed_corpus_is_what_the_generator_writes (test_numref.GeneratorTests.test_the_committed_corpus_is_what_the_generator_writes) ... note: --proplist not given; the Zs set was not re-derived from the pinned file
+ok
+test_the_generator_writes_the_revision_REVISIONS_md_ends_at (test_numref.GeneratorTests.test_the_generator_writes_the_revision_REVISIONS_md_ends_at) ... ok
+test_early_errors (test_numref.LiteralTests.test_early_errors) ... ok
+test_values (test_numref.LiteralTests.test_values) ... ok
+test_every_admissible_value_round_trips (test_numref.NumberToStringTests.test_every_admissible_value_round_trips) ... ok
+test_known_answers (test_numref.NumberToStringTests.test_known_answers) ... ok
+test_radix_10_recommendation_agrees_with_cpython (test_numref.NumberToStringTests.test_radix_10_recommendation_agrees_with_cpython) ... ok
+test_the_smallest_subnormal_admits_every_one_digit_string_that_rounds_to_it (test_numref.NumberToStringTests.test_the_smallest_subnormal_admits_every_one_digit_string_that_rounds_to_it) ... ok
+test_from_fraction_agrees_with_cpython_division (test_numref.RoundingTests.test_from_fraction_agrees_with_cpython_division) ... ok
+test_ties_round_to_even (test_numref.RoundingTests.test_ties_round_to_even) ... ok
+test_to_fraction_is_exact (test_numref.RoundingTests.test_to_fraction_is_exact) ... ok
+test_non_decimal_strings_are_exact (test_numref.StringTests.test_non_decimal_strings_are_exact) ... ok
+test_parse_float (test_numref.StringTests.test_parse_float) ... ok
+test_parse_int (test_numref.StringTests.test_parse_int) ... ok
+test_round_mv_result_admits_both_options_beyond_20_digits (test_numref.StringTests.test_round_mv_result_admits_both_options_beyond_20_digits) ... ok
+test_short_decimal_strings_agree_with_cpython (test_numref.StringTests.test_short_decimal_strings_agree_with_cpython) ... ok
+test_white_space (test_numref.StringTests.test_white_space) ... ok
+test_d1_holds_the_specials_at_both_signs_and_nan (test_reference_population.ClassTests.test_d1_holds_the_specials_at_both_signs_and_nan) ... ok
+test_d2_and_d3_hold_each_power_with_its_neighbours (test_reference_population.ClassTests.test_d2_and_d3_hold_each_power_with_its_neighbours) ... ok
+test_d6_skips_nan_draws_without_counting_them (test_reference_population.ClassTests.test_d6_skips_nan_draws_without_counting_them) ... ok
+test_escaping_survives_every_code_unit (test_reference_population.ClassTests.test_escaping_survives_every_code_unit) ... ok
+test_p2_strings_bracket_the_midpoint (test_reference_population.ClassTests.test_p2_strings_bracket_the_midpoint) ... ok
+test_t1_values_are_exact_ties_at_their_digit_count (test_reference_population.ClassTests.test_t1_values_are_exact_ties_at_their_digit_count) ... ok
+test_t2_values_have_one_more_significant_digit_than_their_precision_ending_in_5 (test_reference_population.ClassTests.test_t2_values_have_one_more_significant_digit_than_their_precision_ending_in_5) ... ok
+test_the_published_reference_outputs (test_reference_population.SplitMix64Tests.test_the_published_reference_outputs) ... ok
+
+----------------------------------------------------------------------
+Ran 62 tests in 26.437s
+
+OK

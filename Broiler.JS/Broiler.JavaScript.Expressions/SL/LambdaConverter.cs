@@ -60,7 +60,8 @@ public class LambdaConverter : BExpressionVisitor<Expression>
             BOperator.Multipley => Expression.Multiply(left, right),
             BOperator.Divide => Expression.Divide(left, right),
             BOperator.Mod => Expression.Modulo(left, right),
-            BOperator.Power => Expression.Power(left, right),
+            // Number::exponentiate, the shared library's (SJL-4.5): Expression.Power without a method is Math.Pow.
+            BOperator.Power => Expression.Power(left, right, BExpression.NumberExponentiate),
             BOperator.Xor => Expression.ExclusiveOr(left, right),
             BOperator.BitwiseAnd => Expression.And(left, right),
             BOperator.BitwiseOr => Expression.Or(left, right),

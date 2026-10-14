@@ -48,7 +48,7 @@ partial class JSNumber
             if (double.IsNaN(this.value))
                 return false;
 
-            return bigint.value.CompareToNumber(this.value) > 0;
+            return JSBigInt.OrderAgainstNumber(bigint.value, this.value) > 0;
         }
 
         return base.Less(value);
@@ -66,7 +66,7 @@ partial class JSNumber
             if (double.IsNaN(this.value))
                 return false;
 
-            return bigint.value.CompareToNumber(this.value) >= 0;
+            return JSBigInt.OrderAgainstNumber(bigint.value, this.value) >= 0;
         }
 
         return base.LessOrEqual(value);
@@ -84,7 +84,7 @@ partial class JSNumber
             if (double.IsNaN(this.value))
                 return false;
 
-            return bigint.value.CompareToNumber(this.value) < 0;
+            return JSBigInt.OrderAgainstNumber(bigint.value, this.value) < 0;
         }
 
         return base.Greater(value);
@@ -102,7 +102,7 @@ partial class JSNumber
             if (double.IsNaN(this.value))
                 return false;
 
-            return bigint.value.CompareToNumber(this.value) <= 0;
+            return JSBigInt.OrderAgainstNumber(bigint.value, this.value) <= 0;
         }
 
         return base.GreaterOrEqual(value);
@@ -118,7 +118,7 @@ partial class JSNumber
             // @@toPrimitive receives the "number" hint rather than "default".
             value = value is JSObject @object ? @object.ToNumberPrimitive() : value;
             return value is JSBigInt bigint
-                ? new JSNumber(JSBigInt.ToNumber(bigint.value))
+                ? new JSNumber(BigIntMath.ToNumber(bigint.value, null))
                 : new JSNumber(value.DoubleValue);
         }
 
@@ -186,7 +186,7 @@ partial class JSNumber
             return new JSString(NumberText.ToString(value));
 
         // §21.1.3.6 steps 3-4: ToIntegerOrInfinity(radix), so null, NaN and 0 are 0 and out of range.
-        var radixMV = ToIntegerOrInfinity(radix);
+        var radixMV = IntegerOf(radix);
         if (radixMV < 2 || radixMV > 36)
             throw JSEngine.NewRangeError("The radix must be between 2 and 36, inclusive.");
 
@@ -203,7 +203,7 @@ partial class JSNumber
 
         // Step 2: ToIntegerOrInfinity(fractionDigits), with any observable coercion, before the
         // non-finite short-circuit of step 4 (NaN.toExponential(-1) === "NaN").
-        var f = hasFractionDigits ? ToIntegerOrInfinity(fractionDigits) : 0;
+        var f = hasFractionDigits ? IntegerOf(fractionDigits) : 0;
         if (!double.IsFinite(nv))
             return new JSString(NumberText.ToString(nv));
 
@@ -221,7 +221,7 @@ partial class JSNumber
 
         // Steps 2-5: ToIntegerOrInfinity(fractionDigits), and the range check, which an infinity
         // fails, before a non-finite x is looked at.
-        var f = ToIntegerOrInfinity(a.Get1());
+        var f = IntegerOf(a.Get1());
         if (f < 0 || f > 100)
             throw JSEngine.NewRangeError("toFixed() digits argument must be between 0 and 100");
 
@@ -239,7 +239,7 @@ partial class JSNumber
 
         // Step 3 coerces the precision before step 4 looks at x, so a valueOf that throws throws
         // even for Infinity; step 5 checks the truncated value, so 100.5 is 100.
-        var p = ToIntegerOrInfinity(precision);
+        var p = IntegerOf(precision);
         if (!double.IsFinite(nv))
             return new JSString(NumberText.ToString(nv));
 
@@ -249,13 +249,9 @@ partial class JSNumber
         return new JSString(NumberText.ToPrecision(nv, (int)p));
     }
 
-    // ToIntegerOrInfinity (ECMA-262 7.1.5): ToNumber, which throws on a Symbol or a BigInt, then
-    // NaN is 0 and the rest is truncated toward zero.
-    private static double ToIntegerOrInfinity(JSValue value)
-    {
-        var number = value.DoubleValue;
-        return double.IsNaN(number) ? 0 : Math.Truncate(number);
-    }
+    // ToIntegerOrInfinity (ECMA-262 7.1.5): ToNumber, which throws on a Symbol or a BigInt, then the
+    // shared library's IntegerConversions.ToIntegerOrInfinity (SJL-4.5).
+    private static double IntegerOf(JSValue value) => IntegerConversions.ToIntegerOrInfinity(value.DoubleValue);
 
     [JSPrototypeMethod]
     [JSExport("toLocaleString", Length = 0)]

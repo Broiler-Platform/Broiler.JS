@@ -8,6 +8,7 @@ using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.DataView;
 
@@ -117,13 +118,13 @@ public partial class DataView : JSObject
         // ToIndex(byteOffset): a fractional value truncates toward zero, NaN / undefined become 0, and
         // a negative or non-integral-index value (e.g. -Infinity, +Infinity) is a RangeError — observed
         // before the offset is range-checked against the buffer.
-        var byteOffset = ToIndex(a[1]); //optional, if not available assign 0
+        var byteOffset = IndexArgument(a[1]); //optional, if not available assign 0
 
         var byteLengthArg = a[2];
         long byteLength = 0;
         var hasExplicitLength = byteLengthArg != null && !byteLengthArg.IsUndefined;
         if (hasExplicitLength)
-            byteLength = ToIndex(byteLengthArg);
+            byteLength = IndexArgument(byteLengthArg);
 
         // First bounds check (spec steps 5/6/9b) — against the buffer's CURRENT byte length, before
         // the prototype getter has had a chance to resize.
@@ -163,24 +164,23 @@ public partial class DataView : JSObject
         this.byteOffset = (int)byteOffset;
     }
 
-    // ToIndex (abstract operation): ToNumber the argument (observing valueOf), truncate toward zero,
-    // and require the result to be an integer index in [0, 2^53-1]; undefined / NaN map to 0 and a
-    // negative or out-of-range value (including ±Infinity) is a RangeError. Returned as a long so the
-    // buffer-bounds comparisons happen before the value is narrowed to the int offset/length fields.
+    // ToIndex (abstract operation): ToNumber the argument (observing valueOf), then the shared
+    // library's range rule (SJL-4.5): an integer index in [0, 2^53-1]; undefined / NaN map to 0 and a
+    // negative or out-of-range value (including ±Infinity) is this engine's RangeError. Returned as a
+    // long so the buffer-bounds comparisons happen before the value is narrowed to the int
+    // offset/length fields.
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 s7.1.22; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
     // Broiler-Falsified-If: a byteOffset or byteLength of -1 or 2^53 is accepted instead of raising a RangeError, or undefined yields anything but 0
     // Broiler-Human:        PENDING
-    private static long ToIndex(JSValue value)
+    private static long IndexArgument(JSValue value)
     {
         if (value == null || value.IsUndefined)
             return 0;
 
-        var number = value.DoubleValue;
-        var integer = double.IsNaN(number) ? 0 : Math.Truncate(number);
-        if (integer < 0 || integer > 9007199254740991d) // 2^53 - 1
+        if (!IntegerConversions.TryToIndex(value.DoubleValue, out var index))
             throw JSEngine.NewRangeError("DataView offset or length is out of range.");
 
-        return (long)integer;
+        return index;
     }
 
     // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
@@ -264,21 +264,19 @@ public partial class DataView : JSObject
     // Broiler-Falsified-If: an index above int.MaxValue but below 2^53 is narrowed to a value that passes the per-access bounds check, or an index of -1 is accepted
     // Broiler-Human:        PENDING
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static int ToByteOffset(JSValue value)
+    private static int ByteOffsetArgument(JSValue value)
     {
-        // ToIndex (SetViewValue step 4 / GetViewValue step 4): ToNumber then truncate
-        // toward zero; NaN/undefined → 0; a negative value or one above 2^53-1 (including
+        // ToIndex (SetViewValue step 4 / GetViewValue step 4): ToNumber, then the shared library's
+        // range rule (SJL-4.5); NaN/undefined → 0; a negative value or one above 2^53-1 (including
         // ±Infinity) is a RangeError. This runs BEFORE the value coercion in the set*
         // methods, so an out-of-range index is rejected before the value's valueOf is
         // observed (test262: DataView/prototype/set*/index-check-before-value-conversion).
-        var number = value.DoubleValue;
-        var integer = double.IsNaN(number) ? 0 : Math.Truncate(number);
-        if (integer < 0 || integer > 9007199254740991d) // [0, 2^53 - 1]
+        if (!IntegerConversions.TryToIndex(value.DoubleValue, out var index))
             throw JSEngine.NewRangeError("DataView offset is outside the bounds of the buffer.");
 
         // A valid index that still overflows int is clamped so the per-access bounds
         // check (getIndex + elementSize > viewSize) reports it as out of range.
-        return integer > int.MaxValue ? int.MaxValue : (int)integer;
+        return index > int.MaxValue ? int.MaxValue : (int)index;
     }
 
     /// <summary>
@@ -303,7 +301,7 @@ public partial class DataView : JSObject
     // Broiler-Human:        PENDING
     public long GetInt64(in Arguments a)
     {
-        var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
+        var byteOffset = ByteOffsetArgument(a[0] ?? JSUndefined.Value);
         var littleEndian = a[1]?.BooleanValue ?? false;
 
         if (byteOffset < 0 || byteOffset > RequireInBoundsByteLength() - 8)
@@ -328,7 +326,7 @@ public partial class DataView : JSObject
     public int GetInt32Int(in Arguments a)
     {
         var @this = this;
-        var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
+        var byteOffset = ByteOffsetArgument(a[0] ?? JSUndefined.Value);
         var littleEndian = a[1]?.BooleanValue ?? false;
         
         if (byteOffset < 0 || byteOffset > @this.RequireInBoundsByteLength() - 4)
@@ -371,8 +369,8 @@ public partial class DataView : JSObject
     public JSValue GetFloat16(in Arguments a)
     {
         int temp = GetInt16Int(in a);
-        var half = BitConverter.UInt16BitsToHalf((ushort)temp);
-        return new JSNumber((double)half);
+        // The decoding is the shared library's (SJL-4.5).
+        return new JSNumber(Float16.Decode(unchecked((ushort)temp)));
     }
 
     /// <summary>
@@ -402,7 +400,7 @@ public partial class DataView : JSObject
     public int GetInt16Int(in Arguments a)
     {
         var @this = this;
-        var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
+        var byteOffset = ByteOffsetArgument(a[0] ?? JSUndefined.Value);
         var littleEndian = a[1]?.BooleanValue ?? false;
 
         if (byteOffset < 0 || byteOffset > @this.RequireInBoundsByteLength() - 2)
@@ -468,7 +466,7 @@ public partial class DataView : JSObject
     public int GetInt8Int(in Arguments a)
     {
         var @this = this;
-        var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
+        var byteOffset = ByteOffsetArgument(a[0] ?? JSUndefined.Value);
 
         if (byteOffset < 0 || byteOffset > @this.RequireInBoundsByteLength() - 1)
             ThrowOffsetOutOfBounds(byteOffset);
@@ -527,7 +525,7 @@ public partial class DataView : JSObject
     public JSValue GetUint8(in Arguments a)
     {
         var @this = this;
-        var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
+        var byteOffset = ByteOffsetArgument(a[0] ?? JSUndefined.Value);
         
         if (byteOffset < 0 || byteOffset > @this.RequireInBoundsByteLength() - 1)
             ThrowOffsetOutOfBounds(byteOffset);
@@ -545,19 +543,6 @@ public partial class DataView : JSObject
     /// <param name="value"> The value to set. </param>
     /// <param name="littleEndian"> Indicates whether the 64-bit float is stored in little- or
     /// big-endian format. If false or undefined, a big-endian value is written. </param>
-    // RawBitsFor reduces a (ToBigInt-coerced) value to its low 64 bits — the
-    // two's-complement 8-byte pattern shared by setBigInt64/setBigUint64. A plain
-    // (long)/(ulong) cast on JSBigInt.BigIntValue overflows for magnitudes that do
-    // not fit a signed 64-bit integer, so mask the BigInteger directly.
-    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
-    // Broiler-Falsified-If: -1n yields anything other than 0xFFFFFFFFFFFFFFFF, or 2 to the 64th plus 5 yields anything other than 5
-    // Broiler-Human:        PENDING
-    private static ulong RawBitsFor(JSValue value)
-    {
-        var big = value is JSBigInt bigint ? bigint.value : new System.Numerics.BigInteger(value.BigIntValue);
-        return (ulong)(big & ((BigInteger.One << 64) - 1));
-    }
-
     // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=4; Fingerprint=TBF
     // Broiler-Falsified-If: setBigInt64 with 2^63 stores anything other than 80 followed by seven zero bytes big-endian
     // Broiler-Human:        PENDING
@@ -565,7 +550,8 @@ public partial class DataView : JSObject
     public JSValue SetBigInt64(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 8, bigInt: true);
-        @this.WriteUInt64(byteOffset, RawBitsFor(value), littleEndian);
+        // ToBigInt64's bit pattern is the shared library's (SJL-4.5).
+        @this.WriteUInt64(byteOffset, unchecked((ulong)IntegerConversions.ToBigInt64(((JSBigInt)value).value)), littleEndian);
         return JSUndefined.Value;
     }
 
@@ -576,7 +562,8 @@ public partial class DataView : JSObject
     public JSValue SetBigUInt64(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 8, bigInt: true);
-        @this.WriteUInt64(byteOffset, RawBitsFor(value), littleEndian);
+        // ToBigUint64's bit pattern is the shared library's (SJL-4.5).
+        @this.WriteUInt64(byteOffset, IntegerConversions.ToBigUint64(((JSBigInt)value).value), littleEndian);
         return JSUndefined.Value;
     }
 
@@ -602,8 +589,9 @@ public partial class DataView : JSObject
     public JSValue SetFloat16(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 2);
-        var half = (Half)value.DoubleValue;
-        @this.WriteUInt16(byteOffset, BitConverter.HalfToUInt16Bits(half), littleEndian);
+        // The encoding is the shared library's; a NaN keeps its sign and high payload bits, this
+        // engine's choice of the implementation-defined NaN encoding (SJL-4.5).
+        @this.WriteUInt16(byteOffset, Float16.Encode(value.DoubleValue, Float16NanPolicy.PreservePayload), littleEndian);
         return JSUndefined.Value;
     }
 
@@ -626,7 +614,7 @@ public partial class DataView : JSObject
     public JSValue SetInt16(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 2);
-        @this.WriteUInt16(byteOffset, (ushort)value.IntValue, littleEndian);
+        @this.WriteUInt16(byteOffset, unchecked((ushort)IntegerConversions.ToInt16(value.DoubleValue)), littleEndian);
         return JSUndefined.Value;
     }
 
@@ -649,7 +637,7 @@ public partial class DataView : JSObject
     public JSValue SetInt8(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 1);
-        var bytes = (byte)(sbyte)(uint)value.IntValue;
+        var bytes = unchecked((byte)IntegerConversions.ToInt8(value.DoubleValue));
 
         @this.buffer.buffer[@this.byteOffset + byteOffset] = bytes;
         return JSUndefined.Value;
@@ -662,7 +650,7 @@ public partial class DataView : JSObject
     public JSValue SetUint16(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 2);
-        @this.WriteUInt16(byteOffset, (ushort)value.IntValue, littleEndian);
+        @this.WriteUInt16(byteOffset, IntegerConversions.ToUint16(value.DoubleValue), littleEndian);
         return JSUndefined.Value;
     }
 
@@ -684,7 +672,7 @@ public partial class DataView : JSObject
     public JSValue SetUint8(in Arguments a)
     {
         var (byteOffset, littleEndian, @this, value) = GetSetArgs(in a, 1);
-        var bytes = (byte)(uint)value.IntValue;
+        var bytes = IntegerConversions.ToUint8(value.DoubleValue);
 
         @this.buffer.buffer[@this.byteOffset + byteOffset] = bytes;
         return JSUndefined.Value;
@@ -707,7 +695,7 @@ public partial class DataView : JSObject
 
         // An omitted byteOffset is ToIndex(undefined) = 0 and an omitted value is undefined
         // (coerced per type); neither argument is required.
-        var byteOffset = ToByteOffset(a[0] ?? JSUndefined.Value);
+        var byteOffset = ByteOffsetArgument(a[0] ?? JSUndefined.Value);
         var value = a[1] ?? JSUndefined.Value;
 
         // SetViewValue coerces the value (step 6 — ToBigInt for the BigInt element types,

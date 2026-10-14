@@ -2,6 +2,7 @@
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
@@ -112,8 +113,15 @@ public readonly struct TypedArrayParameters
             // the byteOffset/length arguments.
             prototype = JSEngine.NewTargetPrototype;
             buffer = arrayBuffer;
-            byteOffset = JSTypedArray.ToIntegerOrInfinity(a2);
-            length = a3.IsUndefined ? -1 : ToTypedArrayLength(a3);
+            // InitializeTypedArrayFromArrayBuffer steps 2-4: ToIndex(byteOffset), the RangeError
+            // for an offset that is not a multiple of the element size, and only then
+            // ToIndex(length), so a misaligned offset is refused before the length's valueOf runs.
+            var offset = IndexArgument(a2, "Invalid typed array offset");
+            if (offset % bytesPerElements != 0)
+                throw JSEngine.NewRangeError($"Start offset {offset} is outside the bounds of the buffer");
+
+            byteOffset = offset > int.MaxValue ? int.MaxValue : (int)offset;
+            length = a3.IsUndefined ? -1 : LengthArgument(a3);
             return;
         }
 
@@ -125,7 +133,7 @@ public readonly struct TypedArrayParameters
             // prototype getter.
             buffer = null;
             byteOffset = 0;
-            length = ToTypedArrayLength(a1);
+            length = LengthArgument(a1);
             prototype = JSEngine.NewTargetPrototype;
             return;
         }
@@ -153,22 +161,24 @@ public readonly struct TypedArrayParameters
     // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
     // Broiler-Falsified-If: new Float64Array(2**29) returns a view of length 0 instead of throwing a RangeError, because only the element count and not its byte size is held to 2147483647
     // Broiler-Human:        PENDING
-    private static int ToTypedArrayLength(JSValue value)
+    private static int LengthArgument(JSValue value)
     {
-        // ToIndex: ToIntegerOrInfinity truncates toward zero FIRST (so -0.1 → -0,
-        // NaN/undefined → 0), and only then is the sign / upper-bound checked. A
-        // fractional value in (-1, 0) must not throw — it floors to 0.
-        var numberLength = value.DoubleValue;
-        if (double.IsNaN(numberLength))
-            return 0;
-
-        var integer = Math.Truncate(numberLength);
-        if (integer < 0 || integer > 9007199254740991.0)
+        // ToIndex is the shared library's range rule (SJL-4.5): a fraction in (-1, 0) truncates to
+        // 0 and does not throw. A length past int.MaxValue is this engine's allocation limit.
+        var index = IndexArgument(value, "Invalid typed array length");
+        if (index > int.MaxValue)
             throw JSEngine.NewRangeError("Invalid typed array length");
 
-        if (integer > int.MaxValue)
-            throw JSEngine.NewRangeError("Invalid typed array length");
+        return (int)index;
+    }
 
-        return (int)integer;
+    // ToIndex (§7.1.22): this engine's ToNumber, then the shared library's range rule; the
+    // RangeError is this engine's.
+    private static long IndexArgument(JSValue value, string message)
+    {
+        if (!IntegerConversions.TryToIndex(value.DoubleValue, out var index))
+            throw JSEngine.NewRangeError(message);
+
+        return index;
     }
 }

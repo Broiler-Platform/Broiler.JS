@@ -130,17 +130,7 @@ internal sealed class JSRegExpStringIterator : JSObject
         return regExp.Exec(new Arguments(regexp, input));
     }
 
-    private int GetObservableLastIndex()
-    {
-        var observableLastIndex = regexp[KeyStrings.lastIndex].DoubleValue;
-        if (double.IsNaN(observableLastIndex) || observableLastIndex <= 0)
-            return 0;
-
-        if (observableLastIndex >= int.MaxValue)
-            return int.MaxValue;
-
-        return (int)observableLastIndex;
-    }
+    private int GetObservableLastIndex() => JSRegExp.LengthOf(regexp[KeyStrings.lastIndex]);
 
     private static JSObject CreateIterResult(JSValue value, bool done)
     {

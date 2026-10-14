@@ -1,5 +1,6 @@
 ﻿using Broiler.JavaScript.BuiltIns.RegExp;
 using System;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Symbol;
@@ -47,13 +48,15 @@ public partial class JSString
         if (IsRegExpArgument(f))
             throw JSEngine.NewTypeError("Substring argument must not be a regular expression.");
 
-        var endPosition = a[1]?.IntegerValue ?? int.MaxValue;
+        // §22.1.3.7: searchString's ToString, then the position; an undefined endPosition is the
+        // length, and any other is ToIntegerOrInfinity's, the shared library's (SJL-4.5).
         var fs = f.StringValue;
+        var endArg = a[1];
 
-        if (endPosition == int.MaxValue)
+        if (endArg == null || endArg.IsUndefined)
             return @this.EndsWith(fs) ? BooleanTrue : BooleanFalse;
 
-        endPosition = Math.Min(Math.Max(0, endPosition), @this.Length);
+        var endPosition = Clamp(IntegerArgument(endArg), @this.Length);
 
         if (fs.Length > endPosition)
             return BooleanFalse;
@@ -70,16 +73,16 @@ public partial class JSString
     {
         var @this = a.This.AsString();
         var searchStr = a[0] ?? JSUndefined.Value;
-        var pos = a[1]?.IntegerValue ?? 0;
 
         if (IsRegExpArgument(searchStr))
             throw JSEngine.NewTypeError("Substring argument must not be a regular expression.");
 
+        // §22.1.3.24: searchString's ToString, then the position's ToIntegerOrInfinity.
         var search = searchStr.StringValue;
+        var pos = Clamp(IntegerArgument(a[1]), @this.Length);
         if (pos == 0)
             return @this.StartsWith(search) ? BooleanTrue : BooleanFalse;
 
-        pos = Math.Min(Math.Max(0, pos), @this.Length);
         // §22.1.3.22 step 8: if searchLength + start > len, return false. Otherwise
         // compare searchStr against the slice of S that starts at `start` — anchored at
         // `start`, not found anywhere via IndexOf. An empty searchStr therefore matches
@@ -99,13 +102,14 @@ public partial class JSString
     {
         var @this = a.This.AsString();
         var searchStr = a[0] ?? JSUndefined.Value;
-        var pos = a[1]?.IntegerValue ?? 0;
 
         if (IsRegExpArgument(searchStr))
             throw JSEngine.NewTypeError("Substring argument must not be a regular expression.");
 
-        pos = Math.Min(Math.Max(pos, 0), @this.Length);
-        return @this.IndexOf(searchStr.StringValue, pos) >= 0 ? BooleanTrue : BooleanFalse;
+        // §22.1.3.8: searchString's ToString, then the position's ToIntegerOrInfinity.
+        var search = searchStr.StringValue;
+        var pos = Clamp(IntegerArgument(a[1]), @this.Length);
+        return @this.IndexOf(search, pos) >= 0 ? BooleanTrue : BooleanFalse;
     }
 
     [JSPrototypeMethod]
@@ -117,9 +121,7 @@ public partial class JSString
         // ToInteger(position). Read searchString BEFORE coercing position so an
         // exception from the search argument surfaces first.
         var searchString = (a[0] ?? JSUndefined.Value).StringValue;
-        var pos = a[1]?.IntegerValue ?? 0;
-
-        pos = Math.Min(Math.Max(pos, 0), @this.Length);
+        var pos = Clamp(IntegerArgument(a[1]), @this.Length);
 
         var index = @this.IndexOf(searchString, pos);
         return CreateNumber(index);
@@ -144,7 +146,7 @@ public partial class JSString
         // returned -1 \u2014 "not found" for a string that is always found.
         var start = double.IsNaN(fromIndex)
             ? length
-            : fromIndex <= 0 ? 0 : fromIndex >= length ? length : (int)fromIndex;
+            : Clamp(IntegerConversions.ToIntegerOrInfinity(fromIndex), length);
 
         // StringLastIndexOf: the largest k <= start with k + searchLength <= length that matches.
         var lastPossible = Math.Min(start, length - search.Length);

@@ -1,0 +1,372 @@
+{
+  "differences": {
+    "file": "differences.tsv.gz",
+    "lines": 8067692,
+    "sha256": "dcb70e77174b9bbc1aaad38e83cbf6d8a8153f4cf805b26550dd4a335c12840e"
+  },
+  "classification": {
+    "file": "classification.tsv.gz",
+    "lines": 8067692,
+    "sha256": "c81fa93bda5dab1ccee4bc989602a6ce2d8cc32208a206141bf1895e44c21edf"
+  },
+  "unclassified": 1062,
+  "groups": [
+    {
+      "operation": "A rational's nearest double",
+      "variant": "J:JSTemporalDuration.RatioToDouble",
+      "class": "a",
+      "reason": "does not round the rational once to the nearest double",
+      "count": 31636
+    },
+    {
+      "operation": "A rational's nearest double",
+      "variant": "V:JsTemporalCore.ToDouble(num, den)",
+      "class": "a",
+      "reason": "does not round the rational once to the nearest double",
+      "count": 143
+    },
+    {
+      "operation": "An integer's nearest double",
+      "variant": "J:JSTemporalDuration.NearestDouble",
+      "class": "a",
+      "reason": "answers another value",
+      "count": 6
+    },
+    {
+      "operation": "ApplyUnsignedRoundingMode, a window",
+      "variant": "J:JSTemporalPlainDate's NudgeToCalendarUnit with TemporalRoundingOptions.ApplyRoundingPicksEnd",
+      "class": "a",
+      "reason": "rounds to the other end",
+      "count": 1104
+    },
+    {
+      "operation": "ApplyUnsignedRoundingMode, a window",
+      "variant": "J:JSTemporalZonedDateTime's NudgeToCalendarUnit with ApplyRoundingPicksEnd",
+      "class": "a",
+      "reason": "rounds to the other end",
+      "count": 1104
+    },
+    {
+      "operation": "BigInt.asUintN",
+      "variant": "J:JSBigInt.AsUintN",
+      "class": "a",
+      "reason": "answers an input the clause or the policy refuses",
+      "count": 28664
+    },
+    {
+      "operation": "BigInt.asUintN",
+      "variant": "J:JSBigInt.AsUintN",
+      "class": "a",
+      "reason": "throws DivideByZeroException where the clause gives a result or a RangeError",
+      "count": 28664
+    },
+    {
+      "operation": "BigInt::exponentiate",
+      "variant": "J:JSBigInt.Power",
+      "class": "a",
+      "reason": "throws OverflowException where the clause gives a result or a RangeError",
+      "count": 8473
+    },
+    {
+      "operation": "BigInt::toString",
+      "variant": "J:JSBigInt.BigIntegerToRadixString (radix 10: ToString), under U+2212",
+      "class": "a",
+      "reason": "follows the process's culture (its negative sign)",
+      "count": 14332
+    },
+    {
+      "operation": "Comparison with a Number",
+      "variant": "J:JSBigInt.EqualsLiteral",
+      "class": "a",
+      "reason": "orders the BigInt and the Number wrongly",
+      "count": 2
+    },
+    {
+      "operation": "Math.cbrt",
+      "variant": "J:JSMath.Cbrt",
+      "class": "b",
+      "reason": "both admitted",
+      "count": 145011
+    },
+    {
+      "operation": "Math.cbrt",
+      "variant": "V:JsRealm's cbrt",
+      "class": "b",
+      "reason": "both admitted",
+      "count": 576644
+    },
+    {
+      "operation": "Math.expm1",
+      "variant": "J:JSMath.Expm1",
+      "class": "a",
+      "reason": "is more than one unit in the last place from the exact value near zero",
+      "count": 794
+    },
+    {
+      "operation": "Math.expm1",
+      "variant": "J:JSMath.Expm1",
+      "class": "b",
+      "reason": "both admitted",
+      "count": 21911
+    },
+    {
+      "operation": "Math.expm1",
+      "variant": "V:JsRealm.MathExpMinusOne",
+      "class": "a",
+      "reason": "is more than one unit in the last place from the exact value near zero",
+      "count": 518694
+    },
+    {
+      "operation": "Math.expm1",
+      "variant": "V:JsRealm.MathExpMinusOne",
+      "class": "b",
+      "reason": "both admitted",
+      "count": 13969
+    },
+    {
+      "operation": "Math.hypot",
+      "variant": "J:JSMath.Hypot",
+      "class": "b",
+      "reason": "both admitted",
+      "count": 13701
+    },
+    {
+      "operation": "Math.hypot",
+      "variant": "V:JsRealm.MathHypotenuse",
+      "class": "b",
+      "reason": "both admitted",
+      "count": 10562
+    },
+    {
+      "operation": "Math.log1p",
+      "variant": "J:JSMath.Log1p",
+      "class": "a",
+      "reason": "is more than one unit in the last place from the exact value near zero",
+      "count": 367
+    },
+    {
+      "operation": "Math.log1p",
+      "variant": "J:JSMath.Log1p",
+      "class": "b",
+      "reason": "both admitted",
+      "count": 11496
+    },
+    {
+      "operation": "Math.log1p",
+      "variant": "V:JsRealm.MathLogOnePlus",
+      "class": "a",
+      "reason": "is more than one unit in the last place from the exact value near zero",
+      "count": 518579
+    },
+    {
+      "operation": "Math.log1p",
+      "variant": "V:JsRealm.MathLogOnePlus",
+      "class": "b",
+      "reason": "both admitted",
+      "count": 11866
+    },
+    {
+      "operation": "Math.sumPrecise",
+      "variant": "V:JsRealm.MathSumPrecise",
+      "class": "a",
+      "reason": "misses the clause's special case or exact result",
+      "count": 40
+    },
+    {
+      "operation": "Number::exponentiate",
+      "variant": "J:JSValue.Power",
+      "class": "a",
+      "reason": "is outside the admitted bound",
+      "count": 1
+    },
+    {
+      "operation": "StringToBigInt",
+      "variant": "V:JsBigInt.TryParseStringInteger",
+      "class": "unclassified",
+      "reason": "the reference cannot judge the input",
+      "count": 1062
+    },
+    {
+      "operation": "ToIndex",
+      "variant": "J:DataView.ToByteOffset",
+      "class": "a",
+      "reason": "saturates at its type's bound",
+      "count": 5808
+    },
+    {
+      "operation": "ToIndex",
+      "variant": "J:JSArrayBuffer.ToBufferLength",
+      "class": "a",
+      "reason": "refuses with a RangeError an input the clause answers",
+      "count": 5808
+    },
+    {
+      "operation": "ToIndex",
+      "variant": "J:JSAtomics.ToIndex",
+      "class": "a",
+      "reason": "refuses with a RangeError an input the clause answers",
+      "count": 5808
+    },
+    {
+      "operation": "ToIndex",
+      "variant": "J:TypedArrayParameters.ToTypedArrayLength",
+      "class": "a",
+      "reason": "refuses with a RangeError an input the clause answers",
+      "count": 5808
+    },
+    {
+      "operation": "ToInt16",
+      "variant": "J:JSAtomics.TruncateToElement(Int16, ToIntegerOperand)",
+      "class": "a",
+      "reason": "wraps the operand after saturating it to 64 bits, not the integer itself",
+      "count": 250486
+    },
+    {
+      "operation": "ToInt32",
+      "variant": "J:JSAtomics.TruncateToElement(Int32, ToIntegerOperand)",
+      "class": "a",
+      "reason": "wraps the operand after saturating it to 64 bits, not the integer itself",
+      "count": 254518
+    },
+    {
+      "operation": "ToInt8",
+      "variant": "J:JSAtomics.TruncateToElement(Int8, ToIntegerOperand)",
+      "class": "a",
+      "reason": "wraps the operand after saturating it to 64 bits, not the integer itself",
+      "count": 249454
+    },
+    {
+      "operation": "ToIntegerOrInfinity",
+      "variant": "J:JSArrayBuffer.ToIntegerOrInfinity",
+      "class": "a",
+      "reason": "answers a finite value for an infinity",
+      "count": 2
+    },
+    {
+      "operation": "ToIntegerOrInfinity",
+      "variant": "J:JSArrayBuffer.ToIntegerOrInfinity",
+      "class": "a",
+      "reason": "saturates at its type's bound",
+      "count": 512289
+    },
+    {
+      "operation": "ToIntegerOrInfinity",
+      "variant": "J:JSArrayPrototype.ToIntegerOrInfinity",
+      "class": "a",
+      "reason": "answers an infinity for a finite integer (its saturation sentinel)",
+      "count": 495484
+    },
+    {
+      "operation": "ToIntegerOrInfinity",
+      "variant": "J:JSAtomics.ToIntegerOperand",
+      "class": "a",
+      "reason": "answers a finite value for an infinity",
+      "count": 2
+    },
+    {
+      "operation": "ToIntegerOrInfinity",
+      "variant": "J:JSAtomics.ToIntegerOperand",
+      "class": "a",
+      "reason": "saturates at its type's bound",
+      "count": 495483
+    },
+    {
+      "operation": "ToIntegerOrInfinity",
+      "variant": "J:JSIntlSegments.ContainingPrototype's index",
+      "class": "a",
+      "reason": "answers -0 where the clause's integer is 0",
+      "count": 260990
+    },
+    {
+      "operation": "ToIntegerOrInfinity",
+      "variant": "J:JSNumberPrototype.ToIntegerOrInfinity",
+      "class": "a",
+      "reason": "answers -0 where the clause's integer is 0",
+      "count": 260990
+    },
+    {
+      "operation": "ToIntegerOrInfinity",
+      "variant": "J:JSTypedArray.ToIntegerOrInfinity",
+      "class": "a",
+      "reason": "answers a finite value for an infinity",
+      "count": 2
+    },
+    {
+      "operation": "ToIntegerOrInfinity",
+      "variant": "J:JSTypedArray.ToIntegerOrInfinity",
+      "class": "a",
+      "reason": "saturates at its type's bound",
+      "count": 512289
+    },
+    {
+      "operation": "ToIntegerOrInfinity",
+      "variant": "J:JSTypedArrayPrototype.ToIntegerOrInfinityIndex",
+      "class": "a",
+      "reason": "answers an infinity for a finite integer (its saturation sentinel)",
+      "count": 495484
+    },
+    {
+      "operation": "ToIntegerOrInfinity",
+      "variant": "J:JSValue.IntegerValue",
+      "class": "a",
+      "reason": "answers a finite value for an infinity",
+      "count": 2
+    },
+    {
+      "operation": "ToIntegerOrInfinity",
+      "variant": "J:JSValue.IntegerValue",
+      "class": "a",
+      "reason": "saturates at its type's bound",
+      "count": 512289
+    },
+    {
+      "operation": "ToLength",
+      "variant": "J:BuiltInsAssemblyInitializer.ToLength",
+      "class": "a",
+      "reason": "saturates at its type's bound",
+      "count": 257923
+    },
+    {
+      "operation": "ToLength",
+      "variant": "J:JSIntl.CanonicalizeLocaleList's length",
+      "class": "a",
+      "reason": "saturates at its type's bound",
+      "count": 257644
+    },
+    {
+      "operation": "ToLength",
+      "variant": "J:JSTypedArray.FromShared's length",
+      "class": "a",
+      "reason": "saturates at its type's bound",
+      "count": 257923
+    },
+    {
+      "operation": "ToLength",
+      "variant": "J:JSTypedArray.ToArrayLikeLength (1-byte elements)",
+      "class": "a",
+      "reason": "refuses with a RangeError an input the clause answers",
+      "count": 257923
+    },
+    {
+      "operation": "ToUint16",
+      "variant": "J:JSAtomics.TruncateToElement(Uint16, ToIntegerOperand)",
+      "class": "a",
+      "reason": "wraps the operand after saturating it to 64 bits, not the integer itself",
+      "count": 250486
+    },
+    {
+      "operation": "ToUint32",
+      "variant": "J:JSAtomics.TruncateToElement(Uint32, ToIntegerOperand)",
+      "class": "a",
+      "reason": "wraps the operand after saturating it to 64 bits, not the integer itself",
+      "count": 254518
+    },
+    {
+      "operation": "ToUint8",
+      "variant": "J:JSAtomics.TruncateToElement(Uint8, ToIntegerOperand)",
+      "class": "a",
+      "reason": "wraps the operand after saturating it to 64 bits, not the integer itself",
+      "count": 249454
+    }
+  ]
+}

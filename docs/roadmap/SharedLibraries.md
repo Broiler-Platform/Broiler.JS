@@ -20,13 +20,15 @@ policy.
 
 The decisions are taken and their records filed. The shared conformance corpus exists, with this
 engine's runners over it (SJL-1), and so does the shared folder, `Broiler.ECMAScript/`, with its
-conventions, its rules, its version stream and its Native AOT probe (SJL-2); no algorithm has moved
-into it, and no engine consumes a shared package. See
-[`SharedLibraries.status.md`](SharedLibraries.status.md).
+conventions, its rules, its version stream and its Native AOT probe (SJL-2). Two areas have moved into
+it, and both engines consume them: number conversion (SJL-3) and the numerics (SJL-4, whose cut-overs
+are done and whose evidence remains). See [`SharedLibraries.status.md`](SharedLibraries.status.md).
 
 *(Corrected 2026-10-12, at milestone SJL-2. It read: "The decisions are taken, the records are being
 filed, and no shared code exists. Milestone SJL-0 is in progress in both repositories; every other
-milestone is not started.")*
+milestone is not started.")* *(Corrected again 2026-10-14, at milestone SJL-4.5; the correction was
+due from SJL-3's cut-overs. The second sentence ended: "(SJL-2); no algorithm has moved into it, and
+no engine consumes a shared package.")*
 
 ## What this repository hosts
 
@@ -100,6 +102,133 @@ JSD in Broiler.VM's JavaScript profile series, and here.
   This engine has no budget, and its adapters pass none.
 - **The non-standard extensions stay here** (SJL-D-17): the `m` literal suffix, `Number.prototype.clz`
   and `toLocaleString`'s .NET format strings. None is a shared operation.
+
+**Numerics (SJL-4.1), filed 2026-10-13: all four sub-areas accepted.** Broiler.VM's record is
+`Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0067-numerics-move-to-the-shared-algorithms-library.md`
+(JSD-0067), which states each condition for integer conversions and Float16, the Math kernels, exact
+rounding and the BigInt kernel, each on its own; its input, the correspondence from code with every
+member by file and line, is `Broiler.VM/docs/evidence/sjl-4-001/correspondence.md`. This repository's
+part of it:
+
+- **The correspondence was read from code**, at this repository's `4899f9c`, because the area has no
+  vectors yet; SJL-4.2's vectors confirm it. It found far more copies of the area here than the design
+  named: about thirteen more `ToIndex`, `ToLength` and `ToIntegerOrInfinity` helpers, Atomics' own
+  narrowing and BigInt arithmetic, `JSDate.CoercedIntValue`, a second `Math.Pow` emitter, about eleven
+  copies of the rounding modes across Temporal and Intl, and BigInt text, comparison and key paths
+  outside `JSBigInt`'s named members. Each joins the deletion list, and SJL-4.5 removes or forwards it.
+- **The corrections**, each listed in `CHANGELOG.md` at SJL-4.5 under decision SJL-D-16 (a): `1 ** NaN`
+  on every path and the ±1-to-an-infinity cases on the compiled fast paths; Atomics' operands beyond
+  2^53; `%TypedArray%.prototype.fill`'s range; the typed-array constructor's conversion order;
+  `%TypedArray%.from`'s length; a Date setter's argument; `String.prototype.endsWith`'s undefined
+  position; the scientific and compact notations' rounding mode; `NudgeToCalendarUnit`'s window;
+  `Duration.prototype.total`'s double rounding; the culture-dependent BigInt text; `Power`'s 32-bit
+  exponent and a shift's .NET exceptions; `asUintN` at very large widths; the compiled `==` between a
+  BigInt and a Number literal; BigInt property keys beyond 2^32 - 1 and below 0; and `ToBigInt`'s hint
+  and Number refusal in the typed arrays. The Intl mathematical value and the Temporal consumers'
+  quantities are wrong here too, and stay with SJL-9 and SJL-10, which the milestone leaves them to.
+- **Decision SJL-D-15 (a) is recorded here**, as the decision names this record: this engine passes
+  the BigInt kernel the unbounded width policy and a no-op meter, and maps the kernel's over-width
+  status to `RangeError` at the representation's limit, never to a .NET exception. The kernel keeps
+  Broiler.VM's charging units (JSD-0067, decision 3), which costs nothing here, where no meter is
+  passed.
+- **Decision SJL-D-25 applies to the public members the area empties**: `JSNumericOperators.ToInt32`
+  and `ToUint32` stay as forwarders, and the public, saturating `IntegerValue` stays as a member that
+  forwards to the library's `ToIntegerOrInfinity` and saturates as it does today; every specification
+  path that used it calls the library instead. `docs/public-api.md` records each at SJL-4.5.
+- **Not shared, and staying here:** `Math.fround`, `clz32`, `imul`, `max`, `min` and `sign`, whose
+  result the platform already gives; `Math.random`'s single generator; `Math.sumPrecise`'s feature
+  flag; typed arrays' host byte order. `JSMath.Clz32`'s comment cites Jurassic's `MathObject.cs`, and
+  `SumPrecise` ports the `Math.sumPrecise` proposal's reference algorithm; the third-party notices name
+  neither, and SJL-4.5 corrects that when the kernel moves.
+
+**Numerics vectors (SJL-4.2), 2026-10-13.** Corpus revision 6 adds the area's vectors
+(`conformance/vectors/numerics/`). Where the specification leaves a result to the implementation, a
+vector's `per-engine.broiler-js` expectation is this plan's, and this is what the plan commits this
+engine to:
+
+- **A Float16 NaN keeps its payload.** This engine does not normalise: a NaN is written quiet, with
+  its sign and the ten most significant bits of the double's payload, which is what its `(Half)`
+  conversion does today and what it passes the shared `Float16.Encode` as its NaN policy at SJL-4.5.
+- **The approximated Math results are the library's**, as JSD-0067 decision 5 states them: `cbrt`
+  correctly rounded; `expm1` and `log1p` within one unit in the last place; `hypot` within one unit in
+  the last place until the library states its bound; and `**` and `Math.pow`'s general case,
+  `System.Math.Pow`'s, pinned only where every approximation gives one result.
+- **A BigInt past any representation is a `RangeError`**, as decision SJL-D-15 (a) has it, never a .NET
+  exception or a wrong value.
+
+**The first runs (SJL-4.2), 2026-10-13.** Each engine's first engine-level run on revision 6 is
+classified at revision 7, and both engines then classify every vector. SJL-4.5 answers every one of
+this engine's differences: as corrections listed in `CHANGELOG.md`, BigInt powers past a 32-bit
+exponent, `asUintN` at very large widths, BigInt property keys beyond 2^32 - 1, `1 ** NaN` and the
+cases of 1 to an infinity, `expm1` and `log1p` beyond any approximation, and a hexadecimal
+`StringToBigInt` whose time grows with the square of its digits; and, by the library's bounds, `cbrt`,
+`hypot` and the rest of `expm1` and `log1p`. Four differences between
+the engines were not in the area verdict's classification, which fires the verdict's first falsifier;
+Broiler.VM's `JSD-0068` (`Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0068-the-numerics-vectors-find-what-x2-did-not-classify.md`)
+classifies them and keeps the verdict. For this engine it corrects one reading above, that the cases of
+1 to an infinity are wrong "on the compiled fast paths": `1 ** Infinity` written as literals is 1 here
+too, and SJL-4.5 corrects every path. It also refutes the verdict's reading that the library adopts this
+engine's `expm1`, which is not accurate across the range: the library implements its own.
+
+**The implementation (SJL-4.3), 2026-10-13.** The numerics area is in `Broiler.ECMAScript.Algorithms`
+(`2b0a16b`), with its adapter guide, and the shared stream's next version is `0.1.0-preview.2`, the owner
+keeping the `0.1.0` prefix while the stream is a preview *(corrected 2026-10-14; read "and the shared
+stream moves to `0.2.0`")*. Corpus revision 8 gives 72
+vectors the operation and inputs that decide them, so that the library-level runner can read them, and
+every numerics vector the library answers passes at library level. The reference-arm comparison is met
+under [`reference-arms.md`](../evidence/sjl-4-001/reference-arms.md) as revised before any run
+(bundle `sjl-4-001` section 2). Its first run found one defect of the library, which was corrected
+before the run that met the rule: an exact value at a rounding window's upper end was rounded down
+under "zero". For this engine, the comparison's corrections are what SJL-4.5 answers:
+
+- Atomics' operands are saturated to 64 bits before they wrap;
+- the ToIntegerOrInfinity, ToLength and ToIndex helpers give −0, saturate at their types' bounds, or
+  refuse indices the clause admits;
+- BigInt powers with a huge exponent throw a .NET overflow, and `asUintN` wraps or divides by zero at
+  very large widths;
+- a rational's nearest double is not rounded once, and an integer at the overflow threshold gives the
+  largest double instead of the infinity;
+- BigInt text follows the process's culture;
+- a BigInt compared with a literal Number is compared through a double;
+- `expm1` and `log1p` are more than a unit in the last place out near zero.
+
+The comparison admits this engine's `cbrt`, `hypot` and the rest of `expm1` and `log1p` as
+approximations, which the library's bounds replace.
+
+**The cut-over (SJL-4.5), 2026-10-13 to 2026-10-14.** This engine's numerics are the shared library's: the integer
+conversions and Float16, the Math kernels on every path the compiler has for `**`, the exact rounding
+of Temporal and Intl, and the BigInt kernel (`0aa8369`, `73f1cd4`, `c565360`, `21a72c2` and
+`e4094ec`). `CHANGELOG.md` lists every correction under decision SJL-D-16 (a), each with the vector or
+test that names it, and corpus revision 9 (`f2c3597`) retires every divergence field of the area,
+this engine's and those of Broiler.VM, whose cut-over (SJL-4.4) corrected its own. This repository's
+part of the record:
+
+- **Decision SJL-D-25 is applied, and no public member is removed**, so its consumer check is not
+  needed: `JSNumericOperators.ToInt32` and `ToUint32` and `JSValue.IntValue` and `UIntValue` are
+  forwarders, `IntegerValue` stays as this plan said, `JSMath.Hypot(double, double)` and
+  `JSBigInt.ToNumber` are obsolete forwarders, and `BigIntegerExtensions.FromDouble`, which had no
+  caller and which the cut-over did not empty, stays unchanged. `docs/public-api.md` records each.
+- **Decision SJL-D-15 (a) found a defect of the library.** The representation's limit that the
+  unbounded policy passes, `BigIntPolicy.RepresentationLimit`, was wider than a .NET `BigInteger`
+  holds, so a result between the two widths raised a .NET exception, which the decision refuses. The
+  limit is now below .NET's, with room for what an operation computes before it refuses (`ff7416b`,
+  with a test of the edge and an entry in the library's changelog). Broiler.VM's width policy never
+  came near it, and the package its feed holds is unaffected.
+- **The search for surviving copies of the area**, made before the record, found hand-written
+  conversions in built-ins outside the correspondence's list, most of them `ToIntegerOrInfinity` and
+  `ToLength`, and some of them wrong. They call the library now (``eb3ff34``), and the changelog
+  lists the corrections. Temporal's `ToIntegerWithTruncation` is one adapter over the library's
+  `ToIntegerOrInfinity`.
+- **One implementation-defined result changed:** a NaN read from binary16 (`Math.f16round`, a
+  `Float16Array` element, `getFloat16`) is the platform's quiet NaN. A NaN written to binary16 keeps
+  its sign and the high bits of its payload, as SJL-4.2's record above commits this engine to.
+- **The third-party notices** name the two citations the numerics record found, `JSMath.Clz32`'s
+  Jurassic reference and `SumPrecise`'s port of the proposal's algorithm, whose engine copy is gone,
+  and correct what they said of arm J.
+- **Left, as the area verdict leaves them:** the Temporal consumers' quantities (`PlainTime`,
+  `PlainDateTime` and `ZonedDateTime`'s `round` round the nanoseconds since midnight) with SJL-10, and
+  Intl's mathematical value with SJL-9. `UriHelper` cites Jurassic too, and the notices say that its
+  derivation is not yet examined.
 
 ## Invariants
 

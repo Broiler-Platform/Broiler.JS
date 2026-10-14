@@ -31,6 +31,7 @@ using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns;
 
@@ -946,14 +947,15 @@ internal static class BuiltInsAssemblyInitializer
             prototype.FastAddValue(atKey, CreateNativeFunction(static (in Arguments a) =>
             {
                 var text = a.This.AsString();
-                var index = a.Get1().IntegerValue;
+                // ToIntegerOrInfinity (§7.1.5) is the shared library's (SJL-4.5).
+                var index = IntegerConversions.ToIntegerOrInfinity(a.Get1().DoubleValue);
                 if (index < 0)
                     index += text.Length;
 
                 if (index < 0 || index >= text.Length)
                     return JSUndefined.Value;
 
-                return JSValue.CreateString(text[index].ToString());
+                return JSValue.CreateString(text[(int)index].ToString());
             }, "at", 1), JSPropertyAttributes.ConfigurableValue);
         }
 
@@ -1475,31 +1477,18 @@ internal static class BuiltInsAssemblyInitializer
             && value.DoubleValue == 0d
             && BitConverter.DoubleToInt64Bits(value.DoubleValue) == BitConverter.DoubleToInt64Bits(0d);
 
+        // ToLength (§7.1.20) is the shared library's (SJL-4.5); this one is held within int.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int ToLength(JSValue value)
+        static int LengthOf(JSValue value)
         {
-            var length = value.DoubleValue;
-            if (double.IsNaN(length) || length <= 0)
-                return 0;
-
-            if (length >= int.MaxValue)
-                return int.MaxValue;
-
-            return (int)length;
+            var length = IntegerConversions.ToLength(value.DoubleValue);
+            return length >= int.MaxValue ? int.MaxValue : (int)length;
         }
 
-        // ToLength as a double (clamped to the integer index range [0, 2^53-1]) for the
-        // lastIndex advance, where the value can legitimately exceed int.MaxValue.
+        // ToLength as a double, for the lastIndex advance, where the value can legitimately exceed
+        // int.MaxValue.
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static double ToLengthDouble(JSValue value)
-        {
-            var length = Math.Truncate(value.DoubleValue);
-            if (double.IsNaN(length) || length <= 0)
-                return 0;
-
-            const double MaxSafeLength = 9007199254740991d; // 2^53 - 1
-            return length > MaxSafeLength ? MaxSafeLength : length;
-        }
+        static double LengthAsDouble(JSValue value) => IntegerConversions.ToLength(value.DoubleValue);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static int AdvanceStringIndex(string input, int index, bool unicode)
@@ -1653,13 +1642,16 @@ internal static class BuiltInsAssemblyInitializer
                 if (matchString.Length != 0)
                     continue;
 
-                // §22.2.6.9 step 8.g: empty match → lastIndex = AdvanceStringIndex(S,
-                // thisIndex, fullUnicode); a surrogate pair counts as one position so the
-                // loop does not emit a spurious empty match between the two code units.
-                var nextIndex = (int)rx[KeyStrings.lastIndex].DoubleValue;
-                var advanced = nextIndex + 1;
+                // §22.2.6.9 step 8.g: empty match → thisIndex = ToLength(Get(rx, "lastIndex"));
+                // lastIndex = AdvanceStringIndex(S, thisIndex, fullUnicode); a surrogate pair counts
+                // as one position so the loop does not emit a spurious empty match between the two
+                // code units. As in [Symbol.replace], ToLength is computed in double: a lastIndex of
+                // 2^31 or more advances past it rather than overflowing an int, a negative one is 0,
+                // and an index at or past the end advances by one without reading the string.
+                double thisIndex = LengthAsDouble(rx[KeyStrings.lastIndex]);
+                double advanced = thisIndex + 1;
                 if (matchFullUnicode && advanced < s.Length
-                    && char.IsHighSurrogate(s[nextIndex]) && char.IsLowSurrogate(s[advanced]))
+                    && char.IsHighSurrogate(s[(int)thisIndex]) && char.IsLowSurrogate(s[(int)thisIndex + 1]))
                     advanced++;
                 rxObj.SetPropertyOrThrow(KeyStrings.lastIndex.ToJSValue(), JSValue.CreateNumber(advanced));
             }
@@ -1695,7 +1687,7 @@ internal static class BuiltInsAssemblyInitializer
                 : species.CreateInstance(new Arguments(species, r, flags));
 
             // Steps 7-8: matcher.lastIndex = ToLength(Get(R, "lastIndex")).
-            matcher[KeyStrings.lastIndex] = JSValue.CreateNumber(ToLength(r[KeyStrings.lastIndex]));
+            matcher[KeyStrings.lastIndex] = JSValue.CreateNumber(LengthOf(r[KeyStrings.lastIndex]));
 
             // Steps 9-11: global / fullUnicode are derived from the flags STRING, not by
             // reading "global"/"unicode" off the constructed matcher (those reads are not
@@ -1780,7 +1772,7 @@ internal static class BuiltInsAssemblyInitializer
                     if (match.Length != 0)
                         continue;
 
-                    double streamThisIndex = ToLengthDouble(rx[KeyStrings.lastIndex]);
+                    double streamThisIndex = LengthAsDouble(rx[KeyStrings.lastIndex]);
                     double streamAdvanced = streamThisIndex + 1;
                     if (fullUnicode && streamAdvanced < input.Length
                         && char.IsHighSurrogate(input[(int)streamThisIndex])
@@ -1818,7 +1810,7 @@ internal static class BuiltInsAssemblyInitializer
                 // = AdvanceStringIndex(S, thisIndex, fullUnicode). ToLength clamps to 2^53-1,
                 // so compute in double — a huge lastIndex (e.g. 2^54) must clamp and advance
                 // to 2^53, not overflow a 32-bit int to a negative value.
-                double thisIndex = ToLengthDouble(rx[KeyStrings.lastIndex]);
+                double thisIndex = LengthAsDouble(rx[KeyStrings.lastIndex]);
                 double advanced = thisIndex + 1;
                 if (fullUnicode && advanced < input.Length
                     && char.IsHighSurrogate(input[(int)thisIndex]) && char.IsLowSurrogate(input[(int)thisIndex + 1]))
@@ -1842,14 +1834,13 @@ internal static class BuiltInsAssemblyInitializer
                 // read "0" before "length" AND read "groups" before the captures loop —
                 // both observable through a Proxy result and breaking test262
                 // sm/RegExp/replace-trace.
-                var capturesLength = Math.Max((int)result[KeyStrings.length].DoubleValue, 0);
+                var capturesLength = LengthOf(result[KeyStrings.length]);
                 var matched = result[0].ToString();
                 // §22.2.6.11 step 16.f-g: position is ToIntegerOrInfinity(Get(result, "index"))
                 // clamped to [0, lengthS]. An ill-behaving exec (e.g. a Proxy result) may report
                 // an index past the end of the subject string; clamping keeps the later
                 // input.AsSpan(...) slices in range instead of throwing ArgumentOutOfRangeException.
-                var rawPosition = result[KeyStrings.index].DoubleValue;
-                var position = (int)Math.Clamp(double.IsNaN(rawPosition) ? 0 : Math.Truncate(rawPosition), 0, input.Length);
+                var position = (int)Math.Clamp(IntegerConversions.ToIntegerOrInfinity(result[KeyStrings.index].DoubleValue), 0, input.Length);
 
                 List<JSValue> captures = [];
                 for (var i = 1; i < capturesLength; i++)
@@ -1995,7 +1986,7 @@ internal static class BuiltInsAssemblyInitializer
                     continue;
                 }
 
-                var e = ToLength(splitter[KeyStrings.lastIndex]);
+                var e = LengthOf(splitter[KeyStrings.lastIndex]);
                 if (e == p)
                 {
                     q = AdvanceStringIndex(input, q, unicodeMatching);
@@ -2007,7 +1998,7 @@ internal static class BuiltInsAssemblyInitializer
                     return results;
 
                 p = Math.Min(e, input.Length);
-                var captureCount = ToLength(z[KeyStrings.length]);
+                var captureCount = LengthOf(z[KeyStrings.length]);
                 for (var i = 1; i < captureCount; i++)
                 {
                     results.AddArrayItem(z[(uint)i]);

@@ -1,3 +1,5 @@
+using Broiler.ECMAScript.Numbers;
+
 namespace Broiler.JavaScript.Runtime;
 
 /// <summary>
@@ -19,8 +21,8 @@ namespace Broiler.JavaScript.Runtime;
 /// <c>ToInt32</c>/<c>ToUint32</c> of it (§7.1.5/§7.1.6), which truncates toward zero and reduces
 /// modulo 2^32, maps NaN and the infinities to 0, and is <em>not</em> a plain CLR cast — an
 /// out-of-range <c>(int)</c> conversion is undefined in .NET rather than wrapping. Routing every
-/// operator through <see cref="JSValue.ToUint32"/>, the same helper <c>JSValue.IntValue</c> uses,
-/// makes these identical to the boxed operators by construction rather than by inspection.
+/// operator through the shared library's <c>IntegerConversions</c>, which <c>JSValue.IntValue</c> uses
+/// too, makes these identical to the boxed operators by construction rather than by inspection.
 /// </para>
 /// <para>
 /// Shift counts follow the boxed operators exactly, including where they rely on the CLR: C#
@@ -31,11 +33,11 @@ namespace Broiler.JavaScript.Runtime;
 /// </remarks>
 public static class JSNumericOperators
 {
-    /// <summary>ToInt32 (§7.1.5), via the same reduction <see cref="JSValue.IntValue"/> uses.</summary>
-    public static int ToInt32(double value) => unchecked((int)JSValue.ToUint32(value));
+    /// <summary>ToInt32 (§7.1.6): a public forwarder to the shared library's <c>IntegerConversions.ToInt32</c> (SJL-4.5, decision SJL-D-25).</summary>
+    public static int ToInt32(double value) => IntegerConversions.ToInt32(value);
 
-    /// <summary>ToUint32 (§7.1.6).</summary>
-    public static uint ToUint32(double value) => JSValue.ToUint32(value);
+    /// <summary>ToUint32 (§7.1.7): a public forwarder to the shared library's <c>IntegerConversions.ToUint32</c> (SJL-4.5, decision SJL-D-25).</summary>
+    public static uint ToUint32(double value) => IntegerConversions.ToUint32(value);
 
     public static double BitwiseAnd(double left, double right) => ToInt32(left) & ToInt32(right);
 

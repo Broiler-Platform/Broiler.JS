@@ -46,12 +46,19 @@ internal static class Program
         if (corpus.Records.Count == 0)
             failures.Add("corpus: no vector was read from " + root);
 
-        // Every area the algorithms library implements must pass; every other area is not implemented.
+        // Every area the algorithms library implements must pass; every other area is not implemented. In
+        // the numerics area the operations the library does not share and the width-policy vectors are
+        // engine-level, and not implemented here either.
         var library = new AlgorithmsLibrary();
         var results = LibraryRun.Run(corpus.Records, library);
         foreach (var result in results)
         {
-            var implemented = result.Vector["area"] == "numbers";
+            var implemented = result.Vector["area"] switch
+            {
+                "numbers" => true,
+                "numerics" => !IsEngineLevel(result.Vector),
+                _ => false,
+            };
             if (implemented ? result.Verdict != Verdict.Match : result.Verdict != Verdict.NotImplemented)
                 failures.Add(result.Vector.Id + ": " + library.Name + " gave " + VectorRun.Name(result.Verdict));
         }
@@ -75,6 +82,14 @@ internal static class Program
     }
 
     internal static string Decimal(int value) => value.ToString(NumberFormatInfo.InvariantInfo);
+
+    /// <summary>
+    /// A numerics vector the library does not answer: an operation it does not share, or a
+    /// width-policy vector, which pins each engine's policy.
+    /// </summary>
+    private static bool IsEngineLevel(VectorRecord vector) =>
+        vector["op"] is "Math.fround" or "Math.clz32" or "Math.imul" or "ToPropertyKey"
+        || (vector["op"] ?? string.Empty).EndsWith(" (width policy)", StringComparison.Ordinal);
 
     private static int Usage()
     {

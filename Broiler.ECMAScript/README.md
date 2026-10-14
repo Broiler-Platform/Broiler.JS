@@ -13,7 +13,7 @@ The programme that creates them is owned in the Broiler.VM repository, under
 
 | Package | Holds | State |
 |---|---|---|
-| `Broiler.ECMAScript.Algorithms` | The language algorithms: number conversion, numerics, text, Date, the Temporal core, the time-zone algorithms. References the base class library only, and carries no data but the white-space set's generated `Space_Separator` table. | The contract types (`WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit`, `DepthLimit`) and **the number-conversion area** of milestone SJL-3 (`Broiler.ECMAScript.Numbers`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-numbers.md)). |
+| `Broiler.ECMAScript.Algorithms` | The language algorithms: number conversion, numerics, text, Date, the Temporal core, the time-zone algorithms. References the base class library only, and carries no data but the white-space set's generated `Space_Separator` table. | The contract types (`WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit`, `DepthLimit`), **the number-conversion area** of milestone SJL-3 (`Broiler.ECMAScript.Numbers`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-numbers.md)) and **the numerics area** of milestone SJL-4 (the same namespace; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-numerics.md)). |
 | `Broiler.ECMAScript.Conformance` | The shared conformance vectors' reader, validator and runners. Test-only. | Not packed at this version; the corpus itself is [`conformance/vectors/`](../conformance/vectors/README.md). |
 
 Further libraries (the frontend, Intl, the data generators) are added by the milestones that create
@@ -59,8 +59,13 @@ The shared packages have their own version stream, tag prefix (`ecmascript-v`) a
 
 | Engine | Consumes | Since |
 |---|---|---|
-| Broiler.JS | nothing yet | — |
-| Broiler.VM | nothing in a product project; the probe package, test-only, through its committed feed | milestone SJL-2 |
+| Broiler.JS | `Broiler.ECMAScript.Algorithms`, by project reference, from its parser, runtime, built-ins and storage | milestone SJL-3.5 |
+| Broiler.VM | `Broiler.ECMAScript.Algorithms` `0.1.0-preview.1`, through its committed feed, from its profile and its compiler | milestone SJL-3.4 |
+
+*(Corrected 2026-10-13, at milestone SJL-4.3, for the SJL-3 cut-overs. The rows read "| Broiler.JS |
+nothing yet | — |" and "| Broiler.VM | nothing in a product project; the probe package, test-only,
+through its committed feed | milestone SJL-2 |"; the package table's state for the algorithms library
+read "The contract types (...) and **the number-conversion area** of milestone SJL-3 (...)".)*
 
 ## Licence
 

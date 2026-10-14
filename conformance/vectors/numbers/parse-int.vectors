@@ -2334,8 +2334,7 @@ area: numbers
 op: parseInt
 in: str:"12345678901234567890123456789" undefined
 out: value: f64:0x45C3F20D99235F65
-class: divergence
-divergence.broiler-vm: parseInt does not round a value beyond 2^53 to the nearest double, at radix 10 within 20 significant digits and at radices 2, 4, 8, 16 and 32. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("12345678901234567890123456789")
 since: 1
@@ -2345,8 +2344,7 @@ area: numbers
 op: parseInt
 in: str:"12345678901234567890123456789" int:0
 out: value: f64:0x45C3F20D99235F65
-class: divergence
-divergence.broiler-vm: parseInt does not round a value beyond 2^53 to the nearest double, at radix 10 within 20 significant digits and at radices 2, 4, 8, 16 and 32. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("12345678901234567890123456789", 0)
 since: 1
@@ -2376,8 +2374,7 @@ area: numbers
 op: parseInt
 in: str:"12345678901234567890123456789" int:10
 out: value: f64:0x45C3F20D99235F65
-class: divergence
-divergence.broiler-vm: parseInt does not round a value beyond 2^53 to the nearest double, at radix 10 within 20 significant digits and at radices 2, 4, 8, 16 and 32. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("12345678901234567890123456789", 10)
 since: 1
@@ -2483,8 +2480,7 @@ area: numbers
 op: parseInt
 in: str:"1000000000000000000000000000000" undefined
 out: value: f64:0x46293E5939A08CEA
-class: divergence
-divergence.broiler-vm: parseInt does not round a value beyond 2^53 to the nearest double, at radix 10 within 20 significant digits and at radices 2, 4, 8, 16 and 32. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("1000000000000000000000000000000")
 since: 1
@@ -2494,8 +2490,7 @@ area: numbers
 op: parseInt
 in: str:"1000000000000000000000000000000" int:0
 out: value: f64:0x46293E5939A08CEA
-class: divergence
-divergence.broiler-vm: parseInt does not round a value beyond 2^53 to the nearest double, at radix 10 within 20 significant digits and at radices 2, 4, 8, 16 and 32. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("1000000000000000000000000000000", 0)
 since: 1
@@ -2525,8 +2520,7 @@ area: numbers
 op: parseInt
 in: str:"1000000000000000000000000000000" int:10
 out: value: f64:0x46293E5939A08CEA
-class: divergence
-divergence.broiler-vm: parseInt does not round a value beyond 2^53 to the nearest double, at radix 10 within 20 significant digits and at radices 2, 4, 8, 16 and 32. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("1000000000000000000000000000000", 10)
 since: 1
@@ -2549,7 +2543,6 @@ out: value: f64:0x49A11F249DD9DDB5
 class: impl-defined
 per-engine.broiler-js: value: f64:0x49A11F249DD9DDB5
 per-engine.broiler-vm: value: f64:0x49A11F249DD9DDB5
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("1000000000000000000000000000000", 36)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -2610,8 +2603,7 @@ area: numbers
 op: parseInt
 in: str:"200000000000011" int:16
 out: value: f64:0x4380000000000001
-class: divergence
-divergence.broiler-vm: parseInt does not round a value beyond 2^53 to the nearest double, at radix 10 within 20 significant digits and at radices 2, 4, 8, 16 and 32. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("200000000000011", 16)
 since: 1
@@ -2840,8 +2832,7 @@ area: numbers
 op: parseInt
 in: str:"10000000000000000000000000000000000000000000000000000100000000001" int:2
 out: value: f64:0x43F0000000000001
-class: divergence
-divergence.broiler-vm: parseInt does not round a value beyond 2^53 to the nearest double, at radix 10 within 20 significant digits and at radices 2, 4, 8, 16 and 32. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("10000000000000000000000000000000000000000000000000000100000000001", 2)
 since: 1
@@ -2880,7 +2871,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("11112220022122120101211020120210220122211", 3)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -2911,8 +2901,7 @@ area: numbers
 op: parseInt
 in: str:"100000000000000000000000000200001" int:4
 out: value: f64:0x43F0000000000001
-class: divergence
-divergence.broiler-vm: parseInt does not round a value beyond 2^53 to the nearest double, at radix 10 within 20 significant digits and at radices 2, 4, 8, 16 and 32. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("100000000000000000000000000200001", 4)
 since: 1
@@ -2951,7 +2940,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("2214220303114400424121204130", 5)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -2991,7 +2979,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("3520522010102100444302121", 6)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -3031,7 +3018,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("45012021522523134143560", 7)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -3062,8 +3048,7 @@ area: numbers
 op: parseInt
 in: str:"2000000000000000004001" int:8
 out: value: f64:0x43F0000000000001
-class: divergence
-divergence.broiler-vm: parseInt does not round a value beyond 2^53 to the nearest double, at radix 10 within 20 significant digits and at radices 2, 4, 8, 16 and 32. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("2000000000000000004001", 8)
 since: 1
@@ -3102,7 +3087,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("145808576354216726584", 9)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -3162,7 +3146,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("335500516a429072878", 11)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -3202,7 +3185,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("839365134a2a241941", 12)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -3242,7 +3224,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("219505a9511a868a8b", 13)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -3351,8 +3332,7 @@ area: numbers
 op: parseInt
 in: str:"10000000000000801" int:16
 out: value: f64:0x43F0000000000001
-class: divergence
-divergence.broiler-vm: parseInt does not round a value beyond 2^53 to the nearest double, at radix 10 within 20 significant digits and at radices 2, 4, 8, 16 and 32. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("10000000000000801", 16)
 since: 1
@@ -3391,7 +3371,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("67979g60f542872a", 17)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -3431,7 +3410,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("2d3fgb0b9cg4c18d", 18)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -3549,7 +3527,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("5e8g4ggg7g56ib7", 21)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -3667,7 +3644,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("l12ee5fn0ji581", 24)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -3746,7 +3722,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("7b7n2pcniokfhb", 26)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -3972,8 +3947,7 @@ area: numbers
 op: parseInt
 in: str:"g000000000201" int:32
 out: value: f64:0x43F0000000000001
-class: divergence
-divergence.broiler-vm: parseInt does not round a value beyond 2^53 to the nearest double, at radix 10 within 20 significant digits and at radices 2, 4, 8, 16 and 32. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
+class: normative
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("g000000000201", 32)
 since: 1
@@ -4051,7 +4025,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("7orp63sh4dr9r", 34)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)
@@ -4130,7 +4103,6 @@ out: value: f64:0x43F0000000000001
 class: impl-defined
 per-engine.broiler-js: value: f64:0x43F0000000000001
 per-engine.broiler-vm: value: f64:0x43F0000000000001
-divergence.broiler-vm: parseInt at a radix whose result the specification lets an implementation approximate gives a value other than the correctly rounded one this engine's plan commits it to (SJL-3.3). Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-3-number-conversion-pilot.md, SJL-3.4 (Broiler.VM's cut-over).
 prov: spec:es2026@0248456c#sec-parseint-string-radix ucd:17.0.0/PropList.txt ref:numref@1
 script: parseInt("3w5e11264sidd", 36)
 note: the radix is not 2, 4, 8, 10, 16 or 32, so the result may be an implementation-approximated integer; both engines' plans require the exact value (SJL-3.3)

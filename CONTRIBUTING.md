@@ -43,6 +43,27 @@ For an untargeted run, the workflow can follow a two-phase approach:
 6. **Set the verdict** — a terminal job passes only when the requested full
    phase ran and its authoritative latest-attempt merge is completely green.
 
+### A run that only measures — test262 evidence
+
+`.github/workflows/test262-evidence.yml` runs the whole pinned suite and writes
+nothing: no issue, no commit, no change to the failure list. Use it to compare
+two commits, as the shared libraries programme's evidence bundles do. Its token
+can only read the repository and the Actions artifacts. It runs no saved-failure
+preflight, so the known failures cannot stop the full run, and it succeeds when
+the run is complete, whatever the tests' verdicts.
+
+It runs eight shards in parallel through the same shard action as `test262`, in
+the bundles' configuration: every script-host-verifiable path, original plus
+pinned Terser, 30 s per test, no memory cap, four workers per shard. Every shard
+must run the same shell, checked by the hashes of its binaries. Every timed-out
+path runs again alone with one worker. Given `base_run_id` (an earlier evidence
+run) or `base_results` (a committed merged report), it compares the two runs
+path by path with `scripts/compliance/compare_test262_paths.py` and reports the
+comparison's verdict without enforcing it. `commit` tests a commit other than
+the dispatched ref's head. Everything is in the artifact `test262-evidence`:
+the merged report, the shards' logs and statuses, the shell's hashes, the
+re-run, the comparison and `run.txt`, which records what was run.
+
 ## Assembly manifest
 
 The mapping from assembly names to test262 path prefixes lives in

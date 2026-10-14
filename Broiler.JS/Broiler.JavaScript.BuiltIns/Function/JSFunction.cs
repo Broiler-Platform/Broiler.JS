@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Ast.Misc;
 using Broiler.JavaScript.BuiltIns.Proxy;
@@ -1175,13 +1176,10 @@ public partial class JSFunction : JSObject, IPropertyAccessor, IJSFunction
             && !targetObject.GetOwnPropertyDescriptor(KeyStrings.length.ToJSValue()).IsUndefined)
         {
             var targetLengthValue = target[KeyStrings.length];
+            // Step 6.b: max(ToIntegerOrInfinity(targetLen) - argCount, 0), the shared library's
+            // ToIntegerOrInfinity (SJL-4.5); +∞ stays +∞, and -∞ and NaN give 0.
             if (targetLengthValue.IsNumber)
-            {
-                var targetLength = targetLengthValue.DoubleValue;
-                boundLength = double.IsNaN(targetLength) || targetLength <= 0
-                    ? 0
-                    : Math.Max(Math.Floor(targetLength) - boundArgsLength, 0);
-            }
+                boundLength = Math.Max(IntegerConversions.ToIntegerOrInfinity(targetLengthValue.DoubleValue) - boundArgsLength, 0);
         }
         var copy = a;
         var fx = new JSFunction((in Arguments a2) => { return target.InvokeFunction(copy.CopyForBind(a2)); }, StringSpan.Empty, StringSpan.Empty, 0, createPrototype: false)

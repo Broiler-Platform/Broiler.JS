@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   8
-// Annotated:        8/8
+// Relevant units:   9
+// Annotated:        9/9
 // Exempt:           2
-// Human-reviewed:   0/8
+// Human-reviewed:   0/9
 // IP risk:          Low
 // Security risk:    Low
 // Criteria:         0/0
 // Resource impact:  2/10 max
-// Unverified:       8
+// Unverified:       9
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -63,8 +63,11 @@ public sealed class EmptyLibrary : IVectorLibrary
 
 /// <summary>
 /// The library-level runner: it calls a library's API directly with each vector's inputs, and
-/// compares the outcome with the vector's <c>out</c>. A library is not an engine, so a vector's
-/// per-engine fields do not apply to it.
+/// compares the outcome with the vector's <c>out</c>, or with the expectation both engines'
+/// per-engine fields agree on (<see cref="Expected"/>). A library is not an engine, so one engine's
+/// expectation alone does not apply to it. <i>(Revised 2026-10-13, at milestone SJL-4.3. The summary
+/// ended: "compares the outcome with the vector's <c>out</c>. A library is not an engine, so a
+/// vector's per-engine fields do not apply to it.")</i>
 /// </summary>
 // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=959A3D
 // Broiler-Human:        PENDING
@@ -74,7 +77,7 @@ public static class LibraryRun
     /// <param name="vectors">The vectors, already validated.</param>
     /// <param name="library">The library.</param>
     /// <returns>One result per vector, in order.</returns>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=298F32
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=2; Fingerprint=6B2B33
     // Broiler-Human:        PENDING
     public static IReadOnlyList<VectorResult> Run(IEnumerable<VectorRecord> vectors, IVectorLibrary library)
     {
@@ -83,16 +86,46 @@ public static class LibraryRun
         var results = new List<VectorResult>();
         foreach (var vector in vectors)
         {
+            var expected = Expected(vector);
             var rendered = library.Call(vector["op"] ?? string.Empty, Inputs(vector));
             var verdict = rendered == EmptyLibrary.NotImplemented
                 ? Verdict.NotImplemented
-                : Outcome.TryParseAlternatives(vector.Out, out var alternatives, out _, out _) && Outcome.AnyIs(alternatives, rendered)
+                : Outcome.TryParseAlternatives(expected, out var alternatives, out _, out _) && Outcome.AnyIs(alternatives, rendered)
                     ? Verdict.Match
                     : Verdict.Difference;
-            results.Add(new VectorResult(vector, vector.Out, rendered, verdict));
+            results.Add(new VectorResult(vector, expected, rendered, verdict));
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// The outcome a library is compared with: <c>out</c>, except on an <c>impl-defined</c> vector
+    /// whose per-engine expectations name both engines and agree, which is then the library's.
+    /// </summary>
+    /// <param name="vector">The vector.</param>
+    /// <returns>The expected outcome.</returns>
+    /// <remarks>
+    /// Both engines' plans commit them to the same implementation-defined result only when that result
+    /// is the shared library's - its documented bound for an approximated function, its refusal past
+    /// any representation - so an agreeing pair of expectations is the library's own commitment. Where
+    /// the engines' expectations differ, each is an engine's policy, and the library is compared with
+    /// the specification's ideal. <i>(Added 2026-10-13, at milestone SJL-4.3, when the numerics area
+    /// gave impl-defined vectors both engines agree on; until then every vector was compared with its
+    /// <c>out</c>.)</i>
+    /// </remarks>
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=63F339
+    // Broiler-Human:        PENDING
+    public static string Expected(VectorRecord vector)
+    {
+        ArgumentNullException.ThrowIfNull(vector);
+        if (vector.Class == "impl-defined"
+            && vector["per-engine.broiler-js"] is { } js
+            && vector["per-engine.broiler-vm"] is { } vm
+            && js == vm)
+            return js;
+
+        return vector.Out;
     }
 
     /// <summary>A vector's <c>in</c> field, decoded; the validator has already accepted it.</summary>

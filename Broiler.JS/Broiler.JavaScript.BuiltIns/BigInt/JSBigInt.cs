@@ -2,9 +2,7 @@
 using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.ExpressionCompiler;
 using System;
-using System.Globalization;
 using System.Numerics;
-using System.Text;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.Runtime;
@@ -27,31 +25,29 @@ static class JSBigIntExtensions
     public static JSValue UnwrapPrimitive(this JSValue value)
         => value is JSPrimitiveObject primitiveObject ? primitiveObject.ValueOf() : value;
 
-    public static int CompareToNumber(this BigInteger left, double right)
-    {
-        if (double.IsNaN(right))
-            return NaNComparison;
-
-        if (double.IsPositiveInfinity(right))
-            return -1;
-
-        if (double.IsNegativeInfinity(right))
-            return 1;
-
-        var truncated = Math.Truncate(right);
-        var integerComparison = left.CompareTo(new BigInteger(truncated));
-        if (truncated == right || integerComparison != 0)
-            return integerComparison;
-
-        return right > 0 ? -1 : 1;
-    }
+    // A BigInt compared with a Number is JSBigInt.OrderAgainstNumber: the engine answers NaN and the
+    // infinities, and the exact comparison is the shared library's BigIntMath.CompareToNumber (SJL-4.5).
 }
 
+// Every BigInt operation, conversion and text is the shared library's BigInt kernel (BigIntMath and
+// BigIntText, milestone SJL-4.5); what stays here are the adapters, which keep the engine's coercions,
+// its errors and its value wrapping. The kernel runs under decision SJL-D-15 (a): no width but the
+// representation's, no meter, and an over-width status is a RangeError, never a .NET exception.
 [JSBaseClass("Object")]
 [JSFunctionGenerator("BigInt")]
 public partial class JSBigInt : JSPrimitive
 {
     public static JSException CannotMix() => JSEngine.NewTypeError("Cannot mix BigInt and other types, use explicit conversions");
+
+    // Decision SJL-D-15 (a): Broiler.JS sets no BigInt width of its own.
+    private static readonly BigIntPolicy Policy = BigIntPolicy.Unbounded;
+
+    // The kernel's LimitExceeded: a result wider than the representation can hold.
+    private static JSException TooWide() => JSEngine.NewRangeError("Maximum BigInt size exceeded");
+
+    // A kernel result as a BigInt value, or the RangeError of an over-width status.
+    private static JSBigInt Of(ResultStatus status, BigInteger result)
+        => status == ResultStatus.Completed ? new JSBigInt(result) : throw TooWide();
 
     internal readonly BigInteger value;
 
@@ -63,94 +59,28 @@ public partial class JSBigInt : JSPrimitive
 
     public override long BigIntValue => (long)value;
 
-    // BigInt::toNumber — 𝔽(ℝ(x)): the nearest IEEE-754 double, ties to even. .NET's
-    // (double)BigInteger truncates toward zero, so it must never back the result Number
-    // (e.g. Number(8692288669465520373761n) must round up, not down).
-    public static double ToNumber(BigInteger v)
-    {
-        var negative = v.Sign < 0;
-        var magnitude = BigInteger.Abs(v);
-        var lo = (double)magnitude; // .NET truncates toward zero, so lo <= magnitude
-        if (double.IsInfinity(lo))
-            return negative ? double.NegativeInfinity : double.PositiveInfinity;
+    // A BigInt's Number (Number(value), 21.1.1.1 step 2.a) is the shared library's
+    // BigIntMath.ToNumber, the nearest double with ties to even (SJL-4.5). The public member stays
+    // as a forwarder (decision SJL-D-25 (b)).
+    [Obsolete("Use Broiler.ECMAScript.Numbers.BigIntMath.ToNumber, which this forwards to. To be removed in the next major version.")]
+    public static double ToNumber(BigInteger v) => BigIntMath.ToNumber(v, null);
 
-        double chosen;
-        var loBig = new BigInteger(lo);
-        if (loBig == magnitude)
-        {
-            chosen = lo;
-        }
-        else
-        {
-            var hi = Math.BitIncrement(lo);
-            if (double.IsInfinity(hi))
-            {
-                // `lo` is the largest finite double (MAX_VALUE = 2^1024 - 2^971); its
-                // conceptual successor is 2^1024. IEEE-754 roundTiesToEven overflows to
-                // Infinity once the magnitude reaches the midpoint 2^1024 - 2^970, and a
-                // tie also rounds up (2^1024 has the even significand). Below the midpoint
-                // it rounds down to MAX_VALUE.
-                var conceptualHi = BigInteger.One << 1024;
-                var overflowDistanceLo = magnitude - loBig;
-                var overflowDistanceHi = conceptualHi - magnitude;
-                if (overflowDistanceLo < overflowDistanceHi)
-                    return negative ? -lo : lo;
-
-                return negative ? double.NegativeInfinity : double.PositiveInfinity;
-            }
-
-            var distanceLo = magnitude - loBig;
-            var distanceHi = new BigInteger(hi) - magnitude;
-            chosen = distanceLo < distanceHi ? lo
-                : distanceHi < distanceLo ? hi
-                : (BitConverter.DoubleToInt64Bits(lo) & 1) == 0 ? lo : hi; // tie → even
-        }
-
-        return negative ? -chosen : chosen;
-    }
-
+    // BigInt(value) (21.2.1.1): ToPrimitive with the number hint; a Number is NumberToBigInt, whose
+    // RangeError for a Number that is not integral is the engine's and whose integer is the shared
+    // library's BigIntMath.FromIntegralNumber; anything else is ToBigInt.
     [JSExport(IsConstructor = true, Length = 1)]
     public static JSValue Constructor(in Arguments a)
     {
-        var f = a[0];
-        if (f is JSObject objectValue)
-            f = objectValue.ToDefaultPrimitive();
-
-        switch (f)
+        var primitive = a[0] is JSObject @object ? @object.ToNumberPrimitive() : a[0];
+        if (primitive is JSNumber number)
         {
-            case JSNumber number:
-                return NumberToBigInt(number.value);
+            if (!double.IsFinite(number.value) || Math.Truncate(number.value) != number.value)
+                throw JSEngine.NewRangeError("The number cannot be converted to a BigInt because it is not an integer");
 
-            case JSBigInt bigint:
-                return bigint;
-
-            case JSBoolean boolean:
-                return new JSBigInt(boolean.BooleanValue ? BigInteger.One : BigInteger.Zero);
+            return new JSBigInt(BigIntMath.FromIntegralNumber(number.value));
         }
 
-        var text = f.ToString();
-        // StringToBigInt of an empty or whitespace-only string is 0n, not an error
-        // (e.g. BigInt(""), new BigInt64Array([""])).
-        if (f.IsString && IsStrWhiteSpaceOnly(text))
-            return new JSBigInt(BigInteger.Zero);
-        if (!TryParseBigIntString(text, out var v))
-            throw (f.IsString || f.IsObject)
-                ? JSEngine.NewSyntaxError($"{f} is not a valid big integer")
-                : JSEngine.NewTypeError($"{f} is not a valid big integer");
-
-        return new JSBigInt(v);
-    }
-
-    private static JSValue NumberToBigInt(double number)
-    {
-        if (double.IsNaN(number)
-            || double.IsInfinity(number)
-            || Math.Truncate(number) != number)
-        {
-            throw JSEngine.NewRangeError("The number cannot be converted to a BigInt because it is not an integer");
-        }
-
-        return new JSBigInt(new BigInteger(number));
+        return primitive as JSBigInt ?? new JSBigInt(ToBigInt(primitive));
     }
 
     public JSBigInt(BigInteger value) => this.value = value;
@@ -170,92 +100,38 @@ public partial class JSBigInt : JSPrimitive
         value = negative ? -literal.BigInt : literal.BigInt;
     }
 
-    // StringToBigInt (ECMA-262 §7.1.14): an empty or whitespace-only string maps to 0n;
-    // any other string is parsed as a BigInt integer literal. A string that is not a valid
-    // integer (e.g. "0.", "1.5", "abc") yields undefined — signalled here by returning false —
-    // so abstract equality treats it as not-equal and relational comparison as incomparable.
-    internal static bool TryStringToBigInt(string value, out BigInteger result)
+    // StringToBigInt (7.1.14) is the shared library's BigIntText.StringToBigInt, which trims the
+    // specification's white space, reads "" as 0n and answers Malformed where the clause answers
+    // undefined. Abstract equality reads undefined, and a value past the representation, as unequal
+    // to every BigInt.
+    private bool EqualsString(string text)
+        => BigIntText.StringToBigInt(text, Policy, null, out var parsed, out _) == ResultStatus.Completed && value == parsed;
+
+    // IsLessThan (7.2.13) of a BigInt and a String: undefined is NaNComparison, so every relational
+    // operator answers false, and a value past the representation is ordered by its sign.
+    private int CompareToString(string text) => BigIntText.StringToBigInt(text, Policy, null, out var parsed, out var tooWideSign) switch
     {
-        if (IsStrWhiteSpaceOnly(value))
-        {
-            result = BigInteger.Zero;
-            return true;
-        }
+        ResultStatus.Completed => value.CompareTo(parsed),
+        ResultStatus.LimitExceeded => -tooWideSign,
+        _ => JSBigIntExtensions.NaNComparison,
+    };
 
-        return TryParseBigIntString(value, out result);
-    }
+    // IsLooselyEqual (7.2.14) steps 12-13: NaN and the infinities equal no BigInt, and a finite Number
+    // is compared exactly by the shared library, never through a conversion of either side.
+    private bool EqualsNumber(double number)
+        => double.IsFinite(number) && BigIntMath.CompareToNumber(value, number, null) == 0;
 
-    // StringToBigInt trims StrWhiteSpaceChar, the shared library's set (SJL-3.5), not .NET's.
-    private static bool IsStrWhiteSpaceOnly(string value) => NumberParsing.TrimStrWhiteSpace(value, TrimEnds.Both).IsEmpty;
-
-    private static bool TryParseBigIntString(string value, out BigInteger result)
+    // IsLessThan (7.2.13) steps 3-4 of a BigInt and a Number: NaN is NaNComparison, +Infinity is above
+    // and -Infinity below every BigInt, and a finite Number is compared exactly by the shared library.
+    internal static int OrderAgainstNumber(BigInteger value, double number)
     {
-        var text = NumberParsing.TrimStrWhiteSpace(value, TrimEnds.Both).ToString();
-        if (text.Length == 0 || text.Contains('_') || text.EndsWith('n'))
-        {
-            result = default;
-            return false;
-        }
+        if (double.IsNaN(number))
+            return JSBigIntExtensions.NaNComparison;
 
-        if (text.StartsWith("+", StringComparison.Ordinal) || text.StartsWith("-", StringComparison.Ordinal))
-        {
-            var rest = text[1..];
-            if (rest.StartsWith("0x", StringComparison.OrdinalIgnoreCase)
-                || rest.StartsWith("0b", StringComparison.OrdinalIgnoreCase)
-                || rest.StartsWith("0o", StringComparison.OrdinalIgnoreCase))
-            {
-                result = default;
-                return false;
-            }
+        if (double.IsInfinity(number))
+            return number > 0 ? -1 : 1;
 
-            return BigInteger.TryParse(text, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out result);
-        }
-
-        if (text.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
-            return TryParsePrefixedDigits(text.AsSpan(2), 16, 1, out result);
-
-        if (text.StartsWith("0b", StringComparison.OrdinalIgnoreCase))
-            return TryParsePrefixedDigits(text.AsSpan(2), 2, 1, out result);
-
-        if (text.StartsWith("0o", StringComparison.OrdinalIgnoreCase))
-            return TryParsePrefixedDigits(text.AsSpan(2), 8, 1, out result);
-
-        return BigInteger.TryParse(text, NumberStyles.None, CultureInfo.InvariantCulture, out result);
-    }
-
-    private static bool TryParsePrefixedDigits(ReadOnlySpan<char> digits, int numberBase, int sign, out BigInteger result)
-    {
-        if (digits.Length == 0)
-        {
-            result = default;
-            return false;
-        }
-
-        result = BigInteger.Zero;
-
-        foreach (var ch in digits)
-        {
-            int digit = ch switch
-            {
-                >= '0' and <= '9' => ch - '0',
-                >= 'a' and <= 'f' => ch - 'a' + 10,
-                >= 'A' and <= 'F' => ch - 'A' + 10,
-                _ => -1
-            };
-
-            if (digit < 0 || digit >= numberBase)
-            {
-                result = default;
-                return false;
-            }
-
-            result = (result * numberBase) + digit;
-        }
-
-        if (sign < 0)
-            result = BigInteger.Negate(result);
-
-        return true;
+        return BigIntMath.CompareToNumber(value, number, null);
     }
 
     public override bool Equals(JSValue value)
@@ -273,41 +149,27 @@ public partial class JSBigInt : JSPrimitive
         // BigInt == String compares via StringToBigInt: an empty/whitespace string is 0n,
         // and a non-integer string (e.g. "0.") is not equal to any BigInt.
         if (value is JSString str)
-            return TryStringToBigInt(str.ToString(), out var bigintFromString) && this.value == bigintFromString;
+            return EqualsString(str.ToString());
 
         // A Boolean operand is converted with ToNumber first (true -> 1, false -> 0)
         // and then compared by mathematical value, per abstract equality.
         if (!value.IsNumber && !value.IsBoolean)
             return false;
 
-        var number = value.DoubleValue;
-        if (double.IsNaN(number) || double.IsInfinity(number) || Math.Truncate(number) != number)
-            return false;
-
-        return this.value == new BigInteger(number);
+        return EqualsNumber(value.DoubleValue);
     }
 
-    public override string ToString() => value.ToString();
+    // BigInt::toString(x, 10), the shared library's BigIntText.ToString: culture-invariant, so a
+    // negative BigInt is written with U+002D whatever the current culture's negative sign. It is
+    // every radix-10 text of a BigInt: String(x), concatenation, template literals and keys.
+    public override string ToString() => BigIntText.ToString(value, 10, null);
 
-    public override string ToDetailString() => value.ToString() + "n";
+    public override string ToDetailString() => ToString() + "n";
 
     public override JSValue InvokeFunction(in Arguments a) => throw JSEngine.NewTypeError($"{this} is not a function");
 
-    public override JSValue CreateInstance(in Arguments a)
-    {
-        if (a.Length == 0)
-            return new JSBigInt(0);
-
-        var value = a[0];
-        if (value is JSBigInt bigint)
-            return bigint;
-
-        if (value.IsNumber)
-            return NumberToBigInt(value.DoubleValue);
-
-        var v = long.Parse(value.ToString());
-        return new JSBigInt(v);
-    }
+    // A BigInt is not a constructor: `new` of one is the base class's TypeError. (It read its argument
+    // as a 64-bit integer and answered a BigInt, before SJL-4.5.)
 
     public override bool StrictEquals(JSValue value)
     {
@@ -330,12 +192,10 @@ public partial class JSBigInt : JSPrimitive
                 // BigInt vs String relational comparison uses StringToBigInt for exact
                 // comparison; a non-integer string is incomparable (yields undefined),
                 // signalled with NaNComparison so every relational operator returns false.
-                comparison = TryStringToBigInt(str.ToString(), out var parsed)
-                    ? this.value.CompareTo(parsed)
-                    : JSBigIntExtensions.NaNComparison;
+                comparison = CompareToString(str.ToString());
                 return true;
             case var _ when value.IsNumber || value.IsBoolean || value.IsNull:
-                comparison = this.value.CompareToNumber(value.DoubleValue);
+                comparison = OrderAgainstNumber(this.value, value.DoubleValue);
                 return true;
             default:
                 comparison = default;
@@ -388,16 +248,27 @@ public partial class JSBigInt : JSPrimitive
     // BigInt == String literal uses StringToBigInt, not a textual comparison: an
     // empty/whitespace string is 0n (so `0n == ""` is true) and a non-integer string
     // (e.g. "0.") equals no BigInt.
-    public override bool EqualsLiteral(string value) => TryStringToBigInt(value, out var parsed) && this.value == parsed;
+    public override bool EqualsLiteral(string value) => EqualsString(value);
 
-    public override bool EqualsLiteral(double value) => (double)this.value == value;
-
+    // The compiled `==` against a Number literal is the same exact comparison as Equals: through no
+    // conversion of the BigInt to a double, which made 2n ** 53n + 1n == 2 ** 53 + 1 true.
+    public override bool EqualsLiteral(double value) => EqualsNumber(value);
 
     public override JSValue TypeOf() => JSConstants.BigInt;
 
     protected override JSValue GetPrototype() => Intrinsics.Prototype(Names.BigInt);
 
-    internal override PropertyKey ToKey(bool create = true) => (uint)value;
+    // ToPropertyKey (7.1.19) of a BigInt is its ToString: the key of its canonical decimal text, an
+    // array index only where that text is one, so 4294967295n, 2n ** 40n and -1n key exactly as the
+    // Strings "4294967295", "1099511627776" and "-1" do.
+    internal override PropertyKey ToKey(bool create = true)
+    {
+        var text = ToString();
+        if (NumericKeys.TryParseArrayIndex(text, out var index))
+            return index;
+
+        return KeyStrings.GetOrCreate(text);
+    }
 
     public override bool ConvertTo(Type type, out object value)
     {
@@ -428,13 +299,17 @@ public partial class JSBigInt : JSPrimitive
         return base.ConvertTo(type, out value);
     }
 
-    public override JSValue Negate() => new JSBigInt(-value);
+    // The BigInt:: operations (6.1.6.2) are the shared library's BigIntMath; each adapter keeps the
+    // engine's ToNumeric of the other operand (AsBigIntegerOnly, whose TypeError is mixing a BigInt
+    // with another type) and the errors the specification raises before the operation: a zero divisor
+    // and a negative exponent. Increment and decrement are BigInt::add and BigInt::subtract with 1n.
+    public override JSValue Negate() => Of(BigIntMath.Negate(value, Policy, null, out var result), result);
 
-    public override JSValue Increment() => new JSBigInt(value + BigInteger.One);
+    public override JSValue Increment() => Of(BigIntMath.Add(value, BigInteger.One, Policy, null, out var result), result);
 
-    public override JSValue Decrement() => new JSBigInt(value - BigInteger.One);
+    public override JSValue Decrement() => Of(BigIntMath.Subtract(value, BigInteger.One, Policy, null, out var result), result);
 
-    public override JSValue BitwiseNot() => new JSBigInt(~value);
+    public override JSValue BitwiseNot() => Of(BigIntMath.BitwiseNot(value, Policy, null, out var result), result);
 
     public override JSValue Power(JSValue a)
     {
@@ -442,43 +317,21 @@ public partial class JSBigInt : JSPrimitive
         if (exponent.Sign < 0)
             throw JSEngine.NewRangeError("Exponent must be positive");
 
-        return new JSBigInt(BigInteger.Pow(value, (int)exponent));
+        return Of(BigIntMath.Power(value, exponent, Policy, null, out var result), result);
     }
 
-    public override JSValue BitwiseAnd(JSValue value) => new JSBigInt(this.value & value.AsBigIntegerOnly());
+    public override JSValue BitwiseAnd(JSValue value) => Of(BigIntMath.BitwiseAnd(this.value, value.AsBigIntegerOnly(), Policy, null, out var result), result);
 
-    public override JSValue BitwiseOr(JSValue value) => new JSBigInt(this.value | value.AsBigIntegerOnly());
+    public override JSValue BitwiseOr(JSValue value) => Of(BigIntMath.BitwiseOr(this.value, value.AsBigIntegerOnly(), Policy, null, out var result), result);
 
-    public override JSValue BitwiseXor(JSValue value) => new JSBigInt(this.value ^ value.AsBigIntegerOnly());
+    public override JSValue BitwiseXor(JSValue value) => Of(BigIntMath.BitwiseXor(this.value, value.AsBigIntegerOnly(), Policy, null, out var result), result);
 
-    // BigInt::leftShift(x, y): y > 0 shifts left (x × 2^y), y < 0 shifts right (arithmetic floor
-    // division by 2^|y|). BigInt::signedRightShift(x, y) is leftShift(x, -y). BigInts are
-    // arbitrary precision, so the shift count can exceed Int32 — the previous `(int)` / `(byte)`
-    // casts overflowed (e.g. `123n >> 9999999999999n`) or mangled negative counts (`5n >> -1n`).
-    public override JSValue LeftShift(JSValue value) => new JSBigInt(Shift(this.value, value.AsBigIntegerOnly()));
+    // BigInt::leftShift and BigInt::signedRightShift take a count of any size: a negative count shifts
+    // the other way, a right shift past the value's width is 0n or -1n, and a left shift past the
+    // representation is the kernel's over-width status, a RangeError.
+    public override JSValue LeftShift(JSValue value) => Of(BigIntMath.LeftShift(this.value, value.AsBigIntegerOnly(), Policy, null, out var result), result);
 
-    public override JSValue RightShift(JSValue value) => new JSBigInt(Shift(this.value, -value.AsBigIntegerOnly()));
-
-    private static BigInteger Shift(BigInteger v, BigInteger bits)
-    {
-        if (bits.IsZero || v.IsZero)
-            return v;
-
-        if (bits.Sign > 0)
-        {
-            // Left shift. A count beyond Int32 would allocate an unusable BigInt.
-            if (bits > int.MaxValue)
-                throw JSEngine.NewRangeError("Maximum BigInt size exceeded");
-            return v << (int)bits;
-        }
-
-        // Right shift by |bits| (arithmetic, sign-preserving). Beyond the magnitude's bit length
-        // the result collapses to 0 (non-negative) or -1 (negative); .NET's >> needs an Int32.
-        var count = -bits;
-        if (count > int.MaxValue)
-            return v.Sign < 0 ? BigInteger.MinusOne : BigInteger.Zero;
-        return v >> (int)count;
-    }
+    public override JSValue RightShift(JSValue value) => Of(BigIntMath.SignedRightShift(this.value, value.AsBigIntegerOnly(), Policy, null, out var result), result);
 
     // BigInt::unsignedRightShift always throws — BigInts are arbitrary-precision and have no fixed
     // width, so ">>>" is unsupported for any BigInt operand (a TypeError, not a RangeError).
@@ -491,29 +344,30 @@ public partial class JSBigInt : JSPrimitive
         throw JSEngine.NewTypeError("BigInts have no unsigned right shift, use >> instead");
     }
 
-    public override JSValue Multiply(JSValue value) => new JSBigInt(this.value * value.AsBigIntegerOnly());
+    public override JSValue Multiply(JSValue value) => Of(BigIntMath.Multiply(this.value, value.AsBigIntegerOnly(), Policy, null, out var result), result);
 
     public override JSValue Divide(JSValue value)
     {
         var divisor = value.AsBigIntegerOnly();
         if (divisor.IsZero)
             throw JSEngine.NewRangeError("Division by zero");
-        return new JSBigInt(this.value / divisor);
+        return Of(BigIntMath.Divide(this.value, divisor, Policy, null, out var result), result);
     }
 
-    public override JSValue Subtract(JSValue value) => new JSBigInt(this.value - value.AsBigIntegerOnly());
+    public override JSValue Subtract(JSValue value) => Of(BigIntMath.Subtract(this.value, value.AsBigIntegerOnly(), Policy, null, out var result), result);
 
     public override JSValue Modulo(JSValue value)
     {
         var divisor = value.AsBigIntegerOnly();
         if (divisor.IsZero)
             throw JSEngine.NewRangeError("Division by zero");
-        return new JSBigInt(this.value % divisor);
+        return Of(BigIntMath.Remainder(this.value, divisor, Policy, null, out var result), result);
     }
 
     public override JSValue AddValue(double value) => throw CannotMix();
 
-    public override JSValue AddValue(string value) => new JSString(this.value + value);
+    // String concatenation reads the BigInt's text through ToString, the shared library's.
+    public override JSValue AddValue(string value) => new JSString(ToString() + value);
 
     public override JSValue AddValue(JSValue value)
     {
@@ -523,16 +377,16 @@ public partial class JSBigInt : JSPrimitive
             value = primitive.value;
 
         if (value is JSBigInt b)
-            return new JSBigInt(this.value + b.value);
+            return Of(BigIntMath.Add(this.value, b.value, Policy, null, out var result), result);
 
         if (value.IsBoolean || value.IsNumber)
             throw CannotMix();
 
         if (value is JSString @string)
-            return new JSString(this.value.ToString() + @string.ToString());
+            return new JSString(ToString() + @string.ToString());
 
         if (value is JSObject @object)
-            return new JSString(this.value + @object.StringValue);
+            return new JSString(ToString() + @object.StringValue);
 
         // After ToPrimitive, the only operands that combine with a BigInt are another BigInt
         // (numeric add, handled above) or a String (concatenation, handled above). Everything
@@ -563,45 +417,18 @@ public partial class JSBigInt : JSPrimitive
         var radixArg = a.Get1();
 
         // BigInt.prototype.toString(radix): undefined radix defaults to 10, any other
-        // value is coerced with ToIntegerOrInfinity and must land in [2, 36].
+        // value is coerced with ToIntegerOrInfinity and must land in [2, 36]. The digits are
+        // BigInt::toString, the shared library's BigIntText.ToString.
         var radix = 10;
         if (!radixArg.IsUndefined)
         {
-            var radixMV = Math.Truncate(radixArg.DoubleValue);
-            if (double.IsNaN(radixMV))
-                radixMV = 0;
+            var radixMV = IntegerConversions.ToIntegerOrInfinity(radixArg.DoubleValue);
             if (radixMV < 2 || radixMV > 36)
                 throw JSEngine.NewRangeError("toString() radix must be between 2 and 36");
             radix = (int)radixMV;
         }
 
-        return new JSString(BigIntegerToRadixString(bigint.value, radix));
-    }
-
-    private static string BigIntegerToRadixString(BigInteger value, int radix)
-    {
-        if (radix == 10)
-            return value.ToString();
-
-        if (value.IsZero)
-            return "0";
-
-        const string digits = "0123456789abcdefghijklmnopqrstuvwxyz";
-        var negative = value.Sign < 0;
-        var magnitude = BigInteger.Abs(value);
-        var builder = new StringBuilder();
-        var bigRadix = new BigInteger(radix);
-
-        while (!magnitude.IsZero)
-        {
-            magnitude = BigInteger.DivRem(magnitude, bigRadix, out var remainder);
-            builder.Insert(0, digits[(int)remainder]);
-        }
-
-        if (negative)
-            builder.Insert(0, '-');
-
-        return builder.ToString();
+        return new JSString(BigIntText.ToString(bigint.value, radix, null));
     }
 
     [JSPrototypeMethod]
@@ -619,34 +446,36 @@ public partial class JSBigInt : JSPrimitive
     [JSExport("valueOf")]
     public static JSValue ValueOf(in Arguments a) => ThisBigInt(a.This);
 
-    // ToIndex(value): coerce to an integer index in [0, 2^53-1], else RangeError.
-    // Performed before ToBigInt so that side effects occur in spec order
-    // (BigInt.asIntN/asUintN step 1 runs before step 2).
-    private static long ToBitsIndex(JSValue value)
+    // ToIndex (7.1.22) of BigInt.asIntN's and asUintN's bits, before ToBigInt of the value so that
+    // side effects occur in the specification's order (21.2.2.1 steps 1-2): undefined is 0, the
+    // argument's ToNumber is the engine's, and the range rule is the shared library's.
+    private static ulong ToIndex(JSValue value)
     {
         if (value.IsUndefined)
             return 0;
 
-        var number = value.DoubleValue;
-        var integer = double.IsNaN(number) ? 0 : Math.Truncate(number);
-        if (integer < 0 || integer > 9007199254740991.0)
+        if (!IntegerConversions.TryToIndex(value.DoubleValue, out var index))
             throw JSEngine.NewRangeError("Invalid range for bits");
 
-        return (long)integer;
+        return (ulong)index;
     }
 
-    // ToBigInt(value): ECMAScript abstract operation. Coerces booleans, BigInts
-    // and BigInt-parseable strings; Numbers/Symbols/undefined/null throw TypeError.
     /// <summary>
-    /// Performs the ToBigInt abstract operation, returning a <see cref="JSBigInt"/>.
-    /// Throws a TypeError for values that cannot be converted (undefined, null,
-    /// Number, Symbol) and a SyntaxError for an unparseable string.
+    /// Performs the ToBigInt abstract operation, returning a <see cref="JSBigInt"/>: <see cref="ToBigInt"/>
+    /// with the value wrapped, for the callers that store or return it.
     /// </summary>
-    internal static JSBigInt Coerce(JSValue value) => new JSBigInt(ToBigInt(value));
+    internal static JSBigInt Coerce(JSValue value) => value as JSBigInt ?? new JSBigInt(ToBigInt(value));
 
-    private static BigInteger ToBigInt(JSValue value)
+    /// <summary>
+    /// The abstract operation ToBigInt (ECMA-262 7.1.13), the one every caller converts with:
+    /// ToPrimitive with the number hint, then a BigInt is itself, a Boolean is 1n or 0n, and a String
+    /// is StringToBigInt (the shared library's), a SyntaxError where that answers undefined and the
+    /// RangeError of decision SJL-D-15 (a) past the representation. Undefined, null, a Number and a
+    /// Symbol are a TypeError.
+    /// </summary>
+    internal static BigInteger ToBigInt(JSValue value)
     {
-        var primitive = value is JSObject @object ? @object.ToDefaultPrimitive() : value;
+        var primitive = value is JSObject @object ? @object.ToNumberPrimitive() : value;
 
         switch (primitive)
         {
@@ -657,105 +486,35 @@ public partial class JSBigInt : JSPrimitive
                 return boolean.BooleanValue ? BigInteger.One : BigInteger.Zero;
 
             case JSString str:
-                // StringToBigInt: empty/whitespace-only strings are 0n; an
-                // otherwise unparseable string is a SyntaxError, not a TypeError.
                 var text = str.ToString();
-                if (IsStrWhiteSpaceOnly(text))
-                    return BigInteger.Zero;
-                if (!TryParseBigIntString(text, out var parsed))
-                    throw JSEngine.NewSyntaxError($"Cannot convert {text} to a BigInt");
-                return parsed;
+                return BigIntText.StringToBigInt(text, Policy, null, out var parsed, out _) switch
+                {
+                    ResultStatus.Completed => parsed,
+                    ResultStatus.LimitExceeded => throw TooWide(),
+                    _ => throw JSEngine.NewSyntaxError($"Cannot convert {text} to a BigInt"),
+                };
 
             default:
                 throw JSEngine.NewTypeError($"Cannot convert {primitive.TypeOf()} to a BigInt");
         }
     }
 
+    // BigInt.asIntN and BigInt.asUintN (21.2.2.1, 21.2.2.2): ToIndex, then ToBigInt, then the shared
+    // library's BigIntMath.AsIntN and AsUintN; a negative value modulo a width past the representation
+    // is the kernel's over-width status, a RangeError.
     [JSExport("asIntN", Length = 2)]
     public static JSValue AsIntN(in Arguments a)
     {
-        var bits = ToBitsIndex(a.GetAt(0));
+        var bits = ToIndex(a.GetAt(0));
         var n = ToBigInt(a.GetAt(1));
-
-        var buffer = n.ToByteArray();
-
-        if (buffer.Length * 8 < bits)
-            return new JSBigInt(n);
-
-        var reminderBits = bits % 8;
-        var length = (int)(bits / 8);
-
-        if (reminderBits > 0)
-            length++;
-
-        var copy = new byte[length];
-        Buffer.BlockCopy(buffer, 0, copy, 0, length);
-
-        if (reminderBits > 0)
-        {
-            // here we need to pad leftmost bits as 1s
-            // as BigInteger uses bytes and only if the
-            // eighth bit is 1, it will consider it as a
-            // negative integer
-
-            // so we need to create mask to first remove
-            // bits as byte contains eight bits
-
-            // then check the most significant digit
-            // if it is negative, then we need to pad
-            // 1s before it
-
-            ref byte last = ref copy[copy.Length - 1];
-
-            byte padMask = 0xFF;
-
-            byte mask = 1;
-            byte start = 1;
-            
-            reminderBits--;
-            
-            while (reminderBits > 0)
-            {
-                padMask &= (byte)~start;
-                start <<= 1;
-                start |= 1;
-                mask <<= 1;
-                reminderBits--;
-            }
-            
-            last &= start;
-            var lastValue = last;
-
-            if ((mask & lastValue) > 0)
-                last |= padMask;
-        }
-
-        var r = new BigInteger(copy);
-        return new JSBigInt(r);
+        return Of(BigIntMath.AsIntN(bits, n, Policy, null, out var result), result);
     }
 
     [JSExport("asUintN", Length = 2)]
     public static JSValue AsUintN(in Arguments a)
     {
-        var bits = ToBitsIndex(a.GetAt(0));
+        var bits = ToIndex(a.GetAt(0));
         var n = ToBigInt(a.GetAt(1));
-
-        // BigInt.asUintN(bits, n): return n modulo 2**bits as a non-negative BigInt
-        // (spec step 3). A negative n wraps into [0, 2**bits), e.g. asUintN(2, -1n) is
-        // 3n and asUintN(64, -1n) is 18446744073709551615n.
-        if (bits == 0)
-            return new JSBigInt(BigInteger.Zero);
-
-        // A non-negative value already below 2**bits needs no reduction; this also
-        // avoids materialising 2**bits for the common in-range case.
-        if (n.Sign >= 0 && n.GetBitLength() <= bits)
-            return new JSBigInt(n);
-
-        var modulus = BigInteger.One << (int)bits;
-        var r = n % modulus;
-        if (r.Sign < 0)
-            r += modulus;
-
-        return new JSBigInt(r);
+        return Of(BigIntMath.AsUintN(bits, n, Policy, null, out var result), result);
     }
 }

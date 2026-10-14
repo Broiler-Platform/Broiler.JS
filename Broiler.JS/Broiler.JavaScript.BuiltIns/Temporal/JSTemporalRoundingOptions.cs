@@ -1,15 +1,21 @@
 using System;
 using System.Numerics;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Temporal;
 
-// Shared option-reading and rounding helpers for the calendar-independent (time-based) Temporal
-// types — Temporal.Instant and Temporal.Duration. These mirror the abstract operations in the
+// Shared option-reading helpers for the Temporal types. These mirror the abstract operations in the
 // Temporal proposal: GetRoundingModeOption, GetRoundingIncrementOption,
-// ValidateTemporalRoundingIncrement, GetTemporalFractionalSecondDigitsOption and
-// RoundNumberToIncrement.
+// ValidateTemporalRoundingIncrement and GetTemporalFractionalSecondDigitsOption.
+//
+// The rounding itself is the shared library's (Broiler.ECMAScript.Algorithms, ExactRounding and
+// RoundingMode; milestone SJL-4.5): RoundNumberToIncrement, RoundNumberToIncrementAsIfPositive,
+// NegateRoundingMode, GetUnsignedRoundingMode and ApplyUnsignedRoundingMode. The engine's copies of
+// them (NormalizeRoundingMode, NegateRoundingMode, UnsignedRoundingMode, ApplyRoundingPicksEnd,
+// RoundToIncrement and RoundToIncrementAsIfPositive) were removed; what stays here is the option
+// reading, its coercion and its RangeError, and NudgeToCalendarUnit's window in the library's terms.
 //
 // Option values are read through the spec coercions (ToString / ToNumber, exposed here as the
 // StringValue / DoubleValue members) so that a Symbol option value raises a TypeError, an
@@ -59,59 +65,31 @@ internal static class TemporalRoundingOptions
         _ => throw JSEngine.NewRangeError($"Temporal: invalid unit \"{u}\""),
     };
 
-    // GetRoundingModeOption.
-    internal static string GetRoundingMode(JSObject options, string fallback)
+    // GetRoundingModeOption (Temporal 13.8): undefined is the fallback; any other value is converted
+    // with ToString (a Symbol is a TypeError) and must be one of the nine names, which the library
+    // parses; any other string is the RangeError, raised here.
+    internal static RoundingMode GetRoundingMode(JSObject options, RoundingMode fallback)
     {
         var v = options[KeyStrings.GetOrCreate("roundingMode")];
         if (v.IsUndefined) return fallback;
-        return NormalizeRoundingMode(v.StringValue);
+
+        var text = v.StringValue;
+        if (!ExactRounding.TryParseRoundingMode(text, out var mode))
+            throw JSEngine.NewRangeError($"Temporal: invalid roundingMode \"{text}\"");
+        return mode;
     }
 
-    internal static string NormalizeRoundingMode(string mode) => mode switch
+    // ToIntegerWithTruncation (Temporal): ToNumber (a Symbol or a BigInt raises the TypeError), a
+    // RangeError with the caller's message for NaN and the infinities, then ToIntegerOrInfinity, the
+    // shared library's (SJL-4.5). Each caller keeps its own narrowing of the integer.
+    internal static double ToIntegerWithTruncation(JSValue value, string message)
     {
-        "ceil" or "floor" or "expand" or "trunc"
-            or "halfCeil" or "halfFloor" or "halfExpand" or "halfTrunc" or "halfEven" => mode,
-        _ => throw JSEngine.NewRangeError($"Temporal: invalid roundingMode \"{mode}\""),
-    };
+        var number = value.DoubleValue;
+        if (double.IsNaN(number) || double.IsInfinity(number))
+            throw JSEngine.NewRangeError(message);
 
-    // NegateRoundingMode: a "since" difference negates the operands, so the rounding mode is mirrored
-    // (ceil ↔ floor, halfCeil ↔ halfFloor); the symmetric modes are unchanged.
-    internal static string NegateRoundingMode(string mode) => mode switch
-    {
-        "ceil" => "floor",
-        "floor" => "ceil",
-        "halfCeil" => "halfFloor",
-        "halfFloor" => "halfCeil",
-        _ => mode,
-    };
-
-    // GetUnsignedRoundingMode: collapses the nine signed rounding modes to the direction they imply for a
-    // value of the given sign (zero = toward zero, infinity = away from zero, half-* = the tie-break).
-    internal static string UnsignedRoundingMode(string mode, bool negative) => mode switch
-    {
-        "ceil" => negative ? "zero" : "infinity",
-        "floor" => negative ? "infinity" : "zero",
-        "expand" => "infinity",
-        "trunc" => "zero",
-        "halfCeil" => negative ? "half-zero" : "half-infinity",
-        "halfFloor" => negative ? "half-infinity" : "half-zero",
-        "halfExpand" => "half-infinity",
-        "halfTrunc" => "half-zero",
-        "halfEven" => "half-even",
-        _ => "half-infinity",
-    };
-
-    // Given cmp = sign(2·|numerator| − |denominator|) and whether the lower boundary's unit count is even,
-    // whether ApplyUnsignedRoundingMode picks the END (upper) boundary rather than the start (lower) one.
-    internal static bool ApplyRoundingPicksEnd(int cmp, bool even, string unsignedMode) => unsignedMode switch
-    {
-        "zero" => false,
-        "infinity" => true,
-        "half-zero" => cmp > 0,
-        "half-infinity" => cmp >= 0,
-        "half-even" => cmp > 0 || (cmp == 0 && !even),
-        _ => false,
-    };
+        return IntegerConversions.ToIntegerOrInfinity(number);
+    }
 
     // GetRoundingIncrementOption: ToIntegerWithTruncation, then a 1 … 10^9 range check.
     internal static int GetRoundingIncrement(JSObject options)
@@ -119,11 +97,7 @@ internal static class TemporalRoundingOptions
         var v = options[KeyStrings.GetOrCreate("roundingIncrement")];
         if (v.IsUndefined) return 1;
 
-        var n = v.DoubleValue; // ToNumber: a Symbol raises a TypeError here.
-        if (double.IsNaN(n) || double.IsInfinity(n))
-            throw JSEngine.NewRangeError("Temporal: roundingIncrement must be a finite number");
-
-        var increment = Math.Truncate(n);
+        var increment = ToIntegerWithTruncation(v, "Temporal: roundingIncrement must be a finite number");
         if (increment < 1 || increment > 1_000_000_000)
             throw JSEngine.NewRangeError("Temporal: roundingIncrement out of range");
         return (int)increment;
@@ -183,63 +157,24 @@ internal static class TemporalRoundingOptions
         return result;
     }
 
-    // RoundNumberToIncrement: rounds `value` to the nearest multiple of `increment` under the
-    // requested rounding mode (the same nine modes as RoundDuration).
-    internal static BigInteger RoundToIncrement(BigInteger value, BigInteger increment, string roundingMode)
+    // NudgeToCalendarUnit (Temporal): total = r1 + progress × increment × sign, as an exact ratio,
+    // where progress = progressed / span is the destination's distance from the window's start over
+    // the window's length (both magnitudes, span > 0).
+    internal static (BigInteger numerator, BigInteger denominator) NudgeTotal(
+        long r1, long increment, int sign, BigInteger progressed, BigInteger span)
+        => ((BigInteger)r1 * span + sign * increment * progressed, span);
+
+    // NudgeToCalendarUnit's rounding of a progress below 1 (a progress of 1 rounds to the end, which
+    // the caller decides first, as the operation does): the library's ApplyUnsignedRoundingMode over
+    // the window [|r1|, |r2|] for the total's magnitude, under the unsigned mode the library's
+    // GetUnsignedRoundingMode gives for the sign. Whether the rounded unit is |r2|, the window's end.
+    internal static bool NudgeRoundsToEnd(
+        BigInteger totalNumerator, BigInteger totalDenominator, long r1, long r2, int sign, RoundingMode mode)
     {
-        var quotient = BigInteger.DivRem(value, increment, out var remainder);
-        if (remainder == 0) return value;
-
-        var sign = value.Sign; // remainder shares the sign of value
-        var absRem2 = BigInteger.Abs(remainder) * 2;
-        var absInc = BigInteger.Abs(increment);
-
-        var roundUp = roundingMode switch
-        {
-            "trunc" => false,
-            "expand" => true,
-            "ceil" => sign > 0,
-            "floor" => sign < 0,
-            "halfExpand" => absRem2 >= absInc,
-            "halfTrunc" => absRem2 > absInc,
-            "halfCeil" => sign > 0 ? absRem2 >= absInc : absRem2 > absInc,
-            "halfFloor" => sign < 0 ? absRem2 >= absInc : absRem2 > absInc,
-            "halfEven" => absRem2 > absInc || (absRem2 == absInc && !BigInteger.Abs(quotient).IsEven),
-            _ => absRem2 >= absInc,
-        };
-
-        if (roundUp)
-            quotient += sign >= 0 ? 1 : -1;
-
-        return quotient * increment;
-    }
-
-    // RoundNumberToIncrementAsIfPositive: rounds toward the two surrounding multiples as though the
-    // value were non-negative, so the direction of "floor"/"trunc" (down, toward the Big Bang) and
-    // "ceil"/"expand" (up) never depends on the sign. Temporal.Instant and Temporal.ZonedDateTime
-    // round an absolute epoch-nanosecond count this way (test262 .../rounding-direction).
-    internal static BigInteger RoundToIncrementAsIfPositive(BigInteger value, BigInteger increment, string roundingMode)
-    {
-        var quotient = BigInteger.DivRem(value, increment, out var remainder);
-        if (remainder == 0) return value;
-
-        // Floor the quotient so 0 < remainder < increment (the lower surrounding multiple).
-        if (remainder < 0) { quotient -= 1; remainder += increment; }
-        var rem2 = remainder * 2;
-
-        var roundUp = roundingMode switch
-        {
-            "trunc" or "floor" => false,
-            "expand" or "ceil" => true,
-            "halfExpand" or "halfCeil" => rem2 >= increment,
-            "halfTrunc" or "halfFloor" => rem2 > increment,
-            "halfEven" => rem2 > increment || (rem2 == increment && !quotient.IsEven),
-            _ => rem2 >= increment,
-        };
-
-        if (roundUp)
-            quotient += 1;
-
-        return quotient * increment;
+        var end = BigInteger.Abs(r2);
+        var rounded = ExactRounding.ApplyUnsignedRoundingMode(
+            BigInteger.Abs(totalNumerator), totalDenominator, BigInteger.Abs(r1), end,
+            ExactRounding.GetUnsignedRoundingMode(mode, sign < 0));
+        return rounded == end;
     }
 }

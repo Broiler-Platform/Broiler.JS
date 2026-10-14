@@ -5,6 +5,7 @@ using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
@@ -32,9 +33,8 @@ public partial class JSBigUint64Array : JSTypedArray
         if (TrySetForeignReceiver(index, value, receiver, throwError, out var foreign))
             return foreign;
 
-        // ToBigUint64 wraps modulo 2^64; a plain (ulong) cast on the BigInteger
-        // overflows for magnitudes outside [0, 2^64), so mask the low 64 bits.
-        var bits = (ulong)(ToBigIntValue(value ?? JSUndefined.Value).value & ((BigInteger.One << 64) - 1));
+        // ToBigInt, then ToBigUint64, the shared library's bit pattern (SJL-4.5).
+        var bits = IntegerConversions.ToBigUint64(JSBigInt.Coerce(value ?? JSUndefined.Value).value);
         if (index >= length)
             return true; // out-of-bounds element write is a successful no-op (spec [[Set]] returns true)
 
@@ -43,19 +43,5 @@ public partial class JSBigUint64Array : JSTypedArray
     }
 
 
-    internal override void ValidateElementValue(JSValue value) => _ = ToBigIntValue(value);
-
-    private static JSBigInt ToBigIntValue(JSValue value)
-    {
-        if (value is JSBigInt bigint)
-            return bigint;
-
-        if (value is JSBoolean boolean)
-            return new JSBigInt(boolean.BooleanValue ? BigInteger.One : BigInteger.Zero);
-
-        if (value.IsNullOrUndefined || value.IsNumber || value.IsSymbol)
-            throw JSEngine.NewTypeError("Cannot convert value to BigInt");
-
-        return (JSBigInt)JSBigInt.Constructor(new Arguments(JSUndefined.Value, value));
-    }
+    internal override void ValidateElementValue(JSValue value) => _ = JSBigInt.Coerce(value);
 }

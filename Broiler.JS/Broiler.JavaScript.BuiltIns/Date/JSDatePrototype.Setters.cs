@@ -1,4 +1,5 @@
 ﻿using System;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 
@@ -8,11 +9,16 @@ public partial class JSDate
 {
     // IsValid already performed ToNumber on the first component argument (which may
     // invoke valueOf). Multi-argument setters must reuse that coerced value for the
-    // first slot instead of reading IntValue again — a second read would call
-    // valueOf a second time, which the spec forbids (each argument is coerced
-    // exactly once). The (int)(long) truncation reproduces JSValue.IntValue exactly,
-    // including its low-32-bit wraparound for out-of-range / infinite operands.
-    private static int CoercedIntValue(double coerced) => unchecked((int)(long)coerced);
+    // first slot instead of coercing again — a second read would call valueOf a second
+    // time, which the spec forbids (each argument is coerced exactly once). MakeTime and
+    // MakeDay take each component's ToIntegerOrInfinity, the shared library's (SJL-4.5),
+    // not a 32-bit wrap; a component DateTimeOffset cannot add makes the date invalid.
+    private static double IntegerComponent(double coerced) => IntegerConversions.ToIntegerOrInfinity(coerced);
+
+    // A month count for DateTimeOffset.AddMonths, which takes an int: one beyond its range is
+    // held at the range's edge, where AddMonths refuses it and the date becomes invalid.
+    private static int Months(double integer)
+        => integer >= int.MaxValue ? int.MaxValue : integer <= int.MinValue ? int.MinValue : (int)integer;
 
     // A trailing optional component argument that is *present* — even when its value
     // is `undefined` — is "specified" per the spec (the spec keys "if X is not
@@ -36,7 +42,7 @@ public partial class JSDate
 
         try
         {
-            value = date.AddDays(-date.Day + diffValue);
+            value = date.AddDays(-date.Day + IntegerComponent(diffValue));
         }
         catch (ArgumentOutOfRangeException)
         {
@@ -74,7 +80,7 @@ public partial class JSDate
                 || double.IsNaN(dv) || double.IsInfinity(dv))
                 return new JSNumber(SetTimeValue(double.NaN));
 
-            double newDate = JSDateMath.MakeDate(JSDateMath.MakeDay(Math.Truncate(year), Math.Truncate(mv), Math.Truncate(dv)), JSDateMath.TimeWithinDay(t));
+            double newDate = JSDateMath.MakeDate(JSDateMath.MakeDay(year, mv, dv), JSDateMath.TimeWithinDay(t));
             return new JSNumber(SetTimeValue(JSDateMath.TimeClip(JSDateMath.UTC(newDate))));
         }
 
@@ -120,24 +126,25 @@ public partial class JSDate
             || (dayGiven && !double.IsFinite(dayCoerced)))
             return new JSNumber(SetTimeValue(double.NaN));
 
-        var month = monthGiven ? CoercedIntValue(monthCoerced) : curMonth0;
-        var day = dayGiven ? CoercedIntValue(dayCoerced) : curDay;
+        var yearInteger = IntegerComponent(year);
+        var month = monthGiven ? IntegerComponent(monthCoerced) : curMonth0;
+        var day = dayGiven ? IntegerComponent(dayCoerced) : curDay;
 
         // For years that .NET DateTimeOffset can handle (1–9999), use the fast path.
-        if (year >= 1 && year <= 9999)
+        if (yearInteger >= 1 && yearInteger <= 9999)
         {
             rawTimeMs = double.NaN; // clear any raw override
 
             try
             {
-                date = new DateTimeOffset((int)year, 1, 1, curHour, curMin, curSec, curMs, value.Offset);
+                date = new DateTimeOffset((int)yearInteger, 1, 1, curHour, curMin, curSec, curMs, value.Offset);
                 // Apply the month offset before the day offset: ECMAScript MakeDay
                 // resolves the (year, month) to the first of that month and then adds
                 // (date - 1) days, so day overflow rolls into the next month. Doing
                 // AddDays first then AddMonths would let .NET's AddMonths clamp the
                 // day-of-month to the target month's last valid day (e.g. setMonth(5,31)
                 // would wrongly land on Jun 30 instead of Jul 1).
-                date = date.AddMonths(month);
+                date = date.AddMonths(Months(month));
                 date = date.AddDays(day - 1);
                 value = date;
                 // Disambiguate a real year-1 boundary date from the MinValue sentinel
@@ -155,7 +162,7 @@ public partial class JSDate
         // For year 0 or negative years, use ECMAScript date math directly.
         // This handles the proleptic Gregorian calendar correctly.
         double timeWithinDay = JSDateMath.MakeTime(curHour, curMin, curSec, curMs);
-        double dayValue = JSDateMath.MakeDay(Math.Truncate(year), month, day);
+        double dayValue = JSDateMath.MakeDay(yearInteger, month, day);
         double utcMs = JSDateMath.UTC(JSDateMath.MakeDate(dayValue, timeWithinDay));
         double result = JSDateMath.TimeClip(utcMs);
 
@@ -176,7 +183,7 @@ public partial class JSDate
         // Coerce every present argument (ToNumber, possibly invoking valueOf) BEFORE
         // returning on an invalid date: the spec performs all the ToNumber conversions
         // in order before the "if t is NaN, return NaN" step. Each value is read once
-        // and reused via CoercedIntValue so valueOf is invoked exactly once per arg.
+        // and reused via IntegerComponent so valueOf is invoked exactly once per arg.
         bool minsGiven = Specified(a, 1), secGiven = Specified(a, 2), msGiven = Specified(a, 3);
         double minsCoerced = minsGiven ? _mins.DoubleValue : double.NaN;
         double secCoerced = secGiven ? _seconds.DoubleValue : double.NaN;
@@ -189,10 +196,10 @@ public partial class JSDate
         if ((minsGiven && !double.IsFinite(minsCoerced)) || (secGiven && !double.IsFinite(secCoerced)) || (msGiven && !double.IsFinite(msCoerced)))
             return new JSNumber(SetTimeValue(double.NaN));
 
-        var hrs = CoercedIntValue(hours);
-        var mins = minsGiven ? CoercedIntValue(minsCoerced) : date.Minute;
-        var seconds = secGiven ? CoercedIntValue(secCoerced) : date.Second;
-        var millis = msGiven ? CoercedIntValue(msCoerced) : date.Millisecond;
+        var hrs = IntegerComponent(hours);
+        var mins = minsGiven ? IntegerComponent(minsCoerced) : date.Minute;
+        var seconds = secGiven ? IntegerComponent(secCoerced) : date.Second;
+        var millis = msGiven ? IntegerComponent(msCoerced) : date.Millisecond;
 
         try
         {
@@ -221,7 +228,7 @@ public partial class JSDate
         try
         {
             date = new DateTimeOffset(date.Year, date.Month, date.Day, date.Hour, date.Minute, date.Second, 0, date.Offset);
-            date = date.AddMilliseconds(_millis);
+            date = date.AddMilliseconds(IntegerComponent(_millis));
             value = date;
         }
         catch (ArgumentOutOfRangeException)
@@ -252,9 +259,9 @@ public partial class JSDate
         if ((secGiven && !double.IsFinite(secCoerced)) || (msGiven && !double.IsFinite(msCoerced)))
             return new JSNumber(SetTimeValue(double.NaN));
 
-        var mins = CoercedIntValue(minutes);
-        var seconds = secGiven ? CoercedIntValue(secCoerced) : date.Second;
-        var millis = msGiven ? CoercedIntValue(msCoerced) : date.Millisecond;
+        var mins = IntegerComponent(minutes);
+        var seconds = secGiven ? IntegerComponent(secCoerced) : date.Second;
+        var millis = msGiven ? IntegerComponent(msCoerced) : date.Millisecond;
 
         try
         {
@@ -291,8 +298,8 @@ public partial class JSDate
         if (daysGiven && !double.IsFinite(daysCoerced))
             return new JSNumber(SetTimeValue(double.NaN));
 
-        var month = CoercedIntValue(mnth);
-        var days = (daysGiven ? CoercedIntValue(daysCoerced) : date.Day) - 1;
+        var month = IntegerComponent(mnth);
+        var days = (daysGiven ? IntegerComponent(daysCoerced) : date.Day) - 1;
 
         try
         {
@@ -300,7 +307,7 @@ public partial class JSDate
             // (ECMAScript MakeDay), instead of .NET AddMonths clamping the day to the
             // target month's last valid day. See SetFullYear for the detailed rationale.
             date = new DateTimeOffset(date.Year, 1, 1, date.Hour, date.Minute, date.Second, date.Millisecond, date.Offset);
-            date = date.AddMonths(month);
+            date = date.AddMonths(Months(month));
             date = date.AddDays(days);
             value = date;
 
@@ -332,8 +339,8 @@ public partial class JSDate
         if (msGiven && !double.IsFinite(msCoerced))
             return new JSNumber(SetTimeValue(double.NaN));
 
-        var seconds = CoercedIntValue(secs);
-        var millis = msGiven ? CoercedIntValue(msCoerced) : date.Millisecond;
+        var seconds = IntegerComponent(secs);
+        var millis = msGiven ? IntegerComponent(msCoerced) : date.Millisecond;
 
         try
         {
@@ -379,7 +386,8 @@ public partial class JSDate
             return JSNumber.NaN;
         }
 
-        var year = (long)Math.Truncate(yearValue);
+        // MakeFullYear: the two-digit test is on the year's ToIntegerOrInfinity.
+        var year = IntegerComponent(yearValue);
         if (year >= 0 && year <= 99)
             year += 1900;
 
@@ -424,7 +432,7 @@ public partial class JSDate
             var offset = date.Offset;
             var utc = date.ToUniversalTime();
 
-            utc = utc.AddDays(-utc.Day + _date);
+            utc = utc.AddDays(-utc.Day + IntegerComponent(_date));
             value = utc.ToOffset(offset);
         }
         catch (ArgumentOutOfRangeException)
@@ -467,9 +475,9 @@ public partial class JSDate
             return new JSNumber(SetTimeValue(double.NaN));
         }
 
-        // Pass the truncated-but-full-magnitude doubles to MakeDay (which guards the
-        // out-of-range case); a (long) cast would wrap a huge year such as MAX_VALUE.
-        double newDay = JSDateMath.MakeDay(Math.Truncate(yearValue), Math.Truncate(monthValue), Math.Truncate(dayValue));
+        // Pass the full-magnitude doubles to MakeDay, which takes their ToIntegerOrInfinity and
+        // guards the out-of-range case; a (long) cast would wrap a huge year such as MAX_VALUE.
+        double newDay = JSDateMath.MakeDay(yearValue, monthValue, dayValue);
         double newDate = JSDateMath.MakeDate(newDay, JSDateMath.TimeWithinDay(t));
         return new JSNumber(SetTimeValue(JSDateMath.TimeClip(newDate)));
     }
@@ -524,7 +532,7 @@ public partial class JSDate
         try
         {
             utc = new DateTimeOffset(utc.Year, utc.Month, utc.Day, utc.Hour, utc.Minute, utc.Second, 0, utc.Offset);
-            utc = utc.AddMilliseconds(_millis);
+            utc = utc.AddMilliseconds(IntegerComponent(_millis));
 
             value = utc.ToOffset(offset);
         }
@@ -559,9 +567,9 @@ public partial class JSDate
         if ((secGiven && !double.IsFinite(secCoerced)) || (msGiven && !double.IsFinite(msCoerced)))
             return new JSNumber(SetTimeValue(double.NaN));
 
-        var mins = CoercedIntValue(minutes);
-        var seconds = secGiven ? CoercedIntValue(secCoerced) : utc.Second;
-        var millis = msGiven ? CoercedIntValue(msCoerced) : utc.Millisecond;
+        var mins = IntegerComponent(minutes);
+        var seconds = secGiven ? IntegerComponent(secCoerced) : utc.Second;
+        var millis = msGiven ? IntegerComponent(msCoerced) : utc.Millisecond;
 
         try
         {
@@ -602,15 +610,15 @@ public partial class JSDate
         if (daysGiven && !double.IsFinite(daysCoerced))
             return new JSNumber(SetTimeValue(double.NaN));
 
-        var month = CoercedIntValue(mnth);
-        var days = (daysGiven ? CoercedIntValue(daysCoerced) : utc.Day) - 1;
+        var month = IntegerComponent(mnth);
+        var days = (daysGiven ? IntegerComponent(daysCoerced) : utc.Day) - 1;
 
         try
         {
             // Month offset before day offset so day overflow rolls into the next month
             // (ECMAScript MakeDay), instead of .NET AddMonths clamping. See SetFullYear.
             utc = new DateTimeOffset(utc.Year, 1, 1, utc.Hour, utc.Minute, utc.Second, utc.Millisecond, utc.Offset);
-            utc = utc.AddMonths(month);
+            utc = utc.AddMonths(Months(month));
             utc = utc.AddDays(days);
 
             value = utc.ToOffset(offset);
@@ -645,8 +653,8 @@ public partial class JSDate
         if (msGiven && !double.IsFinite(msCoerced))
             return new JSNumber(SetTimeValue(double.NaN));
 
-        var seconds = CoercedIntValue(secs);
-        var millis = msGiven ? CoercedIntValue(msCoerced) : utc.Millisecond;
+        var seconds = IntegerComponent(secs);
+        var millis = msGiven ? IntegerComponent(msCoerced) : utc.Millisecond;
 
         try
         {

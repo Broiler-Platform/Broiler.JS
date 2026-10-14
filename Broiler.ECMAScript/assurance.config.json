@@ -7,6 +7,8 @@
 // settings (rule J6), because code moves between the two repositories; criteria below High are refused
 // because the rubric writes none there.
 //
+// The one override is fdlibm's (expm1 and log1p, milestone SJL-4.3), whose notice its file keeps under the header.
+//
 // regenerateCommand assumes the aggregate layout CI reproduces: Broiler.Code and Broiler.JS checked out side
 // by side.
 {
@@ -26,5 +28,10 @@
     ],
     "license": "Apache-2.0"
   },
+  "spdxOverrides": [
+    { "glob": "Broiler.ECMAScript.Algorithms/Numbers/Fdlibm.cs",
+      "copyright": [ "2026 Broiler Platform contributors", "1993 Sun Microsystems, Inc." ],
+      "license": "Apache-2.0 AND SunPro" }
+  ],
   "regenerateCommand": "dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance generate --root Broiler.JS/Broiler.ECMAScript"
 }

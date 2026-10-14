@@ -9,6 +9,7 @@ using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.Proxy;
 
@@ -910,16 +911,8 @@ public partial class JSProxy : JSObject
         return target.TrySetPrototypeOf(proto, out error);
     }
 
-    // ToLength(Get(arrayLike, "length")): ToNumber, then clamp to [0, 2^53-1].
-    private static long ToArrayLikeLength(JSValue value)
-    {
-        var number = value.DoubleValue;
-        if (double.IsNaN(number) || number <= 0)
-            return 0;
-
-        const double maxSafeInteger = 9007199254740991.0; // 2^53 - 1
-        return number >= maxSafeInteger ? (long)maxSafeInteger : (long)Math.Floor(number);
-    }
+    // ToLength(Get(arrayLike, "length")): ToNumber, then the shared library's ToLength (SJL-4.5).
+    private static long ArrayLikeLengthOf(JSValue value) => IntegerConversions.ToLength(value.DoubleValue);
 
     public override IElementEnumerator GetAllKeys(bool showEnumerableOnly = true, bool inherited = true)
     {
@@ -939,7 +932,7 @@ public partial class JSProxy : JSObject
             if (result is not JSObject resultObject)
                 throw JSEngine.NewTypeError("Proxy ownKeys trap must return an array-like object");
 
-            var length = ToArrayLikeLength(resultObject[KeyStrings.length]);
+            var length = ArrayLikeLengthOf(resultObject[KeyStrings.length]);
             for (long i = 0; i < length; i++)
             {
                 var value = resultObject[(uint)i];

@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -142,7 +143,7 @@ public partial class JSTemporalDuration : JSObject
     {
         var optionsArg = a.GetAt(0);
         var digits = -1; // "auto"
-        var roundingMode = "trunc";
+        var roundingMode = RoundingMode.Trunc;
         string smallestUnit = null;
 
         if (optionsArg != null && !optionsArg.IsUndefined)
@@ -151,7 +152,7 @@ public partial class JSTemporalDuration : JSObject
                 throw JSEngine.NewTypeError("Temporal.Duration.toString options must be an object or undefined");
 
             digits = TemporalRoundingOptions.GetFractionalSecondDigits(options);
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, "trunc");
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, RoundingMode.Trunc);
 
             var su = options[KeyStrings.GetOrCreate("smallestUnit")];
             if (!su.IsUndefined)
@@ -183,7 +184,7 @@ public partial class JSTemporalDuration : JSObject
     }
 
     [JSExport("toJSON", Length = 0)]
-    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString(-1, 1, "trunc"));
+    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString(-1, 1, RoundingMode.Trunc));
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
@@ -462,7 +463,7 @@ public partial class JSTemporalDuration : JSObject
     // TemporalDurationToString: ISO-8601 with the seconds field assembled from seconds/ms/us/ns.
     // `precision` controls the fractional-second digits (-1 = auto, 0..9 = fixed); `incrementNs`
     // and `roundingMode` round the combined seconds value to that precision.
-    private string ToISOString(int precision, long incrementNs, string roundingMode)
+    private string ToISOString(int precision, long incrementNs, RoundingMode roundingMode)
     {
         var sign = DurationSign();
         var sb = new StringBuilder();
@@ -501,7 +502,7 @@ public partial class JSTemporalDuration : JSObject
                 + secondsNs;
 
             var signed = sign < 0 ? -timeNs : timeNs;
-            signed = TemporalRoundingOptions.RoundToIncrement(signed, incrementNs, roundingMode);
+            signed = ExactRounding.RoundNumberToIncrement(signed, BigInteger.One, incrementNs, roundingMode);
             timeNs = BigInteger.Abs(signed);
 
             // TemporalDurationFromInternal: the rounded duration must still be valid — rounding the

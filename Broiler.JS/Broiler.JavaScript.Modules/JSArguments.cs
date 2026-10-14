@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
@@ -32,14 +33,9 @@ public class JSArguments: JSObject, IJSArguments
     {
         private int index = -1;
 
-        private long CurrentLength()
-        {
-            var length = args[KeyStrings.length].DoubleValue;
-            if (double.IsNaN(length) || length <= 0)
-                return 0;
-
-            return length > uint.MaxValue ? uint.MaxValue : (long)length;
-        }
+        // LengthOfArrayLike's ToLength (§7.1.20): this engine's ToNumber, then the shared library's
+        // IntegerConversions.ToLength (SJL-4.5).
+        private long CurrentLength() => IntegerConversions.ToLength(args[KeyStrings.length].DoubleValue);
 
         public bool MoveNext(out JSValue value)
         {

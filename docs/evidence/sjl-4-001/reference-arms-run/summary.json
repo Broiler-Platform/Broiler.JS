@@ -1,0 +1,1918 @@
+{
+  "rule": "docs/evidence/sjl-4-001/reference-arms.md",
+  "revision": "docs/evidence/sjl-4-001/reference-arms-revised-2026-10-13.md",
+  "void": false,
+  "lineLimit": null,
+  "seconds": 2288,
+  "population": {
+    "rule": "docs/evidence/sjl-4-001/reference-arms.md",
+    "revision": "docs/evidence/sjl-4-001/reference-arms-revised-2026-10-13.md",
+    "generator": "scripts/conformance/generate_numerics_population.py",
+    "seeds": {
+      "SEED_N1": "0x534a4c342d303031",
+      "SEED_N2": "0x534a4c342d303032",
+      "SEED_N3_UNIFORM": "0x534a4c342d303033",
+      "SEED_N3_POW": "0x534a4c342d303034",
+      "SEED_N3_HYPOT": "0x534a4c342d303035",
+      "SEED_N4": "0x534a4c342d303036",
+      "SEED_R1_INCREMENT": "0x534a4c342d303037",
+      "SEED_R1_RATIONAL": "0x534a4c342d303038",
+      "SEED_B1_VALUES": "0x534a4c342d303039",
+      "SEED_B1_PAIRS": "0x534a4c342d30303a"
+    },
+    "classes": {
+      "N1": {
+        "file": "N1.txt.gz",
+        "count": 1055930,
+        "sha256": "7f7aa24b9a1172ce905362470b4fc32c6ca90caa4745ba4c18ed08aed9df139b",
+        "what": "doubles: the fixed set, then 1048576 draws of seed 0x534a4c342d303031"
+      },
+      "N2D": {
+        "file": "N2D.txt.gz",
+        "count": 65536,
+        "sha256": "18e4d3cb689550a6f4938b738610e22f6af215c2ebca42014c15c53b9b32e719",
+        "what": "every binary16 bit pattern"
+      },
+      "N2E": {
+        "file": "N2E.txt.gz",
+        "count": 380928,
+        "sha256": "fcfbcc9a458c730b583cd98a983f26a9d9484b225b5ab089076be59bc568696b",
+        "what": "every finite binary16 value and every midpoint, and their neighbours"
+      },
+      "N2N": {
+        "file": "N2N.txt.gz",
+        "count": 4126,
+        "sha256": "16aaf4352391c844d327e0ce9a72f261ecd01a4676a018ac68a8356bcdbaa9bf",
+        "what": "NaN patterns, then 4096 draws of seed 0x534a4c342d303032"
+      },
+      "N3E": {
+        "file": "N3E.txt.gz",
+        "count": 67684,
+        "sha256": "2efdf191fa79fbcaae5cf5da918680641bbc3e661880ab4bba6b9cfa8ad9fbb0",
+        "what": "\u002B-2^-k, then 65536 uniform draws in (-50, 50)"
+      },
+      "N3C": {
+        "file": "N3C.txt.gz",
+        "count": 262145,
+        "sha256": "b6c773e9002d54414701bd7ef4479ba5da9d8167779fe542a1a2e234c2ea4813",
+        "what": "n^3 for n from -2^17 to 2^17"
+      },
+      "N3P": {
+        "file": "N3P.txt.gz",
+        "count": 262628,
+        "sha256": "c14c43fe83a6be0b2fbec461466f7c1f63d7ca1262be15d572b92b2228b80956",
+        "what": "the special set\u0027s pairs, then 262144 pairs drawn from N1"
+      },
+      "N3H": {
+        "file": "N3H.txt.gz",
+        "count": 76668,
+        "sha256": "0a7effbc268990e74879e1d2276b4c8e0acb5ef8e9b71a806ca15b6373808404",
+        "what": "the special set\u0027s 2- and 3-tuples, then 65536 drawn tuples"
+      },
+      "N4": {
+        "file": "N4.txt.gz",
+        "count": 16754,
+        "sha256": "130a36110d5e318e1c226bd92ce0cd9c6d76fa7e6377bb813f9b92ee4b30cefb",
+        "what": "the proposal\u0027s cases and the constructed sequences, then 16384 drawn sequences"
+      },
+      "R1M": {
+        "file": "R1M.txt.gz",
+        "count": 26,
+        "sha256": "2400aa5a4e0fb238772dd0e754877e78b41f3294532f8ede78741c23d4fa4cb9",
+        "what": "the nine rounding-mode names and unknown names"
+      },
+      "R1I": {
+        "file": "R1I.txt.gz",
+        "count": 7102108,
+        "sha256": "23c1b1468c1676d970ed39571abf79638b97743ad504747ac000e91440a314f4",
+        "what": "num den inc: the increment roundings\u0027 inputs"
+      },
+      "R1W": {
+        "file": "R1W.txt.gz",
+        "count": 2254,
+        "sha256": "a824753125ab5d5eee2597aa6cedb46552027812f4a554ee23bc92b7bdc3dcd1",
+        "what": "num den r1 r2: ApplyUnsignedRoundingMode\u0027s windows"
+      },
+      "R1D": {
+        "file": "R1D.txt.gz",
+        "count": 72970,
+        "sha256": "20444ed5d1ee76f960f2928bbcc031ad36c561a8f58f368136bc07a481553389",
+        "what": "num den: rationals for the nearest double"
+      },
+      "B1V": {
+        "file": "B1V.txt.gz",
+        "count": 28723,
+        "sha256": "ffec1a1d39dd593f234da2c45534826c999f5f000cbdaa6d991e26c8fdf65387",
+        "what": "BigInt values, then 4096 draws of seed 0x534a4c342d303039"
+      },
+      "B1P": {
+        "file": "B1P.txt.gz",
+        "count": 17920,
+        "sha256": "a3d60c4420082a7875c2908024df027cc79312ed85fc93861db804a91a3e3742",
+        "what": "16384 pairs of B1V line numbers drawn with seed 0x534a4c342d30303a"
+      },
+      "B1S": {
+        "file": "B1S.txt.gz",
+        "count": 545553,
+        "sha256": "70c68afc824a0a8694564452a2850c111933456f3fc157bf1071d92b78454eb1",
+        "what": "B1V line number, shift count"
+      },
+      "B1N": {
+        "file": "B1N.txt.gz",
+        "count": 402014,
+        "sha256": "511963b30fb92f5499284b4c5f8a386e21b6f1660aded02f45fd340c4a0ca502",
+        "what": "B1V line number, asIntN/asUintN width (hexadecimal)"
+      },
+      "B1E": {
+        "file": "B1E.txt.gz",
+        "count": 18497,
+        "sha256": "671c9d6783b2d80779041c1d833f738f4811dcf3d256dc74058f9b56e11b2e32",
+        "what": "2^e \u002B k and the halfway cases, for a BigInt\u0027s Number"
+      },
+      "B1C": {
+        "file": "B1C.txt.gz",
+        "count": 16397,
+        "sha256": "9576671b06e2ec71cff863421f871c99abc13365f4ed1c7a5c086f672386d1c3",
+        "what": "the doubles every B1V value is compared with"
+      }
+    }
+  },
+  "notImplemented": [
+    {
+      "arm": "V",
+      "operation": "ToInt16",
+      "reason": "no member of arm V\u0027s list narrows to 16 bits: the engine narrows ToUint32\u0027s result inside JsElements.Write, which the rule does not copy"
+    },
+    {
+      "arm": "V",
+      "operation": "ToUint16",
+      "reason": "as ToInt16"
+    },
+    {
+      "arm": "V",
+      "operation": "ToInt8",
+      "reason": "as ToInt16"
+    },
+    {
+      "arm": "V",
+      "operation": "ToUint8",
+      "reason": "as ToInt16"
+    },
+    {
+      "arm": "V",
+      "operation": "Float16 encode (payload policy)",
+      "reason": "Broiler.VM\u0027s policy is the canonical NaN; arm V is compared under that policy"
+    },
+    {
+      "arm": "J",
+      "operation": "Float16 encode (canonical policy)",
+      "reason": "Broiler.JS\u0027s policy keeps the payload; arm J is compared under that policy"
+    },
+    {
+      "arm": "V",
+      "operation": "Rounding-mode name",
+      "reason": "no member of arm V\u0027s list parses an option name: the parse is in JsTemporal.Options and JsRealm.NumberFormat, which the rule does not copy"
+    },
+    {
+      "arm": "J",
+      "operation": "TemporalRoundingOptions.GetRoundingMode",
+      "reason": "it reads options[\u0022roundingMode\u0022]; its string part, NormalizeRoundingMode, is copied and compared"
+    },
+    {
+      "arm": "V",
+      "operation": "BigInt operands wider than 2^20 bits",
+      "reason": "Broiler.VM cannot hold such a value (JsBigInt\u0027s constructor refuses it), so arm V is not called with one"
+    },
+    {
+      "arm": "J",
+      "operation": "BigInt results wider than 2^24 bits",
+      "reason": "the revision of 2026-10-13: arm J and S under the unbounded policy are not asked to build them"
+    },
+    {
+      "arm": "J",
+      "operation": "BigInt::toString at a radix other than 10, and StringToBigInt\u0027s prefixed texts, of values wider than 4,101 bits beyond the first 256 drawn",
+      "reason": "the revision of 2026-10-13: arm J\u0027s radix text and prefixed parse are quadratic"
+    },
+    {
+      "arm": "S,J,V",
+      "operation": "Divisors of 0n and negative exponents",
+      "reason": "the engines raise the RangeError before calling the kernel (convention 2)"
+    },
+    {
+      "arm": "S,J,V",
+      "operation": "Comparison with NaN or an infinity",
+      "reason": "each engine\u0027s adapter answers it before calling the kernel"
+    }
+  ],
+  "operations": [
+    {
+      "operation": "ToInt32",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSValue.IntValue",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSAtomics.TruncateToElement(Int32, ToIntegerOperand)",
+          "ran": 1055930,
+          "differ": 254518,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsValue.ToInt32",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "ToUint32",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSValue.ToUint32(double)",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSValue.UIntValue",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSAtomics.TruncateToElement(Uint32, ToIntegerOperand)",
+          "ran": 1055930,
+          "differ": 254518,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsValue.ToUint32",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "ToInt16",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSInt16Array.SetValue",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "DataView.SetInt16",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSAtomics.TruncateToElement(Int16, ToIntegerOperand)",
+          "ran": 1055930,
+          "differ": 250486,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "ToUint16",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSUInt16Array.SetValue",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "DataView.SetUint16",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSStringStatic.FromCharCode",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSAtomics.TruncateToElement(Uint16, ToIntegerOperand)",
+          "ran": 1055930,
+          "differ": 250486,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "ToInt8",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSInt8Array.SetValue",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "DataView.SetInt8",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSAtomics.TruncateToElement(Int8, ToIntegerOperand)",
+          "ran": 1055930,
+          "differ": 249454,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "ToUint8",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSUInt8Array.SetValue",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "DataView.SetUint8",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSAtomics.TruncateToElement(Uint8, ToIntegerOperand)",
+          "ran": 1055930,
+          "differ": 249454,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "ToUint8Clamp",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSUint8ClampedArray.SetValue",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsElements.Clamp",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "ToIntegerOrInfinity",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSNumberPrototype.ToIntegerOrInfinity",
+          "ran": 1055930,
+          "differ": 260990,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSTypedArray.ToIntegerOrInfinity",
+          "ran": 1055930,
+          "differ": 512291,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSArrayBuffer.ToIntegerOrInfinity",
+          "ran": 1055930,
+          "differ": 512291,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSArrayPrototype.ToIntegerOrInfinity",
+          "ran": 1055930,
+          "differ": 495484,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSTypedArrayPrototype.ToIntegerOrInfinityIndex",
+          "ran": 1055930,
+          "differ": 495484,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSAtomics.ToIntegerOperand",
+          "ran": 1055930,
+          "differ": 495485,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSIntlSegments.ContainingPrototype\u0027s index",
+          "ran": 1055930,
+          "differ": 260990,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSValue.IntegerValue",
+          "ran": 1055930,
+          "differ": 512291,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.JSToString\u0027s radix",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "BuiltInsAssemblyInitializer.OneReplacement\u0027s position (length 1000)",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsValue.ToInteger",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "ToLength",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSJSON.ToLength",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSArrayPrototype.ToLength",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSProxy.ToArrayLikeLength",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "BuiltInsAssemblyInitializer.ToLength",
+          "ran": 1055930,
+          "differ": 257923,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "BuiltInsAssemblyInitializer.ToLengthDouble",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSTypedArray.ToArrayLikeLength (1-byte elements)",
+          "ran": 1055930,
+          "differ": 257923,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSTypedArray.FromShared\u0027s length",
+          "ran": 1055930,
+          "differ": 257923,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSIntl.CanonicalizeLocaleList\u0027s length",
+          "ran": 1055930,
+          "differ": 257644,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.ArrayToLength(ToInteger)",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "ToIndex",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "DataView.ToIndex",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.ToBitsIndex",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "DataView.ToByteOffset",
+          "ran": 1055930,
+          "differ": 5808,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSAtomics.ToIndex",
+          "ran": 1055930,
+          "differ": 5808,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "TypedArrayParameters.ToTypedArrayLength",
+          "ran": 1055930,
+          "differ": 5808,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSArrayBuffer.ToBufferLengthLong",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSArrayBuffer.ToBufferLength",
+          "ran": 1055930,
+          "differ": 5808,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.BinaryToIndex(ToInteger)",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "ToBigInt64",
+      "class": "B1V",
+      "lines": 28723,
+      "inputs": 28723,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSBigInt64Array.SetValue",
+          "ran": 28723,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "DataView.RawBitsFor (setBigInt64)",
+          "ran": 28723,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSAtomics.TruncateToBigElement(BigInt64)",
+          "ran": 28723,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsElements.Low64 (read as BigInt64)",
+          "ran": 28723,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsElements.Narrow(BigInt64)",
+          "ran": 28714,
+          "differ": 0,
+          "notCalled": 9
+        }
+      ]
+    },
+    {
+      "operation": "ToBigUint64",
+      "class": "B1V",
+      "lines": 28723,
+      "inputs": 28723,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSBigUint64Array.SetValue",
+          "ran": 28723,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "DataView.RawBitsFor (setBigUint64)",
+          "ran": 28723,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSAtomics.TruncateToBigElement(BigUint64)",
+          "ran": 28723,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsElements.Low64",
+          "ran": 28723,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsElements.Narrow(BigUint64)",
+          "ran": 28714,
+          "differ": 0,
+          "notCalled": 9
+        }
+      ]
+    },
+    {
+      "operation": "Float16 encode (canonical policy)",
+      "class": "N2E",
+      "lines": 380928,
+      "inputs": 380928,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsFloat16.Encode",
+          "ran": 380928,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Float16 encode (canonical policy)",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsFloat16.Encode",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Float16 encode (canonical policy)",
+      "class": "N2N",
+      "lines": 4126,
+      "inputs": 4126,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsFloat16.Encode",
+          "ran": 4126,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Float16 encode (payload policy)",
+      "class": "N2E",
+      "lines": 380928,
+      "inputs": 380928,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSFloat16Array.SetValue",
+          "ran": 380928,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "DataView.SetFloat16",
+          "ran": 380928,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Float16 encode (payload policy)",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSFloat16Array.SetValue",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "DataView.SetFloat16",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Float16 encode (payload policy)",
+      "class": "N2N",
+      "lines": 4126,
+      "inputs": 4126,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSFloat16Array.SetValue",
+          "ran": 4126,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "DataView.SetFloat16",
+          "ran": 4126,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Float16 decode",
+      "class": "N2D",
+      "lines": 65536,
+      "inputs": 65536,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSFloat16Array.GetValue",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "DataView.GetFloat16",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsFloat16.Decode",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Math.f16round",
+      "class": "N2E",
+      "lines": 380928,
+      "inputs": 380928,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSMath.F16round",
+          "ran": 380928,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsFloat16.Round",
+          "ran": 380928,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Math.f16round",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSMath.F16round",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsFloat16.Round",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Math.f16round",
+      "class": "N2N",
+      "lines": 4126,
+      "inputs": 4126,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSMath.F16round",
+          "ran": 4126,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsFloat16.Round",
+          "ran": 4126,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Math.round",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSMath.Round",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.MathRoundHalfUp",
+          "ran": 1055930,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Number::exponentiate",
+      "class": "N3P",
+      "lines": 262628,
+      "inputs": 262628,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSMath.Pow",
+          "ran": 262628,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSValue.Power",
+          "ran": 262628,
+          "differ": 1,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.MathPower",
+          "ran": 262628,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Math.hypot",
+      "class": "N3H",
+      "lines": 76668,
+      "inputs": 76668,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSMath.Hypot",
+          "ran": 76668,
+          "differ": 13701,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.MathHypotenuse",
+          "ran": 76668,
+          "differ": 10562,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Math.cbrt",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSMath.Cbrt",
+          "ran": 1055930,
+          "differ": 140459,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm\u0027s cbrt",
+          "ran": 1055930,
+          "differ": 576644,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Math.cbrt",
+      "class": "N3C",
+      "lines": 262145,
+      "inputs": 262145,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSMath.Cbrt",
+          "ran": 262145,
+          "differ": 4552,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm\u0027s cbrt",
+          "ran": 262145,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Math.expm1",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSMath.Expm1",
+          "ran": 1055930,
+          "differ": 9314,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.MathExpMinusOne",
+          "ran": 1055930,
+          "differ": 526419,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Math.expm1",
+      "class": "N3E",
+      "lines": 67684,
+      "inputs": 67684,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSMath.Expm1",
+          "ran": 67684,
+          "differ": 13391,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.MathExpMinusOne",
+          "ran": 67684,
+          "differ": 6244,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Math.log1p",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 1055930,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSMath.Log1p",
+          "ran": 1055930,
+          "differ": 9931,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.MathLogOnePlus",
+          "ran": 1055930,
+          "differ": 526475,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Math.log1p",
+      "class": "N3E",
+      "lines": 67684,
+      "inputs": 67684,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSMath.Log1p",
+          "ran": 67684,
+          "differ": 1932,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.MathLogOnePlus",
+          "ran": 67684,
+          "differ": 3970,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Math.sumPrecise",
+      "class": "N4",
+      "lines": 16754,
+      "inputs": 16754,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSMath.SumPrecise",
+          "ran": 16754,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsRealm.MathSumPrecise",
+          "ran": 16754,
+          "differ": 40,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Rounding-mode name",
+      "class": "R1M",
+      "lines": 26,
+      "inputs": 26,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "TemporalRoundingOptions.NormalizeRoundingMode",
+          "ran": 26,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSTemporalDuration.NormalizeRoundingMode",
+          "ran": 26,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "NegateRoundingMode",
+      "class": "R1M",
+      "lines": 26,
+      "inputs": 9,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "TemporalRoundingOptions.NegateRoundingMode",
+          "ran": 9,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsTemporalCore.Negate",
+          "ran": 9,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "GetUnsignedRoundingMode",
+      "class": "R1M",
+      "lines": 26,
+      "inputs": 18,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "TemporalRoundingOptions.UnsignedRoundingMode",
+          "ran": 18,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSTemporalZonedDateTime.UnsignedRoundingMode",
+          "ran": 18,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSIntlNumberFormat.GetUnsignedRoundingMode",
+          "ran": 18,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsTemporalCore.UnsignedMode",
+          "ran": 18,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsNumberFormatter.Unsigned",
+          "ran": 18,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "ApplyUnsignedRoundingMode, one step",
+      "class": "R1W",
+      "lines": 2254,
+      "inputs": 1610,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsTemporalCore.ApplyUnsigned",
+          "ran": 1380,
+          "differ": 0,
+          "notCalled": 230
+        },
+        {
+          "arm": "J",
+          "variant": "JSIntlNumberFormat.RoundRatio",
+          "ran": 1380,
+          "differ": 0,
+          "notCalled": 230
+        }
+      ]
+    },
+    {
+      "operation": "ApplyUnsignedRoundingMode, a window",
+      "class": "R1W",
+      "lines": 2254,
+      "inputs": 34776,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsTemporal.Durations\u0027 NudgeToCalendarUnit with JsTemporalCore.RoundsToSecond",
+          "ran": 34776,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSTemporalZonedDateTime\u0027s NudgeToCalendarUnit with ApplyRoundingPicksEnd",
+          "ran": 34776,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSTemporalPlainDate\u0027s NudgeToCalendarUnit with TemporalRoundingOptions.ApplyRoundingPicksEnd",
+          "ran": 34776,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "RoundNumberToIncrement, integers",
+      "class": "R1I",
+      "lines": 7102108,
+      "inputs": 381150,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsTemporalCore.RoundToIncrement(x, increment, mode)",
+          "ran": 381150,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "TemporalRoundingOptions.RoundToIncrement",
+          "ran": 381150,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSTemporalDuration.RoundToIncrement",
+          "ran": 381150,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "RoundNumberToIncrement, rationals",
+      "class": "R1I",
+      "lines": 7102108,
+      "inputs": 63918972,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsTemporalCore.RoundToIncrement(num, den, increment, mode)",
+          "ran": 63918972,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSIntlNumberFormat.RoundRatio (ToRawFixed\u0027s call)",
+          "ran": 63918972,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "RoundNumberToIncrementAsIfPositive",
+      "class": "R1I",
+      "lines": 7102108,
+      "inputs": 381150,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsTemporalCore.RoundToIncrementAsIfPositive",
+          "ran": 381150,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "TemporalRoundingOptions.RoundToIncrementAsIfPositive",
+          "ran": 381150,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "A rational\u0027s nearest double",
+      "class": "R1D",
+      "lines": 72970,
+      "inputs": 72970,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsTemporalCore.ToDouble(num, den)",
+          "ran": 72970,
+          "differ": 143,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSTemporalDuration.RatioToDouble",
+          "ran": 72970,
+          "differ": 31636,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "An integer\u0027s nearest double",
+      "class": "R1D",
+      "lines": 72970,
+      "inputs": 72970,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsTemporalCore.ToDouble(BigInteger)",
+          "ran": 72970,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSTemporalDuration.NearestDouble",
+          "ran": 72970,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "An integer\u0027s nearest double",
+      "class": "B1E",
+      "lines": 18497,
+      "inputs": 18497,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsTemporalCore.ToDouble(BigInteger)",
+          "ran": 18497,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSTemporalDuration.NearestDouble",
+          "ran": 18497,
+          "differ": 6,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt::add",
+      "class": "B1P",
+      "lines": 17920,
+      "inputs": 17920,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.Add",
+          "ran": 17915,
+          "differ": 0,
+          "notCalled": 5
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.AddValue",
+          "ran": 17920,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt::subtract",
+      "class": "B1P",
+      "lines": 17920,
+      "inputs": 17920,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.Subtract",
+          "ran": 17915,
+          "differ": 0,
+          "notCalled": 5
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.Subtract",
+          "ran": 17920,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt::multiply",
+      "class": "B1P",
+      "lines": 17920,
+      "inputs": 17920,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.Multiply",
+          "ran": 17915,
+          "differ": 0,
+          "notCalled": 5
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.Multiply",
+          "ran": 17920,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt::bitwiseAND",
+      "class": "B1P",
+      "lines": 17920,
+      "inputs": 17920,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.And",
+          "ran": 17915,
+          "differ": 0,
+          "notCalled": 5
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.BitwiseAnd",
+          "ran": 17920,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt::bitwiseOR",
+      "class": "B1P",
+      "lines": 17920,
+      "inputs": 17920,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.Or",
+          "ran": 17915,
+          "differ": 0,
+          "notCalled": 5
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.BitwiseOr",
+          "ran": 17920,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt::bitwiseXOR",
+      "class": "B1P",
+      "lines": 17920,
+      "inputs": 17920,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.Xor",
+          "ran": 17915,
+          "differ": 0,
+          "notCalled": 5
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.BitwiseXor",
+          "ran": 17920,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt::divide",
+      "class": "B1P",
+      "lines": 17920,
+      "inputs": 17664,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.Divide",
+          "ran": 17659,
+          "differ": 0,
+          "notCalled": 5
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.Divide",
+          "ran": 17664,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt::remainder",
+      "class": "B1P",
+      "lines": 17920,
+      "inputs": 17664,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.Remainder",
+          "ran": 17659,
+          "differ": 0,
+          "notCalled": 5
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.Modulo",
+          "ran": 17664,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt::exponentiate",
+      "class": "B1P",
+      "lines": 17920,
+      "inputs": 9044,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.Power",
+          "ran": 9041,
+          "differ": 0,
+          "notCalled": 3
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.Power",
+          "ran": 9023,
+          "differ": 8473,
+          "notCalled": 21
+        }
+      ]
+    },
+    {
+      "operation": "BigInt::leftShift",
+      "class": "B1S",
+      "lines": 545553,
+      "inputs": 545553,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.ShiftLeft",
+          "ran": 545392,
+          "differ": 0,
+          "notCalled": 161
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.LeftShift",
+          "ran": 545553,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt::signedRightShift",
+      "class": "B1S",
+      "lines": 545553,
+      "inputs": 545553,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.ShiftRight",
+          "ran": 545392,
+          "differ": 0,
+          "notCalled": 161
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.RightShift",
+          "ran": 545553,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt::unaryMinus",
+      "class": "B1V",
+      "lines": 28723,
+      "inputs": 28723,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.Negate",
+          "ran": 28714,
+          "differ": 0,
+          "notCalled": 9
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.Negate",
+          "ran": 28723,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt::bitwiseNOT",
+      "class": "B1V",
+      "lines": 28723,
+      "inputs": 28723,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.BitwiseNot",
+          "ran": 28714,
+          "differ": 0,
+          "notCalled": 9
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.BitwiseNot",
+          "ran": 28723,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt.asIntN",
+      "class": "B1N",
+      "lines": 402014,
+      "inputs": 402014,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.AsIntN",
+          "ran": 401902,
+          "differ": 0,
+          "notCalled": 112
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.AsIntN",
+          "ran": 402014,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt.asUintN",
+      "class": "B1N",
+      "lines": 402014,
+      "inputs": 402014,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.AsUintN",
+          "ran": 401902,
+          "differ": 0,
+          "notCalled": 112
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.AsUintN",
+          "ran": 402014,
+          "differ": 57328,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "BigInt::toString",
+      "class": "B1V",
+      "lines": 28723,
+      "inputs": 1005305,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.ToRadixString",
+          "ran": 1004990,
+          "differ": 0,
+          "notCalled": 315
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.BigIntegerToRadixString (radix 10: ToString)",
+          "ran": 881409,
+          "differ": 0,
+          "notCalled": 123896
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.BigIntegerToRadixString (radix 10: ToString), under U\u002B2212",
+          "ran": 881409,
+          "differ": 14332,
+          "notCalled": 123896
+        }
+      ]
+    },
+    {
+      "operation": "StringToBigInt",
+      "class": "B1V",
+      "lines": 28723,
+      "inputs": 3647757,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.TryParseStringInteger",
+          "ran": 3647757,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.TryStringToBigInt",
+          "ran": 3297933,
+          "differ": 0,
+          "notCalled": 349824
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.TryStringToBigInt, under U\u002B2212",
+          "ran": 3297933,
+          "differ": 0,
+          "notCalled": 349824
+        }
+      ]
+    },
+    {
+      "operation": "A BigInt\u0027s Number",
+      "class": "B1V",
+      "lines": 28723,
+      "inputs": 28723,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.ToNumber",
+          "ran": 28714,
+          "differ": 0,
+          "notCalled": 9
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.ToNumber",
+          "ran": 28723,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "A BigInt\u0027s Number",
+      "class": "B1E",
+      "lines": 18497,
+      "inputs": 18497,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.ToNumber",
+          "ran": 18497,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.ToNumber",
+          "ran": 18497,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "An integral Number\u0027s BigInt",
+      "class": "N1",
+      "lines": 1055930,
+      "inputs": 502017,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.FromIntegralNumber",
+          "ran": 502017,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.NumberToBigInt",
+          "ran": 502017,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Comparison with a Number",
+      "class": "B1V",
+      "lines": 28723,
+      "inputs": 470884862,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsBigInt.CompareToNumber",
+          "ran": 470737316,
+          "differ": 0,
+          "notCalled": 147546
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigIntExtensions.CompareToNumber",
+          "ran": 470884862,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSBigInt.EqualsLiteral",
+          "ran": 470884862,
+          "differ": 2,
+          "notCalled": 0
+        }
+      ]
+    }
+  ]
+}

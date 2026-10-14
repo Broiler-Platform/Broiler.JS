@@ -1,0 +1,1 @@
+ToInt32 N1: 1055930 lines, 1055930 inputs, J:JSValue.IntValue 1 of 1055930 differ (0 not called), J:JSAtomics.TruncateToElement(Int32, ToIntegerOperand) 254518 of 1055930 differ (0 not called), V:JsValue.ToInt32 0 of 1055930 differ (0 not called) (1.4 s)

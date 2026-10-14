@@ -1,0 +1,21 @@
+bundle: sjl-4-001 (Broiler.JS)
+after commit: bc2d663c5737204cdca0c92561a88440513d62b4
+after tree clean: True
+base: bundle sjl-3-001's after run, its after commit ef6769322b2189d413f1c3649df3e7aa6aaffcda
+rule commit: 1eb526206ed43a1fd47c61a04965f777aead22f0 (the commit that added docs/evidence/sjl-4-001/decision-rule.md)
+rule commit an ancestor of the after commit: True
+files the rule fixes, changed between the rule commit and the after commit:
+  none
+the rule's base condition: files under Broiler.JS/ and Broiler.ECMAScript/ that differ between ef67693 and the rule commit:
+  Broiler.JS/Broiler.JavaScript.Vectors.Tests/Runners/BroilerJsEngine.cs
+collector commit: 6d6603ec636f15ee14be2970c4e841b5564a66db
+dotnet --version: 10.0.401
+dotnet --list-runtimes: Microsoft.AspNetCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.AspNetCore.App]
+Microsoft.NETCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.NETCore.App]
+node --version: v22.22.0
+terser: 5.50.0
+machine: x86_64; Linux-6.18.44-fc-v114-x86_64-with-glibc2.39; logical processors 4
+cpu: Intel(R) Xeon(R) Processor @ 2.10GHz
+memory: 16479424 kB
+suite revision: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+collected: 2026-10-14T13:05:19Z

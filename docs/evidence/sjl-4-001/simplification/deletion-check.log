@@ -1,0 +1,55 @@
+# SJL-4.6 deletion check, Broiler.JS at bc2d663c5737204cdca0c92561a88440513d62b4: every entry of the numerics area's Broiler.JS
+# deletion list (Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.5),
+# searched in the file or folder that held it with git grep -E. An entry with no line is absent;
+# a line that remains is a forwarder or the library's own name, which the bundle's README reads.
+
+## JSValue.ToUint32(double)'s body
+# in Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs: ToUint32\(double
+Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs:388:    internal static uint ToUint32(double d) => IntegerConversions.ToUint32(d);
+
+## the inline clamp in JSUint8ClampedArray
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/JSUint8ClampedArray.cs: Math\.(Round|Clamp|Max|Min|Floor|Ceiling)\(|MidpointRounding
+
+## the inline (Half) casts: JSMath.F16round, DataView, JSFloat16Array
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs, Broiler.JS/Broiler.JavaScript.BuiltIns/DataView/DataView.cs, Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/JSFloat16Array.cs: \(Half\)|\bHalf\.|BitConverter\.(HalfToUInt16Bits|UInt16BitsToHalf)
+
+## JSMath's round, cbrt, expm1, log1p, hypot, pow and sumPrecise kernels
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs: \b(CorrectlyRoundedCbrt|TwoSum|SameNonFinite|Two1023|Two53|MaxUlp)\b|Math\.(Pow|Cbrt|Round)\(
+Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:52:    // CorrectlyRoundedCbrt, Expm1's Kahan form, Log1p's series and SumPrecise's expansion with TwoSum,
+Broiler.JS/Broiler.JavaScript.BuiltIns/Objects/JSMath.cs:53:    // SameNonFinite and their constants.
+
+## the special-case-less JSValue.Power and the direct Math.Pow emission for **
+# in Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs, Broiler.JS/Broiler.JavaScript.Expressions, Broiler.JS/Broiler.JavaScript.Compiler, Broiler.JS/Broiler.JavaScript.LinqExpressions: Math\.Pow\b|nameof\(Math\.Pow\)
+Broiler.JS/Broiler.JavaScript.Expressions/Expressions/BExpression.cs:162:    /// doubles calls: the shared library's <c>MathKernels.Power</c> (SJL-4.5), never <c>Math.Pow</c>,
+Broiler.JS/Broiler.JavaScript.Expressions/SL/LambdaConverter.cs:63:            // Number::exponentiate, the shared library's (SJL-4.5): Expression.Power without a method is Math.Pow.
+
+## the rounding copies: JSTemporalRoundingOptions, JSTemporalZonedDateTime.Rounding, JSTemporalDuration.Arithmetic.RoundToIncrement, JSIntl's unsigned rounding
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal, Broiler.JS/Broiler.JavaScript.BuiltIns/Intl: \b(NormalizeRoundingMode|ApplyRoundingPicksEnd|RoundToIncrement|RoundToIncrementAsIfPositive|RatioToDouble|NearestDouble|RoundOffsetToMinute|RoundRatio)\b|\"half(Expand|Even|Trunc|Ceil|Floor)\" *=>|MidpointRounding|enum UnsignedRoundingMode
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5458:    // (the engine's own RoundRatio decided it before milestone SJL-4.5).
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.Arithmetic.cs:845:    // The engine's own rounding helpers (NearestDouble, RatioToDouble, a second NormalizeRoundingMode
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.Arithmetic.cs:846:    // and RoundToIncrement) were removed at milestone SJL-4.5: an integer's or a ratio's nearest double
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalRoundingOptions.cs:16:// them (NormalizeRoundingMode, NegateRoundingMode, UnsignedRoundingMode, ApplyRoundingPicksEnd,
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalRoundingOptions.cs:17:// RoundToIncrement and RoundToIncrementAsIfPositive) were removed; what stays here is the option
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.Rounding.cs:94:        // ExactRounding.ToDouble, which replaced the engine's RatioToDouble at milestone SJL-4.5)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.Rounding.cs:408:    // (UnsignedRoundingMode and ApplyRoundingPicksEnd) were removed at milestone SJL-4.5: the nudge
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1456:    // engine's own RoundOffsetToMinute was removed at milestone SJL-4.5).
+
+## JSBigInt's ToNumber, TryStringToBigInt, TryParseBigIntString, TryParsePrefixedDigits, BigIntegerToRadixString, Shift, and the bodies of AsIntN and AsUintN
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs: \b(ToNumber|TryStringToBigInt|TryParseBigIntString|TryParsePrefixedDigits|BigIntegerToRadixString|Shift|AsIntN|AsUintN)\b
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:63:    // BigIntMath.ToNumber, the nearest double with ties to even (SJL-4.5). The public member stays
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:65:    [Obsolete("Use Broiler.ECMAScript.Numbers.BigIntMath.ToNumber, which this forwards to. To be removed in the next major version.")]
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:66:    public static double ToNumber(BigInteger v) => BigIntMath.ToNumber(v, null);
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:154:        // A Boolean operand is converted with ToNumber first (true -> 1, false -> 0)
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:451:    // argument's ToNumber is the engine's, and the range rule is the shared library's.
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:503:    // library's BigIntMath.AsIntN and AsUintN; a negative value modulo a width past the representation
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:506:    public static JSValue AsIntN(in Arguments a)
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:510:        return Of(BigIntMath.AsIntN(bits, n, Policy, null, out var result), result);
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:514:    public static JSValue AsUintN(in Arguments a)
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:518:        return Of(BigIntMath.AsUintN(bits, n, Policy, null, out var result), result);
+
+## JSBigIntExtensions.CompareToNumber
+# in Broiler.JS: \bCompareToNumber\b
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:29:    // infinities, and the exact comparison is the shared library's BigIntMath.CompareToNumber (SJL-4.5).
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:122:        => double.IsFinite(number) && BigIntMath.CompareToNumber(value, number, null) == 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:134:        return BigIntMath.CompareToNumber(value, number, null);
+

@@ -1,0 +1,18 @@
+# The numerics area's classified differences, read by generate_numerics_vectors.py.
+#
+# A line `reason <key>: <text>` defines a reason. A line `<engine> <key> <id>` classifies the vector
+# <id> as a divergence of <engine> for that reason: the generator writes the field
+# divergence.<engine>: <text>, and a normative vector becomes a divergence. An impl-defined vector
+# stays impl-defined, the field classifying the engine's difference from its own per-engine
+# expectation. The vector's expected value never changes (SCHEMA.md section 5).
+#
+# A line is added in a new corpus revision, with a dated row in conformance/vectors/REVISIONS.md,
+# and is removed only the same way, when the engine's cut-over corrects the difference and lists
+# the correction in its changelog. Every reason names the plan that answers it.
+#
+# Revision 7, 2026-10-13: every difference of each engine's first engine-level run on the area, at
+# revision 6 (Broiler.JS's docs/evidence/sjl-4-001/engine/ and Broiler.VM's bundle sjl-4-001).
+# Revision 9, 2026-10-13: Broiler.JS's cut-over (milestone SJL-4.5) corrects all 54 of its divergences and
+# Broiler.VM's (milestone SJL-4.4) all 100 of its, whose lines and reasons are removed;
+# docs/evidence/sjl-4-001/engine/retired-divergences-revision-9.tsv lists them. No numerics vector is
+# classified as a divergence at this revision.

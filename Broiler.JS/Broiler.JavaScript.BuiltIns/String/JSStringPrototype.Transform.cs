@@ -54,8 +54,8 @@ public partial class JSString
     // before fillString, and fillString is only coerced when padding is needed.
     private static JSString StringPad(string str, JSValue maxLengthArg, JSValue fillArg, bool padStart)
     {
-        var maxLengthValue = maxLengthArg.DoubleValue;
-        var maxLength = double.IsNaN(maxLengthValue) ? 0 : System.Math.Truncate(maxLengthValue);
+        // intMaxLength = ToLength(maxLength), the shared library's (SJL-4.5).
+        var maxLength = IntegerConversions.ToLength(maxLengthArg.DoubleValue);
 
         if (maxLength <= str.Length)
             return new JSString(str);
@@ -63,6 +63,10 @@ public partial class JSString
         var fillString = fillArg.IsUndefined ? " " : fillArg.StringValue;
         if (fillString.Length == 0)
             return new JSString(str);
+
+        // A result longer than this engine's strings hold is a RangeError, as repeat's is.
+        if (maxLength > int.MaxValue)
+            throw JSEngine.NewRangeError("Invalid string length");
 
         var fillLength = (int)maxLength - str.Length;
         var filler = new StringBuilder(fillLength);
@@ -81,9 +85,9 @@ public partial class JSString
     {
         var @this = a.This.AsString();
 
-        // Step 3: n = ToIntegerOrInfinity(count). ToNumber maps undefined/NaN to 0.
-        var n = a.Get1().DoubleValue;
-        n = double.IsNaN(n) ? 0 : System.Math.Truncate(n);
+        // Step 3: n = ToIntegerOrInfinity(count), the shared library's (SJL-4.5). ToNumber maps
+        // undefined/NaN to 0.
+        var n = IntegerConversions.ToIntegerOrInfinity(a.Get1().DoubleValue);
 
         // Step 4: a negative or infinite count is a RangeError.
         if (n < 0 || double.IsPositiveInfinity(n))

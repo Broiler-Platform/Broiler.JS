@@ -1,4 +1,4 @@
-using System.Numerics;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.BuiltIns.Temporal;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
@@ -16,7 +16,9 @@ public partial class JSDate
         if (double.IsNaN(ms))
             throw JSEngine.NewRangeError("Date.prototype.toTemporalInstant called on an invalid Date");
 
-        var ns = new BigInteger(ms) * 1_000_000;
+        // NumberToBigInt(t) × 10^6: the shared library's BigIntMath.FromIntegralNumber (SJL-4.5); a
+        // valid time value is integral.
+        var ns = BigIntMath.FromIntegralNumber(ms) * 1_000_000;
         return new JSTemporalInstant(ns, JSTemporalInstant.InstantPrototype);
     }
 }

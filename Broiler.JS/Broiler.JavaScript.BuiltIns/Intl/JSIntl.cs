@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Numerics;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.BuiltIns.Date;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Symbol;
@@ -14,6 +15,7 @@ using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using UnicodeCldr.LocaleData;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.Intl;
 
@@ -1316,15 +1318,10 @@ public static class JSIntl
             return result;
 
         // ToLength(Get(O, "length")): ToNumber (a Symbol length throws a TypeError via DoubleValue),
-        // truncate toward zero, then clamp a negative result to 0 — so a negative length yields an empty
-        // list and the indexed getters are never read (rather than wrapping the negative into a uint).
-        var lengthNumber = lengthValue.DoubleValue;
-        var lengthInteger = double.IsNaN(lengthNumber) ? 0 : Math.Truncate(lengthNumber);
-        if (lengthInteger < 0)
-            lengthInteger = 0;
-        else if (lengthInteger > 4294967295d)
-            lengthInteger = 4294967295d;
-        var length = (uint)lengthInteger;
+        // then the shared library's ToLength (SJL-4.5), so a negative length yields an empty list and
+        // the indexed getters are never read (rather than wrapping the negative into a uint).
+        var lengthInteger = IntegerConversions.ToLength(lengthValue.DoubleValue);
+        var length = lengthInteger > uint.MaxValue ? uint.MaxValue : (uint)lengthInteger;
         HashSet<string> seen = null;
         for (uint i = 0; i < length; i++)
         {
@@ -2165,7 +2162,7 @@ public static class JSIntl
         // their sanctioned value lists (a bad value, e.g. an empty string for
         // trailingZeroDisplay, is a RangeError). All four always have a resolved value (their
         // defaults) which resolvedOptions reflects.
-        var (roundingIncrement, roundingMode, roundingPriority, trailingZeroDisplay) = ReadRoundingOptions(options);
+        var (roundingIncrement, roundingMode, roundingModeName, roundingPriority, trailingZeroDisplay) = ReadRoundingOptions(options);
 
         // notation precedes compactDisplay (spec order; observed by the compactDisplay
         // getter call-order tests). compactDisplay is always validated, but only
@@ -2217,6 +2214,7 @@ public static class JSIntl
             DigitOptions = digitOptions,
             RoundingIncrement = roundingIncrement,
             RoundingMode = roundingMode,
+            RoundingModeName = roundingModeName,
             RoundingPriority = roundingPriority,
             TrailingZeroDisplay = trailingZeroDisplay,
             UseGrouping = useGrouping,
@@ -2281,21 +2279,28 @@ public static class JSIntl
     // not otherwise consume the values, so it just needs the reads to happen (the order
     // and per-value validation are observable — Intl.PluralRules options read order).
     // NumberFormat reads them inline because it also applies the increment/significant
-    // cross-checks. Returns the four resolved values.
-    internal static (int RoundingIncrement, string RoundingMode, string RoundingPriority, string TrailingZeroDisplay)
+    // cross-checks. Returns the four resolved values, the rounding mode both as the shared library's
+    // RoundingMode the formatter rounds with and as the option's name resolvedOptions reports.
+    internal static (int RoundingIncrement, RoundingMode RoundingMode, string RoundingModeName, string RoundingPriority, string TrailingZeroDisplay)
         ReadRoundingOptions(JSObject options)
     {
         var roundingIncrement = GetNumberOption(options, RoundingIncrementKey, 1, 5000) ?? 1;
         if (System.Array.IndexOf(SanctionedRoundingIncrements, roundingIncrement) < 0)
             throw JSEngine.NewRangeError("roundingIncrement value is out of range.");
-        var roundingMode = GetOption(options, RoundingModeKey,
-            ["ceil", "floor", "expand", "trunc", "halfCeil", "halfFloor", "halfExpand", "halfTrunc", "halfEven"],
-            false, "halfExpand");
+
+        // GetOption(options, "roundingMode", string, « the nine names », "halfExpand"): the property
+        // read and its ToString are the engine's; the shared library's TryParseRoundingMode decides
+        // whether the text is one of the nine names, and any other text is GetOption's RangeError.
+        var roundingModeValue = options == null ? JSUndefined.Value : options[RoundingModeKey];
+        var roundingModeName = roundingModeValue.IsUndefined ? "halfExpand" : roundingModeValue.StringValue;
+        if (!ExactRounding.TryParseRoundingMode(roundingModeName, out var roundingMode))
+            throw JSEngine.NewRangeError($"Invalid {RoundingModeKey} option");
+
         var roundingPriority = GetOption(options, RoundingPriorityKey,
             ["auto", "morePrecision", "lessPrecision"], false, "auto");
         var trailingZeroDisplay = GetOption(options, TrailingZeroDisplayKey,
             ["auto", "stripIfInteger"], false, "auto");
-        return (roundingIncrement, roundingMode, roundingPriority, trailingZeroDisplay);
+        return (roundingIncrement, roundingMode, roundingModeName, roundingPriority, trailingZeroDisplay);
     }
 
     internal static JSObject SnapshotDigitOptions(JSObject options)
@@ -3186,9 +3191,8 @@ public sealed class JSIntlSegments : JSObject
         if (a.This is not JSIntlSegments segments)
             throw JSEngine.NewTypeError("%Segments.prototype%.containing called on incompatible receiver");
 
-        // ToInteger(index): ToNumber then NaN/±0 → 0, otherwise truncate toward zero.
-        var number = a.Get1().DoubleValue;
-        var n = double.IsNaN(number) ? 0 : Math.Truncate(number);
+        // ToIntegerOrInfinity(index): ToNumber, then the shared library's operation (SJL-4.5).
+        var n = IntegerConversions.ToIntegerOrInfinity(a.Get1().DoubleValue);
 
         if (n < 0 || n >= segments._input.Length)
             return JSUndefined.Value;
@@ -4744,7 +4748,8 @@ internal sealed class JSIntlNumberFormatResolved
     // SetNumberFormatDigitOptions rounding slots. These always have a resolved value
     // (their defaults), so resolvedOptions reflects them unconditionally.
     public int RoundingIncrement { get; set; } = 1;
-    public string RoundingMode { get; set; } = "halfExpand";
+    public RoundingMode RoundingMode { get; set; } = RoundingMode.HalfExpand;
+    public string RoundingModeName { get; set; } = "halfExpand";
     public string RoundingPriority { get; set; } = "auto";
     public string TrailingZeroDisplay { get; set; } = "auto";
 
@@ -4814,7 +4819,7 @@ public class JSIntlNumberFormat : JSObject
         // A BigInt operand is converted via its exact magnitude (BigIntValue truncates to Int64 and
         // overflows for large values); ToNumber gives the nearest double.
         var x = value != null && value.IsBigInt
-            ? BigInt.JSBigInt.ToNumber(((BigInt.JSBigInt)value).value)
+            ? Broiler.ECMAScript.Numbers.BigIntMath.ToNumber(((BigInt.JSBigInt)value).value, null)
             : (value ?? JSUndefined.Value).DoubleValue;
 
         // ECMA-402 ToIntlMathematicalValue: a string or BigInt operand is formatted from its
@@ -4916,14 +4921,17 @@ public class JSIntlNumberFormat : JSObject
     }
 
     // Parses the magnitude of a JS numeric string into an exact rational num/den (den a
-    // power of ten). Supports optional sign, decimal point, exponent, and the 0x/0o/0b
-    // non-decimal integer forms. Returns false (caller falls back to the double value) for
-    // anything it does not recognise, e.g. "Infinity" or a non-numeric string.
+    // power of ten): StringIntlMV (ECMA-402) of a StringNumericLiteral. Supports optional sign,
+    // decimal point, exponent, and the 0x/0o/0b non-decimal integer forms. Returns false (caller
+    // falls back to the double value) for anything it does not recognise, e.g. "Infinity" or a
+    // non-numeric string.
     private static bool TryParseExactDecimal(string s, out BigInteger num, out BigInteger den)
     {
         num = BigInteger.Zero;
         den = BigInteger.One;
-        s = s.Trim();
+        // The StrWhiteSpace the literal may have around it is the specification's set, the shared
+        // library's (SJL-4.5): U+FEFF is in it, and U+0085, which .NET's Trim removed, is not.
+        s = NumberParsing.TrimStrWhiteSpace(s, TrimEnds.Both).ToString();
         if (s.Length == 0)
             return true; // empty / whitespace string is the mathematical value 0
         if (s[0] is '+' or '-')
@@ -4931,22 +4939,11 @@ public class JSIntlNumberFormat : JSObject
         if (s.Length == 0)
             return false;
 
+        // NonDecimalIntegerLiteral: its MV is StringToBigInt's (7.1.14) of the same text, the shared
+        // library's BigIntText.StringToBigInt (SJL-4.5): the prefix, then one or more of the radix's
+        // digits, without a sign or a separator.
         if (s.Length > 2 && s[0] == '0' && s[1] is 'x' or 'X' or 'o' or 'O' or 'b' or 'B')
-        {
-            var radix = s[1] is 'x' or 'X' ? 16 : s[1] is 'o' or 'O' ? 8 : 2;
-            BigInteger acc = BigInteger.Zero;
-            foreach (var c in s[2..])
-            {
-                var d = c is >= '0' and <= '9' ? c - '0'
-                    : c is >= 'a' and <= 'f' ? c - 'a' + 10
-                    : c is >= 'A' and <= 'F' ? c - 'A' + 10 : -1;
-                if (d < 0 || d >= radix)
-                    return false;
-                acc = acc * radix + d;
-            }
-            num = acc;
-            return true;
-        }
+            return BigIntText.StringToBigInt(s, BigIntPolicy.Unbounded, null, out num, out _) == Broiler.ECMAScript.ResultStatus.Completed;
 
         var exp = 0;
         var eIdx = s.IndexOfAny(['e', 'E']);
@@ -5171,7 +5168,7 @@ public class JSIntlNumberFormat : JSObject
     // Formats a finite magnitude in scientific ("3.45E-4") or engineering ("345E-6")
     // notation. The exponent is chosen so the mantissa lies in [1,10) for scientific
     // or [1,1000) (with the exponent a multiple of 3) for engineering; the mantissa is
-    // then formatted with the usual fraction-digit rules and an "E"+digits exponent
+    // then formatted with the usual digit rules and an "E"+digits exponent
     // suffix is appended as exponentSeparator / exponentMinusSign / exponentInteger
     // parts.
     private List<(string, string)> FormatScientificEngineering(double absX, bool engineering, bool negative, out bool roundedIsZero)
@@ -5182,24 +5179,41 @@ public class JSIntlNumberFormat : JSObject
             maxFrac = minFrac;
 
         var exponent = ComputeExponent(absX, engineering);
-        var mantissa = absX == 0 ? 0 : absX / Math.Pow(10, exponent);
+        var (intDigits, fracDigits) = FormatMantissa(absX, exponent, minFrac, maxFrac, negative, out roundedIsZero);
 
-        // A mantissa that rounds up past its upper bound bumps the exponent
-        // (e.g. 9.999 -> 10 in scientific, 999.9 -> 1000 in engineering).
-        var upper = engineering ? 1000.0 : 10.0;
-        var roundedMantissa = Math.Round(mantissa, Math.Clamp(maxFrac, 0, 15), MidpointRounding.AwayFromZero);
-        if (absX != 0 && roundedMantissa >= upper)
+        // ComputeExponent (ECMA-402): a mantissa that ROUNDS to its upper bound bumps the exponent
+        // (9.99 -> 10 in scientific, 999.9 -> 1000 in engineering, under "halfExpand"). Whether it does
+        // is the formatter's own rounding of the mantissa, under the resolved roundingMode, increment and
+        // digit options, whose choice is the shared library's: under "floor" 9.99 stays 9.9. (The
+        // platform's away-from-zero Math.Round decided this before milestone SJL-4.5.)
+        if (intDigits.TrimStart('0').Length > (engineering ? 3 : 1))
         {
             exponent += engineering ? 3 : 1;
-            mantissa = absX / Math.Pow(10, exponent);
+            (intDigits, fracDigits) = FormatMantissa(absX, exponent, minFrac, maxFrac, negative, out roundedIsZero);
         }
 
-        var result = FormatFiniteMagnitude(mantissa, minFrac, maxFrac, negative, out roundedIsZero);
+        var result = BuildDigitParts(intDigits, fracDigits, ReadIntOption("minimumIntegerDigits", 1));
         result.Add(("exponentSeparator", "E"));
         if (exponent < 0)
             result.Add(("exponentMinusSign", "-"));
         result.Add(("exponentInteger", Math.Abs(exponent).ToString(CultureInfo.InvariantCulture)));
         return result;
+    }
+
+    // The mantissa x × 10^-exponent of the Number's exact value x, kept exact as compact notation
+    // keeps its reduced value, and rounded once by FormatNumericToString. (A double quotient
+    // absX / 10^exponent rounded it twice wherever 10^exponent is not a double, below 10^0 and
+    // above 10^22.)
+    private (string intDigits, string fracDigits) FormatMantissa(
+        double absX, int exponent, int minFrac, int maxFrac, bool negative, out bool roundedIsZero)
+    {
+        var (num, den) = ExactRational(absX);
+        if (exponent >= 0)
+            den *= BigInteger.Pow(10, exponent);
+        else
+            num *= BigInteger.Pow(10, -exponent);
+
+        return FormatNumericToString(num, den, minFrac, maxFrac, negative, out roundedIsZero);
     }
 
     // Compact decimal units (descending by exponent) for the CJK locales exercised
@@ -5289,8 +5303,9 @@ public class JSIntlNumberFormat : JSObject
     {
         var isLong = resolved?.CompactDisplay == "long";
         var units = GetCompactUnits(locale, isLong);
+        var (num, den) = ExactRational(absX);
         if (units == null)
-            return FormatFiniteMagnitude(absX, 0, 3, negative, out roundedIsZero);
+            return FormatFiniteMagnitude(num, den, 0, 3, negative, out roundedIsZero);
 
         string suffix = null;
         var reduced = absX;
@@ -5302,6 +5317,8 @@ public class JSIntlNumberFormat : JSObject
                 if (magnitude >= exp)
                 {
                     reduced = absX / Math.Pow(10, exp);
+                    // The value rounded is x × 10^-exp exactly (1150 is 1.15K, not the double 1.149…).
+                    den *= BigInteger.Pow(10, exp);
                     suffix = sfx;
                     break;
                 }
@@ -5321,7 +5338,7 @@ public class JSIntlNumberFormat : JSObject
             maxFrac = m <= 1 ? Math.Max(0, 1 - m) : 0;
         }
 
-        var parts = FormatCompactMantissa(reduced, maxFrac, out roundedIsZero);
+        var parts = FormatCompactMantissa(num, den, maxFrac, negative, out roundedIsZero);
         if (suffix != null)
         {
             // CLDR compact patterns that include a literal space between the number and the
@@ -5352,21 +5369,17 @@ public class JSIntlNumberFormat : JSObject
         return m;
     }
 
-    // Formats the reduced compact value (integer + optional fraction parts) without
-    // grouping, trimming trailing fraction zeros.
-    private List<(string, string)> FormatCompactMantissa(double reduced, int maxFrac, out bool roundedIsZero)
+    // Formats the reduced compact value num/den (integer + optional fraction parts),
+    // trimming trailing fraction zeros. It is rounded to maxFrac fraction digits (at most 15)
+    // by ToRawFixed under the resolved roundingMode and increment, whose choice is the shared
+    // library's (the platform's away-from-zero Math.Round rounded it before milestone SJL-4.5, so
+    // "floor" formatted 1990 as "2K").
+    private List<(string, string)> FormatCompactMantissa(
+        BigInteger num, BigInteger den, int maxFrac, bool negative, out bool roundedIsZero)
     {
-        var clamped = Math.Clamp(maxFrac, 0, 15);
-        var rounded = Math.Round(reduced, clamped, MidpointRounding.AwayFromZero);
-        roundedIsZero = rounded == 0;
-
-        var fixedStr = rounded.ToString("F" + clamped, CultureInfo.InvariantCulture);
-        var dot = fixedStr.IndexOf('.');
-        var intDigits = dot < 0 ? fixedStr : fixedStr[..dot];
-        var fracDigits = dot < 0 ? string.Empty : fixedStr[(dot + 1)..];
-
-        while (fracDigits.Length > 0 && fracDigits.EndsWith('0'))
-            fracDigits = fracDigits[..^1];
+        var (intDigits, fracDigits, isZero) = RoundFixed(
+            num, den, 0, Math.Clamp(maxFrac, 0, 15), resolved?.RoundingIncrement ?? 1, UnsignedRounding(negative));
+        roundedIsZero = isZero;
 
         intDigits = intDigits.TrimStart('0');
         if (intDigits.Length == 0)
@@ -5386,43 +5399,28 @@ public class JSIntlNumberFormat : JSObject
         return result;
     }
 
-    // ComputeExponentForMagnitude over floor(log10(absX)): scientific keeps the raw
-    // base-10 magnitude; engineering rounds it down to a multiple of 3.
+    // ComputeExponentForMagnitude over floor(log10(x)) of the Number's exact value x: scientific
+    // keeps the raw base-10 magnitude; engineering rounds it down to a multiple of 3. The magnitude
+    // is the exact value's, as the exact mantissa FormatMantissa formats needs, not the double
+    // powers of ten's: the Number 1e23 is below 10^23, so its magnitude is 22.
     private static int ComputeExponent(double absX, bool engineering)
     {
         if (absX == 0 || double.IsNaN(absX) || double.IsInfinity(absX))
             return 0;
 
+        var (num, den) = ExactRational(absX);
         var magnitude = (int)Math.Floor(Math.Log10(absX));
-        // Correct floating-point error near exact powers of ten.
-        if (Math.Pow(10, magnitude) > absX)
-            magnitude--;
-        else if (Math.Pow(10, magnitude + 1) <= absX)
-            magnitude++;
+        while (CompareToPowerOfTen(num, den, magnitude) < 0) magnitude--;       // 10^magnitude ≤ x
+        while (CompareToPowerOfTen(num, den, magnitude + 1) >= 0) magnitude++;  // x < 10^(magnitude+1)
 
         return engineering ? (int)(Math.Floor(magnitude / 3.0) * 3) : magnitude;
     }
 
-    // Maps a (signed) ECMA-402 roundingMode plus the value's sign onto the unsigned
-    // rounding direction applied to the magnitude: "zero" truncates toward zero,
-    // "infinity" rounds away from zero, and the "half-*" variants only differ at the
-    // exact midpoint (toward zero / away / to even).
-    private enum UnsignedRoundingMode { Zero, Infinity, HalfZero, HalfInfinity, HalfEven }
-
-    private UnsignedRoundingMode GetUnsignedRoundingMode(bool negative)
-        => (resolved?.RoundingMode ?? "halfExpand") switch
-        {
-            "ceil" => negative ? UnsignedRoundingMode.Zero : UnsignedRoundingMode.Infinity,
-            "floor" => negative ? UnsignedRoundingMode.Infinity : UnsignedRoundingMode.Zero,
-            "expand" => UnsignedRoundingMode.Infinity,
-            "trunc" => UnsignedRoundingMode.Zero,
-            "halfCeil" => negative ? UnsignedRoundingMode.HalfZero : UnsignedRoundingMode.HalfInfinity,
-            "halfFloor" => negative ? UnsignedRoundingMode.HalfInfinity : UnsignedRoundingMode.HalfZero,
-            "halfExpand" => UnsignedRoundingMode.HalfInfinity,
-            "halfTrunc" => UnsignedRoundingMode.HalfZero,
-            "halfEven" => UnsignedRoundingMode.HalfEven,
-            _ => UnsignedRoundingMode.HalfInfinity,
-        };
+    // GetUnsignedRoundingMode (ECMA-402): the shared library's, for the resolved roundingMode
+    // ("halfExpand" when absent) and the value's sign. The engine's own UnsignedRoundingMode
+    // enumeration and GetUnsignedRoundingMode were removed at milestone SJL-4.5.
+    private UnsignedRoundingMode UnsignedRounding(bool negative)
+        => ExactRounding.GetUnsignedRoundingMode(resolved?.RoundingMode ?? RoundingMode.HalfExpand, negative);
 
     // Exact non-negative rational value of a finite double, as num/den with den a power
     // of two. Used so rounding decisions are made on the real mathematical value of the
@@ -5434,32 +5432,16 @@ public class JSIntlNumberFormat : JSObject
         int exponent = (int)((bits >> 52) & 0x7FF);
         long fraction = bits & 0xFFFFFFFFFFFFFL;
         BigInteger mantissa = exponent == 0 ? fraction : fraction | 0x10000000000000L;
+        // A subnormal's scale is the least normal one's, 2^-1074 per unit (its biased exponent
+        // field is 0, but it counts as 1).
+        if (exponent == 0)
+            exponent = 1;
         exponent -= 1075; // remove the bias (1023) and the 52-bit fraction shift
         if (mantissa.IsZero)
             return (BigInteger.Zero, BigInteger.One);
         return exponent >= 0
             ? (mantissa << exponent, BigInteger.One)
             : (mantissa, BigInteger.One << -exponent);
-    }
-
-    // Rounds the non-negative ratio a/b (b > 0) to an integer using the unsigned mode.
-    // The midpoint is detected exactly by comparing 2·remainder against b.
-    private static BigInteger RoundRatio(BigInteger a, BigInteger b, UnsignedRoundingMode mode)
-    {
-        var q = BigInteger.DivRem(a, b, out var r);
-        if (r.IsZero)
-            return q;
-        var cmp = (r << 1).CompareTo(b); // <0 below, 0 at, >0 above the midpoint
-        var roundUp = mode switch
-        {
-            UnsignedRoundingMode.Zero => false,
-            UnsignedRoundingMode.Infinity => true,
-            UnsignedRoundingMode.HalfZero => cmp > 0,
-            UnsignedRoundingMode.HalfInfinity => cmp >= 0,
-            UnsignedRoundingMode.HalfEven => cmp > 0 || (cmp == 0 && !q.IsEven),
-            _ => cmp >= 0,
-        };
-        return roundUp ? q + 1 : q;
     }
 
     // Sign of (num/den − 10^k): lets us pin down floor(log10(x)) exactly.
@@ -5471,13 +5453,15 @@ public class JSIntlNumberFormat : JSObject
     // ToRawFixed (ECMA-402): rounds the non-negative exact value num/den to a multiple of
     // roundingIncrement·10^-maxFrac using the unsigned rounding mode, then returns the
     // integer/fraction digit strings with trailing fraction zeros trimmed down to minFrac.
+    // The candidates n1 and n2 are the multiples of the increment just below and above
+    // x · 10^maxFrac, and the shared library's ApplyUnsignedRoundingMode picks one exactly
+    // (the engine's own RoundRatio decided it before milestone SJL-4.5).
     private static (string intDigits, string fracDigits, bool isZero) RoundFixed(
         BigInteger num, BigInteger den, int minFrac, int maxFrac, int increment, UnsignedRoundingMode mode)
     {
-        var scale = BigInteger.Pow(10, maxFrac);
-        // qInc = round(x · 10^maxFrac / increment); scaled = qInc · increment = x · 10^maxFrac.
-        var qInc = RoundRatio(num * scale, den * increment, mode);
-        var scaled = qInc * increment;
+        var value = num * BigInteger.Pow(10, maxFrac);
+        var n1 = BigInteger.Divide(value, den * increment) * increment;
+        var scaled = ExactRounding.ApplyUnsignedRoundingMode(value, den, n1, n1 + increment, mode);
         var s = scaled.ToString(CultureInfo.InvariantCulture);
 
         if (maxFrac == 0)
@@ -5508,7 +5492,10 @@ public class JSIntlNumberFormat : JSObject
         if (k >= 0) { a = num * BigInteger.Pow(10, k); b = den; }
         else { a = num; b = den * BigInteger.Pow(10, -k); }
 
-        var digits = RoundRatio(a, b, mode).ToString(CultureInfo.InvariantCulture);
+        // n1 and n2 = n1 + 1 are the candidates in units of 10^(e − maxSig + 1); the shared library's
+        // ApplyUnsignedRoundingMode picks one exactly.
+        var n1 = BigInteger.Divide(a, b);
+        var digits = ExactRounding.ApplyUnsignedRoundingMode(a, b, n1, n1 + 1, mode).ToString(CultureInfo.InvariantCulture);
         if (digits.Length > maxSig)
         {
             // Rounding carried into a new most-significant digit (e.g. 9.99 → 10).
@@ -5522,66 +5509,63 @@ public class JSIntlNumberFormat : JSObject
         return (digits[..sig], e);
     }
 
-    // Overload that derives the exact value from a double (used by notations that have
-    // already scaled the value into a double mantissa, e.g. scientific / compact).
     private List<(string, string)> FormatFiniteMagnitude(
-        double magnitude, int defaultMinFrac, int defaultMaxFrac, bool negative, out bool roundedIsZero)
+        BigInteger num, BigInteger den, int defaultMinFrac, int defaultMaxFrac, bool negative, out bool roundedIsZero)
     {
-        var (num, den) = ExactRational(magnitude);
-        return FormatFiniteMagnitude(num, den, defaultMinFrac, defaultMaxFrac, negative, out roundedIsZero);
+        var (intDigits, fracDigits) = FormatNumericToString(num, den, defaultMinFrac, defaultMaxFrac, negative, out roundedIsZero);
+        return BuildDigitParts(intDigits, fracDigits, ReadIntOption("minimumIntegerDigits", 1));
     }
 
-    private List<(string, string)> FormatFiniteMagnitude(
+    // FormatNumericToString (ECMA-402): the integer and fraction digits the non-negative exact value
+    // num/den rounds to under the resolved digit options, rounding mode and increment.
+    private (string intDigits, string fracDigits) FormatNumericToString(
         BigInteger num, BigInteger den, int defaultMinFrac, int defaultMaxFrac, bool negative, out bool roundedIsZero)
     {
         var priority = resolved?.RoundingPriority ?? "auto";
         var hasSig = HasOption("minimumSignificantDigits") || HasOption("maximumSignificantDigits");
-        var mode = GetUnsignedRoundingMode(negative);
+        var mode = UnsignedRounding(negative);
 
         // roundingPriority "morePrecision"/"lessPrecision" resolve both a significant-digit
         // and a fraction-digit rounding and pick between them; "auto" with significant-digit
         // options uses significant digits; otherwise the fraction-digit rules apply.
         if (priority is "morePrecision" or "lessPrecision")
-            return FormatWithPriority(num, den, defaultMinFrac, defaultMaxFrac, priority, mode, out roundedIsZero);
+            return RoundWithPriority(num, den, defaultMinFrac, defaultMaxFrac, priority, mode, out roundedIsZero);
         if (hasSig)
-            return FormatSignificantDigits(num, den, mode, out roundedIsZero);
-        return FormatFractionDigits(num, den, defaultMinFrac, defaultMaxFrac, mode, out roundedIsZero);
+            return RoundSignificantDigits(num, den, mode, out roundedIsZero);
+        return RoundFractionDigits(num, den, defaultMinFrac, defaultMaxFrac, mode, out roundedIsZero);
     }
 
     // roundingType fractionDigits: rounds to between minimumFractionDigits and
     // maximumFractionDigits (honouring roundingIncrement and the rounding mode).
-    private List<(string, string)> FormatFractionDigits(
+    private (string intDigits, string fracDigits) RoundFractionDigits(
         BigInteger num, BigInteger den, int defaultMinFrac, int defaultMaxFrac, UnsignedRoundingMode mode, out bool roundedIsZero)
     {
         var (minFrac, maxFrac) = ResolveFractionDigits(defaultMinFrac, defaultMaxFrac);
-        var minInt = ReadIntOption("minimumIntegerDigits", 1);
         var increment = resolved?.RoundingIncrement ?? 1;
 
         var (intDigits, fracDigits, isZero) = RoundFixed(num, den, minFrac, maxFrac, increment, mode);
         roundedIsZero = isZero;
-        return BuildDigitParts(intDigits, fracDigits, minInt);
+        return (intDigits, fracDigits);
     }
 
     // roundingType significantDigits: rounds to at most maximumSignificantDigits and pads
     // with trailing zeros up to minimumSignificantDigits.
-    private List<(string, string)> FormatSignificantDigits(
+    private (string intDigits, string fracDigits) RoundSignificantDigits(
         BigInteger num, BigInteger den, UnsignedRoundingMode mode, out bool roundedIsZero)
     {
         var minSig = ReadIntOption("minimumSignificantDigits", 1);
         var maxSig = ReadIntOption("maximumSignificantDigits", 21);
         if (maxSig < minSig)
             maxSig = minSig;
-        var minInt = ReadIntOption("minimumIntegerDigits", 1);
 
-        var (intDigits, fracDigits) = ToRawPrecision(num, den, minSig, maxSig, mode);
         roundedIsZero = num.IsZero;
-        return BuildDigitParts(intDigits, fracDigits, minInt);
+        return ToRawPrecision(num, den, minSig, maxSig, mode);
     }
 
     // FormatNumericToString morePrecision/lessPrecision: compute the significant-digit and
     // fraction-digit roundings, compare their rounding magnitudes (significant: e−maxSig+1,
     // fraction: −maxFrac), and keep the more (or less) precise of the two.
-    private List<(string, string)> FormatWithPriority(
+    private (string intDigits, string fracDigits) RoundWithPriority(
         BigInteger num, BigInteger den, int defaultMinFrac, int defaultMaxFrac, string priority,
         UnsignedRoundingMode mode, out bool roundedIsZero)
     {
@@ -5606,8 +5590,8 @@ public class JSIntlNumberFormat : JSObject
                     || (priority == "lessPrecision" && !fixedIsMorePrecise);
 
         return useFixed
-            ? FormatFractionDigits(num, den, defaultMinFrac, defaultMaxFrac, mode, out roundedIsZero)
-            : FormatSignificantDigits(num, den, mode, out roundedIsZero);
+            ? RoundFractionDigits(num, den, defaultMinFrac, defaultMaxFrac, mode, out roundedIsZero)
+            : RoundSignificantDigits(num, den, mode, out roundedIsZero);
     }
 
     // Shared assembly of the integer/fraction "parts" from already-rounded digit strings:
@@ -6127,7 +6111,7 @@ public class JSIntlNumberFormat : JSObject
             // SetNumberFormatDigitOptions rounding slots are always present (spec order:
             // after notation/compactDisplay/signDisplay).
             result.CreateDataProperty(KeyStrings.GetOrCreate("roundingIncrement"), CreateNumber(r.RoundingIncrement));
-            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingMode"), CreateString(r.RoundingMode));
+            result.CreateDataProperty(KeyStrings.GetOrCreate("roundingMode"), CreateString(r.RoundingModeName));
             result.CreateDataProperty(KeyStrings.GetOrCreate("roundingPriority"), CreateString(r.RoundingPriority));
             result.CreateDataProperty(KeyStrings.GetOrCreate("trailingZeroDisplay"), CreateString(r.TrailingZeroDisplay));
         }

@@ -1,6 +1,6 @@
-﻿using Broiler.JavaScript.ExpressionCompiler;
+﻿using Broiler.ECMAScript.Numbers;
+using Broiler.JavaScript.ExpressionCompiler;
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
@@ -45,37 +45,24 @@ public partial class JSMath : JSObject
     [JSExport]
     public static JSValue Random(in Arguments a) => new JSNumber(randomGenertor.NextDouble());
 
+    // Math.round, pow, hypot, cbrt, expm1, log1p, f16round and sumPrecise are adapters (SJL-4.5): the
+    // kernels are the shared library's MathKernels, Float16 and PreciseSum, and these built-ins keep
+    // the coercion of each argument, in the specification's order, the errors, the iteration and the
+    // value wrapping. The deleted kernels were JSMath.Round's and Pow's bodies, both Hypot overloads,
+    // CorrectlyRoundedCbrt, Expm1's Kahan form, Log1p's series and SumPrecise's expansion with TwoSum,
+    // SameNonFinite and their constants.
+
+    /// <summary><c>Math.round</c> (ECMA-262 21.3.2.28): <c>ToNumber</c> of the argument, then <c>MathKernels.Round</c>.</summary>
     [JSExport]
     public static JSValue Round(in Arguments args)
     {
         var first = args.Get1();
-        if (first.IsUndefined)
-            return JSNumber.NaN;
 
-        if (first.IsNull)
-            return JSNumber.Zero;
-
+        // The engine's decimal extension (the `m` suffix, SJL-D-17) is not a Number and stays here.
         if (first.IsDecimal)
-        {
-            var dv = first.DecimalValue;
-            return CreateDecimal(Math.Floor(dv + 0.5m));
-        }
+            return CreateDecimal(Math.Floor(first.DecimalValue + 0.5m));
 
-        var number = first.DoubleValue;
-        if (double.IsNaN(number) || double.IsInfinity(number) || number == 0.0)
-            return new JSNumber(number);
-
-        // §21.3.2.28 Math.round: the result is the integer closest to x, with halves
-        // rounded toward +Infinity. Use floor(x) + (frac >= 0.5 ? 1 : 0) rather than
-        // floor(x + 0.5): adding 0.5 loses precision, rounding 0.5 - ε/4 up to 1 and
-        // perturbing large odd integers. This also yields -0 for x in (-0.5, -0]
-        // (test262: Math/round/S15.8.2.15_A7).
-        var floor = Math.Floor(number);
-        var result = number - floor >= 0.5 ? floor + 1.0 : floor;
-        if (result == 0.0 && number < 0.0)
-            return new JSNumber(-0.0D);
-
-        return new JSNumber(result);
+        return new JSNumber(MathKernels.Round(first.DoubleValue));
     }
 
     /// <summary>
@@ -197,38 +184,9 @@ public partial class JSMath : JSObject
         return r;
     }
 
+    /// <summary><c>Math.cbrt</c> (ECMA-262 21.3.2.9): <c>ToNumber</c> of the argument, then <c>MathKernels.Cbrt</c>, correctly rounded.</summary>
     [JSExport]
-    public static JSValue Cbrt(in Arguments args)
-    {
-        var first = args.Get1();
-        var d = first.DoubleValue;
-        return new JSNumber(CorrectlyRoundedCbrt(d));
-    }
-
-    // System.Math.Cbrt can be off by one ULP (e.g. Math.Cbrt(27) is
-    // 3.0000000000000004), which breaks perfect-cube landmarks. Choose whichever of
-    // the result and its two neighbours cubes closest to the input. The ±0, ±∞ and
-    // NaN cases are returned as-is (Math.Cbrt already preserves the sign of zero and
-    // propagates non-finite values).
-    private static double CorrectlyRoundedCbrt(double d)
-    {
-        var y = Math.Cbrt(d);
-        if (d == 0.0 || double.IsNaN(d) || double.IsInfinity(d))
-            return y;
-
-        var best = y;
-        var bestErr = Math.Abs(y * y * y - d);
-
-        var lower = Math.BitDecrement(y);
-        var lowerErr = Math.Abs(lower * lower * lower - d);
-        if (lowerErr < bestErr) { best = lower; bestErr = lowerErr; }
-
-        var upper = Math.BitIncrement(y);
-        var upperErr = Math.Abs(upper * upper * upper - d);
-        if (upperErr < bestErr) { best = upper; }
-
-        return best;
-    }
+    public static JSValue Cbrt(in Arguments args) => new JSNumber(MathKernels.Cbrt(args.Get1().DoubleValue));
 
     [JSExport]
     public static JSValue Ceil(in Arguments args)
@@ -288,29 +246,9 @@ public partial class JSMath : JSObject
         return r;
     }
 
+    /// <summary><c>Math.expm1</c> (ECMA-262 21.3.2.15): <c>ToNumber</c> of the argument, then <c>MathKernels.Expm1</c>.</summary>
     [JSExport]
-    public static JSValue Expm1(in Arguments args)
-    {
-        var first = args.Get1();
-        var d = first.DoubleValue;
-        // expm1(±0) === ±0: Math.Exp(-0)-1 would lose the sign of zero, so pass
-        // ±0 (and NaN) through unchanged.
-        if (d == 0.0 || double.IsNaN(d))
-            return new JSNumber(d);
-        var u = Math.Exp(d);
-        // |d| tiny: e^d rounds to 1, so e^d − 1 underflows to 0 and loses all precision; expm1(d) ≈ d.
-        if (u == 1.0)
-            return new JSNumber(d);
-        var um1 = u - 1.0;
-        var logU = Math.Log(u);
-        // When e^d overflowed to +∞ (logU = +∞) or underflowed to 0 (logU = −∞), the correction is
-        // undefined but u − 1 (= +∞ or −1) is already exact.
-        if (double.IsInfinity(logU))
-            return new JSNumber(um1);
-        // Accurate expm1 = (e^d − 1) · d / ln(e^d): the relative errors of (u − 1) and ln(u) cancel,
-        // giving a result good to ~1 ulp where the direct e^d − 1 would not.
-        return new JSNumber(um1 * d / logU);
-    }
+    public static JSValue Expm1(in Arguments args) => new JSNumber(MathKernels.Expm1(args.Get1().DoubleValue));
 
     [JSExport]
     public static JSValue Fround(in Arguments args)
@@ -323,69 +261,34 @@ public partial class JSMath : JSObject
     }
 
     /// <summary>
-    /// ES2025 §2.8 — Math.f16round(x)
-    /// Rounds a number to the nearest IEEE 754 half-precision (16-bit) float.
+    /// <c>Math.f16round</c> (ECMA-262 21.3.2.17): <c>ToNumber</c> of the argument, then
+    /// <c>Float16.Round</c>, which rounds once from the double's bits.
     /// </summary>
     [JSExport("f16round")]
-    public static JSValue F16round(in Arguments args)
-    {
-        var first = args.Get1();
-        var d = first.DoubleValue;
-        var r = (double)(Half)d;
+    public static JSValue F16round(in Arguments args) => new JSNumber(Float16.Round(args.Get1().DoubleValue));
 
-        return new JSNumber(r);
-    }
-
-    [JSExport]
+    /// <summary>
+    /// <c>Math.hypot</c> (ECMA-262 21.3.2.18): <c>ToNumber</c> of every argument, in order, before any
+    /// value is looked at (steps 2-3), then <c>MathKernels.Hypot</c> over the converted values.
+    /// </summary>
+    [JSExport(Length = 2)]
     public static JSValue Hypot(in Arguments args)
     {
-        int length = args.Length;
+        var length = args.Length;
+        Span<double> numbers = length <= 16 ? stackalloc double[length] : new double[length];
+        for (var i = 0; i < length; i++)
+            numbers[i] = args.GetAt(i).DoubleValue;
 
-        if (length == 0)
-            return JSNumber.Zero;
-
-        if (length == 1)
-            return new JSNumber(Math.Abs(args.Get1().DoubleValue));
-
-        var (first, second) = args.Get2();
-        double d1 = first.DoubleValue;
-        double d2 = second.DoubleValue;
-
-        if (length == 2)
-            return new JSNumber(Hypot(d1, d2));
-
-        double result = Hypot(d1, d2);
-        for (int i = 2; i < length; i++)
-        {
-            double val = args.GetAt(i).DoubleValue;
-            result = Hypot(result, val);
-        }
-
-        return new JSNumber(result);
+        return new JSNumber(MathKernels.Hypot(numbers));
     }
 
-    public static double Hypot(double number1, double number2)
-    {
-        double abs1 = Math.Abs(number1);
-        double abs2 = Math.Abs(number2);
-
-        // Per spec (Math.hypot), an infinite magnitude takes precedence over NaN: if any argument
-        // is ±Infinity the result is +Infinity even when another is NaN. Math.Min/Math.Max
-        // propagate NaN, so these cases must be handled before the general computation.
-        if (double.IsInfinity(abs1) || double.IsInfinity(abs2))
-            return double.PositiveInfinity;
-        if (double.IsNaN(abs1) || double.IsNaN(abs2))
-            return double.NaN;
-
-        double min = Math.Min(abs1, abs2);
-        double max = Math.Max(abs1, abs2);
-
-        if (min == 0)
-            return max;
-
-        double u = min / max;
-        return max * Math.Sqrt(1 + u * u);
-    }
+    /// <summary>The hypotenuse of two Numbers: the shared library's <c>MathKernels.Hypot</c> (SJL-4.5).</summary>
+    /// <remarks>
+    /// A public member nothing in the engine calls, kept as an obsolete forwarder (decision SJL-D-25
+    /// (b)); its pairwise body is gone.
+    /// </remarks>
+    [Obsolete("Use Broiler.ECMAScript.Numbers.MathKernels.Hypot, which this forwards to. To be removed in the next major version.")]
+    public static double Hypot(double number1, double number2) => MathKernels.Hypot([number1, number2]);
 
     [JSExport]
     public static JSValue Imul(in Arguments args)
@@ -419,25 +322,9 @@ public partial class JSMath : JSObject
     }
 
 
+    /// <summary><c>Math.log1p</c> (ECMA-262 21.3.2.21): <c>ToNumber</c> of the argument, then <c>MathKernels.Log1p</c>.</summary>
     [JSExport]
-    public static JSValue Log1p(in Arguments args)
-    {
-        var first = args.Get1();
-        var d = first.DoubleValue;
-        double r;
-
-        if (Math.Abs(d) < 0.01)
-        {
-            // For small numbers, use a taylor series approximation.
-            r = d * (1.0 + d * (-1.0 / 2.0 + d * (1.0 / 3.0 + d *
-                (-1.0 / 4.0 + d * (1.0 / 5.0 + d * (-1.0 / 6.0 + d * (1.0 / 7.0)))))));
-            return new JSNumber(r);
-        }
-
-        // Otherwise just use the normal log function.
-        r = Math.Log(1.0 + d);
-        return new JSNumber(r);
-    }
+    public static JSValue Log1p(in Arguments args) => new JSNumber(MathKernels.Log1p(args.Get1().DoubleValue));
 
     [JSExport]
     public static JSValue Log2(in Arguments args)
@@ -488,26 +375,17 @@ public partial class JSMath : JSObject
         return new JSNumber(result);
     }
 
+    /// <summary>
+    /// <c>Math.pow</c> (ECMA-262 21.3.2.26): <c>ToNumber</c> of the base, then of the exponent, then
+    /// <c>MathKernels.Power</c>, the one <c>Number::exponentiate</c> of <c>**</c> and <c>Math.pow</c>.
+    /// </summary>
     [JSExport]
     public static JSValue Pow(in Arguments args)
     {
         var (first, second) = args.Get2();
         var @base = first.DoubleValue;
         var exponent = second.DoubleValue;
-
-        // Number::exponentiate step 1: a NaN exponent always yields NaN, even for
-        // base 1 where IEEE pow(1, NaN) would return 1.
-        if (double.IsNaN(exponent))
-            return JSNumber.NaN;
-
-        if ((@base == 1.0 || @base == -1) && double.IsInfinity(exponent))
-            return JSNumber.NaN;
-
-        if (double.IsNaN(@base) && exponent == 0.0)
-            return JSNumber.One;
-
-        var r = Math.Pow(@base, exponent);
-        return new JSNumber(r);
+        return new JSNumber(MathKernels.Power(@base, exponent));
     }
 
     [JSExport]
@@ -594,199 +472,68 @@ public partial class JSMath : JSObject
         return r;
     }
 
-    /// <summary>
-    /// ES2026 §4.2 — Math.sumPrecise(iterable)
-    /// Returns the sum of values from an iterable using Neumaier compensated
-    /// summation for improved floating-point precision.
-    /// </summary>
-    // 2**1023, 2**53 and 2**(1023-52); computed with ScaleB so no decimal-literal rounding creeps in.
-    private static readonly double Two1023 = Math.ScaleB(1.0, 1023);
-    private static readonly double Two53 = Math.ScaleB(1.0, 53);
-    private static readonly double MaxUlp = Math.ScaleB(1.0, 971); // == double.MaxValue - PENULTIMATE_DOUBLE
-
-    // (hi, lo) such that hi + lo == x + y exactly and hi == fl(x + y). Requires |x| >= |y|.
-    private static (double hi, double lo) TwoSum(double x, double y)
-    {
-        var hi = x + y;
-        var lo = y - (hi - x);
-        return (hi, lo);
-    }
-
-    // Object.is for two non-finite operands: NaN matches NaN; ±Infinity match only themselves.
-    private static bool SameNonFinite(double a, double b) => (double.IsNaN(a) && double.IsNaN(b)) || a == b;
+    /// <summary>The count of values at which <c>Math.sumPrecise</c> refuses its input with a <c>RangeError</c>, 2^53.</summary>
+    private const long SumPreciseCountLimit = 1L << 53;
 
     /// <summary>
-    /// Math.sumPrecise — the maximally precise (correctly rounded) sum of a finite list of Numbers.
-    /// Ports the TC39 reference algorithm (Shewchuk/Python-fsum exact addition, as used by
-    /// CPython's math.fsum, extended with a "biased" partial that tracks multiples of 2**1024 so
-    /// intermediate overflow does not lose precision). See
-    /// https://github.com/tc39/proposal-math-sum.
+    /// <c>Math.sumPrecise</c> (ECMA-262 21.3.2.34): the iteration is this engine's, as the clause has
+    /// it, and the sum is the shared <c>PreciseSum</c>'s, the exact sum rounded once.
     /// </summary>
+    /// <remarks>
+    /// RequireObjectCoercible, then <c>GetIterator(items, sync)</c>, then <c>IteratorStepValue</c>
+    /// until the iterator is done. A count reaching 2^53 is a <c>RangeError</c>, and a value that is
+    /// not a Number a <c>TypeError</c>; each closes the iterator first, and is what propagates
+    /// whatever <c>return()</c> does (<c>IteratorClose</c> with a throw completion). Present only
+    /// under <see cref="JavaScriptFeatureFlags.MathSumPrecise"/>, this engine's policy.
+    /// </remarks>
     [JSExport("sumPrecise", Length = 1, Feature = (int)JavaScriptFeatureFlags.MathSumPrecise)]
     public static JSValue SumPrecise(in Arguments args)
     {
-        var iterable = args.Get1();
-        if (iterable.IsNullOrUndefined)
+        var items = args.Get1();
+        if (items.IsNullOrUndefined)
             throw JSEngine.NewTypeError("Math.sumPrecise requires an iterable argument");
 
-        var en = iterable.GetIterableEnumerator();
-
-        // Pull the next Number summand (skipping holes); a non-Number element is a TypeError after
-        // closing the iterator. Returns false at end of iteration.
-        bool Next(out double value)
+        var iterator = items.GetIterableEnumerator();
+        var sum = new PreciseSum();
+        long count = 0;
+        while (iterator.MoveNext(out var next))
         {
-            while (en.MoveNext(out var hasValue, out var item, out _))
+            if (++count >= SumPreciseCountLimit)
             {
-                if (!hasValue)
-                    continue;
-
-                if (item is not JSNumber number)
-                {
-                    if (en is IReturnableEnumerator returnable)
-                        returnable.Return();
-                    throw JSEngine.NewTypeError("Math.sumPrecise only accepts Number values");
-                }
-
-                value = number.value;
-                return true;
+                var error = JSEngine.NewRangeError("Math.sumPrecise accepts fewer than 2^53 values");
+                CloseIteratorAfterError(iterator);
+                throw error;
             }
 
-            value = 0;
-            return false;
-        }
-
-        // Once a non-finite value is seen, the remaining (finite) summands cannot affect the result;
-        // only the non-finite values matter. Summing two distinct non-finite values gives NaN, while
-        // a non-finite value with itself gives itself. The rest of the iterable is still consumed
-        // (and type-checked).
-        double DrainNonFinite(double current)
-        {
-            while (Next(out var value))
+            if (next is not JSNumber number)
             {
-                if (!double.IsFinite(value) && !SameNonFinite(value, current))
-                    current = double.NaN;
+                var error = JSEngine.NewTypeError("Math.sumPrecise only accepts Number values");
+                CloseIteratorAfterError(iterator);
+                throw error;
             }
 
-            return current;
+            sum.Add(number.value);
         }
 
-        var partials = new List<double>();
-        double overflow = 0; // conceptually 2**1024 times this value; the final (biased) partial
+        return new JSNumber(sum.Result());
+    }
 
-        // Skip a leading run of -0 (the accumulator is -0𝔽, so an all--0 list — and the empty list —
-        // yields -0), stopping at the first value that is not -0.
-        while (true)
+    /// <summary>
+    /// <c>IteratorClose(iteratorRecord, completion)</c> for a throw completion: calls
+    /// <c>return()</c>, and discards what it throws or answers, so the completion's error propagates.
+    /// </summary>
+    private static void CloseIteratorAfterError(IElementEnumerator iterator)
+    {
+        if (iterator is not IReturnableEnumerator returnable)
+            return;
+
+        try
         {
-            if (!Next(out var value))
-                return new JSNumber(-0.0);
-
-            if (!(value == 0.0 && double.IsNegative(value)))
-            {
-                if (!double.IsFinite(value))
-                    return new JSNumber(DrainNonFinite(value));
-                partials.Add(value);
-                break;
-            }
+            returnable.Return();
         }
-
-        // Main loop: fold each summand into the non-overlapping partials, spilling whole-2**1024
-        // overflow into the biased partial so the running sum can exceed the double range losslessly.
-        while (Next(out var value))
+        catch
         {
-            var x = value;
-            if (!double.IsFinite(x))
-                return new JSNumber(DrainNonFinite(x));
-
-            var used = 0;
-            for (var idx = 0; idx < partials.Count; idx++)
-            {
-                var y = partials[idx];
-                if (Math.Abs(x) < Math.Abs(y))
-                    (x, y) = (y, x);
-
-                var (hi, lo) = TwoSum(x, y);
-                if (double.IsInfinity(hi))
-                {
-                    var sign = hi > 0 ? 1 : -1;
-                    overflow += sign;
-                    if (Math.Abs(overflow) >= Two53)
-                        throw JSEngine.NewRangeError("Math.sumPrecise: intermediate overflow");
-
-                    x = (x - sign * Two1023) - sign * Two1023;
-                    if (Math.Abs(x) < Math.Abs(y))
-                        (x, y) = (y, x);
-                    (hi, lo) = TwoSum(x, y);
-                }
-
-                if (lo != 0)
-                    partials[used++] = lo;
-                x = hi;
-            }
-
-            partials.RemoveRange(used, partials.Count - used);
-            if (x != 0)
-                partials.Add(x);
+            // The throw completion wins over anything return() does.
         }
-
-        // Compute the exact sum of the partials (plus the biased overflow), stopping once it becomes
-        // inexact, then apply round-half-to-even.
-        var n = partials.Count - 1;
-        double resultHi = 0, resultLo = 0;
-
-        if (overflow != 0)
-        {
-            var next = n >= 0 ? partials[n] : 0;
-            --n;
-            if (Math.Abs(overflow) > 1 || (overflow > 0 && next > 0) || (overflow < 0 && next < 0))
-                return new JSNumber(overflow > 0 ? double.PositiveInfinity : double.NegativeInfinity);
-
-            // |overflow| == 1: do the arithmetic with a factor of 2 dropped so it cannot overflow.
-            (resultHi, resultLo) = TwoSum(overflow * Two1023, next / 2);
-            resultLo *= 2;
-            if (double.IsInfinity(2 * resultHi))
-            {
-                if (resultHi > 0)
-                {
-                    if (resultHi == Two1023 && resultLo == -(MaxUlp / 2) && n >= 0 && partials[n] < 0)
-                        return new JSNumber(double.MaxValue);
-                    return new JSNumber(double.PositiveInfinity);
-                }
-
-                if (resultHi == -Two1023 && resultLo == MaxUlp / 2 && n >= 0 && partials[n] > 0)
-                    return new JSNumber(-double.MaxValue);
-                return new JSNumber(double.NegativeInfinity);
-            }
-
-            if (resultLo != 0)
-            {
-                partials[n + 1] = resultLo;
-                ++n;
-                resultLo = 0;
-            }
-
-            resultHi *= 2;
-        }
-
-        while (n >= 0)
-        {
-            var x = resultHi;
-            var y = partials[n];
-            --n;
-            (resultHi, resultLo) = TwoSum(x, y);
-            if (resultLo != 0)
-                break;
-        }
-
-        // When the roundoff is exactly half a ULP, the next partial's sign decides the rounding.
-        if (n >= 0 && ((resultLo < 0.0 && partials[n] < 0.0) || (resultLo > 0.0 && partials[n] > 0.0)))
-        {
-            var y = resultLo * 2.0;
-            var x = resultHi + y;
-            var yr = x - resultHi;
-            if (y == yr)
-                resultHi = x;
-        }
-
-        return new JSNumber(resultHi);
     }
 }

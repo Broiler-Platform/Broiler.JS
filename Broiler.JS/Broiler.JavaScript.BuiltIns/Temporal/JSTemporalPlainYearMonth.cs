@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -402,7 +403,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
         // The difference is measured from the receiver (day 1) and negated for "since"; the rounding mode
         // is correspondingly negated before rounding (GetDifferenceSettings).
-        var mode = sign == -1 ? TemporalRoundingOptions.NegateRoundingMode(roundingMode) : roundingMode;
+        var mode = sign == -1 ? ExactRounding.Negate(roundingMode) : roundingMode;
 
         double years, months;
         if (smallestUnit == "month" && increment == 1)
@@ -503,21 +504,13 @@ public partial class JSTemporalPlainYearMonth : JSObject
     private static int ToIntegerWithTruncation(JSValue value)
     {
         if (value == null || value.IsUndefined) return 0;
-        var number = value.DoubleValue;
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            throw JSEngine.NewRangeError("Temporal.PlainYearMonth: component must be finite");
-        return (int)Math.Truncate(number);
+        return (int)TemporalRoundingOptions.ToIntegerWithTruncation(value, "Temporal.PlainYearMonth: component must be finite");
     }
 
     // The constructor's required isoYear/isoMonth arguments are coerced with ToNumber first, so an
     // absent / undefined argument (NaN) is a RangeError rather than silently defaulting to 0.
     private static int ToIntegerWithTruncationArgument(JSValue value)
-    {
-        var number = value == null ? double.NaN : value.DoubleValue;
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            throw JSEngine.NewRangeError("Temporal.PlainYearMonth: component must be finite");
-        return (int)Math.Truncate(number);
-    }
+        => (int)TemporalRoundingOptions.ToIntegerWithTruncation(value ?? JSUndefined.Value, "Temporal.PlainYearMonth: component must be finite");
 
     // ToPositiveIntegerWithTruncation: the `month` field must be a positive integer (≥ 1) regardless
     // of the overflow option — only the upper bound is subject to constrain/reject.
@@ -567,9 +560,9 @@ public partial class JSTemporalPlainYearMonth : JSObject
     // (smallest). Validates largestUnit/smallestUnit (smallestUnit must not be larger than largestUnit),
     // roundingIncrement and roundingMode, and returns all four (rounding is applied in Difference for the
     // ISO calendar).
-    private static (string largestUnit, string smallestUnit, int increment, string roundingMode) ReadDifferenceSettings(JSValue options)
+    private static (string largestUnit, string smallestUnit, int increment, RoundingMode roundingMode) ReadDifferenceSettings(JSValue options)
     {
-        if (options == null || options.IsUndefined) return ("year", "month", 1, "trunc");
+        if (options == null || options.IsUndefined) return ("year", "month", 1, RoundingMode.Trunc);
         if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
 
@@ -581,7 +574,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         if (largestUnit == "auto") largestUnit = null;
 
         var increment = TemporalRoundingOptions.GetRoundingIncrement(o);
-        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, "trunc");
+        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, RoundingMode.Trunc);
 
         var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
         var smallestUnit = smallestRaw.IsUndefined ? "month" : TemporalRoundingOptions.NormalizeAnyUnit(smallestRaw.StringValue, allowAuto: false);

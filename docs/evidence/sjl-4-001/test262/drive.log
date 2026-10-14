@@ -1,0 +1,22 @@
+build start 2026-10-14T07:04:14Z at bc2d663c5737204cdca0c92561a88440513d62b4, clean: 0
+build exit 0 2026-10-14T07:06:21Z
+self-check start 2026-10-14T07:06:21Z
+self-check exit 0
+shard 4 start 2026-10-14T07:06:36Z
+shard 4 exit 1 2026-10-14T07:48:16Z
+shard 5 start 2026-10-14T07:48:16Z
+shard 5 exit 1 2026-10-14T08:30:05Z
+shard 6 start 2026-10-14T08:30:05Z
+shard 6 exit 1 2026-10-14T09:12:14Z
+shard 7 start 2026-10-14T09:12:14Z
+shard 7 exit 1 2026-10-14T09:53:06Z
+shard 0 start 2026-10-14T09:53:06Z
+shard 0 exit 1 2026-10-14T10:34:42Z
+shard 1 start 2026-10-14T10:34:42Z
+shard 1 exit 1 2026-10-14T11:16:09Z
+shard 2 start 2026-10-14T11:16:09Z
+shard 2 exit 1 2026-10-14T11:57:53Z
+shard 3 start 2026-10-14T11:57:53Z
+shard 3 exit 1 2026-10-14T12:39:45Z
+merge exit 0 2026-10-14T13:04:53Z
+DONE

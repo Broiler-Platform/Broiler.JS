@@ -26,6 +26,7 @@ Broiler.ECMAScript.Conformance.IVectorLibrary interface
 Broiler.ECMAScript.Conformance.IVectorLibrary.Call(System.String, System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Conformance.TypedValue>) method abstract System.String
 Broiler.ECMAScript.Conformance.IVectorLibrary.get_Name() method abstract System.String
 Broiler.ECMAScript.Conformance.LibraryRun static class
+Broiler.ECMAScript.Conformance.LibraryRun.Expected(Broiler.ECMAScript.Conformance.VectorRecord) method static System.String
 Broiler.ECMAScript.Conformance.LibraryRun.Inputs(Broiler.ECMAScript.Conformance.VectorRecord) method static System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Conformance.TypedValue>
 Broiler.ECMAScript.Conformance.LibraryRun.Run(System.Collections.Generic.IEnumerable`1<Broiler.ECMAScript.Conformance.VectorRecord>, Broiler.ECMAScript.Conformance.IVectorLibrary) method static System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Conformance.VectorResult>
 Broiler.ECMAScript.Conformance.Outcome sealed class : System.IEquatable`1<Broiler.ECMAScript.Conformance.Outcome>

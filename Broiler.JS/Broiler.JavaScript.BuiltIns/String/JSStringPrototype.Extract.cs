@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.BuiltIns.Generator;
 using Broiler.JavaScript.Runtime;
@@ -8,17 +9,30 @@ namespace Broiler.JavaScript.BuiltIns.String;
 
 public partial class JSString
 {
+    // ToIntegerOrInfinity (§7.1.5) of an argument, which is the shared library's (SJL-4.5); an absent
+    // or undefined argument is +0, as its ToNumber is NaN.
+    private static double IntegerArgument(JSValue? value)
+        => value == null ? 0 : IntegerConversions.ToIntegerOrInfinity(value.DoubleValue);
+
+    // A position clamped into [0, length], as substring and the search methods clamp it.
+    private static int Clamp(double position, int length)
+        => position <= 0 ? 0 : position >= length ? length : (int)position;
+
+    // A relative index, as slice and substr resolve one: from the end when negative, then clamped.
+    private static int Relative(double position, int length)
+        => position < 0 ? Clamp(length + position, length) : Clamp(position, length);
+
     [JSPrototypeMethod]
     [JSExport("charAt", Length = 1)]
     public static JSValue CharAt(in Arguments a)
     {
         var text = a.This.AsString();
-        var pos = a[0]?.IntegerValue ?? 0;
+        var pos = IntegerArgument(a[0]);
 
         if (pos < 0 || pos >= text.Length)
             return Empty;
 
-        return new JSString(new string(text[pos], 1));
+        return new JSString(new string(text[(int)pos], 1));
     }
 
     [JSPrototypeMethod]
@@ -26,20 +40,11 @@ public partial class JSString
     public static JSValue Substring(in Arguments a)
     {
         var @this = a.This.AsString();
-        var start = a[0]?.IntegerValue ?? 0;
-        var end = a.TryGetAt(1, out var v) ? (v.IsUndefined ? int.MaxValue : v.IntegerValue) : int.MaxValue;
+        var start = Clamp(IntegerArgument(a[0]), @this.Length);
+        var end = a.TryGetAt(1, out var v) && !v.IsUndefined ? Clamp(IntegerArgument(v), @this.Length) : @this.Length;
 
-        var si = Math.Max(Math.Min(start, end), 0);
-        var ei = Math.Max(Math.Max(start, end), 0);
-
-        if (si < 0)
-            si += @this.Length;
-
-        if (ei < 0)
-            ei += @this.Length;
-
-        si = Math.Min(Math.Max(si, 0), @this.Length);
-        ei = Math.Min(Math.Max(ei, 0), @this.Length);
+        var si = Math.Min(start, end);
+        var ei = Math.Max(start, end);
 
         if (ei <= si)
             return Empty;
@@ -52,14 +57,9 @@ public partial class JSString
     public static JSValue Substr(in Arguments a)
     {
         var @this = a.This.AsString();
-        var start = a[0]?.IntegerValue ?? 0;
-        var length = a.TryGetAt(1, out var v) ? (v.IsUndefined ? @this.Length : Math.Max(v.IntegerValue, 0)) : @this.Length;
-
-        // Per ECMAScript spec: if start is negative, use max(length + start, 0)
-        if (start < 0)
-            start = Math.Max(@this.Length + start, 0);
-        else
-            start = Math.Min(start, @this.Length);
+        // B.2.2.1: a negative start counts from the end, and the length is clamped into [0, size].
+        var start = Relative(IntegerArgument(a[0]), @this.Length);
+        var length = a.TryGetAt(1, out var v) && !v.IsUndefined ? Clamp(IntegerArgument(v), @this.Length) : @this.Length;
 
         var count = Math.Min(length, @this.Length - start);
         
@@ -82,12 +82,12 @@ public partial class JSString
     internal static JSValue CharCodeAt(in Arguments a)
     {
         var text = a.This.AsString();
-        var pos = a[0]?.IntegerValue ?? 0;
+        var pos = IntegerArgument(a[0]);
 
         if (pos < 0 || pos >= text.Length)
             return NumberNaN;
 
-        return CreateNumber(text[pos]);
+        return CreateNumber(text[(int)pos]);
     }
 
     [JSPrototypeMethod]
@@ -95,11 +95,12 @@ public partial class JSString
     internal static JSValue CodePointAt(in Arguments a)
     {
         var text = a.This.AsString();
-        var pos = a[0]?.IntegerValue ?? 0;
+        var position = IntegerArgument(a[0]);
 
-        if (pos < 0 || pos >= text.Length)
+        if (position < 0 || position >= text.Length)
             return JSUndefined.Value;
 
+        var pos = (int)position;
         int firstCodePoint = text[pos];
         if (firstCodePoint < 0xD800 || firstCodePoint > 0xDBFF || pos + 1 == text.Length)
             return CreateNumber(firstCodePoint);
@@ -142,22 +143,12 @@ public partial class JSString
         var @this = a.This.AsString();
 
         //0th argument, start
-        var f = a.Get1();
-        var start = f.IntegerValue;
+        var start = Relative(IntegerArgument(a.Get1()), @this.Length);
         //1st argument, end — an absent OR explicitly `undefined` end means "to the
         // end of the string" (spec: if end is undefined, intEnd = len), not ToInteger
         // (which would coerce undefined to 0 and yield an empty slice).
         var endArg = a[1];
-        int end = (endArg == null || endArg.IsUndefined) ? int.MaxValue : endArg.IntegerValue;
-
-        if (start < 0)
-            start += @this.Length;
-
-        if (end < 0)
-            end += @this.Length;
-
-        start = Math.Min(Math.Max(start, 0), @this.Length);
-        end = Math.Min(Math.Max(end, 0), @this.Length);
+        var end = (endArg == null || endArg.IsUndefined) ? @this.Length : Relative(IntegerArgument(endArg), @this.Length);
 
         if (end <= start)
             return Empty;
