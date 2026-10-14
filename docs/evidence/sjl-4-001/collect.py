@@ -191,7 +191,7 @@ class Collector(prior.Collector):
             (self.test262_from / "rerun-timeouts.log").write_text(result.stderr, encoding="utf-8")
         base.Collector.test262(self)
         for entry in sorted(self.test262_from.iterdir()):
-            if entry.name.startswith("interrupted-shard-") or entry.name == "shell-binaries.before-resume.sha256":
+            if entry.name.startswith(("interrupted-shard-", "shell-binaries.before-resume")):
                 self.write(f"test262/{entry.name}", entry.read_text(encoding="utf-8"))
 
         # The comparison with bundle sjl-3-001's after run, through the script the rule committed.
