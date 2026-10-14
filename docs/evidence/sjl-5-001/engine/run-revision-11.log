@@ -1,0 +1,42 @@
+== start 2026-10-14T17:43:39Z
+  Broiler.JavaScript.ModuleExtensions -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/js-r10/Broiler.JS/Broiler.JavaScript.ModuleExtensions/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.dll
+  Broiler.JavaScript.All -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/js-r10/Broiler.JS/Broiler.JavaScript.All/bin/Release/net10.0/Broiler.JavaScript.All.dll
+  Broiler.JavaScript.Vectors.Tests -> /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/js-r10/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll
+Test run for /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/js-r10/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:24:59.76]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [24 m 53 s]
+  Error Message:
+   42 of 42943 vectors differ and nothing classifies them:
+text/set-from-hex/0001: expected value: str:"0/0/", rendered value: str:"SyntaxError/"
+text/set-from-hex/0002: expected value: str:"2/1/170", rendered value: str:"SyntaxError/170"
+text/set-from-hex/0011: expected value: str:"0/0/", rendered value: str:"SyntaxError/"
+text/set-from-hex/0012: expected value: str:"2/1/170", rendered value: str:"SyntaxError/170"
+text/set-from-hex/0013: expected value: str:"4/2/170,187", rendered value: str:"SyntaxError/170,187"
+text/set-from-hex/0021: expected value: str:"0/0/", rendered value: str:"SyntaxError/"
+text/options/0001: expected error: TypeError, rendered value: object
+text/options/0002: expected error: TypeError, rendered value: object
+text/options/0003: expected error: TypeError, rendered value: object
+text/options/0004: expected error: TypeError, rendered value: object
+text/options/0006: expected error: TypeError, rendered value: str:"AA=="
+text/options/0009: expected error: TypeError, rendered value: str:""
+text/options/0010: expected error: TypeError, rendered value: str:""
+text/options/0011: expected error: TypeError, rendered value: f64:0x0000000000000000
+text/options/0012: expected error: TypeError, rendered value: f64:0x0000000000000000
+text/parse/2364: expected value: str:"\"\\ud800\"", rendered error: SyntaxError
+text/parse/2365: expected value: str:"\"\\udc00\"", rendered error: SyntaxError
+text/parse/2367: expected value: str:"\"\\ud800\"", rendered abort: ArgumentException: Cannot transcode invalid UTF-16 string to UTF-8 JSON text.
+text/parse/2368: expected value: str:"\"\\udc00x\"", rendered abort: ArgumentException: Cannot transcode invalid UTF-16 string to UTF-8 JSON text.
+text/parse-surrogate/0001: expected value: str:"\uD800", rendered error: SyntaxError
+text/parse-surrogate/0002: expected value: str:"\uD800", rendered abort: ArgumentException: Cannot transcode invalid UTF-16 string to UTF-8 JSON text.
+text/parse-surrogate/0003: expected value: str:"\uDC00", rendered error: SyntaxError
+text/parse-surrogate/0004: expected value: str:"\uDC00", rendered abort: ArgumentException: Cannot transcode invalid UTF-16 string to UTF-8 JSON text.
+text/parse-depth/0011: expected value: f64:0x4060600000000000, rendered error: SyntaxError
+text/parse-depth/0012: expected value: f64:0x4078700000000000, rendered error: SyntaxError
+  Stack Trace:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/js-r10/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 31
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     3, Skipped:     0, Total:     4, Duration: 25 m 23 s - Broiler.JavaScript.Vectors.Tests.dll (net10.0)
+== vectors exit 1 2026-10-14T18:11:46Z

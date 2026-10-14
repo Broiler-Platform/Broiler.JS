@@ -252,9 +252,14 @@ before SJL-3 is met, which the programme's ledger records. This repository's par
   parses its whole input before honouring the destination (B1); a non-object options argument is
   ignored and a `null` option read as the default (B2, B3); a detached array encodes as empty (B4);
   JSON nesting past System.Text.Json's default depth is refused (J1); an escaped lone surrogate is
-  refused and a raw one lets a .NET exception through (J2, J3); `1e400` is refused (J4); indented JSON
+  refused and a raw one lets a .NET exception through (J2, J3); indented JSON
   uses CRLF on Windows (J5); the raw-JSON brand is structural and forgeable (J6); and the brand's
   `rawJSON` property is not enumerable (J7).
+  *Corrected 2026-10-14, at SJL-5.2:* the list read "`1e400` is refused (J4)" after the surrogates. Corpus
+  revision 12 classifies this engine's first run on the text area, and its vectors `text/parse-number/0001`
+  and `0002` show that `JSON.parse("1e400")` and `JSON.parse("-1e400")` answer the infinities, as the
+  specification does: on .NET 10, System.Text.Json's `GetDouble` returns the infinity rather than refusing
+  the text. J4 is not a correction of this engine, and the changelog does not list it.
 - **Three corrections are this engine's own code, not shared:** `split`'s limit with an empty separator
   (X1), the ordinal comparison in `indexOf`, `includes`, `startsWith`, `endsWith` and the non-standard
   `contains`, which use the current culture today (X2), and the raw-JSON brand, which becomes an internal
@@ -280,6 +285,19 @@ before SJL-3 is met, which the programme's ledger records. This repository's par
   (`docs/evidence/sjl-5-001/decision-rule.md`, whose base is taken afresh at the commit that carries it,
   because the shared stream's version moved since SJL-4's after run) and the library-level reference
   arms (`docs/evidence/sjl-5-001/reference-arms.md`).
+
+**The text vectors and the first runs (SJL-5.2), 2026-10-14.** Corpus revision 10 adds the area's vectors
+(`conformance/vectors/text/`), and revision 11 widens the schema's clause ids, which four of their citations
+need and this engine's validator refused. No text vector carries a `per-engine.broiler-js` expectation:
+the only results the area leaves to the implementation are the two pads at Broiler.VM's string ceiling,
+which hold that engine's. Each engine's first engine-level run on revision 11 is classified at revision
+12, and both engines then classify every vector. This engine's 42 differences confirm the rows of the
+correspondence listed above, B1 to B4, J1 to J3, J6, J7, P5, S2 and S3, and SJL-5.5 answers each of them.
+They refute J4 (above). P4, X1 and X2 have no vector: the vectors pad no further than 2^24 + 1 and test
+neither `split` nor string search. J5's three vectors match because the run was on Linux, whose line
+ending is LF. Broiler.VM's five differences are its rows P1, P2 and
+S1, which SJL-5.4 answers. Every difference the runs found is one the area verdict classified, so its
+falsifier does not fire. The runs are retained in [`sjl-5-001/engine/`](../evidence/sjl-5-001/engine/).
 
 ## Invariants
 

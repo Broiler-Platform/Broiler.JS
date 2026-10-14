@@ -5069,7 +5069,8 @@ area: text
 op: StringPaddingBuiltinsImpl converts the filler first
 in: int:16777217
 out: value: f64:0x3FF0000000000000
-class: normative
+class: divergence
+divergence.broiler-vm: padStart and padEnd refuse a length past the engine's string ceiling of 2^24 code units with RangeError before the filler is converted, so a filler's toString is never called, where StringPaddingBuiltinsImpl converts the filler with ToString before StringPad may refuse. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-5-text-algorithms.md, SJL-5.4 (JSD-0070; the correspondence's row P1).
 prov: spec:es2026@0248456c#sec-stringpaddingbuiltinsimpl ref:textref@1
 script: (function () { var c = 0; try { "x".padStart(16777217, { toString: function () { c++; return ""; } }); } catch (e) { } return c; })()
 since: 10
@@ -5079,7 +5080,8 @@ area: text
 op: StringPad with an empty filler
 in: int:16777217 str:""
 out: value: str:"x"
-class: normative
+class: divergence
+divergence.broiler-vm: padStart and padEnd refuse a length past the engine's string ceiling with RangeError when the filler is empty, where StringPad returns the string itself for an empty filler, whatever the length. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-5-text-algorithms.md, SJL-5.4 (JSD-0070; the correspondence's row P2).
 prov: spec:es2026@0248456c#sec-stringpad ref:textref@1
 script: "x".padStart(16777217, "")
 since: 10
@@ -5111,7 +5113,8 @@ area: text
 op: StringPaddingBuiltinsImpl converts the filler first
 in: int:16777217
 out: value: f64:0x3FF0000000000000
-class: normative
+class: divergence
+divergence.broiler-vm: padStart and padEnd refuse a length past the engine's string ceiling of 2^24 code units with RangeError before the filler is converted, so a filler's toString is never called, where StringPaddingBuiltinsImpl converts the filler with ToString before StringPad may refuse. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-5-text-algorithms.md, SJL-5.4 (JSD-0070; the correspondence's row P1).
 prov: spec:es2026@0248456c#sec-stringpaddingbuiltinsimpl ref:textref@1
 script: (function () { var c = 0; try { "x".padEnd(16777217, { toString: function () { c++; return ""; } }); } catch (e) { } return c; })()
 since: 10
@@ -5121,7 +5124,8 @@ area: text
 op: StringPad with an empty filler
 in: int:16777217 str:""
 out: value: str:"x"
-class: normative
+class: divergence
+divergence.broiler-vm: padStart and padEnd refuse a length past the engine's string ceiling with RangeError when the filler is empty, where StringPad returns the string itself for an empty filler, whatever the length. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-5-text-algorithms.md, SJL-5.4 (JSD-0070; the correspondence's row P2).
 prov: spec:es2026@0248456c#sec-stringpad ref:textref@1
 script: "x".padEnd(16777217, "")
 since: 10
@@ -6061,7 +6065,8 @@ area: text
 op: lastIndexOf with fromIndex
 in: int:1
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: %TypedArray%.prototype.lastIndexOf ignores fromIndex when more than two arguments are passed, where fromIndex is present whenever a second argument is. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row P5).
 prov: spec:es2026@0248456c#sec-%typedarray%.prototype.lastindexof ref:textref@1
 script: new Int8Array([1, 2, 1]).lastIndexOf(1, 1, "extra")
 since: 10
