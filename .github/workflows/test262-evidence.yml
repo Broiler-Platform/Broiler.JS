@@ -28,7 +28,9 @@ on:
         default: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
         type: string
       max_workers:
-        description: Parallel worker count per shard.
+        description: >-
+          Parallel worker count per shard. A public repository's standard Linux runner has four vCPUs,
+          one per worker; more workers only crowd the 30 s timeout.
         required: false
         default: 4
         type: number
