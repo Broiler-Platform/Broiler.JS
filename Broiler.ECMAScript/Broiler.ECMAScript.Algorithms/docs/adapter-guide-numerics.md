@@ -9,7 +9,8 @@ obligation is the programme's (`Broiler.VM/docs/javascript-shared-libraries/gove
 Broiler.VM's profile, with its four sub-areas: integer conversions and Float16, the Math kernels,
 exact rounding, and the BigInt kernel.
 
-- **Library and version:** `Broiler.ECMAScript.Algorithms` `0.2.0-preview.1` and later, API baseline
+- **Library and version:** `Broiler.ECMAScript.Algorithms` `0.1.0-preview.2` and later *(corrected 2026-10-14;
+  read "`0.2.0-preview.1` and later")*, API baseline
   [`PublicAPI.txt`](../PublicAPI.txt), namespace `Broiler.ECMAScript.Numbers`.
 - **Specification pins:** ECMA-262 at commit `0248456c` (`conformance/vectors/sources/ecma262.pin`).
   The rounding modes cite Temporal and ECMA-402 by clause for their names and tables; neither is

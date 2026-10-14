@@ -14,7 +14,9 @@ Each entry has the headings **Added**, **Changed**, **Observable changes** and *
 
 ## Unreleased
 
-Packed as `0.2.0-preview.1`: a new API is a minor version.
+Packed as `0.1.0-preview.2`: the owner kept the stream's `0.1.0` prefix while it is a preview, though a
+new API is a minor version. *(Corrected 2026-10-14; read "Packed as `0.2.0-preview.1`: a new API is a
+minor version.")*
 
 ### Added
 
@@ -40,7 +42,9 @@ Packed as `0.2.0-preview.1`: a new API is a minor version.
 ### Changed
 
 - `BigIntPolicy.RepresentationLimit` is 2^31 - 128 bits, no longer 2^31 - 1 (2026-10-13, milestone
-  SJL-4.5, after the `0.2.0-preview.1` pack that Broiler.VM's committed feed holds). A .NET
+  SJL-4.5, after the pack Broiler.VM's committed feed held as `0.2.0-preview.1` until it was re-pinned
+to the published `0.1.0-preview.2`) *(corrected 2026-10-14; read "after the `0.2.0-preview.1` pack that
+Broiler.VM's committed feed holds")*. A .NET
   `BigInteger` holds at most 2^31 - 64 bits and throws `OverflowException` past them, so under
   `BigIntPolicy.Unbounded` an operation whose result was between the two widths threw instead of
   answering `LimitExceeded`: `1n << 2147483600n`, `(-1n) << 2147483646n` and

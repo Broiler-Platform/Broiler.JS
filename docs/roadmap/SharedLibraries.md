@@ -171,7 +171,9 @@ too, and SJL-4.5 corrects every path. It also refutes the verdict's reading that
 engine's `expm1`, which is not accurate across the range: the library implements its own.
 
 **The implementation (SJL-4.3), 2026-10-13.** The numerics area is in `Broiler.ECMAScript.Algorithms`
-(`2b0a16b`), with its adapter guide, and the shared stream moves to `0.2.0`. Corpus revision 8 gives 72
+(`2b0a16b`), with its adapter guide, and the shared stream's next version is `0.1.0-preview.2`, the owner
+keeping the `0.1.0` prefix while the stream is a preview *(corrected 2026-10-14; read "and the shared
+stream moves to `0.2.0`")*. Corpus revision 8 gives 72
 vectors the operation and inputs that decide them, so that the library-level runner can read them, and
 every numerics vector the library answers passes at library level. The reference-arm comparison is met
 under [`reference-arms.md`](../evidence/sjl-4-001/reference-arms.md) as revised before any run

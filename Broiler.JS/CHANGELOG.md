@@ -12,7 +12,8 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ### Numerics move to `Broiler.ECMAScript.Algorithms` (2026-10-13, milestone SJL-4.5)
 
-The numerics area is the shared library's, version `0.2.0`:
+The numerics area is the shared library's, version `0.1.0-preview.2` *(corrected 2026-10-14; read
+"version `0.2.0`")*:
 
 - the integer conversions (`ToInt32` to `ToUint8Clamp`, `ToIntegerOrInfinity`, `ToLength`, `ToIndex`'s
   range rule, `ToBigInt64` and `ToBigUint64`) and Float16;

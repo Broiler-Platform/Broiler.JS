@@ -24,8 +24,8 @@
        version in the packaging file: eng/pack.ps1 -ProjectSet Shared packs it, and
        eng/resolve-preview-version.mjs resolves it against the ecmascript-v* tags. -->
   <PropertyGroup>
-    <VersionPrefix>0.2.0</VersionPrefix>
-    <VersionSuffix>preview.1</VersionSuffix>
+    <VersionPrefix>0.1.0</VersionPrefix>
+    <VersionSuffix>preview.2</VersionSuffix>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -64,7 +64,7 @@ profile. They are not part of the `Broiler.JavaScript.*` set above and do not sh
 
 | Package | State | Public surface |
 | --- | --- | --- |
-| `Broiler.ECMAScript.Algorithms` | `0.1.0-preview.1` published; `0.2.0`, with the numerics area, the next version (Broiler.VM's committed feed holds its `0.2.0-preview.1`); this engine's `Parser`, `Runtime`, `BuiltIns`, `Storage` and `Expressions` reference it | The contract types `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`; the number-conversion area, namespace `Broiler.ECMAScript.Numbers`: `NumberText`, `NumberParsing`, `NumericLiterals`, `NumericKeys`; and the numerics area, in the same namespace: `IntegerConversions`, `Float16`, `MathKernels`, `PreciseSum`, `ExactRounding` with `RoundingMode` and `UnsignedRoundingMode`, `BigIntMath`, `BigIntText` and `BigIntPolicy` |
+| `Broiler.ECMAScript.Algorithms` | `0.1.0-preview.1` published; `0.1.0-preview.2`, with the numerics area, the next *(corrected 2026-10-14; read "`0.2.0`, with the numerics area, the next version (Broiler.VM's committed feed holds its `0.2.0-preview.1`)")*; this engine's `Parser`, `Runtime`, `BuiltIns`, `Storage` and `Expressions` reference it | The contract types `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`; the number-conversion area, namespace `Broiler.ECMAScript.Numbers`: `NumberText`, `NumberParsing`, `NumericLiterals`, `NumericKeys`; and the numerics area, in the same namespace: `IntegerConversions`, `Float16`, `MathKernels`, `PreciseSum`, `ExactRounding` with `RoundingMode` and `UnsignedRoundingMode`, `BigIntMath`, `BigIntText` and `BigIntPolicy` |
 | `Broiler.ECMAScript.Conformance` | Test-only; not packed at this version | The corpus reader, the validator, the engine-level and library-level runners and their report |
 
 **Their compatibility promise is stronger than this engine's**, and it is enforced rather than stated
@@ -98,7 +98,8 @@ row's second cell read "`0.1.0-preview.1`, the first version the stream will pub
 
 ## Public API changes, 2026-10-13 (numerics move to `Broiler.ECMAScript.Algorithms`)
 
-Milestone SJL-4.5 moves the numerics area into the shared library, version `0.2.0`: the integer
+Milestone SJL-4.5 moves the numerics area into the shared library, version `0.1.0-preview.2` *(corrected
+2026-10-14; read "version `0.2.0`")*: the integer
 conversions and Float16, the Math kernels, the exact rounding of Temporal and Intl, and the BigInt
 kernel. It applies decision SJL-D-25 to each public member the move empties, as the number-conversion
 move above did. No public member is removed, so the decision's consumer check is not needed. The
