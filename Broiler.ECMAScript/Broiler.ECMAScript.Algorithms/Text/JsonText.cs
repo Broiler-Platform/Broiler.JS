@@ -9,7 +9,7 @@
 // Human-reviewed:   0/7
 // IP risk:          Low
 // Security risk:    Medium
-// Criteria:         3/0
+// Criteria:         0/0
 // Resource impact:  2/10 max
 // Unverified:       7
 //
@@ -46,7 +46,6 @@ public static class JsonText
     /// <param name="charge">The caller's meter: the String's length plus one, first; <see langword="null"/> for none.</param>
     /// <returns>The quoted String.</returns>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.2.3; IP=Low; Security=Medium; Resources=2; Fingerprint=EF4D2A
-    // Broiler-Falsified-If: a code unit is escaped where the clause copies it, copied where the clause escapes it, or escaped in upper-case hexadecimal
     // Broiler-Human:        PENDING
     public static string Quote(ReadOnlySpan<char> value, WorkCharge? charge = null)
     {
@@ -91,7 +90,6 @@ public static class JsonText
     /// <param name="space">The Number, after a Number object is unwrapped with <c>ToNumber</c>.</param>
     /// <returns><c>min(10, ToIntegerOrInfinity(space))</c> spaces, or the empty String when that is below one.</returns>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.2.1; IP=Low; Security=Low; Resources=1; Fingerprint=98AD82
-    // Broiler-Falsified-If: the gap is not min(10, ToIntegerOrInfinity(space)) spaces, or is not empty below one
     // Broiler-Human:        PENDING
     public static string GapFromNumber(double space)
     {
@@ -104,7 +102,6 @@ public static class JsonText
     /// <returns><paramref name="space"/> itself when it has ten code units or fewer; otherwise its first ten.</returns>
     /// <exception cref="ArgumentNullException">The String is <see langword="null"/>.</exception>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.2.1; IP=Low; Security=Low; Resources=1; Fingerprint=299CC8
-    // Broiler-Falsified-If: the gap is longer than ten code units or is not the String's prefix
     // Broiler-Human:        PENDING
     public static string GapFromString(string space)
     {
@@ -138,7 +135,5 @@ public static class JsonText
         _ => (char)0,
     };
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 25.5.2.3; IP=Low; Security=Low; Resources=1; Fingerprint=13F4E9
-    // Broiler-Human:        PENDING
     private static ReadOnlySpan<char> LowerHexDigits => "0123456789abcdef";
 }

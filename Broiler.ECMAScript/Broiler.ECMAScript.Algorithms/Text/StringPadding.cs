@@ -9,7 +9,7 @@
 // Human-reviewed:   0/10
 // IP risk:          Low
 // Security risk:    High
-// Criteria:         4/1
+// Criteria:         1/1
 // Resource impact:  3/10 max
 // Unverified:       10
 //
@@ -146,7 +146,6 @@ public static class RelativeIndex
     /// <returns>Zero for negative infinity; the length plus a negative position, but not below zero; otherwise the position, but not above the length.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The position is NaN or not integral, or the length is negative or above 2^53 - 1.</exception>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.22; IP=Low; Security=Medium; Resources=1; Fingerprint=AAC274
-    // Broiler-Falsified-If: a result falls outside zero to the length, or a negative position is not counted back from the end
     // Broiler-Human:        PENDING
     public static long Clamped(double relative, long length)
     {
@@ -167,7 +166,6 @@ public static class RelativeIndex
     /// <returns><see langword="true"/> when the position, counted back from the end when it is negative, is an index below the length.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The position is NaN or not integral, or the length is negative or above 2^53 - 1.</exception>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.1; IP=Low; Security=Medium; Resources=1; Fingerprint=EA7860
-    // Broiler-Falsified-If: an index outside zero to the length minus one is answered, or one inside it is refused
     // Broiler-Human:        PENDING
     public static bool TryElement(double relative, long length, out long index)
     {
@@ -192,7 +190,6 @@ public static class RelativeIndex
     /// <returns>The index to start from, no greater than the length minus one; -1 when there is nothing to search.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The position is NaN or not integral, or the length is negative or above 2^53 - 1.</exception>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 23.1.3.20; IP=Low; Security=Medium; Resources=1; Fingerprint=158E88
-    // Broiler-Falsified-If: the start is the length or more, or is below -1, or a negative position is not counted back from the end
     // Broiler-Human:        PENDING
     public static long LastSearchStart(double relative, long length)
     {

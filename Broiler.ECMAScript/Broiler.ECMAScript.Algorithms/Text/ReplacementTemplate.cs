@@ -9,7 +9,7 @@
 // Human-reviewed:   0/4
 // IP risk:          Low
 // Security risk:    Medium
-// Criteria:         1/0
+// Criteria:         0/0
 // Resource impact:  2/10 max
 // Unverified:       4
 //
@@ -87,7 +87,6 @@ public static class ReplacementTemplate
     /// <returns>The parts in order; adjacent literal text is one part, and an empty template has none.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The capture count is negative.</exception>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.19.1; IP=Low; Security=Medium; Resources=2; Fingerprint=BA3A42
-    // Broiler-Falsified-If: a template's parts, evaluated in order, give other than GetSubstitution's result for some capture count and named-capture presence
     // Broiler-Human:        PENDING
     public static ReplacementPart[] Parse(ReadOnlySpan<char> template, int captureCount, bool hasNamedCaptures, WorkCharge? charge = null)
     {

@@ -9,7 +9,7 @@
 // Human-reviewed:   0/14
 // IP risk:          Low
 // Security risk:    High
-// Criteria:         5/1
+// Criteria:         1/1
 // Resource impact:  2/10 max
 // Unverified:       14
 //
@@ -55,7 +55,6 @@ public static class UriCodec
     /// <param name="charge">The caller's meter: one unit before each step, a surrogate pair being one step; <see langword="null"/> for none.</param>
     /// <returns><see cref="ResultStatus.Completed"/>, or <see cref="ResultStatus.Malformed"/> at a lone surrogate (<c>uri.unpaired-surrogate</c>).</returns>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6.5; IP=Low; Security=Medium; Resources=2; Fingerprint=781004
-    // Broiler-Falsified-If: an unescaped character is escaped, an escaped one is written other than as its UTF-8 octets in upper-case hexadecimal, or a lone surrogate completes
     // Broiler-Human:        PENDING
     public static ResultStatus Encode(ReadOnlySpan<char> text, ReadOnlySpan<char> extraUnescaped, out string result, out Failure failure, WorkCharge? charge = null)
     {
@@ -175,7 +174,6 @@ public static class UriCodec
     /// <param name="charge">The caller's meter: one unit before each code unit; <see langword="null"/> for none.</param>
     /// <returns>The escaped String. <c>escape</c> never fails.</returns>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 B.2.1.1; IP=Low; Security=Medium; Resources=2; Fingerprint=FCE721
-    // Broiler-Falsified-If: a code unit of the unescaped set is escaped, or another is written other than as %XX below 256 and %uXXXX above, in upper-case hexadecimal
     // Broiler-Human:        PENDING
     public static string Escape(ReadOnlySpan<char> text, WorkCharge? charge = null)
     {
@@ -207,7 +205,6 @@ public static class UriCodec
     /// <param name="charge">The caller's meter: one unit before each step, an escape being one step; <see langword="null"/> for none.</param>
     /// <returns>The unescaped String. <c>unescape</c> never fails.</returns>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 B.2.1.2; IP=Low; Security=Medium; Resources=2; Fingerprint=1BA52E
-    // Broiler-Falsified-If: a well-formed escape is not replaced by its code unit, or a malformed one is changed
     // Broiler-Human:        PENDING
     public static string Unescape(ReadOnlySpan<char> text, WorkCharge? charge = null)
     {
@@ -251,7 +248,6 @@ public static class UriCodec
     /// <param name="unit">The code unit.</param>
     /// <returns>Zero to fifteen, or -1, which stays negative when it is shifted left by up to 30 bits and combined with other digits by a bitwise or.</returns>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 12.9.3; IP=Low; Security=Low; Resources=1; Fingerprint=039EF5
-    // Broiler-Falsified-If: a hexadecimal digit of either case is not its value, or another code unit is not negative
     // Broiler-Human:        PENDING
     public static int HexDigitValue(char unit) => unit switch
     {
@@ -328,17 +324,11 @@ public static class UriCodec
     // Broiler-Human:        PENDING
     private static bool IsAsciiAlphanumeric(char unit) => unit is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z') or (>= '0' and <= '9');
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6.1; IP=Low; Security=Low; Resources=1; Fingerprint=2400CA
-    // Broiler-Human:        PENDING
     private static ReadOnlySpan<char> UriMark => "-_.!~*'()";
 
     /// <summary>What <c>escape</c> leaves as it is beyond ASCII letters and digits (ECMA-262 B.2.1.1 step 2).</summary>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 B.2.1.1; IP=Low; Security=Low; Resources=1; Fingerprint=7F4EAC
-    // Broiler-Human:        PENDING
     private static ReadOnlySpan<char> EscapeUnescaped => "@*_+-./";
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6.5; IP=Low; Security=Low; Resources=1; Fingerprint=609512
-    // Broiler-Human:        PENDING
     private static ReadOnlySpan<char> UpperHexDigits => "0123456789ABCDEF";
 
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 19.2.6; IP=Low; Security=Low; Resources=1; Fingerprint=5A0616

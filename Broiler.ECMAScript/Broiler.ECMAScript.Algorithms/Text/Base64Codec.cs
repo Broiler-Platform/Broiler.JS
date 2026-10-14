@@ -9,7 +9,7 @@
 // Human-reviewed:   0/13
 // IP risk:          Low
 // Security risk:    High
-// Criteria:         5/2
+// Criteria:         2/2
 // Resource impact:  3/10 max
 // Unverified:       13
 //
@@ -75,7 +75,6 @@ public static class Base64Codec
     /// <returns>Three bytes for each four code units of the text, and three more.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The length is negative.</exception>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=1; Fingerprint=AD66B3
-    // Broiler-Falsified-If: a decode into a destination of this length stops, or reads less, than it would with no limit
     // Broiler-Human:        PENDING
     public static int DecodedLengthBound(int textLength)
     {
@@ -254,7 +253,6 @@ public static class Base64Codec
     /// <returns>The base64 text.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The text would be longer than the longest String the runtime can allocate.</exception>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=2; Fingerprint=CF4207
-    // Broiler-Falsified-If: the text is not RFC 4648's encoding of the bytes in the alphabet asked for, or is padded when padding is omitted
     // Broiler-Human:        PENDING
     public static string ToBase64(ReadOnlySpan<byte> bytes, Base64Alphabet alphabet, bool omitPadding, WorkCharge? charge = null)
     {
@@ -300,7 +298,6 @@ public static class Base64Codec
     /// <returns>The hexadecimal text.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The text would be longer than the longest String the runtime can allocate.</exception>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Medium; Resources=1; Fingerprint=DFFABF
-    // Broiler-Falsified-If: a byte is written other than as two lower-case hexadecimal digits
     // Broiler-Human:        PENDING
     public static string ToHex(ReadOnlySpan<byte> bytes, WorkCharge? charge = null)
     {
@@ -350,12 +347,8 @@ public static class Base64Codec
             destination[written++] = (byte)(bits >> 8);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Low; Resources=1; Fingerprint=7407F6
-    // Broiler-Human:        PENDING
     private static ReadOnlySpan<char> Base64Table => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Low; Resources=1; Fingerprint=D1BE52
-    // Broiler-Human:        PENDING
     private static ReadOnlySpan<char> Base64UrlTable => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 Uint8Array base64; IP=Low; Security=Low; Resources=1; Fingerprint=9DDC75

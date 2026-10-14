@@ -40,7 +40,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 0 |
-| Low | 448 |
+| Low | 442 |
 | Medium | 0 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,7 +51,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 0 |
-| Low | 190 |
+| Low | 184 |
 | Medium | 208 |
 | High | 50 |
 | Critical | 0 |
@@ -122,7 +122,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Units carrying a criterion | 68 |
+| Units carrying a criterion | 50 |
 | Units required to carry one | 50 |
 | Required and missing | 0 |
 

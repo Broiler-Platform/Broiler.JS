@@ -36,7 +36,7 @@ and may never invent an alias, which the check asserts in both directions.
 | `<alias>; Fingerprint=<six hex>` | A decision bound to one exact version of one declaration. |
 | `STALE; Previous=<alias>@<fingerprint>` | Written by the generator when the code moved after a decision. Only a human clears it, by stating their alias again. |
 
-A human may state their own `IP=`, `Security=` and `Resources=` assessment beside their alias,
+A human may state their own `IP=`, `Security=`, `Resources=`, `CS=` and `CL=` assessment beside their alias,
 which is how a reader disagrees with the machine assessment on the line above: an assessment is
 a comment and moves no fingerprint, so there is nowhere else to say it.
 
@@ -108,13 +108,13 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Algorithms/Numbers/ShortestDecimal.cs` | 13 | 13 | 0 | 13 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Algorithms/Numbers/StrWhiteSpace.cs` | 4 | 4 | 0 | 4 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Algorithms/ResultStatus.cs` | 4 | 1 | 3 | 1 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Algorithms/Text/Base64Codec.cs` | 20 | 13 | 7 | 13 | Low | High | 5/2 |
+| `Broiler.ECMAScript.Algorithms/Text/Base64Codec.cs` | 20 | 13 | 7 | 13 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Algorithms/Text/JsonReader.cs` | 51 | 19 | 32 | 19 | Low | High | 6/6 |
-| `Broiler.ECMAScript.Algorithms/Text/JsonText.cs` | 8 | 7 | 1 | 7 | Low | Medium | 3/0 |
-| `Broiler.ECMAScript.Algorithms/Text/ReplacementTemplate.cs` | 11 | 4 | 7 | 4 | Low | Medium | 1/0 |
-| `Broiler.ECMAScript.Algorithms/Text/StringPadding.cs` | 12 | 10 | 2 | 10 | Low | High | 4/1 |
-| `Broiler.ECMAScript.Algorithms/Text/UriCodec.cs` | 17 | 14 | 3 | 14 | Low | High | 5/1 |
-| `Broiler.ECMAScript.Algorithms/Text/Utf16.cs` | 14 | 14 | 0 | 14 | Low | Medium | 4/0 |
+| `Broiler.ECMAScript.Algorithms/Text/JsonText.cs` | 8 | 7 | 1 | 7 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Text/ReplacementTemplate.cs` | 11 | 4 | 7 | 4 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Text/StringPadding.cs` | 12 | 10 | 2 | 10 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Algorithms/Text/UriCodec.cs` | 17 | 14 | 3 | 14 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Algorithms/Text/Utf16.cs` | 14 | 14 | 0 | 14 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Algorithms/WorkCharge.cs` | 1 | 1 | 0 | 1 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Conformance/Ascii.cs` | 15 | 15 | 0 | 15 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/LibraryRun.cs` | 11 | 9 | 2 | 9 | Low | Low | 0/0 |

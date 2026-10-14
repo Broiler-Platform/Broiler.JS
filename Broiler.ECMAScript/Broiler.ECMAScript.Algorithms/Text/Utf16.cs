@@ -9,7 +9,7 @@
 // Human-reviewed:   0/14
 // IP risk:          Low
 // Security risk:    Medium
-// Criteria:         4/0
+// Criteria:         0/0
 // Resource impact:  2/10 max
 // Unverified:       14
 //
@@ -58,7 +58,6 @@ public static class Utf16
     /// <returns>The code point, how many code units it occupies, and whether it is a lone surrogate.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The position is not an index of the text.</exception>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 11.1.4; IP=Low; Security=Medium; Resources=1; Fingerprint=3261BC
-    // Broiler-Falsified-If: a high surrogate followed by a low one is not read as one supplementary code point of two units, or any other code unit is not read as itself of one unit
     // Broiler-Human:        PENDING
     public static CodePointRecord CodePointAt(ReadOnlySpan<char> text, int position)
     {
@@ -80,7 +79,6 @@ public static class Utf16
     /// <param name="charge">The caller's meter: charged the text's length plus one, first; <see langword="null"/> for none.</param>
     /// <returns><see langword="true"/> when the text holds no lone surrogate.</returns>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 6.1.4; IP=Low; Security=Medium; Resources=1; Fingerprint=66D914
-    // Broiler-Falsified-If: a String holding a lone surrogate is reported well formed, or a String of pairs and non-surrogates is not
     // Broiler-Human:        PENDING
     public static bool IsWellFormed(ReadOnlySpan<char> text, WorkCharge? charge = null)
     {
@@ -97,7 +95,6 @@ public static class Utf16
     /// <returns><paramref name="text"/> itself when it is well formed; otherwise a new String of the same length.</returns>
     /// <exception cref="ArgumentNullException">The text is <see langword="null"/>.</exception>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.1.3.31; IP=Low; Security=Medium; Resources=2; Fingerprint=E58D75
-    // Broiler-Falsified-If: a lone surrogate survives, a pair is changed, or the result's length differs from the text's
     // Broiler-Human:        PENDING
     public static string ToWellFormed(string text, WorkCharge? charge = null)
     {
@@ -143,7 +140,6 @@ public static class Utf16
     /// <returns><paramref name="index"/> plus one, or plus two at the start of a pair in Unicode mode.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The index is negative or above 2^53 - 1.</exception>
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 22.2.7.3; IP=Low; Security=Medium; Resources=1; Fingerprint=86BFC9
-    // Broiler-Falsified-If: the index advances by other than one outside Unicode mode, or by other than the code point's unit count inside it
     // Broiler-Human:        PENDING
     public static long AdvanceStringIndex(ReadOnlySpan<char> text, long index, bool unicode)
     {
