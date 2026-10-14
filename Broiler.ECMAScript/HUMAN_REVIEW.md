@@ -36,7 +36,7 @@ and may never invent an alias, which the check asserts in both directions.
 | `<alias>; Fingerprint=<six hex>` | A decision bound to one exact version of one declaration. |
 | `STALE; Previous=<alias>@<fingerprint>` | Written by the generator when the code moved after a decision. Only a human clears it, by stating their alias again. |
 
-A human may state their own `IP=`, `Security=` and `Resources=` assessment beside their alias,
+A human may state their own `IP=`, `Security=`, `Resources=`, `CS=` and `CL=` assessment beside their alias,
 which is how a reader disagrees with the machine assessment on the line above: an assessment is
 a comment and moves no fingerprint, so there is nowhere else to say it.
 
