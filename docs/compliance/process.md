@@ -370,6 +370,14 @@ untouched instead of applying stale measurements.
 Treat a newly failing previously-passing test as a regression unless a pinned suite
 update intentionally changed the expectation.
 
+`.github/workflows/test262-evidence.yml` is the measurement-only companion: the whole
+pinned suite in eight parallel shards through the same shard action, with no issue, no
+commit and no manifest change (its token is read-only), no saved-failure preflight, a
+re-run of every timed-out path alone, and an optional path-by-path comparison with a base
+run through `scripts/compliance/compare_test262_paths.py`. It passes when the run is
+complete and every shard ran the same shell; the comparison's verdict is reported, not
+enforced. [`CONTRIBUTING.md`](../../CONTRIBUTING.md) describes its inputs.
+
 ## Cross-engine comparison
 
 ```powershell

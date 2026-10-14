@@ -1,0 +1,486 @@
+name: test262 evidence
+
+# A plain whole-suite test262 run that only measures: for evidence bundles, and for any comparison of
+# two commits. It runs the pinned suite's script-host-verifiable paths in eight shards in parallel,
+# each path in the original and the terser variant, through the same shard action as test262.yml and
+# in the configuration the evidence bundles take (30 s per test, no memory cap, four workers per
+# shard). It then merges the shards, runs every timed-out path again alone with one worker, and, when
+# given a base, compares the two runs path by path with scripts/compliance/compare_test262_paths.py.
+#
+# Unlike test262.yml it writes nothing. Its token reads the repository and the Actions artifacts and
+# nothing else, so it opens no issue, commits nothing and leaves the failure manifest alone. It runs
+# no saved-failure preflight, so the suite's known failures cannot keep the full run from starting.
+# It succeeds when the run is complete and every shard ran the same shell, whatever the tests'
+# verdicts; the comparison's verdict is reported in the summary, not enforced, because a bundle's
+# decision rule reads it. Everything it measured is the artifact test262-evidence.
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: Commit to build and test; empty tests the dispatched ref's head.
+        required: false
+        default: ''
+        type: string
+      suite_ref:
+        description: test262 commit, all 40 hexadecimal digits, so the run can be repeated.
+        required: false
+        default: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+        type: string
+      max_workers:
+        description: Parallel worker count per shard.
+        required: false
+        default: 4
+        type: number
+      test_timeout_seconds:
+        description: Per-test wall-clock timeout in seconds.
+        required: false
+        default: 30
+        type: number
+      rerun_timeouts:
+        description: Run every timed-out path again alone, with one worker.
+        required: false
+        default: true
+        type: boolean
+      base_run_id:
+        description: Optional. The ID of an earlier test262 evidence run to compare with.
+        required: false
+        default: ''
+        type: string
+      base_results:
+        description: Optional, when no base run ID is given. A repository path to a base's merged report (.json or .json.gz).
+        required: false
+        default: ''
+        type: string
+      base_rerun:
+        description: Optional, with base_results. A repository path to the base's re-run of its timed-out paths.
+        required: false
+        default: ''
+        type: string
+      classifications:
+        description: Optional. A repository path to the comparison's classification file.
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  SHARD_COUNT: '8'
+  TEST262_ROOT: ${{ github.workspace }}/.cache/test262
+  TESTED_COMMIT: ${{ inputs.commit || github.sha }}
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      suite-commit: ${{ steps.resolve.outputs.suite-commit }}
+      suite-cache-key: ${{ steps.resolve.outputs.suite-cache-key }}
+    steps:
+      - name: Check the suite commit
+        id: resolve
+        shell: bash
+        env:
+          SUITE_REF: ${{ inputs.suite_ref }}
+        run: |
+          set -euo pipefail
+          commit="$(printf '%s' "$SUITE_REF" | tr 'A-F' 'a-f')"
+          if ! [[ "$commit" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "suite_ref must be a full 40-digit test262 commit." >&2
+            exit 1
+          fi
+          # The same key as test262.yml's, so the two workflows share the checkout's cache.
+          echo "suite-commit=$commit" >> "$GITHUB_OUTPUT"
+          echo "suite-cache-key=test262-${RUNNER_OS}-${commit}" >> "$GITHUB_OUTPUT"
+
+      - name: Cache the test262 checkout
+        id: suite-cache
+        uses: actions/cache@v5
+        with:
+          path: ${{ env.TEST262_ROOT }}
+          key: ${{ steps.resolve.outputs.suite-cache-key }}
+
+      - name: Fetch the test262 checkout
+        if: steps.suite-cache.outputs.cache-hit != 'true'
+        shell: bash
+        env:
+          SUITE_COMMIT: ${{ steps.resolve.outputs.suite-commit }}
+        run: |
+          set -euo pipefail
+          rm -rf "$TEST262_ROOT"
+          git init "$TEST262_ROOT"
+          git -C "$TEST262_ROOT" remote add origin https://github.com/tc39/test262.git
+          git -C "$TEST262_ROOT" fetch --depth 1 --filter=blob:none origin "$SUITE_COMMIT"
+          git -C "$TEST262_ROOT" checkout --detach "$SUITE_COMMIT"
+          test "$(git -C "$TEST262_ROOT" rev-parse HEAD)" = "$SUITE_COMMIT"
+
+  shard:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        shard-index: [0, 1, 2, 3, 4, 5, 6, 7]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TESTED_COMMIT }}
+          fetch-depth: 1
+
+      # The runner exits 1 when a test fails, which every whole-suite run has; the shard's report is
+      # conclusive all the same. Only a missing report, checked below, fails this job.
+      - name: Run test262 shard ${{ matrix.shard-index }}
+        continue-on-error: true
+        uses: ./.github/actions/run-test262-shard
+        with:
+          phase: full
+          shard-index: ${{ matrix.shard-index }}
+          shard-count: ${{ env.SHARD_COUNT }}
+          suite-commit: ${{ needs.prepare.outputs.suite-commit }}
+          suite-root: ${{ env.TEST262_ROOT }}
+          suite-cache-key: ${{ needs.prepare.outputs.suite-cache-key }}
+          assembly: all
+          rerun-failed: 'false'
+          failed-tests-file: scripts/compliance/test262-failures.txt
+          test-timeout-seconds: ${{ inputs.test_timeout_seconds }}
+          minifier: terser
+          minifier-timeout-seconds: '30'
+          memory-limit-mb: '0'
+          max-workers: ${{ inputs.max_workers }}
+
+      - name: Hash the shell this shard ran
+        if: always()
+        shell: bash
+        env:
+          SHARD_INDEX: ${{ matrix.shard-index }}
+        run: |
+          set -euo pipefail
+          mkdir -p shell-hash
+          (cd Broiler.JS/Broiler.JavaScript/bin/Release/net10.0 && sha256sum *.dll) \
+            > "shell-hash/shell-binaries-shard-${SHARD_INDEX}.sha256"
+
+      - name: Upload the shell's hashes
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test262-evidence-shell-shard-${{ matrix.shard-index }}
+          path: shell-hash
+          if-no-files-found: error
+
+      - name: Require a conclusive report
+        shell: bash
+        env:
+          SHARD_INDEX: ${{ matrix.shard-index }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          index = os.environ["SHARD_INDEX"]
+          status_path = Path("shard-out") / f"test262-full-shard-{index}-status.json"
+          if not status_path.is_file():
+              sys.exit(f"shard {index} left no status file")
+          status = json.loads(status_path.read_text(encoding="utf-8"))
+          if "failureReason" in status:
+              sys.exit(f"shard {index}: {status['failureReason']}: {status.get('failureDetail', '')}")
+          print(f"shard {index}: a conclusive report, runner exit {status.get('exitCode')}")
+          PY
+
+  collect:
+    needs: [prepare, shard]
+    if: ${{ always() && !cancelled() && needs.prepare.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TESTED_COMMIT }}
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Download the shards' reports
+        continue-on-error: true
+        uses: actions/download-artifact@v7
+        with:
+          pattern: test262-full-shard-*
+          path: shards
+          merge-multiple: true
+
+      - name: Download the shells' hashes
+        continue-on-error: true
+        uses: actions/download-artifact@v7
+        with:
+          pattern: test262-evidence-shell-shard-*
+          path: shell-hashes
+          merge-multiple: true
+
+      - name: Merge the shards
+        id: merge
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p shards evidence/shards
+          python scripts/compliance/merge_test262_shards.py \
+            --shard-dir shards \
+            --phase full \
+            --expected-shards 0,1,2,3,4,5,6,7 \
+            --merged-json evidence/test262-results.json \
+            --github-output "$GITHUB_OUTPUT" | tee evidence/merge.log
+          for f in shards/*-status.json; do
+            if [ -f "$f" ]; then cp "$f" evidence/shards/; fi
+          done
+          for f in shards/*.log; do
+            if [ -f "$f" ]; then gzip -n -9 -c "$f" > "evidence/shards/$(basename "$f").gz"; fi
+          done
+
+      - name: Check that every shard ran the same shell
+        id: shell
+        shell: bash
+        run: |
+          set -uo pipefail
+          files=(shell-hashes/shell-binaries-shard-*.sha256)
+          count=0
+          [ -e "${files[0]}" ] && count=${#files[@]}
+          distinct=0
+          [ "$count" -gt 0 ] && distinct="$(sha256sum "${files[@]}" | awk '{print $1}' | sort -u | wc -l)"
+          {
+            echo "# SHA-256 of each shard's list of the shell's binaries; one distinct digest means one shell."
+            [ "$count" -gt 0 ] && sha256sum "${files[@]}"
+            echo "shards: $count; distinct lists: $distinct"
+          } > evidence/shell-hashes.log
+          [ "$count" -gt 0 ] && cp "${files[0]}" evidence/shell-binaries.sha256
+          same=false
+          if [ "$count" = "$SHARD_COUNT" ] && [ "$distinct" = "1" ]; then same=true; fi
+          echo "same=$same" >> "$GITHUB_OUTPUT"
+          cat evidence/shell-hashes.log
+
+      - name: List the timed-out paths
+        id: timeouts
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          merged = Path("evidence/test262-results.json")
+          paths = []
+          if merged.is_file():
+              report = json.loads(merged.read_text(encoding="utf-8"))
+              paths = sorted({str(r["path"]) for r in report.get("results", []) if r.get("status") == "timedOut"})
+          Path("evidence/timed-out-paths.txt").write_text("".join(p + "\n" for p in paths), encoding="utf-8")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
+              out.write(f"count={len(paths)}\n")
+          print(f"{len(paths)} timed-out path(s)")
+          PY
+
+      # The shard action again, so the re-run builds and runs exactly as the shards did, given the
+      # timed-out paths as its path file, alone and with one worker.
+      - name: Run every timed-out path again alone
+        id: rerun
+        if: ${{ inputs.rerun_timeouts && steps.timeouts.outputs.count != '0' }}
+        continue-on-error: true
+        uses: ./.github/actions/run-test262-shard
+        with:
+          phase: rerun
+          shard-index: '0'
+          shard-count: '1'
+          suite-commit: ${{ needs.prepare.outputs.suite-commit }}
+          suite-root: ${{ env.TEST262_ROOT }}
+          suite-cache-key: ${{ needs.prepare.outputs.suite-cache-key }}
+          assembly: all
+          rerun-failed: 'true'
+          failed-tests-file: evidence/timed-out-paths.txt
+          test-timeout-seconds: ${{ inputs.test_timeout_seconds }}
+          minifier: terser
+          minifier-timeout-seconds: '30'
+          memory-limit-mb: '0'
+          max-workers: '1'
+
+      - name: Keep the re-run
+        if: ${{ always() && steps.rerun.outcome != 'skipped' }}
+        shell: bash
+        run: |
+          set -uo pipefail
+          [ -f shard-out/test262-rerun-shard-0.json ] && cp shard-out/test262-rerun-shard-0.json evidence/rerun-timeouts.json
+          [ -f shard-out/test262-rerun-shard-0.log ] && cp shard-out/test262-rerun-shard-0.log evidence/rerun-timeouts.log
+          if [ -d Broiler.JS/Broiler.JavaScript/bin/Release/net10.0 ]; then
+            (cd Broiler.JS/Broiler.JavaScript/bin/Release/net10.0 && sha256sum *.dll) > evidence/shell-binaries.rerun.sha256
+            if cmp -s evidence/shell-binaries.rerun.sha256 evidence/shell-binaries.sha256; then
+              echo "the re-run's shell hashes as the shards' did" >> evidence/shell-hashes.log
+            else
+              echo "the re-run's shell does NOT hash as the shards' did" >> evidence/shell-hashes.log
+            fi
+          fi
+          true
+
+      - name: Download the base run's evidence
+        if: ${{ inputs.base_run_id != '' }}
+        uses: actions/download-artifact@v7
+        with:
+          name: test262-evidence
+          path: base-run
+          run-id: ${{ inputs.base_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Compare with the base
+        id: compare
+        if: ${{ inputs.base_run_id != '' || inputs.base_results != '' }}
+        shell: bash
+        env:
+          BASE_RUN_ID: ${{ inputs.base_run_id }}
+          BASE_RESULTS: ${{ inputs.base_results }}
+          BASE_RERUN: ${{ inputs.base_rerun }}
+          CLASSIFICATIONS: ${{ inputs.classifications }}
+        run: |
+          # The comparison's exit status is recorded, not acted on; a missing base file reaches the
+          # script, which reports the runs as not comparable.
+          set +e
+          mkdir -p base
+          if [ -n "$BASE_RUN_ID" ]; then
+            base_results=base-run/test262-results.json.gz
+            base_rerun=base-run/rerun-timeouts.json
+          else
+            base_results="$BASE_RESULTS"
+            base_rerun="$BASE_RERUN"
+          fi
+          case "$base_results" in
+            *.gz) gunzip -c "$base_results" > base/test262-results.json ;;
+            *) cp "$base_results" base/test262-results.json ;;
+          esac
+          args=(--base base/test262-results.json --after evidence/test262-results.json --output evidence/comparison.json)
+          if [ -n "$base_rerun" ] && [ -f "$base_rerun" ]; then
+            args+=(--base-rerun "$base_rerun")
+            cp "$base_rerun" evidence/base-rerun-timeouts.json
+          fi
+          if [ -f evidence/rerun-timeouts.json ]; then
+            args+=(--after-rerun evidence/rerun-timeouts.json)
+          fi
+          if [ -n "$CLASSIFICATIONS" ]; then
+            args+=(--classifications "$CLASSIFICATIONS")
+            cp "$CLASSIFICATIONS" evidence/classifications.json
+          fi
+          python scripts/compliance/compare_test262_paths.py "${args[@]}" > evidence/comparison.log 2>&1
+          status=$?
+          if [ -n "$BASE_RUN_ID" ]; then base_name="test262 evidence run $BASE_RUN_ID"; else base_name="$base_results"; fi
+          {
+            echo "base: $base_name"
+            echo "exit: $status (0 every changed row admitted, 1 a regression or an unclassified row, 2 not comparable)"
+          } >> evidence/comparison.log
+          echo "exit-code=$status" >> "$GITHUB_OUTPUT"
+          cat evidence/comparison.log
+
+      - name: Record what was run
+        if: always()
+        shell: bash
+        env:
+          SUITE_COMMIT: ${{ needs.prepare.outputs.suite-commit }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          INPUTS: ${{ toJson(inputs) }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          lines = [
+              f"repository: {os.environ['GITHUB_REPOSITORY']}",
+              f"workflow run: {os.environ['RUN_URL']} (attempt {os.environ['GITHUB_RUN_ATTEMPT']})",
+              f"dispatched ref: {os.environ['GITHUB_REF']} at {os.environ['GITHUB_SHA']}",
+              f"tested commit: {subprocess.run(['git', 'rev-parse', 'HEAD'], capture_output=True, text=True).stdout.strip()}",
+              f"suite commit: {os.environ['SUITE_COMMIT']}",
+              f"inputs: {json.dumps(json.loads(os.environ['INPUTS']), sort_keys=True)}",
+              f"runner: {os.environ.get('ImageOS', 'unknown')} {os.environ.get('ImageVersion', '')}; "
+              f"{os.environ.get('RUNNER_OS', '')} {os.environ.get('RUNNER_ARCH', '')}; logical processors {os.cpu_count()}",
+          ]
+          merged = Path("evidence/test262-results.json")
+          if merged.is_file():
+              configuration = json.loads(merged.read_text(encoding="utf-8")).get("runConfiguration") or {}
+              for key in ("dotnetVersion", "minifier", "minifierVersion", "maxWorkers", "testTimeoutSeconds",
+                          "memoryLimitMb", "shardCount", "selectionMode", "suiteRef"):
+                  if key in configuration:
+                      lines.append(f"{key}: {configuration[key]}")
+          Path("evidence").mkdir(exist_ok=True)
+          Path("evidence/run.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+          print("\n".join(lines))
+          PY
+
+      - name: Summarise
+        if: always()
+        shell: bash
+        env:
+          PASSED: ${{ steps.merge.outputs.passed_count }}
+          FAILED: ${{ steps.merge.outputs.failed_count }}
+          TIMED_OUT: ${{ steps.merge.outputs.timed_out_count }}
+          SKIPPED: ${{ steps.merge.outputs.skipped_count }}
+          PATHS: ${{ steps.merge.outputs.unique_path_count }}
+          INCOMPLETE: ${{ steps.merge.outputs.incomplete_shard_count }}
+          CONFIG_FAILURES: ${{ steps.merge.outputs.configuration_failure_count }}
+          SAME_SHELL: ${{ steps.shell.outputs.same }}
+          COMPARE_EXIT: ${{ steps.compare.outputs.exit-code }}
+        run: |
+          {
+            echo "## test262 evidence"
+            echo
+            sed 's/^/    /' evidence/run.txt 2>/dev/null || echo "    (no run record)"
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Base paths | ${PATHS:-?} |"
+            echo "| Variant cases (failed counts timeouts too) | ${PASSED:-?} passed; ${FAILED:-?} failed; ${TIMED_OUT:-?} timed out; ${SKIPPED:-?} skipped |"
+            echo "| Incomplete shards; configuration failures | ${INCOMPLETE:-?}; ${CONFIG_FAILURES:-?} |"
+            echo "| One shell in every shard | ${SAME_SHELL:-?} |"
+            echo "| Comparison exit | ${COMPARE_EXIT:-no base given} |"
+            echo
+            echo "Known failures do not fail this workflow. The comparison is reported, not enforced."
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -f evidence/test262-results.json ]; then
+            gzip -n -9 evidence/test262-results.json
+          fi
+
+      - name: Upload the evidence
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: test262-evidence
+          path: evidence
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Require a complete run
+        shell: bash
+        env:
+          INCOMPLETE: ${{ steps.merge.outputs.incomplete_shard_count }}
+          CONFIG_FAILURES: ${{ steps.merge.outputs.configuration_failure_count }}
+          SAME_SHELL: ${{ steps.shell.outputs.same }}
+          TIMEOUTS: ${{ steps.timeouts.outputs.count }}
+          RERUN_WANTED: ${{ inputs.rerun_timeouts }}
+          COMPARE_EXIT: ${{ steps.compare.outputs.exit-code }}
+        run: |
+          failed=0
+          if [ "${INCOMPLETE:-x}" != "0" ]; then
+            echo "Incomplete shards: ${INCOMPLETE:-the merge did not run}." >&2; failed=1
+          fi
+          if [ "${CONFIG_FAILURES:-x}" != "0" ]; then
+            echo "Configuration failures: ${CONFIG_FAILURES:-unknown}." >&2; failed=1
+          fi
+          if [ "$SAME_SHELL" != "true" ]; then
+            echo "The shards did not all run the same shell (shell-hashes.log)." >&2; failed=1
+          fi
+          if [ "$RERUN_WANTED" = "true" ] && [ "${TIMEOUTS:-0}" != "0" ] && [ ! -f evidence/rerun-timeouts.json ]; then
+            echo "The re-run of the timed-out paths produced no report." >&2; failed=1
+          fi
+          if [ "$COMPARE_EXIT" = "2" ]; then
+            echo "The runs are not comparable (comparison.log)." >&2; failed=1
+          fi
+          [ "$failed" = "0" ] && echo "The run is complete."
+          exit "$failed"
