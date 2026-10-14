@@ -14,6 +14,46 @@ Each entry has the headings **Added**, **Changed**, **Observable changes** and *
 
 ## Unreleased
 
+To be packed as `0.1.0-preview.3`, the stream keeping its `0.1.0` prefix while it is a preview.
+
+### Added
+
+- `Broiler.ECMAScript.Algorithms`: the text area, namespace `Broiler.ECMAScript.Text` (milestone SJL-5.3;
+  adapter guide [`docs/adapter-guide-text.md`](Broiler.ECMAScript.Algorithms/docs/adapter-guide-text.md)):
+  - `Utf16`: `CodePointAt` with its `CodePointRecord`, `IsWellFormed`, `ToWellFormed` and
+    `AdvanceStringIndex`. `TrimString` stays `NumberParsing.TrimStrWhiteSpace`;
+  - `StringPadding.Pad` (`StringPad`) under the caller's longest String, with `PadPlacement`; and
+    `RelativeIndex`, the relative-index normalisations: `Clamped`, `TryElement` and `LastSearchStart`;
+  - `ReplacementTemplate.Parse`, `GetSubstitution`'s template parsed into the `ReplacementPart`s an
+    engine evaluates;
+  - `UriCodec`: `Encode`, `Decode`, Annex B's `Escape` and `Unescape`, and `HexDigitValue`;
+  - `Base64Codec`: `FromBase64` with its `Base64Alphabet` and `LastChunkHandling`, `FromHex`, `ToBase64`
+    and `ToHex`, decoding into the caller's span;
+  - `JsonReader`, a pull reader of `JSON.parse`'s grammar under the caller's `DepthLimit`, with its
+    `JsonToken`s and `Validate`; and `JsonText`: `Quote` (`QuoteJSONString`) and the gap.
+
+  Every operation whose work grows with its input takes a `WorkCharge` and charges Broiler.VM's units
+  before the cut-over (JSD-0070, decision 3). Every text vector of corpus revision 11 that the library
+  answers passes at library level.
+
+### Changed
+
+None.
+
+### Observable changes
+
+None: the area is new in this stream. What each engine observes at its cut-over is listed in that
+engine's own records.
+
+### Data
+
+None.
+
+## 0.1.0-preview.2 — published to nuget.org
+
+*(Heading corrected 2026-10-14, at milestone SJL-5.3, when the next version's entry was opened; read
+"Unreleased". This entry was published as `0.1.0-preview.2` by `Publish shared libraries`.)*
+
 Packed as `0.1.0-preview.2`: the owner kept the stream's `0.1.0` prefix while it is a preview, though a
 new API is a minor version. *(Corrected 2026-10-14; read "Packed as `0.2.0-preview.1`: a new API is a
 minor version.")*

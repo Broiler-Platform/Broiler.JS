@@ -25,6 +25,7 @@ rule for its own engine is [`docs/evidence/sjl-1-001/decision-rule.md`](../../do
 | [`sources/`](sources/) | The pins of the specification edition and the Unicode data the provenance names |
 | `numbers/` | The number area: `Number::toString` at every radix, `toFixed`, `toExponential`, `toPrecision`, `StringToNumber`, `parseFloat`, `parseInt`, numeric literal values, and array-index and canonical numeric keys |
 | `numerics/` | The numerics area: the integer conversions, Float16, the Math kernels each engine implements itself, the rounding modes (through Temporal), and BigInt arithmetic, text, `asIntN`, `asUintN` and its conversion to and comparison with Number |
+| `text/` | The text area: TrimString, well-formedness, CodePointAt and AdvanceStringIndex; StringPad and the relative-index normalisation; replacement templates; the URI codecs with `escape` and `unescape`; the base64 and hex codecs; and JSON's grammar, its quoting, its gap, its line ending and `JSON.rawJSON` *(added 2026-10-14, at corpus revision 10)* |
 | [`controls/`](controls/README.md) | Malformed files the validator must refuse. **Not part of the corpus.** |
 
 ## Running it
@@ -40,6 +41,7 @@ BROILER_VECTORS_REPORT=vectors-report.tsv dotnet test Broiler.JS/Broiler.JavaScr
 # Regenerating the number and numerics areas, and the reference computations' own tests:
 python3 scripts/conformance/generate_number_vectors.py --proplist <UCD 17.0.0 PropList.txt> --out conformance/vectors/numbers
 python3 scripts/conformance/generate_numerics_vectors.py --out conformance/vectors/numerics
+python3 scripts/conformance/generate_text_vectors.py --out conformance/vectors/text
 python3 -m unittest discover -s scripts/conformance/tests
 ```
 

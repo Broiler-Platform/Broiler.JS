@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 355 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 437 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -49,13 +49,13 @@ did, which is the narrower and the more useful of the two.
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 32 |
-| Code units | 439 |
-| Relevant | 355 |
-| Exempt | 84 |
-| Assessed | 355 of 355 (100%) |
-| Human reviewed | 0 of 355 (0%) |
-| Unverified | 355 |
+| Files scanned | 39 |
+| Code units | 573 |
+| Relevant | 437 |
+| Exempt | 136 |
+| Assessed | 437 of 437 (100%) |
+| Human reviewed | 0 of 437 (0%) |
+| Unverified | 437 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 355 |
+| HUMAN_PENDING | 437 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 84 |
+| EXEMPT | 136 |
 
 ## 5. Aliases In The Tree
 
@@ -108,6 +108,13 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Algorithms/Numbers/ShortestDecimal.cs` | 13 | 13 | 0 | 13 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Algorithms/Numbers/StrWhiteSpace.cs` | 4 | 4 | 0 | 4 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Algorithms/ResultStatus.cs` | 4 | 1 | 3 | 1 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Text/Base64Codec.cs` | 20 | 13 | 7 | 13 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Algorithms/Text/JsonReader.cs` | 51 | 19 | 32 | 19 | Low | High | 6/6 |
+| `Broiler.ECMAScript.Algorithms/Text/JsonText.cs` | 8 | 7 | 1 | 7 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Text/ReplacementTemplate.cs` | 11 | 4 | 7 | 4 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Text/StringPadding.cs` | 12 | 10 | 2 | 10 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Algorithms/Text/UriCodec.cs` | 17 | 14 | 3 | 14 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Algorithms/Text/Utf16.cs` | 14 | 14 | 0 | 14 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Algorithms/WorkCharge.cs` | 1 | 1 | 0 | 1 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Conformance/Ascii.cs` | 15 | 15 | 0 | 15 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/LibraryRun.cs` | 11 | 9 | 2 | 9 | Low | Low | 0/0 |
@@ -116,7 +123,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Conformance/VectorCorpus.cs` | 16 | 11 | 5 | 11 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorFile.cs` | 23 | 18 | 5 | 18 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorRun.cs` | 17 | 12 | 5 | 12 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Conformance/VectorValidator.cs` | 22 | 18 | 4 | 18 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Conformance/VectorValidator.cs` | 23 | 19 | 4 | 19 | Low | Low | 0/0 |
 
 ## 7. Decisions Recorded
 
@@ -213,6 +220,26 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a text that is not exactly one NumericLiteral completes, or a legacy form in strict mode code completes
 - `Broiler.ECMAScript.Numbers.NumericLiterals.BigInt(ReadOnlySpan<char>, int, NumericLiteralForm, LengthLimit, WorkCharge?, out NumericLiteral, out Failure)` in `Broiler.ECMAScript.Algorithms/Numbers/NumericLiterals.cs` - Security=High, Spec=ECMA-262 12.9.3 via Broiler.VM JsParser.TryBigIntValue, `E930F3`, PENDING
   - Falsified if: a BigInt literal wider than the caller's limit is converted before it is refused, or one within the limit is refused
+- `Broiler.ECMAScript.Text.Base64Codec.FromBase64(ReadOnlySpan<char>, Base64Alphabet, LastChunkHandling, Span<byte>, out int, out int, out Failure, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Text/Base64Codec.cs` - Security=High, Spec=ECMA-262 Uint8Array base64, `2974B4`, PENDING
+  - Falsified if: a decode writes past the destination, reports a read count other than the clauses', or completes or fails where the clauses do not
+- `Broiler.ECMAScript.Text.Base64Codec.FromHex(ReadOnlySpan<char>, Span<byte>, out int, out int, out Failure, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Text/Base64Codec.cs` - Security=High, Spec=ECMA-262 Uint8Array base64, `C63508`, PENDING
+  - Falsified if: a decode writes past the destination, reads beyond what it wrote, or completes over a text the clauses refuse
+- `Broiler.ECMAScript.Text.JsonReader` in `Broiler.ECMAScript.Algorithms/Text/JsonReader.cs` - Security=High, Spec=ECMA-262 25.5.1, `3D7898`, PENDING
+  - Falsified if: a text outside JSON.parse's grammar is read to its end, or the reader recurses so that a deep text exhausts the stack instead of meeting the limit
+- `Broiler.ECMAScript.Text.JsonReader.Read()` in `Broiler.ECMAScript.Algorithms/Text/JsonReader.cs` - Security=High, Spec=ECMA-262 25.5.1, `9C4E6F`, PENDING
+  - Falsified if: a text outside the JSON grammar completes, a text inside it fails below the depth limit, a value deeper than the limit is read, or a charge falls other than where Broiler.VM's reader charged it
+- `Broiler.ECMAScript.Text.JsonReader.Validate(ReadOnlySpan<char>, DepthLimit, out Failure, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Text/JsonReader.cs` - Security=High, Spec=ECMA-262 25.5.1, `FB9241`, PENDING
+  - Falsified if: the answer differs from reading the text to its end with a reader
+- `Broiler.ECMAScript.Text.JsonReader.ReadValue()` in `Broiler.ECMAScript.Algorithms/Text/JsonReader.cs` - Security=High, Spec=ECMA-262 25.5.1, `06C6F1`, PENDING
+  - Falsified if: a value deeper than the limit is read, or the unit a value is charged falls after its depth check
+- `Broiler.ECMAScript.Text.JsonReader.ReadNumber()` in `Broiler.ECMAScript.Algorithms/Text/JsonReader.cs` - Security=High, Spec=ECMA-262 25.5.1, `C7413D`, PENDING
+  - Falsified if: a number outside the JSON grammar is read, or one inside it is not StringToNumber of its text
+- `Broiler.ECMAScript.Text.JsonReader.ReadString(out string)` in `Broiler.ECMAScript.Algorithms/Text/JsonReader.cs` - Security=High, Spec=ECMA-262 25.5.1, `EE036E`, PENDING
+  - Falsified if: a raw control character or an escape JSON does not define is admitted, or an escape is not resolved to its code unit
+- `Broiler.ECMAScript.Text.StringPadding.Pad(string, long, string, PadPlacement, LengthLimit, out string, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Text/StringPadding.cs` - Security=High, Spec=ECMA-262 22.1.3.17.2, `0D98D3`, PENDING
+  - Falsified if: a String longer than the limit is built or charged, an empty filler is not answered with the String itself, or the filler is not repeated and truncated to exactly maxLength minus the String's length
+- `Broiler.ECMAScript.Text.UriCodec.Decode(ReadOnlySpan<char>, ReadOnlySpan<char>, out string, out Failure, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Text/UriCodec.cs` - Security=High, Spec=ECMA-262 19.2.6.6, `230B5B`, PENDING
+  - Falsified if: an overlong sequence, an encoded surrogate or a value above U+10FFFF completes, a preserved character's escape is decoded, or a well-formed sequence is refused
 
 ## 10. What This Record Does Not Say
 
@@ -229,5 +256,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-261 of the 355 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+343 of the 437 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

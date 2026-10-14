@@ -1,0 +1,79 @@
+# The text area's classified differences, read by generate_text_vectors.py.
+#
+# A line `reason <key>: <text>` defines a reason. A line `<engine> <key> <id>` classifies the vector
+# <id> as a divergence of <engine> for that reason: the generator writes the field
+# divergence.<engine>: <text>, and a normative vector becomes a divergence. An impl-defined vector
+# stays impl-defined, the field classifying the engine's difference from its own per-engine
+# expectation. The vector's expected value never changes (SCHEMA.md section 5).
+#
+# A line is added in a new corpus revision, with a dated row in conformance/vectors/REVISIONS.md,
+# and is removed only the same way, when the engine's cut-over corrects the difference and lists
+# the correction. Every reason names the plan that answers it and the row of bundle sjl-5-001's
+# correspondence from code (Broiler.VM's docs/evidence/sjl-5-001/correspondence.md) it confirms.
+#
+# Revision 12, 2026-10-14: every difference of each engine's first engine-level run on the text area,
+# at revision 11 (Broiler.JS's docs/evidence/sjl-5-001/engine/ and Broiler.VM's bundle sjl-5-001):
+# 42 of Broiler.JS's and 5 of Broiler.VM's.
+reason vm-pad-filler-order: padStart and padEnd refuse a length past the engine's string ceiling of 2^24 code units with RangeError before the filler is converted, so a filler's toString is never called, where StringPaddingBuiltinsImpl converts the filler with ToString before StringPad may refuse. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-5-text-algorithms.md, SJL-5.4 (JSD-0070; the correspondence's row P1).
+reason vm-pad-empty-filler: padStart and padEnd refuse a length past the engine's string ceiling with RangeError when the filler is empty, where StringPad returns the string itself for an empty filler, whatever the length. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-5-text-algorithms.md, SJL-5.4 (JSD-0070; the correspondence's row P2).
+reason vm-replaceall-order: replaceAll converts a replacement value that is not callable with ToString only after the search, so its toString is not called when nothing matches, where String.prototype.replaceAll converts it before searching. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-5-text-algorithms.md, SJL-5.4 (JSD-0070; the correspondence's row S1).
+reason js-set-from-hex-whole-input: setFromHex parses its whole input before honouring the destination's length, so a character past the bytes that fit, which the specification never reads, raises SyntaxError where it answers { read, written }. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B1).
+reason js-options-not-object: fromBase64 and toBase64 ignore an options argument that is neither undefined nor an object, null included, where GetOptionsObject raises TypeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B2).
+reason js-options-null-name: A null alphabet or lastChunkHandling is read as the default, where a value that is not one of the option's names raises TypeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B3).
+reason js-detached-codec: toBase64 and toHex on an array whose buffer is detached answer an empty string, and setFromBase64 and setFromHex answer { read: 0, written: 0 }, where the receiver's checks raise TypeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B4).
+reason js-json-depth: JSON.parse refuses a document nested more than 64 deep with SyntaxError: System.Text.Json's default depth, which nobody chose, where the language sets no limit below the implementation's own. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J1).
+reason js-json-escaped-surrogate: JSON.parse refuses a string whose escape is a lone surrogate with SyntaxError, where the string holds that one code unit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J2).
+reason js-json-raw-surrogate: JSON.parse of a text holding a lone surrogate lets the .NET ArgumentException of its transcoding to UTF-8 escape the engine, where the string holds that one code unit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J3).
+reason js-raw-json-brand: The raw-JSON brand is structural: a frozen ordinary object with a rawJSON property is taken for a raw JSON object by JSON.isRawJSON and by JSON.stringify, which writes its text unvalidated, where only JSON.rawJSON's objects carry the brand. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J6).
+reason js-raw-json-enumerable: The rawJSON property of JSON.rawJSON's object is not enumerable, where CreateDataPropertyOrThrow makes it enumerable. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J7).
+reason js-last-index-of-from-index: %TypedArray%.prototype.lastIndexOf ignores fromIndex when more than two arguments are passed, where fromIndex is present whenever a second argument is. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row P5).
+reason js-named-group-to-string: GetSubstitution converts a named group's value with the CLR's ToString, which calls toString directly, where ToString calls Symbol.toPrimitive first. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row S2).
+reason js-absent-replace: replace with a RegExp whose Symbol.replace is undefined or null matches it as a regular expression, where the search value is converted with ToString and searched for as text. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row S3).
+
+broiler-vm vm-pad-filler-order text/pad-order/0001
+broiler-vm vm-pad-filler-order text/pad-order/0003
+broiler-vm vm-pad-empty-filler text/pad-order/0002
+broiler-vm vm-pad-empty-filler text/pad-order/0004
+broiler-vm vm-replaceall-order text/replace-order/0001
+broiler-js js-set-from-hex-whole-input text/set-from-hex/0001
+broiler-js js-set-from-hex-whole-input text/set-from-hex/0002
+broiler-js js-set-from-hex-whole-input text/set-from-hex/0011
+broiler-js js-set-from-hex-whole-input text/set-from-hex/0012
+broiler-js js-set-from-hex-whole-input text/set-from-hex/0013
+broiler-js js-set-from-hex-whole-input text/set-from-hex/0021
+broiler-js js-options-not-object text/options/0001
+broiler-js js-options-not-object text/options/0002
+broiler-js js-options-not-object text/options/0006
+broiler-js js-options-null-name text/options/0003
+broiler-js js-options-null-name text/options/0004
+broiler-js js-detached-codec text/options/0009
+broiler-js js-detached-codec text/options/0010
+broiler-js js-detached-codec text/options/0011
+broiler-js js-detached-codec text/options/0012
+broiler-js js-json-depth text/parse-depth/0011
+broiler-js js-json-depth text/parse-depth/0012
+broiler-js js-json-depth text/parse-depth/0013
+broiler-js js-json-depth text/parse-depth/0014
+broiler-js js-json-depth text/parse-depth/0015
+broiler-js js-json-depth text/parse-depth/0016
+broiler-js js-json-depth text/parse-depth/0017
+broiler-js js-json-depth text/parse-depth/0018
+broiler-js js-json-depth text/parse-depth/0019
+broiler-js js-json-depth text/parse-depth/0020
+broiler-js js-json-depth text/parse-depth/0021
+broiler-js js-json-depth text/parse-depth/0022
+broiler-js js-json-escaped-surrogate text/parse/2364
+broiler-js js-json-escaped-surrogate text/parse/2365
+broiler-js js-json-escaped-surrogate text/parse-surrogate/0001
+broiler-js js-json-escaped-surrogate text/parse-surrogate/0003
+broiler-js js-json-raw-surrogate text/parse/2367
+broiler-js js-json-raw-surrogate text/parse/2368
+broiler-js js-json-raw-surrogate text/parse-surrogate/0002
+broiler-js js-json-raw-surrogate text/parse-surrogate/0004
+broiler-js js-raw-json-brand text/raw-json/0005
+broiler-js js-raw-json-brand text/raw-json/0006
+broiler-js js-raw-json-enumerable text/raw-json/0003
+broiler-js js-last-index-of-from-index text/last-index-of/0002
+broiler-js js-named-group-to-string text/named-to-string/0001
+broiler-js js-absent-replace text/absent-replace/0001
+broiler-js js-absent-replace text/absent-replace/0002

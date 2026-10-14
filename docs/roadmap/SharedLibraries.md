@@ -230,6 +230,77 @@ part of the record:
   Intl's mathematical value with SJL-9. `UriHelper` cites Jurassic too, and the notices say that its
   derivation is not yet examined.
 
+**Text algorithms (SJL-5.1), filed 2026-10-14: all six sub-areas accepted.** Broiler.VM's record is
+`Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0070-text-algorithms-move-to-the-shared-algorithms-library.md`
+(JSD-0070), which states each condition for whitespace and UTF-16, padding and indices, substitution
+templates, URI, base64 and hex, and JSON lexing, each on its own; its input, the correspondence from code
+with every member by file and line and each difference numbered, is
+`Broiler.VM/docs/evidence/sjl-5-001/correspondence.md`. SJL-5 started on 2026-10-14 by the owner's choice,
+before SJL-3 is met, which the programme's ledger records. This repository's part of it:
+
+- **The correspondence was read from code**, at this repository's `62c42e3`, because the area has no
+  vectors yet; SJL-5.2's vectors confirm it. Trim is already the library's (SJL-3), and
+  `trimCharacters` is gone. Everywhere else this engine holds more of the area than the design named:
+  `AdvanceStringIndex` and six inline copies, a third template walk in `JSRegExp.Replace(string, string)`,
+  and the relative-index normalisation inline in about twenty built-ins. Each joins the deletion list,
+  and SJL-5.5 removes it.
+- **The corrections**, each listed in `CHANGELOG.md` at SJL-5.5 under decision SJL-D-16 (a), with the
+  correspondence's row: a pad or a repeat past .NET's largest string lets `OutOfMemoryException`
+  through (P4); `%TypedArray%.prototype.lastIndexOf` ignores `fromIndex` with more than two arguments
+  (P5); a named group's value is converted with the CLR's `ToString` (S2); a RegExp whose
+  `Symbol.replace` is absent is matched as a pattern, not searched for as text (S3); `setFromHex`
+  parses its whole input before honouring the destination (B1); a non-object options argument is
+  ignored and a `null` option read as the default (B2, B3); a detached array encodes as empty (B4);
+  JSON nesting past System.Text.Json's default depth is refused (J1); an escaped lone surrogate is
+  refused and a raw one lets a .NET exception through (J2, J3); indented JSON
+  uses CRLF on Windows (J5); the raw-JSON brand is structural and forgeable (J6); and the brand's
+  `rawJSON` property is not enumerable (J7).
+  *Corrected 2026-10-14, at SJL-5.2:* the list read "`1e400` is refused (J4)" after the surrogates. Corpus
+  revision 12 classifies this engine's first run on the text area, and its vectors `text/parse-number/0001`
+  and `0002` show that `JSON.parse("1e400")` and `JSON.parse("-1e400")` answer the infinities, as the
+  specification does: on .NET 10, System.Text.Json's `GetDouble` returns the infinity rather than refusing
+  the text. J4 is not a correction of this engine, and the changelog does not list it.
+- **Three corrections are this engine's own code, not shared:** `split`'s limit with an empty separator
+  (X1), the ordinal comparison in `indexOf`, `includes`, `startsWith`, `endsWith` and the non-standard
+  `contains`, which use the current culture today (X2), and the raw-JSON brand, which becomes an internal
+  slot of this engine's object model (J6).
+- **Two policies become parameters, and this engine states its own at SJL-5.5:** the longest string a
+  pad builds, which maps to `RangeError` rather than to a .NET exception, and the JSON nesting depth,
+  which System.Text.Json's default fixes today and nobody chose. Both are listed in the changelog.
+- **Charging.** The shared members keep Broiler.VM's charging units (JSD-0070, decision 3), which costs
+  nothing here, where no meter is passed.
+- **Provenance.** `UriHelper` cites Jurassic's `GlobalObject.cs`, and the third-party notices say its
+  derivation is not yet examined. **It is deleted, not moved**: the shared codec is written from the
+  specification and from Broiler.VM's implementation. The notices drop the open entry when it is
+  deleted, and say that it was deleted rather than resolved.
+- **Decision SJL-D-25 has nothing to dispose of**: every member on this engine's deletion list is
+  internal or private.
+- **Not shared, and staying here:** the JSON drivers (object building, the reviver, source-text
+  records, `JSON.stringify`), `split`, `replace` and the evaluation of named groups, string search, and
+  the option reading, receiver checks and errors around every codec. Outside the area, and left to their
+  milestones as the correspondence names them: U+0085 as white space in the lexer and in `RegExp.escape`
+  (SJL-14, SJL-11), `normalize`'s .NET exception on a lone surrogate (SJL-7), `Date.parse`'s white space
+  and culture (SJL-6), and the tagged-template path's trimming of a raw segment (SJL-14).
+- **The rules** are committed with this record, before any code of the area: test262 per path
+  (`docs/evidence/sjl-5-001/decision-rule.md`, whose base is taken afresh at the commit that carries it,
+  because the shared stream's version moved since SJL-4's after run) and the library-level reference
+  arms (`docs/evidence/sjl-5-001/reference-arms.md`).
+
+**The text vectors and the first runs (SJL-5.2), 2026-10-14.** Corpus revision 10 adds the area's vectors
+(`conformance/vectors/text/`), and revision 11 widens the schema's clause ids, which four of their citations
+need and this engine's validator refused. No text vector carries a `per-engine.broiler-js` expectation:
+the only results the area leaves to the implementation are the two pads at Broiler.VM's string ceiling,
+which hold that engine's. Each engine's first engine-level run on revision 11 is classified at revision
+12, and both engines then classify every vector. This engine's differences confirm the rows of the
+correspondence listed above, B1 to B4, J1 to J3, J6, J7, P5, S2 and S3, and SJL-5.5 answers each of them.
+They refute J4 (above). P4, X1 and X2 have no vector: the vectors pad no further than 2^24 + 1 and test
+neither `split` nor string search. J5's three vectors match because the run was on Linux, whose line
+ending is LF. Broiler.VM's differences are its rows P1, P2 and S1, which SJL-5.4 answers. Every
+difference the runs found is one the area verdict classified, so its falsifier does not fire. The runs are
+retained in [`sjl-5-001/engine/`](../evidence/sjl-5-001/engine/). *(Revised 2026-10-14: the paragraph
+gave the number of differences each engine's run found, which this plan does not hold; the bundle and
+`conformance/vectors/REVISIONS.md` give them.)*
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

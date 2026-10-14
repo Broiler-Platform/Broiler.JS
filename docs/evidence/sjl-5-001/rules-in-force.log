@@ -1,0 +1,33 @@
+# SJL-5: the comparison rules are in force, checked before any code of SJL-5.3 to SJL-5.5 exists
+# Checked 2026-10-14T17:50Z at 753d42ef8014b05d2fc40555ca67d945511a064d (claude/busy-lamport-m3yprr), against the rule commit 3309b15afe16c7d886fe7bc397997db923987b3a.
+
+$ git log --format="%H %s" -- <each file the rules commit or name>
+## docs/evidence/sjl-5-001/decision-rule.md
+3309b15afe16c7d886fe7bc397997db923987b3a SJL-5.1: the text area's verdict here, and bundle sjl-5-001's rules
+blob at HEAD: 7c9e59014b37e5e1a1e6e408d8197f1bc555f418
+blob at 3309b15: 7c9e59014b37e5e1a1e6e408d8197f1bc555f418
+## docs/evidence/sjl-5-001/reference-arms.md
+3309b15afe16c7d886fe7bc397997db923987b3a SJL-5.1: the text area's verdict here, and bundle sjl-5-001's rules
+blob at HEAD: c29be514c764515e2187d4a880c6085aac5780cf
+blob at 3309b15: c29be514c764515e2187d4a880c6085aac5780cf
+## scripts/compliance/compare_test262_paths.py
+1410079e4808ca7fc10677ef996a95b77e571a11 SJL-0.9: Broiler.JS's predeclared comparison rules, before any code they judge
+blob at HEAD: e951dd478a858ac06c4178c28164325b06506d00
+blob at 3309b15: e951dd478a858ac06c4178c28164325b06506d00
+## scripts/compliance/tests/test_compare_test262_paths.py
+1410079e4808ca7fc10677ef996a95b77e571a11 SJL-0.9: Broiler.JS's predeclared comparison rules, before any code they judge
+blob at HEAD: 9c4795c9f3a0a1b0deb67e4d16145fbd1258421e
+blob at 3309b15: 9c4795c9f3a0a1b0deb67e4d16145fbd1258421e
+## scripts/compliance/run_test262.py
+44a214dc5b04a5c8db556dc9b57894beaeb20d0c Update Nuget-Packages
+blob at HEAD: af4f3d99f5c113d9b96c006680320b6d894710d6
+blob at 3309b15: af4f3d99f5c113d9b96c006680320b6d894710d6
+## scripts/compliance/merge_test262_shards.py
+44a214dc5b04a5c8db556dc9b57894beaeb20d0c Update Nuget-Packages
+blob at HEAD: d5131f9eba3d790236b713f04a3d57e4269e7140
+blob at 3309b15: d5131f9eba3d790236b713f04a3d57e4269e7140
+## .github/workflows/test262-evidence.yml
+0f04ef0dcec88b5e37e0857da52e8629d1db7536 CI: test262 evidence says why four workers per shard
+d8981086f77832b9de634b88933700dce1d63107 CI: a test262 workflow that only measures
+blob at HEAD: 34fd08e13c54dc307afe6877dfee10580e12049f
+blob at 3309b15: 34fd08e13c54dc307afe6877dfee10580e12049f

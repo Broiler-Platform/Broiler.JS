@@ -191,6 +191,117 @@ Broiler.ECMAScript.ResultStatus.Completed = 0
 Broiler.ECMAScript.ResultStatus.LimitExceeded = 2
 Broiler.ECMAScript.ResultStatus.Malformed = 1
 Broiler.ECMAScript.ResultStatus.value__ field System.Int32
+Broiler.ECMAScript.Text.Base64Alphabet enum
+Broiler.ECMAScript.Text.Base64Alphabet.Base64 = 0
+Broiler.ECMAScript.Text.Base64Alphabet.Base64Url = 1
+Broiler.ECMAScript.Text.Base64Alphabet.value__ field System.Int32
+Broiler.ECMAScript.Text.Base64Codec static class
+Broiler.ECMAScript.Text.Base64Codec.DecodedLengthBound(System.Int32) method static System.Int32
+Broiler.ECMAScript.Text.Base64Codec.FromBase64(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.Text.Base64Alphabet, Broiler.ECMAScript.Text.LastChunkHandling, System.Span`1<System.Byte>, System.Int32&, System.Int32&, Broiler.ECMAScript.Failure&, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Text.Base64Codec.FromHex(System.ReadOnlySpan`1<System.Char>, System.Span`1<System.Byte>, System.Int32&, System.Int32&, Broiler.ECMAScript.Failure&, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Text.Base64Codec.ToBase64(System.ReadOnlySpan`1<System.Byte>, Broiler.ECMAScript.Text.Base64Alphabet, System.Boolean, Broiler.ECMAScript.WorkCharge) method static System.String
+Broiler.ECMAScript.Text.Base64Codec.ToHex(System.ReadOnlySpan`1<System.Byte>, Broiler.ECMAScript.WorkCharge) method static System.String
+Broiler.ECMAScript.Text.CodePointRecord struct : System.IEquatable`1<Broiler.ECMAScript.Text.CodePointRecord>
+Broiler.ECMAScript.Text.CodePointRecord..ctor(System.Int32, System.Int32, System.Boolean) method System.Void
+Broiler.ECMAScript.Text.CodePointRecord.Deconstruct(System.Int32&, System.Int32&, System.Boolean&) method System.Void
+Broiler.ECMAScript.Text.CodePointRecord.Equals(Broiler.ECMAScript.Text.CodePointRecord) method System.Boolean
+Broiler.ECMAScript.Text.CodePointRecord.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Text.CodePointRecord.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Text.CodePointRecord.ToString() method virtual System.String
+Broiler.ECMAScript.Text.CodePointRecord.get_CodePoint() method System.Int32
+Broiler.ECMAScript.Text.CodePointRecord.get_CodeUnitCount() method System.Int32
+Broiler.ECMAScript.Text.CodePointRecord.get_IsUnpairedSurrogate() method System.Boolean
+Broiler.ECMAScript.Text.CodePointRecord.op_Equality(Broiler.ECMAScript.Text.CodePointRecord, Broiler.ECMAScript.Text.CodePointRecord) method static System.Boolean
+Broiler.ECMAScript.Text.CodePointRecord.op_Inequality(Broiler.ECMAScript.Text.CodePointRecord, Broiler.ECMAScript.Text.CodePointRecord) method static System.Boolean
+Broiler.ECMAScript.Text.CodePointRecord.set_CodePoint(System.Int32) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Text.CodePointRecord.set_CodeUnitCount(System.Int32) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Text.CodePointRecord.set_IsUnpairedSurrogate(System.Boolean) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Text.JsonReader struct
+Broiler.ECMAScript.Text.JsonReader..ctor(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.DepthLimit, Broiler.ECMAScript.WorkCharge) method System.Void
+Broiler.ECMAScript.Text.JsonReader.Read() method Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Text.JsonReader.Validate(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.DepthLimit, Broiler.ECMAScript.Failure&, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Text.JsonReader.get_Depth() method System.Int32
+Broiler.ECMAScript.Text.JsonReader.get_Failure() method Broiler.ECMAScript.Failure
+Broiler.ECMAScript.Text.JsonReader.get_NumberValue() method System.Double
+Broiler.ECMAScript.Text.JsonReader.get_StringValue() method System.String
+Broiler.ECMAScript.Text.JsonReader.get_Token() method Broiler.ECMAScript.Text.JsonToken
+Broiler.ECMAScript.Text.JsonReader.get_TokenEnd() method System.Int32
+Broiler.ECMAScript.Text.JsonReader.get_TokenStart() method System.Int32
+Broiler.ECMAScript.Text.JsonText static class
+Broiler.ECMAScript.Text.JsonText.GapFromNumber(System.Double) method static System.String
+Broiler.ECMAScript.Text.JsonText.GapFromString(System.String) method static System.String
+Broiler.ECMAScript.Text.JsonText.MaximumGap field static const System.Int32 = 10
+Broiler.ECMAScript.Text.JsonText.Quote(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.WorkCharge) method static System.String
+Broiler.ECMAScript.Text.JsonToken enum
+Broiler.ECMAScript.Text.JsonToken.BeginArray = 3
+Broiler.ECMAScript.Text.JsonToken.BeginObject = 1
+Broiler.ECMAScript.Text.JsonToken.EndArray = 4
+Broiler.ECMAScript.Text.JsonToken.EndObject = 2
+Broiler.ECMAScript.Text.JsonToken.EndOfText = 11
+Broiler.ECMAScript.Text.JsonToken.False = 9
+Broiler.ECMAScript.Text.JsonToken.None = 0
+Broiler.ECMAScript.Text.JsonToken.Null = 10
+Broiler.ECMAScript.Text.JsonToken.Number = 7
+Broiler.ECMAScript.Text.JsonToken.PropertyName = 5
+Broiler.ECMAScript.Text.JsonToken.String = 6
+Broiler.ECMAScript.Text.JsonToken.True = 8
+Broiler.ECMAScript.Text.JsonToken.value__ field System.Int32
+Broiler.ECMAScript.Text.LastChunkHandling enum
+Broiler.ECMAScript.Text.LastChunkHandling.Loose = 0
+Broiler.ECMAScript.Text.LastChunkHandling.StopBeforePartial = 2
+Broiler.ECMAScript.Text.LastChunkHandling.Strict = 1
+Broiler.ECMAScript.Text.LastChunkHandling.value__ field System.Int32
+Broiler.ECMAScript.Text.PadPlacement enum
+Broiler.ECMAScript.Text.PadPlacement.End = 1
+Broiler.ECMAScript.Text.PadPlacement.Start = 0
+Broiler.ECMAScript.Text.PadPlacement.value__ field System.Int32
+Broiler.ECMAScript.Text.RelativeIndex static class
+Broiler.ECMAScript.Text.RelativeIndex.Clamped(System.Double, System.Int64) method static System.Int64
+Broiler.ECMAScript.Text.RelativeIndex.LastSearchStart(System.Double, System.Int64) method static System.Int64
+Broiler.ECMAScript.Text.RelativeIndex.TryElement(System.Double, System.Int64, System.Int64&) method static System.Boolean
+Broiler.ECMAScript.Text.ReplacementPart struct : System.IEquatable`1<Broiler.ECMAScript.Text.ReplacementPart>
+Broiler.ECMAScript.Text.ReplacementPart..ctor(Broiler.ECMAScript.Text.ReplacementPartKind, System.Int32, System.Int32, System.Int32) method System.Void
+Broiler.ECMAScript.Text.ReplacementPart.Deconstruct(Broiler.ECMAScript.Text.ReplacementPartKind&, System.Int32&, System.Int32&, System.Int32&) method System.Void
+Broiler.ECMAScript.Text.ReplacementPart.Equals(Broiler.ECMAScript.Text.ReplacementPart) method System.Boolean
+Broiler.ECMAScript.Text.ReplacementPart.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Text.ReplacementPart.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Text.ReplacementPart.ToString() method virtual System.String
+Broiler.ECMAScript.Text.ReplacementPart.get_CaptureIndex() method System.Int32
+Broiler.ECMAScript.Text.ReplacementPart.get_Kind() method Broiler.ECMAScript.Text.ReplacementPartKind
+Broiler.ECMAScript.Text.ReplacementPart.get_Length() method System.Int32
+Broiler.ECMAScript.Text.ReplacementPart.get_Start() method System.Int32
+Broiler.ECMAScript.Text.ReplacementPart.op_Equality(Broiler.ECMAScript.Text.ReplacementPart, Broiler.ECMAScript.Text.ReplacementPart) method static System.Boolean
+Broiler.ECMAScript.Text.ReplacementPart.op_Inequality(Broiler.ECMAScript.Text.ReplacementPart, Broiler.ECMAScript.Text.ReplacementPart) method static System.Boolean
+Broiler.ECMAScript.Text.ReplacementPart.set_CaptureIndex(System.Int32) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Text.ReplacementPart.set_Kind(Broiler.ECMAScript.Text.ReplacementPartKind) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Text.ReplacementPart.set_Length(System.Int32) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Text.ReplacementPart.set_Start(System.Int32) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Text.ReplacementPartKind enum
+Broiler.ECMAScript.Text.ReplacementPartKind.After = 4
+Broiler.ECMAScript.Text.ReplacementPartKind.Before = 3
+Broiler.ECMAScript.Text.ReplacementPartKind.Capture = 5
+Broiler.ECMAScript.Text.ReplacementPartKind.Dollar = 1
+Broiler.ECMAScript.Text.ReplacementPartKind.Literal = 0
+Broiler.ECMAScript.Text.ReplacementPartKind.Match = 2
+Broiler.ECMAScript.Text.ReplacementPartKind.NamedCapture = 6
+Broiler.ECMAScript.Text.ReplacementPartKind.value__ field System.Int32
+Broiler.ECMAScript.Text.ReplacementTemplate static class
+Broiler.ECMAScript.Text.ReplacementTemplate.Parse(System.ReadOnlySpan`1<System.Char>, System.Int32, System.Boolean, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.Text.ReplacementPart[]
+Broiler.ECMAScript.Text.StringPadding static class
+Broiler.ECMAScript.Text.StringPadding.Pad(System.String, System.Int64, System.String, Broiler.ECMAScript.Text.PadPlacement, Broiler.ECMAScript.LengthLimit, System.String&, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Text.UriCodec static class
+Broiler.ECMAScript.Text.UriCodec.Decode(System.ReadOnlySpan`1<System.Char>, System.ReadOnlySpan`1<System.Char>, System.String&, Broiler.ECMAScript.Failure&, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Text.UriCodec.Encode(System.ReadOnlySpan`1<System.Char>, System.ReadOnlySpan`1<System.Char>, System.String&, Broiler.ECMAScript.Failure&, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.ResultStatus
+Broiler.ECMAScript.Text.UriCodec.Escape(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.WorkCharge) method static System.String
+Broiler.ECMAScript.Text.UriCodec.HexDigitValue(System.Char) method static System.Int32
+Broiler.ECMAScript.Text.UriCodec.ReservedAndNumberSign field static const System.String = ";/?:@&=+$,#"
+Broiler.ECMAScript.Text.UriCodec.Unescape(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.WorkCharge) method static System.String
+Broiler.ECMAScript.Text.Utf16 static class
+Broiler.ECMAScript.Text.Utf16.AdvanceStringIndex(System.ReadOnlySpan`1<System.Char>, System.Int64, System.Boolean) method static System.Int64
+Broiler.ECMAScript.Text.Utf16.CodePointAt(System.ReadOnlySpan`1<System.Char>, System.Int32) method static Broiler.ECMAScript.Text.CodePointRecord
+Broiler.ECMAScript.Text.Utf16.IsWellFormed(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.WorkCharge) method static System.Boolean
+Broiler.ECMAScript.Text.Utf16.ReplacementCharacter field static const System.Char = '\uFFFD'
+Broiler.ECMAScript.Text.Utf16.ToWellFormed(System.String, Broiler.ECMAScript.WorkCharge) method static System.String
 Broiler.ECMAScript.WorkCharge delegate
 Broiler.ECMAScript.WorkCharge..ctor(System.Object, System.IntPtr) method System.Void
 Broiler.ECMAScript.WorkCharge.BeginInvoke(System.UInt64, System.AsyncCallback, System.Object) method virtual System.IAsyncResult

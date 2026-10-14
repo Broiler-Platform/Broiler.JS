@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   18
-// Annotated:        18/18
+// Relevant units:   19
+// Annotated:        19/19
 // Exempt:           4
-// Human-reviewed:   0/18
+// Human-reviewed:   0/19
 // IP risk:          Low
 // Security risk:    Low
 // Criteria:         0/0
 // Resource impact:  9/10 max
-// Unverified:       18
+// Unverified:       19
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -279,12 +279,12 @@ public sealed class VectorValidator
     /// </summary>
     /// <remarks>
     /// The grammar, as the regular expression it replaces wrote it:
-    /// <c>spec:[a-z0-9]+@(?&lt;revision&gt;[0-9a-f]{7,40})#[a-z0-9.-]+</c>,
+    /// <c>spec:[a-z0-9]+@(?&lt;revision&gt;[0-9a-f]{7,40})#[a-z0-9.%-]+</c>,
     /// <c>test262:[A-Za-z0-9_./-]+\.js</c>, <c>ref:[a-z0-9-]+@[0-9]+</c>,
     /// <c>ucd:(?&lt;version&gt;[0-9]+\.[0-9]+\.[0-9]+)/[A-Za-z0-9_.-]+</c> and
     /// <c>observed:(?&lt;engine&gt;[a-z0-9-]+)</c>.
     /// </remarks>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=4; Fingerprint=DEECF7
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=4; Fingerprint=8305E3
     // Broiler-Human:        PENDING
     private static bool TryParseProvenance(string entry, out string kind, out string detail)
     {
@@ -304,7 +304,7 @@ public sealed class VectorValidator
                     return false;
                 var rest = body[(at + 1)..];
                 var hash = rest.IndexOf('#');
-                if (hash < 7 || hash > 40 || !Ascii.All(rest[..hash], Ascii.IsLowerHex) || !Ascii.All(rest[(hash + 1)..], IsIdentifierCharacter))
+                if (hash < 7 || hash > 40 || !Ascii.All(rest[..hash], Ascii.IsLowerHex) || !Ascii.All(rest[(hash + 1)..], IsClauseCharacter))
                     return false;
                 detail = rest[..hash].ToString();
                 return true;
@@ -379,6 +379,14 @@ public sealed class VectorValidator
     // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=D7BDFC
     // Broiler-Human:        PENDING
     private static bool IsIdentifierCharacter(char c) => IsLowerAlphanumeric(c) || c is '.' or '-';
+
+    /// <summary>
+    /// A character of a clause id: an identifier character, or <c>%</c>, which ECMA-262 writes in the
+    /// ids of the intrinsics' clauses, such as <c>sec-%typedarray%.prototype.slice</c> (corpus revision 11).
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=156678
+    // Broiler-Human:        PENDING
+    private static bool IsClauseCharacter(char c) => IsIdentifierCharacter(c) || c == '%';
 
     // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=E0D475
     // Broiler-Human:        PENDING

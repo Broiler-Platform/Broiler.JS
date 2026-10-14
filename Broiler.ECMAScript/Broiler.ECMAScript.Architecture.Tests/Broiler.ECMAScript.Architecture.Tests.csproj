@@ -32,6 +32,7 @@
   <ItemGroup>
     <Compile Include="..\runners\CorpusDirectory.cs" Link="CorpusDirectory.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.cs" Link="AlgorithmsLibrary.cs" />
+    <Compile Include="..\runners\AlgorithmsLibrary.Text.cs" Link="AlgorithmsLibrary.Text.cs" />
     <None Include="rules.register.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
