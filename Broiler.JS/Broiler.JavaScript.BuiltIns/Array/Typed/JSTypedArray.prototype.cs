@@ -89,32 +89,15 @@ partial class JSTypedArray
             if (buffer == null || buffer.isDetached || IsOutOfBounds)
                 throw JSEngine.NewTypeError("TypedArray.prototype.copyWithin called on an out-of-bounds TypedArray");
 
+            // The copy proceeds with the longest prefix still within the (possibly shrunk) live
+            // length, and moves bytes, so each element keeps its bit-level encoding (a NaN's sign
+            // and payload among them). The specification's byte loop runs backwards exactly when
+            // the target overlaps the source from above, which is Array.Copy's overlap rule.
             var liveLength = Length;
-
-            // Check if we need to copy in reverse due to an overlap.
-            int direction = 1;
-            if (start < target && target < start + count)
-            {
-                direction = -1;
-                start += count - 1;
-                target += count - 1;
-            }
-
-            while (count > 0)
-            {
-                // §23.2.3.5 step 14: copy an element only while BOTH indices are within
-                // the (possibly shrunk) live length; an index past it is skipped, but the
-                // walk still advances so a later in-bounds element of an
-                // overlap-reversed copy is not lost. Using `break` here dropped that
-                // trailing copy (e.g. a backward copy whose first, highest, index is now
-                // out of bounds).
-                if (start >= 0 && target >= 0 && start < liveLength && target < liveLength)
-                    this[(uint)target] = this[(uint)start];
-
-                start += direction;
-                target += direction;
-                count--;
-            }
+            count = Math.Min(count, Math.Min(liveLength - start, liveLength - target));
+            if (count > 0)
+                System.Array.Copy(buffer.buffer, byteOffset + start * bytesPerElement,
+                    buffer.buffer, byteOffset + target * bytesPerElement, count * bytesPerElement);
         }
 
         return this;
@@ -720,8 +703,25 @@ partial class JSTypedArray
                 throw JSEngine.NewTypeError("TypedArray.prototype.slice called on an out-of-bounds TypedArray");
 
             var n = Math.Min(count, Math.Max(Length - startIndex, 0));
-            for (int i = 0; i < n; i++)
-                r[(uint)i] = this[(uint)(startIndex + i)];
+            if (n > 0 && r.GetType() == GetType())
+            {
+                // Step 14.g: the same element type copies bytes, forwards, so each element keeps its
+                // bit-level encoding (a NaN's sign and payload among them). A shrink can leave nothing
+                // to copy, and then the start may lie past the buffer's end.
+                var src = buffer.buffer;
+                var target = r.buffer.buffer;
+                int from = byteOffset + startIndex * bytesPerElement, to = r.byteOffset, bytes = n * bytesPerElement;
+                if (src != target)
+                    System.Array.Copy(src, from, target, to, bytes);
+                else
+                    for (int b = 0; b < bytes; b++)
+                        target[to + b] = src[from + b];
+            }
+            else
+            {
+                for (int i = 0; i < n; i++)
+                    r[(uint)i] = this[(uint)(startIndex + i)];
+            }
         }
 
         return r;

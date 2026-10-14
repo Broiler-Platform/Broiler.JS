@@ -175,7 +175,12 @@ repository's `01209c4`, before the cut-over, and after it.
 with `DataView.prototype.getFloat16` are the platform's quiet NaN, where they kept the binary16 value's
 sign and payload in the double; no result but the bits written to another buffer shows it. A NaN
 written to a binary16 element still keeps its sign and the high bits of its payload, as this plan
-committed this engine to.
+committed this engine to. A copy between typed arrays of the same element type moves the bytes, as the
+specification asks, so it keeps each element's encoding: `slice`, `copyWithin`, `set`, and the
+constructor given a typed array. *(Added 2026-10-14. The cut-over had made `slice`, `copyWithin` and
+that constructor copy through the value, so a binary16 NaN came out as the platform's, its sign set
+and its payload dropped; test262's `TypedArray/prototype/slice/bit-precision.js` found it in bundle
+sjl-4-001's first after run. `SharedIntegerConversionTests` holds the cases.)*
 
 **Not corrected here.** `Temporal.PlainTime`, `PlainDateTime` and `ZonedDateTime`'s `round` round the
 nanoseconds since midnight rather than the unit the specification names (`01:10` rounded to 20 minutes

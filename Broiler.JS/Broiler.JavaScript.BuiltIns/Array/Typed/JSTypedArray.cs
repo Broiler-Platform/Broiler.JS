@@ -325,7 +325,14 @@ public partial class JSTypedArray: JSObject, IJSIntegerIndexedObject
         explicitLength = len;
         buffer = new JSArrayBuffer(len * bytesPerElement);
 
-        if (copyByIndex)
+        if (source is JSTypedArray sameType && sameType.GetType() == GetType() && (p.map == null || p.map.IsUndefined))
+        {
+            // InitializeTypedArrayFromTypedArray step 11: the same element type clones the bytes, so
+            // each element keeps its bit-level encoding (a NaN's sign and payload among them).
+            if (len > 0)
+                System.Array.Copy(sameType.buffer.buffer, sameType.byteOffset, buffer.buffer, 0, len * bytesPerElement);
+        }
+        else if (copyByIndex)
         {
             for (uint i = 0; i < length; i++)
             {
