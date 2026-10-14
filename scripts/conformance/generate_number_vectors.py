@@ -32,8 +32,9 @@ import numref as R  # noqa: E402
 # appended the parseInt vectors of revision_4_vectors, after every vector of revision 1; revisions 5
 # and 6 retired divergences (number-divergences.txt) and added no vector to this area (revision 6
 # added the numerics area, which generate_numerics_vectors.py writes, and revisions 7 to 9 changed it;
-# revision 10 added the text area, which generate_text_vectors.py writes).
-CORPUS_REVISION = 10
+# revision 10 added the text area, which generate_text_vectors.py writes; revision 11 widened the
+# schema's clause ids and changed no vector).
+CORPUS_REVISION = 11
 FIRST_REVISION = 1
 GENERATOR = "ref:numref@1"
 SPEC = "spec:es2026@0248456c"

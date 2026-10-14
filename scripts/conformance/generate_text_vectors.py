@@ -31,7 +31,9 @@ import numref as R  # noqa: E402
 import textref as T  # noqa: E402
 from generate_number_vectors import f64, js_string_literal, splitmix64, string_value  # noqa: E402
 
-CORPUS_REVISION = 10
+# The corpus revision this generator writes, and the revision its vectors were added in. Revision 11
+# widened the schema's clause ids, which four of this area's citations need, and changed no vector.
+CORPUS_REVISION = 11
 FIRST_REVISION = 10
 GENERATOR = "ref:textref@1"
 SPEC = "spec:es2026@0248456c"

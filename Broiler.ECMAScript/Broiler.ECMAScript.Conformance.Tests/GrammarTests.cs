@@ -42,6 +42,7 @@ public class GrammarTests
     {
         Assert.DoesNotContain(Validate("prov", "spec:es2026@" + Sources.SpecificationRevision[..7] + "#sec-x.y"), d => d.Code == "bad-provenance");
         Assert.DoesNotContain(Validate("prov", "spec:es2026@" + Sources.SpecificationRevision + "#sec-x"), d => d.Code == "bad-provenance");
+        Assert.DoesNotContain(Validate("prov", "spec:es2026@" + Sources.SpecificationRevision + "#sec-%typedarray%.prototype.slice"), d => d.Code == "bad-provenance");
         Assert.DoesNotContain(Validate("prov", "ucd:" + Sources.UnicodeVersion + "/PropList.txt"), d => d.Code == "bad-provenance");
     }
 
@@ -52,6 +53,7 @@ public class GrammarTests
     [InlineData("spec:es2026@abcdef0#")]
     [InlineData("spec:es2026@abcdef0")]
     [InlineData("spec:@abcdef0#sec-x")]
+    [InlineData("spec:es2026@abcdef0#sec-x_y")]
     [InlineData("test262:.js")]
     [InlineData("test262:a.mjs")]
     [InlineData("test262:a b.js")]

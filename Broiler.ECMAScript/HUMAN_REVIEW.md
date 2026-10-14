@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 355 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 356 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -36,7 +36,7 @@ and may never invent an alias, which the check asserts in both directions.
 | `<alias>; Fingerprint=<six hex>` | A decision bound to one exact version of one declaration. |
 | `STALE; Previous=<alias>@<fingerprint>` | Written by the generator when the code moved after a decision. Only a human clears it, by stating their alias again. |
 
-A human may state their own `IP=`, `Security=`, `Resources=`, `CS=` and `CL=` assessment beside their alias,
+A human may state their own `IP=`, `Security=` and `Resources=` assessment beside their alias,
 which is how a reader disagrees with the machine assessment on the line above: an assessment is
 a comment and moves no fingerprint, so there is nowhere else to say it.
 
@@ -50,12 +50,12 @@ did, which is the narrower and the more useful of the two.
 | Metric | Value |
 |---|---:|
 | Files scanned | 32 |
-| Code units | 439 |
-| Relevant | 355 |
+| Code units | 440 |
+| Relevant | 356 |
 | Exempt | 84 |
-| Assessed | 355 of 355 (100%) |
-| Human reviewed | 0 of 355 (0%) |
-| Unverified | 355 |
+| Assessed | 356 of 356 (100%) |
+| Human reviewed | 0 of 356 (0%) |
+| Unverified | 356 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,7 +67,7 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 355 |
+| HUMAN_PENDING | 356 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
@@ -116,7 +116,7 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Conformance/VectorCorpus.cs` | 16 | 11 | 5 | 11 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorFile.cs` | 23 | 18 | 5 | 18 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorRun.cs` | 17 | 12 | 5 | 12 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Conformance/VectorValidator.cs` | 22 | 18 | 4 | 18 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Conformance/VectorValidator.cs` | 23 | 19 | 4 | 19 | Low | Low | 0/0 |
 
 ## 7. Decisions Recorded
 
@@ -229,5 +229,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-261 of the 355 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+262 of the 356 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

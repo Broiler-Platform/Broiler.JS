@@ -98,6 +98,11 @@ is a dated entry in [REVISIONS.md](REVISIONS.md), in a new corpus revision.
 | `ucd:<version>/<file>` | A file of the pinned Unicode Character Database ([sources/unicode.pin](sources/unicode.pin)) |
 | `observed:<engine>` | An engine was seen to produce the outcome |
 
+A clause id is the clause's id in the pinned edition's HTML: lower-case letters, digits, `.`, `-` and
+`%`, which the ids of the intrinsics' clauses hold, such as `sec-%typedarray%.prototype.slice`.
+*(Added 2026-10-14, at corpus revision 11. Until then the validator held a clause id to lower-case
+letters, digits, `.` and `-`, and refused revision 10's citations of four such clauses.)*
+
 **A vector's outcome must have a source independent of both engines**: at least one entry that is not
 `observed:`. The validator refuses a vector whose provenance is only engine-observed.
 
