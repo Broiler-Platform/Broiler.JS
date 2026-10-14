@@ -1,0 +1,7 @@
+culture: invariant
+Encode encodeURIComponent (negative control) U1C: 1114112 lines, 1114112 inputs, V:GlobalUriEncode, one charge changed 1 of 1114112 differ (0 not called) (1.8 s)
+FromBase64 (negative control) B1E: 41371 lines, 1489356 inputs, J:DecodeBase64, one result changed 1 of 1489356 differ (0 not called) (0.9 s)
+
+real	0m2.905s
+user	0m6.821s
+sys	0m0.390s

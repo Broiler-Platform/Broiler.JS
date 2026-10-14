@@ -1,0 +1,1567 @@
+{
+  "rule": "docs/evidence/sjl-5-001/reference-arms.md",
+  "revision": "docs/evidence/sjl-5-001/reference-arms-revised-2026-10-14.md",
+  "culture": "en-US",
+  "void": false,
+  "lineLimit": null,
+  "seconds": 1121,
+  "population": {
+    "rule": "docs/evidence/sjl-5-001/reference-arms.md",
+    "revision": "docs/evidence/sjl-5-001/reference-arms-revised-2026-10-14.md",
+    "generator": "scripts/conformance/generate_text_population.py",
+    "seeds": {
+      "SEED_T1": "0x534a4c352d303031",
+      "SEED_S1": "0x534a4c352d303032",
+      "SEED_U1": "0x534a4c352d303033",
+      "SEED_B1": "0x534a4c352d303034",
+      "SEED_B1_HEX": "0x534a4c352d303035",
+      "SEED_B1_BYTES": "0x534a4c352d303036",
+      "SEED_J1": "0x534a4c352d303037",
+      "SEED_J1_NUMBERS": "0x534a4c352d303038"
+    },
+    "classes": {
+      "T1U": {
+        "file": "T1U.txt.gz",
+        "count": 65536,
+        "sha256": "5abdce0356ea06aab9abbf1920eff13e3f7677c7a7ad95a25274bd91ce697f0d",
+        "what": "every code unit as a one-unit string"
+      },
+      "T1E": {
+        "file": "T1E.txt.gz",
+        "count": 16104,
+        "sha256": "21c87ff779b4caf7215f389f4179d2c56e460b9a83527ec46061cbb04e2a64de",
+        "what": "every string of length 1 to 4 over the eleven units"
+      },
+      "T1W": {
+        "file": "T1W.txt.gz",
+        "count": 252,
+        "sha256": "d32e8ec8caeb000563b65183cfb5c290283be4976ec41960f296ac2d12681469",
+        "what": "every white-space character and U\u002B0085, U\u002B180E, U\u002B200B at either end and both of \u0022ab\u0022, in runs of 1 to 3"
+      },
+      "T1R": {
+        "file": "T1R.txt.gz",
+        "count": 65536,
+        "sha256": "151b09b102a7d503bc6707661fc33657e7a7a6bb12094610affe08797d82fae4",
+        "what": "65536 strings drawn with seed 0x534a4c352d303031"
+      },
+      "P1S": {
+        "file": "P1S.txt.gz",
+        "count": 6,
+        "sha256": "5935b8b213f6edbf7e5553ea13b090e5616c75abd3cb662ee759b4e1fa6f1d9f",
+        "what": "the strings of lengths 0 to 5"
+      },
+      "P1F": {
+        "file": "P1F.txt.gz",
+        "count": 6,
+        "sha256": "45b41eea5c48c425e876283598a30ac4fff3cc22023add57a25e983e105576ad",
+        "what": "the fillers"
+      },
+      "P1M": {
+        "file": "P1M.txt.gz",
+        "count": 6,
+        "sha256": "b3d8ef370571972735849427525822360bba19a627947c7b5711829c04417436",
+        "what": "the maximum lengths"
+      },
+      "P1X": {
+        "file": "P1X.txt.gz",
+        "count": 92,
+        "sha256": "dc65dda2666053615de7c8495645f3805b1ab6cc2a5866377278f95b697afbb1",
+        "what": "length relative: the relative-index inputs"
+      },
+      "S1E": {
+        "file": "S1E.txt.gz",
+        "count": 16105,
+        "sha256": "adfe8a44723a832af9af533a41d2e974d669fb2bf94eea739ad328164b3649d8",
+        "what": "every template of length 0 to 4 over the eleven characters"
+      },
+      "S1R": {
+        "file": "S1R.txt.gz",
+        "count": 16384,
+        "sha256": "481721bb3112e4f5c1f882c16f19932bd8da1839d2826af148b9a4194d8dfd32",
+        "what": "16384 templates drawn with seed 0x534a4c352d303032"
+      },
+      "U1C": {
+        "file": "U1C.txt.gz",
+        "count": 1114112,
+        "sha256": "1e4204e58590dd80b92a39ab113f8de388a7d2a3cebf5de0d8aadec15af13a0e",
+        "what": "every code point, a lone surrogate as one unit"
+      },
+      "U1D": {
+        "file": "U1D.txt.gz",
+        "count": 142586,
+        "sha256": "845d4be6f6cbe434dba29d39872fbe5f071d498e7884729c9f545df2b032e48d",
+        "what": "the decode inputs"
+      },
+      "U1N": {
+        "file": "U1N.txt.gz",
+        "count": 121081,
+        "sha256": "60af43a646b1431ae57ab36f2289af84d0cd02d4805911095f44ff30f0b89e2c",
+        "what": "every %uXXXX in both letter cases, and short ones"
+      },
+      "U1R": {
+        "file": "U1R.txt.gz",
+        "count": 65536,
+        "sha256": "a15b8a9bb3314fcd8e0c8b34a872f486d92355ec8ab99069cffcd09637e1efb4",
+        "what": "65536 strings drawn with seed 0x534a4c352d303033"
+      },
+      "B1E": {
+        "file": "B1E.txt.gz",
+        "count": 41371,
+        "sha256": "8a50a13abf6ca4f1ce641a22b5217c32d89ac19327712d777bedabbf43ac0515",
+        "what": "every string of length 0 to 4 over the fourteen characters"
+      },
+      "B1R": {
+        "file": "B1R.txt.gz",
+        "count": 16384,
+        "sha256": "18e49e657d2a25fdfc090c3282c4caafd7a226098df4579aa123224186444d40",
+        "what": "16384 strings drawn with seed 0x534a4c352d303034"
+      },
+      "B1H": {
+        "file": "B1H.txt.gz",
+        "count": 7381,
+        "sha256": "453fb8b7fa52e26660c9d5c4b009a2270384694b6ab9ebc454e6007740c9645d",
+        "what": "every string of length 0 to 4 over the nine hex characters"
+      },
+      "B1Q": {
+        "file": "B1Q.txt.gz",
+        "count": 4096,
+        "sha256": "f443fd881e8c8318054074c6ad1c47b23a82f44c7eea53567bed227dfbba31d6",
+        "what": "4096 hex strings drawn with seed 0x534a4c352d303035"
+      },
+      "B1Y": {
+        "file": "B1Y.txt.gz",
+        "count": 69889,
+        "sha256": "f79c386e5ab2d44308b0e3c32910e38519ebeb3c56b4bd77af10997f50eb3a8f",
+        "what": "every byte array of length 0 to 2, then 4096 drawn with seed 0x534a4c352d303036"
+      },
+      "J1E": {
+        "file": "J1E.txt.gz",
+        "count": 6175,
+        "sha256": "1e552f854d7e755eb0f2723361cf12bbfb3086268795f9bfcfdde00e9d7665a3",
+        "what": "every text of length 0 to 3 over the eighteen characters"
+      },
+      "J1R": {
+        "file": "J1R.txt.gz",
+        "count": 32768,
+        "sha256": "a95c919352ab08d9aa5568a972fd69697b4fb86b2c0b6c662cc2a7801e551e3d",
+        "what": "16384 documents drawn with seed 0x534a4c352d303037, each followed by its mutation"
+      },
+      "J1S": {
+        "file": "J1S.txt.gz",
+        "count": 186621,
+        "sha256": "73c2661e1a9609f7f63b6023b99bb77cf66801910978c17c2e78b573dda2e30e",
+        "what": "every escape, and every code unit escaped in both letter cases and raw"
+      },
+      "J1N": {
+        "file": "J1N.txt.gz",
+        "count": 12288,
+        "sha256": "37123927ba4ff573101102766ceb07cc89f36e8c0d0163e76100d8d128e3c88b",
+        "what": "the fixed numbers, then 4096 drawn with seed 0x534a4c352d303038"
+      },
+      "J1D": {
+        "file": "J1D.txt.gz",
+        "count": 18,
+        "sha256": "c30c452bad69f684b3746e92a84c1f279f977f3a570b1ad46dda90e408a48699",
+        "what": "arrays and objects nested 63 to 1025 deep"
+      },
+      "J1G": {
+        "file": "J1G.txt.gz",
+        "count": 23,
+        "sha256": "131e6f79813ac18416f62b26ce38a157fe837ad6fb288cc55084f0fc2e19d889",
+        "what": "the gap\u0027s numbers and strings"
+      }
+    }
+  },
+  "notImplemented": [
+    {
+      "arm": "J,V",
+      "operation": "TrimString",
+      "reason": "neither arm\u0027s list copies it: both engines\u0027 trim already reads the library\u0027s StrWhiteSpaceChar set, Broiler.JS\u0027s through TrimStrWhiteSpace itself; S runs over the population alone"
+    },
+    {
+      "arm": "J,V",
+      "operation": "AdvanceStringIndex at index -1",
+      "reason": "no engine calls it below zero: its index is lastIndex after ToLength"
+    },
+    {
+      "arm": "J,V",
+      "operation": "CodePointAt beyond the String",
+      "reason": "both engines answer undefined before reading, as S\u0027s adapter does; the arms run it and S\u0027s variant answers it"
+    },
+    {
+      "arm": "J",
+      "operation": "StringPad to more than 2^24 \u002B 1 code units",
+      "reason": "the revision of 2026-10-14: arm J\u0027s builder allocates up to int.MaxValue code units, past .NET\u0027s largest string; P4 is shown by the vectors"
+    },
+    {
+      "arm": "J,V",
+      "operation": "the relative index for lengths above int.MaxValue",
+      "reason": "Relative, ClampRelativeIndex and StringRelativeIndex take an int length; ArrayRelative takes every length"
+    },
+    {
+      "arm": "V",
+      "operation": "JSON validation at 64",
+      "reason": "Broiler.VM\u0027s limits are 512 and 1024; S runs at 64 alone"
+    },
+    {
+      "arm": "J",
+      "operation": "JSON validation at any limit",
+      "reason": "Broiler.JS\u0027s depth is System.Text.Json\u0027s; S is compared with arm J under no limit"
+    },
+    {
+      "arm": "V",
+      "operation": "StringExpandDollars and RegExpReplaceText with captures or named groups",
+      "reason": "a String pattern has neither"
+    },
+    {
+      "arm": "J",
+      "operation": "JSString.GetSubstitution with captures or named groups",
+      "reason": "a String pattern has neither"
+    }
+  ],
+  "operations": [
+    {
+      "operation": "TrimString",
+      "class": "T1U",
+      "lines": 65536,
+      "inputs": 196608,
+      "sharedAlone": 196608,
+      "variants": []
+    },
+    {
+      "operation": "TrimString",
+      "class": "T1E",
+      "lines": 16104,
+      "inputs": 48312,
+      "sharedAlone": 48312,
+      "variants": []
+    },
+    {
+      "operation": "TrimString",
+      "class": "T1W",
+      "lines": 252,
+      "inputs": 756,
+      "sharedAlone": 756,
+      "variants": []
+    },
+    {
+      "operation": "TrimString",
+      "class": "T1R",
+      "lines": 65536,
+      "inputs": 196608,
+      "sharedAlone": 196608,
+      "variants": []
+    },
+    {
+      "operation": "IsStringWellFormedUnicode",
+      "class": "T1U",
+      "lines": 65536,
+      "inputs": 65536,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "IsWellFormedUtf16",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "isWellFormed",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "IsStringWellFormedUnicode",
+      "class": "T1E",
+      "lines": 16104,
+      "inputs": 16104,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "IsWellFormedUtf16",
+          "ran": 16104,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "isWellFormed",
+          "ran": 16104,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "IsStringWellFormedUnicode",
+      "class": "T1W",
+      "lines": 252,
+      "inputs": 252,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "IsWellFormedUtf16",
+          "ran": 252,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "isWellFormed",
+          "ran": 252,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "IsStringWellFormedUnicode",
+      "class": "T1R",
+      "lines": 65536,
+      "inputs": 65536,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "IsWellFormedUtf16",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "isWellFormed",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "toWellFormed",
+      "class": "T1U",
+      "lines": 65536,
+      "inputs": 65536,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "ToWellFormedUtf16",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "toWellFormed",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "toWellFormed",
+      "class": "T1E",
+      "lines": 16104,
+      "inputs": 16104,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "ToWellFormedUtf16",
+          "ran": 16104,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "toWellFormed",
+          "ran": 16104,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "toWellFormed",
+      "class": "T1W",
+      "lines": 252,
+      "inputs": 252,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "ToWellFormedUtf16",
+          "ran": 252,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "toWellFormed",
+          "ran": 252,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "toWellFormed",
+      "class": "T1R",
+      "lines": 65536,
+      "inputs": 65536,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "ToWellFormedUtf16",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "toWellFormed",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "CodePointAt",
+      "class": "T1U",
+      "lines": 65536,
+      "inputs": 262144,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSString.CodePointAt",
+          "ran": 262144,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "codePointAt",
+          "ran": 262144,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "CodePointAt",
+      "class": "T1E",
+      "lines": 16104,
+      "inputs": 111122,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSString.CodePointAt",
+          "ran": 111122,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "codePointAt",
+          "ran": 111122,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "CodePointAt",
+      "class": "T1W",
+      "lines": 252,
+      "inputs": 1932,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSString.CodePointAt",
+          "ran": 1932,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "codePointAt",
+          "ran": 1932,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "CodePointAt",
+      "class": "T1R",
+      "lines": 65536,
+      "inputs": 2291771,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSString.CodePointAt",
+          "ran": 2291771,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "codePointAt",
+          "ran": 2291771,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "AdvanceStringIndex",
+      "class": "T1U",
+      "lines": 65536,
+      "inputs": 524288,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "AdvanceStringIndex",
+          "ran": 393216,
+          "differ": 0,
+          "notCalled": 131072
+        },
+        {
+          "arm": "V",
+          "variant": "RegExpAdvanceIndex",
+          "ran": 393216,
+          "differ": 0,
+          "notCalled": 131072
+        }
+      ]
+    },
+    {
+      "operation": "AdvanceStringIndex",
+      "class": "T1E",
+      "lines": 16104,
+      "inputs": 222244,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "AdvanceStringIndex",
+          "ran": 190036,
+          "differ": 0,
+          "notCalled": 32208
+        },
+        {
+          "arm": "V",
+          "variant": "RegExpAdvanceIndex",
+          "ran": 190036,
+          "differ": 0,
+          "notCalled": 32208
+        }
+      ]
+    },
+    {
+      "operation": "AdvanceStringIndex",
+      "class": "T1W",
+      "lines": 252,
+      "inputs": 3864,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "AdvanceStringIndex",
+          "ran": 3360,
+          "differ": 0,
+          "notCalled": 504
+        },
+        {
+          "arm": "V",
+          "variant": "RegExpAdvanceIndex",
+          "ran": 3360,
+          "differ": 0,
+          "notCalled": 504
+        }
+      ]
+    },
+    {
+      "operation": "AdvanceStringIndex",
+      "class": "T1R",
+      "lines": 65536,
+      "inputs": 4583542,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "AdvanceStringIndex",
+          "ran": 4452470,
+          "differ": 0,
+          "notCalled": 131072
+        },
+        {
+          "arm": "V",
+          "variant": "RegExpAdvanceIndex",
+          "ran": 4452470,
+          "differ": 0,
+          "notCalled": 131072
+        }
+      ]
+    },
+    {
+      "operation": "QuoteJSONString",
+      "class": "T1U",
+      "lines": 65536,
+      "inputs": 65536,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSJSON.QuoteString",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsonQuote",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "QuoteJSONString",
+      "class": "T1E",
+      "lines": 16104,
+      "inputs": 16104,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSJSON.QuoteString",
+          "ran": 16104,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsonQuote",
+          "ran": 16104,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "QuoteJSONString",
+      "class": "T1W",
+      "lines": 252,
+      "inputs": 252,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSJSON.QuoteString",
+          "ran": 252,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsonQuote",
+          "ran": 252,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "QuoteJSONString",
+      "class": "T1R",
+      "lines": 65536,
+      "inputs": 65536,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSJSON.QuoteString",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsonQuote",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "StringPad",
+      "class": "P1S",
+      "lines": 6,
+      "inputs": 5760,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "StringPadTo",
+          "ran": 5760,
+          "differ": 84,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "StringPad",
+          "ran": 5328,
+          "differ": 0,
+          "notCalled": 432
+        },
+        {
+          "arm": "S",
+          "variant": "under the maximum 0",
+          "ran": 5760,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "S",
+          "variant": "under the maximum 1",
+          "ran": 5760,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "S",
+          "variant": "under the maximum 16",
+          "ran": 5760,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "S",
+          "variant": "under the maximum 1073741824",
+          "ran": 5760,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "StringPad",
+      "class": "T1R",
+      "lines": 65536,
+      "inputs": 55836672,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "StringPadTo",
+          "ran": 55836672,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "StringPad",
+          "ran": 55836672,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "S",
+          "variant": "under the maximum 0",
+          "ran": 55836672,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "S",
+          "variant": "under the maximum 1",
+          "ran": 55836672,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "S",
+          "variant": "under the maximum 16",
+          "ran": 55836672,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "S",
+          "variant": "under the maximum 1073741824",
+          "ran": 55836672,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "RelativeIndex",
+      "class": "P1X",
+      "lines": 92,
+      "inputs": 92,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "JSString.Relative",
+          "ran": 56,
+          "differ": 0,
+          "notCalled": 36
+        },
+        {
+          "arm": "J",
+          "variant": "JSTypedArray.ClampRelativeIndex",
+          "ran": 56,
+          "differ": 0,
+          "notCalled": 36
+        },
+        {
+          "arm": "V",
+          "variant": "StringRelativeIndex",
+          "ran": 56,
+          "differ": 0,
+          "notCalled": 36
+        },
+        {
+          "arm": "V",
+          "variant": "ArrayRelative",
+          "ran": 92,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "GetSubstitution",
+      "class": "S1E",
+      "lines": 16105,
+      "inputs": 1835970,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "RegExpSubstitute",
+          "ran": 1835970,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "StringExpandDollars",
+          "ran": 48315,
+          "differ": 0,
+          "notCalled": 1787655
+        },
+        {
+          "arm": "V",
+          "variant": "RegExpReplaceText",
+          "ran": 48315,
+          "differ": 0,
+          "notCalled": 1787655
+        },
+        {
+          "arm": "J",
+          "variant": "JSString.GetSubstitution",
+          "ran": 48315,
+          "differ": 0,
+          "notCalled": 1787655
+        },
+        {
+          "arm": "J",
+          "variant": "initializer GetSubstitution",
+          "ran": 1835970,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSRegExp.Replace(string, string)",
+          "ran": 1835970,
+          "differ": 1824,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "GetSubstitution",
+      "class": "S1R",
+      "lines": 16384,
+      "inputs": 1867776,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "RegExpSubstitute",
+          "ran": 1867776,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "StringExpandDollars",
+          "ran": 49152,
+          "differ": 0,
+          "notCalled": 1818624
+        },
+        {
+          "arm": "V",
+          "variant": "RegExpReplaceText",
+          "ran": 49152,
+          "differ": 0,
+          "notCalled": 1818624
+        },
+        {
+          "arm": "J",
+          "variant": "JSString.GetSubstitution",
+          "ran": 49152,
+          "differ": 0,
+          "notCalled": 1818624
+        },
+        {
+          "arm": "J",
+          "variant": "initializer GetSubstitution",
+          "ran": 1867776,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSRegExp.Replace(string, string)",
+          "ran": 1867776,
+          "differ": 41724,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Encode encodeURIComponent",
+      "class": "U1C",
+      "lines": 1114112,
+      "inputs": 1114112,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "UriHelper.EncodeURIComponent",
+          "ran": 1114112,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "GlobalUriEncode",
+          "ran": 1114112,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Encode encodeURIComponent",
+      "class": "U1R",
+      "lines": 65536,
+      "inputs": 65536,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "UriHelper.EncodeURIComponent",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "GlobalUriEncode",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Encode encodeURI",
+      "class": "U1C",
+      "lines": 1114112,
+      "inputs": 1114112,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "UriHelper.EncodeURI",
+          "ran": 1114112,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "GlobalUriEncode",
+          "ran": 1114112,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Encode encodeURI",
+      "class": "U1R",
+      "lines": 65536,
+      "inputs": 65536,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "UriHelper.EncodeURI",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "GlobalUriEncode",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Decode decodeURIComponent",
+      "class": "U1D",
+      "lines": 142586,
+      "inputs": 142586,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "UriHelper.DecodeURIComponent",
+          "ran": 142586,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "GlobalUriDecode",
+          "ran": 142586,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Decode decodeURIComponent",
+      "class": "U1R",
+      "lines": 65536,
+      "inputs": 65536,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "UriHelper.DecodeURIComponent",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "GlobalUriDecode",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Decode decodeURI",
+      "class": "U1D",
+      "lines": 142586,
+      "inputs": 142586,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "UriHelper.DecodeURI",
+          "ran": 142586,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "GlobalUriDecode",
+          "ran": 142586,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "Decode decodeURI",
+      "class": "U1R",
+      "lines": 65536,
+      "inputs": 65536,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "UriHelper.DecodeURI",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "GlobalUriDecode",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "escape",
+      "class": "U1C",
+      "lines": 1114112,
+      "inputs": 1114112,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "UriHelper.Escape",
+          "ran": 1114112,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "GlobalEscapeText",
+          "ran": 1114112,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "escape",
+      "class": "U1R",
+      "lines": 65536,
+      "inputs": 65536,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "UriHelper.Escape",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "GlobalEscapeText",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "unescape",
+      "class": "U1N",
+      "lines": 121081,
+      "inputs": 121081,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "UriHelper.Unescape",
+          "ran": 121081,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "GlobalUnescapeText",
+          "ran": 121081,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "unescape",
+      "class": "U1C",
+      "lines": 1114112,
+      "inputs": 1114112,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "UriHelper.Unescape",
+          "ran": 1114112,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "GlobalUnescapeText",
+          "ran": 1114112,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "unescape",
+      "class": "U1R",
+      "lines": 65536,
+      "inputs": 65536,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "UriHelper.Unescape",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "GlobalUnescapeText",
+          "ran": 65536,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "FromBase64",
+      "class": "B1E",
+      "lines": 41371,
+      "inputs": 1489356,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "DecodeBase64",
+          "ran": 1489356,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "Base64Decode",
+          "ran": 1489356,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "FromBase64",
+      "class": "B1R",
+      "lines": 16384,
+      "inputs": 589824,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "DecodeBase64",
+          "ran": 589824,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "Base64Decode",
+          "ran": 589824,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "FromHex",
+      "class": "B1H",
+      "lines": 7381,
+      "inputs": 44286,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "FromHex and SetFromHex",
+          "ran": 44286,
+          "differ": 6930,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "Base64DecodeHex",
+          "ran": 44286,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "FromHex",
+      "class": "B1Q",
+      "lines": 4096,
+      "inputs": 24576,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "FromHex and SetFromHex",
+          "ran": 24576,
+          "differ": 4106,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "Base64DecodeHex",
+          "ran": 24576,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "ToBase64",
+      "class": "B1Y",
+      "lines": 69889,
+      "inputs": 279556,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "ToBase64",
+          "ran": 279556,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "Base64Encode",
+          "ran": 279556,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "ToHex",
+      "class": "B1Y",
+      "lines": 69889,
+      "inputs": 69889,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "ToHex",
+          "ran": 69889,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "toHex",
+          "ran": 69889,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "JSON parse",
+      "class": "J1E",
+      "lines": 6175,
+      "inputs": 6175,
+      "sharedAlone": 6175,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsonParseEntry",
+          "ran": 6175,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsJsonModule.TryTranslate",
+          "ran": 6175,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSJSON.Parse",
+          "ran": 6175,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "JSON parse",
+      "class": "J1R",
+      "lines": 32768,
+      "inputs": 32768,
+      "sharedAlone": 32768,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsonParseEntry",
+          "ran": 32768,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsJsonModule.TryTranslate",
+          "ran": 32768,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSJSON.Parse",
+          "ran": 32768,
+          "differ": 19187,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "JSON parse",
+      "class": "J1S",
+      "lines": 186621,
+      "inputs": 186621,
+      "sharedAlone": 186621,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsonParseEntry",
+          "ran": 186621,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsJsonModule.TryTranslate",
+          "ran": 186621,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSJSON.Parse",
+          "ran": 186621,
+          "differ": 6144,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "JSON parse",
+      "class": "J1N",
+      "lines": 12288,
+      "inputs": 12288,
+      "sharedAlone": 12288,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsonParseEntry",
+          "ran": 12288,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsJsonModule.TryTranslate",
+          "ran": 12288,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSJSON.Parse",
+          "ran": 12288,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "JSON parse",
+      "class": "J1D",
+      "lines": 18,
+      "inputs": 18,
+      "sharedAlone": 18,
+      "variants": [
+        {
+          "arm": "V",
+          "variant": "JsonParseEntry",
+          "ran": 18,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsJsonModule.TryTranslate",
+          "ran": 18,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "J",
+          "variant": "JSJSON.Parse",
+          "ran": 18,
+          "differ": 14,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "JSON gap",
+      "class": "J1G",
+      "lines": 23,
+      "inputs": 23,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "Stringify\u0027s gap",
+          "ran": 23,
+          "differ": 0,
+          "notCalled": 0
+        },
+        {
+          "arm": "V",
+          "variant": "JsonApplySpace",
+          "ran": 23,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    }
+  ]
+}

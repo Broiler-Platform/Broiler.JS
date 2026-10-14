@@ -1,0 +1,30 @@
+{
+  "differences": 2,
+  "verdicts": {
+    "unclassified": 2
+  },
+  "classes": [
+    {
+      "operation": "Encode encodeURIComponent (negative control)",
+      "variant": "V:GlobalUriEncode, one charge changed",
+      "verdict": "unclassified",
+      "reason": "charges differ: S 1, arm 2",
+      "count": 1
+    },
+    {
+      "operation": "FromBase64 (negative control)",
+      "variant": "J:DecodeBase64, one result changed",
+      "verdict": "unclassified",
+      "reason": "no reference for the operation",
+      "count": 1
+    }
+  ],
+  "differences.tsv": {
+    "lines": 3,
+    "sha256": "3228536c4c5d3aa63e860d95d54174312bce30200271503e2680bf50cd87fe80"
+  },
+  "classification.tsv": {
+    "lines": 3,
+    "sha256": "02a01d23d3ca058d93d854a633dca42eb585924d7e8cb769c2fb909548034cb8"
+  }
+}

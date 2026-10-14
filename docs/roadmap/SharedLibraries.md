@@ -301,6 +301,18 @@ retained in [`sjl-5-001/engine/`](../evidence/sjl-5-001/engine/). *(Revised 2026
 gave the number of differences each engine's run found, which this plan does not hold; the bundle and
 `conformance/vectors/REVISIONS.md` give them.)*
 
+**The implementation (SJL-5.3), 2026-10-14.** The text area is in `Broiler.ECMAScript.Algorithms`
+(`7af1424`, merged with Broiler-Platform/Broiler.JS#1028), with its adapter guide, and every text vector
+the library answers passes at library level. The reference-arm comparison is met under
+[`reference-arms.md`](../evidence/sjl-5-001/reference-arms.md) as revised before any run (bundle
+`sjl-5-001` section 3). Its first run did not meet the rule, because of a defect of the classifier, not of
+the library; the classifier was corrected and the whole comparison run again. Every difference it found is
+a correction the area verdict names. For this engine they are `setFromHex`'s whole-input parse (B1), the
+third template walk's `$<name>` (S3), JSON nesting past System.Text.Json's depth (J1) and the lone
+surrogates (J2, J3), all answered at SJL-5.5; for Broiler.VM, the pad's refusal with an empty filler (P2).
+The run under `en-US` lists the same differences as the run under the invariant culture. The preview
+package of the shared stream's next version follows, before either cut-over.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

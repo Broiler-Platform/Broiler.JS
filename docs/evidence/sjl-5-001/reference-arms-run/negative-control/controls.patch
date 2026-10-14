@@ -1,0 +1,91 @@
+diff --git b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Program.cs a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Program.cs
+index 5593fe7..38c5d4f 100644
+--- b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Program.cs
++++ a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Program.cs
+@@ -30,7 +30,7 @@ internal static class Program
+         {
+             Console.Error.WriteLine("usage: compare --population DIR --out DIR [--limit LINES] [--operations NAME,NAME]");
+             Console.Error.WriteLine("       compare-numerics --population DIR --out DIR [--limit LINES] [--operations NAME|NAME]");
+-            Console.Error.WriteLine("       compare-text --population DIR --out DIR [--limit LINES] [--operations NAME|NAME] [--culture NAME]");
++            Console.Error.WriteLine("       compare-text --population DIR --out DIR [--limit LINES] [--operations NAME|NAME] [--controls] [--culture NAME]");
+             return 2;
+         }
+ 
+@@ -44,7 +44,7 @@ internal static class Program
+             return CompareNumerics(Option);
+ 
+         if (args[0] == "compare-text")
+-            return CompareText(Option);
++            return CompareText(Option, args.Contains("--controls"));
+ 
+         var population = new Population(Option("--population") ?? throw new ArgumentException("--population is required"));
+         var output = Option("--out") ?? throw new ArgumentException("--out is required");
+@@ -56,11 +56,11 @@ internal static class Program
+     }
+ 
+     /// <summary>
+-    /// Bundle sjl-5-001's comparison. The operation names hold spaces, so a filter separates them with "|";
+-    /// a filtered run, like a limited one, is void. Its two negative controls ran with <c>--controls</c> and
+-    /// were then removed, as the rule asks; reference-arms-run/negative-control/controls.patch restores them.
++    /// Bundle sjl-5-001's comparison, or with <c>--controls</c> its two negative controls alone. The
++    /// operation names hold spaces, so a filter separates them with "|"; a filtered run, like a limited
++    /// one, is void.
+     /// </summary>
+-    private static int CompareText(Func<string, string?> option)
++    private static int CompareText(Func<string, string?> option, bool controls)
+     {
+         // Every thread of the run, the parallel workers' included, under one culture: the invariant one, or
+         // the one --culture names for the rule's second run of arm J's string operations.
+@@ -74,7 +74,8 @@ internal static class Program
+         var output = option("--out") ?? throw new ArgumentException("--out is required");
+         long? limit = option("--limit") is { } text ? long.Parse(text, CultureInfo.InvariantCulture) : null;
+         var names = option("--operations")?.Split('|');
+-        var operations = Text.TextArms.Operations.Where(o => names is null || names.Contains(o.Name)).ToList();
++        var all = controls ? Text.TextArms.NegativeControls : Text.TextArms.Operations;
++        var operations = all.Where(o => names is null || names.Contains(o.Name)).ToList();
+         new Text.TextComparison(population, operations, limit, names is not null, Console.Out)
+             .Run(output, "docs/evidence/sjl-5-001/reference-arms.md", "docs/evidence/sjl-5-001/reference-arms-revised-2026-10-14.md");
+         return 0;
+diff --git b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/TextArms.cs a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/TextArms.cs
+index a29603a..b582f2a 100644
+--- b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/TextArms.cs
++++ a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Text/TextArms.cs
+@@ -78,6 +78,38 @@ internal static class TextArms
+ 
+     private static IReadOnlyList<TextOperation>? operations;
+ 
++    /// <summary>
++    /// The rule's negative controls: a copy of arm V's GlobalUriEncode that charges one unit more for the
++    /// input "A" of U1C, and a copy of arm J's DecodeBase64 whose bytes for the input "AAAA" of B1E have
++    /// their first byte changed. Each is run once, alone, and the comparison must report exactly the one
++    /// input it changes; neither copy is in <see cref="Operations"/>.
++    /// </summary>
++    public static IReadOnlyList<TextOperation> NegativeControls => BuildControls();
++
++    private static List<TextOperation> BuildControls() =>
++    [
++        new("Encode encodeURIComponent (negative control)", ["U1C"], Once,
++        [
++            new("V", "GlobalUriEncode, one charge changed", static i => VCharged(e =>
++            {
++                if (i.Text == "A")
++                    e.Charge(1);
++                return TextRender.Str(V.JsRealmText.GlobalUriEncode(e, i.Text, V.JsRealmText.GlobalUriUnescapedComponent));
++            }), static i => Charged(m => SEncode(i, string.Empty, m.Charge))),
++        ]),
++        new("FromBase64 (negative control)", ["B1E"], Decodes,
++        [
++            new("J", "DecodeBase64, one result changed", static i =>
++            {
++                var result = J.JSUInt8ArrayText.DecodeBase64(i.Text, i.Parameter == 0 ? "base64" : "base64url", Modes[i.Parameter2], i.Int < 0 ? int.MaxValue : (int)i.Int);
++                var bytes = result.Bytes;
++                if (i.Text == "AAAA" && i.Parameter == 0 && i.Parameter2 == 0 && i.Int < 0)
++                    bytes = [0xFF, .. bytes[1..]];
++                return TextRender.Decoded(result.Read, bytes, result.Error?.Kind);
++            }, static i => SBase64(i, null)),
++        ]),
++    ];
++
+     // ---------------------------------------------------------------------------------------------
+     // Helpers.
+ 
