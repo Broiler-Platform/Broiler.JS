@@ -1,4 +1,4 @@
-# SJL-4.6 deletion check, Broiler.JS at 2e0f88573d1ccc481126db867a534bbda0699d8f: every entry of the numerics area's Broiler.JS
+# SJL-4.6 deletion check, Broiler.JS at bc2d663c5737204cdca0c92561a88440513d62b4: every entry of the numerics area's Broiler.JS
 # deletion list (Broiler.VM docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.5),
 # searched in the file or folder that held it with git grep -E. An entry with no line is absent;
 # a line that remains is a forwarder or the library's own name, which the bundle's README reads.

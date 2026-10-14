@@ -1,0 +1,6 @@
+# The stopped run's shards 0 to 3, taken at 2e0f885, against bundle sjl-3-001's after run, per path and variant:
+# every row whose status differs, with the first 140 characters of its stderr. A plain join, not
+# scripts/compliance/compare_test262_paths.py, which compares complete runs only. It decides nothing.
+shards ['test262-full-shard-0.json', 'test262-full-shard-1.json', 'test262-full-shard-2.json', 'test262-full-shard-3.json'] rows 48406 changed 2 {('passed', 'failed'): 2}
+test/built-ins/TypedArray/prototype/slice/bit-precision.js original passed failed Uncaught Test262Error: Expected true but got false (Testing with Float16Array and makePassthrough.) at Throw in <tree>/Broiler.JS/Broiler.Ja
+test/built-ins/TypedArray/prototype/slice/bit-precision.js terser passed failed Uncaught Test262Error: Expected true but got false (Testing with Float16Array and makePassthrough.) at Throw in <tree>/Broiler.JS/Broiler.Ja

@@ -1,0 +1,9 @@
+# The targeted check of the fix's first version, before it guarded an empty copy: the shell built from <repo> with it, run over
+# test/built-ins/TypedArray/prototype/{slice,copyWithin,set}, test/built-ins/TypedArrayConstructors and
+# the staging paths of staging-paths.txt, both variants, four workers, 30 s per test; joined with bundle
+# sjl-3-001's after run per path and variant. A plain join; it decides nothing.
+rows 2038; changed 4; {('passed', 'failed'): 2, ('failed', 'passed'): 2}
+passed -> failed	test/built-ins/TypedArray/prototype/slice/resize-count-bytes-to-zero.js [original]	Unhandled exception. System.ArgumentException: Source array was not long enough. Check the source index, length, and the array's lower bounds. (Parameter 'sourc
+passed -> failed	test/built-ins/TypedArray/prototype/slice/resize-count-bytes-to-zero.js [terser]	Unhandled exception. System.ArgumentException: Source array was not long enough. Check the source index, length, and the array's lower bounds. (Parameter 'sourc
+failed -> passed	test/staging/sm/TypedArray/slice-bitwise-same.js [original]	
+failed -> passed	test/staging/sm/TypedArray/slice-bitwise-same.js [terser]	

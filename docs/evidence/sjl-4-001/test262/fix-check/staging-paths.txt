@@ -1,0 +1,17 @@
+test/staging/sm/Array/sort_small.js
+test/staging/sm/Array/to-length.js
+test/staging/sm/Array/unscopables.js
+test/staging/sm/ArrayBuffer/slice-species.js
+test/staging/sm/TypedArray/detached-array-buffer-checks.js
+test/staging/sm/TypedArray/prototype-constructor-identity.js
+test/staging/sm/TypedArray/slice-bitwise-same.js
+test/staging/sm/TypedArray/slice-conversion.js
+test/staging/sm/TypedArray/slice-detached.js
+test/staging/sm/TypedArray/slice-memcpy.js
+test/staging/sm/TypedArray/slice-species.js
+test/staging/sm/TypedArray/slice.js
+test/staging/sm/TypedArray/sort-negative-nan.js
+test/staging/sm/TypedArray/sort_small.js
+test/staging/sm/TypedArray/subarray-species.js
+test/staging/sm/extensions/ArrayBuffer-slice-arguments-detaching.js
+test/staging/sm/extensions/typedarray-copyWithin-arguments-detaching.js

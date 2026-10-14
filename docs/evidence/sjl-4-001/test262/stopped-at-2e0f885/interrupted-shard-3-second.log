@@ -1,0 +1,50 @@
+[test262] Starting test262 run for suite ref ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e using local suite root <suite>/test262-ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+[test262] Selected 6038 runnable test(s) for shard 4/8 from 48360 selected file(s) and 53194 candidate path(s) using mode all-script-host-verifiable.
+[test262] Using Broiler script host at Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+[test262] Running 6038 test(s) for shard 4/8.
+[test262] Per-test timeout is 30s; POSIX memory cap is disabled.
+[test262] Each path will run as original and terser variants (test262-safe-mangle-v2, version 5.50.0).
+[test262] A failing minified case is cross-checked against node v22.22.0 before it counts as an engine failure. It accepts --harmony-temporal --harmony-shadow-realm --harmony-intl-duration-format --js-float16array, so it can speak about those features.
+[test262] Using 4 parallel worker(s).
+[test262] Failure 1 at test/built-ins/Array/fromAsync/asyncitems-asynciterator-throws.js [original]
+[test262] Failure 2 at test/built-ins/Array/fromAsync/asyncitems-asynciterator-throws.js [terser]
+[test262] Failure 3 at test/built-ins/Array/fromAsync/asyncitems-boolean.js [original]
+[test262] Failure 4 at test/built-ins/Array/fromAsync/asyncitems-boolean.js [terser]
+[test262] Failure 5 at test/built-ins/Array/fromAsync/asyncitems-symbol.js [original]
+[test262] Failure 6 at test/built-ins/Array/fromAsync/asyncitems-symbol.js [terser]
+[test262] Failure 7 at test/built-ins/Array/fromAsync/asyncitems-iterator-null.js [original]
+[test262] Failure 8 at test/built-ins/Array/fromAsync/asyncitems-iterator-null.js [terser]
+[test262] Failure 9 at test/built-ins/Array/fromAsync/mapfn-not-callable.js [original]
+[test262] Failure 10 at test/built-ins/Array/fromAsync/mapfn-not-callable.js [terser]
+[test262] Failure 11 at test/built-ins/Array/fromAsync/mapfn-sync-iterable-sync.js [original]
+[test262] Failure 12 at test/built-ins/Array/fromAsync/mapfn-sync-iterable-sync.js [terser]
+[test262] Failure 13 at test/built-ins/Array/fromAsync/non-iterable-input-with-thenable-async-mapped-awaits-callback-result-once.js [original]
+[test262] Failure 14 at test/built-ins/Array/fromAsync/non-iterable-input-with-thenable-async-mapped-awaits-callback-result-once.js [terser]
+[test262] Failure 15 at test/built-ins/Array/fromAsync/non-iterable-input.js [original]
+[test262] Failure 16 at test/built-ins/Array/fromAsync/non-iterable-input.js [terser]
+[test262] Failure 17 at test/built-ins/Array/fromAsync/sync-iterable-with-thenable-awaits-once.js [original]
+[test262] Failure 18 at test/built-ins/Array/fromAsync/sync-iterable-with-thenable-awaits-once.js [terser]
+[test262] Failure 19 at test/built-ins/Array/fromAsync/this-constructor-with-bad-length-setter.js [original]
+[test262] Failure 20 at test/built-ins/Array/fromAsync/this-constructor-with-bad-length-setter.js [terser]
+[test262] Failure 21 at test/built-ins/Array/fromAsync/this-constructor-with-unsettable-element.js [original]
+[test262] Failure 22 at test/built-ins/Array/fromAsync/this-constructor-with-unsettable-element.js [terser]
+[test262] Completed 603/6038 path(s), 1206 variant case(s) (passed=1178, failed=22, skipped=6, timedOut=0).
+[test262] Failure 23 at test/built-ins/DataView/custom-proto-access-detaches-buffer.js [original]
+[test262] Failure 24 at test/built-ins/DataView/custom-proto-access-detaches-buffer.js [terser]
+[test262] Failure 25 at test/built-ins/DataView/proto-from-ctor-realm.js [original]
+[test262] Failure 26 at test/built-ins/DataView/proto-from-ctor-realm.js [terser]
+[test262] Failure 27 at test/built-ins/Function/prototype/bind/proto-from-ctor-realm.js [original]
+[test262] Failure 28 at test/built-ins/Function/prototype/bind/proto-from-ctor-realm.js [terser]
+[test262] Failure 29 at test/built-ins/GeneratorFunction/proto-from-ctor-realm.js [original]
+[test262] Failure 30 at test/built-ins/GeneratorFunction/proto-from-ctor-realm.js [terser]
+[test262] Failure 31 at test/built-ins/NativeErrors/TypeError/proto-from-ctor-realm.js [original]
+[test262] Failure 32 at test/built-ins/NativeErrors/TypeError/proto-from-ctor-realm.js [terser]
+[test262] Failure 33 at test/built-ins/NativeErrors/URIError/proto-from-ctor-realm.js [original]
+[test262] Failure 34 at test/built-ins/NativeErrors/URIError/proto-from-ctor-realm.js [terser]
+[test262] Failure 35 at test/built-ins/Number/proto-from-ctor-realm.js [original]
+[test262] Failure 36 at test/built-ins/Number/proto-from-ctor-realm.js [terser]
+[test262] Completed 1206/6038 path(s), 2412 variant case(s) (passed=2359, failed=36, skipped=17, timedOut=0).
+[test262] Failure 37 at test/built-ins/Promise/proto-from-ctor-realm.js [original]
+[test262] Failure 38 at test/built-ins/Promise/proto-from-ctor-realm.js [terser]
+[test262] Failure 39 at test/built-ins/Promise/prototype/then/rxn-handler-fulfilled-invoke-nonstrict.js [original]
+[test262] Failure 40 at test/built-ins/Promise/prototype/then/rxn-handler-fulfilled-invoke-nonstrict.js [terser]

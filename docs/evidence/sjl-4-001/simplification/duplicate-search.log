@@ -1,4 +1,4 @@
-# SJL-4.6 search for a surviving intra-engine duplicate of the numerics area, Broiler.JS at 2e0f88573d1ccc481126db867a534bbda0699d8f:
+# SJL-4.6 search for a surviving intra-engine duplicate of the numerics area, Broiler.JS at bc2d663c5737204cdca0c92561a88440513d62b4:
 # every construct that approximates a Math function the shared library computes, converts binary16
 # or a BigInt by the platform, rounds by a mode spelled as a string or by the platform's midpoint
 # rule, or writes the 32-bit wrap out, in the engine's product sources (Broiler.JS/, test projects,
@@ -6,7 +6,7 @@
 # pattern: Math\.(Pow|Cbrt|Round|Truncate)\(|double\.(ExpM1|LogP1)|\(Half\)|\bHalf\.|BitConverter\.(HalfToUInt16Bits|UInt16BitsToHalf)|MidpointRounding|"half(Expand|Even|Trunc|Ceil|Floor)"|BigInteger\.(Pow|Parse|TryParse)\(|4294967296|unchecked\(\(int\)\(uint\)
 # hits: 45; each is reviewed in the bundle's README
 
-Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/JSTypedArray.cs:614:            || Math.Truncate(numericIndex) != numericIndex)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/JSTypedArray.cs:621:            || Math.Truncate(numericIndex) != numericIndex)
 Broiler.JS/Broiler.JavaScript.BuiltIns/BigInt/JSBigInt.cs:77:            if (!double.IsFinite(number.value) || Math.Truncate(number.value) != number.value)
 Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2291:        // GetOption(options, "roundingMode", string, « the nine names », "halfExpand"): the property
 Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2295:        var roundingModeName = roundingModeValue.IsUndefined ? "halfExpand" : roundingModeValue.StringValue;
@@ -50,4 +50,4 @@ Broiler.JS/Broiler.JavaScript.Runtime/TaggedValuePrototype.cs:32:            && 
 Broiler.JS/Broiler.JavaScript.Runtime/TaggedValuePrototype.cs:53:        ? unchecked((int)(uint)(bits & PayloadMask))
 Broiler.JS/CHANGELOG.md:119:    `"halfEven"` is `1.2K`, where it was `1.3K`; -1910 with `"floor"` is `-2K`, and -1990 with `"trunc"`
 Broiler.JS/CHANGELOG.md:124:    largestUnit: "months", roundingIncrement: 2, roundingMode: "halfTrunc", relativeTo: "2023-01-01" })`
-Broiler.JS/CHANGELOG.md:182:with `"halfEven"` is `01:20`, where the specification gives `01:00`); that is the Temporal consumer's
+Broiler.JS/CHANGELOG.md:187:with `"halfEven"` is `01:20`, where the specification gives `01:00`); that is the Temporal consumer's

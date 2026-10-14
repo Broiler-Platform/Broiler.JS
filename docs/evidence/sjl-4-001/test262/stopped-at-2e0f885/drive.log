@@ -1,0 +1,28 @@
+build start 2026-10-14T02:18:34Z at 2e0f88573d1ccc481126db867a534bbda0699d8f, clean: 0
+build exit 0 2026-10-14T02:20:35Z
+self-check start 2026-10-14T02:20:35Z
+self-check exit 0
+shard 0 start 2026-10-14T02:20:50Z
+shard 0 exit 1 2026-10-14T03:00:48Z
+shard 1 start 2026-10-14T03:00:48Z
+shard 1 exit 1 2026-10-14T03:39:49Z
+shard 2 start 2026-10-14T03:39:49Z
+shard 2 exit 1 2026-10-14T04:19:56Z
+shard 3 start 2026-10-14T04:19:56Z
+RESUMED 2026-10-14T04:41:31Z after a machine restart interrupted shard 3 near 04:40Z: same script, same binaries (shell-binaries.sha256 re-checked before the resume); shards 0 to 2 are kept, shard 3 runs again from its start; the interrupted shard's log is interrupted-shard-3.log
+self-check start 2026-10-14T04:41:31Z
+self-check exit 0
+shard 0 already done
+shard 1 already done
+shard 2 already done
+shard 3 start 2026-10-14T04:41:48Z
+RESUMED 2026-10-14T05:26:33Z after a second machine restart, while the session was idle, interrupted shard 3 again after 04:41Z: same script, same binaries (re-checked, shell-binaries.before-resume-2.sha256); shards 0 to 2 are kept, shard 3 runs again from its start; the interrupted shard's log is interrupted-shard-3-second.log
+self-check start 2026-10-14T05:26:33Z
+self-check exit 0
+shard 0 already done
+shard 1 already done
+shard 2 already done
+shard 3 start 2026-10-14T05:26:48Z
+shard 3 exit 1 2026-10-14T06:07:51Z
+shard 4 start 2026-10-14T06:07:51Z
+STOPPED 2026-10-14T06:24:20Z during shard 4: shards 0 to 3 had shown a regression part A does not admit (TypedArray/prototype/slice/bit-precision.js, both variants); the run is taken again at the fix's commit

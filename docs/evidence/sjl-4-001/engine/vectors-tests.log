@@ -1,0 +1,45 @@
+$ dotnet test Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release --nologo --logger console;verbosity=normal
+# cwd <tree>; started 2026-10-14T13:08:41Z; exit 0
+  Determining projects to restore...
+  Restored <tree>/Broiler.JS/Broiler.JavaScript.ModuleExtensions/Broiler.JavaScript.ModuleExtensions.csproj (in 518 ms).
+  Restored <tree>/Broiler.JS/Broiler.JavaScript.Debugger/Broiler.JavaScript.Debugger.csproj (in 449 ms).
+  Restored <tree>/Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj (in 434 ms).
+  Restored <tree>/Broiler.JS/Broiler.JavaScript.Vectors.Tests/Broiler.JavaScript.Vectors.Tests.csproj (in 424 ms).
+  17 of 21 projects are up-to-date for restore.
+  Broiler.ECMAScript.Conformance -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/bin/Release/net10.0/Broiler.ECMAScript.Conformance.dll
+  Broiler.ECMAScript.Algorithms -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> <tree>/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Ast -> <tree>/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.ExpressionCompiler -> <tree>/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Storage -> <tree>/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.JSClassGenerator -> <tree>/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> <tree>/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Parser -> <tree>/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Engine -> <tree>/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> <tree>/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Compiler -> <tree>/Broiler.JS/Broiler.JavaScript.Compiler/bin/Release/net10.0/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.Extensions -> <tree>/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.BuiltIns -> <tree>/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Debugger -> <tree>/Broiler.JS/Broiler.JavaScript.Debugger/bin/Release/net10.0/Broiler.JavaScript.Debugger.dll
+  Broiler.JavaScript.Modules -> <tree>/Broiler.JS/Broiler.JavaScript.Modules/bin/Release/net10.0/Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Clr -> <tree>/Broiler.JS/Broiler.JavaScript.Clr/bin/Release/net10.0/Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.Globals -> <tree>/Broiler.JS/Broiler.JavaScript.Globals/bin/Release/net10.0/Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.ModuleExtensions -> <tree>/Broiler.JS/Broiler.JavaScript.ModuleExtensions/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.dll
+  Broiler.JavaScript.All -> <tree>/Broiler.JS/Broiler.JavaScript.All/bin/Release/net10.0/Broiler.JavaScript.All.dll
+  Broiler.JavaScript.Vectors.Tests -> <tree>/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll
+Test run for <tree>/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.07]   Discovering: Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.11]   Discovered:  Broiler.JavaScript.Vectors.Tests
+[xUnit.net 00:00:00.11]   Starting:    Broiler.JavaScript.Vectors.Tests
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_renderer_reads_values_errors_and_parse_failures_the_schema_s_way [5 s]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Each_vector_runs_in_a_fresh_realm [391 ms]
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [9 m 57 s]
+[xUnit.net 00:10:20.58]   Finished:    Broiler.JavaScript.Vectors.Tests
+  Passed Broiler.JavaScript.Vectors.Tests.EngineRunTests.The_negative_control_is_reported_as_an_unclassified_difference [17 s]
+
+Test Run Successful.
+Total tests: 4
+     Passed: 4
+ Total time: 10.3526 Minutes
