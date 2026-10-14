@@ -10,6 +10,15 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### `JSON.stringify` breaks lines with LINE FEED on every platform (2026-10-14)
+
+- **An indented `JSON.stringify` ends each line with LINE FEED (U+000A) alone**, as
+  SerializeJSONObject and SerializeJSONArray specify: `JSON.stringify({ a: 1 }, null, 2)` is
+  `"{\n  \"a\": 1\n}"` on every platform, where on Windows each line ended in CR LF, the platform's line
+  terminator. Compact output, without a `space` argument, had no line breaks and is unchanged.
+  `JsonStringifyLineTerminatorTests` holds the cases; test262's JSON tests run on Linux, where the two
+  terminators agree, and the Windows Release job of #1025 found it.
+
 ### Numerics move to `Broiler.ECMAScript.Algorithms` (2026-10-13, milestone SJL-4.5)
 
 The numerics area is the shared library's, version `0.1.0-preview.2` *(corrected 2026-10-14; read

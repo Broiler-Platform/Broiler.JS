@@ -508,7 +508,10 @@ public partial class JSJSON : JSObject
 
         if (indent != null)
         {
-            var writer = new IndentedTextWriter(sb, indent);
+            // SerializeJSONObject / SerializeJSONArray break lines with LINE FEED (U+000A) alone.
+            // WriteLine writes the writer's NewLine, which defaults to Environment.NewLine (CR LF
+            // on Windows); IndentedTextWriter forwards NewLine to the StringWriter it wraps.
+            var writer = new IndentedTextWriter(sb, indent) { NewLine = "\n" };
             Stringify(writer, f, replacer, propertyList, writer, []);
         }
         else
