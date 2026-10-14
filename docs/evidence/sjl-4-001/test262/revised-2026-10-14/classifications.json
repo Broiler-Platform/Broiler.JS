@@ -1,0 +1,10 @@
+{
+ "test/staging/sm/TypedArray/slice-bitwise-same.js|original": {
+  "class": "C1",
+  "reason": "C1 (b) of decision-rule-revised-2026-10-14.md. Clause: ECMA-262 %TypedArray%.prototype.slice, step 14.g, a byte copy when the source and the result have the same element type. Commit: bc2d663, which made slice copy bytes where it copied each element through a double, so a binary32 signalling NaN keeps its bits (0x7F800001), where the base quieted it (0x7FC00001). Why the cut-over had to change it: the shared library's binary16 read gives the platform's NaN, so the value copy lost a binary16 NaN's sign and payload, and test/built-ins/TypedArray/prototype/slice/bit-precision.js, passing at the base, failed in both variants at 2e0f885 (test262/stopped-at-2e0f885/). Changelog: Broiler.JS/CHANGELOG.md, \"The typed arrays' copies of the same element type\". Test: SharedIntegerConversionTests.A_copy_of_the_same_element_type_keeps_each_element_s_bytes."
+ },
+ "test/staging/sm/TypedArray/slice-bitwise-same.js|terser": {
+  "class": "C1",
+  "reason": "C1 (b) of decision-rule-revised-2026-10-14.md. Clause: ECMA-262 %TypedArray%.prototype.slice, step 14.g, a byte copy when the source and the result have the same element type. Commit: bc2d663, which made slice copy bytes where it copied each element through a double, so a binary32 signalling NaN keeps its bits (0x7F800001), where the base quieted it (0x7FC00001). Why the cut-over had to change it: the shared library's binary16 read gives the platform's NaN, so the value copy lost a binary16 NaN's sign and payload, and test/built-ins/TypedArray/prototype/slice/bit-precision.js, passing at the base, failed in both variants at 2e0f885 (test262/stopped-at-2e0f885/). Changelog: Broiler.JS/CHANGELOG.md, \"The typed arrays' copies of the same element type\". Test: SharedIntegerConversionTests.A_copy_of_the_same_element_type_keeps_each_element_s_bytes."
+ }
+}

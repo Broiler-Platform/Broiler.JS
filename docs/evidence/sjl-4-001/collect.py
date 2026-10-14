@@ -41,6 +41,9 @@ Steps, each with `--only`:
                   docs/javascript-shared-libraries/milestones/sjl-4-numerics.md, SJL-4.5), each member
                   searched in the file that held it, and the search for a surviving duplicate of the
                   area in the engine's product sources, into simplification/;
+  revised         part A under decision-rule-revised-2026-10-14.md: the comparison of the runs the test262
+                  step retained, through the same script, reading test262/revised-2026-10-14/
+                  classifications.json, into test262/revised-2026-10-14/; it takes no run of its own;
   manifest        manifest.json: the SHA-256 of every file the bundle retains.
 
 Paths in retained logs are written as <tree>, <repo>, <suite>, <run> and <scratch>.
@@ -66,13 +69,16 @@ _spec.loader.exec_module(prior)
 base = prior.base
 
 RULE = "docs/evidence/sjl-4-001/decision-rule.md"
+# Part A as revised after its run was seen (decision-rule-revised-2026-10-14.md): its classification
+# file and its comparison live in this folder of the bundle.
+REVISED = "test262/revised-2026-10-14"
 # What the rule fixes with itself: it and the comparison script (decision-rule.md, "Revisions").
 RULE_FILES = (RULE, "scripts/compliance/compare_test262_paths.py")
 # The commit whose shell bundle sjl-3-001 shows its run's binaries are, and so the start of the
 # rule's base condition.
 BASE_SHELL_COMMIT = "ef67693"
 SHARED_VERSION = "0.2.0-preview.1"
-STEPS = ("identity", "home", "vectors", "test262", "consumer", "simplification", "manifest")
+STEPS = ("identity", "home", "vectors", "test262", "consumer", "simplification", "revised", "manifest")
 
 # The area's Broiler.JS deletion list (Broiler.VM docs/javascript-shared-libraries/milestones/
 # sjl-4-numerics.md, SJL-4.5), entry by entry: what was deleted, the file or files that held it, and
@@ -212,6 +218,34 @@ class Collector(prior.Collector):
         comparison = self.scratch / "comparison.json"
         if comparison.exists():
             self.write("test262/comparison.json", comparison.read_text(encoding="utf-8"))
+
+    # -- revised -------------------------------------------------------------------------------
+
+    def revised(self) -> None:
+        # The comparison of part A again, through the script the rule fixes, unchanged, over the runs the
+        # test262 step retained in this bundle and in sjl-3-001, reading the revision's classification
+        # file. It reads retained files only, so it can be taken again from any checkout.
+        classifications = self.out / REVISED / "classifications.json"
+        if not classifications.exists():
+            raise SystemExit(f"the revision's classification file is missing: {classifications}")
+        merged = {}
+        for side, bundle in (("base", PRIOR_BUNDLE), ("after", self.out)):
+            merged[side] = self.scratch / f"{side}-test262-results.json"
+            with gzip.open(bundle / "test262" / "test262-results.json.gz", "rt", encoding="utf-8") as handle:
+                merged[side].write_text(handle.read(), encoding="utf-8")
+        output = self.scratch / "comparison-revised.json"
+        output.unlink(missing_ok=True)
+        command = [sys.executable, "scripts/compliance/compare_test262_paths.py", "--base", str(merged["base"]),
+                   "--after", str(merged["after"]), "--output", str(output),
+                   "--base-rerun", str(PRIOR_BUNDLE / "test262" / "rerun-timeouts.json"),
+                   "--classifications", str(classifications)]
+        if (self.out / "test262" / "rerun-timeouts.json").exists():
+            command += ["--after-rerun", str(self.out / "test262" / "rerun-timeouts.json")]
+        log: list[str] = []
+        self.run(command, self.tree, log)
+        self.log_to(f"{REVISED}/comparison.log", log)
+        if output.exists():
+            self.write(f"{REVISED}/comparison.json", output.read_text(encoding="utf-8"))
 
     # -- simplification --------------------------------------------------------------------------
 
