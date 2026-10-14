@@ -4921,14 +4921,17 @@ public class JSIntlNumberFormat : JSObject
     }
 
     // Parses the magnitude of a JS numeric string into an exact rational num/den (den a
-    // power of ten). Supports optional sign, decimal point, exponent, and the 0x/0o/0b
-    // non-decimal integer forms. Returns false (caller falls back to the double value) for
-    // anything it does not recognise, e.g. "Infinity" or a non-numeric string.
+    // power of ten): StringIntlMV (ECMA-402) of a StringNumericLiteral. Supports optional sign,
+    // decimal point, exponent, and the 0x/0o/0b non-decimal integer forms. Returns false (caller
+    // falls back to the double value) for anything it does not recognise, e.g. "Infinity" or a
+    // non-numeric string.
     private static bool TryParseExactDecimal(string s, out BigInteger num, out BigInteger den)
     {
         num = BigInteger.Zero;
         den = BigInteger.One;
-        s = s.Trim();
+        // The StrWhiteSpace the literal may have around it is the specification's set, the shared
+        // library's (SJL-4.5): U+FEFF is in it, and U+0085, which .NET's Trim removed, is not.
+        s = NumberParsing.TrimStrWhiteSpace(s, TrimEnds.Both).ToString();
         if (s.Length == 0)
             return true; // empty / whitespace string is the mathematical value 0
         if (s[0] is '+' or '-')
@@ -4936,22 +4939,11 @@ public class JSIntlNumberFormat : JSObject
         if (s.Length == 0)
             return false;
 
+        // NonDecimalIntegerLiteral: its MV is StringToBigInt's (7.1.14) of the same text, the shared
+        // library's BigIntText.StringToBigInt (SJL-4.5): the prefix, then one or more of the radix's
+        // digits, without a sign or a separator.
         if (s.Length > 2 && s[0] == '0' && s[1] is 'x' or 'X' or 'o' or 'O' or 'b' or 'B')
-        {
-            var radix = s[1] is 'x' or 'X' ? 16 : s[1] is 'o' or 'O' ? 8 : 2;
-            BigInteger acc = BigInteger.Zero;
-            foreach (var c in s[2..])
-            {
-                var d = c is >= '0' and <= '9' ? c - '0'
-                    : c is >= 'a' and <= 'f' ? c - 'a' + 10
-                    : c is >= 'A' and <= 'F' ? c - 'A' + 10 : -1;
-                if (d < 0 || d >= radix)
-                    return false;
-                acc = acc * radix + d;
-            }
-            num = acc;
-            return true;
-        }
+            return BigIntText.StringToBigInt(s, BigIntPolicy.Unbounded, null, out num, out _) == Broiler.ECMAScript.ResultStatus.Completed;
 
         var exp = 0;
         var eIdx = s.IndexOfAny(['e', 'E']);
@@ -5208,13 +5200,19 @@ public class JSIntlNumberFormat : JSObject
         return result;
     }
 
-    // The mantissa absX × 10^-exponent, as the double quotient the notation has always formatted,
-    // rounded by FormatNumericToString over that double's exact value.
+    // The mantissa x × 10^-exponent of the Number's exact value x, kept exact as compact notation
+    // keeps its reduced value, and rounded once by FormatNumericToString. (A double quotient
+    // absX / 10^exponent rounded it twice wherever 10^exponent is not a double, below 10^0 and
+    // above 10^22.)
     private (string intDigits, string fracDigits) FormatMantissa(
         double absX, int exponent, int minFrac, int maxFrac, bool negative, out bool roundedIsZero)
     {
-        var mantissa = absX == 0 ? 0 : absX / Math.Pow(10, exponent);
-        var (num, den) = ExactRational(mantissa);
+        var (num, den) = ExactRational(absX);
+        if (exponent >= 0)
+            den *= BigInteger.Pow(10, exponent);
+        else
+            num *= BigInteger.Pow(10, -exponent);
+
         return FormatNumericToString(num, den, minFrac, maxFrac, negative, out roundedIsZero);
     }
 
@@ -5401,19 +5399,19 @@ public class JSIntlNumberFormat : JSObject
         return result;
     }
 
-    // ComputeExponentForMagnitude over floor(log10(absX)): scientific keeps the raw
-    // base-10 magnitude; engineering rounds it down to a multiple of 3.
+    // ComputeExponentForMagnitude over floor(log10(x)) of the Number's exact value x: scientific
+    // keeps the raw base-10 magnitude; engineering rounds it down to a multiple of 3. The magnitude
+    // is the exact value's, as the exact mantissa FormatMantissa formats needs, not the double
+    // powers of ten's: the Number 1e23 is below 10^23, so its magnitude is 22.
     private static int ComputeExponent(double absX, bool engineering)
     {
         if (absX == 0 || double.IsNaN(absX) || double.IsInfinity(absX))
             return 0;
 
+        var (num, den) = ExactRational(absX);
         var magnitude = (int)Math.Floor(Math.Log10(absX));
-        // Correct floating-point error near exact powers of ten.
-        if (Math.Pow(10, magnitude) > absX)
-            magnitude--;
-        else if (Math.Pow(10, magnitude + 1) <= absX)
-            magnitude++;
+        while (CompareToPowerOfTen(num, den, magnitude) < 0) magnitude--;       // 10^magnitude ≤ x
+        while (CompareToPowerOfTen(num, den, magnitude + 1) >= 0) magnitude++;  // x < 10^(magnitude+1)
 
         return engineering ? (int)(Math.Floor(magnitude / 3.0) * 3) : magnitude;
     }
@@ -5434,6 +5432,10 @@ public class JSIntlNumberFormat : JSObject
         int exponent = (int)((bits >> 52) & 0x7FF);
         long fraction = bits & 0xFFFFFFFFFFFFFL;
         BigInteger mantissa = exponent == 0 ? fraction : fraction | 0x10000000000000L;
+        // A subnormal's scale is the least normal one's, 2^-1074 per unit (its biased exponent
+        // field is 0, but it counts as 1).
+        if (exponent == 0)
+            exponent = 1;
         exponent -= 1075; // remove the bias (1023) and the 52-bit fraction shift
         if (mantissa.IsZero)
             return (BigInteger.Zero, BigInteger.One);

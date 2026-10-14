@@ -245,7 +245,7 @@ partial class JSTypedArray
         ValidateTypedArray("with");
         var len = Length;
         var (indexArg, value) = a.Get2();
-        var relativeIndex = (long)indexArg.DoubleValue;
+        var relativeIndex = LongIntegerOf(indexArg);
         long actualIndex = relativeIndex >= 0 ? relativeIndex : len + relativeIndex;
 
         // Coerce the value (ToBigInt for bigint element types, otherwise ToNumber)
@@ -681,8 +681,9 @@ partial class JSTypedArray
 
         // SetTypedArrayFromArrayLike: read source.length (a getter may resize the target's buffer),
         // bounds-check against the captured target length, then copy element by element via [[Get]]
-        // (so a source Proxy / accessor source is observed correctly).
-        var srcLength = (long)IntegerOf(source[KeyStrings.length]);
+        // (so a source Proxy / accessor source is observed correctly). srcLength is
+        // LengthOfArrayLike's ToLength, the shared library's (SJL-4.5).
+        var srcLength = IntegerConversions.ToLength(source[KeyStrings.length].DoubleValue);
         if (srcLength + relativeStart > length)
             throw JSEngine.NewRangeError("Offset is out of bounds");
 

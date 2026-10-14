@@ -276,7 +276,9 @@ public partial class JSTemporalZonedDateTime : JSObject
             // extreme epoch limits (a RangeError, not a saturated value).
             if (!IsValid(todayStart) || !IsValid(tomorrowStart))
                 throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.hoursInDay: start of day is out of range");
-            return (double)(tomorrowStart - todayStart) / 3_600_000_000_000d;
+            // TotalTimeDuration(diff, hour): the exact ratio rounded once, the shared library's
+            // ExactRounding.ToDouble (SJL-4.5).
+            return ExactRounding.ToDouble(tomorrowStart - todayStart, 3_600_000_000_000);
         }
     }
 
@@ -1682,10 +1684,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     private static int ToIntegerWithTruncation(JSValue value)
     {
         if (value == null || value.IsUndefined) return 0;
-        var number = value.DoubleValue;
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: component must be finite");
-        return (int)Math.Truncate(number);
+        return (int)TemporalRoundingOptions.ToIntegerWithTruncation(value, "Temporal.ZonedDateTime: component must be finite");
     }
 
     private static int MonthFromCode(string code)

@@ -146,11 +146,9 @@ public partial class JSTemporalDuration
             {
                 // GetRoundingIncrementOption: ToIntegerWithTruncation(value) truncates a
                 // non-integer toward zero (so 2.5 -> 2) and only NaN / ±Infinity or an
-                // out-of-range [1, 1e9] result is a RangeError.
-                var n = inc.DoubleValue;
-                if (double.IsNaN(n) || double.IsInfinity(n))
-                    throw JSEngine.NewRangeError("Temporal.Duration.round: invalid roundingIncrement");
-                n = Math.Truncate(n);
+                // out-of-range [1, 1e9] result is a RangeError. GetRoundingIncrement computes the
+                // same, but with its own messages; these are round's.
+                var n = TemporalRoundingOptions.ToIntegerWithTruncation(inc, "Temporal.Duration.round: invalid roundingIncrement");
                 if (n < 1 || n > 1_000_000_000)
                     throw JSEngine.NewRangeError("Temporal.Duration.round: invalid roundingIncrement");
                 increment = n;

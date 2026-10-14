@@ -1,4 +1,5 @@
 ﻿using System;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 
@@ -18,10 +19,13 @@ public partial class JSArray
 
         if (a.Length == 1 && arg.IsNumber)
         {
-            double val = arg.DoubleValue;
-            if (double.IsNaN(val) || val < 0 || val > uint.MaxValue || Math.Floor(val) != val)
+            // Array(len) step 5.c: intLen = ToUint32(len), the shared library's (SJL-4.5); a length
+            // that is not SameValueZero to it is a RangeError.
+            var len = arg.DoubleValue;
+            var intLen = IntegerConversions.ToUint32(len);
+            if (intLen != len)
                 throw JSEngine.NewRangeError($"Invalid array length");
-            return new JSArray((uint)arg.DoubleValue);
+            return new JSArray(intLen);
         }
 
         for (int i = 0; i < a.Length; i++)

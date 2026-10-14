@@ -1642,13 +1642,16 @@ internal static class BuiltInsAssemblyInitializer
                 if (matchString.Length != 0)
                     continue;
 
-                // §22.2.6.9 step 8.g: empty match → lastIndex = AdvanceStringIndex(S,
-                // thisIndex, fullUnicode); a surrogate pair counts as one position so the
-                // loop does not emit a spurious empty match between the two code units.
-                var nextIndex = (int)rx[KeyStrings.lastIndex].DoubleValue;
-                var advanced = nextIndex + 1;
+                // §22.2.6.9 step 8.g: empty match → thisIndex = ToLength(Get(rx, "lastIndex"));
+                // lastIndex = AdvanceStringIndex(S, thisIndex, fullUnicode); a surrogate pair counts
+                // as one position so the loop does not emit a spurious empty match between the two
+                // code units. As in [Symbol.replace], ToLength is computed in double: a lastIndex of
+                // 2^31 or more advances past it rather than overflowing an int, a negative one is 0,
+                // and an index at or past the end advances by one without reading the string.
+                double thisIndex = LengthAsDouble(rx[KeyStrings.lastIndex]);
+                double advanced = thisIndex + 1;
                 if (matchFullUnicode && advanced < s.Length
-                    && char.IsHighSurrogate(s[nextIndex]) && char.IsLowSurrogate(s[advanced]))
+                    && char.IsHighSurrogate(s[(int)thisIndex]) && char.IsLowSurrogate(s[(int)thisIndex + 1]))
                     advanced++;
                 rxObj.SetPropertyOrThrow(KeyStrings.lastIndex.ToJSValue(), JSValue.CreateNumber(advanced));
             }

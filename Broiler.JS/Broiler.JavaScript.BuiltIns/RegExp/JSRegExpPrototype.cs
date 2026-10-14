@@ -1,3 +1,4 @@
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
@@ -7,18 +8,17 @@ namespace Broiler.JavaScript.BuiltIns.RegExp;
 
 public partial class JSRegExp
 {
+    // ToLength (§7.1.20) of a lastIndex value: this engine's ToNumber, then the shared library's
+    // IntegerConversions.ToLength (SJL-4.5), held within int, as this engine's string indices are.
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private int GetObservableLastIndex()
+    internal static int LengthOf(JSValue value)
     {
-        var observableLastIndex = this[KeyStrings.lastIndex].DoubleValue;
-        if (double.IsNaN(observableLastIndex) || observableLastIndex <= 0)
-            return 0;
-
-        if (observableLastIndex >= int.MaxValue)
-            return int.MaxValue;
-
-        return (int)observableLastIndex;
+        var length = IntegerConversions.ToLength(value.DoubleValue);
+        return length >= int.MaxValue ? int.MaxValue : (int)length;
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private int GetObservableLastIndex() => LengthOf(this[KeyStrings.lastIndex]);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void SetObservableLastIndex(int value)

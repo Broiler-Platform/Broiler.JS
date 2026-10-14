@@ -418,11 +418,7 @@ public partial class JSTemporalPlainTime : JSObject
         if (value == null || value.IsUndefined)
             return 0;
 
-        var number = value.DoubleValue; // ToNumber (throws TypeError for BigInt/Symbol)
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            throw JSEngine.NewRangeError("Temporal.PlainTime: time component must be finite");
-
-        return (int)Math.Truncate(number);
+        return (int)TemporalRoundingOptions.ToIntegerWithTruncation(value, "Temporal.PlainTime: time component must be finite");
     }
 
     private static bool IsValidTime(int h, int mi, int s, int ms, int us, int ns)

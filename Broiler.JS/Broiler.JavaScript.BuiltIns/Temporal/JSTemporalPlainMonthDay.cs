@@ -285,10 +285,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
     private static int ToIntegerWithTruncation(JSValue value)
     {
         if (value == null || value.IsUndefined) return 0;
-        var number = value.DoubleValue;
-        if (double.IsNaN(number) || double.IsInfinity(number))
-            throw JSEngine.NewRangeError("Temporal.PlainMonthDay: component must be finite");
-        return (int)Math.Truncate(number);
+        return (int)TemporalRoundingOptions.ToIntegerWithTruncation(value, "Temporal.PlainMonthDay: component must be finite");
     }
 
     // month / day fields must be a positive (≥ 1) integer (RangeError otherwise) — checked when the

@@ -1,4 +1,5 @@
 using System;
+using Broiler.ECMAScript.Numbers;
 
 namespace Broiler.JavaScript.BuiltIns.Date;
 
@@ -114,6 +115,12 @@ internal static class JSDateMath
         if (!double.IsFinite(year) || !double.IsFinite(month) || !double.IsFinite(date))
             return double.NaN;
 
+        // Steps 2-4: each component is its ToIntegerOrInfinity, the shared library's (SJL-4.5), before
+        // the month is split into years: a month of -0.5 is 0, not -1, so it stays in the same year.
+        year = IntegerConversions.ToIntegerOrInfinity(year);
+        month = IntegerConversions.ToIntegerOrInfinity(month);
+        date = IntegerConversions.ToIntegerOrInfinity(date);
+
         double ymD = year + Math.Floor(month / 12);
 
         // A component this far out of range can only produce a time value outside the
@@ -138,7 +145,20 @@ internal static class JSDateMath
     internal static double MakeDate(double day, double time) => day * MsPerDay + time;
 
     /// <summary>MakeTime per ECMA-262 § 21.4.1.12.</summary>
-    internal static double MakeTime(double hour, double min, double sec, double ms) => hour * 3_600_000 + min * 60_000 + sec * 1_000 + ms;
+    internal static double MakeTime(double hour, double min, double sec, double ms)
+    {
+        // Step 1: a non-finite component yields NaN.
+        if (!double.IsFinite(hour) || !double.IsFinite(min) || !double.IsFinite(sec) || !double.IsFinite(ms))
+            return double.NaN;
+
+        // Steps 2-6: each component is its ToIntegerOrInfinity, the shared library's (SJL-4.5), and the
+        // sum is the double arithmetic the clause specifies, in its order.
+        var h = IntegerConversions.ToIntegerOrInfinity(hour);
+        var m = IntegerConversions.ToIntegerOrInfinity(min);
+        var s = IntegerConversions.ToIntegerOrInfinity(sec);
+        var milli = IntegerConversions.ToIntegerOrInfinity(ms);
+        return h * 3_600_000 + m * 60_000 + s * 1_000 + milli;
+    }
 
     /// <summary>
     /// UTC adjustment: convert local time to UTC.
@@ -185,6 +205,8 @@ internal static class JSDateMath
         if (Math.Abs(time) > 8.64e15)
             return double.NaN;
 
-        return Math.Truncate(time);
+        // 𝔽(! ToIntegerOrInfinity(time)), the shared library's (SJL-4.5): -0 and a time in (-1, 0)
+        // are +0, where a truncation kept -0.
+        return IntegerConversions.ToIntegerOrInfinity(time);
     }
 }

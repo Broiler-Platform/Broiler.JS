@@ -16,34 +16,14 @@ internal static class ArgumentsCoreExtensions
         if (args.IsNullOrUndefined)
             return new Arguments(@this);
 
-        if (args.IsArray)
-        {
-            var arrayLength = (uint)args.Length;
-            switch (arrayLength)
-            {
-                case 0:
-                    return new Arguments(@this);
-                case 1:
-                    return new Arguments(@this, args[0u]);
-                case 2:
-                    return new Arguments(@this, args[0u], args[1u]);
-                case 3:
-                    return new Arguments(@this, args[0u], args[1u], args[2u]);
-                case 4:
-                    return new Arguments(@this, args[0u], args[1u], args[2u], args[3u]);
-                default:
-                    var argList = new JSValue[arrayLength];
-                    var ee = args.GetElementEnumerator();
-                    while (ee.MoveNext(out var hasValue, out var value, out var index))
-                        argList[index] = hasValue ? value : JSUndefined.Value;
-                    return new Arguments(@this, argList);
-            }
-        }
-
         if (args is not JSObject @object)
             throw JSValue.NewTypeError("CreateListFromArrayLike called on non-object");
 
-        var length = Math.Max(@object.Length, 0);
+        // CreateListFromArrayLike step 2: LengthOfArrayLike(obj), whose ToLength is the shared
+        // library's (SJL-4.5); a length too long for an argument list is a RangeError. An array
+        // takes this path too: its Length wrapped at 2^31, and a Proxy of one answered the proxy's
+        // own (absent) "length", so neither was LengthOfArrayLike. Each element is Get(obj, index).
+        var length = JSObject.LengthOfArrayLike(@object);
         switch (length)
         {
             case 0:

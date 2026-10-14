@@ -75,7 +75,9 @@ public partial class JSTemporalInstant : JSObject
         if (double.IsNaN(ms) || double.IsInfinity(ms) || Math.Truncate(ms) != ms)
             throw JSEngine.NewRangeError("Temporal.Instant.fromEpochMilliseconds requires an integral Number");
 
-        var ns = new BigInteger(ms) * 1_000_000;
+        // NumberToBigInt(epochMilliseconds) × 10^6: the shared library's BigIntMath.FromIntegralNumber
+        // (SJL-4.5), after this engine's RangeError for a Number that is not integral.
+        var ns = BigIntMath.FromIntegralNumber(ms) * 1_000_000;
         if (!IsValid(ns))
             throw JSEngine.NewRangeError("Temporal.Instant.fromEpochMilliseconds: out of range");
 
