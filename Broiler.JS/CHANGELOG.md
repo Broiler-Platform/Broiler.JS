@@ -129,6 +129,48 @@ repository's `01209c4`, before the cut-over, and after it.
   - `Duration.prototype.round`'s `RangeError` for an unknown rounding mode reads "Temporal: invalid
     roundingMode", as the other types' do.
 
+- *The copies the search for survivors found* (2026-10-14; `SharedNumericsSurvivorsTests`, run
+  against `728e958`, the cut-over before the search, and after it). Built-ins outside the correspondence's list converted
+  their arguments by hand; each now calls the library, and these results change:
+  - **`Function.prototype.apply`, `Reflect.apply` and `Reflect.construct` build their list with
+    `CreateListFromArrayLike`**: `LengthOfArrayLike`, then `Get` of each index. A length of 2^31 or
+    more is a `RangeError`, where the call got no arguments, or a .NET `OverflowException` escaped for
+    an array; an array-like whose `length` is inherited, a `Proxy`, and a `String` object give their
+    elements, where the call got none (a `Proxy` of an array raised a .NET `OverflowException`); and a
+    hole is read through the prototype, so with `Array.prototype[1] = "p"` the hole at 1 is `"p"`,
+    where it was `undefined`.
+  - **`String.raw` reads its `raw` object with `LengthOfArrayLike`**: `String.raw({ raw: "abc" }, 1, 2)`
+    is `"a1b2c"`, where it was `""`, and a `raw` of length 2^32 is a `RangeError`.
+  - **`RegExp.prototype[Symbol.match]` advances an empty match from `ToLength(lastIndex)`**: a
+    `lastIndex` of -5 becomes 1, where it became -4, and one of 2^31 becomes 2147483649, where it
+    became -2147483648; with the `u` flag, a negative `lastIndex` raised a .NET
+    `IndexOutOfRangeException`.
+  - **`String.prototype.padStart` and `padEnd` convert their length with `ToLength`**, and a result
+    too long for the engine is a `RangeError`: `"a".padStart(2 ** 32 + 3, "-")` raised an `Error`
+    wrapping a .NET `OutOfMemoryException`.
+  - **`%TypedArray%.prototype.set` reads an array-like source's length with `ToLength`**:
+    `new Uint8Array(2).set({ length: -5 }, 3)` is a `RangeError`, an offset past the end, where the
+    negative length let it through.
+  - **The Set methods' `GetSetRecord` truncates `size` before its sign test**: a set-like object of
+    size -0.5 is of size 0, where it was a `RangeError`.
+  - **`TimeClip` is `ToIntegerOrInfinity`**: `new Date(0).setTime(-0.5)` is +0, where it was -0.
+  - **`MakeTime` and `MakeDay` apply `ToIntegerOrInfinity` to each component**: `setUTCHours(1.5)`
+    sets one hour, where it set an hour and a half; `setUTCDate(1.5)` and `setDate(1.5)` keep the
+    first day, where they added twelve hours; and `new Date(1000).setUTCMilliseconds(-0.5)` is 1000,
+    where it was 999.
+  - **`Intl.NumberFormat`'s scientific and engineering notations take the mantissa and exponent from
+    the Number's exact value**, where they divided by a power of ten in doubles: with 20 fraction
+    digits, `1e-30` is `1.00000000000000008334E-30`, where it was `1E-30`, `9.999999999999999e22` is
+    `9.99999999999999916114E22`, where it was `0.99999999999999977796E23`, and `5e-324` is
+    `4.94065645841246544177E-324`, where it was `0.5E-323`. The default precision's results are
+    unchanged.
+  - **A subnormal Number's exact value is right in every notation**: it was scaled by 2^-1075 rather
+    than 2^-1074, so its digits were those of half the value (`5e-324` to three significant digits
+    ended in 247, where it ends in 494).
+  - **A String's Intl mathematical value trims the specification's white space**: with 20 fraction
+    digits, `format("\uFEFF0.1")` is `0.1`, where U+FEFF stopped the decimal reading and the text was
+    read as the Number 0.1 (`0.10000000000000000555`).
+
 **Implementation-defined, and changed.** `Math.f16round(NaN)` and a NaN read from a `Float16Array` or
 with `DataView.prototype.getFloat16` are the platform's quiet NaN, where they kept the binary16 value's
 sign and payload in the double; no result but the bits written to another buffer shows it. A NaN

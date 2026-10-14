@@ -20,13 +20,15 @@ policy.
 
 The decisions are taken and their records filed. The shared conformance corpus exists, with this
 engine's runners over it (SJL-1), and so does the shared folder, `Broiler.ECMAScript/`, with its
-conventions, its rules, its version stream and its Native AOT probe (SJL-2); no algorithm has moved
-into it, and no engine consumes a shared package. See
-[`SharedLibraries.status.md`](SharedLibraries.status.md).
+conventions, its rules, its version stream and its Native AOT probe (SJL-2). Two areas have moved into
+it, and both engines consume them: number conversion (SJL-3) and the numerics (SJL-4, whose cut-overs
+are done and whose evidence remains). See [`SharedLibraries.status.md`](SharedLibraries.status.md).
 
 *(Corrected 2026-10-12, at milestone SJL-2. It read: "The decisions are taken, the records are being
 filed, and no shared code exists. Milestone SJL-0 is in progress in both repositories; every other
-milestone is not started.")*
+milestone is not started.")* *(Corrected again 2026-10-14, at milestone SJL-4.5; the correction was
+due from SJL-3's cut-overs. The second sentence ended: "(SJL-2); no algorithm has moved into it, and
+no engine consumes a shared package.")*
 
 ## What this repository hosts
 
@@ -190,6 +192,41 @@ under "zero". For this engine, the comparison's corrections are what SJL-4.5 ans
 
 The comparison admits this engine's `cbrt`, `hypot` and the rest of `expm1` and `log1p` as
 approximations, which the library's bounds replace.
+
+**The cut-over (SJL-4.5), 2026-10-13 to 2026-10-14.** This engine's numerics are the shared library's: the integer
+conversions and Float16, the Math kernels on every path the compiler has for `**`, the exact rounding
+of Temporal and Intl, and the BigInt kernel (`0aa8369`, `73f1cd4`, `c565360`, `21a72c2` and
+`e4094ec`). `CHANGELOG.md` lists every correction under decision SJL-D-16 (a), each with the vector or
+test that names it, and corpus revision 9 (`f2c3597`) retires every divergence field of the area,
+this engine's and those of Broiler.VM, whose cut-over (SJL-4.4) corrected its own. This repository's
+part of the record:
+
+- **Decision SJL-D-25 is applied, and no public member is removed**, so its consumer check is not
+  needed: `JSNumericOperators.ToInt32` and `ToUint32` and `JSValue.IntValue` and `UIntValue` are
+  forwarders, `IntegerValue` stays as this plan said, `JSMath.Hypot(double, double)` and
+  `JSBigInt.ToNumber` are obsolete forwarders, and `BigIntegerExtensions.FromDouble`, which had no
+  caller and which the cut-over did not empty, stays unchanged. `docs/public-api.md` records each.
+- **Decision SJL-D-15 (a) found a defect of the library.** The representation's limit that the
+  unbounded policy passes, `BigIntPolicy.RepresentationLimit`, was wider than a .NET `BigInteger`
+  holds, so a result between the two widths raised a .NET exception, which the decision refuses. The
+  limit is now below .NET's, with room for what an operation computes before it refuses (`ff7416b`,
+  with a test of the edge and an entry in the library's changelog). Broiler.VM's width policy never
+  came near it, and the package its feed holds is unaffected.
+- **The search for surviving copies of the area**, made before the record, found hand-written
+  conversions in built-ins outside the correspondence's list, most of them `ToIntegerOrInfinity` and
+  `ToLength`, and some of them wrong. They call the library now (``eb3ff34``), and the changelog
+  lists the corrections. Temporal's `ToIntegerWithTruncation` is one adapter over the library's
+  `ToIntegerOrInfinity`.
+- **One implementation-defined result changed:** a NaN read from binary16 (`Math.f16round`, a
+  `Float16Array` element, `getFloat16`) is the platform's quiet NaN. A NaN written to binary16 keeps
+  its sign and the high bits of its payload, as SJL-4.2's record above commits this engine to.
+- **The third-party notices** name the two citations the numerics record found, `JSMath.Clz32`'s
+  Jurassic reference and `SumPrecise`'s port of the proposal's algorithm, whose engine copy is gone,
+  and correct what they said of arm J.
+- **Left, as the area verdict leaves them:** the Temporal consumers' quantities (`PlainTime`,
+  `PlainDateTime` and `ZonedDateTime`'s `round` round the nanoseconds since midnight) with SJL-10, and
+  Intl's mathematical value with SJL-9. `UriHelper` cites Jurassic too, and the notices say that its
+  derivation is not yet examined.
 
 ## Invariants
 

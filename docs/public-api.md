@@ -141,6 +141,14 @@ observable corrections are in [`Broiler.JS/CHANGELOG.md`](../Broiler.JS/CHANGELO
   `TryParseBigIntString`, `TryParsePrefixedDigits`, `BigIntegerToRadixString`, `Shift` and
   `ToBitsIndex`, and `JSBigIntExtensions.CompareToNumber` (an internal class). `JSBigInt.ToBigInt`
   and `Coerce` are internal and call the library.
+- *The copies the search for survivors found:* the hand-written conversions of the String, Iterator,
+  JSON, ShadowRealm, Function, Set, typed-array, RegExp, Array, Date, Temporal and Intl built-ins and
+  of `JSArguments`; `CreateListFromArrayLike`'s array fast path, whose length wrapped at 2^31 and
+  which skipped the prototype for a hole; `JSJSON.MaxArrayLikeLength` and the unused locals of
+  `BinaryOperation`, which were dead. Three internal adapters are added: `JSObject.LengthOfArrayLike`,
+  `JSRegExp.LengthOf` and `TemporalRoundingOptions.ToIntegerWithTruncation`. The public
+  `JSObject.Length` is unchanged: it reads an own `length` and is not `LengthOfArrayLike`, and its
+  other callers keep it.
 
 **Compatibility.** Binary-compatible: every public member is kept, as itself or as a forwarder.
 `Broiler.JavaScript.Expressions` gains a dependency on `Broiler.ECMAScript.Algorithms`, beside
