@@ -35,6 +35,8 @@ CORPUS_REVISION = 10
 FIRST_REVISION = 10
 GENERATOR = "ref:textref@1"
 SPEC = "spec:es2026@0248456c"
+ENGINES = ("broiler-js", "broiler-vm")
+DIVERGENCES = Path(__file__).resolve().parent / "text-divergences.txt"
 
 # Broiler.VM's string ceiling (JsRealm.String's StringLengthCeiling, 2^24 code units), which JSD-0070
 # decision 4 keeps as this family's policy: past it, padStart and padEnd refuse with RangeError.
@@ -105,6 +107,32 @@ class Corpus:
         assert "\n" not in full["script"], full["script"]
         assert all(ord(ch) < 0x80 for ch in full["script"]), full["script"]
         self.files.setdefault(file, []).append(full)
+
+    def classify(self, path: Path) -> None:
+        """Applies text-divergences.txt, as generate_numerics_vectors.py applies its own file."""
+        if not path.exists():
+            return
+        reasons: dict[str, str] = {}
+        by_id = {record["id"]: record for records in self.files.values() for record in records}
+        for line_number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("reason "):
+                key, _, text = line[len("reason "):].partition(": ")
+                if not text or key in reasons:
+                    raise SystemExit(f"{path.name}:{line_number}: a malformed or repeated reason")
+                reasons[key] = text
+                continue
+            engine, key, vector_id = line.split(" ")
+            record = by_id.get(vector_id)
+            if engine not in ENGINES or key not in reasons or record is None:
+                raise SystemExit(f"{path.name}:{line_number}: '{line}' names no engine, reason or vector")
+            if f"divergence.{engine}" in record or (
+                    record["class"] == "impl-defined" and f"per-engine.{engine}" not in record):
+                raise SystemExit(f"{path.name}:{line_number}: {vector_id} cannot take this classification")
+            if record["class"] == "normative":
+                record["class"] = "divergence"
+            record[f"divergence.{engine}"] = reasons[key]
 
     def write(self, out: Path) -> None:
         out.mkdir(parents=True, exist_ok=True)
@@ -733,6 +761,7 @@ def main(argv: list[str] | None = None) -> int:
     uri(corpus)
     base64_and_hex(corpus)
     json_area(corpus)
+    corpus.classify(DIVERGENCES)
     corpus.write(arguments.out)
     total = sum(len(records) for records in corpus.files.values())
     print(f"{total} vectors in {len(corpus.files)} files")
