@@ -4,19 +4,32 @@
 `Broiler.VM/docs/javascript-shared-libraries/milestones/sjl-4-numerics.md`: its home clauses 1 to 3 and
 its Broiler.JS clauses 4 to 7. **Rules:** [`decision-rule.md`](decision-rule.md) (test262 per path) and
 [`reference-arms.md`](reference-arms.md) (the library-level comparison), both committed at SJL-4.1
-before any code they judge. **Area verdict:** [`SharedLibraries.md`](../../roadmap/SharedLibraries.md),
+before any code they judge, and [`decision-rule-revised-2026-10-14.md`](decision-rule-revised-2026-10-14.md),
+part A revised at the owner's direction after its run was seen, which is weaker evidence *(added
+2026-10-14)*. **Area verdict:** [`SharedLibraries.md`](../../roadmap/SharedLibraries.md),
 "Area verdicts", with Broiler.VM's JSD-0067 and JSD-0068. **Owner:** the Broiler.JS maintainer; one
 person holds every role (the programme's EX-30, recorded in Broiler.VM). **Reviewer:** none, and nothing
 here has been read by anyone but its author.
 
 **State:** collected, 2026-10-14, at SJL-4.6, from a clean checkout of the after commit `bc2d663`.
-**Part A (clause 5) is NOT MET under the rule as written**, on one path that improved and none that
-regressed: `staging/sm/TypedArray/slice-bitwise-same.js` fails at the base and passes after, in both
-variants, because the engine's own `slice` now follows the specification, and no class of the rule
-admits that (section 7). Clauses 1 to 4, 6 and 7 hold (section 4). The first after run, at `2e0f885`,
-found a regression the cut-over had made, and was stopped; the fix is `bc2d663` (section 7). Broiler.VM
-keeps its own bundle of the same name for its own half, judged by its own rule; neither bundle reads the
-other's runs. *(Revised 2026-10-14, at SJL-4.6. The paragraph read: "**State:** collection in progress.
+**Part A (clause 5) is NOT MET under the rule as written and MET under its revision of the same day**,
+[`decision-rule-revised-2026-10-14.md`](decision-rule-revised-2026-10-14.md), written after the run was
+seen and so weaker evidence. No row regressed; one path improved, in both variants:
+`staging/sm/TypedArray/slice-bitwise-same.js` fails at the base and passes after, because the engine's
+own `slice` now follows the specification. The original's classes do not admit that, and the revision's
+C1 (b) does, as a correction the cut-over had to make (section 7). Clauses 1 to 4, 6 and 7 hold (section
+4). The first after run, at `2e0f885`, found a regression the cut-over had made, and was stopped; the
+fix is `bc2d663` (section 7). Broiler.VM keeps its own bundle of the same name for its own half, judged
+by its own rule; neither bundle reads the other's runs. *(Revised 2026-10-14, at SJL-4.6, when the
+revised rule had been applied. The paragraph read: "**State:** collected, 2026-10-14, at SJL-4.6, from a
+clean checkout of the after commit `bc2d663`. **Part A (clause 5) is NOT MET under the rule as
+written**, on one path that improved and none that regressed:
+`staging/sm/TypedArray/slice-bitwise-same.js` fails at the base and passes after, in both variants,
+because the engine's own `slice` now follows the specification, and no class of the rule admits that
+(section 7). Clauses 1 to 4, 6 and 7 hold (section 4). The first after run, at `2e0f885`, found a
+regression the cut-over had made, and was stopped; the fix is `bc2d663` (section 7). Broiler.VM keeps
+its own bundle of the same name for its own half, judged by its own rule; neither bundle reads the
+other's runs." Before the collection earlier the same day, it read: "**State:** collection in progress.
 Nothing here is a verdict until its section says so. **Taken:** the engine-level vectors of SJL-4.2
 (section 1) and the reference-arm comparison of SJL-4.3 (section 2). The rest is added as SJL-4.4 to
 SJL-4.6 take it.", with the note of its revision of 2026-10-13, which quoted its earlier sentences:
@@ -83,7 +96,7 @@ section 3; SJL-4.4 and SJL-4.5 list the observable ones with their cut-overs.
 | 2 | Its vectors and reference arms pass under the area rule | sections 2 and 5 | **Met**: every vector of corpus revision 9 at library level, under the JIT and Native AOT alike; the reference arms MET (section 2) |
 | 3 | The `SL` rules, the API baseline and package validation pass, and the Native AOT probe runs | section 5 | **Met** at `bc2d663` |
 | 4 | The deletion list is absent and the public dispositions are recorded | section 9; [`docs/public-api.md`](../../public-api.md) | **Met**: every entry absent; the dispositions recorded, no public member removed |
-| 5 | test262 per path meets the area rule | section 7, [`test262/`](test262/) | **Not met under the rule as written**: no regression, and one path improved in both variants, which no class admits |
+| 5 | test262 per path meets the area rule | section 7, [`test262/`](test262/) | **Not met under the rule as written; met under its revision**, which is weaker evidence: no regression, and one path improved in both variants, which the original's classes do not admit and the revision's C1 (b) does *(2026-10-14; read "**Not met under the rule as written**: no regression, and one path improved in both variants, which no class admits")* |
 | 6 | Engine-level vectors pass | section 6 | **Met**: no difference at corpus revision 9, four classified divergences SJL-14 answers |
 | 7 | Every correction is listed | [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md) | **Met**: each correction the corpus names with its vectors, each other with its tests, and the copies' correction section 7 found |
 
@@ -118,7 +131,9 @@ under its reason. The rows are byte-identical to the run taken at the cut-over b
 
 ## 7. Test262 per path (rule part A)
 
-**NOT MET under the rule as written; no row regressed.** [`test262/comparison.json`](test262/comparison.json) and
+**NOT MET under the rule as written; MET under its revision of the same day, as weaker evidence; no
+row regressed.** *(2026-10-14; the first sentence read "**NOT MET under the rule as written; no row
+regressed.**")* [`test262/comparison.json`](test262/comparison.json) and
 [`test262/comparison.log`](test262/comparison.log): the after run against bundle sjl-3-001's after
 run, through `scripts/compliance/compare_test262_paths.py` as the rule committed it, with each run's
 timed-out rows replaced by their re-runs and [`test262/classifications.json`](test262/classifications.json)
@@ -130,7 +145,7 @@ variants, and no row passing at the base fails, times out or is skipped after.**
 | Both runs complete | eight of eight shards reported in each, no incomplete shard, no configuration failure, one suite revision, `ccaac100` ([`test262/merge.log`](test262/merge.log); the base's in sjl-3-001) |
 | The script finds them comparable | yes ([`test262/compare-checks.log`](test262/compare-checks.log): the after run against itself changes nothing, and a planted regression is reported); the fields it records and does not compare are the same in both: .NET SDK 10.0.401, four workers, eight shards, Linux, X64 |
 | No row passing at the base fails, times out or is skipped after | none |
-| Every changed verdict in C1, C3 or C5, and listed | **not met**: the two rows below are in no class (the classification file is empty) |
+| Every changed verdict in C1, C3 or C5, and listed | **not met** under the original: the two rows below are in no class (the classification file is empty); under the revision, both are C1 (b), below *(2026-10-14; the cell read "**not met**: the two rows below are in no class (the classification file is empty)")* |
 
 **The changed rows.**
 
@@ -150,9 +165,26 @@ specification where this engine did not". These rows pass because the engine's o
 follows the specification: binary32 elements never reach the shared library, whose binary16 read is
 what made the byte copy necessary (the stopped run, below). The class's wording does not reach them, and
 the rule as written counts every other difference as a regression, an improvement included. So part
-A is **not met**, on one improved path and no regressed one. Admitting these rows would take a
-dated revision of the rule, written after this run and so weaker evidence, as Broiler.VM's bundle
-did for its own part A. That is the owner's decision; this bundle does not take it.
+A is **not met**, on one improved path and no regressed one. The owner had the rule revised the same
+day, after this run had been seen; the next paragraph reads part A under that revision. *(2026-10-14;
+the sentences read: "Admitting these rows would take a dated revision of the rule, written after this
+run and so weaker evidence, as Broiler.VM's bundle did for its own part A. That is the owner's
+decision; this bundle does not take it.")*
+
+**Under the revised rule: MET, as weaker evidence.**
+[`decision-rule-revised-2026-10-14.md`](decision-rule-revised-2026-10-14.md), written at the owner's
+direction after this run was seen, quotes the original whole and changes class C1 alone: C1 (a) is
+the original's, and C1 (b) admits a row that fails at the base and passes after because code of this
+engine that the cut-over had to change now follows the specification. The collector's `revised` step
+ran the same script again, unchanged, over the same retained runs and re-runs, reading the revision's
+own classification file: [`test262/revised-2026-10-14/`](test262/revised-2026-10-14/), whose
+`comparison.log` reads **96,720 rows, 2 changed, 2 admitted, 0 unclassified, 0 regressions**, exit 0.
+Its report equals the original's in every row but the two rows' classification. The original's
+classification file stays empty, and its comparison stays as it was.
+
+| Path | Variants | Class | What C1 (b) asks, and where it is |
+|---|---|---|---|
+| `test/staging/sm/TypedArray/slice-bitwise-same.js` | original, terser | C1 (b) | The clause: `%TypedArray%.prototype.slice` step 14.g, a byte copy for the same element type. The commit: `bc2d663`. Why the cut-over had to change the code: the shared library's binary16 read gives the platform's NaN, so `slice`'s copy through the value lost a binary16 NaN's sign and payload, and `TypedArray/prototype/slice/bit-precision.js`, passing at the base, failed at `2e0f885` (the stopped run, below). The changelog: "The typed arrays' copies of the same element type". The test: `SharedIntegerConversionTests.A_copy_of_the_same_element_type_keeps_each_element_s_bytes` |
 
 **The after run.** [`test262/drive.sh`](test262/drive.sh) took it at `bc2d663`, in the base's
 configuration with four workers per shard, from 2026-10-14 07:04 to 13:05

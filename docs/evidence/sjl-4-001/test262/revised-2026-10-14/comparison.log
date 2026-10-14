@@ -1,0 +1,5 @@
+$ /usr/bin/python3 scripts/compliance/compare_test262_paths.py --base <scratch>/base-test262-results.json --after <scratch>/after-test262-results.json --output <scratch>/comparison-revised.json --base-rerun <repo>/docs/evidence/sjl-3-001/test262/rerun-timeouts.json --classifications <repo>/docs/evidence/sjl-4-001/test262/revised-2026-10-14/classifications.json --after-rerun <repo>/docs/evidence/sjl-4-001/test262/rerun-timeouts.json
+# cwd <tree>; started 2026-10-14T13:35:07Z; exit 0
+admitted       failed -> passed   test/staging/sm/TypedArray/slice-bitwise-same.js [original] C1
+admitted       failed -> passed   test/staging/sm/TypedArray/slice-bitwise-same.js [terser] C1
+rows 96720; changed 2; admitted 2; unclassified 0; regressions 0
