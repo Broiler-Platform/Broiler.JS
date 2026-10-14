@@ -27,7 +27,7 @@ namespace Broiler.ECMAScript.Runners;
 /// other shared library (architecture section 1), so the adapter to one lives with the runners.
 /// </para>
 /// </remarks>
-internal sealed class AlgorithmsLibrary : IVectorLibrary
+internal sealed partial class AlgorithmsLibrary : IVectorLibrary
 {
     /// <inheritdoc/>
     public string Name => "Broiler.ECMAScript.Algorithms";
@@ -294,7 +294,7 @@ internal sealed class AlgorithmsLibrary : IVectorLibrary
             case "IsLooselyEqual": return "value: " + TypedValue.RenderBoolean(LooselyEqual(inputs[0], inputs[1]));
         }
 
-        return EmptyLibrary.NotImplemented;
+        return TextArea(operation, inputs);
     }
 
     /// <summary>The index lastIndexOf starts from on an array-like of length 2^53 - 1 with every index, given its fromIndex's ToIntegerOrInfinity.</summary>

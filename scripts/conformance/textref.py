@@ -500,6 +500,11 @@ class JsonSyntaxError(Exception):
     pass
 
 
+class JsonDepthError(Exception):
+    """A value deeper than the caller's limit, found before anything after it is read (the reference
+    for an engine's depth policy; the specification itself has no limit)."""
+
+
 @dataclass
 class JsonValue:
     """A parsed value: kind is "object", "array", "string", "number", "true", "false" or "null"."""
@@ -530,10 +535,14 @@ def json_depth(text: str) -> int:
     return deepest
 
 
-def json_parse(text: str) -> JsonValue:
+def json_parse(text: str, max_depth: int | None = None) -> JsonValue:
     """Parses a JavaScript string as JSON text, or raises JsonSyntaxError. Strings keep every code unit,
     lone surrogates escaped or raw included; numbers are converted to the nearest double, -0 and
-    overflow to infinity included; a repeated key keeps its first position and its last value."""
+    overflow to infinity included; a repeated key keeps its first position and its last value.
+
+    With max_depth, a value deeper than it (the document is depth 0, a member or element one deeper
+    than its container) raises JsonDepthError when the reader reaches it, after the white space before
+    it: an engine's depth policy, which the bundle sjl-5-001 classifier judges refusals by."""
     position = 0
     length = len(text)
 
@@ -618,9 +627,11 @@ def json_parse(text: str) -> JsonValue:
             bits |= R.SIGN_BIT
         return bits
 
-    def parse_value() -> JsonValue:
+    def parse_value(depth: int = 0) -> JsonValue:
         nonlocal position
         skip()
+        if max_depth is not None and depth > max_depth:
+            raise JsonDepthError(position)
         if position >= length:
             raise JsonSyntaxError(position)
         ch = text[position]
@@ -636,7 +647,7 @@ def json_parse(text: str) -> JsonValue:
                 key = parse_string()
                 skip()
                 expect(":")
-                value = parse_value()
+                value = parse_value(depth + 1)
                 entries[key] = value  # a repeated key keeps its first position and its last value
                 skip()
                 if position < length and text[position] == ",":
@@ -652,7 +663,7 @@ def json_parse(text: str) -> JsonValue:
                 position += 1
                 return JsonValue("array", items)
             while True:
-                items.append(parse_value())
+                items.append(parse_value(depth + 1))
                 skip()
                 if position < length and text[position] == ",":
                     position += 1

@@ -160,6 +160,18 @@ class JsonTests(unittest.TestCase):
             with self.assertRaises(T.JsonSyntaxError, msg=text):
                 T.json_parse(text)
 
+    def test_the_depth_limit_reads_in_order(self) -> None:
+        # The value at depth 2 is refused at 1; a container at the limit is admitted, empty.
+        self.assertRaises(T.JsonDepthError, T.json_parse, "[[1]]", 1)
+        self.assertEqual("array", T.json_parse("[[]]", 1).kind)
+        self.assertEqual("array", T.json_parse("[[1]]", 2).kind)
+        # The deep value is reached before the text's error after it, and after the white space before it.
+        self.assertRaises(T.JsonDepthError, T.json_parse, "[ [1]] x", 1)
+        self.assertRaises(T.JsonSyntaxError, T.json_parse, "[x, [1]]", 1)
+        with self.assertRaises(T.JsonDepthError) as caught:
+            T.json_parse("[  [1]]", 0)
+        self.assertEqual(3, caught.exception.args[0])
+
     def test_numbers_and_surrogates(self) -> None:
         self.assertEqual(R.SIGN_BIT, T.json_parse("-0").value)
         self.assertEqual(0x7FF0000000000000, T.json_parse("1e400").value)
