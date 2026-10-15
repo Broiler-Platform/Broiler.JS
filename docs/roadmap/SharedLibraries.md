@@ -327,6 +327,7 @@ stated there: the longest String a pad or a repeat builds is the longest a .NET 
 `JSON.parse` reads 512 levels, as Broiler.VM does; past either, a `RangeError`. A typed array's `with`
 keeps its normalisation inline, because its two steps read two lengths. `UriHelper` is deleted, and the
 third-party notices say so. The corpus's next revision retires the fields these corrections answer.
+*Added 2026-10-15:* corpus revision 13 retires them, with Broiler.VM's five.
 
 ## Invariants
 

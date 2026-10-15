@@ -33667,8 +33667,7 @@ area: text
 op: replaceAll converts the replacement first
 in: str:"abc" str:"x"
 out: value: f64:0x3FF0000000000000
-class: divergence
-divergence.broiler-vm: replaceAll converts a replacement value that is not callable with ToString only after the search, so its toString is not called when nothing matches, where String.prototype.replaceAll converts it before searching. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-5-text-algorithms.md, SJL-5.4 (JSD-0070; the correspondence's row S1).
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.replaceall ref:textref@1
 script: (function () { var c = 0; "abc".replaceAll("x", { toString: function () { c++; return ""; } }); return c; })()
 since: 10
@@ -33678,8 +33677,7 @@ area: text
 op: GetSubstitution converts a named capture with ToString
 in: str:"ab" str:"$<x>"
 out: value: str:"Pb"
-class: divergence
-divergence.broiler-js: GetSubstitution converts a named group's value with the CLR's ToString, which calls toString directly, where ToString calls Symbol.toPrimitive first. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row S2).
+class: normative
 prov: spec:es2026@0248456c#sec-getsubstitution spec:es2026@0248456c#sec-regexp.prototype-%symbol.replace% ref:textref@1
 script: (function () { var re = /a/; re.exec = function () { var r = ["a"]; r.index = 0; r.groups = { x: { [Symbol.toPrimitive]: function () { return "P"; }, toString: function () { return "T"; } } }; return r; }; return "ab".replace(re, "$<x>"); })()
 since: 10
@@ -33689,8 +33687,7 @@ area: text
 op: replace with a search value whose Symbol.replace is undefined
 in: str:"a/a/g" str:"x"
 out: value: str:"ax"
-class: divergence
-divergence.broiler-js: replace with a RegExp whose Symbol.replace is undefined or null matches it as a regular expression, where the search value is converted with ToString and searched for as text. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row S3).
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.replace ref:textref@1
 script: (function () { var re = /a/g; re[Symbol.replace] = undefined; return "a/a/g".replace(re, "x"); })()
 since: 10
@@ -33700,8 +33697,7 @@ area: text
 op: replace with a search value whose Symbol.replace is null
 in: str:"a/a/g" str:"x"
 out: value: str:"ax"
-class: divergence
-divergence.broiler-js: replace with a RegExp whose Symbol.replace is undefined or null matches it as a regular expression, where the search value is converted with ToString and searched for as text. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row S3).
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.replace ref:textref@1
 script: (function () { var re = /a/g; re[Symbol.replace] = null; return "a/a/g".replace(re, "x"); })()
 since: 10

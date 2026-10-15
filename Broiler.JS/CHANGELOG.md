@@ -41,7 +41,9 @@ say. The API dispositions are in [`docs/public-api.md`](../docs/public-api.md).
 
 **Corrections the corpus names.** Each was a `divergence.broiler-js` field of the shared corpus
 (`conformance/vectors/text`, revision 12), with its reason in `scripts/conformance/text-divergences.txt`
-and the row of bundle `sjl-5-001`'s correspondence it confirmed.
+and the row of bundle `sjl-5-001`'s correspondence it confirmed. Corpus revision 13 retires the 42 fields,
+and [`docs/evidence/sjl-5-001/engine/retired-divergences-revision-13.tsv`](../docs/evidence/sjl-5-001/engine/retired-divergences-revision-13.tsv)
+lists every retired vector under its reason.
 
 - **`setFromHex` stops at the destination** (B1, `js-set-from-hex-whole-input`,
   `text/set-from-hex/0001`, `0002`, `0011` to `0013` and `0021`): `new Uint8Array(1).setFromHex("aaZZ")`

@@ -23637,8 +23637,7 @@ area: text
 op: JSON parse then serialize
 in: str:"\"\\ud800\""
 out: value: str:"\"\\ud800\""
-class: divergence
-divergence.broiler-js: JSON.parse refuses a string whose escape is a lone surrogate with SyntaxError, where the string holds that one code unit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J2).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse spec:es2026@0248456c#sec-json.stringify ref:textref@1
 script: JSON.stringify(JSON.parse("\"\\ud800\""))
 since: 10
@@ -23648,8 +23647,7 @@ area: text
 op: JSON parse then serialize
 in: str:"\"\\uDC00\""
 out: value: str:"\"\\udc00\""
-class: divergence
-divergence.broiler-js: JSON.parse refuses a string whose escape is a lone surrogate with SyntaxError, where the string holds that one code unit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J2).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse spec:es2026@0248456c#sec-json.stringify ref:textref@1
 script: JSON.stringify(JSON.parse("\"\\uDC00\""))
 since: 10
@@ -23669,8 +23667,7 @@ area: text
 op: JSON parse then serialize
 in: str:"\"\uD800\""
 out: value: str:"\"\\ud800\""
-class: divergence
-divergence.broiler-js: JSON.parse of a text holding a lone surrogate lets the .NET ArgumentException of its transcoding to UTF-8 escape the engine, where the string holds that one code unit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J3).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse spec:es2026@0248456c#sec-json.stringify ref:textref@1
 script: JSON.stringify(JSON.parse("\"\uD800\""))
 since: 10
@@ -23680,8 +23677,7 @@ area: text
 op: JSON parse then serialize
 in: str:"\"\uDC00x\""
 out: value: str:"\"\\udc00x\""
-class: divergence
-divergence.broiler-js: JSON.parse of a text holding a lone surrogate lets the .NET ArgumentException of its transcoding to UTF-8 escape the engine, where the string holds that one code unit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J3).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse spec:es2026@0248456c#sec-json.stringify ref:textref@1
 script: JSON.stringify(JSON.parse("\"\uDC00x\""))
 since: 10
@@ -23991,8 +23987,7 @@ area: text
 op: JSON parse a lone surrogate
 in: str:"\"\\ud800\""
 out: value: str:"\uD800"
-class: divergence
-divergence.broiler-js: JSON.parse refuses a string whose escape is a lone surrogate with SyntaxError, where the string holds that one code unit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J2).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.parse("\"\\ud800\"")
 since: 10
@@ -24002,8 +23997,7 @@ area: text
 op: JSON parse a lone surrogate
 in: str:"\"\uD800\""
 out: value: str:"\uD800"
-class: divergence
-divergence.broiler-js: JSON.parse of a text holding a lone surrogate lets the .NET ArgumentException of its transcoding to UTF-8 escape the engine, where the string holds that one code unit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J3).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.parse("\"\uD800\"")
 since: 10
@@ -24013,8 +24007,7 @@ area: text
 op: JSON parse a lone surrogate
 in: str:"\"\\udc00\""
 out: value: str:"\uDC00"
-class: divergence
-divergence.broiler-js: JSON.parse refuses a string whose escape is a lone surrogate with SyntaxError, where the string holds that one code unit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J2).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.parse("\"\\udc00\"")
 since: 10
@@ -24024,8 +24017,7 @@ area: text
 op: JSON parse a lone surrogate
 in: str:"\"\uDC00\""
 out: value: str:"\uDC00"
-class: divergence
-divergence.broiler-js: JSON.parse of a text holding a lone surrogate lets the .NET ArgumentException of its transcoding to UTF-8 escape the engine, where the string holds that one code unit. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J3).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.parse("\"\uDC00\"")
 since: 10
@@ -24135,8 +24127,7 @@ area: text
 op: JSON parse nested 65 deep
 in: int:65 str:"["
 out: value: f64:0x4060600000000000
-class: divergence
-divergence.broiler-js: JSON.parse refuses a document nested more than 64 deep with SyntaxError: System.Text.Json's default depth, which nobody chose, where the language sets no limit below the implementation's own. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J1).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.stringify(JSON.parse("[".repeat(65) + "1" + "]".repeat(65))).length
 since: 10
@@ -24146,8 +24137,7 @@ area: text
 op: JSON parse nested 65 deep
 in: int:65 str:"{\"k\":"
 out: value: f64:0x4078700000000000
-class: divergence
-divergence.broiler-js: JSON.parse refuses a document nested more than 64 deep with SyntaxError: System.Text.Json's default depth, which nobody chose, where the language sets no limit below the implementation's own. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J1).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.stringify(JSON.parse("{\"k\":".repeat(65) + "1" + "}".repeat(65))).length
 since: 10
@@ -24157,8 +24147,7 @@ area: text
 op: JSON parse nested 66 deep
 in: int:66 str:"["
 out: value: f64:0x4060A00000000000
-class: divergence
-divergence.broiler-js: JSON.parse refuses a document nested more than 64 deep with SyntaxError: System.Text.Json's default depth, which nobody chose, where the language sets no limit below the implementation's own. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J1).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.stringify(JSON.parse("[".repeat(66) + "1" + "]".repeat(66))).length
 since: 10
@@ -24168,8 +24157,7 @@ area: text
 op: JSON parse nested 66 deep
 in: int:66 str:"{\"k\":"
 out: value: f64:0x4078D00000000000
-class: divergence
-divergence.broiler-js: JSON.parse refuses a document nested more than 64 deep with SyntaxError: System.Text.Json's default depth, which nobody chose, where the language sets no limit below the implementation's own. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J1).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.stringify(JSON.parse("{\"k\":".repeat(66) + "1" + "}".repeat(66))).length
 since: 10
@@ -24179,8 +24167,7 @@ area: text
 op: JSON parse nested 100 deep
 in: int:100 str:"["
 out: value: f64:0x4069200000000000
-class: divergence
-divergence.broiler-js: JSON.parse refuses a document nested more than 64 deep with SyntaxError: System.Text.Json's default depth, which nobody chose, where the language sets no limit below the implementation's own. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J1).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.stringify(JSON.parse("[".repeat(100) + "1" + "]".repeat(100))).length
 since: 10
@@ -24190,8 +24177,7 @@ area: text
 op: JSON parse nested 100 deep
 in: int:100 str:"{\"k\":"
 out: value: f64:0x4082C80000000000
-class: divergence
-divergence.broiler-js: JSON.parse refuses a document nested more than 64 deep with SyntaxError: System.Text.Json's default depth, which nobody chose, where the language sets no limit below the implementation's own. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J1).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.stringify(JSON.parse("{\"k\":".repeat(100) + "1" + "}".repeat(100))).length
 since: 10
@@ -24201,8 +24187,7 @@ area: text
 op: JSON parse nested 256 deep
 in: int:256 str:"["
 out: value: f64:0x4080080000000000
-class: divergence
-divergence.broiler-js: JSON.parse refuses a document nested more than 64 deep with SyntaxError: System.Text.Json's default depth, which nobody chose, where the language sets no limit below the implementation's own. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J1).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.stringify(JSON.parse("[".repeat(256) + "1" + "]".repeat(256))).length
 since: 10
@@ -24212,8 +24197,7 @@ area: text
 op: JSON parse nested 256 deep
 in: int:256 str:"{\"k\":"
 out: value: f64:0x4098040000000000
-class: divergence
-divergence.broiler-js: JSON.parse refuses a document nested more than 64 deep with SyntaxError: System.Text.Json's default depth, which nobody chose, where the language sets no limit below the implementation's own. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J1).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.stringify(JSON.parse("{\"k\":".repeat(256) + "1" + "}".repeat(256))).length
 since: 10
@@ -24223,8 +24207,7 @@ area: text
 op: JSON parse nested 511 deep
 in: int:511 str:"["
 out: value: f64:0x408FF80000000000
-class: divergence
-divergence.broiler-js: JSON.parse refuses a document nested more than 64 deep with SyntaxError: System.Text.Json's default depth, which nobody chose, where the language sets no limit below the implementation's own. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J1).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.stringify(JSON.parse("[".repeat(511) + "1" + "]".repeat(511))).length
 since: 10
@@ -24234,8 +24217,7 @@ area: text
 op: JSON parse nested 511 deep
 in: int:511 str:"{\"k\":"
 out: value: f64:0x40A7F60000000000
-class: divergence
-divergence.broiler-js: JSON.parse refuses a document nested more than 64 deep with SyntaxError: System.Text.Json's default depth, which nobody chose, where the language sets no limit below the implementation's own. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J1).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.stringify(JSON.parse("{\"k\":".repeat(511) + "1" + "}".repeat(511))).length
 since: 10
@@ -24245,8 +24227,7 @@ area: text
 op: JSON parse nested 512 deep
 in: int:512 str:"["
 out: value: f64:0x4090040000000000
-class: divergence
-divergence.broiler-js: JSON.parse refuses a document nested more than 64 deep with SyntaxError: System.Text.Json's default depth, which nobody chose, where the language sets no limit below the implementation's own. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J1).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.stringify(JSON.parse("[".repeat(512) + "1" + "]".repeat(512))).length
 since: 10
@@ -24256,8 +24237,7 @@ area: text
 op: JSON parse nested 512 deep
 in: int:512 str:"{\"k\":"
 out: value: f64:0x40A8020000000000
-class: divergence
-divergence.broiler-js: JSON.parse refuses a document nested more than 64 deep with SyntaxError: System.Text.Json's default depth, which nobody chose, where the language sets no limit below the implementation's own. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J1).
+class: normative
 prov: spec:es2026@0248456c#sec-json.parse ref:textref@1
 script: JSON.stringify(JSON.parse("{\"k\":".repeat(512) + "1" + "}".repeat(512))).length
 since: 10
@@ -25027,8 +25007,7 @@ area: text
 op: rawJSON's property is enumerable
 in: undefined
 out: value: str:"rawJSON"
-class: divergence
-divergence.broiler-js: The rawJSON property of JSON.rawJSON's object is not enumerable, where CreateDataPropertyOrThrow makes it enumerable. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J7).
+class: normative
 prov: spec:es2026@0248456c#sec-json.rawjson spec:es2026@0248456c#sec-json.israwjson ref:textref@1
 script: Object.keys(JSON.rawJSON("1")).join()
 since: 10
@@ -25048,8 +25027,7 @@ area: text
 op: isRawJSON of a look-alike
 in: undefined
 out: value: bool:false
-class: divergence
-divergence.broiler-js: The raw-JSON brand is structural: a frozen ordinary object with a rawJSON property is taken for a raw JSON object by JSON.isRawJSON and by JSON.stringify, which writes its text unvalidated, where only JSON.rawJSON's objects carry the brand. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J6).
+class: normative
 prov: spec:es2026@0248456c#sec-json.rawjson spec:es2026@0248456c#sec-json.israwjson ref:textref@1
 script: JSON.isRawJSON(Object.freeze({ rawJSON: "1" }))
 since: 10
@@ -25059,8 +25037,7 @@ area: text
 op: a look-alike is an ordinary object
 in: undefined
 out: value: str:"{\"rawJSON\":\"}{\"}"
-class: divergence
-divergence.broiler-js: The raw-JSON brand is structural: a frozen ordinary object with a rawJSON property is taken for a raw JSON object by JSON.isRawJSON and by JSON.stringify, which writes its text unvalidated, where only JSON.rawJSON's objects carry the brand. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row J6).
+class: normative
 prov: spec:es2026@0248456c#sec-json.rawjson spec:es2026@0248456c#sec-json.israwjson ref:textref@1
 script: JSON.stringify(Object.freeze({ rawJSON: "}{" }))
 since: 10

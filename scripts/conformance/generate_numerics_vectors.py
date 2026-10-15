@@ -37,8 +37,9 @@ from generate_number_vectors import double_expression, f64, js_string_literal, s
 # outcome, as the library-level runner reads them; revision 9 retired every divergence the two
 # engines' cut-overs corrected (numerics-divergences.txt); revision 10 added the text area, which
 # generate_text_vectors.py writes, and changed nothing here; revision 11 widened the schema's clause ids
-# and changed no vector; revision 12 classified the text area's differences and changed nothing here.
-CORPUS_REVISION = 12
+# and changed no vector; revision 12 classified the text area's differences and revision 13 retired
+# them, and neither changed anything here.
+CORPUS_REVISION = 13
 FIRST_REVISION = 6
 GENERATOR = "ref:numericsref@1"
 SPEC = "spec:es2026@0248456c"
