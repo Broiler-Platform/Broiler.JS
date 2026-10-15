@@ -1,0 +1,11 @@
+$ /usr/bin/python3 <tree>/scripts/compliance/compare_test262_paths.py --base <scratch>/base-test262-results.json --after <scratch>/after-test262-results.json --output <scratch>/comparison.json --base-rerun <tree>/docs/evidence/sjl-5-001/test262/base/rerun-timeouts.json --after-rerun <tree>/docs/evidence/sjl-5-001/test262/after/rerun-timeouts.json --classifications <tree>/docs/evidence/sjl-5-001/test262/classifications.json
+# cwd <tree>; started 2026-10-15T10:46:04Z; exit 0
+admitted       failed -> passed   test/built-ins/Uint8Array/prototype/setFromBase64/detached-buffer.js [original] C1
+admitted       failed -> passed   test/built-ins/Uint8Array/prototype/setFromBase64/detached-buffer.js [terser] C1
+admitted       failed -> passed   test/built-ins/Uint8Array/prototype/setFromHex/detached-buffer.js [original] C1
+admitted       failed -> passed   test/built-ins/Uint8Array/prototype/setFromHex/detached-buffer.js [terser] C1
+admitted       failed -> passed   test/built-ins/Uint8Array/prototype/toBase64/detached-buffer.js [original] C1
+admitted       failed -> passed   test/built-ins/Uint8Array/prototype/toBase64/detached-buffer.js [terser] C1
+admitted       failed -> passed   test/built-ins/Uint8Array/prototype/toHex/detached-buffer.js [original] C1
+admitted       failed -> passed   test/built-ins/Uint8Array/prototype/toHex/detached-buffer.js [terser] C1
+rows 96720; changed 8; admitted 8; unclassified 0; regressions 0
