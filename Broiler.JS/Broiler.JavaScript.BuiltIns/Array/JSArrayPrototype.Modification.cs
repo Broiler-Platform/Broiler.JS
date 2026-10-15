@@ -4,6 +4,7 @@ using Broiler.JavaScript.BuiltIns.Null;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.ECMAScript.Text;
 
 namespace Broiler.JavaScript.BuiltIns.Array;
 
@@ -104,9 +105,9 @@ public partial class JSArray
         var relStart = IntegerOf(s);
         var relEnd = IntegerOf(a.GetAt(2), length);
 
-        long target = relTarget < 0 ? Math.Max(length + relTarget, 0) : Math.Min(relTarget, length);
-        long start = relStart < 0 ? Math.Max(length + relStart, 0) : Math.Min(relStart, length);
-        long end = relEnd < 0 ? Math.Max(length + relEnd, 0) : Math.Min(relEnd, length);
+        long target = RelativeIndex.Clamped(relTarget, length);
+        long start = RelativeIndex.Clamped(relStart, length);
+        long end = RelativeIndex.Clamped(relEnd, length);
 
         // Calculate the number of values to copy.
         long count = Math.Min(end - start, length - target);
@@ -174,8 +175,8 @@ public partial class JSArray
         var relativeStart = IntegerOf(start);
         var relativeEnd = IntegerOf(end, len);
 
-        var startIndex = relativeStart < 0 ? Math.Max(len + relativeStart, 0) : Math.Min(relativeStart, len);
-        var endIndex = relativeEnd < 0 ? Math.Max(len + relativeEnd, 0) : Math.Min(relativeEnd, len);
+        var startIndex = RelativeIndex.Clamped(relativeStart, len);
+        var endIndex = RelativeIndex.Clamped(relativeEnd, len);
 
         if (@this is JSArray denseArray
             && startIndex <= uint.MaxValue
@@ -530,10 +531,7 @@ public partial class JSArray
         var arrayLength = GetArrayLikeLengthLong(@this);
 
         // Fix the arguments so they are positive and within the bounds of the array.
-        if (start < 0)
-            start = Math.Max(arrayLength + start, 0);
-        else
-            start = Math.Min(start, arrayLength);
+        start = RelativeIndex.Clamped(start, arrayLength);
 
         deleteCount = Math.Min(Math.Max(deleteCount, 0), arrayLength - start);
 

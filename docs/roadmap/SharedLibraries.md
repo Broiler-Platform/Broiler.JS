@@ -274,7 +274,9 @@ before SJL-3 is met, which the programme's ledger records. This repository's par
   specification and from Broiler.VM's implementation. The notices drop the open entry when it is
   deleted, and say that it was deleted rather than resolved.
 - **Decision SJL-D-25 has nothing to dispose of**: every member on this engine's deletion list is
-  internal or private.
+  internal or private. *Corrected 2026-10-15, at SJL-5.5: one is public, `JSRegExp.Replace(string,
+  string)`, so the decision has one member to dispose of; it is kept, its body over the shared
+  template parser, as [`docs/public-api.md`](../public-api.md) records. The bullet read as above.*
 - **Not shared, and staying here:** the JSON drivers (object building, the reviver, source-text
   records, `JSON.stringify`), `split`, `replace` and the evaluation of named groups, string search, and
   the option reading, receiver checks and errors around every codec. Outside the area, and left to their
@@ -300,6 +302,32 @@ difference the runs found is one the area verdict classified, so its falsifier d
 retained in [`sjl-5-001/engine/`](../evidence/sjl-5-001/engine/). *(Revised 2026-10-14: the paragraph
 gave the number of differences each engine's run found, which this plan does not hold; the bundle and
 `conformance/vectors/REVISIONS.md` give them.)*
+
+**The implementation (SJL-5.3), 2026-10-14.** The text area is in `Broiler.ECMAScript.Algorithms`
+(`7af1424`, merged with Broiler-Platform/Broiler.JS#1028), with its adapter guide, and every text vector
+the library answers passes at library level. The reference-arm comparison is met under
+[`reference-arms.md`](../evidence/sjl-5-001/reference-arms.md) as revised before any run (bundle
+`sjl-5-001` section 3). Its first run did not meet the rule, because of a defect of the classifier, not of
+the library; the classifier was corrected and the whole comparison run again. Every difference it found is
+a correction the area verdict names. For this engine they are `setFromHex`'s whole-input parse (B1), the
+third template walk's `$<name>` (S3), JSON nesting past System.Text.Json's depth (J1) and the lone
+surrogates (J2, J3), all answered at SJL-5.5; for Broiler.VM, the pad's refusal with an empty filler (P2).
+The run under `en-US` lists the same differences as the run under the invariant culture. The preview
+package of the shared stream's next version follows, before either cut-over.
+
+**The cut-over (SJL-5.5), 2026-10-15.** This engine's text algorithms are the shared library's, the
+stream's `0.1.0-preview.3` (`0db9042`), which Broiler.VM took the day before at SJL-5.4: the UTF-16
+readings and `AdvanceStringIndex` with its six copies, `StringPad` and the relative indices, the
+template walks, `UriHelper`, `Uint8Array`'s codecs, and `JSON.parse`'s System.Text.Json reading with its
+exception mapping, `QuoteString` and the gap. Every correction the area verdict lists for this engine is
+made and listed in [`Broiler.JS/CHANGELOG.md`](../../Broiler.JS/CHANGELOG.md) under decision SJL-D-16
+(a): P4, P5, S2, S3, B1 to B4, J1 to J3, J6 and J7, with X1 and X2 in this engine's own `split` and
+string search; J5 was corrected on 2026-10-14, and J4 was refuted at SJL-5.2. The two policies are
+stated there: the longest String a pad or a repeat builds is the longest a .NET string can be, and
+`JSON.parse` reads 512 levels, as Broiler.VM does; past either, a `RangeError`. A typed array's `with`
+keeps its normalisation inline, because its two steps read two lengths. `UriHelper` is deleted, and the
+third-party notices say so. The corpus's next revision retires the fields these corrections answer.
+*Added 2026-10-15:* corpus revision 13 retires them, with Broiler.VM's five.
 
 ## Invariants
 

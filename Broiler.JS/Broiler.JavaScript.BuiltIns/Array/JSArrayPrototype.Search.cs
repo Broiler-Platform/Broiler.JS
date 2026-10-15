@@ -3,6 +3,7 @@ using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
+using Broiler.ECMAScript.Text;
 
 namespace Broiler.JavaScript.BuiltIns.Array;
 
@@ -20,10 +21,7 @@ public partial class JSArray
     {
         var @this = ToArrayLikeObject(a.This);
         var length = GetArrayLikeLengthLong(@this);
-        var relativeIndex = IntegerOf(a[0]);
-        var index = relativeIndex >= 0 ? relativeIndex : length + relativeIndex;
-
-        if (index < 0 || index >= length)
+        if (!RelativeIndex.TryElement(IntegerOf(a[0]), length, out var index))
             return JSUndefined.Value;
 
         return @this[CreateNumber(index)];
@@ -45,13 +43,7 @@ public partial class JSArray
         if (length == 0)
             return JSBoolean.False;
 
-        long fromIndex = IntegerOf(a[1]);
-        if (fromIndex < 0)
-            fromIndex = fromIndex < -length ? 0 : fromIndex + length;
-        if (fromIndex < 0)
-            fromIndex = 0;
-
-        for (long index = fromIndex; index < length; index++)
+        for (long index = RelativeIndex.Clamped(IntegerOf(a[1]), length); index < length; index++)
         {
             if (GetElementByIndex(@this, index).SameValueZero(first))
                 return JSBoolean.True;
@@ -100,10 +92,7 @@ public partial class JSArray
         if (length == 0)
             return JSNumber.MinusOne;
 
-        long fromIndex = IntegerOf(a[1]);
-
-        if (fromIndex < 0)
-            fromIndex = fromIndex < -length ? 0 : fromIndex + length;
+        var fromIndex = RelativeIndex.Clamped(IntegerOf(a[1]), length);
 
         if (fromIndex >= length)
             return JSNumber.MinusOne;
@@ -137,17 +126,10 @@ public partial class JSArray
         if (length == 0)
             return JSNumber.MinusOne;
 
-        // Default fromIndex is len-1; a supplied n ≥ 0 clamps to len-1, a negative n offsets from len.
-        long start;
-        if (a.TryGetAt(1, out var value))
-        {
-            var n = IntegerOf(value);
-            start = n >= 0 ? Math.Min(n, length - 1) : length + n;
-        }
-        else
-        {
-            start = length - 1;
-        }
+        // Default fromIndex is len-1; a supplied one is resolved by the shared library (SJL-5.5).
+        var start = a.TryGetAt(1, out var value)
+            ? RelativeIndex.LastSearchStart(IntegerOf(value), length)
+            : length - 1;
 
         for (long i = start; i >= 0; i--)
         {

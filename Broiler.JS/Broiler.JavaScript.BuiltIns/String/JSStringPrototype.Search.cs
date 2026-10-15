@@ -32,7 +32,8 @@ public partial class JSString
 
         position = Math.Min(Math.Max(0, position), @this.Length);
 
-        if (@this.IndexOf(arg, position) >= 0)
+        // Ordinal, as every search here is: code units compared, no culture (X2, SJL-5.5).
+        if (@this.IndexOf(arg, position, StringComparison.Ordinal) >= 0)
             return BooleanTrue;
 
         return BooleanFalse;
@@ -54,14 +55,14 @@ public partial class JSString
         var endArg = a[1];
 
         if (endArg == null || endArg.IsUndefined)
-            return @this.EndsWith(fs) ? BooleanTrue : BooleanFalse;
+            return @this.EndsWith(fs, StringComparison.Ordinal) ? BooleanTrue : BooleanFalse;
 
         var endPosition = Clamp(IntegerArgument(endArg), @this.Length);
 
         if (fs.Length > endPosition)
             return BooleanFalse;
 
-        if (string.Compare(@this, endPosition - fs.Length, fs, 0, fs.Length) == 0)
+        if (string.CompareOrdinal(@this, endPosition - fs.Length, fs, 0, fs.Length) == 0)
             return BooleanTrue;
 
         return BooleanFalse;
@@ -81,7 +82,7 @@ public partial class JSString
         var search = searchStr.StringValue;
         var pos = Clamp(IntegerArgument(a[1]), @this.Length);
         if (pos == 0)
-            return @this.StartsWith(search) ? BooleanTrue : BooleanFalse;
+            return @this.StartsWith(search, StringComparison.Ordinal) ? BooleanTrue : BooleanFalse;
 
         // §22.1.3.22 step 8: if searchLength + start > len, return false. Otherwise
         // compare searchStr against the slice of S that starts at `start` — anchored at
@@ -109,7 +110,7 @@ public partial class JSString
         // §22.1.3.8: searchString's ToString, then the position's ToIntegerOrInfinity.
         var search = searchStr.StringValue;
         var pos = Clamp(IntegerArgument(a[1]), @this.Length);
-        return @this.IndexOf(search, pos) >= 0 ? BooleanTrue : BooleanFalse;
+        return @this.IndexOf(search, pos, StringComparison.Ordinal) >= 0 ? BooleanTrue : BooleanFalse;
     }
 
     [JSPrototypeMethod]
@@ -123,7 +124,9 @@ public partial class JSString
         var searchString = (a[0] ?? JSUndefined.Value).StringValue;
         var pos = Clamp(IntegerArgument(a[1]), @this.Length);
 
-        var index = @this.IndexOf(searchString, pos);
+        // StringIndexOf compares code units: ordinal, not the current culture's comparison, which
+        // under ICU read "\r\n" as one unit and skipped ignorable characters (X2, SJL-5.5).
+        var index = @this.IndexOf(searchString, pos, StringComparison.Ordinal);
         return CreateNumber(index);
     }
 

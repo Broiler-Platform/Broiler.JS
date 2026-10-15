@@ -1,6 +1,8 @@
 ﻿using System.Globalization;
 using System.Text;
+using Broiler.ECMAScript;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Text;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
@@ -48,10 +50,14 @@ public partial class JSString
         return StringPad(@this, s, c, padStart: true);
     }
 
-    // Implements the abstract operation StringPad (ECMA-262). The filler is the
-    // full fill string repeated and truncated to the required width, not just a
-    // single character. Argument coercion order matters: maxLength is converted
-    // before fillString, and fillString is only coerced when padding is needed.
+    // This engine's length policy (SJL-5.5): the longest String a built-in builds, which is the longest
+    // a .NET string can be. A pad or a repeat past it is a RangeError, not the runtime's exception.
+    internal const int MaximumLength = 0x3FFFFFDF;
+
+    // StringPaddingBuiltinsImpl (ECMA-262 22.1.3.17.1): maxLength is converted before fillString, and
+    // fillString only when padding is needed. StringPad itself is the shared library's (SJL-5.5),
+    // under this engine's length policy: a result longer than MaximumLength is a RangeError, where the
+    // builder used to let .NET's OutOfMemoryException through past the runtime's largest string (P4).
     private static JSString StringPad(string str, JSValue maxLengthArg, JSValue fillArg, bool padStart)
     {
         // intMaxLength = ToLength(maxLength), the shared library's (SJL-4.5).
@@ -61,22 +67,17 @@ public partial class JSString
             return new JSString(str);
 
         var fillString = fillArg.IsUndefined ? " " : fillArg.StringValue;
-        if (fillString.Length == 0)
-            return new JSString(str);
+        var status = StringPadding.Pad(
+            str,
+            (long)maxLength,
+            fillString,
+            padStart ? PadPlacement.Start : PadPlacement.End,
+            new LengthLimit(MaximumLength),
+            out var padded);
 
-        // A result longer than this engine's strings hold is a RangeError, as repeat's is.
-        if (maxLength > int.MaxValue)
-            throw JSEngine.NewRangeError("Invalid string length");
-
-        var fillLength = (int)maxLength - str.Length;
-        var filler = new StringBuilder(fillLength);
-        while (filler.Length < fillLength)
-            filler.Append(fillString);
-        filler.Length = fillLength;
-
-        return padStart
-            ? new JSString(filler.Append(str).ToString())
-            : new JSString(str + filler);
+        return status == ResultStatus.Completed
+            ? new JSString(padded)
+            : throw JSEngine.NewRangeError("Invalid string length");
     }
 
     [JSPrototypeMethod]
@@ -99,7 +100,9 @@ public partial class JSString
         if (@this.Length == 0 || n == 0)
             return new JSString(string.Empty);
 
-        if (n * @this.Length > int.MaxValue)
+        // A result longer than this engine's strings hold is a RangeError: past MaximumLength the
+        // runtime cannot allocate it, and its OutOfMemoryException used to reach a script (P4).
+        if (n * @this.Length > MaximumLength)
             throw JSEngine.NewRangeError($"Invalid count value");
 
         var c = (int)n;
@@ -179,67 +182,17 @@ public partial class JSString
     internal static JSValue IsWellFormed(in Arguments a)
     {
         var @this = a.This.AsString();
-        return IsWellFormedUtf16(@this) ? JSBoolean.True : JSBoolean.False;
+        return Utf16.IsWellFormed(@this) ? JSBoolean.True : JSBoolean.False;
     }
 
+    // One U+FFFD per lone surrogate, so the result is as long as the receiver; the shared library's
+    // toWellFormed (SJL-5.5), which answers a well-formed receiver itself.
     [JSPrototypeMethod]
     [JSExport("toWellFormed")]
     internal static JSValue ToWellFormed(in Arguments a)
     {
         var @this = a.This.AsString();
-        return new JSString(ToWellFormedUtf16(@this));
-    }
-
-    private static bool IsWellFormedUtf16(string value)
-    {
-        for (var i = 0; i < value.Length; i++)
-        {
-            var ch = value[i];
-            if (char.IsHighSurrogate(ch))
-            {
-                if (i + 1 >= value.Length || !char.IsLowSurrogate(value[i + 1]))
-                    return false;
-
-                i++;
-            }
-            else if (char.IsLowSurrogate(ch))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static string ToWellFormedUtf16(string value)
-    {
-        var result = new StringBuilder(value.Length);
-        for (var i = 0; i < value.Length; i++)
-        {
-            var ch = value[i];
-            if (char.IsHighSurrogate(ch))
-            {
-                if (i + 1 < value.Length && char.IsLowSurrogate(value[i + 1]))
-                {
-                    result.Append(ch);
-                    result.Append(value[++i]);
-                }
-                else
-                {
-                    result.Append('\uFFFD');
-                }
-            }
-            else if (char.IsLowSurrogate(ch))
-            {
-                result.Append('\uFFFD');
-            }
-            else
-            {
-                result.Append(ch);
-            }
-        }
-
-        return result.ToString();
+        return new JSString(Utf16.ToWellFormed(@this));
     }
 
     [JSPrototypeMethod]

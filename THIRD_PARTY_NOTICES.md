@@ -90,8 +90,13 @@ third-party code.", which overlooked arm J's `SumPrecise`.
 - `JSMath.Clz32` (`Broiler.JavaScript.BuiltIns`) links Jurassic's `MathObject.cs`
   ([github.com/paulbartrum/jurassic](https://github.com/paulbartrum/jurassic), MIT License, Copyright
   (c) 2015 Paul Bartrum) as a reference. Its body is `ToUint32` and a leading-zero count, and carries
-  no Jurassic code. `UriHelper` (`Broiler.JavaScript.Runtime`) links Jurassic's `GlobalObject.cs` the
-  same way; whether its code derives from it is not recorded here yet.
+  no Jurassic code. `UriHelper` (`Broiler.JavaScript.Runtime`) linked Jurassic's `GlobalObject.cs` the
+  same way, and whether its code derived from it was never recorded. It was deleted at milestone
+  SJL-5.5, not resolved: the URI functions call the shared library's `UriCodec`, written from the
+  specification and from Broiler.VM's implementation. The test-only arm J of the text area's reference
+  arms keeps a copy until SJL-16. *(Revised 2026-10-15, at milestone SJL-5.5: the sentence read
+  "`UriHelper` (`Broiler.JavaScript.Runtime`) links Jurassic's `GlobalObject.cs` the same way; whether
+  its code derives from it is not recorded here yet.")*
 - `JSMath.SumPrecise` said, until milestone SJL-4.5, that it ported the reference algorithm of the
   TC39 `Math.sumPrecise` proposal named above. That code is deleted from the engine: the sum is the
   shared library's `PreciseSum`, written from the clause. The test-only arm J keeps a copy until

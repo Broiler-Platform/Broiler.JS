@@ -16,6 +16,8 @@ using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Compiler;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript;
+using Broiler.ECMAScript.Text;
 
 namespace Broiler.JavaScript.Globals;
 
@@ -101,14 +103,14 @@ public partial class JSGlobalStatic
     public static JSValue DecodeURI(in Arguments a)
     {
         var f = a.Get1().StringValue;
-        return JSValue.CreateString(UriHelper.DecodeURI(f));
+        return UriAnswer(UriCodec.Decode(f, UriCodec.ReservedAndNumberSign, out var result, out _), result);
     }
 
     [JSExport("decodeURIComponent", Length = 1)]
     public static JSValue DecodeURIComponent(in Arguments a)
     {
         var f = a.Get1().StringValue;
-        return JSValue.CreateString(UriHelper.DecodeURIComponent(f));
+        return UriAnswer(UriCodec.Decode(f, string.Empty, out var result, out _), result);
     }
 
     [JSExport("eval", Length = 1)]
@@ -152,21 +154,29 @@ public partial class JSGlobalStatic
     public static JSValue EncodeURI(in Arguments a)
     {
         var f = a.Get1().StringValue;
-        return JSValue.CreateString(UriHelper.EncodeURI(f));
+        return UriAnswer(UriCodec.Encode(f, UriCodec.ReservedAndNumberSign, out var result, out _), result);
     }
 
     [JSExport("encodeURIComponent", Length = 1)]
     public static JSValue EncodeURIComponent(in Arguments a)
     {
         var f = a.Get1().StringValue;
-        return JSValue.CreateString(UriHelper.EncodeURIComponent(f));
+        return UriAnswer(UriCodec.Encode(f, string.Empty, out var result, out _), result);
     }
+
+    // A URI function's answer: the shared codec's String (SJL-5.5), or the one URIError the
+    // language has for a lone surrogate to encode and for every malformed escape, octet or sequence
+    // to decode. The codec names which; the message does not.
+    private static JSValue UriAnswer(ResultStatus status, string result) =>
+        status == ResultStatus.Completed
+            ? JSValue.CreateString(result)
+            : throw JSEngine.NewURIError("URI malformed");
 
     [JSExport("escape", Length = 1)]
     public static JSValue Escape(in Arguments a)
     {
         var f = CoerceLegacyUriString(a.Get1());
-        return JSValue.CreateString(UriHelper.Escape(f));
+        return JSValue.CreateString(UriCodec.Escape(f));
     }
 
     [JSExport("isFinite", Length = 1)]
@@ -204,7 +214,7 @@ public partial class JSGlobalStatic
     public static JSValue Unescape(in Arguments a)
     {
         var f = CoerceLegacyUriString(a.Get1());
-        return JSValue.CreateString(UriHelper.Unescape(f));
+        return JSValue.CreateString(UriCodec.Unescape(f));
     }
 
     [JSExport("setImmediate", Length = 1)]

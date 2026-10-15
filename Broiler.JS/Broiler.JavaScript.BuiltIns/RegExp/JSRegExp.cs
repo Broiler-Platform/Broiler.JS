@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using UnicodeEmoji.StringProperties;
+using Broiler.ECMAScript.Text;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
 
@@ -451,13 +452,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
             if (nextLastIndex >= inputString.Length)
                 return matchValues;
 
-            var advanced = nextLastIndex + 1;
-            if (fullUnicode && advanced < inputString.Length
-                && char.IsHighSurrogate(inputString[nextLastIndex])
-                && char.IsLowSurrogate(inputString[advanced]))
-                advanced++;
-
-            SetObservableLastIndex(advanced);
+            SetObservableLastIndex((int)Utf16.AdvanceStringIndex(inputString, nextLastIndex, fullUnicode));
         }
     }
 
@@ -592,79 +587,43 @@ public partial class JSRegExp : JSObject, IJSRegExp
     /// <returns> A copy of the given string with text replaced using a regular expression. </returns>
     public string Replace(string input, string replaceText)
     {
-        // Check if the replacement string contains any patterns.
-        bool replaceTextContainsPattern = replaceText.IndexOf('$') >= 0;
+        // The template is the shared library's parse (SJL-5.5), taken once, and its parts are
+        // evaluated per match. This pattern's groups are its captures, and a group that did not
+        // participate substitutes the empty string; there are no named captures here, so `$<`
+        // stays literal. String.prototype.replace no longer reaches this member (SJL-5.5, S3): it is
+        // kept for its public callers (decision SJL-D-25).
+        ReplacementPart[]? parts = null;
 
         return ReplaceMatches(input, match =>
         {
-            // If there is no pattern, replace the pattern as is.
-            if (replaceTextContainsPattern == false)
-                return replaceText;
-
             var groups = match.Groups;
+            parts ??= ReplacementTemplate.Parse(replaceText, groups.Length - 1, false);
 
-            // An unmatched capture substitutes the empty string, matching .NET's Group.Value
-            // for a non-participating group (RegexMatchData reports it as null).
-            string Capture(int n) => groups[n].Success ? groups[n].Value : string.Empty;
-
-            // Patterns
-            // $$	Inserts a "$".
-            // $&	Inserts the matched substring.
-            // $`	Inserts the portion of the string that precedes the matched substring.
-            // $'	Inserts the portion of the string that follows the matched substring.
-            // $n or $nn	Where n or nn are decimal digits, inserts the nth parenthesized submatch string, provided the first argument was a RegExp object.
-            var replacementBuilder = new StringBuilder();
-            for (int i = 0; i < replaceText.Length; i++)
+            var replacementBuilder = new StringBuilder(replaceText.Length);
+            foreach (var part in parts)
             {
-                char c = replaceText[i];
-                if (c == '$' && i < replaceText.Length - 1)
+                switch (part.Kind)
                 {
-                    c = replaceText[++i];
-                    if (c == '$')
+                    case ReplacementPartKind.Dollar:
                         replacementBuilder.Append('$');
-                    else if (c == '&')
+                        break;
+                    case ReplacementPartKind.Match:
                         replacementBuilder.Append(match.Value);
-                    else if (c == '`')
+                        break;
+                    case ReplacementPartKind.Before:
                         replacementBuilder.Append(input.AsSpan(0, match.Index));
-                    else if (c == '\'')
+                        break;
+                    case ReplacementPartKind.After:
                         replacementBuilder.Append(input.AsSpan(match.Index + match.Length));
-                    else if (c >= '0' && c <= '9')
-                    {
-                        int matchNumber1 = c - '0';
-
-                        // The match number can be one or two digits long.
-                        int matchNumber2 = 0;
-                        if (i < replaceText.Length - 1 && replaceText[i + 1] >= '0' && replaceText[i + 1] <= '9')
-                            matchNumber2 = matchNumber1 * 10 + (replaceText[i + 1] - '0');
-
-                        // Try the two digit capture first.
-                        if (matchNumber2 > 0 && matchNumber2 < groups.Length)
-                        {
-                            // Two digit capture replacement.
-                            replacementBuilder.Append(Capture(matchNumber2));
-                            i++;
-                        }
-                        else if (matchNumber1 > 0 && matchNumber1 < groups.Length)
-                        {
-                            // Single digit capture replacement.
-                            replacementBuilder.Append(Capture(matchNumber1));
-                        }
-                        else
-                        {
-                            // Capture does not exist.
-                            replacementBuilder.Append('$');
-                            i--;
-                        }
-                    }
-                    else
-                    {
-                        // Unknown replacement pattern.
-                        replacementBuilder.Append('$');
-                        replacementBuilder.Append(c);
-                    }
+                        break;
+                    case ReplacementPartKind.Capture:
+                        var group = groups[part.CaptureIndex];
+                        replacementBuilder.Append(group.Success ? group.Value : string.Empty);
+                        break;
+                    default:
+                        replacementBuilder.Append(replaceText.AsSpan(part.Start, part.Length));
+                        break;
                 }
-                else
-                    replacementBuilder.Append(c);
             }
 
             return replacementBuilder.ToString();

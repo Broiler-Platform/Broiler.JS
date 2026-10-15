@@ -4,6 +4,7 @@ using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.BuiltIns.Symbol;
+using Broiler.ECMAScript.Text;
 
 namespace Broiler.JavaScript.BuiltIns.Array;
 
@@ -111,12 +112,8 @@ public partial class JSArray
             ? (end.IsUndefined ? length : IntegerOf(end, length))
             : length;
 
-        var actualStart = relativeStart < 0
-            ? Math.Max(length + relativeStart, 0)
-            : Math.Min(relativeStart, length);
-        var actualEnd = relativeEnd < 0
-            ? Math.Max(length + relativeEnd, 0)
-            : Math.Min(relativeEnd, length);
+        var actualStart = RelativeIndex.Clamped(relativeStart, length);
+        var actualEnd = RelativeIndex.Clamped(relativeEnd, length);
         var count = Math.Max(actualEnd - actualStart, 0);
 
         // §23.1.3.25 step 8 hands `count` straight to ArraySpeciesCreate, so a count above the
@@ -304,9 +301,7 @@ public partial class JSArray
         long relativeStart = a.TryGetAt(0, out var startArg)
             ? IntegerOf(startArg)
             : 0;
-        long actualStart = relativeStart < 0
-            ? Math.Max(len + relativeStart, 0)
-            : Math.Min(relativeStart, len);
+        long actualStart = RelativeIndex.Clamped(relativeStart, len);
 
         long insertCount = a.Length > 2 ? a.Length - 2 : 0;
 
@@ -357,10 +352,7 @@ public partial class JSArray
 
         var len = (uint)length;
         var (indexArg, value) = a.Get2();
-        var relativeIndex = IntegerOf(indexArg);
-        long actualIndex = relativeIndex >= 0 ? (long)relativeIndex : len + relativeIndex;
-
-        if (actualIndex < 0 || actualIndex >= len)
+        if (!RelativeIndex.TryElement(IntegerOf(indexArg), len, out var actualIndex))
             throw JSEngine.NewRangeError("Invalid index");
 
         var result = new JSArray(len);

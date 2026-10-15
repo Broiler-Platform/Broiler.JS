@@ -30,7 +30,7 @@ internal static class Program
         {
             Console.Error.WriteLine("usage: compare --population DIR --out DIR [--limit LINES] [--operations NAME,NAME]");
             Console.Error.WriteLine("       compare-numerics --population DIR --out DIR [--limit LINES] [--operations NAME|NAME]");
-            Console.Error.WriteLine("       compare-text --population DIR --out DIR [--limit LINES] [--operations NAME|NAME] [--controls] [--culture NAME]");
+            Console.Error.WriteLine("       compare-text --population DIR --out DIR [--limit LINES] [--operations NAME|NAME] [--culture NAME]");
             return 2;
         }
 
@@ -44,7 +44,7 @@ internal static class Program
             return CompareNumerics(Option);
 
         if (args[0] == "compare-text")
-            return CompareText(Option, args.Contains("--controls"));
+            return CompareText(Option);
 
         var population = new Population(Option("--population") ?? throw new ArgumentException("--population is required"));
         var output = Option("--out") ?? throw new ArgumentException("--out is required");
@@ -56,11 +56,11 @@ internal static class Program
     }
 
     /// <summary>
-    /// Bundle sjl-5-001's comparison, or with <c>--controls</c> its two negative controls alone. The
-    /// operation names hold spaces, so a filter separates them with "|"; a filtered run, like a limited
-    /// one, is void.
+    /// Bundle sjl-5-001's comparison. The operation names hold spaces, so a filter separates them with "|";
+    /// a filtered run, like a limited one, is void. Its two negative controls ran with <c>--controls</c> and
+    /// were then removed, as the rule asks; reference-arms-run/negative-control/controls.patch restores them.
     /// </summary>
-    private static int CompareText(Func<string, string?> option, bool controls)
+    private static int CompareText(Func<string, string?> option)
     {
         // Every thread of the run, the parallel workers' included, under one culture: the invariant one, or
         // the one --culture names for the rule's second run of arm J's string operations.
@@ -74,8 +74,7 @@ internal static class Program
         var output = option("--out") ?? throw new ArgumentException("--out is required");
         long? limit = option("--limit") is { } text ? long.Parse(text, CultureInfo.InvariantCulture) : null;
         var names = option("--operations")?.Split('|');
-        var all = controls ? Text.TextArms.NegativeControls : Text.TextArms.Operations;
-        var operations = all.Where(o => names is null || names.Contains(o.Name)).ToList();
+        var operations = Text.TextArms.Operations.Where(o => names is null || names.Contains(o.Name)).ToList();
         new Text.TextComparison(population, operations, limit, names is not null, Console.Out)
             .Run(output, "docs/evidence/sjl-5-001/reference-arms.md", "docs/evidence/sjl-5-001/reference-arms-revised-2026-10-14.md");
         return 0;

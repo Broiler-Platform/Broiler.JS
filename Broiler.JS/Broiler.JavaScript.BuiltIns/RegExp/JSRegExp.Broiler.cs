@@ -3,6 +3,7 @@ using Broiler.Regex;
 using Broiler.Regex.Ast;
 using Broiler.Regex.Matching;
 using NetMatch = System.Text.RegularExpressions.Match;
+using Broiler.ECMAScript.Text;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
 
@@ -339,11 +340,7 @@ public partial class JSRegExp
             {
                 // Advance one position past an empty match so iteration terminates, keeping
                 // a surrogate pair whole under u/v (the same rule BroilerRegex.Matches uses).
-                next = match.Index + 1;
-                if ((unicode || unicodeSets) && match.Index < input.Length
-                    && char.IsHighSurrogate(input[match.Index])
-                    && match.Index + 1 < input.Length && char.IsLowSurrogate(input[match.Index + 1]))
-                    next++;
+                next = (int)Utf16.AdvanceStringIndex(input, match.Index, unicode || unicodeSets);
             }
             pos = next;
         }

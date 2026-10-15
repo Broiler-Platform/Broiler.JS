@@ -9,7 +9,7 @@ namespace Broiler.JavaScript.Engine;
 /// <summary>
 /// Module initializer for the Engine assembly.
 /// Wires factory delegates for JSEngine, JSObject, JSException, JSVariable,
-/// UriHelper, JSValue, Arguments, and other delegate-based extension points.
+/// JSValue, Arguments, and other delegate-based extension points.
 /// Consolidates initialization previously split across Core and Engine assemblies.
 /// </summary>
 internal static class EngineAssemblyInitializer
@@ -50,10 +50,6 @@ internal static class EngineAssemblyInitializer
         JSVariable.IsStrictMode = static () => JSEngine.IsStrictMode;
         JSVariable.NewReferenceErrorFactory = static (msg, function, filePath, line) =>
             JSEngine.NewReferenceError(msg, function, filePath, line);
-
-        // ── UriHelper delegate ──────────────────────────────────────
-        UriHelper.NewURIError = static (message, function, filePath, line) =>
-            JSEngine.NewURIError(message, function, filePath, line);
 
         // ── JSValue.MarshalObject delegate ──────────────────────────
         JSValue.IsStrictModeEnabled = static () => JSEngine.IsStrictMode;

@@ -553,17 +553,11 @@ public partial class JSString : JSPrimitive
                 return false;
             }
 
-            var first = span[pos];
-            if (char.IsHighSurrogate(first) && pos + 1 < span.Length && char.IsLowSurrogate(span[pos + 1]))
-            {
-                value = new JSString(new string([first, span[pos + 1]]));
-                pos += 2;
-            }
-            else
-            {
-                value = new JSString(new string(first, 1));
-                pos += 1;
-            }
+            // CodePointAt's width (§11.1.4): two units for a pair, one for any other unit; the shared
+            // library's (SJL-5.5).
+            var width = Broiler.ECMAScript.Text.Utf16.CodePointAt(span.AsSpan(), pos).CodeUnitCount;
+            value = new JSString(new string(span.AsSpan().Slice(pos, width)));
+            pos += width;
 
             index++;
             return true;

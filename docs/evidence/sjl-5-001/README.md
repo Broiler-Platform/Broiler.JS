@@ -12,8 +12,11 @@ first code of the area is [`rules-in-force.log`](rules-in-force.log). **Area ver
 Broiler.VM). **Reviewer:** none, and nothing here has been read by anyone but its author.
 
 **State:** collection in progress. Nothing here is a verdict until its section says so. **Taken:** the
-test262 base (section 1) and the first engine-level runs on the text area (section 2). The reference-arm
-comparison, the after run and the rest of SJL-5.6 are added when they are taken. Broiler.VM keeps its own
+test262 base (section 1), the engine-level runs on the text area (section 2) and the reference-arm
+comparison, which is **MET** (section 3). The after run and the rest of SJL-5.6 are added when they are
+taken. *(Revised 2026-10-14, when the comparison was taken. The paragraph read: "**Taken:** the test262
+base (section 1) and the first engine-level runs on the text area (section 2). The reference-arm
+comparison, the after run and the rest of SJL-5.6 are added when they are taken.")* Broiler.VM keeps its own
 bundle of the same name for its own half, judged by its own rule; neither bundle reads the other's runs.
 
 ## 1. The test262 base (part A)
@@ -75,3 +78,36 @@ classified divergences, 0 unclassified differences**, and the runner's four test
 fields above and the number area's 4. The negative control
 ([`engine/negative-control-revision-12.tsv`](engine/negative-control-revision-12.tsv)) moves
 `numbers/to-fixed/0001`'s verdict alone, to a difference.
+
+## 3. The reference-arm comparison (SJL-5.3): MET
+
+[`reference-arms-run/`](reference-arms-run/README.md) holds it. The rule is
+[`reference-arms.md`](reference-arms.md), as revised before any run by
+[`reference-arms-revised-2026-10-14.md`](reference-arms-revised-2026-10-14.md). Run at `95f4387`, the
+comparison lists 80,013 differences between S and the arms. Every one is class (a), a correction that
+S makes, under the rows of the correspondence: B1, S3, J1, J2 and J3 of this engine's arm, and P2 of
+Broiler.VM's. Arm V's charges are S's wherever its values are. Both negative controls were reported and
+left unclassified. The run under `en-US` gives the same listing, byte for byte.
+
+**The first run did not meet the rule**, and the bundle keeps it (`reference-arms-run/first-run/`). The
+classifier could not read the comparison's shortened listing of a long field, so it put 3,158 differences
+in class (c) and left 13,227 unclassified. S was right on all of them. The classifier was corrected at
+`95f4387`, before the whole comparison ran again.
+
+## 4. The cut-over's vectors (SJL-5.5)
+
+On corpus revision 12, with the product sources of the change that lands SJL-5.5's cut-over
+([`engine/cut-over-revision-12.log`](engine/cut-over-revision-12.log),
+[`engine/cut-over-revision-12.tsv.gz`](engine/cut-over-revision-12.tsv.gz)): **42,943 vectors, 42,939
+match, 4 classified divergences, 0 unclassified differences**, and the runner's four tests pass. Each of
+the 42 fields of section 2 reports "divergence no longer holds"; the 4 are the number area's, as before.
+Every correction is listed in [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md), and corpus
+revision 13 retires the fields.
+
+**Every vector of corpus revision 13 has the result its class expects.** At `bb1fc66`, which carries
+revision 13 and retires the 42 fields with Broiler.VM's five
+([`engine/retired-divergences-revision-13.tsv`](engine/retired-divergences-revision-13.tsv)), with the
+same product sources ([`engine/run-revision-13.log`](engine/run-revision-13.log),
+[`engine/run-revision-13.tsv.gz`](engine/run-revision-13.tsv.gz)): **42,943 vectors, 42,939 match, 4
+classified divergences, 0 unclassified differences**, and the runner's four tests pass. The 4 are the
+number area's.

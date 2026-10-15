@@ -1,0 +1,58 @@
+{
+  "differences": 80013,
+  "verdicts": {
+    "(a)": 80013
+  },
+  "classes": [
+    {
+      "operation": "FromHex",
+      "variant": "J:FromHex and SetFromHex",
+      "verdict": "(a)",
+      "reason": "correction of Broiler.JS: S is the reference's; B1",
+      "count": 11036
+    },
+    {
+      "operation": "GetSubstitution",
+      "variant": "J:JSRegExp.Replace(string, string)",
+      "verdict": "(a)",
+      "reason": "correction of Broiler.JS: S is the reference's; S3",
+      "count": 43548
+    },
+    {
+      "operation": "JSON parse",
+      "variant": "J:JSJSON.Parse",
+      "verdict": "(a)",
+      "reason": "correction of Broiler.JS: S is the reference's; J1",
+      "count": 19201
+    },
+    {
+      "operation": "JSON parse",
+      "variant": "J:JSJSON.Parse",
+      "verdict": "(a)",
+      "reason": "correction of Broiler.JS: S is the reference's; J2",
+      "count": 4096
+    },
+    {
+      "operation": "JSON parse",
+      "variant": "J:JSJSON.Parse",
+      "verdict": "(a)",
+      "reason": "correction of Broiler.JS: S is the reference's; J3",
+      "count": 2048
+    },
+    {
+      "operation": "StringPad",
+      "variant": "V:StringPadTo",
+      "verdict": "(a)",
+      "reason": "correction of Broiler.VM: S is the reference's; P2",
+      "count": 84
+    }
+  ],
+  "differences.tsv": {
+    "lines": 80014,
+    "sha256": "f7db6fde59e32240a77bb7d7c2b206fa02f0a5be562a5962a6d7ab81d602d807"
+  },
+  "classification.tsv": {
+    "lines": 80014,
+    "sha256": "6a34dcb5a032b511043c03caceb06412808596fea30b3c6a7e45996c924860ca"
+  }
+}

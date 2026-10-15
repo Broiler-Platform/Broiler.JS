@@ -64,7 +64,7 @@ profile. They are not part of the `Broiler.JavaScript.*` set above and do not sh
 
 | Package | State | Public surface |
 | --- | --- | --- |
-| `Broiler.ECMAScript.Algorithms` | `0.1.0-preview.1` published; `0.1.0-preview.2`, with the numerics area, the next *(corrected 2026-10-14; read "`0.2.0`, with the numerics area, the next version (Broiler.VM's committed feed holds its `0.2.0-preview.1`)")*; this engine's `Parser`, `Runtime`, `BuiltIns`, `Storage` and `Expressions` reference it | The contract types `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`; the number-conversion area, namespace `Broiler.ECMAScript.Numbers`: `NumberText`, `NumberParsing`, `NumericLiterals`, `NumericKeys`; and the numerics area, in the same namespace: `IntegerConversions`, `Float16`, `MathKernels`, `PreciseSum`, `ExactRounding` with `RoundingMode` and `UnsignedRoundingMode`, `BigIntMath`, `BigIntText` and `BigIntPolicy` |
+| `Broiler.ECMAScript.Algorithms` | `0.1.0-preview.1` and `0.1.0-preview.2`, with the numerics area, published; `0.1.0-preview.3`, with the text area, the next *(corrected 2026-10-14; read "`0.2.0`, with the numerics area, the next version (Broiler.VM's committed feed holds its `0.2.0-preview.1`)")*; this engine's `Parser`, `Runtime`, `BuiltIns`, `Storage` and `Expressions` reference it | The contract types `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`; the number-conversion area, namespace `Broiler.ECMAScript.Numbers`: `NumberText`, `NumberParsing`, `NumericLiterals`, `NumericKeys`; the numerics area, in the same namespace: `IntegerConversions`, `Float16`, `MathKernels`, `PreciseSum`, `ExactRounding` with `RoundingMode` and `UnsignedRoundingMode`, `BigIntMath`, `BigIntText` and `BigIntPolicy`; and the text area, namespace `Broiler.ECMAScript.Text`: `Utf16` with `CodePointRecord`, `StringPadding` with `PadPlacement`, `RelativeIndex`, `ReplacementTemplate` with `ReplacementPart` and `ReplacementPartKind`, `UriCodec`, `Base64Codec` with `Base64Alphabet` and `LastChunkHandling`, `JsonReader` with `JsonToken`, and `JsonText` |
 | `Broiler.ECMAScript.Conformance` | Test-only; not packed at this version | The corpus reader, the validator, the engine-level and library-level runners and their report |
 
 **Their compatibility promise is stronger than this engine's**, and it is enforced rather than stated
@@ -94,7 +94,53 @@ version the stream will publish | `WorkCharge`, `ResultStatus`, `Failure`, `Leng
 `DepthLimit` |".* *Revised again 2026-10-13, at milestone SJL-4.5, when the numerics area moved in: the
 row's second cell read "`0.1.0-preview.1`, the first version the stream will publish; this engine's
 `Parser`, `Runtime`, `BuiltIns` and `Storage` reference it", and its third cell ended at
-"`NumericKeys`".*
+"`NumericKeys`".* *Revised again 2026-10-15, at milestone SJL-5.5, when the text area moved in: the
+row's second cell began "`0.1.0-preview.1` published; `0.1.0-preview.2`, with the numerics area, the
+next", and its third cell ended at "`BigIntText` and `BigIntPolicy`".*
+
+## Public API changes, 2026-10-15 (text algorithms move to `Broiler.ECMAScript.Algorithms`)
+
+Milestone SJL-5.5 moves the text area into the shared library, the stream's `0.1.0-preview.3`: the
+UTF-16 readings, padding and relative indices, replacement templates, the URI codecs, the base64 and hex
+codecs, and JSON's reading, quoting and gap. It applies decision SJL-D-25 to the one public member the
+move empties. No public member is removed. The observable corrections are in
+[`Broiler.JS/CHANGELOG.md`](../Broiler.JS/CHANGELOG.md).
+
+| Member | Assembly | Disposition | What it does now |
+| --- | --- | --- | --- |
+| `JSRegExp.Replace(string, string)` | `BuiltIns` | kept, body replaced | The template is `ReplacementTemplate.Parse`'s, and its parts are evaluated per match, as before: a group substitutes, an unmatched one is empty, and `$<` is literal. `String.prototype.replace` no longer calls it (correction S3), so no specification path reaches it. The area verdict, Broiler.VM's JSD-0070, listed it among members it called internal or private; it is public, so this disposition applies |
+| `JSRegExp.Replace(string, JSValue)` | `BuiltIns` | kept, unchanged | It calls the member above for a replacement that is not callable |
+| `JsonParserReceiver` | `BuiltIns` | kept, unchanged | A public delegate type no member of this engine takes any more: the internal `JSJsonParser.Parse` no longer accepted one |
+
+**Two policies are internal constants, stated in the changelog:** `JSString.MaximumLength`, the
+longest String a pad or a repeat builds, and `JSJsonParser.MaximumDepth`, the deepest value
+`JSON.parse` reads.
+
+**Removed internal and private members**, with no public surface:
+
+- *UTF-16:* `JSString`'s `IsWellFormedUtf16` and `ToWellFormedUtf16`; `codePointAt`'s arithmetic and the
+  String iterator's pair test, which were not members; the initializer's local `AdvanceStringIndex` and
+  its six inline copies in `[Symbol.match]`, `[Symbol.replace]` (two), `matchAll`'s iterator,
+  `JSRegExp`'s match loop and `JSRegExp.EnumerateMatches`.
+- *Padding and indices:* `StringPad`'s builder (`StringPad` itself stays, the adapter); `JSTypedArray`'s
+  `ClampRelativeIndex`; and the inline normalisations of the built-ins the changelog lists. `JSString`'s
+  `Relative` is one line over `RelativeIndex.Clamped`, and `Clamp`, which has no relative step, stays.
+- *Templates:* `JSString.GetSubstitution` and the initializer's local `GetSubstitution`; the internal
+  evaluators that replace them are `JSString.Substitute` and the initializer's `EvaluateSubstitution`.
+- *URI:* the internal class `UriHelper` whole, and its factory delegate `UriHelper.NewURIError`, which
+  `EngineAssemblyInitializer` no longer wires.
+- *Base64 and hex:* `JSUInt8Array`'s `Base64DecodeResult`, `DecodeBase64`, `DecodeBase64Chunk`,
+  `SkipAsciiWhitespace`, `Base64Value`, `TryParseHexByte` and `HexDigitValue`, and the constants
+  `Base64Alphabet` and `Base64UrlAlphabet`.
+- *JSON:* `JSJsonParser`'s System.Text.Json converter (`Read`, `ReadArray`, `ReadObject`,
+  `ReadWithSource`, `GetSourceText`, the `JsonConverter<JSValue>` base and its unused `Write`);
+  `JSJSON.Parse`'s and `JSJSON.RawJSON`'s exception filters over System.Text.Json's exceptions;
+  `JSJSON.QuoteString`; and the gap's inline normalisation. `JSJSON.TryGetRawJsonText` reads the new
+  private type `JSRawJsonObject`, which is the raw-JSON brand (correction J6).
+
+**Compatibility.** Binary-compatible: every public member is kept. `Broiler.JavaScript.Globals` and
+`Broiler.JavaScript.BuiltIns` call `Broiler.ECMAScript.Text`, which they already referenced the package
+for.
 
 ## Public API changes, 2026-10-13 (numerics move to `Broiler.ECMAScript.Algorithms`)
 

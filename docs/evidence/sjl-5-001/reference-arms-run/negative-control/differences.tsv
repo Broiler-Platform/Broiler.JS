@@ -1,0 +1,3 @@
+operation	class	line	detail	input	variant	S	result
+Encode encodeURIComponent (negative control)	U1C	65	-	41	V:GlobalUriEncode, one charge changed	str:A|charge:1	str:A|charge:2
+FromBase64 (negative control)	B1E	2955	base64/loose/unbounded	AAAA	J:DecodeBase64, one result changed	read:4|bytes:000000|ok	read:4|bytes:ff0000|ok

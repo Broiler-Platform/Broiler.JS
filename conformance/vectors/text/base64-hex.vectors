@@ -97247,8 +97247,7 @@ area: text
 op: FromHex into a destination
 in: str:"aaZZ" int:0
 out: value: str:"0/0/"
-class: divergence
-divergence.broiler-js: setFromHex parses its whole input before honouring the destination's length, so a character past the bytes that fit, which the specification never reads, raises SyntaxError where it answers { read, written }. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B1).
+class: normative
 prov: spec:es2026@0248456c#sec-fromhex spec:es2026@0248456c#sec-uint8array.prototype.setfromhex ref:textref@1
 script: (function () { var t = new Uint8Array(0); try { var r = t.setFromHex("aaZZ"); return r.read + "/" + r.written + "/" + Array.prototype.join.call(t, ","); } catch (e) { return e.name + "/" + Array.prototype.join.call(t, ","); } })()
 since: 10
@@ -97258,8 +97257,7 @@ area: text
 op: FromHex into a destination
 in: str:"aaZZ" int:1
 out: value: str:"2/1/170"
-class: divergence
-divergence.broiler-js: setFromHex parses its whole input before honouring the destination's length, so a character past the bytes that fit, which the specification never reads, raises SyntaxError where it answers { read, written }. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B1).
+class: normative
 prov: spec:es2026@0248456c#sec-fromhex spec:es2026@0248456c#sec-uint8array.prototype.setfromhex ref:textref@1
 script: (function () { var t = new Uint8Array(1); try { var r = t.setFromHex("aaZZ"); return r.read + "/" + r.written + "/" + Array.prototype.join.call(t, ","); } catch (e) { return e.name + "/" + Array.prototype.join.call(t, ","); } })()
 since: 10
@@ -97349,8 +97347,7 @@ area: text
 op: FromHex into a destination
 in: str:"aabbZZ" int:0
 out: value: str:"0/0/"
-class: divergence
-divergence.broiler-js: setFromHex parses its whole input before honouring the destination's length, so a character past the bytes that fit, which the specification never reads, raises SyntaxError where it answers { read, written }. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B1).
+class: normative
 prov: spec:es2026@0248456c#sec-fromhex spec:es2026@0248456c#sec-uint8array.prototype.setfromhex ref:textref@1
 script: (function () { var t = new Uint8Array(0); try { var r = t.setFromHex("aabbZZ"); return r.read + "/" + r.written + "/" + Array.prototype.join.call(t, ","); } catch (e) { return e.name + "/" + Array.prototype.join.call(t, ","); } })()
 since: 10
@@ -97360,8 +97357,7 @@ area: text
 op: FromHex into a destination
 in: str:"aabbZZ" int:1
 out: value: str:"2/1/170"
-class: divergence
-divergence.broiler-js: setFromHex parses its whole input before honouring the destination's length, so a character past the bytes that fit, which the specification never reads, raises SyntaxError where it answers { read, written }. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B1).
+class: normative
 prov: spec:es2026@0248456c#sec-fromhex spec:es2026@0248456c#sec-uint8array.prototype.setfromhex ref:textref@1
 script: (function () { var t = new Uint8Array(1); try { var r = t.setFromHex("aabbZZ"); return r.read + "/" + r.written + "/" + Array.prototype.join.call(t, ","); } catch (e) { return e.name + "/" + Array.prototype.join.call(t, ","); } })()
 since: 10
@@ -97371,8 +97367,7 @@ area: text
 op: FromHex into a destination
 in: str:"aabbZZ" int:2
 out: value: str:"4/2/170,187"
-class: divergence
-divergence.broiler-js: setFromHex parses its whole input before honouring the destination's length, so a character past the bytes that fit, which the specification never reads, raises SyntaxError where it answers { read, written }. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B1).
+class: normative
 prov: spec:es2026@0248456c#sec-fromhex spec:es2026@0248456c#sec-uint8array.prototype.setfromhex ref:textref@1
 script: (function () { var t = new Uint8Array(2); try { var r = t.setFromHex("aabbZZ"); return r.read + "/" + r.written + "/" + Array.prototype.join.call(t, ","); } catch (e) { return e.name + "/" + Array.prototype.join.call(t, ","); } })()
 since: 10
@@ -97452,8 +97447,7 @@ area: text
 op: FromHex into a destination
 in: str:"zz" int:0
 out: value: str:"0/0/"
-class: divergence
-divergence.broiler-js: setFromHex parses its whole input before honouring the destination's length, so a character past the bytes that fit, which the specification never reads, raises SyntaxError where it answers { read, written }. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B1).
+class: normative
 prov: spec:es2026@0248456c#sec-fromhex spec:es2026@0248456c#sec-uint8array.prototype.setfromhex ref:textref@1
 script: (function () { var t = new Uint8Array(0); try { var r = t.setFromHex("zz"); return r.read + "/" + r.written + "/" + Array.prototype.join.call(t, ","); } catch (e) { return e.name + "/" + Array.prototype.join.call(t, ","); } })()
 since: 10
@@ -99953,8 +99947,7 @@ area: text
 op: GetOptionsObject refuses a non-object
 in: undefined
 out: error: TypeError
-class: divergence
-divergence.broiler-js: fromBase64 and toBase64 ignore an options argument that is neither undefined nor an object, null included, where GetOptionsObject raises TypeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B2).
+class: normative
 prov: spec:es2026@0248456c#sec-uint8array.frombase64 spec:es2026@0248456c#sec-uint8array.prototype.tobase64 ref:textref@1
 script: Uint8Array.fromBase64("", 1)
 since: 10
@@ -99964,8 +99957,7 @@ area: text
 op: GetOptionsObject refuses null
 in: undefined
 out: error: TypeError
-class: divergence
-divergence.broiler-js: fromBase64 and toBase64 ignore an options argument that is neither undefined nor an object, null included, where GetOptionsObject raises TypeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B2).
+class: normative
 prov: spec:es2026@0248456c#sec-uint8array.frombase64 spec:es2026@0248456c#sec-uint8array.prototype.tobase64 ref:textref@1
 script: Uint8Array.fromBase64("", null)
 since: 10
@@ -99975,8 +99967,7 @@ area: text
 op: an alphabet that is not a name
 in: undefined
 out: error: TypeError
-class: divergence
-divergence.broiler-js: A null alphabet or lastChunkHandling is read as the default, where a value that is not one of the option's names raises TypeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B3).
+class: normative
 prov: spec:es2026@0248456c#sec-uint8array.frombase64 spec:es2026@0248456c#sec-uint8array.prototype.tobase64 ref:textref@1
 script: Uint8Array.fromBase64("", { alphabet: null })
 since: 10
@@ -99986,8 +99977,7 @@ area: text
 op: a last-chunk handling that is not a name
 in: undefined
 out: error: TypeError
-class: divergence
-divergence.broiler-js: A null alphabet or lastChunkHandling is read as the default, where a value that is not one of the option's names raises TypeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B3).
+class: normative
 prov: spec:es2026@0248456c#sec-uint8array.frombase64 spec:es2026@0248456c#sec-uint8array.prototype.tobase64 ref:textref@1
 script: Uint8Array.fromBase64("", { lastChunkHandling: null })
 since: 10
@@ -100007,8 +99997,7 @@ area: text
 op: toBase64's GetOptionsObject refuses a non-object
 in: undefined
 out: error: TypeError
-class: divergence
-divergence.broiler-js: fromBase64 and toBase64 ignore an options argument that is neither undefined nor an object, null included, where GetOptionsObject raises TypeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B2).
+class: normative
 prov: spec:es2026@0248456c#sec-uint8array.frombase64 spec:es2026@0248456c#sec-uint8array.prototype.tobase64 ref:textref@1
 script: new Uint8Array(1).toBase64(1)
 since: 10
@@ -100038,8 +100027,7 @@ area: text
 op: toBase64 refuses a detached array
 in: undefined
 out: error: TypeError
-class: divergence
-divergence.broiler-js: toBase64 and toHex on an array whose buffer is detached answer an empty string, and setFromBase64 and setFromHex answer { read: 0, written: 0 }, where the receiver's checks raise TypeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B4).
+class: normative
 prov: spec:es2026@0248456c#sec-uint8array.frombase64 spec:es2026@0248456c#sec-uint8array.prototype.tobase64 ref:textref@1
 script: (function () { var b = new ArrayBuffer(4); var t = new Uint8Array(b); b.transfer(); return t.toBase64(); })()
 since: 10
@@ -100049,8 +100037,7 @@ area: text
 op: toHex refuses a detached array
 in: undefined
 out: error: TypeError
-class: divergence
-divergence.broiler-js: toBase64 and toHex on an array whose buffer is detached answer an empty string, and setFromBase64 and setFromHex answer { read: 0, written: 0 }, where the receiver's checks raise TypeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B4).
+class: normative
 prov: spec:es2026@0248456c#sec-uint8array.frombase64 spec:es2026@0248456c#sec-uint8array.prototype.tobase64 ref:textref@1
 script: (function () { var b = new ArrayBuffer(4); var t = new Uint8Array(b); b.transfer(); return t.toHex(); })()
 since: 10
@@ -100060,8 +100047,7 @@ area: text
 op: setFromBase64 refuses a detached array
 in: undefined
 out: error: TypeError
-class: divergence
-divergence.broiler-js: toBase64 and toHex on an array whose buffer is detached answer an empty string, and setFromBase64 and setFromHex answer { read: 0, written: 0 }, where the receiver's checks raise TypeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B4).
+class: normative
 prov: spec:es2026@0248456c#sec-uint8array.frombase64 spec:es2026@0248456c#sec-uint8array.prototype.tobase64 ref:textref@1
 script: (function () { var b = new ArrayBuffer(4); var t = new Uint8Array(b); b.transfer(); var r = t.setFromBase64(""); return r.read; })()
 since: 10
@@ -100071,8 +100057,7 @@ area: text
 op: setFromHex refuses a detached array
 in: undefined
 out: error: TypeError
-class: divergence
-divergence.broiler-js: toBase64 and toHex on an array whose buffer is detached answer an empty string, and setFromBase64 and setFromHex answer { read: 0, written: 0 }, where the receiver's checks raise TypeError. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-5.5 (the text area's record; the correspondence's row B4).
+class: normative
 prov: spec:es2026@0248456c#sec-uint8array.frombase64 spec:es2026@0248456c#sec-uint8array.prototype.tobase64 ref:textref@1
 script: (function () { var b = new ArrayBuffer(4); var t = new Uint8Array(b); b.transfer(); var r = t.setFromHex(""); return r.read; })()
 since: 10

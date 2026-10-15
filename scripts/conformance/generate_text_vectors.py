@@ -33,8 +33,9 @@ from generate_number_vectors import f64, js_string_literal, splitmix64, string_v
 
 # The corpus revision this generator writes, and the revision its vectors were added in. Revision 11
 # widened the schema's clause ids, which four of this area's citations need, and changed no vector;
-# revision 12 classified both engines' first runs on the area (text-divergences.txt).
-CORPUS_REVISION = 12
+# revision 12 classified both engines' first runs on the area (text-divergences.txt), and revision 13
+# retired every field the two engines' cut-overs corrected.
+CORPUS_REVISION = 13
 FIRST_REVISION = 10
 GENERATOR = "ref:textref@1"
 SPEC = "spec:es2026@0248456c"

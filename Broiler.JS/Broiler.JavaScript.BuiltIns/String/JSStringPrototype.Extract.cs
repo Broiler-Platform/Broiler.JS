@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Text;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.BuiltIns.Generator;
 using Broiler.JavaScript.Runtime;
@@ -18,9 +19,10 @@ public partial class JSString
     private static int Clamp(double position, int length)
         => position <= 0 ? 0 : position >= length ? length : (int)position;
 
-    // A relative index, as slice and substr resolve one: from the end when negative, then clamped.
+    // A relative index, as slice and substr resolve one: from the end when negative, then clamped; the
+    // shared library's (SJL-5.5).
     private static int Relative(double position, int length)
-        => position < 0 ? Clamp(length + position, length) : Clamp(position, length);
+        => (int)RelativeIndex.Clamped(position, length);
 
     [JSPrototypeMethod]
     [JSExport("charAt", Length = 1)]
@@ -100,18 +102,9 @@ public partial class JSString
         if (position < 0 || position >= text.Length)
             return JSUndefined.Value;
 
-        var pos = (int)position;
-        int firstCodePoint = text[pos];
-        if (firstCodePoint < 0xD800 || firstCodePoint > 0xDBFF || pos + 1 == text.Length)
-            return CreateNumber(firstCodePoint);
-
-        int secondCodePoint = text[pos + 1];
-        if (secondCodePoint < 0xDC00 || secondCodePoint > 0xDFFF)
-            return CreateNumber(firstCodePoint);
-
-        var output = (double)((firstCodePoint - 0xD800) * 1024 + (secondCodePoint - 0xDC00) + 0x10000);
-        return CreateNumber(output);
-
+        // CodePointAt (§11.1.4): a pair is one code point, a lone surrogate itself; the shared
+        // library's (SJL-5.5).
+        return CreateNumber(Utf16.CodePointAt(text, (int)position).CodePoint);
     }
 
     [JSPrototypeMethod]

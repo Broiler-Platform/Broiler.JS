@@ -78,38 +78,6 @@ internal static class TextArms
 
     private static IReadOnlyList<TextOperation>? operations;
 
-    /// <summary>
-    /// The rule's negative controls: a copy of arm V's GlobalUriEncode that charges one unit more for the
-    /// input "A" of U1C, and a copy of arm J's DecodeBase64 whose bytes for the input "AAAA" of B1E have
-    /// their first byte changed. Each is run once, alone, and the comparison must report exactly the one
-    /// input it changes; neither copy is in <see cref="Operations"/>.
-    /// </summary>
-    public static IReadOnlyList<TextOperation> NegativeControls => BuildControls();
-
-    private static List<TextOperation> BuildControls() =>
-    [
-        new("Encode encodeURIComponent (negative control)", ["U1C"], Once,
-        [
-            new("V", "GlobalUriEncode, one charge changed", static i => VCharged(e =>
-            {
-                if (i.Text == "A")
-                    e.Charge(1);
-                return TextRender.Str(V.JsRealmText.GlobalUriEncode(e, i.Text, V.JsRealmText.GlobalUriUnescapedComponent));
-            }), static i => Charged(m => SEncode(i, string.Empty, m.Charge))),
-        ]),
-        new("FromBase64 (negative control)", ["B1E"], Decodes,
-        [
-            new("J", "DecodeBase64, one result changed", static i =>
-            {
-                var result = J.JSUInt8ArrayText.DecodeBase64(i.Text, i.Parameter == 0 ? "base64" : "base64url", Modes[i.Parameter2], i.Int < 0 ? int.MaxValue : (int)i.Int);
-                var bytes = result.Bytes;
-                if (i.Text == "AAAA" && i.Parameter == 0 && i.Parameter2 == 0 && i.Int < 0)
-                    bytes = [0xFF, .. bytes[1..]];
-                return TextRender.Decoded(result.Read, bytes, result.Error?.Kind);
-            }, static i => SBase64(i, null)),
-        ]),
-    ];
-
     // ---------------------------------------------------------------------------------------------
     // Helpers.
 
