@@ -1,0 +1,20 @@
+# The targeted check of the fix as committed in 1ebde70, taken before its after run: test/intl402 and the
+# 235 paths outside it that use Intl (intl-paths.txt; the suite has no staging/Intl402 at ccaac100), the
+# original variant only, through scripts/compliance/run_test262.py with --feature-match any, four workers and
+# 30 s per test. Two shells: the cut-over's (built from a clean checkout of 6b0d06f, whose product sources are
+# 37ece76's but for Broiler.JS/CHANGELOG.md) and the fix's (built from the working tree that became 1ebde70,
+# its product sources unchanged since the build). Joined per path. A plain join; it decides nothing.
+
+cut-over shell: variantCases=3559, passed=3548, failed=11, timedOut=0, skipped=0
+fix shell:      variantCases=3559, passed=3549, failed=10, timedOut=0, skipped=0
+
+## the cut-over's shell against the fix's
+rows 3559; changed 1; {('failed', 'passed'): 1}
+failed -> passed	test/intl402/DateTimeFormat/prototype/format/temporal-objects-no-time-clip-non-latin-numerals.js [original]
+
+## the base run (test262/base/, original variant) against the fix's shell
+rows 3559; changed 0; {}
+
+## the base run (test262/base/, original variant) against the cut-over's shell
+rows 3559; changed 1; {('passed', 'failed'): 1}
+passed -> failed	test/intl402/DateTimeFormat/prototype/format/temporal-objects-no-time-clip-non-latin-numerals.js [original]
