@@ -13,15 +13,15 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 39 |
+| Files scanned | 44 |
 | Files not covered | 0 |
-| Files carrying an annotation | 39 |
-| Code units | 573 |
-| Relevant | 437 |
-| Exempt by predicate | 136 |
-| Annotated | 437 of 437 (100%) |
-| Human reviewed | 0 of 437 (0%) |
-| Unverified | 437 |
+| Files carrying an annotation | 44 |
+| Code units | 677 |
+| Relevant | 533 |
+| Exempt by predicate | 144 |
+| Annotated | 533 of 533 (100%) |
+| Human reviewed | 0 of 533 (0%) |
+| Unverified | 533 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 437 |
+| HUMAN_PENDING | 533 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 136 |
+| EXEMPT | 144 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
 | None | 0 |
-| Low | 442 |
+| Low | 538 |
 | Medium | 0 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,9 +51,9 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 0 |
-| Low | 184 |
-| Medium | 208 |
-| High | 50 |
+| Low | 235 |
+| Medium | 250 |
+| High | 53 |
 | Critical | 0 |
 | *not annotated* | 0 |
 
@@ -62,8 +62,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Metric | Value |
 |---|---:|
 | Maximum | 9 / 10 |
-| Average over annotated units | 1.5 / 10 |
-| Units scored | 437 |
+| Average over annotated units | 1.4 / 10 |
+| Units scored | 533 |
 
 ## High-security review areas
 
@@ -117,13 +117,16 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Text.JsonReader.ReadString(out string)` in `Broiler.ECMAScript.Algorithms/Text/JsonReader.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Text.StringPadding.Pad(string, long, string, PadPlacement, LengthLimit, out string, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Text/StringPadding.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Text.UriCodec.Decode(ReadOnlySpan<char>, ReadOnlySpan<char>, out string, out Failure, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Text/UriCodec.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Time.EcmaDateParser` in `Broiler.ECMAScript.Algorithms/Time/EcmaDateParser.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Time.EcmaDateParser.Parse(ReadOnlySpan<char>, DateParseDialect, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Time/EcmaDateParser.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Time.EcmaLocalTime.Utc(double, ILocalTimeProvider)` in `Broiler.ECMAScript.Algorithms/Time/LocalTime.cs` - Security=High, human line PENDING
 
 ## Falsification criteria
 
 | Metric | Value |
 |---|---:|
-| Units carrying a criterion | 50 |
-| Units required to carry one | 50 |
+| Units carrying a criterion | 53 |
+| Units required to carry one | 53 |
 | Required and missing | 0 |
 
 A `Broiler-Falsified-If:` line states, at the declaration, the observation that would make
@@ -146,12 +149,12 @@ that the rule is reviewable in one place rather than in several hundred.
 |---|---:|
 | TrivialPropertyOrAccessor | 20 |
 | ParameterAssigningConstructor | 0 |
-| TrivialExpressionBodiedMember | 9 |
+| TrivialExpressionBodiedMember | 10 |
 | CompilerSuppliedRecordOrEnumMember | 10 |
 | DelegatingOverrideOrOperator | 0 |
 | InsideAssemblyMarker | 0 |
-| FieldDeclaringStorage | 15 |
-| EnumMemberOfADeclaredVocabulary | 82 |
+| FieldDeclaringStorage | 17 |
+| EnumMemberOfADeclaredVocabulary | 87 |
 | DeclaredInSource | 0 |
 
 ## Per-unit exemptions
@@ -175,14 +178,14 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `assurance.manifest.json` lists **every** code unit in the 2 covered assemblies -
-573 of them, exempt and relevant alike - with the fingerprint of its declaration.
+677 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as
 trivial is no longer invisible: a semantic change to one moves a value in a generated file
 the check compares byte for byte. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript` holds the manifest to the tree.
 
-Beside the units it lists **every covered file** - 39 of them - with a
+Beside the units it lists **every covered file** - 44 of them - with a
 fingerprint over the complete token stream of its compilation unit. A unit entry exists only
 for a declaration kind the scanner enumerates, and an enumeration is a whitelist: an
 `[assembly: ...]` attribute is a member of nothing and can be in no unit at all.

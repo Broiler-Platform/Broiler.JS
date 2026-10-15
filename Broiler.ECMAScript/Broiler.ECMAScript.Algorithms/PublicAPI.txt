@@ -302,6 +302,85 @@ Broiler.ECMAScript.Text.Utf16.CodePointAt(System.ReadOnlySpan`1<System.Char>, Sy
 Broiler.ECMAScript.Text.Utf16.IsWellFormed(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.WorkCharge) method static System.Boolean
 Broiler.ECMAScript.Text.Utf16.ReplacementCharacter field static const System.Char = '\uFFFD'
 Broiler.ECMAScript.Text.Utf16.ToWellFormed(System.String, Broiler.ECMAScript.WorkCharge) method static System.String
+Broiler.ECMAScript.Time.DateParseDialect enum
+Broiler.ECMAScript.Time.DateParseDialect.BroilerVM = 1
+Broiler.ECMAScript.Time.DateParseDialect.Strict = 0
+Broiler.ECMAScript.Time.DateParseDialect.value__ field System.Int32
+Broiler.ECMAScript.Time.EcmaDateFormatter static class
+Broiler.ECMAScript.Time.EcmaDateFormatter.DateString(System.Double) method static System.String
+Broiler.ECMAScript.Time.EcmaDateFormatter.InvalidDate field static const System.String = "Invalid Date"
+Broiler.ECMAScript.Time.EcmaDateFormatter.TimeString(System.Double) method static System.String
+Broiler.ECMAScript.Time.EcmaDateFormatter.TimeZoneString(System.Double, Broiler.ECMAScript.Time.ILocalTimeProvider) method static System.String
+Broiler.ECMAScript.Time.EcmaDateFormatter.ToDateString(System.Double, Broiler.ECMAScript.Time.ILocalTimeProvider) method static System.String
+Broiler.ECMAScript.Time.EcmaDateFormatter.ToUtcString(System.Double) method static System.String
+Broiler.ECMAScript.Time.EcmaDateFormatter.TryToIsoString(System.Double, System.String&) method static System.Boolean
+Broiler.ECMAScript.Time.EcmaDateParser static class
+Broiler.ECMAScript.Time.EcmaDateParser.Parse(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.Time.DateParseDialect, Broiler.ECMAScript.WorkCharge) method static Broiler.ECMAScript.Time.EcmaParsedDate
+Broiler.ECMAScript.Time.EcmaLocalTime static class
+Broiler.ECMAScript.Time.EcmaLocalTime.LocalTime(System.Double, Broiler.ECMAScript.Time.ILocalTimeProvider) method static System.Double
+Broiler.ECMAScript.Time.EcmaLocalTime.Utc(System.Double, Broiler.ECMAScript.Time.ILocalTimeProvider) method static System.Double
+Broiler.ECMAScript.Time.EcmaParsedDate struct : System.IEquatable`1<Broiler.ECMAScript.Time.EcmaParsedDate>
+Broiler.ECMAScript.Time.EcmaParsedDate..ctor(Broiler.ECMAScript.Time.EcmaParsedKind, System.Double) method System.Void
+Broiler.ECMAScript.Time.EcmaParsedDate.Deconstruct(Broiler.ECMAScript.Time.EcmaParsedKind&, System.Double&) method System.Void
+Broiler.ECMAScript.Time.EcmaParsedDate.Equals(Broiler.ECMAScript.Time.EcmaParsedDate) method System.Boolean
+Broiler.ECMAScript.Time.EcmaParsedDate.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Time.EcmaParsedDate.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Time.EcmaParsedDate.ToString() method virtual System.String
+Broiler.ECMAScript.Time.EcmaParsedDate.get_Kind() method Broiler.ECMAScript.Time.EcmaParsedKind
+Broiler.ECMAScript.Time.EcmaParsedDate.get_Value() method System.Double
+Broiler.ECMAScript.Time.EcmaParsedDate.op_Equality(Broiler.ECMAScript.Time.EcmaParsedDate, Broiler.ECMAScript.Time.EcmaParsedDate) method static System.Boolean
+Broiler.ECMAScript.Time.EcmaParsedDate.op_Inequality(Broiler.ECMAScript.Time.EcmaParsedDate, Broiler.ECMAScript.Time.EcmaParsedDate) method static System.Boolean
+Broiler.ECMAScript.Time.EcmaParsedDate.set_Kind(Broiler.ECMAScript.Time.EcmaParsedKind) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Time.EcmaParsedDate.set_Value(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Time.EcmaParsedKind enum
+Broiler.ECMAScript.Time.EcmaParsedKind.Invalid = 0
+Broiler.ECMAScript.Time.EcmaParsedKind.Local = 2
+Broiler.ECMAScript.Time.EcmaParsedKind.Utc = 1
+Broiler.ECMAScript.Time.EcmaParsedKind.value__ field System.Int32
+Broiler.ECMAScript.Time.EcmaTime static class
+Broiler.ECMAScript.Time.EcmaTime.DateFromTime(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.Day(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.DayFromYear(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.DayWithinYear(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.DaysInYear(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.HourFromTime(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.InLeapYear(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.MakeDate(System.Double, System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.MakeDay(System.Double, System.Double, System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.MakeFullYear(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.MakeTime(System.Double, System.Double, System.Double, System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.MaxTimeValue field static const System.Double = 0x433EB208C2DC0000
+Broiler.ECMAScript.Time.EcmaTime.MinFromTime(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.MonthFromTime(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.MsFromTime(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.MsPerDay field static const System.Double = 0x4194997000000000
+Broiler.ECMAScript.Time.EcmaTime.MsPerHour field static const System.Double = 0x414B774000000000
+Broiler.ECMAScript.Time.EcmaTime.MsPerMinute field static const System.Double = 0x40ED4C0000000000
+Broiler.ECMAScript.Time.EcmaTime.MsPerSecond field static const System.Double = 0x408F400000000000
+Broiler.ECMAScript.Time.EcmaTime.SecFromTime(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.TimeClip(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.TimeFromYear(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.TimeWithinDay(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.WeekDay(System.Double) method static System.Double
+Broiler.ECMAScript.Time.EcmaTime.YearFromTime(System.Double) method static System.Double
+Broiler.ECMAScript.Time.FixedOffsetLocalTimeProvider sealed class : Broiler.ECMAScript.Time.ILocalTimeProvider
+Broiler.ECMAScript.Time.FixedOffsetLocalTimeProvider..ctor(System.Double, System.String) method System.Void
+Broiler.ECMAScript.Time.FixedOffsetLocalTimeProvider.GetName(System.Double) method System.String
+Broiler.ECMAScript.Time.FixedOffsetLocalTimeProvider.GetOffsetMilliseconds(System.Double) method System.Double
+Broiler.ECMAScript.Time.ILocalTimeProvider interface
+Broiler.ECMAScript.Time.ILocalTimeProvider.GetName(System.Double) method abstract System.String
+Broiler.ECMAScript.Time.ILocalTimeProvider.GetOffsetMilliseconds(System.Double) method abstract System.Double
+Broiler.ECMAScript.Time.IsoCalendarMath static class
+Broiler.ECMAScript.Time.IsoCalendarMath.BalanceYearMonth(System.Int64, System.Int64) method static System.ValueTuple`2<System.Int64,System.Int32>
+Broiler.ECMAScript.Time.IsoCalendarMath.DayOfWeek(System.Int64, System.Int32, System.Int32) method static System.Int32
+Broiler.ECMAScript.Time.IsoCalendarMath.DayOfYear(System.Int64, System.Int32, System.Int32) method static System.Int32
+Broiler.ECMAScript.Time.IsoCalendarMath.DaysInMonth(System.Int64, System.Int32) method static System.Int32
+Broiler.ECMAScript.Time.IsoCalendarMath.DaysInYear(System.Int64) method static System.Int32
+Broiler.ECMAScript.Time.IsoCalendarMath.EpochDays(System.Int64, System.Int32, System.Int32) method static System.Int64
+Broiler.ECMAScript.Time.IsoCalendarMath.FromEpochDays(System.Int64) method static System.ValueTuple`3<System.Int64,System.Int32,System.Int32>
+Broiler.ECMAScript.Time.IsoCalendarMath.IsLeapYear(System.Int64) method static System.Boolean
+Broiler.ECMAScript.Time.IsoCalendarMath.IsValidIsoDate(System.Int64, System.Int32, System.Int32) method static System.Boolean
+Broiler.ECMAScript.Time.IsoCalendarMath.WeekOfYear(System.Int64, System.Int32, System.Int32) method static System.ValueTuple`2<System.Int32,System.Int64>
 Broiler.ECMAScript.WorkCharge delegate
 Broiler.ECMAScript.WorkCharge..ctor(System.Object, System.IntPtr) method System.Void
 Broiler.ECMAScript.WorkCharge.BeginInvoke(System.UInt64, System.AsyncCallback, System.Object) method virtual System.IAsyncResult

@@ -15,11 +15,12 @@ in source files, package metadata, or accompanying notices.
 ## The shared JavaScript libraries (`Broiler.ECMAScript.*`)
 
 The packages built from [`Broiler.ECMAScript/`](Broiler.ECMAScript/README.md) carry this file. They
-contain two pieces of third-party code, named below, and no data:
+contain two pieces of third-party code and one set of public-domain formulas, named below, and no data:
 
-- `Broiler.ECMAScript.Algorithms` holds the contract types, the number-conversion area and the
-  numerics area written for the shared libraries programme, Apache-2.0, and no code derived from
-  Yantra JS. Its third-party components are **Ryu** and **fdlibm**, below.
+- `Broiler.ECMAScript.Algorithms` holds the contract types and the number-conversion, numerics, text
+  and Date areas written for the shared libraries programme, Apache-2.0, and no code derived from
+  Yantra JS. Its third-party components are **Ryu** and **fdlibm**, below, and it implements **Howard
+  Hinnant's civil-day formulas**, also below.
 - **Ryu** ([github.com/ulfjack/ryu](https://github.com/ulfjack/ryu)), Copyright 2018 Ulf Adams, used
   under the Apache License, Version 2.0 (the project is offered under that licence or the Boost
   Software License 1.0, at the user's choice). `Broiler.ECMAScript.Algorithms/Numbers/ShortestDecimal.cs`
@@ -38,11 +39,18 @@ contain two pieces of third-party code, named below, and no data:
   > Permission to use, copy, modify, and distribute this
   > software is freely granted, provided that this notice
   > is preserved.
+- **Howard Hinnant's civil-day formulas**, `days_from_civil` and `civil_from_days`
+  ([howardhinnant.github.io/date_algorithms.html](https://howardhinnant.github.io/date_algorithms.html)),
+  which their author "donated to the public domain": `Broiler.ECMAScript.Algorithms/Time/IsoCalendarMath.cs`
+  implements them in `EpochDays` and `FromEpochDays` (milestone SJL-6.3), and says so in its source. No
+  licence terms apply; the credit is given here.
 - The number area's other routines that are not written from the specification are ported from
   Broiler.VM, the programme's other engine, under the same licence and by the same contributors
   (`FixedDigits.cs`, from `JsRealm.Number`; the BigInt literal ceiling, from `JsParser.TryBigIntValue`;
-  and, at milestone SJL-4.3, the BigInt kernel `BigIntMath.cs` and `BigIntText.cs`, from `JsBigInt`).
-  Each records its origin in its assurance annotation.
+  and, at milestone SJL-4.3, the BigInt kernel `BigIntMath.cs` and `BigIntText.cs`, from `JsBigInt`);
+  so is the Date area's reading of strings in Broiler.VM's dialect, at milestone SJL-6.3
+  (`EcmaDateParser.cs`, from `DateParseText` and `DateParseTextual`). Each records its origin in its
+  assurance annotation or its source.
 - `Broiler.ECMAScript.Conformance` (not packed) holds the conformance corpus's reader, validator and
   runners, written for the programme. The corpus it reads, `conformance/vectors/`, takes its expected
   values from ECMA-262 and from an exact reference computation in this repository, not from code.
@@ -83,7 +91,13 @@ was added. Revised again the same day, later in milestone SJL-4.3: the bullet on
 `Broiler.ECMAScript.Algorithms.Tests` ended at "the engine's own method forwards to the shared
 library.", and its last three sentences, on bundle `sjl-4-001`'s arms, were added. Revised again
 2026-10-13, at milestone SJL-4.5: the bullet's last sentence read "Neither copies fdlibm or any other
-third-party code.", which overlooked arm J's `SumPrecise`.
+third-party code.", which overlooked arm J's `SumPrecise`. Revised again 2026-10-15, at milestone
+SJL-6.3, when the Date area moved in: the section's second sentence read "They contain two pieces of
+third-party code, named below, and no data:"; the first bullet read "holds the contract types, the
+number-conversion area and the numerics area written for the shared libraries programme" and ended
+"Its third-party components are **Ryu** and **fdlibm**, below.", which also overlooked the text area of
+milestone SJL-5.3; the bullet on Hinnant's formulas was added; and the bullet on the code ported from
+Broiler.VM ended at "from `JsBigInt`). Each records its origin in its assurance annotation."
 
 ## Sources the engine's own code cites
 
