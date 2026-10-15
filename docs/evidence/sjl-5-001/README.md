@@ -103,3 +103,11 @@ match, 4 classified divergences, 0 unclassified differences**, and the runner's 
 the 42 fields of section 2 reports "divergence no longer holds"; the 4 are the number area's, as before.
 Every correction is listed in [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md), and corpus
 revision 13 retires the fields.
+
+**Every vector of corpus revision 13 has the result its class expects.** At `bb1fc66`, which carries
+revision 13 and retires the 42 fields with Broiler.VM's five
+([`engine/retired-divergences-revision-13.tsv`](engine/retired-divergences-revision-13.tsv)), with the
+same product sources ([`engine/run-revision-13.log`](engine/run-revision-13.log),
+[`engine/run-revision-13.tsv.gz`](engine/run-revision-13.tsv.gz)): **42,943 vectors, 42,939 match, 4
+classified divergences, 0 unclassified differences**, and the runner's four tests pass. The 4 are the
+number area's.
