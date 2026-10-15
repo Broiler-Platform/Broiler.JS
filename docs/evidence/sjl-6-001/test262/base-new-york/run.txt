@@ -1,0 +1,17 @@
+repository: Broiler-Platform/Broiler.JS
+workflow run: https://github.com/Broiler-Platform/Broiler.JS/actions/runs/38752514354 (attempt 1)
+dispatched ref: refs/heads/main at e8b801f02e427743470d5bea0a9090b5db31c8fe
+tested commit: 5fef1165f001c226b28f9bf0ae32c6dbe56abcc8
+suite commit: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+inputs: {"commit": "5fef1165f001c226b28f9bf0ae32c6dbe56abcc8", "max_workers": "4", "rerun_timeouts": true, "suite_ref": "ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e", "test_timeout_seconds": "30", "time_zone": "America/New_York"}
+runner: ubuntu24 20261012.334.1; Linux X64; logical processors 4
+host time zone: TZ America/New_York (host-zone.log)
+dotnetVersion: 10.0.402
+minifier: terser
+minifierVersion: 5.50.0
+maxWorkers: 4
+testTimeoutSeconds: 30.0
+memoryLimitMb: 0
+shardCount: 8
+selectionMode: all-script-host-verifiable
+suiteRef: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e

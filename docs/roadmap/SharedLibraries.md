@@ -407,6 +407,27 @@ of it:
   with its new `time_zone` input (`docs/evidence/sjl-6-001/decision-rule.md`), and the library-level
   reference arms (`docs/evidence/sjl-6-001/reference-arms.md`).
 
+**The Date vectors and the first runs (SJL-6.2), 2026-10-15.** Corpus revision 14 adds the area's vectors
+(`conformance/vectors/date/`), from the reference computation `scripts/conformance/dateref.py`, written from
+the specification's text and the Temporal proposal's ISO calendar and tested against Python's proleptic
+Gregorian calendar. No vector's outcome depends on the time zone, so each one holds in UTC and in
+`America/New_York` alike; this engine's runner was run in both, from one build. The numeric slash dates are
+the area's `impl-defined` vectors, with this engine's expectation from its `N/N/N` heuristic, which SJL-D-17
+keeps, and this engine meets it. Each engine's first engine-level run on revision 14 is classified at revision
+15, and both engines then classify every vector. This engine's differences confirm the rows of the
+correspondence listed above, T3, T4, G2, L2, P1 and P9, and D1 to D3; SJL-6.5 answers each of them. Rows L2
+and P1 show only in New York, and under UTC their fields are reported as no longer holding, which retires none
+of them: a field goes when its correction is listed and the run in New York shows it gone. Two rows are
+refined, and none is refuted: the vectors show T3, which was worked from the code, for seven setters, while
+`setUTCHours`, `setUTCFullYear` and `setFullYear` convert as the specification says; and L2's mechanism shows
+also in the years before the zone's standard time, where the tzdata's offset is local mean time. L3, L4, L5,
+D4, D5, R3 and R4 have no vector, nor have P4 to P7 beyond the slash dates: their outcome depends on the zone,
+the culture or the host, or lies outside ECMA-262, and part B's run and the reference arms carry them.
+Broiler.VM's differences are its rows T4, G3 and P9, which SJL-6.4 answers. Every difference the runs found is
+one the area verdict classified, so its falsifier does not fire. The runs are retained in
+[`sjl-6-001/engine/`](../evidence/sjl-6-001/engine/), and the bases of both parts of this repository's test262
+rule were taken at its commit, `5fef116`, by `test262 evidence`.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

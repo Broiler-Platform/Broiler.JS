@@ -144,7 +144,7 @@ public class GrammarTests
     private static System.Collections.Generic.IReadOnlyList<VectorDiagnostic> Validate(string key, string value)
     {
         var validator = new VectorValidator(Sources);
-        validator.Validate(new VectorFile("changed.vectors", [Home.Corpus.Records.First().With(key, value)], []));
+        validator.Validate(new VectorFile("changed.vectors", [Home.Corpus.Records.First(r => r["area"] == "numbers").With(key, value)], []));
         return validator.Diagnostics;
     }
 }
