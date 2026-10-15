@@ -455,7 +455,10 @@ it is the owner's to choose. Broiler.VM's Date area is the library's, its getter
 UTC provider's identity, and its corrections T4, G3 and P9 are made; its pin of the corpus moves to revision
 16, where each of its sixteen divergence fields reports that it no longer holds, and its record is its
 JSD-0073. This engine's cut-over, SJL-6.5, follows on the same version; a later corpus revision retires
-Broiler.VM's fields, with this engine's.
+Broiler.VM's fields, with this engine's. *Added 2026-10-15:* on the owner's instruction, `Publish shared
+libraries` published `0.1.0-preview.4` to nuget.org from `d1e4b11` (run 38813070829), whose library code is
+`e04874d`'s, and tagged it `ecmascript-v0.1.0-preview.4`; Broiler.VM's feed now holds the package as
+published.
 
 ## Invariants
 

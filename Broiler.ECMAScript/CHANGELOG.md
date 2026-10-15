@@ -12,9 +12,14 @@ follow semantic versioning under [convention 16](docs/conventions.md):
 Each entry has the headings **Added**, **Changed**, **Observable changes** and **Data**, and says
 "none" under a heading with nothing to report. A release without an entry here is not published.
 
-## Unreleased
+## 0.1.0-preview.4 — published to nuget.org
 
-To be packed as `0.1.0-preview.4`, the stream keeping its `0.1.0` prefix while it is a preview.
+*(Heading corrected 2026-10-15, when the entry was published; read "Unreleased". This entry was published
+as `0.1.0-preview.4` by `Publish shared libraries`, run 38813070829, from `d1e4b11`.)*
+
+Packed as `0.1.0-preview.4`, the stream keeping its `0.1.0` prefix while it is a preview.
+*(Corrected 2026-10-15; read "To be packed as `0.1.0-preview.4`, the stream keeping its `0.1.0` prefix
+while it is a preview.")*
 
 ### Added
 
