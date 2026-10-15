@@ -1,5 +1,5 @@
 $ /usr/bin/python3 -m unittest discover -s scripts/conformance/tests -v
-# cwd <tree>; started 2026-10-15T08:24:31Z; exit 0
+# cwd <tree>; started 2026-10-15T09:22:03Z; exit 0
 bigint-arithmetic.vectors: 1488 vectors
 bigint-asintn.vectors: 526 vectors
 bigint-number.vectors: 514 vectors
@@ -104,6 +104,6 @@ test_trim_uses_the_pinned_white_space (test_textref.Utf16Tests.test_trim_uses_th
 test_well_formedness (test_textref.Utf16Tests.test_well_formedness) ... ok
 
 ----------------------------------------------------------------------
-Ran 81 tests in 26.266s
+Ran 81 tests in 27.881s
 
 OK
