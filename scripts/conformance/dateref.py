@@ -13,12 +13,17 @@ in it. A step it writes on mathematical values (ℝ) is computed on Python integ
 
 **Local time is UTC here.** The reference has no time zone: the vectors that read local time are written so
 that their outcome does not depend on the zone (a local time put in and read back, or a relation that holds in
-every zone), and the reference computes them in UTC.
+every zone), and the reference computes them in UTC. **From milestone SJL-6.3** it also computes `LocalTime` and
+`UTC` (21.4.1.25 and 21.4.1.26) in a named zone, and `TimeZoneString` (21.4.4.41.3) at a given offset and name,
+for bundle sjl-6-001's reference-arm comparison; no vector reads them. A zone's offsets are read from the
+host's tzdata through Python's zoneinfo, or, where the caller passes them, from the offsets an engine's
+provider read; `parse_format` gains the strict reading of a day past its month's length, off by default.
 """
 
 from __future__ import annotations
 
 import math
+from datetime import datetime, timedelta, timezone
 from fractions import Fraction
 
 MS_PER_SECOND = 1000.0
@@ -315,13 +320,14 @@ def _digits(text: str, at: int, count: int):
     return int(piece)
 
 
-def parse_format(text: str):
+def parse_format(text: str, strict_days: bool = False):
     """Reads `text` as an instance of the Date Time String Format (21.4.1.32).
 
     Returns None when the text is not a valid instance, and otherwise ("utc", fields) or ("local", fields),
     the fields being (year, month, day, hour, minute, second, millisecond, offset minutes); a date-only form is
     UTC and a date-time form without an offset local (21.4.3.2). Out-of-bounds elements make the text not an
-    instance, and so does -000000.
+    instance, and so does -000000. A day is out of bounds past 31; with `strict_days`, past its month's length
+    (the "illegal element values" of 21.4.1.32, as the library's strict dialect reads them, decision JSD-0072).
     """
     at = 0
     if text[:1] in ("+", "-"):
@@ -350,6 +356,8 @@ def parse_format(text: str):
                 return None
             at += 3
     if not (1 <= month <= 12 and 1 <= dday <= 31):
+        return None
+    if strict_days and dday > iso_days_in_month(year, month):
         return None
     if at == len(text):
         return ("utc", (year, month, dday, 0, 0, 0, 0, 0))
@@ -560,3 +568,77 @@ def iso_date_string(year: int, month: int, dday: int) -> str:
     """A PlainDate's toString() in the ISO 8601 calendar: an expanded year outside 0 to 9999."""
     y = f"{year:04d}" if 0 <= year <= 9999 else ("+" if year > 0 else "-") + f"{abs(year):06d}"
     return f"{y}-{month:02d}-{dday:02d}"
+
+
+# --------------------------------------------------------------------------------------------------
+# Local time in a named zone (21.4.1.25, 21.4.1.26) and TimeZoneString (21.4.4.41.3), for bundle sjl-6-001's
+# reference-arm comparison. A time is an integral number of milliseconds since the epoch.
+
+_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
+_EPOCH_NAIVE = datetime(1970, 1, 1)
+FOUR_CENTURIES_MS = 146097 * 86_400_000
+FIRST_MS = day_from_year_exact(1) * 86_400_000
+LAST_MS = day_from_year_exact(10000) * 86_400_000 - 1
+
+
+def _truncated_ms(offset: timedelta) -> int:
+    """truncate(offsetNs / 10^6) of an offset."""
+    micro = offset // timedelta(microseconds=1)
+    return int(micro / 1000) if micro >= 0 else -int(-micro / 1000)
+
+
+def _into_range(t: int, margin: int = 0) -> tuple[int, int]:
+    """A time moved back by whole 400-year steps until it is within datetime's years 1 to 9999 less a margin;
+    the zone's rules repeat with the Gregorian calendar every 400 years past its last explicit transition."""
+    shift = 0
+    while t - shift > LAST_MS - margin:
+        shift += FOUR_CENTURIES_MS
+    return t - shift, shift
+
+
+def zone_offset_ms(zone, t: int) -> int:
+    """truncate(GetNamedTimeZoneOffsetNanoseconds(zone, t × 10^6) / 10^6) (21.4.1.21), read through zoneinfo:
+    within two days of the end of year 9999 or past it at the instant 400 years earlier as often as needed, and
+    before year 1's third day at that day's first instant, whose offset is the zone's earliest (two days from
+    either end, so that no zone's local date falls outside datetime's years 1 to 9999)."""
+    moved, _ = _into_range(t, 2 * 86_400_000)
+    moved = max(moved, FIRST_MS + 2 * 86_400_000)
+    return _truncated_ms((_EPOCH + timedelta(milliseconds=moved)).astimezone(zone).utcoffset())
+
+
+def local_time(t: int, zone) -> int:
+    """LocalTime (21.4.1.25): t + the offset in force at the instant t."""
+    return t + zone_offset_ms(zone, t)
+
+
+def utc(t: int, zone) -> int:
+    """UTC (21.4.1.26) of a local time, through zoneinfo: the offset of the earliest instant the local time
+    names, or of the last instant before a transition that skips it, which is PEP 495's fold=0 reading of
+    the wall time; before year 1, the zone's earliest offset."""
+    moved, shift = _into_range(t, 2 * 86_400_000)
+    if moved < FIRST_MS + 2 * 86_400_000:
+        return t - zone_offset_ms(zone, FIRST_MS)
+    wall = (_EPOCH_NAIVE + timedelta(milliseconds=moved)).replace(tzinfo=zone, fold=0)
+    return t - _truncated_ms(wall.utcoffset())
+
+
+def utc_over(t: int, offset_at) -> int:
+    """UTC (21.4.1.26) over an offset function of instants (`offset_at(instant)` in milliseconds), where the
+    zone changes its offset at most once within a day either side of t: the possible instants are t - o for
+    each offset o in force a day before or after, kept where the offset at t - o is o; the earliest is
+    taken, and with none, a skipped local time, the offset a day before, which is the offset before the
+    transition."""
+    day = 86_400_000
+    before, after = offset_at(t - day), offset_at(t + day)
+    possible = sorted(t - o for o in {before, after} if offset_at(t - o) == o)
+    if possible:
+        return possible[0]
+    return t - before
+
+
+def time_zone_string(offset_ms: int, name: str | None) -> str:
+    """TimeZoneString (21.4.4.41.3) at an offset: its sign, HourFromTime and MinFromTime of its magnitude, two
+    digits each, then " (" + name + ")" when there is a name."""
+    magnitude = float(abs(offset_ms))
+    text = ("+" if offset_ms >= 0 else "-") + padded(hour_from_time(magnitude), 2) + padded(min_from_time(magnitude), 2)
+    return text if not name else text + " (" + name + ")"

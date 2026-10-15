@@ -1,0 +1,15 @@
+comparison commit b75d12e9afa51a0f9bbf59877f6c2d86e244e96b (the binary was built from its sources, committed at 18:11:30Z, before the run started)
+first run at 5501705fad471d9b98a34dab86a76c3cd5983392 (committed 18:00:49Z), started 2026-10-15T18:00:59Z, 49 seconds; classified with scripts/conformance/classify_date_arms.py at 5501705f, 18:02Z (classified again from its listing at 5501705f on 2026-10-15 at 19:11Z, with the same counts; first-run/ holds that classification)
+this run started 2026-10-15T18:11:41Z, 49 seconds; classified with scripts/conformance/classify_date_arms.py at b75d12e9, 18:12Z to 18:13Z
+culture runs at b75d12e9 (compare-date --culture), sv-SE 2026-10-15T18:13:17Z 30 seconds, fa-IR 18:17:47Z 33 seconds, ar-SA 18:22:20Z 31 seconds; each classified at b75d12e9 within six minutes of its start
+negative controls at b75d12e9 (compare-date --controls), 2026-10-15T18:29:08Z, 9 seconds; classified at b75d12e9
+the controls removed at 6f29debdad87b61000fd995b23dc2e229210b7ce, with corpus revision 16
+this run's listing regenerated at b75d12e9 on 2026-10-15 at 19:10Z, built in a separate checkout of that commit, from the same population: differences.tsv byte-identical (sha256 f201df78d0fe408eff8d5c954117b506091f1c1a5c74961b049e72969a422b9f)
+population generated at the sources of 5501705f, 17:40Z; generated again at 6f29deb (its generator and dateref.py are b75d12e9's) and byte-identical, every file
+arm J copied from Broiler.JS at bc3597f, arm V from Broiler.VM at 9c3d809; each file's header names its sources' blobs
+process zone UTC (TZ=UTC); tzdata 2026c, read by .NET's TimeZoneInfo and by Python's zoneinfo
+python 3.13.16
+sdk 10.0.401
+kernel Linux 6.18.44-fc-v114
+processors 4
+memory 15 GiB

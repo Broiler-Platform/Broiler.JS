@@ -10,15 +10,17 @@
     toPrecision, StringToNumber, parseInt and parseFloat, numeric literal values, the array-index
     and canonical numeric key tests, and the StrWhiteSpaceChar set; from SJL-4, numerics in the same
     namespace; and from SJL-5, text (Broiler.ECMAScript.Text) - UTF-16, padding and relative indices,
-    replacement templates, the URI, base64 and hex codecs, and JSON's grammar, quoting and gap. Its
-    preview pre-releases reach Broiler.VM through that repository's committed feed (decision
-    SJL-D-4 (c)).
+    replacement templates, the URI, base64 and hex codecs, and JSON's grammar, quoting and gap; and
+    from SJL-6, Date (Broiler.ECMAScript.Time) - the time-value arithmetic, the ISO calendar's
+    civil-day helpers, the local-time provider with LocalTime and UTC, the Date string grammar in two
+    dialects and the Date renderings. Its preview pre-releases reach Broiler.VM through that
+    repository's committed feed (decision SJL-D-4 (c)).
   -->
   <PropertyGroup>
     <RootNamespace>Broiler.ECMAScript</RootNamespace>
     <AssemblyName>Broiler.ECMAScript.Algorithms</AssemblyName>
     <PackageId>Broiler.ECMAScript.Algorithms</PackageId>
-    <Description>The language algorithms shared by the Broiler JavaScript engines: number conversion (Number::toString at every radix, toFixed, toExponential, toPrecision, StringToNumber, parseInt, parseFloat, numeric literal values, numeric keys and the string white-space set), numerics (the integer conversions, Float16, the Math kernels, exact rounding and the BigInt kernel) and text (UTF-16, padding and relative indices, replacement templates, the URI, base64 and hex codecs, and JSON's grammar, quoting and gap), with the WorkCharge metering delegate, the ResultStatus enumeration and the limit records every shared operation uses.</Description>
+    <Description>The language algorithms shared by the Broiler JavaScript engines: number conversion (Number::toString at every radix, toFixed, toExponential, toPrecision, StringToNumber, parseInt, parseFloat, numeric literal values, numeric keys and the string white-space set), numerics (the integer conversions, Float16, the Math kernels, exact rounding and the BigInt kernel) and text (UTF-16, padding and relative indices, replacement templates, the URI, base64 and hex codecs, and JSON's grammar, quoting and gap) and Date (the time-value arithmetic, the ISO calendar's civil-day helpers, the local-time provider with LocalTime and UTC, Date.parse's grammar in a strict and a Broiler.VM dialect, and the Date renderings), with the WorkCharge metering delegate, the ResultStatus enumeration and the limit records every shared operation uses.</Description>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
   <ItemGroup>

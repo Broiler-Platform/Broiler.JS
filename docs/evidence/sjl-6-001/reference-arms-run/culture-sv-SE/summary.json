@@ -1,0 +1,293 @@
+{
+  "rule": "docs/evidence/sjl-6-001/reference-arms.md",
+  "revision": "docs/evidence/sjl-6-001/reference-arms-revised-2026-10-15.md and reference-arms-revised-2026-10-15-after-first-run.md",
+  "culture": "sv-SE",
+  "cultureRun": "sv-SE",
+  "processZone": "UTC",
+  "startedUtc": "2026-10-15T18:13:17.5603521\u002B00:00",
+  "void": false,
+  "lineLimit": null,
+  "seconds": 30,
+  "population": {
+    "rule": "docs/evidence/sjl-6-001/reference-arms.md",
+    "revision": "docs/evidence/sjl-6-001/reference-arms-revised-2026-10-15.md",
+    "generator": "scripts/conformance/generate_date_population.py",
+    "python": "3.13.16",
+    "tzdata": "2026c",
+    "seeds": {
+      "SEED_E1": "0x534a4c362d303031",
+      "SEED_E2": "0x534a4c362d303032",
+      "SEED_E3": "0x534a4c362d303033",
+      "SEED_E4": "0x534a4c362d303034",
+      "SEED_E5": "0x534a4c362d303035"
+    },
+    "classes": {
+      "E1T": {
+        "file": "E1T.txt.gz",
+        "count": 72127,
+        "sha256": "efdccaeda753379de3aeddf5b3592cfdb1235a92f1de489a589cf2908ff292e5",
+        "what": "the edges, the days of six years\u0027 ranges, the special Numbers, then 65536 integers drawn with seed 0x534a4c362d303031"
+      },
+      "E2C": {
+        "file": "E2C.txt.gz",
+        "count": 65760,
+        "sha256": "0752704386a9959bea5c6466176a23c2c5909c445b9a4a5b330568787d815c23",
+        "what": "each value in each of the seven components in turn, then 65536 tuples drawn with seed 0x534a4c362d303032; d where MakeDay alone runs"
+      },
+      "E2M": {
+        "file": "E2M.txt.gz",
+        "count": 63006,
+        "sha256": "492db7f519cdf85d79ef79701a8284b552530d6829354c0bcfe3630a19a2d1c3",
+        "what": "MakeDate alone: the reference\u0027s MakeDay and MakeTime of each E2 tuple whose MakeDate is NaN or within the time values"
+      },
+      "E3Y": {
+        "file": "E3Y.txt.gz",
+        "count": 4807,
+        "sha256": "7812539c45860df52a78147f9a2542f8ff7ca48f807ac9540218580af612c4a6",
+        "what": "the years -1200 to 2800, then the large years"
+      },
+      "E3D": {
+        "file": "E3D.txt.gz",
+        "count": 1896822,
+        "sha256": "d21e4f43292046a5eee8ea764559d9c76845374852458b6ada955eeed0ae403c",
+        "what": "every year -1200 to 2800 with months 0 to 13 and days 0 to 32, then the large years\u0027 dates; v where valid"
+      },
+      "E3E": {
+        "file": "E3E.txt.gz",
+        "count": 2065537,
+        "sha256": "ef9bd6b9415dc3f06391b446d46b81cfff2e52e7a74bc7629ade7e48ba503def",
+        "what": "every epoch day from -1,000,000 to 1,000,000, then 65536 drawn with seed 0x534a4c362d303033"
+      },
+      "E3B": {
+        "file": "E3B.txt.gz",
+        "count": 254771,
+        "sha256": "aafce111b4e11973207552b99f2bf1c63679f6e0dafad4d4e6d9e8e9178b3066",
+        "what": "every year of E3Y with the months -25 to 25 and \u002B-2^53"
+      },
+      "E4L": {
+        "file": "E4L.txt.gz",
+        "count": 265307,
+        "sha256": "c9dd75312f01c170a2a26f9519d7f7b5a688236b62a89c73a045e69a14ebb36e",
+        "what": "each zone\u0027s transitions at the deltas both ways, six years\u0027 local times, then 16384 instants drawn with seed 0x534a4c362d303034"
+      },
+      "E5F": {
+        "file": "E5F.txt.gz",
+        "count": 5885919,
+        "sha256": "34cb6ae75f103a12867a334054519648f27ca5b258b668e8ed962607b0b2a42b",
+        "what": "every combination of the format\u0027s shapes over the rule\u0027s values, each with its mutations"
+      },
+      "E5V": {
+        "file": "E5V.txt.gz",
+        "count": 20368,
+        "sha256": "872ccb633c54bc6428366c96c7742106aac8b0fa140f3d6063c3ebc22ae30188",
+        "what": "Broiler.VM\u0027s fallback shapes, one dimension at a time, with the correspondence\u0027s strings"
+      },
+      "E5G": {
+        "file": "E5G.txt.gz",
+        "count": 65536,
+        "sha256": "02a990ef2506b837d4ed8acf559b5b0ea67aa9d2d1366a6085c77eab69fab06e",
+        "what": "65536 strings drawn with seed 0x534a4c362d303035 from the grammar of those tokens, each mutated by one character"
+      },
+      "E6O": {
+        "file": "E6O.txt.gz",
+        "count": 11,
+        "sha256": "b4126ac6b9eccec0d2b27963d19e0682c39669e467e2788952219aaeb606ea88",
+        "what": "the offsets of E6, in milliseconds"
+      },
+      "E6N": {
+        "file": "E6N.txt.gz",
+        "count": 3,
+        "sha256": "76d2eea7e13d863c3400845c5135192374c3e97d5ee739ea3f594c6709702199",
+        "what": "the names of E6: none (the empty line), an ASCII one and one outside ASCII"
+      }
+    }
+  },
+  "notImplemented": [
+    {
+      "arm": "J,V",
+      "operation": "the field operations over NaN and the infinities",
+      "reason": "no engine calls them there: every getter answers NaN for an invalid date first; S runs over them alone"
+    },
+    {
+      "arm": "J",
+      "operation": "InLeapYear",
+      "reason": "JSDateMath has no member: the leap test is written inline (correspondence section 1)"
+    },
+    {
+      "arm": "V",
+      "operation": "LocalTime and UTC",
+      "reason": "Broiler.VM\u0027s local time is UTC by omission, with no LocalTime or UTC member (correspondence section 3)"
+    },
+    {
+      "arm": "V",
+      "operation": "TimeString, TimeZoneString and toString at any offset or name but zero and its own",
+      "reason": "its zone text is the constant DateZoneText"
+    },
+    {
+      "arm": "J",
+      "operation": "TimeZoneString and toString with no name",
+      "reason": "Broiler.JS always writes the host zone\u0027s name"
+    },
+    {
+      "arm": "J",
+      "operation": "parse, outside the format and its own renderings",
+      "reason": "the rest of its fallback stays in Broiler.JS (decision SJL-D-17)"
+    },
+    {
+      "arm": "V",
+      "operation": "the renderings of NaN but toString\u0027s",
+      "reason": "Broiler.VM\u0027s methods answer Invalid Date or throw before calling DateToCalendarText, DateToUtcText or DateToIsoText"
+    },
+    {
+      "arm": "J",
+      "operation": "BalanceISOYearMonth",
+      "reason": "no member of the nine civil copies balances a year and a month"
+    }
+  ],
+  "operations": [
+    {
+      "operation": "parse, Broiler.JS\u0027s order",
+      "class": "E5F",
+      "lines": 5885919,
+      "inputs": 5885919,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "Date.parse",
+          "ran": 5885919,
+          "differ": 115332,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "parse, Broiler.JS\u0027s order, its renderings",
+      "class": "E1T",
+      "lines": 72127,
+      "inputs": 360580,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "Date.parse",
+          "ran": 216348,
+          "differ": 133124,
+          "notCalled": 144232
+        }
+      ]
+    },
+    {
+      "operation": "DateString",
+      "class": "E1T",
+      "lines": 72127,
+      "inputs": 72116,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "DateString",
+          "ran": 72116,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "TimeString",
+      "class": "E1T",
+      "lines": 72127,
+      "inputs": 72116,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "ClockString and \u0022 GMT\u0022",
+          "ran": 72116,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "TimeZoneString",
+      "class": "E1T",
+      "lines": 72127,
+      "inputs": 2379828,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "ToTimeZoneString",
+          "ran": 1586552,
+          "differ": 721160,
+          "notCalled": 793276
+        }
+      ]
+    },
+    {
+      "operation": "toString",
+      "class": "E1T",
+      "lines": 72127,
+      "inputs": 2379828,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "toString\u0027s body",
+          "ran": 1586552,
+          "differ": 721160,
+          "notCalled": 793276
+        }
+      ]
+    },
+    {
+      "operation": "toString, a host zone",
+      "class": "E1T",
+      "lines": 72127,
+      "inputs": 144232,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "toString",
+          "ran": 144232,
+          "differ": 72116,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "toUTCString",
+      "class": "E1T",
+      "lines": 72127,
+      "inputs": 72117,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "toUTCString",
+          "ran": 72117,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    },
+    {
+      "operation": "toISOString",
+      "class": "E1T",
+      "lines": 72127,
+      "inputs": 72117,
+      "sharedAlone": null,
+      "variants": [
+        {
+          "arm": "J",
+          "variant": "toISOString",
+          "ran": 72117,
+          "differ": 0,
+          "notCalled": 0
+        }
+      ]
+    }
+  ]
+}

@@ -14,7 +14,50 @@ Each entry has the headings **Added**, **Changed**, **Observable changes** and *
 
 ## Unreleased
 
-To be packed as `0.1.0-preview.3`, the stream keeping its `0.1.0` prefix while it is a preview.
+To be packed as `0.1.0-preview.4`, the stream keeping its `0.1.0` prefix while it is a preview.
+
+### Added
+
+- `Broiler.ECMAScript.Algorithms`: the Date area, namespace `Broiler.ECMAScript.Time` (milestone SJL-6.3;
+  adapter guide [`docs/adapter-guide-date.md`](Broiler.ECMAScript.Algorithms/docs/adapter-guide-date.md)):
+  - `EcmaTime`: the time-value arithmetic of ECMA-262 21.4.1, `Day` to `msFromTime`, `MakeTime`,
+    `MakeDay`, `MakeDate`, `MakeFullYear` and `TimeClip`, with `MsPerSecond` to `MsPerDay` and
+    `MaxTimeValue`; every step the specification writes on mathematical values is exact;
+  - `IsoCalendarMath`: the Temporal proposal's ISO 8601 civil-day operations over 64-bit integers -
+    `IsLeapYear`, `DaysInYear`, `DaysInMonth`, `EpochDays`, `FromEpochDays`, `DayOfWeek`, `DayOfYear`,
+    `WeekOfYear`, `BalanceYearMonth` and `IsValidIsoDate`;
+  - `ILocalTimeProvider`, the local-time provider of decision SJL-D-19, with
+    `FixedOffsetLocalTimeProvider`, and `EcmaLocalTime`: `LocalTime` and `UTC` with the specification's
+    disambiguation;
+  - `EcmaDateParser.Parse` with its `DateParseDialect` (`Strict`, and `BroilerVM` with correction P9),
+    its optional `WorkCharge` and its `EcmaParsedDate` of kind `Utc`, `Local` or `Invalid`;
+  - `EcmaDateFormatter`: `TimeString`, `DateString`, `TimeZoneString`, `ToDateString`, `ToUtcString` and
+    `TryToIsoString`, the zone's offset and name coming from the provider.
+
+  The parser charges the text's length before reading it (JSD-0072, decision 4); nothing else in the
+  area charges. Every Date vector of corpus revision 15 that the library answers passes at library level.
+
+### Changed
+
+None.
+
+### Observable changes
+
+None: the area is new in this stream. What each engine observes at its cut-over is listed in that
+engine's own records.
+
+### Data
+
+None.
+
+## 0.1.0-preview.3 — published to nuget.org
+
+*(Heading corrected 2026-10-15, at milestone SJL-6.3, when the next version's entry was opened; read
+"Unreleased". This entry was published as `0.1.0-preview.3` by `Publish shared libraries`.)*
+
+Packed as `0.1.0-preview.3`, the stream keeping its `0.1.0` prefix while it is a preview.
+*(Corrected 2026-10-15; read "To be packed as `0.1.0-preview.3`, the stream keeping its `0.1.0` prefix
+while it is a preview.")*
 
 ### Added
 

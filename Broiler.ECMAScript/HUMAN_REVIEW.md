@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 437 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 533 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -49,13 +49,13 @@ did, which is the narrower and the more useful of the two.
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 39 |
-| Code units | 573 |
-| Relevant | 437 |
-| Exempt | 136 |
-| Assessed | 437 of 437 (100%) |
-| Human reviewed | 0 of 437 (0%) |
-| Unverified | 437 |
+| Files scanned | 44 |
+| Code units | 677 |
+| Relevant | 533 |
+| Exempt | 144 |
+| Assessed | 533 of 533 (100%) |
+| Human reviewed | 0 of 533 (0%) |
+| Unverified | 533 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 437 |
+| HUMAN_PENDING | 533 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 136 |
+| EXEMPT | 144 |
 
 ## 5. Aliases In The Tree
 
@@ -115,6 +115,11 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Algorithms/Text/StringPadding.cs` | 12 | 10 | 2 | 10 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Algorithms/Text/UriCodec.cs` | 17 | 14 | 3 | 14 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Algorithms/Text/Utf16.cs` | 14 | 14 | 0 | 14 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Time/EcmaDateFormatter.cs` | 13 | 13 | 0 | 13 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Time/EcmaDateParser.cs` | 23 | 18 | 5 | 18 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Algorithms/Time/EcmaTime.cs` | 37 | 37 | 0 | 37 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Time/IsoCalendarMath.cs` | 16 | 16 | 0 | 16 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Time/LocalTime.cs` | 15 | 12 | 3 | 12 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Algorithms/WorkCharge.cs` | 1 | 1 | 0 | 1 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Conformance/Ascii.cs` | 15 | 15 | 0 | 15 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/LibraryRun.cs` | 11 | 9 | 2 | 9 | Low | Low | 0/0 |
@@ -240,6 +245,12 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a String longer than the limit is built or charged, an empty filler is not answered with the String itself, or the filler is not repeated and truncated to exactly maxLength minus the String's length
 - `Broiler.ECMAScript.Text.UriCodec.Decode(ReadOnlySpan<char>, ReadOnlySpan<char>, out string, out Failure, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Text/UriCodec.cs` - Security=High, Spec=ECMA-262 19.2.6.6, `230B5B`, PENDING
   - Falsified if: an overlong sequence, an encoded surrogate or a value above U+10FFFF completes, a preserved character's escape is decoded, or a well-formed sequence is refused
+- `Broiler.ECMAScript.Time.EcmaDateParser` in `Broiler.ECMAScript.Algorithms/Time/EcmaDateParser.cs` - Security=High, Spec=ECMA-262 21.4.1.32, `0047BF`, PENDING
+  - Falsified if: a string outside the format is read by the strict dialect, a string of the format is refused or read at another time value, or Broiler.VM's dialect answers differently from that engine's DateParseText on a string other than a rendering of a negative year
+- `Broiler.ECMAScript.Time.EcmaDateParser.Parse(ReadOnlySpan<char>, DateParseDialect, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Time/EcmaDateParser.cs` - Security=High, Spec=ECMA-262 21.4.3.2, `5C16E2`, PENDING
+  - Falsified if: the meter is charged other than the text's length before the first character is read, or charged for an empty text
+- `Broiler.ECMAScript.Time.EcmaLocalTime.Utc(double, ILocalTimeProvider)` in `Broiler.ECMAScript.Algorithms/Time/LocalTime.cs` - Security=High, Spec=ECMA-262 21.4.1.26, `708CAB`, PENDING
+  - Falsified if: a repeated local time is read at a later instant than its earliest, a skipped local time is read at an offset other than the one before its transition, or a local time with one instant is read at another
 
 ## 10. What This Record Does Not Say
 
@@ -256,5 +267,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-343 of the 437 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+439 of the 533 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

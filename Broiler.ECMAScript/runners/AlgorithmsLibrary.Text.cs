@@ -121,7 +121,7 @@ internal sealed partial class AlgorithmsLibrary
             return Text(Base64Codec.ToBase64(Bytes(inputs[0].Chars), alphabet, operation.EndsWith("omitPadding", StringComparison.Ordinal)));
         }
 
-        return EmptyLibrary.NotImplemented;
+        return DateArea(operation, inputs);
     }
 
     // ---------------------------------------------------------------------------------------------

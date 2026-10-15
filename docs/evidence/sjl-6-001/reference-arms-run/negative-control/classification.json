@@ -1,0 +1,53 @@
+{
+  "differences": 163,
+  "verdicts": {
+    "(b)": 80,
+    "unclassified": 83
+  },
+  "classes": [
+    {
+      "operation": "epoch days from a date",
+      "variant": "J:control: JSTemporalPlainDate's DaysFromCivil one day more for 1970-01-01",
+      "verdict": "unclassified",
+      "reason": "a negative control",
+      "count": 1
+    },
+    {
+      "operation": "parse, Broiler.VM's dialect",
+      "variant": "V:DateParseText",
+      "verdict": "(b)",
+      "reason": "implementation-defined: a signed year outside the renderings (P9's reading)",
+      "count": 80
+    },
+    {
+      "operation": "parse, Broiler.VM's dialect",
+      "variant": "V:control: DateParseText charging one unit more for \"1970\"",
+      "verdict": "unclassified",
+      "reason": "a negative control",
+      "count": 82
+    }
+  ],
+  "kinds (b)": [
+    {
+      "arm": "V",
+      "kind": "implementation-defined: a signed year outside the renderings (P9's reading)",
+      "count": 80
+    }
+  ],
+  "correspondence rows": [
+    {
+      "row": "P9",
+      "arm": "V",
+      "verdict": "(b)",
+      "count": 80
+    }
+  ],
+  "differences.tsv": {
+    "lines": 164,
+    "sha256": "4364ef71c5e2161e51b0389f1c4b38b470f3c0746fc351841e24d9e1760d3f67"
+  },
+  "classification.tsv": {
+    "lines": 164,
+    "sha256": "b207ae2e63c4ee6a17495e84d66ffc2808973348c6678973a0e22f1948e222e2"
+  }
+}

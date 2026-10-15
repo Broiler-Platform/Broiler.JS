@@ -1301,3 +1301,159 @@ prov: spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: var d = new Date("10000/1/1"); [d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes()].join()
 note: outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS reads it by its slash-date heuristic, which decision SJL-D-17 keeps (docs/roadmap/SharedLibraries.md, the Date area's record); Broiler.VM's dialect reads no slash and gives an invalid date, as JSD-0072 keeps it
 since: 14
+
+id: date/outside-format/0001
+area: date
+op: Date.parse, a string outside the format
+in: str:"0000-02-30T00:00Z"
+out: value: f64:0x7FF8000000000000
+class: impl-defined
+per-engine.broiler-js: value: f64:0x7FF8000000000000
+per-engine.broiler-vm: value: f64:0xC2CC449D03680000
+prov: spec:es2026@0248456c#sec-date.parse ref:dateref@1
+script: Date.parse("0000-02-30T00:00Z")
+note: outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS's expectation is its reading before its cut-over, by its own grammar; milestone SJL-6.5 states its reading after it, which JSD-0072 orders strict, its own, then Broiler.VM's dialect. Broiler.VM's is its dialect's reading as Broiler.ECMAScript.Algorithms ports it (EcmaDateParser, DateParseDialect.BroilerVM), which its cut-over, milestone SJL-6.4, adopts. The kind is one bundle sjl-6-001's reference-arm comparison classified (b): a day past its month's length (P5)
+since: 16
+
+id: date/outside-format/0002
+area: date
+op: Date.parse, a string outside the format
+in: str:"0001-01-01T00:00:00.-05:30"
+out: value: f64:0x7FF8000000000000
+class: impl-defined
+per-engine.broiler-js: value: f64:0xC2CC41887F5C2000
+per-engine.broiler-vm: value: f64:0x7FF8000000000000
+prov: spec:es2026@0248456c#sec-date.parse ref:dateref@1
+script: Date.parse("0001-01-01T00:00:00.-05:30")
+note: outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS's expectation is its reading before its cut-over, by its own grammar; milestone SJL-6.5 states its reading after it, which JSD-0072 orders strict, its own, then Broiler.VM's dialect. Broiler.VM's is its dialect's reading as Broiler.ECMAScript.Algorithms ports it (EcmaDateParser, DateParseDialect.BroilerVM), which its cut-over, milestone SJL-6.4, adopts. The kind is one bundle sjl-6-001's reference-arm comparison classified (b): a fraction of 0 digits (P4)
+since: 16
+
+id: date/outside-format/0003
+area: date
+op: Date.parse, a string outside the format
+in: str:"0000T00:00:00.0Z"
+out: value: f64:0x7FF8000000000000
+class: impl-defined
+per-engine.broiler-js: value: f64:0xC2CC453782300000
+per-engine.broiler-vm: value: f64:0x7FF8000000000000
+prov: spec:es2026@0248456c#sec-date.parse ref:dateref@1
+script: Date.parse("0000T00:00:00.0Z")
+note: outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS's expectation is its reading before its cut-over, by its own grammar; milestone SJL-6.5 states its reading after it, which JSD-0072 orders strict, its own, then Broiler.VM's dialect. Broiler.VM's is its dialect's reading as Broiler.ECMAScript.Algorithms ports it (EcmaDateParser, DateParseDialect.BroilerVM), which its cut-over, milestone SJL-6.4, adopts. The kind is one bundle sjl-6-001's reference-arm comparison classified (b): a fraction of 1 digits (P4)
+since: 16
+
+id: date/outside-format/0004
+area: date
+op: Date.parse, a string outside the format
+in: str:"0000T00:00:00.00Z"
+out: value: f64:0x7FF8000000000000
+class: impl-defined
+per-engine.broiler-js: value: f64:0xC2CC453782300000
+per-engine.broiler-vm: value: f64:0x7FF8000000000000
+prov: spec:es2026@0248456c#sec-date.parse ref:dateref@1
+script: Date.parse("0000T00:00:00.00Z")
+note: outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS's expectation is its reading before its cut-over, by its own grammar; milestone SJL-6.5 states its reading after it, which JSD-0072 orders strict, its own, then Broiler.VM's dialect. Broiler.VM's is its dialect's reading as Broiler.ECMAScript.Algorithms ports it (EcmaDateParser, DateParseDialect.BroilerVM), which its cut-over, milestone SJL-6.4, adopts. The kind is one bundle sjl-6-001's reference-arm comparison classified (b): a fraction of 2 digits (P4)
+since: 16
+
+id: date/outside-format/0005
+area: date
+op: Date.parse, a string outside the format
+in: str:"0000T00:00:00.0000Z"
+out: value: f64:0x7FF8000000000000
+class: impl-defined
+per-engine.broiler-js: value: f64:0xC2CC453782300000
+per-engine.broiler-vm: value: f64:0x7FF8000000000000
+prov: spec:es2026@0248456c#sec-date.parse ref:dateref@1
+script: Date.parse("0000T00:00:00.0000Z")
+note: outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS's expectation is its reading before its cut-over, by its own grammar; milestone SJL-6.5 states its reading after it, which JSD-0072 orders strict, its own, then Broiler.VM's dialect. Broiler.VM's is its dialect's reading as Broiler.ECMAScript.Algorithms ports it (EcmaDateParser, DateParseDialect.BroilerVM), which its cut-over, milestone SJL-6.4, adopts. The kind is one bundle sjl-6-001's reference-arm comparison classified (b): a fraction of 4 digits (P4)
+since: 16
+
+id: date/outside-format/0006
+area: date
+op: Date.parse, a string outside the format
+in: str:"0000T00:00:00.000000000Z"
+out: value: f64:0x7FF8000000000000
+class: impl-defined
+per-engine.broiler-js: value: f64:0xC2CC453782300000
+per-engine.broiler-vm: value: f64:0x7FF8000000000000
+prov: spec:es2026@0248456c#sec-date.parse ref:dateref@1
+script: Date.parse("0000T00:00:00.000000000Z")
+note: outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS's expectation is its reading before its cut-over, by its own grammar; milestone SJL-6.5 states its reading after it, which JSD-0072 orders strict, its own, then Broiler.VM's dialect. Broiler.VM's is its dialect's reading as Broiler.ECMAScript.Algorithms ports it (EcmaDateParser, DateParseDialect.BroilerVM), which its cut-over, milestone SJL-6.4, adopts. The kind is one bundle sjl-6-001's reference-arm comparison classified (b): a fraction of 9 digits (P4)
+since: 16
+
+id: date/outside-format/0007
+area: date
+op: Date.parse, a string outside the format
+in: str:"0001-01-01t00:00-05:30"
+out: value: f64:0x7FF8000000000000
+class: impl-defined
+per-engine.broiler-js: value: f64:0xC2CC41887F5C2000
+per-engine.broiler-vm: value: f64:0x7FF8000000000000
+prov: spec:es2026@0248456c#sec-date.parse ref:dateref@1
+script: Date.parse("0001-01-01t00:00-05:30")
+note: outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS's expectation is its reading before its cut-over, by its own grammar; milestone SJL-6.5 states its reading after it, which JSD-0072 orders strict, its own, then Broiler.VM's dialect. Broiler.VM's is its dialect's reading as Broiler.ECMAScript.Algorithms ports it (EcmaDateParser, DateParseDialect.BroilerVM), which its cut-over, milestone SJL-6.4, adopts. The kind is one bundle sjl-6-001's reference-arm comparison classified (b): a lower-case t (P6)
+since: 16
+
+id: date/outside-format/0008
+area: date
+op: Date.parse, a string outside the format
+in: str:"0001-01-01 00:00-05:30"
+out: value: f64:0x7FF8000000000000
+class: impl-defined
+per-engine.broiler-js: value: f64:0xC2CC41887F5C2000
+per-engine.broiler-vm: value: f64:0x7FF8000000000000
+prov: spec:es2026@0248456c#sec-date.parse ref:dateref@1
+script: Date.parse("0001-01-01 00:00-05:30")
+note: outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS's expectation is its reading before its cut-over, by its own grammar; milestone SJL-6.5 states its reading after it, which JSD-0072 orders strict, its own, then Broiler.VM's dialect. Broiler.VM's is its dialect's reading as Broiler.ECMAScript.Algorithms ports it (EcmaDateParser, DateParseDialect.BroilerVM), which its cut-over, milestone SJL-6.4, adopts. The kind is one bundle sjl-6-001's reference-arm comparison classified (b): a space for the T
+since: 16
+
+id: date/outside-format/0009
+area: date
+op: Date.parse, a string outside the format
+in: str:"0001-01-01T00:00-0530"
+out: value: f64:0x7FF8000000000000
+class: impl-defined
+per-engine.broiler-js: value: f64:0xC2CC41887F5C2000
+per-engine.broiler-vm: value: f64:0x7FF8000000000000
+prov: spec:es2026@0248456c#sec-date.parse ref:dateref@1
+script: Date.parse("0001-01-01T00:00-0530")
+note: outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS's expectation is its reading before its cut-over, by its own grammar; milestone SJL-6.5 states its reading after it, which JSD-0072 orders strict, its own, then Broiler.VM's dialect. Broiler.VM's is its dialect's reading as Broiler.ECMAScript.Algorithms ports it (EcmaDateParser, DateParseDialect.BroilerVM), which its cut-over, milestone SJL-6.4, adopts. The kind is one bundle sjl-6-001's reference-arm comparison classified (b): an offset without its colon (P6)
+since: 16
+
+id: date/outside-format/0010
+area: date
+op: Date.parse, a string outside the format
+in: str:"Thu Jan 01 -5 00:00:00 GMT+0000 (Coordinated Universal Time)"
+out: value: f64:0x7FF8000000000000
+class: impl-defined
+per-engine.broiler-js: value: f64:0x7FF8000000000000
+per-engine.broiler-vm: value: f64:0xC2CC5795504C0000
+prov: spec:es2026@0248456c#sec-date.parse ref:dateref@1
+script: Date.parse("Thu Jan 01 -5 00:00:00 GMT+0000 (Coordinated Universal Time)")
+note: outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS's expectation is its reading before its cut-over, by its own grammar; milestone SJL-6.5 states its reading after it, which JSD-0072 orders strict, its own, then Broiler.VM's dialect. Broiler.VM's is its dialect's reading as Broiler.ECMAScript.Algorithms ports it (EcmaDateParser, DateParseDialect.BroilerVM), which its cut-over, milestone SJL-6.4, adopts. The kind is one bundle sjl-6-001's reference-arm comparison classified (b): a signed year outside the renderings (P9's reading)
+since: 16
+
+id: date/outside-format/0011
+area: date
+op: Date.parse, a string outside the format, its local fields
+in: str:" 2000-01-28"
+out: value: str:"NaN,NaN,NaN,NaN,NaN"
+class: impl-defined
+per-engine.broiler-js: value: str:"2000,0,28,0,0"
+per-engine.broiler-vm: value: str:"NaN,NaN,NaN,NaN,NaN"
+prov: spec:es2026@0248456c#sec-date.parse ref:dateref@1
+script: var d = new Date(" 2000-01-28"); [d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes()].join()
+note: outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS's expectation is its reading before its cut-over, by its own grammar; milestone SJL-6.5 states its reading after it, which JSD-0072 orders strict, its own, then Broiler.VM's dialect. Broiler.VM's is its dialect's reading as Broiler.ECMAScript.Algorithms ports it (EcmaDateParser, DateParseDialect.BroilerVM), which its cut-over, milestone SJL-6.4, adopts. The kind is one bundle sjl-6-001's reference-arm comparison classified (b): a leading or trailing space
+since: 16
+
+id: date/outside-format/0012
+area: date
+op: Date.parse, a string outside the format, its local fields
+in: str:"2000-01-28 "
+out: value: str:"NaN,NaN,NaN,NaN,NaN"
+class: impl-defined
+per-engine.broiler-js: value: str:"2000,0,28,0,0"
+per-engine.broiler-vm: value: str:"NaN,NaN,NaN,NaN,NaN"
+prov: spec:es2026@0248456c#sec-date.parse ref:dateref@1
+script: var d = new Date("2000-01-28 "); [d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes()].join()
+note: outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS's expectation is its reading before its cut-over, by its own grammar; milestone SJL-6.5 states its reading after it, which JSD-0072 orders strict, its own, then Broiler.VM's dialect. Broiler.VM's is its dialect's reading as Broiler.ECMAScript.Algorithms ports it (EcmaDateParser, DateParseDialect.BroilerVM), which its cut-over, milestone SJL-6.4, adopts. The kind is one bundle sjl-6-001's reference-arm comparison classified (b): a leading or trailing space
+since: 16
