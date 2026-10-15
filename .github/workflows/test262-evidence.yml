@@ -7,6 +7,10 @@ name: test262 evidence
 # shard). It then merges the shards, runs every timed-out path again alone with one worker, and, when
 # given a base, compares the two runs path by path with scripts/compliance/compare_test262_paths.py.
 #
+# The shell runs in the runner's own time zone, which is UTC, unless time_zone names another: then TZ
+# is set to it for every shard and for the re-run, each shard records the zone its tests ran in, and
+# the run is complete only if every shard ran in that zone. Two runs are compared only within one zone.
+#
 # Unlike test262.yml it writes nothing. Its token reads the repository and the Actions artifacts and
 # nothing else, so it opens no issue, commits nothing and leaves the failure manifest alone. It runs
 # no saved-failure preflight, so the suite's known failures cannot keep the full run from starting.
@@ -44,6 +48,13 @@ on:
         required: false
         default: true
         type: boolean
+      time_zone:
+        description: >-
+          Optional. An IANA time zone in the runner's /usr/share/zoneinfo, set as TZ for every test and
+          the re-run; empty runs in the runner's own zone, UTC.
+        required: false
+        default: ''
+        type: string
       base_run_id:
         description: Optional. The ID of an earlier test262 evidence run to compare with.
         required: false
@@ -131,6 +142,33 @@ jobs:
         with:
           ref: ${{ env.TESTED_COMMIT }}
           fetch-depth: 1
+
+      # Inline rather than a script of the tested tree, so that any commit can be tested in any zone.
+      # The zone each shard's tests ran in is uploaded with its shell's hashes and checked when merged.
+      - name: Set the host time zone
+        shell: bash
+        env:
+          TIME_ZONE: ${{ inputs.time_zone }}
+          SHARD_INDEX: ${{ matrix.shard-index }}
+        run: |
+          set -euo pipefail
+          if [ -n "$TIME_ZONE" ]; then
+            if ! [[ "$TIME_ZONE" =~ ^[A-Za-z][A-Za-z0-9_+-]*(/[A-Za-z0-9_+-]+)*$ ]] \
+              || [ ! -f "/usr/share/zoneinfo/$TIME_ZONE" ]; then
+              echo "time_zone must name a zone in the runner's /usr/share/zoneinfo." >&2
+              exit 1
+            fi
+            echo "TZ=$TIME_ZONE" >> "$GITHUB_ENV"
+            export TZ="$TIME_ZONE"
+          fi
+          mkdir -p shell-hash
+          {
+            echo "TZ: ${TZ:-unset}"
+            echo "2021-01-15T12:00:00Z: $(date -d 2021-01-15T12:00:00Z '+%Z %z')"
+            echo "2021-07-15T12:00:00Z: $(date -d 2021-07-15T12:00:00Z '+%Z %z')"
+            echo "tzdata: $(sed -n '1s/^# version //p' /usr/share/zoneinfo/tzdata.zi 2>/dev/null || true)"
+          } > "shell-hash/host-zone-shard-${SHARD_INDEX}.txt"
+          cat "shell-hash/host-zone-shard-${SHARD_INDEX}.txt"
 
       # The runner exits 1 when a test fails, which every whole-suite run has; the shard's report is
       # conclusive all the same. Only a missing report, checked below, fails this job.
@@ -263,6 +301,56 @@ jobs:
           if [ "$count" = "$SHARD_COUNT" ] && [ "$distinct" = "1" ]; then same=true; fi
           echo "same=$same" >> "$GITHUB_OUTPUT"
           cat evidence/shell-hashes.log
+
+      - name: Set the host time zone
+        shell: bash
+        env:
+          TIME_ZONE: ${{ inputs.time_zone }}
+        run: |
+          set -euo pipefail
+          if [ -n "$TIME_ZONE" ]; then
+            if ! [[ "$TIME_ZONE" =~ ^[A-Za-z][A-Za-z0-9_+-]*(/[A-Za-z0-9_+-]+)*$ ]] \
+              || [ ! -f "/usr/share/zoneinfo/$TIME_ZONE" ]; then
+              echo "time_zone must name a zone in the runner's /usr/share/zoneinfo." >&2
+              exit 1
+            fi
+            echo "TZ=$TIME_ZONE" >> "$GITHUB_ENV"
+          fi
+
+      # Every shard's zone record must read as this job's own: the same TZ, the same abbreviation and
+      # offset at a winter and a summer instant, and the same release of the runner's tzdata.
+      - name: Check that every shard ran in the zone
+        id: zone
+        shell: bash
+        run: |
+          set -uo pipefail
+          {
+            echo "TZ: ${TZ:-unset}"
+            echo "2021-01-15T12:00:00Z: $(date -d 2021-01-15T12:00:00Z '+%Z %z')"
+            echo "2021-07-15T12:00:00Z: $(date -d 2021-07-15T12:00:00Z '+%Z %z')"
+            echo "tzdata: $(sed -n '1s/^# version //p' /usr/share/zoneinfo/tzdata.zi 2>/dev/null || true)"
+          } > expected-zone.txt
+          files=(shell-hashes/host-zone-shard-*.txt)
+          count=0
+          [ -e "${files[0]}" ] && count=${#files[@]}
+          matching=0
+          {
+            echo "# The zone each shard's tests ran in, against the merging job's own."
+            sed 's/^/expected: /' expected-zone.txt
+            for f in "${files[@]}"; do
+              [ -e "$f" ] || continue
+              if cmp -s "$f" expected-zone.txt; then
+                matching=$((matching + 1)); echo "$(basename "$f"): as expected"
+              else
+                echo "$(basename "$f"): differs"; sed 's/^/  /' "$f"
+              fi
+            done
+            echo "shards: $count; in the expected zone: $matching"
+          } > evidence/host-zone.log
+          same=false
+          if [ "$count" = "$SHARD_COUNT" ] && [ "$matching" = "$SHARD_COUNT" ]; then same=true; fi
+          echo "same=$same" >> "$GITHUB_OUTPUT"
+          cat evidence/host-zone.log
 
       - name: List the timed-out paths
         id: timeouts
@@ -403,6 +491,7 @@ jobs:
               f"inputs: {json.dumps(json.loads(os.environ['INPUTS']), sort_keys=True)}",
               f"runner: {os.environ.get('ImageOS', 'unknown')} {os.environ.get('ImageVersion', '')}; "
               f"{os.environ.get('RUNNER_OS', '')} {os.environ.get('RUNNER_ARCH', '')}; logical processors {os.cpu_count()}",
+              f"host time zone: TZ {os.environ.get('TZ') or 'unset'} (host-zone.log)",
           ]
           merged = Path("evidence/test262-results.json")
           if merged.is_file():
@@ -428,6 +517,7 @@ jobs:
           INCOMPLETE: ${{ steps.merge.outputs.incomplete_shard_count }}
           CONFIG_FAILURES: ${{ steps.merge.outputs.configuration_failure_count }}
           SAME_SHELL: ${{ steps.shell.outputs.same }}
+          SAME_ZONE: ${{ steps.zone.outputs.same }}
           COMPARE_EXIT: ${{ steps.compare.outputs.exit-code }}
         run: |
           {
@@ -441,6 +531,7 @@ jobs:
             echo "| Variant cases (failed counts timeouts too) | ${PASSED:-?} passed; ${FAILED:-?} failed; ${TIMED_OUT:-?} timed out; ${SKIPPED:-?} skipped |"
             echo "| Incomplete shards; configuration failures | ${INCOMPLETE:-?}; ${CONFIG_FAILURES:-?} |"
             echo "| One shell in every shard | ${SAME_SHELL:-?} |"
+            echo "| Every shard in the host time zone, TZ ${TZ:-unset} | ${SAME_ZONE:-?} |"
             echo "| Comparison exit | ${COMPARE_EXIT:-no base given} |"
             echo
             echo "Known failures do not fail this workflow. The comparison is reported, not enforced."
@@ -464,6 +555,7 @@ jobs:
           INCOMPLETE: ${{ steps.merge.outputs.incomplete_shard_count }}
           CONFIG_FAILURES: ${{ steps.merge.outputs.configuration_failure_count }}
           SAME_SHELL: ${{ steps.shell.outputs.same }}
+          SAME_ZONE: ${{ steps.zone.outputs.same }}
           TIMEOUTS: ${{ steps.timeouts.outputs.count }}
           RERUN_WANTED: ${{ inputs.rerun_timeouts }}
           COMPARE_EXIT: ${{ steps.compare.outputs.exit-code }}
@@ -477,6 +569,9 @@ jobs:
           fi
           if [ "$SAME_SHELL" != "true" ]; then
             echo "The shards did not all run the same shell (shell-hashes.log)." >&2; failed=1
+          fi
+          if [ "$SAME_ZONE" != "true" ]; then
+            echo "The shards did not all run in the host time zone (host-zone.log)." >&2; failed=1
           fi
           if [ "$RERUN_WANTED" = "true" ] && [ "${TIMEOUTS:-0}" != "0" ] && [ ! -f evidence/rerun-timeouts.json ]; then
             echo "The re-run of the timed-out paths produced no report." >&2; failed=1
