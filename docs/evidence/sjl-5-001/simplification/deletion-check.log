@@ -1,0 +1,38 @@
+# SJL-5.6 deletion check, Broiler.JS at 1ebde70dc673de9a7b932c595c44ca39141ce58d: every entry of the text area's Broiler.JS
+# deletion list (Broiler.VM docs/javascript-shared-libraries/milestones/sjl-5-text-algorithms.md,
+# SJL-5.5), searched in the file or folder that held it with git grep -E, test projects included
+# where the folder holds them. An entry with no line is absent; a line that remains is an adapter,
+# a comment or the library's own name, which the bundle's README reads.
+
+## IsWellFormedUtf16 and ToWellFormedUtf16
+# in Broiler.JS: \b(IsWellFormedUtf16|ToWellFormedUtf16)\b
+
+## StringPad's builder
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Transform.cs: \bStringPad\b|\.Pad(Left|Right)\(|StringBuilder|\.Append\(
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Transform.cs:41:        return StringPad(@this, s, c, padStart: false);
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Transform.cs:50:        return StringPad(@this, s, c, padStart: true);
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Transform.cs:58:    // fillString only when padding is needed. StringPad itself is the shared library's (SJL-5.5),
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Transform.cs:61:    private static JSString StringPad(string str, JSValue maxLengthArg, JSValue fillArg, bool padStart)
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Transform.cs:111:        // StringBuilder and materialising that afterwards keeps two full-size buffers
+
+## JSString.GetSubstitution, and the initializer's local GetSubstitution
+# in Broiler.JS: \bstring GetSubstitution\(|JSString\.GetSubstitution\b|\bGetSubstitution\(
+
+## the UriHelper class
+# in Broiler.JS: \bUriHelper\b|\b(CreateCharacterSetLookupTable|CreateUnescapedLookupTable|ParseHexNumber|IsEscapeUnescaped|Utf8Encode)\b
+Broiler.JS/Broiler.JavaScript.Integration.Tests/EngineErrorOriginFrameTests.cs:56:    // functions' among them since SJL-5.5 deleted UriHelper and its factory.
+
+## the base64 and hex cores of JSUInt8Array
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/JSUInt8Array.cs: \b(DecodeBase64|DecodeBase64Chunk|Base64DecodeResult|SkipAsciiWhitespace|Base64Value|GetBase64Alphabet|TryParseHexByte|HexDigitValue)\b|Convert\.(To|From|TryFrom)(Base64|Hex)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/JSUInt8Array.cs:63:        var alphabet = GetBase64Alphabet(options);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/JSUInt8Array.cs:101:        var alphabet = GetBase64Alphabet(options);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/JSUInt8Array.cs:127:        var alphabet = GetBase64Alphabet(options);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Array/Typed/JSUInt8Array.cs:179:    private static Base64Alphabet GetBase64Alphabet(JSObject? options)
+
+## JSJSON.QuoteString
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Json: \bQuoteString\b
+
+## JSJsonParser's use of System.Text.Json for guest JSON, with its exception mapping
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Json: System\.Text\.Json|Utf8JsonReader|JsonSerializer|JsonConverter|JsonReaderException|JsonException
+Broiler.JS/Broiler.JavaScript.BuiltIns/Json/JSJsonParser.cs:18:/// Until SJL-5.5 this was System.Text.Json, whose grammar is not quite the language's: its default
+
