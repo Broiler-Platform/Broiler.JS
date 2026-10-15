@@ -11,10 +11,14 @@ maintainer; one person holds every role (the programme's EX-30, recorded in Broi
 and nothing here has been read by anyone but its author.
 
 **State:** collection in progress. Nothing here is a verdict until its section says so. **Taken:** both
+test262 bases (section 1), the engine-level runs on the Date area, at corpus revisions 14 and 15
+(section 2), and the reference-arm comparison, with this engine's runs on corpus revision 16, which holds
+its class (b) kinds (section 3). The after runs and the rest of SJL-6.6 are added when they are taken.
+Broiler.VM keeps its own bundle of the same name for its own half, judged by its own rule; neither bundle
+reads the other's runs. *(2026-10-15, at SJL-6.3; the second and third sentences read "**Taken:** both
 test262 bases (section 1) and the engine-level runs on the Date area, at corpus revisions 14 and 15
 (section 2). The reference-arm comparison, the after runs and the rest of SJL-6.6 are added when they are
-taken. Broiler.VM keeps its own bundle of the same name for its own half, judged by its own rule; neither
-bundle reads the other's runs.
+taken.")*
 
 ## 1. The test262 bases (parts A and B)
 
@@ -86,10 +90,41 @@ their outcome depends on the zone, on the culture or on the host, or lies outsid
 reference arms and part B's run carry them. The 22 numeric slash dates, `impl-defined`, match this engine's
 expectation, its slash-date heuristic, which decision SJL-D-17 keeps.
 
+## 3. The reference-arm comparison (SJL-6.3)
+
+**MET**, with one judgement it states, under [`reference-arms.md`](reference-arms.md) as revised before any
+run ([`reference-arms-revised-2026-10-15.md`](reference-arms-revised-2026-10-15.md)) and after the first
+judged run was seen
+([`reference-arms-revised-2026-10-15-after-first-run.md`](reference-arms-revised-2026-10-15-after-first-run.md),
+weaker evidence on the two points it decides). The run, its first run, the three culture runs and the
+negative controls are in [`reference-arms-run/`](reference-arms-run/README.md), whose README reads the MET
+line clause by clause. In short: the Date area of `Broiler.ECMAScript.Algorithms` (`c69b70c`, with two
+defects the first run showed fixed at `b75d12e9`) against arm J, this engine's code at `bc3597f` with its
+eight other civil copies, and arm V, Broiler.VM's at `9c3d809`, over 13 population files; every difference
+is a correction of an arm (class (a)) or a string outside the format the engines read differently (class
+(b)), and none is unclassified. The corrections confirm rows G2, L3, L4, P8 and P9 of the correspondence for
+this engine, and under the `fa-IR` and `ar-SA` cultures show a second way row P8's read-back fails, through
+the culture's calendar.
+
+**The class (b) kinds in vectors.** Corpus revision 16 (`6f29deb`) appends 12 `impl-defined` vectors,
+`date/outside-format/0001` to `0012`, one or two for each of the comparison's 12 class (b) kinds. This
+engine's expectation is its reading before its cut-over; Broiler.VM's is its dialect's reading as the library
+ports it. The engine-level runner was run on revision 16 from one build of `6f29deb`, in both zones:
+
+| Run | Result | Files |
+|---|---|---|
+| Revision 16, UTC | 50,727 vectors: 50,658 match, 69 classified divergences, 0 unclassified differences; the 951 fields of rows L2 and P1 are again reported as no longer holding | [`engine/run-revision-16-utc.log`](engine/run-revision-16-utc.log), [`engine/run-revision-16-utc.tsv.gz`](engine/run-revision-16-utc.tsv.gz) |
+| Revision 16, New York | 50,727 vectors: 49,707 match, 1,020 classified divergences, 0 unclassified differences | [`engine/run-revision-16-new-york.log`](engine/run-revision-16-new-york.log), [`engine/run-revision-16-new-york.tsv.gz`](engine/run-revision-16-new-york.tsv.gz) |
+
+The 12 new vectors match in both zones, the two read through the local fields included; every other verdict
+is revision 15's. The runs were taken together, from 19:08Z to 19:31Z.
+
 ## What this bundle does not hold yet
 
-- **The reference-arm comparison**, which [`reference-arms.md`](reference-arms.md) decides, when the area is
-  in `Broiler.ECMAScript.Algorithms` (SJL-6.3).
 - **The after runs** of parts A and B, at the commit that lands SJL-6.5's cut-over, and their comparisons.
 - **The deletion list, Date's storage and the corrections list** (clauses 1, 2 and 5), at SJL-6.5 and
   SJL-6.6.
+
+*(2026-10-15, at SJL-6.3: the list began with "**The reference-arm comparison**, which
+[`reference-arms.md`](reference-arms.md) decides, when the area is in `Broiler.ECMAScript.Algorithms`
+(SJL-6.3).")*

@@ -428,6 +428,27 @@ one the area verdict classified, so its falsifier does not fire. The runs are re
 [`sjl-6-001/engine/`](../evidence/sjl-6-001/engine/), and the bases of both parts of this repository's test262
 rule were taken at its commit, `5fef116`, by `test262 evidence`.
 
+**The implementation (SJL-6.3), 2026-10-15.** The Date area is in `Broiler.ECMAScript.Algorithms`
+(`c69b70c`, with two defects the comparison's first run showed fixed at `b75d12e9`): `EcmaTime`,
+`IsoCalendarMath`, the local-time provider with UTC's disambiguation, `EcmaDateParser` in the strict dialect
+and in Broiler.VM's, and `EcmaDateFormatter`, with its adapter guide; every Date vector the library answers
+passes at library level, and the vectors whose outcome is an engine's own, the setters' conversions and the
+local setters, are engine-level only. The reference-arm comparison is met under
+[`reference-arms.md`](../evidence/sjl-6-001/reference-arms.md) as revised before any run and, on two points,
+after its first judged run was seen, which is weaker evidence; the bundle states one judgement, on arm V's
+negative control (bundle `sjl-6-001` section 3). The first run did not meet the rule: the library answered
+`Day(-0)` with -0 and reset an earlier clock's seconds in Broiler.VM's dialect, the local-time arbiter's
+boundary at 1913 did not hold, and the classifier had defects; the library was fixed, the rule revised, and
+the whole comparison run again. Every correction it found is a row the correspondence names, or refines: for
+this engine, the ISO week in negative years (G2), local time at a transition (L3) and past .NET's range (L4),
+and its own renderings read back (P8, P9), with the fraction of a time value or a year dropped or kept, and,
+under `fa-IR` and `ar-SA`, a read-back through the culture's calendar, a second way P8 fails; for Broiler.VM,
+`Day(-0)`, a fractional year and its renderings of negative years read back (P9). The other differences are
+strings outside the format that each engine reads its own way. Corpus revision 16 holds each of their kinds in
+an `impl-defined` vector, with this engine's reading before its cut-over as its expectation, and this engine's
+runs on it, in UTC and in New York, meet every one. The preview package of the shared stream's next version,
+`0.1.0-preview.4`, follows, before either cut-over.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

@@ -1,0 +1,103 @@
+diff --git b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/DateArms.cs a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/DateArms.cs
+index b7bb1ce4..13ee057e 100644
+--- b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/DateArms.cs
++++ a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Date/DateArms.cs
+@@ -4,6 +4,7 @@ using System.Globalization;
+ using System.Linq;
+ using Broiler.ECMAScript.Algorithms.Tests.ReferenceArms.Numerics;
+ using Broiler.ECMAScript.Time;
++using J = Broiler.ECMAScript.Algorithms.Tests.ReferenceArms.Date.J;
+ using V = Broiler.ECMAScript.Algorithms.Tests.ReferenceArms.Date.V;
+ 
+ namespace Broiler.ECMAScript.Algorithms.Tests.ReferenceArms.Date;
+@@ -60,10 +61,16 @@ internal static partial class DateArms
+         Names = population.ReadLines("E6N").Select(static l => NumericsPopulation.Unescape(l)).Select(static n => n.Length == 0 ? null : n).ToList();
+     }
+ 
+-    /// <summary>The operations; under a culture run, arm J's string operations alone.</summary>
+-    public static IReadOnlyList<DateOperation> Operations(bool cultureRun)
++    /// <summary>
++    /// The operations; under a culture run, arm J's string operations alone. With <paramref name="controls"/>,
++    /// the rule's two negative controls are added as variants: arm V's parse charging one unit more for E5F's
++    /// "1970", and arm J's DaysFromCivil answering one day more for 1970-01-01.
++    /// </summary>
++    public static IReadOnlyList<DateOperation> Operations(bool cultureRun, bool controls = false)
+     {
+         var all = Build();
++        if (controls)
++            all = all.Select(AddControl).ToList();
+         if (!cultureRun)
+             return all;
+ 
+@@ -73,6 +80,36 @@ internal static partial class DateArms
+             .ToList();
+     }
+ 
++    private static DateOperation AddControl(DateOperation operation) => operation.Name switch
++    {
++        "parse, Broiler.VM's dialect" => operation with
++        {
++            Variants =
++            [
++                .. operation.Variants,
++                new("V", "control: DateParseText charging one unit more for \"1970\"", i =>
++                {
++                    var engine = new V.JsEngine();
++                    var value = V.JsRealmDate.DateParseText(engine, i.Text);
++                    return Render.Charged(Num(value), engine.Charged + (i.Text == "1970" ? 1UL : 0UL));
++                }, i => SVmParse(i.Text, DateParseDialect.BroilerVM)),
++            ],
++        },
++        "epoch days from a date" => operation with
++        {
++            Variants =
++            [
++                .. operation.Variants,
++                new("J", "control: JSTemporalPlainDate's DaysFromCivil one day more for 1970-01-01", i =>
++                {
++                    var days = J.JSTemporalPlainDateCivil.DaysFromCivil(i.Year, i.Month, i.Day);
++                    return Num(days + (i.Year == 1970 && i.Month == 1 && i.Day == 1 ? 1 : 0));
++                }, i => Num(IsoCalendarMath.EpochDays(i.Year, i.Month, i.Day)), Valid),
++            ],
++        },
++        _ => operation,
++    };
++
+     // ---------------------------------------------------------------------------------------------
+     // Helpers.
+ 
+diff --git b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Program.cs a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Program.cs
+index 6b2e22bc..4433cbcd 100644
+--- b/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Program.cs
++++ a/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/ReferenceArms/Program.cs
+@@ -33,7 +33,7 @@ internal static class Program
+             Console.Error.WriteLine("usage: compare --population DIR --out DIR [--limit LINES] [--operations NAME,NAME]");
+             Console.Error.WriteLine("       compare-numerics --population DIR --out DIR [--limit LINES] [--operations NAME|NAME]");
+             Console.Error.WriteLine("       compare-text --population DIR --out DIR [--limit LINES] [--operations NAME|NAME] [--culture NAME]");
+-            Console.Error.WriteLine("       compare-date --population DIR --out DIR [--limit LINES] [--operations NAME|NAME] [--culture NAME]");
++            Console.Error.WriteLine("       compare-date --population DIR --out DIR [--limit LINES] [--operations NAME|NAME] [--culture NAME] [--controls]");
+             return 2;
+         }
+ 
+@@ -90,9 +90,8 @@ internal static class Program
+     /// Bundle sjl-6-001's comparison, with the process's zone UTC (the run sets TZ=UTC). Under <c>--culture</c>
+     /// it is the rule's second run of arm J's string operations, those operations alone, every thread under
+     /// that culture; otherwise every thread is under the invariant culture. The operation names hold commas, so
+-    /// a filter separates them with "|"; a filtered run, like a limited one, is void. The rule's two negative
+-    /// controls ran once with <c>--controls</c> and were then removed, as the rule asks;
+-    /// docs/evidence/sjl-6-001/reference-arms-run/negative-control/controls.patch restores them.
++    /// a filter separates them with "|"; a filtered run, like a limited one, is void. <c>--controls</c> adds the
++    /// rule's two negative controls (<see cref="Date.DateArms.Operations"/>); they run once and are then removed.
+     /// </summary>
+     private static int CompareDate(Func<string, string?> option)
+     {
+@@ -107,7 +106,8 @@ internal static class Program
+         var output = option("--out") ?? throw new ArgumentException("--out is required");
+         long? limit = option("--limit") is { } text ? long.Parse(text, CultureInfo.InvariantCulture) : null;
+         var names = option("--operations")?.Split('|');
+-        var operations = Date.DateArms.Operations(cultureRun: name is not null).Where(o => names is null || names.Contains(o.Name)).ToList();
++        var controls = Array.IndexOf(Environment.GetCommandLineArgs(), "--controls") >= 0;
++        var operations = Date.DateArms.Operations(cultureRun: name is not null, controls).Where(o => names is null || names.Contains(o.Name)).ToList();
+         new Date.DateComparison(population, operations, limit, names is not null, name, Console.Out)
+             .Run(output, "docs/evidence/sjl-6-001/reference-arms.md",
+                 "docs/evidence/sjl-6-001/reference-arms-revised-2026-10-15.md and reference-arms-revised-2026-10-15-after-first-run.md");

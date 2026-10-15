@@ -1,0 +1,11 @@
+culture: fa-IR; zone: UTC
+parse, Broiler.JS's order E5F: 5885919 lines, 5885919 inputs, J:Date.parse 117403 of 5885919 differ (0 not called) (18٫2 s)
+parse, Broiler.JS's order, its renderings E1T: 72127 lines, 360580 inputs, J:Date.parse 134435 of 216348 differ (144232 not called) (2٫0 s)
+DateString E1T: 72127 lines, 72116 inputs, J:DateString 0 of 72116 differ (0 not called) (0٫1 s)
+TimeString E1T: 72127 lines, 72116 inputs, J:ClockString and " GMT" 0 of 72116 differ (0 not called) (0٫1 s)
+TimeZoneString E1T: 72127 lines, 2379828 inputs, J:ToTimeZoneString 721160 of 1586552 differ (793276 not called) (4٫5 s)
+toString E1T: 72127 lines, 2379828 inputs, J:toString's body 721160 of 1586552 differ (793276 not called) (7٫2 s)
+toString, a host zone E1T: 72127 lines, 144232 inputs, J:toString 72116 of 144232 differ (0 not called) (1٫1 s)
+toUTCString E1T: 72127 lines, 72117 inputs, J:toUTCString 0 of 72117 differ (0 not called) (0٫1 s)
+toISOString E1T: 72127 lines, 72117 inputs, J:toISOString 0 of 72117 differ (0 not called) (0٫1 s)
+exit 0

@@ -1,0 +1,193 @@
+{
+  "differences": 1762896,
+  "verdicts": {
+    "(a)": 1647564,
+    "(b)": 115332
+  },
+  "classes": [
+    {
+      "operation": "TimeZoneString",
+      "variant": "J:ToTimeZoneString",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS",
+      "count": 721160
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a day past its month's length (P5)",
+      "count": 6225
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a fraction of 0 digits (P4)",
+      "count": 2860
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a fraction of 1 digits (P4)",
+      "count": 19856
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a fraction of 2 digits (P4)",
+      "count": 19856
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a fraction of 4 digits (P4)",
+      "count": 19856
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a fraction of 9 digits (P4)",
+      "count": 19856
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a leading or trailing space",
+      "count": 129
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a lower-case t (P6)",
+      "count": 10014
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a space for the T",
+      "count": 10014
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: an offset without its colon (P6)",
+      "count": 6666
+    },
+    {
+      "operation": "parse, Broiler.JS's order, its renderings",
+      "variant": "J:Date.parse",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS",
+      "count": 133128
+    },
+    {
+      "operation": "toString",
+      "variant": "J:toString's body",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS",
+      "count": 721160
+    },
+    {
+      "operation": "toString, a host zone",
+      "variant": "J:toString",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS",
+      "count": 72116
+    }
+  ],
+  "kinds (b)": [
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a day past its month's length (P5)",
+      "count": 6225
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a fraction of 0 digits (P4)",
+      "count": 2860
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a fraction of 1 digits (P4)",
+      "count": 19856
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a fraction of 2 digits (P4)",
+      "count": 19856
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a fraction of 4 digits (P4)",
+      "count": 19856
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a fraction of 9 digits (P4)",
+      "count": 19856
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a leading or trailing space",
+      "count": 129
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a lower-case t (P6)",
+      "count": 10014
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a space for the T",
+      "count": 10014
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: an offset without its colon (P6)",
+      "count": 6666
+    }
+  ],
+  "correspondence rows": [
+    {
+      "row": "L4",
+      "arm": "J",
+      "verdict": "(a)",
+      "count": 66561
+    },
+    {
+      "row": "P8",
+      "arm": "J",
+      "verdict": "(a)",
+      "count": 6
+    },
+    {
+      "row": "P9",
+      "arm": "J",
+      "verdict": "(a)",
+      "count": 133122
+    },
+    {
+      "row": "R3",
+      "arm": "J",
+      "verdict": "(a)",
+      "count": 1447875
+    }
+  ],
+  "differences.tsv": {
+    "lines": 1762897,
+    "sha256": "8d5459cd5e5ce7300fb8b9b58bd38c7a2a53671852bf83c67ec219e4b01131a3"
+  },
+  "classification.tsv": {
+    "lines": 1762897,
+    "sha256": "9b1c39f5c5f36fba888b5ff7e2593ed9b66048fe2e143148a5c20c0d3ab9b14b"
+  }
+}

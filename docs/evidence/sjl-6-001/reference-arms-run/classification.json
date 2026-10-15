@@ -1,0 +1,317 @@
+{
+  "differences": 548853,
+  "verdicts": {
+    "(a)": 427216,
+    "(b)": 121637
+  },
+  "classes": [
+    {
+      "operation": "Day",
+      "variant": "V:JsRealm.Date",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.VM",
+      "count": 1
+    },
+    {
+      "operation": "LocalTime",
+      "variant": "J:JSDateMath",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS",
+      "count": 20
+    },
+    {
+      "operation": "MakeFullYear",
+      "variant": "J:Date.UTC inline",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS",
+      "count": 138
+    },
+    {
+      "operation": "MakeFullYear",
+      "variant": "V:DateFromFields inline",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.VM",
+      "count": 31
+    },
+    {
+      "operation": "TimeWithinDay",
+      "variant": "J:JSDateMath",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS",
+      "count": 4
+    },
+    {
+      "operation": "UTC",
+      "variant": "J:JSDateMath",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS",
+      "count": 10078
+    },
+    {
+      "operation": "msFromTime",
+      "variant": "J:JSDateMath",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS",
+      "count": 4
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a day past its month's length (P5)",
+      "count": 6225
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a fraction of 0 digits (P4)",
+      "count": 2860
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a fraction of 1 digits (P4)",
+      "count": 19856
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a fraction of 2 digits (P4)",
+      "count": 19856
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a fraction of 4 digits (P4)",
+      "count": 19856
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a fraction of 9 digits (P4)",
+      "count": 19856
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a leading or trailing space",
+      "count": 129
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a lower-case t (P6)",
+      "count": 10014
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a space for the T",
+      "count": 10014
+    },
+    {
+      "operation": "parse, Broiler.JS's order",
+      "variant": "J:Date.parse",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: an offset without its colon (P6)",
+      "count": 6666
+    },
+    {
+      "operation": "parse, Broiler.JS's order, its renderings",
+      "variant": "J:Date.parse",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS",
+      "count": 199686
+    },
+    {
+      "operation": "parse, Broiler.VM's dialect",
+      "variant": "V:DateParseText",
+      "verdict": "(b)",
+      "reason": "implementation-defined: a signed year outside the renderings (P9's reading)",
+      "count": 80
+    },
+    {
+      "operation": "parse, Broiler.VM's dialect, the renderings",
+      "variant": "V:DateParseText",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.VM: its rendering of a negative year read back",
+      "count": 166326
+    },
+    {
+      "operation": "parse, Broiler.VM's format path",
+      "variant": "V:DateParseText",
+      "verdict": "(b)",
+      "reason": "implementation-defined, outside the format: a day past its month's length (P5)",
+      "count": 6225
+    },
+    {
+      "operation": "the ISO week and its year",
+      "variant": "J3:JSTemporalPlainDateTime",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS",
+      "count": 1849
+    },
+    {
+      "operation": "the ISO week and its year",
+      "variant": "J6:JSTemporalZonedDateTime",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS",
+      "count": 1849
+    },
+    {
+      "operation": "the ISO week and its year",
+      "variant": "J:JSTemporalPlainDate",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS",
+      "count": 1849
+    },
+    {
+      "operation": "toString, a host zone",
+      "variant": "J:toString",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS",
+      "count": 45380
+    },
+    {
+      "operation": "toString, a host zone",
+      "variant": "J:toString",
+      "verdict": "(a)",
+      "reason": "corrects Broiler.JS: the zone's name read at the instant, not at the moment of the call",
+      "count": 1
+    }
+  ],
+  "kinds (b)": [
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a day past its month's length (P5)",
+      "count": 6225
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a fraction of 0 digits (P4)",
+      "count": 2860
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a fraction of 1 digits (P4)",
+      "count": 19856
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a fraction of 2 digits (P4)",
+      "count": 19856
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a fraction of 4 digits (P4)",
+      "count": 19856
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a fraction of 9 digits (P4)",
+      "count": 19856
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a leading or trailing space",
+      "count": 129
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a lower-case t (P6)",
+      "count": 10014
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: a space for the T",
+      "count": 10014
+    },
+    {
+      "arm": "J",
+      "kind": "implementation-defined, outside the format: an offset without its colon (P6)",
+      "count": 6666
+    },
+    {
+      "arm": "V",
+      "kind": "implementation-defined, outside the format: a day past its month's length (P5)",
+      "count": 6225
+    },
+    {
+      "arm": "V",
+      "kind": "implementation-defined: a signed year outside the renderings (P9's reading)",
+      "count": 80
+    }
+  ],
+  "correspondence rows": [
+    {
+      "row": "G2",
+      "arm": "J",
+      "verdict": "(a)",
+      "count": 1847
+    },
+    {
+      "row": "G2",
+      "arm": "J3",
+      "verdict": "(a)",
+      "count": 1847
+    },
+    {
+      "row": "G2",
+      "arm": "J6",
+      "verdict": "(a)",
+      "count": 1847
+    },
+    {
+      "row": "L3",
+      "arm": "J",
+      "verdict": "(a)",
+      "count": 10058
+    },
+    {
+      "row": "L4",
+      "arm": "J",
+      "verdict": "(a)",
+      "count": 45421
+    },
+    {
+      "row": "P8",
+      "arm": "J",
+      "verdict": "(a)",
+      "count": 3
+    },
+    {
+      "row": "P9",
+      "arm": "J",
+      "verdict": "(a)",
+      "count": 199683
+    },
+    {
+      "row": "P9",
+      "arm": "V",
+      "verdict": "(a)",
+      "count": 166326
+    },
+    {
+      "row": "P9",
+      "arm": "V",
+      "verdict": "(b)",
+      "count": 80
+    }
+  ],
+  "differences.tsv": {
+    "lines": 548854,
+    "sha256": "f201df78d0fe408eff8d5c954117b506091f1c1a5c74961b049e72969a422b9f"
+  },
+  "classification.tsv": {
+    "lines": 548854,
+    "sha256": "2f7baa307a51354ba62775c96200122494b45e3c1a18db155270f769303f7ec6"
+  }
+}
