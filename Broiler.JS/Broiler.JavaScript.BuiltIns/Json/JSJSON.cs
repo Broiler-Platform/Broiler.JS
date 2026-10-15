@@ -16,7 +16,7 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Proxy;
 using Broiler.JavaScript.BuiltIns.Symbol;
-using System.Text.Json;
+using Broiler.ECMAScript.Text;
 
 // Maps a holder object to the parse-time source text and originally-parsed value of
 // each of its primitive members, so the reviver's `context.source` can be supplied only
@@ -389,23 +389,17 @@ public partial class JSJSON : JSObject
         var sourceTextAccessEnabled = JSEngine.Current is JSContext context
             && context.HasExperimentalFeature(JavaScriptFeatureFlags.JsonParseSourceTextAccess);
 
-        JSValue parsed;
-        try
-        {
-            parsed = sourceTextAccessEnabled
-                ? JSJsonParser.ParseWithSource(
-                    jText,
-                    p =>
-                    {
-                        RecordSource(sourceMap ??= new SourceMap(JSObjectReferenceComparer.Instance), p.holder, p.key, p.source, p.value);
-                        return p.value;
-                    })
-                : JSJsonParser.Parse(jText, null);
-        }
-        catch (Exception ex) when (ex is JsonException or InvalidOperationException or NotSupportedException)
-        {
-            throw JSEngine.NewSyntaxError(ex.Message);
-        }
+        // The reader is the shared library's (SJL-5.5), and a text it refuses is a SyntaxError where
+        // it stopped, or the RangeError of this engine's depth policy; no .NET exception is mapped.
+        var parsed = sourceTextAccessEnabled
+            ? JSJsonParser.ParseWithSource(
+                jText,
+                p =>
+                {
+                    RecordSource(sourceMap ??= new SourceMap(JSObjectReferenceComparer.Instance), p.holder, p.key, p.source, p.value);
+                    return p.value;
+                })
+            : JSJsonParser.Parse(jText);
 
         parsed ??= JSNull.Value;
         if (sourceTextAccessEnabled)
@@ -457,25 +451,14 @@ public partial class JSJSON : JSObject
                         space = CreateString(CoerceJsonWrapperToPrimitive(spaceWrapper, preferString: true).ToString());
                 }
 
-                if (space.IsNumber)
-                {
-                    // step 6.a: space = min(10, ToIntegerOrInfinity(space)), the shared library's
-                    // (SJL-4.5); step 6.b: a gap shorter than one space yields the empty String
-                    // (compact output).
-                    var count = Math.Min(10, IntegerConversions.ToIntegerOrInfinity(space.DoubleValue));
-                    if (count >= 1)
-                        indent = new string(' ', (int)count);
-                }
-                else if (space.IsString)
-                {
-                    // step 7: a gap longer than 10 code units is truncated to its first 10;
-                    // an empty gap leaves indent null so the output stays compact.
-                    var gap = space.ToString();
-                    if (gap.Length > 10)
-                        gap = gap.Substring(0, 10);
-                    if (gap.Length > 0)
-                        indent = gap;
-                }
+                // Steps 6 to 8: the gap is the shared library's (SJL-5.5), min(10, ToIntegerOrInfinity)
+                // spaces for a Number and the first ten code units of a String; an empty gap leaves
+                // indent null so the output stays compact.
+                var gap = space.IsNumber
+                    ? JsonText.GapFromNumber(space.DoubleValue)
+                    : space.IsString ? JsonText.GapFromString(space.ToString()) : string.Empty;
+                if (gap.Length > 0)
+                    indent = gap;
             }
 
             if (r is JSFunction rf)
@@ -543,26 +526,28 @@ public partial class JSJSON : JSObject
         if (IsIllegalRawJsonBoundaryChar(str[0]) || IsIllegalRawJsonBoundaryChar(str[^1]))
             throw JSEngine.NewSyntaxError("JSON.rawJSON cannot start or end with whitespace");
 
-        JSValue parsed;
-        try
-        {
-            parsed = JSJsonParser.Parse(str, null);
-        }
-        catch (Exception ex) when (ex is JsonException or InvalidOperationException or NotSupportedException)
-        {
-            throw JSEngine.NewSyntaxError(ex.Message);
-        }
-
+        var parsed = JSJsonParser.Parse(str);
         if (parsed is JSObject)
             throw JSEngine.NewSyntaxError("JSON.rawJSON cannot be called with a JSON object or array");
 
-        // §JSON.rawJSON: obj is OrdinaryObjectCreate(null) — a null-prototype object —
-        // carrying the [[IsRawJSON]] marker (the own "rawJSON" data property) and frozen.
-        var result = new JSObject();
+        // §JSON.rawJSON: obj is OrdinaryObjectCreate(null, « [[IsRawJSON]] ») with its "rawJSON"
+        // made by CreateDataPropertyOrThrow, so enumerable (J7: it was not), and then frozen.
+        var result = new JSRawJsonObject(str);
         result.BasePrototypeObject = null;
-        result.FastAddValue(rawJSONKey, CreateString(str), JSPropertyAttributes.ConfigurableValue);
+        result.FastAddValue(rawJSONKey, CreateString(str), JSPropertyAttributes.EnumerableConfigurableValue);
         FreezeObject(result);
         return result;
+    }
+
+    /// <summary>
+    /// A value <c>JSON.rawJSON</c> made: the brand is the [[IsRawJSON]] internal slot, which this
+    /// type is, and not a property a script can write. Until SJL-5.5 any frozen object with an own
+    /// string "rawJSON" passed for one, and its text went into JSON.stringify's output unchecked (J6).
+    /// </summary>
+    private sealed class JSRawJsonObject(string text) : JSObject
+    {
+        /// <summary>The validated text, which is also the frozen "rawJSON" property's value.</summary>
+        internal string Text { get; } = text;
     }
 
     private static bool IsIllegalRawJsonBoundaryChar(char ch)
@@ -572,25 +557,18 @@ public partial class JSJSON : JSObject
     public static JSValue IsRawJSON(in Arguments a)
         => TryGetRawJsonText(a.Get1(), out _) ? JSBoolean.True : JSBoolean.False;
 
-    // A value produced by JSON.rawJSON: a frozen object carrying the [[IsRawJSON]] marker
-    // (an own "rawJSON" data property whose value is a String). SerializeJSONProperty emits
-    // that text verbatim instead of serializing the object.
+    // A value produced by JSON.rawJSON, which only JSON.rawJSON constructs: SerializeJSONProperty
+    // emits its text verbatim instead of serializing the object. A Proxy of one, or an object that
+    // merely carries a "rawJSON" property, is an ordinary object.
     private static bool TryGetRawJsonText(JSValue value, out string text)
     {
-        text = null;
-        if (value is not JSObject obj || !obj.IsFrozen())
-            return false;
-
-        ref var ownProps = ref obj.GetOwnProperties();
-        if (!ownProps.TryGetValue(rawJSONKey.Key, out var prop) || prop.IsEmpty)
-            return false;
-
-        if (prop.value is JSValue v && v.IsString)
+        if (value is JSRawJsonObject raw)
         {
-            text = v.ToString();
+            text = raw.Text;
             return true;
         }
 
+        text = null;
         return false;
     }
 
@@ -652,7 +630,7 @@ public partial class JSJSON : JSObject
                 return;
 
             case JSString str:
-                QuoteString(str.value, sb);
+                WriteQuoted(str.value, sb);
                 return;
 
             case JSBigInt:
@@ -723,7 +701,7 @@ public partial class JSJSON : JSObject
             if (indent != null)
                 sb.WriteLine();
 
-            QuoteString(keyText, sb);
+            WriteQuoted(keyText, sb);
             sb.Write(':');
             if (indent != null)
                 sb.Write(' ');
@@ -885,96 +863,8 @@ public partial class JSJSON : JSObject
     }
 
     /// <summary>
-    /// Adds double quote characters to the start and end of the given string and converts any
-    /// invalid characters into escape sequences.
+    /// QuoteJSONString (§25.5.2.3): the shared library's (SJL-5.5), written to <paramref name="result"/>.
+    /// A lone surrogate is escaped as \uXXXX, so the output is well formed.
     /// </summary>
-    /// <param name="input"> The string to quote. </param>
-    /// <param name="result"> The StringBuilder to write the quoted string to. </param>
-    private static void QuoteString(in StringSpan input, TextWriter result)
-    {
-        result.Write('\"');
-
-        // Check if there are characters that need to be escaped.
-        // These characters include '"', '\', any character with an ASCII value
-        // less than 32, and any UTF-16 surrogate code unit. Surrogates route to
-        // the slow path so a lone (unpaired) surrogate can be escaped as \uXXXX
-        // per the well-formed JSON.stringify rules (ES2019); a well-formed pair is
-        // still emitted verbatim there.
-        bool containsUnsafeCharacters = false;
-        for (int i = 0; i < input.Length; i++)
-        {
-            char c = input[i];
-
-            if (c == '\\' || c == '\"' || c < 0x20 || char.IsSurrogate(c))
-            {
-                containsUnsafeCharacters = true;
-                break;
-            }
-        }
-
-        if (containsUnsafeCharacters == false)
-        {
-            // The string does not contain escape characters.
-            result.Write(input);
-        }
-        else
-        {
-            // The string contains escape characters - fall back to the slower code path.
-            for (int i = 0; i < input.Length; i++)
-            {
-                char c = input[i];
-                switch (c)
-                {
-                    case '\"':
-                    case '\\':
-                        result.Write('\\');
-                        result.Write(c);
-                        break;
-                    case '\b':
-                        result.Write("\\b");
-                        break;
-                    case '\f':
-                        result.Write("\\f");
-                        break;
-                    case '\n':
-                        result.Write("\\n");
-                        break;
-                    case '\r':
-                        result.Write("\\r");
-                        break;
-                    case '\t':
-                        result.Write("\\t");
-                        break;
-                    default:
-                        if (c < 0x20)
-                        {
-                            result.Write('\\');
-                            result.Write('u');
-                            result.Write(((int)c).ToString("x4"));
-                        }
-                        else if (char.IsHighSurrogate(c) && i + 1 < input.Length && char.IsLowSurrogate(input[i + 1]))
-                        {
-                            // A well-formed surrogate pair encodes a single code point;
-                            // emit both code units verbatim.
-                            result.Write(c);
-                            result.Write(input[i + 1]);
-                            i++;
-                        }
-                        else if (char.IsSurrogate(c))
-                        {
-                            // Lone (unpaired) surrogate: escape as \uXXXX so the output is
-                            // well-formed and round-trips through JSON.parse.
-                            result.Write('\\');
-                            result.Write('u');
-                            result.Write(((int)c).ToString("x4"));
-                        }
-                        else
-                            result.Write(c);
-                        break;
-                }
-            }
-        }
-
-        result.Write('\"');
-    }
+    private static void WriteQuoted(in StringSpan input, TextWriter result) => result.Write(JsonText.Quote(input.AsSpan()));
 }

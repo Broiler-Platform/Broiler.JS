@@ -6,6 +6,7 @@ using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Text;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
@@ -464,11 +465,8 @@ public partial class JSArrayBuffer : JSObject
         int begin = IntegerOf(beginVal, 0);
         int end = IntegerOf(endVal, len);
 
-        if (begin < 0) begin = Math.Max(len + begin, 0);
-        else begin = Math.Min(begin, len);
-
-        if (end < 0) end = Math.Max(len + end, 0);
-        else end = Math.Min(end, len);
+        begin = (int)RelativeIndex.Clamped(begin, len);
+        end = (int)RelativeIndex.Clamped(end, len);
 
         int newLen = Math.Max(end - begin, 0);
         var ctor = GetSpeciesConstructor(source);
@@ -508,11 +506,8 @@ public partial class JSArrayBuffer : JSObject
         int begin = IntegerOf(beginVal, 0);
         int end = IntegerOf(endVal, len);
 
-        if (begin < 0) begin = Math.Max(len + begin, 0);
-        else begin = Math.Min(begin, len);
-
-        if (end < 0) end = Math.Max(len + end, 0);
-        else end = Math.Min(end, len);
+        begin = (int)RelativeIndex.Clamped(begin, len);
+        end = (int)RelativeIndex.Clamped(end, len);
 
         int newLen = Math.Max(end - begin, 0);
         var result = new JSArrayBuffer(newLen);

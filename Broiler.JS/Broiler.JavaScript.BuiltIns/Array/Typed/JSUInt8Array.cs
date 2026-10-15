@@ -5,15 +5,14 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Engine;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript;
+using Broiler.ECMAScript.Text;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
 [JSClassGenerator("Uint8Array"), JSBaseClass("TypedArray")]
 public partial class JSUInt8Array : JSTypedArray
 {
-    private const string Base64Alphabet = "base64";
-    private const string Base64UrlAlphabet = "base64url";
-
     [JSExport("BYTES_PER_ELEMENT")]
     internal static readonly int BYTES_PER_ELENENT = 1;
 
@@ -46,19 +45,31 @@ public partial class JSUInt8Array : JSTypedArray
 
 
     /// <summary>
-    /// ES2026 §4.3.1 — Uint8Array.fromBase64(str)
+    /// ES2026 §4.3.1 — Uint8Array.fromBase64(str, options)
     /// Creates a new Uint8Array from a Base64-encoded string.
     /// </summary>
+    /// <remarks>
+    /// The codecs are the shared library's (SJL-5.5); what stays here is what a script observes around
+    /// them: the receiver, GetOptionsObject and the option reads in order, bounds, the result object
+    /// and the errors.
+    /// </remarks>
     [JSExport("fromBase64", Length = 1, Feature = (int)JavaScriptFeatureFlags.Uint8ArrayBase64)]
     public static JSValue FromBase64(in Arguments a)
     {
         var str = a.Get1();
         if (!str.IsString)
             throw JSEngine.NewTypeError("Uint8Array.fromBase64 requires a string argument");
-        var result = DecodeBase64(str.ToString(), a.Length > 1 ? a[1] : JSUndefined.Value, int.MaxValue);
-        if (result.Error != null)
-            throw result.Error;
-        return new JSUInt8Array(result.Bytes);
+        var options = GetOptionsObject(a.Length > 1 ? a[1] : JSUndefined.Value);
+        var alphabet = GetBase64Alphabet(options);
+        var lastChunkHandling = GetBase64LastChunkHandling(options);
+        var text = str.ToString();
+
+        // No maxLength: a destination no decode of the text can fill.
+        var bytes = new byte[Base64Codec.DecodedLengthBound(text.Length)];
+        if (Base64Codec.FromBase64(text, alphabet, lastChunkHandling, bytes, out _, out var written, out _) != ResultStatus.Completed)
+            throw JSEngine.NewSyntaxError("Invalid base64 string");
+
+        return new JSUInt8Array(bytes.AsSpan(0, written).ToArray());
     }
 
     /// <summary>
@@ -72,36 +83,24 @@ public partial class JSUInt8Array : JSTypedArray
         if (!str.IsString)
             throw JSEngine.NewTypeError("Uint8Array.fromHex requires a string argument");
         var hex = str.ToString();
-        if (hex.Length % 2 != 0)
-            throw JSEngine.NewSyntaxError("Invalid hex string length");
         var bytes = new byte[hex.Length / 2];
-        for (int i = 0; i < bytes.Length; i++)
-        {
-            if (!TryParseHexByte(hex, i * 2, out var b))
-                throw JSEngine.NewSyntaxError("Invalid hex string");
-            bytes[i] = b;
-        }
+        if (Base64Codec.FromHex(hex, bytes, out _, out _, out var failure) != ResultStatus.Completed)
+            throw HexError(failure);
+
         return new JSUInt8Array(bytes);
     }
 
     /// <summary>
-    /// ES2026 §4.3.2 — Uint8Array.prototype.toBase64()
+    /// ES2026 §4.3.2 — Uint8Array.prototype.toBase64(options)
     /// Returns a Base64-encoded string of the typed array content.
     /// </summary>
     [JSExport("toBase64", Length = 0, Feature = (int)JavaScriptFeatureFlags.Uint8ArrayBase64)]
     public JSValue ToBase64(in Arguments a)
     {
-        var options = a.Length > 0 ? a[0] : JSUndefined.Value;
+        var options = GetOptionsObject(a.Length > 0 ? a[0] : JSUndefined.Value);
         var alphabet = GetBase64Alphabet(options);
-        var omitPadding = GetBase64OmitPadding(options);
-        var src = new byte[length];
-        System.Array.Copy(buffer.buffer, byteOffset, src, 0, length);
-        var text = System.Convert.ToBase64String(src);
-        if (alphabet == Base64UrlAlphabet)
-            text = text.Replace('+', '-').Replace('/', '_');
-        if (omitPadding)
-            text = text.TrimEnd('=');
-        return new JSString(text);
+        var omitPadding = options != null && options["omitPadding"].BooleanValue;
+        return new JSString(Base64Codec.ToBase64(BytesOf(), alphabet, omitPadding));
     }
 
     /// <summary>
@@ -109,15 +108,10 @@ public partial class JSUInt8Array : JSTypedArray
     /// Returns a hex-encoded string of the typed array content.
     /// </summary>
     [JSExport("toHex", Feature = (int)JavaScriptFeatureFlags.Uint8ArrayBase64)]
-    public JSValue ToHex(in Arguments a)
-    {
-        var src = new byte[length];
-        System.Array.Copy(buffer.buffer, byteOffset, src, 0, length);
-        return new JSString(System.Convert.ToHexString(src).ToLowerInvariant());
-    }
+    public JSValue ToHex(in Arguments a) => new JSString(Base64Codec.ToHex(BytesOf()));
 
     /// <summary>
-    /// ES2026 §4.3.5 — Uint8Array.prototype.setFromBase64(str)
+    /// ES2026 §4.3.5 — Uint8Array.prototype.setFromBase64(str, options)
     /// Decodes a Base64 string and writes bytes into this typed array.
     /// Returns an object { read, written }.
     /// </summary>
@@ -129,277 +123,18 @@ public partial class JSUInt8Array : JSTypedArray
             throw JSEngine.NewTypeError("setFromBase64 requires a string argument");
         if (buffer.isImmutable)
             throw JSEngine.NewTypeError("Cannot write into a Uint8Array backed by an immutable ArrayBuffer");
-        // Per spec, maxLength is the byte capacity of the target; FromBase64 never
-        // produces more bytes than that, and any successfully decoded bytes are
-        // written even when decoding ultimately fails (writes-up-to-error).
-        var result = DecodeBase64(str.ToString(), a.Length > 1 ? a[1] : JSUndefined.Value, length);
-        int written = Math.Min(result.Bytes.Length, length);
-        System.Array.Copy(result.Bytes, 0, buffer.buffer, byteOffset, written);
-        if (result.Error != null)
-            throw result.Error;
-        var obj = new JSObject();
-        obj["read"] = new JSNumber(result.Read);
-        obj["written"] = new JSNumber(written);
-        return obj;
-    }
-
-    /// <summary>
-    /// Result of decoding a Base64 string per the ES2026 FromBase64 abstract
-    /// operation: the bytes decoded so far, the number of input code units
-    /// consumed, and a deferred SyntaxError (null on success). Bytes are always
-    /// populated, even when <see cref="Error"/> is non-null, so callers such as
-    /// setFromBase64 can write the successfully decoded prefix before throwing.
-    /// </summary>
-    private readonly struct Base64DecodeResult(byte[] bytes, int read, JSException error)
-    {
-        public readonly byte[] Bytes = bytes;
-        public readonly int Read = read;
-        public readonly JSException Error = error;
-    }
-
-    /// <summary>
-    /// ES2026 FromBase64 abstract operation. Decodes <paramref name="text"/>
-    /// up to <paramref name="maxLength"/> bytes, honouring ASCII whitespace,
-    /// '=' padding, the alphabet ("base64"/"base64url") and lastChunkHandling
-    /// ("loose"/"strict"/"stop-before-partial") options. Errors are reported via
-    /// the returned record's <c>Error</c> rather than thrown so partial output
-    /// is preserved.
-    /// </summary>
-    private static Base64DecodeResult DecodeBase64(string text, JSValue options, int maxLength)
-    {
+        var options = GetOptionsObject(a.Length > 1 ? a[1] : JSUndefined.Value);
         var alphabet = GetBase64Alphabet(options);
         var lastChunkHandling = GetBase64LastChunkHandling(options);
 
-        if (maxLength == 0)
-            return new Base64DecodeResult(System.Array.Empty<byte>(), 0, null);
+        // The bounds are read after the options, whose getters may detach or shrink the buffer. The
+        // decode writes straight into the view, at most its length, so the bytes decoded before an
+        // error are in the array when the error is thrown.
+        var status = Base64Codec.FromBase64(str.ToString(), alphabet, lastChunkHandling, Destination("setFromBase64"), out var read, out var written, out _);
+        if (status != ResultStatus.Completed)
+            throw JSEngine.NewSyntaxError("Invalid base64 string");
 
-        var read = 0;
-        var bytes = new System.Collections.Generic.List<byte>();
-        Span<int> chunk = stackalloc int[4];
-        var chunkLength = 0;
-        var index = 0;
-        var length = text.Length;
-
-        Base64DecodeResult Fail() => new(bytes.ToArray(), read, JSEngine.NewSyntaxError("Invalid base64 string"));
-
-        while (true)
-        {
-            index = SkipAsciiWhitespace(text, index);
-            if (index == length)
-            {
-                if (chunkLength > 0)
-                {
-                    if (lastChunkHandling == "stop-before-partial")
-                        return new Base64DecodeResult(bytes.ToArray(), read, null);
-
-                    if (lastChunkHandling == "loose")
-                    {
-                        if (chunkLength == 1)
-                            return Fail();
-
-                        DecodeBase64Chunk(bytes, chunk, chunkLength, throwOnExtraBits: false, out _);
-                    }
-                    else
-                    {
-                        return Fail();
-                    }
-                }
-
-                return new Base64DecodeResult(bytes.ToArray(), length, null);
-            }
-
-            var ch = text[index];
-            index++;
-
-            if (ch == '=')
-            {
-                if (chunkLength < 2)
-                    return Fail();
-
-                index = SkipAsciiWhitespace(text, index);
-                if (chunkLength == 2)
-                {
-                    if (index == length)
-                    {
-                        if (lastChunkHandling == "stop-before-partial")
-                            return new Base64DecodeResult(bytes.ToArray(), read, null);
-
-                        return Fail();
-                    }
-
-                    if (text[index] == '=')
-                        index = SkipAsciiWhitespace(text, index + 1);
-                }
-
-                if (index < length)
-                    return Fail();
-
-                var throwOnExtraBits = lastChunkHandling == "strict";
-                if (!DecodeBase64Chunk(bytes, chunk, chunkLength, throwOnExtraBits, out var extraBitsError))
-                    return new Base64DecodeResult(bytes.ToArray(), read, extraBitsError);
-
-                return new Base64DecodeResult(bytes.ToArray(), length, null);
-            }
-
-            if (alphabet == Base64UrlAlphabet)
-            {
-                if (ch is '+' or '/')
-                    return Fail();
-                if (ch == '-')
-                    ch = '+';
-                else if (ch == '_')
-                    ch = '/';
-            }
-
-            var value = Base64Value(ch);
-            if (value < 0)
-                return Fail();
-
-            var remaining = maxLength - bytes.Count;
-            if ((remaining == 1 && chunkLength == 2) || (remaining == 2 && chunkLength == 3))
-                return new Base64DecodeResult(bytes.ToArray(), read, null);
-
-            chunk[chunkLength] = value;
-            chunkLength++;
-            if (chunkLength == 4)
-            {
-                DecodeBase64Chunk(bytes, chunk, 4, throwOnExtraBits: false, out _);
-                chunkLength = 0;
-                read = index;
-                if (bytes.Count == maxLength)
-                    return new Base64DecodeResult(bytes.ToArray(), read, null);
-            }
-        }
-    }
-
-    /// <summary>
-    /// ES2026 DecodeBase64Chunk. Appends the bytes decoded from the first
-    /// <paramref name="chunkLength"/> six-bit values of <paramref name="chunk"/>
-    /// to <paramref name="bytes"/>. A 2-value chunk yields one byte, a 3-value
-    /// chunk two bytes, a 4-value chunk three bytes. When
-    /// <paramref name="throwOnExtraBits"/> is set, a non-zero trailing partial
-    /// byte yields a SyntaxError (returned via <paramref name="error"/>).
-    /// Returns false only when such an error is produced.
-    /// </summary>
-    private static bool DecodeBase64Chunk(System.Collections.Generic.List<byte> bytes, Span<int> chunk, int chunkLength, bool throwOnExtraBits, out JSException error)
-    {
-        error = null;
-        var v0 = chunk[0];
-        var v1 = chunk[1];
-        var v2 = chunkLength > 2 ? chunk[2] : 0;
-        var v3 = chunkLength > 3 ? chunk[3] : 0;
-
-        var b0 = (byte)((v0 << 2) | (v1 >> 4));
-        var b1 = (byte)(((v1 & 0xF) << 4) | (v2 >> 2));
-        var b2 = (byte)(((v2 & 0x3) << 6) | v3);
-
-        if (chunkLength == 2)
-        {
-            if (throwOnExtraBits && b1 != 0)
-            {
-                error = JSEngine.NewSyntaxError("Base64 chunk has unused bits set");
-                return false;
-            }
-
-            bytes.Add(b0);
-        }
-        else if (chunkLength == 3)
-        {
-            if (throwOnExtraBits && b2 != 0)
-            {
-                error = JSEngine.NewSyntaxError("Base64 chunk has unused bits set");
-                return false;
-            }
-
-            bytes.Add(b0);
-            bytes.Add(b1);
-        }
-        else
-        {
-            bytes.Add(b0);
-            bytes.Add(b1);
-            bytes.Add(b2);
-        }
-
-        return true;
-    }
-
-    private static int SkipAsciiWhitespace(string text, int index)
-    {
-        while (index < text.Length)
-        {
-            var c = text[index];
-            if (c != '\t' && c != '\n' && c != '\f' && c != '\r' && c != ' ')
-                return index;
-
-            index++;
-        }
-
-        return index;
-    }
-
-    private static int Base64Value(char c) => c switch
-    {
-        >= 'A' and <= 'Z' => c - 'A',
-        >= 'a' and <= 'z' => c - 'a' + 26,
-        >= '0' and <= '9' => c - '0' + 52,
-        '+' => 62,
-        '/' => 63,
-        _ => -1,
-    };
-
-    private static string GetBase64Alphabet(JSValue options)
-    {
-        if (options is JSObject @object)
-        {
-            var alphabet = @object["alphabet"];
-            if (!alphabet.IsNullOrUndefined)
-            {
-                if (!alphabet.IsString)
-                    throw JSEngine.NewTypeError("alphabet option must be a string");
-
-                var value = alphabet.StringValue;
-                if (value != Base64Alphabet && value != Base64UrlAlphabet)
-                    throw JSEngine.NewTypeError($"Invalid alphabet option {value}");
-
-                return value;
-            }
-        }
-
-        return Base64Alphabet;
-    }
-
-    private static bool GetBase64OmitPadding(JSValue options)
-    {
-        if (options is JSObject @object)
-        {
-            var omitPadding = @object["omitPadding"];
-            if (!omitPadding.IsNullOrUndefined)
-                return omitPadding.BooleanValue;
-        }
-
-        return false;
-    }
-
-    private static string GetBase64LastChunkHandling(JSValue options)
-    {
-        if (options is JSObject @object)
-        {
-            var lastChunkHandling = @object["lastChunkHandling"];
-            if (!lastChunkHandling.IsNullOrUndefined)
-            {
-                if (!lastChunkHandling.IsString)
-                    throw JSEngine.NewTypeError("lastChunkHandling option must be a string");
-
-                var value = lastChunkHandling.StringValue;
-                if (value != "loose" && value != "strict" && value != "stop-before-partial")
-                    throw JSEngine.NewTypeError($"Invalid lastChunkHandling option {value}");
-
-                return value;
-            }
-        }
-
-        return "loose";
+        return ReadAndWritten(read, written);
     }
 
     /// <summary>
@@ -415,49 +150,102 @@ public partial class JSUInt8Array : JSTypedArray
             throw JSEngine.NewTypeError("setFromHex requires a string argument");
         if (buffer.isImmutable)
             throw JSEngine.NewTypeError("Cannot write into a Uint8Array backed by an immutable ArrayBuffer");
-        var hex = str.ToString();
-        if (hex.Length % 2 != 0)
-            throw JSEngine.NewSyntaxError("Invalid hex string length");
-        var bytes = new byte[hex.Length / 2];
-        int parsed = 0;
-        for (int i = 0; i < bytes.Length; i++)
+
+        // FromHex stops at the view's length, so text past it is neither read nor judged; until
+        // SJL-5.5 the whole text was parsed first, and a bad pair past the destination threw (B1).
+        var status = Base64Codec.FromHex(str.ToString(), Destination("setFromHex"), out var read, out var written, out var failure);
+        if (status != ResultStatus.Completed)
+            throw HexError(failure);
+
+        return ReadAndWritten(read, written);
+    }
+
+    /// <summary>
+    /// GetOptionsObject: no options read nothing, an object is read, and anything else is a
+    /// TypeError; until SJL-5.5 a non-object argument was ignored (B2).
+    /// </summary>
+    private static JSObject? GetOptionsObject(JSValue options)
+    {
+        if (options.IsUndefined)
+            return null;
+
+        return options as JSObject ?? throw JSEngine.NewTypeError("The options argument must be an object");
+    }
+
+    /// <summary>
+    /// The alphabet option: only the two Strings name one, so null is a TypeError like any other
+    /// value; until SJL-5.5 null read as the default (B3).
+    /// </summary>
+    private static Base64Alphabet GetBase64Alphabet(JSObject? options)
+    {
+        var alphabet = options?["alphabet"] ?? JSUndefined.Value;
+        if (alphabet.IsUndefined)
+            return Base64Alphabet.Base64;
+
+        if (!alphabet.IsString)
+            throw JSEngine.NewTypeError("alphabet option must be a string");
+
+        return alphabet.StringValue switch
         {
-            if (!TryParseHexByte(hex, i * 2, out var b))
-            {
-                // Write successfully parsed bytes before throwing
-                int written = Math.Min(parsed, length);
-                System.Array.Copy(bytes, 0, buffer.buffer, byteOffset, written);
-                throw JSEngine.NewSyntaxError("Invalid hex string");
-            }
-            bytes[i] = b;
-            parsed++;
-        }
-        int totalWritten = Math.Min(parsed, length);
-        System.Array.Copy(bytes, 0, buffer.buffer, byteOffset, totalWritten);
+            "base64" => Base64Alphabet.Base64,
+            "base64url" => Base64Alphabet.Base64Url,
+            var value => throw JSEngine.NewTypeError($"Invalid alphabet option {value}"),
+        };
+    }
+
+    /// <summary>The lastChunkHandling option, read as the alphabet is (B3).</summary>
+    private static LastChunkHandling GetBase64LastChunkHandling(JSObject? options)
+    {
+        var lastChunkHandling = options?["lastChunkHandling"] ?? JSUndefined.Value;
+        if (lastChunkHandling.IsUndefined)
+            return LastChunkHandling.Loose;
+
+        if (!lastChunkHandling.IsString)
+            throw JSEngine.NewTypeError("lastChunkHandling option must be a string");
+
+        return lastChunkHandling.StringValue switch
+        {
+            "loose" => LastChunkHandling.Loose,
+            "strict" => LastChunkHandling.Strict,
+            "stop-before-partial" => LastChunkHandling.StopBeforePartial,
+            var value => throw JSEngine.NewTypeError($"Invalid lastChunkHandling option {value}"),
+        };
+    }
+
+    /// <summary>
+    /// GetUint8ArrayBytes: the view's bytes, or a TypeError when it is detached or out of bounds;
+    /// until SJL-5.5 such a view encoded as the empty string (B4).
+    /// </summary>
+    private ReadOnlySpan<byte> BytesOf()
+    {
+        if (buffer == null || buffer.isDetached || IsOutOfBounds)
+            throw JSEngine.NewTypeError("The Uint8Array is detached or out of bounds");
+
+        return new ReadOnlySpan<byte>(buffer.buffer, byteOffset, length);
+    }
+
+    /// <summary>
+    /// Where a setFrom… call writes: the view's bytes, whose length is the decode's maxLength, or a
+    /// TypeError when it is detached or out of bounds; until SJL-5.5 such a view answered
+    /// { read: 0, written: 0 } (B4).
+    /// </summary>
+    private Span<byte> Destination(string method)
+    {
+        if (buffer == null || buffer.isDetached || IsOutOfBounds)
+            throw JSEngine.NewTypeError($"Uint8Array.prototype.{method} called on a detached or out-of-bounds array");
+
+        return new Span<byte>(buffer.buffer, byteOffset, length);
+    }
+
+    private static JSValue ReadAndWritten(int read, int written)
+    {
         var result = new JSObject();
-        result["read"] = new JSNumber(totalWritten * 2);
-        result["written"] = new JSNumber(totalWritten);
+        result["read"] = new JSNumber(read);
+        result["written"] = new JSNumber(written);
         return result;
     }
 
-    private static bool TryParseHexByte(string hex, int offset, out byte value)
-    {
-        var hi = HexDigitValue(hex[offset]);
-        var lo = HexDigitValue(hex[offset + 1]);
-        if (hi < 0 || lo < 0)
-        {
-            value = 0;
-            return false;
-        }
-        value = (byte)((hi << 4) | lo);
-        return true;
-    }
-
-    private static int HexDigitValue(char c) => c switch
-    {
-        >= '0' and <= '9' => c - '0',
-        >= 'a' and <= 'f' => c - 'a' + 10,
-        >= 'A' and <= 'F' => c - 'A' + 10,
-        _ => -1,
-    };
+    private static JSException HexError(Failure failure) => failure.MessageId == "hex.odd-length"
+        ? JSEngine.NewSyntaxError("Invalid hex string length")
+        : JSEngine.NewSyntaxError("Invalid hex string");
 }

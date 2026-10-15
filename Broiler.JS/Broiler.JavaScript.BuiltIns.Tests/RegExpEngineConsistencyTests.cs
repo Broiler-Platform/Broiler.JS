@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.BuiltIns.RegExp;
 
 namespace Broiler.JavaScript.BuiltIns.Tests;
 
@@ -16,6 +17,11 @@ namespace Broiler.JavaScript.BuiltIns.Tests;
 /// abandons an empty iteration and matches the whole "ab", while .NET keeps looping and
 /// matches only "a" (issue #923 problem 8). Each case below is the answer that follows
 /// from the "ab"-long match; the .NET-span answer it replaces is noted beside it.
+///
+/// Since SJL-5.5 (correction S3) <c>String.prototype.replace</c> no longer has that fallback: a
+/// RegExp whose <c>@@replace</c> is removed is converted with ToString and searched for as text,
+/// as the specification says. The replace cases therefore run the public
+/// <c>JSRegExp.Replace</c> members the fallback called, which still match through the routed engine.
 /// </summary>
 public class RegExpEngineConsistencyTests
 {
@@ -28,39 +34,50 @@ public class RegExpEngineConsistencyTests
         return ctx.Eval(body).ToString();
     }
 
+    // The public JSRegExp.Replace members, run against a live context.
+    private static string PublicReplace(string pattern, string input, string template)
+    {
+        Load();
+        using var ctx = new JSContext();
+        return new JSRegExp(pattern, "").Replace(input, template);
+    }
+
     [Fact(Timeout = 600000)]
-    public void LegacyStringReplace_UsesTheRoutedEngine()
+    public void PublicReplace_UsesTheRoutedEngine()
     {
         // Broiler match is "ab" → "[ab]"; the .NET translation matched "a" → "[a]b".
-        var result = Eval(@"
-            delete RegExp.prototype[Symbol.replace];
-            'ab'.replace(/(a?b??)*/, '[$&]');
-        ");
-        Assert.Equal("[ab]", result);
+        Assert.Equal("[ab]", PublicReplace("(a?b??)*", "ab", "[$&]"));
     }
 
     [Fact(Timeout = 600000)]
-    public void LegacyStringReplace_Functional_UsesTheRoutedEngine()
+    public void PublicReplace_Functional_UsesTheRoutedEngine()
     {
         // The functional replacer receives the Broiler match ("ab"), not the .NET one ("a").
-        var result = Eval(@"
-            delete RegExp.prototype[Symbol.replace];
-            'ab'.replace(/(a?b??)*/, function (m) { return '<' + m + '>'; });
-        ");
-        Assert.Equal("<ab>", result);
+        Load();
+        using var ctx = new JSContext();
+        var replacer = ctx.Eval("(function (m) { return '<' + m + '>'; })");
+        Assert.Equal("<ab>", new JSRegExp("(a?b??)*", "").Replace("ab", replacer));
     }
 
     [Fact(Timeout = 600000)]
-    public void LegacyStringReplace_CaptureSubstitution_UsesTheRoutedEngine()
+    public void PublicReplace_CaptureSubstitution_UsesTheRoutedEngine()
     {
         // The whole match is "ab", but $1 is the LAST iteration's capture, "b" (matching
         // V8) — the point is that the substitution reads Broiler's normalized capture
         // array, so it agrees with exec's, not the .NET translation's.
+        Assert.Equal("<ab|b>", PublicReplace("(a?b??)*", "ab", "<$&|$1>"));
+    }
+
+    [Fact(Timeout = 600000)]
+    public void StringReplace_WithoutSymbolReplace_SearchesForTheText()
+    {
+        // §22.1.3.19 steps 2 and 3: with no @@replace the search value is ToString'd, so the
+        // RegExp's source text is what is searched for (correction S3, SJL-5.5).
         var result = Eval(@"
             delete RegExp.prototype[Symbol.replace];
-            'ab'.replace(/(a?b??)*/, '<$&|$1>');
+            ['ab'.replace(/(a?b??)*/, '[$&]'), 'x/(a?b??)*/'.replace(/(a?b??)*/, '[$&]')].join();
         ");
-        Assert.Equal("<ab|b>", result);
+        Assert.Equal("ab,x[/(a?b??)*/]", result);
     }
 
     [Fact(Timeout = 600000)]
@@ -76,16 +93,13 @@ public class RegExpEngineConsistencyTests
     }
 
     [Fact(Timeout = 600000)]
-    public void SymbolAndLegacyReplace_Agree_ForARoutedPattern()
+    public void SymbolAndPublicReplace_Agree_ForARoutedPattern()
     {
-        // The spec @@replace path (exec-driven) and the legacy fallback must now give the
+        // The spec @@replace path (exec-driven) and the public JSRegExp.Replace must give the
         // same answer for a routed pattern, since both run the Broiler engine.
         var viaSymbol = Eval("'ab'.replace(/(a?b??)*/, '[$&]');");
-        var viaLegacy = Eval(@"
-            delete RegExp.prototype[Symbol.replace];
-            'ab'.replace(/(a?b??)*/, '[$&]');
-        ");
-        Assert.Equal(viaSymbol, viaLegacy);
+        var viaPublic = PublicReplace("(a?b??)*", "ab", "[$&]");
+        Assert.Equal(viaSymbol, viaPublic);
         Assert.Equal("[ab]", viaSymbol);
     }
 

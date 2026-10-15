@@ -32,6 +32,7 @@ using Broiler.JavaScript.LinqExpressions.LinqExpressions.GeneratorsV2;
 using Broiler.JavaScript.LinqExpressions.LinqExpressions;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Text;
 
 namespace Broiler.JavaScript.BuiltIns;
 
@@ -947,12 +948,10 @@ internal static class BuiltInsAssemblyInitializer
             prototype.FastAddValue(atKey, CreateNativeFunction(static (in Arguments a) =>
             {
                 var text = a.This.AsString();
-                // ToIntegerOrInfinity (§7.1.5) is the shared library's (SJL-4.5).
-                var index = IntegerConversions.ToIntegerOrInfinity(a.Get1().DoubleValue);
-                if (index < 0)
-                    index += text.Length;
-
-                if (index < 0 || index >= text.Length)
+                // ToIntegerOrInfinity (§7.1.5) and the relative index are the shared library's
+                // (SJL-4.5, SJL-5.5).
+                var relative = IntegerConversions.ToIntegerOrInfinity(a.Get1().DoubleValue);
+                if (!RelativeIndex.TryElement(relative, text.Length, out var index))
                     return JSUndefined.Value;
 
                 return JSValue.CreateString(text[(int)index].ToString());
@@ -1490,101 +1489,50 @@ internal static class BuiltInsAssemblyInitializer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static double LengthAsDouble(JSValue value) => IntegerConversions.ToLength(value.DoubleValue);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        static int AdvanceStringIndex(string input, int index, bool unicode)
+        // GetSubstitution (§22.1.3.18.1): the template is the shared library's parse (SJL-5.5), and its
+        // parts are evaluated here, in template order, so a named group is read with Get where its part
+        // stands. Its value is converted with ToString, as step 2.b.ii says; until SJL-5.5 it was the
+        // CLR's ToString, which called a toString method directly (S2).
+        static string EvaluateSubstitution(string matched, string input, int position, IReadOnlyList<JSValue> captures, JSValue namedCaptures, string replacement)
         {
-            if (!unicode || index + 1 >= input.Length || !char.IsHighSurrogate(input[index]) || !char.IsLowSurrogate(input[index + 1]))
-                return index + 1;
-
-            return index + 2;
-        }
-
-        static string GetSubstitution(string matched, string input, int position, IReadOnlyList<JSValue> captures, JSValue namedCaptures, string replacement)
-        {
-            if (replacement.IndexOf('$') < 0)
-                return replacement;
-
-            var replacementBuilder = new StringBuilder();
-            for (int i = 0; i < replacement.Length; i++)
+            var parts = ReplacementTemplate.Parse(replacement, captures.Count, !namedCaptures.IsUndefined);
+            var replacementBuilder = new StringBuilder(replacement.Length);
+            foreach (var part in parts)
             {
-                var c = replacement[i];
-                if (c != '$' || i >= replacement.Length - 1)
+                switch (part.Kind)
                 {
-                    replacementBuilder.Append(c);
-                    continue;
-                }
-
-                c = replacement[++i];
-                switch (c)
-                {
-                    case '$':
+                    case ReplacementPartKind.Dollar:
                         replacementBuilder.Append('$');
                         break;
-                    case '&':
+                    case ReplacementPartKind.Match:
                         replacementBuilder.Append(matched);
                         break;
-                    case '`':
+                    case ReplacementPartKind.Before:
                         replacementBuilder.Append(input.AsSpan(0, Math.Max(position, 0)));
                         break;
-                    case '\'':
+                    case ReplacementPartKind.After:
                         replacementBuilder.Append(input.AsSpan(Math.Min(position + matched.Length, input.Length)));
                         break;
-                    case '<':
+                    case ReplacementPartKind.Capture:
                     {
-                        // §22.1.3.18.1: $< introduces a named-capture reference ONLY when the
-                        // pattern contains named groups (namedCaptures is defined). When it is
-                        // undefined, the literal characters "$<" are emitted and parsing resumes
-                        // immediately after them, so `"abcd".replace(/(.)(.)/, "$<x>")` yields
-                        // "$<x>cd" rather than swallowing the "<x>".
-                        if (namedCaptures.IsUndefined)
-                        {
-                            replacementBuilder.Append("$<");
-                            break;
-                        }
-
-                        var end = replacement.IndexOf('>', i + 1);
-                        if (end < 0)
-                        {
-                            replacementBuilder.Append("$<");
-                            break;
-                        }
-
+                        var capture = captures[part.CaptureIndex - 1];
+                        if (!capture.IsUndefined)
+                            replacementBuilder.Append(capture.ToString());
+                        break;
+                    }
+                    case ReplacementPartKind.NamedCapture:
+                    {
                         if (namedCaptures is not JSObject namedCapturesObject)
                             throw JSEngine.NewTypeError("RegExp replacement named captures must be an object");
 
-                        var groupName = replacement.Substring(i + 1, end - i - 1);
+                        var groupName = replacement.Substring(part.Start, part.Length);
                         var capture = namedCapturesObject[KeyStrings.GetOrCreate(groupName)];
                         if (!capture.IsUndefined)
-                            replacementBuilder.Append(capture.ToString());
-
-                        i = end;
+                            replacementBuilder.Append(capture.StringValue);
                         break;
                     }
                     default:
-                        if (c is >= '0' and <= '9')
-                        {
-                            var captureIndex = c - '0';
-                            if (i < replacement.Length - 1 && replacement[i + 1] is >= '0' and <= '9')
-                            {
-                                var twoDigitIndex = (captureIndex * 10) + (replacement[i + 1] - '0');
-                                if (twoDigitIndex > 0 && twoDigitIndex <= captures.Count)
-                                {
-                                    captureIndex = twoDigitIndex;
-                                    i++;
-                                }
-                            }
-
-                            if (captureIndex > 0 && captureIndex <= captures.Count)
-                            {
-                                var capture = captures[captureIndex - 1];
-                                if (!capture.IsUndefined)
-                                    replacementBuilder.Append(capture.ToString());
-                                break;
-                            }
-                        }
-
-                        replacementBuilder.Append('$');
-                        replacementBuilder.Append(c);
+                        replacementBuilder.Append(replacement.AsSpan(part.Start, part.Length));
                         break;
                 }
             }
@@ -1649,10 +1597,7 @@ internal static class BuiltInsAssemblyInitializer
                 // 2^31 or more advances past it rather than overflowing an int, a negative one is 0,
                 // and an index at or past the end advances by one without reading the string.
                 double thisIndex = LengthAsDouble(rx[KeyStrings.lastIndex]);
-                double advanced = thisIndex + 1;
-                if (matchFullUnicode && advanced < s.Length
-                    && char.IsHighSurrogate(s[(int)thisIndex]) && char.IsLowSurrogate(s[(int)thisIndex + 1]))
-                    advanced++;
+                double advanced = Utf16.AdvanceStringIndex(s, (long)thisIndex, matchFullUnicode);
                 rxObj.SetPropertyOrThrow(KeyStrings.lastIndex.ToJSValue(), JSValue.CreateNumber(advanced));
             }
         }, "[Symbol.match]", 1), JSPropertyAttributes.ConfigurableValue);
@@ -1773,11 +1718,7 @@ internal static class BuiltInsAssemblyInitializer
                         continue;
 
                     double streamThisIndex = LengthAsDouble(rx[KeyStrings.lastIndex]);
-                    double streamAdvanced = streamThisIndex + 1;
-                    if (fullUnicode && streamAdvanced < input.Length
-                        && char.IsHighSurrogate(input[(int)streamThisIndex])
-                        && char.IsLowSurrogate(input[(int)streamThisIndex + 1]))
-                        streamAdvanced++;
+                    double streamAdvanced = Utf16.AdvanceStringIndex(input, (long)streamThisIndex, fullUnicode);
                     rx[KeyStrings.lastIndex] = JSValue.CreateNumber(streamAdvanced);
                 }
 
@@ -1811,10 +1752,7 @@ internal static class BuiltInsAssemblyInitializer
                 // so compute in double — a huge lastIndex (e.g. 2^54) must clamp and advance
                 // to 2^53, not overflow a 32-bit int to a negative value.
                 double thisIndex = LengthAsDouble(rx[KeyStrings.lastIndex]);
-                double advanced = thisIndex + 1;
-                if (fullUnicode && advanced < input.Length
-                    && char.IsHighSurrogate(input[(int)thisIndex]) && char.IsLowSurrogate(input[(int)thisIndex + 1]))
-                    advanced++;
+                double advanced = Utf16.AdvanceStringIndex(input, (long)thisIndex, fullUnicode);
                 rx[KeyStrings.lastIndex] = JSValue.CreateNumber(advanced);
             }
 
@@ -1880,7 +1818,7 @@ internal static class BuiltInsAssemblyInitializer
                             ?? (JSObject)JSObject.CreatePrimitiveObject(namedCaptures);
                     }
 
-                    replacement = GetSubstitution(matched, input, position, captures, normalizedNamedCaptures, replacementText);
+                    replacement = EvaluateSubstitution(matched, input, position, captures, normalizedNamedCaptures, replacementText);
                 }
 
                 return (position, matched, replacement);
@@ -1982,14 +1920,14 @@ internal static class BuiltInsAssemblyInitializer
                 var z = RegExpExec(splitter, JSValue.CreateString(input));
                 if (z.IsNull)
                 {
-                    q = AdvanceStringIndex(input, q, unicodeMatching);
+                    q = (int)Utf16.AdvanceStringIndex(input, q, unicodeMatching);
                     continue;
                 }
 
                 var e = LengthOf(splitter[KeyStrings.lastIndex]);
                 if (e == p)
                 {
-                    q = AdvanceStringIndex(input, q, unicodeMatching);
+                    q = (int)Utf16.AdvanceStringIndex(input, q, unicodeMatching);
                     continue;
                 }
 

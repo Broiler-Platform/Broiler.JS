@@ -9,6 +9,7 @@ using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine.Extensions;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Text;
 
 namespace Broiler.JavaScript.BuiltIns.Array.Typed;
 
@@ -33,16 +34,6 @@ partial class JSTypedArray
 
         var integer = IntegerConversions.ToIntegerOrInfinity(value.DoubleValue);
         return integer >= long.MaxValue ? long.MaxValue : integer <= long.MinValue ? long.MinValue : (long)integer;
-    }
-
-    // Resolves a relative index (per copyWithin/slice clamping): a negative value counts
-    // from the end and clamps at 0; a positive value clamps at len. Overflow-safe for the
-    // long.MinValue / long.MaxValue infinity sentinels.
-    private static int ClampRelativeIndex(long relative, int len)
-    {
-        if (relative < 0)
-            return relative <= -len ? 0 : (int)(len + relative);
-        return relative >= len ? len : (int)relative;
     }
 
     [JSExport("toString")]
@@ -72,9 +63,9 @@ partial class JSTypedArray
         // offsets from the end (negative) or the length (positive). An undefined/absent
         // end defaults to len, and an infinite argument clamps to the array bound rather
         // than collapsing to 0 (test262 copyWithin/{undefined-end,non-negative-out-of-bounds-end}).
-        var target = ClampRelativeIndex(LongIntegerOf(t), len);
-        var start = ClampRelativeIndex(LongIntegerOf(s), len);
-        var end = ClampRelativeIndex(a.TryGetAt(2, out var e) ? LongIntegerOf(e, len) : len, len);
+        var target = (int)RelativeIndex.Clamped(LongIntegerOf(t), len);
+        var start = (int)RelativeIndex.Clamped(LongIntegerOf(s), len);
+        var end = (int)RelativeIndex.Clamped(a.TryGetAt(2, out var e) ? LongIntegerOf(e, len) : len, len);
 
         // Calculate the number of values to copy.
         int count = Math.Min(end - start, len - target);
@@ -151,8 +142,8 @@ partial class JSTypedArray
         len = Length;
 
         // Negative values represent offsets from the end of the array.
-        relativeStart = relativeStart < 0 ? Math.Max(len + relativeStart, 0) : Math.Min(relativeStart, len);
-        relativeEnd = relativeEnd < 0 ? Math.Max(len + relativeEnd, 0) : Math.Min(relativeEnd, len);
+        relativeStart = (int)RelativeIndex.Clamped(relativeStart, len);
+        relativeEnd = (int)RelativeIndex.Clamped(relativeEnd, len);
         for (; relativeStart < relativeEnd; relativeStart++)
         {
             this[(uint)relativeStart] = numericValue;
@@ -229,6 +220,10 @@ partial class JSTypedArray
         var len = Length;
         var (indexArg, value) = a.Get2();
         var relativeIndex = LongIntegerOf(indexArg);
+
+        // The relative step is taken against the length before the value's coercion and the range
+        // test below against the length after it, which RelativeIndex.TryElement's one length cannot
+        // say; so this normalisation stays inline (SJL-5.5).
         long actualIndex = relativeIndex >= 0 ? relativeIndex : len + relativeIndex;
 
         // Coerce the value (ToBigInt for bigint element types, otherwise ToNumber)
@@ -257,10 +252,7 @@ partial class JSTypedArray
     {
         ValidateTypedArray("at");
         var len = Length;
-        var relativeIndex = IntegerOf(a.Get1());
-        long index = relativeIndex >= 0 ? relativeIndex : (long)len + relativeIndex;
-
-        if (index < 0 || index >= len)
+        if (!RelativeIndex.TryElement(IntegerOf(a.Get1()), len, out var index))
             return JSUndefined.Value;
 
         return this[(uint)index];
@@ -367,16 +359,10 @@ partial class JSTypedArray
 
         // ToIntegerOrInfinity (not ToInt32): a +Infinity fromIndex is past the end → false, and
         // -Infinity clamps to the start.
-        var startIndex = IntegerOf(fromIndex);
+        // A negative fromIndex counts back from the end; below the start it clamps to 0.
+        var startIndex = (int)RelativeIndex.Clamped(IntegerOf(fromIndex), n);
         if (startIndex >= n)
             return JSBoolean.False;
-        if (startIndex < 0)
-        {
-            // A negative fromIndex counts back from the end; below the start it clamps to 0.
-            startIndex = n + startIndex;
-            if (startIndex < 0)
-                startIndex = 0;
-        }
 
         for (var k = startIndex; k < n; k++)
         {
@@ -402,12 +388,11 @@ partial class JSTypedArray
         // §23.2.3.13: fromIndex is ToIntegerOrInfinity. +Infinity is past the end (-1);
         // -Infinity (and any offset before the start) clamps the search start to 0
         // (test262 indexOf/fromIndex-infinity).
-        var from = LongIntegerOf(fromIndex);
-        if (from >= n)
+        var startIndex = (int)RelativeIndex.Clamped(LongIntegerOf(fromIndex), n);
+        if (startIndex >= n)
         {
             return JSNumber.MinusOne;
         }
-        var startIndex = from >= 0 ? (int)from : (from <= -n ? 0 : (int)(n + from));
         var en = GetElementEnumerator(startIndex);
         while (en.MoveNext(out var hasValue, out var item, out var index))
         {
@@ -462,10 +447,10 @@ partial class JSTypedArray
             return JSNumber.MinusOne;
         }
 
-        // §23.2.3.17: fromIndex (when present) is ToIntegerOrInfinity, else len-1.
-        // +Infinity clamps to the last index; -Infinity (or an offset before -length)
-        // leaves nothing to search (test262 lastIndexOf/fromIndex-infinity).
-        var from = a.Length == 2 ? LongIntegerOf(fromIndex) : (long)n - 1;
+        // §23.2.3.17: fromIndex (when present) is ToIntegerOrInfinity, else len-1. It is present
+        // whenever a second argument is passed, however many follow it; until SJL-5.5 a third
+        // argument made it ignored (P5).
+        var from = a.Length >= 2 ? LongIntegerOf(fromIndex) : (long)n - 1;
 
         // Coercing fromIndex (ToIntegerOrInfinity) may run user code that resizes the
         // backing resizable buffer, leaving this fixed-length view out of bounds — every
@@ -476,20 +461,11 @@ partial class JSTypedArray
             return JSNumber.MinusOne;
         }
 
-        int startIndex;
-        if (from >= 0)
-        {
-            startIndex = from >= n ? n - 1 : (int)from;
-        }
-        else if (from < -n)
-        {
-            // A fromIndex more negative than -length leaves no elements to search.
+        // +Infinity clamps to the last index; -Infinity (or an offset before -length) leaves
+        // nothing to search (test262 lastIndexOf/fromIndex-infinity).
+        var startIndex = RelativeIndex.LastSearchStart(from, n);
+        if (startIndex < 0)
             return JSNumber.MinusOne;
-        }
-        else
-        {
-            startIndex = (int)(n + from);
-        }
 
         var i = (uint)startIndex;
 
@@ -687,8 +663,8 @@ partial class JSTypedArray
         var begin = IntegerOf(a.GetAt(0), 0);
         var end = IntegerOf(a.GetAt(1), srcLen);
 
-        begin = begin < 0 ? Math.Max(srcLen + begin, 0) : Math.Min(begin, srcLen);
-        end = end < 0 ? Math.Max(srcLen + end, 0) : Math.Min(end, srcLen);
+        begin = (int)RelativeIndex.Clamped(begin, srcLen);
+        end = (int)RelativeIndex.Clamped(end, srcLen);
         var count = (int)Math.Max(end - begin, 0);
         var startIndex = (int)begin;
 
@@ -846,8 +822,8 @@ partial class JSTypedArray
         var begin = IntegerOf(a.GetAt(0), 0);
         var end = IntegerOf(a.GetAt(1), srcLength);
 
-        begin = begin < 0 ? Math.Max(srcLength + begin, 0) : Math.Min(begin, srcLength);
-        end = end < 0 ? Math.Max(srcLength + end, 0) : Math.Min(end, srcLength);
+        begin = (int)RelativeIndex.Clamped(begin, srcLength);
+        end = (int)RelativeIndex.Clamped(end, srcLength);
         var newLength = Math.Max(end - begin, 0);
 
         // subarray step 17 is TypedArraySpeciesCreate(O, argumentsList), whose

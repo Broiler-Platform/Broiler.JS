@@ -51,9 +51,9 @@ public class EngineErrorOriginFrameTests
     // anything a script provokes, so naming one is always wrong — whichever of them it names.
     //
     // The cases cover the rewired factory delegates — JSValue.NewTypeError, JSObject.NewTypeError
-    // and NewRangeError, JSVariable.NewReferenceErrorFactory, UriHelper.NewURIError,
-    // PropertySequence.TypeErrorFactory — plus a few that always reached the Engine directly and
-    // so have to stay right.
+    // and NewRangeError, JSVariable.NewReferenceErrorFactory, PropertySequence.TypeErrorFactory —
+    // plus a few that always reached the Engine directly and so have to stay right, the URI
+    // functions' among them since SJL-5.5 deleted UriHelper and its factory.
     [Theory]
     [InlineData("var u; u.foo;")]
     [InlineData("var u; u();")]

@@ -1,16 +1,35 @@
-﻿using System;
-using System.Text.Json;
-using System.Text;
+﻿using System.Globalization;
+using Broiler.ECMAScript;
+using Broiler.ECMAScript.Text;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.BuiltIns.Null;
 using Broiler.JavaScript.BuiltIns.Array;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Json;
 
-internal class JSJsonParser(JsonParserReceiver r) : System.Text.Json.Serialization.JsonConverter<JSValue>
+/// <summary>
+/// <c>JSON.parse</c>'s reading: the shared library's <see cref="JsonReader"/> checks the grammar and
+/// converts the leaves, and this class builds the values (SJL-5.5).
+/// </summary>
+/// <remarks>
+/// Until SJL-5.5 this was System.Text.Json, whose grammar is not quite the language's: its default
+/// depth of 64, which nobody chose, refused deeper documents (J1); an escaped lone surrogate was
+/// refused (J2); and a raw one let the transcoding's .NET exception reach a script (J3). The reader
+/// reads code units, so either surrogate is a string holding it, and the depth is this engine's
+/// policy, <see cref="MaximumDepth"/>.
+/// </remarks>
+internal static class JSJsonParser
 {
+    /// <summary>
+    /// This engine's JSON nesting policy (SJL-5.5): the deepest value <c>JSON.parse</c> and
+    /// <c>JSON.rawJSON</c> read, the document itself being depth 0. Past it the parse is a
+    /// <c>RangeError</c>. The reader does not recurse; the building below does, one frame a level.
+    /// </summary>
+    internal const int MaximumDepth = 512;
+
     private static void AddJsonObjectProperty(JSObject target, string name, JSValue value)
     {
         if (uint.TryParse(name, out var index) && index != uint.MaxValue && index.ToString() == name)
@@ -22,166 +41,110 @@ internal class JSJsonParser(JsonParserReceiver r) : System.Text.Json.Serializati
         target.FastAddValue(KeyStrings.GetOrCreate(name), value, JSPropertyAttributes.EnumerableConfigurableValue);
     }
 
-    public static JSValue Parse(string str, JsonParserReceiver r) => JsonSerializer.Deserialize<JSValue>(str, new JsonSerializerOptions
-    {
-        Converters =
-            {
-                new JSJsonParser(r)
-            }
-    });
+    public static JSValue Parse(string text) => Read(text, null);
 
     /// <summary>
-    /// Parse with source text tracking for the reviver context (ES2026 §4.7).
+    /// Parse with source text tracking for the reviver context (ES2026 §4.7): each primitive's
+    /// source is its text exactly as written, quotes, escapes and exponent included.
     /// </summary>
-    public static JSValue ParseWithSource(string str, JsonParserReceiverWithSource r)
+    public static JSValue ParseWithSource(string text, JsonParserReceiverWithSource sources) => Read(text, sources);
+
+    private static JSValue Read(string text, JsonParserReceiverWithSource? sources)
     {
-        var parser = new JSJsonParser(null) { reviverWithSource = r };
-        return JsonSerializer.Deserialize<JSValue>(str, new JsonSerializerOptions
-        {
-            Converters = { parser }
-        });
+        var reader = new JsonReader(text, new DepthLimit(MaximumDepth));
+        Next(ref reader, text);
+        var value = Build(ref reader, text, sources, out _);
+
+        // The end of the text, after nothing but white space: anything else is refused where it starts.
+        Next(ref reader, text);
+        return value;
     }
 
-    private JsonParserReceiverWithSource reviverWithSource;
-
-    public override JSValue Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    private static void Next(ref JsonReader reader, string text)
     {
-        return reader.TokenType switch
+        if (reader.Read() != ResultStatus.Completed)
+            throw Error(text, reader.Failure);
+    }
+
+    /// <summary>The error for a text the reader refused: a SyntaxError where it stopped, or the RangeError of the depth policy.</summary>
+    internal static JSException Error(string text, Failure failure) => failure.MessageId switch
+    {
+        "json.too-deep" => JSEngine.NewRangeError("Maximum JSON nesting depth exceeded"),
+        "json.unterminated-string" => Syntax("Unterminated string in JSON", failure.Position),
+        "json.control-character" => Syntax("Bad control character in JSON", failure.Position),
+        "json.bad-escape" => Syntax("Bad escaped character in JSON", failure.Position),
+        "json.bad-unicode-escape" => Syntax("Bad Unicode escape in JSON", failure.Position),
+        _ when failure.Position >= text.Length => Syntax("Unexpected end of JSON input", failure.Position),
+        _ => Syntax("Unexpected token '" + text[failure.Position] + "' in JSON", failure.Position),
+    };
+
+    private static JSException Syntax(string message, int position) =>
+        JSEngine.NewSyntaxError(message + " at position " + position.ToString(CultureInfo.InvariantCulture));
+
+    /// <summary>Builds the value whose first token the reader has just read.</summary>
+    private static JSValue Build(ref JsonReader reader, string text, JsonParserReceiverWithSource? sources, out string? source)
+    {
+        source = null;
+        switch (reader.Token)
         {
-            JsonTokenType.None => throw new NotSupportedException($"Unable to read JSON Data"),
-            JsonTokenType.StartObject => ReadObject(ref reader, options),
-            JsonTokenType.StartArray => ReadArray(ref reader, options),
-            JsonTokenType.String => new JSString(reader.GetString()),
-            JsonTokenType.Number => new JSNumber(reader.GetDouble()),
-            JsonTokenType.True => JSBoolean.True,
-            JsonTokenType.False => JSBoolean.False,
-            JsonTokenType.Null => JSNull.Value,
-            _ => throw new NotSupportedException($"Unexpected JSON {reader.TokenType} at {reader.TokenStartIndex}"),
+            case JsonToken.BeginObject:
+                return BuildObject(ref reader, text, sources);
+
+            case JsonToken.BeginArray:
+                return BuildArray(ref reader, text, sources);
+        }
+
+        if (sources != null)
+            source = text[reader.TokenStart..reader.TokenEnd];
+
+        return reader.Token switch
+        {
+            JsonToken.String => new JSString(reader.StringValue),
+            JsonToken.Number => new JSNumber(reader.NumberValue),
+            JsonToken.True => JSBoolean.True,
+            JsonToken.False => JSBoolean.False,
+            _ => JSNull.Value,
         };
     }
 
-    /// <summary>
-    /// Extracts the raw source text for a primitive token from the reader.
-    /// </summary>
-    private static string GetSourceText(ref Utf8JsonReader reader)
-    {
-        if (reader.HasValueSequence)
-        {
-            var sequence = reader.ValueSequence;
-            return Encoding.UTF8.GetString(sequence.FirstSpan);
-        }
-        
-        return Encoding.UTF8.GetString(reader.ValueSpan);
-    }
-
-    /// <summary>
-    /// Reads a value and returns both the value and its source text for
-    /// the reviver context.
-    /// </summary>
-    private (JSValue value, string source) ReadWithSource(ref Utf8JsonReader reader, JsonSerializerOptions options)
-    {
-        switch (reader.TokenType)
-        {
-            case JsonTokenType.StartObject:
-                return (ReadObject(ref reader, options), null);
-
-            case JsonTokenType.StartArray:
-                return (ReadArray(ref reader, options), null);
-
-            case JsonTokenType.String:
-                // Source includes the surrounding quotes
-                var strSource = "\"" + GetSourceText(ref reader) + "\"";
-                return (new JSString(reader.GetString()), strSource);
-
-            case JsonTokenType.Number:
-                var numSource = GetSourceText(ref reader);
-                return (new JSNumber(reader.GetDouble()), numSource);
-
-            case JsonTokenType.True:
-                return (JSBoolean.True, "true");
-
-            case JsonTokenType.False:
-                return (JSBoolean.False, "false");
-
-            case JsonTokenType.Null:
-                return (JSNull.Value, "null");
-
-            default:
-                throw new NotSupportedException($"Unexpected JSON {reader.TokenType} at {reader.TokenStartIndex}");
-        }
-    }
-
-    private JSValue ReadArray(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    private static JSValue BuildArray(ref JsonReader reader, string text, JsonParserReceiverWithSource? sources)
     {
         var j = new JSArray();
-        // read properties...
-        while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
+        while (true)
         {
-            if (reviverWithSource != null)
-            {
-                var (value, source) = ReadWithSource(ref reader, options);
-                value = reviverWithSource((j, j.Length.ToString(), value, source));
-                if (!value.IsUndefined)
-                    j.Add(value);
-            }
-            else
-            {
-                var value = Read(ref reader, typeof(JSValue), options);
-                value = r?.Invoke((j, j.Length.ToString(), value)) ?? value;
-                if (!value.IsUndefined)
-                    j.Add(value);
-            }
-        }
+            Next(ref reader, text);
+            if (reader.Token == JsonToken.EndArray)
+                return j;
 
-        return j;
+            var value = Build(ref reader, text, sources, out var source);
+            if (sources != null)
+                value = sources((j, j.Length.ToString(), value, source!));
+
+            if (!value.IsUndefined)
+                j.Add(value);
+        }
     }
 
-    private JSValue ReadObject(ref Utf8JsonReader reader, JsonSerializerOptions options)
+    private static JSValue BuildObject(ref JsonReader reader, string text, JsonParserReceiverWithSource? sources)
     {
         var j = new JSObject();
-
-        // read properties...
-        while (reader.Read())
+        while (true)
         {
-            switch (reader.TokenType)
+            Next(ref reader, text);
+            if (reader.Token == JsonToken.EndObject)
+                return j;
+
+            var name = reader.StringValue;
+            Next(ref reader, text);
+            var value = Build(ref reader, text, sources, out var source);
+            if (sources != null)
             {
-                case JsonTokenType.EndObject:
-                    return j;
-
-                case JsonTokenType.PropertyName:
-                    var name = reader.GetString();
-
-                    if (!reader.Read())
-                        throw new InvalidOperationException($"Unable to read JSON");
-
-                    if (reviverWithSource != null)
-                    {
-                        var (value, source) = ReadWithSource(ref reader, options);
-                        value = reviverWithSource((j, name, value, source));
-
-                        if (value.IsUndefined)
-                            continue;
-
-                        AddJsonObjectProperty(j, name, value);
-                    }
-                    else
-                    {
-                        var value = Read(ref reader, typeof(JSValue), options);
-                        value = r?.Invoke((j, name, value)) ?? value;
-                        if (value.IsUndefined)
-                            continue;
-
-                        AddJsonObjectProperty(j, name, value);
-                    }
-                    break;
-
-                default:
-                    throw new InvalidOperationException($"Invalid token {reader.TokenType} at {reader.TokenStartIndex}");
+                value = sources((j, name, value, source!));
+                if (value.IsUndefined)
+                    continue;
             }
+
+            AddJsonObjectProperty(j, name, value);
         }
-
-        return j;
     }
-
-    public override void Write(Utf8JsonWriter writer, JSValue value, JsonSerializerOptions options) => throw new NotImplementedException();
 }

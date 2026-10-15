@@ -3,6 +3,7 @@ using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Symbol;
+using Broiler.ECMAScript.Text;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
 
@@ -100,11 +101,7 @@ internal sealed class JSRegExpStringIterator : JSObject
             // the iterator does not yield a spurious empty match inside an astral char.
             var s = input.ToString();
             var nextIndex = GetObservableLastIndex();
-            var advanced = nextIndex + 1;
-            if (unicode && advanced < s.Length
-                && char.IsHighSurrogate(s[nextIndex]) && char.IsLowSurrogate(s[advanced]))
-                advanced++;
-            regexp[KeyStrings.lastIndex] = CreateNumber(advanced);
+            regexp[KeyStrings.lastIndex] = CreateNumber(Utf16.AdvanceStringIndex(s, nextIndex, unicode));
         }
 
         return CreateIterResult(match, false);

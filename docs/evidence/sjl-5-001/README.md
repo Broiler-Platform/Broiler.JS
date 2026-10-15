@@ -93,3 +93,13 @@ left unclassified. The run under `en-US` gives the same listing, byte for byte.
 classifier could not read the comparison's shortened listing of a long field, so it put 3,158 differences
 in class (c) and left 13,227 unclassified. S was right on all of them. The classifier was corrected at
 `95f4387`, before the whole comparison ran again.
+
+## 4. The cut-over's vectors (SJL-5.5)
+
+On corpus revision 12, with the product sources of the change that lands SJL-5.5's cut-over
+([`engine/cut-over-revision-12.log`](engine/cut-over-revision-12.log),
+[`engine/cut-over-revision-12.tsv.gz`](engine/cut-over-revision-12.tsv.gz)): **42,943 vectors, 42,939
+match, 4 classified divergences, 0 unclassified differences**, and the runner's four tests pass. Each of
+the 42 fields of section 2 reports "divergence no longer holds"; the 4 are the number area's, as before.
+Every correction is listed in [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md), and corpus
+revision 13 retires the fields.

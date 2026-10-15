@@ -6,6 +6,7 @@ using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Engine.Extensions;
+using Broiler.ECMAScript.Text;
 
 namespace Broiler.JavaScript.BuiltIns.String;
 
@@ -46,46 +47,32 @@ public partial class JSString
         return builtinMatcher.InvokeFunction(new Arguments(created, @this));
     }
 
-    // GetSubstitution (ECMA-262 §22.1.3.18.1) for a string searchValue: there are no captures
-    // and no named captures, so only $$, $&, $` and $' are expanded; $n and $<name> have no
-    // corresponding capture and are therefore emitted verbatim (the leading '$' is literal).
-    private static string GetSubstitution(string matched, string str, int position, string replacement)
+    // GetSubstitution (ECMA-262 §22.1.3.18.1) for a string searchValue, over the shared library's
+    // parse of the template (SJL-5.5): the parts are evaluated here. A string pattern has no captures
+    // and no named groups, so only $$, $&, $` and $' substitute, and every other part, $n and $<name>
+    // included, is the template's own text.
+    private static string Substitute(ReplacementPart[] parts, string template, string matched, string str, int position)
     {
-        if (replacement.IndexOf('$') < 0)
-            return replacement;
-
-        var result = new StringBuilder(replacement.Length);
-        for (int i = 0; i < replacement.Length; i++)
+        var result = new StringBuilder(template.Length);
+        foreach (var part in parts)
         {
-            var c = replacement[i];
-            if (c != '$' || i + 1 >= replacement.Length)
+            switch (part.Kind)
             {
-                result.Append(c);
-                continue;
-            }
-
-            switch (replacement[i + 1])
-            {
-                case '$': // $$ -> $
+                case ReplacementPartKind.Dollar:
                     result.Append('$');
-                    i++;
                     break;
-                case '&': // $& -> the matched substring
+                case ReplacementPartKind.Match:
                     result.Append(matched);
-                    i++;
                     break;
-                case '`': // $` -> the portion of the string before the match
+                case ReplacementPartKind.Before:
                     result.Append(str, 0, position);
-                    i++;
                     break;
-                case '\'': // $' -> the portion of the string after the match
+                case ReplacementPartKind.After:
                     var tail = position + matched.Length;
                     result.Append(str, tail, str.Length - tail);
-                    i++;
                     break;
                 default:
-                    // $n / $<name> with no captures: not a substitution, keep '$' literal.
-                    result.Append('$');
+                    result.Append(template, part.Start, part.Length);
                     break;
             }
         }
@@ -112,10 +99,9 @@ public partial class JSString
             }
         }
 
-        if (f is JSRegExp jSRegExp)
-            return new JSString(jSRegExp.Replace(@this, s));
-
-        // Find the first occurrence of the (stringified) search value.
+        // Find the first occurrence of the (stringified) search value. A RegExp whose
+        // Symbol.replace is undefined or null is converted with ToString and searched for as text,
+        // as §22.1.3.19 steps 2 and 3 say; until SJL-5.5 it was matched as a pattern (S3).
         var substr = f.StringValue;
         // Per §22.1.3.19 step 6, if replaceValue is not callable it is coerced via ToString
         // BEFORE the match is searched for — even when there is no match (test262
@@ -134,7 +120,7 @@ public partial class JSString
         var replaceText = s.IsFunction
             ? s.InvokeFunction(new Arguments(JSUndefined.Value,
                 CreateString(substr), CreateNumber(start), CreateString(@this))).StringValue
-            : GetSubstitution(substr, @this, start, replacementTemplate);
+            : Substitute(ReplacementTemplate.Parse(replacementTemplate, 0, false), replacementTemplate!, substr, @this, start);
 
         // Replace only the first match — so the answer is exactly prefix + replacement + suffix,
         // and string.Concat writes those three spans into ONE allocation of the final length.
@@ -184,12 +170,13 @@ public partial class JSString
         var searchString = searchValue.IsUndefined ? "undefined" : searchValue.StringValue;
         var functionalReplace = replaceValue.IsFunction;
         var replacementText = functionalReplace ? null : replaceValue.StringValue;
+        var replacementParts = functionalReplace ? null : ReplacementTemplate.Parse(replacementText, 0, false);
         var source = CreateString(@this);
 
         string GetReplacement(int position)
             => functionalReplace
                 ? replaceValue.InvokeFunction(new Arguments(JSUndefined.Value, CreateString(searchString), CreateNumber(position), source)).StringValue
-                : GetSubstitution(searchString, @this, position, replacementText!);
+                : Substitute(replacementParts!, replacementText!, searchString, @this, position);
 
         if (searchString.Length == 0)
         {
@@ -301,7 +288,9 @@ public partial class JSString
         var result = CreateArray();
         if (string.IsNullOrEmpty(separator))
         {
-            for (int i = 0; i < @this.Length; i++)
+            // One code unit per element, and no more elements than the limit (§22.1.3.21 step 14);
+            // until SJL-5.5 this branch ignored the limit (X1).
+            for (int i = 0; i < @this.Length && i < limitMax; i++)
                 result[(uint)i] = new JSString(@this[i]);
 
             return result;

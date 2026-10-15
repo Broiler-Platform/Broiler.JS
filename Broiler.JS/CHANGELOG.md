@@ -10,6 +10,91 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### Text algorithms move to `Broiler.ECMAScript.Algorithms` (2026-10-15, milestone SJL-5.5)
+
+The text area is the shared library's, the stream's `0.1.0-preview.3` in this repository's
+`Broiler.ECMAScript`:
+
+- UTF-16: `isWellFormed`, `toWellFormed`, `codePointAt`, the String iterator's step, and
+  `AdvanceStringIndex` wherever a RegExp method moves past an empty match (`[Symbol.split]`,
+  `[Symbol.match]`, `[Symbol.replace]`, `matchAll`'s iterator and the engine's own enumerations);
+- `padStart` and `padEnd`'s StringPad, and the relative-index normalisation of String `at`, `slice` and
+  `substr`; Array `at`, `includes`, `indexOf`, `lastIndexOf`, `slice`, `toSpliced`, `with`, `copyWithin`,
+  `fill` and `splice`; the typed arrays' `at`, `copyWithin`, `fill`, `includes`, `indexOf`, `lastIndexOf`,
+  `slice` and `subarray`; and `ArrayBuffer`'s `slice` and `sliceToImmutable` and `SharedArrayBuffer`'s
+  `slice`;
+- the replacement templates of `replace`, `replaceAll` and `RegExp.prototype[Symbol.replace]`, which the
+  library parses and this engine evaluates part by part;
+- `encodeURI`, `encodeURIComponent`, `decodeURI`, `decodeURIComponent`, `escape` and `unescape`;
+- `Uint8Array`'s base64 and hex codecs;
+- `JSON.parse`'s and `JSON.rawJSON`'s reading, which no longer goes through System.Text.Json, and
+  `JSON.stringify`'s quoting and gap.
+
+The built-ins keep their coercions, their option reading, their errors and their drivers. **Two
+policies are this engine's, and stated:** the longest String a pad or a repeat builds is
+`JSString.MaximumLength`, 1,073,741,791 code units, the longest a .NET string can be, and past it the
+call is a `RangeError`; and `JSON.parse` and `JSON.rawJSON` read a value at most 512 levels deep
+(`JSJsonParser.MaximumDepth`), the document being level 0, and past it the parse is a `RangeError`. A
+typed array's `with` keeps its normalisation inline: its relative step uses the length before the
+value's conversion and its range test the length after it, which the shared one-length rule cannot
+say. The API dispositions are in [`docs/public-api.md`](../docs/public-api.md).
+
+**Corrections the corpus names.** Each was a `divergence.broiler-js` field of the shared corpus
+(`conformance/vectors/text`, revision 12), with its reason in `scripts/conformance/text-divergences.txt`
+and the row of bundle `sjl-5-001`'s correspondence it confirmed.
+
+- **`setFromHex` stops at the destination** (B1, `js-set-from-hex-whole-input`,
+  `text/set-from-hex/0001`, `0002`, `0011` to `0013` and `0021`): `new Uint8Array(1).setFromHex("aaZZ")`
+  is `{ read: 2, written: 1 }`, where the whole text was parsed first and the `ZZ` the method never
+  reads raised `SyntaxError`.
+- **An options argument that is not an object is a `TypeError`** (B2, `js-options-not-object`,
+  `text/options/0001`, `0002` and `0006`): `Uint8Array.fromBase64("", 1)` and `toBase64(null)` were
+  read as no options.
+- **A `null` `alphabet` or `lastChunkHandling` is a `TypeError`** (B3, `js-options-null-name`,
+  `text/options/0003` and `0004`), where it was read as the default.
+- **A detached or out-of-bounds array is a `TypeError` to the codecs** (B4, `js-detached-codec`,
+  `text/options/0009` to `0012`): `toBase64` and `toHex` answered `""`, and `setFromBase64` and
+  `setFromHex` answered `{ read: 0, written: 0 }`.
+- **`JSON.parse` reads past 64 levels** (J1, `js-json-depth`, `text/parse-depth/0011` to `0022`):
+  System.Text.Json's default depth, which nobody chose, refused a document nested 65 deep with
+  `SyntaxError`; the depth is now the policy above.
+- **A lone surrogate in a JSON string is that code unit** (J2 and J3, `js-json-escaped-surrogate` and
+  `js-json-raw-surrogate`, `text/parse/2364`, `2365`, `2367` and `2368` and `text/parse-surrogate/0001`
+  to `0004`): `JSON.parse('"\\ud800"')` raised `SyntaxError`, and a raw lone surrogate let the .NET
+  `ArgumentException` of the text's transcoding to UTF-8 reach the script as a plain `Error`.
+- **Only `JSON.rawJSON` makes a raw JSON object** (J6, `js-raw-json-brand`, `text/raw-json/0005` and
+  `0006`): the brand is an internal slot of the object `JSON.rawJSON` returns, where any frozen object
+  with an own string `rawJSON` passed for one, and `JSON.stringify(Object.freeze({ rawJSON: "}{" }))`
+  wrote `}{` into its output unchecked.
+- **The raw JSON object's `rawJSON` is enumerable** (J7, `js-raw-json-enumerable`, `text/raw-json/0003`):
+  `Object.keys(JSON.rawJSON("1"))` is `["rawJSON"]`, where it was `[]`.
+- **`%TypedArray%.prototype.lastIndexOf` reads `fromIndex` whenever a second argument is passed** (P5,
+  `js-last-index-of-from-index`, `text/last-index-of/0002`), where a third argument made it ignored.
+- **A named group's value is converted with ToString** (S2, `js-named-group-to-string`,
+  `text/named-to-string/0001`): its `Symbol.toPrimitive` is called first, where the CLR's `ToString`
+  called its `toString` directly.
+- **`replace` with a RegExp whose `Symbol.replace` is `undefined` or `null` searches for its text** (S3,
+  `js-absent-replace`, `text/absent-replace/0001` and `0002`): `"a/a/".replace(re, "x")` searches for
+  `"/a/"`, where the pattern was matched as a regular expression by `JSRegExp.Replace`, whose templates
+  never substituted `$<name>`.
+
+**Corrections the corpus does not hold.** `SharedTextAlgorithmTests` holds each, beside control cases
+that pass on both sides of the cut-over.
+
+- **A pad or a repeat past the length policy is a `RangeError`** (P4): `"x".padEnd(2 ** 30 + 1)` and
+  `"x".repeat(2 ** 30 + 1)` let .NET's `OutOfMemoryException` reach the script as a plain `Error`.
+- **`split` with an empty separator honours its limit** (X1): `"abc".split("", 2)` is `["a", "b"]`,
+  where it was `["a", "b", "c"]`.
+- **`indexOf`, `includes`, `startsWith`, `endsWith` and the non-standard `contains` compare code units**
+  (X2), where they used the current culture's comparison, which under ICU reads `"\r\n"` as one unit
+  and ignores ignorable characters: `"a\r\nb".indexOf("\n")` is 2.
+
+**Messages.** A JSON text `JSON.parse` refuses is a `SyntaxError` naming where the reader stopped, such
+as "Unexpected token 'x' in JSON at position 3" or "Unexpected end of JSON input at position 1", where
+the message was System.Text.Json's. A URI function's `URIError` and the codecs' `SyntaxError`s keep
+their messages. `JSON.stringify`'s line terminator, the correspondence's J5, was corrected on
+2026-10-14 (below).
+
 ### `JSON.stringify` breaks lines with LINE FEED on every platform (2026-10-14)
 
 - **An indented `JSON.stringify` ends each line with LINE FEED (U+000A) alone**, as
