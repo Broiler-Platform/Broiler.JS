@@ -39,7 +39,8 @@ Steps, each with `--only`:
                   and restored and run by a pristine consumer, into home/;
   vectors         the engine-level vectors, into engine/;
   test262         the after run's artifact imported into test262/after/, the comparison with the base,
-                  and the script's checks, into test262/;
+                  and the script's checks, into test262/; with --label, an earlier after run that a
+                  later commit superseded, into test262/<label>/ and test262/<label>-comparison/;
   consumer        the engine set packed and restored by a pristine consumer, into engine/;
   simplification  the text area's Broiler.JS deletion list (Broiler.VM
                   docs/javascript-shared-libraries/milestones/sjl-5-text-algorithms.md, SJL-5.5), each entry
@@ -123,6 +124,7 @@ class Collector(numerics.Collector):
         self.run_url = args.run_url
         self.artifact_id = args.artifact_id
         self.run_times = args.run_times
+        self.label = args.label
 
     # -- identity --------------------------------------------------------------------------------
 
@@ -179,7 +181,10 @@ class Collector(numerics.Collector):
         if self.artifact_zip is None or not self.run_url or not self.artifact_id or not self.run_times:
             raise SystemExit("test262 imports the after run: pass --artifact-zip, --run-url, --artifact-id "
                              "and --run-times")
-        after = self.out / "test262" / "after"
+        # The run imported is test262/<label>/; the bundle's comparison of the after run is test262/'s
+        # own, and that of an earlier run, superseded, is test262/<label>-comparison/.
+        after = self.out / "test262" / self.label
+        compared = "test262" if self.label == "after" else f"test262/{self.label}-comparison"
         if after.exists():
             raise SystemExit(f"{after} exists; the import writes it once")
         after.mkdir(parents=True)
@@ -204,7 +209,8 @@ class Collector(numerics.Collector):
         merged = {}
         for side in ("base", "after"):
             merged[side] = self.scratch / f"{side}-test262-results.json"
-            with gzip.open(self.out / "test262" / side / "test262-results.json.gz", "rt", encoding="utf-8") as handle:
+            folder = "base" if side == "base" else self.label
+            with gzip.open(self.out / "test262" / folder / "test262-results.json.gz", "rt", encoding="utf-8") as handle:
                 merged[side].write_text(handle.read(), encoding="utf-8")
         script = self.tree / "scripts" / "compliance" / "compare_test262_paths.py"
         output = self.scratch / "comparison.json"
@@ -212,7 +218,7 @@ class Collector(numerics.Collector):
         command = [sys.executable, str(script), "--base", str(merged["base"]), "--after", str(merged["after"]),
                    "--output", str(output)]
         for side in ("base", "after"):
-            rerun = self.out / "test262" / side / "rerun-timeouts.json"
+            rerun = self.out / "test262" / ("base" if side == "base" else self.label) / "rerun-timeouts.json"
             if rerun.exists():
                 command += [f"--{side}-rerun", str(rerun)]
         classifications = self.out / "test262" / "classifications.json"
@@ -220,9 +226,9 @@ class Collector(numerics.Collector):
             command += ["--classifications", str(classifications)]
         log: list[str] = []
         self.run(command, self.tree, log)
-        self.log_to("test262/comparison.log", log)
+        self.log_to(f"{compared}/comparison.log", log)
         if output.exists():
-            self.write("test262/comparison.json", output.read_text(encoding="utf-8"))
+            self.write(f"{compared}/comparison.json", output.read_text(encoding="utf-8"))
 
         # The script on the after run: against itself (no difference), and against a copy with one
         # passing row turned to failed (one regression, exit 1).
@@ -239,7 +245,7 @@ class Collector(numerics.Collector):
                       "passed to failed in a copy\n")
         self.run([sys.executable, str(script), "--base", str(merged["after"]), "--after", str(copy)], self.tree, checks)
         copy.unlink()
-        self.write("test262/compare-checks.log", "".join(checks))
+        self.write(f"{compared}/compare-checks.log", "".join(checks))
 
     # -- simplification --------------------------------------------------------------------------
 
@@ -293,6 +299,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--run-url", help="the after run's workflow run, with its attempt")
     parser.add_argument("--artifact-id", help="the artifact's id")
     parser.add_argument("--run-times", help="when the after run was dispatched and completed")
+    parser.add_argument("--label", default="after",
+                        help="the folder of test262/ the run is imported into: after, or an earlier run's name")
     parser.add_argument("--out", required=True)
     parser.add_argument("--scratch", default=os.path.join(os.environ.get("TMPDIR", "/tmp"), "sjl-5-001-js"))
     parser.add_argument("--only", nargs="+", choices=STEPS, required=True)
