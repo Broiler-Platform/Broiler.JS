@@ -2549,10 +2549,11 @@ public static class JSIntl
     // extension, given the already-read numberingSystem option value. Per spec: a supported
     // `-u-nu-` value is used and reflected in the locale; a supported option that DIFFERS
     // overrides it and removes the `-u-nu-` from the locale; an unsupported value (in either
-    // place) falls through to "latn" with `-u-nu-` removed.
+    // place) falls through to the locale's default with `-u-nu-` removed. The default is CLDR's
+    // (JSIntlDefaultNumberingSystems): "arab" for ar-EG, "arabext" for fa, "latn" for en or ar.
     internal static (string NumberingSystem, string Locale) ResolveNumberingSystem(string localeTag, string optionValue)
     {
-        var value = "latn";
+        var value = JSIntlDefaultNumberingSystems.Of(localeTag);
         var reflectInLocale = false;
 
         var ext = GetUnicodeExtensionType(localeTag, "nu");
@@ -4356,7 +4357,8 @@ public sealed class JSIntlLocale : JSObject
     public static JSValue GetNumberingSystemsPrototype(in Arguments a)
     {
         var locale = RequireLocale(in a, "getNumberingSystems");
-        return CreateArrayFromListAndPreferred(Preferred(locale.GetUnicodeKeyword("nu")), "latn");
+        return CreateArrayFromListAndPreferred(Preferred(locale.GetUnicodeKeyword("nu")),
+            JSIntlDefaultNumberingSystems.Of(locale.tag));
     }
 
     public static JSValue GetTextInfoPrototype(in Arguments a)
@@ -6950,7 +6952,8 @@ public class JSIntlDateTimeFormat : JSObject
         var pattern = ResolveTemporalPattern(EffectiveTemporalFields(in meta, enforceStyle));
         CheckTemporalCalendar(meta.CalendarId, RequiresExactCalendar(meta.Kind));
         var fields = meta.Fields;
-        return JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, FractionalSecondDigits(), null);
+        // The numbering system's digits, as a Date's parts and FormatTemporalRangeToParts take them.
+        return MapNumbering(JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, FractionalSecondDigits(), null));
     }
 
     // FormatDateTimeRange with two Temporal endpoints: both must be the same Temporal type and share a
@@ -7536,7 +7539,7 @@ public class JSIntlDateTimeFormat : JSObject
     {
         this.locale = locale;
         localeTag = locale.Name;
-        numberingSystem = "latn";
+        numberingSystem = JSIntlDefaultNumberingSystems.Of(localeTag);
     }
 
     private static readonly KeyString IntrinsicKey = KeyStrings.GetOrCreate("Intl.DateTimeFormat");
