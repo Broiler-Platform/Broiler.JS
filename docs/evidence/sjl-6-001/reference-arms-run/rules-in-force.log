@@ -1,0 +1,14 @@
+# SJL-6.3: bundle sjl-6-001's rules are in force, unchanged since they were committed, before the comparison first runs
+# Checked 2026-10-15T18:00Z at c69b70cd4508d51e4a2828a6c929069ad3afb6f2 (claude/busy-lamport-m3yprr), against the rule commit 5fef1165f001c226b28f9bf0ae32c6dbe56abcc8 and 319f0753, the commit before SJL-6.3's code.
+
+$ git log --format="%H %s" -- <each rule file>
+## docs/evidence/sjl-6-001/decision-rule.md
+5fef1165f001c226b28f9bf0ae32c6dbe56abcc8 SJL-6.1: the Date area's verdict here, SJL-D-19, and bundle sjl-6-001's rules
+blob at HEAD: 09595a26b6e6703cc18086d59afd648e17d4a302
+blob at 319f075: 09595a26b6e6703cc18086d59afd648e17d4a302
+blob at 5fef116: 09595a26b6e6703cc18086d59afd648e17d4a302
+## docs/evidence/sjl-6-001/reference-arms.md
+5fef1165f001c226b28f9bf0ae32c6dbe56abcc8 SJL-6.1: the Date area's verdict here, SJL-D-19, and bundle sjl-6-001's rules
+blob at HEAD: c6f9ed2e0a2bef06d3742a63ac0f53ee563e505b
+blob at 319f075: c6f9ed2e0a2bef06d3742a63ac0f53ee563e505b
+blob at 5fef116: c6f9ed2e0a2bef06d3742a63ac0f53ee563e505b

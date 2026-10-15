@@ -69,7 +69,11 @@ contain two pieces of third-party code and one set of public-domain formulas, na
   ([github.com/tc39/proposal-math-sum](https://github.com/tc39/proposal-math-sum)), Shewchuk's exact
   addition as CPython's `math.fsum` uses it; since milestone SJL-4.5 that copy is the only one in this
   repository (see the engine's section below), and the shared library's `PreciseSum` is written from
-  the clause, not from that code. Neither arm copies fdlibm.
+  the clause, not from that code. Neither arm copies fdlibm. The project also holds, under
+  `ReferenceArms/Text/` and `ReferenceArms/Date/`, the reference arms of bundles `docs/evidence/sjl-5-001` and
+  `docs/evidence/sjl-6-001`: test-only copies of both engines' text and Date code before their cut-overs, held
+  and retired the same way; arm J is this engine's code and arm V Broiler.VM's, as above, and the Date arms'
+  civil copies implement Hinnant's formulas, above.
 
 Code that later moves into a shared library records its origin unit by unit, and code whose licence
 is share-alike or unclear is rewritten from the specification rather than moved (the programme's
@@ -96,8 +100,10 @@ SJL-6.3, when the Date area moved in: the section's second sentence read "They c
 third-party code, named below, and no data:"; the first bullet read "holds the contract types, the
 number-conversion area and the numerics area written for the shared libraries programme" and ended
 "Its third-party components are **Ryu** and **fdlibm**, below.", which also overlooked the text area of
-milestone SJL-5.3; the bullet on Hinnant's formulas was added; and the bullet on the code ported from
-Broiler.VM ended at "from `JsBigInt`). Each records its origin in its assurance annotation."
+milestone SJL-5.3; the bullet on Hinnant's formulas was added; the bullet on the code ported from
+Broiler.VM ended at "from `JsBigInt`). Each records its origin in its assurance annotation."; and the bullet
+on `Broiler.ECMAScript.Algorithms.Tests` ended at "Neither arm copies fdlibm.", which overlooked bundle
+`sjl-5-001`'s text arms, and the sentence on them and on bundle `sjl-6-001`'s Date arms was added.
 
 ## Sources the engine's own code cites
 
