@@ -35,7 +35,7 @@ import numref as R  # noqa: E402
 # revision 10 added the text area, which generate_text_vectors.py writes; revision 11 widened the
 # schema's clause ids and changed no vector; revision 12 classified the text area's differences, and
 # revision 13 retired them).
-CORPUS_REVISION = 13
+CORPUS_REVISION = 14
 FIRST_REVISION = 1
 GENERATOR = "ref:numref@1"
 SPEC = "spec:es2026@0248456c"

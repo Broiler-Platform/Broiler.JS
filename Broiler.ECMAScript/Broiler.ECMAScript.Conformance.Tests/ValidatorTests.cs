@@ -92,7 +92,7 @@ public class ValidatorTests
     [InlineData("in", "f64:0x3FF0000000000000  int:1", "bad-value")]
     public void A_changed_field_of_a_real_vector_is_refused(string key, string value, string code)
     {
-        var record = Home.Corpus.Records.First().With(key, value);
+        var record = Home.Corpus.Records.First(r => r["area"] == "numbers").With(key, value);
         var validator = new VectorValidator(Home.Corpus.Sources);
         validator.Validate(new VectorFile("changed.vectors", [record], []));
         Assert.Contains(validator.Diagnostics, d => d.Code == code);
