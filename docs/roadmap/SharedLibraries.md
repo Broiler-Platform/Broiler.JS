@@ -342,6 +342,71 @@ showed this engine's Latin digits for `ar-EG`. This is the dated data decision p
 bundle's rule names: a row whose verdict changes because of it is listed there with this decision, and
 in [`Broiler.JS/CHANGELOG.md`](../../Broiler.JS/CHANGELOG.md).
 
+**Date (SJL-6.1), filed 2026-10-15: all four sub-areas accepted, and decision SJL-D-19 recorded.**
+Broiler.VM's record is
+`Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0072-date-algorithms-move-to-the-shared-algorithms-library.md`
+(JSD-0072), which states each condition for the time arithmetic, the civil-day helpers, the Date string
+grammar and the Date string renderings, each on its own; its input, the correspondence from code with every
+member by file and line and each difference numbered (T, D, G, L, P, R), is
+`Broiler.VM/docs/evidence/sjl-6-001/correspondence.md`. SJL-6 began with SJL-6.0, a Broiler.VM workflow that
+changes no product code, before SJL-3 is met, which the programme's ledger records. This repository's part
+of it:
+
+- **The correspondence was read from code**, at this repository's `bc3597f`, and every cell of this
+  engine's that a row rests on was run through the shell in UTC and in `America/New_York`; SJL-6.2's vectors
+  confirm it. **Four of the area design's differences are already gone**: SJL-4.5 made `TimeClip` fold -0,
+  `MakeTime` and the setters truncate, and the setters convert large arguments without a wrap, and
+  `Broiler.JS/CHANGELOG.md` lists them there; they are not SJL-6's. Everywhere else this engine holds more
+  of the area than the design named: the civil-day arithmetic in nine types (`JSTemporalInstant`,
+  `JSTemporalPlainDate`, `JSTemporalPlainDateTime`, `JSTemporalPlainMonthDay`, `JSTemporalPlainYearMonth`,
+  `JSTemporalZonedDateTime`, `TemporalIsoString`, `TemporalArithmeticCalendar`, `TemporalNonIso`) and in
+  `JSDate.DaysInMonth`; MakeFullYear inline in three places; and Intl's dozen reads of `JSDateMath`. Each
+  joins the deletion list, and SJL-6.5 removes it, with the dead `JSDate.ToDateTime`, `invalidDate` and
+  `IsValid(JSValue, ...)`.
+- **The corrections**, each listed in `CHANGELOG.md` at SJL-6.5 under decision SJL-D-16 (a), with the
+  correspondence's row: a date-only string read as local time in years 0001 to 9999 (P1); a month at or
+  past 2^53 that saturates (T4); a setter that writes the invalid date before converting its later
+  arguments (T3); the ISO week of a date in a negative year (G2); two offsets for one zone, the base one
+  for storage and the components constructor and the DST-aware one for `toString` (L2); no disambiguation of
+  skipped and repeated local times, and the offset before a transition read after it (L3); the offset of
+  the moment of the call for a date outside `DateTimeOffset`'s range (L4); this engine's renderings outside
+  0001 to 9999 that `Date.parse` cannot read back (P9); and the culture's minus sign in `toString`'s
+  `GMT-hhmm` (R3).
+- **Date's storage becomes the time value**, and five defects of the `DateTimeOffset` storage go with it,
+  each listed in the changelog: a valid date outside 0001 to 9999 refused by twelve setters (D1), a date
+  stored raw that those setters cannot change (D2), the instant 0001-01-01T00:00Z read as invalid (D3),
+  `getTimezoneOffset` without a raw path (D4), and a structured clone that loses a raw date (D5). They are
+  this engine's own code, not shared.
+- **Decision SJL-D-19 is recorded here**: the shared library defines the local-time provider and the
+  specification's `LocalTime` and `UTC` over it, and **this engine's provider wraps the host's
+  `TimeZoneInfo`**, read at each instant with its daylight-saving time, which corrects L2 to L4. Its
+  `Temporal` reads its bundled tzdata, so `Date` and `Temporal` read different data until SJL-8 gives the
+  provider the shared IANA data; the milestone's "Either way" is corrected there. The clock and locale
+  providers of the same decision are defined at SJL-9 and SJL-10.
+- **The order of grammars**: `Date.parse` calls the shared strict dialect, then this engine's own fallback
+  (`DateParser`'s `N/N/N` heuristic, its other format lists and its culture parses, which stay under
+  SJL-D-17), then Broiler.VM's dialect for what both refuse, which reads this engine's renderings outside
+  0001 to 9999. `TryParseExtendedIso` and `DateParser`'s lists of the format are deleted. **Whether the
+  fallback keeps what only they accepted beyond the format** - fractions of zero or of four to nine
+  digits, lower-case `t` (P4, P6) - is decided at SJL-6.5 and listed in the changelog.
+- **Charging.** The shared parser keeps Broiler.VM's charging units (JSD-0072, decision 4), which costs
+  nothing here, where no meter is passed.
+- **Decision SJL-D-25.** `DateParser` is public, but its `Parse` is internal, so it keeps its type and has
+  nothing to forward. `JSDate`'s public constructor from a `DateTimeOffset`, its `Value` and `DateTime`, the
+  unused public `epoch`, `JSValue.CreateDate` and `ClrProxy.Marshal`'s date overloads keep their signatures
+  over the time value, as derived views; what each answers outside 0001 to 9999 is decided and recorded in
+  [`docs/public-api.md`](../public-api.md) at SJL-6.5.
+- **Not shared, and staying here:** storage, argument conversion and its order, the culture-dependent
+  fallback and the .NET format string of `toLocale*` (SJL-D-17), and the CLR converters, whose
+  `DateTime.Parse` reads a guest string into a host type and is not `Date.parse`. Outside the area, and left
+  to their milestones as the correspondence names them: `Temporal`'s grammar and limits (SJL-10), the
+  bundled tzdata and the non-ISO calendars (SJL-8), and Intl's `ArgumentOutOfRangeException` for
+  `formatToParts(8.64e15)` (SJL-9).
+- **The rules** are committed with this record, before any code of the area: test262 per path in UTC and
+  in `America/New_York`, the latter the non-UTC host run of clause 4, each taken by `test262 evidence`
+  with its new `time_zone` input (`docs/evidence/sjl-6-001/decision-rule.md`), and the library-level
+  reference arms (`docs/evidence/sjl-6-001/reference-arms.md`).
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
