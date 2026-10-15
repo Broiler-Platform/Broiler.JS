@@ -109,7 +109,8 @@ internal static class Program
         var controls = Array.IndexOf(Environment.GetCommandLineArgs(), "--controls") >= 0;
         var operations = Date.DateArms.Operations(cultureRun: name is not null, controls).Where(o => names is null || names.Contains(o.Name)).ToList();
         new Date.DateComparison(population, operations, limit, names is not null, name, Console.Out)
-            .Run(output, "docs/evidence/sjl-6-001/reference-arms.md", "docs/evidence/sjl-6-001/reference-arms-revised-2026-10-15.md");
+            .Run(output, "docs/evidence/sjl-6-001/reference-arms.md",
+                "docs/evidence/sjl-6-001/reference-arms-revised-2026-10-15.md and reference-arms-revised-2026-10-15-after-first-run.md");
         return 0;
     }
 

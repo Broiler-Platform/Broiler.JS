@@ -86,6 +86,12 @@ public class DateTests
         Assert.Equal(11, EcmaTime.MonthFromTime(-62167219200001));
         Assert.Equal(31, EcmaTime.DateFromTime(-62167219200001));
         Assert.Equal(86399999, EcmaTime.TimeWithinDay(-1));
+
+        // Day is 𝔽 of a mathematical integer: never -0, whether t is -0 or its quotient rounds to -0.
+        Assert.Equal(0UL, BitConverter.DoubleToUInt64Bits(EcmaTime.Day(-0.0)));
+        Assert.Equal(0UL, BitConverter.DoubleToUInt64Bits(EcmaTime.Day(-double.Epsilon)));
+        Assert.Equal(0UL, BitConverter.DoubleToUInt64Bits(EcmaTime.DayWithinYear(-0.0)));
+        Assert.Equal(-1, EcmaTime.Day(-0.5));
         Assert.Equal(23, EcmaTime.HourFromTime(-1));
         Assert.Equal(999, EcmaTime.MsFromTime(-1));
     }
@@ -411,6 +417,11 @@ public class DateTests
         Assert.Equal(EcmaParsedKind.Invalid, EcmaDateParser.Parse("1970 Jan 01", DateParseDialect.BroilerVM).Kind);
         Assert.Equal(EcmaParsedKind.Invalid, EcmaDateParser.Parse("03/04/2021 10:00", DateParseDialect.BroilerVM).Kind);
         Assert.Equal(EcmaParsedKind.Invalid, EcmaDateParser.Parse("1:2:3:4 Jan 1 1970", DateParseDialect.BroilerVM).Kind);
+
+        // A later clock of two parts keeps an earlier clock's seconds, as Broiler.VM's reader does: 11:15:30,
+        // and an invalid date when the kept seconds are out of bounds.
+        Assert.Equal(new EcmaParsedDate(EcmaParsedKind.Local, Utc(1970, 1, 1, 11, 15, 30)), EcmaDateParser.Parse("Jan 1 1970 10:00:30 11:15", DateParseDialect.BroilerVM));
+        Assert.Equal(EcmaParsedKind.Invalid, EcmaDateParser.Parse("50:10 Jan 90:23:60 15:14 1 3", DateParseDialect.BroilerVM).Kind);
         Assert.Equal(EcmaParsedKind.Invalid, EcmaDateParser.Parse("Jan 1 1970 GMT+05:30", DateParseDialect.BroilerVM).Kind);
         Assert.Equal(EcmaParsedKind.Invalid, EcmaDateParser.Parse(string.Empty, DateParseDialect.BroilerVM).Kind);
         Assert.Equal(new EcmaParsedDate(EcmaParsedKind.Utc, Utc(1970, 1, 1)), EcmaDateParser.Parse("Thu, 01 Jan 1970 00:00:00 UTC (anything after)", DateParseDialect.BroilerVM));

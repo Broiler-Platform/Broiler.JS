@@ -16,20 +16,23 @@ For each difference of one variant from S:
 - a charge that differs is class (c) whatever the values: Broiler.VM's units are the specification of the
   charge (JSD-0072, decision 4), and the rule makes a charge of S that differs from arm V's a defect of S;
 - **Broiler.VM's dialect has no arbiter but arm V**: a difference of S's Broiler.VM dialect from arm V is class
-  (c), except on correspondence row P9's strings - those holding a token of a minus sign and digits, which S
-  reads as the year and arm V refuses. On an engine's rendering of a negative year the
-  reference expects the rendered time value without its milliseconds (Date.parse's expectation, 21.4.3.2):
-  S's answering it is class (a), P9. Elsewhere a P9 string is outside the format, so class (b);
+  (c), except where correspondence row P9 makes it. On an engine's rendering of a negative year (one of year 0
+  at most, since a western zone renders year 0's first hours as -0001) the reference expects the rendered time
+  value without its milliseconds (Date.parse's expectation, 21.4.3.2): S's answering it is class (a), P9.
+  Elsewhere a string holding a token of a minus sign and digits is P9's when S's reading of it without those
+  tokens, which the comparison lists and which Broiler.VM's reader skips, is arm V's: such a string is outside
+  the format, so class (b);
 - **a string outside the format** - dateref.parse_format, with the strict reading of a day past its month's
   length, refuses it - is class (b), implementation-defined, when S answers its dialect's reading and the arm
   its engine's own (arm J against S's strict dialect then Broiler.VM's, arm V's format path against S's strict
   dialect), with its kind: the mutation or shape that puts it outside;
-- **local time** is judged by the specification's algorithm over the zone's offsets: through zoneinfo for
-  instants from 1913 on (read 400 years earlier past year 9999), where the host's TimeZoneInfo and zoneinfo
-  read the same offsets from the same tzdata; before 1913 over the offsets S's provider read from
-  TimeZoneInfo, which the comparison lists beside the input, because there the two readers differ (the
-  revision's section 2). A zone's name is the provider's; a toString in a host zone that differs only in the
-  name is judged by whether the name follows the instant's daylight-saving time as zoneinfo reads it;
+- **local time** is judged by the specification's algorithm over the zone's offsets: through zoneinfo where
+  the offsets S's provider read from the host's TimeZoneInfo, which the comparison lists beside the input,
+  are zoneinfo's at every instant concerned (an instant past year 9999 read 400 years earlier as often as
+  needed); over the listed offsets where they are not, because there the two readers of the same tzdata
+  differ (the revision's section 3, as revised after the first run). A zone's name is the provider's; a
+  toString in a host zone that differs only in the name is judged by whether the name follows the instant's
+  daylight-saving time as zoneinfo reads it;
 - class (a), a correction: S's result is the reference's and the arm's is not. It is listed with the engine it
   corrects and, where the area verdict's correspondence names it, its row;
 - otherwise unclassified: S's result is not the reference's (class (c), a defect of S, which is fixed and the
@@ -40,6 +43,20 @@ arm's result, the reference, the class, the reason and the correspondence row; a
 characters is shown by its length. report.md gives per operation, variant, class and reason the count and the
 first --examples differences in full. classification.json gives the counts, the class (b) kinds, and the
 SHA-256 of both listings' uncompressed text.
+
+Revised 2026-10-15, after the first judged run and before the run that judges, for four defects of this
+script that the run showed (reference-arms-revised-2026-10-15-after-first-run.md says what was seen). First, a
+string of class E5 was judged as the population writes it, its spaces and every character outside '!' to '~'
+still escaped, because the listing escapes the population's line once more and this script unescaped it only
+once; a parse's string is now unescaped twice. Second, a rendering read back was taken to be of a negative year
+when its time value's year in UTC was negative; New York's rendering of year 0's first hours shows -0001, so
+it is now a year of at most 0. Third, local time was judged through zoneinfo for every instant from 1913, which
+section 3 of the revision set on a reading of the two zone readers that held no year from 1901 to 1949; St
+John's offsets differ until 1935. Zoneinfo is now used where the listed offsets are its own, and the listed
+offsets elsewhere. Fourth, a string was taken to be P9's when arm V refused it and S did not; a signed year
+can also make a later number the day rather than the year, with both answering, so a string is now P9's when
+S's reading of it without its signed-year tokens, which the comparison now lists, is arm V's. Nothing else
+changed.
 """
 
 from __future__ import annotations
@@ -63,7 +80,6 @@ import dateref as D  # noqa: E402
 
 SHOWN = 256
 DAY = 86_400_000
-ERA_START = D.epoch_days(1913, 1, 1) * DAY
 FOUR_CENTURIES = 146097 * DAY
 VM_NAME = "Coordinated Universal Time"
 TEMPORAL_MIN_DAYS, TEMPORAL_MAX_DAYS = -100_000_001, 100_000_000
@@ -149,23 +165,24 @@ def components(raw: str) -> list[float]:
 # --------------------------------------------------------------------------------------------------
 # Local time: zoneinfo from 1913, the provider's listed offsets before.
 
-def in_era(t: int) -> bool:
-    while t > D.LAST_MS:
-        t -= FOUR_CENTURIES
-    return t >= ERA_START
+def agrees_with_zoneinfo(zone: str, listed_at: dict[int, int]) -> bool:
+    """Whether every offset S's provider read is zoneinfo's at the same instant."""
+    info = ZoneInfo(zone)
+    return all(D.zone_offset_ms(info, instant) == offset for instant, offset in listed_at.items())
 
 
 def local_time_ref(t: int, zone: str, listed: dict[str, str]) -> int:
-    if in_era(t):
+    o = int(float(listed["o"]))
+    if agrees_with_zoneinfo(zone, {t: o}):
         return D.local_time(t, ZoneInfo(zone))
-    return t + int(float(listed["o"]))
+    return t + o
 
 
 def utc_ref(t: int, zone: str, listed: dict[str, str]) -> int:
-    if in_era(t - DAY) and in_era(t + DAY):
-        return D.utc(t, ZoneInfo(zone))
     b, a = int(float(listed["b"])), int(float(listed["a"]))
     known = {t - DAY: b, t + DAY: a, t - b: int(float(listed["pb"])), t - a: int(float(listed["pa"]))}
+    if agrees_with_zoneinfo(zone, known):
+        return D.utc(t, ZoneInfo(zone))
     return D.utc_over(t, lambda instant: known[instant])
 
 
@@ -212,14 +229,6 @@ def format_value(text: str) -> float | None:
     if parsed is None:
         return None
     return D.format_time_value(parsed[1])
-
-
-def signed_year_token(text: str) -> str | None:
-    """A token of a minus sign and digits before any '(' (row P9's shape), as Broiler.VM's textual reader splits."""
-    for token in re.split(r"[ ,\t]+", text.split("(")[0]):
-        if re.fullmatch(r"-\d+", token):
-            return token
-    return None
 
 
 def rendered_value(listed: dict[str, str]) -> float:
@@ -382,7 +391,8 @@ def classify(row: list[str]) -> tuple[str, str, str, str]:
     raw = unescape(listed_input)
     s_value, s_charge = charged(unescape(s_listed))
     arm_value, arm_charge = charged(unescape(arm_listed))
-    text = raw if cls.startswith("E5") else ""
+    # The listing escapes the population's line once more: a string of E5 is the line unescaped again.
+    text = unescape(raw) if cls.startswith("E5") else ""
     if operation.startswith("parse") and cls == "E1T":
         text = ""  # the rendering read back is not listed; its time value is in the detail
 
@@ -392,14 +402,13 @@ def classify(row: list[str]) -> tuple[str, str, str, str]:
         return "unclassified", "a charge of S differs from arm V's (class (c))", "-", "-"
 
     if operation in ("parse, Broiler.VM's dialect", "parse, Broiler.VM's dialect, the renderings"):
-        token = signed_year_token(text) if text else None
         if "tv" in listed:
             ref = num(rendered_value(listed))
             year = D.year_from_time(from_f64(listed["tv"]))
-            if year < 0 and s_value == ref and arm_value != ref:
+            if year <= 0 and s_value == ref and arm_value != ref:
                 return "(a)", "corrects Broiler.VM: its rendering of a negative year read back", ref, "P9"
             return "unclassified", "S's Broiler.VM dialect differs from arm V outside P9 (class (c))", ref, "-"
-        if token is not None and arm_value == "NaN" and s_value != "NaN":
+        if "unsigned" in listed and listed["unsigned"] == arm_value:
             return "(b)", "implementation-defined: a signed year outside the renderings (P9's reading)", "-", "P9"
         return "unclassified", "S's Broiler.VM dialect differs from arm V outside P9 (class (c))", "-", "-"
 

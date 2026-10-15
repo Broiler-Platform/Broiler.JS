@@ -237,7 +237,7 @@ public static class EcmaDateParser
     // "Thu Jan 01 1970" - and the shapes around them, exactly as Broiler.VM's DateParseTextual did,
     // except that a minus sign and digits are a year (correspondence row P9 of bundle sjl-6-001), so that
     // its renderings of negative years read back.
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Medium; Resources=1; Fingerprint=48F2D0
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Medium; Resources=1; Fingerprint=0D2460
     // Broiler-Human:        PENDING
     private static EcmaParsedDate ReadTextual(ReadOnlySpan<char> text)
     {
@@ -265,7 +265,7 @@ public static class EcmaDateParser
 
             if (token.Contains(':'))
             {
-                if (!ReadClock(token, out hour, out minute, out second))
+                if (!ReadClock(token, ref hour, ref minute, ref second))
                     return Invalid;
                 continue;
             }
@@ -391,14 +391,12 @@ public static class EcmaDateParser
     // Broiler-Human:        PENDING
     private static bool IsSeparator(char c) => c is ' ' or ',' or '\t';
 
-    // HH:mm or HH:mm:ss, each part a whole number of any length.
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Medium; Resources=1; Fingerprint=58B5DF
+    // HH:mm or HH:mm:ss, each part a whole number of any length. A clock of two parts keeps the seconds an
+    // earlier clock of three set, as Broiler.VM's reader did: only the parts a clock has are read.
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.3.2; IP=Low; Security=Medium; Resources=1; Fingerprint=92DE4C
     // Broiler-Human:        PENDING
-    private static bool ReadClock(ReadOnlySpan<char> token, out double hour, out double minute, out double second)
+    private static bool ReadClock(ReadOnlySpan<char> token, ref double hour, ref double minute, ref double second)
     {
-        hour = 0;
-        minute = 0;
-        second = 0;
         var first = token.IndexOf(':');
         var rest = token[(first + 1)..];
         var next = rest.IndexOf(':');

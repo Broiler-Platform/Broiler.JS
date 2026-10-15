@@ -598,10 +598,10 @@ def _into_range(t: int, margin: int = 0) -> tuple[int, int]:
 
 def zone_offset_ms(zone, t: int) -> int:
     """truncate(GetNamedTimeZoneOffsetNanoseconds(zone, t × 10^6) / 10^6) (21.4.1.21), read through zoneinfo:
-    past year 9999 at the instant 400 years earlier as often as needed, and before year 1's third day at that
-    day's first instant, whose offset is the zone's earliest (two days in, so that no zone's local date falls
-    before datetime's year 1)."""
-    moved, _ = _into_range(t)
+    within two days of the end of year 9999 or past it at the instant 400 years earlier as often as needed, and
+    before year 1's third day at that day's first instant, whose offset is the zone's earliest (two days from
+    either end, so that no zone's local date falls outside datetime's years 1 to 9999)."""
+    moved, _ = _into_range(t, 2 * 86_400_000)
     moved = max(moved, FIRST_MS + 2 * 86_400_000)
     return _truncated_ms((_EPOCH + timedelta(milliseconds=moved)).astimezone(zone).utcoffset())
 

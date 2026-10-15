@@ -392,9 +392,49 @@ internal static partial class DateArms
 
     private static IEnumerable<DateInput> Strings(DateInput input) => [input with { Detail = "-" }];
 
+    /// <summary>
+    /// A string for Broiler.VM's dialect: when it holds a token of a minus sign and digits (correspondence row
+    /// P9's shape), the listing also carries S's reading of it without those tokens, which Broiler.VM's reader
+    /// skips, so that the classifier can tell a difference P9 makes from any other.
+    /// </summary>
+    private static IEnumerable<DateInput> VmStrings(DateInput input)
+    {
+        var unsigned = WithoutSignedYears(input.Text);
+        return [input with { Detail = unsigned is null ? "-" : "unsigned=" + SVmParse(unsigned, DateParseDialect.BroilerVM).Split('|')[0] }];
+    }
+
+    /// <summary>The string with every token of a minus sign and digits removed, its separators kept; null when it has none.</summary>
+    public static string? WithoutSignedYears(string text)
+    {
+        static bool Separator(char c) => c is ' ' or ',' or '\t';
+        var kept = new System.Text.StringBuilder(text.Length);
+        var removed = false;
+        var at = 0;
+        while (at < text.Length)
+        {
+            if (Separator(text[at]))
+            {
+                kept.Append(text[at++]);
+                continue;
+            }
+
+            var start = at;
+            while (at < text.Length && !Separator(text[at]))
+                at++;
+
+            var token = text.AsSpan(start, at - start);
+            if (token.Length > 1 && token[0] == '-' && token[1..].IndexOfAnyExceptInRange('0', '9') < 0)
+                removed = true;
+            else
+                kept.Append(token);
+        }
+
+        return removed ? kept.ToString() : null;
+    }
+
     private static IEnumerable<DateOperation> ParseOperations()
     {
-        yield return new("parse, Broiler.VM's dialect", ["E5F", "E5V", "E5G"], Strings,
+        yield return new("parse, Broiler.VM's dialect", ["E5F", "E5V", "E5G"], VmStrings,
         [
             new("V", "DateParseText", i => VParse(i.Text), i => SVmParse(i.Text, DateParseDialect.BroilerVM)),
         ]);

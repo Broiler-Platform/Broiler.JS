@@ -84,9 +84,18 @@ public static class EcmaTime
     /// <summary><c>Day</c> (ECMA-262 21.4.1.3): <c>𝔽(floor(ℝ(t / msPerDay)))</c>.</summary>
     /// <param name="t">A finite time value or local time.</param>
     /// <returns>The day number; NaN for a NaN or an infinite <paramref name="t"/>.</returns>
-    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.3; IP=Low; Security=Medium; Resources=1; Fingerprint=633F91
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.3; IP=Low; Security=Medium; Resources=1; Fingerprint=0B7ACE
     // Broiler-Human:        PENDING
-    public static double Day(double t) => Field(t) ? Math.Floor(t / MsPerDay) : double.NaN;
+    public static double Day(double t)
+    {
+        if (!Field(t))
+            return double.NaN;
+
+        // floor(ℝ(t / msPerDay)) is a mathematical value, so -0 (of t = -0, or of a quotient that rounds to -0)
+        // is the integer 0, whose 𝔽 is +0.
+        var day = Math.Floor(t / MsPerDay);
+        return day == 0 ? 0 : day;
+    }
 
     /// <summary><c>TimeWithinDay</c> (ECMA-262 21.4.1.4): <c>𝔽(ℝ(t) modulo ℝ(msPerDay))</c>.</summary>
     /// <param name="t">A finite time value or local time.</param>
