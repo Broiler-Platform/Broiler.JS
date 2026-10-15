@@ -1,0 +1,8 @@
+# imported: the base run was taken by .github/workflows/test262-evidence.yml, not locally
+workflow run: https://github.com/Broiler-Platform/Broiler.JS/actions/runs/38752508689 (attempt 1), dispatched 2026-10-15T14:33:47Z from main at e8b801f02e427743470d5bea0a9090b5db31c8fe, completed 2026-10-15T16:00:59Z
+tested commit: 5fef1165f001c226b28f9bf0ae32c6dbe56abcc8 (the commit that carries the rule), before any code of SJL-6 landed
+configuration: part A's, in the runner's own zone (time_zone empty: TZ unset, UTC)
+artifact: test262-evidence, id 11986264502, 3,188,138 bytes, sha256 28f99a229783c0eded403a805864a438370004a8860b1e1231df4ae6615fd667 (the digest GitHub records, and the digest of the zip as downloaded on 2026-10-15)
+retained: every file of the artifact, unchanged, in this directory; this file is the only one added
+shell: one digest of the shell's binaries across the eight shards and the re-run (shell-hashes.log)
+zone: every shard in the expected zone (host-zone.log)
