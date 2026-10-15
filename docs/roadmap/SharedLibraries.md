@@ -449,6 +449,14 @@ an `impl-defined` vector, with this engine's reading before its cut-over as its 
 runs on it, in UTC and in New York, meet every one. The preview package of the shared stream's next version,
 `0.1.0-preview.4`, follows, before either cut-over.
 
+**Broiler.VM's cut-over (SJL-6.4), 2026-10-15.** The stream's next version is `0.1.0-preview.4` (`e04874d`),
+packed from this repository and admitted to Broiler.VM's committed feed before it is published; publishing
+it is the owner's to choose. Broiler.VM's Date area is the library's, its getters and setters keeping its
+UTC provider's identity, and its corrections T4, G3 and P9 are made; its pin of the corpus moves to revision
+16, where each of its sixteen divergence fields reports that it no longer holds, and its record is its
+JSD-0073. This engine's cut-over, SJL-6.5, follows on the same version; a later corpus revision retires
+Broiler.VM's fields, with this engine's.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
