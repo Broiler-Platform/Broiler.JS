@@ -1,0 +1,39 @@
+== start 2026-10-15T15:04:27Z TZ=America/New_York at ff6cd24ae6e243b25d62937825aaa3f299ffaa17
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:25:20.73]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [25 m 20 s]
+  Error Message:
+   1016 of 50715 vectors differ and nothing classifies them:
+date/make-day/0863: expected value: f64:0xC2CC43FFF1720000, rendered value: f64:0xC2CC43130CEA0000
+date/utc-setter/0007: expected value: f64:0x42ECCEFA43FB8000, rendered value: f64:0x7FF8000000000000
+date/utc-setter/0008: expected value: f64:0xC30C6BF38A374000, rendered value: f64:0x7FF8000000000000
+date/utc-setter/0010: expected value: f64:0xC2CC41D8E8FE0000, rendered value: f64:0x7FF8000000000000
+date/utc-setter/0011: expected value: f64:0x42ECCF0D93D48000, rendered value: f64:0x7FF8000000000000
+date/utc-setter/0012: expected value: f64:0xC30C6BF526340000, rendered value: f64:0x7FF8000000000000
+date/utc-setter/0019: expected value: f64:0xC2CC4189166C0000, rendered value: f64:0x7FF8000000000000
+date/utc-setter/0021: expected value: f64:0xC30C6BF52633FFD8, rendered value: f64:0x7FF8000000000000
+date/local-setter/0001: expected value: str:"10000,0,1,12", rendered value: str:"NaN,NaN,NaN,NaN"
+date/local-setter/0002: expected value: str:"0,11,1,12", rendered value: str:"NaN,NaN,NaN,NaN"
+date/local-setter/0004: expected value: str:"275760,1,15,12", rendered value: str:"275759,5,15,12"
+date/local-setter/0009: expected value: str:"-271821,11,30,12", rendered value: str:"-271820,0,1,12"
+date/setter-order/0004: expected value: f64:0x0000000000000000, rendered value: f64:0x7FF8000000000000
+date/setter-order/0005: expected value: f64:0x0000000000000000, rendered value: f64:0x7FF8000000000000
+date/setter-order/0007: expected value: f64:0x0000000000000000, rendered value: f64:0x7FF8000000000000
+date/setter-order/0008: expected value: f64:0x0000000000000000, rendered value: f64:0x7FF8000000000000
+date/setter-order/0010: expected value: f64:0x0000000000000000, rendered value: f64:0x7FF8000000000000
+date/setter-order/0011: expected value: f64:0x0000000000000000, rendered value: f64:0x7FF8000000000000
+date/setter-order/0016: expected value: f64:0x0000000000000000, rendered value: f64:0x7FF8000000000000
+date/setter-order/0017: expected value: f64:0x0000000000000000, rendered value: f64:0x7FF8000000000000
+date/setter-order/0019: expected value: f64:0x0000000000000000, rendered value: f64:0x7FF8000000000000
+date/setter-order/0020: expected value: f64:0x0000000000000000, rendered value: f64:0x7FF8000000000000
+date/setter-order/0022: expected value: f64:0x0000000000000000, rendered value: f64:0x7FF8000000000000
+date/setter-order/0023: expected value: f64:0x0000000000000000, rendered value: f64:0x7FF8000000000000
+date/setter-order/0025: expected value: f64:0x0000000000000000, rendered value: f64:0x7FF8000000000000
+  Stack Trace:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 31
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 25 m 20 s - Broiler.JavaScript.Vectors.Tests.dll (net10.0)
+== end 2026-10-15T15:29:49Z

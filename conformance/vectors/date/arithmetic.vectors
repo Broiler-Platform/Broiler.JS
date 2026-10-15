@@ -11547,7 +11547,9 @@ area: date
 op: MakeDay
 in: f64:0xC3A7213080C1A6AB f64:0x43E158E460913D00 f64:0x3FF0000000000000
 out: value: f64:0xC2CC43FFF1720000
-class: normative
+class: divergence
+divergence.broiler-js: MakeDay converts its month to a 64-bit integer, which saturates, so a month of 1e19 is read as 2^63 - 1 and the date falls in August, where R(m) modulo 12, taken exactly, gives May. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T4).
+divergence.broiler-vm: MakeDay takes its month modulo 12 in floating point (DateFloorMod), where 1e19 - 12 x floor(1e19 / 12) rounds to 0, so a month of 1e19 is read as January, where R(m) modulo 12, taken exactly, gives May. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-6-date.md, SJL-6.4 (JSD-0072; the correspondence's row T4).
 prov: spec:es2026@0248456c#sec-makeday spec:es2026@0248456c#sec-makedate spec:es2026@0248456c#sec-timeclip spec:es2026@0248456c#sec-date.prototype.setutcfullyear ref:dateref@1
 script: new Date(0).setUTCFullYear($f64(0xC3A72130, 0x80C1A6AB), $f64(0x43E158E4, 0x60913D00), 1)
 note: the month is past 2^53: its modulo 12 and floor of its twelfth are exact (correspondence row T4)
@@ -12049,7 +12051,8 @@ area: date
 op: Date.prototype.setUTCDate
 in: f64:0x42ECCEF99F300000 f64:0x4040000000000000
 out: value: f64:0x42ECCEFA43FB8000
-class: normative
+class: divergence
+divergence.broiler-js: A setter whose result is a valid date outside the years 0001 to 9999 answers NaN and makes the date invalid, because the DateTimeOffset arithmetic it computes with throws, where it answers that date and stores it. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row D1).
 prov: spec:es2026@0248456c#sec-date.prototype.setutcdate spec:es2026@0248456c#sec-makeday spec:es2026@0248456c#sec-maketime spec:es2026@0248456c#sec-timeclip ref:dateref@1
 script: new Date(253402214400000).setUTCDate(32)
 since: 14
@@ -12059,7 +12062,8 @@ area: date
 op: Date.prototype.setUTCDate
 in: f64:0xC30C6BF526340000 f64:0x402E000000000000
 out: value: f64:0xC30C6BF38A374000
-class: normative
+class: divergence
+divergence.broiler-js: A setter on a date this engine stores as a raw time value, outside the years 0001 to 9999, answers NaN and leaves the date unchanged, where it answers the new date and stores it. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row D2).
 prov: spec:es2026@0248456c#sec-date.prototype.setutcdate spec:es2026@0248456c#sec-makeday spec:es2026@0248456c#sec-maketime spec:es2026@0248456c#sec-timeclip ref:dateref@1
 script: new Date(-1000000000000000).setUTCDate(15)
 since: 14
@@ -12079,7 +12083,8 @@ area: date
 op: Date.prototype.setUTCMonth
 in: f64:0xC2CC4189166C0000 f64:0xBFF0000000000000
 out: value: f64:0xC2CC41D8E8FE0000
-class: normative
+class: divergence
+divergence.broiler-js: A setter whose result is a valid date outside the years 0001 to 9999 answers NaN and makes the date invalid, because the DateTimeOffset arithmetic it computes with throws, where it answers that date and stores it. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row D1).
 prov: spec:es2026@0248456c#sec-date.prototype.setutcmonth spec:es2026@0248456c#sec-makeday spec:es2026@0248456c#sec-maketime spec:es2026@0248456c#sec-timeclip ref:dateref@1
 script: new Date(-62135596800000).setUTCMonth(-1)
 since: 14
@@ -12089,7 +12094,8 @@ area: date
 op: Date.prototype.setUTCMonth
 in: f64:0x42ECCEF99F300000 f64:0x4028000000000000
 out: value: f64:0x42ECCF0D93D48000
-class: normative
+class: divergence
+divergence.broiler-js: A setter whose result is a valid date outside the years 0001 to 9999 answers NaN and makes the date invalid, because the DateTimeOffset arithmetic it computes with throws, where it answers that date and stores it. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row D1).
 prov: spec:es2026@0248456c#sec-date.prototype.setutcmonth spec:es2026@0248456c#sec-makeday spec:es2026@0248456c#sec-maketime spec:es2026@0248456c#sec-timeclip ref:dateref@1
 script: new Date(253402214400000).setUTCMonth(12)
 since: 14
@@ -12099,7 +12105,8 @@ area: date
 op: Date.prototype.setUTCMonth
 in: f64:0xC30C6BF526340000 f64:0x4008000000000000
 out: value: f64:0xC30C6BF526340000
-class: normative
+class: divergence
+divergence.broiler-js: A setter on a date this engine stores as a raw time value, outside the years 0001 to 9999, answers NaN and leaves the date unchanged, where it answers the new date and stores it. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row D2).
 prov: spec:es2026@0248456c#sec-date.prototype.setutcmonth spec:es2026@0248456c#sec-makeday spec:es2026@0248456c#sec-maketime spec:es2026@0248456c#sec-timeclip ref:dateref@1
 script: new Date(-1000000000000000).setUTCMonth(3)
 since: 14
@@ -12169,7 +12176,8 @@ area: date
 op: Date.prototype.setUTCMilliseconds
 in: f64:0xC2CC4189166BFF80 f64:0x0000000000000000
 out: value: f64:0xC2CC4189166C0000
-class: normative
+class: divergence
+divergence.broiler-js: The instant 0001-01-01T00:00:00.000Z is this engine's invalid-date sentinel, so a date at that instant, whether a setter or the constructor makes it, is invalid: the setter answers NaN, and toUTCString answers Invalid Date, which Date.parse reads as NaN, where the time value is -62135596800000. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row D3).
 prov: spec:es2026@0248456c#sec-date.prototype.setutcmilliseconds spec:es2026@0248456c#sec-makeday spec:es2026@0248456c#sec-maketime spec:es2026@0248456c#sec-timeclip ref:dateref@1
 script: new Date(-62135596799999).setUTCMilliseconds(0)
 since: 14
@@ -12189,7 +12197,8 @@ area: date
 op: Date.prototype.setUTCMilliseconds
 in: f64:0xC30C6BF526340000 f64:0x4014000000000000
 out: value: f64:0xC30C6BF52633FFD8
-class: normative
+class: divergence
+divergence.broiler-js: A setter on a date this engine stores as a raw time value, outside the years 0001 to 9999, answers NaN and leaves the date unchanged, where it answers the new date and stores it. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row D2).
 prov: spec:es2026@0248456c#sec-date.prototype.setutcmilliseconds spec:es2026@0248456c#sec-makeday spec:es2026@0248456c#sec-maketime spec:es2026@0248456c#sec-timeclip ref:dateref@1
 script: new Date(-1000000000000000).setUTCMilliseconds(5)
 since: 14
@@ -12199,7 +12208,8 @@ area: date
 op: local setters, read back
 in: str:"d.setFullYear(9999, 11, 31); d.setDate(32)"
 out: value: str:"10000,0,1,12"
-class: normative
+class: divergence
+divergence.broiler-js: A setter whose result is a valid date outside the years 0001 to 9999 answers NaN and makes the date invalid, because the DateTimeOffset arithmetic it computes with throws, where it answers that date and stores it. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row D1).
 prov: spec:es2026@0248456c#sec-date.prototype.setfullyear spec:es2026@0248456c#sec-date.prototype.setmonth spec:es2026@0248456c#sec-date.prototype.setdate spec:es2026@0248456c#sec-date.prototype.sethours spec:es2026@0248456c#sec-makeday spec:es2026@0248456c#sec-utc-t spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date(2000, 0, 1, 12); d.setFullYear(9999, 11, 31); d.setDate(32); [d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()].join()
 note: a local date put in and read back, so the outcome holds in every time zone
@@ -12210,7 +12220,8 @@ area: date
 op: local setters, read back
 in: str:"d.setFullYear(1, 0, 1); d.setMonth(-1)"
 out: value: str:"0,11,1,12"
-class: normative
+class: divergence
+divergence.broiler-js: A setter whose result is a valid date outside the years 0001 to 9999 answers NaN and makes the date invalid, because the DateTimeOffset arithmetic it computes with throws, where it answers that date and stores it. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row D1).
 prov: spec:es2026@0248456c#sec-date.prototype.setfullyear spec:es2026@0248456c#sec-date.prototype.setmonth spec:es2026@0248456c#sec-date.prototype.setdate spec:es2026@0248456c#sec-date.prototype.sethours spec:es2026@0248456c#sec-makeday spec:es2026@0248456c#sec-utc-t spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date(2000, 0, 1, 12); d.setFullYear(1, 0, 1); d.setMonth(-1); [d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()].join()
 note: a local date put in and read back, so the outcome holds in every time zone
@@ -12232,7 +12243,8 @@ area: date
 op: local setters, read back
 in: str:"d.setFullYear(275759, 5, 15); d.setMonth(13)"
 out: value: str:"275760,1,15,12"
-class: normative
+class: divergence
+divergence.broiler-js: A setter on a date this engine stores as a raw time value, outside the years 0001 to 9999, answers NaN and leaves the date unchanged, where it answers the new date and stores it. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row D2).
 prov: spec:es2026@0248456c#sec-date.prototype.setfullyear spec:es2026@0248456c#sec-date.prototype.setmonth spec:es2026@0248456c#sec-date.prototype.setdate spec:es2026@0248456c#sec-date.prototype.sethours spec:es2026@0248456c#sec-makeday spec:es2026@0248456c#sec-utc-t spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date(2000, 0, 1, 12); d.setFullYear(275759, 5, 15); d.setMonth(13); [d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()].join()
 note: a local date put in and read back, so the outcome holds in every time zone
@@ -12287,7 +12299,8 @@ area: date
 op: local setters, read back
 in: str:"d.setFullYear(-271820, 0, 1); d.setDate(-1)"
 out: value: str:"-271821,11,30,12"
-class: normative
+class: divergence
+divergence.broiler-js: A setter on a date this engine stores as a raw time value, outside the years 0001 to 9999, answers NaN and leaves the date unchanged, where it answers the new date and stores it. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row D2).
 prov: spec:es2026@0248456c#sec-date.prototype.setfullyear spec:es2026@0248456c#sec-date.prototype.setmonth spec:es2026@0248456c#sec-date.prototype.setdate spec:es2026@0248456c#sec-date.prototype.sethours spec:es2026@0248456c#sec-makeday spec:es2026@0248456c#sec-utc-t spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date(2000, 0, 1, 12); d.setFullYear(-271820, 0, 1); d.setDate(-1); [d.getFullYear(), d.getMonth(), d.getDate(), d.getHours()].join()
 note: a local date put in and read back, so the outcome holds in every time zone
@@ -12342,7 +12355,8 @@ area: date
 op: Date.prototype.setUTCMinutes, order
 in: str:"undefined"
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: setUTCMinutes, setUTCSeconds, setUTCMonth, setHours, setMinutes, setSeconds and setMonth make the date invalid as soon as their first argument is undefined or NaN, before the later arguments are converted, so a later argument's valueOf reads getTime() as NaN, where the date is written only after every argument is converted. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T3).
 prov: spec:es2026@0248456c#sec-date.prototype.setutcminutes ref:dateref@1
 script: var d = new Date(0); var seen = null; d.setUTCMinutes(undefined, { valueOf: function () { seen = d.getTime(); return 0; } }); seen
 note: a later argument's conversion reads the date: it is unchanged until the setter writes it
@@ -12353,7 +12367,8 @@ area: date
 op: Date.prototype.setUTCMinutes, order
 in: str:"NaN"
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: setUTCMinutes, setUTCSeconds, setUTCMonth, setHours, setMinutes, setSeconds and setMonth make the date invalid as soon as their first argument is undefined or NaN, before the later arguments are converted, so a later argument's valueOf reads getTime() as NaN, where the date is written only after every argument is converted. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T3).
 prov: spec:es2026@0248456c#sec-date.prototype.setutcminutes ref:dateref@1
 script: var d = new Date(0); var seen = null; d.setUTCMinutes(NaN, { valueOf: function () { seen = d.getTime(); return 0; } }); seen
 note: a later argument's conversion reads the date: it is unchanged until the setter writes it
@@ -12375,7 +12390,8 @@ area: date
 op: Date.prototype.setUTCSeconds, order
 in: str:"undefined"
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: setUTCMinutes, setUTCSeconds, setUTCMonth, setHours, setMinutes, setSeconds and setMonth make the date invalid as soon as their first argument is undefined or NaN, before the later arguments are converted, so a later argument's valueOf reads getTime() as NaN, where the date is written only after every argument is converted. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T3).
 prov: spec:es2026@0248456c#sec-date.prototype.setutcseconds ref:dateref@1
 script: var d = new Date(0); var seen = null; d.setUTCSeconds(undefined, { valueOf: function () { seen = d.getTime(); return 0; } }); seen
 note: a later argument's conversion reads the date: it is unchanged until the setter writes it
@@ -12386,7 +12402,8 @@ area: date
 op: Date.prototype.setUTCSeconds, order
 in: str:"NaN"
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: setUTCMinutes, setUTCSeconds, setUTCMonth, setHours, setMinutes, setSeconds and setMonth make the date invalid as soon as their first argument is undefined or NaN, before the later arguments are converted, so a later argument's valueOf reads getTime() as NaN, where the date is written only after every argument is converted. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T3).
 prov: spec:es2026@0248456c#sec-date.prototype.setutcseconds ref:dateref@1
 script: var d = new Date(0); var seen = null; d.setUTCSeconds(NaN, { valueOf: function () { seen = d.getTime(); return 0; } }); seen
 note: a later argument's conversion reads the date: it is unchanged until the setter writes it
@@ -12408,7 +12425,8 @@ area: date
 op: Date.prototype.setUTCMonth, order
 in: str:"undefined"
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: setUTCMinutes, setUTCSeconds, setUTCMonth, setHours, setMinutes, setSeconds and setMonth make the date invalid as soon as their first argument is undefined or NaN, before the later arguments are converted, so a later argument's valueOf reads getTime() as NaN, where the date is written only after every argument is converted. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T3).
 prov: spec:es2026@0248456c#sec-date.prototype.setutcmonth ref:dateref@1
 script: var d = new Date(0); var seen = null; d.setUTCMonth(undefined, { valueOf: function () { seen = d.getTime(); return 0; } }); seen
 note: a later argument's conversion reads the date: it is unchanged until the setter writes it
@@ -12419,7 +12437,8 @@ area: date
 op: Date.prototype.setUTCMonth, order
 in: str:"NaN"
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: setUTCMinutes, setUTCSeconds, setUTCMonth, setHours, setMinutes, setSeconds and setMonth make the date invalid as soon as their first argument is undefined or NaN, before the later arguments are converted, so a later argument's valueOf reads getTime() as NaN, where the date is written only after every argument is converted. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T3).
 prov: spec:es2026@0248456c#sec-date.prototype.setutcmonth ref:dateref@1
 script: var d = new Date(0); var seen = null; d.setUTCMonth(NaN, { valueOf: function () { seen = d.getTime(); return 0; } }); seen
 note: a later argument's conversion reads the date: it is unchanged until the setter writes it
@@ -12474,7 +12493,8 @@ area: date
 op: Date.prototype.setHours, order
 in: str:"undefined"
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: setUTCMinutes, setUTCSeconds, setUTCMonth, setHours, setMinutes, setSeconds and setMonth make the date invalid as soon as their first argument is undefined or NaN, before the later arguments are converted, so a later argument's valueOf reads getTime() as NaN, where the date is written only after every argument is converted. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T3).
 prov: spec:es2026@0248456c#sec-date.prototype.sethours ref:dateref@1
 script: var d = new Date(0); var seen = null; d.setHours(undefined, { valueOf: function () { seen = d.getTime(); return 0; } }); seen
 note: a later argument's conversion reads the date: it is unchanged until the setter writes it
@@ -12485,7 +12505,8 @@ area: date
 op: Date.prototype.setHours, order
 in: str:"NaN"
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: setUTCMinutes, setUTCSeconds, setUTCMonth, setHours, setMinutes, setSeconds and setMonth make the date invalid as soon as their first argument is undefined or NaN, before the later arguments are converted, so a later argument's valueOf reads getTime() as NaN, where the date is written only after every argument is converted. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T3).
 prov: spec:es2026@0248456c#sec-date.prototype.sethours ref:dateref@1
 script: var d = new Date(0); var seen = null; d.setHours(NaN, { valueOf: function () { seen = d.getTime(); return 0; } }); seen
 note: a later argument's conversion reads the date: it is unchanged until the setter writes it
@@ -12507,7 +12528,8 @@ area: date
 op: Date.prototype.setMinutes, order
 in: str:"undefined"
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: setUTCMinutes, setUTCSeconds, setUTCMonth, setHours, setMinutes, setSeconds and setMonth make the date invalid as soon as their first argument is undefined or NaN, before the later arguments are converted, so a later argument's valueOf reads getTime() as NaN, where the date is written only after every argument is converted. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T3).
 prov: spec:es2026@0248456c#sec-date.prototype.setminutes ref:dateref@1
 script: var d = new Date(0); var seen = null; d.setMinutes(undefined, { valueOf: function () { seen = d.getTime(); return 0; } }); seen
 note: a later argument's conversion reads the date: it is unchanged until the setter writes it
@@ -12518,7 +12540,8 @@ area: date
 op: Date.prototype.setMinutes, order
 in: str:"NaN"
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: setUTCMinutes, setUTCSeconds, setUTCMonth, setHours, setMinutes, setSeconds and setMonth make the date invalid as soon as their first argument is undefined or NaN, before the later arguments are converted, so a later argument's valueOf reads getTime() as NaN, where the date is written only after every argument is converted. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T3).
 prov: spec:es2026@0248456c#sec-date.prototype.setminutes ref:dateref@1
 script: var d = new Date(0); var seen = null; d.setMinutes(NaN, { valueOf: function () { seen = d.getTime(); return 0; } }); seen
 note: a later argument's conversion reads the date: it is unchanged until the setter writes it
@@ -12540,7 +12563,8 @@ area: date
 op: Date.prototype.setSeconds, order
 in: str:"undefined"
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: setUTCMinutes, setUTCSeconds, setUTCMonth, setHours, setMinutes, setSeconds and setMonth make the date invalid as soon as their first argument is undefined or NaN, before the later arguments are converted, so a later argument's valueOf reads getTime() as NaN, where the date is written only after every argument is converted. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T3).
 prov: spec:es2026@0248456c#sec-date.prototype.setseconds ref:dateref@1
 script: var d = new Date(0); var seen = null; d.setSeconds(undefined, { valueOf: function () { seen = d.getTime(); return 0; } }); seen
 note: a later argument's conversion reads the date: it is unchanged until the setter writes it
@@ -12551,7 +12575,8 @@ area: date
 op: Date.prototype.setSeconds, order
 in: str:"NaN"
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: setUTCMinutes, setUTCSeconds, setUTCMonth, setHours, setMinutes, setSeconds and setMonth make the date invalid as soon as their first argument is undefined or NaN, before the later arguments are converted, so a later argument's valueOf reads getTime() as NaN, where the date is written only after every argument is converted. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T3).
 prov: spec:es2026@0248456c#sec-date.prototype.setseconds ref:dateref@1
 script: var d = new Date(0); var seen = null; d.setSeconds(NaN, { valueOf: function () { seen = d.getTime(); return 0; } }); seen
 note: a later argument's conversion reads the date: it is unchanged until the setter writes it
@@ -12573,7 +12598,8 @@ area: date
 op: Date.prototype.setMonth, order
 in: str:"undefined"
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: setUTCMinutes, setUTCSeconds, setUTCMonth, setHours, setMinutes, setSeconds and setMonth make the date invalid as soon as their first argument is undefined or NaN, before the later arguments are converted, so a later argument's valueOf reads getTime() as NaN, where the date is written only after every argument is converted. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T3).
 prov: spec:es2026@0248456c#sec-date.prototype.setmonth ref:dateref@1
 script: var d = new Date(0); var seen = null; d.setMonth(undefined, { valueOf: function () { seen = d.getTime(); return 0; } }); seen
 note: a later argument's conversion reads the date: it is unchanged until the setter writes it
@@ -12584,7 +12610,8 @@ area: date
 op: Date.prototype.setMonth, order
 in: str:"NaN"
 out: value: f64:0x0000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: setUTCMinutes, setUTCSeconds, setUTCMonth, setHours, setMinutes, setSeconds and setMonth make the date invalid as soon as their first argument is undefined or NaN, before the later arguments are converted, so a later argument's valueOf reads getTime() as NaN, where the date is written only after every argument is converted. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row T3).
 prov: spec:es2026@0248456c#sec-date.prototype.setmonth ref:dateref@1
 script: var d = new Date(0); var seen = null; d.setMonth(NaN, { valueOf: function () { seen = d.getTime(); return 0; } }); seen
 note: a later argument's conversion reads the date: it is unchanged until the setter writes it

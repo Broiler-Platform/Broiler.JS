@@ -35,7 +35,7 @@ from generate_number_vectors import f64, js_string_literal, splitmix64, string_v
 # widened the schema's clause ids, which four of this area's citations need, and changed no vector;
 # revision 12 classified both engines' first runs on the area (text-divergences.txt), and revision 13
 # retired every field the two engines' cut-overs corrected.
-CORPUS_REVISION = 14
+CORPUS_REVISION = 15
 FIRST_REVISION = 10
 GENERATOR = "ref:textref@1"
 SPEC = "spec:es2026@0248456c"

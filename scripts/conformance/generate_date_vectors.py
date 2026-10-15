@@ -37,7 +37,7 @@ import dateref as D  # noqa: E402
 from generate_number_vectors import js_string_literal, splitmix64, string_value  # noqa: E402
 
 # The corpus revision this generator writes, and the revision its vectors were added in.
-CORPUS_REVISION = 14
+CORPUS_REVISION = 15
 FIRST_REVISION = 14
 GENERATOR = "ref:dateref@1"
 SPEC = "spec:es2026@0248456c"

@@ -315,7 +315,8 @@ area: date
 op: Temporal.PlainDate.prototype.weekOfYear
 in: int:-401 int:1 int:1
 out: value: f64:0x404A800000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-401, 1, 1).weekOfYear
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -337,7 +338,8 @@ area: date
 op: Temporal.PlainDate.prototype.weekOfYear
 in: int:-401 int:1 int:2
 out: value: f64:0x404A800000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-401, 1, 2).weekOfYear
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -359,7 +361,8 @@ area: date
 op: Temporal.PlainDate.prototype.weekOfYear
 in: int:-401 int:1 int:3
 out: value: f64:0x404A800000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-401, 1, 3).weekOfYear
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -843,7 +846,8 @@ area: date
 op: Temporal.PlainDate.prototype.weekOfYear
 in: int:-8 int:12 int:28
 out: value: f64:0x404A800000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-8, 12, 28).weekOfYear
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -854,7 +858,8 @@ area: date
 op: Temporal.PlainDate.prototype.yearOfWeek
 in: int:-8 int:12 int:28
 out: value: f64:0xC020000000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-8, 12, 28).yearOfWeek
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -865,7 +870,8 @@ area: date
 op: Temporal.PlainDate.prototype.weekOfYear
 in: int:-8 int:12 int:29
 out: value: f64:0x404A800000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-8, 12, 29).weekOfYear
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -876,7 +882,8 @@ area: date
 op: Temporal.PlainDate.prototype.yearOfWeek
 in: int:-8 int:12 int:29
 out: value: f64:0xC020000000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-8, 12, 29).yearOfWeek
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -887,7 +894,8 @@ area: date
 op: Temporal.PlainDate.prototype.weekOfYear
 in: int:-8 int:12 int:30
 out: value: f64:0x404A800000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-8, 12, 30).weekOfYear
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -898,7 +906,8 @@ area: date
 op: Temporal.PlainDate.prototype.yearOfWeek
 in: int:-8 int:12 int:30
 out: value: f64:0xC020000000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-8, 12, 30).yearOfWeek
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -909,7 +918,8 @@ area: date
 op: Temporal.PlainDate.prototype.weekOfYear
 in: int:-8 int:12 int:31
 out: value: f64:0x404A800000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-8, 12, 31).weekOfYear
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -920,7 +930,8 @@ area: date
 op: Temporal.PlainDate.prototype.yearOfWeek
 in: int:-8 int:12 int:31
 out: value: f64:0xC020000000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-8, 12, 31).yearOfWeek
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -1767,7 +1778,8 @@ area: date
 op: Temporal.PlainDate.prototype.weekOfYear
 in: int:-2 int:12 int:28
 out: value: f64:0x404A800000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-2, 12, 28).weekOfYear
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -1778,7 +1790,8 @@ area: date
 op: Temporal.PlainDate.prototype.yearOfWeek
 in: int:-2 int:12 int:28
 out: value: f64:0xC000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-2, 12, 28).yearOfWeek
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -1789,7 +1802,8 @@ area: date
 op: Temporal.PlainDate.prototype.weekOfYear
 in: int:-2 int:12 int:29
 out: value: f64:0x404A800000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-2, 12, 29).weekOfYear
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -1800,7 +1814,8 @@ area: date
 op: Temporal.PlainDate.prototype.yearOfWeek
 in: int:-2 int:12 int:29
 out: value: f64:0xC000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-2, 12, 29).yearOfWeek
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -1811,7 +1826,8 @@ area: date
 op: Temporal.PlainDate.prototype.weekOfYear
 in: int:-2 int:12 int:30
 out: value: f64:0x404A800000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-2, 12, 30).weekOfYear
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -1822,7 +1838,8 @@ area: date
 op: Temporal.PlainDate.prototype.yearOfWeek
 in: int:-2 int:12 int:30
 out: value: f64:0xC000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-2, 12, 30).yearOfWeek
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -1833,7 +1850,8 @@ area: date
 op: Temporal.PlainDate.prototype.weekOfYear
 in: int:-2 int:12 int:31
 out: value: f64:0x404A800000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-2, 12, 31).weekOfYear
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -1844,7 +1862,8 @@ area: date
 op: Temporal.PlainDate.prototype.yearOfWeek
 in: int:-2 int:12 int:31
 out: value: f64:0xC000000000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-2, 12, 31).yearOfWeek
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -2163,7 +2182,8 @@ area: date
 op: Temporal.PlainDate.prototype.weekOfYear
 in: int:-1 int:1 int:1
 out: value: f64:0x404A800000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-1, 1, 1).weekOfYear
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -2185,7 +2205,8 @@ area: date
 op: Temporal.PlainDate.prototype.weekOfYear
 in: int:-1 int:1 int:2
 out: value: f64:0x404A800000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-1, 1, 2).weekOfYear
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -2207,7 +2228,8 @@ area: date
 op: Temporal.PlainDate.prototype.weekOfYear
 in: int:-1 int:1 int:3
 out: value: f64:0x404A800000000000
-class: normative
+class: divergence
+divergence.broiler-js: Temporal.PlainDate's weekOfYear and yearOfWeek count the weeks of a negative ISO year with a division that truncates toward zero, so -0001-01-01 falls in week 52 rather than 53 of -2 and -0002-12-28 in week 1 of -1 rather than 53 of -2, where ISOWeekOfYear's weekday arithmetic is floored. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row G2).
 prov: ref:dateref@1
 script: new Temporal.PlainDate(-1, 1, 3).weekOfYear
 note: ISOWeekOfYear of the Temporal proposal, which the pinned edition does not hold (correspondence row G2)
@@ -14433,7 +14455,8 @@ area: date
 op: Temporal.PlainMonthDay.from, a year's leap day
 in: int:1000000100 int:2 int:29 str:"reject"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-vm: Temporal.PlainMonthDay.from reduces a year past 1e9 in magnitude to 1972 + year modulo 400 before it regulates the date, so February 29 is accepted, constrained or refused by the leap-ness of a different year, where it is regulated in the year given. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-6-date.md, SJL-6.4 (JSD-0072; the correspondence's row G3).
 prov: ref:dateref@1
 script: Temporal.PlainMonthDay.from({ year: 1000000100, month: 2, day: 29 }, { overflow: "reject" }).toString()
 note: the date is regulated in the year given, whose leap-ness decides it (correspondence row G3)
@@ -14444,7 +14467,8 @@ area: date
 op: Temporal.PlainMonthDay.from, a year's leap day
 in: int:1000000100 int:2 int:29 str:"constrain"
 out: value: str:"02-28"
-class: normative
+class: divergence
+divergence.broiler-vm: Temporal.PlainMonthDay.from reduces a year past 1e9 in magnitude to 1972 + year modulo 400 before it regulates the date, so February 29 is accepted, constrained or refused by the leap-ness of a different year, where it is regulated in the year given. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-6-date.md, SJL-6.4 (JSD-0072; the correspondence's row G3).
 prov: ref:dateref@1
 script: Temporal.PlainMonthDay.from({ year: 1000000100, month: 2, day: 29 }, { overflow: "constrain" }).toString()
 note: the date is regulated in the year given, whose leap-ness decides it (correspondence row G3)
@@ -14477,7 +14501,8 @@ area: date
 op: Temporal.PlainMonthDay.from, a year's leap day
 in: int:1000000128 int:2 int:29 str:"reject"
 out: value: str:"02-29"
-class: normative
+class: divergence
+divergence.broiler-vm: Temporal.PlainMonthDay.from reduces a year past 1e9 in magnitude to 1972 + year modulo 400 before it regulates the date, so February 29 is accepted, constrained or refused by the leap-ness of a different year, where it is regulated in the year given. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-6-date.md, SJL-6.4 (JSD-0072; the correspondence's row G3).
 prov: ref:dateref@1
 script: Temporal.PlainMonthDay.from({ year: 1000000128, month: 2, day: 29 }, { overflow: "reject" }).toString()
 note: the date is regulated in the year given, whose leap-ness decides it (correspondence row G3)
@@ -14488,7 +14513,8 @@ area: date
 op: Temporal.PlainMonthDay.from, a year's leap day
 in: int:1000000128 int:2 int:29 str:"constrain"
 out: value: str:"02-29"
-class: normative
+class: divergence
+divergence.broiler-vm: Temporal.PlainMonthDay.from reduces a year past 1e9 in magnitude to 1972 + year modulo 400 before it regulates the date, so February 29 is accepted, constrained or refused by the leap-ness of a different year, where it is regulated in the year given. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-6-date.md, SJL-6.4 (JSD-0072; the correspondence's row G3).
 prov: ref:dateref@1
 script: Temporal.PlainMonthDay.from({ year: 1000000128, month: 2, day: 29 }, { overflow: "constrain" }).toString()
 note: the date is regulated in the year given, whose leap-ness decides it (correspondence row G3)
@@ -14609,7 +14635,8 @@ area: date
 op: Temporal.PlainMonthDay.from, a year's leap day
 in: int:2000000100 int:2 int:29 str:"reject"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-vm: Temporal.PlainMonthDay.from reduces a year past 1e9 in magnitude to 1972 + year modulo 400 before it regulates the date, so February 29 is accepted, constrained or refused by the leap-ness of a different year, where it is regulated in the year given. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-6-date.md, SJL-6.4 (JSD-0072; the correspondence's row G3).
 prov: ref:dateref@1
 script: Temporal.PlainMonthDay.from({ year: 2000000100, month: 2, day: 29 }, { overflow: "reject" }).toString()
 note: the date is regulated in the year given, whose leap-ness decides it (correspondence row G3)
@@ -14620,7 +14647,8 @@ area: date
 op: Temporal.PlainMonthDay.from, a year's leap day
 in: int:2000000100 int:2 int:29 str:"constrain"
 out: value: str:"02-28"
-class: normative
+class: divergence
+divergence.broiler-vm: Temporal.PlainMonthDay.from reduces a year past 1e9 in magnitude to 1972 + year modulo 400 before it regulates the date, so February 29 is accepted, constrained or refused by the leap-ness of a different year, where it is regulated in the year given. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-6-date.md, SJL-6.4 (JSD-0072; the correspondence's row G3).
 prov: ref:dateref@1
 script: Temporal.PlainMonthDay.from({ year: 2000000100, month: 2, day: 29 }, { overflow: "constrain" }).toString()
 note: the date is regulated in the year given, whose leap-ness decides it (correspondence row G3)
@@ -14653,7 +14681,8 @@ area: date
 op: Temporal.PlainMonthDay.from, a year's leap day
 in: int:-1000000100 int:2 int:29 str:"reject"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-vm: Temporal.PlainMonthDay.from reduces a year past 1e9 in magnitude to 1972 + year modulo 400 before it regulates the date, so February 29 is accepted, constrained or refused by the leap-ness of a different year, where it is regulated in the year given. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-6-date.md, SJL-6.4 (JSD-0072; the correspondence's row G3).
 prov: ref:dateref@1
 script: Temporal.PlainMonthDay.from({ year: -1000000100, month: 2, day: 29 }, { overflow: "reject" }).toString()
 note: the date is regulated in the year given, whose leap-ness decides it (correspondence row G3)
@@ -14664,7 +14693,8 @@ area: date
 op: Temporal.PlainMonthDay.from, a year's leap day
 in: int:-1000000100 int:2 int:29 str:"constrain"
 out: value: str:"02-28"
-class: normative
+class: divergence
+divergence.broiler-vm: Temporal.PlainMonthDay.from reduces a year past 1e9 in magnitude to 1972 + year modulo 400 before it regulates the date, so February 29 is accepted, constrained or refused by the leap-ness of a different year, where it is regulated in the year given. Answered by Broiler.VM docs/javascript-shared-libraries/milestones/sjl-6-date.md, SJL-6.4 (JSD-0072; the correspondence's row G3).
 prov: ref:dateref@1
 script: Temporal.PlainMonthDay.from({ year: -1000000100, month: 2, day: 29 }, { overflow: "constrain" }).toString()
 note: the date is regulated in the year given, whose leap-ness decides it (correspondence row G3)
