@@ -1,0 +1,165 @@
+{
+  "admitted": 8,
+  "afterCommit": "",
+  "allChangesAdmitted": false,
+  "baseCommit": "",
+  "changed": [
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/Uint8Array/prototype/setFromBase64/detached-buffer.js",
+      "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.setFromBase64 answered { read: 0, written: 0 }. The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\".",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/Uint8Array/prototype/setFromBase64/detached-buffer.js",
+      "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.setFromBase64 answered { read: 0, written: 0 }. The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\".",
+      "variant": "terser",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/Uint8Array/prototype/setFromHex/detached-buffer.js",
+      "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.setFromHex answered { read: 0, written: 0 }. The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\".",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/Uint8Array/prototype/setFromHex/detached-buffer.js",
+      "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.setFromHex answered { read: 0, written: 0 }. The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\".",
+      "variant": "terser",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/Uint8Array/prototype/toBase64/detached-buffer.js",
+      "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.toBase64 answered \"\". The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\".",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/Uint8Array/prototype/toBase64/detached-buffer.js",
+      "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.toBase64 answered \"\". The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\".",
+      "variant": "terser",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/Uint8Array/prototype/toHex/detached-buffer.js",
+      "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.toHex answered \"\". The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\".",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/Uint8Array/prototype/toHex/detached-buffer.js",
+      "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.toHex answered \"\". The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\".",
+      "variant": "terser",
+      "verdict": "admitted"
+    },
+    {
+      "after": "failed",
+      "base": "passed",
+      "hostMode": "script",
+      "path": "test/intl402/DateTimeFormat/prototype/format/temporal-objects-no-time-clip-non-latin-numerals.js",
+      "variant": "original",
+      "verdict": "regression"
+    },
+    {
+      "after": "failed",
+      "base": "passed",
+      "hostMode": "script",
+      "path": "test/intl402/DateTimeFormat/prototype/format/temporal-objects-no-time-clip-non-latin-numerals.js",
+      "variant": "terser",
+      "verdict": "regression"
+    }
+  ],
+  "regressions": 2,
+  "replacedByRerun": {
+    "after": [
+      {
+        "before": "timedOut",
+        "path": "test/staging/sm/regress/regress-1507322-deep-weakmap.js",
+        "rerun": "timedOut",
+        "rerunReport": "<tree>/docs/evidence/sjl-5-001/test262/first-after-473dc46/rerun-timeouts.json",
+        "variant": "original"
+      },
+      {
+        "before": "timedOut",
+        "path": "test/staging/sm/regress/regress-1507322-deep-weakmap.js",
+        "rerun": "timedOut",
+        "rerunReport": "<tree>/docs/evidence/sjl-5-001/test262/first-after-473dc46/rerun-timeouts.json",
+        "variant": "terser"
+      }
+    ],
+    "base": [
+      {
+        "before": "timedOut",
+        "path": "test/staging/sm/regress/regress-1507322-deep-weakmap.js",
+        "rerun": "timedOut",
+        "rerunReport": "<tree>/docs/evidence/sjl-5-001/test262/base/rerun-timeouts.json",
+        "variant": "original"
+      },
+      {
+        "before": "timedOut",
+        "path": "test/staging/sm/regress/regress-1507322-deep-weakmap.js",
+        "rerun": "timedOut",
+        "rerunReport": "<tree>/docs/evidence/sjl-5-001/test262/base/rerun-timeouts.json",
+        "variant": "terser"
+      }
+    ]
+  },
+  "rows": 96720,
+  "suiteRef": "ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e",
+  "unclassified": 0,
+  "uncomparedFields": {
+    "dotnetVersion": {
+      "after": "10.0.402",
+      "base": "10.0.402"
+    },
+    "maxWorkers": {
+      "after": 4,
+      "base": 4
+    },
+    "runnerArch": {
+      "after": "X64",
+      "base": "X64"
+    },
+    "runnerOs": {
+      "after": "Linux",
+      "base": "Linux"
+    },
+    "shardCount": {
+      "after": 8,
+      "base": 8
+    }
+  },
+  "unusedClassifications": []
+}

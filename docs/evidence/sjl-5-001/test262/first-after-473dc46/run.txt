@@ -1,0 +1,16 @@
+repository: Broiler-Platform/Broiler.JS
+workflow run: https://github.com/Broiler-Platform/Broiler.JS/actions/runs/38696639019 (attempt 1)
+dispatched ref: refs/heads/claude/busy-lamport-m3yprr at 473dc46cc940221d948ba79563489257a11c895e
+tested commit: 473dc46cc940221d948ba79563489257a11c895e
+suite commit: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+inputs: {"base_run_id": "38601306943", "commit": "473dc46cc940221d948ba79563489257a11c895e", "max_workers": "4", "rerun_timeouts": true, "suite_ref": "ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e", "test_timeout_seconds": "30"}
+runner: ubuntu24 20261012.334.1; Linux X64; logical processors 4
+dotnetVersion: 10.0.402
+minifier: terser
+minifierVersion: 5.50.0
+maxWorkers: 4
+testTimeoutSeconds: 30.0
+memoryLimitMb: 0
+shardCount: 8
+selectionMode: all-script-host-verifiable
+suiteRef: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e

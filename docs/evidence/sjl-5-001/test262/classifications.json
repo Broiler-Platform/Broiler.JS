@@ -1,0 +1,34 @@
+{
+ "test/built-ins/Uint8Array/prototype/setFromBase64/detached-buffer.js|original": {
+  "class": "C1",
+  "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.setFromBase64 answered { read: 0, written: 0 }. The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\"."
+ },
+ "test/built-ins/Uint8Array/prototype/setFromBase64/detached-buffer.js|terser": {
+  "class": "C1",
+  "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.setFromBase64 answered { read: 0, written: 0 }. The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\"."
+ },
+ "test/built-ins/Uint8Array/prototype/setFromHex/detached-buffer.js|original": {
+  "class": "C1",
+  "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.setFromHex answered { read: 0, written: 0 }. The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\"."
+ },
+ "test/built-ins/Uint8Array/prototype/setFromHex/detached-buffer.js|terser": {
+  "class": "C1",
+  "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.setFromHex answered { read: 0, written: 0 }. The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\"."
+ },
+ "test/built-ins/Uint8Array/prototype/toBase64/detached-buffer.js|original": {
+  "class": "C1",
+  "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.toBase64 answered \"\". The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\"."
+ },
+ "test/built-ins/Uint8Array/prototype/toBase64/detached-buffer.js|terser": {
+  "class": "C1",
+  "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.toBase64 answered \"\". The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\"."
+ },
+ "test/built-ins/Uint8Array/prototype/toHex/detached-buffer.js|original": {
+  "class": "C1",
+  "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.toHex answered \"\". The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\"."
+ },
+ "test/built-ins/Uint8Array/prototype/toHex/detached-buffer.js|terser": {
+  "class": "C1",
+  "reason": "C1 of decision-rule.md: this engine's correction B4 (Broiler.VM docs/evidence/sjl-5-001/correspondence.md, row B4). Clause: ECMA-262's ValidateUint8Array and GetUint8ArrayBytes, which throw a TypeError for a detached or out-of-bounds array; at the base Uint8Array.prototype.toHex answered \"\". The shared codecs' adapters validate the array first since SJL-5.5 (37ece76). Vectors: text/options/0009 to 0012, reason js-detached-codec, which corpus revision 13 retires. Changelog: Broiler.JS/CHANGELOG.md, \"A detached or out-of-bounds array is a TypeError to the codecs\"."
+ }
+}

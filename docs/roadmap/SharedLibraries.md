@@ -329,6 +329,19 @@ keeps its normalisation inline, because its two steps read two lengths. `UriHelp
 third-party notices say so. The corpus's next revision retires the fields these corrections answer.
 *Added 2026-10-15:* corpus revision 13 retires them, with Broiler.VM's five.
 
+**A data decision: each locale's default numbering system is CLDR's (SJL-5.6), 2026-10-15.** The owner
+decided on 2026-10-15 that this engine takes each locale's default numbering system from CLDR, release
+47.0.0, where every locale defaulted to `latn`: the table is generated in this repository by
+`scripts/intl/generate_default_numbering_systems.py` from the `cldr-json` release's `cldr-numbers-full`
+package, pinned by its integrity, and embedded in `Broiler.JavaScript.BuiltIns`, as decision SJL-D-6 (c)
+has it for locale data; SJL-9 moves it into the shared locale data. The same change makes a Temporal
+value's digits follow the numbering system, as a `Date`'s did. Bundle `sjl-5-001`'s first after run
+found the need: `intl402/DateTimeFormat/prototype/format/temporal-objects-no-time-clip-non-latin-numerals.js`
+passed at the base only because `String.prototype.includes` compared by culture, and correction X2
+showed this engine's Latin digits for `ar-EG`. This is the dated data decision part A's class C5 of the
+bundle's rule names: a row whose verdict changes because of it is listed there with this decision, and
+in [`Broiler.JS/CHANGELOG.md`](../../Broiler.JS/CHANGELOG.md).
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

@@ -1,0 +1,73 @@
+$ /usr/bin/python3 scripts/packaging/test_pristine_consumer.py --set engine
+# cwd <tree>; started 2026-10-15T09:44:58Z; exit 0
++ dotnet restore <tree>/Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj
+  Determining projects to restore...
+  All projects are up-to-date for restore.
++ dotnet build <tree>/Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj -c Release --no-restore
+  Broiler.ECMAScript.Algorithms -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> <tree>/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.ExpressionCompiler -> <tree>/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Ast -> <tree>/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Storage -> <tree>/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.JSClassGenerator -> <tree>/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> <tree>/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Parser -> <tree>/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Engine -> <tree>/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> <tree>/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Compiler -> <tree>/Broiler.JS/Broiler.JavaScript.Compiler/bin/Release/net10.0/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.Extensions -> <tree>/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.BuiltIns -> <tree>/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Clr -> <tree>/Broiler.JS/Broiler.JavaScript.Clr/bin/Release/net10.0/Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.Modules -> <tree>/Broiler.JS/Broiler.JavaScript.Modules/bin/Release/net10.0/Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Debugger -> <tree>/Broiler.JS/Broiler.JavaScript.Debugger/bin/Release/net10.0/Broiler.JavaScript.Debugger.dll
+  Broiler.JavaScript.Globals -> <tree>/Broiler.JS/Broiler.JavaScript.Globals/bin/Release/net10.0/Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.ModuleExtensions -> <tree>/Broiler.JS/Broiler.JavaScript.ModuleExtensions/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.dll
+  Broiler.JavaScript.All -> <tree>/Broiler.JS/Broiler.JavaScript.All/bin/Release/net10.0/Broiler.JavaScript.All.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:04.86
++ dotnet pack <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.ECMAScript.Algorithms.0.1.0-preview.3.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.Expressions/Broiler.JavaScript.Expressions.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.Expressions.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.Ast/Broiler.JavaScript.Ast.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.Ast.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.Storage/Broiler.JavaScript.Storage.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.Storage.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.Runtime.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Broiler.JavaScript.ExpressionCompiler.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.ExpressionCompiler.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.Parser/Broiler.JavaScript.Parser.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.Parser.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.Engine/Broiler.JavaScript.Engine.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.Engine.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.LinqExpressions/Broiler.JavaScript.LinqExpressions.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.LinqExpressions.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.Extensions/Broiler.JavaScript.Extensions.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.Extensions.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.BuiltIns.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.Clr/Broiler.JavaScript.Clr.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.Clr.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.Compiler/Broiler.JavaScript.Compiler.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.Compiler.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.Modules/Broiler.JavaScript.Modules.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.Modules.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.ModuleExtensions/Broiler.JavaScript.ModuleExtensions.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.ModuleExtensions.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.Globals/Broiler.JavaScript.Globals.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.Globals.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.Debugger/Broiler.JavaScript.Debugger.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.Debugger.0.1.0-preview.1.nupkg'.
++ dotnet pack <tree>/Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj -c Release --no-restore --no-build -p:IncludeSymbols=false --output /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed
+  Successfully created package '/tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/feed/Broiler.JavaScript.All.0.1.0-preview.1.nupkg'.
++ dotnet restore --configfile /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/NuGet.Config
+  Determining projects to restore...
+  Restored /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/tmp/broiler-pristine-consumer-31vxhrx9/consumer/Consumer.csproj (in 2.07 sec).
++ dotnet run -c Release --no-restore
+pristine-consumer: 42
+Validated Broiler.JavaScript.All 0.1.0-preview.1 from 18 locally produced packages

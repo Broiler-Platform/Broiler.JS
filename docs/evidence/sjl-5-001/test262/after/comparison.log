@@ -1,0 +1,11 @@
+unclassified   failed -> passed   test/built-ins/Uint8Array/prototype/setFromBase64/detached-buffer.js [original]
+unclassified   failed -> passed   test/built-ins/Uint8Array/prototype/setFromBase64/detached-buffer.js [terser]
+unclassified   failed -> passed   test/built-ins/Uint8Array/prototype/setFromHex/detached-buffer.js [original]
+unclassified   failed -> passed   test/built-ins/Uint8Array/prototype/setFromHex/detached-buffer.js [terser]
+unclassified   failed -> passed   test/built-ins/Uint8Array/prototype/toBase64/detached-buffer.js [original]
+unclassified   failed -> passed   test/built-ins/Uint8Array/prototype/toBase64/detached-buffer.js [terser]
+unclassified   failed -> passed   test/built-ins/Uint8Array/prototype/toHex/detached-buffer.js [original]
+unclassified   failed -> passed   test/built-ins/Uint8Array/prototype/toHex/detached-buffer.js [terser]
+rows 96720; changed 8; admitted 0; unclassified 8; regressions 0
+base: test262 evidence run 38601306943
+exit: 1 (0 every changed row admitted, 1 a regression or an unclassified row, 2 not comparable)
