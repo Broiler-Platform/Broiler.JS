@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using Broiler.ECMAScript.Algorithms.Tests.ReferenceArms.Numerics;
 using Broiler.ECMAScript.Time;
-using J = Broiler.ECMAScript.Algorithms.Tests.ReferenceArms.Date.J;
 using V = Broiler.ECMAScript.Algorithms.Tests.ReferenceArms.Date.V;
 
 namespace Broiler.ECMAScript.Algorithms.Tests.ReferenceArms.Date;
@@ -61,16 +60,10 @@ internal static partial class DateArms
         Names = population.ReadLines("E6N").Select(static l => NumericsPopulation.Unescape(l)).Select(static n => n.Length == 0 ? null : n).ToList();
     }
 
-    /// <summary>
-    /// The operations; under a culture run, arm J's string operations alone. With <paramref name="controls"/>,
-    /// the rule's two negative controls are added as variants: arm V's parse charging one unit more for E5F's
-    /// "1970", and arm J's DaysFromCivil answering one day more for 1970-01-01.
-    /// </summary>
-    public static IReadOnlyList<DateOperation> Operations(bool cultureRun, bool controls = false)
+    /// <summary>The operations; under a culture run, arm J's string operations alone.</summary>
+    public static IReadOnlyList<DateOperation> Operations(bool cultureRun)
     {
         var all = Build();
-        if (controls)
-            all = all.Select(AddControl).ToList();
         if (!cultureRun)
             return all;
 
@@ -79,36 +72,6 @@ internal static partial class DateArms
             .Where(static o => o.Variants.Length > 0)
             .ToList();
     }
-
-    private static DateOperation AddControl(DateOperation operation) => operation.Name switch
-    {
-        "parse, Broiler.VM's dialect" => operation with
-        {
-            Variants =
-            [
-                .. operation.Variants,
-                new("V", "control: DateParseText charging one unit more for \"1970\"", i =>
-                {
-                    var engine = new V.JsEngine();
-                    var value = V.JsRealmDate.DateParseText(engine, i.Text);
-                    return Render.Charged(Num(value), engine.Charged + (i.Text == "1970" ? 1UL : 0UL));
-                }, i => SVmParse(i.Text, DateParseDialect.BroilerVM)),
-            ],
-        },
-        "epoch days from a date" => operation with
-        {
-            Variants =
-            [
-                .. operation.Variants,
-                new("J", "control: JSTemporalPlainDate's DaysFromCivil one day more for 1970-01-01", i =>
-                {
-                    var days = J.JSTemporalPlainDateCivil.DaysFromCivil(i.Year, i.Month, i.Day);
-                    return Num(days + (i.Year == 1970 && i.Month == 1 && i.Day == 1 ? 1 : 0));
-                }, i => Num(IsoCalendarMath.EpochDays(i.Year, i.Month, i.Day)), Valid),
-            ],
-        },
-        _ => operation,
-    };
 
     // ---------------------------------------------------------------------------------------------
     // Helpers.

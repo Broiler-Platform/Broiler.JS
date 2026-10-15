@@ -33,7 +33,7 @@ internal static class Program
             Console.Error.WriteLine("usage: compare --population DIR --out DIR [--limit LINES] [--operations NAME,NAME]");
             Console.Error.WriteLine("       compare-numerics --population DIR --out DIR [--limit LINES] [--operations NAME|NAME]");
             Console.Error.WriteLine("       compare-text --population DIR --out DIR [--limit LINES] [--operations NAME|NAME] [--culture NAME]");
-            Console.Error.WriteLine("       compare-date --population DIR --out DIR [--limit LINES] [--operations NAME|NAME] [--culture NAME] [--controls]");
+            Console.Error.WriteLine("       compare-date --population DIR --out DIR [--limit LINES] [--operations NAME|NAME] [--culture NAME]");
             return 2;
         }
 
@@ -90,8 +90,9 @@ internal static class Program
     /// Bundle sjl-6-001's comparison, with the process's zone UTC (the run sets TZ=UTC). Under <c>--culture</c>
     /// it is the rule's second run of arm J's string operations, those operations alone, every thread under
     /// that culture; otherwise every thread is under the invariant culture. The operation names hold commas, so
-    /// a filter separates them with "|"; a filtered run, like a limited one, is void. <c>--controls</c> adds the
-    /// rule's two negative controls (<see cref="Date.DateArms.Operations"/>); they run once and are then removed.
+    /// a filter separates them with "|"; a filtered run, like a limited one, is void. The rule's two negative
+    /// controls ran once with <c>--controls</c> and were then removed, as the rule asks;
+    /// docs/evidence/sjl-6-001/reference-arms-run/negative-control/controls.patch restores them.
     /// </summary>
     private static int CompareDate(Func<string, string?> option)
     {
@@ -106,8 +107,7 @@ internal static class Program
         var output = option("--out") ?? throw new ArgumentException("--out is required");
         long? limit = option("--limit") is { } text ? long.Parse(text, CultureInfo.InvariantCulture) : null;
         var names = option("--operations")?.Split('|');
-        var controls = Array.IndexOf(Environment.GetCommandLineArgs(), "--controls") >= 0;
-        var operations = Date.DateArms.Operations(cultureRun: name is not null, controls).Where(o => names is null || names.Contains(o.Name)).ToList();
+        var operations = Date.DateArms.Operations(cultureRun: name is not null).Where(o => names is null || names.Contains(o.Name)).ToList();
         new Date.DateComparison(population, operations, limit, names is not null, name, Console.Out)
             .Run(output, "docs/evidence/sjl-6-001/reference-arms.md",
                 "docs/evidence/sjl-6-001/reference-arms-revised-2026-10-15.md and reference-arms-revised-2026-10-15-after-first-run.md");

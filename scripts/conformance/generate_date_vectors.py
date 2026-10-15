@@ -36,9 +36,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import dateref as D  # noqa: E402
 from generate_number_vectors import js_string_literal, splitmix64, string_value  # noqa: E402
 
-# The corpus revision this generator writes, and the revision its vectors were added in.
-CORPUS_REVISION = 15
+# The corpus revision this generator writes, and the revision its vectors were added in. Revision 16 adds the
+# strings outside the format whose readings the engines' dialects differ on (OUTSIDE_FORMAT_REVISION).
+CORPUS_REVISION = 16
 FIRST_REVISION = 14
+OUTSIDE_FORMAT_REVISION = 16
 GENERATOR = "ref:dateref@1"
 SPEC = "spec:es2026@0248456c"
 ENGINES = ("broiler-js", "broiler-vm")
@@ -600,6 +602,74 @@ def dialect(corpus: Corpus) -> None:
         })
 
 
+
+def outside_format_strings() -> list[tuple[str, str, float, float]]:
+    """Corpus revision 16: one string outside the Date Time String Format for each kind of class (b) difference
+    bundle sjl-6-001's reference-arm comparison found (docs/evidence/sjl-6-001/reference-arms-run/), with Broiler.JS's
+    reading and the reading of Broiler.VM's dialect, each computed here from the reading's description, not taken
+    from either engine. Every string is read as UTC by whichever grammar reads it, so no expectation depends on
+    the zone. NaN is an invalid date."""
+    nan = math.nan
+    either = utc(1, 0, 1, 5, 30)  # 0001-01-01T00:00 at the offset -05:30
+    year_zero = utc(0)
+    return [
+        # A day past its month's length (correspondence row P5): Broiler.VM's dialect carries it into the next
+        # month, as MakeDay does; Broiler.JS's grammar refuses it.
+        ("0000-02-30T00:00Z", "a day past its month's length (P5)", nan, utc(0, 1, 30)),
+        # A fraction of other than three digits (P4): Broiler.JS's grammar reads it; Broiler.VM's dialect refuses it.
+        # Each kind is written as the classifier, scripts/conformance/classify_date_arms.py, names it.
+        ("0001-01-01T00:00:00.-05:30", "a fraction of 0 digits (P4)", either, nan),
+        ("0000T00:00:00.0Z", "a fraction of 1 digits (P4)", year_zero, nan),
+        ("0000T00:00:00.00Z", "a fraction of 2 digits (P4)", year_zero, nan),
+        ("0000T00:00:00.0000Z", "a fraction of 4 digits (P4)", year_zero, nan),
+        ("0000T00:00:00.000000000Z", "a fraction of 9 digits (P4)", year_zero, nan),
+        # The separator and the offset (P6): Broiler.JS's grammar reads a lower-case t, a space for the T and an
+        # offset without its colon; Broiler.VM's dialect refuses each.
+        ("0001-01-01t00:00-05:30", "a lower-case t (P6)", either, nan),
+        ("0001-01-01 00:00-05:30", "a space for the T", either, nan),
+        ("0001-01-01T00:00-0530", "an offset without its colon (P6)", either, nan),
+        # A signed year outside the renderings (P9's reading): Broiler.VM's dialect reads toString's shape with
+        # the year -5 written unpadded, which no rendering writes; Broiler.JS's grammar refuses it.
+        ("Thu Jan 01 -5 00:00:00 GMT+0000 (Coordinated Universal Time)", "a signed year outside the renderings (P9's reading)",
+         nan, utc(-5)),
+    ]
+
+
+def outside_format(corpus: Corpus) -> None:
+    note = ("outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS's expectation "
+            "is its reading before its cut-over, by its own grammar; milestone SJL-6.5 states its reading after it, "
+            "which JSD-0072 orders strict, its own, then Broiler.VM's dialect. Broiler.VM's is its dialect's reading as "
+            "Broiler.ECMAScript.Algorithms ports it (EcmaDateParser, DateParseDialect.BroilerVM), which its cut-over, "
+            "milestone SJL-6.4, adopts. The kind is one bundle sjl-6-001's reference-arm comparison classified (b): ")
+    for text, kind, js_reading, vm_reading in outside_format_strings():
+        corpus.add("dialect", "outside-format", {
+            "op": "Date.parse, a string outside the format",
+            "in": f"str:{string_value(text)[4:]}",
+            "out": number_out(math.nan),
+            "class": "impl-defined",
+            "per-engine.broiler-js": number_out(js_reading),
+            "per-engine.broiler-vm": number_out(vm_reading),
+            "prov": prov("sec-date.parse"),
+            "script": f"Date.parse({lit(text)})",
+            "note": note + kind,
+        }, since=OUTSIDE_FORMAT_REVISION)
+    # A leading or trailing space: Broiler.JS's grammar reads a date-only form with one as local midnight, so the
+    # vector reads the local fields back, which are the same in every zone; Broiler.VM's dialect refuses it.
+    invalid = "NaN,NaN,NaN,NaN,NaN"
+    for text in (" 2000-01-28", "2000-01-28 "):
+        corpus.add("dialect", "outside-format", {
+            "op": "Date.parse, a string outside the format, its local fields",
+            "in": f"str:{string_value(text)[4:]}",
+            "out": text_out(invalid),
+            "class": "impl-defined",
+            "per-engine.broiler-js": text_out("2000,0,28,0,0"),
+            "per-engine.broiler-vm": text_out(invalid),
+            "prov": prov("sec-date.parse"),
+            "script": (f"var d = new Date({lit(text)}); "
+                       "[d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes()].join()"),
+            "note": note + "a leading or trailing space",
+        }, since=OUTSIDE_FORMAT_REVISION)
+
 # --------------------------------------------------------------------------------------------------
 # The renderings.
 
@@ -821,6 +891,7 @@ def main(argv: list[str] | None = None) -> int:
     renderings(corpus)
     local_time(corpus)
     civil(corpus)
+    outside_format(corpus)
     corpus.classify(DIVERGENCES)
     corpus.write(arguments.out)
     total = sum(len(records) for records in corpus.files.values())
