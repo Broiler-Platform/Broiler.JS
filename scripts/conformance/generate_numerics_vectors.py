@@ -39,8 +39,9 @@ from generate_number_vectors import double_expression, f64, js_string_literal, s
 # generate_text_vectors.py writes, and changed nothing here; revision 11 widened the schema's clause ids
 # and changed no vector; revision 12 classified the text area's differences and revision 13 retired
 # them, and neither changed anything here; nor did revisions 14 to 17, which added, classified and
-# retired the Date area's divergences (generate_date_vectors.py).
-CORPUS_REVISION = 17
+# retired the Date area's divergences (generate_date_vectors.py), nor revision 18, which added the Unicode
+# area (generate_unicode_vectors.py).
+CORPUS_REVISION = 18
 FIRST_REVISION = 6
 GENERATOR = "ref:numericsref@1"
 SPEC = "spec:es2026@0248456c"
