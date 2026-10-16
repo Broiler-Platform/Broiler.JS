@@ -3,12 +3,13 @@ using Broiler.JavaScript.Engine;
 
 namespace Broiler.JavaScript.BuiltIns.Tests;
 
-// Intl.DateTimeFormat.prototype.formatToParts renders a format with minute and second but no hour
+// Intl.DateTimeFormat.prototype.formatToParts rendered a format with minute and second but no hour
 // through its own branch. That branch read the minute and second through DateTimeOffset.ToLocalTime(),
 // the host's zone, where every other path reads the zoned fields of the format's resolved timeZone. A
 // zone whose offset has a minute part then showed the host's minute: on this suite's UTC host,
 // Asia/Kolkata (+05:30) gave "00" where `format` gave "30". The branch also threw .NET's
-// ArgumentOutOfRangeException for a time value past DateTimeOffset's years 0001 to 9999.
+// ArgumentOutOfRangeException for a time value past DateTimeOffset's years 0001 to 9999. The branch is
+// gone, and such a format takes the pattern `format` takes (DateTimeFormatMinuteSecondPartsTests).
 public class DateTimeFormatMinuteSecondTimeZoneTests
 {
     // 2026-10-16T12:00:05.678Z.

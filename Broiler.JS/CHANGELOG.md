@@ -10,6 +10,24 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### `formatToParts` writes a minute-and-second format through the pattern `format` writes (2026-10-16)
+
+`Intl.DateTimeFormat.prototype.formatToParts` wrote a format with `minute` and `second` but no `hour` as
+`mm:ss[.fff]` by hand, where `format` writes the format's resolved pattern. The hand-written branch is
+gone, and such a format's parts join to what `format` writes. In the Latin-digit locales, for the formats
+that had no other field, the parts are unchanged.
+
+- **The digits follow the numbering system**, a locale's default one or a `-u-nu-` extension's, as
+  `format`'s do: `new Intl.DateTimeFormat("ar-EG", { minute: "2-digit", second: "2-digit" })` writes the
+  minute `"٠٣"`, where it was `"03"`, and with `fractionalSecondDigits` `arab` writes the fraction after
+  its decimal separator U+066B, where it was `"."`.
+- **The other fields the format asks for are written**: a date field, `weekday` or `timeZoneName` beside
+  the minute and second was dropped from the parts, so
+  `{ day: "numeric", minute: "2-digit", second: "2-digit" }` gave `minute`, `literal` and `second` alone.
+
+`DateTimeFormatMinuteSecondPartsTests` holds the cases. The time-zone correction below holds on the
+pattern's path, which reads the same zoned fields, and its tests still pass.
+
 ### `formatToParts` writes a minute and second in the format's time zone (2026-10-16)
 
 - **`Intl.DateTimeFormat.prototype.formatToParts` writes a format with `minute` and `second` but no
