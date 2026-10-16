@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.ExpressionCompiler;
 
 namespace Broiler.JavaScript.Ast.Misc;
@@ -114,59 +115,29 @@ public readonly struct StringSpan : IEquatable<StringSpan>, IEquatable<string>, 
 
     public override string ToString() => Value ?? string.Empty;
 
-    public StringSpan Trim() => TrimStart().TrimEnd();
+    // The three trim StrWhiteSpaceChar, the shared library's set: the specification's WhiteSpace and
+    // LineTerminator, from the pinned Unicode data. They trimmed .NET's char.IsWhiteSpace, which holds
+    // U+0085 and not U+FEFF. Nothing in the engine calls them (milestone SJL-7.5, decision SJL-D-25 (b)).
+    [Obsolete("Use Broiler.ECMAScript.Numbers.NumberParsing.TrimStrWhiteSpace, which this forwards to. To be removed in the next major version.")]
+    public StringSpan Trim() => Trimmed(TrimEnds.Both);
 
-    public unsafe StringSpan TrimStart()
+    [Obsolete("Use Broiler.ECMAScript.Numbers.NumberParsing.TrimStrWhiteSpace, which this forwards to. To be removed in the next major version.")]
+    public StringSpan TrimStart() => Trimmed(TrimEnds.Start);
+
+    [Obsolete("Use Broiler.ECMAScript.Numbers.NumberParsing.TrimStrWhiteSpace, which this forwards to. To be removed in the next major version.")]
+    public StringSpan TrimEnd() => Trimmed(TrimEnds.End);
+
+    private StringSpan Trimmed(TrimEnds ends)
     {
-        int offset = Offset;
-        int length = Length;
-
-        if (length == 0)
-            return this;
-
-        fixed (char* src = Source)
-        {
-            char* start = src + offset;
-            int currentLength = length;
-
-            for (int i = 0; i < currentLength; i++)
-            {
-                if (!char.IsWhiteSpace(*start))
-                    break;
-
-                offset++;
-                length--;
-                start++;
-            }
-        }
-
-        return new StringSpan(Source, offset, length);
-    }
-
-    public unsafe StringSpan TrimEnd()
-    {
-        int offset = Offset;
-        int length = Length;
-
-        if (length == 0)
-            return this;
-
-        fixed (char* src = Source)
-        {
-            char* start = src + offset + length - 1;
-            int currentLength = length;
-
-            for (int i = 0; i < currentLength; i++)
-            {
-                if (!char.IsWhiteSpace(*start))
-                    break;
-
-                length--;
-                start--;
-            }
-        }
-
-        return new StringSpan(Source, offset, length);
+        var text = AsSpan();
+        var start = (ends & TrimEnds.Start) != 0
+            ? text.Length - NumberParsing.TrimStrWhiteSpace(text, TrimEnds.Start).Length
+            : 0;
+        var rest = text[start..];
+        var length = (ends & TrimEnds.End) != 0
+            ? NumberParsing.TrimStrWhiteSpace(rest, TrimEnds.End).Length
+            : rest.Length;
+        return new StringSpan(Source, Offset + start, length);
     }
 
     public string ToLower()
