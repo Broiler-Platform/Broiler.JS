@@ -99,3 +99,13 @@ one. The reasons are in `scripts/conformance/unicode-divergences.txt`.
 
 Every difference falls under a row the area verdict names. One row, C3, read the default mappings as agreeing at
 Unicode 17. The Beria Erfe vectors show that it does not, and Broiler.VM's correspondence is revised for them.
+
+**On revision 19** (`c976cbea`), the same runner, at that commit, from a clean tree, under `TZ=UTC`:
+
+| Run | Result | Files |
+|---|---|---|
+| Revision 19, UTC | 88,465 vectors: 84,783 match, 3,682 classified divergences, no unclassified difference, and no divergence that no longer holds | [`engine/run-revision-19-utc.log`](engine/run-revision-19-utc.log), [`engine/run-revision-19-utc.tsv.gz`](engine/run-revision-19-utc.tsv.gz) |
+| Its negative control | one vector's expected value changed in memory, reported as an unclassified difference | [`engine/negative-control-revision-19.tsv`](engine/negative-control-revision-19.tsv) |
+
+Each of the 3,678 Unicode-area divergences holds until this engine's cut-over, SJL-7.5. A run after it reports
+each one it corrects as no longer holding, and the corpus revision that follows retires them.
