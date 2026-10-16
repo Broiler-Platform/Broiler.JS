@@ -8485,13 +8485,13 @@ public class BuiltInsTests
         Assert.Throws<JSException>(() => ctx.Eval(@"/\p{Script=NotAScript}/u;"));
 
         // RGI_Emoji is a property of strings (UTS #51): valid only with the `v` flag.
-        // Bare in `u` mode it must raise the clear "not supported" SyntaxError, not
-        // .NET's cryptic "Unknown property 'RGI_Emoji'" message. The lookup goes
-        // through NormalizeKey (strips '_'), so the name table must match the
-        // normalized form (#648 problem 1).
+        // Bare in `u` mode it is a SyntaxError, not .NET's cryptic "Unknown property
+        // 'RGI_Emoji'" message (#648 problem 1). Since SJL-7.5 the name is checked
+        // exactly by Broiler.Unicode's lookup, the literal's at parse time (an early
+        // error) and the constructor's before either engine reads the pattern.
         var ex = Assert.Throws<JSException>(() => ctx.Eval(@"/\p{RGI_Emoji}/u;"));
-        Assert.Contains("not supported", ex.Message);
         Assert.DoesNotContain("Unknown property", ex.Message);
+        Assert.Equal("SyntaxError", ctx.Eval(@"try { new RegExp('\\p{RGI_Emoji}', 'u'); 'no error' } catch (e) { e.name }").ToString());
 
         // In `v` mode the same property is now supported: it expands to an
         // alternation of the bundled RGI emoji sequences (#659 problems 1/2).

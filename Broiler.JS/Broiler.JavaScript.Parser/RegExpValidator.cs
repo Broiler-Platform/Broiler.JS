@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Runtime.Unicode;
 
 namespace Broiler.JavaScript.Parser;
 
@@ -83,6 +84,12 @@ internal static class RegExpValidator
             }
 
             pattern = NormalizeES3CharacterClasses(pattern);
+
+            // Under u or v a property escape must name what ECMA-262's tables hold, exactly as they write it
+            // (22.2.2.9): an early error otherwise. The check is Broiler.Unicode's lookup, the one the RegExp
+            // constructor makes (SJL-7.5; correspondence rows P1 to P3 and S2).
+            if ((unicode || unicodeSets) && JSUnicodePropertyNames.FirstRefused(pattern, unicodeSets) != null)
+                return false;
 
             if (unicodeSets)
             {
@@ -758,7 +765,8 @@ internal static class RegExpValidator
     /// <summary>
     /// Rewrites JavaScript Unicode property escapes into simple placeholders so
     /// the lexer can validate their syntax without relying on the .NET regex
-    /// engine's property-name support.
+    /// engine's property-name support. Their names are checked first, exactly,
+    /// by <see cref="JSUnicodePropertyNames"/>.
     /// </summary>
     private static string NormalizeUnicodePropertyEscapes(string pattern)
     {

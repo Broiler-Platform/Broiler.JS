@@ -60,4 +60,30 @@ public class UnicodeLexicalClassTests
     [InlineData("3in []")]
     [InlineData("3\u0870")]
     public void An_identifier_start_after_a_number_is_refused(string source) => ParseError(source);
+
+    // P1 to P3 and S2, at parse time: a regular-expression literal under u or v whose property escape
+    // names what ECMA-262's tables do not hold, exactly as written, is an early SyntaxError (22.2.1.1),
+    // checked by Broiler.Unicode's lookup, where the lexer replaced every name with a placeholder.
+    [Theory]
+    [InlineData(@"/\p{letter}/u")]
+    [InlineData(@"/\p{lu}/u")]
+    [InlineData(@"/\p{GC=Lu}/u")]
+    [InlineData(@"/\p{Script_Extensions=greek}/u")]
+    [InlineData(@"/\p{IsGreek}/u")]
+    [InlineData(@"/\p{RGI_Emoji}/u")]
+    [InlineData(@"/\p{rgiemoji}/v")]
+    [InlineData(@"/\P{RGI_Emoji}/v")]
+    [InlineData(@"/[\p{lowercase_letter}]/v")]
+    public void A_property_name_ECMA_262_does_not_hold_is_an_early_error(string source) => ParseError(source);
+
+    [Theory]
+    [InlineData(@"/\p{Lu}/u")]
+    [InlineData(@"/\p{General_Category=Uppercase_Letter}/u")]
+    [InlineData(@"/\p{Script=Katakana_Or_Hiragana}/u")]
+    [InlineData(@"/\P{scx=Grek}/u")]
+    [InlineData(@"/\p{RGI_Emoji}/v")]
+    [InlineData(@"/[\p{Basic_Emoji}--\q{x}]/v")]
+    [InlineData(@"/\p{letter}/")]
+    [InlineData(@"/\\p/u")]
+    public void A_property_name_ECMA_262_holds_is_read(string source) => Parse(source);
 }

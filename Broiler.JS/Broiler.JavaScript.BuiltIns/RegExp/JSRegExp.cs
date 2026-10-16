@@ -3,14 +3,13 @@ using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Runtime.Unicode;
 using Broiler.Regex;
-using Broiler.Unicode.Properties;
+using Broiler.Unicode.Algorithms;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using UnicodeEmoji.StringProperties;
 using Broiler.ECMAScript.Text;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
@@ -789,6 +788,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
             // Each (?<name>…) GroupSpecifier must be a valid RegExpIdentifierName; an exotic name
             // such as (?<🦊>…) or (?<𝟚the>…) (an ID_Continue-only first character) is a SyntaxError.
             ValidateNamedGroupNames(pattern);
+
+            // Under u or v, every \p{…} and \P{…} must name a property or value of ECMA-262's tables
+            // exactly as they write it (22.2.2.9), checked by Broiler.Unicode's lookup before Broiler.Regex
+            // or the translator reads the pattern, since each of them resolves names in its own looser way
+            // (correspondence rows P1 to P3 and S2; SJL-7.5).
+            if ((unicode || unicodeSets) && JSUnicodePropertyNames.FirstRefused(pattern, unicodeSets) is { } refused)
+                throw JSEngine.NewSyntaxError($"Invalid regular expression: invalid property name in {refused}");
 
             // Route the pattern to the Broiler.Regex engine when it should own it: every
             // Unicode-mode (u/v) pattern Broiler can build, plus the non-Unicode gap shapes
@@ -3397,41 +3403,22 @@ public partial class JSRegExp : JSObject, IJSRegExp
     // BROILER-PATCH: Transform ES3-specific regex patterns for .NET compatibility
     // Handles empty character classes, forward backreferences, and NUL escapes.
     /// <summary>
-    /// General_Category long names / aliases → the .NET short form that
-    /// <see cref="Regex"/> accepts (e.g. <c>Uppercase_Letter</c> → <c>Lu</c>).
-    /// Keys are normalized (lower-cased, '_'/' ' stripped). Short forms map to
-    /// themselves so that the <c>gc=Lu</c> form normalizes too.
+    /// The General_Category values ECMA-262 admits, by every name and alias its table writes
+    /// (<c>Uppercase_Letter</c>, <c>Lu</c>, …), each to the .NET short form <see cref="Regex"/> accepts, which
+    /// the translator emits inside a character class. Keys are exact: a name reaches this table only after
+    /// Broiler.Unicode's lookup has admitted it (<see cref="JSUnicodePropertyNames"/>), and the table chooses
+    /// .NET's spelling and nothing else. <c>LC</c> (<c>Cased_Letter</c>) has no .NET form.
     /// </summary>
     private static readonly Dictionary<string, string> GeneralCategoryNames = BuildGeneralCategoryNames();
 
     /// <summary>
-    /// Emoji string-property names (UTS #51 "properties of strings") mapped to the
-    /// <see cref="EmojiSequenceProperties"/> bit they select. These match
-    /// multi-code-point sequences and are only valid with the <c>v</c> flag; there
-    /// they expand to an alternation of the literal sequences (see
-    /// <see cref="ExpandEmojiStringProperty"/>), backed by the bundled Unicode emoji data.
-    ///
-    /// Keys are stored in normalized form (lower-cased, '_'/' ' stripped) because
-    /// lookups go through <c>NormalizeKey</c> — e.g. <c>RGI_Emoji</c> normalizes to
-    /// <c>rgiemoji</c>.
+    /// The expanded .NET alternation of each property of strings, keyed by the property's id: building it
+    /// reads every sequence (thousands for <c>RGI_Emoji</c>), so it is computed once.
     /// </summary>
-    private static readonly Dictionary<string, EmojiSequenceProperties> EmojiStringPropertyNames = new(StringComparer.Ordinal)
-    {
-        ["rgiemoji"] = EmojiSequenceProperties.RgiEmoji,
-        ["rgiemojiflagsequence"] = EmojiSequenceProperties.RgiEmojiFlagSequence,
-        ["rgiemojimodifiersequence"] = EmojiSequenceProperties.RgiEmojiModifierSequence,
-        ["rgiemojitagsequence"] = EmojiSequenceProperties.RgiEmojiTagSequence,
-        ["rgiemojizwjsequence"] = EmojiSequenceProperties.RgiEmojiZwjSequence,
-        ["basicemoji"] = EmojiSequenceProperties.BasicEmoji,
-        ["emojikeycapsequence"] = EmojiSequenceProperties.EmojiKeycapSequence,
-    };
+    private static readonly Dictionary<int, string> StringPropertyAlternationCache = [];
 
-    /// <summary>
-    /// Cache of the expanded .NET alternation for each emoji string property, keyed by
-    /// the <see cref="EmojiSequenceProperties"/> mask. Building the alternation walks the
-    /// whole emoji trie (thousands of sequences for <c>RGI_Emoji</c>), so it is computed once.
-    /// </summary>
-    private static readonly Dictionary<EmojiSequenceProperties, string> EmojiAlternationCache = [];
+    /// <summary>The code-point ranges of each admitted <c>\p{…}</c> body, keyed by its exact text.</summary>
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, (int Lo, int Hi)[]> PropertyRangesCache = new(StringComparer.Ordinal);
 
     private static Dictionary<string, string> BuildGeneralCategoryNames()
     {
@@ -3439,9 +3426,9 @@ public partial class JSRegExp : JSObject, IJSRegExp
 
         void Add(string shortName, params string[] names)
         {
-            map[Normalize(shortName)] = shortName;
+            map[shortName] = shortName;
             foreach (var n in names)
-                map[Normalize(n)] = shortName;
+                map[n] = shortName;
         }
 
         Add("L", "Letter");
@@ -3483,18 +3470,84 @@ public partial class JSRegExp : JSObject, IJSRegExp
         Add("Cn", "Unassigned");
 
         return map;
+    }
 
-        static string Normalize(string s)
+    /// <summary>
+    /// The code-point ranges of an admitted <c>\p{…}</c> body (<c>Name=Value</c> or a lone name), from
+    /// Broiler.Unicode's exact lookup over this engine's tables; false when the lookup refuses it.
+    /// </summary>
+    private static bool TryResolvePropertyRanges(string inner, out (int Lo, int Hi)[] ranges)
+    {
+        if (PropertyRangesCache.TryGetValue(inner, out ranges))
+            return true;
+
+        var eq = inner.IndexOf('=');
+        CodePointSet set;
+        var admitted = eq < 0
+            ? JSUnicode.Properties.TryResolve(inner, out set)
+            : JSUnicode.Properties.TryResolve(inner.AsSpan(0, eq), inner.AsSpan(eq + 1), out set);
+        if (!admitted)
         {
-            var sb = new StringBuilder(s.Length);
-            foreach (var ch in s)
-            {
-                if (ch == '_' || ch == ' ')
-                    continue;
-                sb.Append(char.ToLowerInvariant(ch));
-            }
-            return sb.ToString();
+            ranges = null;
+            return false;
         }
+
+        ranges = new (int Lo, int Hi)[set.RangeCount];
+        for (var i = 0; i < ranges.Length; i++)
+            ranges[i] = (set.First(i), set.Last(i));
+
+        PropertyRangesCache.TryAdd(inner, ranges);
+        return true;
+    }
+
+    /// <summary>
+    /// The sequences of two or more code points and the single code points of a property of strings. The
+    /// union <c>RGI_Emoji</c> has no data of its own and is read as the other properties together.
+    /// </summary>
+    private static void CollectStringProperty(StringProperty property, ICollection<string> sequences, List<(int Lo, int Hi)> codePoints)
+    {
+        if (property.IsUnion)
+        {
+            var all = JSUnicode.StringProperties;
+            for (var id = 0; id < all.PropertyCount; id++)
+            {
+                var member = all.Property(id);
+                if (!member.IsUnion)
+                    CollectStringProperty(member, sequences, codePoints);
+            }
+
+            return;
+        }
+
+        for (var i = 0; i < property.CodePointRangeCount; i++)
+            codePoints.Add((property.FirstCodePoint(i), property.LastCodePoint(i)));
+
+        Span<int> buffer = stackalloc int[StringPropertySequences.MaxSequenceLength];
+        var cursor = property.GetSequences();
+        var text = new StringBuilder();
+        while (cursor.TryRead(buffer, out var length))
+        {
+            text.Clear();
+            foreach (var codePoint in buffer[..length])
+                text.Append(char.ConvertFromUtf32(codePoint));
+            sequences.Add(text.ToString());
+        }
+    }
+
+    /// <summary>Sorts code-point ranges and merges those that overlap or touch.</summary>
+    private static (int Lo, int Hi)[] MergeRanges(List<(int Lo, int Hi)> ranges)
+    {
+        ranges.Sort(static (a, b) => a.Lo.CompareTo(b.Lo));
+        var merged = new List<(int Lo, int Hi)>(ranges.Count);
+        foreach (var (lo, hi) in ranges)
+        {
+            if (merged.Count > 0 && lo <= merged[^1].Hi + 1)
+                merged[^1] = (merged[^1].Lo, Math.Max(merged[^1].Hi, hi));
+            else
+                merged.Add((lo, hi));
+        }
+
+        return merged.ToArray();
     }
 
     /// <summary>
@@ -3670,115 +3723,40 @@ public partial class JSRegExp : JSObject, IJSRegExp
     }
 
     /// <summary>
-    /// Returns the .NET replacement text for a single <c>\p{inner}</c> /
-    /// <c>\P{inner}</c> escape, or <c>null</c> when it should be left untouched.
-    /// Throws a SyntaxError for property classes that are recognized but not
-    /// yet supported.
+    /// Returns the .NET replacement text for a single <c>\p{inner}</c> / <c>\P{inner}</c> escape. The name is
+    /// Broiler.Unicode's exact lookup's (SJL-7.5): a name it refuses is a SyntaxError, never left for .NET's
+    /// own <c>\p</c> (correspondence row P3), though <see cref="JSUnicodePropertyNames"/> has refused every
+    /// such name before the translator runs. Throws a SyntaxError for a property the translator cannot
+    /// express where it stands.
     /// </summary>
     private static string TranslateUnicodeProperty(bool negated, string inner, bool inClass, bool unicodeSets, bool ignoreCase)
     {
         var eq = inner.IndexOf('=');
         var prefix = negated ? "\\P" : "\\p";
 
-        static string NormalizeKey(string s)
+        // A property of strings (UTS #51) matches sequences of code points, so it is admitted under `v`
+        // alone, and neither negated nor nested in a class (a `[...]` fragment cannot hold a sequence, and
+        // `\P` of one is an early error). Standalone under `v`, it expands to an alternation of its sequences.
+        if (eq < 0 && unicodeSets && JSUnicode.StringProperties.TryResolve(inner, out var stringProperty))
         {
-            var sb = new StringBuilder(s.Length);
-            foreach (var ch in s)
-            {
-                if (ch == '_' || ch == ' ')
-                    continue;
-                sb.Append(char.ToLowerInvariant(ch));
-            }
-            return sb.ToString();
-        }
-
-        if (eq >= 0)
-        {
-            // `Name=Value` form. .NET rejects this syntax entirely today, so it is
-            // always safe to handle here.
-            var name = NormalizeKey(inner.Substring(0, eq));
-            var value = NormalizeKey(inner.Substring(eq + 1));
-
-            if (name is "gc" or "generalcategory")
-                return TranslateGeneralCategory(value, prefix, negated, inClass, inner, ignoreCase);
-
-            if (name is "sc" or "script")
-            {
-                var ranges = UnicodeProperties.GetScript(value);
-                if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass, ignoreCase) is { } expanded)
-                    return expanded;
-
-                throw NewUnsupportedPropertyError(inner);
-            }
-
-            if (name is "scx" or "scriptextensions")
-            {
-                var ranges = UnicodeProperties.GetScriptExtensions(value);
-                if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass, ignoreCase) is { } expanded)
-                    return expanded;
-
-                throw NewUnsupportedPropertyError(inner);
-            }
-
-            // Unknown Name=Value — let .NET surface its own error.
-            return null;
-        }
-
-        // Lone `\p{Value}` form.
-        var lone = NormalizeKey(inner);
-
-        // A lone General_Category value (Lu, L, Letter, …).
-        if (UnicodeProperties.GetGeneralCategory(lone) != null
-            || (inClass && GeneralCategoryNames.ContainsKey(lone)))
-            return TranslateGeneralCategory(lone, prefix, negated, inClass, inner, ignoreCase);
-
-        // Binary Unicode properties (ASCII, Alphabetic, Assigned, Emoji, …) come from
-        // the generated UCD 17.0.0 range tables in Broiler.Unicode.Properties.
-        var binaryRanges = UnicodeProperties.GetBinaryProperty(lone);
-        if (binaryRanges != null)
-        {
-            var expanded = ExpandCodePointProperty(binaryRanges, negated, inClass, ignoreCase);
-            if (expanded != null)
-                return expanded;
-            throw NewUnsupportedPropertyError(inner);
-        }
-
-        if (EmojiStringPropertyNames.TryGetValue(lone, out var emojiProperty))
-        {
-            // Properties of strings (UTS #51) match multi-code-point sequences, so they are
-            // only meaningful with the `v` flag and cannot be negated or nested in a class
-            // (a `[...]` set fragment cannot hold multi-character strings, and `\P` of a set
-            // containing strings is a SyntaxError). In `v` mode, standalone, expand to an
-            // alternation of the literal sequences; everything else stays a SyntaxError.
-            if (unicodeSets && !negated && !inClass)
-                return ExpandEmojiStringProperty(emojiProperty);
+            if (!negated && !inClass)
+                return ExpandStringProperty(stringProperty);
 
             throw NewUnsupportedPropertyError(inner);
         }
 
-        // Anything else (native short categories like \p{L}, named blocks like
-        // \p{IsBasicLatin}, or unknown lone names) is left for .NET to handle.
-        return null;
-    }
+        if (!TryResolvePropertyRanges(inner, out var ranges))
+            throw JSEngine.NewSyntaxError($"Invalid regular expression: invalid property name in {prefix}{{{inner}}}");
 
-    /// <summary>
-    /// Translates a General_Category value (the <c>gc=…</c> dimension or a lone gc value).
-    /// Outside a character class it expands to the bundled UCD 17.0.0 code-point ranges so
-    /// supplementary-plane code points match by code point. Inside a class — where the
-    /// range expansion (with its surrogate-pair alternatives) cannot be nested — it falls
-    /// back to .NET's native category escape (<c>\p{Lu}</c>), which is code-unit based.
-    /// </summary>
-    private static string TranslateGeneralCategory(string value, string prefix, bool negated, bool inClass, string inner, bool ignoreCase)
-    {
-        if (inClass)
-        {
-            if (GeneralCategoryNames.TryGetValue(value, out var shortName))
-                return $"{prefix}{{{shortName}}}";
-            throw NewUnsupportedPropertyError(inner);
-        }
+        // Inside a class, where the range expansion (with its surrogate-pair alternatives) cannot be nested,
+        // a General_Category value falls back to .NET's native category escape (`\p{Lu}`), which is code-unit
+        // based. Everywhere else, and for every other property, the ranges are the pinned data's.
+        var value = eq < 0 ? inner : inner[(eq + 1)..];
+        var isGeneralCategory = eq < 0 || inner.AsSpan(0, eq) is "gc" or "General_Category";
+        if (inClass && isGeneralCategory && GeneralCategoryNames.TryGetValue(value, out var shortName))
+            return $"{prefix}{{{shortName}}}";
 
-        var ranges = UnicodeProperties.GetGeneralCategory(value);
-        if (ranges != null && ExpandCodePointProperty(ranges, negated, inClass, ignoreCase) is { } expanded)
+        if (ExpandCodePointProperty(ranges, negated, inClass, ignoreCase) is { } expanded)
             return expanded;
 
         throw NewUnsupportedPropertyError(inner);
@@ -3789,24 +3767,26 @@ public partial class JSRegExp : JSObject, IJSRegExp
             $"Unicode property escape '\\p{{{inner}}}' is not supported yet (requires Unicode script/sequence data)");
 
     /// <summary>
-    /// Expands an emoji string property (UTS #51 property of strings, e.g.
-    /// <c>RGI_Emoji</c> or <c>Emoji_Keycap_Sequence</c>) into a non-capturing alternation
-    /// of the literal sequences drawn from the bundled Unicode emoji data. Alternatives are
-    /// ordered longest-first so leftmost-longest matching picks the maximal sequence — e.g.
-    /// the full ZWJ family rather than a leading single-code-point emoji. The result is cached
-    /// per property because the alternation is large (thousands of sequences for RGI_Emoji).
+    /// Expands a property of strings (UTS #51, e.g. <c>RGI_Emoji</c> or <c>Emoji_Keycap_Sequence</c>) into a
+    /// non-capturing alternation: its sequences of two or more code points as literals, longest first so that
+    /// leftmost-longest matching picks the maximal sequence (the full ZWJ family rather than a leading
+    /// single-code-point emoji), then one matcher of its single code points, which are each shorter than any
+    /// sequence. The result is cached per property because the alternation is large (thousands of sequences
+    /// for <c>RGI_Emoji</c>).
     /// </summary>
-    private static string ExpandEmojiStringProperty(EmojiSequenceProperties property)
+    private static string ExpandStringProperty(StringProperty property)
     {
-        lock (EmojiAlternationCache)
+        lock (StringPropertyAlternationCache)
         {
-            if (EmojiAlternationCache.TryGetValue(property, out var cached))
+            if (StringPropertyAlternationCache.TryGetValue(property.Id, out var cached))
                 return cached;
 
-            var sequences = EmojiStringProperties.GetSequences(property);
+            var sequences = new HashSet<string>(StringComparer.Ordinal);
+            var codePoints = new List<(int Lo, int Hi)>();
+            CollectStringProperty(property, sequences, codePoints);
 
-            // Longest first, then ordinal for a stable pattern. Length here is in UTF-16 code
-            // units, which is what the .NET regex consumes when matching the literal text.
+            // Longest first, then ordinal for a stable pattern. Length here is in UTF-16 code units, which is
+            // what the .NET regex consumes when matching the literal text.
             var ordered = new List<string>(sequences);
             ordered.Sort(static (a, b) =>
             {
@@ -3822,10 +3802,20 @@ public partial class JSRegExp : JSObject, IJSRegExp
                     sb.Append('|');
                 sb.Append(System.Text.RegularExpressions.Regex.Escape(ordered[n]));
             }
+
+            if (codePoints.Count > 0)
+            {
+                if (ordered.Count > 0)
+                    sb.Append('|');
+                sb.Append(BuildPositiveCodePointMatcher(MergeRanges(codePoints)));
+            }
+
+            if (ordered.Count == 0 && codePoints.Count == 0)
+                sb.Append("(?!)");
             sb.Append(')');
 
             var expanded = sb.ToString();
-            EmojiAlternationCache[property] = expanded;
+            StringPropertyAlternationCache[property.Id] = expanded;
             return expanded;
         }
     }
@@ -3875,8 +3865,11 @@ public partial class JSRegExp : JSObject, IJSRegExp
             return fragment.ToString();
         }
 
+        // A positive matcher over an empty set (`\p{sc=Hrkt}`, whose script has no code point) matches
+        // nothing; the empty group `(?:)` that BuildPositiveCodePointMatcher would build matches the empty
+        // string everywhere, as the `\P{Any}` guard below explains.
         if (!negated)
-            return BuildPositiveCodePointMatcher(ranges);
+            return ranges.Length == 0 ? "(?!)" : BuildPositiveCodePointMatcher(ranges);
 
         // `\P{X}` matches one code point that is not in X, which is one code point in the
         // COMPLEMENT of X — so it is the same matcher over complemented ranges, and no

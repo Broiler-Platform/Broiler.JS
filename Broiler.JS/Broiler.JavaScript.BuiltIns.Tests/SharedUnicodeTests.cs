@@ -151,4 +151,86 @@ public class SharedUnicodeTests
             System.Globalization.CultureInfo.CurrentCulture = saved;
         }
     }
+
+    // ---- property lookup and properties of strings (rows P1 to P4 and S2) ------------------------------
+
+    // P1 and S2: names are matched exactly as ECMA-262's tables write them, where a loose lookup ignored their
+    // case, underscores, spaces and hyphens; P3: an unknown name no longer falls through to .NET's own \p.
+    // Through the constructor and, by the parser's early check, through a literal.
+    [Theory]
+    [InlineData("new RegExp('\\\\p{letter}', 'u')")]
+    [InlineData("new RegExp('\\\\p{Script_Extensions=greek}', 'u')")]
+    [InlineData("new RegExp('\\\\p{GC=Lu}', 'u')")]
+    [InlineData("new RegExp('\\\\p{lu}', 'u')")]
+    [InlineData("new RegExp('\\\\p{Uppercase Letter}', 'u')")]
+    [InlineData("new RegExp('[\\\\p{lowercase_letter}]', 'v')")]
+    [InlineData("new RegExp('\\\\p{rgiemoji}', 'v')")]
+    [InlineData("new RegExp('\\\\P{RGI_Emoji}', 'v')")]
+    [InlineData("new RegExp('\\\\p{RGI_Emoji}', 'u')")]
+    [InlineData("new RegExp('\\\\p{IsGreek}', 'u')")]
+    [InlineData("new RegExp('\\\\p{Han}', 'u')")]
+    [InlineData("new RegExp('\\\\p{Lu', 'u')")]
+    [InlineData("eval('/\\\\p{letter}/u')")]
+    [InlineData("eval('/\\\\P{lu}/v')")]
+    [InlineData("eval('/[\\\\p{rgiemoji}]/v')")]
+    [InlineData("eval('/\\\\p{IsGreek}/u')")]
+    public void A_name_ECMA_262_does_not_hold_is_a_SyntaxError(string expression)
+        => Assert.Equal("SyntaxError", ErrorName(expression));
+
+    [Theory]
+    [InlineData("/\\p{Lu}/u.test('A')")]
+    [InlineData("/\\p{General_Category=Uppercase_Letter}/u.test('A')")]
+    [InlineData("/\\p{gc=LC}/u.test('a')")]
+    [InlineData("/[\\p{Lowercase_Letter}]/u.test('a')")]
+    [InlineData("/\\p{Script_Extensions=Greek}/u.test('\\u03A9')")]
+    [InlineData("/^\\p{RGI_Emoji}$/v.test('\\u{1F44D}\\u{1F3FD}')")]
+    [InlineData("/^\\p{Basic_Emoji}$/v.test('\\u231A')")]
+    [InlineData("/\\p{letter}/.test('p{letter}')")]
+    [InlineData("eval('/\\\\p{Script=Latin}/u').test('a')")]
+    public void A_name_ECMA_262_holds_is_admitted(string expression) => Assert.Equal("true", Eval(expression));
+
+    // P2: Katakana_Or_Hiragana (Hrkt) is a value of Script and Script_Extensions, and names an empty set.
+    [Theory]
+    [InlineData("/\\p{sc=Hrkt}/u.test('\\u3042')", "false")]
+    [InlineData("/\\p{Script=Katakana_Or_Hiragana}/u.test('\\u30A2')", "false")]
+    [InlineData("/\\p{scx=Hrkt}/u.test('\\u30FC')", "false")]
+    [InlineData("/^\\p{sc=Hrkt}*$/u.test('')", "true")]
+    [InlineData("/\\P{sc=Hrkt}/u.test('\\u3042')", "true")]
+    [InlineData("/[^\\p{sc=Hrkt}]/u.test('a')", "true")]
+    [InlineData("'a'.replace(/\\p{sc=Hrkt}/gu, 'X')", "a")]
+    public void Katakana_Or_Hiragana_is_an_empty_set(string expression, string expected)
+        => Assert.Equal(expected, Eval(expression));
+
+    // P2 and P4 on the .NET translator's path, which CreateRegex builds beside Broiler.Regex: the empty set
+    // matches nothing, and a v-mode set operation takes General_Category.
+    [Theory]
+    [InlineData("\\p{sc=Hrkt}", "u", "", false)]
+    [InlineData("\\p{sc=Hrkt}", "u", "\\u3042", false)]
+    [InlineData("[\\p{gc=Lu}--\\p{Script=Latin}]", "v", "\\u03A9", true)]
+    [InlineData("[\\p{gc=Lu}--\\p{Script=Latin}]", "v", "A", false)]
+    [InlineData("[\\p{Lu}&&\\p{Script=Greek}]", "v", "\\u03A9", true)]
+    [InlineData("[\\p{Lu}&&\\p{Script=Greek}]", "v", "\\u03C9", false)]
+    [InlineData("\\p{Lu}", "u", "A", true)]
+    public void The_translator_resolves_names_exactly(string pattern, string flags, string input, bool expected)
+    {
+        Load();
+        using var ctx = new JSContext();
+        var (regex, _, _, _, _, _, _, _, _) = RegExp.JSRegExp.CreateRegex(pattern, flags, out _);
+        Assert.NotNull(regex);
+        Assert.Equal(expected, regex.IsMatch(Unescape(input)));
+    }
+
+    // The translator's in-class General_Category table chooses .NET's spelling for names Broiler.Unicode's
+    // lookup has admitted, and holds no name it would refuse.
+    [Fact]
+    public void Every_general_category_name_the_translator_spells_is_admitted()
+    {
+        var field = typeof(RegExp.JSRegExp).GetField("GeneralCategoryNames", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        var names = Assert.IsType<Dictionary<string, string>>(field!.GetValue(null));
+        Assert.Equal(78, names.Count);
+        foreach (var name in names.Keys)
+            Assert.Equal("true", Eval($"/\\p{{General_Category={name}}}/u instanceof RegExp && /\\p{{{name}}}/u instanceof RegExp"));
+    }
+
+    private static string Unescape(string text) => System.Text.RegularExpressions.Regex.Unescape(text);
 }
