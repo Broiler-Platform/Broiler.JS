@@ -34,9 +34,9 @@ from generate_number_vectors import f64, js_string_literal, splitmix64, string_v
 # The corpus revision this generator writes, and the revision its vectors were added in. Revision 11
 # widened the schema's clause ids, which four of this area's citations need, and changed no vector;
 # revision 12 classified both engines' first runs on the area (text-divergences.txt), and revision 13
-# retired every field the two engines' cut-overs corrected. Revisions 14 to 16 added and classified the
-# Date area (generate_date_vectors.py) and changed nothing here.
-CORPUS_REVISION = 16
+# retired every field the two engines' cut-overs corrected. Revisions 14 to 17 added, classified and
+# retired the Date area's divergences (generate_date_vectors.py) and changed nothing here.
+CORPUS_REVISION = 17
 FIRST_REVISION = 10
 GENERATOR = "ref:textref@1"
 SPEC = "spec:es2026@0248456c"

@@ -54,7 +54,8 @@ match its date and an offset of 60 minutes among them (P7).
 **Corrections the corpus names.** Each was a `divergence.broiler-js` field of the shared corpus
 (`conformance/vectors/date`, revision 16), with the row of bundle `sjl-6-001`'s correspondence it
 confirmed (Broiler.VM's `docs/evidence/sjl-6-001/correspondence.md`). Corpus revision 17 retires the 1,016
-fields, and the retired list names every vector under its reason.
+fields, and [`docs/evidence/sjl-6-001/engine/retired-divergences-revision-17.tsv`](../docs/evidence/sjl-6-001/engine/retired-divergences-revision-17.tsv)
+lists every retired vector under its reason.
 
 - **One offset per instant, the one in force at it** (L2, 892 vectors of `date/offset`, `date/to-string`,
   `date/local-string`, `date/local` and `date/date-time`, in a zone with daylight-saving time): in

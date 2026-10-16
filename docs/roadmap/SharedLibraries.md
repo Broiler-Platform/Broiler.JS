@@ -480,7 +480,10 @@ from the deletion: a Gregorian-family `Temporal.PlainMonthDay` with a year was b
 copy that carried a month past 12 past the year, and is now bound-checked with its month as `constrain`
 regulates it; the changelog lists it. The next corpus revision retires both engines' Date divergence
 fields, and gives this engine's expectation of the strings outside the format its reading since the
-cut-over; Broiler.VM's pin moves to it.
+cut-over; Broiler.VM's pin moves to it. *Added 2026-10-16:* corpus revision 17 does, and both engines'
+expectations of two of those strings now agree on Broiler.VM's dialect's reading, which a library-level run
+compares the library with: its runner reads a string outside the format as both engines ask the library
+to, in the strict dialect and then, for what that refuses, in Broiler.VM's.
 
 ## Invariants
 

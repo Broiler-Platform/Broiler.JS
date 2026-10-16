@@ -87,8 +87,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"0001"
 out: value: f64:0xC2CC4189166C0000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("0001")
 since: 14
@@ -98,8 +97,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"0001-01"
 out: value: f64:0xC2CC4189166C0000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("0001-01")
 since: 14
@@ -109,8 +107,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"0001-12"
 out: value: f64:0xC2CC3E2D10680000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("0001-12")
 since: 14
@@ -120,8 +117,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"0001-01-01"
 out: value: f64:0xC2CC4189166C0000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("0001-01-01")
 since: 14
@@ -131,8 +127,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"0001-02-28"
 out: value: f64:0xC2CC40F3BE000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("0001-02-28")
 since: 14
@@ -142,8 +137,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"0001-06-15"
 out: value: f64:0xC2CC3FE039C60000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("0001-06-15")
 since: 14
@@ -153,8 +147,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"0001-12-31"
 out: value: f64:0xC2CC3DDFD1040000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("0001-12-31")
 since: 14
@@ -164,8 +157,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"1969"
 out: value: f64:0xC21D5EC4B0000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("1969")
 since: 14
@@ -175,8 +167,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"1969-01"
 out: value: f64:0xC21D5EC4B0000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("1969-01")
 since: 14
@@ -186,8 +177,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"1969-12"
 out: value: f64:0xC1E3F4A480000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("1969-12")
 since: 14
@@ -197,8 +187,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"1969-01-01"
 out: value: f64:0xC21D5EC4B0000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("1969-01-01")
 since: 14
@@ -208,8 +197,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"1969-02-28"
 out: value: f64:0xC218B40150000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("1969-02-28")
 since: 14
@@ -219,8 +207,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"1969-06-15"
 out: value: f64:0xC21017DF80000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("1969-06-15")
 since: 14
@@ -230,8 +217,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"1969-12-31"
 out: value: f64:0xC194997000000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("1969-12-31")
 since: 14
@@ -241,8 +227,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"1970"
 out: value: f64:0x0000000000000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("1970")
 since: 14
@@ -252,8 +237,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"1970-01"
 out: value: f64:0x0000000000000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("1970-01")
 since: 14
@@ -263,8 +247,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"1970-12"
 out: value: f64:0x421AE03020000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("1970-12")
 since: 14
@@ -274,8 +257,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"1970-01-01"
 out: value: f64:0x0000000000000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("1970-01-01")
 since: 14
@@ -285,8 +267,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"1970-02-28"
 out: value: f64:0x41F2AB0D80000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("1970-02-28")
 since: 14
@@ -296,8 +277,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"1970-06-15"
 out: value: f64:0x420A8DCA60000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("1970-06-15")
 since: 14
@@ -307,8 +287,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"1970-12-31"
 out: value: f64:0x421D4A2B40000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("1970-12-31")
 since: 14
@@ -318,8 +297,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2000"
 out: value: f64:0x426B8D59F5800000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2000")
 since: 14
@@ -329,8 +307,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2000-01"
 out: value: f64:0x426B8D59F5800000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2000-01")
 since: 14
@@ -340,8 +317,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2000-12"
 out: value: f64:0x426C650042000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2000-12")
 since: 14
@@ -351,8 +327,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2000-01-01"
 out: value: f64:0x426B8D59F5800000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2000-01-01")
 since: 14
@@ -362,8 +337,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2000-02-28"
 out: value: f64:0x426BB2B010800000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2000-02-28")
 since: 14
@@ -373,8 +347,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2000-06-15"
 out: value: f64:0x426BF835EA800000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2000-06-15")
 since: 14
@@ -384,8 +357,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2000-12-31"
 out: value: f64:0x426C78501B000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2000-12-31")
 since: 14
@@ -395,8 +367,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2000-02-29"
 out: value: f64:0x426BB354DC000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2000-02-29")
 since: 14
@@ -406,8 +377,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2024"
 out: value: f64:0x4278CC251F400000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2024")
 since: 14
@@ -417,8 +387,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2024-01"
 out: value: f64:0x4278CC251F400000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2024-01")
 since: 14
@@ -428,8 +397,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2024-12"
 out: value: f64:0x427937F845800000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2024-12")
 since: 14
@@ -439,8 +407,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2024-01-01"
 out: value: f64:0x4278CC251F400000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2024-01-01")
 since: 14
@@ -450,8 +417,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2024-02-28"
 out: value: f64:0x4278DED02CC00000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2024-02-28")
 since: 14
@@ -461,8 +427,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2024-06-15"
 out: value: f64:0x4279019319C00000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2024-06-15")
 since: 14
@@ -472,8 +437,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2024-12-31"
 out: value: f64:0x427941A032000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2024-12-31")
 since: 14
@@ -483,8 +447,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"2024-02-29"
 out: value: f64:0x4278DF2292800000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("2024-02-29")
 since: 14
@@ -494,8 +457,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"9999"
 out: value: f64:0x42ECCE0F4DD60000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("9999")
 since: 14
@@ -505,8 +467,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"9999-01"
 out: value: f64:0x42ECCE0F4DD60000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("9999-01")
 since: 14
@@ -516,8 +477,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"9999-12"
 out: value: f64:0x42ECCEE64F570000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("9999-12")
 since: 14
@@ -527,8 +487,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"9999-01-01"
 out: value: f64:0x42ECCE0F4DD60000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("9999-01-01")
 since: 14
@@ -538,8 +497,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"9999-02-28"
 out: value: f64:0x42ECCE34A3F10000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("9999-02-28")
 since: 14
@@ -549,8 +507,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"9999-06-15"
 out: value: f64:0x42ECCE7984FF8000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("9999-06-15")
 since: 14
@@ -560,8 +517,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"9999-12-31"
 out: value: f64:0x42ECCEF99F300000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("9999-12-31")
 since: 14
@@ -661,8 +617,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"+002024-01"
 out: value: f64:0x4278CC251F400000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("+002024-01")
 since: 14
@@ -672,8 +627,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"+002024-12"
 out: value: f64:0x427937F845800000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("+002024-12")
 since: 14
@@ -683,8 +637,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"+002024-01-01"
 out: value: f64:0x4278CC251F400000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("+002024-01-01")
 since: 14
@@ -694,8 +647,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"+002024-02-28"
 out: value: f64:0x4278DED02CC00000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("+002024-02-28")
 since: 14
@@ -705,8 +657,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"+002024-06-15"
 out: value: f64:0x4279019319C00000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("+002024-06-15")
 since: 14
@@ -716,8 +667,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"+002024-12-31"
 out: value: f64:0x427941A032000000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("+002024-12-31")
 since: 14
@@ -727,8 +677,7 @@ area: date
 op: Date.parse, the Date Time String Format
 in: str:"+002024-02-29"
 out: value: f64:0x4278DF2292800000
-class: divergence
-divergence.broiler-js: A date-only form of the Date Time String Format for a year from 0001 to 9999 is read as local time, where it is UTC; the difference shows in a zone whose offset at that date is not zero, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row P1).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-expanded-years spec:es2026@0248456c#sec-date.parse ref:dateref@1
 script: Date.parse("+002024-02-29")
 since: 14
@@ -6262,8 +6211,7 @@ area: date
 op: Date.parse, a date-time form without an offset
 in: str:"2024-06T12:30"
 out: value: str:"2024,5,1,12,30,0,0"
-class: divergence
-divergence.broiler-js: Local time takes the zone's base offset where a date is made from local fields, set by a local setter or read by the local getters, and the offset in force at the instant where getTimezoneOffset, toString and some of Date.parse's forms read it, so in daylight-saving time, and in the years before the zone's standard time, the local fields, the offset and the rendering disagree, where one offset, the one in force at the instant, serves them all; the difference shows in a zone with daylight-saving time or a historical offset, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row L2).
+class: normative
 prov: spec:es2026@0248456c#sec-date-time-string-format spec:es2026@0248456c#sec-date.parse spec:es2026@0248456c#sec-utc-t spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date("2024-06T12:30"); [d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds(), d.getMilliseconds()].join()
 note: a local time put in and read back, at half past noon, so the outcome holds in every time zone
