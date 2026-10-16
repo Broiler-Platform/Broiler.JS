@@ -1,6 +1,7 @@
 using Broiler.ECMAScript;
 using Broiler.ECMAScript.Numbers;
 using Broiler.JavaScript.Ast.Misc;
+using Broiler.JavaScript.Runtime.Unicode;
 using System;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -373,10 +374,10 @@ public class FastScanner
         bool lineTerminator = false;
         bool skipped = false;
 
-        // U+FEFF ZERO WIDTH NO-BREAK SPACE (ZWNBSP/BOM) is ECMAScript WhiteSpace, but
-        // .NET reclassified it out of White_Space so char.IsWhiteSpace returns false
-        // for it; treat it as whitespace explicitly.
-        while (char.IsWhiteSpace(first) || first == '﻿')
+        // WhiteSpace and LineTerminator (ECMA-262 12.2 and 12.3), Broiler.Unicode's over the pinned
+        // Unicode 17.0.0 tables (SJL-7.5): U+FEFF is white space and U+0085 is neither, where
+        // .NET's char.IsWhiteSpace held U+0085 and not U+FEFF.
+        while (JSUnicode.IsWhiteSpace(first) || JSUnicode.IsLineTerminator(first))
         {
             if (first.IsLineTerminator())
                 lineTerminator = true;
@@ -402,11 +403,11 @@ public class FastScanner
         if (skipped)
             state = Push();
 
-        if (first == '\\' || first.IsIdentifierStart())
+        if (first == '\\' || JSUnicode.IsIdentifierStart(first))
             return ReadIdentifier(state);
 
         if (char.IsHighSurrogate(first) && char.IsLowSurrogate(Next())
-            && char.ConvertToUtf32(first, Next()).IsIdentifierStart())
+            && JSUnicode.IsIdentifierStart(char.ConvertToUtf32(first, Next())))
             return ReadIdentifier(state);
 
         switch (first)
@@ -1700,7 +1701,7 @@ public class FastScanner
                     if (char.IsLowSurrogate(low))
                     {
                         var codePoint = char.ConvertToUtf32(current, low);
-                        if (!(start ? codePoint.IsIdentifierStart() : codePoint.IsIdentifierPart()))
+                        if (!(start ? JSUnicode.IsIdentifierStart(codePoint) : JSUnicode.IsIdentifierPart(codePoint)))
                             break;
 
                         if (builder != null)
@@ -1715,7 +1716,7 @@ public class FastScanner
                     }
                 }
 
-                if (!(start ? current.IsIdentifierStart() : current.IsIdentifierPart()))
+                if (!(start ? JSUnicode.IsIdentifierStart(current) : JSUnicode.IsIdentifierPart(current)))
                     break;
 
                 builder?.Append(current);
@@ -1781,7 +1782,7 @@ public class FastScanner
             }
         }
 
-        if (!(start ? codePoint.IsIdentifierStart() : codePoint.IsIdentifierPart()))
+        if (!(start ? JSUnicode.IsIdentifierStart(codePoint) : JSUnicode.IsIdentifierPart(codePoint)))
             throw Unexpected();
 
         return codePoint.FromCodePoint();
@@ -1821,7 +1822,7 @@ public class FastScanner
         FastToken CommitNumberToken(State s, TokenTypes type = TokenTypes.Number)
         {
             var p = Peek();
-            if (p != char.MaxValue && p.IsIdentifierStart() && p != '$' && p != '@')
+            if (p != char.MaxValue && JSUnicode.IsIdentifierStart(p) && p != '$' && p != '@')
                 throw Unexpected(); // identifier start after numeric literal
 
             // The value is the shared library's (SJL-3.5), which also refuses what the digit scan

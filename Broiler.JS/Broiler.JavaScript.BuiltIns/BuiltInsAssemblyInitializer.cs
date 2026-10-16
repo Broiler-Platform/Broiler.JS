@@ -25,6 +25,7 @@ using Broiler.JavaScript.LinqExpressions;
 using Broiler.JavaScript.BuiltIns.Class;
 using Broiler.JavaScript.BuiltIns.RegExp;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Runtime.Unicode;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Extensions;
@@ -865,14 +866,15 @@ internal static class BuiltInsAssemblyInitializer
         if (name[0] == '[')
             return true;
 
-        if (name[0] != '$' && name[0] != '_' && !char.IsLetter(name[0]))
-            return false;
-
-        for (var i = 1; i < name.Length; i++)
+        // An IdentifierName (ECMA-262 12.7), by code point: an IdentifierStartChar, then
+        // IdentifierPartChars, Broiler.Unicode's over the pinned Unicode 17.0.0 tables (SJL-7.5).
+        for (var i = 0; i < name.Length;)
         {
-            var c = name[i];
-            if (c != '$' && c != '_' && !char.IsLetterOrDigit(c))
+            var record = Utf16.CodePointAt(name, i);
+            if (!(i == 0 ? JSUnicode.IsIdentifierStart(record.CodePoint) : JSUnicode.IsIdentifierPart(record.CodePoint)))
                 return false;
+
+            i += record.CodeUnitCount;
         }
 
         return true;

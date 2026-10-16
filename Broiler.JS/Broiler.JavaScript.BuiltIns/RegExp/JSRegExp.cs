@@ -1,6 +1,7 @@
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Runtime.Unicode;
 using Broiler.Regex;
 using Broiler.Unicode.Properties;
 using System;
@@ -121,7 +122,10 @@ public partial class JSRegExp : JSObject, IJSRegExp
             return true;
         }
 
-        if (char.IsWhiteSpace(c) || c == '\uFEFF' || c == '\u2028' || c == '\u2029')
+        // WhiteSpace or LineTerminator (EncodeForRegExpEscape step 4), Broiler.Unicode's over the pinned
+        // Unicode 17.0.0 tables (SJL-7.5): U+0085 is neither, where .NET's char.IsWhiteSpace held it.
+        // Every Space_Separator is in the BMP, so a code unit decides.
+        if (JSUnicode.IsWhiteSpace(c) || JSUnicode.IsLineTerminator(c))
         {
             AppendUnicodeEscape(sb, c);
             return true;
@@ -1937,10 +1941,13 @@ public partial class JSRegExp : JSObject, IJSRegExp
     {
         if (!TryDecodeGroupName(name, unicode: true, out var codePoints) || codePoints.Count == 0)
             return false;
-        if (!IsRegExpIdentifierStart(codePoints[0]))
+        // RegExpIdentifierStart and RegExpIdentifierPart are IdentifierStartChar and IdentifierPartChar
+        // (ECMA-262 22.2.1), Broiler.Unicode's over the pinned Unicode 17.0.0 tables (SJL-7.5), so a group
+        // name and an identifier admit the same code points.
+        if (!JSUnicode.IsIdentifierStart(codePoints[0]))
             return false;
         for (var k = 1; k < codePoints.Count; k++)
-            if (!IsRegExpIdentifierPart(codePoints[k]))
+            if (!JSUnicode.IsIdentifierPart(codePoints[k]))
                 return false;
         return true;
     }
@@ -2023,32 +2030,6 @@ public partial class JSRegExp : JSObject, IJSRegExp
         foreach (var cp in codePoints)
             sb.Append(char.ConvertFromUtf32(cp));
         return sb.ToString();
-    }
-
-    private static bool IsRegExpIdentifierStart(int cp)
-    {
-        if (cp < 0 || cp > 0x10FFFF || cp is >= 0xD800 and <= 0xDFFF) return false;
-        if (cp is '$' or '_' or 0x1885 or 0x1886 or 0x2118 or 0x212E or 0x309B or 0x309C) return true;
-        return char.GetUnicodeCategory(char.ConvertFromUtf32(cp), 0) switch
-        {
-            UnicodeCategory.UppercaseLetter or UnicodeCategory.LowercaseLetter or UnicodeCategory.TitlecaseLetter
-            or UnicodeCategory.ModifierLetter or UnicodeCategory.OtherLetter or UnicodeCategory.LetterNumber => true,
-            _ => false,
-        };
-    }
-
-    private static bool IsRegExpIdentifierPart(int cp)
-    {
-        if (cp < 0 || cp > 0x10FFFF || cp is >= 0xD800 and <= 0xDFFF) return false;
-        if (IsRegExpIdentifierStart(cp)) return true;
-        if (cp is 0x200C or 0x200D or 0x00B7 or 0x0387 or 0x19DA or 0x30FB or 0xFF65) return true;
-        if (cp is >= 0x1369 and <= 0x1371) return true;
-        return char.GetUnicodeCategory(char.ConvertFromUtf32(cp), 0) switch
-        {
-            UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark
-            or UnicodeCategory.DecimalDigitNumber or UnicodeCategory.ConnectorPunctuation => true,
-            _ => false,
-        };
     }
 
     // Rewrites a JS \k<name> reference to its synthetic .NET form. A name shared by
