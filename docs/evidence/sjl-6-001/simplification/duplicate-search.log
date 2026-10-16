@@ -1,0 +1,87 @@
+# SJL-6.6 search for a surviving intra-engine duplicate of the Date area, Broiler.JS at 4d70821e50cfbf1823d4a309de63b7d8188f04aa:
+# every construct that spells a civil-day or time constant (the 400-year cycle's days, the civil
+# epoch's shift, the day's milliseconds, the time value's limit), names a civil-day helper, spells a
+# month or weekday name, parses a date by the platform, converts between local and universal time
+# by the platform, or reads the platform's zones, in the engine's product sources (Broiler.JS/, test
+# projects, benchmarks and samples excluded).
+# pattern: 146097|719468|\b86400000\b|8\.64e15|8640000000000000|DaysFromCivil|CivilFromDays|IsLeapYear|DaysInMonth|"(Sun|Mon|Tue|Wed|Thu|Fri|Sat)"|"(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)"|\bDateTime(Offset)?\.(Parse|TryParse|ParseExact|TryParseExact|DaysInMonth|IsLeapYear)\b|\.ToUniversalTime\(|\.ToLocalTime\(|\bTimeZoneInfo\b
+# hits: 78; each is reviewed in the bundle's README
+
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/HostLocalTimeProvider.cs:7:/// This engine's local time zone (decision SJL-D-19): the host's <see cref="TimeZoneInfo.Local"/>, read at
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/HostLocalTimeProvider.cs:12:/// <see cref="TimeZoneInfo"/> reads instants from year 1 to year 9999 only. An instant past the last of them
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/HostLocalTimeProvider.cs:15:/// zone is read again at each call, so a host that changes it, or clears <see cref="TimeZoneInfo"/>'s cache,
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/HostLocalTimeProvider.cs:30:    private const double FourCenturies = 146097d * 86400000d;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/HostLocalTimeProvider.cs:33:        Math.Truncate(TimeZoneInfo.Local.GetUtcOffset(Instant(epochMilliseconds)).TotalMilliseconds);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/HostLocalTimeProvider.cs:37:        var zone = TimeZoneInfo.Local;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDate.cs:15:    // Broiler-Falsified-If: LocalTime, UTC or TimeZoneString reads a zone other than the host's TimeZoneInfo.Local at the instant
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDate.cs:71:        var local = TimeZoneInfo.ConvertTime(instant, TimeZoneInfo.Local);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:7163:            var localTime = DateTimeOffset.FromUnixTimeMilliseconds((long)clipped).ToLocalTime();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:20:    // valid date range (±8.64e15 ms / ±275760 years) is supported — DateTime/DateTimeOffset
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:119:        var clamped = Math.Clamp(epochMs, -8.64e15, 8.64e15);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:221:        ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:223:        ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:229:        ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:656:        var clamped = Math.Clamp(clippedMs, -8.64e15, 8.64e15);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:25:    private static readonly BigInteger MaxEpochNanoseconds = BigInteger.Parse("8640000000000000000000");
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalNow.cs:25:            var local = TimeZoneInfo.Local;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalNow.cs:33:            if (TimeZoneInfo.TryConvertWindowsIdToIanaId(local.Id, out var iana))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:124:    [JSExport("daysInMonth")] public double DaysInMonth
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:126:        get { if (NonIso) { var c = CalendarYmd(); return TemporalCalendarMath.DaysInMonth(calendarId, c.y, c.m); } return IsoCalendarMath.DaysIn
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:136:        : IsoCalendarMath.IsLeapYear(isoYear);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:780:            day = Math.Clamp(day, 1, IsoCalendarMath.DaysInMonth(year, month));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:822:        var maxDay = IsoCalendarMath.DaysInMonth(newYear, newMonth);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:890:        var cd = Math.Min(ad, IsoCalendarMath.DaysInMonth(iy, im));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:1120:        var newDay = Math.Min(day, IsoCalendarMath.DaysInMonth(newYear, newMonth));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:155:    [JSExport("daysInMonth")] public double DaysInMonth
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:157:        get { if (NonIso) { var c = CalendarYmd(); return TemporalCalendarMath.DaysInMonth(calendarId, c.y, c.m); } return IsoCalendarMath.Da
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:167:        : IsoCalendarMath.IsLeapYear(isoYear);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1032:                day = Math.Clamp(day, 1, IsoCalendarMath.DaysInMonth(year, month));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1196:        var maxDay = IsoCalendarMath.DaysInMonth(newYear, newMonth);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:239:        var day = Math.Clamp(isoDay, 1, IsoCalendarMath.DaysInMonth(year, isoMonth));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:562:            day = Math.Min(day, IsoCalendarMath.DaysInMonth(validationYear, month));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:100:    [JSExport("daysInMonth")] public double DaysInMonth
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:102:        get { if (NonIso) { var c = CalendarYmd(); return TemporalCalendarMath.DaysInMonth(calendarId, c.y, c.m); } return IsoCalendarMath.D
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:112:        : IsoCalendarMath.IsLeapYear(isoYear);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:459:        day = Math.Clamp(day, 1, IsoCalendarMath.DaysInMonth(isoYear, isoMonth));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:23:// via .NET TimeZoneInfo, which handles DST transitions for ordinary years). Construction, from(),
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:31:    private static readonly BigInteger MaxEpochNanoseconds = BigInteger.Parse("8640000000000000000000");
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:244:    [JSExport("daysInMonth")] public double DaysInMonth
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:246:        get { if (NonIso) { var c = CalendarYmd(); return TemporalCalendarMath.DaysInMonth(calendarId, c.y, c.m); } var l = Local(); return I
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:256:        : IsoCalendarMath.IsLeapYear(Local().y);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:942:        var maxDay = IsoCalendarMath.DaysInMonth(newYear, newMonth);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1317:        var newDay = Math.Min(day, IsoCalendarMath.DaysInMonth(newYear, newMonth));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalArithmeticCalendar.cs:64:        if (id == "indian") return IsoCalendarMath.IsLeapYear(year + 78);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalArithmeticCalendar.cs:81:    internal static int DaysInMonth(string id, int year, int month)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalArithmeticCalendar.cs:83:        if (id == "indian") return IndianMonthLength(IsoCalendarMath.IsLeapYear(year + 78), month);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalArithmeticCalendar.cs:140:        while (dayOfYear >= DaysInMonth(id, year, month))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalArithmeticCalendar.cs:142:            dayOfYear -= DaysInMonth(id, year, month);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalArithmeticCalendar.cs:328:        var leap = IsoCalendarMath.IsLeapYear(gregorianYear);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalArithmeticCalendar.cs:341:        var leap = IsoCalendarMath.IsLeapYear(year + 78);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:35:    internal static int DaysInMonth(string id, int year, int month)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:36:        => Persian(id) ? TemporalSolarHijriCalendar.DaysInMonth(year, month)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:37:         : Luni(id) ? TemporalLunisolarCalendar.DaysInMonth(id, year, month) : TemporalArithmeticCalendar.DaysInMonth(id, year, month);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalLunisolarCalendar.cs:107:            if (month < 1 || month > info.MonthCount || day < 1 || day > info.DaysInMonth(month))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalLunisolarCalendar.cs:132:        return cal.IsLeapYear(NetYear(cal, id, year));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalLunisolarCalendar.cs:142:    internal static int DaysInMonth(string id, int year, int month)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalLunisolarCalendar.cs:144:        if (UseAstro(id, year)) return CldrChineseCalendar.GetYear(year).DaysInMonth(month);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalLunisolarCalendar.cs:146:        return cal.GetDaysInMonth(NetYear(cal, id, year), month);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs:150:            if (ord < 0 || targetDay > TemporalCalendarMath.DaysInMonth(calendarId, y, ord)) continue;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs:173:            if (ord >= 0) max = Math.Max(max, TemporalCalendarMath.DaysInMonth(calendarId, y, ord));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs:390:            if (month < 1 || month > monthsInYear || day < 1 || day > TemporalCalendarMath.DaysInMonth(calendarId, year, month))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs:396:            day = Math.Clamp(day, 1, TemporalCalendarMath.DaysInMonth(calendarId, year, month));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs:459:        var d = Math.Min(day, TemporalCalendarMath.DaysInMonth(calendarId, y, m));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs:473:        var maxDay = TemporalCalendarMath.DaysInMonth(calendarId, newYear, newMonth);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs:564:        var curDay = Math.Min(ad, TemporalCalendarMath.DaysInMonth(calendarId, cy, cm));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalSolarHijriCalendar.cs:93:        try { return Persian.IsLeapYear(year) ? 366 : 365; }
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalSolarHijriCalendar.cs:97:    internal static int DaysInMonth(int year, int month)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/Tz/IanaTimeZone.cs:9:// whole-minute TimeZoneInfo). All instants are UTC seconds since the Unix epoch.
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:128:        if (day > DateTime.DaysInMonth(year, month))
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:198:        if (!DateTimeOffset.TryParseExact(text, formats, CultureInfo.InvariantCulture, assume, out var instant))
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:201:        var marked = DateTime.TryParseExact(text, formats, CultureInfo.InvariantCulture, Marked(assume), out var clock);
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:209:        if (!DateTimeOffset.TryParse(text, culture, DateTimeStyles.AssumeLocal, out var instant))
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:212:        var marked = DateTime.TryParse(text, culture, Marked(DateTimeStyles.AssumeLocal), out var clock);
+Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:53:        value.HasValue() ? (value.ConvertTo(typeof(DateTime), out var dt) ? (DateTime)dt : DateTime.Parse(value.ToString())) : throw new ArgumentException
+Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:56:        value.HasValue() ? (value.ConvertTo(typeof(DateTime), out var dt) ? (DateTime)dt : DateTime.Parse(value.ToString())) : null;
+Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:59:        value.HasValue() ? (value.ConvertTo(typeof(DateTimeOffset), out var dto) ? (DateTimeOffset)dto : DateTime.Parse(value.ToString())) : throw new Arg
+Broiler.JS/Broiler.JavaScript.Runtime/JSValueToClrConverter.cs:62:        value.HasValue() ? (value.ConvertTo(typeof(DateTimeOffset), out var dto) ? (DateTimeOffset)dto : DateTime.Parse(value.ToString())) : null;
+Broiler.JS/CHANGELOG.md:21:  times, over this engine's provider of the host's zone: `TimeZoneInfo.Local`, read at each instant with
