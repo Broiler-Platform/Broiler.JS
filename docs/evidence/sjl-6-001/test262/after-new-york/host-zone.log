@@ -1,0 +1,14 @@
+# The zone each shard's tests ran in, against the merging job's own.
+expected: TZ: America/New_York
+expected: 2021-01-15T12:00:00Z: EST -0500
+expected: 2021-07-15T12:00:00Z: EDT -0400
+expected: tzdata: 2026c
+host-zone-shard-0.txt: as expected
+host-zone-shard-1.txt: as expected
+host-zone-shard-2.txt: as expected
+host-zone-shard-3.txt: as expected
+host-zone-shard-4.txt: as expected
+host-zone-shard-5.txt: as expected
+host-zone-shard-6.txt: as expected
+host-zone-shard-7.txt: as expected
+shards: 8; in the expected zone: 8

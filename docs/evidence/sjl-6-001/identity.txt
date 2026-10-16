@@ -1,0 +1,23 @@
+bundle: sjl-6-001 (Broiler.JS), its after arm
+after commit: 4d70821e50cfbf1823d4a309de63b7d8188f04aa
+after tree clean: True
+cut-over commit: 31c04809337e9b60e0480782a068438415cf8e07 (SJL-6.5)
+files under Broiler.JS/ and Broiler.ECMAScript/ that differ between the cut-over commit and the after commit:
+  Broiler.ECMAScript/runners/AlgorithmsLibrary.Date.cs
+  Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedDateAlgorithmTests.cs
+  Broiler.JS/CHANGELOG.md
+bases: test262/base/ (part A) and test262/base-new-york/ (part B), both taken at 5fef1165f001c226b28f9bf0ae32c6dbe56abcc8
+rule commit: 5fef1165f001c226b28f9bf0ae32c6dbe56abcc8 (the commit that added docs/evidence/sjl-6-001/decision-rule.md)
+rule commit an ancestor of the after commit: True
+files the rule fixes, changed between the rule commit and the after commit:
+  none
+collector commit: 4d70821e50cfbf1823d4a309de63b7d8188f04aa
+dotnet --version: 10.0.401
+dotnet --list-runtimes: Microsoft.AspNetCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.AspNetCore.App]
+Microsoft.NETCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.NETCore.App]
+node --version: v22.22.0
+machine: x86_64; Linux-6.18.44-fc-v139-x86_64-with-glibc2.39; logical processors 4
+cpu: Intel(R) Xeon(R) Processor @ 2.10GHz
+memory: 16479424 kB
+suite revision: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+collected: 2026-10-16T10:43:44Z
