@@ -96,4 +96,59 @@ public class SharedUnicodeTests
     [Fact]
     public void An_unknown_form_is_a_RangeError_before_the_text_is_read()
         => Assert.Equal("RangeError", ErrorName("'\\uD800'.normalize('nfc')"));
+
+    // ---- case mapping (rows C1 to C8) ------------------------------------------------------------------
+
+    // C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a sigma after them is final.
+    [Theory]
+    [InlineData("'\\u00AA\\u03A3'.toLowerCase() === '\\u00AA\\u03C2'")]
+    [InlineData("'\\u00BA\\u03A3'.toLowerCase() === '\\u00BA\\u03C2'")]
+    // C3: Unicode 17's Beria Erfe case pairs, which the hand patches lacked.
+    [InlineData("'\\u{16EA0}'.toLowerCase() === '\\u{16EBB}'")]
+    [InlineData("'\\u{16EBB}'.toUpperCase() === '\\u{16EA0}'")]
+    // C4: the Turkic lower case reads the pinned data for every other code point.
+    [InlineData("'\\uA7CB'.toLocaleLowerCase('tr') === '\\u0264'")]
+    [InlineData("'\\uA7CE'.toLocaleLowerCase('tr') === '\\uA7CF'")]
+    // C5: U+1DF1A is Soft_Dotted, so Lithuanian upper case removes the dot above after it.
+    [InlineData("'\\u{1DF1A}\\u0307'.toLocaleUpperCase('lt') === '\\u{1DF1A}'")]
+    // C6: More_Above admits no intervening character of class 0 or 230, and U+0903 is of class 0.
+    [InlineData("'I\\u0903\\u0300'.toLocaleLowerCase('lt') === 'i\\u0903\\u0300'")]
+    [InlineData("'I\\u0903\\u0307'.toLocaleLowerCase('tr') === '\\u0131\\u0903\\u0307'")]
+    // C7: a list of locales is canonicalized and its first element taken.
+    [InlineData("'i'.toLocaleUpperCase(['tr', 'en']) === '\\u0130'")]
+    [InlineData("'i'.toLocaleUpperCase(['en', 'tr']) === 'I'")]
+    [InlineData("'I'.toLocaleLowerCase(['az']) === '\\u0131'")]
+    // C9 holds: the language is matched after canonicalization, a Unicode extension removed.
+    [InlineData("'i'.toLocaleUpperCase('TR') === '\\u0130'")]
+    [InlineData("'i'.toLocaleUpperCase('tr-u-co-search') === '\\u0130'")]
+    [InlineData("'i'.toLocaleUpperCase([]) === 'I'")]
+    // C11 holds: lone surrogates pass through.
+    [InlineData("'\\uD800a'.toUpperCase() === '\\uD800A'")]
+    public void Case_mapping_follows_the_pinned_data(string expression) => Assert.Equal("true", Eval(expression));
+
+    // C8: CanonicalizeLocaleList(null) throws a TypeError, and a malformed tag a RangeError.
+    [Theory]
+    [InlineData("'i'.toLocaleUpperCase(null)", "TypeError")]
+    [InlineData("'i'.toLocaleLowerCase(null)", "TypeError")]
+    [InlineData("'i'.toLocaleUpperCase('x!')", "RangeError")]
+    [InlineData("'i'.toLocaleUpperCase(['tr', 5])", "TypeError")]
+    public void A_locale_list_is_canonicalized_first(string expression, string error)
+        => Assert.Equal(error, ErrorName(expression));
+
+    // C8: with no locale the default is this engine's, en-US, and never the host's culture; nor does
+    // toUpperCase or toLowerCase read the culture.
+    [Fact]
+    public void Casing_does_not_read_the_host_culture()
+    {
+        var saved = System.Globalization.CultureInfo.CurrentCulture;
+        try
+        {
+            System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.GetCultureInfo("tr-TR");
+            Assert.Equal("I,I,I,i,i", Eval("['i'.toLocaleUpperCase(), 'i'.toLocaleUpperCase(undefined), 'i'.toUpperCase(), 'I'.toLocaleLowerCase(), 'I'.toLowerCase()].join()"));
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = saved;
+        }
+    }
 }

@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Broiler.ECMAScript;
+﻿using Broiler.ECMAScript;
 using Broiler.ECMAScript.Numbers;
 using Broiler.ECMAScript.Text;
 using Broiler.JavaScript.BuiltIns.Boolean;
@@ -8,7 +7,6 @@ using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime.Unicode;
 using Broiler.Unicode.Algorithms;
-using Broiler.Unicode.Properties;
 
 namespace Broiler.JavaScript.BuiltIns.String;
 
@@ -143,17 +141,7 @@ public partial class JSString
     internal static JSValue ToLocaleLowerCase(in Arguments a)
     {
         var @this = a.This.AsString();
-        var locale = a.Get1();
-
-        try
-        {
-            CultureInfo culture = locale.IsNullOrUndefined ? CultureInfo.CurrentCulture : CultureInfo.GetCultureInfo(locale.ToString());
-            return new JSString(JSStringSpecialCasing.ToLocaleLower(@this, culture));
-        }
-        catch (CultureNotFoundException)
-        {
-            throw JSEngine.NewRangeError($"Incorrect locale information provided");
-        }
+        return new JSString(ChangeCase(@this, TransformCaseLanguage(a.Get1()), upper: false));
     }
 
     [JSPrototypeMethod]
@@ -161,17 +149,7 @@ public partial class JSString
     internal static JSValue ToLocaleUpperCase(in Arguments a)
     {
         var @this = a.This.AsString();
-        var locale = a.Get1();
-
-        try
-        {
-            CultureInfo culture = locale.IsNullOrUndefined ? CultureInfo.CurrentCulture : CultureInfo.GetCultureInfo(locale.ToString());
-            return new JSString(JSStringSpecialCasing.ToLocaleUpper(@this, culture));
-        }
-        catch (CultureNotFoundException)
-        {
-            throw JSEngine.NewRangeError($"Incorrect locale information provided");
-        }
+        return new JSString(ChangeCase(@this, TransformCaseLanguage(a.Get1()), upper: true));
     }
 
     [JSPrototypeMethod]
@@ -179,7 +157,7 @@ public partial class JSString
     internal static JSValue ToLowerCase(in Arguments a)
     {
         var @this = a.This.AsString();
-        return new JSString(JSStringSpecialCasing.ToLower(@this));
+        return new JSString(ChangeCase(@this, CaseLanguage.Default, upper: false));
     }
 
     [JSPrototypeMethod]
@@ -187,7 +165,44 @@ public partial class JSString
     internal static JSValue ToUpperCase(in Arguments a)
     {
         var @this = a.This.AsString();
-        return new JSString(JSStringSpecialCasing.ToUpper(@this));
+        return new JSString(ChangeCase(@this, CaseLanguage.Default, upper: true));
+    }
+
+    // The full case mappings of UnicodeData.txt and SpecialCasing.txt, Final_Sigma and the Turkic and
+    // Lithuanian rules, Broiler.Unicode's over the pinned Unicode 17.0.0 tables (SJL-7.5), where they were
+    // the casing class of the Broiler.Unicode.Properties package over the runtime's data, its culture and
+    // its categories. This engine's length policy: a result longer than MaximumLength is a RangeError.
+    private static string ChangeCase(string text, CaseLanguage language, bool upper)
+    {
+        string? result;
+        var status = upper
+            ? JSUnicode.CaseMapping.ToUpperCase(text, language, MaximumLength, null, out result)
+            : JSUnicode.CaseMapping.ToLowerCase(text, language, MaximumLength, null, out result);
+
+        return status == UnicodeStatus.Success
+            ? result!
+            : throw JSEngine.NewRangeError("Invalid string length");
+    }
+
+    // ECMA-402 TransformCase, steps 1 to 6: the requested locales are canonicalized (null is a TypeError
+    // and a malformed tag a RangeError), the first is taken, or the default locale when there is none,
+    // and its language, which a Unicode extension does not change, chooses the language-sensitive
+    // mappings. The default locale is this engine's, en-US, never the host's culture (C8), and a list of
+    // locales is read as a list (C7).
+    private static CaseLanguage TransformCaseLanguage(JSValue locales)
+    {
+        var requested = Intl.JSIntl.CanonicalizeLocaleList(locales);
+        if (requested[KeyStrings.length].UIntValue == 0)
+            return CaseLanguage.Default;
+
+        var tag = requested[0u].StringValue;
+        var dash = tag.IndexOf('-');
+        return (dash < 0 ? tag : tag[..dash]) switch
+        {
+            "tr" or "az" => CaseLanguage.Turkic,
+            "lt" => CaseLanguage.Lithuanian,
+            _ => CaseLanguage.Default,
+        };
     }
 
     [JSPrototypeMethod]
