@@ -141,6 +141,19 @@ as the year -5, -62324985600000. The runner fails on them, as it must until the 
 expectation; the plan, `SharedLibraries.md`'s record of SJL-6.5, states the reading, and the next corpus
 revision takes it from there, not from this run. The runs were taken together, from 08:41Z to 09:03Z.
 
+**Every vector of corpus revision 17 has the result its class expects, in both zones.** At `520ecf9`,
+which carries revision 17, retires the 1,016 fields with Broiler.VM's 16
+([`engine/retired-divergences-revision-17.tsv`](engine/retired-divergences-revision-17.tsv)) and states this
+engine's reading of the two strings, with the same product sources, from a clean checkout:
+
+| Run | Result | Files |
+|---|---|---|
+| Revision 17, UTC | 50,727 vectors: 50,723 match, 4 classified divergences, 0 unclassified differences | [`engine/run-revision-17-utc.log`](engine/run-revision-17-utc.log), [`engine/run-revision-17-utc.tsv.gz`](engine/run-revision-17-utc.tsv.gz) |
+| Revision 17, New York | 50,727 vectors: 50,723 match, 4 classified divergences, 0 unclassified differences | [`engine/run-revision-17-new-york.log`](engine/run-revision-17-new-york.log), [`engine/run-revision-17-new-york.tsv.gz`](engine/run-revision-17-new-york.tsv.gz) |
+
+The 4 are the number area's. The runner's test passes in both zones. The runs were taken together, from
+09:08Z to 09:29Z.
+
 ## What this bundle does not hold yet
 
 - **The after runs** of parts A and B, at the commit that lands SJL-6.5's cut-over, and their comparisons.
