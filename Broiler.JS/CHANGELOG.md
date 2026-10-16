@@ -63,6 +63,12 @@ engine-level run after the cut-over.
 - **`Katakana_Or_Hiragana` is a Script value** (P2, 20 vectors of `unicode/property-accepted`,
   `unicode/property-cells` and `unicode/property-membership`, `js-p2-hrkt`): `/\p{sc=Hrkt}/u` is valid and
   matches nothing, where it was a SyntaxError.
+- **A name no table holds never reaches .NET's `\p`** (P3; no vector): a lone name or a `Name=Value` that
+  Broiler.Regex refused was left verbatim for the translator, whose .NET pattern might admit it; the lookup
+  now refuses it before either engine reads the pattern.
+- **General_Category is an operand of a `v`-mode set operation on the translator's path too** (P4; no
+  vector): where Broiler.Regex declines a pattern, `[\p{gc=Lu}--\p{Script=Latin}]` resolves its operands,
+  where the translator took only Script, Script_Extensions and binary properties and threw a SyntaxError.
 - **The names of the properties of strings are exact** (S2, 1 vector of `unicode/property-cells`,
   `js-s2-string-properties`): `/\p{rgiemoji}/v` is a SyntaxError.
 - **An identifier subtracts Pattern_Syntax** (I1, 2 vectors of `unicode/identifier-special`,
