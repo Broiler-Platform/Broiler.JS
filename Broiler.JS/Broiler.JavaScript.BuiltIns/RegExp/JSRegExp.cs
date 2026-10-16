@@ -122,7 +122,7 @@ public partial class JSRegExp : JSObject, IJSRegExp
         }
 
         // WhiteSpace or LineTerminator (EncodeForRegExpEscape step 4), Broiler.Unicode's over the pinned
-        // Unicode 17.0.0 tables (SJL-7.5): U+0085 is neither, where .NET's char.IsWhiteSpace held it.
+        // Unicode 17.0.0 tables (SJL-7.5): U+0085 is neither, where the runtime's white-space test held it.
         // Every Space_Separator is in the BMP, so a code unit decides.
         if (JSUnicode.IsWhiteSpace(c) || JSUnicode.IsLineTerminator(c))
         {

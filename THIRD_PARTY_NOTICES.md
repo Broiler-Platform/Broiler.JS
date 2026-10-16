@@ -170,6 +170,11 @@ its tables' source.*
 - The same tables encode the property names, values and aliases ECMAScript admits, which the generator reads
   from three tables of **ECMA-262**, archived unmodified in
   [`data/unicode/pins/ecma262/`](data/unicode/pins/ecma262), below.
+- Until milestone SJL-7.5 the engine's case mapping, its `\p{…}` sets and its properties of strings were read
+  from the Unicode data the `Broiler.Unicode.Properties` and `Broiler.Unicode.Emoji.StringProperties`
+  packages carry, under the same licence, with the runtime's own Unicode data and the host's ICU. The engine
+  no longer calls either package; both still arrive with `Broiler.Regex`, which depends on them, until
+  milestone SJL-11, and carry their own notices.
 
 *Added 2026-10-16, at milestone SJL-7.5, when the Unicode area moved to Broiler.Unicode's packages.*
 

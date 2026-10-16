@@ -376,7 +376,7 @@ public class FastScanner
 
         // WhiteSpace and LineTerminator (ECMA-262 12.2 and 12.3), Broiler.Unicode's over the pinned
         // Unicode 17.0.0 tables (SJL-7.5): U+FEFF is white space and U+0085 is neither, where
-        // .NET's char.IsWhiteSpace held U+0085 and not U+FEFF.
+        // the runtime's white-space test held U+0085 and not U+FEFF.
         while (JSUnicode.IsWhiteSpace(first) || JSUnicode.IsLineTerminator(first))
         {
             if (first.IsLineTerminator())

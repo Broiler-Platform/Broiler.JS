@@ -111,6 +111,39 @@ member the move changes. No public member is removed. The observable corrections
 | Member | Assembly | Disposition | What it does now |
 | --- | --- | --- | --- |
 | `StringSpan.Trim()`, `TrimStart()`, `TrimEnd()` | `Ast` | (b) obsolete forwarder, removed in the next major version | `NumberParsing.TrimStrWhiteSpace`: `StrWhiteSpaceChar`, the specification's WhiteSpace and LineTerminator from the pinned Unicode data, where they trimmed .NET's `char.IsWhiteSpace`, so U+0085 is no longer trimmed and U+FEFF now is. Nothing in the engine calls them, as nothing called `JSStringExtensions.JSTrim` at SJL-3.5, which took the same disposition. `Ast` now references `Broiler.ECMAScript.Algorithms` for it |
+| `JSRegExp.CreateRegex(string, string, out CaptureGroupMap)` and its overload with `out BroilerRegex` | `BuiltIns` | kept, behaviour corrected | Under `u` or `v`, a property escape whose name ECMA-262's tables do not hold, exactly as written, is a SyntaxError before Broiler.Regex or the translator reads the pattern, where a loose lookup admitted it (correspondence rows P1 to P3 and S2). The translator's sets are Broiler.Unicode's; the returned .NET `Regex` matches nothing for an empty set such as `\p{sc=Hrkt}` |
+| `JSRegExp(string pattern, string flags)` | `BuiltIns` | kept, behaviour corrected | Through `CreateRegex`, as above; and a group name admits what an identifier admits (I3) |
+| `JSIntlSegmenter`, `JSIntlSegments(string, string)` | `BuiltIns` | kept, results corrected | The segments are UAX #29's grapheme, word and sentence segments over the pinned data, and `isWordLike` the owner's word status (G1 to G4); a granularity other than `word` or `sentence` is read as `grapheme`, as before |
+| `JSIntlCollator.Compare(in Arguments)` | `BuiltIns` | kept, behaviour corrected | Both strings are decomposed to NFD by Broiler.Unicode before the host's `CompareInfo` compares them, where the host's normalizer threw on a lone surrogate (N1); a decomposition longer than `JSString.MaximumLength` is a RangeError |
+| `CharExtensions` | `Parser` | kept, its type | Public, with no public member, as before: its internal `IsIdentifierStart` and `IsIdentifierPart` (two overloads each), its Unicode 17 tables and `InRanges` are deleted; `FromCodePoint`, `HexValue`, `IsDigitPart` and `IsLineTerminator` stay |
+| `RegExpUnicodeValidator.IsValidUnicodePattern(string)` | `Runtime` | kept, unchanged | It still checks structure only; the names are checked by the new internal `JSUnicodePropertyNames`, which the parser and `CreateRegex` call beside it |
+
+**Removed internal and private members**, with no public surface:
+
+- *Lexical classes:* `CharExtensions.IsIdentifierStart` and `IsIdentifierPart` (for `char` and `int`),
+  `UnicodeV17IdStart`, `UnicodeV17IdContinueExtra` and `InRanges` (`Parser`); `JSRegExp`'s
+  `IsRegExpIdentifierStart` and `IsRegExpIdentifierPart`.
+- *Property lookup:* `JSRegExp`'s two copies of `NormalizeKey` (one local to `TranslateUnicodeProperty`, one
+  in `JSRegExp.UnicodeSets`), `TranslateGeneralCategory`, `EmojiStringPropertyNames`,
+  `EmojiAlternationCache` and `ExpandEmojiStringProperty`; `GeneralCategoryNames` stays, keyed by the exact
+  names, to choose .NET's spelling inside a class.
+- *Segmentation:* `JSIntlSegments`' `ComputeGraphemes`, `ComputeWords`, `ComputeSentences`, `WordCategory`,
+  `WordCat`, `IsNumericInfix`, `Joinable` and `IsWordLike`.
+
+The new internal members are, in `Runtime`, `JSUnicode` (the owner's types over this engine's tables, with
+the lexical classes), `JSUnicodeTables` (the provider), `JSUnicodeTableData` (the generated tables) and
+`JSUnicodePropertyNames` (the exact name check); in `BuiltIns`, `JSString.NormalizeText`, and the private
+helpers that read the owner's sets and properties of strings in `JSRegExp` and the segmenter in
+`JSIntlSegments`.
+
+**Packages.** `Runtime` references `Broiler.Unicode.Algorithms` and `BuiltIns`
+`Broiler.Unicode.Segmentation`, both `0.1.0-preview.4` from nuget.org; `Ast` references
+`Broiler.ECMAScript.Algorithms`. No package of this engine references a package that carries Unicode
+tables. `Broiler.Unicode.Properties` and `UnicodeEmoji.StringProperties` stay in the closure through
+`Broiler.Regex` until milestone SJL-11, and no code of this engine calls them.
+
+**Compatibility.** Binary-compatible: every public member is kept with its signature. Source-compatible,
+with a CS0618 warning where a caller uses `StringSpan`'s trims.
 
 ## Public API changes, 2026-10-16 (the Date area moves to `Broiler.ECMAScript.Algorithms`)
 

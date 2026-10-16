@@ -116,7 +116,7 @@ public readonly struct StringSpan : IEquatable<StringSpan>, IEquatable<string>, 
     public override string ToString() => Value ?? string.Empty;
 
     // The three trim StrWhiteSpaceChar, the shared library's set: the specification's WhiteSpace and
-    // LineTerminator, from the pinned Unicode data. They trimmed .NET's char.IsWhiteSpace, which holds
+    // LineTerminator, from the pinned Unicode data. They trimmed the runtime's white space, which holds
     // U+0085 and not U+FEFF. Nothing in the engine calls them (milestone SJL-7.5, decision SJL-D-25 (b)).
     [Obsolete("Use Broiler.ECMAScript.Numbers.NumberParsing.TrimStrWhiteSpace, which this forwards to. To be removed in the next major version.")]
     public StringSpan Trim() => Trimmed(TrimEnds.Both);
