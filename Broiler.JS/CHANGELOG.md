@@ -10,6 +10,21 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### The `era` option is written beside a format with no year (2026-10-16)
+
+- **`Intl.DateTimeFormat` writes the `era` option's era beside a format that shows no year**, where the
+  pattern appended its era field only to a date with a year, so the option was dropped from `format`
+  and `formatToParts` alike. It follows a date, `{ era: "short", month: "short", day: "numeric" }`
+  formats as `"Oct 16 AD"` where it was `"Oct 16"`, and leads a time alone, joined as a date is:
+  `{ era: "short", minute: "2-digit", second: "2-digit" }` is `"AD, 03:05"`, where it was `"03:05"`.
+  These are CLDR's en layouts, and V8's (ICU 77.1, CLDR 47) for the same options. A day or a month
+  alone with an era takes the same layout (`"16 AD"`), where CLDR's en has an appended-field form
+  (`"AD (day: 16)"`) that this engine's patterns do not model.
+
+An era-using calendar's era written without the option, such as `buddhist`'s `BE`, still needs a year,
+as in CLDR; a Temporal type with no era, `PlainTime` or `PlainMonthDay`, still drops the option.
+`DateTimeFormatEraWithoutYearTests` holds the cases.
+
 ### `formatToParts` writes a minute-and-second format through the pattern `format` writes (2026-10-16)
 
 `Intl.DateTimeFormat.prototype.formatToParts` wrote a format with `minute` and `second` but no `hour` as

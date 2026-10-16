@@ -408,6 +408,9 @@ internal static class JSIntlDateTimeFormatEngine
         if (datePattern == null && timePattern == null)
             datePattern = DefaultNumericDate(localeTag);
 
+        // The cyclic calendars (chinese/dangi) have no era, so an era option is ignored for them.
+        var cyclicCalendar = CyclicYearCalendars.Contains(calendar ?? string.Empty);
+        var eraTok = eraStyle switch { "narrow" => "GGGGG", "long" => "GGGG", _ => "G" };
         if (datePattern != null && datePattern.IndexOf('y') >= 0)
         {
             // An era-using calendar (e.g. buddhist) appends the era after a date that
@@ -419,12 +422,19 @@ internal static class JSIntlDateTimeFormatEngine
             // form used elsewhere wraps the name in parentheses, "r(U)". Each makes the pattern
             // structurally distinct.
             var eraCalendar = EraCalendars.ContainsKey(calendar ?? string.Empty) || IslamicCalendars.Contains(calendar ?? string.Empty);
-            // The cyclic calendars (chinese/dangi) have no era, so an era option is ignored for them.
-            if ((eraCalendar || hasEra) && !CyclicYearCalendars.Contains(calendar ?? string.Empty))
-                datePattern += eraStyle switch { "narrow" => " GGGGG", "long" => " GGGG", _ => " G" };
-            else if (CyclicYearCalendars.Contains(calendar ?? string.Empty))
+            if ((eraCalendar || hasEra) && !cyclicCalendar)
+                datePattern += " " + eraTok;
+            else if (cyclicCalendar)
                 datePattern = ReplaceYearField(datePattern,
                     CldrLocaleData.LanguageOf(localeTag) == "zh" ? "rU年" : "r(U)");
+        }
+        else if (hasEra && !cyclicCalendar)
+        {
+            // The explicit `era` option is written beside a format with no year too, in CLDR's en
+            // layout: after a date ("MMM d" -> "MMM d G", "Oct 16 AD"), and ahead of a time alone,
+            // joined as a date is ("G, h:mm a", "AD, 12:03 PM"). An era-using calendar's own era
+            // still needs a year.
+            datePattern = datePattern != null ? datePattern + " " + eraTok : eraTok;
         }
 
         string combined = (datePattern, timePattern) switch
