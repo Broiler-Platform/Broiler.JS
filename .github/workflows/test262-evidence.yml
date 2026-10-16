@@ -11,6 +11,11 @@ name: test262 evidence
 # is set to it for every shard and for the re-run, each shard records the zone its tests ran in, and
 # the run is complete only if every shard ran in that zone. Two runs are compared only within one zone.
 #
+# Negative-metadata tests (a SyntaxError expected at parse time, an early error) are left out unless
+# include_negative is set: then every shard and the re-run include them and verify the error each
+# expects. Two runs are compared only when both were taken the same way, which each run's run.txt shows
+# among its inputs.
+#
 # Unlike test262.yml it writes nothing. Its token reads the repository and the Actions artifacts and
 # nothing else, so it opens no issue, commits nothing and leaves the failure manifest alone. It runs
 # no saved-failure preflight, so the suite's known failures cannot keep the full run from starting.
@@ -55,6 +60,11 @@ on:
         required: false
         default: ''
         type: string
+      include_negative:
+        description: Include and verify negative-metadata tests in every shard and in the re-run.
+        required: false
+        default: false
+        type: boolean
       base_run_id:
         description: Optional. The ID of an earlier test262 evidence run to compare with.
         required: false
@@ -190,6 +200,7 @@ jobs:
           minifier-timeout-seconds: '30'
           memory-limit-mb: '0'
           max-workers: ${{ inputs.max_workers }}
+          include-negative: ${{ inputs.include_negative }}
 
       - name: Hash the shell this shard ran
         if: always()
@@ -394,6 +405,7 @@ jobs:
           minifier-timeout-seconds: '30'
           memory-limit-mb: '0'
           max-workers: '1'
+          include-negative: ${{ inputs.include_negative }}
 
       - name: Keep the re-run
         if: ${{ always() && steps.rerun.outcome != 'skipped' }}
@@ -497,7 +509,7 @@ jobs:
           if merged.is_file():
               configuration = json.loads(merged.read_text(encoding="utf-8")).get("runConfiguration") or {}
               for key in ("dotnetVersion", "minifier", "minifierVersion", "maxWorkers", "testTimeoutSeconds",
-                          "memoryLimitMb", "shardCount", "selectionMode", "suiteRef"):
+                          "memoryLimitMb", "shardCount", "selectionMode", "suiteRef", "includeNegative"):
                   if key in configuration:
                       lines.append(f"{key}: {configuration[key]}")
           Path("evidence").mkdir(exist_ok=True)

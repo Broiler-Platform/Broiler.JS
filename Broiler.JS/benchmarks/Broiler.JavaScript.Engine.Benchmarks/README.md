@@ -71,6 +71,8 @@ Useful filters:
 - `*NumberConversionBenchmarks*` for the shared JavaScript libraries pilot's measurement:
   number to string, string to number and numeric literal values, each with its control. See
   below.
+- `*UnicodeBenchmarks*` for the shared JavaScript libraries' Unicode measurement:
+  `normalize`, casing and identifier scanning, each with its control. See below.
 - `*Phase5TieringBenchmarks*` for baseline versus promoted numeric reductions with
   numeric and mixed-type inputs; `*Phase5TaggedValueFeasibilityBenchmarks*` compares
   reference-backed `JSValue` scalar reads with the isolated eight-byte prototype.
@@ -119,3 +121,20 @@ configuration as one JSON object; the rule checks both before and after every ru
 counts the conversions its workload completed rather than their results, so a correction the
 cut-over makes does not change it. **No figure from these workloads belongs anywhere but an
 evidence bundle**: `docs/evidence/sjl-0-001/` holds the base reading.
+
+`UnicodeBenchmarks` holds the workloads of milestone SJL-7's measurement in the same way:
+`Normalize`, `Casing` and `Identifiers`, each with its control, committed with their rule,
+`docs/evidence/sjl-7-001/decision-rule.md` part B, at SJL-7.1, before any code that rule judges
+existed, and not changed afterwards.
+
+```bash
+dotnet Broiler.JavaScript.Engine.Benchmarks.dll --unicode-answers
+BROILER_BENCHMARK_PROFILE=baseline dotnet Broiler.JavaScript.Engine.Benchmarks.dll --filter '*UnicodeBenchmarks*' --buildTimeout 1800
+```
+
+`--unicode-answers` prints the answers and the configuration as `--number-conversion-answers`
+does, with the current culture and two probes of the host's globalization data added: this
+engine's casing and normalization read the host's ICU until the cut-over, and its locale casing
+throws under invariant globalization, so a lane without ICU fails the answers. Each answer counts
+completed operations, for the same reason. **No figure from these workloads belongs anywhere but
+bundle `docs/evidence/sjl-7-001/`.**

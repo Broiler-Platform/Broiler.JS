@@ -189,6 +189,12 @@ public static class Program
             return;
         }
 
+        if (args.Length == 1 && args[0] == "--unicode-answers")
+        {
+            UnicodeBenchmarks.WriteAnswers();
+            return;
+        }
+
         BenchmarkSwitcher
             .FromTypes([
                 typeof(ContextStartupBenchmarks),
@@ -213,6 +219,7 @@ public static class Program
                 typeof(BuiltInHeavyBenchmarks),
                 typeof(JIntSmokeBenchmarks),
                 typeof(NumberConversionBenchmarks),
+                typeof(UnicodeBenchmarks),
             ])
             .Run(args, BenchmarkConfiguration.Create());
     }
