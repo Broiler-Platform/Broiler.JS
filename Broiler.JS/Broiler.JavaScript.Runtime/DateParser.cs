@@ -1,9 +1,15 @@
 ﻿using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Broiler.ECMAScript.Time;
 
 namespace Broiler.JavaScript.Runtime;
 
+/// <summary>
+/// This engine's own reading of the strings outside the Date Time String Format (decision SJL-D-17), which
+/// <c>Date.parse</c> calls after the shared library's strict dialect and before Broiler.VM's (JSD-0072): the
+/// numeric slash dates, the format's leniencies this engine keeps, its format lists and the culture's parses.
+/// </summary>
 public static class DateParser
 {
     // Date.prototype.toString() / toTimeString() emit the implementation-defined shape
@@ -46,42 +52,36 @@ public static class DateParser
         return text;
     }
 
-    internal static readonly string[] DefaultFormats = [
-        "yyyy-MM-ddTHH:mm:ss.FFF",
-        "yyyy-MM-ddTHH:mm:ss",
-        "yyyy-MM-ddTHH:mm",
-        "yyyy-MM-dd",
-        "yyyy-MM",
-        "yyyy"
-    ];
+    // The format's leniencies this engine keeps (correspondence rows P4 and P6, decided at SJL-6.5): a
+    // 'T'-joined date-time of the format whose fraction has other than three digits, none to nine, or whose
+    // offset has no colon. It is read as the format with the fraction cut or padded to three digits and the
+    // colon inserted, through the shared library's strict dialect.
+    private static readonly Regex FormatLeniencies = new(
+        @"^((?:[+-]\d{6}|\d{4})(?:-\d{2}(?:-\d{2})?)?)T(\d{2}:\d{2}(?::\d{2})?)(?:\.(\d{0,9}))?(Z|[+-]\d{2}:?\d{2})?$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
-    // The ES Date Time String Format proper: a 'T' date/time separator requires
-    // zero-padded fields and a Z or ±HH:mm offset (no bare ±HH). A relaxed,
-    // single-digit / bare-offset form is accepted only with a SPACE separator
-    // (SpiderMonkey extension). So any string whose date and time are joined by 'T'
-    // must match these strict patterns exactly — it must NOT fall through to the
-    // relaxed format lists or the general parser (test262 sm/Date/non-iso:
-    // "1997-3-8T11:19:20" and "1997-03-08T11:19:10-07" are NaN, while the
-    // space-separated equivalents parse).
-    // Z-suffixed strict ISO is UTC: parsed with AssumeUniversal so the wall clock is read as
-    // UTC (a 'Z' literal under AssumeLocal would wrongly apply the local offset — Date.parse of
-    // a toISOString() round-trip must be exact).
-    private static readonly string[] StrictIsoTUtcFormats = [
-        "yyyy-MM-ddTHH:mm:ss.FFF'Z'",
-        "yyyy-MM-ddTHH:mm:ss'Z'",
-        "yyyy-MM-ddTHH:mm'Z'",
-    ];
+    private static EcmaParsedDate ReadFormatLeniencies(string text)
+    {
+        var m = FormatLeniencies.Match(text);
+        if (!m.Success)
+            return Invalid;
 
-    // Strict ISO with an explicit ±HH:mm offset (zzz rejects a bare ±HH) or with no offset
-    // (a no-offset date-time is local time).
-    private static readonly string[] StrictIsoTLocalFormats = [
-        "yyyy-MM-ddTHH:mm:ss.FFFzzz",
-        "yyyy-MM-ddTHH:mm:sszzz",
-        "yyyy-MM-ddTHH:mmzzz",
-        "yyyy-MM-ddTHH:mm:ss.FFF",
-        "yyyy-MM-ddTHH:mm:ss",
-        "yyyy-MM-ddTHH:mm",
-    ];
+        var time = m.Groups[2].Value;
+        var fraction = m.Groups[3];
+        var offset = m.Groups[4].Value;
+
+        // A fraction needs the seconds, as the format's does.
+        if (fraction.Success && time.Length != 8)
+            return Invalid;
+
+        var normalized = m.Groups[1].Value + "T" + time;
+        if (fraction.Success)
+            normalized += "." + (fraction.Value + "000").Substring(0, 3);
+        if (offset.Length == 5)
+            offset = offset.Substring(0, 3) + ":" + offset.Substring(3);
+
+        return EcmaDateParser.Parse(normalized + offset, DateParseDialect.Strict);
+    }
 
     // The ISO 'T' date/time separator: a 'T' immediately preceded by a digit (the day).
     // This does not match the 'T' in "GMT"/"UTC" zone designators (preceded by a letter).
@@ -97,9 +97,9 @@ public static class DateParser
     // maps 50..99 -> 1950..1999 and 00..49 -> 2000..2049. Returns false (the caller yields an
     // invalid Date) for an out-of-range field — and the caller treats ANY N/N/N string this
     // way, so it never falls through to a more lenient parse.
-    private static bool TryParseNumericSlashDate(string text, out DateTimeOffset result)
+    private static bool TryParseNumericSlashDate(string text, out DateTime result)
     {
-        result = DateTimeOffset.MinValue;
+        result = default;
 
         var m = NumericSlashDate.Match(text);
         if (!m.Success)
@@ -125,20 +125,19 @@ public static class DateParser
         if (month is < 1 or > 12 || day is < 1 or > 31 || year is < 1 or > 9999)
             return false;
 
-        try
-        {
-            // Bare numeric dates are interpreted in local time, like the Date(y, m, d) form
-            // (not the UTC ISO date-only form).
-            result = new DateTimeOffset(new DateTime(year, month, day, 0, 0, 0, DateTimeKind.Local));
-            return true;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
+        if (day > DateTime.DaysInMonth(year, month))
             return false;
-        }
+
+        // Bare numeric dates are interpreted in local time, like the Date(y, m, d) form
+        // (not the UTC ISO date-only form).
+        result = new DateTime(year, month, day);
+        return true;
     }
 
     internal static readonly string[] SecondaryFormatsUTC = [
+        // The form of Date.prototype.toUTCString, read before the culture's parse, which reads it in
+        // the culture's calendar (correspondence row P8)
+        "ddd, dd MMM yyyy HH:mm:ss 'GMT'",
         "d MMMM yyyy HH:mm \\U\\T\\CK",
         "MMMM dd, yyyy, HH:mm:ss \\U\\T\\CK",
         "MMMM dd, yyyy HH:mm:ss \\U\\T\\CK",
@@ -177,7 +176,50 @@ public static class DateParser
 
     ];
 
-    internal static DateTimeOffset Parse(string text)
+    private static readonly EcmaParsedDate Invalid = new(EcmaParsedKind.Invalid, double.NaN);
+
+    // A .NET parse's reading. DateTimeOffset reads the string as this engine always has: a string with an
+    // offset, or one the UTC list reads, is its instant; DateTime, which marks such a string UTC, tells it
+    // from one without, whose wall clock is a local time the caller reads through UTC over the host's zone.
+    private static EcmaParsedDate Reading(DateTimeOffset instant, bool marked, DateTime clock)
+    {
+        if (marked && clock.Kind == DateTimeKind.Unspecified)
+        {
+            var wallClock = new DateTimeOffset(instant.DateTime.Ticks, TimeSpan.Zero).ToUnixTimeMilliseconds();
+            return new EcmaParsedDate(EcmaParsedKind.Local, wallClock);
+        }
+
+        return new EcmaParsedDate(EcmaParsedKind.Utc, EcmaTime.TimeClip(instant.ToUnixTimeMilliseconds()));
+    }
+
+    private static bool TryParseExact(string text, string[] formats, DateTimeStyles assume, out EcmaParsedDate parsed)
+    {
+        parsed = Invalid;
+        if (!DateTimeOffset.TryParseExact(text, formats, CultureInfo.InvariantCulture, assume, out var instant))
+            return false;
+
+        var marked = DateTime.TryParseExact(text, formats, CultureInfo.InvariantCulture, Marked(assume), out var clock);
+        parsed = Reading(instant, marked, clock);
+        return true;
+    }
+
+    private static bool TryParse(string text, CultureInfo culture, out EcmaParsedDate parsed)
+    {
+        parsed = Invalid;
+        if (!DateTimeOffset.TryParse(text, culture, DateTimeStyles.AssumeLocal, out var instant))
+            return false;
+
+        var marked = DateTime.TryParse(text, culture, Marked(DateTimeStyles.AssumeLocal), out var clock);
+        parsed = Reading(instant, marked, clock);
+        return true;
+    }
+
+    // The styles under which DateTime marks a string with an offset, or one assumed UTC, as UTC, and leaves
+    // the kind of one without unspecified.
+    private static DateTimeStyles Marked(DateTimeStyles assume) =>
+        DateTimeStyles.AdjustToUniversal | (assume & DateTimeStyles.AssumeUniversal);
+
+    internal static EcmaParsedDate Parse(string text)
     {
         text = NormalizeToStringZone(text);
         text = NormalizeExtendedYear(text);
@@ -186,37 +228,29 @@ public static class DateParser
         // year heuristic, and any such string is handled exclusively here (an out-of-range
         // field is an invalid Date, never re-parsed leniently — test262 sm/Date/two-digit-years).
         if (NumericSlashDate.IsMatch(text))
-            return TryParseNumericSlashDate(text, out var slash) ? slash : DateTimeOffset.MinValue;
+        {
+            return TryParseNumericSlashDate(text, out var slash)
+                ? new EcmaParsedDate(EcmaParsedKind.Local, new DateTimeOffset(slash.Ticks, TimeSpan.Zero).ToUnixTimeMilliseconds())
+                : Invalid;
+        }
 
-        // A 'T'-joined date/time is the strict ES Date Time String Format: it must match the
-        // zero-padded patterns exactly, and an unrecognised 'T' string is NaN rather than being
+        // A 'T'-joined date/time is the ES Date Time String Format's: this engine reads it with the
+        // format's leniencies it keeps, and an unrecognised 'T' string is NaN rather than being
         // re-parsed leniently (test262 sm/Date/non-iso). The relaxed single-digit / bare-offset
         // forms below apply only to the space-separated and other non-'T' shapes.
         if (IsoTSeparator.IsMatch(text))
-        {
-            if (DateTimeOffset.TryParseExact(text, StrictIsoTUtcFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var iso))
-                return iso;
-            if (DateTimeOffset.TryParseExact(text, StrictIsoTLocalFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out iso))
-                return iso;
-            return DateTimeOffset.MinValue;
-        }
+            return ReadFormatLeniencies(text);
 
-        if (DateTimeOffset.TryParseExact(text, DefaultFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var result))
+        if (TryParseExact(text, SecondaryFormatsUTC, DateTimeStyles.AssumeUniversal, out var result))
             return result;
 
-        if (DateTimeOffset.TryParseExact(text, SecondaryFormatsUTC, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out result))
+        if (TryParseExact(text, SecondaryFormats, DateTimeStyles.AssumeLocal, out result))
             return result;
 
-        if (DateTimeOffset.TryParseExact(text, SecondaryFormats, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out result))
+        if (TryParse(text, CultureInfo.CurrentCulture, out result))
             return result;
 
-        if (DateTimeOffset.TryParse(text, CultureInfo.CurrentCulture, DateTimeStyles.AssumeLocal, out result))
-            return result;
-
-        if (!DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out result))
-            // unrecognized dates should return NaN (15.9.4.2)
-            return DateTimeOffset.MinValue;
-
-        return result;
+        // unrecognized dates should return NaN (15.9.4.2)
+        return TryParse(text, CultureInfo.InvariantCulture, out result) ? result : Invalid;
     }
 }

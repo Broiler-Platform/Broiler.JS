@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Numerics;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.Date;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Symbol;
@@ -6650,7 +6651,7 @@ public class JSIntlDateTimeFormat : JSObject
             ?? (timeStyle == "full" ? "long" : "short");
         var zoneName = JSIntlDateTimeFormatEngine.FormatTimeZoneName(localeTag, tz, style, clipped);
         var wall = JSIntlDateTimeFormatEngine.ToZone(clipped, tz);
-        var dayPeriod = DayPeriodName(JSDateMath.HourFromTime(wall), JSDateMath.MinFromTime(wall));
+        var dayPeriod = DayPeriodName((int)EcmaTime.HourFromTime(wall), (int)EcmaTime.MinFromTime(wall));
         return new(wall, zoneName, dayPeriod);
     }
 
@@ -7032,7 +7033,7 @@ public class JSIntlDateTimeFormat : JSObject
         var value = a.Length == 0 || a[0] == null || a[0].IsUndefined
             ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
             : a.Get1().DoubleValue;
-        var clipped = JSDateMath.TimeClip(value);
+        var clipped = EcmaTime.TimeClip(value);
         if (double.IsNaN(clipped))
             throw JSEngine.NewRangeError("Invalid time value");
 
@@ -7125,7 +7126,7 @@ public class JSIntlDateTimeFormat : JSObject
         var value = a.Length == 0 || a[0] == null || a[0].IsUndefined
             ? DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
             : a.Get1().DoubleValue;
-        var clipped = JSDateMath.TimeClip(value);
+        var clipped = EcmaTime.TimeClip(value);
         if (double.IsNaN(clipped))
             throw JSEngine.NewRangeError("Invalid time value");
 
@@ -7305,7 +7306,7 @@ public class JSIntlDateTimeFormat : JSObject
     private (int hour, int minute) WallHourMinute(double clipped)
     {
         var wall = JSIntlDateTimeFormatEngine.ToZone(clipped, OptionString(TimeZoneKey));
-        return (JSDateMath.HourFromTime(wall), JSDateMath.MinFromTime(wall));
+        return ((int)EcmaTime.HourFromTime(wall), (int)EcmaTime.MinFromTime(wall));
     }
 
     // CLDR day-period rule overrides for the ECMA-402 dayPeriod option. The bundled
@@ -7551,7 +7552,7 @@ public class JSIntlDateTimeFormat : JSObject
 
     private static double TimeClipRange(double number)
     {
-        var clipped = JSDateMath.TimeClip(number);
+        var clipped = EcmaTime.TimeClip(number);
         if (double.IsNaN(clipped))
             throw JSEngine.NewRangeError("Invalid time value");
 

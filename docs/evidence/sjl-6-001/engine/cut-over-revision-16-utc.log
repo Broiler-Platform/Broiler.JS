@@ -1,0 +1,16 @@
+== start 2026-10-16T08:41:53Z TZ=UTC at b5cffe6065fa7ffef25d90ce6b648c5de7871132 with the working tree of the change
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:21:14.56]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [21 m 14 s]
+  Error Message:
+   2 of 50727 vectors differ and nothing classifies them:
+date/outside-format/0001: expected value: f64:0x7FF8000000000000, rendered value: f64:0xC2CC449D03680000
+date/outside-format/0010: expected value: f64:0x7FF8000000000000, rendered value: f64:0xC2CC5795504C0000
+  Stack Trace:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 31
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: 21 m 14 s - Broiler.JavaScript.Vectors.Tests.dll (net10.0)
+== end 2026-10-16T09:03:11Z

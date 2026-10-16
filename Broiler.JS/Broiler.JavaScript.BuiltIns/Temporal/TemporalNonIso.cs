@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
@@ -16,12 +17,12 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 internal static class TemporalNonIso
 {
     // ISODateWithinLimits bounds, matching Temporal.PlainDate: −271821-04-19 … +275760-09-13.
-    internal static readonly long MinEpochDays = DaysFromCivil(-271821, 4, 19);
-    internal static readonly long MaxEpochDays = DaysFromCivil(275760, 9, 13);
+    internal static readonly long MinEpochDays = IsoCalendarMath.EpochDays(-271821, 4, 19);
+    internal static readonly long MaxEpochDays = IsoCalendarMath.EpochDays(275760, 9, 13);
 
     // The stored ISO date projected into the active calendar's (year, month, day).
     internal static (int y, int m, int d) CalendarYmd(string calendarId, int isoYear, int isoMonth, int isoDay)
-        => TemporalCalendarMath.YmdFromEpochDays(calendarId, DaysFromCivil(isoYear, isoMonth, isoDay));
+        => TemporalCalendarMath.YmdFromEpochDays(calendarId, IsoCalendarMath.EpochDays(isoYear, isoMonth, isoDay));
 
     // Resolves a property bag for one of the non-Gregorian calendars: the year comes from `year`
     // and/or { era, eraYear } (era-less for the lunisolar calendars), the month from `month` /
@@ -139,7 +140,7 @@ internal static class TemporalNonIso
     // when the month-day never occurs in the searched span.
     private static (int y, int m, int d)? MonthDayExact(string calendarId, int codeNumber, bool isLeap, int targetDay)
     {
-        var threshold = DaysFromCivil(MonthDayReferenceYear, 12, 31);
+        var threshold = IsoCalendarMath.EpochDays(MonthDayReferenceYear, 12, 31);
         var bestBelow = long.MinValue;
         var bestAbove = long.MaxValue;
         var (searchLow, searchHigh) = MonthDaySearchYears(calendarId);
@@ -156,8 +157,8 @@ internal static class TemporalNonIso
         if (chosen == null) return null;
         if (chosen < MinEpochDays || chosen > MaxEpochDays)
             throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month-day is out of range");
-        var (iy, im, id) = CivilFromDays(chosen.Value);
-        return ((int)iy, (int)im, (int)id);
+        var (iy, im, id) = IsoCalendarMath.FromEpochDays(chosen.Value);
+        return ((int)iy, im, id);
     }
 
     // The greatest month length (codeNumber, isLeap) ever attains across the search range; 0 when
@@ -399,8 +400,8 @@ internal static class TemporalNonIso
         if (enforceIsoDateRange && (epoch < MinEpochDays || epoch > MaxEpochDays))
             throw JSEngine.NewRangeError("Temporal: date is out of range");
 
-        var (iy, im, id) = CivilFromDays(epoch);
-        return ((int)iy, (int)im, (int)id);
+        var (iy, im, id) = IsoCalendarMath.FromEpochDays(epoch);
+        return ((int)iy, im, id);
     }
 
     // After shifting the year by a whole number of years, the spec preserves the *month code* (not
@@ -482,8 +483,8 @@ internal static class TemporalNonIso
         if (epoch < MinEpochDays || epoch > MaxEpochDays)
             throw JSEngine.NewRangeError("Temporal: result is out of range");
 
-        var (ry, rm, rd) = CivilFromDays(epoch);
-        return ((int)ry, (int)rm, (int)rd);
+        var (ry, rm, rd) = IsoCalendarMath.FromEpochDays(epoch);
+        return ((int)ry, rm, rd);
     }
 
     // Calendar-space date difference: step whole years (only for largestUnit "year") then whole
@@ -599,30 +600,5 @@ internal static class TemporalNonIso
         if (m1 != m2) return m1 < m2 ? -1 : 1;
         if (d1 != d2) return d1 < d2 ? -1 : 1;
         return 0;
-    }
-
-    // Howard Hinnant's days_from_civil / civil_from_days about the ISO 1970-01-01 epoch.
-    internal static long DaysFromCivil(long y, long m, long d)
-    {
-        y -= m <= 2 ? 1 : 0;
-        var era = (y >= 0 ? y : y - 399) / 400;
-        var yoe = y - era * 400;
-        var doy = (153 * (m > 2 ? m - 3 : m + 9) + 2) / 5 + d - 1;
-        var doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-        return era * 146097 + doe - 719468;
-    }
-
-    internal static (long y, long m, long d) CivilFromDays(long z)
-    {
-        z += 719468;
-        var era = (z >= 0 ? z : z - 146096) / 146097;
-        var doe = z - era * 146097;
-        var yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
-        var y = yoe + era * 400;
-        var doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-        var mp = (5 * doy + 2) / 153;
-        var d = doy - (153 * mp + 2) / 5 + 1;
-        var m = mp < 10 ? mp + 3 : mp - 9;
-        return (m <= 2 ? y + 1 : y, m, d);
     }
 }

@@ -38,7 +38,9 @@ from generate_number_vectors import js_string_literal, splitmix64, string_value 
 
 # The corpus revision this generator writes, and the revision its vectors were added in. Revision 16 adds the
 # strings outside the format whose readings the engines' dialects differ on (OUTSIDE_FORMAT_REVISION).
-CORPUS_REVISION = 16
+# Revision 17 retires every divergence both engines' cut-overs correct (date-divergences.txt), and
+# Broiler.JS's expectation of two of those strings becomes its reading since its cut-over, milestone SJL-6.5.
+CORPUS_REVISION = 17
 FIRST_REVISION = 14
 OUTSIDE_FORMAT_REVISION = 16
 GENERATOR = "ref:dateref@1"
@@ -608,14 +610,17 @@ def outside_format_strings() -> list[tuple[str, str, float, float]]:
     bundle sjl-6-001's reference-arm comparison found (docs/evidence/sjl-6-001/reference-arms-run/), with Broiler.JS's
     reading and the reading of Broiler.VM's dialect, each computed here from the reading's description, not taken
     from either engine. Every string is read as UTC by whichever grammar reads it, so no expectation depends on
-    the zone. NaN is an invalid date."""
+    the zone. NaN is an invalid date. Revision 17: Broiler.JS's reading is the one its cut-over, milestone SJL-6.5,
+    commits it to, which reads the strict dialect, then its own grammar, then Broiler.VM's dialect; it changes for
+    the two strings its own grammar refuses, which Broiler.VM's dialect reads."""
     nan = math.nan
     either = utc(1, 0, 1, 5, 30)  # 0001-01-01T00:00 at the offset -05:30
     year_zero = utc(0)
     return [
         # A day past its month's length (correspondence row P5): Broiler.VM's dialect carries it into the next
-        # month, as MakeDay does; Broiler.JS's grammar refuses it.
-        ("0000-02-30T00:00Z", "a day past its month's length (P5)", nan, utc(0, 1, 30)),
+        # month, as MakeDay does; Broiler.JS's grammar refuses it, so since its cut-over Broiler.JS reads it the
+        # same way, through that dialect.
+        ("0000-02-30T00:00Z", "a day past its month's length (P5)", utc(0, 1, 30), utc(0, 1, 30)),
         # A fraction of other than three digits (P4): Broiler.JS's grammar reads it; Broiler.VM's dialect refuses it.
         # Each kind is written as the classifier, scripts/conformance/classify_date_arms.py, names it.
         ("0001-01-01T00:00:00.-05:30", "a fraction of 0 digits (P4)", either, nan),
@@ -629,16 +634,17 @@ def outside_format_strings() -> list[tuple[str, str, float, float]]:
         ("0001-01-01 00:00-05:30", "a space for the T", either, nan),
         ("0001-01-01T00:00-0530", "an offset without its colon (P6)", either, nan),
         # A signed year outside the renderings (P9's reading): Broiler.VM's dialect reads toString's shape with
-        # the year -5 written unpadded, which no rendering writes; Broiler.JS's grammar refuses it.
+        # the year -5 written unpadded, which no rendering writes; Broiler.JS's grammar refuses it, so since its
+        # cut-over Broiler.JS reads it through that dialect.
         ("Thu Jan 01 -5 00:00:00 GMT+0000 (Coordinated Universal Time)", "a signed year outside the renderings (P9's reading)",
-         nan, utc(-5)),
+         utc(-5), utc(-5)),
     ]
 
 
 def outside_format(corpus: Corpus) -> None:
     note = ("outside the format, so implementation-defined; out is the strict dialect's answer. Broiler.JS's expectation "
-            "is its reading before its cut-over, by its own grammar; milestone SJL-6.5 states its reading after it, "
-            "which JSD-0072 orders strict, its own, then Broiler.VM's dialect. Broiler.VM's is its dialect's reading as "
+            "is its reading since its cut-over, milestone SJL-6.5, which reads the strict dialect, then its own grammar, "
+            "then Broiler.VM's dialect, as JSD-0072 orders them. Broiler.VM's is its dialect's reading as "
             "Broiler.ECMAScript.Algorithms ports it (EcmaDateParser, DateParseDialect.BroilerVM), which its cut-over, "
             "milestone SJL-6.4, adopts. The kind is one bundle sjl-6-001's reference-arm comparison classified (b): ")
     for text, kind, js_reading, vm_reading in outside_format_strings():

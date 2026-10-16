@@ -861,8 +861,7 @@ area: date
 op: Date.prototype.toString, a local date
 in: f64:0x409F940000000000 f64:0x4018000000000000 f64:0x4010000000000000
 out: value: str:"Sun Jul 04 2021 12:30:15"
-class: divergence
-divergence.broiler-js: Local time takes the zone's base offset where a date is made from local fields, set by a local setter or read by the local getters, and the offset in force at the instant where getTimezoneOffset, toString and some of Date.parse's forms read it, so in daylight-saving time, and in the years before the zone's standard time, the local fields, the offset and the rendering disagree, where one offset, the one in force at the instant, serves them all; the difference shows in a zone with daylight-saving time or a historical offset, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row L2).
+class: normative
 prov: spec:es2026@0248456c#sec-date.prototype.tostring spec:es2026@0248456c#sec-datestring spec:es2026@0248456c#sec-timestring spec:es2026@0248456c#sec-todatestring spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date(2000, 0, 1, 12, 30, 15); d.setFullYear(2021, 6, 4); d.toString().split(" GMT")[0]
 note: a local date put in and rendered without its zone, so the outcome holds in every time zone
@@ -873,8 +872,7 @@ area: date
 op: Date.prototype.toTimeString, a local date
 in: f64:0x409F940000000000 f64:0x4018000000000000 f64:0x4010000000000000
 out: value: str:"12:30:15"
-class: divergence
-divergence.broiler-js: Local time takes the zone's base offset where a date is made from local fields, set by a local setter or read by the local getters, and the offset in force at the instant where getTimezoneOffset, toString and some of Date.parse's forms read it, so in daylight-saving time, and in the years before the zone's standard time, the local fields, the offset and the rendering disagree, where one offset, the one in force at the instant, serves them all; the difference shows in a zone with daylight-saving time or a historical offset, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row L2).
+class: normative
 prov: spec:es2026@0248456c#sec-date.prototype.totimestring spec:es2026@0248456c#sec-datestring spec:es2026@0248456c#sec-timestring spec:es2026@0248456c#sec-todatestring spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date(2000, 0, 1, 12, 30, 15); d.setFullYear(2021, 6, 4); d.toTimeString().split(" GMT")[0]
 note: a local date put in and rendered without its zone, so the outcome holds in every time zone
@@ -929,8 +927,7 @@ area: date
 op: Date.prototype.toString, a local date
 in: f64:0x3FF0000000000000 f64:0x0000000000000000 f64:0x3FF0000000000000
 out: value: str:"Mon Jan 01 0001 12:30:15"
-class: divergence
-divergence.broiler-js: Local time takes the zone's base offset where a date is made from local fields, set by a local setter or read by the local getters, and the offset in force at the instant where getTimezoneOffset, toString and some of Date.parse's forms read it, so in daylight-saving time, and in the years before the zone's standard time, the local fields, the offset and the rendering disagree, where one offset, the one in force at the instant, serves them all; the difference shows in a zone with daylight-saving time or a historical offset, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row L2).
+class: normative
 prov: spec:es2026@0248456c#sec-date.prototype.tostring spec:es2026@0248456c#sec-datestring spec:es2026@0248456c#sec-timestring spec:es2026@0248456c#sec-todatestring spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date(2000, 0, 1, 12, 30, 15); d.setFullYear(1, 0, 1); d.toString().split(" GMT")[0]
 note: a local date put in and rendered without its zone, so the outcome holds in every time zone
@@ -941,8 +938,7 @@ area: date
 op: Date.prototype.toTimeString, a local date
 in: f64:0x3FF0000000000000 f64:0x0000000000000000 f64:0x3FF0000000000000
 out: value: str:"12:30:15"
-class: divergence
-divergence.broiler-js: Local time takes the zone's base offset where a date is made from local fields, set by a local setter or read by the local getters, and the offset in force at the instant where getTimezoneOffset, toString and some of Date.parse's forms read it, so in daylight-saving time, and in the years before the zone's standard time, the local fields, the offset and the rendering disagree, where one offset, the one in force at the instant, serves them all; the difference shows in a zone with daylight-saving time or a historical offset, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row L2).
+class: normative
 prov: spec:es2026@0248456c#sec-date.prototype.totimestring spec:es2026@0248456c#sec-datestring spec:es2026@0248456c#sec-timestring spec:es2026@0248456c#sec-todatestring spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date(2000, 0, 1, 12, 30, 15); d.setFullYear(1, 0, 1); d.toTimeString().split(" GMT")[0]
 note: a local date put in and rendered without its zone, so the outcome holds in every time zone
@@ -1129,8 +1125,7 @@ area: date
 op: Date.prototype.toString, a local date
 in: f64:0x4058C00000000000 f64:0x4026000000000000 f64:0x403F000000000000
 out: value: str:"Thu Dec 31 0099 12:30:15"
-class: divergence
-divergence.broiler-js: Local time takes the zone's base offset where a date is made from local fields, set by a local setter or read by the local getters, and the offset in force at the instant where getTimezoneOffset, toString and some of Date.parse's forms read it, so in daylight-saving time, and in the years before the zone's standard time, the local fields, the offset and the rendering disagree, where one offset, the one in force at the instant, serves them all; the difference shows in a zone with daylight-saving time or a historical offset, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row L2).
+class: normative
 prov: spec:es2026@0248456c#sec-date.prototype.tostring spec:es2026@0248456c#sec-datestring spec:es2026@0248456c#sec-timestring spec:es2026@0248456c#sec-todatestring spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date(2000, 0, 1, 12, 30, 15); d.setFullYear(99, 11, 31); d.toString().split(" GMT")[0]
 note: a local date put in and rendered without its zone, so the outcome holds in every time zone
@@ -1141,8 +1136,7 @@ area: date
 op: Date.prototype.toTimeString, a local date
 in: f64:0x4058C00000000000 f64:0x4026000000000000 f64:0x403F000000000000
 out: value: str:"12:30:15"
-class: divergence
-divergence.broiler-js: Local time takes the zone's base offset where a date is made from local fields, set by a local setter or read by the local getters, and the offset in force at the instant where getTimezoneOffset, toString and some of Date.parse's forms read it, so in daylight-saving time, and in the years before the zone's standard time, the local fields, the offset and the rendering disagree, where one offset, the one in force at the instant, serves them all; the difference shows in a zone with daylight-saving time or a historical offset, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row L2).
+class: normative
 prov: spec:es2026@0248456c#sec-date.prototype.totimestring spec:es2026@0248456c#sec-datestring spec:es2026@0248456c#sec-timestring spec:es2026@0248456c#sec-todatestring spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date(2000, 0, 1, 12, 30, 15); d.setFullYear(99, 11, 31); d.toTimeString().split(" GMT")[0]
 note: a local date put in and rendered without its zone, so the outcome holds in every time zone
@@ -1164,8 +1158,7 @@ area: date
 op: Date.prototype.toString, a local date
 in: f64:0x4059000000000000 f64:0x0000000000000000 f64:0x3FF0000000000000
 out: value: str:"Fri Jan 01 0100 12:30:15"
-class: divergence
-divergence.broiler-js: Local time takes the zone's base offset where a date is made from local fields, set by a local setter or read by the local getters, and the offset in force at the instant where getTimezoneOffset, toString and some of Date.parse's forms read it, so in daylight-saving time, and in the years before the zone's standard time, the local fields, the offset and the rendering disagree, where one offset, the one in force at the instant, serves them all; the difference shows in a zone with daylight-saving time or a historical offset, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row L2).
+class: normative
 prov: spec:es2026@0248456c#sec-date.prototype.tostring spec:es2026@0248456c#sec-datestring spec:es2026@0248456c#sec-timestring spec:es2026@0248456c#sec-todatestring spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date(2000, 0, 1, 12, 30, 15); d.setFullYear(100, 0, 1); d.toString().split(" GMT")[0]
 note: a local date put in and rendered without its zone, so the outcome holds in every time zone
@@ -1176,8 +1169,7 @@ area: date
 op: Date.prototype.toTimeString, a local date
 in: f64:0x4059000000000000 f64:0x0000000000000000 f64:0x3FF0000000000000
 out: value: str:"12:30:15"
-class: divergence
-divergence.broiler-js: Local time takes the zone's base offset where a date is made from local fields, set by a local setter or read by the local getters, and the offset in force at the instant where getTimezoneOffset, toString and some of Date.parse's forms read it, so in daylight-saving time, and in the years before the zone's standard time, the local fields, the offset and the rendering disagree, where one offset, the one in force at the instant, serves them all; the difference shows in a zone with daylight-saving time or a historical offset, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row L2).
+class: normative
 prov: spec:es2026@0248456c#sec-date.prototype.totimestring spec:es2026@0248456c#sec-datestring spec:es2026@0248456c#sec-timestring spec:es2026@0248456c#sec-todatestring spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date(2000, 0, 1, 12, 30, 15); d.setFullYear(100, 0, 1); d.toTimeString().split(" GMT")[0]
 note: a local date put in and rendered without its zone, so the outcome holds in every time zone
@@ -1199,8 +1191,7 @@ area: date
 op: Date.prototype.toString, a local date
 in: f64:0x408F380000000000 f64:0x4018000000000000 f64:0x402E000000000000
 out: value: str:"Mon Jul 15 0999 12:30:15"
-class: divergence
-divergence.broiler-js: Local time takes the zone's base offset where a date is made from local fields, set by a local setter or read by the local getters, and the offset in force at the instant where getTimezoneOffset, toString and some of Date.parse's forms read it, so in daylight-saving time, and in the years before the zone's standard time, the local fields, the offset and the rendering disagree, where one offset, the one in force at the instant, serves them all; the difference shows in a zone with daylight-saving time or a historical offset, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row L2).
+class: normative
 prov: spec:es2026@0248456c#sec-date.prototype.tostring spec:es2026@0248456c#sec-datestring spec:es2026@0248456c#sec-timestring spec:es2026@0248456c#sec-todatestring spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date(2000, 0, 1, 12, 30, 15); d.setFullYear(999, 6, 15); d.toString().split(" GMT")[0]
 note: a local date put in and rendered without its zone, so the outcome holds in every time zone
@@ -1211,8 +1202,7 @@ area: date
 op: Date.prototype.toTimeString, a local date
 in: f64:0x408F380000000000 f64:0x4018000000000000 f64:0x402E000000000000
 out: value: str:"12:30:15"
-class: divergence
-divergence.broiler-js: Local time takes the zone's base offset where a date is made from local fields, set by a local setter or read by the local getters, and the offset in force at the instant where getTimezoneOffset, toString and some of Date.parse's forms read it, so in daylight-saving time, and in the years before the zone's standard time, the local fields, the offset and the rendering disagree, where one offset, the one in force at the instant, serves them all; the difference shows in a zone with daylight-saving time or a historical offset, such as America/New_York, and not under UTC. Answered by Broiler.JS docs/roadmap/SharedLibraries.md, SJL-6.5 (the Date area's record; the correspondence's row L2).
+class: normative
 prov: spec:es2026@0248456c#sec-date.prototype.totimestring spec:es2026@0248456c#sec-datestring spec:es2026@0248456c#sec-timestring spec:es2026@0248456c#sec-todatestring spec:es2026@0248456c#sec-localtime ref:dateref@1
 script: var d = new Date(2000, 0, 1, 12, 30, 15); d.setFullYear(999, 6, 15); d.toTimeString().split(" GMT")[0]
 note: a local date put in and rendered without its zone, so the outcome holds in every time zone

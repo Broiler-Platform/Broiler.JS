@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 
@@ -128,9 +129,9 @@ public partial class JSTemporalZonedDateTime
             var dayCorrection = Math.Sign(timeNs) == -sign ? 1 : 0;
             while (true)
             {
-                var epochDay = DaysFromCivil(end.y, end.mo, end.d) - (long)dayCorrection * sign;
-                var (cy, cm, cd) = CivilFromDays(epochDay);
-                iy = (int)cy; im = (int)cm; id = (int)cd;
+                var epochDay = IsoCalendarMath.EpochDays(end.y, end.mo, end.d) - (long)dayCorrection * sign;
+                var (cy, cm, cd) = IsoCalendarMath.FromEpochDays(epochDay);
+                iy = (int)cy; im = cm; id = cd;
 
                 var intermediateNs = EpochNsForLocal(iy, im, id, start.h, start.mi, start.s, start.ms, start.us, start.ns);
                 residual = ns2 - intermediateNs;
@@ -257,8 +258,8 @@ public partial class JSTemporalZonedDateTime
             case "week":
             {
                 var (ws_y, ws_mo, ws_d) = AddISODate(o.y, o.mo, o.d, dur.Years, dur.Months, 0, 0, "constrain");
-                var (we_y, we_mo, we_d) = CivilFromDays(DaysFromCivil(ws_y, ws_mo, ws_d) + dur.Days);
-                var until = DifferenceISODate(ws_y, ws_mo, ws_d, (int)we_y, (int)we_mo, (int)we_d, "week");
+                var (we_y, we_mo, we_d) = IsoCalendarMath.FromEpochDays(IsoCalendarMath.EpochDays(ws_y, ws_mo, ws_d) + dur.Days);
+                var until = DifferenceISODate(ws_y, ws_mo, ws_d, (int)we_y, we_mo, we_d, "week");
                 var weeks = TruncateToIncrement(dur.Weeks + (long)until.weeks, increment);
                 r1 = weeks;
                 r2 = r1 + increment * sign;
@@ -307,8 +308,8 @@ public partial class JSTemporalZonedDateTime
 
         var (sy, sm, sd) = AddISODate(o.y, o.mo, o.d, dur.Years, dur.Months, dur.Weeks, dur.Days, "constrain");
         var startEpochNs = EpochNsForLocal(sy, sm, sd, o.h, o.mi, o.s, o.ms, o.us, o.ns);
-        var (ey, em, ed) = CivilFromDays(DaysFromCivil(sy, sm, sd) + sign);
-        var endEpochNs = EpochNsForLocal((int)ey, (int)em, (int)ed, o.h, o.mi, o.s, o.ms, o.us, o.ns);
+        var (ey, em, ed) = IsoCalendarMath.FromEpochDays(IsoCalendarMath.EpochDays(sy, sm, sd) + sign);
+        var endEpochNs = EpochNsForLocal((int)ey, em, ed, o.h, o.mi, o.s, o.ms, o.us, o.ns);
 
         var daySpan = endEpochNs - startEpochNs;
         if (daySpan.Sign != sign)

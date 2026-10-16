@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -32,7 +33,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         var refDay = a.GetAt(3);
         referenceISODay = refDay == null || refDay.IsUndefined ? 1 : ToIntegerWithTruncation(refDay);
 
-        if (!IsValidISODate(isoYear, isoMonth, referenceISODay) || !ISOYearMonthWithinLimits(isoYear, isoMonth))
+        if (!IsoCalendarMath.IsValidIsoDate(isoYear, isoMonth, referenceISODay) || !ISOYearMonthWithinLimits(isoYear, isoMonth))
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: invalid ISO year-month");
     }
 
@@ -98,17 +99,17 @@ public partial class JSTemporalPlainYearMonth : JSObject
     }
     [JSExport("daysInMonth")] public double DaysInMonth
     {
-        get { if (NonIso) { var c = CalendarYmd(); return TemporalCalendarMath.DaysInMonth(calendarId, c.y, c.m); } return DaysInMonthOf(isoYear, isoMonth); }
+        get { if (NonIso) { var c = CalendarYmd(); return TemporalCalendarMath.DaysInMonth(calendarId, c.y, c.m); } return IsoCalendarMath.DaysInMonth(isoYear, isoMonth); }
     }
     [JSExport("daysInYear")] public double DaysInYear => NonIso
         ? TemporalCalendarMath.DaysInYear(calendarId, CalendarYmd().y)
-        : (IsLeapYear(isoYear) ? 366 : 365);
+        : IsoCalendarMath.DaysInYear(isoYear);
     [JSExport("monthsInYear")] public double MonthsInYear => NonIso
         ? TemporalCalendarMath.MonthsInYear(calendarId, CalendarYmd().y)
         : 12;
     [JSExport("inLeapYear")] public bool InLeapYear => NonIso
         ? TemporalCalendarMath.InLeapYear(calendarId, CalendarYmd().y)
-        : IsLeapYear(isoYear);
+        : IsoCalendarMath.IsLeapYear(isoYear);
 
     // ── statics ─────────────────────────────────────────────────────────────────
 
@@ -455,7 +456,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
                 throw JSEngine.NewRangeError("Temporal.PlainYearMonth.prototype.toPlainDate: result is outside the supported ISO date range");
             return new JSTemporalPlainDate(iy, im, id, calendarId, JSTemporalPlainDate.PlainDatePrototype);
         }
-        day = Math.Clamp(day, 1, DaysInMonthOf(isoYear, isoMonth));
+        day = Math.Clamp(day, 1, IsoCalendarMath.DaysInMonth(isoYear, isoMonth));
         // The combined date can fall outside the representable ISO range even when the
         // year-month itself is in range (the year-month limit is wider than the date limit
         // at the boundary months, e.g. -271821-04 is valid but -271821-04-18 is not).
@@ -732,7 +733,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         if (TemporalCalendarMath.IsNonIso(calendarId))
         {
             var day = match.Groups["d"].Success ? int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture) : 1;
-            if (!IsValidISODate(year, month, day))
+            if (!IsoCalendarMath.IsValidIsoDate(year, month, day))
                 throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainYearMonth from \"{text}\"");
             return YearMonthFromIsoDate(year, month, day, calendarId);
         }
@@ -759,27 +760,14 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
     // ── ISO arithmetic ───────────────────────────────────────────────────────────
 
-    private static bool IsLeapYear(long y) => (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
-
-    private static int DaysInMonthOf(long year, int month) => month switch
-    {
-        1 or 3 or 5 or 7 or 8 or 10 or 12 => 31,
-        4 or 6 or 9 or 11 => 30,
-        2 => IsLeapYear(year) ? 29 : 28,
-        _ => 0,
-    };
-
-    private static bool IsValidISODate(int year, int month, int day)
-        => month is >= 1 and <= 12 && day >= 1 && day <= DaysInMonthOf(year, month);
-
     // ISODateWithinLimits: the full date (not just the year-month) must lie within the representable
     // instant range, −271821-04-19 … +275760-09-13.
-    private static readonly long MinIsoEpochDays = DaysFromCivil(-271821, 4, 19);
-    private static readonly long MaxIsoEpochDays = DaysFromCivil(275760, 9, 13);
+    private static readonly long MinIsoEpochDays = IsoCalendarMath.EpochDays(-271821, 4, 19);
+    private static readonly long MaxIsoEpochDays = IsoCalendarMath.EpochDays(275760, 9, 13);
     private static bool IsWithinIsoDateLimits(int year, int month, int day)
     {
-        if (!IsValidISODate(year, month, day)) return false;
-        var epoch = DaysFromCivil(year, month, day);
+        if (!IsoCalendarMath.IsValidIsoDate(year, month, day)) return false;
+        var epoch = IsoCalendarMath.EpochDays(year, month, day);
         return epoch >= MinIsoEpochDays && epoch <= MaxIsoEpochDays;
     }
 
@@ -806,30 +794,6 @@ public partial class JSTemporalPlainYearMonth : JSObject
         var q = a / b;
         if (a % b != 0 && (a < 0) != (b < 0)) q -= 1;
         return q;
-    }
-
-    private static long DaysFromCivil(long y, long m, long d)
-    {
-        y -= m <= 2 ? 1 : 0;
-        var era = (y >= 0 ? y : y - 399) / 400;
-        var yoe = y - era * 400;
-        var doy = (153 * (m > 2 ? m - 3 : m + 9) + 2) / 5 + d - 1;
-        var doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-        return era * 146097 + doe - 719468;
-    }
-
-    private static (long y, long m, long d) CivilFromDays(long z)
-    {
-        z += 719468;
-        var era = (z >= 0 ? z : z - 146096) / 146097;
-        var doe = z - era * 146097;
-        var yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
-        var y = yoe + era * 400;
-        var doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-        var mp = (5 * doy + 2) / 153;
-        var d = doy - (153 * mp + 2) / 5 + 1;
-        var m = mp < 10 ? mp + 3 : mp - 9;
-        return (m <= 2 ? y + 1 : y, m, d);
     }
 
     // TemporalYearMonthToString: "YYYY-MM" (expanding to ±YYYYYY outside 0000–9999). For a

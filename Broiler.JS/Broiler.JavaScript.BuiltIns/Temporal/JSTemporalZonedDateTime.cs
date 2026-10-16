@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Null;
@@ -186,7 +187,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     {
         var l = Local();
         return NonIso
-            ? TemporalCalendarMath.YmdFromEpochDays(calendarId, DaysFromCivil(l.y, l.mo, l.d))
+            ? TemporalCalendarMath.YmdFromEpochDays(calendarId, IsoCalendarMath.EpochDays(l.y, l.mo, l.d))
             : (l.y, l.mo, l.d);
     }
 
@@ -230,34 +231,34 @@ public partial class JSTemporalZonedDateTime : JSObject
     [JSExport("microsecond")] public double MicrosecondValue => Local().us;
     [JSExport("nanosecond")] public double NanosecondValue => Local().ns;
 
-    [JSExport("dayOfWeek")] public double DayOfWeek { get { var l = Local(); return IsoDayOfWeek(l.y, l.mo, l.d); } }
+    [JSExport("dayOfWeek")] public double DayOfWeek { get { var l = Local(); return IsoCalendarMath.DayOfWeek(l.y, l.mo, l.d); } }
     [JSExport("dayOfYear")] public double DayOfYear
     {
         get
         {
             if (NonIso) { var c = CalendarYmd(); return TemporalCalendarMath.DayOfYear(calendarId, c.y, c.m, c.d); }
-            var l = Local(); return (int)(DaysFromCivil(l.y, l.mo, l.d) - DaysFromCivil(l.y, 1, 1)) + 1;
+            var l = Local(); return IsoCalendarMath.DayOfYear(l.y, l.mo, l.d);
         }
     }
     [JSExport("daysInWeek")] public double DaysInWeek => 7;
     [JSExport("daysInMonth")] public double DaysInMonth
     {
-        get { if (NonIso) { var c = CalendarYmd(); return TemporalCalendarMath.DaysInMonth(calendarId, c.y, c.m); } var l = Local(); return DaysInMonthOf(l.y, l.mo); }
+        get { if (NonIso) { var c = CalendarYmd(); return TemporalCalendarMath.DaysInMonth(calendarId, c.y, c.m); } var l = Local(); return IsoCalendarMath.DaysInMonth(l.y, l.mo); }
     }
     [JSExport("daysInYear")] public double DaysInYear => NonIso
         ? TemporalCalendarMath.DaysInYear(calendarId, CalendarYmd().y)
-        : (IsLeapYear(Local().y) ? 366 : 365);
+        : IsoCalendarMath.DaysInYear(Local().y);
     [JSExport("monthsInYear")] public double MonthsInYear => NonIso
         ? TemporalCalendarMath.MonthsInYear(calendarId, CalendarYmd().y)
         : 12;
     [JSExport("inLeapYear")] public bool InLeapYear => NonIso
         ? TemporalCalendarMath.InLeapYear(calendarId, CalendarYmd().y)
-        : IsLeapYear(Local().y);
+        : IsoCalendarMath.IsLeapYear(Local().y);
     // Only the ISO calendar defines a week-numbering system; other calendars return undefined.
     [JSExport("weekOfYear")] public JSValue WeekOfYear
-        { get { if (calendarId != "iso8601") return JSUndefined.Value; var l = Local(); return new JSNumber(IsoWeek(l.y, l.mo, l.d).week); } }
+        { get { if (calendarId != "iso8601") return JSUndefined.Value; var l = Local(); return new JSNumber(IsoCalendarMath.WeekOfYear(l.y, l.mo, l.d).Week); } }
     [JSExport("yearOfWeek")] public JSValue YearOfWeek
-        { get { if (calendarId != "iso8601") return JSUndefined.Value; var l = Local(); return new JSNumber(IsoWeek(l.y, l.mo, l.d).year); } }
+        { get { if (calendarId != "iso8601") return JSUndefined.Value; var l = Local(); return new JSNumber(IsoCalendarMath.WeekOfYear(l.y, l.mo, l.d).Year); } }
 
     [JSExport("offsetNanoseconds")] public double OffsetNanosecondsValue => OffsetNanoseconds();
     [JSExport("offset")] public JSValue Offset => new JSString(FormatOffset(OffsetNanoseconds()));
@@ -268,10 +269,10 @@ public partial class JSTemporalZonedDateTime : JSObject
         get
         {
             var l = Local();
-            var startEpoch = DaysFromCivil(l.y, l.mo, l.d);
+            var startEpoch = IsoCalendarMath.EpochDays(l.y, l.mo, l.d);
             var todayStart = StartOfDayEpochNs(timeZoneId, l.y, l.mo, l.d);
-            var (ty, tm, td) = CivilFromDays(startEpoch + 1);
-            var tomorrowStart = StartOfDayEpochNs(timeZoneId, (int)ty, (int)tm, (int)td);
+            var (ty, tm, td) = IsoCalendarMath.FromEpochDays(startEpoch + 1);
+            var tomorrowStart = StartOfDayEpochNs(timeZoneId, (int)ty, tm, td);
             // GetStartOfDay for either boundary may fall outside the representable instant range at the
             // extreme epoch limits (a RangeError, not a saturated value).
             if (!IsValid(todayStart) || !IsValid(tomorrowStart))
@@ -636,8 +637,8 @@ public partial class JSTemporalZonedDateTime : JSObject
             // Round to a day boundary using the actual (DST-aware) length of the local day. Both the
             // day's start and the next day's start (GetStartOfDay) must be representable instants.
             if (!IsValid(dayStart)) throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is out of range");
-            var (ty, tm, td) = CivilFromDays(DaysFromCivil(l.y, l.mo, l.d) + 1);
-            var tomorrowStart = StartOfDayEpochNs(timeZoneId, (int)ty, (int)tm, (int)td);
+            var (ty, tm, td) = IsoCalendarMath.FromEpochDays(IsoCalendarMath.EpochDays(l.y, l.mo, l.d) + 1);
+            var tomorrowStart = StartOfDayEpochNs(timeZoneId, (int)ty, tm, td);
             if (!IsValid(tomorrowStart)) throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is out of range");
             var dayLengthNs = tomorrowStart - dayStart;
             var rounded = ExactRounding.RoundNumberToIncrement(epochNanoseconds - dayStart, BigInteger.One, dayLengthNs, roundingMode);
@@ -662,7 +663,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var roundedNs = (long)ExactRounding.RoundNumberToIncrement(wallNs, BigInteger.One, unitNs, roundingMode);
         var dayspill = FloorDiv(roundedNs, NanosecondsPerDay);
         var wrapped = roundedNs - (long)dayspill * NanosecondsPerDay;
-        var (ny, nm, nd) = CivilFromDays(DaysFromCivil(l.y, l.mo, l.d) + (long)dayspill);
+        var (ny, nm, nd) = IsoCalendarMath.FromEpochDays(IsoCalendarMath.EpochDays(l.y, l.mo, l.d) + (long)dayspill);
 
         var nh = (int)(wrapped / 3_600_000_000_000);
         var nmi = (int)(wrapped / 60_000_000_000 % 60);
@@ -938,7 +939,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (newYear < -400000 || newYear > 400000)
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: result is out of range");
 
-        var maxDay = DaysInMonthOf(newYear, newMonth);
+        var maxDay = IsoCalendarMath.DaysInMonth(newYear, newMonth);
         long regulatedDay;
         if (overflow == "reject")
         {
@@ -948,12 +949,12 @@ public partial class JSTemporalZonedDateTime : JSObject
         }
         else regulatedDay = Math.Min((long)day, maxDay);
 
-        var epochDay = DaysFromCivil(newYear, newMonth, regulatedDay) + days + weeks * 7;
+        var epochDay = IsoCalendarMath.EpochDays(newYear, newMonth, (int)regulatedDay) + days + weeks * 7;
         if (epochDay < -100_000_001 || epochDay > 100_000_001)
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: result is out of range");
 
-        var (ry, rm, rd) = CivilFromDays(epochDay);
-        return ((int)ry, (int)rm, (int)rd);
+        var (ry, rm, rd) = IsoCalendarMath.FromEpochDays(epochDay);
+        return ((int)ry, rm, rd);
     }
 
     // DifferenceTemporalZonedDateTime: the signed difference between two instants in this zone,
@@ -1063,9 +1064,9 @@ public partial class JSTemporalZonedDateTime : JSObject
             var dayCorrection = Math.Sign(timeNs) == -sign ? 1 : 0;
             while (true)
             {
-                var epochDay = DaysFromCivil(end.y, end.mo, end.d) - (long)dayCorrection * sign;
-                var (cy, cm, cd) = CivilFromDays(epochDay);
-                iy = (int)cy; im = (int)cm; id = (int)cd;
+                var epochDay = IsoCalendarMath.EpochDays(end.y, end.mo, end.d) - (long)dayCorrection * sign;
+                var (cy, cm, cd) = IsoCalendarMath.FromEpochDays(epochDay);
+                iy = (int)cy; im = cm; id = cd;
 
                 var intermediateNs = EpochNsForLocal(iy, im, id, start.h, start.mi, start.s, start.ms, start.us, start.ns);
                 residual = ns2 - intermediateNs;
@@ -1235,7 +1236,7 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         var days = (long)FloorDiv(totalSeconds, 86400);
         var secondsOfDay = (long)(totalSeconds - new BigInteger(days) * 86400);
-        var (y, m, d) = CivilFromDays(days);
+        var (y, m, d) = IsoCalendarMath.FromEpochDays(days);
 
         var h = (int)(secondsOfDay / 3600);
         var mi = (int)(secondsOfDay % 3600 / 60);
@@ -1243,7 +1244,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var ms = (int)(fraction / 1_000_000);
         var us = (int)(fraction / 1000 % 1000);
         var ns = (int)(fraction % 1000);
-        return ((int)y, (int)m, (int)d, h, mi, s, ms, us, ns);
+        return ((int)y, m, d, h, mi, s, ms, us, ns);
     }
 
     // The epoch instant for a local wall-clock datetime in this zone ("compatible" disambiguation).
@@ -1254,8 +1255,8 @@ public partial class JSTemporalZonedDateTime : JSObject
     private static (double years, double months, double weeks, double days) DifferenceISODate(
         int ay, int am, int ad, int by, int bm, int bd, string largestUnit)
     {
-        var startEpoch = DaysFromCivil(ay, am, ad);
-        var endEpoch = DaysFromCivil(by, bm, bd);
+        var startEpoch = IsoCalendarMath.EpochDays(ay, am, ad);
+        var endEpoch = IsoCalendarMath.EpochDays(by, bm, bd);
 
         if (largestUnit is "day" or "week")
         {
@@ -1296,7 +1297,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (largestUnit == "month") { months += years * 12; years = 0; }
 
         var (iy, im, id) = AddYearsMonths(ay, am, ad, years, months);
-        var days = DaysFromCivil(by, bm, bd) - DaysFromCivil(iy, im, id);
+        var days = IsoCalendarMath.EpochDays(by, bm, bd) - IsoCalendarMath.EpochDays(iy, im, id);
         return (years, months, 0, days);
     }
 
@@ -1313,7 +1314,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var total = (long)month - 1 + months;
         var newYear = (int)(year + years + FloorDiv(total, 12));
         var newMonth = (int)(((total % 12) + 12) % 12) + 1;
-        var newDay = Math.Min(day, DaysInMonthOf(newYear, newMonth));
+        var newDay = Math.Min(day, IsoCalendarMath.DaysInMonth(newYear, newMonth));
         return (newYear, newMonth, newDay);
     }
 
@@ -1480,7 +1481,7 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         var days = (long)FloorDiv(totalSeconds, 86400);
         var secondsOfDay = (long)(totalSeconds - new BigInteger(days) * 86400);
-        var (y, m, d) = CivilFromDays(days);
+        var (y, m, d) = IsoCalendarMath.FromEpochDays(days);
 
         var h = (int)(secondsOfDay / 3600);
         var mi = (int)(secondsOfDay % 3600 / 60);
@@ -1488,7 +1489,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var ms = (int)(fraction / 1_000_000);
         var us = (int)(fraction / 1000 % 1000);
         var ns = (int)(fraction % 1000);
-        return ((int)y, (int)m, (int)d, h, mi, s, ms, us, ns);
+        return ((int)y, m, d, h, mi, s, ms, us, ns);
     }
 
     // GetStartOfDay: the first instant of the calendar day `y-mo-d` in the zone. Normally this is local
@@ -1497,7 +1498,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     // America/Toronto 1919-03-31 sprang forward 23:30→00:30, so the day starts at 00:30).
     private static BigInteger StartOfDayEpochNs(string timeZoneId, int y, int mo, int d)
     {
-        var localMidnightNs = new BigInteger(DaysFromCivil(y, mo, d)) * NanosecondsPerDay;
+        var localMidnightNs = new BigInteger(IsoCalendarMath.EpochDays(y, mo, d)) * NanosecondsPerDay;
 
         // The earliest instant whose local time is this midnight: local midnight minus the largest of
         // the zone's candidate offsets (a fall-back fold yields two; pick the earlier instant).
@@ -1797,7 +1798,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     }
 
     private static BigInteger LocalNanoseconds(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns)
-        => new BigInteger(DaysFromCivil(y, mo, d)) * NanosecondsPerDay
+        => new BigInteger(IsoCalendarMath.EpochDays(y, mo, d)) * NanosecondsPerDay
          + ((((long)h * 60 + mi) * 60 + s) * 1000L + ms) * 1_000_000L + (long)us * 1000 + ns;
 
     // A UTC offset *value* (the offset field of a property bag, or a "with" offset): ±HH[:MM[:SS[.fff]]],
@@ -1905,7 +1906,7 @@ public partial class JSTemporalZonedDateTime : JSObject
             ns = int.Parse(digits.Substring(6, 3), CultureInfo.InvariantCulture);
         }
 
-        if (!IsValidISODate(year, month, day) || hour > 23 || minute > 59 || second > 59)
+        if (!IsoCalendarMath.IsValidIsoDate(year, month, day) || hour > 23 || minute > 59 || second > 59)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
 
         var timeZoneId = CanonicalizeTimeZone(timeZoneAnnotation);
@@ -2001,70 +2002,11 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     // ── ISO helpers ───────────────────────────────────────────────────────────────
 
-    private static bool IsLeapYear(long y) => (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
-
-    private static int DaysInMonthOf(long year, int month) => month switch
-    {
-        1 or 3 or 5 or 7 or 8 or 10 or 12 => 31,
-        4 or 6 or 9 or 11 => 30,
-        2 => IsLeapYear(year) ? 29 : 28,
-        _ => 0,
-    };
-
-    private static bool IsValidISODate(int year, int month, int day)
-        => month is >= 1 and <= 12 && day >= 1 && day <= DaysInMonthOf(year, month);
-
-    private static int IsoDayOfWeek(int year, int month, int day)
-    {
-        var epoch = DaysFromCivil(year, month, day);
-        return (int)(((epoch + 3) % 7 + 7) % 7) + 1;
-    }
-
-    private static (int week, int year) IsoWeek(int year, int month, int day)
-    {
-        var ordinal = (int)(DaysFromCivil(year, month, day) - DaysFromCivil(year, 1, 1)) + 1;
-        var weekday = IsoDayOfWeek(year, month, day);
-        var week = (ordinal - weekday + 10) / 7;
-        if (week < 1) return (WeeksInIsoYear(year - 1), year - 1);
-        if (week > WeeksInIsoYear(year)) return (1, year + 1);
-        return (week, year);
-    }
-
-    private static int WeeksInIsoYear(int year)
-    {
-        int P(int y) => (y + y / 4 - y / 100 + y / 400) % 7;
-        return P(year) == 4 || P(year - 1) == 3 ? 53 : 52;
-    }
-
     private static BigInteger FloorDiv(BigInteger a, BigInteger b)
     {
         var q = BigInteger.DivRem(a, b, out var r);
         if (r != 0 && (r < 0) != (b < 0)) q -= 1;
         return q;
-    }
-
-    private static long DaysFromCivil(long y, long m, long d)
-    {
-        y -= m <= 2 ? 1 : 0;
-        var era = (y >= 0 ? y : y - 399) / 400;
-        var yoe = y - era * 400;
-        var doy = (153 * (m > 2 ? m - 3 : m + 9) + 2) / 5 + d - 1;
-        var doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-        return era * 146097 + doe - 719468;
-    }
-
-    private static (long y, long m, long d) CivilFromDays(long z)
-    {
-        z += 719468;
-        var era = (z >= 0 ? z : z - 146096) / 146097;
-        var doe = z - era * 146097;
-        var yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
-        var y = yoe + era * 400;
-        var doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-        var mp = (5 * doy + 2) / 153;
-        var d = doy - (153 * mp + 2) / 5 + 1;
-        var m = mp < 10 ? mp + 3 : mp - 9;
-        return (m <= 2 ? y + 1 : y, m, d);
     }
 
     private static string FormatOffset(long offsetNs)
@@ -2122,7 +2064,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var fraction = (long)(localNs - totalSeconds * 1_000_000_000);
         var days = (long)FloorDiv(totalSeconds, 86400);
         var secondsOfDay = (long)(totalSeconds - new BigInteger(days) * 86400);
-        var (y, mo, d) = CivilFromDays(days);
+        var (y, mo, d) = IsoCalendarMath.FromEpochDays(days);
         var h = secondsOfDay / 3600;
         var mi = secondsOfDay % 3600 / 60;
         var s = secondsOfDay % 60;

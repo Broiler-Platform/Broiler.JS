@@ -1,3 +1,4 @@
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.Engine.Core;
 using UnicodeCldr.LocaleData;
 
@@ -60,7 +61,7 @@ internal static class TemporalArithmeticCalendar
 
     internal static bool InLeapYear(string id, int year)
     {
-        if (id == "indian") return GregorianLeap(year + 78);
+        if (id == "indian") return IsoCalendarMath.IsLeapYear(year + 78);
         if (id == "hebrew") return HebrewLeap(year);
         if (UmalquraTable(id, year)) return CldrUmmAlQura.YearLength(year) == 355;
         return IsSolar13(id)
@@ -70,7 +71,7 @@ internal static class TemporalArithmeticCalendar
 
     internal static int DaysInYear(string id, int year)
     {
-        if (id == "indian") return GregorianLeap(year + 78) ? 366 : 365;
+        if (id == "indian") return IsoCalendarMath.DaysInYear(year + 78);
         if (id == "hebrew") return (int)(HebrewNewYear(year + 1) - HebrewNewYear(year));
         if (UmalquraTable(id, year)) return CldrUmmAlQura.YearLength(year);
         if (IsSolar13(id)) return InLeapYear(id, year) ? 366 : 365;
@@ -79,7 +80,7 @@ internal static class TemporalArithmeticCalendar
 
     internal static int DaysInMonth(string id, int year, int month)
     {
-        if (id == "indian") return IndianMonthLength(GregorianLeap(year + 78), month);
+        if (id == "indian") return IndianMonthLength(IsoCalendarMath.IsLeapYear(year + 78), month);
         if (id == "hebrew") return HebrewMonthLength(year, month);
         if (UmalquraTable(id, year)) return CldrUmmAlQura.MonthLength(year, month);
         if (IsSolar13(id))
@@ -318,28 +319,26 @@ internal static class TemporalArithmeticCalendar
     // Gregorian year S + 78 in a common year and 21 March when that Gregorian year is a leap year
     // (so the extra day is absorbed by a 31-day Chaitra and the following months are unchanged).
 
-    private static bool GregorianLeap(int y) => (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
-
     private static int IndianMonthLength(bool leap, int month)
         => month == 1 ? (leap ? 31 : 30) : (month <= 6 ? 31 : 30);
 
     private static long IndianEpochDays(int year, int month, int day)
     {
         var gregorianYear = year + 78;
-        var leap = GregorianLeap(gregorianYear);
-        var epoch = DaysFromCivil(gregorianYear, 3, leap ? 21 : 22);
+        var leap = IsoCalendarMath.IsLeapYear(gregorianYear);
+        var epoch = IsoCalendarMath.EpochDays(gregorianYear, 3, leap ? 21 : 22);
         for (var m = 1; m < month; m++) epoch += IndianMonthLength(leap, m);
         return epoch + day - 1;
     }
 
     private static (int year, int month, int day) IndianYmdFromEpochDays(long epoch)
     {
-        var (gy, _, _) = CivilFromDays(epoch);
+        var (gy, _, _) = IsoCalendarMath.FromEpochDays(epoch);
         var year = (int)gy - 78;
         while (IndianEpochDays(year + 1, 1, 1) <= epoch) year++;
         while (IndianEpochDays(year, 1, 1) > epoch) year--;
 
-        var leap = GregorianLeap(year + 78);
+        var leap = IsoCalendarMath.IsLeapYear(year + 78);
         var dayOfYear = epoch - IndianEpochDays(year, 1, 1);
         var month = 1;
         while (dayOfYear >= IndianMonthLength(leap, month))
@@ -348,32 +347,6 @@ internal static class TemporalArithmeticCalendar
             month++;
         }
         return (year, month, (int)dayOfYear + 1);
-    }
-
-    // Howard Hinnant's days_from_civil / civil_from_days about the ISO 1970-01-01 epoch (used by the
-    // Gregorian-anchored Indian calendar).
-    private static long DaysFromCivil(long y, long m, long d)
-    {
-        y -= m <= 2 ? 1 : 0;
-        var era = (y >= 0 ? y : y - 399) / 400;
-        var yoe = y - era * 400;
-        var doy = (153 * (m > 2 ? m - 3 : m + 9) + 2) / 5 + d - 1;
-        var doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-        return era * 146097 + doe - 719468;
-    }
-
-    private static (long y, long m, long d) CivilFromDays(long z)
-    {
-        z += 719468;
-        var era = (z >= 0 ? z : z - 146096) / 146097;
-        var doe = z - era * 146097;
-        var yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
-        var y = yoe + era * 400;
-        var doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-        var mp = (5 * doy + 2) / 153;
-        var d = doy - (153 * mp + 2) / 5 + 1;
-        var m = mp < 10 ? mp + 3 : mp - 9;
-        return (m <= 2 ? y + 1 : y, m, d);
     }
 
     private static long FloorDiv(long a, long b)

@@ -12,13 +12,14 @@ and nothing here has been read by anyone but its author.
 
 **State:** collection in progress. Nothing here is a verdict until its section says so. **Taken:** both
 test262 bases (section 1), the engine-level runs on the Date area, at corpus revisions 14 and 15
-(section 2), and the reference-arm comparison, with this engine's runs on corpus revision 16, which holds
-its class (b) kinds (section 3). The after runs and the rest of SJL-6.6 are added when they are taken.
+(section 2), the reference-arm comparison, with this engine's runs on corpus revision 16, which holds
+its class (b) kinds (section 3), and the cut-over's runs (section 4). The after runs and the rest of
+SJL-6.6 are added when they are taken.
 Broiler.VM keeps its own bundle of the same name for its own half, judged by its own rule; neither bundle
 reads the other's runs. *(2026-10-15, at SJL-6.3; the second and third sentences read "**Taken:** both
 test262 bases (section 1) and the engine-level runs on the Date area, at corpus revisions 14 and 15
 (section 2). The reference-arm comparison, the after runs and the rest of SJL-6.6 are added when they are
-taken.")*
+taken."; the fourth sentence ended at "which holds its class (b) kinds (section 3)." until SJL-6.5)*
 
 ## 1. The test262 bases (parts A and B)
 
@@ -118,6 +119,40 @@ ports it. The engine-level runner was run on revision 16 from one build of `6f29
 
 The 12 new vectors match in both zones, the two read through the local fields included; every other verdict
 is revision 15's. The runs were taken together, from 19:08Z to 19:31Z.
+
+## 4. This engine's cut-over (SJL-6.5)
+
+On corpus revision 16, with the product sources of the change that lands SJL-6.5's cut-over, from one
+build, once under `TZ=UTC` and once under `TZ=America/New_York`:
+
+| Run | Result | Files |
+|---|---|---|
+| Revision 16, UTC | 50,727 vectors: 50,721 match, 4 classified divergences, 2 unclassified differences | [`engine/cut-over-revision-16-utc.log`](engine/cut-over-revision-16-utc.log), [`engine/cut-over-revision-16-utc.tsv.gz`](engine/cut-over-revision-16-utc.tsv.gz) |
+| Revision 16, New York | 50,727 vectors: 50,721 match, 4 classified divergences, 2 unclassified differences | [`engine/cut-over-revision-16-new-york.log`](engine/cut-over-revision-16-new-york.log), [`engine/cut-over-revision-16-new-york.tsv.gz`](engine/cut-over-revision-16-new-york.tsv.gz) |
+
+**Each of the 1,016 fields of section 2 reports "divergence no longer holds" in both zones**, the 951 of
+rows L2 and P1 in New York, where they held before the cut-over, as well as in UTC; every correction is
+listed in [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md). The 4 are the number area's, as
+before. **The 2 are `date/outside-format/0001` and `0010`**, `impl-defined` vectors whose expectation for
+this engine is its reading before the cut-over (section 3): this engine now reads both in Broiler.VM's
+dialect, after its own grammar refuses them, as JSD-0072's order of grammars has it, `"0000-02-30T00:00Z"`
+as March 1 of year 0, -62162035200000, and `"Thu Jan 01 -5 00:00:00 GMT+0000 (Coordinated Universal Time)"`
+as the year -5, -62324985600000. The runner fails on them, as it must until the corpus changes the
+expectation; the plan, `SharedLibraries.md`'s record of SJL-6.5, states the reading, and the next corpus
+revision takes it from there, not from this run. The runs were taken together, from 08:41Z to 09:03Z.
+
+**Every vector of corpus revision 17 has the result its class expects, in both zones.** At `520ecf9`,
+which carries revision 17, retires the 1,016 fields with Broiler.VM's 16
+([`engine/retired-divergences-revision-17.tsv`](engine/retired-divergences-revision-17.tsv)) and states this
+engine's reading of the two strings, with the same product sources, from a clean checkout:
+
+| Run | Result | Files |
+|---|---|---|
+| Revision 17, UTC | 50,727 vectors: 50,723 match, 4 classified divergences, 0 unclassified differences | [`engine/run-revision-17-utc.log`](engine/run-revision-17-utc.log), [`engine/run-revision-17-utc.tsv.gz`](engine/run-revision-17-utc.tsv.gz) |
+| Revision 17, New York | 50,727 vectors: 50,723 match, 4 classified divergences, 0 unclassified differences | [`engine/run-revision-17-new-york.log`](engine/run-revision-17-new-york.log), [`engine/run-revision-17-new-york.tsv.gz`](engine/run-revision-17-new-york.tsv.gz) |
+
+The 4 are the number area's. The runner's test passes in both zones. The runs were taken together, from
+09:08Z to 09:29Z.
 
 ## What this bundle does not hold yet
 

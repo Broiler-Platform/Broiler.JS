@@ -1,108 +1,32 @@
-using System;
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Date;
 
+// The getters of ECMA-262 21.4.4: each reads the time value, or LocalTime of it over the host's zone,
+// through the shared library's field operations; NaN for an invalid date.
 public partial class JSDate
 {
+    // LocalTime(t) (21.4.1.25) of this date's time value; NaN for an invalid date.
+    private double LocalTimeValue => EcmaLocalTime.LocalTime(timeValue, Zone);
+
+    // A Number result, the shared NaN for NaN.
+    private static JSValue NumberOf(double value) => double.IsNaN(value) ? JSNumber.NaN : new JSNumber(value);
+
     [JSExport("getDate", Length = 0)]
-    internal JSValue GetDate(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-        {
-            double localMs = JSDateMath.LocalTime(rawTimeMs);
-            return new JSNumber(JSDateMath.DateFromTime(localMs));
-        }
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.Day;
-        return new JSNumber(result);
-    }
-
-    /// <summary>
-    /// If invalid date, return false
-    /// If diff is undefined or NaN, return false
-    /// else return true
-    /// </summary>
-    /// <param name="this"></param>
-    /// <param name="diff"></param>
-    /// <param name="diffValue"></param>
-    /// <returns></returns>
-    internal bool IsValid(JSValue diff, out double diffValue) =>
-        IsValid(value, diff, out diffValue);
-
-    internal bool IsValid(DateTimeOffset date, JSValue diff, out double diffValue)
-    {
-        diffValue = 0;
-
-        if (diff.IsUndefined)
-        {
-            value = DateTimeOffset.MinValue;
-            return false;
-        }
-
-        // Coerce the argument (ToNumber, which may invoke valueOf and have
-        // observable side effects) BEFORE testing whether the stored date value
-        // is valid: the spec reads [[DateValue]] first but performs the ToNumber
-        // conversions of the arguments before the "if t is NaN, return NaN" step.
-        diffValue = diff.DoubleValue;
-
-        if (date == DateTimeOffset.MinValue)
-            return false;
-
-        if (double.IsNaN(diffValue))
-        {
-            value = DateTimeOffset.MinValue;
-            return false;
-        }
-
-        return true;
-    }
+    internal JSValue GetDate(in Arguments a) => NumberOf(EcmaTime.DateFromTime(LocalTimeValue));
 
     [JSExport("getDay", Length = 0)]
-    internal JSValue GetDay(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-        {
-            double localMs = JSDateMath.LocalTime(rawTimeMs);
-            return new JSNumber(JSDateMath.WeekDay(localMs));
-        }
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.DayOfWeek;
-        return new JSNumber((double)result);
-    }
+    internal JSValue GetDay(in Arguments a) => NumberOf(EcmaTime.WeekDay(LocalTimeValue));
 
     [JSExport("getFullYear", Length = 0)]
-    internal JSValue GetFullYear(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-        {
-            double localMs = JSDateMath.LocalTime(rawTimeMs);
-            return new JSNumber(JSDateMath.YearFromTime(localMs));
-        }
+    internal JSValue GetFullYear(in Arguments a) => NumberOf(EcmaTime.YearFromTime(LocalTimeValue));
 
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.Year;
-        return new JSNumber(result);
-    }
-
+    // getYear (B.2.3.1): YearFromTime(LocalTime(t)) - 1900.
     [JSExport("getYear", Length = 0)]
-    internal JSValue GetYear(in Arguments a)
-    {
-        var fullYear = GetFullYear(in a);
-        return fullYear.IsUndefined || double.IsNaN(fullYear.DoubleValue)
-            ? fullYear
-            : new JSNumber(fullYear.DoubleValue - 1900);
-    }
+    internal JSValue GetYear(in Arguments a) => NumberOf(EcmaTime.YearFromTime(LocalTimeValue) - 1900);
 
     internal static JSValue GetYearLegacy(in Arguments a)
     {
@@ -113,205 +37,48 @@ public partial class JSDate
     }
 
     [JSExport("getHours", Length = 0)]
-    internal JSValue GetHours(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-        {
-            double localMs = JSDateMath.LocalTime(rawTimeMs);
-            return new JSNumber(JSDateMath.HourFromTime(localMs));
-        }
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.Hour;
-        return new JSNumber(result);
-    }
+    internal JSValue GetHours(in Arguments a) => NumberOf(EcmaTime.HourFromTime(LocalTimeValue));
 
     [JSExport("getMilliseconds", Length = 0)]
-    internal JSValue GetMilliSeconds(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-        {
-            double localMs = JSDateMath.LocalTime(rawTimeMs);
-            return new JSNumber(JSDateMath.MsFromTime(localMs));
-        }
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.Millisecond;
-        return new JSNumber(result);
-    }
+    internal JSValue GetMilliSeconds(in Arguments a) => NumberOf(EcmaTime.MsFromTime(LocalTimeValue));
 
     [JSExport("getMinutes", Length = 0)]
-    internal JSValue GetMinutes(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-        {
-            double localMs = JSDateMath.LocalTime(rawTimeMs);
-            return new JSNumber(JSDateMath.MinFromTime(localMs));
-        }
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.Minute;
-        return new JSNumber(result);
-    }
+    internal JSValue GetMinutes(in Arguments a) => NumberOf(EcmaTime.MinFromTime(LocalTimeValue));
 
     [JSExport("getMonth", Length = 0)]
-    internal JSValue GetMonth(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-        {
-            double localMs = JSDateMath.LocalTime(rawTimeMs);
-            return new JSNumber(JSDateMath.MonthFromTime(localMs));
-        }
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.Month - 1;
-        return new JSNumber(result);
-    }
+    internal JSValue GetMonth(in Arguments a) => NumberOf(EcmaTime.MonthFromTime(LocalTimeValue));
 
     [JSExport("getSeconds", Length = 0)]
-    internal JSValue GetSeconds(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-        {
-            double localMs = JSDateMath.LocalTime(rawTimeMs);
-            return new JSNumber(JSDateMath.SecFromTime(localMs));
-        }
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.Second;
-        return new JSNumber(result);
-    }
+    internal JSValue GetSeconds(in Arguments a) => NumberOf(EcmaTime.SecFromTime(LocalTimeValue));
 
     [JSExport("getTime", Length = 0)]
-    internal JSValue GetTime(in Arguments a)
-    {
-        if (!IsValidDate())
-            return JSNumber.NaN;
+    internal JSValue GetTime(in Arguments a) => NumberOf(timeValue);
 
-        return new JSNumber(GetTimeMs());
-    }
-
+    // getTimezoneOffset (21.4.4.11): (t - LocalTime(t)) / msPerMinute.
     [JSExport("getTimezoneOffset", Length = 0)]
-    internal JSValue GetTimezoneOffset(in Arguments a)
-    {
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = -(int)TimeZoneInfo.Local.GetUtcOffset(Value).TotalMinutes;
-        return new JSNumber(result);
-    }
+    internal JSValue GetTimezoneOffset(in Arguments a) => NumberOf((timeValue - LocalTimeValue) / EcmaTime.MsPerMinute);
 
     [JSExport("getUTCDate", Length = 0)]
-    internal JSValue GetUTCDate(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-            return new JSNumber(JSDateMath.DateFromTime(rawTimeMs));
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.ToUniversalTime().Day;
-        return new JSNumber(result);
-    }
+    internal JSValue GetUTCDate(in Arguments a) => NumberOf(EcmaTime.DateFromTime(timeValue));
 
     [JSExport("getUTCDay", Length = 0)]
-    internal JSValue GetUTCDay(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-            return new JSNumber(JSDateMath.WeekDay(rawTimeMs));
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.ToUniversalTime().DayOfWeek;
-        return new JSNumber((double)result);
-    }
+    internal JSValue GetUTCDay(in Arguments a) => NumberOf(EcmaTime.WeekDay(timeValue));
 
     [JSExport("getUTCFullYear", Length = 0)]
-    internal JSValue GetUTCFullYear(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-            return new JSNumber(JSDateMath.YearFromTime(rawTimeMs));
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.ToUniversalTime().Year;
-        return new JSNumber(result);
-    }
+    internal JSValue GetUTCFullYear(in Arguments a) => NumberOf(EcmaTime.YearFromTime(timeValue));
 
     [JSExport("getUTCHours", Length = 0)]
-    internal JSValue GetUTCHours(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-            return new JSNumber(JSDateMath.HourFromTime(rawTimeMs));
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.ToUniversalTime().Hour;
-        return new JSNumber(result);
-    }
+    internal JSValue GetUTCHours(in Arguments a) => NumberOf(EcmaTime.HourFromTime(timeValue));
 
     [JSExport("getUTCMilliseconds", Length = 0)]
-    internal JSValue GetUTCMilliseconds(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-            return new JSNumber(JSDateMath.MsFromTime(rawTimeMs));
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.ToUniversalTime().Millisecond;
-        return new JSNumber(result);
-    }
+    internal JSValue GetUTCMilliseconds(in Arguments a) => NumberOf(EcmaTime.MsFromTime(timeValue));
 
     [JSExport("getUTCMinutes", Length = 0)]
-    internal JSValue GetUTCMinutes(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-            return new JSNumber(JSDateMath.MinFromTime(rawTimeMs));
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.ToUniversalTime().Minute;
-        return new JSNumber(result);
-    }
+    internal JSValue GetUTCMinutes(in Arguments a) => NumberOf(EcmaTime.MinFromTime(timeValue));
 
     [JSExport("getUTCMonth", Length = 0)]
-    internal JSValue GetUTCMonth(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-            return new JSNumber(JSDateMath.MonthFromTime(rawTimeMs));
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.ToUniversalTime().Month - 1;
-        return new JSNumber(result);
-    }
+    internal JSValue GetUTCMonth(in Arguments a) => NumberOf(EcmaTime.MonthFromTime(timeValue));
 
     [JSExport("getUTCSeconds", Length = 0)]
-    internal JSValue GetUTCSeconds(in Arguments a)
-    {
-        if (!double.IsNaN(rawTimeMs))
-            return new JSNumber(JSDateMath.SecFromTime(rawTimeMs));
-
-        if (value == DateTimeOffset.MinValue)
-            return JSNumber.NaN;
-
-        var result = value.ToUniversalTime().Second;
-        return new JSNumber(result);
-    }
+    internal JSValue GetUTCSeconds(in Arguments a) => NumberOf(EcmaTime.SecFromTime(timeValue));
 }

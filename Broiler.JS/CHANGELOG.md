@@ -10,6 +10,111 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### The Date area moves to `Broiler.ECMAScript.Algorithms` (2026-10-16, milestone SJL-6.5)
+
+The Date area is the shared library's, the stream's `0.1.0-preview.4` in this repository's
+`Broiler.ECMAScript`:
+
+- the time arithmetic of every getter and setter, the constructor, `Date.UTC`, `getYear` and `setYear`
+  (`EcmaTime`);
+- local time, `LocalTime` and `UTC` with the specification's disambiguation of skipped and repeated local
+  times, over this engine's provider of the host's zone: `TimeZoneInfo.Local`, read at each instant with
+  its daylight-saving time (decision SJL-D-19, `EcmaLocalTime`);
+- `Date.parse`'s Date Time String Format, through the library's strict dialect, and Broiler.VM's dialect
+  after this engine's own fallback (`EcmaDateParser`);
+- `toString`, `toDateString`, `toTimeString`, `toUTCString` and `toISOString` (`EcmaDateFormatter`);
+- the civil-day arithmetic of `Temporal.Instant`, `PlainDate`, `PlainDateTime`, `PlainMonthDay`,
+  `PlainYearMonth` and `ZonedDateTime`, of the ISO string reader and the non-ISO calendars, and Intl's
+  date fields (`IsoCalendarMath`, `EcmaTime`).
+
+**A `Date`'s storage is its time value alone**, where it was a `DateTimeOffset` with a raw time value
+beside it for the dates the type cannot hold; the CLR views of it are in
+[`docs/public-api.md`](../docs/public-api.md). The built-ins keep their argument conversion and its
+order, their errors, the fallback of `Date.parse` and the .NET format string of `toLocaleString` (decision
+SJL-D-17). **Two of this engine's own readings are decided** (correspondence rows P4 to P6 and R5):
+
+- **`Date.parse` keeps the format's leniencies its own grammars read**, now in every form of the format
+  and every year, where the .NET format lists read them in the years 0001 to 9999 only and the expanded
+  years' expression read only some: a fraction of none to nine digits, cut to milliseconds
+  (`"2021-03-04T10:00:00.1Z"` is 1614852000100), and an offset without its colon
+  (`"0001-01-01T00:00-0530"`). A lower-case `t` keeps the culture parse's reading, and a `'T'`-joined
+  string the format does not hold is still not read leniently (test262 `staging/sm/Date/non-iso.js`).
+- **A .NET format string formats a date from the year 1 to the year 9999 only**:
+  `new Date(Date.UTC(-1, 0, 1)).toLocaleString(undefined, "yyyy-MM-dd")` is a `RangeError`, where it
+  answered `"0001-01-01"`, the invalid-date sentinel's fields. Within those years it formats the instant
+  at the offset in force at it, where it used the offset the date was stored with (L2).
+
+**`Date.parse` reads what both its grammars refuse in Broiler.VM's dialect** (JSD-0072's order: the
+format, this engine's fallback, then Broiler.VM's). Every string this engine read keeps its reading,
+except where a correction below says otherwise; among the strings it now reads are its own renderings of
+the years outside 0001 to 9999 (P9, below), a day past its month's length, carried into the next month
+(`"2021-02-30"` is March 2, where it was NaN, P5), and the dialect's textual forms, a weekday that does not
+match its date and an offset of 60 minutes among them (P7).
+
+**Corrections the corpus names.** Each was a `divergence.broiler-js` field of the shared corpus
+(`conformance/vectors/date`, revision 16), with the row of bundle `sjl-6-001`'s correspondence it
+confirmed (Broiler.VM's `docs/evidence/sjl-6-001/correspondence.md`). Corpus revision 17 retires the 1,016
+fields, and [`docs/evidence/sjl-6-001/engine/retired-divergences-revision-17.tsv`](../docs/evidence/sjl-6-001/engine/retired-divergences-revision-17.tsv)
+lists every retired vector under its reason.
+
+- **One offset per instant, the one in force at it** (L2, 892 vectors of `date/offset`, `date/to-string`,
+  `date/local-string`, `date/local` and `date/date-time`, in a zone with daylight-saving time): in
+  New York, `new Date(2021, 6, 1)` is 04:00Z, midnight EDT, where storage and the components constructor
+  took the zone's base offset, so it was 05:00Z with `getHours()` 0 and `toString()` 01:00 EDT; a local
+  setter kept whichever offset the date was stored with.
+- **A date-only form is UTC** (P1, 59 vectors of `date/date-only` and `date/utc`, in a zone whose offset is
+  not zero): `Date.parse("2021-03-04")` is UTC midnight, where it was local midnight for the years 0001 to
+  9999.
+- **The ISO week of a date in a negative year** (G2, 22 vectors of `date/iso-week`):
+  `Temporal.PlainDate.from("-000002-12-28").weekOfYear` is 53 of -2, where `WeeksInIsoYear` divided with
+  truncation and answered week 1 of -1.
+- **`Date.parse` reads back this engine's renderings of the years outside 0001 to 9999** (P9, 16 vectors of
+  `date/round-trip`): `Date.parse(new Date(Date.UTC(-1, 0, 1)).toUTCString())` is that date, where the
+  .NET formats could not hold the year and answered NaN.
+- **A setter converts every argument before it writes the date** (T3, 14 vectors of `date/setter-order`):
+  `setUTCMinutes`, `setUTCSeconds`, `setUTCMonth`, `setHours`, `setMinutes`, `setSeconds` and `setMonth`
+  made the date invalid as soon as their first argument was `undefined` or NaN, so a later argument's
+  `valueOf` read `getTime()` as NaN. `setYear` likewise reads the time value before it converts its
+  argument, where it read it after, so a `valueOf` that moved the date set the year of the moved date.
+- **A setter answers a valid date outside the years 0001 to 9999** (D1, 5 vectors of `date/utc-setter` and
+  `date/local-setter`): `new Date(9999, 11, 31).setDate(32)` is January 1 of 10000, where the
+  `DateTimeOffset` arithmetic threw and the date became invalid.
+- **A setter sets a date outside those years** (D2, 5 vectors of the same files): `new Date(-1e15).setHours(1)`
+  answers the new date, where it answered NaN and left the date unchanged.
+- **The instant 0001-01-01T00:00:00.000Z is a date** (D3, 2 vectors of `date/utc-setter` and
+  `date/round-trip`), -62135596800000, where it was the invalid-date sentinel.
+- **A month at or past 2^53 is taken exactly** (T4, `date/make-day/0863`):
+  `Date.UTC(-833333333333333333, 1e19, 1)` is May 1 of year 0, -62156764800000, where the month saturated
+  as a 64-bit integer and the date fell in August.
+
+**Corrections the corpus does not hold.** Their outcome depends on the zone, the culture or the host;
+`SharedDateAlgorithmTests` holds each, the zone's in a collection that runs under `America/New_York`.
+
+- **A skipped local time is read at the offset before its transition, a repeated one at its earlier
+  instant, and a local time just after a transition at the offset after it** (L3): in New York,
+  `new Date(2021, 2, 14, 2, 30)` is 07:30Z, 03:30 EDT, where `getHours()` answered 2;
+  `new Date(2021, 10, 7, 1, 30)` is 05:30Z, where it was 06:30Z; and
+  `Date.parse("2021-03-14T03:30:00.0000")` is 07:30Z, where it was 08:30Z.
+- **A date outside `DateTimeOffset`'s range takes the offset the zone's rules give at its instant** (L4),
+  where it took the offset in force at the moment of the call: in New York, `new Date(10000, 0, 1)` is
+  05:00Z in any season, and a date before the zone's standard time takes its local mean time.
+- **`getTimezoneOffset` reads a date outside the years 0001 to 9999** (D4), where it answered NaN.
+- **A structured clone keeps a date outside those years** (D5): `structuredClone(new Date(-1e15))` is
+  that date, where the clone copied only the `DateTimeOffset` storage and was invalid.
+- **`toString`'s and `toTimeString`'s offset is written with U+002D** (R3), where `GMT-0500` was written
+  with the culture's negative sign, U+2212 under `sv-SE`, and did not read back (P8).
+- **`toUTCString` reads back under any culture** (P8): `Date.parse` reads its form before the culture's
+  parse, which read the year in the culture's calendar under `fa-IR` and `ar-SA`.
+- **A Gregorian-family `PlainMonthDay` with a year and a month past 12 is bound-checked in December**, as
+  `constrain` regulates the month, where the civil copy the check called carried the month past the year:
+  `Temporal.PlainMonthDay.from({ calendar: "gregory", year: 275759, month: 21, day: 13 })` is `12-13`, where
+  it was a `RangeError`. The shared `EpochDays` takes a month from 1 to 12 only; `reject` refuses such a
+  month either way.
+
+**Messages and names.** The zone's name in parentheses is the host's daylight or standard name at the
+instant (R4), where a date outside `DateTimeOffset`'s range took the name in force at the moment of the
+call.
+
 ### Each locale's default numbering system is CLDR's (2026-10-15, milestone SJL-5.6)
 
 A locale's default numbering system is CLDR's, release 47.0.0, where every locale defaulted to `latn`.

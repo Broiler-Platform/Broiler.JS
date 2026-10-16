@@ -8,7 +8,9 @@ namespace Broiler.ECMAScript.Runners;
 
 /// <summary>
 /// The Date area (corpus revision 14, with its strings outside the format at revision 16): each operation as an engine's adapter calls the library, with the
-/// script's own reading of the result where a vector's script shows it through a built-in.
+/// script's own reading of the result where a vector's script shows it through a built-in. A string outside the format is read as both
+/// engines' adapters ask the library to read it, in the strict dialect and then, for what that refuses, in Broiler.VM's (since corpus
+/// revision 17, where both engines' expectations of two such strings agree on that dialect's reading).
 /// </summary>
 /// <remarks>
 /// <para>
@@ -70,9 +72,9 @@ internal sealed partial class AlgorithmsLibrary
             case "Date.parse, a date-time form without an offset":
                 return Text(LocalFields(DateParse(inputs[0].Chars, DateParseDialect.Strict), 7));
             case "Date.parse, a numeric slash date": return Text(LocalFields(DateParse(inputs[0].Chars, DateParseDialect.Strict), 5));
-            case "Date.parse, a string outside the format": return Number(DateParse(inputs[0].Chars, DateParseDialect.Strict));
+            case "Date.parse, a string outside the format": return Number(DateParseOutsideFormat(inputs[0].Chars));
             case "Date.parse, a string outside the format, its local fields":
-                return Text(LocalFields(DateParse(inputs[0].Chars, DateParseDialect.Strict), 5));
+                return Text(LocalFields(DateParseOutsideFormat(inputs[0].Chars), 5));
             case "Date.parse of toISOString":
                 return Number(EcmaDateFormatter.TryToIsoString(inputs[0].Number, out var iso) ? DateParse(iso, DateParseDialect.Strict) : double.NaN);
             case "Date.parse of toUTCString": return Number(DateParse(EcmaDateFormatter.ToUtcString(inputs[0].Number), DateParseDialect.BroilerVM));
@@ -204,6 +206,14 @@ internal sealed partial class AlgorithmsLibrary
             EcmaParsedKind.Local => EcmaTime.TimeClip(EcmaLocalTime.Utc(parsed.Value, DateZone)),
             _ => double.NaN,
         };
+    }
+
+    // The library's part of either engine's Date.parse for a string outside the format: the strict dialect, then Broiler.VM's for
+    // what it refuses. Broiler.JS's own grammar, between the two, is that engine's, not the library's.
+    private static double DateParseOutsideFormat(string text)
+    {
+        var strict = DateParse(text, DateParseDialect.Strict);
+        return double.IsNaN(strict) ? DateParse(text, DateParseDialect.BroilerVM) : strict;
     }
 
     // [getFullYear(), getMonth(), getDate(), getHours(), getMinutes(), getSeconds(), getMilliseconds()].join(), its first count.

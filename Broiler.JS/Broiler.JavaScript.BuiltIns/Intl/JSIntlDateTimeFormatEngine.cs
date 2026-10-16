@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.Date;
 using UnicodeCldr.LocaleData;
 
@@ -32,13 +33,13 @@ internal static class JSIntlDateTimeFormatEngine
         public readonly string MonthLabel;
         public Fields(double wallClockMs, string timeZoneName = null, string dayPeriod = null)
         {
-            Year = (int)JSDateMath.YearFromTime(wallClockMs);
-            Month = JSDateMath.MonthFromTime(wallClockMs) + 1; // 0-indexed -> 1-indexed
-            Day = JSDateMath.DateFromTime(wallClockMs);
-            Hour = JSDateMath.HourFromTime(wallClockMs);
-            Minute = JSDateMath.MinFromTime(wallClockMs);
-            Second = JSDateMath.SecFromTime(wallClockMs);
-            Millisecond = JSDateMath.MsFromTime(wallClockMs);
+            Year = (int)EcmaTime.YearFromTime(wallClockMs);
+            Month = (int)EcmaTime.MonthFromTime(wallClockMs) + 1; // 0-indexed -> 1-indexed
+            Day = (int)EcmaTime.DateFromTime(wallClockMs);
+            Hour = (int)EcmaTime.HourFromTime(wallClockMs);
+            Minute = (int)EcmaTime.MinFromTime(wallClockMs);
+            Second = (int)EcmaTime.SecFromTime(wallClockMs);
+            Millisecond = (int)EcmaTime.MsFromTime(wallClockMs);
             TimeZoneName = timeZoneName;
             DayPeriod = dayPeriod;
             MonthLabel = null;
@@ -228,10 +229,6 @@ internal static class JSIntlDateTimeFormatEngine
         ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     private static readonly string[] WeekdayNarrow =
         ["S", "M", "T", "W", "T", "F", "S"];
-
-    // 0 = Sunday .. 6 = Saturday for a Gregorian/ISO date, valid across the full ±275760-year range.
-    private static int DayOfWeek(in Fields f)
-        => JSDateMath.WeekDay(JSDateMath.MakeDate(JSDateMath.MakeDay(f.Year, f.Month - 1, f.Day), 0));
 
     // CLDR en intervalFormats fallback: "{0} – {1}" (U+2013 with surrounding spaces).
     internal const string RangeSeparator = " – ";
@@ -643,7 +640,7 @@ internal static class JSIntlDateTimeFormatEngine
     internal static double ToZone(double clippedMs, string timeZone)
     {
         if (string.IsNullOrEmpty(timeZone))
-            return JSDateMath.LocalTime(clippedMs);
+            return EcmaLocalTime.LocalTime(clippedMs, JSDate.Zone);
 
         if (string.Equals(timeZone, "UTC", StringComparison.OrdinalIgnoreCase))
             return clippedMs;
@@ -654,7 +651,7 @@ internal static class JSIntlDateTimeFormatEngine
         // Resolve through the bundled IANA database (host-independent), at full offset precision.
         var tz = Temporal.Tz.IanaTimeZoneDatabase.Get(timeZone);
         if (tz == null)
-            return JSDateMath.LocalTime(clippedMs);
+            return EcmaLocalTime.LocalTime(clippedMs, JSDate.Zone);
 
         var clamped = Math.Clamp(clippedMs, -8.64e15, 8.64e15);
         var offsetSeconds = tz.GetOffsetSeconds((long)Math.Floor(clamped / 1000.0));
@@ -758,7 +755,9 @@ internal static class JSIntlDateTimeFormatEngine
                 return ("fractionalSecond", digits <= 3 ? ms.Substring(0, digits) : ms.PadRight(digits, '0'));
             case 'E':
             case 'c':
-                var dow = DayOfWeek(in f);
+                // 0 = Sunday .. 6 = Saturday for a Gregorian/ISO date, valid across the full ±275760-year range:
+                // ECMA-262's WeekDay of MakeDay, the shared library's, which carries a month outside 1 to 12.
+                var dow = (int)EcmaTime.WeekDay(EcmaTime.MakeDate(EcmaTime.MakeDay(f.Year, f.Month - 1, f.Day), 0));
                 return ("weekday", token.Count switch
                 {
                     5 => WeekdayNarrow[dow],

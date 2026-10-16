@@ -460,6 +460,31 @@ libraries` published `0.1.0-preview.4` to nuget.org from `d1e4b11` (run 38813070
 `e04874d`'s, and tagged it `ecmascript-v0.1.0-preview.4`; Broiler.VM's feed now holds the package as
 published.
 
+**This engine's cut-over (SJL-6.5), 2026-10-16.** This engine's Date area is the shared library's, on the
+stream's `0.1.0-preview.4`, which nuget.org serves. Its getters, setters, constructor, `Date.UTC`, `getYear`
+and `setYear` call `EcmaTime`; its local time is `EcmaLocalTime` over its provider of the host's
+`TimeZoneInfo`, `HostLocalTimeProvider` (SJL-D-19); `Date.parse` reads the strict dialect, then `DateParser`,
+its own fallback, then Broiler.VM's dialect; its renderings are `EcmaDateFormatter`'s; and Temporal's and
+Intl's civil-day arithmetic is `IsoCalendarMath`'s and `EcmaTime`'s. **A `Date`'s storage is its time value
+alone.** The deletion list is absent, with what JSD-0072 added to it, and every correction the area record
+names is made and listed in [`Broiler.JS/CHANGELOG.md`](../../Broiler.JS/CHANGELOG.md): those the corpus
+holds, and D4, D5, L3, L4, R3 and P8, which `SharedDateAlgorithmTests` holds, its zone's cases under
+`America/New_York`. **The readings the record left to this milestone are decided** (P4 to P6, R5):
+`Date.parse`'s own grammar keeps the format's leniencies it read, a fraction of none to nine digits and an
+offset without its colon, now in every form and year of the format; and a .NET format string of
+`toLocaleString` formats the years 1 to 9999 only, and is a `RangeError` outside them. By the record's order,
+`Date.parse` now reads in Broiler.VM's dialect what both of this engine's grammars refuse, a day past its
+month's length among them, carried (P5). The CLR views' answers outside the years 1 to 9999 are recorded
+in [`docs/public-api.md`](../public-api.md) under SJL-D-25. **One change the record did not name** follows
+from the deletion: a Gregorian-family `Temporal.PlainMonthDay` with a year was bound-checked through a civil
+copy that carried a month past 12 past the year, and is now bound-checked with its month as `constrain`
+regulates it; the changelog lists it. The next corpus revision retires both engines' Date divergence
+fields, and gives this engine's expectation of the strings outside the format its reading since the
+cut-over; Broiler.VM's pin moves to it. *Added 2026-10-16:* corpus revision 17 does, and both engines'
+expectations of two of those strings now agree on Broiler.VM's dialect's reading, which a library-level run
+compares the library with: its runner reads a string outside the format as both engines ask the library
+to, in the strict dialect and then, for what that refuses, in Broiler.VM's.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
