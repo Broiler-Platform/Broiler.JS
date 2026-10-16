@@ -1,0 +1,15 @@
+$ /usr/bin/python3 <tree>/scripts/compliance/compare_test262_paths.py --base <scratch>/base-B-test262-results.json --after <scratch>/after-B-test262-results.json --output <scratch>/comparison-B.json --base-rerun <repo>/docs/evidence/sjl-6-001/test262/base-new-york/rerun-timeouts.json --after-rerun <repo>/docs/evidence/sjl-6-001/test262/after-new-york/rerun-timeouts.json --classifications <repo>/docs/evidence/sjl-6-001/test262/comparison-new-york/classifications.json
+# cwd <tree>; started 2026-10-16T12:11:37Z; exit 0
+admitted       failed -> passed   test/built-ins/Date/15.9.1.15-1.js [original] C1
+admitted       failed -> passed   test/built-ins/Date/15.9.1.15-1.js [terser] C1
+admitted       failed -> passed   test/built-ins/Date/parse/without-utc-offset.js [original] C1
+admitted       failed -> passed   test/built-ins/Date/parse/without-utc-offset.js [terser] C1
+admitted       failed -> passed   test/built-ins/Date/prototype/setFullYear/arg-year-to-number.js [original] C1
+admitted       failed -> passed   test/built-ins/Date/prototype/setFullYear/arg-year-to-number.js [terser] C1
+admitted       failed -> passed   test/built-ins/Date/prototype/setFullYear/this-value-invalid-date.js [original] C1
+admitted       failed -> passed   test/built-ins/Date/prototype/setFullYear/this-value-invalid-date.js [terser] C1
+admitted       failed -> passed   test/built-ins/Date/prototype/toISOString/15.9.5.43-0-4.js [original] C1
+admitted       failed -> passed   test/built-ins/Date/prototype/toISOString/15.9.5.43-0-4.js [terser] C1
+admitted       failed -> passed   test/harness/assertRelativeDateMs.js [original] C1
+admitted       failed -> passed   test/harness/assertRelativeDateMs.js [terser] C1
+rows 96720; changed 12; admitted 12; unclassified 0; regressions 0
