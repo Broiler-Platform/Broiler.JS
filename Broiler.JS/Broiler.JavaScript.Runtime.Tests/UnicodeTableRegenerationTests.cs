@@ -96,6 +96,7 @@ public sealed class UnicodeTableRegenerationTests
         Assert.NotNull(JSUnicode.CaseMapping);
         Assert.NotNull(JSUnicode.Normalization);
         Assert.NotNull(JSUnicode.StringProperties);
+        Assert.NotNull(new Broiler.Unicode.Segmentation.UnicodeSegmenter(provider));
 
         // By design: the folding tables are not embedded, and the owner refuses a provider that lacks one.
         Assert.Throws<ArgumentException>(() => new UnicodeCaseFolding(provider));

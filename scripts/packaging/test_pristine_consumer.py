@@ -27,8 +27,13 @@ SHARED_PREFIX = "Broiler.ECMAScript."
 
 # The packages Broiler.JavaScript.BuiltIns declares, as its project file references them. This list
 # named Broiler.DateTime and Broiler.Unicode.Properties until 2026-10-12, which BuiltIns no longer
-# references; it now names what the project does (repaired at milestone SJL-2.13).
-BUILT_INS_DEPENDENCIES = {"Broiler.Regex", "Broiler.Unicode.Cldr.LocaleData"}
+# references; it now names what the project does (repaired at milestone SJL-2.13). Milestone SJL-7.5
+# added Broiler.Unicode.Segmentation, and the Runtime's Broiler.Unicode.Algorithms below.
+BUILT_INS_DEPENDENCIES = {"Broiler.Regex", "Broiler.Unicode.Cldr.LocaleData", "Broiler.Unicode.Segmentation"}
+
+# The packages Broiler.JavaScript.Runtime declares (milestone SJL-7.5): the Unicode area's code package,
+# whose tables the Runtime embeds. No package that carries tables is among them.
+RUNTIME_DEPENDENCIES = {"Broiler.Unicode.Algorithms"}
 
 
 def run(arguments: list[str], *, cwd: Path, env: dict[str, str] | None = None) -> None:
@@ -257,6 +262,14 @@ def main() -> int:
         if missing_runtime_dependencies:
             raise RuntimeError(
                 f"BuiltIns package is missing runtime dependencies: {sorted(missing_runtime_dependencies)}"
+            )
+        runtime_package = next(
+            path for (package_id, _), path in identities.items() if package_id == "Broiler.JavaScript.Runtime"
+        )
+        missing_runtime_dependencies = RUNTIME_DEPENDENCIES - package_dependencies(runtime_package)
+        if missing_runtime_dependencies:
+            raise RuntimeError(
+                f"Runtime package is missing dependencies: {sorted(missing_runtime_dependencies)}"
             )
         root_id = "Broiler.JavaScript.All"
         root_versions = sorted(version for package_id, version in identities if package_id == root_id)

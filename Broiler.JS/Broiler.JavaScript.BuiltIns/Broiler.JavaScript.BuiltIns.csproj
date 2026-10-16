@@ -17,6 +17,8 @@
   <ItemGroup>
     <PackageReference Include="Broiler.Regex" />
     <PackageReference Include="Broiler.Unicode.Cldr.LocaleData" />
+    <!-- Intl.Segmenter's boundaries and word statuses (milestone SJL-7.5), over the tables Runtime embeds. -->
+    <PackageReference Include="Broiler.Unicode.Segmentation" />
   </ItemGroup>
 
   <ItemGroup>

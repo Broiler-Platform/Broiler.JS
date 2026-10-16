@@ -46,4 +46,13 @@ public class UnicodeDependencyTests
     [Fact]
     public void The_runtime_calls_the_owner_s_algorithms()
         => Assert.Contains("Broiler.Unicode.Algorithms", References("Broiler.JavaScript.Runtime"));
+
+    // Segmentation is the built-ins' alone: the parser and the runtime do not carry it.
+    [Fact]
+    public void The_built_ins_alone_call_the_owner_s_segmenter()
+    {
+        Assert.Contains("Broiler.Unicode.Segmentation", References("Broiler.JavaScript.BuiltIns"));
+        Assert.DoesNotContain("Broiler.Unicode.Segmentation", References("Broiler.JavaScript.Runtime"));
+        Assert.DoesNotContain("Broiler.Unicode.Segmentation", References("Broiler.JavaScript.Parser"));
+    }
 }

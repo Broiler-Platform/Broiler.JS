@@ -233,4 +233,50 @@ public class SharedUnicodeTests
     }
 
     private static string Unescape(string text) => System.Text.RegularExpressions.Regex.Unescape(text);
+
+    // ---- segmentation (rows G1 to G4) ------------------------------------------------------------------
+
+    private static string Segments(string granularity, string text)
+        => $"JSON.stringify([...new Intl.Segmenter('en', {{ granularity: '{granularity}' }}).segment({text})].map(s => s.segment))";
+
+    // G1: UAX #29's sentence boundaries, where the whole text was one sentence.
+    [Theory]
+    [InlineData("'One. Two? Three! Mr. Smith'", "['One. ', 'Two? ', 'Three! ', 'Mr. ', 'Smith']")]
+    [InlineData("'Hello world. \\u4E16\\u754C\\u3002\\u7D42\\u308F\\u308A'", "['Hello world. ', '\\u4E16\\u754C\\u3002', '\\u7D42\\u308F\\u308A']")]
+    [InlineData("''", "[]")]
+    public void Sentences_follow_UAX_29(string text, string expected)
+        => Assert.Equal("true", Eval($"{Segments("sentence", text)} === JSON.stringify({expected})"));
+
+    // G2: UAX #29's word boundaries (WB6, WB7, WB11 to WB13b), with no dictionary: an apostrophe or a full
+    // stop between letters, an underscore and a comma between digits do not break, a Katakana run is one
+    // word and each ideograph is its own.
+    [Theory]
+    [InlineData("\"can't\"", "[\"can't\"]")]
+    [InlineData("'a_b c.d 3,000'", "['a_b', ' ', 'c.d', ' ', '3,000']")]
+    [InlineData("'\\u65E5\\u672C\\u8A9E\\u306E\\u30C6\\u30AD\\u30B9\\u30C8'", "['\\u65E5', '\\u672C', '\\u8A9E', '\\u306E', '\\u30C6\\u30AD\\u30B9\\u30C8']")]
+    [InlineData("'1\\u0085a'", "['1', '\\u0085', 'a']")]
+    public void Words_follow_UAX_29(string text, string expected)
+        => Assert.Equal("true", Eval($"{Segments("word", text)} === JSON.stringify({expected})"));
+
+    // G4: isWordLike is the word status: a letter, a number, kana or an ideograph.
+    [Fact]
+    public void A_word_is_word_like_by_its_word_status()
+        => Assert.Equal("a_b:true, :false,3:true,.:false,\u65E5:true", Eval(
+            "[...new Intl.Segmenter('en', { granularity: 'word' }).segment('a_b 3.\\u65E5')].map(s => s.segment + ':' + s.isWordLike).join()"));
+
+    // G3 holds on the correspondence's cells, from the pinned data: an extended grapheme cluster each.
+    [Theory]
+    [InlineData("'e\\u0301\\u{1F44D}\\u{1F3FD}\\u{1F1E9}\\u{1F1EA}'", 3)]
+    [InlineData("'\\u1100\\u1161\\u11A8'", 1)]
+    [InlineData("'\\u000D\\u000A'", 1)]
+    [InlineData("'\\uD800a'", 2)]
+    public void Graphemes_are_extended_grapheme_clusters(string text, int expected)
+        => Assert.Equal(expected.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            Eval($"[...new Intl.Segmenter('en').segment({text})].length"));
+
+    // G7 holds: containing and the iterator read the same segments.
+    [Fact]
+    public void Containing_reads_the_same_segments()
+        => Assert.Equal("Two? |5|true", Eval(
+            "var s = new Intl.Segmenter('en', { granularity: 'sentence' }).segment('One. Two? Three'); var c = s.containing(6); [c.segment, c.index, c.input === 'One. Two? Three'].join('|')"));
 }
