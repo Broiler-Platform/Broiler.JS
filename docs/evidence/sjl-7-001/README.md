@@ -14,14 +14,16 @@ JSD-0074 and its correspondence from code, retained in Broiler.VM's bundle of th
 **Owner:** the Broiler.JS maintainer. One person holds every role (the programme's EX-30, recorded in
 Broiler.VM). **Reviewer:** none, and nothing here has been read by anyone but its author.
 
-**State, 2026-10-16, at SJL-7.3: part A's base is taken, and the engine-level vectors' first run is classified;
-nothing here is a verdict.**
-- Part A's after run follows SJL-7.5's cut-over.
+**State, 2026-10-16, at SJL-7.5: part A's base is taken, the engine-level vectors' first run is classified, and
+this engine's cut-over is recorded with its run on the vectors; nothing here is a verdict.**
+- Part A's after run is taken at SJL-7.6, at the commit that lands the cut-over.
 - Part B's arms are measured at SJL-7.6, when the after arm exists, because the rule interleaves the arms
   inside each repetition.
 
 *(Revised 2026-10-16, at SJL-7.3. The state's heading read "at SJL-7.2: part A's base is taken, and nothing here is
-a verdict.")*
+a verdict." Revised again at SJL-7.5; it read "at SJL-7.3: part A's base is taken, and the engine-level vectors'
+first run is classified; nothing here is a verdict.", and its first item "Part A's after run follows SJL-7.5's
+cut-over.")*
 
 Broiler.Unicode judges the owner's clauses in its own bundle of the same name, and Broiler.VM judges its own
 half in its own. This bundle reads neither's runs.
@@ -109,3 +111,85 @@ Unicode 17. The Beria Erfe vectors show that it does not, and Broiler.VM's corre
 
 Each of the 3,678 Unicode-area divergences holds until this engine's cut-over, SJL-7.5. A run after it reports
 each one it corrects as no longer holding, and the corpus revision that follows retires them.
+
+## 3. This engine's cut-over (SJL-7.5)
+
+**The change**, on `0.1.0-preview.4` of `Broiler.Unicode.Algorithms` and `Broiler.Unicode.Segmentation` as
+nuget.org serves them, over the tables this engine embeds from its own pin, `data/unicode/pins/`:
+
+| Commit | What it moves | Rows |
+|---|---|---|
+| `3374c933` | The pinned archive, a byte-for-byte copy of the owner's; the tables the owner's generator writes from it, in `Broiler.JavaScript.Runtime`, and the test that regenerates them and compares them byte for byte; the package references | SJL-D-6 (c) |
+| `3e213ab4` | Identifiers, group names, the scanner's white space, `RegExp.escape`'s and the native names onto the owner's lexical classes; `CharExtensions`' classes and patch tables deleted | I1 to I4, W1 |
+| `664c804e` | `StringSpan.Trim`, `TrimStart` and `TrimEnd` become obsolete forwarders to the shared white-space set | SJL-D-25 |
+| `99d84a54` | `normalize` and the collator's decomposition onto the owner's normalization | N1 to N3 |
+| `c7423e7c` | The four casing methods onto the owner's case mapping, the locale mapped to the owner's language by this engine's canonicalisation | C1 to C8 |
+| `876c4f66` | `\p{…}` names onto the owner's exact lookup, checked by the parser and by the `RegExp` constructor before either engine reads the pattern | P1 to P4, S2 |
+| `294c8a5d` | `Intl.Segmenter`'s boundaries and word status onto `UnicodeSegmenter` | G1 to G4 |
+| `c7a19d35` | The records: the changelog, `docs/public-api.md`, `docs/architecture/dependencies.md`, the notices | |
+
+A later commit of the same change adds rows P3 and P4, which no vector names, to the changelog; it changes
+no product source. Every correction is listed in [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md),
+with its row and the vectors that name it. **Rows F2 and W5 are untouched**: no hunk of the change falls in
+the translator's case folding, its multiline anchors, its white-space list or the scanner's line terminators,
+which are SJL-11's.
+
+**On corpus revision 19**, at `c7a19d35`, from a clean tree, under `TZ=UTC`, 22:09Z to 22:49Z:
+
+| Run | Result | Files |
+|---|---|---|
+| Revision 19, UTC | 88,465 vectors: 88,461 match, 4 classified divergences, 0 unclassified differences, 0 not implemented | [`engine/cut-over-revision-19-utc.log`](engine/cut-over-revision-19-utc.log), [`engine/cut-over-revision-19-utc.tsv.gz`](engine/cut-over-revision-19-utc.tsv.gz) |
+| Its negative control | one vector's expected value changed in memory, reported as an unclassified difference | [`engine/negative-control-cut-over-revision-19.tsv`](engine/negative-control-cut-over-revision-19.tsv) |
+
+**Each of the 3,678 fields of section 2 reports "divergence no longer holds"**, and they are exactly the
+fields `unicode-divergences.txt` lists. The 4 are the number area's `numbers/literal/0082`, `0084`, `0088` and
+`0090`, as before. The runner fails on the 3,678, as it must until the corpus retires them.
+
+**The milestone's searches**, at `c7a19d35`, each with its command as its first line:
+
+- **The deletion list is absent** ([`cutover/deletion-search.txt`](cutover/deletion-search.txt)): the search
+  for its members finds nothing under `Broiler.JS/`, the changelog included.
+- **No host Unicode API is left in the areas covered** ([`cutover/host-api-search.txt`](cutover/host-api-search.txt)).
+  Its 315 lines are each outside them:
+
+  | Where | Lines | Whose |
+  |---|---|---|
+  | The .NET translator's case folding, `JSRegExp.cs` 4891, 4902, 5014, 5067, 5076, 5080 and 5087 | 7 | Row F2, SJL-11 |
+  | Intl: the host culture as the default locale (`JSIntl.cs:2380`), locale tags' ASCII casing, number, unit and date-time formatting, the date-time pattern reader (`JSIntlDateTimeFormatEngine.cs` 551, 586); `toLocaleString` of Number and Decimal | most of `JSIntl.cs`, `JSIntlDateTimeFormatEngine.cs`, `JSNumber.cs`, `JSNumberPrototype.cs`, `JSDecimal.cs` | SJL-9 |
+  | The collator's tie-break, `JSIntl.cs:6230` | 1 | SJL-17 |
+  | Temporal's invariant formatting, and its time-zone and calendar names' casing | `Temporal/` | SJL-8, SJL-10 |
+  | `DateParser`'s culture parse and `toLocaleString`'s .NET format strings | `DateParser.cs`, `JSDatePrototype.Formatters.cs` | This engine's extensions, decided at SJL-6.5 (SJL-D-17) |
+  | The lexer's decimal-digit lookahead after `?.` and `.`, `FastScanner.cs` 627 and 651, and `NumberParser.cs:32` | 3 | The lexer, SJL-14. `char.IsDigit` admits every Nd digit where the grammar admits ASCII; run in the shell after the cut-over, `a ?.٣ : b`, `.٣` and `a?.٣` are SyntaxErrors and `Number("0٣")` is NaN, as the grammar's reading would have them |
+  | Invariant-culture formatting of numbers and hex, which reads no Unicode data: Compiler, PortableCompiler, Runtime's `JSVariable.cs`, Modules, JSON, `JSArray.Template.cs`, `JSRegExp.cs` 1979, 1987, 1993 and 4383; the `ToLocaleString(string, CultureInfo)` overrides; a diagnostic's text, `NullishAccess.cs:321`; the Native AOT sample's `bool` | the rest | Outside the area |
+  | The changelog's lines naming the deleted code | 7 | Records |
+
+**Tests.** `eng/run-tests.sh Release` under `TZ=UTC` at `c7a19d35`: 17 assemblies, 11,340 tests, none failed
+([`cutover/run-tests.log`](cutover/run-tests.log)). One existing test changed: `BuiltInsTests`' unsupported
+property escape asserted the translator's "not supported" message, and a `u`-mode `\p{RGI_Emoji}` is now an
+early error, so it asserts the SyntaxError. The corpus's Python tests pass.
+
+**Part B's answers are unchanged.** `--unicode-answers` printed the same answers and the same configuration
+block at `c976cbea` and at `c7a19d35`, byte for byte ([`cutover/benchmark-answers-base.txt`](cutover/benchmark-answers-base.txt),
+[`cutover/benchmark-answers-after.txt`](cutover/benchmark-answers-after.txt)): Casing and its control
+24,000, Identifiers and its control 200, Normalize and its control 24,000.
+
+**A local subset of test262, before the hosted after run.** Not part A's evidence, which is the hosted run at
+the commit that lands this change; a check that no row regresses, taken before the change lands. The suite at
+`ccaac100`, `--all-script-host-verifiable --include-negative`, both variants, three workers, on this machine,
+with the shell built at `c976cbea` and at `c7a19d35`, over part A's likely-affected directories in two parts:
+
+| Part | Rows | Changed | Comparison |
+|---|---|---|---|
+| `language/{statements,expressions}/class/elements/` | 5,924 | 0 | [`cutover/test262-subset/compare-class-elements.json`](cutover/test262-subset/compare-class-elements.json) |
+| `built-ins/RegExp/{property-escapes,unicodeSets,named-groups,escape}`, `built-ins/RegExp/prototype/unicodeSets`, `language/{identifiers,white-space,line-terminators,comments,literals/regexp}`, `built-ins/String/prototype/{normalize,toLowerCase,toUpperCase,toLocaleLowerCase,toLocaleUpperCase,localeCompare}`, `intl402/{String/prototype,Collator,Segmenter}`, `built-ins/Function/prototype/toString`, `staging/sm/{RegExp,String}` | 4,010 | 140, each failed → passed | [`cutover/test262-subset/compare-unicode-directories.json`](cutover/test262-subset/compare-unicode-directories.json) |
+
+`scripts/compliance/compare_test262_paths.py` reports no regression; the 140 are admitted as class C1 by
+[`cutover/test262-subset/classification.json`](cutover/test262-subset/classification.json), all in the original
+variant: 136 negative tests under `built-ins/RegExp/property-escapes/` that the parser now refuses (rows P1, P3
+and S2), and 4 under `language/identifiers/vertical-tilde-*` (row I1). The local base agrees with the hosted
+base of section 1 on 9,926 of these 9,934 rows; the 8 others are the terser variant of the `*-unicode-17.0.0*`
+identifier tests, which this machine skips before and after. **Seven rows are unchanged that a fuller check
+would correct**: `generated/strings/*-negative-CharacterClass.js`, a property of strings inside a negated
+class, which the parser's check does not refuse, because refusing a direct member of a negated class would
+refuse valid patterns such as `[^\p{RGI_Emoji}&&a]`; the `RegExp` constructor still refuses
+`[^\p{RGI_Emoji}]`. They fail before and after.

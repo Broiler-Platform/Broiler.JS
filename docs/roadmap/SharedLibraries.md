@@ -557,6 +557,43 @@ by the owner's choice, which the programme's ledger records. This repository's p
   Unicode's own test files, the byte-for-byte generation and the reference arms, are the owner's, in
   Broiler.Unicode's bundle of the same name.
 
+**Broiler.VM's cut-over (SJL-7.4), 2026-10-16.** Broiler.Unicode published `0.1.0-preview.4` of its packages
+to nuget.org from its `6e14f93`, on the owner's instruction, and Broiler.VM's committed feed holds them as
+published. Broiler.VM's Unicode area references the owner's code packages; its embedded tables are the owner's
+generator's, from a pin of its own held to the owner's; its deletion list is gone; and its record is its
+JSD-0075. The corpus at revision 19 names no divergence of Broiler.VM's, and its pin matches every vector
+there after the cut-over, as before it.
+
+**This engine's cut-over (SJL-7.5), 2026-10-16.** This engine's Unicode area is Broiler.Unicode's, on
+`0.1.0-preview.4` of `Broiler.Unicode.Algorithms` and `Broiler.Unicode.Segmentation`, which nuget.org serves.
+**Decision SJL-D-6 (c) is applied as recorded**: [`data/unicode/pins/`](../../data/unicode/pins/README.md) is
+a byte-for-byte copy of the owner's pin, the tables the owner's generator writes from it are embedded in
+`Broiler.JavaScript.Runtime` (`JSUnicodeTableData.g.cs`), and `UnicodeTableRegenerationTests` runs the
+generator and compares its output byte for byte, as rule SL7 does for the owner. This engine references no
+package that carries tables directly; `Broiler.Unicode.Properties` and the emoji package still arrive in the
+closure through Broiler.Regex's dependencies until SJL-11, and no code of this engine calls them.
+- **The deletion list is absent**, with what JSD-0074 added to it: the search for its members finds nothing,
+  and the search for host Unicode APIs finds each of its hits outside the areas covered (bundle
+  [`sjl-7-001`](../evidence/sjl-7-001/README.md), section 3, which lists them by milestone).
+- **Every correction is made and listed** in [`Broiler.JS/CHANGELOG.md`](../../Broiler.JS/CHANGELOG.md), with
+  its row and its vectors: P1 to P4, S2, I1, I3, W1, C1, C4 to C8, N1, G1 and G2, and, by decision, I2, C2,
+  C3, N2, N3, G3 and the word status G4. On corpus revision 19 each of the 3,678 divergence fields reports that
+  it no longer holds, and nothing is unclassified.
+- **A property escape's name is checked by the parser too**, an early error for a literal, by the same exact
+  lookup the `RegExp` constructor calls before Broiler.Regex or the translator reads the pattern. Inside a
+  negated class the parser does not refuse a property of strings, because refusing a direct member would
+  refuse valid patterns; the constructor still refuses it, and seven negative tests of test262 stay failed.
+- **Policies decided here**: a result longer than this engine's strings hold is a `RangeError`, the owner
+  taking `JSString.MaximumLength` as its maximum result length; the default language of `toLocaleUpperCase`
+  and `toLocaleLowerCase` is this engine's, never the host's culture, while Intl's other services keep the
+  host's culture until SJL-9.
+- **Decision SJL-D-25**: `StringSpan.Trim`, `TrimStart` and `TrimEnd` stay, obsolete, as forwarders to the
+  shared white-space set, and `Broiler.JavaScript.Ast` now references `Broiler.ECMAScript.Algorithms`
+  ([`docs/public-api.md`](../public-api.md)).
+
+The next corpus revision retires this engine's 3,678 divergence fields of the Unicode area, and Broiler.VM's
+pin moves to it.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

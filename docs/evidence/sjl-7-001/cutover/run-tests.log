@@ -1,0 +1,73 @@
+== start 2026-10-16T23:06:56Z at c7a19d35abf664b774ae55c55b1b524bc5d75486
+    8 Warning(s)
+    0 Error(s)
+Time Elapsed 00:00:08.24
+Test run for /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /home/user/broiler.js/Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/bin/Release/net10.0/Broiler.ECMAScript.Conformance.Tests.dll (.NETCoreApp,Version=v10.0)
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Ast.Tests/bin/Release/net10.0/Broiler.JavaScript.Ast.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     9, Skipped:     0, Total:     9, Duration: 22 ms - Broiler.JavaScript.Ast.Tests.dll (net10.0)
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:   111, Skipped:     0, Total:   111, Duration: 4 s - Broiler.ECMAScript.Conformance.Tests.dll (net10.0)
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Clr.Tests/bin/Release/net10.0/Broiler.JavaScript.Clr.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     3, Skipped:     0, Total:     3, Duration: 697 ms - Broiler.JavaScript.Clr.Tests.dll (net10.0)
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Compiler.Tests/bin/Release/net10.0/Broiler.JavaScript.Compiler.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:   313, Skipped:     0, Total:   313, Duration: 14 s - Broiler.ECMAScript.Algorithms.Tests.dll (net10.0)
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Core.Tests/bin/Release/net10.0/Broiler.JavaScript.Core.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    34, Skipped:     0, Total:    34, Duration: 18 s - Broiler.JavaScript.Core.Tests.dll (net10.0)
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Debugger.Tests/bin/Release/net10.0/Broiler.JavaScript.Debugger.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     4, Skipped:     0, Total:     4, Duration: 887 ms - Broiler.JavaScript.Debugger.Tests.dll (net10.0)
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Integration.Tests/bin/Release/net10.0/Broiler.JavaScript.Integration.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    32, Skipped:     0, Total:    32, Duration: 1 m 2 s - Broiler.ECMAScript.Architecture.Tests.dll (net10.0)
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.ModuleExtensions.Tests/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     5, Skipped:     0, Total:     5, Duration: 1 s - Broiler.JavaScript.ModuleExtensions.Tests.dll (net10.0)
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Modules.Tests/bin/Release/net10.0/Broiler.JavaScript.Modules.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:  3330, Skipped:     0, Total:  3330, Duration: 1 m 11 s - Broiler.JavaScript.BuiltIns.Tests.dll (net10.0)
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Parser.Tests/bin/Release/net10.0/Broiler.JavaScript.Parser.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:   478, Skipped:     0, Total:   478, Duration: 307 ms - Broiler.JavaScript.Parser.Tests.dll (net10.0)
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Portable.Tests/bin/Release/net10.0/Broiler.JavaScript.Portable.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     8, Skipped:     0, Total:     8, Duration: 82 ms - Broiler.JavaScript.Portable.Tests.dll (net10.0)
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Runtime.Tests/bin/Release/net10.0/Broiler.JavaScript.Runtime.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    42, Skipped:     0, Total:    42, Duration: 3 s - Broiler.JavaScript.Runtime.Tests.dll (net10.0)
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Storage.Tests/bin/Release/net10.0/Broiler.JavaScript.Storage.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:   191, Skipped:     0, Total:   191, Duration: 12 s - Broiler.JavaScript.Modules.Tests.dll (net10.0)
+Test run for /home/user/broiler.js/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    46, Skipped:     0, Total:    46, Duration: 839 ms - Broiler.JavaScript.Storage.Tests.dll (net10.0)
+
+Passed!  - Failed:     0, Passed:  1443, Skipped:     0, Total:  1443, Duration: 1 m 29 s - Broiler.JavaScript.Compiler.Tests.dll (net10.0)
+
+Passed!  - Failed:     0, Passed:  5287, Skipped:     0, Total:  5287, Duration: 1 m 23 s - Broiler.JavaScript.Integration.Tests.dll (net10.0)
+
+Passed!  - Failed:     0, Passed:     4, Skipped:     0, Total:     4, Duration: 36 m - Broiler.JavaScript.Vectors.Tests.dll (net10.0)
+exit=0
