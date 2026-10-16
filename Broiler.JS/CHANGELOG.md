@@ -10,6 +10,21 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### `formatToParts` writes a minute and second in the format's time zone (2026-10-16)
+
+- **`Intl.DateTimeFormat.prototype.formatToParts` writes a format with `minute` and `second` but no
+  `hour` in its resolved `timeZone`**, from the zoned fields `format` writes, where it used the host's
+  zone through `DateTimeOffset.ToLocalTime()`, bypassing this engine's provider of the host's zone
+  (decision SJL-D-19) that `format` goes through. A zone whose offset is not a whole hour had the host's
+  minute: `new Intl.DateTimeFormat("en", { minute: "2-digit", second: "2-digit", timeZone: "Asia/Kolkata" })`
+  formats 12:00:05Z as parts that join to `"30:05"`, like `format`, where on a UTC host the minute was
+  `"00"`. The fractional seconds come from the same fields.
+- **That format writes a time value outside the years 0001 to 9999**: `formatToParts(8.64e15)` is
+  `"00:00"` in UTC, where .NET's `ArgumentOutOfRangeException` reached the caller.
+
+`DateTimeFormatMinuteSecondTimeZoneTests` holds the cases. Milestone SJL-6.6's duplicate search
+(`simplification/duplicate-search.log` of bundle `sjl-6-001`) found it and named it for milestone SJL-9.
+
 ### The Date area moves to `Broiler.ECMAScript.Algorithms` (2026-10-16, milestone SJL-6.5)
 
 The Date area is the shared library's, the stream's `0.1.0-preview.4` in this repository's

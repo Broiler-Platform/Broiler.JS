@@ -7153,18 +7153,20 @@ public class JSIntlDateTimeFormat : JSObject
             return dayPeriodParts;
         }
 
+        var fields = @this.ResolveFields(clipped);
+
         // minute + second (optionally with fractionalSecondDigits), no hour/date
-        // fields: render "mm:ss[.fff]" as typed parts.
+        // fields: render "mm:ss[.fff]" as typed parts, from the same zoned fields
+        // as the pattern below, so the minute is the format's time zone's.
         if (@this.options != null
             && !@this.options[MinuteKey].IsUndefined
             && !@this.options[SecondKey].IsUndefined
             && @this.options[HourKey].IsUndefined)
         {
-            var localTime = DateTimeOffset.FromUnixTimeMilliseconds((long)clipped).ToLocalTime();
             var timeParts = CreateArray();
-            AddDateTimePart(timeParts, "minute", localTime.Minute.ToString("D2", CultureInfo.InvariantCulture));
+            AddDateTimePart(timeParts, "minute", fields.Minute.ToString("D2", CultureInfo.InvariantCulture));
             AddDateTimePart(timeParts, "literal", ":");
-            AddDateTimePart(timeParts, "second", localTime.Second.ToString("D2", CultureInfo.InvariantCulture));
+            AddDateTimePart(timeParts, "second", fields.Second.ToString("D2", CultureInfo.InvariantCulture));
 
             var fractionalSecondDigits = @this.options[FractionalSecondDigitsKey];
             if (!fractionalSecondDigits.IsUndefined)
@@ -7174,7 +7176,7 @@ public class JSIntlDateTimeFormat : JSObject
                 {
                     AddDateTimePart(timeParts, "literal", ".");
                     AddDateTimePart(timeParts, "fractionalSecond",
-                        localTime.Millisecond.ToString("D3", CultureInfo.InvariantCulture).Substring(0, digits));
+                        fields.Millisecond.ToString("D3", CultureInfo.InvariantCulture).Substring(0, digits));
                 }
             }
 
@@ -7182,7 +7184,6 @@ public class JSIntlDateTimeFormat : JSObject
         }
 
         var pattern = @this.ResolveEnginePattern();
-        var fields = @this.ResolveFields(clipped);
         var engineParts = JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, @this.FractionalSecondDigits(), null);
         return PartsArray(@this.MapNumbering(engineParts));
     }
