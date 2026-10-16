@@ -252,7 +252,7 @@ internal static class BuiltInsAssemblyInitializer
         {
             if (value is JSDate date)
             {
-                var clone = new JSDate(date.value);
+                var clone = new JSDate(date.timeValue);
                 seen[value] = clone;
                 return clone;
             }

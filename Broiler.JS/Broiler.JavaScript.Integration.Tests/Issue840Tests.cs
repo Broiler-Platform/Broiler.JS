@@ -163,11 +163,18 @@ public class Issue840Tests
     [InlineData("'+275760-09-14T00:00:00Z'")] // one day past the maximum time value
     [InlineData("'-000000-01-01'")]            // negative-zero year is invalid
     [InlineData("'2021-13-01'")]               // month out of range
-    [InlineData("'2021-02-30'")]               // day out of range for February
-    [InlineData("'2021-02-29'")]               // not a leap year
     [InlineData("'2021-01-01T24:00:01Z'")]     // hour 24 only valid when the rest is zero
     public void RejectsOutOfRangeExtendedDates(string input)
         => Assert.Equal("NaN", Eval($"String(Date.parse({input}))"));
+
+    // A day past its month's length is outside the format. Since milestone SJL-6.5 Date.parse reads what
+    // the format and this engine's own grammar refuse in Broiler.VM's dialect, which carries the day into
+    // the next month (JSD-0072; the correspondence's row P5), where it answered NaN.
+    [Theory]
+    [InlineData("'2021-02-30'", "1614643200000")] // March 2
+    [InlineData("'2021-02-29'", "1614556800000")] // March 1, 2021 not being a leap year
+    public void CarriesADayPastItsMonth(string input, string expected)
+        => Assert.Equal(expected, Eval($"Date.parse({input})"));
 
     [Fact(Timeout = 600000)]
     public void DateOnlyExpandedFormParsesAsUtc()

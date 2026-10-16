@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -141,34 +142,34 @@ public partial class JSTemporalPlainDateTime : JSObject
     [JSExport("microsecond")] public double MicrosecondValue => microsecond;
     [JSExport("nanosecond")] public double NanosecondValue => nanosecond;
 
-    [JSExport("dayOfWeek")] public double DayOfWeek => IsoDayOfWeek(isoYear, isoMonth, isoDay);
+    [JSExport("dayOfWeek")] public double DayOfWeek => IsoCalendarMath.DayOfWeek(isoYear, isoMonth, isoDay);
     [JSExport("dayOfYear")] public double DayOfYear
     {
         get
         {
             if (NonIso) { var c = CalendarYmd(); return TemporalCalendarMath.DayOfYear(calendarId, c.y, c.m, c.d); }
-            return (int)(DaysFromCivil(isoYear, isoMonth, isoDay) - DaysFromCivil(isoYear, 1, 1)) + 1;
+            return IsoCalendarMath.DayOfYear(isoYear, isoMonth, isoDay);
         }
     }
     [JSExport("daysInWeek")] public double DaysInWeek => 7;
     [JSExport("daysInMonth")] public double DaysInMonth
     {
-        get { if (NonIso) { var c = CalendarYmd(); return TemporalCalendarMath.DaysInMonth(calendarId, c.y, c.m); } return DaysInMonthOf(isoYear, isoMonth); }
+        get { if (NonIso) { var c = CalendarYmd(); return TemporalCalendarMath.DaysInMonth(calendarId, c.y, c.m); } return IsoCalendarMath.DaysInMonth(isoYear, isoMonth); }
     }
     [JSExport("daysInYear")] public double DaysInYear => NonIso
         ? TemporalCalendarMath.DaysInYear(calendarId, CalendarYmd().y)
-        : (IsLeapYear(isoYear) ? 366 : 365);
+        : IsoCalendarMath.DaysInYear(isoYear);
     [JSExport("monthsInYear")] public double MonthsInYear => NonIso
         ? TemporalCalendarMath.MonthsInYear(calendarId, CalendarYmd().y)
         : 12;
     [JSExport("inLeapYear")] public bool InLeapYear => NonIso
         ? TemporalCalendarMath.InLeapYear(calendarId, CalendarYmd().y)
-        : IsLeapYear(isoYear);
+        : IsoCalendarMath.IsLeapYear(isoYear);
     // Only the ISO calendar defines a week-numbering system; other calendars return undefined.
     [JSExport("weekOfYear")] public JSValue WeekOfYear
-        => calendarId == "iso8601" ? new JSNumber(IsoWeek(isoYear, isoMonth, isoDay).week) : JSUndefined.Value;
+        => calendarId == "iso8601" ? new JSNumber(IsoCalendarMath.WeekOfYear(isoYear, isoMonth, isoDay).Week) : JSUndefined.Value;
     [JSExport("yearOfWeek")] public JSValue YearOfWeek
-        => calendarId == "iso8601" ? new JSNumber(IsoWeek(isoYear, isoMonth, isoDay).year) : JSUndefined.Value;
+        => calendarId == "iso8601" ? new JSNumber(IsoCalendarMath.WeekOfYear(isoYear, isoMonth, isoDay).Year) : JSUndefined.Value;
 
     // ── statics ─────────────────────────────────────────────────────────────────
 
@@ -518,8 +519,8 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (carryDays != 0)
         {
             var endDays = JSTemporalPlainDate.AddDateGetDays(isoYear, isoMonth, isoDay, years, months, weeks, days + carryDays);
-            var (ey, em, ed) = CivilFromDays(endDays);
-            var (by, bm, bw, bd) = JSTemporalPlainDate.DiffCalendarDate(isoYear, isoMonth, isoDay, (int)ey, (int)em, (int)ed, largestUnit);
+            var (ey, em, ed) = IsoCalendarMath.FromEpochDays(endDays);
+            var (by, bm, bw, bd) = JSTemporalPlainDate.DiffCalendarDate(isoYear, isoMonth, isoDay, (int)ey, em, ed, largestUnit);
             years = (long)by; months = (long)bm; weeks = (long)bw; days = (long)bd;
         }
 
@@ -555,21 +556,21 @@ public partial class JSTemporalPlainDateTime : JSObject
         {
             var total = TimeNanoseconds();
             var roundedDays = (long)ExactRounding.RoundNumberToIncrement(total, BigInteger.One, NanosecondsPerDay, roundingMode) / NanosecondsPerDay;
-            var epoch = DaysFromCivil(isoYear, isoMonth, isoDay) + roundedDays;
-            var (ry, rm, rd) = CivilFromDays(epoch);
-            return Create((int)ry, (int)rm, (int)rd, 0, 0, 0, 0, 0, 0, calendarId, PlainDateTimePrototype);
+            var epoch = IsoCalendarMath.EpochDays(isoYear, isoMonth, isoDay) + roundedDays;
+            var (ry, rm, rd) = IsoCalendarMath.FromEpochDays(epoch);
+            return Create((int)ry, rm, rd, 0, 0, 0, 0, 0, 0, calendarId, PlainDateTimePrototype);
         }
 
         var unitNs = UnitNanoseconds(unit) * increment;
         var rounded = (long)ExactRounding.RoundNumberToIncrement(TimeNanoseconds(), BigInteger.One, unitNs, roundingMode);
         var dayspill = rounded / NanosecondsPerDay;
         var wrapped = rounded - dayspill * NanosecondsPerDay;
-        var ep = DaysFromCivil(isoYear, isoMonth, isoDay) + dayspill;
-        var (cy, cm, cd) = CivilFromDays(ep);
+        var ep = IsoCalendarMath.EpochDays(isoYear, isoMonth, isoDay) + dayspill;
+        var (cy, cm, cd) = IsoCalendarMath.FromEpochDays(ep);
         var (hh, mm, ss, l, mc, nn) = FromTimeNanoseconds(wrapped);
         // RoundISODateTime can push the result past the representable range (test262
         // round/limits); Create performs the ISODateTimeWithinLimits RangeError check.
-        return Create((int)cy, (int)cm, (int)cd, hh, mm, ss, l, mc, nn, calendarId, PlainDateTimePrototype);
+        return Create((int)cy, cm, cd, hh, mm, ss, l, mc, nn, calendarId, PlainDateTimePrototype);
     }
 
     [JSExport("equals", Length = 1)]
@@ -636,8 +637,8 @@ public partial class JSTemporalPlainDateTime : JSObject
             var rounded = (long)ExactRounding.RoundNumberToIncrement(TimeNanoseconds(), BigInteger.One, incrementNs, roundingMode);
             var dayspill = FloorDiv(rounded, NanosecondsPerDay);
             wrapped = rounded - dayspill * NanosecondsPerDay;
-            var (cy, cm, cd) = CivilFromDays(DaysFromCivil(isoYear, isoMonth, isoDay) + dayspill);
-            ry = (int)cy; rm = (int)cm; rd = (int)cd;
+            var (cy, cm, cd) = IsoCalendarMath.FromEpochDays(IsoCalendarMath.EpochDays(isoYear, isoMonth, isoDay) + dayspill);
+            ry = (int)cy; rm = cm; rd = cd;
 
             // Rounding can carry the wall clock past the representable range (test262
             // toString/rounding-edge-of-range): reject an out-of-limits result.
@@ -1020,7 +1021,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     {
         if (overflow == "reject")
         {
-            if (!IsValidISODate(year, month, day) || !IsValidTime(h, mi, s, ms, us, ns))
+            if (!IsoCalendarMath.IsValidIsoDate(year, month, day) || !IsValidTime(h, mi, s, ms, us, ns))
                 throw JSEngine.NewRangeError("Temporal.PlainDateTime: date-time is out of range");
         }
         else
@@ -1028,7 +1029,7 @@ public partial class JSTemporalPlainDateTime : JSObject
             if (!dateAlreadyResolved)
             {
                 month = Math.Clamp(month, 1, 12);
-                day = Math.Clamp(day, 1, DaysInMonthOf(year, month));
+                day = Math.Clamp(day, 1, IsoCalendarMath.DaysInMonth(year, month));
             }
             h = Math.Clamp(h, 0, 23); mi = Math.Clamp(mi, 0, 59); s = Math.Clamp(s, 0, 59);
             ms = Math.Clamp(ms, 0, 999); us = Math.Clamp(us, 0, 999); ns = Math.Clamp(ns, 0, 999);
@@ -1082,7 +1083,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         }
 
         if (s == 60) s = 59; // ISO leap second collapses to :59.
-        if (!IsValidISODate(year, month, day) || !IsValidTime(h, mi, s, ms, us, ns)
+        if (!IsoCalendarMath.IsValidIsoDate(year, month, day) || !IsValidTime(h, mi, s, ms, us, ns)
             || !IsValidISODateTime(year, month, day, h, mi, s, ms, us, ns))
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDateTime from \"{text}\"");
 
@@ -1110,16 +1111,16 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (timeDiff < 0 && dateSign < 0)
         {
             // borrow a day from the date difference
-            var ep = DaysFromCivil(b.isoYear, b.isoMonth, b.isoDay) - 1;
-            var (yy, mm, dd) = CivilFromDays(ep);
-            by = (int)yy; bm = (int)mm; bd = (int)dd;
+            var ep = IsoCalendarMath.EpochDays(b.isoYear, b.isoMonth, b.isoDay) - 1;
+            var (yy, mm, dd) = IsoCalendarMath.FromEpochDays(ep);
+            by = (int)yy; bm = mm; bd = dd;
             timeDiff += NanosecondsPerDay;
         }
         else if (timeDiff > 0 && dateSign > 0)
         {
-            var ep = DaysFromCivil(b.isoYear, b.isoMonth, b.isoDay) + 1;
-            var (yy, mm, dd) = CivilFromDays(ep);
-            by = (int)yy; bm = (int)mm; bd = (int)dd;
+            var ep = IsoCalendarMath.EpochDays(b.isoYear, b.isoMonth, b.isoDay) + 1;
+            var (yy, mm, dd) = IsoCalendarMath.FromEpochDays(ep);
+            by = (int)yy; bm = mm; bd = dd;
             timeDiff -= NanosecondsPerDay;
         }
 
@@ -1163,27 +1164,14 @@ public partial class JSTemporalPlainDateTime : JSObject
 
     // ── ISO 8601 calendar arithmetic (shared with PlainDate) ──────────────────────
 
-    private static bool IsLeapYear(long y) => (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
-
-    private static int DaysInMonthOf(long year, int month) => month switch
-    {
-        1 or 3 or 5 or 7 or 8 or 10 or 12 => 31,
-        4 or 6 or 9 or 11 => 30,
-        2 => IsLeapYear(year) ? 29 : 28,
-        _ => 0,
-    };
-
     private static bool IsValidTime(int h, int mi, int s, int ms, int us, int ns)
         => h is >= 0 and <= 23 && mi is >= 0 and <= 59 && s is >= 0 and <= 59
            && ms is >= 0 and <= 999 && us is >= 0 and <= 999 && ns is >= 0 and <= 999;
 
-    private static bool IsValidISODate(int year, int month, int day)
-        => month is >= 1 and <= 12 && day >= 1 && day <= DaysInMonthOf(year, month);
-
     private static bool IsValidISODateTime(int year, int month, int day, int h, int mi, int s, int ms, int us, int ns)
     {
-        if (!IsValidISODate(year, month, day)) return false;
-        var dayNs = new BigInteger(DaysFromCivil(year, month, day)) * NanosecondsPerDay
+        if (!IsoCalendarMath.IsValidIsoDate(year, month, day)) return false;
+        var dayNs = new BigInteger(IsoCalendarMath.EpochDays(year, month, day)) * NanosecondsPerDay
                     + ((((long)h * 60 + mi) * 60 + s) * 1000L + ms) * 1_000_000L + (long)us * 1000 + ns;
         // ISODateTimeWithinLimits compares strictly against nsMinInstant − nsPerDay / nsMaxInstant +
         // nsPerDay, so a date-time exactly one day outside the instant limits (e.g. midnight at the
@@ -1205,7 +1193,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         var newYear = (int)(year + years + FloorDiv(total, 12));
         var newMonth = (int)(((total % 12) + 12) % 12) + 1;
 
-        var maxDay = DaysInMonthOf(newYear, newMonth);
+        var maxDay = IsoCalendarMath.DaysInMonth(newYear, newMonth);
         var regulatedDay = day;
         if (overflow == "reject")
         {
@@ -1214,31 +1202,9 @@ public partial class JSTemporalPlainDateTime : JSObject
         }
         else regulatedDay = Math.Min(day, maxDay);
 
-        var epoch = DaysFromCivil(newYear, newMonth, regulatedDay) + days + weeks * 7;
-        var (ry, rm, rd) = CivilFromDays(epoch);
-        return ((int)ry, (int)rm, (int)rd);
-    }
-
-    private static int IsoDayOfWeek(int year, int month, int day)
-    {
-        var epoch = DaysFromCivil(year, month, day);
-        return (int)(((epoch + 3) % 7 + 7) % 7) + 1;
-    }
-
-    private static (int week, int year) IsoWeek(int year, int month, int day)
-    {
-        var ordinal = (int)(DaysFromCivil(year, month, day) - DaysFromCivil(year, 1, 1)) + 1;
-        var weekday = IsoDayOfWeek(year, month, day);
-        var week = (ordinal - weekday + 10) / 7;
-        if (week < 1) return (WeeksInIsoYear(year - 1), year - 1);
-        if (week > WeeksInIsoYear(year)) return (1, year + 1);
-        return (week, year);
-    }
-
-    private static int WeeksInIsoYear(int year)
-    {
-        int P(int y) => (y + y / 4 - y / 100 + y / 400) % 7;
-        return P(year) == 4 || P(year - 1) == 3 ? 53 : 52;
+        var epoch = IsoCalendarMath.EpochDays(newYear, newMonth, regulatedDay) + days + weeks * 7;
+        var (ry, rm, rd) = IsoCalendarMath.FromEpochDays(epoch);
+        return ((int)ry, rm, rd);
     }
 
     private static long FloorDiv(long a, long b)
@@ -1306,30 +1272,6 @@ public partial class JSTemporalPlainDateTime : JSObject
         TemporalRoundingOptions.ValidateRoundingIncrement(increment, maximum, inclusive: smallestUnit == "day");
 
         return (smallestUnit, increment, roundingMode);
-    }
-
-    private static long DaysFromCivil(long y, long m, long d)
-    {
-        y -= m <= 2 ? 1 : 0;
-        var era = (y >= 0 ? y : y - 399) / 400;
-        var yoe = y - era * 400;
-        var doy = (153 * (m > 2 ? m - 3 : m + 9) + 2) / 5 + d - 1;
-        var doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-        return era * 146097 + doe - 719468;
-    }
-
-    private static (long y, long m, long d) CivilFromDays(long z)
-    {
-        z += 719468;
-        var era = (z >= 0 ? z : z - 146096) / 146097;
-        var doe = z - era * 146097;
-        var yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
-        var y = yoe + era * 400;
-        var doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-        var mp = (5 * doy + 2) / 153;
-        var d = doy - (153 * mp + 2) / 5 + 1;
-        var m = mp < 10 ? mp + 3 : mp - 9;
-        return (m <= 2 ? y + 1 : y, m, d);
     }
 
     // YYYY-MM-DDTHH:MM:SS with auto fractional-second precision, plus the calendar annotation.

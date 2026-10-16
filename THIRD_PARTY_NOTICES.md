@@ -121,9 +121,19 @@ on `Broiler.ECMAScript.Algorithms.Tests` ended at "Neither arm copies fdlibm.", 
   TC39 `Math.sumPrecise` proposal named above. That code is deleted from the engine: the sum is the
   shared library's `PreciseSum`, written from the clause. The test-only arm J keeps a copy until
   SJL-16.
+- `JSDate.Parse` (`Broiler.JavaScript.BuiltIns`) said, until milestone SJL-6.5, that it was Jint's
+  `Parse` ([github.com/sebastienros/jint](https://github.com/sebastienros/jint), BSD 2-Clause License,
+  Copyright (c) Sebastien Ros) with its `DateTimeStyles` changed, and the dead `JSDate.ToDateTime` named
+  a step "missing from Jurassic" (above). Both are deleted: `Date.parse` calls the shared library's
+  `EcmaDateParser`, written from the specification and from Broiler.VM's implementation, and this
+  engine's own fallback between its two dialects. That fallback, `DateParser` (`Broiler.JavaScript.Runtime`),
+  keeps the format lists the deleted method read, other than its lists of the Date Time String Format;
+  whether they derive from Jint was never recorded. The test-only arm J of the Date area's reference arms
+  keeps a copy of the deleted code until SJL-16.
 
 *Added 2026-10-13, at milestone SJL-4.5, as the shared libraries plan said it would be: the plan's
-numerics record found that the notices named neither citation.*
+numerics record found that the notices named neither citation. Revised 2026-10-16, at milestone SJL-6.5:
+the bullet on `JSDate.Parse` was added; the notices had named neither of the Date code's citations.*
 
 ## Data the engine's own code is generated from
 

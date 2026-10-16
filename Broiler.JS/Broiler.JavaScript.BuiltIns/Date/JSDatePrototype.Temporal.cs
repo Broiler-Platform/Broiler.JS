@@ -12,7 +12,7 @@ public partial class JSDate
     [JSExport("toTemporalInstant", Length = 0)]
     internal JSValue ToTemporalInstant(in Arguments a)
     {
-        var ms = GetTimeMs();
+        var ms = timeValue;
         if (double.IsNaN(ms))
             throw JSEngine.NewRangeError("Date.prototype.toTemporalInstant called on an invalid Date");
 

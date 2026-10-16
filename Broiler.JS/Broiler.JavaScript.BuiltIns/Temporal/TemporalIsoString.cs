@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 
@@ -307,8 +308,7 @@ internal static class TemporalIsoString
         var year = int.Parse(yearText, CultureInfo.InvariantCulture);
         var month = int.Parse(monthText, CultureInfo.InvariantCulture);
         var day = int.Parse(dayText, CultureInfo.InvariantCulture);
-        if (month is < 1 or > 12) return false;
-        return day >= 1 && day <= DaysInMonth(year, month);
+        return IsoCalendarMath.IsValidIsoDate(year, month, day);
     }
 
     private static bool IsValidTime(Match m)
@@ -318,16 +318,6 @@ internal static class TemporalIsoString
         var second = m.Groups["s"].Success ? int.Parse(m.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
         return hour <= 23 && minute <= 59 && second <= 60; // a leap second (60) parses, then collapses
     }
-
-    private static bool IsLeapYear(int y) => (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
-
-    private static int DaysInMonth(int year, int month) => month switch
-    {
-        1 or 3 or 5 or 7 or 8 or 10 or 12 => 31,
-        4 or 6 or 9 or 11 => 30,
-        2 => IsLeapYear(year) ? 29 : 28,
-        _ => 0,
-    };
 
     // ParseTemporalCalendarString: succeeds for any valid Temporal ISO string, yielding its
     // [u-ca=…] annotation value (or null, meaning the iso8601 default).

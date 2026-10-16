@@ -64,7 +64,7 @@ profile. They are not part of the `Broiler.JavaScript.*` set above and do not sh
 
 | Package | State | Public surface |
 | --- | --- | --- |
-| `Broiler.ECMAScript.Algorithms` | `0.1.0-preview.1` and `0.1.0-preview.2`, with the numerics area, published; `0.1.0-preview.3`, with the text area, the next *(corrected 2026-10-14; read "`0.2.0`, with the numerics area, the next version (Broiler.VM's committed feed holds its `0.2.0-preview.1`)")*; this engine's `Parser`, `Runtime`, `BuiltIns`, `Storage` and `Expressions` reference it | The contract types `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`; the number-conversion area, namespace `Broiler.ECMAScript.Numbers`: `NumberText`, `NumberParsing`, `NumericLiterals`, `NumericKeys`; the numerics area, in the same namespace: `IntegerConversions`, `Float16`, `MathKernels`, `PreciseSum`, `ExactRounding` with `RoundingMode` and `UnsignedRoundingMode`, `BigIntMath`, `BigIntText` and `BigIntPolicy`; and the text area, namespace `Broiler.ECMAScript.Text`: `Utf16` with `CodePointRecord`, `StringPadding` with `PadPlacement`, `RelativeIndex`, `ReplacementTemplate` with `ReplacementPart` and `ReplacementPartKind`, `UriCodec`, `Base64Codec` with `Base64Alphabet` and `LastChunkHandling`, `JsonReader` with `JsonToken`, and `JsonText` |
+| `Broiler.ECMAScript.Algorithms` | `0.1.0-preview.1` to `0.1.0-preview.4` published, the numerics area from `0.1.0-preview.2`, the text area from `0.1.0-preview.3` and the Date area from `0.1.0-preview.4` *(corrected 2026-10-16; read "`0.1.0-preview.1` and `0.1.0-preview.2`, with the numerics area, published; `0.1.0-preview.3`, with the text area, the next"; corrected 2026-10-14, read "`0.2.0`, with the numerics area, the next version (Broiler.VM's committed feed holds its `0.2.0-preview.1`)")*; this engine's `Parser`, `Runtime`, `BuiltIns`, `Storage` and `Expressions` reference it | The contract types `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`; the number-conversion area, namespace `Broiler.ECMAScript.Numbers`: `NumberText`, `NumberParsing`, `NumericLiterals`, `NumericKeys`; the numerics area, in the same namespace: `IntegerConversions`, `Float16`, `MathKernels`, `PreciseSum`, `ExactRounding` with `RoundingMode` and `UnsignedRoundingMode`, `BigIntMath`, `BigIntText` and `BigIntPolicy`; the text area, namespace `Broiler.ECMAScript.Text`: `Utf16` with `CodePointRecord`, `StringPadding` with `PadPlacement`, `RelativeIndex`, `ReplacementTemplate` with `ReplacementPart` and `ReplacementPartKind`, `UriCodec`, `Base64Codec` with `Base64Alphabet` and `LastChunkHandling`, `JsonReader` with `JsonToken`, and `JsonText`; and the Date area, namespace `Broiler.ECMAScript.Time`: `EcmaTime`, `IsoCalendarMath`, `ILocalTimeProvider` with `FixedOffsetLocalTimeProvider` and `EcmaLocalTime`, `EcmaDateParser` with `DateParseDialect`, `EcmaParsedKind` and `EcmaParsedDate`, and `EcmaDateFormatter` *(added 2026-10-16)* |
 | `Broiler.ECMAScript.Conformance` | Test-only; not packed at this version | The corpus reader, the validator, the engine-level and library-level runners and their report |
 
 **Their compatibility promise is stronger than this engine's**, and it is enforced rather than stated
@@ -97,6 +97,60 @@ row's second cell read "`0.1.0-preview.1`, the first version the stream will pub
 "`NumericKeys`".* *Revised again 2026-10-15, at milestone SJL-5.5, when the text area moved in: the
 row's second cell began "`0.1.0-preview.1` published; `0.1.0-preview.2`, with the numerics area, the
 next", and its third cell ended at "`BigIntText` and `BigIntPolicy`".*
+
+## Public API changes, 2026-10-16 (the Date area moves to `Broiler.ECMAScript.Algorithms`)
+
+Milestone SJL-6.5 moves the Date area into the shared library, the stream's `0.1.0-preview.4`: Date's time
+arithmetic, its local time over this engine's provider of the host's zone (decision SJL-D-19), the Date
+Time String Format, the renderings, and the civil-day arithmetic of Temporal and Intl. A `Date`'s storage
+becomes its time value alone, so the members that exposed the `DateTimeOffset` storage become views of
+the time value. It applies decision SJL-D-25 to each public member the move empties or changes. No
+public member is removed. The observable corrections are in
+[`Broiler.JS/CHANGELOG.md`](../Broiler.JS/CHANGELOG.md).
+
+| Member | Assembly | Disposition | What it does now |
+| --- | --- | --- | --- |
+| `JSDate(DateTimeOffset)` | `BuiltIns` | kept, body replaced | Stores the instant's time value, its milliseconds since the epoch, rounded down; `DateTimeOffset.MinValue` makes an invalid date, as it did. The offset passed in is not kept |
+| `JSDate.Value` | `BuiltIns` | kept, a view | Gets the instant at the host's offset in force at it (`TimeZoneInfo.Local`), or at offset zero where that local reading is outside `DateTimeOffset`'s range, in the first and last hours of year 1 and year 9999; `DateTimeOffset.MinValue` for an invalid date **and for a valid date outside the years 1 to 9999**, which `DateTimeOffset` cannot hold. It was the stored `DateTimeOffset`, at whatever offset it had been stored with: the zone's base offset for a date made from local fields, the parsed offset for a parsed one. Setting it stores the time value, as the constructor does |
+| `JSDate.DateTime` | `BuiltIns` | kept, a view | `Value.DateTime`, as before, over the new `Value` |
+| `JSDate.ConvertTo(Type, out object)` | `BuiltIns` | kept, body replaced | To `DateTime` (its local reading, `Value.LocalDateTime`) and to `DateTimeOffset` (`Value`) for a date in the years 1 to 9999 and for an invalid date, which converts to the `DateTimeOffset.MinValue` sentinel as before; **a valid date outside those years converts to neither, and the conversion fails**, where it answered the sentinel's year-1 date as a success. To `object` and the types `JSDate` derives from, the date itself, as before |
+| `JSDate.ToDetailString()` | `BuiltIns` | kept, body replaced | The text of `Date.prototype.toString`, where it was the stored `DateTimeOffset`'s `ToString()` in the current culture |
+| `JSDate.epoch` | `BuiltIns` | kept, unchanged | The epoch's ticks; nothing in the engine reads it |
+| `JSValue.CreateDate(DateTimeOffset)` | `Runtime` | kept, unchanged | Makes a `JSDate` through the constructor above, so the date holds the instant and not the offset |
+| `ClrProxy.Marshal(DateTime)`, `ClrProxy.Marshal(DateTimeOffset)` | `Clr` | kept, unchanged | As `JSValue.CreateDate`; a `DateTime` of an unspecified kind is local time, as before |
+| `DateParser` | `Runtime` | kept, its type | Public, with no public member: its `Parse` is internal, and it is now this engine's own fallback, which `Date.parse` calls between the shared library's two dialects. Its internal format lists `DefaultFormats` and the `'T'` lists are deleted (JSD-0072) |
+
+**What the views answer outside the years 1 to 9999 is decided here**, as SJL-D-25 asks: the
+`DateTimeOffset.MinValue` sentinel from `Value` and `DateTime`, which can no longer be told from an
+invalid date there, and a failed conversion from `ConvertTo`. A host that needs such a date reads its time
+value from script (`getTime()`), which holds every date.
+
+**Removed internal and private members**, with no public surface:
+
+- *Storage:* `JSDate`'s `value` field, `rawTimeMs`, `InvalidDate`, the shared `invalidDate` instance,
+  `Local` (the zone's base offset), `GetTimeMs`, `SetTimeValue`, `IsValidDate`, both `IsValid` overloads,
+  the internal constructor from a prototype and a `DateTimeOffset`, the `MinTime` and `MaxTime` statics,
+  and `JSDateStatic.ToJSDate`. The internal field `timeValue` is the storage, and the internal constructor
+  `JSDate(double)` makes a date from a time value.
+- *Arithmetic:* the internal class `JSDateMath` whole, with its `GetLocalOffsetMs`; the setters' private
+  `IntegerComponent` and `Months`; the inline `MakeFullYear` of the constructor, `Date.UTC` and `setYear`;
+  and the dead `JSDate.ToDateTime(int, …, TimeSpan)`.
+- *Parsing:* `TryParseExtendedIso` with its expression `EcmaIsoDateTime` and `JSDate`'s private
+  `DaysInMonth`; `DateParser`'s `DefaultFormats`, `StrictIsoTUtcFormats` and `StrictIsoTLocalFormats`.
+  `DateParser.Parse` (internal) answers the shared parser's `EcmaParsedDate`, where it answered a
+  `DateTimeOffset`.
+- *Renderings:* the private `ToIsoString`, `DateString`, `ClockString`, `HumanYearString`, `WeekDayNames`
+  and `MonthNames`, and the internal `ToTimeZoneString`.
+- *Civil days:* the leap-year, month-length, epoch-day, weekday, ISO-week and ISO-validity copies of the
+  Temporal types the changelog names, and Intl's private `DayOfWeek`.
+
+The new internal members are `JSDate.Zone`, the provider, of the new internal class
+`HostLocalTimeProvider`; `JSDate.ParseTimeValue`, `Date.parse`'s order of grammars; and
+`JSDate.CurrentTime`.
+
+**Compatibility.** Binary-compatible: every public member is kept with its signature. Source-compatible.
+A host that set a `JSDate` from a `DateTimeOffset` and read it back sees the same instant at the host's
+offset, where it saw the offset it had passed.
 
 ## Public API changes, 2026-10-15 (text algorithms move to `Broiler.ECMAScript.Algorithms`)
 

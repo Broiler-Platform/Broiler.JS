@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
@@ -33,13 +34,13 @@ public partial class JSTemporalPlainMonthDay : JSObject
         var refYear = a.GetAt(3);
         referenceISOYear = refYear == null || refYear.IsUndefined ? DefaultReferenceYear : ToIntegerWithTruncation(refYear);
 
-        if (!IsValidISODate(referenceISOYear, isoMonth, isoDay))
+        if (!IsoCalendarMath.IsValidIsoDate(referenceISOYear, isoMonth, isoDay))
             throw JSEngine.NewRangeError("Temporal.PlainMonthDay: invalid ISO month-day");
 
         // CreateTemporalMonthDay also runs ISODateWithinLimits on the reference date: a
         // referenceISOYear that pushes referenceISOYear-isoMonth-isoDay past the representable
         // ISO date range (after +275760-09-13 or before -271821-04-19) is a RangeError.
-        var epochDays = TemporalNonIso.DaysFromCivil(referenceISOYear, isoMonth, isoDay);
+        var epochDays = IsoCalendarMath.EpochDays(referenceISOYear, isoMonth, isoDay);
         if (epochDays < TemporalNonIso.MinEpochDays || epochDays > TemporalNonIso.MaxEpochDays)
             throw JSEngine.NewRangeError("Temporal.PlainMonthDay: reference date is out of range");
     }
@@ -235,11 +236,11 @@ public partial class JSTemporalPlainMonthDay : JSObject
             return new JSTemporalPlainDate(iy, im, id, calendarId, JSTemporalPlainDate.PlainDatePrototype);
         }
 
-        var day = Math.Clamp(isoDay, 1, DaysInMonthOf(year, isoMonth));
+        var day = Math.Clamp(isoDay, 1, IsoCalendarMath.DaysInMonth(year, isoMonth));
         // The resulting PlainDate (resolved year + this month-day) must lie within the representable
         // ISO date range (−271821-04-19 … +275760-09-13); a year that pushes it out of range is a
         // RangeError rather than being silently produced (test262 .../toPlainDate/limits).
-        var epoch = TemporalNonIso.DaysFromCivil(year, isoMonth, day);
+        var epoch = IsoCalendarMath.EpochDays(year, isoMonth, day);
         if (epoch < TemporalNonIso.MinEpochDays || epoch > TemporalNonIso.MaxEpochDays)
             throw JSEngine.NewRangeError("Temporal.PlainMonthDay.prototype.toPlainDate: date is out of range");
         return new JSTemporalPlainDate(year, isoMonth, day, calendarId, JSTemporalPlainDate.PlainDatePrototype);
@@ -449,9 +450,11 @@ public partial class JSTemporalPlainMonthDay : JSObject
         // to the reference year. The Gregorian-family calendars (buddhist/gregory/japanese/roc) share
         // the ISO month/day, so the resolved ISO year + month/day is the ISO date to bound-check.
         // (test262 intl402/.../PlainMonthDay/from/dont-calculate-month-info-for-out-of-range-year.)
-        if (hasResolvedYear)
+        // The month is not yet regulated here: one below 1 is a RangeError in RegulateMonthDay, and one
+        // above 12 is bound-checked as constrain regulates it, in December, since reject refuses it there.
+        if (hasResolvedYear && month >= 1)
         {
-            var epoch = TemporalNonIso.DaysFromCivil(resolvedIsoYear, month, dayInt);
+            var epoch = IsoCalendarMath.EpochDays(resolvedIsoYear, Math.Min(month, 12), dayInt);
             if (epoch < TemporalNonIso.MinEpochDays || epoch > TemporalNonIso.MaxEpochDays)
                 throw JSEngine.NewRangeError("Temporal.PlainMonthDay: date is out of range");
         }
@@ -494,7 +497,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
             var fy = int.Parse(full.Groups["y"].Value, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
             var fm = int.Parse(full.Groups["mo"].Value, CultureInfo.InvariantCulture);
             var fd = int.Parse(full.Groups["d"].Value, CultureInfo.InvariantCulture);
-            if (!IsValidISODate(fy, fm, fd))
+            if (!IsoCalendarMath.IsValidIsoDate(fy, fm, fd))
                 throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainMonthDay from \"{text}\"");
 
             // The iso8601 calendar discards the parsed year and anchors against the leap-year reference
@@ -504,7 +507,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
             if (calendarId == "iso8601")
                 return new JSTemporalPlainMonthDay(fm, fd, DefaultReferenceYear, calendarId, PlainMonthDayPrototype);
 
-            var epochDays = TemporalNonIso.DaysFromCivil(fy, fm, fd);
+            var epochDays = IsoCalendarMath.EpochDays(fy, fm, fd);
             if (epochDays < TemporalNonIso.MinEpochDays || epochDays > TemporalNonIso.MaxEpochDays)
                 throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainMonthDay from \"{text}\"");
 
@@ -531,7 +534,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
         var month = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
         var day = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
-        if (!IsValidISODate(DefaultReferenceYear, month, day))
+        if (!IsoCalendarMath.IsValidIsoDate(DefaultReferenceYear, month, day))
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainMonthDay from \"{text}\"");
 
         return new JSTemporalPlainMonthDay(month, day, DefaultReferenceYear, calendarId, PlainMonthDayPrototype);
@@ -550,13 +553,13 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
         if (overflow == "reject")
         {
-            if (!IsValidISODate(validationYear, month, day))
+            if (!IsoCalendarMath.IsValidIsoDate(validationYear, month, day))
                 throw JSEngine.NewRangeError("Temporal.PlainMonthDay: month-day is out of range");
         }
         else
         {
             month = Math.Min(month, 12);
-            day = Math.Min(day, DaysInMonthOf(validationYear, month));
+            day = Math.Min(day, IsoCalendarMath.DaysInMonth(validationYear, month));
         }
 
         // The resolved value is always stored against the canonical leap-year reference (1972).
@@ -564,19 +567,6 @@ public partial class JSTemporalPlainMonthDay : JSObject
     }
 
     // ── ISO helpers ───────────────────────────────────────────────────────────────
-
-    private static bool IsLeapYear(long y) => (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
-
-    private static int DaysInMonthOf(long year, int month) => month switch
-    {
-        1 or 3 or 5 or 7 or 8 or 10 or 12 => 31,
-        4 or 6 or 9 or 11 => 30,
-        2 => IsLeapYear(year) ? 29 : 28,
-        _ => 0,
-    };
-
-    private static bool IsValidISODate(int year, int month, int day)
-        => month is >= 1 and <= 12 && day >= 1 && day <= DaysInMonthOf(year, month);
 
     private string ToISOString() => ToISOString("auto");
 

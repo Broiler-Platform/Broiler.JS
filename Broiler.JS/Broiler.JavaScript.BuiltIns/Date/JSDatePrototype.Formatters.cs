@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.BuiltIns.Null;
+﻿using Broiler.ECMAScript.Time;
+using Broiler.JavaScript.BuiltIns.Null;
 using System;
 using System.Globalization;
 using Broiler.JavaScript.BuiltIns.Number;
@@ -42,24 +43,19 @@ public partial class JSDate
         throw JSEngine.NewTypeError("Cannot convert object to primitive value");
     }
 
+    // toDateString (ECMA-262 21.4.4.35): DateString of the local time.
     [JSExport("toDateString", Length = 0)]
-    internal JSValue ToDateString(in Arguments a)
-    {
-        var time = GetTimeMs();
-        if (double.IsNaN(time))
-            return new JSString("Invalid Date");
+    internal JSValue ToDateString(in Arguments a) =>
+        new JSString(double.IsNaN(timeValue) ? EcmaDateFormatter.InvalidDate : EcmaDateFormatter.DateString(LocalTimeValue));
 
-        return new JSString(DateString(JSDateMath.LocalTime(time)));
-    }
-
+    // toISOString (21.4.4.36): a RangeError for an invalid date.
     [JSExport("toISOString", Length = 0)]
     internal JSValue ToISOString(in Arguments a)
     {
-        var time = GetTimeMs();
-        if (double.IsNaN(time))
+        if (!EcmaDateFormatter.TryToIsoString(timeValue, out var text))
             throw JSEngine.NewRangeError("Invalid time value");
 
-        return new JSString(ToIsoString(time));
+        return new JSString(text);
     }
 
     [JSExport("toJSON", Length = 1)]
@@ -87,40 +83,11 @@ public partial class JSDate
         return toISOString.InvokeFunction(new Arguments(@object));
     }
 
-    private static string ToIsoString(double time)
-    {
-        var year = JSDateMath.YearFromTime(time);
-        var month = JSDateMath.MonthFromTime(time) + 1;
-        var day = JSDateMath.DateFromTime(time);
-        var hour = JSDateMath.HourFromTime(time);
-        var minute = JSDateMath.MinFromTime(time);
-        var second = JSDateMath.SecFromTime(time);
-        var millisecond = JSDateMath.MsFromTime(time);
-        var yearText = year >= 0 && year <= 9999
-            ? year.ToString("D4", DateTimeFormatInfo.InvariantInfo)
-            : string.Format(
-                DateTimeFormatInfo.InvariantInfo,
-                "{0}{1:D6}",
-                year < 0 ? "-" : "+",
-                Math.Abs(year));
-
-        return string.Format(
-            DateTimeFormatInfo.InvariantInfo,
-            "{0}-{1:D2}-{2:D2}T{3:D2}:{4:D2}:{5:D2}.{6:D3}Z",
-            yearText,
-            month,
-            day,
-            hour,
-            minute,
-            second,
-            millisecond);
-    }
-
     [JSExport("toLocaleDateString", Length = 0)]
     internal JSValue ToLocaleDateString(in Arguments a)
     {
-        if (double.IsNaN(GetTimeMs()))
-            return new JSString("Invalid Date");
+        if (double.IsNaN(timeValue))
+            return new JSString(EcmaDateFormatter.InvalidDate);
 
         var (locale, format) = a.Get2();
 
@@ -137,8 +104,8 @@ public partial class JSDate
     [JSExport("toLocaleString", Length = 0)]
     internal JSValue ToLocaleString(in Arguments a)
     {
-        if (double.IsNaN(GetTimeMs()))
-            return new JSString("Invalid Date");
+        if (double.IsNaN(timeValue))
+            return new JSString(EcmaDateFormatter.InvalidDate);
 
         var (locale, format) = a.Get2();
 
@@ -155,8 +122,8 @@ public partial class JSDate
     [JSExport("toLocaleTimeString", Length = 0)]
     internal JSValue ToLocaleTimeString(in Arguments a)
     {
-        if (double.IsNaN(GetTimeMs()))
-            return new JSString("Invalid Date");
+        if (double.IsNaN(timeValue))
+            return new JSString(EcmaDateFormatter.InvalidDate);
 
         var (locale, format) = a.Get2();
 
@@ -178,124 +145,44 @@ public partial class JSDate
     {
         var opts = Intl.JSIntlDateTimeFormat.ToDateTimeOptions(format, required, defaults);
         var dtf = new Intl.JSIntlDateTimeFormat(new Arguments(JSUndefined.Value, locale, opts));
-        return dtf.Format(new Arguments(JSUndefined.Value, CreateNumber(GetTimeMs())));
+        return dtf.Format(new Arguments(JSUndefined.Value, CreateNumber(timeValue)));
     }
 
     // The Broiler .NET extension path: a non-spec convenience where the second argument is a .NET
     // custom/standard date format string. A nullish locale uses the current culture; otherwise the
     // locale must validate as a language tag (matching the spec's locale handling) and selects the
     // CultureInfo. <paramref name="standardFormat"/> is the .NET format used when none is supplied.
+    // The date is formatted as its DateTimeOffset view, at the host's offset in force at the instant;
+    // a date that view cannot hold, outside the years 1 to 9999, is a RangeError (correspondence row R5).
     private string FormatWithNetCulture(JSValue locale, string format, string standardFormat)
     {
         if (!locale.IsUndefined)
             Intl.JSIntl.CanonicalizeLocaleList(locale);
 
+        if (!InView(timeValue))
+            throw JSEngine.NewRangeError("A .NET date format string formats a date from the year 1 to the year 9999 only");
+
         var culture = locale.IsNullOrUndefined
             ? DateTimeFormatInfo.CurrentInfo
             : (IFormatProvider)CultureInfo.GetCultureInfo(locale.ToString());
-        return value.ToString(string.IsNullOrEmpty(format) ? standardFormat : format, culture);
+        return ToView(timeValue).ToString(string.IsNullOrEmpty(format) ? standardFormat : format, culture);
     }
 
+    // toString (21.4.4.41): ToDateString over the host's zone.
     [JSExport("toString", Length = 0)]
-    internal new JSValue ToString(in Arguments a)
-    {
-        var time = GetTimeMs();
-        if (double.IsNaN(time))
-            return new JSString("Invalid Date");
+    internal new JSValue ToString(in Arguments a) => new JSString(EcmaDateFormatter.ToDateString(timeValue, Zone));
 
-        // ToDateString (ECMA-262 §21.4.4.41.4): DateString(LocalTime(t)) + " " +
-        // TimeString(LocalTime(t)) + TimeZoneString(t). Computed from the ECMAScript
-        // time value (not the .NET DateTimeOffset) so the full Date range — including
-        // year 0 and negative years that fall outside .NET's 1–9999 window — renders.
-        var local = JSDateMath.LocalTime(time);
-        var date = $"{DateString(local)} {ClockString(local)} {ToTimeZoneString(local - time)}";
-        return new JSString(date);
-    }
-
+    // toTimeString (21.4.4.42): TimeString of the local time, then TimeZoneString.
     [JSExport("toTimeString", Length = 0)]
-    internal JSValue ToTimeString(in Arguments a)
-    {
-        var time = GetTimeMs();
-        if (double.IsNaN(time))
-            return new JSString("Invalid Date");
+    internal JSValue ToTimeString(in Arguments a) =>
+        new JSString(double.IsNaN(timeValue)
+            ? EcmaDateFormatter.InvalidDate
+            : EcmaDateFormatter.TimeString(LocalTimeValue) + EcmaDateFormatter.TimeZoneString(timeValue, Zone));
 
-        var local = JSDateMath.LocalTime(time);
-        var date = $"{ClockString(local)} {ToTimeZoneString(local - time)}";
-        return new JSString(date);
-    }
-
+    // toUTCString (21.4.4.43).
     [JSExport("toUTCString", Length = 0)]
-    internal JSValue ToUTCString(in Arguments a)
-    {
-        var time = GetTimeMs();
-        if (double.IsNaN(time))
-            return new JSString("Invalid Date");
-
-        var weekday = WeekDayNames[JSDateMath.WeekDay(time)];
-        var day = JSDateMath.DateFromTime(time).ToString("D2", DateTimeFormatInfo.InvariantInfo);
-        var month = MonthNames[JSDateMath.MonthFromTime(time)];
-        var year = HumanYearString(JSDateMath.YearFromTime(time));
-        return new JSString($"{weekday}, {day} {month} {year} {ClockString(time)} GMT");
-    }
+    internal JSValue ToUTCString(in Arguments a) => new JSString(EcmaDateFormatter.ToUtcString(timeValue));
 
     [JSExport("valueOf", Length = 0)]
-    internal new JSValue ValueOf(in Arguments a)
-    {
-        var result = GetTimeMs();
-        return double.IsNaN(result) ? JSNumber.NaN : new JSNumber(result);
-    }
-
-    // Abbreviated weekday/month names used by the ECMAScript date/time string
-    // representations (Date.prototype.toString / toUTCString / toDateString). These are
-    // locale-independent: the spec mandates these exact English abbreviations.
-    private static readonly string[] WeekDayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    private static readonly string[] MonthNames =
-        ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-    // DateString (ECMA-262 §21.4.4.41.2): "Thu Jan 01 1970".
-    private static string DateString(double t)
-    {
-        var weekday = WeekDayNames[JSDateMath.WeekDay(t)];
-        var month = MonthNames[JSDateMath.MonthFromTime(t)];
-        var day = JSDateMath.DateFromTime(t).ToString("D2", DateTimeFormatInfo.InvariantInfo);
-        var year = HumanYearString(JSDateMath.YearFromTime(t));
-        return $"{weekday} {month} {day} {year}";
-    }
-
-    // The "hh:mm:ss" portion of TimeString (ECMA-262 §21.4.4.41.1), without the trailing
-    // time-zone text (which differs between the local and UTC string forms).
-    private static string ClockString(double t) => string.Format(
-        DateTimeFormatInfo.InvariantInfo,
-        "{0:D2}:{1:D2}:{2:D2}",
-        JSDateMath.HourFromTime(t),
-        JSDateMath.MinFromTime(t),
-        JSDateMath.SecFromTime(t));
-
-    // Year as it appears in the human-readable date strings: a minimum of four digits,
-    // with a leading "-" for negative (proleptic) years — e.g. 1970, 0001, -0001, 12345.
-    private static string HumanYearString(long year) => year >= 0
-        ? year.ToString("D4", DateTimeFormatInfo.InvariantInfo)
-        : "-" + Math.Abs(year).ToString("D4", DateTimeFormatInfo.InvariantInfo);
-
-    internal string ToTimeZoneString(double offsetMs)
-    {
-        var timeZone = TimeZoneInfo.Local;
-        // Compute the time zone offset in hours-minutes from the supplied offset (already
-        // resolved for this instant by JSDateMath, including the out-of-.NET-range fallback).
-        int offsetInMinutes = (int)(offsetMs / 60000);
-        int hhmm = offsetInMinutes / 60 * 100 + offsetInMinutes % 60;
-
-        // Get the time zone name. For dates outside .NET's range (rawTimeMs set) the
-        // DateTimeOffset value is the MinValue sentinel, so fall back to the current
-        // instant for the implementation-defined zone name — matching the offset fallback.
-        var instant = double.IsNaN(rawTimeMs) ? value : DateTimeOffset.UtcNow;
-        string zoneName = timeZone.IsDaylightSavingTime(instant)
-            ? timeZone.DaylightName
-            : timeZone.StandardName;
-
-        if (hhmm < 0)
-            return $"GMT{hhmm:d4} ({zoneName})";
-        else
-            return $"GMT+{hhmm:d4} ({zoneName})";
-    }
+    internal new JSValue ValueOf(in Arguments a) => NumberOf(timeValue);
 }

@@ -1,5 +1,5 @@
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.Runtime;
-using System;
 using Broiler.JavaScript.BuiltIns.Symbol;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
@@ -8,15 +8,14 @@ namespace Broiler.JavaScript.BuiltIns.Date;
 
 public partial class JSDate
 {
-    static long MinTime = DateTimeOffset.MinValue.ToUnixTimeMilliseconds();
-    static long MaxTime = DateTimeOffset.MaxValue.ToUnixTimeMilliseconds();
-
+    // Date called as a function (ECMA-262 21.4.2.1 step 1): ToDateString of the present moment.
     [JSExport(IsConstructor = true, Length = 7)]
     public new static JSValue Constructor(in Arguments a)
         => (JSEngine.Current as IJSExecutionContext)?.CurrentNewTarget == null
-            ? new JSDate(DateTimeOffset.Now).ToString(Arguments.Empty)
+            ? new JSString(EcmaDateFormatter.ToDateString(CurrentTime(), Zone))
             : new JSDate(a);
 
+    // The Date constructor (ECMA-262 21.4.2.1): the present moment, a time value, or local fields.
     [JSExport(Length = 7)]
     JSDate(in Arguments a)
     {
@@ -52,146 +51,39 @@ public partial class JSDate
             throw JSEngine.NewTypeError("Cannot convert object to primitive value");
         }
 
-        DateTimeOffset date;
-
+        // Step 3: no argument is the present moment.
         if (a.Length == 0)
         {
-            value = DateTimeOffset.Now;
+            timeValue = CurrentTime();
             return;
         }
 
-        var dateString = a.Get1();
-
-        // Fast path for the one-argument time-value form new Date(NaN). This must NOT short-circuit
-        // the multi-argument component form: new Date(year, month, …) has to ToNumber *every* argument
-        // (in order) even when an earlier one is NaN, so a later argument's coercion side effect (e.g.
-        // a throwing valueOf) is still observed — test262 sm/Date/constructor-convert-all-arguments.
-        if (a.Length == 1 && dateString.IsNumber && double.IsNaN(dateString.DoubleValue))
-        {
-            value = DateTimeOffset.MinValue;
-            return;
-        }
-
+        // Step 4: one argument is another date's time value, a String read by Date.parse's grammars, or
+        // any other primitive's ToNumber; TimeClip in every case.
         if (a.Length == 1)
         {
-            if (dateString is JSDate dateObject)
+            var value = a.Get1();
+            double tv;
+            if (value is JSDate other)
             {
-                value = dateObject.value;
-                rawTimeMs = dateObject.rawTimeMs;
-                return;
+                tv = other.timeValue;
+            }
+            else
+            {
+                var primitive = ToPrimitive(value);
+                tv = primitive.IsString ? ParseTimeValue(primitive.StringValue) : primitive.DoubleValue;
             }
 
-            var primitive = ToPrimitive(dateString);
-
-            // §21.4.2.1: only a String is date-parsed; every other primitive is run
-            // through ToNumber. DoubleValue implements ToNumber, so boolean true → 1,
-            // false → 0, null → 0 and undefined → NaN, rather than being stringified
-            // and mis-parsed (test262 Date/value-to-primitive-result-non-string-prim).
-            if (!primitive.IsString)
-            {
-                SetTimeValue(JSDateMath.TimeClip(primitive.DoubleValue));
-                return;
-            }
-
-            var text = primitive.StringValue;
-            date = DateParser.Parse(text);
-
-            if (date == DateTimeOffset.MinValue)
-            {
-                // Fall back to the extended ISO parser for expanded years / years
-                // outside .NET's 1–9999 range (e.g. "+275760-09-13T00:00:00Z").
-                if (TryParseExtendedIso(text, out var extended))
-                {
-                    SetTimeValue(extended);
-                    return;
-                }
-
-                value = date;
-                return;
-            }
-
-            value = date.ToLocalTime();
+            timeValue = EcmaTime.TimeClip(tv);
             return;
         }
 
-        // Coerce each supplied component to Number exactly once (Get7Double); the
-        // NaN/Infinity scan and the integer reduction both read the cached doubles so
-        // a valueOf side effect is observed a single time per argument, in order.
-        var (yD, moD, dD, hD, miD, sD, msD) = a.Get7Double();
-        if (double.IsNaN(yD) || double.IsInfinity(yD) ||
-            double.IsNaN(moD) || double.IsInfinity(moD) ||
-            double.IsNaN(dD) || double.IsInfinity(dD) ||
-            double.IsNaN(hD) || double.IsInfinity(hD) ||
-            double.IsNaN(miD) || double.IsInfinity(miD) ||
-            double.IsNaN(sD) || double.IsInfinity(sD) ||
-            double.IsNaN(msD) || double.IsInfinity(msD))
-        {
-            value = InvalidDate;
-            rawTimeMs = double.NaN;
-            return;
-        }
-
-        // ToIntegerOrInfinity (the shared library's, through IntegerComponent), NOT ToUint32 — the
-        // latter's modulo-2^32 reduction wraps a huge year such as Number.MAX_VALUE into range
-        // (MAX_VALUE mod 2^32 == 0 → year 1900) so the DateTimeOffset fast path below
-        // would succeed with the wrong year instead of producing NaN.
-        double yearD = IntegerComponent(yD), monthD = IntegerComponent(moD), dayD = IntegerComponent(dD),
-            hoursD = IntegerComponent(hD), minutesD = IntegerComponent(miD), secondsD = IntegerComponent(sD), millisD = IntegerComponent(msD);
-        yearD = yearD >= 0 && yearD < 100 ? yearD + 1900 : yearD;
-
-        // A component too large to reduce losslessly to a 32-bit int cannot use the
-        // DateTimeOffset fast path; evaluate it with full-range ECMAScript date math,
-        // which yields NaN when the result falls outside the valid Date range.
-        const double Int32Limit = int.MaxValue;
-        if (Math.Abs(yearD) > Int32Limit || Math.Abs(monthD) > Int32Limit || Math.Abs(dayD) > Int32Limit
-            || Math.Abs(hoursD) > Int32Limit || Math.Abs(minutesD) > Int32Limit
-            || Math.Abs(secondsD) > Int32Limit || Math.Abs(millisD) > Int32Limit)
-        {
-            double timeOutOfRange = JSDateMath.MakeTime(hoursD, minutesD, secondsD, millisD);
-            double dayOutOfRange = JSDateMath.MakeDay(yearD, monthD, dayD);
-            value = DateTimeOffset.MinValue;
-            rawTimeMs = JSDateMath.TimeClip(JSDateMath.UTC(JSDateMath.MakeDate(dayOutOfRange, timeOutOfRange)));
-            return;
-        }
-
-        int year = (int)yearD, month = (int)monthD, day = (int)dayD, hours = (int)hoursD,
-            minutes = (int)minutesD, seconds = (int)secondsD, millis = (int)millisD;
-
-        try
-        {
-            // MakeDay/MakeDate order (§21.4.1.11/§21.4.1.13): resolve the calendar
-            // year+month FIRST (on day 1, which is valid in every month so AddMonths
-            // never clamps), THEN add the day offset, THEN the time. Adding months last
-            // would clamp an overflowing day to the target month's length — e.g.
-            // new Date(2016, 1, 29, 23, 59, 59, 1000) accumulates to Jan 30, and
-            // Jan 30 + 1 month would clamp to Feb 29 instead of rolling to Mar 1
-            // (test262: Date/prototype/getDate/this-value-valid-date).
-            date = new DateTimeOffset(year, 1, 1, 0, 0, 0, 0, Local);
-            date = date.AddMonths(month);
-            date = date.AddDays(day - 1);
-            date = date.AddHours(hours);
-            date = date.AddMinutes(minutes);
-            date = date.AddSeconds(seconds);
-            date = date.AddMilliseconds(millis);
-            value = date;
-            rawTimeMs = double.NaN;
-
-            return;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            // The local date/time is outside .NET DateTimeOffset's 1–9999 year range.
-            // Fall back to ECMAScript time-value math (ms since epoch), which spans the
-            // full Date range, so e.g. new Date(1970, 0, -99999999) stays a valid date
-            // and toISOString() emits an expanded-year string instead of throwing.
-            double timeWithinDay = JSDateMath.MakeTime(hours, minutes, seconds, millis);
-            double dayValue = JSDateMath.MakeDay(year, month, day);
-            double result = JSDateMath.TimeClip(JSDateMath.UTC(JSDateMath.MakeDate(dayValue, timeWithinDay)));
-
-            value = DateTimeOffset.MinValue;
-            rawTimeMs = result;
-            return;
-        }
+        // Step 5: local fields. Each argument is converted once, in order (Get7Double), the absent ones
+        // taking the defaults; the year is MakeFullYear's, and the local time is UTC's over the host's zone.
+        var (year, month, date, hours, minutes, seconds, milliseconds) = a.Get7Double();
+        var finalDate = EcmaTime.MakeDate(
+            EcmaTime.MakeDay(EcmaTime.MakeFullYear(year), month, date),
+            EcmaTime.MakeTime(hours, minutes, seconds, milliseconds));
+        timeValue = EcmaTime.TimeClip(EcmaLocalTime.Utc(finalDate, Zone));
     }
-
 }

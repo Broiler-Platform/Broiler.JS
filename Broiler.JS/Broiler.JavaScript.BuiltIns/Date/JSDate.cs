@@ -1,4 +1,5 @@
-﻿using Broiler.JavaScript.ExpressionCompiler;
+﻿using Broiler.ECMAScript.Time;
+using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using System;
 
@@ -10,150 +11,96 @@ namespace Broiler.JavaScript.BuiltIns.Date;
 [JSFunctionGenerator("Date")]
 public partial class JSDate: JSObject
 {
-    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
-    // Broiler-Falsified-If: a real time value of 0001-01-01T00:00:00Z is reported as NaN because it equals this sentinel
+    // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.21; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: LocalTime, UTC or TimeZoneString reads a zone other than the host's TimeZoneInfo.Local at the instant
     // Broiler-Human:        PENDING
-    internal static readonly DateTimeOffset InvalidDate = DateTimeOffset.MinValue;
-    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
-    // Broiler-Falsified-If: script obtains this shared instance and a setter call on it changes the date every other holder sees
-    // Broiler-Human:        PENDING
-    internal static readonly JSDate invalidDate = new(DateTimeOffset.MinValue);
+    internal static readonly ILocalTimeProvider Zone = new HostLocalTimeProvider();
 
-    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=0; Fingerprint=TBF
-    // Broiler-Falsified-If: an instant inside daylight-saving time is shifted by the zone's standard offset instead of the offset in force at that instant
-    // Broiler-Human:        PENDING
-    internal static TimeSpan Local => TimeZoneInfo.Local.BaseUtcOffset;
-
-    internal DateTimeOffset value;
+    // The instants a DateTimeOffset holds: 0001-01-01T00:00:00.000Z to 9999-12-31T23:59:59.999Z.
+    private const double FirstViewTime = -62135596800000d;
+    private const double LastViewTime = 253402300799999d;
 
     /// <summary>
-    /// Raw ECMAScript time value (ms since epoch) for dates outside
-    /// .NET DateTimeOffset range (e.g., year 0 or negative years).
-    /// When NaN, the <see cref="value"/> field is authoritative.
+    /// [[DateValue]] (ECMA-262 21.4): this date's time value, NaN for an invalid date. It is the date's only
+    /// storage; <see cref="Value"/> and <see cref="DateTime"/> are views of it.
     /// </summary>
-    internal double rawTimeMs = double.NaN;
+    internal double timeValue = double.NaN;
 
+    /// <summary>
+    /// The time value as a <see cref="DateTimeOffset"/>: the instant at the host's offset in force at it, or at
+    /// offset zero where its local reading is outside <see cref="DateTimeOffset"/>'s range; and
+    /// <see cref="DateTimeOffset.MinValue"/> for an invalid date and for a valid date outside that range. Setting
+    /// it stores the instant's time value, and <see cref="DateTimeOffset.MinValue"/> stores an invalid date.
+    /// </summary>
     public DateTimeOffset Value
     {
-        get => value;
-        set => this.value = value;
+        get => ToView(timeValue);
+        set => timeValue = FromView(value);
     }
 
+    /// <summary>The local clock reading of <see cref="Value"/>.</summary>
     public DateTime DateTime => Value.DateTime;
 
-    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
-    // Broiler-Falsified-If: the created date carries a prototype other than the one passed in
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: the created date holds a time value other than the one passed in
     // Broiler-Human:        PENDING
-    internal JSDate(JSObject prototype, DateTimeOffset time) : base(prototype) => value = time;
-
-    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
-    // Broiler-Human:        PENDING
-    public JSDate(DateTimeOffset time) : this() => value = time;
+    internal JSDate(double time) : this() => timeValue = time;
 
     // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
     // Broiler-Human:        PENDING
-    public override string ToDetailString() => value.ToString();
+    public JSDate(DateTimeOffset time) : this() => timeValue = FromView(time);
 
-    /// <summary>
-    /// Returns the ECMAScript time value for this date (ms since epoch).
-    /// Uses <see cref="rawTimeMs"/> when set (for dates outside .NET range),
-    /// otherwise delegates to <see cref="JSDateStatic.ToJSDate"/>.
-    /// </summary>
-    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=0; Fingerprint=TBF
-    // Broiler-Falsified-If: a date holding rawTimeMs returns the .NET sentinel's time instead of rawTimeMs, or an invalid date returns a number
+    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Low; Resources=1; Fingerprint=TBF
     // Broiler-Human:        PENDING
-    internal double GetTimeMs()
-    {
-        if (!double.IsNaN(rawTimeMs))
-            return rawTimeMs;
+    public override string ToDetailString() => EcmaDateFormatter.ToDateString(timeValue, Zone);
 
-        return value.ToJSDate();
+    /// <summary>The time value of the present moment.</summary>
+    internal static double CurrentTime() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+    private static bool InView(double time) => time >= FirstViewTime && time <= LastViewTime;
+
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-Falsified-If: a valid time value inside DateTimeOffset's range is viewed as a different instant
+    // Broiler-Human:        PENDING
+    private static DateTimeOffset ToView(double time)
+    {
+        if (!InView(time))
+            return DateTimeOffset.MinValue;
+
+        var instant = DateTimeOffset.FromUnixTimeMilliseconds((long)time);
+        var local = TimeZoneInfo.ConvertTime(instant, TimeZoneInfo.Local);
+
+        // ConvertTime answers its range's edge for a local reading outside the range, in the range's first
+        // and last hours; the instant at offset zero is the same instant.
+        return local.UtcTicks == instant.UtcTicks ? local : instant;
     }
 
-    /// <summary>
-    /// Stores an ECMAScript time value (ms since epoch) as this date's value,
-    /// keeping the raw <see cref="rawTimeMs"/> representation when the value falls
-    /// outside .NET DateTimeOffset's 1–9999 year range. Returns the stored value.
-    /// </summary>
-    // Broiler-AI:           Origin=AI; IP=Low; Security=Medium; Resources=0; Fingerprint=TBF
-    // Broiler-Falsified-If: a time value inside daylight-saving time is stored at the zone's standard offset, so getHours on new Date(ms) is one hour off the local wall-clock hour
-    // Broiler-Human:        PENDING
-    internal double SetTimeValue(double ms)
-    {
-        if (double.IsNaN(ms))
-        {
-            value = InvalidDate;
-            rawTimeMs = double.NaN;
-            return double.NaN;
-        }
-
-        if (ms < MinTime || ms > MaxTime)
-        {
-            value = DateTimeOffset.MinValue;
-            rawTimeMs = ms;
-            return ms;
-        }
-
-        try
-        {
-            value = DateTimeOffset.FromUnixTimeMilliseconds((long)ms).ToOffset(Local);
-            // The MinValue sentinel doubles as the "invalid date" marker, so a real
-            // time value that lands exactly on it (0001-01-01T00:00:00Z, the .NET
-            // boundary) must keep its raw representation to avoid being read as NaN.
-            rawTimeMs = value == InvalidDate ? ms : double.NaN;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            // Re-expressing the instant in the local offset overflowed .NET's range
-            // at the very edge of the 1–9999 window; keep the raw time value, which
-            // the getters/toISOString handle via ECMAScript date math.
-            value = DateTimeOffset.MinValue;
-            rawTimeMs = ms;
-        }
-
-        return ms;
-    }
-
-    /// <summary>
-    /// Returns true if this date is valid (not NaN / invalid).
-    /// </summary>
-    // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=0; Fingerprint=TBF
-    // Broiler-Falsified-If: a date set to exactly 0001-01-01T00:00:00Z through SetTimeValue reports itself invalid
-    // Broiler-Human:        PENDING
-    internal bool IsValidDate()
-    {
-        if (!double.IsNaN(rawTimeMs))
-            return true;
-
-        return value != InvalidDate;
-    }
+    private static double FromView(DateTimeOffset value) =>
+        value == DateTimeOffset.MinValue ? double.NaN : value.ToUnixTimeMilliseconds();
 
     // Broiler-AI:           Origin=Ported; IP=Medium; Security=Medium; Resources=1; Fingerprint=TBF
-    // Broiler-Falsified-If: a valid Date outside years 1 to 9999, held only in rawTimeMs, converts to a CLR DateTime of 0001-01-01 and the conversion reports success
+    // Broiler-Falsified-If: a valid Date outside years 1 to 9999 converts to a CLR DateTime or DateTimeOffset and the conversion reports success
     // Broiler-Human:        PENDING
     public override bool ConvertTo(Type type, out object value)
     {
-        if (type == typeof(DateTime))
+        if (type == typeof(DateTime) || type == typeof(DateTimeOffset))
         {
-            value = this.value.LocalDateTime;
-            return true;
-        }
+            // A valid date the CLR types cannot hold converts to neither; an invalid one converts to the
+            // MinValue sentinel, as it always has.
+            if (!double.IsNaN(timeValue) && !InView(timeValue))
+            {
+                value = null!;
+                return false;
+            }
 
-        if (type == typeof(DateTimeOffset))
-        {
-            value = this.value;
+            var view = Value;
+            value = type == typeof(DateTime) ? view.LocalDateTime : view;
             return true;
         }
 
         if (type.IsAssignableFrom(typeof(JSDate)))
         {
             value = this;
-            return true;
-        }
-
-        if (type == typeof(object))
-        {
-            value = this.value;
             return true;
         }
 

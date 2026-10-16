@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
@@ -459,7 +460,7 @@ public partial class JSTemporalInstant : JSObject
         var second = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
         if (second == 60) second = 59; // a leap second collapses to :59
 
-        if (month < 1 || month > 12 || day < 1 || day > DaysInMonthOf(year, month)
+        if (!IsoCalendarMath.IsValidIsoDate(year, month, day)
             || hour > 23 || minute > 59 || second > 59)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.Instant from \"{text}\"");
 
@@ -470,7 +471,7 @@ public partial class JSTemporalInstant : JSObject
             fractionNs = BigInteger.Parse(digits, CultureInfo.InvariantCulture);
         }
 
-        var days = DaysFromCivil(year, month, day);
+        var days = IsoCalendarMath.EpochDays(year, month, day);
         var secondsOfDay = (long)hour * 3600 + (long)minute * 60 + second;
         var ns = (new BigInteger(days) * 86400 + secondsOfDay) * 1_000_000_000 + fractionNs;
 
@@ -502,41 +503,6 @@ public partial class JSTemporalInstant : JSObject
         return new JSTemporalInstant(ns, InstantPrototype);
     }
 
-    private static bool IsLeapYear(long y) => (y % 4 == 0 && y % 100 != 0) || y % 400 == 0;
-
-    private static int DaysInMonthOf(long year, int month) => month switch
-    {
-        1 or 3 or 5 or 7 or 8 or 10 or 12 => 31,
-        4 or 6 or 9 or 11 => 30,
-        2 => IsLeapYear(year) ? 29 : 28,
-        _ => 0,
-    };
-
-    // Days from 1970-01-01 (Howard Hinnant's days_from_civil).
-    private static long DaysFromCivil(long y, long m, long d)
-    {
-        y -= m <= 2 ? 1 : 0;
-        var era = (y >= 0 ? y : y - 399) / 400;
-        var yoe = y - era * 400;
-        var doy = (153 * (m > 2 ? m - 3 : m + 9) + 2) / 5 + d - 1;
-        var doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-        return era * 146097 + doe - 719468;
-    }
-
-    private static (long y, long m, long d) CivilFromDays(long z)
-    {
-        z += 719468;
-        var era = (z >= 0 ? z : z - 146096) / 146097;
-        var doe = z - era * 146097;
-        var yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
-        var y = yoe + era * 400;
-        var doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-        var mp = (5 * doy + 2) / 153;
-        var d = doy - (153 * mp + 2) / 5 + 1;
-        var m = mp < 10 ? mp + 3 : mp - 9;
-        return (m <= 2 ? y + 1 : y, m, d);
-    }
-
     private string ToISOString() => FormatISO(epochNanoseconds, precision: -1);
 
     // Renders epoch nanoseconds as an ISO-8601 UTC string. `precision` controls the seconds field:
@@ -550,7 +516,7 @@ public partial class JSTemporalInstant : JSObject
         var days = (long)FloorDiv(totalSeconds, 86400);
         var secondsOfDay = (long)(totalSeconds - new BigInteger(days) * 86400);
 
-        var (y, m, d) = CivilFromDays(days);
+        var (y, m, d) = IsoCalendarMath.FromEpochDays(days);
         var hour = secondsOfDay / 3600;
         var minute = secondsOfDay % 3600 / 60;
         var second = secondsOfDay % 60;
