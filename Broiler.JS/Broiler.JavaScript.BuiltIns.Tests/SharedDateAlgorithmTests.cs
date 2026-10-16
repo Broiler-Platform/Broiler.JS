@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Broiler.JavaScript.BuiltIns.Date;
 using Broiler.JavaScript.Engine;
@@ -145,14 +146,25 @@ public class NewYorkZoneCollection
 }
 
 // The corrections that need a zone with daylight-saving time, under America/New_York, which this
-// collection sets for the process and restores to UTC; it runs alone, after the parallel collections.
+// collection sets as the process's local zone and then gives back; it runs alone, after the parallel
+// collections.
 [Collection(nameof(NewYorkZoneCollection))]
 public sealed class SharedDateAlgorithmNewYorkTests : IDisposable
 {
     public SharedDateAlgorithmNewYorkTests()
     {
+        // TZ selects the local zone on Unix only, and Windows reads it from the system, so the zone is also
+        // set in TimeZoneInfo's cache, which TimeZoneInfo.Local reads on every platform. The cache fills its
+        // local zone under its own lock, from another thread too (the runner reads the clock), so the zone
+        // is set under that lock, where no fill in progress can overwrite it.
         Environment.SetEnvironmentVariable("TZ", "America/New_York");
         TimeZoneInfo.ClearCachedData();
+        var zone = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
+        var cache = typeof(TimeZoneInfo).GetField("s_cachedData", BindingFlags.NonPublic | BindingFlags.Static)?.GetValue(null);
+        var local = cache?.GetType().GetField("_localTimeZone", BindingFlags.NonPublic | BindingFlags.Instance)
+            ?? throw new InvalidOperationException("TimeZoneInfo's cache of the local zone was not found.");
+        lock (cache)
+            local.SetValue(cache, zone);
     }
 
     public void Dispose()
