@@ -15217,8 +15217,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEBB"
 out: value: str:"\uD81B\uDEA0"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEBB".toUpperCase()
 since: 18
@@ -15228,8 +15227,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEBC"
 out: value: str:"\uD81B\uDEA1"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEBC".toUpperCase()
 since: 18
@@ -15239,8 +15237,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEBD"
 out: value: str:"\uD81B\uDEA2"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEBD".toUpperCase()
 since: 18
@@ -15250,8 +15247,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEBE"
 out: value: str:"\uD81B\uDEA3"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEBE".toUpperCase()
 since: 18
@@ -15261,8 +15257,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEBF"
 out: value: str:"\uD81B\uDEA4"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEBF".toUpperCase()
 since: 18
@@ -15272,8 +15267,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEC0"
 out: value: str:"\uD81B\uDEA5"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEC0".toUpperCase()
 since: 18
@@ -15283,8 +15277,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEC1"
 out: value: str:"\uD81B\uDEA6"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEC1".toUpperCase()
 since: 18
@@ -15294,8 +15287,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEC2"
 out: value: str:"\uD81B\uDEA7"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEC2".toUpperCase()
 since: 18
@@ -15305,8 +15297,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEC3"
 out: value: str:"\uD81B\uDEA8"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEC3".toUpperCase()
 since: 18
@@ -15316,8 +15307,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEC4"
 out: value: str:"\uD81B\uDEA9"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEC4".toUpperCase()
 since: 18
@@ -15327,8 +15317,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEC5"
 out: value: str:"\uD81B\uDEAA"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEC5".toUpperCase()
 since: 18
@@ -15338,8 +15327,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEC6"
 out: value: str:"\uD81B\uDEAB"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEC6".toUpperCase()
 since: 18
@@ -15349,8 +15337,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEC7"
 out: value: str:"\uD81B\uDEAC"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEC7".toUpperCase()
 since: 18
@@ -15360,8 +15347,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEC8"
 out: value: str:"\uD81B\uDEAD"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEC8".toUpperCase()
 since: 18
@@ -15371,8 +15357,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDEC9"
 out: value: str:"\uD81B\uDEAE"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDEC9".toUpperCase()
 since: 18
@@ -15382,8 +15367,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDECA"
 out: value: str:"\uD81B\uDEAF"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDECA".toUpperCase()
 since: 18
@@ -15393,8 +15377,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDECB"
 out: value: str:"\uD81B\uDEB0"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDECB".toUpperCase()
 since: 18
@@ -15404,8 +15387,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDECC"
 out: value: str:"\uD81B\uDEB1"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDECC".toUpperCase()
 since: 18
@@ -15415,8 +15397,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDECD"
 out: value: str:"\uD81B\uDEB2"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDECD".toUpperCase()
 since: 18
@@ -15426,8 +15407,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDECE"
 out: value: str:"\uD81B\uDEB3"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDECE".toUpperCase()
 since: 18
@@ -15437,8 +15417,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDECF"
 out: value: str:"\uD81B\uDEB4"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDECF".toUpperCase()
 since: 18
@@ -15448,8 +15427,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDED0"
 out: value: str:"\uD81B\uDEB5"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDED0".toUpperCase()
 since: 18
@@ -15459,8 +15437,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDED1"
 out: value: str:"\uD81B\uDEB6"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDED1".toUpperCase()
 since: 18
@@ -15470,8 +15447,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDED2"
 out: value: str:"\uD81B\uDEB7"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDED2".toUpperCase()
 since: 18
@@ -15481,8 +15457,7 @@ area: unicode
 op: String.prototype.toUpperCase
 in: str:"\uD81B\uDED3"
 out: value: str:"\uD81B\uDEB8"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.touppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt
 script: "\uD81B\uDED3".toUpperCase()
 since: 18
@@ -30122,8 +30097,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEA0"
 out: value: str:"\uD81B\uDEBB"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEA0".toLowerCase()
 since: 18
@@ -30133,8 +30107,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEA1"
 out: value: str:"\uD81B\uDEBC"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEA1".toLowerCase()
 since: 18
@@ -30144,8 +30117,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEA2"
 out: value: str:"\uD81B\uDEBD"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEA2".toLowerCase()
 since: 18
@@ -30155,8 +30127,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEA3"
 out: value: str:"\uD81B\uDEBE"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEA3".toLowerCase()
 since: 18
@@ -30166,8 +30137,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEA4"
 out: value: str:"\uD81B\uDEBF"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEA4".toLowerCase()
 since: 18
@@ -30177,8 +30147,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEA5"
 out: value: str:"\uD81B\uDEC0"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEA5".toLowerCase()
 since: 18
@@ -30188,8 +30157,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEA6"
 out: value: str:"\uD81B\uDEC1"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEA6".toLowerCase()
 since: 18
@@ -30199,8 +30167,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEA7"
 out: value: str:"\uD81B\uDEC2"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEA7".toLowerCase()
 since: 18
@@ -30210,8 +30177,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEA8"
 out: value: str:"\uD81B\uDEC3"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEA8".toLowerCase()
 since: 18
@@ -30221,8 +30187,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEA9"
 out: value: str:"\uD81B\uDEC4"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEA9".toLowerCase()
 since: 18
@@ -30232,8 +30197,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEAA"
 out: value: str:"\uD81B\uDEC5"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEAA".toLowerCase()
 since: 18
@@ -30243,8 +30207,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEAB"
 out: value: str:"\uD81B\uDEC6"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEAB".toLowerCase()
 since: 18
@@ -30254,8 +30217,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEAC"
 out: value: str:"\uD81B\uDEC7"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEAC".toLowerCase()
 since: 18
@@ -30265,8 +30227,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEAD"
 out: value: str:"\uD81B\uDEC8"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEAD".toLowerCase()
 since: 18
@@ -30276,8 +30237,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEAE"
 out: value: str:"\uD81B\uDEC9"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEAE".toLowerCase()
 since: 18
@@ -30287,8 +30247,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEAF"
 out: value: str:"\uD81B\uDECA"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEAF".toLowerCase()
 since: 18
@@ -30298,8 +30257,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEB0"
 out: value: str:"\uD81B\uDECB"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEB0".toLowerCase()
 since: 18
@@ -30309,8 +30267,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEB1"
 out: value: str:"\uD81B\uDECC"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEB1".toLowerCase()
 since: 18
@@ -30320,8 +30277,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEB2"
 out: value: str:"\uD81B\uDECD"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEB2".toLowerCase()
 since: 18
@@ -30331,8 +30287,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEB3"
 out: value: str:"\uD81B\uDECE"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEB3".toLowerCase()
 since: 18
@@ -30342,8 +30297,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEB4"
 out: value: str:"\uD81B\uDECF"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEB4".toLowerCase()
 since: 18
@@ -30353,8 +30307,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEB5"
 out: value: str:"\uD81B\uDED0"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEB5".toLowerCase()
 since: 18
@@ -30364,8 +30317,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEB6"
 out: value: str:"\uD81B\uDED1"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEB6".toLowerCase()
 since: 18
@@ -30375,8 +30327,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEB7"
 out: value: str:"\uD81B\uDED2"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEB7".toLowerCase()
 since: 18
@@ -30386,8 +30337,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\uD81B\uDEB8"
 out: value: str:"\uD81B\uDED3"
-class: divergence
-divergence.broiler-js: row C3: Broiler.JS's default mappings are the runtime's data with hand patches, which lack Unicode 17's Beria Erfe case pairs (U+16EA0 to U+16EB8 and U+16EBB to U+16ED3); data policy under decision SJL-D-6 (c), corrected by SJL-7.5
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\uD81B\uDEB8".toLowerCase()
 since: 18
@@ -31397,8 +31347,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00AA\u03A3"
 out: value: str:"\u00AA\u03C2"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00AA\u03A3".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31431,8 +31380,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00AA\u03A3'"
 out: value: str:"\u00AA\u03C2'"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00AA\u03A3'".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31443,8 +31391,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00AA\u03A31"
 out: value: str:"\u00AA\u03C21"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00AA\u03A31".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31455,8 +31402,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00AA\u03A3\u02B0"
 out: value: str:"\u00AA\u03C2\u02B0"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00AA\u03A3\u02B0".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31467,8 +31413,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00AA\u03A3\u0345"
 out: value: str:"\u00AA\u03C2\u0345"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00AA\u03A3\u0345".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31490,8 +31435,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00AA\u03A3\uDC00"
 out: value: str:"\u00AA\u03C2\uDC00"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00AA\u03A3\uDC00".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31502,8 +31446,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00AA\u03A3 \u0392"
 out: value: str:"\u00AA\u03C2 \u03B2"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00AA\u03A3 \u0392".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31514,8 +31457,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00AA\u03A3."
 out: value: str:"\u00AA\u03C2."
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00AA\u03A3.".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31537,8 +31479,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00BA\u03A3"
 out: value: str:"\u00BA\u03C2"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00BA\u03A3".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31571,8 +31512,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00BA\u03A3'"
 out: value: str:"\u00BA\u03C2'"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00BA\u03A3'".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31583,8 +31523,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00BA\u03A31"
 out: value: str:"\u00BA\u03C21"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00BA\u03A31".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31595,8 +31534,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00BA\u03A3\u02B0"
 out: value: str:"\u00BA\u03C2\u02B0"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00BA\u03A3\u02B0".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31607,8 +31545,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00BA\u03A3\u0345"
 out: value: str:"\u00BA\u03C2\u0345"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00BA\u03A3\u0345".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31630,8 +31567,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00BA\u03A3\uDC00"
 out: value: str:"\u00BA\u03C2\uDC00"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00BA\u03A3\uDC00".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31642,8 +31578,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00BA\u03A3 \u0392"
 out: value: str:"\u00BA\u03C2 \u03B2"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00BA\u03A3 \u0392".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -31654,8 +31589,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00BA\u03A3."
 out: value: str:"\u00BA\u03C2."
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00BA\u03A3.".toLowerCase()
 note: Final_Sigma: a cased letter and case-ignorables before, and no case-ignorables then a cased letter after; the scans are possessive (section 3.13), and a lone surrogate is neither
@@ -34328,8 +34262,7 @@ area: unicode
 op: String.prototype.toLocaleLowerCase
 in: str:"I\u0903\u0300" str:"lt"
 out: value: str:"i\u0903\u0300"
-class: divergence
-divergence.broiler-js: row C6: More_Above and the other casing contexts admit no intervening character of combining class 0 or 230, and Broiler.JS's IsContextTransparent passes over every mark not of class 230, U+0903 (class 0) included; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolocalelowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: "I\u0903\u0300".toLocaleLowerCase("lt")
 note: ECMA-262's clause defers to ECMA-402's TransformCase, which takes the first requested locale, its Unicode extension removed, matches it by prefix against the languages the UCD has language-sensitive mappings for, and maps by that language: SpecialCasing.txt's conditional lines for tr, az and lt, else the default mapping. Normative, as both engines' plans read it (JSD-0074's case-mapping section, row C9; Broiler.JS's record of SJL-7.1), both engine-level runners' realms having Intl
@@ -35022,8 +34955,7 @@ area: unicode
 op: String.prototype.toLocaleUpperCase
 in: str:"\uD837\uDF1A\u0307" str:"lt"
 out: value: str:"\uD837\uDF1A"
-class: divergence
-divergence.broiler-js: row C5: Broiler.JS's hand-written Soft_Dotted set lacks U+1DF1A, U+1E04C, U+1E04D and U+1E068, which PropList.txt lists; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolocaleuppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: "\uD837\uDF1A\u0307".toLocaleUpperCase("lt")
 note: ECMA-262's clause defers to ECMA-402's TransformCase, which takes the first requested locale, its Unicode extension removed, matches it by prefix against the languages the UCD has language-sensitive mappings for, and maps by that language: SpecialCasing.txt's conditional lines for tr, az and lt, else the default mapping. Normative, as both engines' plans read it (JSD-0074's case-mapping section, row C9; Broiler.JS's record of SJL-7.1), both engine-level runners' realms having Intl
@@ -35111,8 +35043,7 @@ area: unicode
 op: String.prototype.toLocaleUpperCase
 in: str:"\uD838\uDC4C\u0307" str:"lt"
 out: value: str:"\uD838\uDC4C"
-class: divergence
-divergence.broiler-js: row C5: Broiler.JS's hand-written Soft_Dotted set lacks U+1DF1A, U+1E04C, U+1E04D and U+1E068, which PropList.txt lists; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolocaleuppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: "\uD838\uDC4C\u0307".toLocaleUpperCase("lt")
 note: ECMA-262's clause defers to ECMA-402's TransformCase, which takes the first requested locale, its Unicode extension removed, matches it by prefix against the languages the UCD has language-sensitive mappings for, and maps by that language: SpecialCasing.txt's conditional lines for tr, az and lt, else the default mapping. Normative, as both engines' plans read it (JSD-0074's case-mapping section, row C9; Broiler.JS's record of SJL-7.1), both engine-level runners' realms having Intl
@@ -35200,8 +35131,7 @@ area: unicode
 op: String.prototype.toLocaleUpperCase
 in: str:"\uD838\uDC4D\u0307" str:"lt"
 out: value: str:"\uD838\uDC4D"
-class: divergence
-divergence.broiler-js: row C5: Broiler.JS's hand-written Soft_Dotted set lacks U+1DF1A, U+1E04C, U+1E04D and U+1E068, which PropList.txt lists; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolocaleuppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: "\uD838\uDC4D\u0307".toLocaleUpperCase("lt")
 note: ECMA-262's clause defers to ECMA-402's TransformCase, which takes the first requested locale, its Unicode extension removed, matches it by prefix against the languages the UCD has language-sensitive mappings for, and maps by that language: SpecialCasing.txt's conditional lines for tr, az and lt, else the default mapping. Normative, as both engines' plans read it (JSD-0074's case-mapping section, row C9; Broiler.JS's record of SJL-7.1), both engine-level runners' realms having Intl
@@ -35289,8 +35219,7 @@ area: unicode
 op: String.prototype.toLocaleUpperCase
 in: str:"\uD838\uDC68\u0307" str:"lt"
 out: value: str:"\uD838\uDC68"
-class: divergence
-divergence.broiler-js: row C5: Broiler.JS's hand-written Soft_Dotted set lacks U+1DF1A, U+1E04C, U+1E04D and U+1E068, which PropList.txt lists; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolocaleuppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: "\uD838\uDC68\u0307".toLocaleUpperCase("lt")
 note: ECMA-262's clause defers to ECMA-402's TransformCase, which takes the first requested locale, its Unicode extension removed, matches it by prefix against the languages the UCD has language-sensitive mappings for, and maps by that language: SpecialCasing.txt's conditional lines for tr, az and lt, else the default mapping. Normative, as both engines' plans read it (JSD-0074's case-mapping section, row C9; Broiler.JS's record of SJL-7.1), both engine-level runners' realms having Intl
@@ -35334,8 +35263,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00AA\u03A3"
 out: value: str:"\u00AA\u03C2"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00AA\u03A3".toLowerCase()
 note: correspondence row C1
@@ -35346,8 +35274,7 @@ area: unicode
 op: String.prototype.toLowerCase
 in: str:"\u00BA\u03A3"
 out: value: str:"\u00BA\u03C2"
-class: divergence
-divergence.broiler-js: row C1: U+00AA and U+00BA are Cased (Other_Lowercase), so a final sigma after them is final, and Broiler.JS reads Cased as General_Category Lu, Ll or Lt; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt
 script: "\u00BA\u03A3".toLowerCase()
 note: correspondence row C1
@@ -35710,8 +35637,7 @@ area: unicode
 op: String.prototype.toLocaleLowerCase
 in: str:"\uA7CB" str:"tr"
 out: value: str:"\u0264"
-class: divergence
-divergence.broiler-js: row C4: Broiler.JS's Turkic lower-case path maps every other code point with the runtime's ToLowerInvariant and skips the class's table, so the runtime's older data shows; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolocalelowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: "\uA7CB".toLocaleLowerCase("tr")
 note: correspondence row C4. ECMA-262's clause defers to ECMA-402's TransformCase, which takes the first requested locale, its Unicode extension removed, matches it by prefix against the languages the UCD has language-sensitive mappings for, and maps by that language: SpecialCasing.txt's conditional lines for tr, az and lt, else the default mapping. Normative, as both engines' plans read it (JSD-0074's case-mapping section, row C9; Broiler.JS's record of SJL-7.1), both engine-level runners' realms having Intl
@@ -35722,8 +35648,7 @@ area: unicode
 op: String.prototype.toLocaleLowerCase
 in: str:"\uA7CE" str:"tr"
 out: value: str:"\uA7CF"
-class: divergence
-divergence.broiler-js: row C4: Broiler.JS's Turkic lower-case path maps every other code point with the runtime's ToLowerInvariant and skips the class's table, so the runtime's older data shows; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolocalelowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: "\uA7CE".toLocaleLowerCase("tr")
 note: correspondence row C4. ECMA-262's clause defers to ECMA-402's TransformCase, which takes the first requested locale, its Unicode extension removed, matches it by prefix against the languages the UCD has language-sensitive mappings for, and maps by that language: SpecialCasing.txt's conditional lines for tr, az and lt, else the default mapping. Normative, as both engines' plans read it (JSD-0074's case-mapping section, row C9; Broiler.JS's record of SJL-7.1), both engine-level runners' realms having Intl
@@ -35734,8 +35659,7 @@ area: unicode
 op: String.prototype.toLocaleLowerCase
 in: str:"\uA7CB" str:"az"
 out: value: str:"\u0264"
-class: divergence
-divergence.broiler-js: row C4: Broiler.JS's Turkic lower-case path maps every other code point with the runtime's ToLowerInvariant and skips the class's table, so the runtime's older data shows; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolocalelowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: "\uA7CB".toLocaleLowerCase("az")
 note: correspondence row C4. ECMA-262's clause defers to ECMA-402's TransformCase, which takes the first requested locale, its Unicode extension removed, matches it by prefix against the languages the UCD has language-sensitive mappings for, and maps by that language: SpecialCasing.txt's conditional lines for tr, az and lt, else the default mapping. Normative, as both engines' plans read it (JSD-0074's case-mapping section, row C9; Broiler.JS's record of SJL-7.1), both engine-level runners' realms having Intl
@@ -35746,8 +35670,7 @@ area: unicode
 op: String.prototype.toLocaleLowerCase
 in: str:"\uA7CE" str:"az"
 out: value: str:"\uA7CF"
-class: divergence
-divergence.broiler-js: row C4: Broiler.JS's Turkic lower-case path maps every other code point with the runtime's ToLowerInvariant and skips the class's table, so the runtime's older data shows; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolocalelowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: "\uA7CE".toLocaleLowerCase("az")
 note: correspondence row C4. ECMA-262's clause defers to ECMA-402's TransformCase, which takes the first requested locale, its Unicode extension removed, matches it by prefix against the languages the UCD has language-sensitive mappings for, and maps by that language: SpecialCasing.txt's conditional lines for tr, az and lt, else the default mapping. Normative, as both engines' plans read it (JSD-0074's case-mapping section, row C9; Broiler.JS's record of SJL-7.1), both engine-level runners' realms having Intl
@@ -35758,8 +35681,7 @@ area: unicode
 op: String.prototype.toLocaleUpperCase
 in: str:"\uD837\uDF1A\u0307" str:"lt"
 out: value: str:"\uD837\uDF1A"
-class: divergence
-divergence.broiler-js: row C5: Broiler.JS's hand-written Soft_Dotted set lacks U+1DF1A, U+1E04C, U+1E04D and U+1E068, which PropList.txt lists; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolocaleuppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: "\uD837\uDF1A\u0307".toLocaleUpperCase("lt")
 note: correspondence row C5. ECMA-262's clause defers to ECMA-402's TransformCase, which takes the first requested locale, its Unicode extension removed, matches it by prefix against the languages the UCD has language-sensitive mappings for, and maps by that language: SpecialCasing.txt's conditional lines for tr, az and lt, else the default mapping. Normative, as both engines' plans read it (JSD-0074's case-mapping section, row C9; Broiler.JS's record of SJL-7.1), both engine-level runners' realms having Intl
@@ -35770,8 +35692,7 @@ area: unicode
 op: String.prototype.toLocaleLowerCase
 in: str:"I\u0903\u0300" str:"lt"
 out: value: str:"i\u0903\u0300"
-class: divergence
-divergence.broiler-js: row C6: More_Above and the other casing contexts admit no intervening character of combining class 0 or 230, and Broiler.JS's IsContextTransparent passes over every mark not of class 230, U+0903 (class 0) included; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolocalelowercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: "I\u0903\u0300".toLocaleLowerCase("lt")
 note: correspondence row C6. ECMA-262's clause defers to ECMA-402's TransformCase, which takes the first requested locale, its Unicode extension removed, matches it by prefix against the languages the UCD has language-sensitive mappings for, and maps by that language: SpecialCasing.txt's conditional lines for tr, az and lt, else the default mapping. Normative, as both engines' plans read it (JSD-0074's case-mapping section, row C9; Broiler.JS's record of SJL-7.1), both engine-level runners' realms having Intl
@@ -35815,8 +35736,7 @@ area: unicode
 op: String.prototype.toLocaleUpperCase, a list of locales
 in: str:"i" str:"tr" str:"en"
 out: value: str:"\u0130"
-class: divergence
-divergence.broiler-js: row C7: ECMA-402's TransformCase canonicalizes the list of locales and takes its first element, and Broiler.JS hands the joined list to CultureInfo; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolocaleuppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: "i".toLocaleUpperCase(["tr", "en"])
 note: correspondence row C7: CanonicalizeLocaleList throws a TypeError for null and a RangeError for a malformed tag. ECMA-262's clause defers to ECMA-402's TransformCase, which takes the first requested locale, its Unicode extension removed, matches it by prefix against the languages the UCD has language-sensitive mappings for, and maps by that language: SpecialCasing.txt's conditional lines for tr, az and lt, else the default mapping. Normative, as both engines' plans read it (JSD-0074's case-mapping section, row C9; Broiler.JS's record of SJL-7.1), both engine-level runners' realms having Intl
@@ -35827,8 +35747,7 @@ area: unicode
 op: String.prototype.toLocaleUpperCase, a list of locales
 in: str:"i" str:"en" str:"tr"
 out: value: str:"I"
-class: divergence
-divergence.broiler-js: row C7: ECMA-402's TransformCase canonicalizes the list of locales and takes its first element, and Broiler.JS hands the joined list to CultureInfo; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolocaleuppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: "i".toLocaleUpperCase(["en", "tr"])
 note: correspondence row C7: CanonicalizeLocaleList throws a TypeError for null and a RangeError for a malformed tag. ECMA-262's clause defers to ECMA-402's TransformCase, which takes the first requested locale, its Unicode extension removed, matches it by prefix against the languages the UCD has language-sensitive mappings for, and maps by that language: SpecialCasing.txt's conditional lines for tr, az and lt, else the default mapping. Normative, as both engines' plans read it (JSD-0074's case-mapping section, row C9; Broiler.JS's record of SJL-7.1), both engine-level runners' realms having Intl
@@ -35839,8 +35758,7 @@ area: unicode
 op: String.prototype.toLocaleUpperCase, the locale argument
 in: str:"i" null
 out: error: TypeError
-class: divergence
-divergence.broiler-js: row C8: CanonicalizeLocaleList(null) throws a TypeError, and Broiler.JS reads null as the host culture; SJL-7.5 corrects it
+class: normative
 prov: spec:es2026@0248456c#sec-string.prototype.tolocaleuppercase ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt ucd:17.0.0/SpecialCasing.txt ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: "i".toLocaleUpperCase(null)
 note: correspondence row C8: CanonicalizeLocaleList throws a TypeError for null and a RangeError for a malformed tag. ECMA-262's clause defers to ECMA-402's TransformCase, which takes the first requested locale, its Unicode extension removed, matches it by prefix against the languages the UCD has language-sensitive mappings for, and maps by that language: SpecialCasing.txt's conditional lines for tr, az and lt, else the default mapping. Normative, as both engines' plans read it (JSD-0074's case-mapping section, row C9; Broiler.JS's record of SJL-7.1), both engine-level runners' realms having Intl

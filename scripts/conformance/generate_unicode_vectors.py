@@ -68,8 +68,9 @@ import unicoderef as U  # noqa: E402
 from generate_number_vectors import js_string_body, string_value  # noqa: E402
 
 # The corpus revision this generator writes, and the revision its vectors were added in. Revision 19 classifies
-# every difference of both engines' first runs on revision 18 (unicode-divergences.txt).
-CORPUS_REVISION = 19
+# every difference of both engines' first runs on revision 18 (unicode-divergences.txt), and revision 20 retires
+# every one of them, which Broiler.JS's cut-over, milestone SJL-7.5, corrects.
+CORPUS_REVISION = 20
 FIRST_REVISION = 18
 GENERATOR = "ref:unicoderef@1"
 SPEC = "spec:es2026@0248456c"
