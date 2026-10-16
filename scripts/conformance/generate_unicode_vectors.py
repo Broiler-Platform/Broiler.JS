@@ -67,8 +67,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import unicoderef as U  # noqa: E402
 from generate_number_vectors import js_string_body, string_value  # noqa: E402
 
-# The corpus revision this generator writes, and the revision its vectors were added in.
-CORPUS_REVISION = 18
+# The corpus revision this generator writes, and the revision its vectors were added in. Revision 19 classifies
+# every difference of both engines' first runs on revision 18 (unicode-divergences.txt).
+CORPUS_REVISION = 19
 FIRST_REVISION = 18
 GENERATOR = "ref:unicoderef@1"
 SPEC = "spec:es2026@0248456c"
@@ -210,8 +211,8 @@ class Corpus:
         self.files.setdefault(file, []).append(full)
 
     def classify(self, path: Path) -> None:
-        """Applies unicode-divergences.txt, as generate_date_vectors.py applies its own file; at revision 18
-        there is none."""
+        """Applies unicode-divergences.txt, as generate_date_vectors.py applies its own file; revision 18 had
+        none, and revision 19 adds it."""
         if not path.exists():
             return
         reasons: dict[str, str] = {}

@@ -188,8 +188,28 @@ class CommittedFileTests(unittest.TestCase):
                 self.assertEqual("error: RangeError", vector["per-engine.broiler-vm"], vector_id)
                 self.assertNotIn("per-engine.broiler-js", vector, vector_id)
             else:
-                self.assertEqual("normative", vector["class"], vector_id)
+                # Revision 19 classifies the engines' first runs: a normative vector one engine differs on is a
+                # divergence, with that engine's field (unicode-divergences.txt).
+                self.assertIn(vector["class"], ("normative", "divergence"), vector_id)
+                self.assertEqual(vector["class"] == "divergence", any(k.startswith("divergence.") for k in vector), vector_id)
                 self.assertTrue(any(e.startswith("spec:es2026@0248456c#") for e in vector["prov"].split(" ")), vector_id)
+
+    def test_every_divergence_field_is_one_unicode_divergences_txt_lists(self) -> None:
+        reasons, listed = {}, {}
+        for line in generator.DIVERGENCES.read_text(encoding="utf-8").splitlines():
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("reason "):
+                key, _, text = line[len("reason "):].partition(": ")
+                reasons[key] = text
+                continue
+            engine, key, vector_id = line.split(" ")
+            listed[(engine, vector_id)] = reasons[key]
+        fields = {(k[len("divergence."):], vector_id): v for vector_id, vector in self.vectors.items()
+                  for k, v in vector.items() if k.startswith("divergence.")}
+        self.assertEqual(listed, fields)
+        # At revision 19 Broiler.VM's first run matched every vector.
+        self.assertFalse(any(engine == "broiler-vm" for engine, _ in fields))
 
     def test_every_ucd_file_cited_is_one_the_pin_names(self) -> None:
         pinned = set(U.Pins(U.PIN_FILE, REPOSITORY).entries)

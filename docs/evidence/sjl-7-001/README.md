@@ -14,10 +14,14 @@ JSD-0074 and its correspondence from code, retained in Broiler.VM's bundle of th
 **Owner:** the Broiler.JS maintainer. One person holds every role (the programme's EX-30, recorded in
 Broiler.VM). **Reviewer:** none, and nothing here has been read by anyone but its author.
 
-**State, 2026-10-16, at SJL-7.2: part A's base is taken, and nothing here is a verdict.**
+**State, 2026-10-16, at SJL-7.3: part A's base is taken, and the engine-level vectors' first run is classified;
+nothing here is a verdict.**
 - Part A's after run follows SJL-7.5's cut-over.
 - Part B's arms are measured at SJL-7.6, when the after arm exists, because the rule interleaves the arms
   inside each repetition.
+
+*(Revised 2026-10-16, at SJL-7.3. The state's heading read "at SJL-7.2: part A's base is taken, and nothing here is
+a verdict.")*
 
 Broiler.Unicode judges the owner's clauses in its own bundle of the same name, and Broiler.VM judges its own
 half in its own. This bundle reads neither's runs.
@@ -51,3 +55,47 @@ sources. No earlier run stands for this base, because none included them: the ru
 Part A's after run is taken at the commit that lands SJL-7.5's cut-over, by the same workflow with the same
 inputs. `scripts/compliance/compare_test262_paths.py` then compares it with this base, path by path and variant
 by variant.
+
+## 2. Engine-level vectors: the first run on the Unicode area (SJL-7.3)
+
+Corpus revision 18 (`b69eb709`) adds the Unicode area: 37,738 vectors in five files under
+`conformance/vectors/unicode/`, from `scripts/conformance/generate_unicode_vectors.py`. The engine-level runner,
+`Broiler.JS/Broiler.JavaScript.Vectors.Tests` in Release, ran on it at that commit under `TZ=UTC`, as this
+repository's tests run. None of the area's vectors depends on the time zone.
+
+| Run | Result | Files |
+|---|---|---|
+| Revision 18, UTC | 88,465 vectors: 84,783 match, 4 classified divergences, 3,678 unclassified differences | [`engine/run-revision-18-utc.log`](engine/run-revision-18-utc.log), [`engine/run-revision-18-utc.tsv.gz`](engine/run-revision-18-utc.tsv.gz) |
+| Its negative control | one vector's expected value changed in memory, reported as an unclassified difference | [`engine/negative-control-revision-18.tsv`](engine/negative-control-revision-18.tsv) |
+
+The 4 are the number area's `strict-non-octal-decimal` fields, which stay with SJL-14. Every one of the 3,678
+is in the Unicode area. Broiler.VM's run on the same revision matched every vector; its bundle of the same name
+retains it.
+
+**Corpus revision 19 classifies the 3,678.** Each is filed under the row of bundle `sjl-7-001`'s correspondence
+from code (Broiler.VM's `docs/evidence/sjl-7-001/correspondence.md`) that it confirms, and SJL-7.5 answers each
+one. The reasons are in `scripts/conformance/unicode-divergences.txt`.
+
+| Row | Vectors | What this engine does |
+|---|---|---|
+| P1 | 1,346 | Admits `\p{…}` names that ECMA-262's tables do not hold. Its lookup ignores case, underscores, spaces and hyphens |
+| P2 | 20 | Refuses the Script value `Hrkt` (`Katakana_Or_Hiragana`) |
+| S2 | 1 | Resolves the names of the properties of strings loosely, as P1 |
+| I1 | 2 | Admits U+2E2F, which is Pattern_Syntax, in an escaped identifier |
+| I3 | 6 | Admits U+2E2F in a group name and refuses U+11B60 there |
+| W1 | 3 | Treats U+0085 as white space, in source text and in `RegExp.escape` |
+| C1 | 18 | Does not treat a sigma after U+00AA or U+00BA as final |
+| C3 | 50 | Leaves Beria Erfe's case pairs unmapped. Unicode 17 adds them, and its hand patches lack them |
+| C4 | 4 | Its Turkic lower case reads the runtime's older data |
+| C5 | 5 | Its Soft_Dotted set lacks U+1DF1A, U+1E04C, U+1E04D and U+1E068 |
+| C6 | 2 | Passes over U+0903, a mark of class 0, in a casing context |
+| C7, C8 | 2, 1 | Hands a list of locales to `CultureInfo`, and reads `null` as the host culture |
+| N1 | 50 | Throws on a lone surrogate in `normalize` and `localeCompare` |
+| N2 | 582 | Normalizes with the host's ICU, at Unicode 15.1. Every one of these vectors reads a code point that Unicode 16 or 17 adds |
+| G1 | 138 | Answers a text as one sentence |
+| G2 | 684 | Word boundaries that are not UAX #29's |
+| G2, G4 | 747 | Each segment's `isWordLike`, over those word boundaries |
+| G3 | 17 | Grapheme clusters from the runtime's older data |
+
+Every difference falls under a row the area verdict names. One row, C3, read the default mappings as agreeing at
+Unicode 17. The Beria Erfe vectors show that it does not, and Broiler.VM's correspondence is revised for them.

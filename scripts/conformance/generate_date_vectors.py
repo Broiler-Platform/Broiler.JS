@@ -40,8 +40,9 @@ from generate_number_vectors import js_string_literal, splitmix64, string_value 
 # strings outside the format whose readings the engines' dialects differ on (OUTSIDE_FORMAT_REVISION).
 # Revision 17 retires every divergence both engines' cut-overs correct (date-divergences.txt), and
 # Broiler.JS's expectation of two of those strings becomes its reading since its cut-over, milestone SJL-6.5.
-# Revision 18 adds the Unicode area (generate_unicode_vectors.py) and changes nothing here.
-CORPUS_REVISION = 18
+# Revision 18 adds the Unicode area (generate_unicode_vectors.py) and changes nothing here, nor does revision 19,
+# which classifies the Unicode area's divergences.
+CORPUS_REVISION = 19
 FIRST_REVISION = 14
 OUTSIDE_FORMAT_REVISION = 16
 GENERATOR = "ref:dateref@1"

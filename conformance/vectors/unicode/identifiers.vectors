@@ -57086,7 +57086,8 @@ area: unicode
 op: IdentifierStart, an escaped code point
 in: int:11823
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row I1: Broiler.JS's IdentifierStartChar and IdentifierPartChar admit U+2E2F, which is Lm and Pattern_Syntax, and ID_Start and ID_Continue subtract Pattern_Syntax (UAX #31); SJL-7.5 corrects it
 prov: spec:es2026@0248456c#sec-identifier-names spec:es2026@0248456c#sec-identifier-names-static-semantics-early-errors spec:es2026@0248456c#sec-identifiercodepoint ref:unicoderef@1 ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: var \u2E2F; true
 note: row I1: Lm and Pattern_Syntax
@@ -57097,7 +57098,8 @@ area: unicode
 op: IdentifierPart, an escaped code point
 in: int:11823
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row I1: Broiler.JS's IdentifierStartChar and IdentifierPartChar admit U+2E2F, which is Lm and Pattern_Syntax, and ID_Start and ID_Continue subtract Pattern_Syntax (UAX #31); SJL-7.5 corrects it
 prov: spec:es2026@0248456c#sec-identifier-names spec:es2026@0248456c#sec-identifier-names-static-semantics-early-errors spec:es2026@0248456c#sec-identifiercodepoint ref:unicoderef@1 ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: var a\u2E2F; true
 note: row I1: Lm and Pattern_Syntax
@@ -57746,7 +57748,8 @@ area: unicode
 op: RegExpIdentifierStart, an escaped code point in a group name
 in: int:11823
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row I3: Broiler.JS's group names copy the identifier tests without Pattern_Syntax's subtraction and without Unicode 17's tables, so they admit U+2E2F and refuse U+11B60; SJL-7.5 corrects it
 prov: spec:es2026@0248456c#sec-patterns-static-semantics-early-errors spec:es2026@0248456c#sec-regexpidentifiercodepoint spec:es2026@0248456c#sec-identifier-names ref:unicoderef@1 ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: /(?<\u2E2Fx>.)/ instanceof RegExp
 note: a group name takes the code points an identifier takes (correspondence row I3)
@@ -57757,7 +57760,8 @@ area: unicode
 op: RegExpIdentifierStart, an escaped code point in a group name under u
 in: int:11823
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row I3: Broiler.JS's group names copy the identifier tests without Pattern_Syntax's subtraction and without Unicode 17's tables, so they admit U+2E2F and refuse U+11B60; SJL-7.5 corrects it
 prov: spec:es2026@0248456c#sec-patterns-static-semantics-early-errors spec:es2026@0248456c#sec-regexpidentifiercodepoint spec:es2026@0248456c#sec-identifier-names ref:unicoderef@1 ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: /(?<\u2E2Fx>.)/u instanceof RegExp
 note: a group name takes the code points an identifier takes (correspondence row I3)
@@ -57768,7 +57772,8 @@ area: unicode
 op: RegExpIdentifierPart, an escaped code point in a group name
 in: int:11823
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row I3: Broiler.JS's group names copy the identifier tests without Pattern_Syntax's subtraction and without Unicode 17's tables, so they admit U+2E2F and refuse U+11B60; SJL-7.5 corrects it
 prov: spec:es2026@0248456c#sec-patterns-static-semantics-early-errors spec:es2026@0248456c#sec-regexpidentifiercodepoint spec:es2026@0248456c#sec-identifier-names ref:unicoderef@1 ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: /(?<x\u2E2F>.)/ instanceof RegExp
 note: a group name takes the code points an identifier takes (correspondence row I3)
@@ -57779,7 +57784,8 @@ area: unicode
 op: RegExpIdentifierPart, an escaped code point in a group name under u
 in: int:11823
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row I3: Broiler.JS's group names copy the identifier tests without Pattern_Syntax's subtraction and without Unicode 17's tables, so they admit U+2E2F and refuse U+11B60; SJL-7.5 corrects it
 prov: spec:es2026@0248456c#sec-patterns-static-semantics-early-errors spec:es2026@0248456c#sec-regexpidentifiercodepoint spec:es2026@0248456c#sec-identifier-names ref:unicoderef@1 ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: /(?<x\u2E2F>.)/u instanceof RegExp
 note: a group name takes the code points an identifier takes (correspondence row I3)
@@ -57900,7 +57906,8 @@ area: unicode
 op: RegExpIdentifierPart, an escaped code point in a group name
 in: int:72544
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-js: row I3: Broiler.JS's group names copy the identifier tests without Pattern_Syntax's subtraction and without Unicode 17's tables, so they admit U+2E2F and refuse U+11B60; SJL-7.5 corrects it
 prov: spec:es2026@0248456c#sec-patterns-static-semantics-early-errors spec:es2026@0248456c#sec-regexpidentifiercodepoint spec:es2026@0248456c#sec-identifier-names ref:unicoderef@1 ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: /(?<x\u{11B60}>.)/ instanceof RegExp
 note: a group name takes the code points an identifier takes (correspondence row I3)
@@ -57911,7 +57918,8 @@ area: unicode
 op: RegExpIdentifierPart, an escaped code point in a group name under u
 in: int:72544
 out: value: bool:true
-class: normative
+class: divergence
+divergence.broiler-js: row I3: Broiler.JS's group names copy the identifier tests without Pattern_Syntax's subtraction and without Unicode 17's tables, so they admit U+2E2F and refuse U+11B60; SJL-7.5 corrects it
 prov: spec:es2026@0248456c#sec-patterns-static-semantics-early-errors spec:es2026@0248456c#sec-regexpidentifiercodepoint spec:es2026@0248456c#sec-identifier-names ref:unicoderef@1 ucd:17.0.0/DerivedCoreProperties.txt ucd:17.0.0/PropList.txt
 script: /(?<x\u{11B60}>.)/u instanceof RegExp
 note: a group name takes the code points an identifier takes (correspondence row I3)
@@ -59341,7 +59349,8 @@ area: unicode
 op: WhiteSpace in source text
 in: int:133
 out: error: SyntaxError
-class: normative
+class: divergence
+divergence.broiler-js: row W1: U+0085 is Cc and in neither WhiteSpace nor LineTerminator, and Broiler.JS's scanner and RegExp.escape treat it as white space; SJL-7.5 corrects it
 prov: spec:es2026@0248456c#sec-white-space spec:es2026@0248456c#sec-tokens spec:es2026@0248456c#sec-performeval ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt
 script: (0, eval)("1\u0085+1")
 note: U+0085, not WhiteSpace: 1, the code point and +1 as source text, through indirect eval, the one way an ASCII script can put the code point in source text (correspondence rows W1 and W3)
@@ -59385,7 +59394,8 @@ area: unicode
 op: WhiteSpace, RegExp.escape
 in: str:"\u0085"
 out: value: str:"\u0085"
-class: normative
+class: divergence
+divergence.broiler-js: row W1: U+0085 is Cc and in neither WhiteSpace nor LineTerminator, and Broiler.JS's scanner and RegExp.escape treat it as white space; SJL-7.5 corrects it
 prov: spec:es2026@0248456c#sec-regexp.escape spec:es2026@0248456c#sec-encodeforregexpescape spec:es2026@0248456c#sec-white-space ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt
 script: RegExp.escape("\u0085")
 note: U+0085, not WhiteSpace: EncodeForRegExpEscape escapes WhiteSpace and LineTerminator (correspondence rows W1 and W4)
@@ -60221,7 +60231,8 @@ area: unicode
 op: WhiteSpace, RegExp.escape
 in: str:" \u0085\u3000"
 out: value: str:"\\x20\u0085\\u3000"
-class: normative
+class: divergence
+divergence.broiler-js: row W1: U+0085 is Cc and in neither WhiteSpace nor LineTerminator, and Broiler.JS's scanner and RegExp.escape treat it as white space; SJL-7.5 corrects it
 prov: spec:es2026@0248456c#sec-regexp.escape spec:es2026@0248456c#sec-encodeforregexpescape spec:es2026@0248456c#sec-white-space ref:unicoderef@1 ucd:17.0.0/UnicodeData.txt
 script: RegExp.escape(" \u0085\u3000")
 note: correspondence row W1
