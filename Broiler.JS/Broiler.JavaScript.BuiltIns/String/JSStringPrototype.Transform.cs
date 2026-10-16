@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Text;
 using Broiler.ECMAScript;
 using Broiler.ECMAScript.Numbers;
 using Broiler.ECMAScript.Text;
@@ -7,6 +6,8 @@ using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
+using Broiler.JavaScript.Runtime.Unicode;
+using Broiler.Unicode.Algorithms;
 using Broiler.Unicode.Properties;
 
 namespace Broiler.JavaScript.BuiltIns.String;
@@ -20,17 +21,29 @@ public partial class JSString
         var @this = a.This.AsString();
         var input = a.Get1();
 
+        // Steps 3 to 6: the form is read and checked before the text is touched.
         string form = input.IsUndefined ? "NFC" : input.StringValue;
-
-        return form switch
+        var normalForm = form switch
         {
-            "NFC" => new JSString(@this.Normalize(NormalizationForm.FormC)),
-            "NFD" => new JSString(@this.Normalize(NormalizationForm.FormD)),
-            "NFKC" => new JSString(@this.Normalize(NormalizationForm.FormKC)),
-            "NFKD" => new JSString(@this.Normalize(NormalizationForm.FormKD)),
+            "NFC" => NormalForm.Nfc,
+            "NFD" => NormalForm.Nfd,
+            "NFKC" => NormalForm.Nfkc,
+            "NFKD" => NormalForm.Nfkd,
             _ => throw JSEngine.NewRangeError($"The normalization form should be one of NFC, NFD, NFKC, NFKD."),
         };
+
+        return new JSString(NormalizeText(@this, normalForm));
     }
+
+    // The string's code points in a normal form (UAX #15), Broiler.Unicode's over the pinned Unicode
+    // 17.0.0 tables (SJL-7.5), where it was the host's string.Normalize: a lone surrogate is a code point
+    // of class 0 without a decomposition and passes through (N1), Unicode 16's and 17's decompositions
+    // are known (N2), and the result does not depend on the host's ICU or on invariant globalization
+    // (N3). This engine's length policy: a result longer than MaximumLength is a RangeError.
+    internal static string NormalizeText(string text, NormalForm form)
+        => JSUnicode.Normalization.Transform(text, form, MaximumLength, null, out var result) == UnicodeStatus.Success
+            ? result!
+            : throw JSEngine.NewRangeError("Invalid string length");
 
     [JSPrototypeMethod]
     [JSExport("padEnd", Length = 1)]

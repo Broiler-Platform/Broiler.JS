@@ -15,6 +15,7 @@ using Broiler.JavaScript.BuiltIns.Temporal;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
+using Broiler.Unicode.Algorithms;
 using UnicodeCldr.LocaleData;
 using Broiler.ECMAScript.Numbers;
 
@@ -6342,10 +6343,11 @@ public class JSIntlCollator : JSObject
         // NFD (canonical decomposition) folds the orderings together before the locale-aware
         // collation runs, matching the spec's "canonically equivalent strings compare equal"
         // requirement (test262 intl402/Collator/prototype/compare/canonically-equivalent-strings).
-        if (!left.IsNormalized(NormalizationForm.FormD))
-            left = left.Normalize(NormalizationForm.FormD);
-        if (!right.IsNormalized(NormalizationForm.FormD))
-            right = right.Normalize(NormalizationForm.FormD);
+        // The decomposition is Broiler.Unicode's (SJL-7.5), which passes a lone surrogate through
+        // where the host's threw (N1) and answers a string already in NFD as itself; the collation
+        // that follows is still the host's (SJL-17).
+        left = String.JSString.NormalizeText(left, NormalForm.Nfd);
+        right = String.JSString.NormalizeText(right, NormalForm.Nfd);
 
         var options = CompareOptions.None;
         if (sensitivity == "base")

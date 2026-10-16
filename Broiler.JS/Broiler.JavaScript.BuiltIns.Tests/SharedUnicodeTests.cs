@@ -61,4 +61,39 @@ public class SharedUnicodeTests
     [InlineData("Object.getOwnPropertyDescriptor(RegExp, '$&').get.toString()", "function get () { [native code] }")]
     public void A_native_function_s_name_is_an_identifier_name(string expression, string expected)
         => Assert.Equal(expected, Eval(expression));
+
+    // ---- normalization (rows N1 and N2) ----------------------------------------------------------------
+
+    // N1: a lone surrogate is a code point of class 0 without a decomposition, and passes through, where
+    // the host's normalizer threw; the collator's decomposition, which localeCompare reaches, likewise.
+    [Theory]
+    [InlineData("'\\uD800'.normalize() === '\\uD800'")]
+    [InlineData("'a\\uDC00\\u0301'.normalize('NFD') === 'a\\uDC00\\u0301'")]
+    [InlineData("'\\u00E9\\uD800'.normalize('NFD') === 'e\\u0301\\uD800'")]
+    [InlineData("'\\uDBFF'.normalize('NFKC') === '\\uDBFF'")]
+    [InlineData("'\\uD800'.localeCompare('\\uD800') === 0")]
+    [InlineData("new Intl.Collator().compare('a\\uDC00', 'a\\uDC00') === 0")]
+    [InlineData("'a\\uD800'.localeCompare('b') < 0")]
+    public void A_lone_surrogate_passes_through(string expression) => Assert.Equal("true", Eval(expression));
+
+    // N2: Unicode 16's decompositions, from the pinned data, where the host's ICU (Unicode 15.1) left them.
+    [Theory]
+    [InlineData("'\\u{105C9}'.normalize('NFD') === '\\u{105D2}\\u0307'")]
+    [InlineData("'\\u{11383}'.normalize('NFD') === '\\u{11382}\\u{113C9}'")]
+    [InlineData("'\\u{1611E}\\u{1611E}'.normalize('NFC') === '\\u{16121}'")]
+    [InlineData("'\\u{105D2}\\u0307'.normalize() === '\\u{105C9}'")]
+    public void Unicode_16_decompositions_are_known(string expression) => Assert.Equal("true", Eval(expression));
+
+    // N4 and N5 hold: the specification's answers, and the form is checked before the text.
+    [Theory]
+    [InlineData("'\\u00E9'.normalize('NFD') === 'e\\u0301'")]
+    [InlineData("'e\\u0301'.normalize() === '\\u00E9'")]
+    [InlineData("'\\uFB01'.normalize('NFKC') === 'fi'")]
+    [InlineData("'\\uAC00'.normalize('NFD') === '\\u1100\\u1161'")]
+    [InlineData("'\\u1100\\u1161'.normalize('NFC') === '\\uAC00'")]
+    public void The_specification_s_answers_hold(string expression) => Assert.Equal("true", Eval(expression));
+
+    [Fact]
+    public void An_unknown_form_is_a_RangeError_before_the_text_is_read()
+        => Assert.Equal("RangeError", ErrorName("'\\uD800'.normalize('nfc')"));
 }
