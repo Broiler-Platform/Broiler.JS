@@ -7153,37 +7153,8 @@ public class JSIntlDateTimeFormat : JSObject
             return dayPeriodParts;
         }
 
-        var fields = @this.ResolveFields(clipped);
-
-        // minute + second (optionally with fractionalSecondDigits), no hour/date
-        // fields: render "mm:ss[.fff]" as typed parts, from the same zoned fields
-        // as the pattern below, so the minute is the format's time zone's.
-        if (@this.options != null
-            && !@this.options[MinuteKey].IsUndefined
-            && !@this.options[SecondKey].IsUndefined
-            && @this.options[HourKey].IsUndefined)
-        {
-            var timeParts = CreateArray();
-            AddDateTimePart(timeParts, "minute", fields.Minute.ToString("D2", CultureInfo.InvariantCulture));
-            AddDateTimePart(timeParts, "literal", ":");
-            AddDateTimePart(timeParts, "second", fields.Second.ToString("D2", CultureInfo.InvariantCulture));
-
-            var fractionalSecondDigits = @this.options[FractionalSecondDigitsKey];
-            if (!fractionalSecondDigits.IsUndefined)
-            {
-                var digits = (int)fractionalSecondDigits.DoubleValue;
-                if (digits >= 1 && digits <= 3)
-                {
-                    AddDateTimePart(timeParts, "literal", ".");
-                    AddDateTimePart(timeParts, "fractionalSecond",
-                        fields.Millisecond.ToString("D3", CultureInfo.InvariantCulture).Substring(0, digits));
-                }
-            }
-
-            return timeParts;
-        }
-
         var pattern = @this.ResolveEnginePattern();
+        var fields = @this.ResolveFields(clipped);
         var engineParts = JSIntlDateTimeFormatEngine.FormatToParts(pattern, in fields, @this.FractionalSecondDigits(), null);
         return PartsArray(@this.MapNumbering(engineParts));
     }
@@ -7222,14 +7193,6 @@ public class JSIntlDateTimeFormat : JSObject
             }
         }
         return mapped;
-    }
-
-    private static void AddDateTimePart(JSValue parts, string type, string value)
-    {
-        var part = new JSObject();
-        part[KeyStrings.GetOrCreate("type")] = CreateString(type);
-        part[KeyStrings.GetOrCreate("value")] = CreateString(value);
-        parts.AddArrayItem(part);
     }
 
     public static JSValue ResolvedOptionsPrototype(in Arguments a)
