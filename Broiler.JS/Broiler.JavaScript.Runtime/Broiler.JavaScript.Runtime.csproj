@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- The Unicode area's algorithms (milestone SJL-7.5), over the tables this assembly embeds
+         (Unicode/JSUnicodeTableData.g.cs), for the parser, the runtime and the built-ins. -->
+    <PackageReference Include="Broiler.Unicode.Algorithms" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Broiler.ECMAScript\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Ast\Broiler.JavaScript.Ast.csproj" />
     <ProjectReference Include="..\Broiler.JavaScript.Expressions\Broiler.JavaScript.Expressions.csproj" />
