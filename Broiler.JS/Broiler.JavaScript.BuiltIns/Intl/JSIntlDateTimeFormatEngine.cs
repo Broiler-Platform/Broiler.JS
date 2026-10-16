@@ -434,7 +434,25 @@ internal static class JSIntlDateTimeFormatEngine
             // layout: after a date ("MMM d" -> "MMM d G", "Oct 16 AD"), and ahead of a time alone,
             // joined as a date is ("G, h:mm a", "AD, 12:03 PM"). An era-using calendar's own era
             // still needs a year.
-            datePattern = datePattern != null ? datePattern + " " + eraTok : eraTok;
+            //
+            // A lone day, month or weekday beside an era of the default short width is appended to
+            // the era with CLDR's en appendItems, as V8 (ICU) writes it: a day or month as
+            // "{0} ({2}: {1})" ("AD (day: 16)", "AD (month: Oct)"), a weekday as "{0} {1}"
+            // ("AD Fri"). The field names are en's, as this engine's other names are. With a long or
+            // narrow era ICU's skeleton matching mostly keeps the field first ("16 Anno Domini"), as
+            // the date layout above does.
+            var shortEra = eraStyle is null or "short";
+            var loneField = datePattern == null || !shortEra ? null
+                : hasDay && !hasMonth && !hasWeekday ? "day"
+                : hasMonth && !hasDay && !hasWeekday ? "month"
+                : hasWeekday && !hasDay && !hasMonth ? "weekday"
+                : null;
+            datePattern = loneField switch
+            {
+                "day" or "month" => $"{eraTok} '({loneField}: '{datePattern}')'",
+                "weekday" => $"{eraTok} {datePattern}",
+                _ => datePattern != null ? datePattern + " " + eraTok : eraTok,
+            };
         }
 
         string combined = (datePattern, timePattern) switch

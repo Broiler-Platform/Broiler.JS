@@ -6,9 +6,10 @@ namespace Broiler.JavaScript.BuiltIns.Tests;
 // Intl.DateTimeFormat wrote the `era` option only beside a year: the pattern appended its 'G' field
 // to a date that showed one, so `{ era, month, day }` and `{ era, minute, second }` formatted with no
 // era at all, in format and formatToParts alike. The era is now written beside a format with no year
-// too, in CLDR's en layout: after a date ("Oct 16 AD") and ahead of a time alone ("AD, 03:05"). The
-// expected strings are V8's (ICU 77.1, CLDR 47) for the same options. An era-using calendar's own
-// era, written without the option, still needs a year.
+// too, in CLDR's en layout: after a date ("Oct 16 AD") and ahead of a time alone ("AD, 03:05"); a
+// lone day, month or weekday beside a short era is appended to the era ("AD (day: 16)", "AD Fri").
+// The expected strings are V8's (ICU 77.1, CLDR 47) for the same options. An era-using calendar's
+// own era, written without the option, still needs a year.
 public class DateTimeFormatEraWithoutYearTests
 {
     // 2026-10-16T12:03:05.678Z, a Friday.
@@ -42,9 +43,28 @@ public class DateTimeFormatEraWithoutYearTests
     [InlineData("{ era: 'short', month: 'numeric', day: 'numeric' }", "10/16 AD")]
     [InlineData("{ era: 'short', weekday: 'short', month: 'short', day: 'numeric' }", "Fri, Oct 16 AD")]
     [InlineData("{ era: 'narrow', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }", "Oct 16 A, 12:03 PM")]
-    // A lone day takes the same layout; CLDR's en appends it instead ("AD (day: 16)"), which this
-    // engine's patterns do not model.
-    [InlineData("{ era: 'short', day: 'numeric' }", "16 AD")]
+    // A lone day or month beside a short era is appended to it, "{0} ({2}: {1})"; a lone weekday
+    // follows it, "{0} {1}". Each joins a time as a date does.
+    [InlineData("{ era: 'short', day: 'numeric' }", "AD (day: 16)")]
+    [InlineData("{ era: 'short', day: '2-digit' }", "AD (day: 16)")]
+    [InlineData("{ era: 'short', month: 'long' }", "AD (month: October)")]
+    [InlineData("{ era: 'short', month: 'short' }", "AD (month: Oct)")]
+    [InlineData("{ era: 'short', month: 'narrow' }", "AD (month: O)")]
+    [InlineData("{ era: 'short', month: 'numeric' }", "AD (month: 10)")]
+    [InlineData("{ era: 'short', month: '2-digit' }", "AD (month: 10)")]
+    [InlineData("{ era: 'short', weekday: 'short' }", "AD Fri")]
+    [InlineData("{ era: 'short', weekday: 'long' }", "AD Friday")]
+    [InlineData("{ era: 'short', weekday: 'narrow' }", "AD F")]
+    [InlineData("{ era: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }", "AD (day: 16), 12:03 PM")]
+    [InlineData("{ era: 'short', month: 'short', hour: 'numeric', minute: '2-digit' }", "AD (month: Oct), 12:03 PM")]
+    [InlineData("{ era: 'short', weekday: 'short', hour: 'numeric', minute: '2-digit' }", "AD Fri, 12:03 PM")]
+    // Beside a long or narrow era the field comes first, as ICU's skeleton matching mostly has it.
+    [InlineData("{ era: 'long', day: 'numeric' }", "16 Anno Domini")]
+    [InlineData("{ era: 'long', month: 'short' }", "Oct Anno Domini")]
+    [InlineData("{ era: 'long', weekday: 'short' }", "Fri Anno Domini")]
+    [InlineData("{ era: 'narrow', day: 'numeric' }", "16 A")]
+    [InlineData("{ era: 'narrow', month: 'long' }", "October A")]
+    [InlineData("{ era: 'narrow', weekday: 'long' }", "Friday A")]
     // With a year, unchanged.
     [InlineData("{ era: 'short', year: 'numeric' }", "2026 AD")]
     [InlineData("{ era: 'short' }", "10/16/2026 AD")]
@@ -64,11 +84,16 @@ public class DateTimeFormatEraWithoutYearTests
             Parts("en", "{ era: 'short', minute: '2-digit', second: '2-digit' }"));
         Assert.Equal("month=Oct|literal= |day=16|literal= |era=AD",
             Parts("en", "{ era: 'short', month: 'short', day: 'numeric' }"));
+        Assert.Equal("era=AD|literal= (day: |day=16|literal=)",
+            Parts("en", "{ era: 'short', day: 'numeric' }"));
+        Assert.Equal("era=AD|literal= (month: |month=October|literal=)",
+            Parts("en", "{ era: 'short', month: 'long' }"));
     }
 
     [Theory]
     // The option writes an era-using calendar's era too; without it, that era still needs a year.
     [InlineData("en-u-ca-buddhist", "{ era: 'short', month: 'short', day: 'numeric' }", "Oct 16 BE")]
+    [InlineData("en-u-ca-buddhist", "{ era: 'short', day: 'numeric' }", "BE (day: 16)")]
     [InlineData("en-u-ca-buddhist", "{ month: 'short', day: 'numeric' }", "Oct 16")]
     [InlineData("en-u-ca-buddhist", "{ hour: 'numeric', minute: '2-digit' }", "12:03 PM")]
     public void An_era_using_calendar_s_era_needs_the_option_or_a_year(string locale, string options, string expected)
