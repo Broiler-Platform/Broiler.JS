@@ -11,7 +11,8 @@ namespace Broiler.JavaScript.BuiltIns.Tests;
 // `era`, and the 'G' formatter ignored its width (always "AD"). So
 // `new Intl.DateTimeFormat("en", { era: "narrow" })` produced "M/d/y" with no era
 // part. The era option now appends the era field (when the pattern shows a year) at
-// the requested width, and the gregorian era renders AD/BC narrow/short/long.
+// the requested width, and the gregorian era renders AD/BC narrow/short/long. It is
+// written beside a format with no year too (DateTimeFormatEraWithoutYearTests).
 public class Issue818EraOptionTests
 {
     private static string Eval(string code)
