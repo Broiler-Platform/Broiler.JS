@@ -7,7 +7,8 @@ namespace Broiler.JavaScript.BuiltIns.Tests;
 // to a date that showed one, so `{ era, month, day }` and `{ era, minute, second }` formatted with no
 // era at all, in format and formatToParts alike. The era is now written beside a format with no year
 // too, in CLDR's en layout: after a date ("Oct 16 AD") and ahead of a time alone ("AD, 03:05"); a
-// lone day, month or weekday beside a short era is appended to the era ("AD (day: 16)", "AD Fri").
+// lone day, month or weekday as ICU's pattern generator lays it out ("AD (day: 16)", "AD Fri",
+// "16 Anno Domini"), by the nearer of the era's and the field's skeletons.
 // The expected strings are V8's (ICU 77.1, CLDR 47) for the same options. An era-using calendar's
 // own era, written without the option, still needs a year.
 public class DateTimeFormatEraWithoutYearTests
@@ -43,33 +44,55 @@ public class DateTimeFormatEraWithoutYearTests
     [InlineData("{ era: 'short', month: 'numeric', day: 'numeric' }", "10/16 AD")]
     [InlineData("{ era: 'short', weekday: 'short', month: 'short', day: 'numeric' }", "Fri, Oct 16 AD")]
     [InlineData("{ era: 'narrow', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }", "Oct 16 A, 12:03 PM")]
-    // A lone day or month beside a short era is appended to it, "{0} ({2}: {1})"; a lone weekday
-    // follows it, "{0} {1}". Each joins a time as a date does.
-    [InlineData("{ era: 'short', day: 'numeric' }", "AD (day: 16)")]
-    [InlineData("{ era: 'short', day: '2-digit' }", "AD (day: 16)")]
-    [InlineData("{ era: 'short', month: 'long' }", "AD (month: October)")]
-    [InlineData("{ era: 'short', month: 'short' }", "AD (month: Oct)")]
-    [InlineData("{ era: 'short', month: 'narrow' }", "AD (month: O)")]
-    [InlineData("{ era: 'short', month: 'numeric' }", "AD (month: 10)")]
-    [InlineData("{ era: 'short', month: '2-digit' }", "AD (month: 10)")]
-    [InlineData("{ era: 'short', weekday: 'short' }", "AD Fri")]
-    [InlineData("{ era: 'short', weekday: 'long' }", "AD Friday")]
-    [InlineData("{ era: 'short', weekday: 'narrow' }", "AD F")]
+    // A lone field joins a time as a date does.
     [InlineData("{ era: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }", "AD (day: 16), 12:03 PM")]
     [InlineData("{ era: 'short', month: 'short', hour: 'numeric', minute: '2-digit' }", "AD (month: Oct), 12:03 PM")]
     [InlineData("{ era: 'short', weekday: 'short', hour: 'numeric', minute: '2-digit' }", "AD Fri, 12:03 PM")]
-    // Beside a long or narrow era the field comes first, as ICU's skeleton matching mostly has it.
-    [InlineData("{ era: 'long', day: 'numeric' }", "16 Anno Domini")]
-    [InlineData("{ era: 'long', month: 'short' }", "Oct Anno Domini")]
-    [InlineData("{ era: 'long', weekday: 'short' }", "Fri Anno Domini")]
-    [InlineData("{ era: 'narrow', day: 'numeric' }", "16 A")]
-    [InlineData("{ era: 'narrow', month: 'long' }", "October A")]
-    [InlineData("{ era: 'narrow', weekday: 'long' }", "Friday A")]
+    [InlineData("{ era: 'long', day: '2-digit', hour: 'numeric', minute: '2-digit' }", "Anno Domini (day: 16), 12:03 PM")]
+    [InlineData("{ era: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' }", "16 Anno Domini, 12:03 PM")]
+    [InlineData("{ era: 'narrow', weekday: 'narrow', hour: 'numeric', minute: '2-digit' }", "A F, 12:03 PM")]
     // With a year, unchanged.
     [InlineData("{ era: 'short', year: 'numeric' }", "2026 AD")]
     [InlineData("{ era: 'short' }", "10/16/2026 AD")]
     public void The_era_is_written_beside_a_format_with_no_year(string options, string expected)
         => Assert.Equal(expected, Format("en", options));
+
+    // A lone day, month or weekday beside each era width, all 30 of V8's layouts: the era first
+    // where ICU starts from it, the day or month appended "{0} ({2}: {1})" and a weekday "{0} {1}";
+    // the field first where its own skeleton is nearer the requested width.
+    [Theory]
+    [InlineData("short", "day: 'numeric'", "AD (day: 16)")]
+    [InlineData("short", "day: '2-digit'", "AD (day: 16)")]
+    [InlineData("short", "month: 'long'", "AD (month: October)")]
+    [InlineData("short", "month: 'short'", "AD (month: Oct)")]
+    [InlineData("short", "month: 'narrow'", "AD (month: O)")]
+    [InlineData("short", "month: 'numeric'", "AD (month: 10)")]
+    [InlineData("short", "month: '2-digit'", "AD (month: 10)")]
+    [InlineData("short", "weekday: 'short'", "AD Fri")]
+    [InlineData("short", "weekday: 'long'", "AD Friday")]
+    [InlineData("short", "weekday: 'narrow'", "AD F")]
+    [InlineData("long", "day: 'numeric'", "16 Anno Domini")]
+    [InlineData("long", "day: '2-digit'", "Anno Domini (day: 16)")]
+    [InlineData("long", "month: 'long'", "Anno Domini (month: October)")]
+    [InlineData("long", "month: 'short'", "Oct Anno Domini")]
+    [InlineData("long", "month: 'narrow'", "Anno Domini (month: O)")]
+    [InlineData("long", "month: 'numeric'", "10 Anno Domini")]
+    [InlineData("long", "month: '2-digit'", "Anno Domini (month: 10)")]
+    [InlineData("long", "weekday: 'short'", "Fri Anno Domini")]
+    [InlineData("long", "weekday: 'long'", "Anno Domini Friday")]
+    [InlineData("long", "weekday: 'narrow'", "Anno Domini F")]
+    [InlineData("narrow", "day: 'numeric'", "16 A")]
+    [InlineData("narrow", "day: '2-digit'", "16 A")]
+    [InlineData("narrow", "month: 'long'", "October A")]
+    [InlineData("narrow", "month: 'short'", "Oct A")]
+    [InlineData("narrow", "month: 'narrow'", "A (month: O)")]
+    [InlineData("narrow", "month: 'numeric'", "10 A")]
+    [InlineData("narrow", "month: '2-digit'", "10 A")]
+    [InlineData("narrow", "weekday: 'short'", "Fri A")]
+    [InlineData("narrow", "weekday: 'long'", "Friday A")]
+    [InlineData("narrow", "weekday: 'narrow'", "A F")]
+    public void A_lone_field_is_laid_out_as_ICU_lays_it_out(string era, string field, string expected)
+        => Assert.Equal(expected, Format("en", $"{{ era: '{era}', {field} }}"));
 
     [Theory]
     [InlineData("{ era: 'short', month: 'short', day: 'numeric' }", "Jan 1 BC")]

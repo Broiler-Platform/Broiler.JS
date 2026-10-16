@@ -18,15 +18,18 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
   formats as `"Oct 16 AD"` where it was `"Oct 16"`, and leads a time alone, joined as a date is:
   `{ era: "short", minute: "2-digit", second: "2-digit" }` is `"AD, 03:05"`, where it was `"03:05"`.
   These are CLDR's en layouts, and V8's (ICU 77.1, CLDR 47) for the same options.
-- **A lone day, month or weekday beside a short era is appended to the era**, with CLDR's en
-  appendItems as V8 writes them: `{ era: "short", day: "numeric" }` is `"AD (day: 16)"`,
-  `{ era: "short", month: "short" }` is `"AD (month: Oct)"`, and `{ era: "short", weekday: "short" }` is
-  `"AD Fri"`; beside a time it joins as a date does (`"AD (day: 16), 12:03 PM"`). The field names are
-  en's in every locale, as this engine's month, weekday and era names are. Beside a long or narrow era
-  the field comes first (`"16 Anno Domini"`, `"October A"`), as ICU's skeleton matching mostly has it;
-  ICU also appends for some of those widths and styles (`{ era: "long", day: "2-digit" }` is
-  `"Anno Domini (day: 16)"` in V8, `"16 Anno Domini"` here), and joins a long month to a time with
-  `" at "`, which this engine's patterns do not model.
+- **A lone day, month or weekday beside the era is laid out as ICU's pattern generator lays it out**,
+  V8's layouts for all 30 pairs of an era width and a day, month or weekday style. CLDR's en has no
+  skeleton with an era and such a field, so ICU starts from the nearer, by its width distance, of the
+  era alone and the field's own skeleton (`d`; `M` or `MMM`; `E`), the era on a tie, and appends the
+  other with en's appendItems. From the era, a day or month is `"{0} ({2}: {1})"` and a weekday
+  `"{0} {1}"`: `{ era: "short", day: "numeric" }` is `"AD (day: 16)"`, `{ era: "short", weekday: "short" }`
+  `"AD Fri"` and `{ era: "long", day: "2-digit" }` `"Anno Domini (day: 16)"`. From the field, the era
+  follows it, as after a date: `{ era: "long", day: "numeric" }` is `"16 Anno Domini"` and
+  `{ era: "narrow", month: "long" }` `"October A"`. Beside a time the result joins as a date does
+  (`"AD (day: 16), 12:03 PM"`). The field names are en's in every locale, as this engine's month,
+  weekday and era names are. V8 joins a long month to a time with `" at "` (`"AD (month: October) at
+  12:03 PM"`), as it does any long date, which this engine's patterns do not model.
 
 An era-using calendar's era written without the option, such as `buddhist`'s `BE`, still needs a year,
 as in CLDR; a Temporal type with no era, `PlainTime` or `PlainMonthDay`, still drops the option.
