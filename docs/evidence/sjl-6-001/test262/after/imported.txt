@@ -1,0 +1,6 @@
+# imported: the after run was taken by .github/workflows/test262-evidence.yml, not locally
+workflow run: https://github.com/Broiler-Platform/Broiler.JS/actions/runs/38888323117 (attempt 1), dispatched 2026-10-16T10:36:17Z from main at 4d70821e50cfbf1823d4a309de63b7d8188f04aa, completed 2026-10-16T12:01:52Z
+tested commit: 4d70821e50cfbf1823d4a309de63b7d8188f04aa, whose product sources are the cut-over commit 31c04809337e9b60e0480782a068438415cf8e07's but for the files identity.txt lists
+configuration: part A's, the runner's own zone (time_zone empty: TZ unset, UTC)
+artifact: test262-evidence, id 12045060362, 3,187,458 bytes, sha256 81fc45491295edf949596698ad81b0b1605ba57e19444b935ea6364e566585dd (the zip as downloaded)
+retained: every file of the artifact, unchanged, in this directory (26 entries); this file is the only one added
