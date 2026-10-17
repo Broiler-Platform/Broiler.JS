@@ -99,7 +99,7 @@ internal static class ListExtensions
         for (; i < length; i++)
         {
             var ch = @this[i];
-            d[i] = char.ToLower(ch);
+            d[i] = char.ToLowerInvariant(ch);
             if (!char.IsUpper(ch))
             {
                 i++;

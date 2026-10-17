@@ -10,6 +10,23 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### The CLR binding's names do not read the host's culture (2026-10-17)
+
+- **.NET member names and the keys matched to them are now lower-cased with invariant casing.** This
+  covers a .NET member's script name and a script object's key matched to a .NET property.
+  - **Before:** `char.ToLower` and `string.ToLower()` read the current culture. Under `tr-TR` or `az`, a
+    member named `ID` became `ıd` (dotless i), and converting `({ id: 7 })` to a type with a property `ID`
+    left that property unset.
+  - **The sites:**
+    - `ToCamelCase` in `Broiler.JavaScript.Runtime`'s `StringExtensions`, in `StringSpan` and in the class
+      generator's `ListExtensions`;
+    - `StringSpan.ToLower` and `StringSpanExtensions`' snake-case names;
+    - the unmarshalling of a script object into a .NET object (`CoreInternalHelpers`, `MarshalExtensions`);
+    - `KeyValueStore`'s header names.
+  - `ClrType.getMethod` needed no change: reflection's `IgnoreCase` does not read the culture.
+- The duplicate search of bundle `sjl-7-001` (section 9) found these sites. `ClrBindingCultureTests`
+  holds the cases, run under `tr-TR`.
+
 ### The Unicode area moves to Broiler.Unicode's packages (2026-10-16, milestone SJL-7.5)
 
 The Unicode area is Broiler.Unicode's: its code packages `Broiler.Unicode.Algorithms` and
