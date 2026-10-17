@@ -1,0 +1,141 @@
+rule commit: 3916bd2b13f672239ae7a0e1498f98aff0c2f10d
+arm B: 3916bd2b13f672239ae7a0e1498f98aff0c2f10d
+arm B is the rule's commit: True
+arm A and A-again: a34b1f78cc4bda6bcdfe68ed943af6cc069c1b71
+arm A is the after commit: True
+bench tree clean: True
+after tree clean: True
+UnicodeBenchmarks.cs, Program.cs and BenchmarkConfiguration.cs at A as the rule's commit has them (git): True
+the same three files byte-identical in the two checkouts: True
+  cc83f2dcd21afea4ac7f83bf0a95da8d99298cc1ef5d39093368869223f5f222  Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/UnicodeBenchmarks.cs
+  a1d615904d3c645e0bd2bda5de404a05a00e2e86e8b8de0ae16ebb1e14a3c77b  Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/Program.cs
+  805473f7d3d111b2b0a4b163416df1cbd7ce1a684a95ecdaf2d0376bb19b0096  Broiler.JS/benchmarks/Broiler.JavaScript.Engine.Benchmarks/BenchmarkConfiguration.cs
+files of the benchmark project changed between the arms: none
+arm B binaries:
+  5a05c522b4ff2998336f19a718d0f781a4c3d51f13d6117f75c5356e3c9ff12a  BenchmarkDotNet.Annotations.dll
+  e89d53c63ed7c24060b35ae7f95a88543dbc4c9fd7e78427b16d1f92cf071bef  BenchmarkDotNet.dll
+  fb9774f50ff109a0eb5140cfbaf66b97ca7d1d2b88deec207dca4be18911f9ce  Broiler.ECMAScript.Algorithms.dll
+  f7c547ed5ebbc3b2394187786a9a9f656bfdf7fda6a35956c943241c2f0fcc80  Broiler.JavaScript.All.dll
+  5f5f1ed619a07661c0db881f28fb3c805cfd979c315791e7465c781b0b9dcc49  Broiler.JavaScript.Ast.dll
+  35d586f2b325ccc80434436c47bbe492e5e9d64ef27f6c1b788827f3bb2ec5ee  Broiler.JavaScript.BuiltIns.dll
+  57eb3ba89dbdfc97674aeeeeb819e0752c51009c2c13ab5c6d40a9e776cc125a  Broiler.JavaScript.Clr.dll
+  301fedcfdc5dd7e5b1db8a55d165efbbcef0c0fa65a5599abd771258819b6303  Broiler.JavaScript.Compiler.dll
+  19c3ef4ac154ff24f80b84fc87bbbd6cafa96c86d09ca97e594e07324631fc1e  Broiler.JavaScript.Debugger.dll
+  c459a78a886dafa7c9edb31f2ad0bce6656d9f124ba2735d2664cfb6e0daf8c4  Broiler.JavaScript.Engine.Benchmarks.dll
+  5730c9d12b76f0d7f16d4eacb2480caa3bc887ab2825637e8201be10de98c69e  Broiler.JavaScript.Engine.dll
+  031a7b78c9464e36e4375d02c2f98ecadfadb11477f0ad7a7f1ad1f658468cf9  Broiler.JavaScript.ExpressionCompiler.dll
+  311454cefa21485560684860f14e60eac21b0d5311f77962ffc5420ffc3d88d1  Broiler.JavaScript.Expressions.dll
+  d990ee86df769a054de3504e466372a18ad6898f7c07ee646215a3f44eb6195e  Broiler.JavaScript.Extensions.dll
+  32bf1f9c0fdab011b0780bf9acc9c8b8f47f1fcb403f378622627559e5b07f2b  Broiler.JavaScript.Globals.dll
+  b29db906f8b9fd36fd768a2fe7aa72b20e1c56ed98ff2ccc0bbfdc0267fcf0a4  Broiler.JavaScript.LinqExpressions.dll
+  a2072dc635b6ba7555bd47b5c3c486b21ef4436e01c33969fe770b2e89fcd6dc  Broiler.JavaScript.ModuleExtensions.dll
+  ec9004d1143263069aeb1057cd589ddac94d673df1f230eecdb05c2334264046  Broiler.JavaScript.Modules.dll
+  be440898ea4cf42b905b1a560956d47169ba714db00e3aa61ebd8b7fa5160409  Broiler.JavaScript.Parser.dll
+  08f449a83af5cf1c7a653d1455d1695ca2ccbf90db4c476da76f3b11cc9ddb9c  Broiler.JavaScript.Runtime.dll
+  4946c5c2817e6451aa8b2b9eebc0581fd82859e796b5f04aa08c603cca09f539  Broiler.JavaScript.Storage.dll
+  b6d4b0f744a061b750c1189acf716a82f3fff70a5c9025c73434764c387b6325  Broiler.Regex.dll
+  fad332af4ffc5fd9da4bb3f0a07b585b4bf40722522fdc82e48ba62ad9f94786  Broiler.Unicode.Properties.dll
+  8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad  CommandLine.dll
+  6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac  Dia2Lib.dll
+  6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965  Gee.External.Capstone.dll
+  0763eaf4a7a3a7798deb16f7138d454062868914a5226ef2bf512d3d19662714  Iced.dll
+  3815a1da8afeda653a7a5c2a3df98bef61416552a5d96cd32782ff22b29e5cce  Microsoft.Bcl.AsyncInterfaces.dll
+  e39e962775915c4a74b1b29ed664f352d7edacd3e8f798f11a482f0057c08820  Microsoft.CodeAnalysis.CSharp.dll
+  de51f515d2d8d7515db4c60f1f40fae351faf14a4eeea68635f19f9ef11efc92  Microsoft.CodeAnalysis.dll
+  a6d75998956876dc76610e15b3fb18bb74479338e69034a0c0364176b159a310  Microsoft.Diagnostics.FastSerialization.dll
+  7baec46ac76a8f893348a38fab108ce53a1f3baac60a99de0c5549f702fad50d  Microsoft.Diagnostics.NETCore.Client.dll
+  600b481a55337213e91ff0494a9de338aff303fda3b581e569862c4869d442c3  Microsoft.Diagnostics.Runtime.dll
+  be9a0a5d2e08eca7c23cbb8ae0573e993a25ca1005b9ce296cc32661ceb3a063  Microsoft.Diagnostics.Tracing.TraceEvent.dll
+  b1f4ad169fb192747f5d2d3111c01db4257e3ec1f7f18f301f7fc4be3b869ff3  Microsoft.DotNet.PlatformAbstractions.dll
+  4cb5a4f1cedfb8fdee5de6de23b0d29ac86d9ce24dabfb9924146c7d70f3b78d  Microsoft.Extensions.Configuration.Abstractions.dll
+  43cae0256a8bc4fd190b8397862a852ab1016fdc0c0ed6ab61c999a1a7396fbf  Microsoft.Extensions.Configuration.Binder.dll
+  3d5d8fddc11b27573942d1feba5d8ac91e2504c82ad489003acf3e17fdb130ec  Microsoft.Extensions.Configuration.dll
+  901b7c5727f29fa4f55eb2cf9f1a44d15afd02f1d14103eb08966de31f5bb12f  Microsoft.Extensions.DependencyInjection.Abstractions.dll
+  8c7763fce381531dda9e9d6b533599e789f705da613ac711b7c82f8c08185bb4  Microsoft.Extensions.Logging.Abstractions.dll
+  aa5217fad65fd54f843c348160e02abce8bb321f0714577754a5995d3489896a  Microsoft.Extensions.Logging.dll
+  1323345e21f12e5c0cd90ed2a96fc497010a94667ea4fdaf4c9bbbdb1610f148  Microsoft.Extensions.Options.dll
+  fa58254542604e4c90e9876b5a5c7653d6ac8a3164102e5604981fba6660f750  Microsoft.Extensions.Primitives.dll
+  c35c348400c44358fc863dabeba25e3c8690dd8c958b0f2a8dfbf575d778111a  Perfolizer.dll
+  dd8764e3eeeebbce505c96f3c0413f2c6c506968c099da61586ff91f1b441b4b  System.CodeDom.dll
+  1ec7837b8c7f3098c4549f7fd06136bd4ff7cad39e807fa0bea9d2ba48281e85  System.Management.dll
+  6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5  TraceReloggerLib.dll
+  8250a77c32f283e24035406ed8dce934f68d353154d646bde03468881c0879e3  UnicodeCldr.LocaleData.dll
+  d3db8abaa3bf41536752acd89ef08795f0855f6db78035d9b5eafde9abfec268  UnicodeEmoji.StringProperties.dll
+arm A and A-again (one build) binaries:
+  5a05c522b4ff2998336f19a718d0f781a4c3d51f13d6117f75c5356e3c9ff12a  BenchmarkDotNet.Annotations.dll
+  e89d53c63ed7c24060b35ae7f95a88543dbc4c9fd7e78427b16d1f92cf071bef  BenchmarkDotNet.dll
+  8e0e2f5ac64cbf92197feff524764df9b7e00b23e6fa9a1c2e40e34b13ffe2f2  Broiler.ECMAScript.Algorithms.dll
+  ae140998d8d69c8c36b288292939fb37c75555a8bdb7a591e61927501737a45a  Broiler.JavaScript.All.dll
+  3181eb51114e479fa937c0f301be0c17fc998047d7b86fb018cbbc3d80f644f3  Broiler.JavaScript.Ast.dll
+  80ba09d990abd69dd43e47c25aca2d4ed22f0c68b5795a0ada03f9885a3ebd4b  Broiler.JavaScript.BuiltIns.dll
+  c707ba7998fdd85b21903a2f17bfb6f8af069eafee4d2b635f8016853e919190  Broiler.JavaScript.Clr.dll
+  0d1f1448b4c8e8655b6a87dd37c861b087b5bc2e2c75ed6e23621e537bec14f1  Broiler.JavaScript.Compiler.dll
+  e80e92885d74dbe9caf4229335ed6880698038049b693322adff09f8c1538e0e  Broiler.JavaScript.Debugger.dll
+  374999979f47a8b700e47c553948657ae0d4ce7f450f5a5e64992895dfe57c7b  Broiler.JavaScript.Engine.Benchmarks.dll
+  2acfb890d802576020356e344f69e5d85db2b7695a897cd5630411d825858e41  Broiler.JavaScript.Engine.dll
+  780195dbf6a683487d20863387fd54f69e9cdf3e8d9eaf369c3626da6049b4d0  Broiler.JavaScript.ExpressionCompiler.dll
+  99df9b361b2b72f45776daabd736a2ee000c44fe29d26444bfd46ee93b647f40  Broiler.JavaScript.Expressions.dll
+  8ac235d297fe827dc76d3e52fcbd20e13a03d200fab0d5e0c9848ebe25ff97c0  Broiler.JavaScript.Extensions.dll
+  ceed1a1a4265cacd853ca13395b58600e6c7cc5e11ccd3d9e239a31b708bd99f  Broiler.JavaScript.Globals.dll
+  d3f0b790581fa651e96c766c62c9f30c4a3d1a6a20c7bfa91ef3fe5e3898f6e8  Broiler.JavaScript.LinqExpressions.dll
+  09f69dc366d961de4ed2b3cfc02330db0ff87abc056798363063083c5bc003f7  Broiler.JavaScript.ModuleExtensions.dll
+  e95df79ab46b63facbb2af8968ca2e1aa5367df8dce57867dbac16cb178328dd  Broiler.JavaScript.Modules.dll
+  802f8148ac2979707f1825a818d01e0e87dfc681766504684e5f3b4701b397e8  Broiler.JavaScript.Parser.dll
+  6e67b953ebe1cb9b3b40724919b7d5b1a1dc65f5e384983fc699623c94cf68cd  Broiler.JavaScript.Runtime.dll
+  8b4a44a7364d45beb4e07f4d8aaf1b5c1dd0b7f9bc976bac01b9178a798cc6ba  Broiler.JavaScript.Storage.dll
+  b6d4b0f744a061b750c1189acf716a82f3fff70a5c9025c73434764c387b6325  Broiler.Regex.dll
+  35d119cc7331d3236b6c24e962def999fd5f31741d006a9ed9a8e925755e5cbb  Broiler.Unicode.Algorithms.dll
+  fad332af4ffc5fd9da4bb3f0a07b585b4bf40722522fdc82e48ba62ad9f94786  Broiler.Unicode.Properties.dll
+  6cf56128a1a836c8d4a218024f688dfb910133091fe8b93bdc83a5985234f806  Broiler.Unicode.Segmentation.dll
+  8a55501cd1a1590a4bd93a17c6fdd2c01a0ed5bff1aea9036bdc78d98c9a3fad  CommandLine.dll
+  6c4cac68010fe032218efe5e9fcf46eef9f77bfaa5f3bd33f03c5ff77d5a8fac  Dia2Lib.dll
+  6dfda67784598de9677173b89d0692593935f1a4024d36040c95dea48c1b5965  Gee.External.Capstone.dll
+  0763eaf4a7a3a7798deb16f7138d454062868914a5226ef2bf512d3d19662714  Iced.dll
+  3815a1da8afeda653a7a5c2a3df98bef61416552a5d96cd32782ff22b29e5cce  Microsoft.Bcl.AsyncInterfaces.dll
+  e39e962775915c4a74b1b29ed664f352d7edacd3e8f798f11a482f0057c08820  Microsoft.CodeAnalysis.CSharp.dll
+  de51f515d2d8d7515db4c60f1f40fae351faf14a4eeea68635f19f9ef11efc92  Microsoft.CodeAnalysis.dll
+  a6d75998956876dc76610e15b3fb18bb74479338e69034a0c0364176b159a310  Microsoft.Diagnostics.FastSerialization.dll
+  7baec46ac76a8f893348a38fab108ce53a1f3baac60a99de0c5549f702fad50d  Microsoft.Diagnostics.NETCore.Client.dll
+  600b481a55337213e91ff0494a9de338aff303fda3b581e569862c4869d442c3  Microsoft.Diagnostics.Runtime.dll
+  be9a0a5d2e08eca7c23cbb8ae0573e993a25ca1005b9ce296cc32661ceb3a063  Microsoft.Diagnostics.Tracing.TraceEvent.dll
+  b1f4ad169fb192747f5d2d3111c01db4257e3ec1f7f18f301f7fc4be3b869ff3  Microsoft.DotNet.PlatformAbstractions.dll
+  4cb5a4f1cedfb8fdee5de6de23b0d29ac86d9ce24dabfb9924146c7d70f3b78d  Microsoft.Extensions.Configuration.Abstractions.dll
+  43cae0256a8bc4fd190b8397862a852ab1016fdc0c0ed6ab61c999a1a7396fbf  Microsoft.Extensions.Configuration.Binder.dll
+  3d5d8fddc11b27573942d1feba5d8ac91e2504c82ad489003acf3e17fdb130ec  Microsoft.Extensions.Configuration.dll
+  901b7c5727f29fa4f55eb2cf9f1a44d15afd02f1d14103eb08966de31f5bb12f  Microsoft.Extensions.DependencyInjection.Abstractions.dll
+  8c7763fce381531dda9e9d6b533599e789f705da613ac711b7c82f8c08185bb4  Microsoft.Extensions.Logging.Abstractions.dll
+  aa5217fad65fd54f843c348160e02abce8bb321f0714577754a5995d3489896a  Microsoft.Extensions.Logging.dll
+  1323345e21f12e5c0cd90ed2a96fc497010a94667ea4fdaf4c9bbbdb1610f148  Microsoft.Extensions.Options.dll
+  fa58254542604e4c90e9876b5a5c7653d6ac8a3164102e5604981fba6660f750  Microsoft.Extensions.Primitives.dll
+  c35c348400c44358fc863dabeba25e3c8690dd8c958b0f2a8dfbf575d778111a  Perfolizer.dll
+  dd8764e3eeeebbce505c96f3c0413f2c6c506968c099da61586ff91f1b441b4b  System.CodeDom.dll
+  1ec7837b8c7f3098c4549f7fd06136bd4ff7cad39e807fa0bea9d2ba48281e85  System.Management.dll
+  6830c0f1d3f3c17719181e73dd5cfa8ccbb3f3c575329d2120576545103467b5  TraceReloggerLib.dll
+  8250a77c32f283e24035406ed8dce934f68d353154d646bde03468881c0879e3  UnicodeCldr.LocaleData.dll
+  d3db8abaa3bf41536752acd89ef08795f0855f6db78035d9b5eafde9abfec268  UnicodeEmoji.StringProperties.dll
+profile: baseline; repetitions per lane: 7; lanes: B, A, A-again, rotated by repetition: r0: B, A, A-again; r1: A, A-again, B; r2: A-again, B, A; r3: B, A, A-again; r4: A, A-again, B; r5: A-again, B, A; r6: B, A, A-again
+each run: *UnicodeBenchmarks*, all six workloads (Normalize, NormalizeControl, Casing, CasingControl, Identifiers, IdentifiersControl), each in BenchmarkDotNet's own child process; --unicode-answers before and after it
+lane record:
+  machine: x86_64; Linux-6.18.44-fc-v139-x86_64-with-glibc2.39; logical processors 4
+  cpu: Intel(R) Xeon(R) Processor @ 2.10GHz
+  memory: 16479424 kB
+  microcode: 0x1
+  lscpu: CPU(s):                                  4
+  lscpu: On-line CPU(s) list:                     0-3
+  lscpu: Thread(s) per core:                      1
+  lscpu: Core(s) per socket:                      4
+  lscpu: Socket(s):                               1
+  lscpu: Hypervisor vendor:                       KVM
+  lscpu: Virtualization type:                     full
+  lscpu: NUMA node(s):                            1
+  os: Ubuntu 24.04.5 LTS; kernel 6.18.44-fc-v139
+  governor: not exposed
+  thermal: not exposed
+  host ICU: libicuuc.so.74
+  environment: DOTNET_CLI_TELEMETRY_OPTOUT=1
+  environment: DOTNET_CLI_USE_MSBUILD_SERVER=0
+  environment: DOTNET_NOLOGO=1
+  environment: DOTNET_ROOT=/root/.dotnet
+  environment: LC_CTYPE=C.UTF-8
+lane: smoke - this machine is not recorded as a controlled lane as Measurement.md's section "Controlled lanes and effective configuration" requires; part B is void on it
+written: 2026-10-17T01:42:14Z, before the first run

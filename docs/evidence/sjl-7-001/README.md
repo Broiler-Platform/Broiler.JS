@@ -14,14 +14,15 @@ JSD-0074 and its correspondence from code, retained in Broiler.VM's bundle of th
 **Owner:** the Broiler.JS maintainer. One person holds every role (the programme's EX-30, recorded in
 Broiler.VM). **Reviewer:** none, and nothing here has been read by anyone but its author.
 
-**State, 2026-10-17, at SJL-7.6: collection in progress, from clean checkouts of the after commit `a34b1f78`,
+**State, 2026-10-17, at SJL-7.6: the after arm is collected, from clean checkouts of the after commit `a34b1f78`,
 which lands SJL-7.5's cut-over (section 4).** **Clause 7 is met under part A of [`decision-rule.md`](decision-rule.md)
 as written**, with no revision: of the whole suite's 106,058 rows, 140 changed, each from failed to passed and each a
 correction of class C1 the changelog lists, and none regressed (section 6). Clauses 5, 6 and 8 are met as section 5
-reads them, with findings that section 9 names for other milestones. Not yet taken:
-- **Part B**, the measurement, which the maintainer takes on an idle machine with the collector's `measure`
-  step (section 11);
-- **the engine-level vectors at corpus revision 20**, at the after commit (section 10).
+reads them, with findings that section 9 names for other milestones. Every vector of corpus revision 20 has the
+result its class expects at the after commit (section 10).
+- **Part B, the measurement, is void**: this machine is not a controlled lane. Its arithmetic finds `Normalize`
+  about three times and `Casing` about twice as slow after the cut-over, far beyond the A/A floor, and
+  `Identifiers` unchanged (section 11). JSD-0031's fifth reason stays open for this engine.
 
 Nothing is accepted: review is deferred, and SJL-7 may not meet its gate before SJL-3 meets SJL-3's.
 
@@ -30,6 +31,8 @@ a verdict." Revised again at SJL-7.5; it read "at SJL-7.3: part A's base is take
 first run is classified; nothing here is a verdict.", and its first item "Part A's after run follows SJL-7.5's
 cut-over.")*
 
+*(Revised 2026-10-17, later at SJL-7.6, when sections 10 and 11 were added. The heading read "collection in
+progress", and its list "Not yet taken:" named part B and the engine-level vectors at corpus revision 20.)*
 *(Revised 2026-10-17, at SJL-7.6. The state read "**State, 2026-10-16, at SJL-7.5: part A's base is taken, the
 engine-level vectors' first run is classified, and this engine's cut-over is recorded with its run on the vectors;
 nothing here is a verdict.**", with the items "Part A's after run is taken at SJL-7.6, at the commit that lands the
@@ -228,7 +231,7 @@ refuse valid patterns such as `[^\p{RGI_Emoji}&&a]`; the `RegExp` constructor st
 | 7 | test262 per path meets the area rule | section 6, [`test262/`](test262/) | **Met** under part A of the rule as written, at `a34b1f78`: both runs complete and comparable; of 106,058 rows of the whole suite, 140 changed, each from failed to passed, each a correction of class C1 that the changelog lists (rows P1, P3 and I1); none regressed, and C3 and C5 list no row |
 | 8 | Every correction is listed | [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md) | **Met**: every correction the area record names for this engine, under its row of the correspondence, P1 to P4, S2, I1, I3, W1, C1, C4 to C8, N1, G1 and G2, with the data-policy rows I2, C2, C3, N2, N3 and G3 and the word status G4; and every row of section 6 in class C1 falls under one of them |
 
-**SJL-7.6's measurement**, part B of the rule, which answers JSD-0031 §4(b)'s fifth reason for this engine: **not taken** (section 11). Clauses 1 to 4 are the owner's, judged in Broiler.Unicode's bundle of the same name, and 9 to 13 are Broiler.VM's, judged in its own. None is accepted: review is deferred, and SJL-7 may not meet its gate before SJL-3 meets SJL-3's.
+**SJL-7.6's measurement**, part B of the rule, which answers JSD-0031 §4(b)'s fifth reason for this engine: **void**, on a lane that is not controlled, and its arithmetic finds `Normalize` and `Casing` far slower after the cut-over (section 11); the reason stays open for this engine. Clauses 1 to 4 are the owner's, judged in Broiler.Unicode's bundle of the same name, and 9 to 13 are Broiler.VM's, judged in its own. None is accepted: review is deferred, and SJL-7 may not meet its gate before SJL-3 meets SJL-3's.
 
 ## 6. Test262 per path (rule part A)
 
@@ -597,10 +600,21 @@ Broiler.VM's run on the same revision, in its bundle of the same name, matches e
 
 ## 11. Part B: the measurement (rule part B)
 
-**PLACEHOLDER: not taken.** Part B's arms are measured on an idle machine by the maintainer, into
-[`measurement/`](measurement/), a sub-bundle with its own README and manifest, as the rule asks.
+**Void: the lane is not a controlled lane** (clause 1), so part B decides nothing, and JSD-0031 §4(b)'s fifth
+reason stays open for this engine. [`measurement/`](measurement/README.md) holds the run, a sub-bundle of its own
+evidence class with its own README, manifest and hashes, taken on 2026-10-17 from 01:42Z to 02:58Z with nothing
+else of the programme running. Clauses 2 to 4 hold: all 43 answer checks equal to arm B's first, one effective
+configuration and one BenchmarkDotNet host record, and 21 runs of six workloads with no issues.
 
-**The collector's step is written and checked, and was not run.** `collect.py --only measure` follows bundle
+**Its arithmetic would not meet clause 5 on a controlled lane.** `Identifiers` is below resolution (D = -0.034 ms,
+N = 0.035 ms). **`Normalize` and `Casing` are far slower after the cut-over**: D = +17.764 ms against N = 0.793 ms
+for `Normalize` (Q 9.003 ms at the base, 26.767 ms after), and D = +8.891 ms against N = 0.307 ms for `Casing`
+(9.446 ms, 18.337 ms). The arms' ranges do not overlap, and the controls did not move. The base normalized with
+the host's ICU and cased through the runtime; the after arm runs the owner's managed algorithms over the pinned
+tables. The plan named this exposure before the cut-over; whether the owner's normalization and case mapping are
+made faster before a controlled lane runs the protocol is the owner's to decide.
+
+**The collector's step, as it was run.** `collect.py --only measure` follows bundle
 `sjl-3-001`'s step with this rule's workloads: arm B is a clean checkout of `3916bd2b`; arm A is one of
 `a34b1f78`, where `UnicodeBenchmarks.cs`, the benchmark `Program.cs` and `BenchmarkConfiguration.cs` are the
 rule commit's byte for byte (and no file of the benchmark project changed), so A is the after commit as it stands;
@@ -626,13 +640,14 @@ python3 docs/evidence/sjl-7-001/collect.py --tree <a clean checkout of a34b1f78>
 
 - **Nothing about Broiler.VM or the owner.** Broiler.VM's half and the owner's clauses (1 to 4) are judged in
   their own bundles, and this bundle reads neither's runs.
-- **Part B, and any speed claim.** Section 11 holds the collector, not a run.
+- **Part B's decision, and any speed claim.** Section 11's run is void; its arithmetic is read, and decides
+  nothing.
 - **The rows that fail at both commits** (section 6): the parser's early check of a literal's group names, and
   of a property of strings directly inside a negated class, is not made, and nothing here says it is.
 - **The translator, the lexer and Intl.** The findings of section 9 are named for the milestones that own the
   code; nothing here judges them.
 - **A Unicode version other than 17.0.0**, the pin's; and the runners' ICU, 74.2 (Unicode 15.1), only as the
   host data part A's runs loaded: after the cut-over the area covered reads the pin, not the host.
-- **A final manifest.** [`manifest.json`](manifest.json) holds the SHA-256 of every file this bundle retains as
-  this collection leaves it; the collector's `manifest` step writes it again when sections 10 and 11 add theirs.
+- **A manifest of the measurement.** [`manifest.json`](manifest.json) holds the SHA-256 of every file this bundle
+  retains, sections 10 and 11's included; `measurement/` also has its own `hashes.txt`.
 - **Review**: the reviewer field says none and means it.

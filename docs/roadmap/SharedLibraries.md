@@ -592,7 +592,20 @@ closure through Broiler.Regex's dependencies until SJL-11, and no code of this e
   ([`docs/public-api.md`](../public-api.md)).
 
 The next corpus revision retires this engine's 3,678 divergence fields of the Unicode area, and Broiler.VM's
-pin moves to it.
+pin moves to it. *Added 2026-10-17:* corpus revision 20 (`a34b1f78`) does, and every vector of it has the result
+its class expects in both engines' runs.
+
+**The evidence (SJL-7.6), 2026-10-17.** Bundle [`sjl-7-001`](../evidence/sjl-7-001/README.md) reads this
+engine's clauses at the after commit `a34b1f78`, whose product sources are `c7a19d35`'s:
+- **Clause 7, test262 per path, is met under part A of its rule as written**: of the whole suite's 106,058 rows,
+  with negative-metadata tests, 140 changed, each from failed to passed and each a correction of class C1 under
+  rows P1, P3 and I1, and none regressed.
+- **Clauses 5, 6 and 8 are met** as the bundle's section 5 reads them, with findings named for SJL-11, SJL-14 and
+  the CLR binding.
+- **Part B, the measurement, is void**: this repository's machine is not a controlled lane. Its arithmetic finds
+  `Normalize` about three times and `Casing` about twice as slow after the cut-over, far beyond the A/A floor,
+  and `Identifiers` unchanged. **JSD-0031 §4(b)'s fifth reason stays open for this engine**, and the plan's first
+  risk, that the owner's normalizer and casing are slower than ICU and the runtime, is what the run shows.
 
 ## Invariants
 
