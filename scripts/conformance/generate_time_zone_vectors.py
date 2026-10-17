@@ -50,8 +50,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import tzref as T  # noqa: E402
 from generate_number_vectors import js_string_body, string_value  # noqa: E402
 
-# The corpus revision this generator writes, and the revision its vectors were added in.
-CORPUS_REVISION = 21
+# The corpus revision this generator writes, and the revision its vectors were added in. Revision 22 classifies every
+# difference of Broiler.JS's first engine-level runs on revision 21, under UTC and America/New_York
+# (time-zone-divergences.txt); no expected value changes.
+CORPUS_REVISION = 22
 FIRST_REVISION = 21
 GENERATOR = T.GENERATOR
 SPEC = "spec:es2026@0248456c"
@@ -199,7 +201,8 @@ class Corpus:
         self.files.setdefault(file, []).append(full)
 
     def classify(self, path: Path) -> None:
-        """Applies time-zone-divergences.txt, as the other generators apply their own files; revision 21 has none."""
+        """Applies time-zone-divergences.txt, as the other generators apply their own files; revision 21 had none, and
+        revision 22 adds it."""
         if not path.exists():
             return
         reasons: dict[str, str] = {}

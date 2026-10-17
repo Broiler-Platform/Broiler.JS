@@ -559,7 +559,8 @@ area: time-zones
 op: Temporal.ZonedDateTime, timeZoneId
 in: str:"America/Lo\u017F_Angeles"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z10: Broiler.JS folds a name with the runtime's invariant upper-casing, which maps U+017F to S, so it admits a name that GetAvailableNamedTimeZoneIdentifier's ASCII-case-insensitive match refuses; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Temporal.ZonedDateTime(0n, "America/Lo\u017F_Angeles").timeZoneId
 note: row Z10, GetAvailableNamedTimeZoneIdentifier matches by ASCII case only, so a non-ASCII fold is no match
@@ -570,7 +571,8 @@ area: time-zones
 op: Temporal.Instant.prototype.toZonedDateTimeISO, timeZoneId
 in: str:"America/Lo\u017F_Angeles"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z10: Broiler.JS folds a name with the runtime's invariant upper-casing, which maps U+017F to S, so it admits a name that GetAvailableNamedTimeZoneIdentifier's ASCII-case-insensitive match refuses; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: Temporal.Instant.fromEpochNanoseconds(0n).toZonedDateTimeISO("America/Lo\u017F_Angeles").timeZoneId
 note: row Z10, GetAvailableNamedTimeZoneIdentifier matches by ASCII case only, so a non-ASCII fold is no match
@@ -581,7 +583,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"America/Lo\u017F_Angeles"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z10: Broiler.JS folds a name with the runtime's invariant upper-casing, which maps U+017F to S, so it admits a name that GetAvailableNamedTimeZoneIdentifier's ASCII-case-insensitive match refuses; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "America/Lo\u017F_Angeles" }).resolvedOptions().timeZone
 note: row Z10, GetAvailableNamedTimeZoneIdentifier matches by ASCII case only, so a non-ASCII fold is no match
@@ -592,7 +595,8 @@ area: time-zones
 op: Temporal.ZonedDateTime, timeZoneId
 in: str:"A\u017Fia/Tokyo"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z10: Broiler.JS folds a name with the runtime's invariant upper-casing, which maps U+017F to S, so it admits a name that GetAvailableNamedTimeZoneIdentifier's ASCII-case-insensitive match refuses; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Temporal.ZonedDateTime(0n, "A\u017Fia/Tokyo").timeZoneId
 note: row Z10, GetAvailableNamedTimeZoneIdentifier matches by ASCII case only, so a non-ASCII fold is no match
@@ -603,7 +607,8 @@ area: time-zones
 op: Temporal.Instant.prototype.toZonedDateTimeISO, timeZoneId
 in: str:"A\u017Fia/Tokyo"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z10: Broiler.JS folds a name with the runtime's invariant upper-casing, which maps U+017F to S, so it admits a name that GetAvailableNamedTimeZoneIdentifier's ASCII-case-insensitive match refuses; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: Temporal.Instant.fromEpochNanoseconds(0n).toZonedDateTimeISO("A\u017Fia/Tokyo").timeZoneId
 note: row Z10, GetAvailableNamedTimeZoneIdentifier matches by ASCII case only, so a non-ASCII fold is no match
@@ -614,7 +619,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"A\u017Fia/Tokyo"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z10: Broiler.JS folds a name with the runtime's invariant upper-casing, which maps U+017F to S, so it admits a name that GetAvailableNamedTimeZoneIdentifier's ASCII-case-insensitive match refuses; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "A\u017Fia/Tokyo" }).resolvedOptions().timeZone
 note: row Z10, GetAvailableNamedTimeZoneIdentifier matches by ASCII case only, so a non-ASCII fold is no match
@@ -625,7 +631,8 @@ area: time-zones
 op: Temporal.ZonedDateTime, timeZoneId
 in: str:"Au\u017Ftralia/Sydney"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z10: Broiler.JS folds a name with the runtime's invariant upper-casing, which maps U+017F to S, so it admits a name that GetAvailableNamedTimeZoneIdentifier's ASCII-case-insensitive match refuses; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Temporal.ZonedDateTime(0n, "Au\u017Ftralia/Sydney").timeZoneId
 note: row Z10, GetAvailableNamedTimeZoneIdentifier matches by ASCII case only, so a non-ASCII fold is no match
@@ -636,7 +643,8 @@ area: time-zones
 op: Temporal.Instant.prototype.toZonedDateTimeISO, timeZoneId
 in: str:"Au\u017Ftralia/Sydney"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z10: Broiler.JS folds a name with the runtime's invariant upper-casing, which maps U+017F to S, so it admits a name that GetAvailableNamedTimeZoneIdentifier's ASCII-case-insensitive match refuses; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: Temporal.Instant.fromEpochNanoseconds(0n).toZonedDateTimeISO("Au\u017Ftralia/Sydney").timeZoneId
 note: row Z10, GetAvailableNamedTimeZoneIdentifier matches by ASCII case only, so a non-ASCII fold is no match
@@ -647,7 +655,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"Au\u017Ftralia/Sydney"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z10: Broiler.JS folds a name with the runtime's invariant upper-casing, which maps U+017F to S, so it admits a name that GetAvailableNamedTimeZoneIdentifier's ASCII-case-insensitive match refuses; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "Au\u017Ftralia/Sydney" }).resolvedOptions().timeZone
 note: row Z10, GetAvailableNamedTimeZoneIdentifier matches by ASCII case only, so a non-ASCII fold is no match
@@ -658,7 +667,8 @@ area: time-zones
 op: Temporal.ZonedDateTime, timeZoneId
 in: str:"U\u017F/Pacific"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z10: Broiler.JS folds a name with the runtime's invariant upper-casing, which maps U+017F to S, so it admits a name that GetAvailableNamedTimeZoneIdentifier's ASCII-case-insensitive match refuses; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Temporal.ZonedDateTime(0n, "U\u017F/Pacific").timeZoneId
 note: row Z10, GetAvailableNamedTimeZoneIdentifier matches by ASCII case only, so a non-ASCII fold is no match
@@ -669,7 +679,8 @@ area: time-zones
 op: Temporal.Instant.prototype.toZonedDateTimeISO, timeZoneId
 in: str:"U\u017F/Pacific"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z10: Broiler.JS folds a name with the runtime's invariant upper-casing, which maps U+017F to S, so it admits a name that GetAvailableNamedTimeZoneIdentifier's ASCII-case-insensitive match refuses; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: Temporal.Instant.fromEpochNanoseconds(0n).toZonedDateTimeISO("U\u017F/Pacific").timeZoneId
 note: row Z10, GetAvailableNamedTimeZoneIdentifier matches by ASCII case only, so a non-ASCII fold is no match
@@ -680,7 +691,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"U\u017F/Pacific"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z10: Broiler.JS folds a name with the runtime's invariant upper-casing, which maps U+017F to S, so it admits a name that GetAvailableNamedTimeZoneIdentifier's ASCII-case-insensitive match refuses; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "U\u017F/Pacific" }).resolvedOptions().timeZone
 note: row Z10, GetAvailableNamedTimeZoneIdentifier matches by ASCII case only, so a non-ASCII fold is no match
@@ -922,7 +934,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"2020-01-01T00:00[Europe/Berlin]"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z11: Broiler.JS's formatter reads an ISO date-time string's zone annotation, or its Z as UTC, where CreateDateTimeFormat takes only an offset string or an available name and throws a RangeError otherwise; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "2020-01-01T00:00[Europe/Berlin]" }).resolvedOptions().timeZone
 note: row Z11, an ISO date-time string is neither an offset nor an available name to the formatter
@@ -955,7 +968,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"2020-01-01T00:00Z"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z11: Broiler.JS's formatter reads an ISO date-time string's zone annotation, or its Z as UTC, where CreateDateTimeFormat takes only an offset string or an available name and throws a RangeError otherwise; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "2020-01-01T00:00Z" }).resolvedOptions().timeZone
 note: row Z11, an ISO date-time string is neither an offset nor an available name to the formatter
@@ -988,7 +1002,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"2020-01-01T00:00+01:00[Europe/Berlin]"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z11: Broiler.JS's formatter reads an ISO date-time string's zone annotation, or its Z as UTC, where CreateDateTimeFormat takes only an offset string or an available name and throws a RangeError otherwise; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "2020-01-01T00:00+01:00[Europe/Berlin]" }).resolvedOptions().timeZone
 note: row Z11, an ISO date-time string is neither an offset nor an available name to the formatter
@@ -1021,7 +1036,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"2020-01-01T00:00[America/Lo\u017F_Angeles]"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z11: Broiler.JS's formatter reads an ISO date-time string's zone annotation, or its Z as UTC, where CreateDateTimeFormat takes only an offset string or an available name and throws a RangeError otherwise; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "2020-01-01T00:00[America/Lo\u017F_Angeles]" }).resolvedOptions().timeZone
 note: row Z11, an ISO date-time string is neither an offset nor an available name to the formatter
@@ -1043,7 +1059,8 @@ area: time-zones
 op: Temporal.Instant.prototype.toZonedDateTimeISO, timeZoneId
 in: str:"2020-01-01T00:00[America/Lo\u017F_Angeles]"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row Z10: Broiler.JS folds a name with the runtime's invariant upper-casing, which maps U+017F to S, so it admits a name that GetAvailableNamedTimeZoneIdentifier's ASCII-case-insensitive match refuses; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: Temporal.Instant.fromEpochNanoseconds(0n).toZonedDateTimeISO("2020-01-01T00:00[America/Lo\u017F_Angeles]").timeZoneId
 note: row Z11, Temporal's ToTemporalTimeZoneIdentifier reads its annotation
@@ -1758,7 +1775,8 @@ area: time-zones
 op: Temporal.ZonedDateTime, timeZoneId
 in: str:"+\u0660\u0665:\u0663\u0660"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Temporal.ZonedDateTime(0n, "+\u0660\u0665:\u0663\u0660").timeZoneId
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1769,7 +1787,8 @@ area: time-zones
 op: Temporal.Instant.prototype.toZonedDateTimeISO, timeZoneId
 in: str:"+\u0660\u0665:\u0663\u0660"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: Temporal.Instant.fromEpochNanoseconds(0n).toZonedDateTimeISO("+\u0660\u0665:\u0663\u0660").timeZoneId
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1780,7 +1799,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"+\u0660\u0665:\u0663\u0660"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "+\u0660\u0665:\u0663\u0660" }).resolvedOptions().timeZone
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1791,7 +1811,8 @@ area: time-zones
 op: Temporal.ZonedDateTime, timeZoneId
 in: str:"+\u06F0\u06F5:\u06F3\u06F0"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Temporal.ZonedDateTime(0n, "+\u06F0\u06F5:\u06F3\u06F0").timeZoneId
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1802,7 +1823,8 @@ area: time-zones
 op: Temporal.Instant.prototype.toZonedDateTimeISO, timeZoneId
 in: str:"+\u06F0\u06F5:\u06F3\u06F0"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: Temporal.Instant.fromEpochNanoseconds(0n).toZonedDateTimeISO("+\u06F0\u06F5:\u06F3\u06F0").timeZoneId
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1813,7 +1835,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"+\u06F0\u06F5:\u06F3\u06F0"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "+\u06F0\u06F5:\u06F3\u06F0" }).resolvedOptions().timeZone
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1824,7 +1847,8 @@ area: time-zones
 op: Temporal.ZonedDateTime, timeZoneId
 in: str:"+\u0966\u096B:\u0969\u0966"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Temporal.ZonedDateTime(0n, "+\u0966\u096B:\u0969\u0966").timeZoneId
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1835,7 +1859,8 @@ area: time-zones
 op: Temporal.Instant.prototype.toZonedDateTimeISO, timeZoneId
 in: str:"+\u0966\u096B:\u0969\u0966"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: Temporal.Instant.fromEpochNanoseconds(0n).toZonedDateTimeISO("+\u0966\u096B:\u0969\u0966").timeZoneId
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1846,7 +1871,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"+\u0966\u096B:\u0969\u0966"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "+\u0966\u096B:\u0969\u0966" }).resolvedOptions().timeZone
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1857,7 +1883,8 @@ area: time-zones
 op: Temporal.ZonedDateTime, timeZoneId
 in: str:"+\uFF10\uFF15:\uFF13\uFF10"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Temporal.ZonedDateTime(0n, "+\uFF10\uFF15:\uFF13\uFF10").timeZoneId
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1868,7 +1895,8 @@ area: time-zones
 op: Temporal.Instant.prototype.toZonedDateTimeISO, timeZoneId
 in: str:"+\uFF10\uFF15:\uFF13\uFF10"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: Temporal.Instant.fromEpochNanoseconds(0n).toZonedDateTimeISO("+\uFF10\uFF15:\uFF13\uFF10").timeZoneId
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1879,7 +1907,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"+\uFF10\uFF15:\uFF13\uFF10"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "+\uFF10\uFF15:\uFF13\uFF10" }).resolvedOptions().timeZone
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1890,7 +1919,8 @@ area: time-zones
 op: Temporal.ZonedDateTime, timeZoneId
 in: str:"+0\u0665:30"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Temporal.ZonedDateTime(0n, "+0\u0665:30").timeZoneId
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1901,7 +1931,8 @@ area: time-zones
 op: Temporal.Instant.prototype.toZonedDateTimeISO, timeZoneId
 in: str:"+0\u0665:30"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: Temporal.Instant.fromEpochNanoseconds(0n).toZonedDateTimeISO("+0\u0665:30").timeZoneId
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1912,7 +1943,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"+0\u0665:30"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "+0\u0665:30" }).resolvedOptions().timeZone
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1923,7 +1955,8 @@ area: time-zones
 op: Temporal.ZonedDateTime, timeZoneId
 in: str:"-\u0660\u0665"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Temporal.ZonedDateTime(0n, "-\u0660\u0665").timeZoneId
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1934,7 +1967,8 @@ area: time-zones
 op: Temporal.Instant.prototype.toZonedDateTimeISO, timeZoneId
 in: str:"-\u0660\u0665"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: Temporal.Instant.fromEpochNanoseconds(0n).toZonedDateTimeISO("-\u0660\u0665").timeZoneId
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1945,7 +1979,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"-\u0660\u0665"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "-\u0660\u0665" }).resolvedOptions().timeZone
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1956,7 +1991,8 @@ area: time-zones
 op: Temporal.ZonedDateTime, timeZoneId
 in: str:"+\u0660\u0665\u0663\u0660"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Temporal.ZonedDateTime(0n, "+\u0660\u0665\u0663\u0660").timeZoneId
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1967,7 +2003,8 @@ area: time-zones
 op: Temporal.Instant.prototype.toZonedDateTimeISO, timeZoneId
 in: str:"+\u0660\u0665\u0663\u0660"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-time-zone-identifier-record spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: Temporal.Instant.fromEpochNanoseconds(0n).toZonedDateTimeISO("+\u0660\u0665\u0663\u0660").timeZoneId
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name
@@ -1978,7 +2015,8 @@ area: time-zones
 op: Intl.DateTimeFormat, resolved timeZone
 in: str:"+\u0660\u0665\u0663\u0660"
 out: error: RangeError
-class: normative
+class: divergence
+divergence.broiler-js: row A13: Broiler.JS matches an offset's digits with .NET's \d, which admits every decimal digit, and its int.Parse then lets a FormatException escape the evaluation; the offset grammar's digits are ASCII, so the string is neither an offset nor an available name, a RangeError; correction under SJL-D-16 (a), answered by SJL-8.6
 prov: spec:es2026@0248456c#sec-istimezoneoffsetstring spec:es2026@0248456c#sec-time-zone-offset-strings spec:es2026@0248456c#sec-availablenamedtimezoneidentifiers ref:tzref@1
 script: new Intl.DateTimeFormat("en", { timeZone: "+\u0660\u0665\u0663\u0660" }).resolvedOptions().timeZone
 note: row A13, the offset grammar's digits are ASCII (DecimalDigit), so this is no offset and no name

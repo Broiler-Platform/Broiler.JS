@@ -38,8 +38,8 @@ from generate_number_vectors import f64, js_string_literal, splitmix64, string_v
 # retired the Date area's divergences (generate_date_vectors.py) and changed nothing here, and revision 18
 # added the Unicode area (generate_unicode_vectors.py) and changed nothing here either, nor did revision 19,
 # which classified its divergences, nor revision 20, which retired them, nor revision 21, which added the
-# time-zone area (generate_time_zone_vectors.py).
-CORPUS_REVISION = 21
+# time-zone area (generate_time_zone_vectors.py), nor revision 22, which classified its divergences.
+CORPUS_REVISION = 22
 FIRST_REVISION = 10
 GENERATOR = "ref:textref@1"
 SPEC = "spec:es2026@0248456c"
