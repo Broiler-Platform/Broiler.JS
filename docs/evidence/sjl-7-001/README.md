@@ -580,11 +580,20 @@ property names and aliases spelled as strings (33).
 
 ## 10. Engine-level vectors at the after commit (corpus revision 20)
 
-**PLACEHOLDER: not taken by this collection.** The engine-level runner, `Broiler.JS/Broiler.JavaScript.Vectors.Tests`
-in Release, run at `a34b1f78` on corpus revision 20 under `TZ=UTC`, with its negative control, is taken by the
-maintainer and added here with its log and report under `engine/`. What section 3 leads one to expect, and what
-this section will hold either way: no unclassified difference, the 3,678 fields retired, and the number area's
-four classified divergences.
+**Every vector of corpus revision 20 has the result its class expects.** The engine-level runner,
+`Broiler.JS/Broiler.JavaScript.Vectors.Tests` in Release, ran at `a34b1f78`, the after commit, which carries
+revision 20, from a clean checkout, under `TZ=UTC`, from 23:54Z on 2026-10-16 for 35 minutes. The machine ran
+Broiler.VM's vectors and builds beside it; nothing in the run is timed.
+
+| Run | Result | Files |
+|---|---|---|
+| Revision 20, UTC | 88,465 vectors: 88,461 match, 4 classified divergences, 0 unclassified differences, 0 not implemented, and no divergence that no longer holds | [`engine/run-revision-20-utc.log`](engine/run-revision-20-utc.log), [`engine/run-revision-20-utc.tsv.gz`](engine/run-revision-20-utc.tsv.gz) |
+| Its negative control | one vector's expected value changed in memory, `numbers/to-fixed/0001`, reported as an unclassified difference | [`engine/negative-control-revision-20.tsv`](engine/negative-control-revision-20.tsv) |
+
+The 4 are the number area's `numbers/literal/0082`, `0084`, `0088` and `0090`, which stay with SJL-14. The 3,678
+fields revision 20 retired ([`engine/retired-divergences-revision-20.tsv`](engine/retired-divergences-revision-20.tsv))
+are matches now, as they were reported as no longer holding at revision 19 (section 3). The runner's test passes.
+Broiler.VM's run on the same revision, in its bundle of the same name, matches every vector.
 
 ## 11. Part B: the measurement (rule part B)
 
@@ -618,7 +627,6 @@ python3 docs/evidence/sjl-7-001/collect.py --tree <a clean checkout of a34b1f78>
 - **Nothing about Broiler.VM or the owner.** Broiler.VM's half and the owner's clauses (1 to 4) are judged in
   their own bundles, and this bundle reads neither's runs.
 - **Part B, and any speed claim.** Section 11 holds the collector, not a run.
-- **The engine-level vectors at revision 20**, which section 10 awaits.
 - **The rows that fail at both commits** (section 6): the parser's early check of a literal's group names, and
   of a property of strings directly inside a negated class, is not made, and nothing here says it is.
 - **The translator, the lexer and Intl.** The findings of section 9 are named for the milestones that own the
