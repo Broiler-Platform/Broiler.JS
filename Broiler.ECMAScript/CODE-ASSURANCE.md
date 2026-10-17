@@ -13,15 +13,15 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 44 |
+| Files scanned | 56 |
 | Files not covered | 0 |
-| Files carrying an annotation | 44 |
-| Code units | 677 |
-| Relevant | 533 |
-| Exempt by predicate | 144 |
-| Annotated | 533 of 533 (100%) |
-| Human reviewed | 0 of 533 (0%) |
-| Unverified | 533 |
+| Files carrying an annotation | 56 |
+| Code units | 832 |
+| Relevant | 661 |
+| Exempt by predicate | 171 |
+| Annotated | 661 of 661 (100%) |
+| Human reviewed | 0 of 661 (0%) |
+| Unverified | 661 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 533 |
+| HUMAN_PENDING | 661 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 144 |
+| EXEMPT | 171 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
 | None | 0 |
-| Low | 538 |
+| Low | 674 |
 | Medium | 0 |
 | High | 0 |
 | Unknown | 0 |
@@ -51,9 +51,9 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Value | Units |
 |---|---:|
 | None | 0 |
-| Low | 235 |
-| Medium | 250 |
-| High | 53 |
+| Low | 300 |
+| Medium | 299 |
+| High | 75 |
 | Critical | 0 |
 | *not annotated* | 0 |
 
@@ -62,8 +62,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 | Metric | Value |
 |---|---:|
 | Maximum | 9 / 10 |
-| Average over annotated units | 1.4 / 10 |
-| Units scored | 533 |
+| Average over annotated units | 1.5 / 10 |
+| Units scored | 661 |
 
 ## High-security review areas
 
@@ -120,13 +120,35 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Time.EcmaDateParser` in `Broiler.ECMAScript.Algorithms/Time/EcmaDateParser.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Time.EcmaDateParser.Parse(ReadOnlySpan<char>, DateParseDialect, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Time/EcmaDateParser.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Time.EcmaLocalTime.Utc(double, ILocalTimeProvider)` in `Broiler.ECMAScript.Algorithms/Time/LocalTime.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.ArchiveReading` in `Broiler.ECMAScript.Generation/Time/ArchiveReading.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.ArchiveReading.RegularFiles(byte[], IReadOnlySet<string>)` in `Broiler.ECMAScript.Generation/Time/ArchiveReading.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.CalendarPin` in `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.CalendarPin.Parse(string)` in `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.CalendarPin.Extract(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.CalendarPin.ArchiveViolations(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.CalendarPin.Violations(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.CalendarPin.Verified(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.CalendarTableGenerator` in `Broiler.ECMAScript.Generation/Time/CalendarTableGenerator.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.CalendarTableGenerator.Generate(CalendarPin, IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/CalendarTableGenerator.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.CldrPin` in `Broiler.ECMAScript.Generation/Time/CldrPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.CldrPin.Parse(string)` in `Broiler.ECMAScript.Generation/Time/CldrPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.CldrPin.Violations(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/CldrPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.CldrPin.Verified(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/CldrPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.TzdbPin` in `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.TzdbPin.Parse(string)` in `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.TzdbPin.Extract(byte[])` in `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.TzdbPin.TarballViolations(byte[])` in `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.TzdbPin.Violations(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.TzdbPin.Verified(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.TzdbTableGenerator` in `Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Generation.Time.TzdbTableGenerator.Generate(TzdbPin, IReadOnlyDictionary<string, byte[]>, CldrPin, IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs` - Security=High, human line PENDING
 
 ## Falsification criteria
 
 | Metric | Value |
 |---|---:|
-| Units carrying a criterion | 53 |
-| Units required to carry one | 53 |
+| Units carrying a criterion | 75 |
+| Units required to carry one | 75 |
 | Required and missing | 0 |
 
 A `Broiler-Falsified-If:` line states, at the declaration, the observation that would make
@@ -147,10 +169,10 @@ that the rule is reviewable in one place rather than in several hundred.
 
 | Case | Units |
 |---|---:|
-| TrivialPropertyOrAccessor | 20 |
-| ParameterAssigningConstructor | 0 |
+| TrivialPropertyOrAccessor | 35 |
+| ParameterAssigningConstructor | 5 |
 | TrivialExpressionBodiedMember | 10 |
-| CompilerSuppliedRecordOrEnumMember | 10 |
+| CompilerSuppliedRecordOrEnumMember | 17 |
 | DelegatingOverrideOrOperator | 0 |
 | InsideAssemblyMarker | 0 |
 | FieldDeclaringStorage | 17 |
@@ -177,15 +199,15 @@ through a `<Compile Include>` it states, is left out of the record.
 
 ## Change detection
 
-`assurance.manifest.json` lists **every** code unit in the 2 covered assemblies -
-677 of them, exempt and relevant alike - with the fingerprint of its declaration.
+`assurance.manifest.json` lists **every** code unit in the 3 covered assemblies -
+832 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as
 trivial is no longer invisible: a semantic change to one moves a value in a generated file
 the check compares byte for byte. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript` holds the manifest to the tree.
 
-Beside the units it lists **every covered file** - 44 of them - with a
+Beside the units it lists **every covered file** - 56 of them - with a
 fingerprint over the complete token stream of its compilation unit. A unit entry exists only
 for a declaration kind the scanner enumerates, and an enumeration is a whitelist: an
 `[assembly: ...]` attribute is a member of nothing and can be in no unit at all.

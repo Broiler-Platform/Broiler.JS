@@ -15,9 +15,12 @@ The programme that creates them is owned in the Broiler.VM repository, under
 |---|---|---|
 | `Broiler.ECMAScript.Algorithms` | The language algorithms: number conversion, numerics, text, Date, the Temporal core, the time-zone algorithms. References the base class library only, and carries no data but the white-space set's generated `Space_Separator` table. | The contract types (`WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit`, `DepthLimit`), **the number-conversion area** of milestone SJL-3 (`Broiler.ECMAScript.Numbers`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-numbers.md)), **the numerics area** of milestone SJL-4 (the same namespace; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-numerics.md)) , **the text area** of milestone SJL-5 (`Broiler.ECMAScript.Text`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-text.md)) and **the Date area** of milestone SJL-6 (`Broiler.ECMAScript.Time`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-date.md)). |
 | `Broiler.ECMAScript.Conformance` | The shared conformance vectors' reader, validator and runners. Test-only. | Not packed at this version; the corpus itself is [`conformance/vectors/`](../conformance/vectors/README.md). |
+| `Broiler.ECMAScript.Generation` | The time data home's generator: the tz, CLDR and calendar pin readers, a tz compiler equivalent to `zic`, the compact time zone and calendar tables, and source writers that wrap them into C#. Test-only, as Broiler.Unicode.Generation is: engines' tests run it, and it carries no table. | **The time data home** of milestone SJL-8.2 (`Broiler.ECMAScript.Generation.Time`), ported from Broiler.VM's architecture tests; its inputs and tables are [`data/time/`](data/time/README.md). Not yet published. |
 
-Further libraries (the frontend, Intl, the data generators) are added by the milestones that create
-them.
+Further libraries (the frontend, Intl, further data generators) are added by the milestones that create
+them. *(Revised 2026-10-17, at milestone SJL-8.2, when the generator's row was added; the sentence read
+"Further libraries (the frontend, Intl, the data generators) are added by the milestones that create
+them.")*
 
 ## Pins
 
@@ -30,6 +33,10 @@ them.
   generator writes. *(Revised 2026-10-12, at SJL-3.3. The bullet read: "**Data:** none. No shared
   package carries data (decision SJL-D-6 (c)); each engine embeds the tables a shared generator
   writes.")*
+- **Time data:** IANA tzdb 2026e, CLDR 48.2.0's time zone keys, and ICU4X's `icu_calendar` 2.3.0 and
+  `calendrical_calculations` 0.2.4 (`TimeDataVersions`), pinned in [`data/time/`](data/time/README.md)
+  as copies of Broiler.VM's pins, with the tables `Broiler.ECMAScript.Generation` writes from them. No
+  package carries them; rule SL7 regenerates the tables byte for byte. *(Added 2026-10-17, at SJL-8.2.)*
 
 ## Conventions
 
@@ -47,6 +54,8 @@ dotnet build Broiler.ECMAScript.slnf -c Release
 dotnet test Broiler.ECMAScript.slnf -c Release
 # The Native AOT probe, with Broiler.VM's root settings, over the whole corpus:
 dotnet publish Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release -r linux-x64
+# The time data home's zone table against the host's zic (where zic is installed):
+python3 -I Broiler.ECMAScript/data/time/tzdb/check-zic.py
 ```
 
 ## Versions

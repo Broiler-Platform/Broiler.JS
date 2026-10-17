@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 533 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 661 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -49,13 +49,13 @@ did, which is the narrower and the more useful of the two.
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 44 |
-| Code units | 677 |
-| Relevant | 533 |
-| Exempt | 144 |
-| Assessed | 533 of 533 (100%) |
-| Human reviewed | 0 of 533 (0%) |
-| Unverified | 533 |
+| Files scanned | 56 |
+| Code units | 832 |
+| Relevant | 661 |
+| Exempt | 171 |
+| Assessed | 661 of 661 (100%) |
+| Human reviewed | 0 of 661 (0%) |
+| Unverified | 661 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 533 |
+| HUMAN_PENDING | 661 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 144 |
+| EXEMPT | 171 |
 
 ## 5. Aliases In The Tree
 
@@ -129,6 +129,18 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Conformance/VectorFile.cs` | 23 | 18 | 5 | 18 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorRun.cs` | 17 | 12 | 5 | 12 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/VectorValidator.cs` | 23 | 19 | 4 | 19 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Generation/Time/ArchiveReading.cs` | 9 | 9 | 0 | 9 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` | 16 | 12 | 4 | 12 | Low | High | 6/6 |
+| `Broiler.ECMAScript.Generation/Time/CalendarTableGenerator.cs` | 32 | 29 | 3 | 29 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Generation/Time/CalendarTableSource.cs` | 2 | 2 | 0 | 2 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Generation/Time/CldrPin.cs` | 12 | 8 | 4 | 8 | Low | High | 4/4 |
+| `Broiler.ECMAScript.Generation/Time/TableSourceOptions.cs` | 9 | 2 | 7 | 2 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Generation/Time/TableSourceWriter.cs` | 8 | 8 | 0 | 8 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Generation/Time/TimeDataVersions.cs` | 5 | 5 | 0 | 5 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Generation/Time/TzdbCompiler.cs` | 26 | 25 | 1 | 25 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` | 15 | 12 | 3 | 12 | Low | High | 6/6 |
+| `Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs` | 19 | 14 | 5 | 14 | Low | High | 2/2 |
+| `Broiler.ECMAScript.Generation/Time/TzdbTableSource.cs` | 2 | 2 | 0 | 2 | Low | Low | 0/0 |
 
 ## 7. Decisions Recorded
 
@@ -251,6 +263,50 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: the meter is charged other than the text's length before the first character is read, or charged for an empty text
 - `Broiler.ECMAScript.Time.EcmaLocalTime.Utc(double, ILocalTimeProvider)` in `Broiler.ECMAScript.Algorithms/Time/LocalTime.cs` - Security=High, Spec=ECMA-262 21.4.1.26, `708CAB`, PENDING
   - Falsified if: a repeated local time is read at a later instant than its earliest, a skipped local time is read at an offset other than the one before its transition, or a local time with one instant is read at another
+- `Broiler.ECMAScript.Generation.Time.ArchiveReading` in `Broiler.ECMAScript.Generation/Time/ArchiveReading.cs` - Security=High, Spec=JSD-0053 tz pin via Broiler.VM TzdbPin, `CD64C8`, PENDING
+  - Falsified if: a member of a tarball is answered with bytes other than the ones its tar entry holds, or a link, a directory or an unnamed member is answered as a file
+- `Broiler.ECMAScript.Generation.Time.ArchiveReading.RegularFiles(byte[], IReadOnlySet<string>)` in `Broiler.ECMAScript.Generation/Time/ArchiveReading.cs` - Security=High, Spec=JSD-0053 tz pin via Broiler.VM TzdbPin, `78B9DB`, PENDING
+  - Falsified if: an entry that is not a regular file, or whose name is not wanted, is answered, or a wanted file's bytes differ from its tar entry's
+- `Broiler.ECMAScript.Generation.Time.CalendarPin` in `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` - Security=High, Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin, `BFC182`, PENDING
+  - Falsified if: a crate or a member whose length, digests or stated name and version differ from the pin is extracted, or returned as the pinned one, without an exception
+- `Broiler.ECMAScript.Generation.Time.CalendarPin.Parse(string)` in `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` - Security=High, Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin, `084A93`, PENDING
+  - Falsified if: a malformed archive or member line, or a repeated key, is accepted
+- `Broiler.ECMAScript.Generation.Time.CalendarPin.Extract(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` - Security=High, Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin, `87E5C0`, PENDING
+  - Falsified if: a crate whose length or digests differ from the pin is decompressed, or a member is answered without its own length and hash compared
+- `Broiler.ECMAScript.Generation.Time.CalendarPin.ArchiveViolations(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` - Security=High, Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin, `5AF285`, PENDING
+  - Falsified if: a crate one byte or one length away from the pin's, or a crate of another version, yields no violation
+- `Broiler.ECMAScript.Generation.Time.CalendarPin.Violations(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` - Security=High, Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin, `1EB55D`, PENDING
+  - Falsified if: a member whose length or hash differs from the pin, or a Cargo.toml stating another name or version, yields no violation
+- `Broiler.ECMAScript.Generation.Time.CalendarPin.Verified(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/CalendarPin.cs` - Security=High, Spec=JSD-0056 calendar pin via Broiler.VM CalendarPin, `6B0B95`, PENDING
+  - Falsified if: members with a violation are returned instead of refused
+- `Broiler.ECMAScript.Generation.Time.CalendarTableGenerator` in `Broiler.ECMAScript.Generation/Time/CalendarTableGenerator.cs` - Security=High, Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator, `CDF266`, PENDING
+  - Falsified if: the table is written from a crate member that failed its pin's check, or a year that does not follow the one before it, or whose new year falls outside the layout, is written instead of refused
+- `Broiler.ECMAScript.Generation.Time.CalendarTableGenerator.Generate(CalendarPin, IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/CalendarTableGenerator.cs` - Security=High, Spec=JSD-0056 calendar tables via Broiler.VM CalendarTableGenerator, `5E7CCA`, PENDING
+  - Falsified if: a table is answered for a crate member whose length or hash differs from the pin
+- `Broiler.ECMAScript.Generation.Time.CldrPin` in `Broiler.ECMAScript.Generation/Time/CldrPin.cs` - Security=High, Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin, `FAF53A`, PENDING
+  - Falsified if: a file whose length or SHA-256 differs from the pin, or a pin of another CLDR version, is returned as the pinned one without an exception
+- `Broiler.ECMAScript.Generation.Time.CldrPin.Parse(string)` in `Broiler.ECMAScript.Generation/Time/CldrPin.cs` - Security=High, Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin, `4ECE1D`, PENDING
+  - Falsified if: a malformed file line or a repeated key is accepted
+- `Broiler.ECMAScript.Generation.Time.CldrPin.Violations(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/CldrPin.cs` - Security=High, Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin, `558790`, PENDING
+  - Falsified if: a file whose length or hash differs from the pin, or a pin of another version, yields no violation
+- `Broiler.ECMAScript.Generation.Time.CldrPin.Verified(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/CldrPin.cs` - Security=High, Spec=JSD-0027 s5 CLDR pin via Broiler.VM CldrPin, `22A1C6`, PENDING
+  - Falsified if: files with a violation are returned instead of refused
+- `Broiler.ECMAScript.Generation.Time.TzdbPin` in `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` - Security=High, Spec=JSD-0053 tz pin via Broiler.VM TzdbPin, `790869`, PENDING
+  - Falsified if: a tarball or a member whose length, SHA-256, SHA-512 or stated version differs from the pin is extracted, or returned as the pinned one, without an exception
+- `Broiler.ECMAScript.Generation.Time.TzdbPin.Parse(string)` in `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` - Security=High, Spec=JSD-0053 tz pin via Broiler.VM TzdbPin, `72E0AE`, PENDING
+  - Falsified if: a malformed member line or a repeated key is accepted
+- `Broiler.ECMAScript.Generation.Time.TzdbPin.Extract(byte[])` in `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` - Security=High, Spec=JSD-0053 tz pin via Broiler.VM TzdbPin, `CF0796`, PENDING
+  - Falsified if: a tarball whose length or digests differ from the pin is decompressed, or a member is answered without its own length and hash compared
+- `Broiler.ECMAScript.Generation.Time.TzdbPin.TarballViolations(byte[])` in `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` - Security=High, Spec=JSD-0053 tz pin via Broiler.VM TzdbPin, `394CF4`, PENDING
+  - Falsified if: a tarball one byte or one length away from the pin's yields no violation
+- `Broiler.ECMAScript.Generation.Time.TzdbPin.Violations(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` - Security=High, Spec=JSD-0053 tz pin via Broiler.VM TzdbPin, `4DB748`, PENDING
+  - Falsified if: a member whose length, hash or stated version differs from the pin yields no violation
+- `Broiler.ECMAScript.Generation.Time.TzdbPin.Verified(IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/TzdbPin.cs` - Security=High, Spec=JSD-0053 tz pin via Broiler.VM TzdbPin, `FE7B8A`, PENDING
+  - Falsified if: members with a violation are returned instead of refused
+- `Broiler.ECMAScript.Generation.Time.TzdbTableGenerator` in `Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs` - Security=High, Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator, `A7C108`, PENDING
+  - Falsified if: a table is written from a tzdb member or a CLDR file that failed its pin's check, or two runs over the same inputs write different bytes
+- `Broiler.ECMAScript.Generation.Time.TzdbTableGenerator.Generate(TzdbPin, IReadOnlyDictionary<string, byte[]>, CldrPin, IReadOnlyDictionary<string, byte[]>)` in `Broiler.ECMAScript.Generation/Time/TzdbTableGenerator.cs` - Security=High, Spec=JSD-0053 tz tables via Broiler.VM TzdbTableGenerator, `CA2F6C`, PENDING
+  - Falsified if: tables are answered for a tzdb member or a CLDR file whose length or hash differs from its pin
 
 ## 10. What This Record Does Not Say
 
@@ -267,5 +323,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-439 of the 533 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+458 of the 661 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.
