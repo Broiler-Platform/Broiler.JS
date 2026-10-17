@@ -287,74 +287,80 @@ public static class RegExpUnicodeValidator
     }
 
     /// <summary>
-    /// Validates character class content for unicode mode.
-    /// Rejects ranges where either endpoint is a character class escape (\w, \d, etc.)
+    /// Validates character class content for unicode mode: no range may have a class escape at either end
+    /// (<c>\d \D \s \S \w \W</c>, or a property escape <c>\p{…}</c> / <c>\P{…}</c>), the early error of
+    /// <c>NonemptyClassRanges</c> and <c>NonemptyClassRangesNoDash</c> (ECMA-262 22.2.1.1, IsCharacterClass).
     /// </summary>
+    /// <remarks>
+    /// The class is read atom by atom as ClassRanges is: an atom, then, when a <c>-</c> follows it and something
+    /// other than the closing <c>]</c> follows that, the range's other end. So <c>[--\p{Hex}]</c> and
+    /// <c>[\p{Hex}-\uFFFF]</c> are refused, while <c>[\w-]</c>, <c>[-\w]</c> and <c>[a\-\d]</c>, which hold no
+    /// range, are not.
+    /// </remarks>
     private static bool ValidateUnicodeCharacterClass(string pattern, int classStart)
     {
         int i = classStart + 1;
         if (i < pattern.Length && pattern[i] == '^')
             i++;
 
-        bool prevIsClassEscape = false;
-
-        while (i < pattern.Length)
+        while (i < pattern.Length && pattern[i] != ']')
         {
-            char c = pattern[i];
+            if (!ReadClassAtom(pattern, ref i, out bool startIsClass))
+                return false;
 
-            if (c == ']')
-                return true;
-
-            if (c == '\\' && i + 1 < pattern.Length)
+            if (i + 1 < pattern.Length && pattern[i] == '-' && pattern[i + 1] != ']')
             {
-                char next = pattern[i + 1];
-                bool isClassEscape = next is 'd' or 'D' or 'w' or 'W' or 's' or 'S';
-
-                // Check if this is the end of a range: prevChar-\w
-                if (isClassEscape && i >= 2 && pattern[i - 1] == '-' && !prevIsClassEscape)
-                {
-                    // The '-' before a class escape forms an invalid range
+                i++;
+                if (!ReadClassAtom(pattern, ref i, out bool endIsClass))
                     return false;
-                }
-
-                prevIsClassEscape = isClassEscape;
-
-                // Check if next char is '-' forming range start: \w-nextChar
-                if (isClassEscape && i + 2 < pattern.Length && pattern[i + 2] == '-' && i + 3 < pattern.Length && pattern[i + 3] != ']')
-                {
+                if (startIsClass || endIsClass)
                     return false;
-                }
-
-                // Skip escape
-                if (next == 'u' && i + 2 < pattern.Length && pattern[i + 2] == '{')
-                {
-                    int end = pattern.IndexOf('}', i + 3);
-                    if (end < 0) return false;
-                    i = end + 1;
-                }
-                else if (next == 'u')
-                {
-                    i += 6;
-                }
-                else if (next == 'x')
-                {
-                    i += 4;
-                }
-                else if ((next == 'p' || next == 'P') && i + 2 < pattern.Length && pattern[i + 2] == '{')
-                {
-                    int end = pattern.IndexOf('}', i + 3);
-                    if (end < 0) return false;
-                    i = end + 1;
-                }
-                else
-                {
-                    i += 2;
-                }
-                continue;
             }
+        }
 
-            prevIsClassEscape = false;
-            i++;
+        return true;
+    }
+
+    // Reads one ClassAtom at pattern[i], leaving i just after it, and says whether it is a class escape.
+    // Returns false for an escape cut short by the pattern's end.
+    private static bool ReadClassAtom(string pattern, ref int i, out bool isClass)
+    {
+        isClass = false;
+        char c = pattern[i];
+
+        if (c != '\\')
+        {
+            i += char.IsHighSurrogate(c) && i + 1 < pattern.Length && char.IsLowSurrogate(pattern[i + 1]) ? 2 : 1;
+            return true;
+        }
+
+        if (i + 1 >= pattern.Length)
+            return false;
+
+        char next = pattern[i + 1];
+        isClass = next is 'd' or 'D' or 'w' or 'W' or 's' or 'S' or 'p' or 'P';
+
+        if ((next == 'u' || next == 'p' || next == 'P') && i + 2 < pattern.Length && pattern[i + 2] == '{')
+        {
+            int end = pattern.IndexOf('}', i + 3);
+            if (end < 0) return false;
+            i = end + 1;
+        }
+        else if (next == 'u')
+        {
+            i = System.Math.Min(i + 6, pattern.Length);
+        }
+        else if (next == 'x')
+        {
+            i = System.Math.Min(i + 4, pattern.Length);
+        }
+        else if (next == 'c')
+        {
+            i = System.Math.Min(i + 3, pattern.Length);
+        }
+        else
+        {
+            i += 2;
         }
 
         return true;

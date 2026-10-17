@@ -34,7 +34,7 @@ public static class StringSpanExtensions
             if (char.IsUpper(ch))
             {
                 sb.Append('-');
-                sb.Append(char.ToLower(ch));
+                sb.Append(char.ToLowerInvariant(ch));
                 continue;
             }
             sb.Append(ch);

@@ -83,6 +83,16 @@ internal static class RegExpValidator
                 }
             }
 
+            // The group names' early errors (22.2.1.1): a name that is not a RegExpIdentifierName, a name
+            // declared twice in one alternative, and, where group names are parsed, an incomplete \k. The check
+            // is the one the RegExp constructor makes, over the source as written.
+            if (RegExpGroupNames.FirstError(pattern, unicode || unicodeSets, unicodeSets) != null)
+                return false;
+
+            // Under v a negated class may not contain strings (22.2.1.1, MayContainStrings).
+            if (unicodeSets && NegatedClassMayContainStrings(pattern))
+                return false;
+
             pattern = NormalizeES3CharacterClasses(pattern);
 
             // Under u or v a property escape must name what ECMA-262's tables hold, exactly as they write it
@@ -376,6 +386,189 @@ internal static class RegExpValidator
         return classDepth == 0;
     }
 
+
+    /// <summary>
+    /// Whether a class of a <c>v</c>-mode <paramref name="pattern"/> is negated, at the top or nested, while its
+    /// contents may contain strings: the early error of <c>CharacterClass :: [^ ClassContents ]</c> and of
+    /// <c>NestedClass :: [^ ClassContents ]</c> (ECMA-262 22.2.1.1).
+    /// </summary>
+    /// <remarks>
+    /// MayContainStrings follows ECMA-262 22.2.1.6: a union may when one of its operands may, an intersection
+    /// only when every operand may, and a subtraction when its first operand may. An operand may when it is a
+    /// <c>\p{…}</c> of a property of strings, a <c>\q{…}</c> with a string not one code point long, or a
+    /// non-negated nested class whose contents may. So <c>[^\p{RGI_Emoji}]</c> is refused and
+    /// <c>[^\p{RGI_Emoji}&amp;&amp;a]</c> is not. The walk only answers this question; a pattern it cannot
+    /// follow is left to the structural check.
+    /// </remarks>
+    private static bool NegatedClassMayContainStrings(string pattern)
+    {
+        var refused = false;
+
+        for (int i = 0; i < pattern.Length && !refused; i++)
+        {
+            if (pattern[i] == '\\')
+            {
+                i++;
+                continue;
+            }
+
+            if (pattern[i] == '[')
+                ClassMayContainStrings(pattern, ref i, ref refused);
+        }
+
+        return refused;
+    }
+
+    // Reads the class opening at pattern[i] through its closing `]`, leaving i on that `]`, and answers
+    // whether it may contain strings. A negated class never does, and it sets refused when its contents may.
+    private static bool ClassMayContainStrings(string pattern, ref int i, ref bool refused)
+    {
+        i++;
+        var negated = i < pattern.Length && pattern[i] == '^';
+        if (negated)
+            i++;
+
+        // 0: a union, 1: an intersection, 2: a subtraction, as the first operator met decides.
+        var kind = 0;
+        var operands = 0;
+        var result = false;
+
+        while (i < pattern.Length && pattern[i] != ']')
+        {
+            if (operands > 0 && i + 1 < pattern.Length
+                && (pattern[i] == '&' && pattern[i + 1] == '&' || pattern[i] == '-' && pattern[i + 1] == '-'))
+            {
+                kind = pattern[i] == '&' ? 1 : 2;
+                i += 2;
+                continue;
+            }
+
+            var operand = OperandMayContainStrings(pattern, ref i, ref refused);
+            result = operands == 0 ? operand
+                : kind == 1 ? result && operand
+                : kind == 2 ? result
+                : result || operand;
+            operands++;
+
+            // A ClassSetRange `a-z` is one operand of a union, and contains no string.
+            if (kind == 0 && i + 1 < pattern.Length && pattern[i] == '-' && pattern[i + 1] != '-' && pattern[i + 1] != ']')
+            {
+                i++;
+                _ = OperandMayContainStrings(pattern, ref i, ref refused);
+            }
+        }
+
+        if (negated && result)
+            refused = true;
+
+        return !negated && result;
+    }
+
+    // Reads one ClassSetOperand at pattern[i], leaving i just after it.
+    private static bool OperandMayContainStrings(string pattern, ref int i, ref bool refused)
+    {
+        var c = pattern[i];
+
+        if (c == '[')
+        {
+            var nested = ClassMayContainStrings(pattern, ref i, ref refused);
+            i++;
+            return nested;
+        }
+
+        if (c != '\\' || i + 1 >= pattern.Length)
+        {
+            i += char.IsHighSurrogate(c) && i + 1 < pattern.Length && char.IsLowSurrogate(pattern[i + 1]) ? 2 : 1;
+            return false;
+        }
+
+        var escape = pattern[i + 1];
+        if (escape is 'p' or 'P' or 'q' or 'u' && i + 2 < pattern.Length && pattern[i + 2] == '{')
+        {
+            var close = pattern.IndexOf('}', i + 3);
+            if (close < 0)
+            {
+                i = pattern.Length;
+                return false;
+            }
+
+            var body = pattern.Substring(i + 3, close - (i + 3));
+            i = close + 1;
+
+            return escape switch
+            {
+                'p' => body.IndexOf('=') < 0 && JSUnicode.StringProperties.TryResolve(body, out _),
+                'q' => QMayContainStrings(body),
+                _ => false,
+            };
+        }
+
+        i += 2;
+        return false;
+    }
+
+    // Whether a \q{…}'s ClassStringDisjunctionContents hold a ClassString that is not one code point long.
+    private static bool QMayContainStrings(string body)
+    {
+        var length = 0;
+
+        for (int k = 0; k <= body.Length; k++)
+        {
+            if (k == body.Length || body[k] == '|')
+            {
+                if (length != 1)
+                    return true;
+                length = 0;
+                continue;
+            }
+
+            length++;
+            if (body[k] == '\\' && k + 1 < body.Length)
+            {
+                k++;
+                if (body[k] == 'u' && k + 1 < body.Length && body[k + 1] == '{')
+                    k = body.IndexOf('}', k) is var end and >= 0 ? end : body.Length - 1;
+                else if (body[k] == 'u' && k + 4 < body.Length)
+                {
+                    k += 4;
+                    // A surrogate pair written as two \u escapes is one code point.
+                    if (k + 6 < body.Length && body[k + 1] == '\\' && body[k + 2] == 'u'
+                        && IsSurrogatePairEscape(body, k - 3))
+                        k += 6;
+                }
+                else if (body[k] == 'x')
+                    k = System.Math.Min(k + 2, body.Length - 1);
+                else if (body[k] == 'c')
+                    k = System.Math.Min(k + 1, body.Length - 1);
+            }
+            else if (char.IsHighSurrogate(body[k]) && k + 1 < body.Length && char.IsLowSurrogate(body[k + 1]))
+            {
+                k++;
+            }
+        }
+
+        return false;
+    }
+
+    // Whether the \uHHHH at text[start] (just after its `u`) and the \uHHHH after it are a lead and a trail.
+    private static bool IsSurrogatePairEscape(string text, int start)
+    {
+        static int Unit(string t, int at)
+        {
+            int v = 0;
+            for (int n = 0; n < 4; n++)
+            {
+                int d = HexDigitValue(t[at + n]);
+                if (d < 0) return -1;
+                v = (v << 4) | d;
+            }
+            return v;
+        }
+
+        var lead = Unit(text, start);
+        var trail = Unit(text, start + 6);
+        return lead is >= 0xD800 and <= 0xDBFF && trail is >= 0xDC00 and <= 0xDFFF;
+    }
 
     /// <summary>
     /// Renames every named group <c>(?&lt;name&gt;…)</c> and named backreference

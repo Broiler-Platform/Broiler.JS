@@ -147,7 +147,7 @@ public readonly struct StringSpan : IEquatable<StringSpan>, IEquatable<string>, 
         if (length == 0)
             return string.Empty;
 
-        return Value!.ToLower();
+        return Value!.ToLowerInvariant();
     }
 
     public unsafe string ToCamelCase()
@@ -167,7 +167,7 @@ public readonly struct StringSpan : IEquatable<StringSpan>, IEquatable<string>, 
             for (i = 0; i < length; i++)
             {
                 var ch = *startOffset++;
-                d[i] = char.ToLower(ch);
+                d[i] = char.ToLowerInvariant(ch);
 
                 if (!char.IsUpper(ch))
                 {

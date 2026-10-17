@@ -33,7 +33,7 @@ namespace BroilerJS.Network
                     var pair = first[i];
                     if (pair.IsArray && pair.Length > 1)
                     {
-                        headers[pair[0].ToString().ToLower()] = pair[1].ToString();
+                        headers[pair[0].ToString().ToLowerInvariant()] = pair[1].ToString();
                         continue;
                     }
                 }
@@ -85,7 +85,7 @@ namespace BroilerJS.Network
                 throw new ArgumentNullException(nameof(name));
             }
             headers ??= new Dictionary<string, string>();
-            name = name.ToLower();
+            name = name.ToLowerInvariant();
             if (headers.TryGetValue(name, out var v))
             {
                 value = v + "," + value;
@@ -100,7 +100,7 @@ namespace BroilerJS.Network
             {
                 throw new ArgumentNullException(nameof(name));
             }
-            name = name.ToLower();
+            name = name.ToLowerInvariant();
             if (headers == null)
             {
                 return;
@@ -146,7 +146,7 @@ namespace BroilerJS.Network
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException(nameof(name));
-            if (headers?.TryGetValue(name.ToLower(), out var value) ?? false)
+            if (headers?.TryGetValue(name.ToLowerInvariant(), out var value) ?? false)
             {
                 return new JSString(value);
             }
@@ -158,7 +158,7 @@ namespace BroilerJS.Network
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException(nameof(name));
-            if (headers!.ContainsKey(name.ToLower()))
+            if (headers!.ContainsKey(name.ToLowerInvariant()))
             {
                 return JSBoolean.True;
             }

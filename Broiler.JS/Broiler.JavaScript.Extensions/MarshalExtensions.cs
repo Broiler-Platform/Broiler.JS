@@ -110,7 +110,7 @@ public static class MarshalExtensions
             }
 
             // change this logic to support case insensitive property match
-            var properties = type.GetProperties().Where(x => x.CanWrite).ToDictionary(x => x.Name.ToLower(), x => x);
+            var properties = type.GetProperties().Where(x => x.CanWrite).ToDictionary(x => x.Name.ToLowerInvariant(), x => x);
             bool Unmarshal(JSObject @object, out object result)
             {
                 result = c.Invoke([]);
@@ -118,7 +118,7 @@ public static class MarshalExtensions
 
                 while (en.MoveNext(out var key, out var value))
                 {
-                    if (properties.TryGetValue(key.ToString().ToLower(), out var p))
+                    if (properties.TryGetValue(key.ToString().ToLowerInvariant(), out var p))
                         p.SetValue(result, value.ForceConvert(p.PropertyType));
                 }
 

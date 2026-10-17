@@ -32,6 +32,6 @@ public static class StringExtensions
             break;
         }
 
-        return string.Concat(text.Substring(0, i).ToLower(), text.AsSpan(i));
+        return string.Concat(text.Substring(0, i).ToLowerInvariant(), text.AsSpan(i));
     }
 }
