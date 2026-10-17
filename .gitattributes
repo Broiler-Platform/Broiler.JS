@@ -15,6 +15,19 @@ Broiler.ECMAScript.slnf text eol=lf
 # Rule SL10's witness for CRLF line endings must keep its CRs, so it alone is stored as-is.
 Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/witnesses/SL10-crlf-line-endings.cs.witness -text
 
+# THE TIME DATA HOME'S PINNED INPUTS AND BINARY TABLES ARE BINARY (milestone SJL-8.2). The archives are
+# held by their SHA-256 in tzdb.pin, calendars.pin and cldr.pin, byte-for-byte copies of Broiler.VM's, and
+# the generated tables by rule SL7 and their manifest. The folder's `text eol=lf` above would let a checkout
+# filter rewrite a byte under a recorded hash, so these lines, which come after it, take it back. The CLDR
+# file and its licence are LF text today and are declared binary as Broiler.VM declares its copies. The
+# pins, the READMEs, the text tables and the manifest stay `text eol=lf`: the tests read them byte for
+# byte, and LF is what the generator writes and what the pins' digests were taken over.
+Broiler.ECMAScript/data/time/tzdb/*.tar.gz binary
+Broiler.ECMAScript/data/time/calendars/*.crate binary
+Broiler.ECMAScript/data/time/cldr/cldr-48.2.0/** binary
+Broiler.ECMAScript/data/time/cldr/cldr-LICENSE.txt binary
+Broiler.ECMAScript/data/time/generated/*.bin binary
+
 # CI job logs retained in an evidence bundle are kept byte for byte as GitHub Actions served them;
 # the Windows jobs' logs have CRLF line endings.
 docs/evidence/*/ci/*.log -text

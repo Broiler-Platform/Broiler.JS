@@ -440,12 +440,23 @@ public class SharedRuleTests
         Assert.Contains(sources, static s => s.EndsWith("WorkCharge.cs", StringComparison.Ordinal));
         Assert.Empty(sources.SelectMany(static p => SharedRules.SL10Directives(SharedTree.Relative(p), File.ReadAllText(p))));
 
-        var text = SharedTree.SourceFiles("*").Where(static p => !p.EndsWith(".png", StringComparison.Ordinal)).ToList();
-        Assert.Empty(text.SelectMany(static p => SharedRules.SL10LineEndings(SharedTree.Relative(p), File.ReadAllBytes(p))));
-
         // Read by line: Git checks .gitattributes out with the platform's line endings.
         var attributes = File.ReadAllLines(Path.Combine(SharedTree.Root, ".gitattributes"));
         Assert.Contains("Broiler.ECMAScript/** text eol=lf", attributes);
+
+        // The data folder's archives and binary tables are bytes, not text (milestone SJL-8.2): a file
+        // .gitattributes declares binary below Broiler.ECMAScript/data/ is not read for a CR, and nothing
+        // outside that folder can be exempted that way.
+        var binary = SharedRules.BinaryDataPatterns(attributes);
+        var files = SharedTree.SourceFiles("*").Where(static p => !p.EndsWith(".png", StringComparison.Ordinal)).ToList();
+        var text = files.Where(p => !SharedRules.IsDeclaredBinary(SharedTree.Relative(p), binary)).ToList();
+        Assert.Empty(text.SelectMany(static p => SharedRules.SL10LineEndings(SharedTree.Relative(p), File.ReadAllBytes(p))));
+
+        // Not vacuous: the exemption holds the pinned tz archive, and only files of the data folder.
+        var exempted = files.Except(text).Select(SharedTree.Relative).ToList();
+        Assert.Contains("Broiler.ECMAScript/data/time/tzdb/tzdata2026e.tar.gz", exempted);
+        Assert.All(exempted, static p => Assert.StartsWith(SharedRules.DataFolder, p, StringComparison.Ordinal));
+        Assert.Contains(text, static p => p.EndsWith("tzdb.pin", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -455,6 +466,13 @@ public class SharedRuleTests
         Assert.Equal(["w.cs:7: #if DEBUG", "w.cs:9: #else", "w.cs:11: #endif", "w.cs:13: #pragma warning disable CS0618", "w.cs:15: #pragma warning restore CS0618"], directives);
 
         Assert.NotEmpty(SharedRules.SL10LineEndings("w.cs", File.ReadAllBytes(Witness.PathOf("SL10-crlf-line-endings.cs.witness"))));
+
+        // A binary declaration exempts the data folder's files only: the same pattern over a source is not honoured.
+        var patterns = SharedRules.BinaryDataPatterns(["Broiler.ECMAScript/data/time/tzdb/*.tar.gz binary", "Broiler.ECMAScript/** binary", "# a/b binary"]);
+        Assert.Equal(["Broiler.ECMAScript/data/time/tzdb/*.tar.gz"], patterns);
+        Assert.True(SharedRules.IsDeclaredBinary("Broiler.ECMAScript/data/time/tzdb/tzdata2026e.tar.gz", patterns));
+        Assert.False(SharedRules.IsDeclaredBinary("Broiler.ECMAScript/data/time/tzdb/nested/tzdata2026e.tar.gz", patterns));
+        Assert.False(SharedRules.IsDeclaredBinary("Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/WorkCharge.cs", ["Broiler.ECMAScript/**"]));
     }
 }
 

@@ -1,0 +1,42 @@
+# broiler-calendars data pin 1
+#
+# The published crates the JavaScript profile's calendar tables are generated from: the Chinese,
+# Korean and Qing-era years, the Umm al-Qura years, and the Persian calendar's corrections to its
+# 33-year rule. Phase F8's slice T3 opens with them: the Intl era and month code proposal requires
+# the CLDR calendars, and names for Chinese, Korean, Umm al-Qura and Persian years data published by
+# the Purple Mountain Observatory, KASI, KACST and the Iranian calendar authority; ICU4X publishes
+# those years as Rust source, and decision JSD-0056 takes them from there. Rule N31 holds the
+# archives to this file.
+#
+# WHAT IS HERE. Two crates as crates.io serves them, unmodified: `icu_calendar` 2.3.0 (Unicode
+# License v3) and `calendrical_calculations` 0.2.4 (Apache License 2.0), its dependency. A reader
+# checks `archive-sha256` without a network; it is also the `cksum` the crates.io index states for
+# each version. The `member` lines name the files inside them a generator may read, each with its
+# length and SHA-256 after extraction: the four year tables, `persian.rs` for its correction table,
+# each crate's `Cargo.toml`, which states its name and version, and each crate's `LICENSE`.
+#
+# HOW IT WAS TAKEN. Retrieved twice on 2026-10-05 from `https://static.crates.io/crates/`, into two
+# directories; `cmp` found them byte-identical, and the first copies are archived.
+
+data calendar-crates
+version icu_calendar-2.3.0 calendrical_calculations-0.2.4
+retrieved 2026-10-05
+retrievals 2 byte-identical
+archived yes
+
+archive icu_calendar-2.3.0.crate 818150 58655df2f728e46e4eee80bddebefacf52ec3e77cdb925014b47c5a5905eb55c uO22OmwvwVt9zm/kTQEJwdD4hs6q7XyDwFkSDFJti+hM93QuqB+qOvbtZ5zJQfIKuU9Obk4unUoQGat+C8flew==
+upstream icu_calendar-2.3.0.crate https://static.crates.io/crates/icu_calendar/icu_calendar-2.3.0.crate
+licence icu_calendar-2.3.0.crate Unicode-3.0
+archive calendrical_calculations-0.2.4.crate 68875 5abbd6eeda6885048d357edc66748eea6e0268e3dd11f326fff5bd248d779c26 XhqLk70oytGvtuomG1/IGy8A1AeIlWv61ncb58zZPA/6pTqb+nDMOaqyuIwbnrA1R9NLTP8LkpmjD/URiFGuYg==
+upstream calendrical_calculations-0.2.4.crate https://static.crates.io/crates/calendrical_calculations/calendrical_calculations-0.2.4.crate
+licence calendrical_calculations-0.2.4.crate Apache-2.0
+
+member icu_calendar-2.3.0.crate icu_calendar-2.3.0/Cargo.toml 5837 e9b5c8ca6ae51b3140ab113fa75888bdddd4a5f6995a020b458194f614140968
+member icu_calendar-2.3.0.crate icu_calendar-2.3.0/LICENSE 2195 f367c1b8e1aa262435251e442901da4607b4650e0e63a026f5044473ecfb90f2
+member icu_calendar-2.3.0.crate icu_calendar-2.3.0/src/cal/east_asian_traditional/china_data.rs 25310 46e9ad101ef4501765524d5f5ea65ec1c87a1c9f1bec00cb66e7b57ad49ef9a5
+member icu_calendar-2.3.0.crate icu_calendar-2.3.0/src/cal/east_asian_traditional/korea_data.rs 25306 109acbffe1cf64ce20bf483752f5c1d2f6b8cae07b6a75e17e79e0f2a20eb69f
+member icu_calendar-2.3.0.crate icu_calendar-2.3.0/src/cal/east_asian_traditional/qing_data.rs 2301 e8097d4ba4651863644ef2ed7247d57640e949eb2c2ef207a2d8ebf9b5c4f69e
+member icu_calendar-2.3.0.crate icu_calendar-2.3.0/src/cal/hijri/ummalqura_data.rs 40745 15118990b415f15ebf5d63502bebc0d6a99a5e021e14d87da4beb6fb136fdfa0
+member calendrical_calculations-0.2.4.crate calendrical_calculations-0.2.4/Cargo.toml 2936 f9f054053fe9cad9f30e0ebe2ab78219d1db32a3600c55aee25a6edbee82a071
+member calendrical_calculations-0.2.4.crate calendrical_calculations-0.2.4/LICENSE 11351 192ea857d1bff2b87c174de36cbae5c173234726c6b8eceab9790a535d7dbc95
+member calendrical_calculations-0.2.4.crate calendrical_calculations-0.2.4/src/persian.rs 8412 177efc990dea2c9243e0e7dc39b5fb33f4276b360bae7128352a0a6f8931eb2f

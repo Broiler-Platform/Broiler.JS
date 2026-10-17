@@ -51,6 +51,14 @@ contain two pieces of third-party code and one set of public-domain formulas, na
   so is the Date area's reading of strings in Broiler.VM's dialect, at milestone SJL-6.3
   (`EcmaDateParser.cs`, from `DateParseText` and `DateParseTextual`). Each records its origin in its
   assurance annotation or its source.
+- `Broiler.ECMAScript.Generation` holds the time data home's generator (milestone SJL-8.2): the tz pin
+  reader, the tz compiler and the time zone table generator, the calendar pin reader and the calendar
+  table generator, ported from Broiler.VM's architecture tests under the same licence and by the same
+  contributors, each recording its origin in its assurance annotation. The compiler reproduces what the
+  IANA tz project's `zic` writes, whose code is in the public domain; it is written from Broiler.VM's
+  compiler and the tz source format, not from `zic`'s code. **The package carries no data**: it reads the
+  pinned archives its caller hands it, and the tables it writes are files of this repository, under the
+  time data section below, never package content (decision SJL-D-6 (c)).
 - `Broiler.ECMAScript.Conformance` (not packed) holds the conformance corpus's reader, validator and
   runners, written for the programme. The corpus it reads, `conformance/vectors/`, takes its expected
   values from ECMA-262 and from an exact reference computation in this repository, not from code.
@@ -103,7 +111,45 @@ number-conversion area and the numerics area written for the shared libraries pr
 milestone SJL-5.3; the bullet on Hinnant's formulas was added; the bullet on the code ported from
 Broiler.VM ended at "from `JsBigInt`). Each records its origin in its assurance annotation."; and the bullet
 on `Broiler.ECMAScript.Algorithms.Tests` ended at "Neither arm copies fdlibm.", which overlooked bundle
-`sjl-5-001`'s text arms, and the sentence on them and on bundle `sjl-6-001`'s Date arms was added.
+`sjl-5-001`'s text arms, and the sentence on them and on bundle `sjl-6-001`'s Date arms was added. Revised
+again 2026-10-17, at milestone SJL-8.2: the bullet on `Broiler.ECMAScript.Generation` was added, and no
+other text changed.
+
+## The time data home (`Broiler.ECMAScript/data/time/`)
+
+This repository is the home of both engines' time zone and calendar data (decision SJL-D-1 (b-iii);
+Broiler.VM's JSD-0076). [`Broiler.ECMAScript/data/time/`](Broiler.ECMAScript/data/time/README.md) holds
+three pinned inputs, each a byte-for-byte copy of Broiler.VM's at its commit `9508bd5`, and the tables
+`Broiler.ECMAScript.Generation` writes from them into `data/time/generated/`. **No package carries the
+inputs or the tables** (decision SJL-D-6 (c)): each engine embeds the tables itself, and Broiler.JS does so
+from milestone SJL-8.6, when this section's tables also join the engine's data above.
+
+- **The IANA Time Zone Database**, release 2026e, its data tarball `tzdata2026e.tar.gz` archived unmodified
+  in [`data/time/tzdb/`](Broiler.ECMAScript/data/time/tzdb/README.md), where `tzdb.pin` records its length,
+  SHA-256 and SHA-512 and the length and SHA-256 of the twelve members the generator reads. The release's
+  `LICENSE` states: "Unless specified below, all files in the tz code and data (including this LICENSE
+  file) are in the public domain." The files it then names are code, are not in the data tarball, and are
+  not here. No licence text therefore has to travel with the tables derived from it, `time-zones.bin`,
+  `time-zone-ids.txt` and `time-zone-regions.txt`; this entry records their source all the same.
+- **The Unicode Common Locale Data Repository (CLDR)**, release 48.2.0: one file, `bcp47/timezone.json`
+  from the npm package `cldr-bcp47`, archived unmodified in
+  [`data/time/cldr/`](Broiler.ECMAScript/data/time/cldr/README.md) with the CLDR licence text,
+  `cldr-LICENSE.txt`, and held by its length and SHA-256 in `cldr.pin`. It is © Unicode, Inc., under the
+  Unicode License v3 below. The primary identifiers in `time-zone-ids.txt` are derived from it and remain
+  subject to that licence.
+- **ICU4X's `icu_calendar` 2.3.0**, as crates.io serves it, archived unmodified in
+  [`data/time/calendars/`](Broiler.ECMAScript/data/time/calendars/README.md) and held by `calendars.pin`. It
+  is under the Unicode License v3 below; the crate's own copy of the licence is its `LICENSE`, "Copyright ©
+  2020-2024 Unicode, Inc.". The Chinese, Korean, Qing-era and Umm al-Qura years in `calendars.bin` are read
+  from its year tables and **remain subject to the Unicode License v3**.
+- **`calendrical_calculations` 0.2.4**, its dependency, archived beside it, under the Apache License 2.0,
+  the licence of this repository's own code, whose text is in [`LICENSE`](LICENSE). Its files state that
+  they implement algorithms from *Calendrical Calculations* by Reingold and Dershowitz (4th edition, 2018),
+  which their authors released as Lisp code under the Apache License 2.0; the crate carries no `NOTICE`
+  file. The Persian calendar's corrections in `calendars.bin` are read from its `persian.rs`.
+
+*Added 2026-10-17, at milestone SJL-8.2, when the data home's inputs and generator were added. Broiler.VM's
+`THIRD_PARTY_NOTICES.md` carries the same three inputs' entries for its own copies.*
 
 ## Sources the engine's own code cites
 
