@@ -1,0 +1,61 @@
+Why the head check's shell binaries hash differently from the base's, while every answer is byte-identical
+
+base: 15a1bd8f329f12238b093def5d1ddcd3e1dffe3d, built in a detached worktree of it
+head check: 90ff6ab18d1ffbf140a30f66679c0d27aea45e01, built in this branch's worktree
+
+$ git diff --name-only 15a1bd8f 90ff6ab1 -- Broiler.JS Directory.Build.props Directory.Build.targets Directory.Packages.props NuGet.config global.json eng
+  (nothing: no source file of the engine or its build differs)
+
+$ git diff --name-only 15a1bd8f 90ff6ab1 -- Broiler.ECMAScript/Broiler.ECMAScript.Algorithms
+  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj
+  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/PublicAPI.txt
+  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Time/CalendarYears.cs
+  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Time/OffsetTimeZones.cs
+  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Time/TimeZoneDatabase.cs
+  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs
+  Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-time-zones.md
+  (SJL-8.3's time-zone and calendar area, which no engine file calls: Broiler.JS is unchanged)
+
+Assemblies whose SHA-256 differs (base/shell-binaries.sha256 against head-check/shell-binaries.sha256):
+  Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Storage.dll
+  BroilerJS.dll
+The other 25 assemblies, every one restored from a package, are identical.
+
+Each assembly built here records the directory it was built in: occurrences of the tree's path in its bytes,
+as UTF-8 (the debug directory's PDB path) and as UTF-16 (string literals such as caller file paths):
+  Broiler.ECMAScript.Algorithms.dll: base 105472 bytes, its path 1 + 0 times; head 141824 bytes, its path 1 + 0 times
+  Broiler.JavaScript.Ast.dll: base 54272 bytes, its path 1 + 0 times; head 54272 bytes, its path 1 + 0 times
+  Broiler.JavaScript.BuiltIns.dll: base 1308672 bytes, its path 1 + 125 times; head 1293312 bytes, its path 1 + 125 times
+  Broiler.JavaScript.Clr.dll: base 43008 bytes, its path 1 + 6 times; head 41984 bytes, its path 1 + 6 times
+  Broiler.JavaScript.Compiler.dll: base 269312 bytes, its path 1 + 8 times; head 268288 bytes, its path 1 + 8 times
+  Broiler.JavaScript.Engine.dll: base 108544 bytes, its path 1 + 9 times; head 107520 bytes, its path 1 + 9 times
+  Broiler.JavaScript.ExpressionCompiler.dll: base 77824 bytes, its path 1 + 0 times; head 77824 bytes, its path 1 + 0 times
+  Broiler.JavaScript.Expressions.dll: base 121344 bytes, its path 1 + 0 times; head 121344 bytes, its path 1 + 0 times
+  Broiler.JavaScript.Extensions.dll: base 16896 bytes, its path 1 + 0 times; head 16896 bytes, its path 1 + 0 times
+  Broiler.JavaScript.Globals.dll: base 22528 bytes, its path 1 + 1 times; head 22528 bytes, its path 1 + 1 times
+  Broiler.JavaScript.LinqExpressions.dll: base 123904 bytes, its path 1 + 2 times; head 123392 bytes, its path 1 + 2 times
+  Broiler.JavaScript.Modules.dll: base 76288 bytes, its path 1 + 6 times; head 75264 bytes, its path 1 + 6 times
+  Broiler.JavaScript.Parser.dll: base 102400 bytes, its path 1 + 0 times; head 102400 bytes, its path 1 + 0 times
+  Broiler.JavaScript.Runtime.dll: base 1023488 bytes, its path 1 + 21 times; head 1020416 bytes, its path 1 + 21 times
+  Broiler.JavaScript.Storage.dll: base 44544 bytes, its path 1 + 1 times; head 44544 bytes, its path 1 + 1 times
+  BroilerJS.dll: base 204288 bytes, its path 0 + 1 times; head 204288 bytes, its path 0 + 1 times
+
+base tree path:  /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl84d/base-tree
+head tree path:  /home/user/broiler.js-sjl84d
+The paths differ in length, so the strings and every offset after them move; Broiler.ECMAScript.Algorithms.dll
+also differs by its sources. The answers do not move: compare-with-base/ finds 0 lines moved in either program,
+and summary.json's answerSha256 is the same in both runs.

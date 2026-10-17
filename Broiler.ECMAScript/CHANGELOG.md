@@ -14,7 +14,10 @@ Each entry has the headings **Added**, **Changed**, **Observable changes** and *
 
 ## Unreleased
 
-Not yet packed under a version of its own: the stream's next version is set when this entry is published.
+To be packed as `0.1.0-preview.5`, the stream keeping its `0.1.0` prefix while it is a preview: Broiler.VM's
+cut-over (SJL-8.5) admits the package from its committed feed before it is published, which is the owner's to
+choose. *(Revised 2026-10-17, at SJL-8.5; read "Not yet packed under a version of its own: the stream's next
+version is set when this entry is published.")*
 
 ### Added
 

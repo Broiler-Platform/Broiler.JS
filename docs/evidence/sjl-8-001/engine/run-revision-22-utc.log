@@ -1,0 +1,6 @@
+== start 2026-10-17T16:14:39Z TZ=UTC at d0f8df7d1d75c005522b484cba92aadf035552bd (clean tree; built once beforehand in Release, run with --no-build)
+Test run for /home/user/broiler.js-sjl84v/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     4, Skipped:     0, Total:     4, Duration: 38 m 14 s - Broiler.JavaScript.Vectors.Tests.dll (net10.0)
+== end 2026-10-17T16:52:55Z
