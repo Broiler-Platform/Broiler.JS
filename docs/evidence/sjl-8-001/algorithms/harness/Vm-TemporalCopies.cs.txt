@@ -1,0 +1,354 @@
+using System;
+using BigInteger = System.Numerics.BigInteger;
+using Broiler.ECMAScript.Time;
+
+namespace VmRef;
+
+internal readonly record struct JsIsoDate(long Year, int Month, int Day)
+{
+    /// <summary>The record of the year, month and day the shared library answers (IsoCalendarMath.FromEpochDays).</summary>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=993F6D
+    // Broiler-Human:        PENDING
+    internal JsIsoDate((long Year, int Month, int Day) date)
+        : this(date.Year, date.Month, date.Day)
+    {
+    }
+}
+
+internal readonly record struct JsTimeRecord(long Days, int Hour, int Minute, int Second, int Millisecond, int Microsecond, int Nanosecond)
+{
+    /// <summary>The specification's MidnightTimeRecord.</summary>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=DE5BAA
+    // Broiler-Human:        PENDING
+    internal static JsTimeRecord Midnight => default;
+
+    /// <summary>The specification's NoonTimeRecord.</summary>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=C5A337
+    // Broiler-Human:        PENDING
+    internal static JsTimeRecord Noon => new(0, 12, 0, 0, 0, 0, 0);
+}
+
+internal readonly record struct JsIsoDateTime(JsIsoDate Date, JsTimeRecord Time);
+
+internal sealed class JsTemporalParser
+{
+    private readonly string text;
+    // Broiler-AI:           Origin=AI;
+
+    private int at;
+
+    // THE PARSE NODES ParseISODateTime READS, captured as the productions match.
+    // Broiler-AI:           Origin=AI;
+
+    private string? fraction;
+    // Broiler-AI:           Origin=AI;
+
+    private JsTemporalParser(string text) => this.text = text;
+
+    private char Peek(int ahead = 0) => at + ahead < text.Length ? text[at + ahead] : '\0';
+
+    private bool Eat(char c)
+    {
+        if (Peek() == c)
+        {
+            at++;
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool EatAny(string set)
+    {
+        if (at < text.Length && set.Contains(text[at], System.StringComparison.Ordinal))
+        {
+            at++;
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsDigit(char c) => c is >= '0' and <= '9';
+
+    private static bool IsAlpha(char c) => c is (>= 'A' and <= 'Z') or (>= 'a' and <= 'z');
+
+    private string? Digits(int count)
+    {
+        if (at + count > text.Length)
+        {
+            return null;
+        }
+
+        for (var i = 0; i < count; i++)
+        {
+            if (!IsDigit(text[at + i]))
+            {
+                return null;
+            }
+        }
+
+        var result = text.Substring(at, count);
+        at += count;
+        return result;
+    }
+
+    private string? Bounded(int maximum)
+    {
+        var start = at;
+        var digits = Digits(2);
+
+        if (digits is null || int.Parse(digits, System.Globalization.CultureInfo.InvariantCulture) > maximum)
+        {
+            at = start;
+            return null;
+        }
+
+        return digits;
+    }
+
+    private bool Fraction()
+    {
+        var start = at;
+
+        if (!EatAny(".,"))
+        {
+            return false;
+        }
+
+        var digitsStart = at;
+
+        while (at < text.Length && IsDigit(text[at]) && at - digitsStart < 9)
+        {
+            at++;
+        }
+
+        if (at == digitsStart || (at < text.Length && IsDigit(text[at])))
+        {
+            at = start;
+            return false;
+        }
+
+        fraction ??= text[start..at];
+        return true;
+    }
+
+    private string? UtcOffset(bool subMinute)
+    {
+        var start = at;
+
+        if (!EatAny("+-") || Bounded(23) is null)
+        {
+            at = start;
+            return null;
+        }
+
+        var afterHour = at;
+
+        foreach (var extended in new[] { true, false })
+        {
+            at = afterHour;
+
+            if ((extended && !Eat(':')) || Bounded(59) is null)
+            {
+                continue;
+            }
+
+            var afterMinute = at;
+
+            if (subMinute && (!extended || Eat(':')) && Bounded(59) is not null)
+            {
+                var savedFraction = fraction;
+                fraction = null;
+                Fraction();
+                fraction = savedFraction;
+                return text[start..at];
+            }
+
+            at = afterMinute;
+            return text[start..at];
+        }
+
+        at = afterHour;
+        return text[start..at];
+    }
+
+    private bool TimeZoneIanaName()
+    {
+        var start = at;
+
+        while (true)
+        {
+            if (!(IsAlpha(Peek()) || Peek() is '.' or '_'))
+            {
+                at = start;
+                return false;
+            }
+
+            at++;
+
+            while (IsAlpha(Peek()) || IsDigit(Peek()) || Peek() is '.' or '_' or '-' or '+')
+            {
+                at++;
+            }
+
+            if (!Eat('/'))
+            {
+                return true;
+            }
+        }
+    }
+
+    private string? TimeZoneIdentifier()
+    {
+        var start = at;
+
+        if (UtcOffset(subMinute: false) is { } offsetText)
+        {
+            return offsetText;
+        }
+
+        at = start;
+        return TimeZoneIanaName() ? text[start..at] : null;
+    }
+
+    internal static bool IsTimeZoneIdentifier(string text)
+    {
+        var parser = new JsTemporalParser(text);
+        return parser.TimeZoneIdentifier() is not null && parser.at == text.Length;
+    }
+
+    internal static bool IsUtcOffset(string text, bool subMinute)
+    {
+        var parser = new JsTemporalParser(text);
+        return parser.UtcOffset(subMinute) is not null && parser.at == text.Length;
+    }
+
+    internal static long OffsetNanoseconds(string offset)
+    {
+        var sign = offset[0] == '-' ? -1L : 1L;
+        var digits = new System.Text.StringBuilder();
+        string? fractionText = null;
+
+        for (var i = 1; i < offset.Length; i++)
+        {
+            if (offset[i] is '.' or ',')
+            {
+                fractionText = offset[(i + 1)..];
+                break;
+            }
+
+            if (IsDigit(offset[i]))
+            {
+                digits.Append(offset[i]);
+            }
+        }
+
+        var all = digits.ToString();
+        var hours = long.Parse(all[..2], System.Globalization.CultureInfo.InvariantCulture);
+        var minutes = all.Length >= 4 ? long.Parse(all[2..4], System.Globalization.CultureInfo.InvariantCulture) : 0;
+        var seconds = all.Length >= 6 ? long.Parse(all[4..6], System.Globalization.CultureInfo.InvariantCulture) : 0;
+        var nanoseconds = fractionText is null ? 0 : long.Parse((fractionText + "000000000")[..9], System.Globalization.CultureInfo.InvariantCulture);
+        return sign * ((((hours * 60) + minutes) * 60 + seconds) * 1_000_000_000L + nanoseconds);
+    }
+
+}
+
+internal static class JsTemporalCore
+{
+    internal static readonly BigInteger NsPerDay = new(86_400_000_000_000L);
+
+    internal static readonly BigInteger NsMaxInstant = NsPerDay * 100_000_000;
+
+    internal static readonly BigInteger NsMinInstant = -NsMaxInstant;
+
+    internal static bool DaysWithinRange(JsIsoDate date) => System.Math.Abs(IsoCalendarMath.EpochDays(date.Year, date.Month, date.Day)) <= 100_000_000;
+
+    internal static JsIsoDate AddDays(JsIsoDate date, long days) =>
+        new(IsoCalendarMath.FromEpochDays(IsoCalendarMath.EpochDays(date.Year, date.Month, date.Day) + days));
+
+    internal static BigInteger TimeNs(JsTimeRecord time) =>
+        (((((((BigInteger)time.Hour * 60) + time.Minute) * 60) + time.Second) * 1000 + time.Millisecond) * 1000 + time.Microsecond) * 1000 +
+        time.Nanosecond;
+
+    internal static JsTimeRecord BalanceTime(BigInteger nanoseconds)
+    {
+        var days = BigInteger.DivRem(nanoseconds, NsPerDay, out var within);
+
+        if (within.Sign < 0)
+        {
+            days -= 1;
+            within += NsPerDay;
+        }
+
+        var ns = (long)within;
+        return new JsTimeRecord(
+            (long)days,
+            (int)(ns / 3_600_000_000_000L),
+            (int)(ns / 60_000_000_000L % 60),
+            (int)(ns / 1_000_000_000L % 60),
+            (int)(ns / 1_000_000L % 1000),
+            (int)(ns / 1000 % 1000),
+            (int)(ns % 1000));
+    }
+
+    internal static BigInteger UtcEpochNs(JsIsoDateTime dateTime) =>
+        ((BigInteger)IsoCalendarMath.EpochDays(dateTime.Date.Year, dateTime.Date.Month, dateTime.Date.Day) * NsPerDay) + TimeNs(dateTime.Time);
+
+    internal static bool IsValidEpochNs(BigInteger ns) => ns >= NsMinInstant && ns <= NsMaxInstant;
+
+    internal static JsIsoDateTime FromEpochNs(BigInteger ns)
+    {
+        var time = BalanceTime(ns);
+        return new JsIsoDateTime(new JsIsoDate(IsoCalendarMath.FromEpochDays(time.Days)), time with { Days = 0 });
+    }
+
+    internal static JsIsoDateTime BalanceDateTime(JsIsoDate date, BigInteger nanoseconds)
+    {
+        var time = BalanceTime(nanoseconds);
+        return new JsIsoDateTime(AddDays(date, time.Days), time with { Days = 0 });
+    }
+
+    internal static string Padded(long value, int width) =>
+        value.ToString(System.Globalization.CultureInfo.InvariantCulture).PadLeft(width, '0');
+
+    internal const int PrecisionAuto = -1;
+
+    internal const int PrecisionMinute = -2;
+
+    internal static string FormatTime(int hour, int minute, int second, long subSecondNanoseconds, int precision, bool separated = true)
+    {
+        var separator = separated ? ":" : string.Empty;
+        var text = Padded(hour, 2) + separator + Padded(minute, 2);
+
+        if (precision == PrecisionMinute)
+        {
+            return text;
+        }
+
+        return text + separator + Padded(second, 2) + FractionalSeconds(subSecondNanoseconds, precision);
+    }
+
+    internal static string FractionalSeconds(long subSecondNanoseconds, int precision)
+    {
+        if (precision < 0)
+        {
+            if (subSecondNanoseconds == 0)
+            {
+                return string.Empty;
+            }
+
+            return "." + Padded(subSecondNanoseconds, 9).TrimEnd('0');
+        }
+
+        return precision == 0 ? string.Empty : "." + Padded(subSecondNanoseconds, 9)[..precision];
+    }
+
+    internal static string FormatOffsetMinutes(long offsetMinutes, bool separated = true)
+    {
+        var sign = offsetMinutes >= 0 ? "+" : "-";
+        var absolute = System.Math.Abs(offsetMinutes);
+        return sign + FormatTime((int)(absolute / 60), (int)(absolute % 60), 0, 0, PrecisionMinute, separated);
+    }
+
+}

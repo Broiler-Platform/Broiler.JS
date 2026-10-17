@@ -1,0 +1,23 @@
+# The data home against Broiler.VM at 9508bd5 (its pins, archives and generated tables unchanged since), checked 2026-10-17
+
+## Pinned inputs, compared file by file with cmp against Broiler.VM's src/tests/*/pins/ at 431c20e (whose product sources are 9508bd5's)
+identical  data/time/tzdb/tzdb.pin  ef9c7443115a802db68895b29ad6c584ddec666280120b61e38061fcf5215f6f
+identical  data/time/tzdb/tzdata2026e.tar.gz  b26882805f26aac59d5b222978e6580484b834ccdc98be89df2f05a6dc53a652
+identical  data/time/calendars/calendars.pin  53c5b2d380a8c69b06648ed2b57db76684619d8fd3493582c196942423d795da
+identical  data/time/calendars/icu_calendar-2.3.0.crate  58655df2f728e46e4eee80bddebefacf52ec3e77cdb925014b47c5a5905eb55c
+identical  data/time/calendars/calendrical_calculations-0.2.4.crate  5abbd6eeda6885048d357edc66748eea6e0268e3dd11f326fff5bd248d779c26
+identical  data/time/cldr/cldr-48.2.0/json/cldr-bcp47/bcp47/timezone.json  c11423884420f00cf52733c854de5c898ddb6657ce560334c638a2bd994a1448
+identical  data/time/cldr/cldr-LICENSE.txt  b49d0e9f8ead51ca8b7df6fec89cc3ae6809198b4b9d43c74216da0118f23f5b
+
+## Generated tables against the data of Broiler.VM's src/Broiler.VM.Profile.JavaScript.Intl/JsTzdbTables.g.cs and JsCalendarTables.g.cs
+## (byte arrays and UTF-8 raw string literals extracted by a script; table, Broiler.VM's length, the home's length, both SHA-256 prefixes, verdict)
+TimeZones 78428 78428 f0993da914d6ffed f0993da914d6ffed IDENTICAL
+TimeZoneIds 14056 14056 c68c5d8e9a5677f0 c68c5d8e9a5677f0 IDENTICAL
+TimeZoneRegions 7627 7627 8cf869e9f19f0011 8cf869e9f19f0011 IDENTICAL
+Calendars 1958 1958 dc368c81f83865b2 dc368c81f83865b2 IDENTICAL
+
+## The shared folder at the integrated commit, after a clean Release build (0 warnings, 0 errors)
+Broiler.ECMAScript.Generation.Tests 28 passed; Broiler.ECMAScript.Conformance.Tests 111 passed; Broiler.ECMAScript.Algorithms.Tests 547 passed; Broiler.ECMAScript.Architecture.Tests 32 passed; 0 failed
+assurance check: Broiler.ECMAScript: no violations.
+scripts/packaging/test_pristine_consumer.py --set shared: Validated Broiler.ECMAScript.Algorithms 0.1.0-preview.4, Broiler.ECMAScript.Generation 0.1.0-preview.4 from a local feed in an isolated cache
+Broiler.ECMAScript/data/time/tzdb/check-zic.py: PASS (zic-check.txt beside this file)

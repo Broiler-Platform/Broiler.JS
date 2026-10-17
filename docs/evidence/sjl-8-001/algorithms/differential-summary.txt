@@ -1,0 +1,81 @@
+SJL-8.3 DIFFERENTIAL CHECK - summary (throwaway harness, not committed)
+=======================================================================
+
+What was compared
+- Reference: Broiler.VM's own code, copied verbatim into the harness (no Broiler.VM build was run):
+  JsTimeZones.cs (JsTimeZones, JsZone), JsTemporal.Zones.cs (all of it but the two members that read
+  engine values: ToTimeZoneIdentifier and TimeZoneFromIdentifier), JsRealm.DateTimeFormat's
+  ResolveTimeZone, EtcGmtZones and ParseOffset, the JsTemporalParser and JsTemporalCore members they
+  call, JsCalendars.cs whole, JsTemporal.CalendarNonIso's YearBound guard, and the two generated table
+  files JsTzdbTables.g.cs and JsCalendarTables.g.cs. Engine types are stand-ins that compute nothing
+  (JsEngine.Error, JsValue, the Lines reader of JsIntlTables). Broiler.VM HEAD fabbcc7; every copied
+  source is unchanged since 431c20e or earlier.
+- Candidate: Broiler.ECMAScript.Algorithms from the sjl-8-3 worktree (library code at 202d4064, which is
+  also the code at 21c11e0a: the last commit touched a test and the adapter guide only), reading the
+  same table bytes.
+- Harness: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl83/harness/
+  (Program.cs; the copies under Vm/). An error is compared by its class (RangeError kinds mapped to
+  OutOfRange, Ambiguous, Skipped, NoStartOfDay, seconds-in-offset, unavailable name).
+- next-transition answers of JsZone are compared after dropping a transition past the limit, which the
+  shared ITimeZoneRules.NextTransition does itself (Broiler.VM's two callers drop it the same way).
+
+Result
+SJL-8.3 differential check: Broiler.VM's current code (copied from /home/user/Broiler.VM at fabbcc7 (its zone and calendar sources unchanged since 431c20e)) against Broiler.ECMAScript.Algorithms in the sjl-8-3 worktree (sjl-8-3 at 202d4064), over Broiler.VM's tzdb 2026e and calendar tables.
+
+A1 identifier lookup and primary (597 names x 10 forms + 27)             5,997 compared, 0 differ
+A2 primary identifier list                                                   1 compared, 0 differ
+A3 region zones (247 regions + 7)                                          254 compared, 0 differ
+B1 offset at every listed transition and the second before              57,710 compared, 0 differ
+B2 daylight flag at every listed transition and the second before        57,710 compared, 0 differ
+B3 offset, 1800-2200 every 3 to 4 days                              24,936,690 compared, 0 differ
+B4 daylight flag, 1800-2200 every 3 to 4 days                       24,936,690 compared, 0 differ
+B5 offset and flag at the range's edges and 2038                         4,776 compared, 0 differ
+C1 next transition, 1850-2150 every 30 to 31 days                    2,145,021 compared, 0 differ
+C10 the walks forward and back meet the same transitions                   597 compared, 0 differ
+C11 transitions from the range's edges                                   2,985 compared, 0 differ
+C2 next transition or daylight change within 184 days, same grid     2,145,021 compared, 0 differ
+C3 previous transition, same grid                                    2,145,021 compared, 0 differ
+C4 previous transition or daylight change, same grid                 2,145,021 compared, 0 differ
+C5 GetNamedTimeZoneNextTransition in nanoseconds, same grid x 3      6,435,063 compared, 0 differ
+C6 GetNamedTimeZonePreviousTransition in nanoseconds, same grid x 3     6,435,063 compared, 0 differ
+C7 every transition 1800-2200, walked forward                          102,275 compared, 0 differ
+C8 offset at every walked transition and the second before             101,678 compared, 0 differ
+C9 every transition 1800-2200, walked back                             102,275 compared, 0 differ
+D0 interesting zones present                                                 1 compared, 0 differ
+D1 wall times around every transition 1900-2100, 50 zones, 15-minute grid: DisambiguatePossibleEpochNanoseconds x 4 modes     1,130,988 compared, 0 differ
+D1 wall times around every transition 1900-2100, 50 zones, 15-minute grid: GetEpochNanosecondsFor x 4 modes     1,133,740 compared, 0 differ
+D1 wall times around every transition 1900-2100, 50 zones, 15-minute grid: GetOffsetNanosecondsFor each instant       282,300 compared, 0 differ
+D1 wall times around every transition 1900-2100, 50 zones, 15-minute grid: possible instants       283,435 compared, 0 differ
+D2 wall times around every transition 1900-2100, other zones, 9 points: DisambiguatePossibleEpochNanoseconds x 4 modes     1,788,124 compared, 0 differ
+D2 wall times around every transition 1900-2100, other zones, 9 points: GetEpochNanosecondsFor x 4 modes     1,819,804 compared, 0 differ
+D2 wall times around every transition 1900-2100, other zones, 9 points: GetOffsetNanosecondsFor each instant       445,823 compared, 0 differ
+D2 wall times around every transition 1900-2100, other zones, 9 points: possible instants       454,951 compared, 0 differ
+D3 wall times in offset zones near the limits and the epoch: DisambiguatePossibleEpochNanoseconds x 4 modes         8,536 compared, 0 differ
+D3 wall times in offset zones near the limits and the epoch: GetEpochNanosecondsFor x 4 modes        14,688 compared, 0 differ
+D3 wall times in offset zones near the limits and the epoch: GetOffsetNanosecondsFor each instant         2,134 compared, 0 differ
+D3 wall times in offset zones near the limits and the epoch: possible instants         3,672 compared, 0 differ
+E1 start of day, each day either side of every transition 1900-2100 and the limits       262,985 compared, 0 differ
+E2 start of day in offset zones at the limits                               56 compared, 0 differ
+E3 offset zones' offsets and transitions                                    56 compared, 0 differ
+G1 offset identifiers (Temporal's ParseTimeZoneIdentifier)             175,180 compared, 0 differ
+G2 offset strings (ECMA-402's IsTimeZoneOffsetString branch)           175,180 compared, 0 differ
+G3 the formatter's ResolveTimeZone core (names, cases, offsets, Etc/GMT)         6,207 compared, 0 differ
+H1 TimeZoneEquals, every pair of 601 identifiers                       361,201 compared, 0 differ
+I1 calendar year (new year, months, lengths, leap month, status), -300000..300000 and beyond: chinese       600,007 compared, 0 differ
+I1 calendar year (new year, months, lengths, leap month, status), -300000..300000 and beyond: dangi       600,007 compared, 0 differ
+I1 calendar year (new year, months, lengths, leap month, status), -300000..300000 and beyond: islamic-umalqura       600,007 compared, 0 differ
+I1 calendar year (new year, months, lengths, leap month, status), -300000..300000 and beyond: persian       600,007 compared, 0 differ
+I2 the Chinese, Korean and Qing tables, 1700-2300                        1,202 compared, 0 differ
+I3 the Umm al-Qura table, 1200-1700 AH                                     501 compared, 0 differ
+I4 the Persian corrections, -10-4000 AP                                  4,011 compared, 0 differ
+
+Total: 82,514,651 comparisons, 0 differences.
+
+Run time: 93 s
+
+Earlier runs: the first run's 268,010 "differences" were all harness defects (a missing "ok:" strip in
+E1/E2 and message-text comparison in G3), fixed in the harness; the second and the final runs found 0.
+
+Also run (not differential): a Native AOT image of a smoke program exercising every member of the area
+over all 597 identifiers and 4 x 858 calendar years answered byte for byte as the JIT did
+(sha256 of the output d2b3ce6c9efdf5956753cbb9e499c809f46d4226d2fe948cc27be941694939e5).
