@@ -607,6 +607,25 @@ engine's clauses at the after commit `a34b1f78`, whose product sources are `c7a1
   and `Identifiers` unchanged. **JSD-0031 §4(b)'s fifth reason stays open for this engine**, and the plan's first
   risk, that the owner's normalizer and casing are slower than ICU and the runtime, is what the run shows.
 
+**After the evidence, 2026-10-17.** Two changes have reached the default branch since SJL-7.6. Neither edits
+bundle `sjl-7-001`, which reads clauses 5 to 8 at `a34b1f78`.
+- **Two of the bundle's findings are fixed**, in [#1041](https://github.com/Broiler-Platform/Broiler.JS/pull/1041)
+  (`f001ff09`):
+  - the CLR binding's names are lowered with invariant casing, not the current culture's, with tests under
+    `tr-TR` (`e8cc0532`);
+  - a regular-expression literal's early errors now refuse what the constructor refuses: group names that are not
+    a `RegExpIdentifierName`, a name declared twice in one alternative, an incomplete `\k`, and, under `v`, a
+    negated class that may contain strings (`06ace97f`).
+- **The owner's algorithms were made faster rather than the cost accepted.** Broiler.Unicode moved normalization,
+  case mapping and the lexical classes onto constant-time tables and published them as `0.1.0-preview.5`.
+  [#1042](https://github.com/Broiler-Platform/Broiler.JS/pull/1042) (`6563786e`) moves this engine to it and
+  regenerates the embedded tables from the same pin. The owner's bundle shows its answers unchanged on the code the
+  engines now run, and its changelog gives its own benchmarks' figures.
+
+**Part B is not taken again here.** On this machine it would be void as the first run was, so it would decide
+nothing. Its arithmetic describes `0.1.0-preview.4`, not the code this engine now runs. JSD-0031 §4(b)'s fifth
+reason stays open for this engine until a controlled lane runs part B, at whatever commit is then current.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
