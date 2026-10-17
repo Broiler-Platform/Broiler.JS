@@ -1,0 +1,75 @@
+{
+  "format": 1,
+  "rule": "docs/evidence/sjl-8-001/decision-rule.md, part C",
+  "label": "head-check",
+  "started": "2026-10-17T15:13:45+00:00",
+  "shellCommit": "90ff6ab18d1ffbf140a30f66679c0d27aea45e01",
+  "shellSha256": "27d2ef24eff22a2fe07aab66e0cf90b10dc8b8b3c2432a4f5e4e7306b3d486e9",
+  "datasetsSourceCommit": "9508bd5b9b6d0f6d009418dda351fb0e7d846745",
+  "copies": {
+    "timezones.js": "901a74066cec6ed13c160c941fd874d52ed390f74b1dc22974debd2c1954cbc1",
+    "timezones.icu-77.1.txt": "d3da1c10f7a87cb5fc5b6125f5b83648e4cfb4130b194848196a0a42f854473f",
+    "timezones.divergences.txt": "b020772f515fb822de8a7edb06e41649e167f31e437e03420be62c921b387a58",
+    "temporal.js": "91e1e5a4fe33785c1430f967b727680ead50406ee98a479a5e0f081b75a869db",
+    "temporal.polyfill-e8cc03fc.txt": "ebf380dda41192c160347c4ddf8f33f40101bfc75b44589ae348241322ad5fec",
+    "temporal.divergences.txt": "271ae88cc6b5ad1c4f5c768551c8e925f0830b15528a48e899fb2b308939daa8"
+  },
+  "programs": {
+    "timezones": {
+      "completed": true,
+      "completionType": "string",
+      "uncaught": null,
+      "problems": [],
+      "extraOutput": [],
+      "exitCode": 0,
+      "seconds": 1.285,
+      "stdoutSha256": "9050acbde994fa263099e3ee7d1df7d9a346629d2acefd826f51eebe4ddafa19",
+      "stdoutBytes": 77075,
+      "stderrBytes": 0,
+      "answerSha256": "69e4d637aa1a5afc6119b8f974be80176de4cc47197c89b381c510097afdeef9",
+      "retainedLines": 610,
+      "answeredLines": 610,
+      "comparedLines": 610,
+      "equal": 51,
+      "differing": 559,
+      "divergenceEntries": 51,
+      "divergencesUsed": 51,
+      "vmLeast": 600,
+      "negativeControl": {
+        "line": 26,
+        "wasEqual": true,
+        "expectedChangedTo": "Africa/Johannesburg => Africa/Johannesburg | GMT+01:52 GMT+01:30 GMT+02:00 GMT+02:00 GMT+02:00 GMT+02:00 GMT+02:00 GMT+02:0X",
+        "shownAsDifference": true,
+        "otherLinesUnchanged": true
+      }
+    },
+    "temporal": {
+      "completed": true,
+      "completionType": "string",
+      "uncaught": null,
+      "problems": [],
+      "extraOutput": [],
+      "exitCode": 0,
+      "seconds": 1.595,
+      "stdoutSha256": "97c3a67c4a842ed97f9ff82bb2759a121f0871f22f4cbfe62f39f3cb83fee046",
+      "stdoutBytes": 128113,
+      "stderrBytes": 0,
+      "answerSha256": "b4d6e3194abee21aa005fd9e42db58fe3cd5f125d7476cac81350264e2d5a9c2",
+      "retainedLines": 1629,
+      "answeredLines": 1629,
+      "comparedLines": 1629,
+      "equal": 1622,
+      "differing": 7,
+      "divergenceEntries": 0,
+      "divergencesUsed": 0,
+      "vmLeast": 1500,
+      "negativeControl": {
+        "line": 1,
+        "wasEqual": true,
+        "expectedChangedTo": "duration P1Y2M3W4DT5H6M7.008009010S sign/blank => 1/falsX",
+        "shownAsDifference": true,
+        "otherLinesUnchanged": true
+      }
+    }
+  }
+}

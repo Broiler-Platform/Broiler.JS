@@ -40,6 +40,9 @@ conformance/datasets/time/timezones.divergences.txt -text
 conformance/datasets/time/temporal.js -text
 conformance/datasets/time/temporal.polyfill-e8cc03fc.txt -text
 conformance/datasets/time/temporal.divergences.txt -text
+# The runs of those datasets that bundle sjl-8-001 retains are kept as the harness wrote them: each run's
+# summary.json records its answers' SHA-256, and its line reports are read back by the harness's compare.
+docs/evidence/sjl-8-001/datasets/** -text
 
 # CI job logs retained in an evidence bundle are kept byte for byte as GitHub Actions served them;
 # the Windows jobs' logs have CRLF line endings.
