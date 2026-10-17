@@ -15,11 +15,12 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     with valid components. A sub-minute (seconds / fractional) offset (-07:00:01, -07:00:00.1) or
 //     a leap-second offset designator (the annotation [+23:59:60]) is now a RangeError; a leap
 //     second in the *time* part with a valid zone designator still succeeds.
-//   * Problem 5 — the persian calendar now covers the whole supported ISO range: .NET's
-//     PersianCalendar (Persian years 1-9378, whose Nowruz dates match the Iranian authority table
-//     used by test262's persian-new-year-dates fixture) in range, ICU's arithmetic 33-year-cycle
-//     algorithm outside it (the extreme / non-positive-year cases need only round-trip + year
-//     arithmetic, which the authority table does not cover that far out).
+//   * Problem 5 — the persian calendar now covers the whole supported ISO range. At the fix, .NET's
+//     persian calendar served Persian years 1-9378 and the arithmetic 33-year cycle the rest; since
+//     milestone SJL-8.6 every year is the shared calendar tables' 33-year rule with
+//     calendrical_calculations' corrections, whose Nowruz dates match the Iranian authority table
+//     used by test262's persian-new-year-dates fixture (the extreme / non-positive-year cases need
+//     only round-trip + year arithmetic, which the authority table does not cover that far out).
 //   * Problem 1 (subset) — PlainDateTime ISODateTimeWithinLimits now compares strictly (was
 //     inclusive), so a date-time exactly one day outside the instant limits — midnight at the
 //     boundary date — is out of range (with({nanosecond:0}) / withPlainTime(midnight) on the minimum
@@ -264,17 +265,20 @@ public class Issue783Tests
         // 2019-M04 + 13 months -> 2020-M04L (2020 has a leap fourth month).
         => Assert.Equal("2020/M04L/1", ChineseAdd("year:2019,monthCode:'M04',day:1", "{months:13}"));
 
-    // The arithmetic algorithm must agree with System.Globalization.PersianCalendar (the previous
-    // backend, verified against the Iranian authority table) across its supported overlap, so the
-    // persian-calendar-authority Nowrúz fixtures keep passing.
+    // The persian years are the shared calendar tables' since milestone SJL-8.6 (decision SJL-D-21): the
+    // 33-year rule with calendrical_calculations' corrections. They agree with
+    // System.Globalization.PersianCalendar (the previous backend, verified against the Iranian authority
+    // table) over the authority's published years, 1206 to 1498 AP, and over every year from 1178 to 1534,
+    // so the persian-calendar-authority Nowrúz fixtures keep passing (row K10 of SJL-8.1's correspondence).
+    // Outside them .NET's astronomy differs (K11), and at its bounds it repeated dates (K12).
     [Fact(Timeout = 600000)]
-    public void PersianMatchesDotNetOverOverlap()
+    public void PersianMatchesDotNetOverTheAuthorityRange()
     {
         var pc = new PersianCalendar();
         var epoch1970 = new System.DateTime(1970, 1, 1);
         using var ctx = new JSContext();
-        // Sample one date per year across the .NET-supported range.
-        for (int y = 1; y <= 9377; y += 7)
+        // Every year from 1178 to 1534 AP.
+        for (int y = 1178; y <= 1534; y++)
         {
             var dt = pc.ToDateTime(y, 1, 1, 0, 0, 0, 0);
             long iso = (long)(dt.Date - epoch1970).TotalDays;

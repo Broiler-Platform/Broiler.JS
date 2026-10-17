@@ -11,11 +11,14 @@ namespace Broiler.JavaScript.Integration.Tests;
 //     calendar-date math with PlainDate via TemporalNonIso.
 //   * Problem 3 — the ethioaa (Ethiopic Amete Alem) calendar (ethiopic day arithmetic, single
 //     "aa" era, years numbered 5500 higher).
-//   * Problem 6 — the persian (Solar Hijri) calendar, backed by .NET's PersianCalendar, whose
-//     leap-year sequence / Nowruz dates match the Iranian calendar authority's published table.
-//   * Problem 7 — the islamic-umalqura (Saudi) calendar: ICU's sighting-based month-length table
-//     for 1300–1600 AH (embedded in the Broiler.Unicode submodule as CldrUmmAlQura), falling back
-//     to the tabular islamic-civil arithmetic outside that span (ah/bh eras).
+//   * Problem 6 — the persian (Solar Hijri) calendar, then backed by .NET's persian calendar; since
+//     milestone SJL-8.6 its years are the shared calendar tables' (the 33-year rule with
+//     calendrical_calculations' corrections), whose leap-year sequence / Nowruz dates match the Iranian
+//     calendar authority's published table.
+//   * Problem 7 — the islamic-umalqura (Saudi) calendar: the sighting-based month-length table for
+//     1300–1600 AH (then the CLDR package's copy of ICU's; since milestone SJL-8.6 the shared calendar
+//     tables', the same data), falling back to the tabular islamic-civil arithmetic outside that span
+//     (ah/bh eras).
 //   * Problem 4 — RangeError validation for out-of-range from() fields (positive month/day,
 //     invalid monthCode) and for since/until/round options (largestUnit < smallestUnit, invalid
 //     roundingIncrement / roundingMode), plus the PlainDateTime.add sub-second overflow case.

@@ -877,8 +877,8 @@ internal static class JSIntlDateTimeFormatEngine
         {
             // chinese/dangi number their months by the lunar month (the month-code number), not the
             // 1..13 ordinal that counts an intervening leap month; a leap month renders as "<n>bis".
-            var code = Temporal.TemporalLunisolarCalendar.MonthCode(calendar, cy, cm);
-            cm = Temporal.TemporalLunisolarCalendar.DisplayMonthNumber(calendar, cy, cm);
+            var code = Temporal.TemporalCalendarMath.MonthCode(calendar, cy, cm);
+            cm = Temporal.TemporalTableCalendar.DisplayMonthNumber(calendar, cy, cm);
             if (code.EndsWith("L", StringComparison.Ordinal))
                 monthLabel = cm.ToString(CultureInfo.InvariantCulture) + "bis";
         }

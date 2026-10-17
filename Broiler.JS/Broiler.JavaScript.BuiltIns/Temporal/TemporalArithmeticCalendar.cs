@@ -1,6 +1,5 @@
 using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.Engine.Core;
-using UnicodeCldr.LocaleData;
 
 namespace Broiler.JavaScript.BuiltIns.Temporal;
 
@@ -21,20 +20,15 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 //
 // Unlike the Gregorian family these have a different month/day structure than ISO, so every date
 // field is computed by converting the stored ISO date to an epoch-day count and back through the
-// calendar's own arithmetic. The remaining lunisolar calendars (chinese, dangi) need astronomical
-// new-moon / solar-term data and stay unimplemented.
+// calendar's own arithmetic. The table-backed calendars (chinese, dangi, islamic-umalqura, persian) read
+// their years from the shared calendar tables instead (TemporalTableCalendar, milestone SJL-8.6).
 internal static class TemporalArithmeticCalendar
 {
     internal static bool IsArithmetic(string id) =>
         id is "coptic" or "ethiopic" or "ethioaa" or "islamic" or "islamic-civil" or "islamic-tbla"
-            or "islamic-umalqura" or "hebrew" or "indian";
+            or "hebrew" or "indian";
 
     private static bool IsSolar13(string id) => id is "coptic" or "ethiopic" or "ethioaa";
-
-    // islamic-umalqura uses ICU's sighting-based month-length table over 1300–1600 AH and falls
-    // back to the tabular (islamic-civil) arithmetic outside that span. A given Hijri year is
-    // table-driven only when it is both this calendar and inside the tabulated range.
-    private static bool UmalquraTable(string id, int year) => id == "islamic-umalqura" && CldrUmmAlQura.IsTabulated(year);
 
     // Epoch-day number (days from the ISO 1970-01-01 epoch) of the calendar's year 1, month 1,
     // day 1, derived from the standard Rata Die epochs (RD of 1970-01-01 is 719163):
@@ -52,7 +46,6 @@ internal static class TemporalArithmeticCalendar
         // civil arithmetic — the two differ by at most a day; ICU's civil (Friday) epoch is used.
         "islamic" or "islamic-civil" => 227015 - 719163,
         "islamic-tbla" => 227014 - 719163,
-        "islamic-umalqura" => 227015 - 719163, // civil (Friday) epoch; used for the out-of-table fallback
         _ => throw JSEngine.NewRangeError($"Temporal: unsupported calendar \"{id}\""),
     };
 
@@ -63,7 +56,6 @@ internal static class TemporalArithmeticCalendar
     {
         if (id == "indian") return IsoCalendarMath.IsLeapYear(year + 78);
         if (id == "hebrew") return HebrewLeap(year);
-        if (UmalquraTable(id, year)) return CldrUmmAlQura.YearLength(year) == 355;
         return IsSolar13(id)
             ? Mod(year, 4) == 3
             : Mod(11 * year + 14, 30) < 11; // tabular Islamic 30-year intercalation
@@ -73,7 +65,6 @@ internal static class TemporalArithmeticCalendar
     {
         if (id == "indian") return IsoCalendarMath.DaysInYear(year + 78);
         if (id == "hebrew") return (int)(HebrewNewYear(year + 1) - HebrewNewYear(year));
-        if (UmalquraTable(id, year)) return CldrUmmAlQura.YearLength(year);
         if (IsSolar13(id)) return InLeapYear(id, year) ? 366 : 365;
         return InLeapYear(id, year) ? 355 : 354;
     }
@@ -82,7 +73,6 @@ internal static class TemporalArithmeticCalendar
     {
         if (id == "indian") return IndianMonthLength(IsoCalendarMath.IsLeapYear(year + 78), month);
         if (id == "hebrew") return HebrewMonthLength(year, month);
-        if (UmalquraTable(id, year)) return CldrUmmAlQura.MonthLength(year, month);
         if (IsSolar13(id))
             return month <= 12 ? 30 : (InLeapYear(id, year) ? 6 : 5);
         if (month == 12)
@@ -98,12 +88,6 @@ internal static class TemporalArithmeticCalendar
         {
             var epoch = HebrewNewYear(year);
             for (int m = 1; m < month; m++) epoch += HebrewMonthLength(year, m);
-            return epoch + day - 1;
-        }
-        if (UmalquraTable(id, year))
-        {
-            var epoch = Epoch(id) + CldrUmmAlQura.YearStartDay(year);
-            for (int m = 1; m < month; m++) epoch += CldrUmmAlQura.MonthLength(year, m);
             return epoch + day - 1;
         }
         if (IsSolar13(id))
