@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 661 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 790 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -49,13 +49,13 @@ did, which is the narrower and the more useful of the two.
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 56 |
-| Code units | 832 |
-| Relevant | 661 |
-| Exempt | 171 |
-| Assessed | 661 of 661 (100%) |
-| Human reviewed | 0 of 661 (0%) |
-| Unverified | 661 |
+| Files scanned | 60 |
+| Code units | 1016 |
+| Relevant | 790 |
+| Exempt | 226 |
+| Assessed | 790 of 790 (100%) |
+| Human reviewed | 0 of 790 (0%) |
+| Unverified | 790 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 661 |
+| HUMAN_PENDING | 790 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 171 |
+| EXEMPT | 226 |
 
 ## 5. Aliases In The Tree
 
@@ -115,11 +115,15 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Algorithms/Text/StringPadding.cs` | 12 | 10 | 2 | 10 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Algorithms/Text/UriCodec.cs` | 17 | 14 | 3 | 14 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Algorithms/Text/Utf16.cs` | 14 | 14 | 0 | 14 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Time/CalendarYears.cs` | 58 | 39 | 19 | 39 | Medium | High | 1/1 |
 | `Broiler.ECMAScript.Algorithms/Time/EcmaDateFormatter.cs` | 13 | 13 | 0 | 13 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Algorithms/Time/EcmaDateParser.cs` | 23 | 18 | 5 | 18 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Algorithms/Time/EcmaTime.cs` | 37 | 37 | 0 | 37 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Algorithms/Time/IsoCalendarMath.cs` | 16 | 16 | 0 | 16 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Algorithms/Time/LocalTime.cs` | 15 | 12 | 3 | 12 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Algorithms/Time/OffsetTimeZones.cs` | 14 | 10 | 4 | 10 | Low | High | 3/3 |
+| `Broiler.ECMAScript.Algorithms/Time/TimeZoneDatabase.cs` | 73 | 50 | 23 | 50 | Low | High | 3/3 |
+| `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` | 39 | 30 | 9 | 30 | Low | High | 5/5 |
 | `Broiler.ECMAScript.Algorithms/WorkCharge.cs` | 1 | 1 | 0 | 1 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Conformance/Ascii.cs` | 15 | 15 | 0 | 15 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Conformance/LibraryRun.cs` | 11 | 9 | 2 | 9 | Low | Low | 0/0 |
@@ -257,12 +261,36 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a String longer than the limit is built or charged, an empty filler is not answered with the String itself, or the filler is not repeated and truncated to exactly maxLength minus the String's length
 - `Broiler.ECMAScript.Text.UriCodec.Decode(ReadOnlySpan<char>, ReadOnlySpan<char>, out string, out Failure, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Text/UriCodec.cs` - Security=High, Spec=ECMA-262 19.2.6.6, `230B5B`, PENDING
   - Falsified if: an overlong sequence, an encoded surrogate or a value above U+10FFFF completes, a preserved character's escape is decoded, or a well-formed sequence is refused
+- `Broiler.ECMAScript.Time.CalendarYears.GetYear(ICalendarTables, TableCalendar, long, out CalendarYear)` in `Broiler.ECMAScript.Algorithms/Time/CalendarYears.cs` - Security=High, Spec=JSD-0076, Intl era and month code proposal Table 1 via Broiler.VM JsCalendarSystem.Year, `4EB1E8`, PENDING
+  - Falsified if: a year inside a table's range is not the table's, a year outside it is not its source's, or a year of magnitude above the bound completes
 - `Broiler.ECMAScript.Time.EcmaDateParser` in `Broiler.ECMAScript.Algorithms/Time/EcmaDateParser.cs` - Security=High, Spec=ECMA-262 21.4.1.32, `0047BF`, PENDING
   - Falsified if: a string outside the format is read by the strict dialect, a string of the format is refused or read at another time value, or Broiler.VM's dialect answers differently from that engine's DateParseText on a string other than a rendering of a negative year
 - `Broiler.ECMAScript.Time.EcmaDateParser.Parse(ReadOnlySpan<char>, DateParseDialect, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Time/EcmaDateParser.cs` - Security=High, Spec=ECMA-262 21.4.3.2, `5C16E2`, PENDING
   - Falsified if: the meter is charged other than the text's length before the first character is read, or charged for an empty text
 - `Broiler.ECMAScript.Time.EcmaLocalTime.Utc(double, ILocalTimeProvider)` in `Broiler.ECMAScript.Algorithms/Time/LocalTime.cs` - Security=High, Spec=ECMA-262 21.4.1.26, `708CAB`, PENDING
   - Falsified if: a repeated local time is read at a later instant than its earliest, a skipped local time is read at an offset other than the one before its transition, or a local time with one instant is read at another
+- `Broiler.ECMAScript.Time.OffsetTimeZones.IsTimeZoneOffsetString(ReadOnlySpan<char>)` in `Broiler.ECMAScript.Algorithms/Time/OffsetTimeZones.cs` - Security=High, Spec=JSD-0076, ECMA-262 21.4.1.33.1 via Broiler.VM JsRealm.DateTimeFormat.ParseOffset, `5FE091`, PENDING
+  - Falsified if: a string outside the UTCOffset grammar, one with a digit outside 0 to 9 among them, is accepted, or one of the grammar is refused
+- `Broiler.ECMAScript.Time.OffsetTimeZones.TryParseOffsetIdentifier(ReadOnlySpan<char>, out int)` in `Broiler.ECMAScript.Algorithms/Time/OffsetTimeZones.cs` - Security=High, Spec=JSD-0076, Temporal ParseTimeZoneIdentifier via Broiler.VM JsTemporal.ParseZone, `203719`, PENDING
+  - Falsified if: an identifier with seconds, with hours above 23 or minutes above 59, with a digit outside 0 to 9, or mixing the extended and basic forms is accepted, or the minutes of an accepted one are not its sign times its hours and minutes
+- `Broiler.ECMAScript.Time.OffsetTimeZones.Parse(ReadOnlySpan<char>, out int, out bool)` in `Broiler.ECMAScript.Algorithms/Time/OffsetTimeZones.cs` - Security=High, Spec=JSD-0076, ECMA-262 21.4.1.33 via Broiler.VM JsRealm.DateTimeFormat.ParseOffset, `5DD51E`, PENDING
+  - Falsified if: a string outside the UTCOffset grammar is read as an offset, one of it is refused, or the seconds flag or the minutes read differ from the string's
+- `Broiler.ECMAScript.Time.TimeZoneDatabase.TryFind(ReadOnlySpan<char>, out TimeZoneId)` in `Broiler.ECMAScript.Algorithms/Time/TimeZoneDatabase.cs` - Security=High, Spec=JSD-0076, ECMA-402 6.5.2 via Broiler.VM JsTimeZones.Find, `DDC576`, PENDING
+  - Falsified if: a name holding a character above U+007F is found, a name differing from an identifier in anything but ASCII case is found, or an identifier in any ASCII case is not found
+- `Broiler.ECMAScript.Time.TableZoneRules.NextTransition(long, long, bool)` in `Broiler.ECMAScript.Algorithms/Time/TimeZoneDatabase.cs` - Security=High, Spec=JSD-0076, Temporal GetNamedTimeZoneNextTransition via Broiler.VM JsZone.NextTransition, `FC4F84`, PENDING
+  - Falsified if: a transition at or before the instant is answered, one after the limit is answered, a later transition is answered where an earlier one changes the offset, or none is answered after 2037 where the recurring rules change the offset
+- `Broiler.ECMAScript.Time.TableZoneRules.PreviousTransition(long, bool)` in `Broiler.ECMAScript.Algorithms/Time/TimeZoneDatabase.cs` - Security=High, Spec=JSD-0076, Temporal GetNamedTimeZonePreviousTransition via Broiler.VM JsZone.PreviousTransition, `30B7EE`, PENDING
+  - Falsified if: a transition at or after the instant is answered, an earlier transition is answered where a later one before the instant changes the offset, or none is answered after 2037 where the recurring rules change the offset
+- `Broiler.ECMAScript.Time.ZonedTime.GetPossibleEpochNanoseconds(ITimeZoneRules, IsoDateTime, Span<BigInteger>, out int)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, Spec=JSD-0076, Temporal GetPossibleEpochNanoseconds and ECMA-262 21.4.1.20 via Broiler.VM JsTemporal.PossibleEpochNs, `57989D`, PENDING
+  - Falsified if: an instant the wall time names in the zone is left out, an instant it does not name is written, the instants are not ascending, or an instant outside the range is written with Completed
+- `Broiler.ECMAScript.Time.ZonedTime.DisambiguatePossibleEpochNanoseconds(ITimeZoneRules, ReadOnlySpan<BigInteger>, IsoDateTime, Disambiguation, out BigInteger)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, Spec=JSD-0076, Temporal DisambiguatePossibleEpochNanoseconds via Broiler.VM JsTemporal.Disambiguate, `DD12D0`, PENDING
+  - Falsified if: a repeated time is not its earlier instant under compatible or earlier or its later under later, a skipped time is not moved by the gap in the mode's direction, or reject answers an instant for a time that is repeated or skipped
+- `Broiler.ECMAScript.Time.ZonedTime.GetStartOfDay(ITimeZoneRules, IsoDate, out BigInteger)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, Spec=JSD-0076, Temporal GetStartOfDay via Broiler.VM JsTemporal.StartOfDay, `515EE5`, PENDING
+  - Falsified if: a day whose midnight exists starts at another instant, a day whose midnight is skipped starts other than at the transition that skips it, or a day with no instant answers one
+- `Broiler.ECMAScript.Time.ZonedTime.Possible(ITimeZoneRules, IsoDateTime, Span<BigInteger>, out int)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, Spec=JSD-0076, ECMA-262 21.4.1.20 via Broiler.VM JsTemporal.PossibleEpochNs, `F0F2D2`, PENDING
+  - Falsified if: a candidate is kept whose instant does not have the offset it was made from, an offset in force a day before or after the wall time is not sampled, or a candidate outside the range completes
+- `Broiler.ECMAScript.Time.ZonedTime.Disambiguate(ITimeZoneRules, ReadOnlySpan<BigInteger>, IsoDateTime, Disambiguation, out BigInteger)` in `Broiler.ECMAScript.Algorithms/Time/ZonedTime.cs` - Security=High, Spec=JSD-0076, Temporal DisambiguatePossibleEpochNanoseconds via Broiler.VM JsTemporal.Disambiguate, `0AFBEC`, PENDING
+  - Falsified if: the gap's two offsets are not read a day before and a day after the wall time, or the moved time's first instant is not answered under earlier and its last otherwise
 - `Broiler.ECMAScript.Generation.Time.ArchiveReading` in `Broiler.ECMAScript.Generation/Time/ArchiveReading.cs` - Security=High, Spec=JSD-0053 tz pin via Broiler.VM TzdbPin, `CD64C8`, PENDING
   - Falsified if: a member of a tarball is answered with bytes other than the ones its tar entry holds, or a link, a directory or an unnamed member is answered as a file
 - `Broiler.ECMAScript.Generation.Time.ArchiveReading.RegularFiles(byte[], IReadOnlySet<string>)` in `Broiler.ECMAScript.Generation/Time/ArchiveReading.cs` - Security=High, Spec=JSD-0053 tz pin via Broiler.VM TzdbPin, `78B9DB`, PENDING
@@ -323,5 +351,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-458 of the 661 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+458 of the 790 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

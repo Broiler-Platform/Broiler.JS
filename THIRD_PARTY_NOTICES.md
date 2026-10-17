@@ -15,12 +15,13 @@ in source files, package metadata, or accompanying notices.
 ## The shared JavaScript libraries (`Broiler.ECMAScript.*`)
 
 The packages built from [`Broiler.ECMAScript/`](Broiler.ECMAScript/README.md) carry this file. They
-contain two pieces of third-party code and one set of public-domain formulas, named below, and no data:
+contain three pieces of third-party code and one set of public-domain formulas, named below, and no data:
 
-- `Broiler.ECMAScript.Algorithms` holds the contract types and the number-conversion, numerics, text
-  and Date areas written for the shared libraries programme, Apache-2.0, and no code derived from
-  Yantra JS. Its third-party components are **Ryu** and **fdlibm**, below, and it implements **Howard
-  Hinnant's civil-day formulas**, also below.
+- `Broiler.ECMAScript.Algorithms` holds the contract types and the number-conversion, numerics, text,
+  Date and time-zone and calendar areas written for the shared libraries programme, Apache-2.0, and no
+  code derived from Yantra JS. Its third-party components are **Ryu**, **fdlibm** and **ICU4X's
+  lunisolar approximation**, below, and it implements **Howard Hinnant's civil-day formulas**, also
+  below.
 - **Ryu** ([github.com/ulfjack/ryu](https://github.com/ulfjack/ryu)), Copyright 2018 Ulf Adams, used
   under the Apache License, Version 2.0 (the project is offered under that licence or the Boost
   Software License 1.0, at the user's choice). `Broiler.ECMAScript.Algorithms/Numbers/ShortestDecimal.cs`
@@ -44,13 +45,23 @@ contain two pieces of third-party code and one set of public-domain formulas, na
   which their author "donated to the public domain": `Broiler.ECMAScript.Algorithms/Time/IsoCalendarMath.cs`
   implements them in `EpochDays` and `FromEpochDays` (milestone SJL-6.3), and says so in its source. No
   licence terms apply; the credit is given here.
+- **ICU4X's lunisolar approximation**, from the `icu_calendar` crate 2.3.0
+  (`src/cal/east_asian_traditional/simple.rs`, [github.com/unicode-org/icu4x](https://github.com/unicode-org/icu4x)),
+  Copyright The ICU4X Project Developers, under the Unicode License v3 (SPDX `Unicode-3.0`), whose text is
+  below: `Broiler.ECMAScript.Algorithms/Time/CalendarYears.cs` ports its mean-solar-term and mean-new-moon
+  reckoning of a `chinese` or `dangi` year outside the published tables (milestone SJL-8.3), as Broiler.VM's
+  `JsCalendars` ported it, and says so in its source. The years inside the tables are data the engine hands
+  in, never the library's (below).
 - The number area's other routines that are not written from the specification are ported from
   Broiler.VM, the programme's other engine, under the same licence and by the same contributors
   (`FixedDigits.cs`, from `JsRealm.Number`; the BigInt literal ceiling, from `JsParser.TryBigIntValue`;
   and, at milestone SJL-4.3, the BigInt kernel `BigIntMath.cs` and `BigIntText.cs`, from `JsBigInt`);
   so is the Date area's reading of strings in Broiler.VM's dialect, at milestone SJL-6.3
-  (`EcmaDateParser.cs`, from `DateParseText` and `DateParseTextual`). Each records its origin in its
-  assurance annotation or its source.
+  (`EcmaDateParser.cs`, from `DateParseText` and `DateParseTextual`); and so is the time-zone and calendar
+  area, at milestone SJL-8.3 (`TimeZoneDatabase.cs`, `OffsetTimeZones.cs`, `ZonedTime.cs` and
+  `CalendarYears.cs`, from `JsTimeZones`, `JsTemporal.Zones`, `JsRealm.DateTimeFormat`'s zone resolution and
+  `JsCalendars`), whose Persian and tabular Hijri years are Calendrical Calculations' arithmetic. Each
+  records its origin in its assurance annotation or its source.
 - `Broiler.ECMAScript.Generation` holds the time data home's generator (milestone SJL-8.2): the tz pin
   reader, the tz compiler and the time zone table generator, the calendar pin reader and the calendar
   table generator, ported from Broiler.VM's architecture tests under the same licence and by the same
@@ -81,7 +92,9 @@ contain two pieces of third-party code and one set of public-domain formulas, na
   `ReferenceArms/Text/` and `ReferenceArms/Date/`, the reference arms of bundles `docs/evidence/sjl-5-001` and
   `docs/evidence/sjl-6-001`: test-only copies of both engines' text and Date code before their cut-overs, held
   and retired the same way; arm J is this engine's code and arm V Broiler.VM's, as above, and the Date arms'
-  civil copies implement Hinnant's formulas, above.
+  civil copies implement Hinnant's formulas, above. Its time-zone and calendar tests (milestone SJL-8.3)
+  read the data home's generated tables from disk, under the time data section below, and hold no copy of
+  them.
 
 Code that later moves into a shared library records its origin unit by unit, and code whose licence
 is share-alike or unclear is rewritten from the specification rather than moved (the programme's
@@ -113,7 +126,16 @@ Broiler.VM ended at "from `JsBigInt`). Each records its origin in its assurance 
 on `Broiler.ECMAScript.Algorithms.Tests` ended at "Neither arm copies fdlibm.", which overlooked bundle
 `sjl-5-001`'s text arms, and the sentence on them and on bundle `sjl-6-001`'s Date arms was added. Revised
 again 2026-10-17, at milestone SJL-8.2: the bullet on `Broiler.ECMAScript.Generation` was added, and no
-other text changed.
+other text changed. Revised again 2026-10-17, at milestone SJL-8.3, when the time-zone and
+calendar area moved in: the section's second sentence read "They contain two pieces of third-party code and
+one set of public-domain formulas, named below, and no data:"; the first bullet read "holds the contract
+types and the number-conversion, numerics, text and Date areas written for the shared libraries programme"
+and "Its third-party components are **Ryu** and **fdlibm**, below, and it implements **Howard Hinnant's
+civil-day formulas**, also below."; the bullet on ICU4X's approximation was added; the bullet on the code
+ported from Broiler.VM read "so is the Date area's reading of strings in Broiler.VM's dialect, at milestone
+SJL-6.3 (`EcmaDateParser.cs`, from `DateParseText` and `DateParseTextual`). Each records its origin in its
+assurance annotation or its source."; and the bullet on `Broiler.ECMAScript.Algorithms.Tests` ended at "the
+Date arms' civil copies implement Hinnant's formulas, above.".
 
 ## The time data home (`Broiler.ECMAScript/data/time/`)
 

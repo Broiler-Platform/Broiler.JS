@@ -1,5 +1,19 @@
 // SPDX-FileCopyrightText: 2026 Broiler Platform contributors
 // SPDX-License-Identifier: Apache-2.0
+//
+// Broiler Code Assurance
+// ----------------------
+// Relevant units:   50
+// Annotated:        50/50
+// Exempt:           23
+// Human-reviewed:   0/50
+// IP risk:          Low
+// Security risk:    High
+// Criteria:         3/3
+// Resource impact:  3/10 max
+// Unverified:       50
+//
+// GENERATED - DO NOT EDIT MANUALLY
 
 using System;
 using System.Collections.Generic;
@@ -19,7 +33,7 @@ namespace Broiler.ECMAScript.Time;
 /// </remarks>
 /// <param name="Index">The identifier's place in the database's identifier table, from zero.</param>
 /// <param name="Identifier">The identifier in the database's case, for example <c>America/New_York</c>.</param>
-// Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-262 21.4.1.22 via Broiler.VM JsTimeZoneId; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+// Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.22 via Broiler.VM JsTimeZoneId; IP=Low; Security=Low; Resources=1; Fingerprint=5FF480
 // Broiler-Human:        PENDING
 public readonly record struct TimeZoneId(int Index, string Identifier);
 
@@ -40,12 +54,12 @@ public readonly record struct TimeZoneId(int Index, string Identifier);
 /// primary never answer different offsets (ECMA-402 6.5.1).
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-402 6.5 via Broiler.VM JsTimeZones; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+// Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-402 6.5 via Broiler.VM JsTimeZones; IP=Low; Security=Medium; Resources=1; Fingerprint=7404DC
 // Broiler-Human:        PENDING
 public interface ITimeZoneDatabase
 {
     /// <summary>The release of the IANA Time Zone Database the tables were compiled from, for example <c>2026e</c> (convention 13).</summary>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 decision 1; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 decision 1; IP=Low; Security=Low; Resources=1; Fingerprint=D12EEF
     // Broiler-Human:        PENDING
     string Release { get; }
 
@@ -53,7 +67,7 @@ public interface ITimeZoneDatabase
     /// The identifiers whose primary identifier is themselves, in the tables' ordinal order: the list
     /// <c>AvailablePrimaryTimeZoneIdentifiers</c> (ECMA-402 6.5.3) and <c>Intl.supportedValuesOf("timeZone")</c> read.
     /// </summary>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-402 6.5.3 via Broiler.VM JsTimeZones.PrimaryIdentifiers; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-402 6.5.3 via Broiler.VM JsTimeZones.PrimaryIdentifiers; IP=Low; Security=Low; Resources=1; Fingerprint=D50FBC
     // Broiler-Human:        PENDING
     IReadOnlyList<string> PrimaryIdentifiers { get; }
 
@@ -64,7 +78,7 @@ public interface ITimeZoneDatabase
     /// <param name="identifier">The name to find, in any ASCII case.</param>
     /// <param name="id">The identifier found, in the database's case; <see langword="default"/> when none is.</param>
     /// <returns>Whether the name is available; <see langword="false"/> for a name holding a character above U+007F.</returns>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-402 6.5.2 via Broiler.VM JsTimeZones.Find; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-402 6.5.2 via Broiler.VM JsTimeZones.Find; IP=Low; Security=Medium; Resources=1; Fingerprint=938739
     // Broiler-Human:        PENDING
     bool TryFind(ReadOnlySpan<char> identifier, out TimeZoneId id);
 
@@ -75,7 +89,7 @@ public interface ITimeZoneDatabase
     /// <param name="id">An identifier this database found.</param>
     /// <returns>The primary identifier.</returns>
     /// <exception cref="ArgumentException">The identifier is not one this database gave.</exception>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-262 21.4.1.22 via Broiler.VM JsTimeZoneId.Primary; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.22 via Broiler.VM JsTimeZoneId.Primary; IP=Low; Security=Low; Resources=1; Fingerprint=C81E22
     // Broiler-Human:        PENDING
     TimeZoneId Primary(TimeZoneId id);
 
@@ -85,7 +99,7 @@ public interface ITimeZoneDatabase
     /// </summary>
     /// <param name="region">A region code, matched ordinally, for example <c>US</c>.</param>
     /// <returns>The region's zones; empty for a region <c>zone.tab</c> does not list.</returns>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 Z12 via Broiler.VM JsTimeZones.Region; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 Z12 via Broiler.VM JsTimeZones.Region; IP=Low; Security=Medium; Resources=1; Fingerprint=A07E6F
     // Broiler-Human:        PENDING
     IReadOnlyList<string> RegionTimeZones(ReadOnlySpan<char> region);
 
@@ -93,7 +107,7 @@ public interface ITimeZoneDatabase
     /// <param name="id">An identifier this database found.</param>
     /// <returns>The zone's rules.</returns>
     /// <exception cref="ArgumentException">The identifier is not one this database gave.</exception>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-402 6.5.1 via Broiler.VM JsTimeZones.Zone; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-402 6.5.1 via Broiler.VM JsTimeZones.Zone; IP=Low; Security=Low; Resources=1; Fingerprint=43CAF6
     // Broiler-Human:        PENDING
     ITimeZoneRules Rules(TimeZoneId id);
 }
@@ -115,14 +129,14 @@ public interface ITimeZoneDatabase
 /// recurring rules continue it without limit.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-262 21.4.1.21 via Broiler.VM JsZone; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+// Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.21 via Broiler.VM JsZone; IP=Low; Security=Medium; Resources=1; Fingerprint=1C1802
 // Broiler-Human:        PENDING
 public interface ITimeZoneRules
 {
     /// <summary>The UTC offset in force at an instant, in seconds, positive east of UTC (ECMA-262 21.4.1.21, in seconds).</summary>
     /// <param name="epochSeconds">The instant, in seconds since the epoch.</param>
     /// <returns>The offset, of magnitude below a day.</returns>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-262 21.4.1.21 via Broiler.VM JsZone.OffsetAt; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.21 via Broiler.VM JsZone.OffsetAt; IP=Low; Security=Medium; Resources=1; Fingerprint=68EDCF
     // Broiler-Human:        PENDING
     int OffsetSecondsAt(long epochSeconds);
 
@@ -132,7 +146,7 @@ public interface ITimeZoneRules
     /// </summary>
     /// <param name="epochSeconds">The instant, in seconds since the epoch.</param>
     /// <returns>Whether it is daylight time.</returns>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, JSD-0058 via Broiler.VM JsZone.DaylightAt; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0058 via Broiler.VM JsZone.DaylightAt; IP=Low; Security=Medium; Resources=1; Fingerprint=AA5163
     // Broiler-Human:        PENDING
     bool IsDaylightAt(long epochSeconds);
 
@@ -145,7 +159,7 @@ public interface ITimeZoneRules
     /// <param name="limitEpochSeconds">The last instant that may be answered; a limit beyond <see cref="TimeZoneDatabase.MaxEpochSeconds"/> is read as that bound.</param>
     /// <param name="daylightFlag">Whether a listed change of the daylight flag alone counts as a transition too, as zone names need.</param>
     /// <returns>The transition, or <see langword="null"/> where there is none up to the limit.</returns>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, Temporal GetNamedTimeZoneNextTransition via Broiler.VM JsZone.NextTransition; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetNamedTimeZoneNextTransition via Broiler.VM JsZone.NextTransition; IP=Low; Security=Medium; Resources=2; Fingerprint=711901
     // Broiler-Human:        PENDING
     long? NextTransition(long afterEpochSeconds, long limitEpochSeconds, bool daylightFlag);
 
@@ -156,7 +170,7 @@ public interface ITimeZoneRules
     /// <param name="beforeEpochSeconds">The instant to search before.</param>
     /// <param name="daylightFlag">Whether a listed change of the daylight flag alone counts as a transition too, as zone names need.</param>
     /// <returns>The transition, or <see langword="null"/> where there is none.</returns>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, Temporal GetNamedTimeZonePreviousTransition via Broiler.VM JsZone.PreviousTransition; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetNamedTimeZonePreviousTransition via Broiler.VM JsZone.PreviousTransition; IP=Low; Security=Medium; Resources=2; Fingerprint=4EEC48
     // Broiler-Human:        PENDING
     long? PreviousTransition(long beforeEpochSeconds, bool daylightFlag);
 }
@@ -187,7 +201,7 @@ public interface ITimeZoneRules
 /// one. Every member is safe to call concurrently.
 /// </para>
 /// </remarks>
-// Broiler-AI:           Origin=Derived; Spec=JSD-0076, JSD-0053 via Broiler.VM JsTimeZones; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+// Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0053 via Broiler.VM JsTimeZones; IP=Low; Security=Medium; Resources=2; Fingerprint=E2E170
 // Broiler-Human:        PENDING
 public sealed class TimeZoneDatabase : ITimeZoneDatabase
 {
@@ -196,57 +210,57 @@ public sealed class TimeZoneDatabase : ITimeZoneDatabase
     /// 31.7 million years, far beyond ECMAScript's ±8.64 × 10^12 seconds, and near enough that every day a
     /// recurring rule is evaluated on is a time value ECMA-262's <c>WeekDay</c> reads exactly.
     /// </summary>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 X3; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 X3; IP=Low; Security=Low; Resources=1; Fingerprint=42AAE4
     // Broiler-Human:        PENDING
     public const long MaxEpochSeconds = 1_000_000_000_000_000L;
 
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=2CEF10
     // Broiler-Human:        PENDING
     private readonly byte[] table;
 
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=218538
     // Broiler-Human:        PENDING
     private readonly string[] names;
 
     // The index of each identifier's primary identifier, itself where it is one.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=739BCF
     // Broiler-Human:        PENDING
     private readonly int[] primaryOf;
 
     // The zone each identifier reads: its primary identifier's.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=1ADEF7
     // Broiler-Human:        PENDING
     private readonly int[] zoneOf;
 
     // The identifiers folded to ASCII lower case, in ordinal order, and the index each one is.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=998B39
     // Broiler-Human:        PENDING
     private readonly string[] foldedKeys;
 
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=0294A1
     // Broiler-Human:        PENDING
     private readonly int[] foldedIndex;
 
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=93CAC6
     // Broiler-Human:        PENDING
     private readonly ReadOnlyCollection<string> primaries;
 
     // The region codes in ordinal order, and each one's zones.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=11B26E
     // Broiler-Human:        PENDING
     private readonly string[] regionCodes;
 
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=39910D
     // Broiler-Human:        PENDING
     private readonly ReadOnlyCollection<string>[] regionZones;
 
     // Where each zone starts in the zone table.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=162021
     // Broiler-Human:        PENDING
     private readonly int[] starts;
 
     // Each zone, once decoded.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones; IP=Low; Security=Low; Resources=1; Fingerprint=331AD7
     // Broiler-Human:        PENDING
     private readonly TableZoneRules?[] zones;
 
@@ -256,7 +270,7 @@ public sealed class TimeZoneDatabase : ITimeZoneDatabase
     /// <param name="identifierTable">The identifier table, ASCII lines.</param>
     /// <param name="regionTable">The region table, ASCII lines.</param>
     /// <exception cref="ArgumentException">The release is empty, or a table does not hold the generator's layout.</exception>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, JSD-0053 via Broiler.VM JsTimeZones..ctor; IP=Low; Security=Medium; Resources=3; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0053 via Broiler.VM JsTimeZones..ctor; IP=Low; Security=Medium; Resources=3; Fingerprint=D85131
     // Broiler-Human:        PENDING
     public TimeZoneDatabase(string release, ReadOnlySpan<byte> zoneTable, ReadOnlySpan<byte> identifierTable, ReadOnlySpan<byte> regionTable)
     {
@@ -342,12 +356,12 @@ public sealed class TimeZoneDatabase : ITimeZoneDatabase
     public string Release { get; }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-402 6.5.3 via Broiler.VM JsTimeZones.PrimaryIdentifiers; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-402 6.5.3 via Broiler.VM JsTimeZones.PrimaryIdentifiers; IP=Low; Security=Low; Resources=1; Fingerprint=ED527D
     // Broiler-Human:        PENDING
     public IReadOnlyList<string> PrimaryIdentifiers => primaries;
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-402 6.5.2 via Broiler.VM JsTimeZones.Find; IP=Low; Security=High; Resources=2; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-402 6.5.2 via Broiler.VM JsTimeZones.Find; IP=Low; Security=High; Resources=2; Fingerprint=DDC576
     // Broiler-Falsified-If: a name holding a character above U+007F is found, a name differing from an identifier in anything but ASCII case is found, or an identifier in any ASCII case is not found
     // Broiler-Human:        PENDING
     public bool TryFind(ReadOnlySpan<char> identifier, out TimeZoneId id)
@@ -382,7 +396,7 @@ public sealed class TimeZoneDatabase : ITimeZoneDatabase
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-262 21.4.1.22 via Broiler.VM JsTimeZoneId.Primary; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.22 via Broiler.VM JsTimeZoneId.Primary; IP=Low; Security=Low; Resources=1; Fingerprint=87BC8A
     // Broiler-Human:        PENDING
     public TimeZoneId Primary(TimeZoneId id)
     {
@@ -391,7 +405,7 @@ public sealed class TimeZoneDatabase : ITimeZoneDatabase
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 Z12 via Broiler.VM JsTimeZones.Region; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 Z12 via Broiler.VM JsTimeZones.Region; IP=Low; Security=Medium; Resources=1; Fingerprint=738317
     // Broiler-Human:        PENDING
     public IReadOnlyList<string> RegionTimeZones(ReadOnlySpan<char> region)
     {
@@ -414,7 +428,7 @@ public sealed class TimeZoneDatabase : ITimeZoneDatabase
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-402 6.5.1 via Broiler.VM JsTimeZones.Zone; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-402 6.5.1 via Broiler.VM JsTimeZones.Zone; IP=Low; Security=Medium; Resources=2; Fingerprint=965CD1
     // Broiler-Human:        PENDING
     public ITimeZoneRules Rules(TimeZoneId id)
     {
@@ -429,7 +443,7 @@ public sealed class TimeZoneDatabase : ITimeZoneDatabase
     }
 
     // The identifier's index, where it is one this database gave.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 X3; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 X3; IP=Low; Security=Low; Resources=1; Fingerprint=3C8520
     // Broiler-Human:        PENDING
     private int Check(TimeZoneId id)
     {
@@ -440,14 +454,14 @@ public sealed class TimeZoneDatabase : ITimeZoneDatabase
     }
 
     // The index of an identifier written exactly as the table writes it, or -1.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones..ctor; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones..ctor; IP=Low; Security=Low; Resources=1; Fingerprint=48710C
     // Broiler-Human:        PENDING
     private int FindExact(string identifier) =>
         TryFind(identifier, out var id) && string.Equals(id.Identifier, identifier, StringComparison.Ordinal) ? id.Index : -1;
 
     // The identifiers folded to ASCII lower case and sorted ordinally, with the index each one is; two
     // identifiers that fold to one key make the table malformed.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-402 6.5.2; IP=Low; Security=Low; Resources=2; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-402 6.5.2; IP=Low; Security=Low; Resources=2; Fingerprint=3B1D16
     // Broiler-Human:        PENDING
     private static (string[] Keys, int[] Index) FoldedIndex(string[] identifiers)
     {
@@ -480,7 +494,7 @@ public sealed class TimeZoneDatabase : ITimeZoneDatabase
     }
 
     // A folded key against an identifier still to fold, ordinally.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-402 6.5.2; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-402 6.5.2; IP=Low; Security=Medium; Resources=1; Fingerprint=5D1E9E
     // Broiler-Human:        PENDING
     private static int CompareFolded(string key, ReadOnlySpan<char> identifier)
     {
@@ -496,7 +510,7 @@ public sealed class TimeZoneDatabase : ITimeZoneDatabase
     }
 
     // ASCII lower case of a character; any other character is itself.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-402 6.5.2; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-402 6.5.2; IP=Low; Security=Low; Resources=1; Fingerprint=B3E8E8
     // Broiler-Human:        PENDING
     private static char Fold(char c) => c is >= 'A' and <= 'Z' ? (char)(c + ('a' - 'A')) : c;
 }
@@ -509,7 +523,7 @@ public sealed class TimeZoneDatabase : ITimeZoneDatabase
 /// <param name="At">The time of day, in seconds.</param>
 /// <param name="AtKind">How the time is read: 2 universal time, 1 standard time, and any other value wall time.</param>
 /// <param name="Save">The seconds the rule adds to the standard offset.</param>
-// Broiler-AI:           Origin=Derived; Spec=JSD-0076, JSD-0053 via Broiler.VM JsZoneRule; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+// Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0053 via Broiler.VM JsZoneRule; IP=Low; Security=Low; Resources=1; Fingerprint=F4CB6B
 // Broiler-Human:        PENDING
 internal readonly record struct ZoneRule(int Month, int OnKind, int Weekday, int Day, int At, int AtKind, int Save);
 
@@ -518,54 +532,54 @@ internal readonly record struct ZoneRule(int Month, int OnKind, int Weekday, int
 /// listed transition, and the rules that continue them after the last listed year - the reading
 /// Broiler.VM's <c>TzdbCompiler</c> encodes and its rule N30 holds to <c>zic</c>'s.
 /// </summary>
-// Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-262 21.4.1.21 via Broiler.VM JsZone; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+// Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.21 via Broiler.VM JsZone; IP=Low; Security=Medium; Resources=2; Fingerprint=29D6B8
 // Broiler-Human:        PENDING
 internal sealed class TableZoneRules : ITimeZoneRules
 {
     // The mean Gregorian year in seconds, by which a recurring zone tells which year an instant is in.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone.SecondsPerYear; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone.SecondsPerYear; IP=Low; Security=Low; Resources=1; Fingerprint=6A2187
     // Broiler-Human:        PENDING
     private const double SecondsPerYear = 31556952.0;
 
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone; IP=Low; Security=Low; Resources=1; Fingerprint=5BDEE7
     // Broiler-Human:        PENDING
     private readonly int initial;
 
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone; IP=Low; Security=Low; Resources=1; Fingerprint=947EF2
     // Broiler-Human:        PENDING
     private readonly long[] transitions;
 
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone; IP=Low; Security=Low; Resources=1; Fingerprint=98A9C3
     // Broiler-Human:        PENDING
     private readonly int[] offsets;
 
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone; IP=Low; Security=Low; Resources=1; Fingerprint=F15A49
     // Broiler-Human:        PENDING
     private readonly bool[] daylight;
 
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone; IP=Low; Security=Low; Resources=1; Fingerprint=8EF01D
     // Broiler-Human:        PENDING
     private readonly int standard;
 
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone; IP=Low; Security=Low; Resources=1; Fingerprint=E1237C
     // Broiler-Human:        PENDING
     private readonly int lastListedYear;
 
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone; IP=Low; Security=Low; Resources=1; Fingerprint=E2840C
     // Broiler-Human:        PENDING
     private readonly ZoneRule[] rules;
 
     // Whether the recurring rules change the offset at all: they do where two of them save differently.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone.RulesChangeOffset; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone.RulesChangeOffset; IP=Low; Security=Low; Resources=1; Fingerprint=1C9A18
     // Broiler-Human:        PENDING
     private readonly bool rulesChangeOffset;
 
     // The least save of the recurring rules, or zero: a save above it is daylight time.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone.DaylightAt; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone.DaylightAt; IP=Low; Security=Low; Resources=1; Fingerprint=1DFCCC
     // Broiler-Human:        PENDING
     private readonly int leastSave;
 
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone..ctor; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone..ctor; IP=Low; Security=Low; Resources=1; Fingerprint=86BE9C
     // Broiler-Human:        PENDING
     private TableZoneRules(int initial, long[] transitions, int[] offsets, bool[] daylight, int standard, int lastListedYear, ZoneRule[] rules)
     {
@@ -588,7 +602,7 @@ internal sealed class TableZoneRules : ITimeZoneRules
     }
 
     /// <summary>Steps over one zone of the table, checking its layout.</summary>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, JSD-0053 via Broiler.VM JsZone.Skip; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0053 via Broiler.VM JsZone.Skip; IP=Low; Security=Medium; Resources=2; Fingerprint=9027F1
     // Broiler-Human:        PENDING
     internal static void Skip(byte[] table, ref int at)
     {
@@ -629,7 +643,7 @@ internal sealed class TableZoneRules : ITimeZoneRules
     }
 
     /// <summary>Decodes the zone that starts at <paramref name="at"/>, which <see cref="Skip"/> has checked.</summary>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, JSD-0053 via Broiler.VM JsZone.Decode; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0053 via Broiler.VM JsZone.Decode; IP=Low; Security=Medium; Resources=2; Fingerprint=00FB30
     // Broiler-Human:        PENDING
     internal static TableZoneRules Decode(byte[] table, int at)
     {
@@ -677,7 +691,7 @@ internal sealed class TableZoneRules : ITimeZoneRules
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-262 21.4.1.21 via Broiler.VM JsZone.OffsetAt; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.21 via Broiler.VM JsZone.OffsetAt; IP=Low; Security=Medium; Resources=1; Fingerprint=49A5BD
     // Broiler-Human:        PENDING
     public int OffsetSecondsAt(long epochSeconds)
     {
@@ -695,7 +709,7 @@ internal sealed class TableZoneRules : ITimeZoneRules
     /// The listed transition's flag, or after them a recurring save greater than the rules' least, which is
     /// standard time where it is negative (Europe/Dublin's winter, JSD-0058).
     /// </remarks>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, JSD-0058 via Broiler.VM JsZone.DaylightAt; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0058 via Broiler.VM JsZone.DaylightAt; IP=Low; Security=Medium; Resources=1; Fingerprint=2CCC7C
     // Broiler-Human:        PENDING
     public bool IsDaylightAt(long epochSeconds)
     {
@@ -713,7 +727,7 @@ internal sealed class TableZoneRules : ITimeZoneRules
     /// The listed transitions are authoritative through the last listed year; the recurring rules answer
     /// only for the years after it, where a change of the daylight flag alone is no transition.
     /// </remarks>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, Temporal GetNamedTimeZoneNextTransition via Broiler.VM JsZone.NextTransition; IP=Low; Security=High; Resources=2; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetNamedTimeZoneNextTransition via Broiler.VM JsZone.NextTransition; IP=Low; Security=High; Resources=2; Fingerprint=FC4F84
     // Broiler-Falsified-If: a transition at or before the instant is answered, one after the limit is answered, a later transition is answered where an earlier one changes the offset, or none is answered after 2037 where the recurring rules change the offset
     // Broiler-Human:        PENDING
     public long? NextTransition(long afterEpochSeconds, long limitEpochSeconds, bool daylightFlag)
@@ -745,7 +759,7 @@ internal sealed class TableZoneRules : ITimeZoneRules
     }
 
     /// <inheritdoc/>
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, Temporal GetNamedTimeZonePreviousTransition via Broiler.VM JsZone.PreviousTransition; IP=Low; Security=High; Resources=2; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, Temporal GetNamedTimeZonePreviousTransition via Broiler.VM JsZone.PreviousTransition; IP=Low; Security=High; Resources=2; Fingerprint=30B7EE
     // Broiler-Falsified-If: a transition at or after the instant is answered, an earlier transition is answered where a later one before the instant changes the offset, or none is answered after 2037 where the recurring rules change the offset
     // Broiler-Human:        PENDING
     public long? PreviousTransition(long beforeEpochSeconds, bool daylightFlag)
@@ -777,7 +791,7 @@ internal sealed class TableZoneRules : ITimeZoneRules
     }
 
     // An instant the rules answer: of magnitude at most 10^15 seconds.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 X3; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 X3; IP=Low; Security=Low; Resources=1; Fingerprint=311672
     // Broiler-Human:        PENDING
     private static void CheckInstant(long epochSeconds, string name)
     {
@@ -786,12 +800,12 @@ internal sealed class TableZoneRules : ITimeZoneRules
     }
 
     // The year an instant is in, by the mean Gregorian year from 1970: the reckoning the recurring rules switch on.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone.YearOf; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone.YearOf; IP=Low; Security=Low; Resources=1; Fingerprint=8FC308
     // Broiler-Human:        PENDING
     private static int YearOf(long seconds) => 1970 + (int)Math.Floor(seconds / SecondsPerYear);
 
     // Whether a listed transition changes the offset, or, where asked, the daylight flag.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone.Changes; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone.Changes; IP=Low; Security=Low; Resources=1; Fingerprint=74B371
     // Broiler-Human:        PENDING
     private bool Changes(int index, bool daylightFlag)
     {
@@ -801,7 +815,7 @@ internal sealed class TableZoneRules : ITimeZoneRules
 
     // The offset the recurring rules give an instant: the last save of the year two before, then each
     // transition of the years either side up to the instant.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone.RecurringOffsetAt; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone.RecurringOffsetAt; IP=Low; Security=Low; Resources=1; Fingerprint=CEA3CE
     // Broiler-Human:        PENDING
     private int RecurringOffsetAt(long seconds)
     {
@@ -821,7 +835,7 @@ internal sealed class TableZoneRules : ITimeZoneRules
     }
 
     // The recurring rules' instants in a range of years, each with the offsets before and after it.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone.RecurringTransitions; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone.RecurringTransitions; IP=Low; Security=Low; Resources=1; Fingerprint=9A869F
     // Broiler-Human:        PENDING
     private List<(long At, int Before, int After)> RecurringTransitions(int first, int last)
     {
@@ -849,7 +863,7 @@ internal sealed class TableZoneRules : ITimeZoneRules
 
     // The recurring rules' occurrences in one year, in order of local time; two at one local time keep the
     // generator's order.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone.Events; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone.Events; IP=Low; Security=Low; Resources=1; Fingerprint=18185B
     // Broiler-Human:        PENDING
     private List<(long Local, int Kind, int Save)> Events(int year)
     {
@@ -874,7 +888,7 @@ internal sealed class TableZoneRules : ITimeZoneRules
     }
 
     // The day, since 1970-01-01, a rule falls on in a year.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone.Day; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone.Day; IP=Low; Security=Low; Resources=1; Fingerprint=696C2D
     // Broiler-Human:        PENDING
     private static long Day(int year, ZoneRule rule)
     {
@@ -903,18 +917,18 @@ internal sealed class TableZoneRules : ITimeZoneRules
 
     // The weekday of a day since 1970-01-01 as a zone rule counts it, Monday 0 to Sunday 6: ECMA-262's
     // WeekDay (21.4.1.13, Sunday 0) of that day's first instant, mapped.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076, ECMA-262 21.4.1.13 via Broiler.VM JsZone.MondayFirst; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076, ECMA-262 21.4.1.13 via Broiler.VM JsZone.MondayFirst; IP=Low; Security=Low; Resources=1; Fingerprint=E3D297
     // Broiler-Human:        PENDING
     private static int MondayFirst(long day) => ((int)EcmaTime.WeekDay(day * EcmaTime.MsPerDay) + 6) % 7;
 }
 
 /// <summary>The readers of the compact tables' integers and lines, each checking that the table holds what it reads.</summary>
-// Broiler-AI:           Origin=Derived; Spec=JSD-0076, JSD-0053 via Broiler.VM JsTimeZones.Unsigned; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+// Broiler-AI:           Origin=Ported; Spec=JSD-0076, JSD-0053 via Broiler.VM JsTimeZones.Unsigned; IP=Low; Security=Medium; Resources=1; Fingerprint=F97523
 // Broiler-Human:        PENDING
 internal static class TableReader
 {
     // A LEB128 varint.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones.Unsigned; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones.Unsigned; IP=Low; Security=Medium; Resources=1; Fingerprint=7CCD27
     // Broiler-Human:        PENDING
     internal static ulong Unsigned(byte[] bytes, ref int at)
     {
@@ -931,7 +945,7 @@ internal static class TableReader
     }
 
     // A zig-zag encoded LEB128 varint.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones.Signed; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones.Signed; IP=Low; Security=Low; Resources=1; Fingerprint=E1B139
     // Broiler-Human:        PENDING
     internal static long Signed(byte[] bytes, ref int at)
     {
@@ -940,7 +954,7 @@ internal static class TableReader
     }
 
     // A count of what follows, which the rest of the table must be able to hold.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones..ctor; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones..ctor; IP=Low; Security=Medium; Resources=1; Fingerprint=33385F
     // Broiler-Human:        PENDING
     internal static int Count(byte[] bytes, ref int at)
     {
@@ -952,7 +966,7 @@ internal static class TableReader
     }
 
     // One byte.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsZone.Decode; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsZone.Decode; IP=Low; Security=Medium; Resources=1; Fingerprint=416536
     // Broiler-Human:        PENDING
     internal static byte Byte(byte[] bytes, ref int at)
     {
@@ -963,7 +977,7 @@ internal static class TableReader
     }
 
     // A zone index field: ASCII digits naming a zone of the table.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsTimeZones..ctor; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTimeZones..ctor; IP=Low; Security=Medium; Resources=1; Fingerprint=0F50E7
     // Broiler-Human:        PENDING
     internal static int Index(string field, int count)
     {
@@ -986,7 +1000,7 @@ internal static class TableReader
     }
 
     // The non-empty lines of an ASCII text table.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 via Broiler.VM JsIntlTables.Lines; IP=Low; Security=Medium; Resources=2; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsIntlTables.Lines; IP=Low; Security=Medium; Resources=2; Fingerprint=15B29E
     // Broiler-Human:        PENDING
     internal static List<string> Lines(ReadOnlySpan<byte> text)
     {
@@ -1016,7 +1030,7 @@ internal static class TableReader
     }
 
     // The exception a table that does not hold the generator's layout is refused with.
-    // Broiler-AI:           Origin=Derived; Spec=JSD-0076 X3; IP=Low; Security=Low; Resources=1; Fingerprint=TBF
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 X3; IP=Low; Security=Low; Resources=1; Fingerprint=B9BE26
     // Broiler-Human:        PENDING
     internal static ArgumentException Malformed(string what) =>
         new("The time-zone or calendar table is malformed: " + what + ".");
