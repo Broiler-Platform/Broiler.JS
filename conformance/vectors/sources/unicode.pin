@@ -5,8 +5,153 @@
 # Broiler.VM pins (Broiler.VM/src/tests/unicode/pins/unicode.pin, rule N22), named here by the same
 # digest. The generator re-derives the set from it when given --proplist and refuses a file whose
 # digest differs.
+#
+# 2026-10-16, corpus revision 18 (milestone SJL-7.3, the Unicode area). The pin now names every file
+# scripts/conformance/generate_unicode_vectors.py and its reference computation, unicoderef.py
+# (`ref:unicoderef@1`), read: the UCD 17.0.0 files below, the auxiliary break data and the three break
+# tests, NormalizationTest.txt, the two emoji 17.0 sequence files, and ECMA-262's three property
+# tables. Each is named by the same length and SHA-256 as Broiler.Unicode's pin,
+# Broiler.Unicode/data/unicode/pins/unicode.pin, at Broiler.Unicode efbdc1d, itself a copy of Broiler.VM's
+# pin, which Broiler.VM's rule I4 holds equal to it; nothing was retrieved again.
+#
+# The corpus archives none of these files. The generator takes the directory that holds them,
+# `--ucd <dir>`, normally Broiler.Unicode's data/unicode/pins/, and refuses every file whose length or
+# SHA-256 is not the one recorded here, before a byte of it is used.
+#
+# WHAT A STANZA MEANS. `file <name>` opens a stanza for a Unicode data file, named as `ucd:17.0.0/<name>`
+# cites it; `spec-table <name>` opens one for an ECMA-262 property table, a file of the tc39/ecma262
+# revision sources/ecma262.pin names (its spec.html imports it into the clause UnicodeMatchProperty),
+# which unicoderef.py reads for the property names and aliases ECMA-262 admits and which no `ucd:`
+# entry names. `path` is where the file sits under the --ucd directory, as Broiler.Unicode's archive lays
+# it out; `bytes` and `sha256` are its length and digest. The PropList.txt stanza, first, is revision 1's,
+# with its `path` line added at revision 18. The two emoji sequence files are Unicode 17.0.0's emoji data
+# (https://www.unicode.org/Public/17.0.0/emoji/), which Broiler.VM's pin and Broiler.Unicode's hold
+# beside the UCD; `ucd:17.0.0/emoji-sequences.txt` and `ucd:17.0.0/emoji-zwj-sequences.txt` cite them.
+# DerivedGeneralCategory.txt is read only by unicoderef.py's own tests, which check UnicodeData.txt's
+# General_Category against it.
 
 version 17.0.0
 file PropList.txt
+path ucd-17.0.0/PropList.txt
 bytes 145465
 sha256 130dcddcaadaf071008bdfce1e7743e04fdfbc910886f017d9f9ac931d8c64dd
+
+file UnicodeData.txt
+path ucd-17.0.0/UnicodeData.txt
+bytes 2198209
+sha256 2e1efc1dcb59c575eedf5ccae60f95229f706ee6d031835247d843c11d96470c
+
+file PropertyAliases.txt
+path ucd-17.0.0/PropertyAliases.txt
+bytes 9619
+sha256 4441f573caf952ffece1d7c892e7715bd7136dfc26f96eb6f268bf1e474715fb
+
+file PropertyValueAliases.txt
+path ucd-17.0.0/PropertyValueAliases.txt
+bytes 81858
+sha256 64e9a5f76f7a1e8b5a47d6a1f9a26522a251208f5276bdfa1559dac7cf2e827a
+
+file DerivedCoreProperties.txt
+path ucd-17.0.0/DerivedCoreProperties.txt
+bytes 1134783
+sha256 24c7fed1195c482faaefd5c1e7eb821c5ee1fb6de07ecdbaa64b56a99da22c08
+
+file DerivedNormalizationProps.txt
+path ucd-17.0.0/DerivedNormalizationProps.txt
+bytes 1377582
+sha256 71fd6a206a2c0cdd41feb6b7f656aa31091db45e9cedc926985d718397f9e488
+
+file DerivedBinaryProperties.txt
+path ucd-17.0.0/extracted/DerivedBinaryProperties.txt
+bytes 17476
+sha256 13dd09d35a9377e33eb388a01e6581d4bfec6b2685316078c341982fa444071a
+
+file DerivedGeneralCategory.txt
+path ucd-17.0.0/extracted/DerivedGeneralCategory.txt
+bytes 277514
+sha256 d62e5bab70ca74f099343f71224fa051cb1fdd61a1ab45c0488c44cfc0b6102e
+
+file emoji-data.txt
+path ucd-17.0.0/emoji/emoji-data.txt
+bytes 107324
+sha256 2cb2bb9455cda83e8481541ecf5b6dfda66a3bb89efa3fa7c5297eccf607b72b
+
+file Scripts.txt
+path ucd-17.0.0/Scripts.txt
+bytes 192460
+sha256 9f5e50d3abaee7d6ce09480f325c706f485ae3240912527e651954d2d6b035bf
+
+file ScriptExtensions.txt
+path ucd-17.0.0/ScriptExtensions.txt
+bytes 20707
+sha256 ec2107e58825a1586acee8e0911ce18260394ac8b87e535ca325f1ccbeb06bc6
+
+file CaseFolding.txt
+path ucd-17.0.0/CaseFolding.txt
+bytes 87539
+sha256 ff8d8fefbf123574205085d6714c36149eb946d717a0c585c27f0f4ef58c4183
+
+file SpecialCasing.txt
+path ucd-17.0.0/SpecialCasing.txt
+bytes 17049
+sha256 efc25faf19de21b92c1194c111c932e03d2a5eaf18194e33f1156e96de4c9588
+
+file NormalizationTest.txt
+path ucd-17.0.0/NormalizationTest.txt
+bytes 2827429
+sha256 5019ffd530751a741900c849c0e010332f142a3612234639bd200b82138a87db
+
+file GraphemeBreakProperty.txt
+path ucd-17.0.0/auxiliary/GraphemeBreakProperty.txt
+bytes 99377
+sha256 d6b51d1d2ae5c33b451b7ed994b48f1f4dc62b2272a5831e7fd418514a6bae89
+
+file GraphemeBreakTest.txt
+path ucd-17.0.0/auxiliary/GraphemeBreakTest.txt
+bytes 126570
+sha256 e2d134d2c52919bace503ebb6a551c1855fe1a1faec18478c78fff254a1793ec
+
+file WordBreakProperty.txt
+path ucd-17.0.0/auxiliary/WordBreakProperty.txt
+bytes 114445
+sha256 72274cac1e6b919507db35655c3e175aa27274668a1ece95c28d2069f2ad9852
+
+file WordBreakTest.txt
+path ucd-17.0.0/auxiliary/WordBreakTest.txt
+bytes 322136
+sha256 1de23a75f37904abc7d206239ee8d34f8fdf0fb4ab32a7174dfbabbde25419b2
+
+file SentenceBreakProperty.txt
+path ucd-17.0.0/auxiliary/SentenceBreakProperty.txt
+bytes 221233
+sha256 871c0c985ad95125e25b302414065a10839d068970bceb383ecec138f22a0a18
+
+file SentenceBreakTest.txt
+path ucd-17.0.0/auxiliary/SentenceBreakTest.txt
+bytes 87946
+sha256 12cb47d028ded0c1cb8a28558f95479cbcd24559c46977015c82f3b50a1cc6e4
+
+file emoji-sequences.txt
+path emoji-17.0.0/emoji-sequences.txt
+bytes 194868
+sha256 12cc8267dc33cbd11ed32bcf6fc5dc2ad9c7a77bae1bdfba2f41b1b9b3ead8dd
+
+file emoji-zwj-sequences.txt
+path emoji-17.0.0/emoji-zwj-sequences.txt
+bytes 277215
+sha256 5b25441daed2322b068c5e70cda522946a4f0274df864445a1965a92e5fc5cad
+
+spec-table table-binary-unicode-properties.html
+path ecma262/table-binary-unicode-properties.html
+bytes 10528
+sha256 bb09794cb0cf887f011f5d1a133b2a29734e432ba0cf87db9281afbd151b8ea0
+
+spec-table table-nonbinary-unicode-properties.html
+path ecma262/table-nonbinary-unicode-properties.html
+bytes 1033
+sha256 08da59f7725ab8c8c932c965d22de931bbf38b1ea9430f67a2cd0163984074f2
+
+spec-table table-binary-unicode-properties-of-strings.html
+path ecma262/table-binary-unicode-properties-of-strings.html
+bytes 702
+sha256 9c4e35660c28217fb8dd7786de72010c30f901e534a57e3c16eef4831d6bf0e1

@@ -1,0 +1,23 @@
+# the pristine consumer above, kept, with its Program.cs replaced by a run of these checks, each a JavaScript expression that must be true:
+#   N1: '\uD800'.normalize() === '\uD800'
+#   N2: '\u{105C9}'.normalize('NFD') === '\u{105D2}\u0307'
+#   C1: '\u00AA\u03A3'.toLowerCase() === '\u00AA\u03C2'
+#   C7: 'i'.toLocaleUpperCase(['tr', 'en']) === '\u0130'
+#   P1: (() => { try { new RegExp('\\p{lu}', 'u'); return false; } catch (e) { return e instanceof SyntaxError; } })()
+#   P2: new RegExp('\\p{sc=Hrkt}', 'u').test('\u3042') === false
+#   S1: new RegExp('^\\p{RGI_Emoji}$', 'v').test('\u{1F44D}\u{1F3FD}')
+#   I1: (() => { try { (0, eval)('var \u2E2F = 1'); return false; } catch (e) { return e instanceof SyntaxError; } })()
+#   W1: (() => { try { (0, eval)('1\u0085+1'); return false; } catch (e) { return e instanceof SyntaxError; } })()
+#   G1: [...new Intl.Segmenter('en', { granularity: 'sentence' }).segment('One. Two? Three! Mr. Smith')].length === 5
+#   G2: [...new Intl.Segmenter('en', { granularity: 'word' }).segment('can\'t')].length === 1
+#   G3: [...new Intl.Segmenter('en').segment('e\u0301\u{1F44D}\u{1F3FD}\u{1F1E9}\u{1F1EA}')].length === 3
+$ dotnet run -c Release --no-restore
+# cwd <tmp>/broiler-pristine-consumer-hm1eapmm/consumer; started 2026-10-17T00:20:58Z; exit 0
+pristine-consumer: the Unicode area's checks: ok 12
+
+# the Unicode packages in the consumer's isolated cache: where each was restored from, whether it carries a signature, and its content hash against the repository's restore of the same version (the hash of the package without its signature):
+Broiler.Unicode.Algorithms 0.1.0-preview.4: from https://api.nuget.org/v3/index.json; signed: True; content hash 8M7PNntCj6RfQF0VIkFXgrClg3RxCdbCKyFIQB+n6Q08jX4S3Mz3ged9qwz83ggzEJ+z60Yg5trOhZ5qaxS3Vg==; the repository's restore holds the same content: True
+Broiler.Unicode.Segmentation 0.1.0-preview.4: from https://api.nuget.org/v3/index.json; signed: True; content hash C5iyHvAUD+0xArtUHX1A9k02Q3Yv6dJm5DELYC4z7SsxNd5BGvCTbfd/dTr3aVa4xSG7ugLu40Fmxzz4f4u3HQ==; the repository's restore holds the same content: True
+Broiler.Unicode.Generation: not in the consumer's closure
+Broiler.UniCode.Properties 0.1.0-preview.3: from https://api.nuget.org/v3/index.json; signed: True; content hash VHYAXBSspP5jfyd65Cg60ActZ0xTJN/kj+w8MpmK1cYbMZtD/gvxwAg06aF9aLCNqhEt/pH2jpRTM7DMhplNxg==; the repository's restore holds the same content: True
+Broiler.UniCode.Emoji.StringProperties 0.1.0-preview.3: from https://api.nuget.org/v3/index.json; signed: True; content hash UUbMHY8ljk9ls/CFrDcW8n1oZtuSg0kLpr1HxZ0rm/nUANjpjZ9zE37iUSw51v5DV78sxQftPd3cd0nMC9ptEw==; the repository's restore holds the same content: True

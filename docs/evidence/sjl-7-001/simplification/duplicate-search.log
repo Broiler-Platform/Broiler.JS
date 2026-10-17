@@ -1,0 +1,203 @@
+# SJL-7.6 search for a surviving intra-engine duplicate of the Unicode area's owner, Broiler.JS at a34b1f78cc4bda6bcdfe68ed943af6cc069c1b71:
+# the engine's product sources (Broiler.JS/; test projects, benchmarks, samples and the generated tables
+# JSUnicodeTableData.g.cs excluded), searched with git grep -E in four parts. Each hit is reviewed in
+# the bundle's README.
+
+## the platform's Unicode APIs the cut-over's host-API search does not name: a character's case and category, Rune's casing, UnicodeCategory, a string's casing in the current culture, culture comparison, IDN mapping, and case-insensitive comparison and matching
+# pattern: char\.(IsUpper|IsLower|IsNumber|IsSeparator|IsControl|ToUpper|ToLower|GetNumericValue)\b|\bRune\.(To|Get)|\bUnicodeCategory\b|\.To(Upper|Lower)\(|CompareInfo|IdnMapping|IgnoreCase
+# hits: 100
+Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs:150:        return Value!.ToLower();
+Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs:170:                d[i] = char.ToLower(ch);
+Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs:172:                if (!char.IsUpper(ch))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:90:        RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:91:    private static readonly HashSet<string> InvalidGrandfatheredLanguageTags = new(StringComparer.OrdinalIgnoreCase)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:105:    private static readonly Dictionary<string, string> RegularGrandfatheredMappings = new(StringComparer.OrdinalIgnoreCase)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:325:                var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1486:        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-t-", StringComparison.OrdinalIgnoreCase) < 0)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1618:    private static readonly Dictionary<string, string> SignLanguageAliases = new(StringComparer.OrdinalIgnoreCase)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1730:            && language.Equals("sgn", StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1915:            variants ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1967:            if (!subtags[i].Equals("t", StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1994:                    tlangVariants ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2074:            if (!subtags[i].Equals("u", StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2099:        if (tag.StartsWith("x-", StringComparison.OrdinalIgnoreCase) &&
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2404:        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase) < 0)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2460:            if (types.Count == 1 && string.Equals(types[0], "true", StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2641:        if (string.IsNullOrEmpty(tag) || tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase) < 0)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2728:            if (parts[j].Length == 2 && string.Equals(parts[j], key, StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4514:                if (string.Equals(currentKey, key, StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4526:        if (string.Equals(currentKey, key, StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5170:                return string.Equals(p, region, StringComparison.OrdinalIgnoreCase);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5697:        var uPos = tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6048:    private readonly CompareInfo compareInfo;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6120:        compareInfo = ResolveCompareInfo(locale, collation, usage);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6123:    // CompareInfo for the resolved locale, honouring the Unicode-extension collation tailoring
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6125:    // CultureInfo path: GetCultureInfo("de-DE-u-co-phonebk").CompareInfo tailors Ä to Ae
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6126:    // (CompareInfo.GetCompareInfo("de-DE_phoneboo") returns a CompareInfo with the same Name
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6129:    // CompareInfo (or the invariant one) when the tailoring isn't recognised.
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6130:    private static CompareInfo ResolveCompareInfo(string localeTag, string collation, string usage)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6143:                return CultureInfo.GetCultureInfo(bareLocale + "-u-co-search").CompareInfo;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6153:                return CultureInfo.GetCultureInfo(bareLocale + "-u-co-" + collation).CompareInfo;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6157:        try { return CultureInfo.GetCultureInfo(bareLocale).CompareInfo; }
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6158:        catch (CultureNotFoundException) { return CultureInfo.InvariantCulture.CompareInfo; }
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6161:    // .NET's CompareInfo names map the BCP-47 collation key to a string suffix in a small
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6216:        return string.Equals(language, "th", StringComparison.OrdinalIgnoreCase);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6245:        // but .NET's CompareInfo.Compare reads the raw UTF-16 code units and so distinguishes
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6259:            options |= CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6261:            options |= CompareOptions.IgnoreCase;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6347:            if (!string.Equals(parts[i], key, StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6537:            if (parts[i].Length == 2 && string.Equals(parts[i], key, StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:65:        if (!string.IsNullOrEmpty(timeZone) && timeZone.Equals("UTC", StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:98:            if (string.Equals(id, timeZone, StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:100:            if (!string.Equals(Temporal.Tz.IanaTimeZoneDatabase.GetPrimary(id), primary, StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:506:        var uPos = tag.IndexOf("-u-", StringComparison.OrdinalIgnoreCase);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:520:        if (culture.IsNeutralCulture && tag.Equals("en", StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:645:        if (string.Equals(timeZone, "UTC", StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDefaultNumberingSystems.g.cs:16:        new(System.StringComparer.OrdinalIgnoreCase)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDefaultNumberingSystems.g.cs:82:        var singleton = tag.IndexOf("-u-", System.StringComparison.OrdinalIgnoreCase);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDefaultNumberingSystems.g.cs:85:            var at = tag.IndexOf(marker, System.StringComparison.OrdinalIgnoreCase);
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:671:    private static (RegexOptions Options, bool GlobalSearch, bool IgnoreCase, bool Multiline, bool DotAll, bool HasIndices, bool Sticky, bool Unicode, bool Un
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:698:                if ((options & RegexOptions.IgnoreCase) == RegexOptions.IgnoreCase)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:700:                options |= RegexOptions.IgnoreCase;
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:839:            // .NET IgnoreCase only applies simple (ToLower-based) case folding, so it
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:2240:    private const string EcmaWordCharsIgnoreCase = @"A-Za-z0-9_\u017F\u212A";
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:2245:    private const string EcmaNonWordRangesIgnoreCase =
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:2274:            var wordChars = unicodeMode && ic ? EcmaWordCharsIgnoreCase : EcmaWordChars;
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:2275:            var nonWordRanges = unicodeMode && ic ? EcmaNonWordRangesIgnoreCase : EcmaNonWordRanges;
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3879:        // active IgnoreCase applied to `positive`, so it rejects every ch that case-folds
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3882:        // match). .NET applies IgnoreCase to the complement set, which is exactly that.
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4698:    /// .NET IgnoreCase regex doesn't handle several Unicode CaseFolding pairs.
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4861:    /// A non-ASCII code unit whose .NET (ToLower-based) IgnoreCase folds it onto an
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4873:    // IgnoreCase regex decides two units are equal) and by ECMAScript's non-Unicode
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4877:    // emitted with IgnoreCase disabled — (?-i:[class]) — so .NET's over-broad fold is
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4921:    /// IgnoreCase locally disabled via an inline <c>(?-i:…)</c> group, so .NET's
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4944:    /// under ECMAScript Canonicalize but that .NET's (simple, ToLower-based) IgnoreCase
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4961:    // correctly by .NET's own IgnoreCase, so expanding them would only bloat the
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5080:    // ToUpper/ToLower only cover the BMP; Rune.ToUpperInvariant/ToLowerInvariant carry the
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5087:        return Rune.ToLowerInvariant(Rune.ToUpperInvariant(r)).Value;
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5091:    // ECMAScript Canonicalize (Unicode-mode) equivalence class. .NET's IgnoreCase regex
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1524:        if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1620:        if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase)) { canonical = "UTC"; return true; }
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1818:        if (string.Equals(text, "Z", StringComparison.OrdinalIgnoreCase)) return true;
+Broiler.JS/Broiler.JavaScript.Clr/ClrType.cs:369:        var flags = BindingFlags.IgnoreCase
+Broiler.JS/Broiler.JavaScript.Engine/Internal/CoreInternalHelpers.cs:157:            var properties = type.GetProperties().Where(x => x.CanWrite).ToDictionary(x => x.Name.ToLower(), x => x);
+Broiler.JS/Broiler.JavaScript.Engine/Internal/CoreInternalHelpers.cs:165:                    if (properties.TryGetValue(key.ToString().ToLower(), out var p))
+Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/ILCodeGenerator.VisitParameter.cs:245:            if (string.Equals(closure.local.Name, name, StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.ExpressionCompiler/Generator/VariableInfo.cs:29:            if (string.Equals(candidate.Name, name, StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript.Extensions/MarshalExtensions.cs:113:            var properties = type.GetProperties().Where(x => x.CanWrite).ToDictionary(x => x.Name.ToLower(), x => x);
+Broiler.JS/Broiler.JavaScript.Extensions/MarshalExtensions.cs:121:                    if (properties.TryGetValue(key.ToString().ToLower(), out var p))
+Broiler.JS/Broiler.JavaScript.Extensions/StringSpanExtensions.cs:34:            if (char.IsUpper(ch))
+Broiler.JS/Broiler.JavaScript.Extensions/StringSpanExtensions.cs:37:                sb.Append(char.ToLower(ch));
+Broiler.JS/Broiler.JavaScript.JSClassGenerator/ListExtensions.cs:102:            d[i] = char.ToLower(ch);
+Broiler.JS/Broiler.JavaScript.JSClassGenerator/ListExtensions.cs:103:            if (!char.IsUpper(ch))
+Broiler.JS/Broiler.JavaScript.Modules/JSModuleContext.cs:228:        => moduleKey != null && moduleKey.EndsWith(".cjs", StringComparison.OrdinalIgnoreCase);
+Broiler.JS/Broiler.JavaScript.Network/KeyValueStore.cs:36:                        headers[pair[0].ToString().ToLower()] = pair[1].ToString();
+Broiler.JS/Broiler.JavaScript.Network/KeyValueStore.cs:88:            name = name.ToLower();
+Broiler.JS/Broiler.JavaScript.Network/KeyValueStore.cs:103:            name = name.ToLower();
+Broiler.JS/Broiler.JavaScript.Network/KeyValueStore.cs:149:            if (headers?.TryGetValue(name.ToLower(), out var value) ?? false)
+Broiler.JS/Broiler.JavaScript.Network/KeyValueStore.cs:161:            if (headers!.ContainsKey(name.ToLower()))
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:126:            : char.IsControl(c)
+Broiler.JS/Broiler.JavaScript.Parser/RegExpValidator.cs:45:                            options |= RegexOptions.IgnoreCase;
+Broiler.JS/Broiler.JavaScript.Runtime/StringExtensions.cs:26:            if (char.IsUpper(ch))
+Broiler.JS/Broiler.JavaScript.Runtime/StringExtensions.cs:35:        return string.Concat(text.Substring(0, i).ToLower(), text.AsSpan(i));
+Broiler.JS/Broiler.JavaScript/BroilerJSContext.cs:162:                    && moduleKey.EndsWith(".js", StringComparison.OrdinalIgnoreCase)
+Broiler.JS/Broiler.JavaScript/BroilerJSContext.cs:163:                    && moduleKey.StartsWith(inbuiltModulesDirectory, StringComparison.OrdinalIgnoreCase));
+Broiler.JS/Broiler.JavaScript/NuGetMetadataReferenceResolver.cs:56:            if (reference.StartsWith("nuget", StringComparison.OrdinalIgnoreCase))
+Broiler.JS/Broiler.JavaScript/REPL/InteractivePrompt.cs:138:                if (Regex.IsMatch(s[i], ".*(?:" + input + ").*", RegexOptions.IgnoreCase))
+Broiler.JS/Broiler.JavaScript/Utils/PackageManager.cs:37:                Version = tokens[1].Trim().ToLower();
+Broiler.JS/Broiler.JavaScript/Utils/PackageManager.cs:38:                if (Package.StartsWith("BroilerJS", StringComparison.OrdinalIgnoreCase))
+
+## code points of the area's sets and algorithms spelled in code: white space and line terminators, the joiners, the casing specials (capital and final sigma, dotted capital and dotless small i, the combining dot above, sharp s), Hangul's composition constants, the regional indicators and the emoji variation selector
+# pattern: \\u(0085|00[aA]0|1680|180[eE]|200[0-9a-dA-D]|202[89fF]|205[fF]|3000|[fF][eE][fF][fF]|03[aA]3|03[cC]2|0130|0131|0307|00[dD][fF])|0x0*(85|[aA]0|1680|180[eE]|200[0-9a-dA-D]|202[89fF]|205[fF]|3000|[fF][eE][fF][fF]|3[aA]3|3[cC]2|130|131|307|[dD][fF]|[aA][cC]00|1100|1161|11[aA]7|1[fF]1[eE]6|1[fF]1[fF][fF]|[fF][eE]0[fF])\b|\b11172\b
+# hits: 23
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:207:                // `\n` / `\r` / `\u2028` / `\u2029` escape, which matches the same
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:255:            case '\u2028':
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:256:            case '\u2029':
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:911:            // the four LineTerminator characters: \n \r \u2028 \u2029.
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:2023:    // group was stored as "_\\u200C" and groups["_‌"] (an identifier resolving to
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:2784:    /// \n (U+000A), \r (U+000D), \u2028 (LS), \u2029 (PS).
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:2823:                sb.Append(@"[^\n\r\u2028\u2029]");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:2849:        // The four ECMAScript LineTerminators as regex escapes: \n \r \u2028 \u2029.
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:2850:        const string lineTerminators = "\\n\\r\\u2028\\u2029";
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3008:        // dotAll=false: match any code point except LineTerminator (\n \r \u2028 \u2029).
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3012:            : @"(?:[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]|[^\n\r\u2028\u2029\uD800-\uDFFF])";
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4606:        const string esWhitespaceChars = @"\t\n\v\f\r \xA0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF";
+Broiler.JS/Broiler.JavaScript.Parser/CharExtensions.cs:91:        => ch is '\n' or '\r' or '\u2028' or '\u2029';
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:295:        if (ch is '\n' or '\u2028' or '\u2029'
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:776:            case '\u2028':
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:777:            case '\u2029':
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1337:                        case '\u2028':
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1338:                        case '\u2029':
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1386:                            if (first is '\n' or '\r' or '\u2028' or '\u2029')
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1560:                case '\u2028':
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:1561:                case '\u2029':
+Broiler.JS/CHANGELOG.md:525:    digits, `format("\uFEFF0.1")` is `0.1`, where U+FEFF stopped the decimal reading and the text was
+Broiler.JS/modules/inbuilt/buffer.js:962:      : (firstByte > 0xDF)
+
+## definitions of the area's predicates and algorithms: identifier, white-space and line-terminator tests, casing conditions, word-likeness, segmentation, decomposition, case folding and property resolution (JSUnicode's own four, which call the owner, are found too, as the search's control)
+# pattern: (static|private|internal|public|protected)[^=;(]*\b(Is(Identifier|Id|RegExpIdentifier)(Start|Part|Continue)\w*|Is\w*WhiteSpace\w*|Is\w*LineTerminator\w*|IsCased|IsCaseIgnorable|Is\w*SoftDotted|Is\w*FinalSigma|IsWordLike\w*|\w*Grapheme\w*|\w*WordBreak\w*|\w*SentenceBreak\w*|\w*Decompos\w*|\w*Fold\w*|CanonicalizeKey|Resolve\w*Property\w*|\w*UnicodeProperty\w*|\w*PropertyEscape\w*|\w*Casing\w*|\w*SpecialCas\w*)\s*[(<]
+# hits: 26
+Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs:186:    public bool IsNullOrWhiteSpace() => Source == null || string.IsNullOrWhiteSpace(Value);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Map/JSMap.cs:272:    private static JSValue CanonicalizeKey(JSValue key)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.UnicodeSets.cs:406:    private static ClassSetValue ResolvePropertyOperand(bool negated, string inner)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:2755:    private static void AppendAstralCaseFoldExtras(List<string> alts, int lo, int hi)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3565:    private static string TransformUnicodePropertyEscapes(string pattern, bool unicodeSets, bool ignoreCase)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3732:    private static string TranslateUnicodeProperty(bool negated, string inner, bool inClass, bool unicodeSets, bool ignoreCase)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4703:    private static string TransformUnicodeCaseFolding(string pattern, bool unicode)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4869:    private static char[] GetNonUnicodeOverFoldClass(int cp)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4882:    private static Dictionary<char, char[]> BuildNonUnicodeOverFoldClasses()
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4951:    private static char[] GetCaseFoldEquivalents(char c, bool unicode)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4968:    private static Dictionary<char, char[]> BuildCaseFoldEquivalents(bool unicode)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5042:    private static void MergeCaseFoldClass(Dictionary<char, char[]> map, char[] equivalenceClass)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5065:    private static char CanonicalizeKey(char ch)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5076:    private static char CaseFoldKey(char ch) => char.ToLowerInvariant(char.ToUpperInvariant(ch));
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5084:    private static int CaseFoldKeyCodePoint(int cp)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5099:    private static Dictionary<int, int[]> BuildAstralCaseFoldEquivalents()
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5139:    private static void SeedCaseFoldPair(Dictionary<int, int[]> map, int a, int b)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5145:    private static void AddCaseFoldEquivalent(Dictionary<int, int[]> map, int member, int other)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5165:    private static int[] GetAstralCaseFoldEquivalents(int cp)
+Broiler.JS/Broiler.JavaScript.Parser/CharExtensions.cs:90:    internal static bool IsLineTerminator(this char ch)
+Broiler.JS/Broiler.JavaScript.Parser/RegExpValidator.cs:771:    private static string NormalizeUnicodePropertyEscapes(string pattern)
+Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs:886:    internal static JSValue ResolvePropertyValue(IPropertyValue value) => value switch
+Broiler.JS/Broiler.JavaScript.Runtime/Unicode/JSUnicode.cs:44:    internal static bool IsIdentifierStart(int codePoint) =>
+Broiler.JS/Broiler.JavaScript.Runtime/Unicode/JSUnicode.cs:51:    internal static bool IsIdentifierPart(int codePoint) =>
+Broiler.JS/Broiler.JavaScript.Runtime/Unicode/JSUnicode.cs:61:    internal static bool IsWhiteSpace(int codePoint) =>
+Broiler.JS/Broiler.JavaScript.Runtime/Unicode/JSUnicode.cs:68:    internal static bool IsLineTerminator(int codePoint) => EcmaScriptLexical.IsLineTerminator(codePoint);
+
+## names and aliases of Unicode properties and values spelled as strings, which the owner's exact lookup holds: General_Category's two-letter values and long names, the binary properties and the Script property (the one-letter values and the short property names are left out: they match unrelated strings)
+# pattern: "(Lu|Ll|Lt|Lm|Lo|LC|Mn|Mc|Me|Nd|Nl|No|Pc|Pd|Ps|Pe|Pi|Pf|Po|Sm|Sc|Sk|So|Zs|Zl|Zp|Cc|Cf|Cs|Co|Cn|Letter|\w+_(Letter|Mark|Number|Punctuation|Symbol|Separator)|General_Category|Script|Script_Extensions|ID_Start|ID_Continue|Alphabetic|White_Space|Any|ASCII|Assigned|Emoji|RGI_Emoji)"
+# hits: 33
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3434:        Add("L", "Letter");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3435:        Add("Lu", "Uppercase_Letter");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3436:        Add("Ll", "Lowercase_Letter");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3437:        Add("Lt", "Titlecase_Letter");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3438:        Add("Lm", "Modifier_Letter");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3439:        Add("Lo", "Other_Letter");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3440:        Add("M", "Mark", "Combining_Mark");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3441:        Add("Mn", "Nonspacing_Mark");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3442:        Add("Mc", "Spacing_Mark");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3443:        Add("Me", "Enclosing_Mark");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3445:        Add("Nd", "Decimal_Number", "digit");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3446:        Add("Nl", "Letter_Number");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3447:        Add("No", "Other_Number");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3449:        Add("Pc", "Connector_Punctuation");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3450:        Add("Pd", "Dash_Punctuation");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3451:        Add("Ps", "Open_Punctuation");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3452:        Add("Pe", "Close_Punctuation");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3453:        Add("Pi", "Initial_Punctuation");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3454:        Add("Pf", "Final_Punctuation");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3455:        Add("Po", "Other_Punctuation");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3457:        Add("Sm", "Math_Symbol");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3458:        Add("Sc", "Currency_Symbol");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3459:        Add("Sk", "Modifier_Symbol");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3460:        Add("So", "Other_Symbol");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3462:        Add("Zs", "Space_Separator");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3463:        Add("Zl", "Line_Separator");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3464:        Add("Zp", "Paragraph_Separator");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3466:        Add("Cc", "Control", "cntrl");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3467:        Add("Cf", "Format");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3468:        Add("Cs", "Surrogate");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3469:        Add("Co", "Private_Use");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3470:        Add("Cn", "Unassigned");
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3755:        var isGeneralCategory = eq < 0 || inner.AsSpan(0, eq) is "gc" or "General_Category";
+

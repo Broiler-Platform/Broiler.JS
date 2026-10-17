@@ -1,0 +1,185 @@
+# SJL-7.6, the home at a34b1f78cc4bda6bcdfe68ed943af6cc069c1b71: Broiler.Unicode's packages as this engine restores them
+
+## Directory.Packages.props: the owner's packages and Broiler.Regex
+Directory.Packages.props:16:    <PackageVersion Include="Broiler.Regex" Version="0.1.0-preview.4" />
+Directory.Packages.props:17:    <PackageVersion Include="Broiler.Unicode.Cldr.LocaleData" Version="0.1.0-preview.3" />
+Directory.Packages.props:20:    <PackageVersion Include="Broiler.Unicode.Algorithms" Version="0.1.0-preview.4" />
+Directory.Packages.props:21:    <PackageVersion Include="Broiler.Unicode.Segmentation" Version="0.1.0-preview.4" />
+Directory.Packages.props:22:    <PackageVersion Include="Broiler.Unicode.Generation" Version="0.1.0-preview.4" />
+
+## The product projects' references to them
+Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj:18:    <PackageReference Include="Broiler.Regex" />
+Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj:19:    <PackageReference Include="Broiler.Unicode.Cldr.LocaleData" />
+Broiler.JS/Broiler.JavaScript.BuiltIns/Broiler.JavaScript.BuiltIns.csproj:21:    <PackageReference Include="Broiler.Unicode.Segmentation" />
+Broiler.JS/Broiler.JavaScript.Runtime.Tests/Broiler.JavaScript.Runtime.Tests.csproj:17:    <PackageReference Include="Broiler.Unicode.Generation" />
+Broiler.JS/Broiler.JavaScript.Runtime/Broiler.JavaScript.Runtime.csproj:12:    <PackageReference Include="Broiler.Unicode.Algorithms" />
+
+## The engine's package closure
+$ dotnet restore Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj
+# cwd <tree>; started 2026-10-17T00:19:17Z; exit 0
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+$ dotnet list Broiler.JS/Broiler.JavaScript.All/Broiler.JavaScript.All.csproj package --include-transitive
+# cwd <tree>; started 2026-10-17T00:19:19Z; exit 0
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+Project 'Broiler.JavaScript.All' has the following package references
+   [net10.0]: 
+   Top-level Package                      Requested   Resolved
+   > Microsoft.Net.Compilers.Toolset      5.3.0       5.3.0   
+
+   Transitive Package                            Resolved       
+   > Broiler.Regex                               0.1.0-preview.4
+   > Broiler.Unicode.Algorithms                  0.1.0-preview.4
+   > Broiler.Unicode.Cldr.LocaleData             0.1.0-preview.3
+   > Broiler.Unicode.Emoji.StringProperties      0.1.0-preview.3
+   > Broiler.Unicode.Properties                  0.1.0-preview.3
+   > Broiler.Unicode.Segmentation                0.1.0-preview.4
+
+
+## Each package as restored, against nuget.org (global packages folder /root/.nuget/packages)
+
+## Broiler.Unicode.Algorithms 0.1.0-preview.4
+restored: 67,377 bytes; sha512 8M7PNntCj6RfQF0VIkFXgrClg3RxCdbCKyFIQB+n6Q08jX4S3Mz3ged9qwz83ggzEJ+z60Yg5trOhZ5qaxS3Vg==; the restore's record (.nupkg.sha512) equal: True; restored into this global folder from: /home/user/Broiler.VM/eng/packages
+$ dotnet nuget verify --all /root/.nuget/packages/broiler.unicode.algorithms/0.1.0-preview.4/broiler.unicode.algorithms.0.1.0-preview.4.nupkg
+# cwd <tree>; started 2026-10-17T00:19:24Z; exit 1
+
+Verifying Broiler.Unicode.Algorithms.0.1.0-preview.4
+Content hash: 8M7PNntCj6RfQF0VIkFXgrClg3RxCdbCKyFIQB+n6Q08jX4S3Mz3ged9qwz83ggzEJ+z60Yg5trOhZ5qaxS3Vg==
+
+error: NU3004: The package is not signed.
+
+Package signature validation failed.
+nuget.org serves https://api.nuget.org/v3-flatcontainer/broiler.unicode.algorithms/0.1.0-preview.4/broiler.unicode.algorithms.0.1.0-preview.4.nupkg: 80,468 bytes
+$ dotnet nuget verify --all <scratch>/nuget-org/broiler.unicode.algorithms.0.1.0-preview.4.nupkg
+# cwd <tree>; started 2026-10-17T00:19:25Z; exit 0
+
+Verifying Broiler.Unicode.Algorithms.0.1.0-preview.4
+Content hash: 8M7PNntCj6RfQF0VIkFXgrClg3RxCdbCKyFIQB+n6Q08jX4S3Mz3ged9qwz83ggzEJ+z60Yg5trOhZ5qaxS3Vg==
+
+Signature type: Repository
+  Subject Name: CN=NuGet.org Repository by Microsoft, O=NuGet.org Repository by Microsoft, L=Redmond, S=Washington, C=US
+  SHA256 hash: 1F4B311D9ACC115C8DC8018B5A49E00FCE6DA8E2855F9F014CA6F34570BC482D
+  Valid from: 02/23/2024 00:00:00 to 05/18/2027 23:59:59
+entries only in nuget.org's copy: ['.signature.p7s']; only in the restored copy: none; entries in both that differ: none
+content hash, nuget.org's copy: 8M7PNntCj6RfQF0VIkFXgrClg3RxCdbCKyFIQB+n6Q08jX4S3Mz3ged9qwz83ggzEJ+z60Yg5trOhZ5qaxS3Vg==; the restored copy: 8M7PNntCj6RfQF0VIkFXgrClg3RxCdbCKyFIQB+n6Q08jX4S3Mz3ged9qwz83ggzEJ+z60Yg5trOhZ5qaxS3Vg==; equal: True
+nuspec dependencies: none
+nuspec repository: <repository type="git" url="https://github.com/Broiler-Platform/Broiler.Unicode" branch="refs/heads/claude/busy-lamport-m3yprr" commit="6e14f93ad753094c99f0013d22269b47550ae552" />
+  35d119cc7331d3236b6c24e962def999fd5f31741d006a9ed9a8e925755e5cbb  lib/net10.0/Broiler.Unicode.Algorithms.dll
+
+## Broiler.Unicode.Segmentation 0.1.0-preview.4
+restored: 52,447 bytes; sha512 C5iyHvAUD+0xArtUHX1A9k02Q3Yv6dJm5DELYC4z7SsxNd5BGvCTbfd/dTr3aVa4xSG7ugLu40Fmxzz4f4u3HQ==; the restore's record (.nupkg.sha512) equal: True; restored into this global folder from: /home/user/Broiler.VM/eng/packages
+$ dotnet nuget verify --all /root/.nuget/packages/broiler.unicode.segmentation/0.1.0-preview.4/broiler.unicode.segmentation.0.1.0-preview.4.nupkg
+# cwd <tree>; started 2026-10-17T00:19:25Z; exit 1
+
+Verifying Broiler.Unicode.Segmentation.0.1.0-preview.4
+Content hash: C5iyHvAUD+0xArtUHX1A9k02Q3Yv6dJm5DELYC4z7SsxNd5BGvCTbfd/dTr3aVa4xSG7ugLu40Fmxzz4f4u3HQ==
+
+error: NU3004: The package is not signed.
+
+Package signature validation failed.
+nuget.org serves https://api.nuget.org/v3-flatcontainer/broiler.unicode.segmentation/0.1.0-preview.4/broiler.unicode.segmentation.0.1.0-preview.4.nupkg: 65,537 bytes
+$ dotnet nuget verify --all <scratch>/nuget-org/broiler.unicode.segmentation.0.1.0-preview.4.nupkg
+# cwd <tree>; started 2026-10-17T00:19:26Z; exit 0
+
+Verifying Broiler.Unicode.Segmentation.0.1.0-preview.4
+Content hash: C5iyHvAUD+0xArtUHX1A9k02Q3Yv6dJm5DELYC4z7SsxNd5BGvCTbfd/dTr3aVa4xSG7ugLu40Fmxzz4f4u3HQ==
+
+Signature type: Repository
+  Subject Name: CN=NuGet.org Repository by Microsoft, O=NuGet.org Repository by Microsoft, L=Redmond, S=Washington, C=US
+  SHA256 hash: 1F4B311D9ACC115C8DC8018B5A49E00FCE6DA8E2855F9F014CA6F34570BC482D
+  Valid from: 02/23/2024 00:00:00 to 05/18/2027 23:59:59
+entries only in nuget.org's copy: ['.signature.p7s']; only in the restored copy: none; entries in both that differ: none
+content hash, nuget.org's copy: C5iyHvAUD+0xArtUHX1A9k02Q3Yv6dJm5DELYC4z7SsxNd5BGvCTbfd/dTr3aVa4xSG7ugLu40Fmxzz4f4u3HQ==; the restored copy: C5iyHvAUD+0xArtUHX1A9k02Q3Yv6dJm5DELYC4z7SsxNd5BGvCTbfd/dTr3aVa4xSG7ugLu40Fmxzz4f4u3HQ==; equal: True
+nuspec dependencies: Broiler.Unicode.Algorithms 0.1.0-preview.4
+nuspec repository: <repository type="git" url="https://github.com/Broiler-Platform/Broiler.Unicode" branch="refs/heads/claude/busy-lamport-m3yprr" commit="6e14f93ad753094c99f0013d22269b47550ae552" />
+  6cf56128a1a836c8d4a218024f688dfb910133091fe8b93bdc83a5985234f806  lib/net10.0/Broiler.Unicode.Segmentation.dll
+
+## Broiler.Unicode.Generation 0.1.0-preview.4
+restored: 89,699 bytes; sha512 ai2J9zGFRnIVVqSlA/hkGbYUADObivp5Ee74QhAYlQuYQTPHQxxlD/cloFQlY9LWmGnVi8nZIMnxVWQXrb2GNw==; the restore's record (.nupkg.sha512) equal: True; restored into this global folder from: /home/user/Broiler.VM/eng/packages
+$ dotnet nuget verify --all /root/.nuget/packages/broiler.unicode.generation/0.1.0-preview.4/broiler.unicode.generation.0.1.0-preview.4.nupkg
+# cwd <tree>; started 2026-10-17T00:19:27Z; exit 1
+
+Verifying Broiler.Unicode.Generation.0.1.0-preview.4
+Content hash: ai2J9zGFRnIVVqSlA/hkGbYUADObivp5Ee74QhAYlQuYQTPHQxxlD/cloFQlY9LWmGnVi8nZIMnxVWQXrb2GNw==
+
+error: NU3004: The package is not signed.
+
+Package signature validation failed.
+nuget.org serves https://api.nuget.org/v3-flatcontainer/broiler.unicode.generation/0.1.0-preview.4/broiler.unicode.generation.0.1.0-preview.4.nupkg: 102,790 bytes
+$ dotnet nuget verify --all <scratch>/nuget-org/broiler.unicode.generation.0.1.0-preview.4.nupkg
+# cwd <tree>; started 2026-10-17T00:19:27Z; exit 0
+
+Verifying Broiler.Unicode.Generation.0.1.0-preview.4
+Content hash: ai2J9zGFRnIVVqSlA/hkGbYUADObivp5Ee74QhAYlQuYQTPHQxxlD/cloFQlY9LWmGnVi8nZIMnxVWQXrb2GNw==
+
+Signature type: Repository
+  Subject Name: CN=NuGet.org Repository by Microsoft, O=NuGet.org Repository by Microsoft, L=Redmond, S=Washington, C=US
+  SHA256 hash: 1F4B311D9ACC115C8DC8018B5A49E00FCE6DA8E2855F9F014CA6F34570BC482D
+  Valid from: 02/23/2024 00:00:00 to 05/18/2027 23:59:59
+entries only in nuget.org's copy: ['.signature.p7s']; only in the restored copy: none; entries in both that differ: none
+content hash, nuget.org's copy: ai2J9zGFRnIVVqSlA/hkGbYUADObivp5Ee74QhAYlQuYQTPHQxxlD/cloFQlY9LWmGnVi8nZIMnxVWQXrb2GNw==; the restored copy: ai2J9zGFRnIVVqSlA/hkGbYUADObivp5Ee74QhAYlQuYQTPHQxxlD/cloFQlY9LWmGnVi8nZIMnxVWQXrb2GNw==; equal: True
+nuspec dependencies: Broiler.Unicode.Algorithms 0.1.0-preview.4
+nuspec repository: <repository type="git" url="https://github.com/Broiler-Platform/Broiler.Unicode" branch="refs/heads/claude/busy-lamport-m3yprr" commit="6e14f93ad753094c99f0013d22269b47550ae552" />
+  c15d9441a9a08e72b9c422e4d65aa9092324fc901946cfc4fc6c9a82932a8163  lib/net10.0/Broiler.Unicode.Generation.dll
+
+## Broiler.UniCode.Properties 0.1.0-preview.3
+restored: 228,232 bytes; sha512 rSm/JQF9GNI5u5CBZyItpzrj7L+y475g8vK44UMbTKRVsdIpkUafnYK6Xl5pfuhyFvUajRt6a4crkuWxgYHE2g==; the restore's record (.nupkg.sha512) equal: True; restored into this global folder from: https://api.nuget.org/v3/index.json
+$ dotnet nuget verify --all /root/.nuget/packages/broiler.unicode.properties/0.1.0-preview.3/broiler.unicode.properties.0.1.0-preview.3.nupkg
+# cwd <tree>; started 2026-10-17T00:19:28Z; exit 0
+
+Verifying Broiler.Unicode.Properties.0.1.0-preview.3
+Content hash: VHYAXBSspP5jfyd65Cg60ActZ0xTJN/kj+w8MpmK1cYbMZtD/gvxwAg06aF9aLCNqhEt/pH2jpRTM7DMhplNxg==
+
+Signature type: Repository
+  Subject Name: CN=NuGet.org Repository by Microsoft, O=NuGet.org Repository by Microsoft, L=Redmond, S=Washington, C=US
+  SHA256 hash: 1F4B311D9ACC115C8DC8018B5A49E00FCE6DA8E2855F9F014CA6F34570BC482D
+  Valid from: 02/23/2024 00:00:00 to 05/18/2027 23:59:59
+nuget.org serves https://api.nuget.org/v3-flatcontainer/broiler.unicode.properties/0.1.0-preview.3/broiler.unicode.properties.0.1.0-preview.3.nupkg: 228,232 bytes
+$ dotnet nuget verify --all <scratch>/nuget-org/broiler.unicode.properties.0.1.0-preview.3.nupkg
+# cwd <tree>; started 2026-10-17T00:19:29Z; exit 0
+
+Verifying Broiler.Unicode.Properties.0.1.0-preview.3
+Content hash: VHYAXBSspP5jfyd65Cg60ActZ0xTJN/kj+w8MpmK1cYbMZtD/gvxwAg06aF9aLCNqhEt/pH2jpRTM7DMhplNxg==
+
+Signature type: Repository
+  Subject Name: CN=NuGet.org Repository by Microsoft, O=NuGet.org Repository by Microsoft, L=Redmond, S=Washington, C=US
+  SHA256 hash: 1F4B311D9ACC115C8DC8018B5A49E00FCE6DA8E2855F9F014CA6F34570BC482D
+  Valid from: 02/23/2024 00:00:00 to 05/18/2027 23:59:59
+entries only in nuget.org's copy: none; only in the restored copy: none; entries in both that differ: none
+content hash, nuget.org's copy: VHYAXBSspP5jfyd65Cg60ActZ0xTJN/kj+w8MpmK1cYbMZtD/gvxwAg06aF9aLCNqhEt/pH2jpRTM7DMhplNxg==; the restored copy: VHYAXBSspP5jfyd65Cg60ActZ0xTJN/kj+w8MpmK1cYbMZtD/gvxwAg06aF9aLCNqhEt/pH2jpRTM7DMhplNxg==; equal: True
+nuspec dependencies: none
+nuspec repository: <repository type="git" url="https://github.com/Broiler-Platform/Broiler.Unicode" branch="refs/heads/main" commit="2affa78ffa96d2c975ad65eb8e990722b18f3e22" />
+  fad332af4ffc5fd9da4bb3f0a07b585b4bf40722522fdc82e48ba62ad9f94786  lib/net10.0/Broiler.Unicode.Properties.dll
+  899700dbb028c236fc64de561d970a3af5befa0fbd444f66323b554fb9ee698a  lib/net8.0/Broiler.Unicode.Properties.dll
+
+## Broiler.UniCode.Emoji.StringProperties 0.1.0-preview.3
+restored: 108,290 bytes; sha512 amP2Fm6RnSiH2IPaHEAQ9ID3OxKJedU2VvXvoK8xJAni2NDQYg7XP8qHKfzVZ70aoenCRv2M5ORhfpN75spNVA==; the restore's record (.nupkg.sha512) equal: True; restored into this global folder from: https://api.nuget.org/v3/index.json
+$ dotnet nuget verify --all /root/.nuget/packages/broiler.unicode.emoji.stringproperties/0.1.0-preview.3/broiler.unicode.emoji.stringproperties.0.1.0-preview.3.nupkg
+# cwd <tree>; started 2026-10-17T00:19:29Z; exit 0
+
+Verifying Broiler.Unicode.Emoji.StringProperties.0.1.0-preview.3
+Content hash: UUbMHY8ljk9ls/CFrDcW8n1oZtuSg0kLpr1HxZ0rm/nUANjpjZ9zE37iUSw51v5DV78sxQftPd3cd0nMC9ptEw==
+
+Signature type: Repository
+  Subject Name: CN=NuGet.org Repository by Microsoft, O=NuGet.org Repository by Microsoft, L=Redmond, S=Washington, C=US
+  SHA256 hash: 1F4B311D9ACC115C8DC8018B5A49E00FCE6DA8E2855F9F014CA6F34570BC482D
+  Valid from: 02/23/2024 00:00:00 to 05/18/2027 23:59:59
+nuget.org serves https://api.nuget.org/v3-flatcontainer/broiler.unicode.emoji.stringproperties/0.1.0-preview.3/broiler.unicode.emoji.stringproperties.0.1.0-preview.3.nupkg: 108,290 bytes
+$ dotnet nuget verify --all <scratch>/nuget-org/broiler.unicode.emoji.stringproperties.0.1.0-preview.3.nupkg
+# cwd <tree>; started 2026-10-17T00:19:30Z; exit 0
+
+Verifying Broiler.Unicode.Emoji.StringProperties.0.1.0-preview.3
+Content hash: UUbMHY8ljk9ls/CFrDcW8n1oZtuSg0kLpr1HxZ0rm/nUANjpjZ9zE37iUSw51v5DV78sxQftPd3cd0nMC9ptEw==
+
+Signature type: Repository
+  Subject Name: CN=NuGet.org Repository by Microsoft, O=NuGet.org Repository by Microsoft, L=Redmond, S=Washington, C=US
+  SHA256 hash: 1F4B311D9ACC115C8DC8018B5A49E00FCE6DA8E2855F9F014CA6F34570BC482D
+  Valid from: 02/23/2024 00:00:00 to 05/18/2027 23:59:59
+entries only in nuget.org's copy: none; only in the restored copy: none; entries in both that differ: none
+content hash, nuget.org's copy: UUbMHY8ljk9ls/CFrDcW8n1oZtuSg0kLpr1HxZ0rm/nUANjpjZ9zE37iUSw51v5DV78sxQftPd3cd0nMC9ptEw==; the restored copy: UUbMHY8ljk9ls/CFrDcW8n1oZtuSg0kLpr1HxZ0rm/nUANjpjZ9zE37iUSw51v5DV78sxQftPd3cd0nMC9ptEw==; equal: True
+nuspec dependencies: none
+nuspec repository: <repository type="git" url="https://github.com/Broiler-Platform/Broiler.Unicode" branch="refs/heads/main" commit="2affa78ffa96d2c975ad65eb8e990722b18f3e22" />
+  d3db8abaa3bf41536752acd89ef08795f0855f6db78035d9b5eafde9abfec268  lib/net10.0/UnicodeEmoji.StringProperties.dll
+  e747de09b6e562ae8900b7e39e7ad45f39fe73fb7e774460c9bea9e793e35f01  lib/net8.0/UnicodeEmoji.StringProperties.dll
+

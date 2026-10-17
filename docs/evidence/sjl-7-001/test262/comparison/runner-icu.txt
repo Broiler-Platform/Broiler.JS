@@ -1,0 +1,11 @@
+# The runner's ICU, which the rule asks to be recorded with the runner image. Neither run printed it: the workflow
+# records the image (run.txt: ubuntu24 20261012.334.1, the same for the base and the after run), and the image's own
+# software list names its ICU. Fetched 2026-10-17T00:23:59Z from
+# https://raw.githubusercontent.com/actions/runner-images/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+# (16327 bytes, sha256 3911b4bc1aa423be7b7469a75f3093f51306c02f2638f2a8b4f5ed31f3ffe791); its lines naming the image and ICU:
+9:- OS Version: 24.04.5 LTS
+11:- Image Version: 20261012.334.1
+286:| libicu-dev             | 74.2-1ubuntu3.1               |
+# ICU 74 carries Unicode 15.1. This bundle's local runs took the same package on this machine:
+$ dpkg -l libicu74
+ii libicu74:amd64 74.2-1ubuntu3.1 amd64 International Components for Unicode

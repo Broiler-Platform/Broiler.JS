@@ -1,0 +1,64 @@
+# broiler-unicode unicode data pin 1
+#
+# The Unicode Character Database files Broiler.Unicode's algorithm tables are generated from, the
+# auxiliary break data and its tests, the two emoji sequence files, the Unicode licence text, and
+# ECMA-262's three property tables. The generator (src/Unicode.Generation) reads these files and
+# nothing else, and refuses any whose bytes or version header do not match what is recorded here.
+#
+# HOW IT WAS TAKEN. This file and the archive beside it are a copy of Broiler.VM's
+# src/tests/unicode/pins/unicode.pin and its archive, taken on 2026-10-16 at milestone SJL-7 (work
+# package SJL-7.2) of the shared JavaScript libraries programme, under decision SJL-D-6 (c) and the
+# owner condition this repository adopted on that date (docs/roadmap.md): "It starts as a copy of
+# Broiler.VM's src/tests/unicode/pins/unicode.pin: the same files, by the same hashes." Every file was
+# copied byte for byte from Broiler.VM at 7b44dc7, and every line below names the same file by the
+# same length and SHA-256 as Broiler.VM's pin; Broiler.VM's rule I4 and this repository's bundle
+# sjl-7-001 (decision-rule.md, part B) hold the two pins equal. Broiler.VM's pin records how each file
+# was retrieved from unicode.org and tc39/ecma262, twice and byte-identical, between 2026-09-22 and
+# 2026-10-04; nothing here was retrieved again.
+#
+# ONE DIFFERENCE OF FORM. A `spec-table` line names its file by a path relative to this repository's
+# root, so the three ECMAScript tables, archived in Broiler.VM beside its specification edition, sit
+# here under data/unicode/pins/ecma262/. Their bytes, lengths and hashes are Broiler.VM's.
+#
+# WHAT A LINE MEANS. `file <path relative to this directory> <bytes> <sha256>` for a UCD file, an
+# emoji file or the licence text; `spec-table <path relative to the repository root> <bytes> <sha256>`
+# for an ECMAScript property table. UnicodeData.txt carries no header line and is held by its hash
+# alone; every other UCD file's first line names its version, and the emoji files state theirs in a
+# `# Version:` line. NormalizationTest.txt and the three auxiliary *BreakTest.txt files are test-only
+# input: no table is generated from them.
+
+data unicode-character-database
+version 17.0.0
+source https://www.unicode.org/Public/17.0.0/ucd/
+licence-source https://www.unicode.org/license.txt
+emoji-source https://www.unicode.org/Public/17.0.0/emoji/
+spec-table-source https://raw.githubusercontent.com/tc39/ecma262/0248456c758431e4bb8e5d26333ff1865123c9cd/
+retrieved 2026-09-22
+retrievals 2 byte-identical
+archived yes
+file ucd-17.0.0/CaseFolding.txt 87539 ff8d8fefbf123574205085d6714c36149eb946d717a0c585c27f0f4ef58c4183
+file ucd-17.0.0/DerivedCoreProperties.txt 1134783 24c7fed1195c482faaefd5c1e7eb821c5ee1fb6de07ecdbaa64b56a99da22c08
+file ucd-17.0.0/DerivedNormalizationProps.txt 1377582 71fd6a206a2c0cdd41feb6b7f656aa31091db45e9cedc926985d718397f9e488
+file ucd-17.0.0/NormalizationTest.txt 2827429 5019ffd530751a741900c849c0e010332f142a3612234639bd200b82138a87db
+file ucd-17.0.0/PropList.txt 145465 130dcddcaadaf071008bdfce1e7743e04fdfbc910886f017d9f9ac931d8c64dd
+file ucd-17.0.0/PropertyAliases.txt 9619 4441f573caf952ffece1d7c892e7715bd7136dfc26f96eb6f268bf1e474715fb
+file ucd-17.0.0/PropertyValueAliases.txt 81858 64e9a5f76f7a1e8b5a47d6a1f9a26522a251208f5276bdfa1559dac7cf2e827a
+file ucd-17.0.0/ScriptExtensions.txt 20707 ec2107e58825a1586acee8e0911ce18260394ac8b87e535ca325f1ccbeb06bc6
+file ucd-17.0.0/SpecialCasing.txt 17049 efc25faf19de21b92c1194c111c932e03d2a5eaf18194e33f1156e96de4c9588
+file ucd-17.0.0/Scripts.txt 192460 9f5e50d3abaee7d6ce09480f325c706f485ae3240912527e651954d2d6b035bf
+file ucd-17.0.0/UnicodeData.txt 2198209 2e1efc1dcb59c575eedf5ccae60f95229f706ee6d031835247d843c11d96470c
+file ucd-17.0.0/auxiliary/GraphemeBreakProperty.txt 99377 d6b51d1d2ae5c33b451b7ed994b48f1f4dc62b2272a5831e7fd418514a6bae89
+file ucd-17.0.0/auxiliary/GraphemeBreakTest.txt 126570 e2d134d2c52919bace503ebb6a551c1855fe1a1faec18478c78fff254a1793ec
+file ucd-17.0.0/auxiliary/SentenceBreakProperty.txt 221233 871c0c985ad95125e25b302414065a10839d068970bceb383ecec138f22a0a18
+file ucd-17.0.0/auxiliary/SentenceBreakTest.txt 87946 12cb47d028ded0c1cb8a28558f95479cbcd24559c46977015c82f3b50a1cc6e4
+file ucd-17.0.0/auxiliary/WordBreakProperty.txt 114445 72274cac1e6b919507db35655c3e175aa27274668a1ece95c28d2069f2ad9852
+file ucd-17.0.0/auxiliary/WordBreakTest.txt 322136 1de23a75f37904abc7d206239ee8d34f8fdf0fb4ab32a7174dfbabbde25419b2
+file ucd-17.0.0/emoji/emoji-data.txt 107324 2cb2bb9455cda83e8481541ecf5b6dfda66a3bb89efa3fa7c5297eccf607b72b
+file ucd-17.0.0/extracted/DerivedBinaryProperties.txt 17476 13dd09d35a9377e33eb388a01e6581d4bfec6b2685316078c341982fa444071a
+file ucd-17.0.0/extracted/DerivedGeneralCategory.txt 277514 d62e5bab70ca74f099343f71224fa051cb1fdd61a1ab45c0488c44cfc0b6102e
+file emoji-17.0.0/emoji-sequences.txt 194868 12cc8267dc33cbd11ed32bcf6fc5dc2ad9c7a77bae1bdfba2f41b1b9b3ead8dd
+file emoji-17.0.0/emoji-zwj-sequences.txt 277215 5b25441daed2322b068c5e70cda522946a4f0274df864445a1965a92e5fc5cad
+file unicode-LICENSE.txt 1995 e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96
+spec-table data/unicode/pins/ecma262/table-binary-unicode-properties-of-strings.html 702 9c4e35660c28217fb8dd7786de72010c30f901e534a57e3c16eef4831d6bf0e1
+spec-table data/unicode/pins/ecma262/table-binary-unicode-properties.html 10528 bb09794cb0cf887f011f5d1a133b2a29734e432ba0cf87db9281afbd151b8ea0
+spec-table data/unicode/pins/ecma262/table-nonbinary-unicode-properties.html 1033 08da59f7725ab8c8c932c965d22de931bbf38b1ea9430f67a2cd0163984074f2

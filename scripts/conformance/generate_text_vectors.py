@@ -35,8 +35,10 @@ from generate_number_vectors import f64, js_string_literal, splitmix64, string_v
 # widened the schema's clause ids, which four of this area's citations need, and changed no vector;
 # revision 12 classified both engines' first runs on the area (text-divergences.txt), and revision 13
 # retired every field the two engines' cut-overs corrected. Revisions 14 to 17 added, classified and
-# retired the Date area's divergences (generate_date_vectors.py) and changed nothing here.
-CORPUS_REVISION = 17
+# retired the Date area's divergences (generate_date_vectors.py) and changed nothing here, and revision 18
+# added the Unicode area (generate_unicode_vectors.py) and changed nothing here either, nor did revision 19,
+# which classified its divergences, nor revision 20, which retired them.
+CORPUS_REVISION = 20
 FIRST_REVISION = 10
 GENERATOR = "ref:textref@1"
 SPEC = "spec:es2026@0248456c"

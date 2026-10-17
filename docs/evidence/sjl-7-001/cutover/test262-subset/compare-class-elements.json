@@ -1,0 +1,38 @@
+{
+  "admitted": 0,
+  "afterCommit": null,
+  "allChangesAdmitted": true,
+  "baseCommit": null,
+  "changed": [],
+  "regressions": 0,
+  "replacedByRerun": {
+    "after": [],
+    "base": []
+  },
+  "rows": 5924,
+  "suiteRef": "ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e",
+  "unclassified": 0,
+  "uncomparedFields": {
+    "dotnetVersion": {
+      "after": "",
+      "base": ""
+    },
+    "maxWorkers": {
+      "after": 3,
+      "base": 3
+    },
+    "runnerArch": {
+      "after": "x86_64",
+      "base": "x86_64"
+    },
+    "runnerOs": {
+      "after": "Linux",
+      "base": "Linux"
+    },
+    "shardCount": {
+      "after": 1,
+      "base": 1
+    }
+  },
+  "unusedClassifications": []
+}

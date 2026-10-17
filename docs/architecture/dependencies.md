@@ -98,13 +98,26 @@ publish-and-run gate decide whether the hypotheses become the target.
 - The numeric bytecode path remains independent of the dynamic-code path. Sharing the parser
   and FrontEnd/Semantics is intended; reaching the IL emitter is not.
 - The Regex and Unicode components are **published packages**, not nested components:
-  `BuiltIns` references `Broiler.Regex` and `Broiler.Unicode.Cldr.LocaleData`, and receives
-  `Broiler.Unicode.Properties` and `Broiler.Unicode.Emoji.StringProperties` through `Broiler.Regex`'s
-  package dependencies, calling both directly as well. They are
-  implementation dependencies of feature code and must not leak into lower-layer public contracts
-  unnecessarily. No project references `Broiler.DateTime`. *(Corrected 2026-10-12: this bullet read
-  "Nested DateTime, Regex, and Unicode components are implementation dependencies of feature code;
-  they must not leak into lower-layer public contracts unnecessarily.")*
+  `BuiltIns` references `Broiler.Regex`, `Broiler.Unicode.Cldr.LocaleData` and
+  `Broiler.Unicode.Segmentation`; `Runtime` references `Broiler.Unicode.Algorithms`, the Unicode area's
+  code package, and embeds the tables it reads (`Runtime/Unicode/JSUnicodeTableData.g.cs`, generated from
+  [`data/unicode/pins/`](../../data/unicode/pins/README.md) by the owner's generator, which
+  `Runtime.Tests` alone references, as `Broiler.Unicode.Generation`). No project references a package that
+  carries Unicode tables. `Broiler.Unicode.Properties` and `Broiler.Unicode.Emoji.StringProperties` still
+  arrive through `Broiler.Regex`'s package dependencies until milestone SJL-11 moves Broiler.Regex onto the
+  owner's code packages, and no code of this engine calls them; `UnicodeDependencyTests` holds that by the
+  assemblies' references. They are implementation dependencies of feature code and must not leak into
+  lower-layer public contracts unnecessarily. No project references `Broiler.DateTime`. *(Corrected
+  2026-10-12: this bullet read "Nested DateTime, Regex, and Unicode components are implementation
+  dependencies of feature code; they must not leak into lower-layer public contracts unnecessarily.")*
+  *(Revised 2026-10-16, at milestone SJL-7.5, when the Unicode area moved to Broiler.Unicode's code
+  packages under decision SJL-D-6 (c): the bullet's first sentence read "`BuiltIns` references
+  `Broiler.Regex` and `Broiler.Unicode.Cldr.LocaleData`, and receives `Broiler.Unicode.Properties` and
+  `Broiler.Unicode.Emoji.StringProperties` through `Broiler.Regex`'s package dependencies, calling both
+  directly as well.")*
+- `Ast` references the shared `Broiler.ECMAScript.Algorithms`, as `Parser`, `Runtime`, `BuiltIns`,
+  `Storage` and `Expressions` do: `StringSpan`'s obsolete trims forward to its white-space set. *(Added
+  2026-10-16, at milestone SJL-7.5.)*
 - A shared `Broiler.ECMAScript.*` library references no `Broiler.JavaScript.*` project or package
   and nothing in Broiler.VM (the programme's rule SL1); this engine references it as any consumer
   does.

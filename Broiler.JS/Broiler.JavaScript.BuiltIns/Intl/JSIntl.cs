@@ -15,6 +15,9 @@ using Broiler.JavaScript.BuiltIns.Temporal;
 using Broiler.JavaScript.Engine;
 using Broiler.JavaScript.Engine.Core;
 using Broiler.JavaScript.Runtime;
+using Broiler.JavaScript.Runtime.Unicode;
+using Broiler.Unicode.Algorithms;
+using Broiler.Unicode.Segmentation;
 using UnicodeCldr.LocaleData;
 using Broiler.ECMAScript.Numbers;
 
@@ -3106,12 +3109,10 @@ public sealed class JSIntlSegmenter : JSObject
 /// instance. Exposes <c>containing(index)</c> and is iterable, yielding a
 /// Segment Data object per segment.
 ///
-/// Grapheme segmentation uses the BCL Unicode text-element algorithm
-/// (UAX #29). Word segmentation uses a simplified rule set (runs of
-/// letters/digits form words; whitespace runs group; everything else breaks).
-/// Sentence segmentation treats the whole string as a single segment. These
-/// approximations are sufficient for the spec'd shape and the common cases
-/// exercised by the test suite without bundling a full ICU break engine.
+/// The boundaries are UAX #29's default grapheme, word and sentence boundaries,
+/// and a word segment's <c>isWordLike</c> is its word status, both Broiler.Unicode's
+/// over the pinned Unicode 17.0.0 tables (milestone SJL-7.5), with no locale
+/// tailoring and no dictionary. The objects and iterators are this engine's.
 /// </summary>
 public sealed class JSIntlSegments : JSObject
 {
@@ -3219,138 +3220,43 @@ public sealed class JSIntlSegments : JSObject
         result.FastAddValue(InputKey, CreateString(_input), JSPropertyAttributes.EnumerableConfigurableValue);
         if (_granularity == "word")
         {
-            var isWordLike = IsWordLike(_input.Substring(start, length));
+            var isWordLike = HasWordStatus(_input.AsSpan(start, length));
             result.FastAddValue(IsWordLikeKey, isWordLike ? BooleanTrue : BooleanFalse, JSPropertyAttributes.EnumerableConfigurableValue);
         }
 
         return result;
     }
 
-    private static List<(int start, int length)> Compute(string input, string granularity) => granularity switch
+    // The segments between consecutive boundaries, which are code unit indices from the text's start to its
+    // end; an empty text has none. A granularity other than word or sentence is read as grapheme, as it was.
+    private static List<(int start, int length)> Compute(string input, string granularity)
     {
-        "word" => ComputeWords(input),
-        "sentence" => ComputeSentences(input),
-        _ => ComputeGraphemes(input),
-    };
-
-    private static List<(int start, int length)> ComputeGraphemes(string input)
-    {
-        var list = new List<(int, int)>();
-        var e = StringInfo.GetTextElementEnumerator(input);
-        while (e.MoveNext())
-            list.Add((e.ElementIndex, ((string)e.Current).Length));
-
-        return list;
-    }
-
-    private static List<(int start, int length)> ComputeSentences(string input)
-    {
-        // Approximation: the whole string is a single sentence. Sufficient for
-        // the spec'd shape; full UAX #29 sentence breaking is not implemented.
-        var list = new List<(int, int)>();
-        if (input.Length > 0)
-            list.Add((0, input.Length));
-
-        return list;
-    }
-
-    private static List<(int start, int length)> ComputeWords(string input)
-    {
-        var graphemes = ComputeGraphemes(input);
-        var list = new List<(int, int)>();
-
-        var i = 0;
-        while (i < graphemes.Count)
+        var boundaries = SegmenterHolder.Value.Boundaries(input, granularity switch
         {
-            var (start, length) = graphemes[i];
-            var category = WordCategory(input, start, length);
+            "word" => SegmentGranularity.Word,
+            "sentence" => SegmentGranularity.Sentence,
+            _ => SegmentGranularity.Grapheme,
+        }, null);
 
-            var j = i + 1;
-            while (j < graphemes.Count)
-            {
-                var (nextStart, nextLength) = graphemes[j];
-                if (Joinable(category, WordCategory(input, nextStart, nextLength)))
-                {
-                    length = nextStart + nextLength - start;
-                    j++;
-                    continue;
-                }
-
-                // UAX #29 WB11/WB12: a numeric run is not broken by a single MidNum/MidNumLet
-                // separator (e.g. "." or ",") that sits between two numbers — "1.23" and "3,000"
-                // are each one word. Consume the separator and the following numeric grapheme.
-                if (category == WordCat.Number
-                    && IsNumericInfix(input, nextStart, nextLength)
-                    && j + 1 < graphemes.Count
-                    && WordCategory(input, graphemes[j + 1].start, graphemes[j + 1].length) == WordCat.Number)
-                {
-                    var (afterStart, afterLength) = graphemes[j + 1];
-                    length = afterStart + afterLength - start;
-                    j += 2;
-                    continue;
-                }
-
-                break;
-            }
-
-            list.Add((start, length));
-            i = j;
+        var list = new List<(int, int)>(Math.Max(0, boundaries.Length - 1));
+        for (var i = 1; i < boundaries.Length; i++)
+        {
+            if (boundaries[i] > boundaries[i - 1])
+                list.Add((boundaries[i - 1], boundaries[i] - boundaries[i - 1]));
         }
 
         return list;
     }
 
-    private enum WordCat { Letter, Number, Space, Other }
+    // A word segment is word-like when its word status is not None: a letter, a number, kana or an ideograph
+    // (ECMA-402 leaves the status to the implementation; correspondence row G4).
+    private static bool HasWordStatus(ReadOnlySpan<char> segment)
+        => SegmenterHolder.Value.GetWordStatus(segment, null) != WordStatus.None;
 
-    private static WordCat WordCategory(string input, int start, int length)
+    // Built on first use: a realm that never segments does not read the break tables.
+    private static class SegmenterHolder
     {
-        foreach (var rune in input.Substring(start, length).EnumerateRunes())
-        {
-            if (Rune.IsLetter(rune))
-                return WordCat.Letter;
-            if (Rune.IsDigit(rune))
-                return WordCat.Number;
-            if (Rune.IsWhiteSpace(rune))
-                return WordCat.Space;
-            return WordCat.Other;
-        }
-
-        return WordCat.Other;
-    }
-
-    // The UAX #29 MidNum / MidNumLet separators that can sit between two numbers without
-    // breaking the numeric word (decimal points and digit-group separators). Only the common
-    // ASCII/Arabic separators that test262 exercises are recognised.
-    private static bool IsNumericInfix(string input, int start, int length)
-    {
-        if (length != 1)
-            return false;
-        return input[start] switch
-        {
-            '.' or ',' or ';' or '٫' or '٬' or '’' or '，' or '．' => true,
-            _ => false,
-        };
-    }
-
-    private static bool Joinable(WordCat a, WordCat b)
-    {
-        if (a == WordCat.Space && b == WordCat.Space)
-            return true;
-
-        var aWord = a is WordCat.Letter or WordCat.Number;
-        var bWord = b is WordCat.Letter or WordCat.Number;
-        return aWord && bWord;
-    }
-
-    private static bool IsWordLike(string segment)
-    {
-        foreach (var rune in segment.EnumerateRunes())
-        {
-            if (Rune.IsLetter(rune) || Rune.IsDigit(rune))
-                return true;
-        }
-
-        return false;
+        internal static readonly UnicodeSegmenter Value = new(JSUnicode.Tables);
     }
 
     private sealed class SegmentEnumerator(JSIntlSegments segments) : IElementEnumerator
@@ -6342,10 +6248,11 @@ public class JSIntlCollator : JSObject
         // NFD (canonical decomposition) folds the orderings together before the locale-aware
         // collation runs, matching the spec's "canonically equivalent strings compare equal"
         // requirement (test262 intl402/Collator/prototype/compare/canonically-equivalent-strings).
-        if (!left.IsNormalized(NormalizationForm.FormD))
-            left = left.Normalize(NormalizationForm.FormD);
-        if (!right.IsNormalized(NormalizationForm.FormD))
-            right = right.Normalize(NormalizationForm.FormD);
+        // The decomposition is Broiler.Unicode's (SJL-7.5), which passes a lone surrogate through
+        // where the host's threw (N1) and answers a string already in NFD as itself; the collation
+        // that follows is still the host's (SJL-17).
+        left = String.JSString.NormalizeText(left, NormalForm.Nfd);
+        right = String.JSString.NormalizeText(right, NormalForm.Nfd);
 
         var options = CompareOptions.None;
         if (sensitivity == "base")

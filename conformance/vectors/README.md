@@ -27,6 +27,7 @@ rule for its own engine is [`docs/evidence/sjl-1-001/decision-rule.md`](../../do
 | `numerics/` | The numerics area: the integer conversions, Float16, the Math kernels each engine implements itself, the rounding modes (through Temporal), and BigInt arithmetic, text, `asIntN`, `asUintN` and its conversion to and comparison with Number |
 | `text/` | The text area: TrimString, well-formedness, CodePointAt and AdvanceStringIndex; StringPad and the relative-index normalisation; replacement templates; the URI codecs with `escape` and `unescape`; the base64 and hex codecs; and JSON's grammar, its quoting, its gap, its line ending and `JSON.rawJSON` *(added 2026-10-14, at corpus revision 10)* |
 | `date/` | The Date area: MakeTime, MakeDay, TimeClip, MakeFullYear and the setters' range and order; field extraction; the Date Time String Format and each engine's dialect; the renderings; local time through relations that hold in every time zone; and the ISO calendar's civil-day helpers (through Temporal); and, from revision 16, strings outside the format on which the engines' readings differ *(added 2026-10-15, at corpus revision 14; the last clause at revision 16, the same day)* |
+| `unicode/` | The Unicode area: `normalize` over Unicode's NormalizationTest.txt and the correspondence's cells; `toUpperCase`, `toLowerCase` and the language-sensitive `toLocaleUpperCase` and `toLocaleLowerCase`, and case folding through RegExp's `i` flag; `\p{…}` acceptance and membership under `u` and `v`, properties of strings included; identifier acceptance through escaped identifiers, and white space; and `Intl.Segmenter` over Unicode's three break tests *(added 2026-10-16, at corpus revision 18)* |
 | [`controls/`](controls/README.md) | Malformed files the validator must refuse. **Not part of the corpus.** |
 
 ## Running it
@@ -44,7 +45,13 @@ python3 scripts/conformance/generate_number_vectors.py --proplist <UCD 17.0.0 Pr
 python3 scripts/conformance/generate_numerics_vectors.py --out conformance/vectors/numerics
 python3 scripts/conformance/generate_text_vectors.py --out conformance/vectors/text
 python3 scripts/conformance/generate_date_vectors.py --out conformance/vectors/date
+# The Unicode area reads the pinned UCD 17.0.0, which the corpus does not archive: --ucd is the directory
+# sources/unicode.pin's paths are under, normally Broiler.Unicode's data/unicode/pins/. -I, as for any downloaded data.
+python3 -I scripts/conformance/generate_unicode_vectors.py --ucd <Broiler.Unicode>/data/unicode/pins --out conformance/vectors/unicode
 python3 -m unittest discover -s scripts/conformance/tests
+# The Unicode area's tests that read the pinned data look for it in BROILER_UNICODE_PINS, or in a Broiler.Unicode
+# checkout beside this repository, and are skipped where it is absent.
+BROILER_UNICODE_PINS=<Broiler.Unicode>/data/unicode/pins python3 -I -m unittest discover -s scripts/conformance/tests
 ```
 
 The reader, the validator and both runners' engine-neutral parts are the test-only
@@ -95,6 +102,11 @@ Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release".)*
 - **Unicode.** The number area's whitespace set takes its Space_Separator members from UCD 17.0.0's
   `PropList.txt` ([`sources/unicode.pin`](sources/unicode.pin)). The corpus copies no Unicode data
   file; it states which code points the set holds.
+  **The Unicode area** (revision 18) reads the UCD 17.0.0 files, the two emoji 17.0 sequence files and
+  ECMA-262's three property tables that the same pin names, by the lengths and digests of Broiler.Unicode's pin, and
+  copies none of them: its expected values are Unicode's own test files where they cover an input, and otherwise
+  `scripts/conformance/unicoderef.py`'s, a marked copy of Broiler.Unicode's reference computation, written from the
+  standards and tested against those files.
 - **Inputs.** The number area's inputs are the populations milestone SJL-1.4 names: special values,
   the exponent range, the subnormal boundaries, seeded random doubles (SplitMix64, with the seeds in
   the generator), the argument edges and exact ties of each method, and the inputs Broiler.VM's

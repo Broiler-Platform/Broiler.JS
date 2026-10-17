@@ -1,0 +1,1469 @@
+{
+  "admitted": 140,
+  "afterCommit": "",
+  "allChangesAdmitted": true,
+  "baseCommit": "",
+  "changed": [
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_F-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here \\p{ASCII=...} or \\P{ASCII=...}: a binary property takes no value, and ASCII is not a name of the non-binary table.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_F.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here \\p{ASCII=...} or \\P{ASCII=...}: a binary property takes no value, and ASCII is not a name of the non-binary table.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Invalid-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here \\p{ASCII=...} or \\P{ASCII=...}: a binary property takes no value, and ASCII is not a name of the non-binary table.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Invalid.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here \\p{ASCII=...} or \\P{ASCII=...}: a binary property takes no value, and ASCII is not a name of the non-binary table.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_N-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here \\p{ASCII=...} or \\P{ASCII=...}: a binary property takes no value, and ASCII is not a name of the non-binary table.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_N.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here \\p{ASCII=...} or \\P{ASCII=...}: a binary property takes no value, and ASCII is not a name of the non-binary table.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_No-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here \\p{ASCII=...} or \\P{ASCII=...}: a binary property takes no value, and ASCII is not a name of the non-binary table.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_No.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here \\p{ASCII=...} or \\P{ASCII=...}: a binary property takes no value, and ASCII is not a name of the non-binary table.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_T-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here \\p{ASCII=...} or \\P{ASCII=...}: a binary property takes no value, and ASCII is not a name of the non-binary table.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_T.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here \\p{ASCII=...} or \\P{ASCII=...}: a binary property takes no value, and ASCII is not a name of the non-binary table.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Y-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here \\p{ASCII=...} or \\P{ASCII=...}: a binary property takes no value, and ASCII is not a name of the non-binary table.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Y.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here \\p{ASCII=...} or \\P{ASCII=...}: a binary property takes no value, and ASCII is not a name of the non-binary table.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Yes-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here \\p{ASCII=...} or \\P{ASCII=...}: a binary property takes no value, and ASCII is not a name of the non-binary table.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Yes.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here \\p{ASCII=...} or \\P{ASCII=...}: a binary property takes no value, and ASCII is not a name of the non-binary table.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/Basic_Emoji-negative-P.js",
+      "reason": "correction, correspondence row P1 as Broiler.JS/CHANGELOG.md lists it for a literal (\"A literal's is an early error\"), for the properties of strings: ECMA-262 22.2.1.1 makes \\p{...} naming a property of strings an early error without the v flag, and \\P{...} of one an early error with it. The RegExp constructor refused both at the base already (row S1, an agreement), but the parser checked no name; after, its check takes Broiler.Unicode's exact lookup of the properties of strings, under v alone and never negated, so the literal is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/Basic_Emoji-negative-u.js",
+      "reason": "correction, correspondence row P1 as Broiler.JS/CHANGELOG.md lists it for a literal (\"A literal's is an early error\"), for the properties of strings: ECMA-262 22.2.1.1 makes \\p{...} naming a property of strings an early error without the v flag, and \\P{...} of one an early error with it. The RegExp constructor refused both at the base already (row S1, an agreement), but the parser checked no name; after, its check takes Broiler.Unicode's exact lookup of the properties of strings, under v alone and never negated, so the literal is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/Emoji_Keycap_Sequence-negative-P.js",
+      "reason": "correction, correspondence row P1 as Broiler.JS/CHANGELOG.md lists it for a literal (\"A literal's is an early error\"), for the properties of strings: ECMA-262 22.2.1.1 makes \\p{...} naming a property of strings an early error without the v flag, and \\P{...} of one an early error with it. The RegExp constructor refused both at the base already (row S1, an agreement), but the parser checked no name; after, its check takes Broiler.Unicode's exact lookup of the properties of strings, under v alone and never negated, so the literal is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/Emoji_Keycap_Sequence-negative-u.js",
+      "reason": "correction, correspondence row P1 as Broiler.JS/CHANGELOG.md lists it for a literal (\"A literal's is an early error\"), for the properties of strings: ECMA-262 22.2.1.1 makes \\p{...} naming a property of strings an early error without the v flag, and \\P{...} of one an early error with it. The RegExp constructor refused both at the base already (row S1, an agreement), but the parser checked no name; after, its check takes Broiler.Unicode's exact lookup of the properties of strings, under v alone and never negated, so the literal is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji-negative-P.js",
+      "reason": "correction, correspondence row P1 as Broiler.JS/CHANGELOG.md lists it for a literal (\"A literal's is an early error\"), for the properties of strings: ECMA-262 22.2.1.1 makes \\p{...} naming a property of strings an early error without the v flag, and \\P{...} of one an early error with it. The RegExp constructor refused both at the base already (row S1, an agreement), but the parser checked no name; after, its check takes Broiler.Unicode's exact lookup of the properties of strings, under v alone and never negated, so the literal is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji-negative-u.js",
+      "reason": "correction, correspondence row P1 as Broiler.JS/CHANGELOG.md lists it for a literal (\"A literal's is an early error\"), for the properties of strings: ECMA-262 22.2.1.1 makes \\p{...} naming a property of strings an early error without the v flag, and \\P{...} of one an early error with it. The RegExp constructor refused both at the base already (row S1, an agreement), but the parser checked no name; after, its check takes Broiler.Unicode's exact lookup of the properties of strings, under v alone and never negated, so the literal is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Flag_Sequence-negative-P.js",
+      "reason": "correction, correspondence row P1 as Broiler.JS/CHANGELOG.md lists it for a literal (\"A literal's is an early error\"), for the properties of strings: ECMA-262 22.2.1.1 makes \\p{...} naming a property of strings an early error without the v flag, and \\P{...} of one an early error with it. The RegExp constructor refused both at the base already (row S1, an agreement), but the parser checked no name; after, its check takes Broiler.Unicode's exact lookup of the properties of strings, under v alone and never negated, so the literal is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Flag_Sequence-negative-u.js",
+      "reason": "correction, correspondence row P1 as Broiler.JS/CHANGELOG.md lists it for a literal (\"A literal's is an early error\"), for the properties of strings: ECMA-262 22.2.1.1 makes \\p{...} naming a property of strings an early error without the v flag, and \\P{...} of one an early error with it. The RegExp constructor refused both at the base already (row S1, an agreement), but the parser checked no name; after, its check takes Broiler.Unicode's exact lookup of the properties of strings, under v alone and never negated, so the literal is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Modifier_Sequence-negative-P.js",
+      "reason": "correction, correspondence row P1 as Broiler.JS/CHANGELOG.md lists it for a literal (\"A literal's is an early error\"), for the properties of strings: ECMA-262 22.2.1.1 makes \\p{...} naming a property of strings an early error without the v flag, and \\P{...} of one an early error with it. The RegExp constructor refused both at the base already (row S1, an agreement), but the parser checked no name; after, its check takes Broiler.Unicode's exact lookup of the properties of strings, under v alone and never negated, so the literal is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Modifier_Sequence-negative-u.js",
+      "reason": "correction, correspondence row P1 as Broiler.JS/CHANGELOG.md lists it for a literal (\"A literal's is an early error\"), for the properties of strings: ECMA-262 22.2.1.1 makes \\p{...} naming a property of strings an early error without the v flag, and \\P{...} of one an early error with it. The RegExp constructor refused both at the base already (row S1, an agreement), but the parser checked no name; after, its check takes Broiler.Unicode's exact lookup of the properties of strings, under v alone and never negated, so the literal is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Tag_Sequence-negative-P.js",
+      "reason": "correction, correspondence row P1 as Broiler.JS/CHANGELOG.md lists it for a literal (\"A literal's is an early error\"), for the properties of strings: ECMA-262 22.2.1.1 makes \\p{...} naming a property of strings an early error without the v flag, and \\P{...} of one an early error with it. The RegExp constructor refused both at the base already (row S1, an agreement), but the parser checked no name; after, its check takes Broiler.Unicode's exact lookup of the properties of strings, under v alone and never negated, so the literal is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Tag_Sequence-negative-u.js",
+      "reason": "correction, correspondence row P1 as Broiler.JS/CHANGELOG.md lists it for a literal (\"A literal's is an early error\"), for the properties of strings: ECMA-262 22.2.1.1 makes \\p{...} naming a property of strings an early error without the v flag, and \\P{...} of one an early error with it. The RegExp constructor refused both at the base already (row S1, an agreement), but the parser checked no name; after, its check takes Broiler.Unicode's exact lookup of the properties of strings, under v alone and never negated, so the literal is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_ZWJ_Sequence-negative-P.js",
+      "reason": "correction, correspondence row P1 as Broiler.JS/CHANGELOG.md lists it for a literal (\"A literal's is an early error\"), for the properties of strings: ECMA-262 22.2.1.1 makes \\p{...} naming a property of strings an early error without the v flag, and \\P{...} of one an early error with it. The RegExp constructor refused both at the base already (row S1, an agreement), but the parser checked no name; after, its check takes Broiler.Unicode's exact lookup of the properties of strings, under v alone and never negated, so the literal is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_ZWJ_Sequence-negative-u.js",
+      "reason": "correction, correspondence row P1 as Broiler.JS/CHANGELOG.md lists it for a literal (\"A literal's is an early error\"), for the properties of strings: ECMA-262 22.2.1.1 makes \\p{...} naming a property of strings an early error without the v flag, and \\P{...} of one an early error with it. The RegExp constructor refused both at the base already (row S1, an agreement), but the parser checked no name; after, its check takes Broiler.Unicode's exact lookup of the properties of strings, under v alone and never negated, so the literal is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Block-implicit-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Block-implicit.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script-implicit-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script-implicit.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-Is-prefix-Script-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-Is-prefix-Script.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-circumflex-negation-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-circumflex-negation.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-invalid-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-invalid.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-separator-and-value-only-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-separator-and-value-only.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-separator-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-separator-only-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-separator-only.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-separator.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here an extension of the grammar: an In or Is prefix, a ^ negation, a colon for the equals sign, a separator alone or without a name, or a name no table holds inside a class; none is a name or value of the tables as written.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-01-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-01.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-02-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-02.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-03-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-03.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-04-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-04.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-05-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-05.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-06-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-06.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-07-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-07.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-08-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-08.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-09-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-09.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-10-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-10.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-11-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-11.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-12-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-12.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-13-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-13.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-14-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-14.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a name or value written with other case, spaces, hyphens or underscores: no loose matching (row P1 itself).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category-equals-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here General_Category, Script or Script_Extensions alone or with an empty value: a non-binary property needs a value, and none of the three names is a lone value.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category-equals.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here General_Category, Script or Script_Extensions alone or with an empty value: a non-binary property needs a value, and none of the three names is a lone value.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here General_Category, Script or Script_Extensions alone or with an empty value: a non-binary property needs a value, and none of the three names is a lone value.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here General_Category, Script or Script_Extensions alone or with an empty value: a non-binary property needs a value, and none of the three names is a lone value.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script-equals-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here General_Category, Script or Script_Extensions alone or with an empty value: a non-binary property needs a value, and none of the three names is a lone value.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script-equals.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here General_Category, Script or Script_Extensions alone or with an empty value: a non-binary property needs a value, and none of the three names is a lone value.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here General_Category, Script or Script_Extensions alone or with an empty value: a non-binary property needs a value, and none of the three names is a lone value.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here General_Category, Script or Script_Extensions alone or with an empty value: a non-binary property needs a value, and none of the three names is a lone value.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions-equals-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here General_Category, Script or Script_Extensions alone or with an empty value: a non-binary property needs a value, and none of the three names is a lone value.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions-equals.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here General_Category, Script or Script_Extensions alone or with an empty value: a non-binary property needs a value, and none of the three names is a lone value.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here General_Category, Script or Script_Extensions alone or with an empty value: a non-binary property needs a value, and none of the three names is a lone value.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here General_Category, Script or Script_Extensions alone or with an empty value: a non-binary property needs a value, and none of the three names is a lone value.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-existent-binary-property-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a property or value no table holds (row P3).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-existent-binary-property.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a property or value no table holds (row P3).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-existent-property-and-value-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a property or value no table holds (row P3).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-existent-property-and-value.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a property or value no table holds (row P3).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-existent-property-existing-value-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a property or value no table holds (row P3).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-existent-property-existing-value.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a property or value no table holds (row P3).",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Composition_Exclusion-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Composition_Exclusion.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFC-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFC.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFD-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFD.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKC-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKC.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKD-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKD.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-FC_NFKC_Closure-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-FC_NFKC_Closure.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Full_Composition_Exclusion-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Full_Composition_Exclusion.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Grapheme_Link-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Grapheme_Link.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Hyphen-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Hyphen.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Alphabetic-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Alphabetic.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Default_Ignorable_Code_Point-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Default_Ignorable_Code_Point.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Grapheme_Extend-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Grapheme_Extend.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Continue-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Continue.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Start-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Start.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Lowercase-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Lowercase.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Math-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Math.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Uppercase-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Uppercase.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Prepended_Concatenation_Mark-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Prepended_Concatenation_Mark.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here a binary property the Unicode Character Database defines and ECMA-262's table of binary properties does not list.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-Block-with-value-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here Block, Line_Break or FC_NFKC_Closure, properties outside ECMA-262's tables, with a value or without.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-Block-with-value.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here Block, Line_Break or FC_NFKC_Closure, properties outside ECMA-262's tables, with a value or without.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-FC_NFKC_Closure-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here Block, Line_Break or FC_NFKC_Closure, properties outside ECMA-262's tables, with a value or without.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-FC_NFKC_Closure.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here Block, Line_Break or FC_NFKC_Closure, properties outside ECMA-262's tables, with a value or without.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here Block, Line_Break or FC_NFKC_Closure, properties outside ECMA-262's tables, with a value or without.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break-with-value-negated.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here Block, Line_Break or FC_NFKC_Closure, properties outside ECMA-262's tables, with a value or without.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break-with-value.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here Block, Line_Break or FC_NFKC_Closure, properties outside ECMA-262's tables, with a value or without.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break.js",
+      "reason": "correction, correspondence rows P1 and P3, listed in Broiler.JS/CHANGELOG.md as \"\\p{...} names are matched exactly\" (\"A literal's is an early error\") and \"A name no table holds never reaches .NET's \\p\": ECMA-262 22.2.1.1 makes a UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables UnicodeMatchProperty and UnicodeMatchPropertyValue (22.2.2.9) read, exactly as written. At the base the parser replaced each \\p{...} with a placeholder and checked no name, and the lookup behind it ignored case, spaces, hyphens and underscores; after, the parser checks each name with Broiler.Unicode's exact lookup (JSUnicodePropertyNames), so the literal is the SyntaxError at parse time the test's negative metadata expects. Here Block, Line_Break or FC_NFKC_Closure, properties outside ECMA-262's tables, with a value or without.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/language/identifiers/vertical-tilde-continue-escaped.js",
+      "reason": "correction, correspondence row I1, listed in Broiler.JS/CHANGELOG.md as \"An identifier subtracts Pattern_Syntax\": U+2E2F VERTICAL TILDE is Lm and Pattern_Syntax, so neither ID_Start nor ID_Continue (UAX #31; ECMA-262 12.7, IdentifierStartChar and IdentifierPartChar), literally or as an escape. At the base the scanner's classes read the runtime's categories with hand lists and no subtraction; after, they are Broiler.Unicode's EcmaScriptLexical over the pinned Unicode 17.0.0 tables, so the declaration is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/language/identifiers/vertical-tilde-continue.js",
+      "reason": "correction, correspondence row I1, listed in Broiler.JS/CHANGELOG.md as \"An identifier subtracts Pattern_Syntax\": U+2E2F VERTICAL TILDE is Lm and Pattern_Syntax, so neither ID_Start nor ID_Continue (UAX #31; ECMA-262 12.7, IdentifierStartChar and IdentifierPartChar), literally or as an escape. At the base the scanner's classes read the runtime's categories with hand lists and no subtraction; after, they are Broiler.Unicode's EcmaScriptLexical over the pinned Unicode 17.0.0 tables, so the declaration is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/language/identifiers/vertical-tilde-start-escaped.js",
+      "reason": "correction, correspondence row I1, listed in Broiler.JS/CHANGELOG.md as \"An identifier subtracts Pattern_Syntax\": U+2E2F VERTICAL TILDE is Lm and Pattern_Syntax, so neither ID_Start nor ID_Continue (UAX #31; ECMA-262 12.7, IdentifierStartChar and IdentifierPartChar), literally or as an escape. At the base the scanner's classes read the runtime's categories with hand lists and no subtraction; after, they are Broiler.Unicode's EcmaScriptLexical over the pinned Unicode 17.0.0 tables, so the declaration is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/language/identifiers/vertical-tilde-start.js",
+      "reason": "correction, correspondence row I1, listed in Broiler.JS/CHANGELOG.md as \"An identifier subtracts Pattern_Syntax\": U+2E2F VERTICAL TILDE is Lm and Pattern_Syntax, so neither ID_Start nor ID_Continue (UAX #31; ECMA-262 12.7, IdentifierStartChar and IdentifierPartChar), literally or as an escape. At the base the scanner's classes read the runtime's categories with hand lists and no subtraction; after, they are Broiler.Unicode's EcmaScriptLexical over the pinned Unicode 17.0.0 tables, so the declaration is the SyntaxError at parse time the test's negative metadata expects.",
+      "variant": "original",
+      "verdict": "admitted"
+    }
+  ],
+  "regressions": 0,
+  "replacedByRerun": {
+    "after": [
+      {
+        "before": "timedOut",
+        "path": "test/staging/sm/regress/regress-1507322-deep-weakmap.js",
+        "rerun": "timedOut",
+        "rerunReport": "<repo>/docs/evidence/sjl-7-001/test262/after/rerun-timeouts.json",
+        "variant": "original"
+      },
+      {
+        "before": "timedOut",
+        "path": "test/staging/sm/regress/regress-1507322-deep-weakmap.js",
+        "rerun": "timedOut",
+        "rerunReport": "<repo>/docs/evidence/sjl-7-001/test262/after/rerun-timeouts.json",
+        "variant": "terser"
+      }
+    ],
+    "base": [
+      {
+        "before": "timedOut",
+        "path": "test/staging/sm/regress/regress-1507322-deep-weakmap.js",
+        "rerun": "timedOut",
+        "rerunReport": "<repo>/docs/evidence/sjl-7-001/test262/base/rerun-timeouts.json",
+        "variant": "original"
+      },
+      {
+        "before": "timedOut",
+        "path": "test/staging/sm/regress/regress-1507322-deep-weakmap.js",
+        "rerun": "timedOut",
+        "rerunReport": "<repo>/docs/evidence/sjl-7-001/test262/base/rerun-timeouts.json",
+        "variant": "terser"
+      }
+    ]
+  },
+  "rows": 106058,
+  "suiteRef": "ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e",
+  "unclassified": 0,
+  "uncomparedFields": {
+    "dotnetVersion": {
+      "after": "10.0.402",
+      "base": "10.0.402"
+    },
+    "maxWorkers": {
+      "after": 4,
+      "base": 4
+    },
+    "runnerArch": {
+      "after": "X64",
+      "base": "X64"
+    },
+    "runnerOs": {
+      "after": "Linux",
+      "base": "Linux"
+    },
+    "shardCount": {
+      "after": 8,
+      "base": 8
+    }
+  },
+  "unusedClassifications": []
+}

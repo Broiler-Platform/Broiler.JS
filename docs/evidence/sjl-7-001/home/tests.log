@@ -1,0 +1,240 @@
+$ dotnet test Broiler.JS/Broiler.JavaScript.Runtime.Tests -c Release --no-build --nologo --filter FullyQualifiedName~.JSUnicodeTests.|FullyQualifiedName~.UnicodeTableRegenerationTests. --logger console;verbosity=normal
+# cwd <tree>; started 2026-10-17T00:19:55Z; exit 0
+Test run for <tree>/Broiler.JS/Broiler.JavaScript.Runtime.Tests/bin/Release/net10.0/Broiler.JavaScript.Runtime.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.06]   Discovering: Broiler.JavaScript.Runtime.Tests
+[xUnit.net 00:00:00.15]   Discovered:  Broiler.JavaScript.Runtime.Tests
+[xUnit.net 00:00:00.16]   Starting:    Broiler.JavaScript.Runtime.Tests
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.White_space(codePoint: 11, expected: True) [8 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.White_space(codePoint: 133, expected: False) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.White_space(codePoint: 8232, expected: False) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.White_space(codePoint: 32, expected: True) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.White_space(codePoint: 65279, expected: True) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.White_space(codePoint: 6158, expected: False) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.White_space(codePoint: 12288, expected: True) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.White_space(codePoint: 160, expected: True) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.White_space(codePoint: 12, expected: True) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.White_space(codePoint: 9, expected: True) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.White_space(codePoint: 10, expected: False) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.The_ascii_cache_equals_the_owner_on_every_ascii_code_point [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.Identifier_classes(codePoint: 2160, start: True, part: True) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.Identifier_classes(codePoint: 72544, start: False, part: True) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.Identifier_classes(codePoint: '_', start: True, part: True) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.Identifier_classes(codePoint: 'a', start: True, part: True) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.Identifier_classes(codePoint: 11823, start: False, part: False) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.Identifier_classes(codePoint: '0', start: False, part: True) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.Identifier_classes(codePoint: '$', start: True, part: True) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.Identifier_classes(codePoint: 55296, start: False, part: False) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.Identifier_classes(codePoint: 8204, start: False, part: True) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.Identifier_classes(codePoint: 93504, start: True, part: True) [< 1 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.UnicodeTableRegenerationTests.The_pin_equals_the_owner_s_by_file_name_length_and_hash [37 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.JSUnicodeTests.Every_code_point_is_answered_as_the_owner_answers_it [286 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.UnicodeTableRegenerationTests.The_provider_answers_the_generated_bytes_for_every_table_but_the_folding_tables [946 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.UnicodeTableRegenerationTests.Control_a_changed_hash_in_the_pin_is_refused_before_anything_is_written [34 ms]
+[xUnit.net 00:00:01.84]   Finished:    Broiler.JavaScript.Runtime.Tests
+  Passed Broiler.JavaScript.Runtime.Tests.UnicodeTableRegenerationTests.The_embedded_tables_regenerate_byte_for_byte_from_the_pin [27 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.UnicodeTableRegenerationTests.Control_a_changed_byte_of_a_pinned_input_is_refused [33 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.UnicodeTableRegenerationTests.Two_generations_write_the_same_bytes [519 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.UnicodeTableRegenerationTests.Control_a_changed_byte_of_the_committed_tables_is_reported_with_its_table [9 ms]
+  Passed Broiler.JavaScript.Runtime.Tests.UnicodeTableRegenerationTests.Every_owner_type_this_engine_reads_constructs_over_the_provider_and_folding_does_not [2 ms]
+
+Test Run Successful.
+Total tests: 31
+     Passed: 31
+ Total time: 2.3808 Seconds
+$ dotnet test Broiler.JS/Broiler.JavaScript.BuiltIns.Tests -c Release --no-build --nologo --filter FullyQualifiedName~.SharedUnicodeTests.|FullyQualifiedName~.UnicodeDependencyTests. --logger console;verbosity=normal
+# cwd <tree>; started 2026-10-17T00:19:58Z; exit 0
+Test run for <tree>/Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.08]   Discovering: Broiler.JavaScript.BuiltIns.Tests
+[xUnit.net 00:00:00.50]   Discovered:  Broiler.JavaScript.BuiltIns.Tests
+[xUnit.net 00:00:00.51]   Starting:    Broiler.JavaScript.BuiltIns.Tests
+  Passed Broiler.JavaScript.BuiltIns.Tests.UnicodeDependencyTests.No_engine_assembly_calls_the_retired_Unicode_packages(name: "Broiler.JavaScript.BuiltIns") [43 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.UnicodeDependencyTests.No_engine_assembly_calls_the_retired_Unicode_packages(name: "Broiler.JavaScript.Parser") [< 1 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.UnicodeDependencyTests.No_engine_assembly_calls_the_retired_Unicode_packages(name: "Broiler.JavaScript.Runtime") [< 1 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.UnicodeDependencyTests.The_built_ins_alone_call_the_owner_s_segmenter [< 1 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.UnicodeDependencyTests.The_runtime_calls_the_owner_s_algorithms [< 1 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_locale_list_is_canonicalized_first(expression: "'i'.toLocaleUpperCase(['tr', 5])", error: "TypeError") [324 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_locale_list_is_canonicalized_first(expression: "'i'.toLocaleUpperCase(null)", error: "TypeError") [8 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_locale_list_is_canonicalized_first(expression: "'i'.toLocaleLowerCase(null)", error: "TypeError") [6 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_locale_list_is_canonicalized_first(expression: "'i'.toLocaleUpperCase('x!')", error: "RangeError") [6 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Katakana_Or_Hiragana_is_an_empty_set(expression: "/[^\\p{sc=Hrkt}]/u.test('a')", expected: "true") [135 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Katakana_Or_Hiragana_is_an_empty_set(expression: "/\\P{sc=Hrkt}/u.test('\\u3042')", expected: "true") [11 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Katakana_Or_Hiragana_is_an_empty_set(expression: "'a'.replace(/\\p{sc=Hrkt}/gu, 'X')", expected: "a") [14 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Katakana_Or_Hiragana_is_an_empty_set(expression: "/^\\p{sc=Hrkt}*$/u.test('')", expected: "true") [8 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Katakana_Or_Hiragana_is_an_empty_set(expression: "/\\p{scx=Hrkt}/u.test('\\u30FC')", expected: "false") [8 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Katakana_Or_Hiragana_is_an_empty_set(expression: "/\\p{sc=Hrkt}/u.test('\\u3042')", expected: "false") [6 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Katakana_Or_Hiragana_is_an_empty_set(expression: "/\\p{Script=Katakana_Or_Hiragana}/u.test('\\u30A2'"···, expected: "false") [5 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'I'.toLocaleLowerCase(['az']) === '\\u0131'") [10 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'i'.toLocaleUpperCase('tr-u-co-search') === '\\u01"···) [5 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'\\u00AA\\u03A3'.toLowerCase() === '\\u00AA\\u03C2"···) [10 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'\\uA7CE'.toLocaleLowerCase('tr') === '\\uA7CF'") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'i'.toLocaleUpperCase([]) === 'I'") [5 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'i'.toLocaleUpperCase(['en', 'tr']) === 'I'") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'\\u00BA\\u03A3'.toLowerCase() === '\\u00BA\\u03C2"···) [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'I\\u0903\\u0300'.toLocaleLowerCase('lt') === 'i\\"···) [6 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'i'.toLocaleUpperCase('TR') === '\\u0130'") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'I\\u0903\\u0307'.toLocaleLowerCase('tr') === '\\u"···) [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'\\uD800a'.toUpperCase() === '\\uD800A'") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'\\u{1DF1A}\\u0307'.toLocaleUpperCase('lt') === '\"···) [5 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'i'.toLocaleUpperCase(['tr', 'en']) === '\\u0130'") [5 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'\\u{16EA0}'.toLowerCase() === '\\u{16EBB}'") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'\\u{16EBB}'.toUpperCase() === '\\u{16EA0}'") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Case_mapping_follows_the_pinned_data(expression: "'\\uA7CB'.toLocaleLowerCase('tr') === '\\u0264'") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Graphemes_are_extended_grapheme_clusters(text: "'\\u000D\\u000A'", expected: 1) [32 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Graphemes_are_extended_grapheme_clusters(text: "'\\uD800a'", expected: 2) [7 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Graphemes_are_extended_grapheme_clusters(text: "'e\\u0301\\u{1F44D}\\u{1F3FD}\\u{1F1E9}\\u{1F1EA}'", expected: 3) [7 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Graphemes_are_extended_grapheme_clusters(text: "'\\u1100\\u1161\\u11A8'", expected: 1) [6 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_lone_surrogate_passes_through(expression: "'\\uDBFF'.normalize('NFKC') === '\\uDBFF'") [5 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_lone_surrogate_passes_through(expression: "new Intl.Collator().compare('a\\uDC00', 'a\\uDC00'"···) [10 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_lone_surrogate_passes_through(expression: "'a\\uD800'.localeCompare('b') < 0") [9 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_lone_surrogate_passes_through(expression: "'a\\uDC00\\u0301'.normalize('NFD') === 'a\\uDC00\\"···) [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_lone_surrogate_passes_through(expression: "'\\uD800'.normalize() === '\\uD800'") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_lone_surrogate_passes_through(expression: "'\\u00E9\\uD800'.normalize('NFD') === 'e\\u0301\\u"···) [5 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_lone_surrogate_passes_through(expression: "'\\uD800'.localeCompare('\\uD800') === 0") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.The_specification_s_answers_hold(expression: "'\\uFB01'.normalize('NFKC') === 'fi'") [5 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.The_specification_s_answers_hold(expression: "'\\uAC00'.normalize('NFD') === '\\u1100\\u1161'") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.The_specification_s_answers_hold(expression: "'\\u00E9'.normalize('NFD') === 'e\\u0301'") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.The_specification_s_answers_hold(expression: "'e\\u0301'.normalize() === '\\u00E9'") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.The_specification_s_answers_hold(expression: "'\\u1100\\u1161'.normalize('NFC') === '\\uAC00'") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_group_name_with_pattern_syntax_is_a_SyntaxError(expression: "new RegExp('(?<x\\u2E2F>.)')") [6 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_group_name_with_pattern_syntax_is_a_SyntaxError(expression: "new RegExp('(?<\\u{2E2F}>.)', 'u')") [5 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_group_name_with_pattern_syntax_is_a_SyntaxError(expression: "new RegExp('(?<\\u2E2Fx>.)')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "new RegExp('\\\\p{IsGreek}', 'u')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "eval('/\\\\P{lu}/v')") [15 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "eval('/\\\\p{letter}/u')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "new RegExp('[\\\\p{lowercase_letter}]', 'v')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "new RegExp('\\\\p{Han}', 'u')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "new RegExp('\\\\P{RGI_Emoji}', 'v')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "new RegExp('\\\\p{GC=Lu}', 'u')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "eval('/[\\\\p{rgiemoji}]/v')") [5 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "new RegExp('\\\\p{letter}', 'u')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "new RegExp('\\\\p{Lu', 'u')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "new RegExp('\\\\p{Script_Extensions=greek}', 'u')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "new RegExp('\\\\p{rgiemoji}', 'v')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "new RegExp('\\\\p{lu}', 'u')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "eval('/\\\\p{IsGreek}/u')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "new RegExp('\\\\p{RGI_Emoji}', 'u')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_does_not_hold_is_a_SyntaxError(expression: "new RegExp('\\\\p{Uppercase Letter}', 'u')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Sentences_follow_UAX_29(text: "'Hello world. \\u4E16\\u754C\\u3002\\u7D42\\u308F\"···, expected: "['Hello world. ', '\\u4E16\\u754C\\u3002', '\\u7D4"···) [50 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Sentences_follow_UAX_29(text: "''", expected: "[]") [10 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Sentences_follow_UAX_29(text: "'One. Two? Three! Mr. Smith'", expected: "['One. ', 'Two? ', 'Three! ', 'Mr. ', 'Smith']") [14 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_holds_is_admitted(expression: "eval('/\\\\p{Script=Latin}/u').test('a')") [14 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_holds_is_admitted(expression: "/[\\p{Lowercase_Letter}]/u.test('a')") [10 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_holds_is_admitted(expression: "/\\p{gc=LC}/u.test('a')") [7 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_holds_is_admitted(expression: "/\\p{General_Category=Uppercase_Letter}/u.test('A'"···) [8 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_holds_is_admitted(expression: "/\\p{Lu}/u.test('A')") [43 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_holds_is_admitted(expression: "/\\p{Script_Extensions=Greek}/u.test('\\u03A9')") [9 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_holds_is_admitted(expression: "/^\\p{RGI_Emoji}$/v.test('\\u{1F44D}\\u{1F3FD}')") [60 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_holds_is_admitted(expression: "/^\\p{Basic_Emoji}$/v.test('\\u231A')") [9 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_name_ECMA_262_holds_is_admitted(expression: "/\\p{letter}/.test('p{letter}')") [9 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_word_is_word_like_by_its_word_status [19 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.The_scanner_refuses_pattern_syntax_and_U0085(expression: "eval('var \\u2E2F = 1')") [5 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.The_scanner_refuses_pattern_syntax_and_U0085(expression: "eval('1\\u0085+1')") [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_native_function_s_name_is_an_identifier_name(expression: "RegExp.prototype[Symbol.replace].toString()", expected: "function [Symbol.replace]() { [native code] }") [8 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_native_function_s_name_is_an_identifier_name(expression: "Object.getOwnPropertyDescriptor(RegExp, '$&').get."···, expected: "function get () { [native code] }") [6 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_native_function_s_name_is_an_identifier_name(expression: "Math.max.toString()", expected: "function max() { [native code] }") [10 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_native_function_s_name_is_an_identifier_name(expression: "Object.getOwnPropertyDescriptor(RegExp.prototype, "···, expected: "function get flags() { [native code] }") [7 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.The_translator_resolves_names_exactly(pattern: "[\\p{Lu}&&\\p{Script=Greek}]", flags: "v", input: "\\u03A9", expected: True) [10 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.The_translator_resolves_names_exactly(pattern: "\\p{Lu}", flags: "u", input: "A", expected: True) [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.The_translator_resolves_names_exactly(pattern: "\\p{sc=Hrkt}", flags: "u", input: "\\u3042", expected: False) [2 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.The_translator_resolves_names_exactly(pattern: "[\\p{Lu}&&\\p{Script=Greek}]", flags: "v", input: "\\u03C9", expected: False) [2 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.The_translator_resolves_names_exactly(pattern: "[\\p{gc=Lu}--\\p{Script=Latin}]", flags: "v", input: "\\u03A9", expected: True) [6 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.The_translator_resolves_names_exactly(pattern: "[\\p{gc=Lu}--\\p{Script=Latin}]", flags: "v", input: "A", expected: False) [3 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.The_translator_resolves_names_exactly(pattern: "\\p{sc=Hrkt}", flags: "u", input: "", expected: False) [2 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Unicode_16_decompositions_are_known(expression: "'\\u{105C9}'.normalize('NFD') === '\\u{105D2}\\u03"···) [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Unicode_16_decompositions_are_known(expression: "'\\u{11383}'.normalize('NFD') === '\\u{11382}\\u{1"···) [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Unicode_16_decompositions_are_known(expression: "'\\u{1611E}\\u{1611E}'.normalize('NFC') === '\\u{1"···) [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Unicode_16_decompositions_are_known(expression: "'\\u{105D2}\\u0307'.normalize() === '\\u{105C9}'") [3 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Casing_does_not_read_the_host_culture [7 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_group_name_of_Unicode_17_is_admitted(expression: "new RegExp('(?<a\\u{11B60}>.)', 'u').exec('b').gro"···, expected: "b") [11 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_group_name_of_Unicode_17_is_admitted(expression: "new RegExp('(?<\\u{16EA0}>.)', 'u').exec('a').grou"···, expected: "a") [6 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.A_group_name_of_Unicode_17_is_admitted(expression: "/(?<\\u0870>.)/.exec('c').groups['\\u0870']", expected: "c") [77 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Words_follow_UAX_29(text: "'\\u65E5\\u672C\\u8A9E\\u306E\\u30C6\\u30AD\\u30B9"···, expected: "['\\u65E5', '\\u672C', '\\u8A9E', '\\u306E', '\\u3"···) [12 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Words_follow_UAX_29(text: "'1\\u0085a'", expected: "['1', '\\u0085', 'a']") [11 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Words_follow_UAX_29(text: "'a_b c.d 3,000'", expected: "['a_b', ' ', 'c.d', ' ', '3,000']") [10 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Words_follow_UAX_29(text: "\"can't\"", expected: "[\"can't\"]") [10 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.An_unknown_form_is_a_RangeError_before_the_text_is_read [4 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Containing_reads_the_same_segments [28 ms]
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.Every_general_category_name_the_translator_spells_is_admitted [350 ms]
+[xUnit.net 00:00:02.33]   Finished:    Broiler.JavaScript.BuiltIns.Tests
+  Passed Broiler.JavaScript.BuiltIns.Tests.SharedUnicodeTests.RegExp_escape_escapes_the_specification_s_white_space_only [15 ms]
+
+Test Run Successful.
+Total tests: 109
+     Passed: 109
+ Total time: 2.9290 Seconds
+$ dotnet test Broiler.JS/Broiler.JavaScript.Parser.Tests -c Release --no-build --nologo --filter FullyQualifiedName~.UnicodeLexicalClassTests. --logger console;verbosity=normal
+# cwd <tree>; started 2026-10-17T00:20:02Z; exit 0
+Test run for <tree>/Broiler.JS/Broiler.JavaScript.Parser.Tests/bin/Release/net10.0/Broiler.JavaScript.Parser.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.07]   Discovering: Broiler.JavaScript.Parser.Tests
+[xUnit.net 00:00:00.18]   Discovered:  Broiler.JavaScript.Parser.Tests
+[xUnit.net 00:00:00.19]   Starting:    Broiler.JavaScript.Parser.Tests
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_does_not_hold_is_an_early_error(source: "/\\p{letter}/u") [15 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_does_not_hold_is_an_early_error(source: "/\\p{IsGreek}/u") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_does_not_hold_is_an_early_error(source: "/\\p{lu}/u") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_does_not_hold_is_an_early_error(source: "/\\p{rgiemoji}/v") [2 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_does_not_hold_is_an_early_error(source: "/\\p{Script_Extensions=greek}/u") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_does_not_hold_is_an_early_error(source: "/[\\p{lowercase_letter}]/v") [7 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_does_not_hold_is_an_early_error(source: "/\\p{GC=Lu}/u") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_does_not_hold_is_an_early_error(source: "/\\P{RGI_Emoji}/v") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_does_not_hold_is_an_early_error(source: "/\\p{RGI_Emoji}/u") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.The_specification_s_white_space_and_line_terminators_are_read(source: "var a = 1 var b = 2") [20 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.The_specification_s_white_space_and_line_terminators_are_read(source: "var a = 1 var b = 2") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.The_specification_s_white_space_and_line_terminators_are_read(source: "var﻿a = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.The_specification_s_white_space_and_line_terminators_are_read(source: "var\va\f= 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.The_specification_s_white_space_and_line_terminators_are_read(source: "var　a = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.The_specification_s_white_space_and_line_terminators_are_read(source: "var a = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_holds_is_read(source: "/\\p{Script=Katakana_Or_Hiragana}/u") [3 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_holds_is_read(source: "/\\p{letter}/") [1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_holds_is_read(source: "/\\p{General_Category=Uppercase_Letter}/u") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_holds_is_read(source: "/[\\p{Basic_Emoji}--\\q{x}]/v") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_holds_is_read(source: "/\\P{scx=Grek}/u") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_holds_is_read(source: "/\\p{Lu}/u") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_holds_is_read(source: "/\\p{RGI_Emoji}/v") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.A_property_name_ECMA_262_holds_is_read(source: "/\\\\p/u") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.Unicode_17_identifiers_are_read(source: "var a··፩᧚‌‍ = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.Unicode_17_identifiers_are_read(source: "var \\u{16D40} = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.Unicode_17_identifiers_are_read(source: "var 𖺠 = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.Unicode_17_identifiers_are_read(source: "var ᢅᢆ = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.Unicode_17_identifiers_are_read(source: "var ℘℮゛ = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.Unicode_17_identifiers_are_read(source: "var a𑭠 = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.Unicode_17_identifiers_are_read(source: "var ࡰ = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.Unicode_17_identifiers_are_read(source: "var 𖵀 = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.Pattern_syntax_is_no_identifier_character(source: "var a\\u2E2F = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.Pattern_syntax_is_no_identifier_character(source: "var \\u{2E2F} = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.Pattern_syntax_is_no_identifier_character(source: "var aⸯ = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.Pattern_syntax_is_no_identifier_character(source: "var \\u2E2F = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.Pattern_syntax_is_no_identifier_character(source: "var ⸯ = 1;") [< 1 ms]
+[xUnit.net 00:00:00.31]   Finished:    Broiler.JavaScript.Parser.Tests
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.An_identifier_start_after_a_number_is_refused(source: "3ࡰ") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.An_identifier_start_after_a_number_is_refused(source: "3in []") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.U0085_is_not_white_space(source: "vara = 1;") [< 1 ms]
+  Passed Broiler.JavaScript.Parser.Tests.UnicodeLexicalClassTests.U0085_is_not_white_space(source: "1+1") [< 1 ms]
+
+Test Run Successful.
+Total tests: 40
+     Passed: 40
+ Total time: 0.8332 Seconds
+$ dotnet test Broiler.JS/Broiler.JavaScript.Ast.Tests -c Release --no-build --nologo --filter FullyQualifiedName~.StringSpanTrimTests. --logger console;verbosity=normal
+# cwd <tree>; started 2026-10-17T00:20:04Z; exit 0
+Test run for <tree>/Broiler.JS/Broiler.JavaScript.Ast.Tests/bin/Release/net10.0/Broiler.JavaScript.Ast.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.5.3.1+6b60a9e56a (64-bit .NET 10.0.12)
+[xUnit.net 00:00:00.06]   Discovering: Broiler.JavaScript.Ast.Tests
+[xUnit.net 00:00:00.11]   Discovered:  Broiler.JavaScript.Ast.Tests
+[xUnit.net 00:00:00.11]   Starting:    Broiler.JavaScript.Ast.Tests
+[xUnit.net 00:00:00.18]   Finished:    Broiler.JavaScript.Ast.Tests
+  Passed Broiler.JavaScript.Ast.Tests.StringSpanTrimTests.TrimStart_and_TrimEnd_trim_one_end [4 ms]
+  Passed Broiler.JavaScript.Ast.Tests.StringSpanTrimTests.Trim_removes_StrWhiteSpaceChar_from_both_ends_of_the_view [2 ms]
+  Passed Broiler.JavaScript.Ast.Tests.StringSpanTrimTests.A_span_of_white_space_trims_to_empty [< 1 ms]
+  Passed Broiler.JavaScript.Ast.Tests.StringSpanTrimTests.U0085_is_not_trimmed [< 1 ms]
+
+Test Run Successful.
+Total tests: 4
+     Passed: 4
+ Total time: 0.7598 Seconds

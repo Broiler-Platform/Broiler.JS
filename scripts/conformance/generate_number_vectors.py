@@ -35,8 +35,10 @@ import numref as R  # noqa: E402
 # revision 10 added the text area, which generate_text_vectors.py writes; revision 11 widened the
 # schema's clause ids and changed no vector; revision 12 classified the text area's differences, and
 # revision 13 retired them; revisions 14 to 16 added and classified the Date area, which
-# generate_date_vectors.py writes, and revision 17 retired its divergences).
-CORPUS_REVISION = 17
+# generate_date_vectors.py writes, and revision 17 retired its divergences; revision 18 added the Unicode
+# area, which generate_unicode_vectors.py writes, and changed nothing here, nor did revision 19, which classified
+# its divergences, nor revision 20, which retired them).
+CORPUS_REVISION = 20
 FIRST_REVISION = 1
 GENERATOR = "ref:numref@1"
 SPEC = "spec:es2026@0248456c"

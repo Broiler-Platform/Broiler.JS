@@ -10,6 +10,135 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### The Unicode area moves to Broiler.Unicode's packages (2026-10-16, milestone SJL-7.5)
+
+The Unicode area is Broiler.Unicode's: its code packages `Broiler.Unicode.Algorithms` and
+`Broiler.Unicode.Segmentation` `0.1.0-preview.4`, over the Unicode 17.0.0 tables this engine embeds in
+`Broiler.JavaScript.Runtime`, which the owner's generator writes from this repository's own pin,
+[`data/unicode/pins/`](../data/unicode/pins/README.md), a byte-for-byte copy of the owner's (decision SJL-D-6
+(c), as Broiler.VM's JSD-0074 applies it; a test regenerates the tables and compares them byte for byte):
+
+- property lookup for `\p{…}` and `\P{…}`, exact as ECMA-262's tables write the names (`UnicodeProperties`);
+- the lexical classes: identifiers, group names, the scanner's white space and `RegExp.escape`'s
+  (`EcmaScriptLexical`);
+- `toUpperCase`, `toLowerCase`, `toLocaleUpperCase` and `toLocaleLowerCase` (`UnicodeCaseMapping`);
+- `normalize`, and the canonical decomposition `Intl.Collator` and `localeCompare` compare after
+  (`UnicodeNormalization`);
+- the properties of strings under the `v` flag (`UnicodeStringProperties`);
+- `Intl.Segmenter`'s grapheme, word and sentence boundaries and its word status (`UnicodeSegmenter`).
+
+**Where they were**, each deleted: the host's `string.Normalize` and `IsNormalized`; the special-casing
+class of `Broiler.Unicode.Properties` over the runtime's data and the host's `CultureInfo`; `CharExtensions`'
+identifier classes over the runtime's categories with hand lists and two Unicode 17 patch tables; the group
+names' copy of them; `char.IsWhiteSpace` in the scanner and `RegExp.escape`; the loose `\p{…}` lookups of
+`Broiler.Unicode.Properties` and of the .NET translator, and its loose name map of the emoji package; and
+`Intl.Segmenter`'s grapheme enumeration over the runtime's `StringInfo`, its word heuristic and its
+one-sentence answer. The built-ins keep their receiver and argument conversion, their errors, this engine's
+locale canonicalisation and the mapping of a locale to the owner's language, the string ceiling, and
+`Intl.Segmenter`'s objects and iterators.
+
+**Policies decided here.**
+
+- **A result longer than this engine's strings hold is a `RangeError`** ("Invalid string length"):
+  `normalize`, the collator's decomposition and the four casing methods pass `JSString.MaximumLength` as the
+  owner's maximum result length, checked on the whole result, where an over-long result was the runtime's
+  exception.
+- **The default locale of `toLocaleUpperCase` and `toLocaleLowerCase` is this engine's, `en-US`**, when no
+  locale is requested, never the host's culture. Intl's other services still default to the host's culture,
+  which milestone SJL-9 moves.
+- **A property escape's name is checked twice by the same lookup**: by the parser for a regular-expression
+  literal, an early error, and by the `RegExp` constructor before Broiler.Regex or the translator reads the
+  pattern.
+
+**Corrections the corpus names.** Each was a `divergence.broiler-js` field of the shared corpus
+(`conformance/vectors/unicode`, revision 19), under its reason in `scripts/conformance/unicode-divergences.txt`,
+with the row of bundle `sjl-7-001`'s correspondence from code it confirmed (Broiler.VM's
+`docs/evidence/sjl-7-001/correspondence.md`). Every one of the 3,678 reports that it no longer holds in the
+engine-level run after the cut-over.
+
+- **`\p{…}` names are matched exactly** (P1, 1,346 vectors of `unicode/property-refused` and
+  `unicode/property-cells`, reason `js-p1-loose-names`): `/\p{letter}/u`, `/\p{Script_Extensions=greek}/u`,
+  `/\p{GC=Lu}/u` and `/\p{lu}/u` are SyntaxErrors, where the lookup ignored case, underscores, spaces and
+  hyphens. A literal's is an early error (test262's `built-ins/RegExp/property-escapes/` negative tests).
+- **`Katakana_Or_Hiragana` is a Script value** (P2, 20 vectors of `unicode/property-accepted`,
+  `unicode/property-cells` and `unicode/property-membership`, `js-p2-hrkt`): `/\p{sc=Hrkt}/u` is valid and
+  matches nothing, where it was a SyntaxError.
+- **A name no table holds never reaches .NET's `\p`** (P3; no vector): a lone name or a `Name=Value` that
+  Broiler.Regex refused was left verbatim for the translator, whose .NET pattern might admit it; the lookup
+  now refuses it before either engine reads the pattern.
+- **General_Category is an operand of a `v`-mode set operation on the translator's path too** (P4; no
+  vector): where Broiler.Regex declines a pattern, `[\p{gc=Lu}--\p{Script=Latin}]` resolves its operands,
+  where the translator took only Script, Script_Extensions and binary properties and threw a SyntaxError.
+- **The names of the properties of strings are exact** (S2, 1 vector of `unicode/property-cells`,
+  `js-s2-string-properties`): `/\p{rgiemoji}/v` is a SyntaxError.
+- **An identifier subtracts Pattern_Syntax** (I1, 2 vectors of `unicode/identifier-special`,
+  `js-i1-pattern-syntax`): `var ⸯ` (U+2E2F, Lm and Pattern_Syntax), literal or escaped, is a SyntaxError.
+- **A group name admits what an identifier admits** (I3, 6 vectors of `unicode/identifier-group-name`,
+  `js-i3-group-names`): `/(?<ⸯx>.)/` is a SyntaxError and a group name with U+11B60, which Unicode 17 adds,
+  is valid, where the group names' copy of the identifier tests had neither the subtraction nor Unicode 17's
+  data.
+- **U+0085 is not white space** (W1, 3 vectors of `unicode/white-space` and `unicode/white-space-cells`,
+  `js-w1-u0085`): `1` U+0085 `+1` is a SyntaxError, and `RegExp.escape` leaves U+0085 unescaped, where both
+  read .NET's `char.IsWhiteSpace`. The segmenter's word boundaries no longer read it either (G2).
+- **U+00AA and U+00BA are Cased** (C1, 18 vectors of `unicode/casing-final-sigma` and `unicode/casing-cells`,
+  `js-c1-other-lowercase`): `'ªΣ'.toLowerCase()` ends in ς.
+- **The Turkic lower case reads Unicode 17's data** (C4, 4 vectors of `unicode/casing-cells`,
+  `js-c4-turkic-table`): U+A7CB's `toLocaleLowerCase('tr')` is U+0264, where the runtime's older data showed.
+- **Soft_Dotted is `PropList.txt`'s** (C5, 5 vectors of `unicode/casing-special` and `unicode/casing-cells`,
+  `js-c5-soft-dotted`): U+1DF1A, U+1E04C, U+1E04D and U+1E068 are soft-dotted, so a following U+0307 is
+  removed by `toLocaleUpperCase('lt')`.
+- **A casing context admits no intervening character of class 0 or 230** (C6, 2 vectors of
+  `unicode/casing-special` and `unicode/casing-cells`, `js-c6-context-marks`): `'I'` U+0903 U+0300
+  `.toLocaleLowerCase('lt')` is `i` U+0903 U+0300, where a mark of class 0 was passed over.
+- **A list of locales is read as a list** (C7, 2 vectors of `unicode/casing-locale`, `js-c7-locale-list`):
+  `'i'.toLocaleUpperCase(['tr', 'en'])` is `İ`, where the joined list reached `CultureInfo` and threw a
+  RangeError.
+- **`null` is not a locale** (C8, 1 vector of `unicode/casing-locale`, `js-c8-locale-null`):
+  `'i'.toLocaleUpperCase(null)` is a TypeError, where it read the host's culture.
+- **A lone surrogate passes through normalization** (N1, 50 vectors of `unicode/normalize-lone-surrogate`,
+  `unicode/normalize-cells` and `unicode/normalize-collator`, `js-n1-lone-surrogate`): `'\uD800'.normalize()`
+  is the string itself, and `localeCompare` and `Intl.Collator.prototype.compare` compare such a string,
+  where the host's normalizer threw an Error.
+- **Sentence boundaries are UAX #29's** (G1, 138 vectors of `unicode/segmenter-sentence` and
+  `unicode/segmenter-cells`, `js-g1-sentences`): `One. Two? Three! Mr. Smith` is five sentences, where every
+  text was one.
+- **Word boundaries are UAX #29's** (G2, 684 vectors of `unicode/segmenter-word` and
+  `unicode/segmenter-cells`, `js-g2-words`), with no dictionary: `can't`, `a_b`, `c.d`, `3,000` and a Katakana
+  run are one word each, and each ideograph is its own.
+
+**Data policy by decision.** Pinned data at Unicode 17.0.0 replaces the host's, under decision SJL-D-6 (c);
+JSD-0074 counts each of these as a correction under SJL-D-16 of class C5.
+
+- **Normalization at Unicode 16 and 17** (N2, 582 vectors of `unicode/normalize-part1` to `part5` and
+  `unicode/normalize-cells`, `js-n2-host-data`): `'\u{105C9}'.normalize('NFD')` decomposes, where the host's
+  ICU 74.2 (Unicode 15.1) left it.
+- **Normalization under invariant globalization** (N3; no vector): it normalizes, where the runtime's
+  `Normalize` returned its input unchanged.
+- **The default case mappings at Unicode 17** (C3, 50 vectors of `unicode/casing-lower` and
+  `unicode/casing-upper`, `js-c3-beria-erfe`): Beria Erfe's case pairs map, which the hand patches lacked.
+- **Cased and Case_Ignorable at Unicode 17** (C2; no vector): Final_Sigma beside the code points Unicode 16
+  and 17 add is decided by `DerivedCoreProperties.txt`, where it read the runtime's categories.
+- **Identifier classes** (I2; no vector of its own): the pinned ID_Start and ID_Continue, where the runtime's
+  categories, hand lists and patches gave the same answers at Unicode 17.0 only through the patches.
+- **Grapheme clusters** (G3, 17 vectors of `unicode/segmenter-grapheme`, `js-g3-graphemes`), where they were
+  the runtime's `StringInfo`'s.
+
+**Implementation-defined.** A word segment's `isWordLike` is the owner's word status, a letter, a number,
+kana or an ideograph (G4, 747 vectors of `unicode/segmenter-word-like` and `unicode/segmenter-cells`, with
+G2's boundaries, `js-g2-g4-word-status`), where it was "contains a letter or a digit". A native function's
+name in its source text is checked by code point with the identifier classes, where it read
+`char.IsLetter` and `char.IsLetterOrDigit`; every native name is ASCII, so nothing changes (I4).
+
+**Not this milestone's.** Case folding under `/i` without `u` (`/[a-z]/i` matching U+212A, row F2) and the
+translator's multiline line terminators (W5) are the .NET translator's, which milestone SJL-11 retires;
+their code is untouched. `Broiler.Unicode.Properties` and `UnicodeEmoji.StringProperties` still arrive in
+the package closure through `Broiler.Regex`'s dependencies until SJL-11, and no code of this engine calls
+them. `StringSpan.Trim`, `TrimStart` and `TrimEnd` are obsolete forwarders to the shared white-space set
+([`docs/public-api.md`](../docs/public-api.md)).
+
+Tests: `SharedUnicodeTests` and `UnicodeDependencyTests` (BuiltIns), `UnicodeLexicalClassTests` (Parser),
+`JSUnicodeTests` and `UnicodeTableRegenerationTests` (Runtime), `StringSpanTrimTests` (Ast).
+
 ### The `era` option is written beside a format with no year (2026-10-16)
 
 - **`Intl.DateTimeFormat` writes the `era` option's era beside a format that shows no year**, where the

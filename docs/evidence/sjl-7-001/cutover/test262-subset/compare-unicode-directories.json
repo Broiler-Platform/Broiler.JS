@@ -1,0 +1,1439 @@
+{
+  "admitted": 140,
+  "afterCommit": null,
+  "allChangesAdmitted": true,
+  "baseCommit": null,
+  "changed": [
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_F-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_F.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Invalid-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Invalid.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_N-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_N.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_No-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_No.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_T-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_T.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Y-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Y.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Yes-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Yes.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/Basic_Emoji-negative-P.js",
+      "reason": "rows P1 and S2 (S1 at parse time): under u a property of strings is not a property name, and under v \\P of one is an early error; the parser now checks names with Broiler.Unicode's exact lookup",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/Basic_Emoji-negative-u.js",
+      "reason": "rows P1 and S2 (S1 at parse time): under u a property of strings is not a property name, and under v \\P of one is an early error; the parser now checks names with Broiler.Unicode's exact lookup",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/Emoji_Keycap_Sequence-negative-P.js",
+      "reason": "rows P1 and S2 (S1 at parse time): under u a property of strings is not a property name, and under v \\P of one is an early error; the parser now checks names with Broiler.Unicode's exact lookup",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/Emoji_Keycap_Sequence-negative-u.js",
+      "reason": "rows P1 and S2 (S1 at parse time): under u a property of strings is not a property name, and under v \\P of one is an early error; the parser now checks names with Broiler.Unicode's exact lookup",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji-negative-P.js",
+      "reason": "rows P1 and S2 (S1 at parse time): under u a property of strings is not a property name, and under v \\P of one is an early error; the parser now checks names with Broiler.Unicode's exact lookup",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji-negative-u.js",
+      "reason": "rows P1 and S2 (S1 at parse time): under u a property of strings is not a property name, and under v \\P of one is an early error; the parser now checks names with Broiler.Unicode's exact lookup",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Flag_Sequence-negative-P.js",
+      "reason": "rows P1 and S2 (S1 at parse time): under u a property of strings is not a property name, and under v \\P of one is an early error; the parser now checks names with Broiler.Unicode's exact lookup",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Flag_Sequence-negative-u.js",
+      "reason": "rows P1 and S2 (S1 at parse time): under u a property of strings is not a property name, and under v \\P of one is an early error; the parser now checks names with Broiler.Unicode's exact lookup",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Modifier_Sequence-negative-P.js",
+      "reason": "rows P1 and S2 (S1 at parse time): under u a property of strings is not a property name, and under v \\P of one is an early error; the parser now checks names with Broiler.Unicode's exact lookup",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Modifier_Sequence-negative-u.js",
+      "reason": "rows P1 and S2 (S1 at parse time): under u a property of strings is not a property name, and under v \\P of one is an early error; the parser now checks names with Broiler.Unicode's exact lookup",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Tag_Sequence-negative-P.js",
+      "reason": "rows P1 and S2 (S1 at parse time): under u a property of strings is not a property name, and under v \\P of one is an early error; the parser now checks names with Broiler.Unicode's exact lookup",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Tag_Sequence-negative-u.js",
+      "reason": "rows P1 and S2 (S1 at parse time): under u a property of strings is not a property name, and under v \\P of one is an early error; the parser now checks names with Broiler.Unicode's exact lookup",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_ZWJ_Sequence-negative-P.js",
+      "reason": "rows P1 and S2 (S1 at parse time): under u a property of strings is not a property name, and under v \\P of one is an early error; the parser now checks names with Broiler.Unicode's exact lookup",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_ZWJ_Sequence-negative-u.js",
+      "reason": "rows P1 and S2 (S1 at parse time): under u a property of strings is not a property name, and under v \\P of one is an early error; the parser now checks names with Broiler.Unicode's exact lookup",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Block-implicit-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Block-implicit.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script-implicit-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script-implicit.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-Is-prefix-Script-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-Is-prefix-Script.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-circumflex-negation-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-circumflex-negation.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-invalid-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-invalid.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-separator-and-value-only-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-separator-and-value-only.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-separator-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-separator-only-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-separator-only.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/grammar-extension-separator.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-01-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-01.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-02-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-02.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-03-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-03.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-04-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-04.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-05-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-05.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-06-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-06.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-07-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-07.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-08-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-08.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-09-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-09.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-10-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-10.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-11-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-11.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-12-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-12.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-13-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-13.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-14-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/loose-matching-14.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category-equals-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category-equals.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script-equals-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script-equals.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions-equals-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions-equals.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-existent-binary-property-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-existent-binary-property.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-existent-property-and-value-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-existent-property-and-value.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-existent-property-existing-value-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/non-existent-property-existing-value.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Composition_Exclusion-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Composition_Exclusion.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFC-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFC.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFD-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFD.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKC-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKC.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKD-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKD.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-FC_NFKC_Closure-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-FC_NFKC_Closure.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Full_Composition_Exclusion-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Full_Composition_Exclusion.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Grapheme_Link-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Grapheme_Link.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Hyphen-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Hyphen.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Alphabetic-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Alphabetic.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Default_Ignorable_Code_Point-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Default_Ignorable_Code_Point.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Grapheme_Extend-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Grapheme_Extend.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Continue-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Continue.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Start-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Start.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Lowercase-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Lowercase.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Math-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Math.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Uppercase-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Uppercase.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Prepended_Concatenation_Mark-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-binary-property-Prepended_Concatenation_Mark.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-Block-with-value-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-Block-with-value.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-FC_NFKC_Closure-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-FC_NFKC_Closure.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break-with-value-negated.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break-with-value.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break.js",
+      "reason": "rows P1 and P3: a name or value ECMA-262's tables do not hold, exactly as written, is an early error; the parser now checks names with Broiler.Unicode's exact lookup, where it replaced each with a placeholder",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/language/identifiers/vertical-tilde-continue-escaped.js",
+      "reason": "row I1: U+2E2F is Pattern_Syntax, so neither ID_Start nor ID_Continue; the scanner now reads Broiler.Unicode's lexical classes",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/language/identifiers/vertical-tilde-continue.js",
+      "reason": "row I1: U+2E2F is Pattern_Syntax, so neither ID_Start nor ID_Continue; the scanner now reads Broiler.Unicode's lexical classes",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/language/identifiers/vertical-tilde-start-escaped.js",
+      "reason": "row I1: U+2E2F is Pattern_Syntax, so neither ID_Start nor ID_Continue; the scanner now reads Broiler.Unicode's lexical classes",
+      "variant": "original",
+      "verdict": "admitted"
+    },
+    {
+      "after": "passed",
+      "base": "failed",
+      "class": "C1",
+      "hostMode": "script",
+      "path": "test/language/identifiers/vertical-tilde-start.js",
+      "reason": "row I1: U+2E2F is Pattern_Syntax, so neither ID_Start nor ID_Continue; the scanner now reads Broiler.Unicode's lexical classes",
+      "variant": "original",
+      "verdict": "admitted"
+    }
+  ],
+  "regressions": 0,
+  "replacedByRerun": {
+    "after": [],
+    "base": []
+  },
+  "rows": 4010,
+  "suiteRef": "ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e",
+  "unclassified": 0,
+  "uncomparedFields": {
+    "dotnetVersion": {
+      "after": "",
+      "base": ""
+    },
+    "maxWorkers": {
+      "after": 3,
+      "base": 3
+    },
+    "runnerArch": {
+      "after": "x86_64",
+      "base": "x86_64"
+    },
+    "runnerOs": {
+      "after": "Linux",
+      "base": "Linux"
+    },
+    "shardCount": {
+      "after": 1,
+      "base": 1
+    }
+  },
+  "unusedClassifications": []
+}

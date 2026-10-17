@@ -1,0 +1,69 @@
+ALTERNATIVE COPYRIGHT NOTICE AND COPYRIGHT LICENSE
+
+(c) Ecma International
+
+By obtaining and/or copying this work, you (the licensee) agree that you have read, understood,
+and will comply with the following terms and conditions.
+
+Permission under Ecma's copyright to copy, modify, prepare derivative works of, and distribute
+this work, with or without modification, for any purpose and without fee or royalty is hereby
+granted, provided that you include the following on ALL copies of the work or portions thereof,
+including modifications:
+
+(i)   The full text of this COPYRIGHT NOTICE AND COPYRIGHT LICENSE in a location viewable to
+      users of the redistributed or derivative work.
+
+(ii)  Any pre-existing intellectual property disclaimers, notices, or terms and conditions. If
+      none exist, the Ecma alternative copyright notice should be included.
+
+(iii) Notice of any changes or modifications, through a copyright statement on the document such
+      as "This document includes material copied from or derived from [title and URL of the Ecma
+      document]. Copyright (c) Ecma International."
+
+DISCLAIMERS
+
+THIS WORK IS PROVIDED "AS IS," AND COPYRIGHT HOLDERS MAKE NO REPRESENTATIONS OR WARRANTIES,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY OR FITNESS FOR
+ANY PARTICULAR PURPOSE OR THAT THE USE OF THE DOCUMENT WILL NOT INFRINGE ANY THIRD PARTY PATENTS,
+COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS.
+
+COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR CONSEQUENTIAL DAMAGES
+ARISING OUT OF ANY USE OF THE DOCUMENT.
+
+The name and trademarks of copyright holders may NOT be used in advertising or publicity
+pertaining to the work without specific, written prior permission. Title to copyright in this work
+will at all times remain with copyright holders.
+
+--------------------------------------------------------------------------------------------------
+
+WHERE THIS TEXT COMES FROM, AND WHY IT IS HERE
+
+The notice above is copied, line for line, from Broiler.VM's
+src/Broiler.VM.Profile.JavaScript/docs/specification/ECMA-alternative-copyright-notice.txt at
+7b44dc7. Broiler.VM retained it on 2026-09-03 from the Ecma text copyright policy, version 3
+(approved December 2025), at https://ecma-international.org/policies/by-ipr/ecma-text-copyright-policy/,
+the "Alternative copyright notice" section. It was copied here on 2026-10-16, at work package SJL-7.2
+of the shared JavaScript libraries programme, with the three tables beside it.
+
+The three tables beside this file - table-binary-unicode-properties.html,
+table-nonbinary-unicode-properties.html and table-binary-unicode-properties-of-strings.html - come
+from the tc39/ecma262 repository at 0248456c, whose LICENSE.md licenses its natural-language text
+under exactly this notice. Condition (i) requires the full text of the notice to be in a location
+viewable to users of the redistributed work, so it is kept here as text, beside the tables, and
+reproduced in THIRD_PARTY_NOTICES.md at the repository's root, which every package of this
+repository carries.
+
+NOTICE OF CHANGES, WHICH IS CONDITION (iii)
+
+The archived tables are unmodified. Each is byte for byte what Broiler.VM archived, which its
+SHA-256 in data/unicode/pins/unicode.pin attests and .gitattributes protects from end-of-line
+conversion.
+
+What is derived from them is the set of property names, values and aliases ECMAScript admits, which
+src/Unicode.Generation encodes into the name tables of src/Unicode.Tables/UnicodeTableData.g.cs and
+which an engine embedding the generated tables compiles into its own assembly. No prose of the
+specification is copied.
+
+Broiler.Unicode includes material derived from the ECMAScript Language Specification, ECMA-262,
+17th edition (ES2026), https://ecma-international.org/publications-and-standards/standards/ecma-262/.
+Copyright (c) Ecma International.

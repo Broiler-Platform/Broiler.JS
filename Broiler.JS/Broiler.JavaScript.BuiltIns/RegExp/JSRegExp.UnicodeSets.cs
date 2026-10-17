@@ -4,8 +4,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
-using UnicodeEmoji.StringProperties;
-using Broiler.Unicode.Properties;
+using Broiler.JavaScript.Runtime.Unicode;
+using Broiler.Unicode.Algorithms;
 
 namespace Broiler.JavaScript.BuiltIns.RegExp;
 
@@ -25,10 +25,10 @@ namespace Broiler.JavaScript.BuiltIns.RegExp;
 // strings) are left untouched for the existing surrogate-aware transforms to
 // handle.
 //
-// Anything we cannot reduce to an exact set (e.g. a General_Category property,
-// for which we only have a .NET short name and no enumerable ranges, or \s inside
-// a set operation) throws the clear "not supported" SyntaxError rather than
-// risk a wrong match.
+// Every property, General_Category included, reduces to an exact set through
+// Broiler.Unicode's lookup (SJL-7.5). Anything else we cannot reduce to an exact
+// set (e.g. \s inside a set operation) throws the clear "not supported"
+// SyntaxError rather than risk a wrong match.
 partial class JSRegExp
 {
     /// <summary>
@@ -170,12 +170,8 @@ partial class JSRegExp
                 if ((n == 'p' || n == 'P') && i + 2 < inner.Length && inner[i + 2] == '{')
                 {
                     var close = inner.IndexOf('}', i + 3);
-                    if (close > 0)
-                    {
-                        var name = NormalizeKey(inner.Substring(i + 3, close - (i + 3)));
-                        if (EmojiStringPropertyNames.ContainsKey(name))
-                            return true;
-                    }
+                    if (close > 0 && JSUnicode.StringProperties.TryResolve(inner.AsSpan(i + 3, close - (i + 3)), out _))
+                        return true;
                 }
                 i += 2;
                 continue;
@@ -188,18 +184,6 @@ partial class JSRegExp
             i++;
         }
         return false;
-    }
-
-    private static string NormalizeKey(string s)
-    {
-        var sb = new StringBuilder(s.Length);
-        foreach (var ch in s)
-        {
-            if (ch == '_' || ch == ' ')
-                continue;
-            sb.Append(char.ToLowerInvariant(ch));
-        }
-        return sb.ToString();
     }
 
     // ---- evaluation ----
@@ -416,40 +400,26 @@ partial class JSRegExp
         return alternatives;
     }
 
+    // A property operand of a class set, by Broiler.Unicode's exact lookup (SJL-7.5): a property of strings
+    // (its sequences and its single code points), or any code point property, General_Category included,
+    // where only Script, Script_Extensions and the binary properties had ranges here (correspondence row P4).
     private static ClassSetValue ResolvePropertyOperand(bool negated, string inner)
     {
-        var normalized = NormalizeKey(inner);
-
-        if (EmojiStringPropertyNames.TryGetValue(normalized, out var emojiProperty))
+        if (inner.IndexOf('=') < 0 && JSUnicode.StringProperties.TryResolve(inner, out var stringProperty))
         {
             // \P of a property of strings is a SyntaxError.
             if (negated)
                 throw NewUnsupportedSetError();
             var value = new ClassSetValue();
-            foreach (var seq in EmojiStringProperties.GetSequences(emojiProperty))
-                value.AddString(seq);
+            var sequences = new List<string>();
+            CollectStringProperty(stringProperty, sequences, value.Ranges);
+            foreach (var sequence in sequences)
+                value.AddString(sequence);
             return value;
         }
 
-        // Character properties for which we have enumerable ranges.
-        var eq = inner.IndexOf('=');
-        (int Lo, int Hi)[] ranges = null;
-        if (eq >= 0)
-        {
-            var name = NormalizeKey(inner.Substring(0, eq));
-            var val = NormalizeKey(inner.Substring(eq + 1));
-            if (name is "sc" or "script")
-                ranges = UnicodeProperties.GetScript(val);
-            else if (name is "scx" or "scriptextensions")
-                ranges = UnicodeProperties.GetScriptExtensions(val);
-        }
-        else
-        {
-            ranges = UnicodeProperties.GetBinaryProperty(normalized);
-        }
-
-        if (ranges == null)
-            throw NewUnsupportedSetError(); // e.g. General_Category — no enumerable ranges here
+        if (!TryResolvePropertyRanges(inner, out var ranges))
+            throw JSEngine.NewSyntaxError($"Invalid regular expression: invalid property name in \\p{{{inner}}}");
 
         var result = new ClassSetValue();
         result.Ranges.AddRange(ranges);

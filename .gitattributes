@@ -18,3 +18,18 @@ Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/witnesses/SL10-crlf-lin
 # CI job logs retained in an evidence bundle are kept byte for byte as GitHub Actions served them;
 # the Windows jobs' logs have CRLF line endings.
 docs/evidence/*/ci/*.log -text
+
+# THE PINNED UNICODE ARCHIVE IS BINARY (milestone SJL-7.5, decision SJL-D-6 (c)). Its files are held by
+# their SHA-256 in data/unicode/pins/unicode.pin, a byte-for-byte copy of Broiler.Unicode's, and a
+# checkout filter that rewrote one line ending would move a hash on one platform. The pin and the
+# archive's README stay text: nothing hashes them. These lines are Broiler.Unicode's own.
+data/unicode/pins/ucd-17.0.0/** binary
+data/unicode/pins/emoji-17.0.0/** binary
+data/unicode/pins/ecma262/** binary
+data/unicode/pins/unicode-LICENSE.txt binary
+data/unicode/pins/unicode.pin text eol=lf
+data/unicode/pins/README.md text eol=lf
+data/unicode/pins/ecma262/ECMA-alternative-copyright-notice.txt text eol=lf
+# The tables generated from that archive are compared with the generator's output byte for byte, and
+# the generator writes LF line endings.
+Broiler.JS/Broiler.JavaScript.Runtime/Unicode/JSUnicodeTableData.g.cs text eol=lf

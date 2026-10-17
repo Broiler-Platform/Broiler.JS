@@ -1,0 +1,20 @@
+# The Unicode area's classified differences, read by generate_unicode_vectors.py.
+#
+# A line `reason <key>: <text>` defines a reason. A line `<engine> <key> <id>` classifies the vector
+# <id> as a divergence of <engine> for that reason: the generator writes the field
+# divergence.<engine>: <text>, and a normative vector becomes a divergence. An impl-defined vector
+# stays impl-defined, the field classifying the engine's difference from its own per-engine
+# expectation. The vector's expected value never changes (SCHEMA.md section 5).
+#
+# A line is added in a new corpus revision, with a dated row in conformance/vectors/REVISIONS.md,
+# and is removed only the same way, when the engine's cut-over corrects the difference and lists
+# the correction. Every reason names the plan that answers it and the row of bundle sjl-7-001's
+# correspondence from code (Broiler.VM's docs/evidence/sjl-7-001/correspondence.md) it confirms.
+#
+# Revision 19, 2026-10-16: every difference of each engine's first engine-level run on the Unicode
+# area, at revision 18 (Broiler.JS's docs/evidence/sjl-7-001/engine/ and Broiler.VM's bundle
+# sjl-7-001): 3,678 of Broiler.JS's, run under UTC, and none of Broiler.VM's, whose run matched every
+# vector.
+# Revision 20, 2026-10-16: Broiler.JS's cut-over (milestone SJL-7.5) corrects all 3,678 of its divergences,
+# whose lines and reasons are removed; docs/evidence/sjl-7-001/engine/retired-divergences-revision-20.tsv lists
+# them. No Unicode vector is classified as a divergence at this revision.

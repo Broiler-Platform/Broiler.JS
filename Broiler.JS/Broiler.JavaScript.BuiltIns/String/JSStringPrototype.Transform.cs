@@ -1,13 +1,12 @@
-﻿using System.Globalization;
-using System.Text;
-using Broiler.ECMAScript;
+﻿using Broiler.ECMAScript;
 using Broiler.ECMAScript.Numbers;
 using Broiler.ECMAScript.Text;
 using Broiler.JavaScript.BuiltIns.Boolean;
 using Broiler.JavaScript.ExpressionCompiler;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
-using Broiler.Unicode.Properties;
+using Broiler.JavaScript.Runtime.Unicode;
+using Broiler.Unicode.Algorithms;
 
 namespace Broiler.JavaScript.BuiltIns.String;
 
@@ -20,17 +19,29 @@ public partial class JSString
         var @this = a.This.AsString();
         var input = a.Get1();
 
+        // Steps 3 to 6: the form is read and checked before the text is touched.
         string form = input.IsUndefined ? "NFC" : input.StringValue;
-
-        return form switch
+        var normalForm = form switch
         {
-            "NFC" => new JSString(@this.Normalize(NormalizationForm.FormC)),
-            "NFD" => new JSString(@this.Normalize(NormalizationForm.FormD)),
-            "NFKC" => new JSString(@this.Normalize(NormalizationForm.FormKC)),
-            "NFKD" => new JSString(@this.Normalize(NormalizationForm.FormKD)),
+            "NFC" => NormalForm.Nfc,
+            "NFD" => NormalForm.Nfd,
+            "NFKC" => NormalForm.Nfkc,
+            "NFKD" => NormalForm.Nfkd,
             _ => throw JSEngine.NewRangeError($"The normalization form should be one of NFC, NFD, NFKC, NFKD."),
         };
+
+        return new JSString(NormalizeText(@this, normalForm));
     }
+
+    // The string's code points in a normal form (UAX #15), Broiler.Unicode's over the pinned Unicode
+    // 17.0.0 tables (SJL-7.5), where it was the host's string.Normalize: a lone surrogate is a code point
+    // of class 0 without a decomposition and passes through (N1), Unicode 16's and 17's decompositions
+    // are known (N2), and the result does not depend on the host's ICU or on invariant globalization
+    // (N3). This engine's length policy: a result longer than MaximumLength is a RangeError.
+    internal static string NormalizeText(string text, NormalForm form)
+        => JSUnicode.Normalization.Transform(text, form, MaximumLength, null, out var result) == UnicodeStatus.Success
+            ? result!
+            : throw JSEngine.NewRangeError("Invalid string length");
 
     [JSPrototypeMethod]
     [JSExport("padEnd", Length = 1)]
@@ -130,17 +141,7 @@ public partial class JSString
     internal static JSValue ToLocaleLowerCase(in Arguments a)
     {
         var @this = a.This.AsString();
-        var locale = a.Get1();
-
-        try
-        {
-            CultureInfo culture = locale.IsNullOrUndefined ? CultureInfo.CurrentCulture : CultureInfo.GetCultureInfo(locale.ToString());
-            return new JSString(JSStringSpecialCasing.ToLocaleLower(@this, culture));
-        }
-        catch (CultureNotFoundException)
-        {
-            throw JSEngine.NewRangeError($"Incorrect locale information provided");
-        }
+        return new JSString(ChangeCase(@this, TransformCaseLanguage(a.Get1()), upper: false));
     }
 
     [JSPrototypeMethod]
@@ -148,17 +149,7 @@ public partial class JSString
     internal static JSValue ToLocaleUpperCase(in Arguments a)
     {
         var @this = a.This.AsString();
-        var locale = a.Get1();
-
-        try
-        {
-            CultureInfo culture = locale.IsNullOrUndefined ? CultureInfo.CurrentCulture : CultureInfo.GetCultureInfo(locale.ToString());
-            return new JSString(JSStringSpecialCasing.ToLocaleUpper(@this, culture));
-        }
-        catch (CultureNotFoundException)
-        {
-            throw JSEngine.NewRangeError($"Incorrect locale information provided");
-        }
+        return new JSString(ChangeCase(@this, TransformCaseLanguage(a.Get1()), upper: true));
     }
 
     [JSPrototypeMethod]
@@ -166,7 +157,7 @@ public partial class JSString
     internal static JSValue ToLowerCase(in Arguments a)
     {
         var @this = a.This.AsString();
-        return new JSString(JSStringSpecialCasing.ToLower(@this));
+        return new JSString(ChangeCase(@this, CaseLanguage.Default, upper: false));
     }
 
     [JSPrototypeMethod]
@@ -174,7 +165,44 @@ public partial class JSString
     internal static JSValue ToUpperCase(in Arguments a)
     {
         var @this = a.This.AsString();
-        return new JSString(JSStringSpecialCasing.ToUpper(@this));
+        return new JSString(ChangeCase(@this, CaseLanguage.Default, upper: true));
+    }
+
+    // The full case mappings of UnicodeData.txt and SpecialCasing.txt, Final_Sigma and the Turkic and
+    // Lithuanian rules, Broiler.Unicode's over the pinned Unicode 17.0.0 tables (SJL-7.5), where they were
+    // the casing class of the Broiler.Unicode.Properties package over the runtime's data, its culture and
+    // its categories. This engine's length policy: a result longer than MaximumLength is a RangeError.
+    private static string ChangeCase(string text, CaseLanguage language, bool upper)
+    {
+        string? result;
+        var status = upper
+            ? JSUnicode.CaseMapping.ToUpperCase(text, language, MaximumLength, null, out result)
+            : JSUnicode.CaseMapping.ToLowerCase(text, language, MaximumLength, null, out result);
+
+        return status == UnicodeStatus.Success
+            ? result!
+            : throw JSEngine.NewRangeError("Invalid string length");
+    }
+
+    // ECMA-402 TransformCase, steps 1 to 6: the requested locales are canonicalized (null is a TypeError
+    // and a malformed tag a RangeError), the first is taken, or the default locale when there is none,
+    // and its language, which a Unicode extension does not change, chooses the language-sensitive
+    // mappings. The default locale is this engine's, en-US, never the host's culture (C8), and a list of
+    // locales is read as a list (C7).
+    private static CaseLanguage TransformCaseLanguage(JSValue locales)
+    {
+        var requested = Intl.JSIntl.CanonicalizeLocaleList(locales);
+        if (requested[KeyStrings.length].UIntValue == 0)
+            return CaseLanguage.Default;
+
+        var tag = requested[0u].StringValue;
+        var dash = tag.IndexOf('-');
+        return (dash < 0 ? tag : tag[..dash]) switch
+        {
+            "tr" or "az" => CaseLanguage.Turkic,
+            "lt" => CaseLanguage.Lithuanian,
+            _ => CaseLanguage.Default,
+        };
     }
 
     [JSPrototypeMethod]

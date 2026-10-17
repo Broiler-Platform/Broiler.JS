@@ -283,6 +283,10 @@ before SJL-3 is met, which the programme's ledger records. This repository's par
   milestones as the correspondence names them: U+0085 as white space in the lexer and in `RegExp.escape`
   (SJL-14, SJL-11), `normalize`'s .NET exception on a lone surrogate (SJL-7), `Date.parse`'s white space
   and culture (SJL-6), and the tagged-template path's trimming of a raw segment (SJL-14).
+  *Revised 2026-10-16, at SJL-7.1, by Broiler.VM's JSD-0074 (decision 6): U+0085 as white space in the
+  scanner and in `RegExp.escape` is SJL-7's, because their white-space lists are on SJL-7.5's deletion list
+  and their answer becomes the owner's `IsWhiteSpace`; the lexer and `RegExp.escape`'s other escaping stay
+  SJL-14's and SJL-11's. The sentence read as above.*
 - **The rules** are committed with this record, before any code of the area: test262 per path
   (`docs/evidence/sjl-5-001/decision-rule.md`, whose base is taken afresh at the commit that carries it,
   because the shared stream's version moved since SJL-4's after run) and the library-level reference
@@ -484,6 +488,124 @@ cut-over; Broiler.VM's pin moves to it. *Added 2026-10-16:* corpus revision 17 d
 expectations of two of those strings now agree on Broiler.VM's dialect's reading, which a library-level run
 compares the library with: its runner reads a string outside the format as both engines ask the library
 to, in the strict dialect and then, for what that refuses, in Broiler.VM's.
+
+**Unicode (SJL-7.1), filed 2026-10-16: all six sub-areas accepted, placed with Broiler.Unicode, and
+decision SJL-D-6 recorded for the first data area.** Broiler.VM's record is
+`Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0074-unicode-moves-to-broiler-unicode-under-the-owner-conditions.md`
+(JSD-0074), which states each condition of the extraction gate for properties and lexical classes, case
+folding, case mapping, normalization, properties of strings and segmentation, each on its own; its input,
+the correspondence from code with every member by file and line and each difference numbered (P, I, W, F,
+C, N, S, G), is `Broiler.VM/docs/evidence/sjl-7-001/correspondence.md`. SJL-7 started before SJL-3 is met,
+by the owner's choice, which the programme's ledger records. This repository's part of it:
+
+- **The home is Broiler.Unicode**, under decision SJL-D-1 (b), because it adopts SJL-7.1's four owner
+  conditions by a dated record in its `docs/roadmap.md`: the programme's conventions, its roadmap, an
+  assurance gate, and generator inputs that are pinned and hashed. It meets them at SJL-7.2. **If it does
+  not meet one by the end of SJL-7.2**, the sub-areas that condition reaches come to this repository, under
+  `Broiler.ECMAScript`, by a dated record naming the condition, as the table above says.
+- **The correspondence was read from code**, at this repository's `bdb1a3ca`, whose engine sources are
+  `4d70821e`'s, and every cell of this engine's that a row rests on was run through the shell, on the
+  host's ICU 74.2, which carries Unicode 15.1, as the hosted runners' does; SJL-7.3's vectors confirm it.
+  **Two sub-areas are adoptions here, not moves**: this engine implements no normalization of its own, and
+  takes graphemes from the runtime and has no sentence segmentation, so pinned data and the owner's
+  algorithms replace the host's. **Its case folding under `u` and `v` is already Broiler.Regex's**, from the
+  same derivation as Broiler.VM's, and the two agree; folding without `u` is the .NET translator's (F2),
+  which SJL-11 retires.
+- **The corrections**, each listed in `Broiler.JS/CHANGELOG.md` at SJL-7.5 under decision SJL-D-16 (a), with
+  the correspondence's row: `\p{…}` names matched loosely, `Katakana_Or_Hiragana` refused, a name falling
+  through to .NET's `\p`, and General_Category refused inside a `v`-mode set operation (P1 to P4);
+  identifiers and group names that do not subtract Pattern_Syntax, and group names without the Unicode 17
+  tables (I1, I3); U+0085 as white space to the scanner, `RegExp.escape` and the segmenter's words (W1);
+  U+00AA and U+00BA not Cased (C1); the Turkic lower case through the runtime's older data (C4); four
+  Soft_Dotted code points missing (C5); More_Above across a class-0 mark (C6); a list of locales that
+  reaches `CultureInfo` and throws (C7); `null` and no argument read as the host's culture (C8); a lone
+  surrogate that throws in `normalize` and `localeCompare` (N1); and sentence and word boundaries that do
+  not follow UAX #29 (G1, G2). **Pinned data replaces the host's**, a correction of class C5 under
+  SJL-D-6, for the identifier classes (I2), the default case mappings (C3), normalization at Unicode 16
+  and 17 and under invariant globalization (N2, N3) and grapheme clusters (G3); and `isWordLike` becomes
+  the owner's word status (G4).
+- **The deletion list grows**, as JSD-0074 records: beside the milestone's, `IsValidNativeFunctionToStringName`'s
+  `char.IsLetter`, the collator's `IsNormalized`, and the translator's loose property lookup with its
+  `NormalizeKey`, which becomes a call to the owner's exact lookup while the translator itself stays
+  SJL-11's. **Already gone**: `JSString.trimCharacters` and `NumberParser`'s list, since SJL-3.5, whose
+  white space is the shared set in `trim`, `Number` and `parseFloat`.
+- **Decision SJL-D-6 (c), as this engine applies it**: this engine references the owner's code packages
+  directly, where today it reaches `Broiler.Unicode.Properties` only through Broiler.Regex while its code
+  calls that package and the emoji package directly. It embeds the tables the owner's generator writes, in
+  an assembly SJL-7.5 names, held byte for byte by a test of rule SL7's shape in this repository, and passes
+  them to the owner's algorithms through the owner's provider. It references no package that carries
+  tables.
+- **Charging.** The owner's casing, normalization and segmentation take a meter and a maximum result
+  length. This engine passes no meter, as with every shared area, and passes its own string ceiling as the
+  maximum, keeping its own error.
+- **Decision SJL-D-25.** `StringSpan.Trim`, `TrimStart` and `TrimEnd` are public and have no caller; their
+  disposition is decided at SJL-7.5 and recorded in [`docs/public-api.md`](../public-api.md).
+  `CharExtensions`' members are internal.
+- **Not shared, and staying here:** receiver and argument conversion; this engine's locale
+  canonicalisation and the mapping of a locale to the owner's language enumeration; its string ceiling and
+  errors; `Intl.Segmenter`'s objects and iterators, whose shape differs from Broiler.VM's (G7) and is
+  outside the area. Outside the area, and left to their milestones: the .NET translator and its folding
+  and line terminators (F2, W5; SJL-11), the lexer (SJL-14) and collation, whose decomposition step alone
+  moves here (SJL-17).
+- **JSD-0031 §4(b)'s fifth reason**, the owner's runtime cost, is answered for this engine by its own
+  measurement of `normalize`, casing and identifier scanning. If its lane is not a controlled lane, the
+  part is void, as SJL-3's was, and the reason stays open for this engine.
+- **The rules** are committed with this record, before any code of the area: test262 per path with
+  negative-metadata tests included, so that the property-name and identifier corrections are inside the
+  population, through `test262 evidence`'s new `include_negative` input, and the measurement over
+  `UnicodeBenchmarks` (`docs/evidence/sjl-7-001/decision-rule.md`, parts A and B). The library-level rules,
+  Unicode's own test files, the byte-for-byte generation and the reference arms, are the owner's, in
+  Broiler.Unicode's bundle of the same name.
+
+**Broiler.VM's cut-over (SJL-7.4), 2026-10-16.** Broiler.Unicode published `0.1.0-preview.4` of its packages
+to nuget.org from its `6e14f93`, on the owner's instruction, and Broiler.VM's committed feed holds them as
+published. Broiler.VM's Unicode area references the owner's code packages; its embedded tables are the owner's
+generator's, from a pin of its own held to the owner's; its deletion list is gone; and its record is its
+JSD-0075. The corpus at revision 19 names no divergence of Broiler.VM's, and its pin matches every vector
+there after the cut-over, as before it.
+
+**This engine's cut-over (SJL-7.5), 2026-10-16.** This engine's Unicode area is Broiler.Unicode's, on
+`0.1.0-preview.4` of `Broiler.Unicode.Algorithms` and `Broiler.Unicode.Segmentation`, which nuget.org serves.
+**Decision SJL-D-6 (c) is applied as recorded**: [`data/unicode/pins/`](../../data/unicode/pins/README.md) is
+a byte-for-byte copy of the owner's pin, the tables the owner's generator writes from it are embedded in
+`Broiler.JavaScript.Runtime` (`JSUnicodeTableData.g.cs`), and `UnicodeTableRegenerationTests` runs the
+generator and compares its output byte for byte, as rule SL7 does for the owner. This engine references no
+package that carries tables directly; `Broiler.Unicode.Properties` and the emoji package still arrive in the
+closure through Broiler.Regex's dependencies until SJL-11, and no code of this engine calls them.
+- **The deletion list is absent**, with what JSD-0074 added to it: the search for its members finds nothing,
+  and the search for host Unicode APIs finds each of its hits outside the areas covered (bundle
+  [`sjl-7-001`](../evidence/sjl-7-001/README.md), section 3, which lists them by milestone).
+- **Every correction is made and listed** in [`Broiler.JS/CHANGELOG.md`](../../Broiler.JS/CHANGELOG.md), with
+  its row and its vectors: P1 to P4, S2, I1, I3, W1, C1, C4 to C8, N1, G1 and G2, and, by decision, I2, C2,
+  C3, N2, N3, G3 and the word status G4. On corpus revision 19 each of the 3,678 divergence fields reports that
+  it no longer holds, and nothing is unclassified.
+- **A property escape's name is checked by the parser too**, an early error for a literal, by the same exact
+  lookup the `RegExp` constructor calls before Broiler.Regex or the translator reads the pattern. Inside a
+  negated class the parser does not refuse a property of strings, because refusing a direct member would
+  refuse valid patterns; the constructor still refuses it, and seven negative tests of test262 stay failed.
+- **Policies decided here**: a result longer than this engine's strings hold is a `RangeError`, the owner
+  taking `JSString.MaximumLength` as its maximum result length; the default language of `toLocaleUpperCase`
+  and `toLocaleLowerCase` is this engine's, never the host's culture, while Intl's other services keep the
+  host's culture until SJL-9.
+- **Decision SJL-D-25**: `StringSpan.Trim`, `TrimStart` and `TrimEnd` stay, obsolete, as forwarders to the
+  shared white-space set, and `Broiler.JavaScript.Ast` now references `Broiler.ECMAScript.Algorithms`
+  ([`docs/public-api.md`](../public-api.md)).
+
+The next corpus revision retires this engine's 3,678 divergence fields of the Unicode area, and Broiler.VM's
+pin moves to it. *Added 2026-10-17:* corpus revision 20 (`a34b1f78`) does, and every vector of it has the result
+its class expects in both engines' runs.
+
+**The evidence (SJL-7.6), 2026-10-17.** Bundle [`sjl-7-001`](../evidence/sjl-7-001/README.md) reads this
+engine's clauses at the after commit `a34b1f78`, whose product sources are `c7a19d35`'s:
+- **Clause 7, test262 per path, is met under part A of its rule as written**: of the whole suite's 106,058 rows,
+  with negative-metadata tests, 140 changed, each from failed to passed and each a correction of class C1 under
+  rows P1, P3 and I1, and none regressed.
+- **Clauses 5, 6 and 8 are met** as the bundle's section 5 reads them, with findings named for SJL-11, SJL-14 and
+  the CLR binding.
+- **Part B, the measurement, is void**: this repository's machine is not a controlled lane. Its arithmetic finds
+  `Normalize` about three times and `Casing` about twice as slow after the cut-over, far beyond the A/A floor,
+  and `Identifiers` unchanged. **JSD-0031 §4(b)'s fifth reason stays open for this engine**, and the plan's first
+  risk, that the owner's normalizer and casing are slower than ICU and the runtime, is what the run shows.
 
 ## Invariants
 
