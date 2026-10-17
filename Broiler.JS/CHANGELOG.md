@@ -139,6 +139,64 @@ them. `StringSpan.Trim`, `TrimStart` and `TrimEnd` are obsolete forwarders to th
 Tests: `SharedUnicodeTests` and `UnicodeDependencyTests` (BuiltIns), `UnicodeLexicalClassTests` (Parser),
 `JSUnicodeTests` and `UnicodeTableRegenerationTests` (Runtime), `StringSpanTrimTests` (Ast).
 
+### The `era` option is written beside a format with no year (2026-10-16)
+
+- **`Intl.DateTimeFormat` writes the `era` option's era beside a format that shows no year**, where the
+  pattern appended its era field only to a date with a year, so the option was dropped from `format`
+  and `formatToParts` alike. It follows a date, `{ era: "short", month: "short", day: "numeric" }`
+  formats as `"Oct 16 AD"` where it was `"Oct 16"`, and leads a time alone, joined as a date is:
+  `{ era: "short", minute: "2-digit", second: "2-digit" }` is `"AD, 03:05"`, where it was `"03:05"`.
+  These are CLDR's en layouts, and V8's (ICU 77.1, CLDR 47) for the same options.
+- **A lone day, month or weekday beside the era is laid out as ICU's pattern generator lays it out**,
+  V8's layouts for all 30 pairs of an era width and a day, month or weekday style. CLDR's en has no
+  skeleton with an era and such a field, so ICU starts from the nearer, by its width distance, of the
+  era alone and the field's own skeleton (`d`; `M` or `MMM`; `E`), the era on a tie, and appends the
+  other with en's appendItems. From the era, a day or month is `"{0} ({2}: {1})"` and a weekday
+  `"{0} {1}"`: `{ era: "short", day: "numeric" }` is `"AD (day: 16)"`, `{ era: "short", weekday: "short" }`
+  `"AD Fri"` and `{ era: "long", day: "2-digit" }` `"Anno Domini (day: 16)"`. From the field, the era
+  follows it, as after a date: `{ era: "long", day: "numeric" }` is `"16 Anno Domini"` and
+  `{ era: "narrow", month: "long" }` `"October A"`. Beside a time the result joins as a date does
+  (`"AD (day: 16), 12:03 PM"`). The field names are en's in every locale, as this engine's month,
+  weekday and era names are. V8 joins a long month to a time with `" at "` (`"AD (month: October) at
+  12:03 PM"`), as it does any long date, which this engine's patterns do not model.
+
+An era-using calendar's era written without the option, such as `buddhist`'s `BE`, still needs a year,
+as in CLDR; a Temporal type with no era, `PlainTime` or `PlainMonthDay`, still drops the option.
+`DateTimeFormatEraWithoutYearTests` holds the cases.
+
+### `formatToParts` writes a minute-and-second format through the pattern `format` writes (2026-10-16)
+
+`Intl.DateTimeFormat.prototype.formatToParts` wrote a format with `minute` and `second` but no `hour` as
+`mm:ss[.fff]` by hand, where `format` writes the format's resolved pattern. The hand-written branch is
+gone, and such a format's parts join to what `format` writes. In the Latin-digit locales, for the formats
+that had no other field, the parts are unchanged.
+
+- **The digits follow the numbering system**, a locale's default one or a `-u-nu-` extension's, as
+  `format`'s do: `new Intl.DateTimeFormat("ar-EG", { minute: "2-digit", second: "2-digit" })` writes the
+  minute `"٠٣"`, where it was `"03"`, and with `fractionalSecondDigits` `arab` writes the fraction after
+  its decimal separator U+066B, where it was `"."`.
+- **The other fields the format asks for are written**: a date field, `weekday` or `timeZoneName` beside
+  the minute and second was dropped from the parts, so
+  `{ day: "numeric", minute: "2-digit", second: "2-digit" }` gave `minute`, `literal` and `second` alone.
+
+`DateTimeFormatMinuteSecondPartsTests` holds the cases. The time-zone correction below holds on the
+pattern's path, which reads the same zoned fields, and its tests still pass.
+
+### `formatToParts` writes a minute and second in the format's time zone (2026-10-16)
+
+- **`Intl.DateTimeFormat.prototype.formatToParts` writes a format with `minute` and `second` but no
+  `hour` in its resolved `timeZone`**, from the zoned fields `format` writes, where it used the host's
+  zone through `DateTimeOffset.ToLocalTime()`, bypassing this engine's provider of the host's zone
+  (decision SJL-D-19) that `format` goes through. A zone whose offset is not a whole hour had the host's
+  minute: `new Intl.DateTimeFormat("en", { minute: "2-digit", second: "2-digit", timeZone: "Asia/Kolkata" })`
+  formats 12:00:05Z as parts that join to `"30:05"`, like `format`, where on a UTC host the minute was
+  `"00"`. The fractional seconds come from the same fields.
+- **That format writes a time value outside the years 0001 to 9999**: `formatToParts(8.64e15)` is
+  `"00:00"` in UTC, where .NET's `ArgumentOutOfRangeException` reached the caller.
+
+`DateTimeFormatMinuteSecondTimeZoneTests` holds the cases. Milestone SJL-6.6's duplicate search
+(`simplification/duplicate-search.log` of bundle `sjl-6-001`) found it and named it for milestone SJL-9.
+
 ### The Date area moves to `Broiler.ECMAScript.Algorithms` (2026-10-16, milestone SJL-6.5)
 
 The Date area is the shared library's, the stream's `0.1.0-preview.4` in this repository's

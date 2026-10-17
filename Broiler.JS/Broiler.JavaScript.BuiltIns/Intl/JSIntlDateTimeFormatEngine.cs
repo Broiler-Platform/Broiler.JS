@@ -408,6 +408,9 @@ internal static class JSIntlDateTimeFormatEngine
         if (datePattern == null && timePattern == null)
             datePattern = DefaultNumericDate(localeTag);
 
+        // The cyclic calendars (chinese/dangi) have no era, so an era option is ignored for them.
+        var cyclicCalendar = CyclicYearCalendars.Contains(calendar ?? string.Empty);
+        var eraTok = eraStyle switch { "narrow" => "GGGGG", "long" => "GGGG", _ => "G" };
         if (datePattern != null && datePattern.IndexOf('y') >= 0)
         {
             // An era-using calendar (e.g. buddhist) appends the era after a date that
@@ -419,12 +422,45 @@ internal static class JSIntlDateTimeFormatEngine
             // form used elsewhere wraps the name in parentheses, "r(U)". Each makes the pattern
             // structurally distinct.
             var eraCalendar = EraCalendars.ContainsKey(calendar ?? string.Empty) || IslamicCalendars.Contains(calendar ?? string.Empty);
-            // The cyclic calendars (chinese/dangi) have no era, so an era option is ignored for them.
-            if ((eraCalendar || hasEra) && !CyclicYearCalendars.Contains(calendar ?? string.Empty))
-                datePattern += eraStyle switch { "narrow" => " GGGGG", "long" => " GGGG", _ => " G" };
-            else if (CyclicYearCalendars.Contains(calendar ?? string.Empty))
+            if ((eraCalendar || hasEra) && !cyclicCalendar)
+                datePattern += " " + eraTok;
+            else if (cyclicCalendar)
                 datePattern = ReplaceYearField(datePattern,
                     CldrLocaleData.LanguageOf(localeTag) == "zh" ? "rU年" : "r(U)");
+        }
+        else if (hasEra && !cyclicCalendar)
+        {
+            // The explicit `era` option is written beside a format with no year too, in CLDR's en
+            // layout: after a date ("MMM d" -> "MMM d G", "Oct 16 AD"), and ahead of a time alone,
+            // joined as a date is ("G, h:mm a", "AD, 12:03 PM"). An era-using calendar's own era
+            // still needs a year.
+            //
+            // A lone day, month or weekday is laid out as ICU's DateTimePatternGenerator lays it out
+            // (V8's): CLDR's en has no skeleton with an era and that field, so ICU starts from the
+            // nearer of the era alone ("G") and the field's own en skeleton, the era on a tie
+            // (SkeletonDistance), and appends the other
+            // with en's appendItems. Starting from the era, a day or month is "{0} ({2}: {1})"
+            // ("AD (day: 16)") and a weekday "{0} {1}" ("AD Fri"); starting from the field, the era
+            // follows it ("16 Anno Domini"), as after any date above. The field names are en's, as
+            // this engine's other names are.
+            var loneField = datePattern == null ? null
+                : hasDay && !hasMonth && !hasWeekday ? "day"
+                : hasMonth && !hasDay && !hasWeekday ? "month"
+                : hasWeekday && !hasDay && !hasMonth ? "weekday"
+                : null;
+            var eraFirst = loneField != null
+                && SkeletonDistance(eraTok, ["G"]) <= SkeletonDistance(datePattern, loneField switch
+                {
+                    "day" => ["d"],
+                    "month" => ["M", "MMM"],
+                    _ => ["E"],
+                });
+            datePattern = (eraFirst, loneField) switch
+            {
+                (true, "day" or "month") => $"{eraTok} '({loneField}: '{datePattern}')'",
+                (true, _) => $"{eraTok} {datePattern}",
+                _ => datePattern != null ? datePattern + " " + eraTok : eraTok,
+            };
         }
 
         string combined = (datePattern, timePattern) switch
@@ -479,6 +515,29 @@ internal static class JSIntlDateTimeFormatEngine
             sb.Append(c);
         }
         return sb.ToString();
+    }
+
+    // The width distance ICU's DateTimeMatcher measures between runs of one field letter
+    // (dtptngen.cpp), the smallest from `run` to any of `candidates`: a numeric width counts its
+    // length (d = 1, dd = 2, M = 1, MM = 2) and a text width its kind (short -3, long -4, narrow -1,
+    // shorter -2, ICU's DT_SHORT, DT_LONG, DT_NARROW and DT_SHORTER kept to a byte), and the distance
+    // is the difference. ICU breaks a tie for the candidate whose missing field comes later in its
+    // field order (era, year, ..., month, ..., weekday, ..., day), which for the era against another
+    // field is the era alone, the one missing that field.
+    private static int SkeletonDistance(string run, string[] candidates)
+    {
+        static int Type(string r) => r[0] switch
+        {
+            'd' => r.Length,
+            'M' when r.Length <= 2 => r.Length,
+            _ => r.Length switch { 4 => -4, 5 => -1, 6 => -2, _ => -3 },
+        };
+
+        var type = Type(run);
+        var best = int.MaxValue;
+        foreach (var candidate in candidates)
+            best = Math.Min(best, Math.Abs(type - Type(candidate)));
+        return best;
     }
 
     // The default all-numeric date pattern (year/month/day) for a locale, e.g.
