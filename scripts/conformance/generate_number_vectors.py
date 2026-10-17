@@ -37,8 +37,9 @@ import numref as R  # noqa: E402
 # revision 13 retired them; revisions 14 to 16 added and classified the Date area, which
 # generate_date_vectors.py writes, and revision 17 retired its divergences; revision 18 added the Unicode
 # area, which generate_unicode_vectors.py writes, and changed nothing here, nor did revision 19, which classified
-# its divergences, nor revision 20, which retired them).
-CORPUS_REVISION = 20
+# its divergences, nor revision 20, which retired them, nor revision 21, which added the time-zone area,
+# which generate_time_zone_vectors.py writes).
+CORPUS_REVISION = 21
 FIRST_REVISION = 1
 GENERATOR = "ref:numref@1"
 SPEC = "spec:es2026@0248456c"

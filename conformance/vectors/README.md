@@ -28,6 +28,7 @@ rule for its own engine is [`docs/evidence/sjl-1-001/decision-rule.md`](../../do
 | `text/` | The text area: TrimString, well-formedness, CodePointAt and AdvanceStringIndex; StringPad and the relative-index normalisation; replacement templates; the URI codecs with `escape` and `unescape`; the base64 and hex codecs; and JSON's grammar, its quoting, its gap, its line ending and `JSON.rawJSON` *(added 2026-10-14, at corpus revision 10)* |
 | `date/` | The Date area: MakeTime, MakeDay, TimeClip, MakeFullYear and the setters' range and order; field extraction; the Date Time String Format and each engine's dialect; the renderings; local time through relations that hold in every time zone; and the ISO calendar's civil-day helpers (through Temporal); and, from revision 16, strings outside the format on which the engines' readings differ *(added 2026-10-15, at corpus revision 14; the last clause at revision 16, the same day)* |
 | `unicode/` | The Unicode area: `normalize` over Unicode's NormalizationTest.txt and the correspondence's cells; `toUpperCase`, `toLowerCase` and the language-sensitive `toLocaleUpperCase` and `toLocaleLowerCase`, and case folding through RegExp's `i` flag; `\p{…}` acceptance and membership under `u` and `v`, properties of strings included; identifier acceptance through escaped identifiers, and white space; and `Intl.Segmenter` over Unicode's three break tests *(added 2026-10-16, at corpus revision 18)* |
+| `time-zones/` | The time-zone area: offsets, next and previous transitions, the instants of a wall-clock time and each disambiguation, start of day and the hours in a day, through Temporal, over the data home's pinned tz database under decision SJL-D-20, at instants on both sides of every policy difference and correction of the area's verdict (the release, backzone, extrapolation after 2037, CLDR primaries, `Factory`, lookup by ASCII case only, offsets with ASCII digits); the identifiers and primaries, through Temporal and ECMA-402; and a sample of ordinary transitions, gaps and overlaps *(added 2026-10-17, at corpus revision 21)* |
 | [`controls/`](controls/README.md) | Malformed files the validator must refuse. **Not part of the corpus.** |
 
 ## Running it
@@ -48,6 +49,9 @@ python3 scripts/conformance/generate_date_vectors.py --out conformance/vectors/d
 # The Unicode area reads the pinned UCD 17.0.0, which the corpus does not archive: --ucd is the directory
 # sources/unicode.pin's paths are under, normally Broiler.Unicode's data/unicode/pins/. -I, as for any downloaded data.
 python3 -I scripts/conformance/generate_unicode_vectors.py --ucd <Broiler.Unicode>/data/unicode/pins --out conformance/vectors/unicode
+# The time-zone area compiles the data home's pinned tz database with the host's zic (tzref.py); its tests are skipped
+# where zic is absent.
+python3 -I scripts/conformance/generate_time_zone_vectors.py --out conformance/vectors/time-zones
 python3 -m unittest discover -s scripts/conformance/tests
 # The Unicode area's tests that read the pinned data look for it in BROILER_UNICODE_PINS, or in a Broiler.Unicode
 # checkout beside this repository, and are skipped where it is absent.
@@ -113,5 +117,6 @@ Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release".)*
   differential probes and Broiler.JS's round-trip tests exercise. Those probes' and tests' answers are
   never used.
 - **The numerics area** (revision 6) follows the same rule: its inputs are milestone SJL-4.2's populations, with seeded random values (SplitMix64, the seeds in the generator), and every expected value is `scripts/conformance/numericsref.py`'s, in exact arithmetic. Its rounding vectors run through Temporal, which the pinned ECMA-262 edition does not contain, so their provenance is that computation alone; the generator names the proposal's operations it follows.
+- **Time zones.** The time-zone area (revision 21) reads the data home's pinned tz database and CLDR file, `Broiler.ECMAScript/data/time/tzdb/` and `cldr/`, by their pins, and copies neither: every expected value is `scripts/conformance/tzref.py`'s (`ref:tzref@1`), which compiles the pinned release with the host's `zic`, reads the compiled files with its own reader and applies decision SJL-D-20's policy, and shares no code with the data home's generator or the algorithms library it judges.
 - **test262.** No vector of revision 1 is derived from a test262 test. A vector that is will cite the
   test with `test262:<path>`, and the corpus will then carry test262's licence notice.
