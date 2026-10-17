@@ -252,5 +252,22 @@ under the correspondence's rows. The reasons are in
 **Every difference falls under a row the area verdict names, and the vectors falsify none of it.** Every vector of
 the rows it calls agreement matches. SJL-8.6, this engine's cut-over, answers each one.
 
+**Revision 23** (`2d496a55`) retires the 1,161 fields, which SJL-8.6's cut-over corrects
+([`engine/retired-divergences-revision-23.tsv`](engine/retired-divergences-revision-23.tsv)). The seven files under
+`conformance/vectors/time-zones/` are revision 21's byte for byte. The runner was built once in Release at
+`2d496a55`, from a clean tree, and run in both zones together, from 21:33Z to 22:10Z, with no `LANG`:
+
+| Run | Result | Files |
+|---|---|---|
+| Revision 23, UTC | 92,434 vectors: 92,430 match, 4 classified divergences, 0 unclassified differences | [`engine/run-revision-23-utc.log`](engine/run-revision-23-utc.log), [`engine/run-revision-23-utc.tsv.gz`](engine/run-revision-23-utc.tsv.gz) |
+| Revision 23, New York | 92,434 vectors: 92,430 match, 4 classified divergences, 0 unclassified differences | [`engine/run-revision-23-new-york.log`](engine/run-revision-23-new-york.log), [`engine/run-revision-23-new-york.tsv.gz`](engine/run-revision-23-new-york.tsv.gz) |
+
+**Every vector of revision 23 has the result its class expects, in both zones.**
+- The 4 are the number area's, SJL-14's, and each still holds. No vector is reported as not implemented.
+- The two reports are byte for byte the same.
+- Each run's negative control flagged exactly its mutated vector, `numbers/to-fixed/0001`
+  ([`engine/negative-control-revision-23-utc.tsv`](engine/negative-control-revision-23-utc.tsv),
+  [`engine/negative-control-revision-23-new-york.tsv`](engine/negative-control-revision-23-new-york.tsv)).
+
 **Broiler.VM's runs** (observed, its bundle of the same name) match every vector at revision 21 and at revision 22,
-on a pin moved to revision 22.
+on a pin moved to revision 22. Its run on revision 23, on the pin moved there, matches every vector too.
