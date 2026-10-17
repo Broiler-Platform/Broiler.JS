@@ -59,22 +59,15 @@ public class CalendarYearTests
     }
 
     [Fact]
-    public void A_year_runs_from_its_new_year_to_the_next_within_each_source()
+    public void A_year_runs_from_its_new_year_to_the_next_across_every_seam()
     {
-        // THE SEAMS between a table and the source outside it are each source's own: a year either side of one
-        // is that side's, and they need not meet (Broiler.VM's behaviour, which the differential check holds).
-        var seams = new[]
-        {
-            (TableCalendar.Chinese, 1899L), (TableCalendar.Chinese, 2102L), (TableCalendar.Dangi, 1899L), (TableCalendar.Dangi, 2102L),
-            (TableCalendar.IslamicUmmAlQura, 1299L), (TableCalendar.IslamicUmmAlQura, 1600L),
-        };
+        // THE YEARS EITHER SIDE OF A TABLE'S EDGE come from different sources (1899 and 1900, 2102 and 2103,
+        // 1299 and 1300 AH, 1600 and 1601 AH, the Persian corrections' first and last), and with the pinned data
+        // they still meet: no day is lost or repeated.
         foreach (var calendar in new[] { TableCalendar.Chinese, TableCalendar.Dangi, TableCalendar.IslamicUmmAlQura, TableCalendar.Persian })
         {
             for (var year = -3000L; year <= 3000; year++)
             {
-                if (seams.Contains((calendar, year)))
-                    continue;
-
                 CalendarYears.GetYear(Tables, calendar, year, out var current);
                 CalendarYears.GetYear(Tables, calendar, year + 1, out var next);
                 Assert.Equal(next.NewYearEpochDays, current.NewYearEpochDays + current.DaysInYear);

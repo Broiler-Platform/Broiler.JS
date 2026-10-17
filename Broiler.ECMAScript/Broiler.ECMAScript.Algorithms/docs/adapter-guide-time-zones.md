@@ -257,8 +257,9 @@ A year is its new year, its months and their lengths, and its leap month's ordin
 answers it from the table inside the table's range - China's and Korea's 1912 to 2102 and the Qing years
 1900 to 1911 for both, Umm al-Qura 1300 to 1600 AH - and outside from ICU4X's approximation (UTC+8 or UTC+9
 after 1912, Beijing's mean time before), the civil tabular year, and the 33-year rule with the listed
-corrections (1502 to 2987 AP). The seams between a table and its source are each side's own, as in
-Broiler.VM. **The arithmetic over the years, month codes, eras and the formula calendars stay SJL-10's.**
+corrections (1502 to 2987 AP). The years either side of a table's edge come from different sources, as in
+Broiler.VM, and with the pinned data they meet: each year ends the day the next begins. **The arithmetic over
+the years, month codes, eras and the formula calendars stay SJL-10's.**
 
 ### Preconditions
 
