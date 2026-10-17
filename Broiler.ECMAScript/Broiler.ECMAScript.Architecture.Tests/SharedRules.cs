@@ -30,6 +30,11 @@ internal static class SharedRules
 
         // Test-only; reads the corpus its caller hands it.
         ["Broiler.ECMAScript.Conformance"] = [],
+
+        // Test-only; the time data home's generator (milestone SJL-8.2), reading the pins and archives
+        // its caller hands it. It references no other shared library: the shared decoder of its tables
+        // is the algorithms library's, and the generator is never in an engine's product closure.
+        ["Broiler.ECMAScript.Generation"] = [],
     }.ToFrozenDictionary(StringComparer.Ordinal);
 
     /// <summary>The component packages a shared library may reference at all, where the layering lets it.</summary>

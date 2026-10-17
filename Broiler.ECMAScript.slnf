@@ -7,6 +7,7 @@
       "Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/Broiler.ECMAScript.Architecture.Tests.csproj",
       "Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/Broiler.ECMAScript.Conformance.Tests.csproj",
       "Broiler.ECMAScript/Broiler.ECMAScript.Conformance/Broiler.ECMAScript.Conformance.csproj",
+      "Broiler.ECMAScript/Broiler.ECMAScript.Generation/Broiler.ECMAScript.Generation.csproj",
       "Broiler.ECMAScript/Broiler.ECMAScript.Probe/Broiler.ECMAScript.Probe.csproj"
     ]
   }

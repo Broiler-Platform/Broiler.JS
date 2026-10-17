@@ -25,7 +25,7 @@ public class SharedRuleTests
     [Fact]
     public void The_rules_read_every_shared_library_and_the_probe()
     {
-        Assert.Equal(["Broiler.ECMAScript.Algorithms", "Broiler.ECMAScript.Conformance"], SharedTree.Libraries.Select(static p => p.Name));
+        Assert.Equal(["Broiler.ECMAScript.Algorithms", "Broiler.ECMAScript.Conformance", "Broiler.ECMAScript.Generation"], SharedTree.Libraries.Select(static p => p.Name));
         Assert.Single(SharedTree.Projects, static p => p.Kind == SharedProjectKind.Probe);
         Assert.All(LibraryAssemblies, static a => Assert.NotEmpty(a.TypeReferences));
     }
