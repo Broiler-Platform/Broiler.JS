@@ -17,9 +17,9 @@
     <PackageVersion Include="Broiler.Unicode.Cldr.LocaleData" Version="0.1.0-preview.3" />
     <!-- The Unicode area's owner (milestone SJL-7.5, decision SJL-D-6 (c)): its code packages, and its
          generator for this repository's tests alone. No package that carries tables is referenced. -->
-    <PackageVersion Include="Broiler.Unicode.Algorithms" Version="0.1.0-preview.4" />
-    <PackageVersion Include="Broiler.Unicode.Segmentation" Version="0.1.0-preview.4" />
-    <PackageVersion Include="Broiler.Unicode.Generation" Version="0.1.0-preview.4" />
+    <PackageVersion Include="Broiler.Unicode.Algorithms" Version="0.1.0-preview.5" />
+    <PackageVersion Include="Broiler.Unicode.Segmentation" Version="0.1.0-preview.5" />
+    <PackageVersion Include="Broiler.Unicode.Generation" Version="0.1.0-preview.5" />
     <!-- Compiler and build tooling -->
     <PackageVersion Include="Microsoft.Net.Compilers.Toolset" Version="$(RoslynVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)" />
