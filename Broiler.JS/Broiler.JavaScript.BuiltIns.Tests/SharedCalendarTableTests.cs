@@ -24,6 +24,18 @@ public class SharedCalendarTableTests
             Assert.DoesNotContain(name, referenced);
     }
 
+    // A PlainMonthDay's reference date in chinese and dangi reads only the years 1900 to 2035, as Table 6 of the
+    // Intl era and month code proposal does, so ICU4X's years outside that span do not move it: 1898's M01L and
+    // dangi 2052's 30-day M08L give no reference date (test262 intl402/Temporal/PlainMonthDay/from/
+    // chinese-dangi-*).
+    [Theory]
+    [InlineData("Temporal.PlainMonthDay.from({ calendar: 'chinese', year: 1898, monthCode: 'M01L', day: 29 }).toString()", "1972-03-14[u-ca=chinese]")]
+    [InlineData("var e = 'none'; try { Temporal.PlainMonthDay.from({ calendar: 'chinese', year: 1898, monthCode: 'M01L', day: 29 }, { overflow: 'reject' }); } catch (x) { e = x.name; } e", "RangeError")]
+    [InlineData("Temporal.PlainMonthDay.from({ calendar: 'dangi', monthCode: 'M08L', day: 30 }).monthCode", "M08")]
+    [InlineData("var d = Temporal.PlainMonthDay.from({ calendar: 'dangi', monthCode: 'M11L', day: 29 }); d.monthCode + ' ' + d.toString().slice(0, 4)", "M11L 2034")]
+    public void Month_day_reference_dates_read_Table_6_s_span(string expression, string expected)
+        => Assert.Equal(expected, Eval(expression));
+
     // K2: chinese 2057, inside Table 1's published range.
     [Theory]
     [InlineData("Temporal.PlainDate.from({ year: 2057, monthCode: 'M09', day: 1, calendar: 'chinese' }).toString()", "2057-09-28[u-ca=chinese]")]
