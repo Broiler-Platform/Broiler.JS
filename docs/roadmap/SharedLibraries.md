@@ -812,6 +812,12 @@ and `SharedTimeZoneTests` holds each embedded file to the home's bytes and to th
 - **Not done here**: the bundle's after runs (SJL-8.7); the corpus revision that retires the area's 1,161
   divergence fields; and publishing `0.1.0-preview.5`, which this engine's packages need before they ship.
 
+*Added 2026-10-17, later:* on the owner's instruction, `Publish shared libraries` published
+`Broiler.ECMAScript.Algorithms` and `Broiler.ECMAScript.Generation` `0.1.0-preview.5` to nuget.org from `a04cd44`
+(run 39064131506), whose library code is `2d37a38`'s, and tagged them `ecmascript-v0.1.0-preview.5`. Broiler.VM's
+feed holds the packages as published, and the source's suffix moves to `preview.5`, so this engine's packages
+depend on the version nuget.org serves.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
