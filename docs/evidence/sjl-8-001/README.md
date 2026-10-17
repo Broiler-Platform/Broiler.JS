@@ -130,7 +130,29 @@ Parts A and B's bases were dispatched by `test262 evidence` at the rule's commit
 - part A in the runner's zone, UTC: run 39038217145;
 - part B in `America/New_York`: run 39038219059.
 
-They are imported here when they complete.
+Both are imported unchanged, with the digest of each zip as downloaded, which is the digest GitHub records:
+[`test262/base/`](test262/base/imported.txt) and [`test262/base-new-york/`](test262/base-new-york/imported.txt).
+- **What ran.** Each run tested `15a1bd8f`, dispatched from `main` at `bfafa77e`. The workflow and
+  `scripts/compliance/` there are byte-identical to the rule commit's.
+- **Completeness.** Each run has:
+  - all eight shards reported, with no configuration failure;
+  - one suite revision, `ccaac100`;
+  - one shell, shown by one distinct list of binaries, with the re-run's shell the same;
+  - `includeNegative` true in `run.txt`, the merged results and the re-run.
+- **The zone.**
+  - Part A's record reads TZ unset and UTC +0000 at both instants.
+  - Part B's reads TZ `America/New_York`, EST -0500 and EDT -0400.
+  - Each run records one tzdata release, 2026c, and every shard is as expected.
+- **Taken.** Part A ran from 13:50Z to 15:25Z on 2026-10-17, and part B from 13:50Z to 15:28Z.
+
+| Run | Passed | Failed | Timed out | Not applicable | Of |
+|---|---|---|---|---|---|
+| Part A, UTC | 98,181 | 2,004 | 2 | 5,871 | 106,058 rows (53,029 paths, two variants) |
+| Part B, `America/New_York` | 98,181 | 2,004 | 2 | 5,871 | 106,058 rows |
+
+The totals are equal in both zones, and the parts compare per row, never with each other. Against bundle
+`sjl-7-001`'s after run (98,146 passed), 35 more rows pass: the fixes merged since, #1041's and the move to
+Broiler.Unicode `0.1.0-preview.5`.
 
 **Part C's base** ([`datasets/`](datasets/README.md)) was taken at the rule's commit.
 - **The population.** Broiler.VM's two programs, with their retained answers and divergences files, are copied
