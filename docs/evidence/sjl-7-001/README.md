@@ -14,16 +14,27 @@ JSD-0074 and its correspondence from code, retained in Broiler.VM's bundle of th
 **Owner:** the Broiler.JS maintainer. One person holds every role (the programme's EX-30, recorded in
 Broiler.VM). **Reviewer:** none, and nothing here has been read by anyone but its author.
 
-**State, 2026-10-16, at SJL-7.5: part A's base is taken, the engine-level vectors' first run is classified, and
-this engine's cut-over is recorded with its run on the vectors; nothing here is a verdict.**
-- Part A's after run is taken at SJL-7.6, at the commit that lands the cut-over.
-- Part B's arms are measured at SJL-7.6, when the after arm exists, because the rule interleaves the arms
-  inside each repetition.
+**State, 2026-10-17, at SJL-7.6: collection in progress, from clean checkouts of the after commit `a34b1f78`,
+which lands SJL-7.5's cut-over (section 4).** **Clause 7 is met under part A of [`decision-rule.md`](decision-rule.md)
+as written**, with no revision: of the whole suite's 106,058 rows, 140 changed, each from failed to passed and each a
+correction of class C1 the changelog lists, and none regressed (section 6). Clauses 5, 6 and 8 are met as section 5
+reads them, with findings that section 9 names for other milestones. Not yet taken:
+- **Part B**, the measurement, which the maintainer takes on an idle machine with the collector's `measure`
+  step (section 11);
+- **the engine-level vectors at corpus revision 20**, at the after commit (section 10).
+
+Nothing is accepted: review is deferred, and SJL-7 may not meet its gate before SJL-3 meets SJL-3's.
 
 *(Revised 2026-10-16, at SJL-7.3. The state's heading read "at SJL-7.2: part A's base is taken, and nothing here is
 a verdict." Revised again at SJL-7.5; it read "at SJL-7.3: part A's base is taken, and the engine-level vectors'
 first run is classified; nothing here is a verdict.", and its first item "Part A's after run follows SJL-7.5's
 cut-over.")*
+
+*(Revised 2026-10-17, at SJL-7.6. The state read "**State, 2026-10-16, at SJL-7.5: part A's base is taken, the
+engine-level vectors' first run is classified, and this engine's cut-over is recorded with its run on the vectors;
+nothing here is a verdict.**", with the items "Part A's after run is taken at SJL-7.6, at the commit that lands the
+cut-over." and "Part B's arms are measured at SJL-7.6, when the after arm exists, because the rule interleaves the
+arms inside each repetition.")*
 
 Broiler.Unicode judges the owner's clauses in its own bundle of the same name, and Broiler.VM judges its own
 half in its own. This bundle reads neither's runs.
@@ -193,3 +204,427 @@ would correct**: `generated/strings/*-negative-CharacterClass.js`, a property of
 class, which the parser's check does not refuse, because refusing a direct member of a negated class would
 refuse valid patterns such as `[^\p{RGI_Emoji}&&a]`; the `RegExp` constructor still refuses
 `[^\p{RGI_Emoji}]`. They fail before and after.
+
+## 4. The after arm (SJL-7.6)
+
+| Field | Value |
+|---|---|
+| Evidence bundle | SJL-7-001 (Broiler.JS's) |
+| Base | Section 1: the workflow's run at `3916bd2b`, the commit that carries the rule, before any code of SJL-7 landed, with its re-run of the rows that timed out |
+| After | `a34b1f78` (`a34b1f78cc4bda6bcdfe68ed943af6cc069c1b71`), on this branch: SJL-7.5's cut-over, `3374c933` to `c7a19d35`, and the three commits after it, which add the changelog's rows P3 and P4 (`93f729c5`), this bundle's record of the cut-over and the plan's (`97de502e`), and corpus revision 20 (`a34b1f78`). **Its product sources are `c7a19d35`'s**: under `Broiler.JS/`, `Broiler.ECMAScript/` and `data/unicode/`, and among the package and build properties, `NuGet.config` and `global.json`, the one file that differs is `Broiler.JS/CHANGELOG.md`, a document ([`identity.txt`](identity.txt), which lists every commit and every file). Unlike SJL-6's after commit it is not a merge into the default branch: part A's after run was dispatched from this branch at this commit, named by all forty digits, as the base was at the rule's. Every local run of this bundle is taken from a clean checkout of it |
+| Rule commit | `3916bd2b`, an ancestor of the after commit. The rule, the comparison script, the workflow and part B's three files, `UnicodeBenchmarks.cs`, the benchmark `Program.cs` and `BenchmarkConfiguration.cs`, are unchanged between the two, by blob; no file of the benchmark project changed ([`identity.txt`](identity.txt)) |
+| Owner | Broiler.Unicode's `Broiler.Unicode.Algorithms` and `Broiler.Unicode.Segmentation` `0.1.0-preview.4`, published to nuget.org from Broiler.Unicode's `6e14f93`, over the Unicode 17.0.0 tables this engine embeds from its own pin (section 7) |
+| Shared vectors | `conformance/vectors` at corpus revision 20, which retires this engine's 3,678 divergence fields of the Unicode area ([`engine/retired-divergences-revision-20.tsv`](engine/retired-divergences-revision-20.tsv)) |
+| Collector | [`collect.py`](collect.py) as this change commits it, which reuses bundle `sjl-6-001`'s collector, and through it `sjl-5-001`'s, `sjl-4-001`'s, `sjl-3-001`'s and `sjl-0-001`'s, run against the clean checkout; its `measure` step, part B's, follows `sjl-3-001`'s |
+| Taken | 2026-10-16 and 17. Part A's after run by the workflow, dispatched 23:56Z and completed at 01:31Z on 2026-10-17; locally, `identity`, `simplification`, `home` and `consumer` from 00:11Z on 2026-10-17 (the last three taken again at 00:19Z with the collector as committed), `test262` and `compare` at 01:33Z. The machine is section 3's, and it ran an engine-level vector run and work in Broiler.VM beside these steps; nothing local here is timed |
+| RID | `linux-x64`: the workflow's runners for test262; locally, one machine with four logical processors |
+
+## 5. The clauses, and what holds each
+
+| Clause | What it asks | Where | State |
+|---|---|---|---|
+| 5 | The deletion list is absent | section 9 | **Met** at `a34b1f78`: every entry of the milestone's list for this engine, with JSD-0074's three additions, is absent from the file or folder that held it; what remains is calls to the owner, adapters and comments, and the cut-over's search for the members' names, repeated, finds nothing |
+| 6 | No host Unicode API remains in the areas covered | section 9 | **Met as the area record bounds the areas**: the cut-over's search, repeated at the after commit, finds the same 315 lines, each outside the areas covered, as section 3 lists them. The wider search for a duplicate of the owner's API finds three things the record leaves to other milestones or that lie outside the area: the translator's General_Category inside a class (SJL-11), the line terminators spelled in the scanner and the translator (SJL-14, SJL-11), and the CLR binding's names cased in the host's culture; section 9 names each |
+| 7 | test262 per path meets the area rule | section 6, [`test262/`](test262/) | **Met** under part A of the rule as written, at `a34b1f78`: both runs complete and comparable; of 106,058 rows of the whole suite, 140 changed, each from failed to passed, each a correction of class C1 that the changelog lists (rows P1, P3 and I1); none regressed, and C3 and C5 list no row |
+| 8 | Every correction is listed | [`Broiler.JS/CHANGELOG.md`](../../../Broiler.JS/CHANGELOG.md) | **Met**: every correction the area record names for this engine, under its row of the correspondence, P1 to P4, S2, I1, I3, W1, C1, C4 to C8, N1, G1 and G2, with the data-policy rows I2, C2, C3, N2, N3 and G3 and the word status G4; and every row of section 6 in class C1 falls under one of them |
+
+**SJL-7.6's measurement**, part B of the rule, which answers JSD-0031 §4(b)'s fifth reason for this engine: **not taken** (section 11). Clauses 1 to 4 are the owner's, judged in Broiler.Unicode's bundle of the same name, and 9 to 13 are Broiler.VM's, judged in its own. None is accepted: review is deferred, and SJL-7 may not meet its gate before SJL-3 meets SJL-3's.
+
+## 6. Test262 per path (rule part A)
+
+**MET under part A of the rule as written, at the after commit `a34b1f78`; no row regressed.**
+[`test262/comparison/comparison.json`](test262/comparison/comparison.json) and
+[`test262/comparison/comparison.log`](test262/comparison/comparison.log): the after run against section 1's base,
+through `scripts/compliance/compare_test262_paths.py` as the rule committed it at SJL-0.9, with each run's
+timed-out rows replaced by their re-runs and [`test262/comparison/classifications.json`](test262/comparison/classifications.json)
+read. **106,058 rows (53,029 paths, each in both variants): 140 changed, every one failed at the base and
+passes after, every one admitted as C1; 0 unclassified, 0 regressions, and no classification the comparison did
+not use.** The script exits 0.
+
+| Part A's condition | This run |
+|---|---|
+| Both runs complete | eight of eight expected shards reported in each, none incomplete or retried, no configuration failure, one suite revision, `ccaac100` ([`test262/comparison/completeness.log`](test262/comparison/completeness.log), read from each run's own files; [`test262/after/merge.log`](test262/after/merge.log)) |
+| One shell in each | the hashes of the shell's binaries are the same in every shard and in the re-run, in each run ([`test262/after/shell-hashes.log`](test262/after/shell-hashes.log)). The two runs' shells differ, as they must: the after run's carries `Broiler.Unicode.Algorithms.dll` and `Broiler.Unicode.Segmentation.dll`, each byte for byte the assembly of the package nuget.org serves (section 7), and not the generator ([`test262/after/shell-binaries.sha256`](test262/after/shell-binaries.sha256)) |
+| Every shard in the zone, and the two records alike | `TZ` unset, UTC +0000 at both instants, tzdata 2026c, in every shard of each run, and the records' lines the same ([`test262/comparison/zone-records.log`](test262/comparison/zone-records.log)) |
+| `includeNegative` true in both | in `run.txt`, in the merged results and in the re-run, in each run |
+| The script finds them comparable | yes ([`test262/comparison/compare-checks.log`](test262/comparison/compare-checks.log): the after run against itself changes nothing, and a planted regression is reported, exit 1); the fields it records and does not compare are the same in both: .NET SDK 10.0.402, four workers, eight shards, Linux, X64 |
+| No row passing at the base fails, times out or is skipped after | none |
+| Every changed verdict in C1, C3 or C5, and listed | **met**: the 140 rows below, all C1, each with its path, its variant, its correspondence row and the specification clause in the classification file; each row's correction is in the changelog. Classes C3 and C5 list no row |
+
+**The changed rows.** Every one is a negative-metadata test (`phase: parse`, `type: SyntaxError`), in the
+original variant: the terser variant skips negative tests, 5,871 rows skipped in both runs. Each test was read
+before it was classified. They are, path for path, the 140 rows SJL-7.5's local subset found (section 3): the
+hosted run finds no other change anywhere in the suite. The classification file gives each family's reason in
+full; in short:
+
+- **Families A to G, 122 rows: rows P1 and P3.** The changelog's "`\p{…}` names are matched exactly" ("A
+  literal's is an early error") and "A name no table holds never reaches .NET's `\p`". ECMA-262 22.2.1.1 makes a
+  UnicodePropertyValueExpression an early error unless its name, and its value, are in the tables that
+  UnicodeMatchProperty and UnicodeMatchPropertyValue read (22.2.2.9), exactly as written. At the base the parser
+  replaced each `\p{…}` with a placeholder and checked no name, and the lookup behind it was loose; after, the
+  parser checks each name with Broiler.Unicode's exact lookup (`JSUnicodePropertyNames`).
+- **Family H, 14 rows: row P1's parse-time check, for the properties of strings.** `\p{…}` naming a property of
+  strings is an early error without `v`, and `\P{…}` of one with it (22.2.1.1). The `RegExp` constructor refused
+  both at the base already (row S1, an agreement); the parser now does, by the owner's lookup of the properties of
+  strings.
+- **Family I, 4 rows: row I1**, the changelog's "An identifier subtracts Pattern_Syntax". U+2E2F VERTICAL TILDE is
+  Lm and Pattern_Syntax, so neither ID_Start nor ID_Continue (UAX #31; ECMA-262 12.7), literally or as an escape;
+  the scanner's classes are now the owner's `EcmaScriptLexical` over the pinned tables.
+
+| Family | Rows | What the test writes | Row |
+|---|---|---|---|
+| A | 14 | `\p{ASCII=...}`: a binary property with a value | P1, P3 |
+| B | 18 | an extension of the grammar: `In` or `Is`, `^`, `:`, a bare `=` | P1, P3 |
+| C | 28 | a name or value matched loosely | P1 |
+| D | 12 | a non-binary property without a value | P1, P3 |
+| E | 6 | a property or value no table holds | P3 |
+| F | 36 | a binary property ECMA-262's table does not list | P1, P3 |
+| G | 8 | `Block`, `Line_Break`, `FC_NFKC_Closure` | P1, P3 |
+| H | 14 | a property of strings under `u`, or negated under `v` | P1 (S1 at run time) |
+| I | 4 | U+2E2F in an identifier | I1 |
+
+| Path | Variant | Base | After | Class | Family | Row |
+|---|---|---|---|---|---|---|
+| `test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_F-negated.js` | original | failed | passed | C1 | A | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_F.js` | original | failed | passed | C1 | A | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Invalid-negated.js` | original | failed | passed | C1 | A | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Invalid.js` | original | failed | passed | C1 | A | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_N-negated.js` | original | failed | passed | C1 | A | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_N.js` | original | failed | passed | C1 | A | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_No-negated.js` | original | failed | passed | C1 | A | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_No.js` | original | failed | passed | C1 | A | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_T-negated.js` | original | failed | passed | C1 | A | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_T.js` | original | failed | passed | C1 | A | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Y-negated.js` | original | failed | passed | C1 | A | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Y.js` | original | failed | passed | C1 | A | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Yes-negated.js` | original | failed | passed | C1 | A | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/binary-property-with-value-ASCII_-_Yes.js` | original | failed | passed | C1 | A | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/generated/strings/Basic_Emoji-negative-P.js` | original | failed | passed | C1 | H | P1 (S1 at run time) |
+| `test/built-ins/RegExp/property-escapes/generated/strings/Basic_Emoji-negative-u.js` | original | failed | passed | C1 | H | P1 (S1 at run time) |
+| `test/built-ins/RegExp/property-escapes/generated/strings/Emoji_Keycap_Sequence-negative-P.js` | original | failed | passed | C1 | H | P1 (S1 at run time) |
+| `test/built-ins/RegExp/property-escapes/generated/strings/Emoji_Keycap_Sequence-negative-u.js` | original | failed | passed | C1 | H | P1 (S1 at run time) |
+| `test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji-negative-P.js` | original | failed | passed | C1 | H | P1 (S1 at run time) |
+| `test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji-negative-u.js` | original | failed | passed | C1 | H | P1 (S1 at run time) |
+| `test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Flag_Sequence-negative-P.js` | original | failed | passed | C1 | H | P1 (S1 at run time) |
+| `test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Flag_Sequence-negative-u.js` | original | failed | passed | C1 | H | P1 (S1 at run time) |
+| `test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Modifier_Sequence-negative-P.js` | original | failed | passed | C1 | H | P1 (S1 at run time) |
+| `test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Modifier_Sequence-negative-u.js` | original | failed | passed | C1 | H | P1 (S1 at run time) |
+| `test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Tag_Sequence-negative-P.js` | original | failed | passed | C1 | H | P1 (S1 at run time) |
+| `test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_Tag_Sequence-negative-u.js` | original | failed | passed | C1 | H | P1 (S1 at run time) |
+| `test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_ZWJ_Sequence-negative-P.js` | original | failed | passed | C1 | H | P1 (S1 at run time) |
+| `test/built-ins/RegExp/property-escapes/generated/strings/RGI_Emoji_ZWJ_Sequence-negative-u.js` | original | failed | passed | C1 | H | P1 (S1 at run time) |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Block-implicit-negated.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Block-implicit.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script-implicit-negated.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script-implicit.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script-negated.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-In-prefix-Script.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-Is-prefix-Script-negated.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-Is-prefix-Script.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-circumflex-negation-negated.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-circumflex-negation.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-invalid-negated.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-invalid.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-separator-and-value-only-negated.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-separator-and-value-only.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-separator-negated.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-separator-only-negated.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-separator-only.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/grammar-extension-separator.js` | original | failed | passed | C1 | B | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-01-negated.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-01.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-02-negated.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-02.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-03-negated.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-03.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-04-negated.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-04.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-05-negated.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-05.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-06-negated.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-06.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-07-negated.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-07.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-08-negated.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-08.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-09-negated.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-09.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-10-negated.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-10.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-11-negated.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-11.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-12-negated.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-12.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-13-negated.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-13.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-14-negated.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/loose-matching-14.js` | original | failed | passed | C1 | C | P1 |
+| `test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category-equals-negated.js` | original | failed | passed | C1 | D | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category-equals.js` | original | failed | passed | C1 | D | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category-negated.js` | original | failed | passed | C1 | D | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/non-binary-property-without-value-General_Category.js` | original | failed | passed | C1 | D | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script-equals-negated.js` | original | failed | passed | C1 | D | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script-equals.js` | original | failed | passed | C1 | D | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script-negated.js` | original | failed | passed | C1 | D | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script.js` | original | failed | passed | C1 | D | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions-equals-negated.js` | original | failed | passed | C1 | D | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions-equals.js` | original | failed | passed | C1 | D | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions-negated.js` | original | failed | passed | C1 | D | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/non-binary-property-without-value-Script_Extensions.js` | original | failed | passed | C1 | D | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/non-existent-binary-property-negated.js` | original | failed | passed | C1 | E | P3 |
+| `test/built-ins/RegExp/property-escapes/non-existent-binary-property.js` | original | failed | passed | C1 | E | P3 |
+| `test/built-ins/RegExp/property-escapes/non-existent-property-and-value-negated.js` | original | failed | passed | C1 | E | P3 |
+| `test/built-ins/RegExp/property-escapes/non-existent-property-and-value.js` | original | failed | passed | C1 | E | P3 |
+| `test/built-ins/RegExp/property-escapes/non-existent-property-existing-value-negated.js` | original | failed | passed | C1 | E | P3 |
+| `test/built-ins/RegExp/property-escapes/non-existent-property-existing-value.js` | original | failed | passed | C1 | E | P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Composition_Exclusion-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Composition_Exclusion.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFC-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFC.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFD-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFD.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKC-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKC.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKD-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Expands_On_NFKD.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-FC_NFKC_Closure-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-FC_NFKC_Closure.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Full_Composition_Exclusion-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Full_Composition_Exclusion.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Grapheme_Link-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Grapheme_Link.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Hyphen-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Hyphen.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Alphabetic-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Alphabetic.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Default_Ignorable_Code_Point-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Default_Ignorable_Code_Point.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Grapheme_Extend-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Grapheme_Extend.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Continue-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Continue.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Start-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_ID_Start.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Lowercase-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Lowercase.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Math-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Math.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Uppercase-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Other_Uppercase.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Prepended_Concatenation_Mark-negated.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-binary-property-Prepended_Concatenation_Mark.js` | original | failed | passed | C1 | F | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-property-Block-with-value-negated.js` | original | failed | passed | C1 | G | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-property-Block-with-value.js` | original | failed | passed | C1 | G | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-property-FC_NFKC_Closure-negated.js` | original | failed | passed | C1 | G | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-property-FC_NFKC_Closure.js` | original | failed | passed | C1 | G | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break-negated.js` | original | failed | passed | C1 | G | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break-with-value-negated.js` | original | failed | passed | C1 | G | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break-with-value.js` | original | failed | passed | C1 | G | P1, P3 |
+| `test/built-ins/RegExp/property-escapes/unsupported-property-Line_Break.js` | original | failed | passed | C1 | G | P1, P3 |
+| `test/language/identifiers/vertical-tilde-continue-escaped.js` | original | failed | passed | C1 | I | I1 |
+| `test/language/identifiers/vertical-tilde-continue.js` | original | failed | passed | C1 | I | I1 |
+| `test/language/identifiers/vertical-tilde-start-escaped.js` | original | failed | passed | C1 | I | I1 |
+| `test/language/identifiers/vertical-tilde-start.js` | original | failed | passed | C1 | I | I1 |
+
+**What did not change, and what part A therefore does not show.** No test under
+`built-ins/String/prototype/` (`normalize`, the four casing methods, `localeCompare`), `intl402/String/prototype/`,
+`intl402/Collator/` or `intl402/Segmenter/` changed verdict: at the base none of them failed but three
+`proto-from-ctor-realm.js` tests of `Intl.Collator` and `Intl.Segmenter`, which are not the area and fail after
+too. The corrections of normalization, casing and segmentation (N1 to N3, C1 to C8, G1 to G4) are cases test262 at
+`ccaac100` does not hold, or holds in tests the base passed already; SJL-7.3's vectors hold them (sections 2 and 3).
+
+**Rows that fail at both commits**, which no class reads because they do not change:
+
+- the seven `property-escapes/generated/strings/*-negative-CharacterClass.js` rows section 3 names, and
+  `property-escapes/character-class-range-end.js` and `character-class-range-no-dash-start.js`, which put a property
+  escape at a class range's end;
+- **26 negative tests of `language/literals/regexp/named-groups/`**: duplicate, numeric, punctuated, incomplete and
+  non-identifier group names in a regular-expression literal. The `RegExp` constructor refuses each such name at the
+  base and after (row I3's correction is made there), but the parser makes no early check of a literal's group
+  names at either commit, as it made none of property names before the cut-over. Fourteen of the 26 turn on
+  whether a code point is ID_Start or ID_Continue. A fuller check would correct them; SJL-7.5 did not make it, and
+  nothing here claims it.
+
+**The after run.** Taken by `.github/workflows/test262-evidence.yml` at `a34b1f78`, in the rule's configuration
+([`test262/after/run.txt`](test262/after/run.txt)): run
+[38983995623](https://github.com/Broiler-Platform/Broiler.JS/actions/runs/38983995623), attempt 1, dispatched
+2026-10-16 23:56Z from this branch at `a34b1f78`, named by all forty digits, and completed 2026-10-17 01:31Z, with
+`suite_ref` `ccaac100`, four workers, 30 seconds per test, `rerun_timeouts` true, `time_zone` empty and
+`include_negative` true: `--all-script-host-verifiable --include-negative` over eight shards, terser 5.50.0, no
+memory limit, the .NET SDK 10.0.402, on runner image ubuntu24 20261012.334.1, the base's. **The runner's ICU** is
+the image's, `libicu` 74.2-1ubuntu3.1 (ICU 74, Unicode 15.1): neither run printed it, and the image's own software
+list names it ([`test262/comparison/runner-icu.txt`](test262/comparison/runner-icu.txt)). It is imported into
+[`test262/after/`](test262/after/) unchanged, all 26 entries of the workflow's artifact `test262-evidence` (id
+12085520993), with [`imported.txt`](test262/after/imported.txt), which records the digest of the zip as
+downloaded, `357f3140…`, the digest GitHub records. **Timeouts.** As at the base, one path timed out in both
+variants, `test/staging/sm/regress/regress-1507322-deep-weakmap.js`; the workflow ran it again alone with one
+worker, and it timed out again in both ([`test262/after/rerun-timeouts.log`](test262/after/rerun-timeouts.log)), so
+the rows compare timed out against timed out. **The merged totals**, which do not decide part A: 98,146 variant
+cases passed, 2,039 failed, 2 timed out and 5,871 skipped, where the base's were 98,006, 2,179, 2 and 5,871; by
+path, 51,550 passed and 1,478 failed, where the base's were 51,410 and 1,618.
+
+**What it says.** The cut-over moved 140 verdicts of the whole suite, each from failed to passed, each a parse-time
+refusal the specification asks for and the base did not make, and moved no other. Part A judges test262 per path
+only; the measurement is part B's (section 11).
+
+## 7. The home: Broiler.Unicode's packages and the tables this engine embeds
+
+The home is another repository's: the owner's code packages as nuget.org serves them, over tables this engine
+generates with the owner's generator from its own pin and embeds in `Broiler.JavaScript.Runtime`. The owner's
+own clauses, its test files, its generation and its reference arms, are judged in its bundle. From a clean
+checkout of `a34b1f78`, into [`home/`](home/):
+
+| Check | Result | Where |
+|---|---|---|
+| The references | `Directory.Packages.props` pins `Broiler.Unicode.Algorithms`, `Broiler.Unicode.Segmentation` and `Broiler.Unicode.Generation` at `0.1.0-preview.4`. `Broiler.JavaScript.Runtime` references the first, `Broiler.JavaScript.BuiltIns` the second, and only the test project `Broiler.JavaScript.Runtime.Tests` the generator. The engine's closure, `Broiler.JavaScript.All`'s, holds the two code packages and, through `Broiler.Regex` `0.1.0-preview.4`, `Broiler.Unicode.Properties` and `Broiler.Unicode.Emoji.StringProperties` `0.1.0-preview.3`, which carry their own data and which no code of this engine calls (the last entry of section 9's deletion check). This engine references no package that carries tables | [`home/packages.log`](home/packages.log) |
+| The packages as nuget.org serves them | For each of the owner's three packages at `0.1.0-preview.4`, nuget.org's copy carries nuget.org's repository signature, which `dotnet nuget verify` accepts, and holds, entry by entry, the bytes of the copy this repository restores, plus that signature: the two have one content hash. Each nuspec names the owner's repository at `6e14f93`; `Algorithms` depends on nothing, and `Segmentation` and `Generation` on `Algorithms` alone. *This machine's* package folder took the three from Broiler.VM's committed feed, whose copies carry no signature; that is why `verify` refuses those copies, and why the content hash, not the file's, is compared. The pristine consumer (section 8) restores them from nuget.org itself. **Part A's after run ran them**: its shell's `Broiler.Unicode.Algorithms.dll` and `Broiler.Unicode.Segmentation.dll` are byte for byte the assemblies in these packages, by SHA-256 ([`test262/after/shell-binaries.sha256`](test262/after/shell-binaries.sha256)) | [`home/packages.log`](home/packages.log) |
+| The pin | `data/unicode/pins/` against the owner's at `6e14f93`, file by file by git blob: 28 of the owner's 31 files are here byte for byte, `unicode.pin` among them; the owner's README is replaced by this repository's, and its `broiler-vm/` (two files) is not copied, as [the pin's README](../../../data/unicode/pins/README.md) says | [`home/pin.log`](home/pin.log) |
+| The embedded tables, and the area's tests | built in Release and run under `TZ=UTC`: **184 tests, none failed**. `UnicodeTableRegenerationTests` (8): the embedded tables regenerate byte for byte from the pin with the owner's generator, two generations write the same bytes, the pin equals the generator package's by file name, length and hash, the provider answers the generated bytes for every table but the folding tables, every owner type this engine reads constructs over the provider and folding does not, and three controls (a changed byte of a pinned input, a changed hash in the pin, a changed byte of the committed tables) are each refused or reported. With them `JSUnicodeTests` (23), `SharedUnicodeTests` (104), `UnicodeDependencyTests` (5), `UnicodeLexicalClassTests` (40) and `StringSpanTrimTests` (4) | [`home/build.log`](home/build.log), [`home/tests.log`](home/tests.log) |
+
+The cut-over's whole test run, 17 assemblies and 11,340 tests at `c7a19d35` (section 3), is not repeated: the
+after commit's product sources are that commit's.
+
+## 8. The pristine consumer
+
+**The consumer runs, and so does the Unicode area through it.**
+[`engine/pristine-consumer.log`](engine/pristine-consumer.log): the runtime graph of `Broiler.JavaScript.All`
+packed from `a34b1f78` into 18 local packages, restored into a clean consumer from that feed and nuget.org
+into an isolated package cache, and run: it printed `42`. The packaging script checks that the `Runtime`
+package declares `Broiler.Unicode.Algorithms` and the `BuiltIns` package `Broiler.Unicode.Segmentation`.
+
+[`engine/pristine-consumer-unicode.log`](engine/pristine-consumer-unicode.log): the same consumer, from the same
+isolated cache and offline, then evaluated twelve expressions, each a correction or a pinned-data answer of the
+cut-over, and printed **`ok 12`**: a lone surrogate through `normalize` (N1), a Unicode 16 decomposition (N2),
+the final sigma after U+00AA (C1), a list of locales (C7), a loose property name refused (P1),
+`Katakana_Or_Hiragana` admitted (P2), `RGI_Emoji` under `v` (S1), U+2E2F refused in an identifier (I1), U+0085
+refused as white space (W1), UAX #29's sentences and words (G1, G2) and a grapheme count (G3). In that cache, the
+owner's two packages, `Broiler.Unicode.Properties` and the emoji package came from nuget.org, signed, and each
+has the content hash of the copy this repository restores.
+
+**A control of the checks**, [`engine/pristine-consumer-checks-control.txt`](engine/pristine-consumer-checks-control.txt):
+the same twelve expressions in the shell built at the base `3916bd2b` and at `a34b1f78`. At the base ten fail
+or throw; S1 and G3, which the correspondence reads as agreements, hold at both. So the consumer's `ok 12` is
+the cut-over's, not a property of any build.
+
+## 9. The simplification check
+
+**The cut-over's searches, repeated.** [`simplification/cutover-searches.log`](simplification/cutover-searches.log)
+runs each of section 3's two searches by the command its file records, at `a34b1f78`, and sets its lines against
+the cut-over's. **The deletion list's members**: no line, as at `c7a19d35`. **The host Unicode APIs**: 315
+lines, 311 of them the cut-over's; the other four are the same four lines of the changelog, six lines further
+down since `93f729c5` added rows P3 and P4. Section 3's table of where each line sits, and whose it is, holds
+unchanged.
+
+**The deletion check.** [`simplification/deletion-check.log`](simplification/deletion-check.log) searches each
+entry of the area's Broiler.JS deletion list (Broiler.VM `docs/javascript-shared-libraries/milestones/sjl-7-unicode.md`,
+SJL-7.5, with the three entries JSD-0074 adds) in the file or folder that held it, with a pattern for what the
+entry deleted and for the call that replaced it. **Every entry is absent.**
+
+| Entry | What remains | Reading |
+|---|---|---|
+| The host `string.Normalize` in `JSStringPrototype.Transform` and in the collator's NFD step | `normalize` calls `NormalizeText`, which is the owner's `UnicodeNormalization.Transform` under this engine's length policy; the collator's two NFD calls go through it | absent |
+| `JSStringSpecialCasing` usage, and the `CultureInfo` resolution for locale casing | a comment naming the class it replaced, and the owner's `ToUpperCase` and `ToLowerCase`; `JSString`'s `ToLocaleString(string, CultureInfo)` override, which returns the string unchanged and cases nothing | absent |
+| `CharExtensions`' identifier classification and its Unicode-17 patch tables | a comment saying the classes are the owner's | absent |
+| The white-space lists: the scanner's, `StringSpan.Trim`'s and `JSRegExp.Escape`'s | the scanner and `RegExp.escape` call `JSUnicode.IsWhiteSpace`; `StringSpan`'s three trims forward to the shared `TrimStrWhiteSpace` (SJL-D-25); `StringSpan.IsNullOrWhiteSpace`, .NET's white space, which recognises a missing name in a stack frame's description and in an Annex B name, and classifies no source text; the .NET translator's `\s` set (row W3, SJL-11), which the list does not name | the three lists are absent |
+| `JSRegExp`'s identifier classes for group names, and its loose property lookup | group names through `JSUnicode.IsIdentifierStart` and `IsIdentifierPart`; property names through the owner's `UnicodeProperties.TryResolve` and `UnicodeStringProperties.TryResolve` | absent |
+| `JSIntl`'s `ComputeGraphemes`, `ComputeWords`, `ComputeSentences` and `IsWordLike` | the owner's `UnicodeSegmenter` over this engine's tables, and `isWordLike` from its `GetWordStatus` | absent |
+| JSD-0074: `IsValidNativeFunctionToStringName`'s `char.IsLetter` | the method, checking each code point with `JSUnicode.IsIdentifierStart` and `IsIdentifierPart` | the platform call is absent |
+| JSD-0074: the collator's `IsNormalized` | nothing | absent |
+| JSD-0074: the translator's loose property lookup with its `NormalizeKey` | `JSUnicodePropertyNames.FirstRefused` before either engine reads the pattern, and the owner's `TryResolve` | absent |
+| The code's direct calls of `Broiler.Unicode.Properties` and the emoji package | in product code, nothing: a test's list of the retired assemblies, an integration test's comment and the changelog | absent |
+
+**The duplicate search.** [`simplification/duplicate-search.log`](simplification/duplicate-search.log) searches
+the engine's product sources (`Broiler.JS/`; test projects, benchmarks, samples and the generated tables
+excluded) in four parts, for anything that would duplicate the owner's API: platform Unicode APIs the cut-over's
+search does not name (100 hits), code points of the area's sets and algorithms spelled in code (23), definitions
+of the area's predicates and algorithms (26, JSUnicode's own four among them as the search's control), and
+property names and aliases spelled as strings (33).
+
+| Hits | Where | What they are |
+|---|---|---|
+| 47 | `JSIntl` (38), `JSIntlDateTimeFormatEngine` (6), `JSIntlDefaultNumberingSystems.g` (3) | locale tags, Unicode extension keys and zone names compared ignoring ASCII case, the grandfathered tags' pattern, and the collator's `CompareInfo` with `CompareOptions.IgnoreCase`: Intl's (SJL-9) and collation's (SJL-17) |
+| 3 | `JSTemporalZonedDateTime` | `UTC` and `Z` compared ignoring ASCII case (SJL-8, SJL-10) |
+| 39 | `JSRegExp` (36), `JSRegExp.UnicodeSets` (1), `RegExpValidator` (2) | the .NET translator: its `IgnoreCase` and its case-folding tables over .NET's casing (row F2, SJL-11); its property escapes and its operand resolution, which take each name from the owner's exact lookup and its ranges from the owner's tables; the validator's placeholder for a `\p{...}` whose name `JSUnicodePropertyNames` has already checked |
+| 33 | `JSRegExp` | `GeneralCategoryNames`: General_Category's names and aliases mapped to .NET's short spelling (a finding for SJL-11, below) |
+| 22 | `JSRegExp` (12), `FastScanner` (8), `CharExtensions.IsLineTerminator` (2: its definition and its body) | the line terminators U+2028 and U+2029 spelled in the scanner, in `source`'s escaping and in the translator's dot and multiline classes, a comment on a group name's U+200C, and the translator's `\s` set (rows W5 and W3) (a finding, below) |
+| 14 | `StringExtensions.ToCamelCase` (2), `StringSpan.ToLower` and `ToCamelCase` (3), `StringSpanExtensions` (2), the class generator's `ListExtensions` (2), `CoreInternalHelpers` (2), `MarshalExtensions` (2), `ClrType` (1) | the CLR binding's names: a .NET member's name lower-cased into a script name, and a script object's keys matched to a .NET property's name ignoring case (a finding, below) |
+| 2 | the expression compiler's `VariableInfo` and `ILCodeGenerator.VisitParameter` | its own variables looked up by name ignoring case; variables that differ only in case, `a` and `A`, `k` and `K`, `İ`, `i`, `ı` and `I`, stayed apart in the shell at `a34b1f78` ([`probes.txt`](simplification/probes.txt)) |
+| 12 | `KeyValueStore` (5), `BroilerJSContext` (2), `PackageManager` (2), `JSModuleContext`, `NuGetMetadataReferenceResolver`, the REPL's prompt | the host's HTTP header names, file extensions, package names and completion |
+| 1 | `FastScanner` | `char.IsControl` choosing a diagnostic's wording for an unexpected character |
+| 4 | `JSUnicode` | the control: `IsIdentifierStart`, `IsIdentifierPart`, `IsWhiteSpace` and `IsLineTerminator`, each the owner's |
+| 4 | `StringSpan.IsNullOrWhiteSpace`, `JSMap.CanonicalizeKey`, `JSValue.ResolvePropertyValue`, `Broiler.JS/CHANGELOG.md` | the first as above; the next two are not the area; the changelog's text |
+| 1 | `modules/inbuilt/buffer.js` | a UTF-8 lead byte's bound in the Node `Buffer` module |
+
+**Findings, none of which the cut-over made or an SJL-7 clause reads:**
+
+- **The translator's General_Category inside a class is the host's** (for SJL-11). Where Broiler.Regex cannot
+  build a `u` or `v` pattern and the .NET translator runs it, a General_Category value inside a class is handed
+  to .NET's own `\p{Xx}`, through the 33-line `GeneralCategoryNames` map, which repeats the gc rows of
+  `PropertyValueAliases.txt` that the owner's lookup holds. .NET's class is code-unit based and reads the
+  runtime's Unicode data, not the pin. Every other property, and every General_Category outside a class, takes
+  its ranges from the owner's tables. The code says so (`JSRegExp.Broiler.cs`), and Broiler.Regex takes every
+  `u` and `v` pattern it can build, so this path is a fallback: `[\p{Lu}]`, `[\p{L}]` and `[\p{Ll}]` under `u`,
+  on Unicode 16 and 17 letters and on U+1D400, matched in the shell at `a34b1f78`
+  ([`simplification/probes.txt`](simplification/probes.txt)). The map was at the base too.
+  The record leaves the translator to SJL-11 ("the translator itself stays SJL-11's"), so clause 6 does not read
+  it; a stricter reading of "property lookup" would.
+- **The line terminators are spelled where the owner's `EcmaScriptLexical.IsLineTerminator` holds them** (rows
+  W5 and W3): eight lines of the scanner, `CharExtensions.IsLineTerminator`, `source`'s escaping and the translator's
+  classes. The correspondence records agreement on the set, and the record leaves the lexer to SJL-14 and the
+  translator to SJL-11; `JSUnicode.IsLineTerminator`, which the scanner's white-space loop calls, is the owner's.
+- **The CLR binding's names read the host's culture** (no milestone names it). `ToCamelCase` lower-cases a .NET
+  member's leading capitals with `char.ToLower` and `string.ToLower()`, which read the current culture, and the
+  marshalling helpers match keys with `ToLower()`: on a Turkish or Azerbaijani host a member named `ID` would
+  become `ıd`. `StringSpan.ToLower()` and `KeyValueStore`'s header names do the same. This is not the Unicode
+  area as SJL-7 bounds it, and no SJL-7 clause reads it.
+
+## 10. Engine-level vectors at the after commit (corpus revision 20)
+
+**PLACEHOLDER: not taken by this collection.** The engine-level runner, `Broiler.JS/Broiler.JavaScript.Vectors.Tests`
+in Release, run at `a34b1f78` on corpus revision 20 under `TZ=UTC`, with its negative control, is taken by the
+maintainer and added here with its log and report under `engine/`. What section 3 leads one to expect, and what
+this section will hold either way: no unclassified difference, the 3,678 fields retired, and the number area's
+four classified divergences.
+
+## 11. Part B: the measurement (rule part B)
+
+**PLACEHOLDER: not taken.** Part B's arms are measured on an idle machine by the maintainer, into
+[`measurement/`](measurement/), a sub-bundle with its own README and manifest, as the rule asks.
+
+**The collector's step is written and checked, and was not run.** `collect.py --only measure` follows bundle
+`sjl-3-001`'s step with this rule's workloads: arm B is a clean checkout of `3916bd2b`; arm A is one of
+`a34b1f78`, where `UnicodeBenchmarks.cs`, the benchmark `Program.cs` and `BenchmarkConfiguration.cs` are the
+rule commit's byte for byte (and no file of the benchmark project changed), so A is the after commit as it stands;
+A-again is A's build under another lane name. Seven repetitions, each running B, A and A-again once in an order
+that rotates by repetition; one run is one launch of the benchmark with `--filter *UnicodeBenchmarks*`,
+`BROILER_BENCHMARK_PROFILE=baseline` and `--buildTimeout 1800`, which runs the six workloads; `--unicode-answers`
+before and after every run, each set against arm B's first check, answers and configuration both. Before any run
+the step refuses arms that are not the rule's, refuses invariant globalization, builds both arms with no build
+server left running, and writes `measurement/manifest.txt` (the commits, the identity checks, the SHA-256 of every
+assembly of each arm, the protocol and the lane's record: CPU, microcode, topology, memory, OS, governor, thermal
+policy, the host's ICU and the `DOTNET_` variables) and makes it read-only. A lane is named on the command line,
+`smoke` or `controlled`; a controlled lane needs its record, which the manifest quotes. An earlier `measurement/`
+is kept beside the new one as stopped. A dry run at the two clean checkouts found the arms the rule's and printed
+the protocol:
+
+```
+python3 docs/evidence/sjl-7-001/collect.py --tree <a clean checkout of a34b1f78> \
+    --bench-tree <a clean checkout of 3916bd2b> --lane smoke|controlled [--lane-record <the lane's record>] \
+    --out docs/evidence/sjl-7-001 --only measure
+```
+
+## 12. What this bundle does not claim
+
+- **Nothing about Broiler.VM or the owner.** Broiler.VM's half and the owner's clauses (1 to 4) are judged in
+  their own bundles, and this bundle reads neither's runs.
+- **Part B, and any speed claim.** Section 11 holds the collector, not a run.
+- **The engine-level vectors at revision 20**, which section 10 awaits.
+- **The rows that fail at both commits** (section 6): the parser's early check of a literal's group names, and
+  of a property of strings directly inside a negated class, is not made, and nothing here says it is.
+- **The translator, the lexer and Intl.** The findings of section 9 are named for the milestones that own the
+  code; nothing here judges them.
+- **A Unicode version other than 17.0.0**, the pin's; and the runners' ICU, 74.2 (Unicode 15.1), only as the
+  host data part A's runs loaded: after the cut-over the area covered reads the pin, not the host.
+- **A final manifest.** [`manifest.json`](manifest.json) holds the SHA-256 of every file this bundle retains as
+  this collection leaves it; the collector's `manifest` step writes it again when sections 10 and 11 add theirs.
+- **Review**: the reviewer field says none and means it.

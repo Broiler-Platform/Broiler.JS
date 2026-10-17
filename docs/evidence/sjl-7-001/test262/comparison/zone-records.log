@@ -1,0 +1,13 @@
+## base: test262/base/host-zone.log
+expected: TZ: unset
+expected: 2021-01-15T12:00:00Z: UTC +0000
+expected: 2021-07-15T12:00:00Z: UTC +0000
+expected: tzdata: 2026c
+shards: 8; in the expected zone: 8
+## after: test262/after/host-zone.log
+expected: TZ: unset
+expected: 2021-01-15T12:00:00Z: UTC +0000
+expected: 2021-07-15T12:00:00Z: UTC +0000
+expected: tzdata: 2026c
+shards: 8; in the expected zone: 8
+# the two runs' expected zone lines read alike, line for line: True
