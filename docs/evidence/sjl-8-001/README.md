@@ -194,3 +194,63 @@ Broiler.Unicode `0.1.0-preview.5`.
   - **`temporal.js`:** the 7 lines are one `Duration.round` to months relative to `2020-01-31`, in 7 of 9 rounding
     modes. It reads no zone and no calendar table year, so it looks like class D3's. D3 admits it only if its answer
     after equals its answer at the base.
+
+## 4. The vectors (SJL-8.4)
+
+**Corpus revision 21** (`09fa9ac5`) adds the time-zone area: 3,969 vectors in seven files under
+[`conformance/vectors/time-zones/`](../../../conformance/vectors/time-zones/), written by
+[`scripts/conformance/generate_time_zone_vectors.py`](../../../scripts/conformance/generate_time_zone_vectors.py).
+- **The reference.** Every expected value is [`scripts/conformance/tzref.py`](../../../scripts/conformance/tzref.py)'s
+  (`ref:tzref@1`). It shares no code with the data home's generator or with `Broiler.ECMAScript.Algorithms`, and it
+  reads none of the generated tables. It:
+  - checks the pinned tarball and CLDR file against their pins;
+  - compiles the nine default source files with the host's `zic -b fat`;
+  - reads every compiled file with its own TZif reader;
+  - evaluates each footer's POSIX TZ string itself after the last listed transition;
+  - applies SJL-D-20's policy.
+
+  Its tests check its reader against Python's `zoneinfo` at about 877,000 instants across all 597 zones.
+- **What the vectors pin.** Instants on both sides of every policy difference and correction JSD-0076 lists:
+  - the release;
+  - backzone;
+  - extrapolation after 2037;
+  - the identifiers, `Factory` and the primaries;
+  - lookup by ASCII case only;
+  - ISO strings as a formatter's zone;
+  - offset identifiers;
+  - a sample of ordinary offsets, transitions, gaps, overlaps and starts of day.
+- **Classes.** 3,800 vectors are `normative` and 169 `impl-defined`. The `impl-defined` ones are the formatter's
+  resolved name (Z8) and a region's zones (Z12).
+
+**The library answers every one.** The library-level runner `Broiler.ECMAScript/runners/AlgorithmsLibrary.TimeZones.cs`
+answers every time-zone vector through `Broiler.ECMAScript.Time`, over the data home's tables, under the JIT and
+under Native AOT. The probe's reports are byte-identical, and a mutated vector is caught.
+
+**This engine's first runs** of `Broiler.JS/Broiler.JavaScript.Vectors.Tests` in Release ([`engine/`](engine/)) were
+taken under `TZ=UTC` and under `TZ=America/New_York`, whose reports are byte-identical.
+
+| Revision | Match | Classified divergences | Unclassified | Not implemented |
+|---|---|---|---|---|
+| 21 | 91,269 | 4 (the number area's, SJL-14's) | 1,161, all in the time-zone area | 0 |
+| 22 | 91,269 | 1,165 | 0 | 0 |
+
+Each run's negative control flagged exactly its mutated vector. **Revision 22** (`4ce20ac7`) classifies the 1,161
+under the correspondence's rows. The reasons are in
+[`scripts/conformance/time-zone-divergences.txt`](../../../scripts/conformance/time-zone-divergences.txt).
+
+| Class | Rows | Vectors |
+|---|---|---|
+| Policy, SJL-D-20 | Z1, Z2 (the release) | 309 |
+| | Z3 (backzone) | 463 |
+| | Z4, A5, A7, A10 (the 2037 freeze) | 310 |
+| | Z5 (`Factory`), Z7 (the primaries) | 31 |
+| Correction, SJL-D-16 (a) | Z10 (lookup by invariant upper-casing) | 13 |
+| | Z11 (ISO strings as a formatter's zone) | 4 |
+| | Z12 (the region lists) | 10 |
+| | A13 (non-ASCII offset digits: a .NET `FormatException` escapes, rendered `abort:`) | 21 |
+
+**Every difference falls under a row the area verdict names, and the vectors falsify none of it.** Every vector of
+the rows it calls agreement matches. SJL-8.6, this engine's cut-over, answers each one.
+
+**Broiler.VM's runs** (observed, its bundle of the same name) match every vector at revision 21 and at revision 22,
+on a pin moved to revision 22.

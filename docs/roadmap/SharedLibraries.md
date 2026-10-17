@@ -731,6 +731,28 @@ This repository's part of it:
 - **Nothing is cut over yet.** Broiler.VM's cut-over (SJL-8.5) follows on the shared stream's next version, and
   this engine's (SJL-8.6) after it. SJL-8.4's vectors and the reference datasets' copies come first.
 
+**The vectors and the reference datasets (SJL-8.4), 2026-10-17.**
+- **Corpus revision 21** adds the time-zone area: 3,969 vectors, every expected value from `scripts/conformance/tzref.py`.
+  That reference compiles the pinned tzdb 2026e with the host's `zic`, reads the result with its own reader and
+  applies SJL-D-20's policy. It shares no code with the generator or the library, which answers every vector.
+- **Broiler.VM** matches every vector, at revision 21 and at revision 22.
+- **This engine's 1,161 differences** are classified at revision 22, every one under a row of the area verdict:
+  - 1,113 policy differences under SJL-D-20: the release, backzone, the 2037 freeze, `Factory` and the primaries;
+  - 48 corrections: Z10, Z11, Z12 and A13.
+
+  SJL-8.6 answers each one. The vectors falsify nothing in the verdict.
+- **The reference datasets.** Broiler.VM's `timezones.js` and `temporal.js`, with its answers and divergences, are
+  copied byte for byte into [`conformance/datasets/time/`](../../conformance/datasets/time/README.md), held by their
+  digests. The harness [`scripts/conformance/run_reference_datasets.py`](../../scripts/conformance/run_reference_datasets.py)
+  builds the expected answers as Broiler.VM's slice checks do.
+  - At the rule's commit, `timezones.js` answers 51 of its 610 lines as Broiler.VM expects, and `temporal.js` 1,622
+    of 1,629.
+  - The differences are the policy rows, Z8, zone display (SJL-9's), and one `Duration.round` outside the area.
+- **The bases of all three parts** of bundle [`sjl-8-001`](../evidence/sjl-8-001/README.md)'s rule are taken at its
+  commit:
+  - test262 in UTC and in `America/New_York`, with negative tests, each complete;
+  - the reference datasets.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
