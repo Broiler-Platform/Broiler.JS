@@ -626,6 +626,89 @@ bundle `sjl-7-001`, which reads clauses 5 to 8 at `a34b1f78`.
 nothing. Its arithmetic describes `0.1.0-preview.4`, not the code this engine now runs. JSD-0031 §4(b)'s fifth
 reason stays open for this engine until a controlled lane runs part B, at whatever commit is then current.
 
+**Time-zone and calendar data (SJL-8.1), filed 2026-10-17: all three sub-areas accepted, decisions SJL-D-20 and
+SJL-D-21 recorded, and tzdb 2026e pinned as the release both engines adopt.**
+- **The records.** Broiler.VM's record is
+  `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0076-time-zone-and-calendar-data-move-to-the-data-home.md`
+  (JSD-0076). It states each condition of the extraction gate for the tz database, the zone algorithms and the
+  calendar tables, each on its own.
+- **Its input** is `Broiler.VM/docs/evidence/sjl-8-001/correspondence.md`: the correspondence from code, read at
+  this repository's `a1a96ca2`, whose engine sources are `6563786e`'s. It names every member by file and line and
+  numbers each difference (Z, A, K). Every cell of this engine's that a row rests on was run through the shell, and
+  every probe and answer is retained beside it.
+- **SJL-8 started before SJL-3 is met**, at the owner's direction, which the programme's ledger records.
+
+This repository's part of it:
+- **This repository is the data home** (SJL-D-1 (b-iii)). SJL-8.2 brings in:
+  - the tz archive's pin, CLDR's `bcp47/timezone.json` for the primaries, and the ICU4X crates' pin, each a copy of
+    Broiler.VM's;
+  - Broiler.VM's tz compiler, table generators and calendar table generator, moved here;
+  - byte-for-byte regeneration (rule SL7) and public version constants.
+- **No package carries the tables** (SJL-D-6 (c)). This engine embeds what the generator writes in `BuiltIns`,
+  until its satellite plan (A-2) makes them optional, as Broiler.VM embeds them in its `.Intl` assembly. The
+  decoder, the zone algorithms and the calendars' year sources join `Broiler.ECMAScript.Algorithms`, under
+  `Broiler.ECMAScript.Time`.
+- **The release is tzdb 2026e**, IANA's newest on 2026-10-17 and the one Broiler.VM's pin records. This engine's
+  2025b is copied from a build host and cannot be regenerated (Z15). The policy is SJL-D-20's:
+  - no backzone;
+  - recurring rules after the last listed transition;
+  - CLDR primaries;
+  - no `Factory`;
+  - ASCII case-insensitive lookup.
+
+  The calendar sources are SJL-D-21's: ICU4X's pinned crates, and no .NET calendar class.
+- **The correspondence found the two engines' zone algorithms in agreement** on every input inside the data both
+  share. Every difference is the data's, three of this engine's input checks, or the host zone.
+- **The corrections**, each listed in `Broiler.JS/CHANGELOG.md` at SJL-8.6 under decision SJL-D-16 (a), with the
+  correspondence's row:
+  - lookup by invariant upper-casing, which admits `America/Loſ_Angeles` (Z10);
+  - an ISO date-time string taken as the formatter's `timeZone` (Z11);
+  - `getTimeZones` from a hand table of fourteen regions (Z12);
+  - an offset with non-ASCII digits surfacing a .NET `FormatException` (A13);
+  - a host zone returned unvalidated (A16);
+  - `chinese` 2057, inside Table 1's published range (K2);
+  - far lunisolar dates that throw or give impossible months (K7);
+  - Persian dates repeated at .NET's bounds (K12).
+
+  **Two more are deletions of code no input reaches**: the zero offset for an unknown name, and start of day's
+  local-midnight fallback (A6, A11).
+- **The policy changes**, listed in the changelog with their decision:
+  - the release (Z1, Z2, Z15);
+  - backzone (Z3);
+  - the 2037 freeze, which also held southern zones on daylight time (Z4, A5, A7, A10);
+  - `Factory` (Z5);
+  - the primaries (Z7);
+  - the calendar years from ICU4X rather than the runtime and the CLDR package's astronomy (K4, K5, K6, K11, K14).
+- **What stays this engine's:**
+  - the formatter's resolved `timeZone`, which keeps the name, as `canonical-tz` asks, until the specification
+    edition both engines pin settles it (Z8);
+  - zone display names (SJL-9);
+  - the calendars' arithmetic (SJL-10);
+  - the host zone (SJL-D-19).
+
+  The local-time provider may read the shared data for the host's zone (milestone SJL-8.6), which ends `Date` and
+  `Temporal` reading one zone from two datasets (A15).
+- **The deletion list**:
+  - `Temporal/Tz/IanaTimeZone`, `IanaTimeZoneDatabase` and `TzifReader`;
+  - `tzdata.bin` with its `EmbeddedResource` item, and `scripts/tzdata/generate_tzdata.py`;
+  - `JSTemporalZonedDateTime`'s offset, candidate, disambiguation, start-of-day and transition helpers;
+  - `JSIntl`'s offset-zone normalisation and its region table;
+  - the formatting engine's zone helpers;
+  - `TemporalLunisolarCalendar`, `TemporalSolarHijriCalendar`, and the Umm al-Qura and .NET dispatch of
+    `TemporalArithmeticCalendar` and `TemporalCalendarMath`;
+  - this engine's uses of `CldrChineseCalendar` and `CldrUmmAlQura`.
+
+  **Every one is `internal`**, so no public type is emptied (SJL-D-25).
+- **The rule**, [`docs/evidence/sjl-8-001/decision-rule.md`](../evidence/sjl-8-001/decision-rule.md), is committed
+  before any code of the area. Its parts are:
+  - test262 per path in UTC;
+  - test262 per path in `America/New_York`;
+  - Broiler.VM's reference datasets `timezones.js` and `temporal.js`, run in this engine against Broiler.VM's
+    answers.
+
+  Its admitted classes name every correction and policy change above by row. Both test262 bases are taken at the
+  rule's commit with negative tests, as bundle `sjl-7-001`'s were.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
