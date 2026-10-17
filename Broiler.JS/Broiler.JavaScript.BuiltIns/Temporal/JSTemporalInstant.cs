@@ -345,7 +345,7 @@ public partial class JSTemporalInstant : JSObject
 
         // Display the instant in the requested zone: shift to its local wall clock and append the
         // numeric UTC offset in place of the "Z" designator.
-        var offsetNs = JSTemporalZonedDateTime.OffsetNanosecondsForInstant(timeZoneId, rounded);
+        var offsetNs = TemporalTimeZones.OffsetNanoseconds(timeZoneId, rounded);
         var localFraction = FormatISO(rounded + offsetNs, precision);
         // Replace the trailing "Z" with the offset string.
         return new JSString(localFraction.Substring(0, localFraction.Length - 1)

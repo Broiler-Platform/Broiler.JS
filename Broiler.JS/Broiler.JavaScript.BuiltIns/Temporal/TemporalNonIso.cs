@@ -98,9 +98,10 @@ internal static class TemporalNonIso
     // (monthCode, day). The reference year mirrors the ISO 1972: the *latest* calendar year on or
     // before 1972 in which the month-day is representable, or — when the month code never occurs in
     // that range (e.g. a leap month whose first occurrence is in the future) — the *earliest* year
-    // after 1972. NOTE this matches the test262 reference years across the .NET-backed chinese span
-    // for the common cases; a handful of rare lunisolar leap edge cases (where ICU4X uses calendar
-    // data we do not reproduce — e.g. the disputed 2033 leap month) are not guaranteed to match.
+    // after 1972. For chinese and dangi this reproduces Table 6 of the Intl era and month code proposal,
+    // whose reference years read the calendars' years from 1900 to 2035 only: a month-day that no year of
+    // that span holds, such as M01L, M12L or a 30-day M08L, has no reference date of its own however the
+    // years outside the span fall (milestone SJL-8.6 made those years ICU4X's).
     private const int MonthDayReferenceYear = 1972;
     // The reference search is bounded to the span over which the lunisolar back ends agree with ICU
     // (1900 onward; before that ICU's chinese/dangi data is not "accurately calculable" and a rare
@@ -109,14 +110,23 @@ internal static class TemporalNonIso
     private const int MonthDaySearchLowYear = 1900;
     private const int MonthDaySearchHighYear = 2100;
 
+    // Table 6's span for the lunisolar calendars: their years 1900 to 2035, and reference dates no later
+    // than 2035-12-31.
+    private const int LunisolarSearchHighYear = 2035;
+    private static readonly long LunisolarSearchLastEpochDay = IsoCalendarMath.EpochDays(LunisolarSearchHighYear, 12, 31);
+
+    private static bool IsLunisolar(string calendarId) => calendarId is "chinese" or "dangi";
+
     // The reference search loop iterates *calendar* years, but the span above is expressed in ISO
     // years. For a calendar whose year numbering differs from the ISO year (the arithmetic islamic /
     // hebrew / coptic / ethiopic families), iterating 1900..2100 as calendar years would search the
     // wrong ISO window entirely (e.g. islamic year 1900 ≈ ISO 2461), so project the ISO endpoints onto
     // the calendar's own years. A one-year margin absorbs the new-year offset at each endpoint.
     private static (int low, int high) MonthDaySearchYears(string calendarId)
-        => (CalendarYmd(calendarId, MonthDaySearchLowYear, 1, 1).y - 1,
-            CalendarYmd(calendarId, MonthDaySearchHighYear, 12, 31).y + 1);
+        => IsLunisolar(calendarId)
+            ? (MonthDaySearchLowYear, LunisolarSearchHighYear)
+            : (CalendarYmd(calendarId, MonthDaySearchLowYear, 1, 1).y - 1,
+               CalendarYmd(calendarId, MonthDaySearchHighYear, 12, 31).y + 1);
 
     // The ordinal of (codeNumber, isLeap) in calendar year `y`, or -1 when that month code does not
     // occur that year (absent leap month, an out-of-range number such as "M15", or a year outside the
@@ -149,6 +159,7 @@ internal static class TemporalNonIso
             var ord = MonthDayOrdinal(calendarId, y, codeNumber, isLeap);
             if (ord < 0 || targetDay > TemporalCalendarMath.DaysInMonth(calendarId, y, ord)) continue;
             var epoch = TemporalCalendarMath.EpochDaysFromYmd(calendarId, y, ord, targetDay);
+            if (IsLunisolar(calendarId) && epoch > LunisolarSearchLastEpochDay) continue;
             if (epoch <= threshold) { if (epoch > bestBelow) bestBelow = epoch; }
             else if (epoch < bestAbove) bestAbove = epoch;
         }

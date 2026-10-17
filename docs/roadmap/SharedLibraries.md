@@ -753,6 +753,65 @@ This repository's part of it:
   - test262 in UTC and in `America/New_York`, with negative tests, each complete;
   - the reference datasets.
 
+**This engine's cut-over (SJL-8.6), 2026-10-17.** This engine's time zones and table-backed calendars are the
+data home's, read through `Broiler.ECMAScript.Time` on the shared stream's next version, `0.1.0-preview.5`, which
+`BuiltIns` takes by project reference and nuget.org does not yet serve. **Decision SJL-D-6 (c) is applied as
+recorded**: `BuiltIns` embeds the five files of
+[`Broiler.ECMAScript/data/time/generated/`](../../Broiler.ECMAScript/data/time/README.md), linked and not copied,
+and `SharedTimeZoneTests` holds each embedded file to the home's bytes and to the manifest's digests.
+`TemporalTimeData` hands them to `TimeZoneDatabase` and `CalendarTables` once, on first use.
+- **The deletion list is absent**, as this plan lists it. The search for its members finds them only in records,
+  in the tests that assert their absence, and in corpus revision 22's divergence fields and reasons, which
+  describe the engine before the cut-over. `TemporalArithmeticCalendar` and `TemporalCalendarMath` stay without
+  their Umm al-Qura and .NET dispatch, as the list says: they hold the formula calendars, which are SJL-10's and
+  which the library does not have yet.
+- **Every correction and policy change is made and listed** in
+  [`Broiler.JS/CHANGELOG.md`](../../Broiler.JS/CHANGELOG.md), with its row and its vectors:
+  - the corrections Z10, Z11, Z12, A13, A16, K2, K7 and K12;
+  - the deletion of the two unreached fallbacks, A6 and A11;
+  - the policy changes: the release (Z1, Z2, Z15), backzone (Z3), the 2037 cliff (Z4, A5, A7, A10), `Factory`
+    (Z5), the primaries (Z7) and the calendar years (K4 to K6, K11, K14).
+
+  On corpus revision 22, run at `76ec819e` in UTC and in `America/New_York`, whose reports are byte for byte the
+  same, each of the area's 1,161 divergence fields reports that it no longer holds, and nothing is unclassified:
+  92,430 of 92,434 vectors match, and the other 4 are the number area's classified fields. Before the cut-over,
+  2,808 of the area's 3,969 vectors matched.
+- **The host's zone (SJL-D-19)** is `TimeZoneInfo.Local`'s IANA name resolved through the shared database to its
+  primary identifier. `Date`'s local time, `Temporal.Now` and the default `Intl.DateTimeFormat` zone all read it,
+  which ends A15. **Decided here**, since neither the verdict nor the correspondence names one: a host zone the
+  database does not hold reads as `UTC` (A16). `Date`'s names stay the host's display names, chosen by the shared
+  daylight flag. The CLR views `JSDate.Value` and `DateTime` keep the host's offset, since a `DateTimeOffset`
+  holds whole minutes only.
+- **Two further readings are this engine's**: the `offset` of a property bag, of `with` or of a `relativeTo` bag
+  is read by the library's `UTCOffset` grammar, so A13's correction holds there too; and `ZonedDateTime.round` to
+  a time unit no longer computes the day's start, which it never used.
+- **Two regressions the local test262 subset found, fixed before the records**:
+  - `Duration.prototype.round` with a zoned `relativeTo` at the instant limit and no rounding requested built a
+    next-day boundary past the limit, which the shared library refuses as the proposal does; it now returns the
+    difference unrounded, as DifferenceZonedDateTimeWithRounding does (`022d3074`, one path).
+  - A `chinese` or `dangi` `PlainMonthDay`'s reference search read the years 1898 to 2101, where ICU4X's years
+    hold month-days that Table 6 of the Intl era and month code proposal says none holds; it now reads Table 6's
+    span, 1900 to 2035 (`eb2ab599`, four paths).
+- **The reference datasets**, run by part C's harness with the shell built at `eb2ab599`, which is not the rule's
+  judged run; its answers equal the run at `76ec819e`, line for line:
+  - `timezones.js` answers 84 of its 610 lines as Broiler.VM expects, where the base answered 51. Each of the
+    other 526 differs only by the formatter's resolved identifier (Z8), by the `longOffset` name's dropped
+    seconds (Z16, SJL-9's), or by both: 24, 374 and 128 lines. No line differs any more by the release,
+    backzone, the 2037 cliff, `Factory`, the primaries or the regions.
+  - `temporal.js` answers 1,622 of its 1,629 lines, and its 7 others are the base's, unchanged.
+- **A local test262 subset**, not parts A and B's evidence: the area's 7,627 paths, negative tests included,
+  from `built-ins/Date`, `built-ins/Temporal`, `intl402`'s `Date`, `DateTimeFormat`, `Intl/supportedValuesOf`,
+  `Locale`, `Temporal` and `TimeZone`, and `staging`'s Temporal directories, run locally with the shell built
+  at `eb2ab599`:
+  - in UTC and in `America/New_York`, each path's verdict equals its verdict in that zone's base, taken by
+    `test262 evidence` at the rule's commit: 7,622 pass, and the five `proto-from-ctor-realm` paths that fail
+    at the base fail after;
+  - the base shell, run the same way in UTC, gave the hosted base's verdict on every path;
+  - the earlier runs, at `76ec819e` (in part) and `022d3074`, found only the two regressions above; none
+    remains.
+- **Not done here**: the bundle's after runs (SJL-8.7); the corpus revision that retires the area's 1,161
+  divergence fields; and publishing `0.1.0-preview.5`, which this engine's packages need before they ship.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

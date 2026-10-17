@@ -18,12 +18,11 @@ using Broiler.JavaScript.Engine.Core;
 namespace Broiler.JavaScript.BuiltIns.Temporal;
 
 // Temporal.ZonedDateTime (Temporal proposal §6): an exact instant (epoch nanoseconds) paired
-// with a time zone and the ISO 8601 calendar. Time-zone offsets are resolved through three
-// kinds of zone: "UTC", a fixed numeric offset ("+01:00"), and a named IANA zone (resolved
-// via .NET TimeZoneInfo, which handles DST transitions for ordinary years). Construction, from(),
-// compare(), the accessor surface, the to* conversions and the DST-aware add / subtract / until /
-// since arithmetic are implemented; round / with (and difference rounding) are not yet wired and
-// throw. Registered under the Temporal namespace via Register = false.
+// with a time zone and a calendar. The time zone is an offset identifier ("+01:00") or an
+// available named zone; its offsets, possible instants, disambiguation, start of day and
+// transitions are the shared library's (Broiler.ECMAScript.Time's ZonedTime), over the time zone
+// tables this engine embeds, through TemporalTimeZones (milestone SJL-8.6). Registered under the
+// Temporal namespace via Register = false.
 [JSClassGenerator("ZonedDateTime", Register = false)]
 public partial class JSTemporalZonedDateTime : JSObject
 {
@@ -51,7 +50,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         // which accepts only a bare time-zone identifier (IANA name or minute-precision UTC
         // offset). A full ISO date-time string such as "1997-12-04T12:34[+01:00]" is valid
         // input for from(), but not for the constructor, where it is a RangeError.
-        if (!TryCanonicalizeTimeZoneIdentifier(tzArg.ToString(), out var canonicalTimeZone))
+        if (!TemporalTimeZones.TryCanonicalize(tzArg.ToString(), out var canonicalTimeZone))
             throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: invalid time zone identifier \"{tzArg}\"");
         timeZoneId = canonicalTimeZone;
         calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(2), "Temporal.ZonedDateTime");
@@ -105,42 +104,14 @@ public partial class JSTemporalZonedDateTime : JSObject
         return new JSTemporalZonedDateTime(epochNs, tz, calendarId, ZonedDateTimePrototype);
     }
 
-    // DisambiguatePossibleEpochNanoseconds: resolve a local wall-clock time to a single epoch instant.
-    // A normal time has one candidate; a fall-back fold has two (earlier = larger offset, later =
-    // smaller offset); a spring-forward gap has none. "compatible" matches "later" for a gap and
-    // "earlier" for a fold; "reject" throws a RangeError whenever the time is ambiguous or skipped.
+    // GetEpochNanosecondsFor: resolve a local wall-clock time to a single epoch instant with the
+    // disambiguation option (compatible / earlier / later / reject), the shared library's
+    // GetPossibleEpochNanoseconds and DisambiguatePossibleEpochNanoseconds.
     private static BigInteger DisambiguateEpochNs(string tz, int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns, string disambiguation)
-    {
-        var localNs = LocalNanoseconds(y, mo, d, h, mi, s, ms, us, ns);
-        var candidates = CandidateOffsetsForLocal(tz, y, mo, d, h, mi, s);
+        => TemporalTimeZones.EpochNanosecondsFor(tz, IsoDateTimeOf(y, mo, d, h, mi, s, ms, us, ns), disambiguation);
 
-        if (candidates.Count == 1)
-            return localNs - candidates[0];
-
-        if (candidates.Count >= 2)
-        {
-            if (disambiguation == "reject")
-                throw JSEngine.NewRangeError("Temporal: wall-clock time is ambiguous in this time zone");
-            // earlier instant = the larger (least-negative) offset; later = the smaller; compatible = earlier.
-            var earlier = Math.Max(candidates[0], candidates[1]);
-            var later = Math.Min(candidates[0], candidates[1]);
-            return localNs - (disambiguation == "later" ? later : earlier);
-        }
-
-        // A spring-forward gap: no candidate offset.
-        if (disambiguation == "reject")
-            throw JSEngine.NewRangeError("Temporal: wall-clock time does not exist in this time zone");
-
-        const long dayNs = 86_400_000_000_000L;
-        var offsetBefore = OffsetNanosecondsForInstant(tz, localNs - dayNs);
-        var offsetAfter = OffsetNanosecondsForInstant(tz, localNs + dayNs);
-        var gap = offsetAfter - offsetBefore;
-        // "earlier": shift the wall clock back across the gap (offset before the transition); "later" /
-        // "compatible": shift it forward (offset after) — both reduce to localNs minus the chosen offset.
-        return disambiguation == "earlier"
-            ? localNs - gap - offsetBefore
-            : localNs + gap - offsetAfter;
-    }
+    private static IsoDateTime IsoDateTimeOf(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns)
+        => new(new IsoDate(y, mo, d), new IsoTime(h, mi, s, ms, us, ns));
 
     // ToRelativeTemporalObject for a property bag carrying a timeZone: build the ZonedDateTime
     // relativeTo (DST-aware) from already-validated bag fields. The wall clock resolves with the
@@ -166,7 +137,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     internal static JSValue StartOfDayFor(int y, int mo, int d, string timeZone, string calendarId = "iso8601")
     {
         var tz = CanonicalizeTimeZone(timeZone);
-        var epochNs = StartOfDayEpochNs(tz, y, mo, d);
+        var epochNs = TemporalTimeZones.StartOfDay(tz, new IsoDate(y, mo, d));
         if (!IsValid(epochNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is out of range");
         return new JSTemporalZonedDateTime(epochNs, tz, calendarId, ZonedDateTimePrototype);
@@ -270,9 +241,9 @@ public partial class JSTemporalZonedDateTime : JSObject
         {
             var l = Local();
             var startEpoch = IsoCalendarMath.EpochDays(l.y, l.mo, l.d);
-            var todayStart = StartOfDayEpochNs(timeZoneId, l.y, l.mo, l.d);
+            var todayStart = TemporalTimeZones.StartOfDay(timeZoneId, new IsoDate(l.y, l.mo, l.d));
             var (ty, tm, td) = IsoCalendarMath.FromEpochDays(startEpoch + 1);
-            var tomorrowStart = StartOfDayEpochNs(timeZoneId, (int)ty, tm, td);
+            var tomorrowStart = TemporalTimeZones.StartOfDay(timeZoneId, new IsoDate(ty, tm, td));
             // GetStartOfDay for either boundary may fall outside the representable instant range at the
             // extreme epoch limits (a RangeError, not a saturated value).
             if (!IsValid(todayStart) || !IsValid(tomorrowStart))
@@ -329,7 +300,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     public JSValue Equals(in Arguments a)
     {
         var other = Require(ToZonedDateTime(a.GetAt(0)));
-        return epochNanoseconds == other.epochNanoseconds && TimeZoneEquals(timeZoneId, other.timeZoneId)
+        return epochNanoseconds == other.epochNanoseconds && TemporalTimeZones.Equal(timeZoneId, other.timeZoneId)
             && calendarId == other.calendarId
             ? BooleanTrue : BooleanFalse;
     }
@@ -363,7 +334,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     // near the instant-range boundary midnight in this zone can fall outside the valid limits.
     private BigInteger ValidStartOfDayEpochNs(int y, int mo, int d)
     {
-        var epoch = StartOfDayEpochNs(timeZoneId, y, mo, d);
+        var epoch = TemporalTimeZones.StartOfDay(timeZoneId, new IsoDate(y, mo, d));
         if (!IsValid(epoch))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is outside the representable range");
         return epoch;
@@ -372,7 +343,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     // Replaces the wall-clock time of day, keeping the date, calendar and time zone. An absent argument
     // means the start of the day (midnight, after disambiguation); otherwise the argument is coerced to
     // a Temporal.PlainTime. The new local datetime is re-resolved in the zone with "compatible"
-    // disambiguation (GetOffsetForLocal handles gaps / folds).
+    // disambiguation, which reads a gap or an overlap as GetEpochNanosecondsFor does.
     [JSExport("withPlainTime", Length = 0)]
     public JSValue WithPlainTime(in Arguments a)
     {
@@ -382,15 +353,15 @@ public partial class JSTemporalZonedDateTime : JSObject
             return new JSTemporalZonedDateTime(ValidStartOfDayEpochNs(l.y, l.mo, l.d), timeZoneId, calendarId, ZonedDateTimePrototype);
 
         var t = JSTemporalPlainTime.ToTemporalTimeObject(arg);
-        var localNs = LocalNanoseconds(l.y, l.mo, l.d, t.hour, t.minute, t.second, t.millisecond, t.microsecond, t.nanosecond);
-        var epoch = localNs - GetOffsetForLocal(timeZoneId, l.y, l.mo, l.d, t.hour, t.minute, t.second);
+        var epoch = EpochNsForLocal(l.y, l.mo, l.d, t.hour, t.minute, t.second, t.millisecond, t.microsecond, t.nanosecond);
         if (!IsValid(epoch)) throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.withPlainTime: result is out of range");
         return new JSTemporalZonedDateTime(epoch, timeZoneId, calendarId, ZonedDateTimePrototype);
     }
 
     // Returns the ZonedDateTime of the nearest UTC-offset transition of the time zone after ("next") or
-    // before ("previous") this instant, or null when the zone has no such transition (a fixed-offset or
-    // non-DST zone, or none within the search horizon).
+    // before ("previous") this instant, or null when the zone has no such transition within the instant
+    // range (an offset zone has none). A named zone's transitions continue by its recurring rules after
+    // its last listed one, with no 2037 cliff.
     [JSExport("getTimeZoneTransition", Length = 1)]
     public JSValue GetTimeZoneTransition(in Arguments a)
     {
@@ -414,23 +385,11 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (direction is not ("next" or "previous"))
             throw JSEngine.NewRangeError($"Temporal.ZonedDateTime.prototype.getTimeZoneTransition: invalid direction \"{direction}\"");
 
-        // Offset (fixed and UTC) zones have no transitions.
-        if (TryFixedOffset(timeZoneId, out _)) return JSNull.Value;
-        var tz = ResolveNamedZone(timeZoneId);
-        if (tz == null) return JSNull.Value;
-
-        var transition = FindTransition(tz, epochNanoseconds, direction == "next");
+        var transition = direction == "next"
+            ? TemporalTimeZones.NextTransition(timeZoneId, epochNanoseconds)
+            : TemporalTimeZones.PreviousTransition(timeZoneId, epochNanoseconds);
         if (transition == null) return JSNull.Value;
         return new JSTemporalZonedDateTime(transition.Value, timeZoneId, calendarId, ZonedDateTimePrototype);
-    }
-
-    // The first offset transition strictly after (forward) or before (!forward) startNs, read directly
-    // from the zone's bundled transition table at full (whole-second) precision, or null when the zone
-    // has no such transition (e.g. an instant before its first recorded transition).
-    private static BigInteger? FindTransition(Tz.IanaTimeZone tz, BigInteger startNs, bool forward)
-    {
-        var transition = tz.FindTransition(startNs, forward);
-        return transition.HasValue && IsValid(transition.Value) ? transition : null;
     }
 
     [JSExport("toInstant", Length = 0)]
@@ -630,15 +589,15 @@ public partial class JSTemporalZonedDateTime : JSObject
             inclusive: smallestUnit == "day");
 
         var l = Local();
-        var dayStart = StartOfDayEpochNs(timeZoneId, l.y, l.mo, l.d);
 
         if (smallestUnit == "day")
         {
             // Round to a day boundary using the actual (DST-aware) length of the local day. Both the
             // day's start and the next day's start (GetStartOfDay) must be representable instants.
+            var dayStart = TemporalTimeZones.StartOfDay(timeZoneId, new IsoDate(l.y, l.mo, l.d));
             if (!IsValid(dayStart)) throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is out of range");
             var (ty, tm, td) = IsoCalendarMath.FromEpochDays(IsoCalendarMath.EpochDays(l.y, l.mo, l.d) + 1);
-            var tomorrowStart = StartOfDayEpochNs(timeZoneId, (int)ty, tm, td);
+            var tomorrowStart = TemporalTimeZones.StartOfDay(timeZoneId, new IsoDate(ty, tm, td));
             if (!IsValid(tomorrowStart)) throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is out of range");
             var dayLengthNs = tomorrowStart - dayStart;
             var rounded = ExactRounding.RoundNumberToIncrement(epochNanoseconds - dayStart, BigInteger.One, dayLengthNs, roundingMode);
@@ -677,7 +636,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var candidate = localNs - oldOffset;
         var resolved = GetOffsetNanosecondsFor(candidate) == oldOffset
             ? candidate
-            : localNs - GetOffsetForLocal(timeZoneId, (int)ny, (int)nm, (int)nd, nh, nmi, ns2);
+            : EpochNsForLocal((int)ny, (int)nm, (int)nd, nh, nmi, ns2, nms, nus, nns);
         if (!IsValid(resolved)) throw JSEngine.NewRangeError("Temporal.ZonedDateTime: out of range");
         return new JSTemporalZonedDateTime(resolved, timeZoneId, calendarId, ZonedDateTimePrototype);
     }
@@ -970,9 +929,9 @@ public partial class JSTemporalZonedDateTime : JSObject
         var (largestUnit, smallestUnit, increment, roundingMode) = ReadZonedDifferenceSettings(options);
 
         // A calendar-unit largestUnit (year/month/week/day) differences the dates in the receiver's
-        // time zone, which is only meaningful when both operands share that zone; the IANA identifiers
-        // are compared canonically (so e.g. "Asia/Calcutta" and "Asia/Kolkata" are the same zone).
-        if (!IsTimeUnit(largestUnit) && !TimeZoneEquals(timeZoneId, other.timeZoneId))
+        // time zone, which is only meaningful when both operands share that zone; the identifiers are
+        // compared by their primary identifiers (so e.g. "Asia/Calcutta" and "Asia/Kolkata" are the same zone).
+        if (!IsTimeUnit(largestUnit) && !TemporalTimeZones.Equal(timeZoneId, other.timeZoneId))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: cannot compute a calendar-unit difference between date-times in different time zones");
 
         // `since` is `-(until)`, so it rounds the (this→other) difference with the negated mode and
@@ -1249,7 +1208,7 @@ public partial class JSTemporalZonedDateTime : JSObject
 
     // The epoch instant for a local wall-clock datetime in this zone ("compatible" disambiguation).
     private BigInteger EpochNsForLocal(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns)
-        => LocalNanoseconds(y, mo, d, h, mi, s, ms, us, ns) - GetOffsetForLocal(timeZoneId, y, mo, d, h, mi, s);
+        => DisambiguateEpochNs(timeZoneId, y, mo, d, h, mi, s, ms, us, ns, "compatible");
 
     // DifferenceISODate from a start to an end date (ISO calendar), per the chosen largestUnit.
     private static (double years, double months, double weeks, double days) DifferenceISODate(
@@ -1337,22 +1296,8 @@ public partial class JSTemporalZonedDateTime : JSObject
     // The offset of this zone at the instant `epochNanoseconds`, in nanoseconds.
     private long OffsetNanoseconds() => GetOffsetNanosecondsFor(epochNanoseconds);
 
-    private long GetOffsetNanosecondsFor(BigInteger epochNs) => OffsetNanosecondsForInstant(timeZoneId, epochNs);
-
-    // GetOffsetNanosecondsFor(timeZone, instant) as a static helper (used by Temporal.Instant.toString):
-    // the UTC offset, in nanoseconds, that the given zone applies at the instant.
-    internal static long OffsetNanosecondsForInstant(string timeZoneId, BigInteger epochNs)
-    {
-        if (TryFixedOffset(timeZoneId, out var fixedNs))
-            return fixedNs;
-
-        var tz = ResolveNamedZone(timeZoneId);
-        if (tz == null) return 0;
-
-        // The bundled table records offsets at full IANA precision (seconds), so historical sub-minute
-        // offsets such as Africa/Monrovia's -00:44:30 are exact without any post-correction.
-        return tz.GetOffsetNanoseconds(epochNs);
-    }
+    // GetOffsetNanosecondsFor: the shared library's, over this zone's rules.
+    private long GetOffsetNanosecondsFor(BigInteger epochNs) => TemporalTimeZones.OffsetNanoseconds(timeZoneId, epochNs);
 
     // ToTemporalTimeZoneIdentifier for a slot value supplied as a JSValue: a ZonedDateTime contributes
     // its own zone; a String is a bare identifier or an ISO string carrying a time-zone designator;
@@ -1365,75 +1310,6 @@ public partial class JSTemporalZonedDateTime : JSObject
         return CanonicalizeTimeZone(value.ToString());
     }
 
-    // Formats a UTC offset (nanoseconds) as ±HH:MM[:SS] for display.
-    internal static string FormatOffsetString(long offsetNs) => FormatOffset(offsetNs);
-
-    // The offset to apply to a *local* wall-clock datetime (used when building from fields).
-    private static long GetOffsetForLocal(string timeZoneId, int y, int mo, int d, int h, int mi, int s)
-    {
-        if (TryFixedOffset(timeZoneId, out var fixedNs))
-            return fixedNs;
-
-        if (ResolveNamedZone(timeZoneId) == null) return 0;
-
-        // Default ("compatible") disambiguation. A fall-back fold yields two candidate offsets: choose
-        // the EARLIER instant, i.e. the largest (least negative) offset (epoch = localNs - offset). An
-        // unambiguous wall time has a single candidate. A spring-forward gap yields no candidate; per
-        // "compatible" the later instant is taken — interpret the wall clock with the pre-transition
-        // offset (a day earlier), which lands just past the gap.
-        var candidates = CandidateOffsetsForLocal(timeZoneId, y, mo, d, h, mi, s);
-        if (candidates.Count >= 2)
-        {
-            var earliest = candidates[0];
-            for (var i = 1; i < candidates.Count; i++)
-                if (candidates[i] > earliest)
-                    earliest = candidates[i];
-            return earliest;
-        }
-        if (candidates.Count == 1)
-            return candidates[0];
-
-        const long dayNs = 86_400_000_000_000L;
-        var localNs = LocalNanoseconds(y, mo, d, h, mi, s, 0, 0, 0);
-        return OffsetNanosecondsForInstant(timeZoneId, localNs - dayNs);
-    }
-
-    // GetPossibleEpochNanoseconds, expressed as the distinct UTC offsets (ns) the zone yields for a
-    // local wall-clock time: two around a fall-back transition, one normally, none inside a
-    // spring-forward gap. Used by InterpretISODateTimeOffset to validate an explicit offset.
-    //
-    // Implements the spec's GetNamedTimeZoneEpochNanoseconds: treat the wall clock as a UTC instant,
-    // take the zone's offset a day before and a day after, and keep each candidate offset only if the
-    // instant it implies actually has that offset (a round-trip). This resolves folds/gaps at full
-    // precision using the (sub-minute-corrected) offset function — unlike .NET's IsAmbiguousTime, which
-    // is whole-minute and misses e.g. Pacific/Niue's 20-second 1952 fold.
-    private static List<long> CandidateOffsetsForLocal(string timeZoneId, int y, int mo, int d, int h, int mi, int s)
-    {
-        if (TryFixedOffset(timeZoneId, out var fixedNs))
-            return [fixedNs];
-
-        if (ResolveNamedZone(timeZoneId) == null)
-            return [0];
-
-        var localNs = LocalNanoseconds(y, mo, d, h, mi, s, 0, 0, 0);
-        const long dayNs = 86_400_000_000_000L;
-        var offsetBefore = OffsetNanosecondsForInstant(timeZoneId, localNs - dayNs);
-        var offsetAfter = OffsetNanosecondsForInstant(timeZoneId, localNs + dayNs);
-
-        var result = new List<long>(2);
-        void TryAdd(long candidateOffset)
-        {
-            if (result.Contains(candidateOffset)) return;
-            // The candidate offset is valid for this wall clock only when the instant it implies
-            // actually reports it back (so a gap yields none, a fold both).
-            if (OffsetNanosecondsForInstant(timeZoneId, localNs - candidateOffset) == candidateOffset)
-                result.Add(candidateOffset);
-        }
-        TryAdd(offsetBefore);
-        TryAdd(offsetAfter);
-        return result;
-    }
-
     // ToRelativeTemporalObject for a property-bag relativeTo that carries a timeZone: the offset field,
     // when present, must EXACTLY match one of the zone's offsets for the given local wall clock — a
     // property bag uses match-exactly, with no minute rounding (unlike the string form, where
@@ -1443,31 +1319,33 @@ public partial class JSTemporalZonedDateTime : JSObject
     {
         if (!TryParseOffsetString(offsetString, out var offsetNs))
             throw JSEngine.NewRangeError($"Temporal: invalid offset string \"{offsetString}\"");
-        if (!CandidateOffsetsForLocal(timeZoneId, y, mo, d, h, mi, s).Contains(offsetNs))
+        var local = IsoDateTimeOf(y, mo, d, h, mi, s, 0, 0, 0);
+        var possible = TemporalTimeZones.PossibleEpochNanoseconds(timeZoneId, local);
+        if (!TryMatchZoneOffset(possible, LocalNanoseconds(y, mo, d, h, mi, s, 0, 0, 0), offsetNs, matchMinutes: false, out _))
             throw JSEngine.NewRangeError($"Temporal: offset \"{offsetString}\" does not match the time zone \"{timeZoneId}\"");
     }
 
     // InterpretISODateTimeOffset offset-matching for the "prefer"/"reject" options: does the explicit
-    // offset parsed from the string match one of the zone's candidate offsets for the local time?
-    // A minute-precision offset string (no sub-minute component) uses the match-minutes behaviour —
-    // a candidate matches when it equals the explicit offset after being rounded to the nearest minute
-    // (half away from zero) — so Africa/Monrovia's -00:44:30 offset is matched by the string "-00:45".
-    // The matched candidate (the real instant's offset), not the rounded value, is returned. The
-    // rounding is RoundNumberToIncrement(offsetNs, 60e9, "halfExpand"), the shared library's (the
-    // engine's own RoundOffsetToMinute was removed at milestone SJL-4.5).
-    private static bool TryMatchZoneOffset(List<long> candidates, long explicitOffset, bool matchMinutes, out long matched)
+    // offset match the offset of one of the wall clock's possible instants (GetPossibleEpochNanoseconds,
+    // each offset being the wall clock read as UTC minus the instant)? A minute-precision offset string
+    // (no sub-minute component) uses the match-minutes behaviour — a candidate matches when it equals the
+    // explicit offset after being rounded to the nearest minute (half away from zero) — so
+    // Africa/Monrovia's -00:44:30 offset is matched by the string "-00:45". The matched instant (whose
+    // offset is the real one, not the rounded value) is returned. The rounding is
+    // RoundNumberToIncrement(offsetNs, 60e9, "halfExpand"), the shared library's.
+    private static bool TryMatchZoneOffset(BigInteger[] possible, BigInteger localNs, long explicitOffset, bool matchMinutes, out BigInteger matched)
     {
-        foreach (var candidate in candidates)
+        foreach (var candidate in possible)
         {
-            if (candidate == explicitOffset) { matched = candidate; return true; }
-            if (matchMinutes
-                && ExactRounding.RoundNumberToIncrement(candidate, BigInteger.One, NanosecondsPerMinute, RoundingMode.HalfExpand) == explicitOffset)
+            var candidateOffset = localNs - candidate;
+            if (candidateOffset == explicitOffset
+                || (matchMinutes && ExactRounding.RoundNumberToIncrement(candidateOffset, BigInteger.One, NanosecondsPerMinute, RoundingMode.HalfExpand) == explicitOffset))
             {
                 matched = candidate;
                 return true;
             }
         }
-        matched = 0;
+        matched = BigInteger.Zero;
         return false;
     }
 
@@ -1492,162 +1370,22 @@ public partial class JSTemporalZonedDateTime : JSObject
         return ((int)y, m, d, h, mi, s, ms, us, ns);
     }
 
-    // GetStartOfDay: the first instant of the calendar day `y-mo-d` in the zone. Normally this is local
-    // midnight; across a spring-forward whose gap covers midnight it is the transition instant (the
-    // first existing local time of the day) — which need be neither 00:00 nor 01:00 (e.g.
-    // America/Toronto 1919-03-31 sprang forward 23:30→00:30, so the day starts at 00:30).
-    private static BigInteger StartOfDayEpochNs(string timeZoneId, int y, int mo, int d)
-    {
-        var localMidnightNs = new BigInteger(IsoCalendarMath.EpochDays(y, mo, d)) * NanosecondsPerDay;
-
-        // The earliest instant whose local time is this midnight: local midnight minus the largest of
-        // the zone's candidate offsets (a fall-back fold yields two; pick the earlier instant).
-        var candidates = CandidateOffsetsForLocal(timeZoneId, y, mo, d, 0, 0, 0);
-        if (candidates.Count > 0)
-        {
-            var maxOffset = candidates[0];
-            foreach (var o in candidates)
-                if (o > maxOffset) maxOffset = o;
-            return localMidnightNs - maxOffset;
-        }
-
-        // Midnight is inside a spring-forward gap: the day starts at the offset transition itself.
-        var tz = ResolveNamedZone(timeZoneId);
-        if (tz == null) return localMidnightNs;
-        var transition = FindTransition(tz, localMidnightNs - NanosecondsPerDay, forward: true);
-        return transition ?? localMidnightNs;
-    }
-
-    private static bool TryFixedOffset(string id, out long offsetNs)
-    {
-        offsetNs = 0;
-        if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase))
-            return true;
-
-        var m = OffsetIdPattern.Match(id);
-        if (!m.Success) return false;
-
-        var sign = m.Groups[1].Value is "-" or "−" ? -1 : 1;
-        var hours = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
-        var minutes = m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
-        var seconds = m.Groups[4].Success ? int.Parse(m.Groups[4].Value, CultureInfo.InvariantCulture) : 0;
-        offsetNs = (long)sign * ((long)hours * 3600 + minutes * 60 + seconds) * 1_000_000_000;
-        return true;
-    }
-
-    private static readonly System.Text.RegularExpressions.Regex OffsetIdPattern = new(
-        @"^([+-])(\d{2})(?::?(\d{2})(?::?(\d{2}))?)?$", RegexOptions.CultureInvariant);
-
-    // Named IANA zones resolve through the bundled tz database (Temporal/Tz), so offset and
-    // transition computation does not depend on the host OS tz data. A link/alias resolves to its
-    // target's transition data while keeping its own identifier; an unknown id yields null.
-    private static Tz.IanaTimeZone ResolveNamedZone(string id) => Tz.IanaTimeZoneDatabase.Get(id);
-
-    // TimeZoneEquals (used by ZonedDateTime.prototype.equals): two identifiers denote the same zone when
-    // they are the same string or resolve to the same primary IANA identifier. IANA keeps backward
-    // aliases (e.g. "Asia/Calcutta" for "Asia/Kolkata"); the identifier is preserved on the instance, but
-    // equality compares the primary. The bundled tz database resolves an alias/link to its target zone
-    // (a numeric offset / UTC is not a link, so it falls back to its already-canonical identifier —
-    // these only ever match an identical string).
-    private static bool TimeZoneEquals(string a, string b)
-        => a == b || PrimaryTimeZoneIdentifier(a) == PrimaryTimeZoneIdentifier(b);
-
-    internal static string PrimaryTimeZoneIdentifier(string id)
-    {
-        var primary = Tz.IanaTimeZoneDatabase.GetPrimary(id);
-        // AvailableNamedTimeZoneIdentifiers step 5.c: the primary identifier of the UTC/GMT-zero
-        // cluster is "UTC", so e.g. "Etc/GMT", "GMT" and "Etc/Zulu" all compare equal to "UTC".
-        return primary is "Etc/UTC" or "Etc/GMT" or "GMT" ? "UTC" : primary;
-    }
-
-    private static string[] _primaryTimeZoneIdentifiers;
-
-    // AvailablePrimaryTimeZoneIdentifiers: the time-zone identifiers whose [[Identifier]] equals
-    // their [[PrimaryIdentifier]] (a zone, not a backward link), sorted in code-unit order. Backed by
-    // the bundled IANA database, so it naturally includes "UTC" and the offset zones "Etc/GMT±N" while
-    // excluding the UTC/GMT-zero links. Used by Intl.supportedValuesOf("timeZone").
-    internal static IReadOnlyList<string> AvailablePrimaryTimeZoneIdentifiers()
-    {
-        var cached = _primaryTimeZoneIdentifiers;
-        if (cached != null) return cached;
-
-        var names = new List<string>();
-        foreach (var name in Tz.IanaTimeZoneDatabase.AllNames)
-            if (PrimaryTimeZoneIdentifier(name) == name)
-                names.Add(name);
-        names.Sort(StringComparer.Ordinal);
-        return _primaryTimeZoneIdentifiers = names.ToArray();
-    }
-
-    // ToTemporalTimeZoneIdentifier: a time-zone slot value supplied as a String is a bare time-zone
-    // identifier (UTC, a numeric offset, or an IANA name) or a full Temporal ISO string, in which
-    // case its time-zone designator — a [TimeZone] annotation, a Z (UTC) designator, or a numeric
-    // UTC offset — is extracted and canonicalized.
-    // Validates a time-zone identifier (the [tz] annotation of a relativeTo string), throwing a
-    // RangeError for an unknown zone or a sub-minute offset zone such as "-00:44:30". This only
-    // checks the identifier — it computes no instant — so it is safe for a relativeTo string that is
-    // otherwise consumed as a (24-hour-day) PlainDate.
-    internal static void ValidateTimeZoneIdentifier(string id) => CanonicalizeTimeZone(id);
-
-    // Validates a bare time-zone identifier (UTC / numeric offset / named IANA zone) and returns it
-    // case-normalized, preserving an IANA backward alias's own name (e.g. "asia/calcutta" stays
-    // "Asia/Calcutta" rather than resolving to "Asia/Kolkata"); an unknown name is a RangeError.
-    // Shared with Intl.DateTimeFormat's timeZone option handling.
-    internal static string CanonicalizeTimeZoneId(string id) => CanonicalizeTimeZone(id);
-
+    // ToTemporalTimeZoneIdentifier for a String: a bare time-zone identifier (an offset, normalized to
+    // ±HH:MM, or an available name, case-normalized and keeping its own name — "asia/calcutta" stays
+    // "Asia/Calcutta" rather than resolving to "Asia/Kolkata") or a full Temporal ISO string, in which case
+    // its time-zone designator — a [TimeZone] annotation, a Z (UTC) designator, or a numeric UTC offset —
+    // is extracted and read so. Anything else, an unknown name or a sub-minute offset zone such as
+    // "-00:44:30" among them, is a RangeError.
     private static string CanonicalizeTimeZone(string id)
     {
-        if (TryCanonicalizeTimeZoneIdentifier(id, out var canonical))
+        if (TemporalTimeZones.TryCanonicalize(id, out var canonical))
             return canonical;
 
         if (TemporalIsoString.TryExtractTimeZone(id, out var designator) &&
-            TryCanonicalizeTimeZoneIdentifier(designator, out canonical))
+            TemporalTimeZones.TryCanonicalize(designator, out canonical))
             return canonical;
 
         throw JSEngine.NewRangeError($"Temporal: unknown time zone \"{id}\"");
-    }
-
-    // Resolves a *bare* time-zone identifier (no surrounding ISO string): UTC, a numeric UTC offset,
-    // or a named IANA zone. Returns false for anything else rather than throwing.
-    private static bool TryCanonicalizeTimeZoneIdentifier(string id, out string canonical)
-    {
-        // "UTC" is the canonical spelling of the bare UTC zone. The UTC/GMT-zero *links*
-        // ("Etc/UTC", "Etc/GMT", "GMT", "Etc/Zulu", …) are NOT collapsed to "UTC": per the
-        // canonical-tz spec the available identifier is preserved on the instance (and in
-        // Intl.DateTimeFormat's resolvedOptions), with only the *primary* identifier — used for
-        // equality and offsets, see PrimaryTimeZoneIdentifier — resolving to "UTC". They fall
-        // through to the IANA database below, which returns each one case-normalized.
-        if (string.Equals(id, "UTC", StringComparison.OrdinalIgnoreCase)) { canonical = "UTC"; return true; }
-        if (TryOffsetTimeZoneIdentifier(id, out var offsetNs)) { canonical = FormatOffset(offsetNs); return true; }
-
-        // IANA identifiers (zones and backward-alias links alike) match case-insensitively and are
-        // returned case-normalized, keeping their OWN name — a link is NOT replaced by its primary
-        // zone (e.g. "africa/cairo" → "Africa/Cairo", "asia/ulan_bator" → "Asia/Ulan_Bator"). The
-        // bundled tz database is the single source of valid identifiers, so this is host-independent.
-        if (Tz.IanaTimeZoneDatabase.TryCanonicalize(id, out canonical))
-            return true;
-
-        canonical = null;
-        return false;
-    }
-
-    // A numeric UTC offset used as a *time-zone identifier* must be minute precision (±HH[:MM]) with
-    // valid component ranges; a sub-minute (seconds / fractional) offset or an out-of-range component
-    // (e.g. the leap-second offset +23:59:60) is not a valid time zone and is rejected by the caller.
-    private static readonly System.Text.RegularExpressions.Regex OffsetTimeZoneIdentifierPattern = new(
-        @"^([+-])(\d{2})(?::?(\d{2}))?$", RegexOptions.CultureInvariant);
-
-    private static bool TryOffsetTimeZoneIdentifier(string id, out long offsetNs)
-    {
-        offsetNs = 0;
-        var m = OffsetTimeZoneIdentifierPattern.Match(id);
-        if (!m.Success) return false;
-        var hours = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
-        var minutes = m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
-        if (hours > 23 || minutes > 59) return false;
-        var sign = m.Groups[1].Value is "-" or "−" ? -1 : 1;
-        offsetNs = (long)sign * ((long)hours * 3600 + minutes * 60) * 1_000_000_000;
-        return true;
     }
 
     // The date-time field names PrepareCalendarFields recognizes for PlainDateTime.with;
@@ -1782,9 +1520,10 @@ public partial class JSTemporalZonedDateTime : JSObject
             epochNs = ResolveWall();
         else
         {
-            var candidates = CandidateOffsetsForLocal(timeZoneId, pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.hour, pdt.minute, pdt.second);
-            if (candidates.Contains(explicitOffset))
-                epochNs = localNs - explicitOffset;
+            var possible = TemporalTimeZones.PossibleEpochNanoseconds(timeZoneId, IsoDateTimeOf(pdt.isoYear, pdt.isoMonth, pdt.isoDay,
+                pdt.hour, pdt.minute, pdt.second, pdt.millisecond, pdt.microsecond, pdt.nanosecond));
+            if (TryMatchZoneOffset(possible, localNs, explicitOffset, matchMinutes: false, out var matched))
+                epochNs = matched;
             else if (offsetOption == "reject")
                 throw JSEngine.NewRangeError("Temporal.ZonedDateTime: offset does not match the time zone");
             else
@@ -1816,6 +1555,10 @@ public partial class JSTemporalZonedDateTime : JSObject
     {
         offsetNs = 0;
         if (string.Equals(text, "Z", StringComparison.OrdinalIgnoreCase)) return true;
+        // ECMA-262's UTCOffset grammar (IsTimeZoneOffsetString, the shared library's): ASCII digits only, so
+        // an offset written with other decimal digits is a RangeError rather than a .NET FormatException,
+        // and hours, minutes and seconds within their ranges (row A13).
+        if (!OffsetTimeZones.IsTimeZoneOffsetString(text)) return false;
         var m = OffsetValuePattern.Match(text);
         if (!m.Success) return false;
         var sign = m.Groups["sign"].Value is "-" or "−" ? -1 : 1;
@@ -1964,7 +1707,7 @@ public partial class JSTemporalZonedDateTime : JSObject
 
         BigInteger epochNs;
         if (!hasTime)
-            epochNs = StartOfDayEpochNs(timeZoneId, year, month, day);
+            epochNs = TemporalTimeZones.StartOfDay(timeZoneId, new IsoDate(year, month, day));
         else if (hasZ)
             epochNs = localNs;
         else if (!hasNumericOffset)
@@ -1975,9 +1718,9 @@ public partial class JSTemporalZonedDateTime : JSObject
             epochNs = ResolveWall();
         else
         {
-            var candidates = CandidateOffsetsForLocal(timeZoneId, year, month, day, hour, minute, second);
-            if (TryMatchZoneOffset(candidates, explicitOffset, matchMinutes, out var matchedOffset))
-                epochNs = localNs - matchedOffset;
+            var possible = TemporalTimeZones.PossibleEpochNanoseconds(timeZoneId, IsoDateTimeOf(year, month, day, hour, minute, second, ms, us, ns));
+            if (TryMatchZoneOffset(possible, localNs, explicitOffset, matchMinutes, out var matched))
+                epochNs = matched;
             else if (offsetOption == "reject")
                 throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: offset does not match the time zone in \"{text}\"");
             else // "prefer": no match — resolve the wall clock via disambiguation

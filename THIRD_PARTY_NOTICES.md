@@ -271,6 +271,22 @@ its tables' source.*
 
 *Added 2026-10-16, at milestone SJL-7.5, when the Unicode area moved to Broiler.Unicode's packages.*
 
+- The time zone and calendar tables `Broiler.JavaScript.BuiltIns` embeds (its resources
+  `Broiler.JavaScript.BuiltIns.TimeData.*`) are the time data home's `data/time/generated/` files, linked into
+  the assembly unmodified. Their sources and licences are the home's, above: the IANA Time Zone Database's
+  zones and links, in the public domain; CLDR's primary identifiers, under the Unicode License v3; ICU4X's
+  Chinese, Korean, Qing-era and Umm al-Qura years, under the Unicode License v3; and
+  `calendrical_calculations`' Persian corrections, under the Apache License 2.0.
+- Until milestone SJL-8.6 the engine embedded instead `tzdata.bin`, a DEFLATE pack of a build host's compiled
+  zoneinfo (tzdb 2025b, in the public domain), and read its Chinese, Korean and Persian years from the .NET
+  runtime's calendars and the CLDR package's `CldrChineseCalendar` (an implementation of *Calendrical
+  Calculations*' astronomy) and its Umm al-Qura years from that package's `CldrUmmAlQura` (ICU4C's table). It
+  no longer embeds `tzdata.bin` or calls either type. `Broiler.Unicode.Cldr.LocaleData` stays a dependency
+  for its locale data, with its own notices.
+
+*Added 2026-10-17, at milestone SJL-8.6, when the time-zone and calendar area moved to the data home's
+tables and `Broiler.ECMAScript.Algorithms`.*
+
 ### ECMA-262's property tables
 
 [`data/unicode/pins/ecma262/`](data/unicode/pins/ecma262) holds three tables of the ECMAScript Language

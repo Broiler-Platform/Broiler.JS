@@ -193,13 +193,13 @@ public static class JSIntl
                     return list;
                 }
 
-                // "timeZone" returns AvailablePrimaryTimeZoneIdentifiers() — the canonical (primary)
-                // IANA zone identifiers, sorted in code-unit order (test262 supportedValuesOf/
-                // timeZones, timeZones-include-non-continental).
+                // "timeZone" returns AvailablePrimaryTimeZoneIdentifiers() — the shared database's
+                // primary identifiers, CLDR's, sorted in code-unit order (test262 supportedValuesOf/
+                // timeZones, timeZones-include-non-continental; milestone SJL-8.6).
                 if (key == "timeZone")
                 {
                     var list = JSValue.CreateArray();
-                    foreach (var tz in JSTemporalZonedDateTime.AvailablePrimaryTimeZoneIdentifiers())
+                    foreach (var tz in TemporalTimeZones.PrimaryIdentifiers)
                         list.AddArrayItem(JSValue.CreateString(tz));
                     return list;
                 }
@@ -2861,30 +2861,6 @@ public static class JSIntl
         return (int)Math.Floor(number);
     }
 
-    // An offset time-zone identifier: a sign, two-digit hour and an optional two-digit minute, with
-    // either a colon or no separator (±HH, ±HHMM, ±HH:MM). No seconds or fractional component is
-    // accepted (CreateDateTimeFormat's IsTimeZoneOffsetString is stricter than Temporal's).
-    private static readonly System.Text.RegularExpressions.Regex OffsetTimeZonePattern =
-        new(@"^([+-])(\d{2})(?::?(\d{2}))?$", RegexOptions.CultureInvariant);
-
-    // Validates and normalizes an offset time-zone identifier to ±HH:MM. Hours are 00-23 and minutes
-    // 00-59; a zero offset always normalizes with a "+" sign (so "-00" / "-00:00" → "+00:00"). Returns
-    // false for any string that is not a well-formed offset.
-    internal static bool TryNormalizeOffsetTimeZone(string timeZone, out string normalized)
-    {
-        normalized = null;
-        var m = OffsetTimeZonePattern.Match(timeZone);
-        if (!m.Success)
-            return false;
-        var hours = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
-        var minutes = m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
-        if (hours > 23 || minutes > 59)
-            return false;
-        var sign = (hours == 0 && minutes == 0) ? "+" : m.Groups[1].Value;
-        normalized = $"{sign}{hours:D2}:{minutes:D2}";
-        return true;
-    }
-
     private static void ObserveOptions(JSObject options, params KeyString[] keys)
     {
         if (options == null)
@@ -4103,17 +4079,6 @@ public sealed class JSIntlLocale : JSObject
         "US", "CA", "AU", "NZ", "IN", "PH", "PK", "BD", "EG", "MX", "CO", "SA",
     };
 
-    // A representative IANA time-zone for a handful of common regions. Not
-    // exhaustive — getTimeZones falls back to UTC for regions not listed here.
-    private static readonly Dictionary<string, string> RegionPrimaryTimeZone = new(StringComparer.Ordinal)
-    {
-        ["US"] = "America/New_York", ["CA"] = "America/Toronto", ["GB"] = "Europe/London",
-        ["DE"] = "Europe/Berlin", ["FR"] = "Europe/Paris", ["ES"] = "Europe/Madrid",
-        ["IT"] = "Europe/Rome", ["RU"] = "Europe/Moscow", ["CN"] = "Asia/Shanghai",
-        ["JP"] = "Asia/Tokyo", ["IN"] = "Asia/Kolkata", ["AU"] = "Australia/Sydney",
-        ["BR"] = "America/Sao_Paulo", ["MX"] = "America/Mexico_City",
-    };
-
     // Scripts written right-to-left (ISO 15924 codes), used by getTextInfo to report the
     // locale's character direction. Not exhaustive, but covers the scripts CLDR marks RTL.
     private static readonly HashSet<string> RightToLeftScripts = new(StringComparer.Ordinal)
@@ -4290,11 +4255,11 @@ public sealed class JSIntlLocale : JSObject
         if (region == null)
             return UndefinedValue;
 
-        // Region→IANA time-zone data is not bundled; return a representative
-        // non-empty list (a primary zone for known regions, UTC otherwise).
+        // TimeZonesOfLocale: the zones zone.tab lists for the region, in code-unit order, from the shared
+        // database (milestone SJL-8.6); none for a region it does not list.
         var array = CreateArray();
-        array.AddArrayItem(CreateString(
-            RegionPrimaryTimeZone.TryGetValue(region, out var zone) ? zone : "UTC"));
+        foreach (var zone in TemporalTimeZones.Database.RegionTimeZones(region))
+            array.AddArrayItem(CreateString(zone));
         return array;
     }
 
@@ -7113,12 +7078,12 @@ public class JSIntlDateTimeFormat : JSObject
         // not collapsed to "gregory") after the ResolveLocale `ca` negotiation, NOT the raw option.
         result.CreateDataProperty(KeyStrings.GetOrCreate("calendar"), CreateString(@this.ResolvedCalendarId()));
         result.CreateDataProperty(KeyStrings.GetOrCreate("numberingSystem"), CreateString(@this.numberingSystem));
-        // The default time zone must be reported as a CANONICAL identifier — a host whose local
-        // zone is "Etc/UTC" (e.g. a UTC container) reports "UTC", not "Etc/UTC" (test262
-        // DateTimeFormat/prototype/resolvedOptions/basic). SystemTimeZoneId normalizes Windows ids
-        // to IANA (falling back to UTC); CanonicalizeTimeZoneId then applies the UTC-cluster rule.
+        // The default time zone is SystemTimeZoneIdentifier: the host's zone as a PRIMARY identifier — a
+        // host whose local zone is "Etc/UTC" (e.g. a UTC container) reports "UTC" (test262
+        // DateTimeFormat/prototype/resolvedOptions/basic) — resolved through the shared database, or
+        // "UTC" for a host zone the database does not hold (milestone SJL-8.6).
         result.CreateDataProperty(KeyStrings.GetOrCreate("timeZone"),
-            CreateString(JSTemporalZonedDateTime.CanonicalizeTimeZoneId(JSTemporalNow.SystemTimeZoneId())));
+            CreateString(TemporalTimeZones.SystemTimeZoneIdentifier()));
 
         if (@this.options != null)
         {
@@ -7381,30 +7346,19 @@ public class JSIntlDateTimeFormat : JSObject
         locale = CultureInfo.CurrentCulture;
     }
 
-    // Reads and validates the timeZone option (CreateDateTimeFormat): an offset
-    // identifier (leading + / -) is validated against the ECMA-402 grammar and
-    // normalized to ±HH:MM; a U+2212 minus or a malformed offset is a RangeError; a
-    // named IANA zone is returned untouched. Returns null when the option is absent.
+    // Reads and validates the timeZone option (CreateDateTimeFormat) through the shared database
+    // (milestone SJL-8.6): an offset string is normalized to ±HH:MM, and one with seconds is a
+    // RangeError; a named zone is matched by its ASCII case and case-normalized — "utc" → "UTC",
+    // "africa/abidjan" → "Africa/Abidjan" — but NOT canonicalized through backward links
+    // ("Asia/Calcutta" stays "Asia/Calcutta"); anything else, an ISO date-time string among them, is a
+    // RangeError. Returns null when the option is absent.
     private static string ReadTimeZoneOption(JSObject userOptions)
     {
         var value = userOptions == null ? JSUndefined.Value : userOptions[TimeZoneKey];
         if (value.IsUndefined)
             return null;
 
-        var timeZone = value.StringValue;
-        if (timeZone.Contains('−'))
-            throw JSEngine.NewRangeError("Invalid timeZone option");
-        if (timeZone.Length > 0 && (timeZone[0] == '+' || timeZone[0] == '-'))
-        {
-            if (JSIntl.TryNormalizeOffsetTimeZone(timeZone, out var normalized))
-                return normalized;
-            throw JSEngine.NewRangeError($"Invalid timeZone option: {timeZone}");
-        }
-
-        // A named time zone is validated against the IANA database and case-normalized — "utc" → "UTC",
-        // "africa/abidjan" → "Africa/Abidjan" — but NOT canonicalized through backward links
-        // ("Asia/Calcutta" stays "Asia/Calcutta"); an unknown or legacy non-IANA name is a RangeError.
-        return JSTemporalZonedDateTime.CanonicalizeTimeZoneId(timeZone);
+        return TemporalTimeZones.ResolveFormatterTimeZone(value.StringValue);
     }
 
     internal JSIntlDateTimeFormat(CultureInfo locale) : base()

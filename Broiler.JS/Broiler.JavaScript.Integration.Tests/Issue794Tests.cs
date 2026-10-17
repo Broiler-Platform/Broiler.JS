@@ -99,9 +99,10 @@ public class Issue794Tests
         => Assert.Equal("RangeError", ErrorName(
             "Temporal.PlainDate.from({year:5779,monthCode:'M05L',day:1,calendar:'hebrew'}).add({years:1}, {overflow:'reject'})"));
 
-    // ── Problem 3: chinese calendar below the .NET span (≤1900) ───────────────────
-    // The astronomical fallback (CldrChineseCalendar) covers years the .NET
-    // ChineseLunisolarCalendar (1901–2100) cannot.
+    // ── Problem 3: chinese calendar below 1901 ───────────────────────────────────
+    // At the fix, an astronomical fallback covered the years .NET's Chinese calendar (1901–2100)
+    // could not. Since milestone SJL-8.6 the shared calendar tables hold the Qing years 1900–1911,
+    // and ICU4X's approximation serves the years before them.
 
     [Fact] // 1900-01-01 ISO is the well-known 己亥年十二月初一 (chinese 1899, M12, day 1)
     public void Chinese1899_M12_Day1_IsoIs1900_01_01()
@@ -120,8 +121,8 @@ public class Issue794Tests
             "(function(){var d=Temporal.PlainDate.from({year:1900,monthCode:'M08L',day:1,calendar:'chinese'});" +
             "return [d.monthCode,d.month,d.daysInYear].join(',');})()"));
 
-    [Fact] // the fallback meets the .NET calendar seamlessly: 1901 new year = 1901-02-19
-    public void Chinese1901_NewYear_BoundaryWithDotNet()
+    [Fact] // the 1901 new year = 1901-02-19, from the Qing table
+    public void Chinese1901_NewYear_FromTheQingTable()
         => Assert.Equal("1901-02-19", Eval(
             "Temporal.PlainDate.from({year:1901,monthCode:'M01',day:1,calendar:'chinese'}).withCalendar('iso8601').toString()"));
 
