@@ -58,8 +58,10 @@ data-home exit clause 3). Run it from the repository root:
 python3 -I Broiler.ECMAScript/data/time/tzdb/check-zic.py
 ```
 
-It needs `zic`, which a test run does not, so no test runs it; the run that closes a work package keeps
-its output in that package's evidence bundle.
+It needs `zic`, which a test run does not, so no test runs it: the shared-libraries workflow runs it on
+Linux, whose runners have `zic`, and the run that closes a work package keeps its output in that package's
+evidence bundle. It exits 1 on any difference but the four names that read their CLDR primaries by design
+(`CST6CDT`, `EST5EDT`, `MST7MDT`, `PST8PDT`, before 1966-10-31).
 
 ## Updating
 
