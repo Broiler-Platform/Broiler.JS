@@ -45,7 +45,9 @@ the formula calendars (`coptic`, `ethiopic`, `ethioaa`, `islamic`, `islamic-civi
 `scripts/conformance/time-zone-divergences.txt`, with the row of bundle `sjl-8-001`'s correspondence from code
 (Broiler.VM's `docs/evidence/sjl-8-001/correspondence.md`). They are corrections under decision SJL-D-16 (a).
 Every one of the area's 1,161 fields, these and the policy changes' below, reports that it no longer holds in the
-engine-level run on revision 22 after the cut-over.
+engine-level run on revision 22 after the cut-over. Corpus revision 23 retires the 1,161 fields, and
+[`docs/evidence/sjl-8-001/engine/retired-divergences-revision-23.tsv`](../docs/evidence/sjl-8-001/engine/retired-divergences-revision-23.tsv)
+lists every retired vector under its reason.
 
 - **A name matches by its ASCII case only** (Z10, 13 vectors of `time-zones/fold` and `time-zones/iso-string`,
   reason `js-z10-lookup`): `America/Loſ_Angeles` (U+017F) is a `RangeError` in the `ZonedDateTime` constructor,

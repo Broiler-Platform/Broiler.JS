@@ -818,6 +818,11 @@ and `SharedTimeZoneTests` holds each embedded file to the home's bytes and to th
 feed holds the packages as published, and the source's suffix moves to `preview.5`, so this engine's packages
 depend on the version nuget.org serves.
 
+*Added 2026-10-17, later again:* corpus revision 23 (`2d496a55`) retires the area's 1,161 divergence fields, and
+every vector of it has the result its class expects in this engine's runs in UTC and in `America/New_York`, whose
+reports are byte for byte the same (bundle [`sjl-8-001`](../evidence/sjl-8-001/README.md), section 4), and in
+Broiler.VM's, whose pin moves to it.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
