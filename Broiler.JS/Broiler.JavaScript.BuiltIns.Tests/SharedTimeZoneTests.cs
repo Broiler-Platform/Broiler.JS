@@ -149,6 +149,16 @@ public class SharedTimeZoneTests
     public void Zone_algorithms_continue_after_2037(string expression, string expected)
         => Assert.Equal(expected, Eval(expression));
 
+    // The shared GetEpochNanosecondsFor refuses a wall time whose instant is outside the range, so a rounding that
+    // requests nothing builds no next-day boundary past the limit (DifferenceZonedDateTimeWithRounding's early
+    // return); one that rounds still needs it (test262 round/relativeto-date-limits and next-day-out-of-range).
+    [Theory]
+    [InlineData("new Temporal.Duration(0).round({ largestUnit: 'years', relativeTo: '+275760-09-12T23:59:60+00:00[UTC]' }).toString()", "PT0S")]
+    [InlineData("new Temporal.Duration(0).round({ largestUnit: 'years', relativeTo: { year: 275760, month: 9, day: 12, hour: 23, minute: 59, second: 60, timeZone: 'UTC' } }).toString()", "PT0S")]
+    [InlineData("var e = 'none'; try { new Temporal.Duration(0).round({ largestUnit: 'days', smallestUnit: 'hours', relativeTo: '+275760-09-12T23:59:59+00:00[UTC]' }); } catch (x) { e = x.name; } e", "RangeError")]
+    public void Rounding_at_the_instant_limits_builds_no_unneeded_boundary(string expression, string expected)
+        => Assert.Equal(expected, Eval(expression));
+
     // Z5: no Factory.
     [Fact]
     public void Factory_is_not_a_zone()

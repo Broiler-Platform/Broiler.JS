@@ -73,6 +73,14 @@ public partial class JSTemporalZonedDateTime
     {
         var target = AddDurationEpochNs(d);
         var diff = DifferenceInternal(epochNanoseconds, target, largestUnit);
+
+        // DifferenceZonedDateTimeWithRounding: with no rounding requested (smallestUnit "nanosecond" and an
+        // increment of 1) the difference is returned as it is, and no nudge window is built. The window's
+        // next-day boundary is a wall time the zone resolves, which past the instant limits is a RangeError
+        // (test262 Duration/prototype/round/relativeto-date-limits).
+        if (smallestUnit == "nanosecond" && increment == 1)
+            return BuildDuration(diff, largestUnit);
+
         var rounded = RoundRelativeDuration(diff, epochNanoseconds, target, largestUnit, increment, smallestUnit, roundingMode);
         return BuildDuration(rounded, largestUnit);
     }
