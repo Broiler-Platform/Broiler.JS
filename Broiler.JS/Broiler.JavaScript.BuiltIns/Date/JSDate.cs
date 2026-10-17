@@ -12,7 +12,7 @@ namespace Broiler.JavaScript.BuiltIns.Date;
 public partial class JSDate: JSObject
 {
     // Broiler-AI:           Origin=AI; Spec=ECMA-262 21.4.1.21; IP=Low; Security=Medium; Resources=1; Fingerprint=TBF
-    // Broiler-Falsified-If: LocalTime, UTC or TimeZoneString reads a zone other than the host's TimeZoneInfo.Local at the instant
+    // Broiler-Falsified-If: LocalTime, UTC or TimeZoneString reads a zone other than the host's, resolved through the shared time zone database, at the instant
     // Broiler-Human:        PENDING
     internal static readonly ILocalTimeProvider Zone = new HostLocalTimeProvider();
 

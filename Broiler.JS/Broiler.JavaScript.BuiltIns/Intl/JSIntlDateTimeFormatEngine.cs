@@ -87,17 +87,19 @@ internal static class JSIntlDateTimeFormatEngine
     // CLDR keys its metazone names on a single representative IANA id per zone (e.g.
     // "Asia/Calcutta", not the now-primary "Asia/Kolkata"). When the supplied id is not itself
     // covered, try the other IANA ids that denote the same zone so a link and its target format
-    // identically (test262 DateTimeFormat/timezone-not-canonicalized). Only reached on a miss.
+    // identically (test262 DateTimeFormat/timezone-not-canonicalized). Only reached on a miss. The
+    // identifiers and their primaries are the shared database's (milestone SJL-8.6).
     private static string NameForEquivalentZone(string localeTag, string timeZone, string style, bool isDaylight)
     {
-        var primary = Temporal.Tz.IanaTimeZoneDatabase.GetPrimary(timeZone);
-        if (string.IsNullOrEmpty(primary))
+        var database = Temporal.TemporalTimeZones.Database;
+        if (string.IsNullOrEmpty(timeZone) || !database.TryFind(timeZone, out var zone))
             return null;
-        foreach (var id in Temporal.Tz.IanaTimeZoneDatabase.AllNames)
+        var primary = database.Primary(zone).Index;
+        foreach (var id in Temporal.TemporalTimeData.Identifiers)
         {
-            if (string.Equals(id, timeZone, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(id, zone.Identifier, StringComparison.Ordinal))
                 continue;
-            if (!string.Equals(Temporal.Tz.IanaTimeZoneDatabase.GetPrimary(id), primary, StringComparison.OrdinalIgnoreCase))
+            if (!database.TryFind(id, out var other) || database.Primary(other).Index != primary)
                 continue;
             var name = CldrLocaleData.GetTimeZoneName(localeTag, id, style, isDaylight);
             if (!string.IsNullOrEmpty(name))
@@ -106,18 +108,15 @@ internal static class JSIntlDateTimeFormatEngine
         return null;
     }
 
-    // Whether daylight-saving time is in effect for a named IANA zone at the instant (false for an
-    // offset/UTC identifier or an unknown zone), selecting the standard vs daylight metazone name.
+    // Whether daylight-saving time is in effect for a zone at the instant (false for an offset zone, or
+    // the host's zone when the formatter names none), selecting the standard vs daylight metazone name.
+    // The daylight flag is the shared database's.
     private static bool IsDaylight(string timeZone, double epochMs)
     {
         if (string.IsNullOrEmpty(timeZone))
             return false;
-        // Resolve through the bundled IANA database (host-independent); fixed-offset / UTC zones,
-        // and any unknown id, observe no daylight saving.
-        var tz = Temporal.Tz.IanaTimeZoneDatabase.Get(timeZone);
-        if (tz == null) return false;
         var clamped = Math.Clamp(epochMs, -8.64e15, 8.64e15);
-        return tz.IsDaylightSavingTime((long)Math.Floor(clamped / 1000.0));
+        return Temporal.TemporalTimeZones.Rules(timeZone).IsDaylightAt((long)Math.Floor(clamped / 1000.0));
     }
 
     // "GMT", "GMT-8", "GMT+5:30" (short) / "GMT-08:00", "GMT+05:30" (long); zero offset is "GMT".
@@ -695,50 +694,17 @@ internal static class JSIntlDateTimeFormatEngine
     // ── Time-zone resolution ──
     // Returns the wall-clock time value (ms) in the requested zone, computed by offset
     // arithmetic so the full ECMAScript date range is supported and offsets beyond ±14h
-    // are permitted (DateTimeOffset rejects those).
+    // are permitted (DateTimeOffset rejects those). The formatter's zone is an offset identifier
+    // or an available name, both validated when the formatter was created, read through the shared
+    // database (milestone SJL-8.6); with no zone, the host's, which Date's local time reads.
     internal static double ToZone(double clippedMs, string timeZone)
     {
         if (string.IsNullOrEmpty(timeZone))
             return EcmaLocalTime.LocalTime(clippedMs, JSDate.Zone);
 
-        if (string.Equals(timeZone, "UTC", StringComparison.OrdinalIgnoreCase))
-            return clippedMs;
-
-        if (TryParseOffset(timeZone, out var offset))
-            return clippedMs + offset.TotalMilliseconds;
-
-        // Resolve through the bundled IANA database (host-independent), at full offset precision.
-        var tz = Temporal.Tz.IanaTimeZoneDatabase.Get(timeZone);
-        if (tz == null)
-            return EcmaLocalTime.LocalTime(clippedMs, JSDate.Zone);
-
         var clamped = Math.Clamp(clippedMs, -8.64e15, 8.64e15);
-        var offsetSeconds = tz.GetOffsetSeconds((long)Math.Floor(clamped / 1000.0));
+        var offsetSeconds = Temporal.TemporalTimeZones.Rules(timeZone).OffsetSecondsAt((long)Math.Floor(clamped / 1000.0));
         return clippedMs + offsetSeconds * 1000.0;
-    }
-
-    // Parses an ECMAScript UTC-offset time-zone identifier such as "+0301", "+02",
-    // "+13:49", "-0914" into a TimeSpan.
-    private static bool TryParseOffset(string tz, out TimeSpan offset)
-    {
-        offset = default;
-        if (tz.Length < 3 || (tz[0] != '+' && tz[0] != '-'))
-            return false;
-
-        var sign = tz[0] == '-' ? -1 : 1;
-        var body = tz.Substring(1).Replace(":", string.Empty);
-        if (body.Length != 2 && body.Length != 4)
-            return false;
-        if (!int.TryParse(body.Substring(0, 2), NumberStyles.None, CultureInfo.InvariantCulture, out var hours))
-            return false;
-        var minutes = 0;
-        if (body.Length == 4 && !int.TryParse(body.Substring(2, 2), NumberStyles.None, CultureInfo.InvariantCulture, out minutes))
-            return false;
-        if (hours > 23 || minutes > 59)
-            return false;
-
-        offset = new TimeSpan(sign * hours, sign * minutes, 0);
-        return true;
     }
 
     // ── Field formatting ──
