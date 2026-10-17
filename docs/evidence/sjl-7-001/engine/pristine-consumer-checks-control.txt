@@ -1,0 +1,28 @@
+# A control of the pristine consumer's checks (engine/pristine-consumer-unicode.log): the same twelve expressions,
+# each wrapped to report a throw, run in the shell (Broiler.JS/Broiler.JavaScript) built in Release from a clean
+# checkout of the base commit 3916bd2b and from one of the after commit a34b1f78, under TZ=UTC, 2026-10-17T00:21:46Z.
+# The checks tell the two apart: ten of the twelve fail or throw at the base. S1 and G3, which the correspondence
+# reads as agreements, hold at both.
+
+$ dotnet <base>/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll checks-safe.js
+N1=threw Error N2=false C1=false C7=threw RangeError P1=false P2=threw SyntaxError S1=true I1=false W1=false G1=false G2=false G3=true
+$ dotnet <tree>/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll checks-safe.js
+N1=true N2=true C1=true C7=true P1=true P2=true S1=true I1=true W1=true G1=true G2=true G3=true
+
+# checks-safe.js, written from collect.py's UNICODE_CHECKS:
+const safe = f => { try { return f(); } catch (e) { return 'threw ' + e.name; } };
+const checks = [
+  ["N1", safe(() => '\uD800'.normalize() === '\uD800')],
+  ["N2", safe(() => '\u{105C9}'.normalize('NFD') === '\u{105D2}\u0307')],
+  ["C1", safe(() => '\u00AA\u03A3'.toLowerCase() === '\u00AA\u03C2')],
+  ["C7", safe(() => 'i'.toLocaleUpperCase(['tr', 'en']) === '\u0130')],
+  ["P1", safe(() => (() => { try { new RegExp('\\p{lu}', 'u'); return false; } catch (e) { return e instanceof SyntaxError; } })())],
+  ["P2", safe(() => new RegExp('\\p{sc=Hrkt}', 'u').test('\u3042') === false)],
+  ["S1", safe(() => new RegExp('^\\p{RGI_Emoji}$', 'v').test('\u{1F44D}\u{1F3FD}'))],
+  ["I1", safe(() => (() => { try { (0, eval)('var \u2E2F = 1'); return false; } catch (e) { return e instanceof SyntaxError; } })())],
+  ["W1", safe(() => (() => { try { (0, eval)('1\u0085+1'); return false; } catch (e) { return e instanceof SyntaxError; } })())],
+  ["G1", safe(() => [...new Intl.Segmenter('en', { granularity: 'sentence' }).segment('One. Two? Three! Mr. Smith')].length === 5)],
+  ["G2", safe(() => [...new Intl.Segmenter('en', { granularity: 'word' }).segment('can\'t')].length === 1)],
+  ["G3", safe(() => [...new Intl.Segmenter('en').segment('e\u0301\u{1F44D}\u{1F3FD}\u{1F1E9}\u{1F1EA}')].length === 3)],
+];
+console.log(checks.map(c => c[0] + '=' + c[1]).join(' '));

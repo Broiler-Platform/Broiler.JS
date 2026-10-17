@@ -1,0 +1,89 @@
+# SJL-7.6 deletion check, Broiler.JS at a34b1f78cc4bda6bcdfe68ed943af6cc069c1b71: every entry of the Unicode area's Broiler.JS
+# deletion list (Broiler.VM docs/javascript-shared-libraries/milestones/sjl-7-unicode.md, SJL-7.5, with
+# what JSD-0074 adds to it), searched in the file or folder that held it with git grep -E, test
+# projects included where the folder holds them. An entry with no line is absent; a line that remains
+# is a call to the owner, an adapter, a comment or another member of the same name, which the bundle's
+# README reads.
+
+## the host string.Normalize in JSStringPrototype.Transform and in the collator's NFD step
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Transform.cs, Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs: \.Normalize\(|NormalizationForm|\bIsNormalized\b|\bNormalizeText\(
+# hits: 4
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6254:        left = String.JSString.NormalizeText(left, NormalForm.Nfd);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6255:        right = String.JSString.NormalizeText(right, NormalForm.Nfd);
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Transform.cs:33:        return new JSString(NormalizeText(@this, normalForm));
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Transform.cs:41:    internal static string NormalizeText(string text, NormalForm form)
+
+## JSStringSpecialCasing usage, and the CultureInfo resolution for locale casing
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/String: \bJSStringSpecialCasing\b|CultureInfo|TextInfo|To(Upper|Lower)Invariant|\.To(Upper|Lower)\(|Broiler\.Unicode\.Properties|JSUnicode\.CaseMapping
+# hits: 4
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSString.cs:260:    public override string ToLocaleString(string format, CultureInfo culture) => value;
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Transform.cs:173:    // the casing class of the Broiler.Unicode.Properties package over the runtime's data, its culture and
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Transform.cs:179:            ? JSUnicode.CaseMapping.ToUpperCase(text, language, MaximumLength, null, out result)
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSStringPrototype.Transform.cs:180:            : JSUnicode.CaseMapping.ToLowerCase(text, language, MaximumLength, null, out result);
+
+## CharExtensions' identifier classification and its Unicode-17 patch tables
+# in Broiler.JS/Broiler.JavaScript.Parser/CharExtensions.cs: Identifier|UnicodeV17|InRanges|char\.Is(Letter|LetterOrDigit|WhiteSpace|Digit)|UnicodeCategory|CharUnicodeInfo|Rune\.
+# hits: 1
+Broiler.JS/Broiler.JavaScript.Parser/CharExtensions.cs:93:    // IdentifierStartChar, IdentifierPartChar and WhiteSpace are Broiler.Unicode's, over this engine's
+
+## the whitespace lists: the scanner's, StringSpan.Trim's and JSRegExp.Escape's
+# in Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs, Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs, Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs: char\.IsWhiteSpace|IsNullOrWhiteSpace|\\x85|\\u0085|0x0?085\b|\\u00[aA]0|\\x[aA]0|\\u1680|\\u2000|\\u200[aA]|\\u202[fF]|\\u205[fF]|\\u3000|\\u[fF][eE][fF][fF]|JSUnicode\.IsWhiteSpace|TrimStrWhiteSpace
+# hits: 9
+Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs:121:    [Obsolete("Use Broiler.ECMAScript.Numbers.NumberParsing.TrimStrWhiteSpace, which this forwards to. To be removed in the next major version.")]
+Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs:124:    [Obsolete("Use Broiler.ECMAScript.Numbers.NumberParsing.TrimStrWhiteSpace, which this forwards to. To be removed in the next major version.")]
+Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs:127:    [Obsolete("Use Broiler.ECMAScript.Numbers.NumberParsing.TrimStrWhiteSpace, which this forwards to. To be removed in the next major version.")]
+Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs:134:            ? text.Length - NumberParsing.TrimStrWhiteSpace(text, TrimEnds.Start).Length
+Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs:138:            ? NumberParsing.TrimStrWhiteSpace(rest, TrimEnds.End).Length
+Broiler.JS/Broiler.JavaScript.Ast/Misc/StringSpan.cs:186:    public bool IsNullOrWhiteSpace() => Source == null || string.IsNullOrWhiteSpace(Value);
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:127:        if (JSUnicode.IsWhiteSpace(c) || JSUnicode.IsLineTerminator(c))
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4606:        const string esWhitespaceChars = @"\t\n\v\f\r \xA0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF";
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:380:        while (JSUnicode.IsWhiteSpace(first) || JSUnicode.IsLineTerminator(first))
+
+## JSRegExp's identifier classes for group names, and its loose property lookup
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp: IsRegExpIdentifier|NormalizeKey|EmojiStringPropertyNames|char\.IsLetter|UnicodeCategory|Broiler\.Unicode\.Properties|UnicodeEmoji|JSUnicode\.(IsIdentifier|Properties|StringProperties)
+# hits: 8
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.UnicodeSets.cs:173:                    if (close > 0 && JSUnicode.StringProperties.TryResolve(inner.AsSpan(i + 3, close - (i + 3)), out _))
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.UnicodeSets.cs:408:        if (inner.IndexOf('=') < 0 && JSUnicode.StringProperties.TryResolve(inner, out var stringProperty))
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1953:        if (!JSUnicode.IsIdentifierStart(codePoints[0]))
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1956:            if (!JSUnicode.IsIdentifierPart(codePoints[k]))
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3487:            ? JSUnicode.Properties.TryResolve(inner, out set)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3488:            : JSUnicode.Properties.TryResolve(inner.AsSpan(0, eq), inner.AsSpan(eq + 1), out set);
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3511:            var all = JSUnicode.StringProperties;
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3740:        if (eq < 0 && unicodeSets && JSUnicode.StringProperties.TryResolve(inner, out var stringProperty))
+
+## JSIntl's ComputeGraphemes, ComputeWords, ComputeSentences and IsWordLike
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Intl: ComputeGraphemes|ComputeWords|ComputeSentences|IsWordLike\(|StringInfo|TextElementEnumerator|UnicodeSegmenter|GetWordStatus
+# hits: 2
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:3254:        => SegmenterHolder.Value.GetWordStatus(segment, null) != WordStatus.None;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:3259:        internal static readonly UnicodeSegmenter Value = new(JSUnicode.Tables);
+
+## JSD-0074: IsValidNativeFunctionToStringName's char.IsLetter
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/BuiltInsAssemblyInitializer.cs: IsValidNativeFunctionToStringName|char\.IsLetter|JSUnicode\.IsIdentifier
+# hits: 3
+Broiler.JS/Broiler.JavaScript.BuiltIns/BuiltInsAssemblyInitializer.cs:855:        => IsValidNativeFunctionToStringName(name) ? name : string.Empty;
+Broiler.JS/Broiler.JavaScript.BuiltIns/BuiltInsAssemblyInitializer.cs:860:    private static bool IsValidNativeFunctionToStringName(string name)
+Broiler.JS/Broiler.JavaScript.BuiltIns/BuiltInsAssemblyInitializer.cs:874:            if (!(i == 0 ? JSUnicode.IsIdentifierStart(record.CodePoint) : JSUnicode.IsIdentifierPart(record.CodePoint)))
+
+## JSD-0074: the collator's IsNormalized
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Intl: \bIsNormalized\b|JSUnicode\.Normalization
+# hits: 0
+
+## JSD-0074: the translator's loose property lookup with its NormalizeKey, which becomes a call to the owner's exact lookup
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp: \bNormalizeKey\b|\bTryResolve\(|JSUnicodePropertyNames
+# hits: 8
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.UnicodeSets.cs:173:                    if (close > 0 && JSUnicode.StringProperties.TryResolve(inner.AsSpan(i + 3, close - (i + 3)), out _))
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.UnicodeSets.cs:408:        if (inner.IndexOf('=') < 0 && JSUnicode.StringProperties.TryResolve(inner, out var stringProperty))
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:796:            if ((unicode || unicodeSets) && JSUnicodePropertyNames.FirstRefused(pattern, unicodeSets) is { } refused)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3409:    /// Broiler.Unicode's lookup has admitted it (<see cref="JSUnicodePropertyNames"/>), and the table chooses
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3487:            ? JSUnicode.Properties.TryResolve(inner, out set)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3488:            : JSUnicode.Properties.TryResolve(inner.AsSpan(0, eq), inner.AsSpan(eq + 1), out set);
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3728:    /// own <c>\p</c> (correspondence row P3), though <see cref="JSUnicodePropertyNames"/> has refused every
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:3740:        if (eq < 0 && unicodeSets && JSUnicode.StringProperties.TryResolve(inner, out var stringProperty))
+
+## the code's direct calls of Broiler.Unicode.Properties and the emoji package (JSD-0074, decision SJL-D-6 (c) as this engine applies it)
+# in Broiler.JS: using Broiler\.Unicode\.Properties|using UnicodeEmoji|Broiler\.Unicode\.Properties\.|UnicodeEmoji\.
+# hits: 3
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/UnicodeDependencyTests.cs:16:    private static readonly string[] Retired = ["Broiler.Unicode.Properties", "UnicodeEmoji.StringProperties"];
+Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue659Tests.cs:11:// Broiler.Unicode emoji data (UnicodeEmoji.StringProperties). They are only valid
+Broiler.JS/CHANGELOG.md:134:their code is untouched. `Broiler.Unicode.Properties` and `UnicodeEmoji.StringProperties` still arrive in
+

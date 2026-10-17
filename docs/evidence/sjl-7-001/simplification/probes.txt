@@ -1,0 +1,32 @@
+# Probes section 9 of the README cites, run 2026-10-17T00:25:52Z under TZ=UTC in the shell built in Release from a
+# clean checkout of the after commit a34b1f78 (<tree>/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll).
+
+## General_Category inside a class under u: Unicode 16 and 17 letters and a supplementary letter (Broiler.Regex
+## takes these patterns; the translator's .NET \p{Xx} is its fallback)
+$ dotnet BroilerJS.dll classes.js
+/[\p{Lu}]/u on U+1D400: true
+/^[\p{Lu}]$/u on U+16EA0: true
+/^\p{Lu}$/u on U+16EA0: true
+/^[\p{Ll}]$/u on U+16EBB: true
+/^[\p{L}]$/u on U+105C0: true
+/^\p{L}$/u on U+105C0: true
+/^[\p{gc=Lu}x]$/u on U+1D400: true
+
+## Variables whose names differ only in case, against the expression compiler's lookup that ignores case
+$ dotnet BroilerJS.dll names.js
+[["lo","UP","lo|UP"],1,2,3,4,["dotted capital","small","dotless small","capital"]]
+
+# classes.js:
+const rows = [];
+for (const [source, text] of [['[\\p{Lu}]', '\u{1D400}'], ['^[\\p{Lu}]$', '\u{16EA0}'], ['^\\p{Lu}$', '\u{16EA0}'],
+    ['^[\\p{Ll}]$', '\u{16EBB}'], ['^[\\p{L}]$', '\u{105C0}'], ['^\\p{L}$', '\u{105C0}'], ['^[\\p{gc=Lu}x]$', '\u{1D400}']]) {
+  let answer;
+  try { answer = new RegExp(source, 'u').test(text); } catch (e) { answer = 'threw ' + e.name; }
+  rows.push('/' + source + '/u on U+' + text.codePointAt(0).toString(16).toUpperCase() + ': ' + answer);
+}
+console.log(rows.join('\n'));
+# names.js:
+function f(a, A) { return () => [a, A, (function (x, X) { return x + '|' + X; })(a, A)]; }
+var k = 1, K = 2; let m = 3, M = 4;
+const turkic = (() => { const İ = 'dotted capital', i = 'small', ı = 'dotless small', I = 'capital'; return [İ, i, ı, I]; })();
+console.log(JSON.stringify([f('lo', 'UP')(), k, K, m, M, turkic]));

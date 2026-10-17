@@ -1,0 +1,336 @@
+# SJL-7.6: the cut-over's two searches (cutover/deletion-search.txt and cutover/host-api-search.txt,
+# taken at c7a19d35abf664b774ae55c55b1b524bc5d75486), each repeated by the command its second line records, at a34b1f78cc4bda6bcdfe68ed943af6cc069c1b71, from the
+# after tree's root. The output is sorted; ripgrep writes in its threads' order. Each search is then
+# set against the cut-over's, line by line.
+
+## cutover/deletion-search.txt
+$ rg -n 'IsRegExpIdentifier|UnicodeV17|InRanges|NormalizeKey|EmojiStringPropertyNames|JSStringSpecialCasing|ComputeGraphemes|ComputeWords|ComputeSentences|IsWordLike\(|GetTextElementEnumerator' Broiler.JS
+# exit 1; lines 0; at the cut-over 0; the same 0
+
+## cutover/host-api-search.txt
+$ rg -n 'char\.Is(WhiteSpace|Letter|LetterOrDigit|Digit|Punctuation|Symbol)|Rune\.Is|GetUnicodeCategory|CharUnicodeInfo|\.Normalize\(|IsNormalized\(|NormalizationForm|StringInfo|TextElementEnumerator|JSStringSpecialCasing|CultureInfo|TextInfo|To(Upper|Lower)Invariant' Broiler.JS --glob '!**/*Tests*/**' --glob '!**/benchmarks/**' --glob '!**/bin/**' --glob '!**/obj/**'
+# exit 0; lines 315; at the cut-over 315; the same 311
+# only at the cut-over: Broiler.JS/CHANGELOG.md:118:  the runtime's `StringInfo`'s.
+# only at the cut-over: Broiler.JS/CHANGELOG.md:124:`char.IsLetter` and `char.IsLetterOrDigit`; every native name is ASCII, so nothing changes (I4).
+# only at the cut-over: Broiler.JS/CHANGELOG.md:76:  read .NET's `char.IsWhiteSpace`. The segmenter's word boundaries no longer read it either (G2).
+# only at the cut-over: Broiler.JS/CHANGELOG.md:88:  `'i'.toLocaleUpperCase(['tr', 'en'])` is `İ`, where the joined list reached `CultureInfo` and threw a
+# only at the after commit: Broiler.JS/CHANGELOG.md:124:  the runtime's `StringInfo`'s.
+# only at the after commit: Broiler.JS/CHANGELOG.md:130:`char.IsLetter` and `char.IsLetterOrDigit`; every native name is ASCII, so nothing changes (I4).
+# only at the after commit: Broiler.JS/CHANGELOG.md:82:  read .NET's `char.IsWhiteSpace`. The segmenter's word boundaries no longer read it either (G2).
+# only at the after commit: Broiler.JS/CHANGELOG.md:94:  `'i'.toLocaleUpperCase(['tr', 'en'])` is `İ`, where the joined list reached `CultureInfo` and threw a
+Broiler.JS/Broiler.JavaScript.BuiltIns/Array/JSArray.Template.cs:93:                var bits = long.Parse(encoded.AsSpan(position, 16), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDatePrototype.Formatters.cs:112:        // Broiler extension: a bare .NET format *string* keeps the legacy "F"/CultureInfo path.
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDatePrototype.Formatters.cs:130:        // Broiler extension: a .NET format *string* keeps the legacy CultureInfo fast path.
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDatePrototype.Formatters.cs:154:    // CultureInfo. <paramref name="standardFormat"/> is the .NET format used when none is supplied.
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDatePrototype.Formatters.cs:167:            : (IFormatProvider)CultureInfo.GetCultureInfo(locale.ToString());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDatePrototype.Formatters.cs:94:        // Broiler extension: a .NET format *string* keeps the legacy CultureInfo fast path.
+Broiler.JS/Broiler.JavaScript.BuiltIns/Decimal/JSDecimal.cs:213:    public JSValue ToLocaleString(in Arguments a) => new JSString(value.ToString(CultureInfo.CurrentCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1072:        var lower = value.ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1181:            var singleton = char.ToLowerInvariant(parts[i][0]);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1218:        value = value.ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1238:        value = WeekdayToString(value).ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1540:            canonical.AddRange(ApplySubtagAliases(string.Join("-", head)).ToLowerInvariant().Split('-'));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1853:                subtags[i] = subtag.ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1861:                subtags[i] = subtag.ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1868:                subtags[i] = subtag.ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1874:                subtags[i] = char.ToUpperInvariant(subtag[0]) + subtag.Substring(1).ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1877:                subtags[i] = subtag.ToUpperInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1880:                subtags[i] = subtag.ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1910:                (subtag.Length == 4 && char.IsDigit(subtag[0]));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:1938:            var singleton = char.ToLowerInvariant(subtags[i][0]);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2083:                if (subtag.Length == 2 && char.IsDigit(subtag[1]))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2380:        return string.IsNullOrEmpty(CultureInfo.CurrentCulture.Name) ? "en-US" : CultureInfo.CurrentCulture.Name;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2430:                keywords.Add((parts[end].ToLowerInvariant(), new List<string>()));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2545:        value = value.ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2664:                keywords.Add((parts[end].ToLowerInvariant(), new List<string>()));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2734:                    types.Add(parts[t].ToLowerInvariant());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2776:        return (dash < 0 ? tag : tag.Substring(0, dash)).ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2791:            return parts[i].ToUpperInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2879:        var hours = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:2880:        var minutes = m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:326:                foreach (var culture in CultureInfo.GetCultures(CultureTypes.AllCultures))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:3632:        var s = intPart.ToString(CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:3634:            s += "." + fracPart.ToString(CultureInfo.InvariantCulture).PadLeft(exponent, '0');
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4064:                    return code.ToUpperInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4117:    // Scripts written right-to-left (ISO 15924 codes), used by getTextInfo to report the
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4271:    public static JSValue GetTextInfoPrototype(in Arguments a)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4273:        var locale = RequireLocale(in a, "getTextInfo");
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4275:        // §1.4.x getTextInfo: an object with a single "direction" property ("ltr" / "rtl").
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4405:        => s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s.Substring(1).ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4410:        return (dash < 0 ? tag : tag.Substring(0, dash)).ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4421:    // Character direction for getTextInfo: an explicit script subtag wins, otherwise fall
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4439:            return parts[i].ToUpperInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4460:                variants.Add(p.ToLowerInvariant());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4522:                values.Add(p.ToLowerInvariant());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4861:            if (!int.TryParse(s[(eIdx + 1)..], NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out exp))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4877:        var n = digits.Length == 0 ? BigInteger.Zero : BigInteger.Parse(digits, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5025:        while (start < text.Length && char.IsWhiteSpace(text[start]))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5028:        while (end > start && char.IsWhiteSpace(text[end - 1]))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:507:        constructor.prototype.FastAddValue(KeyStrings.GetOrCreate("getTextInfo"),
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:508:            new JSFunction(JSIntlLocale.GetTextInfoPrototype, "getTextInfo", "function getTextInfo() { [native code] }", createPrototype: false, length: 0),
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5108:        result.Add(("exponentInteger", Math.Abs(exponent).ToString(CultureInfo.InvariantCulture)));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5169:            if (p.Length == 2 && char.IsLetter(p[0]) && char.IsLetter(p[1]))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5179:        var language = (dash < 0 ? tag : tag[..dash]).ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5193:                var lower = tag.ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5374:        var s = scaled.ToString(CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5407:        var digits = ExactRounding.ApplyUnsignedRoundingMode(a, b, n1, n1 + 1, mode).ToString(CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5692:    private CultureInfo Culture()
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5695:            return CultureInfo.InvariantCulture;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5700:        try { return CultureInfo.GetCultureInfo(tag); }
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5701:        catch (CultureNotFoundException) { return CultureInfo.InvariantCulture; }
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5731:            ReadStringOption("currency", string.Empty).ToUpperInvariant(),
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5737:        => CreateString(currency.StringValue.ToUpperInvariant());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5857:        var leftDigit = startStr.Length > 0 && char.IsDigit(startStr[^1]);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:5858:        var rightDigit = endStr.Length > 0 && char.IsDigit(endStr[0]);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6125:    // CultureInfo path: GetCultureInfo("de-DE-u-co-phonebk").CompareInfo tailors Ä to Ae
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6143:                return CultureInfo.GetCultureInfo(bareLocale + "-u-co-search").CompareInfo;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6153:                return CultureInfo.GetCultureInfo(bareLocale + "-u-co-" + collation).CompareInfo;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6157:        try { return CultureInfo.GetCultureInfo(bareLocale).CompareInfo; }
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6158:        catch (CultureNotFoundException) { return CultureInfo.InvariantCulture.CompareInfo; }
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6170:        return (lang.ToLowerInvariant(), collation) switch
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6230:            if (char.IsWhiteSpace(c) || char.IsPunctuation(c) || char.IsSymbol(c))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6397:    private readonly CultureInfo locale;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6543:                    value.Add(parts[j].ToLowerInvariant());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6932:    public static JSIntlDateTimeFormat Get(CultureInfo culture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:6933:        => formats.GetOrAdd(culture.Name, static key => new JSIntlDateTimeFormat(CultureInfo.GetCultureInfo(key)));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:7072:            AddDateTimePart(timeParts, "minute", localTime.Minute.ToString("D2", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:7074:            AddDateTimePart(timeParts, "second", localTime.Second.ToString("D2", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:7084:                        localTime.Millisecond.ToString("D3", CultureInfo.InvariantCulture).Substring(0, digits));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:7210:        => ((hour % 12) == 0 ? 12 : hour % 12).ToString(CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:7260:        var language = (dash < 0 ? localeTag ?? string.Empty : localeTag[..dash]).ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:7276:                if (int.Parse(rule[(at + 1)..], CultureInfo.InvariantCulture) == time)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:7287:            var from = int.Parse(rule[(eq + 1)..dash], CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:7288:            var before = int.Parse(rule[(dash + 1)..], CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:7417:        locale = CultureInfo.CurrentCulture;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:7446:    internal JSIntlDateTimeFormat(CultureInfo locale) : base()
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:841:        => !string.IsNullOrEmpty(value) && UnicodeKeywordTypePattern.IsMatch(value.ToLowerInvariant());
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:891:            var singleton = char.ToLowerInvariant(parts[i][0]);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:894:            while (i < parts.Length && parts[i].Length != 1) { block.Add(parts[i].ToLowerInvariant()); i++; }
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:915:            language = langOpt.ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:921:            script = char.ToUpperInvariant(scriptOpt[0]) + scriptOpt[1..].ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:927:            region = regionOpt.ToUpperInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:936:            var subtags = variantsOpt.ToLowerInvariant().Split('-');
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:510:        CultureInfo culture;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:513:            culture = CultureInfo.GetCultureInfo(tag);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:551:            else if (order.Length == 1 && separator == null && !char.IsWhiteSpace(c))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:586:            if (char.IsLetter(c))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:673:        if (!int.TryParse(body.Substring(0, 2), NumberStyles.None, CultureInfo.InvariantCulture, out var hours))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:676:        if (body.Length == 4 && !int.TryParse(body.Substring(2, 2), NumberStyles.None, CultureInfo.InvariantCulture, out minutes))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:698:                return ("relatedYear", f.Year.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:714:                    ? (year % 100).ToString("D2", CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:715:                    : year.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:728:                    5 => islamic ? f.Month.ToString(CultureInfo.InvariantCulture) : MonthNarrow[f.Month - 1],
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:730:                    2 => f.Month.ToString("D2", CultureInfo.InvariantCulture),
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:731:                    _ => f.Month.ToString(CultureInfo.InvariantCulture),
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:735:                    ? f.Day.ToString("D2", CultureInfo.InvariantCulture)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:736:                    : f.Day.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:739:                return ("hour", token.Count == 2 ? h12.ToString("D2", CultureInfo.InvariantCulture) : h12.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:741:                return ("hour", token.Count == 2 ? f.Hour.ToString("D2", CultureInfo.InvariantCulture) : f.Hour.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:744:                return ("hour", token.Count == 2 ? k.ToString("D2", CultureInfo.InvariantCulture) : k.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:747:                return ("hour", token.Count == 2 ? kk.ToString("D2", CultureInfo.InvariantCulture) : kk.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:749:                return ("minute", token.Count == 2 ? f.Minute.ToString("D2", CultureInfo.InvariantCulture) : f.Minute.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:751:                return ("second", token.Count == 2 ? f.Second.ToString("D2", CultureInfo.InvariantCulture) : f.Second.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:754:                var ms = f.Millisecond.ToString("D3", CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:858:                monthLabel = cm.ToString(CultureInfo.InvariantCulture) + "bis";
+Broiler.JS/Broiler.JavaScript.BuiltIns/Json/JSJSON.cs:748:                    snapshot.Add(index.ToString(System.Globalization.CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Json/JSJsonParser.cs:82:        JSEngine.NewSyntaxError(message + " at position " + position.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Null/JSNull.cs:106:    public override string ToLocaleString(string format, CultureInfo culture) => "";
+Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumber.cs:370:    public override string ToLocaleString(string format, CultureInfo culture) => value.ToString(format, culture.NumberFormat);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumberPrototype.cs:271:                ? CultureInfo.CurrentCulture
+Broiler.JS/Broiler.JavaScript.BuiltIns/Number/JSNumberPrototype.cs:272:                : CultureInfo.GetCultureInfo(locale.ToString());
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1979:                    if (!int.TryParse(name.AsSpan(i + 1, close - (i + 1)), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var cp) || cp > 0x10FFFF)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1987:                        !int.TryParse(name.AsSpan(i, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var unit))
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:1993:                        && int.TryParse(name.AsSpan(i + 3, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var trail)
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4383:                            sb.Append("\\x").Append(value.ToString("X2", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4891:            AddToCharGroup(netGroups, char.ToLowerInvariant(ch), ch);
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:4902:            var netGroup = netGroups[char.ToLowerInvariant(ch)];
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5014:        // recovered from char.ToUpperInvariant/ToLowerInvariant: their case mapping
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5067:        char cu = char.ToUpperInvariant(ch);
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5076:    private static char CaseFoldKey(char ch) => char.ToLowerInvariant(char.ToUpperInvariant(ch));
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5080:    // ToUpper/ToLower only cover the BMP; Rune.ToUpperInvariant/ToLowerInvariant carry the
+Broiler.JS/Broiler.JavaScript.BuiltIns/RegExp/JSRegExp.cs:5087:        return Rune.ToLowerInvariant(Rune.ToUpperInvariant(r)).Value;
+Broiler.JS/Broiler.JavaScript.BuiltIns/String/JSString.cs:260:    public override string ToLocaleString(string format, CultureInfo culture) => value;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalCalendar.cs:169:        var lower = id.ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalCalendar.cs:257:        var e = era.ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalCalendar.cs:89:        var lower = id.ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:416:        double G(int i) => match.Groups[i].Success ? double.Parse(match.Groups[i].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:458:        var numerator = BigInteger.Parse(digits, CultureInfo.InvariantCulture) * unitNs;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:475:            if (!v.IsZero) sb.Append(v.ToString(CultureInfo.InvariantCulture)).Append(unit);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:562:            if (!hoursOut.IsZero) sb.Append(hoursOut.ToString(CultureInfo.InvariantCulture)).Append('H');
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:563:            if (!minutesOut.IsZero) sb.Append(minutesOut.ToString(CultureInfo.InvariantCulture)).Append('M');
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs:566:                sb.Append(wholeSeconds.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:455:        var year = int.Parse(match.Groups["y"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:456:        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:457:        var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:458:        var hour = int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:459:        var minute = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:460:        var second = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:471:            fractionNs = BigInteger.Parse(digits, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:486:            var offsetHours = int.Parse(match.Groups["oh"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:487:            var offsetMinutes = match.Groups["om"].Success ? int.Parse(match.Groups["om"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:488:            var offsetSeconds = match.Groups["os"].Success ? int.Parse(match.Groups["os"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:494:                offsetFractionNs = BigInteger.Parse(match.Groups["of"].Value.PadRight(9, '0'), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:526:            sb.Append(y < 0 ? '-' : '+').Append(Math.Abs(y).ToString("000000", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:528:            sb.Append(y.ToString("0000", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:530:        sb.Append('-').Append(m.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:531:          .Append('-').Append(d.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:532:          .Append('T').Append(hour.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:533:          .Append(':').Append(minute.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:537:            sb.Append(':').Append(second.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:553:            var frac = fractionNs.ToString("000000000", CultureInfo.InvariantCulture).TrimEnd('0');
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs:558:        var digits = fractionNs.ToString("000000000", CultureInfo.InvariantCulture).Substring(0, precision);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:1176:            sb.Append(isoYear < 0 ? '-' : '+').Append(Math.Abs(isoYear).ToString("000000", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:1178:            sb.Append(isoYear.ToString("0000", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:1180:        sb.Append('-').Append(isoMonth.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:1181:          .Append('-').Append(isoDay.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:524:        var month = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:548:            !int.TryParse(code.AsSpan(1, 2), NumberStyles.None, CultureInfo.InvariantCulture, out var month) ||
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:756:        var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:757:        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:758:        var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1069:        var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1070:        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1071:        var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1072:        var h = match.Groups["h"].Success ? int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1073:        var mi = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1074:        var s = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1080:            ms = int.Parse(digits.Substring(0, 3), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1081:            us = int.Parse(digits.Substring(3, 3), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1082:            ns = int.Parse(digits.Substring(6, 3), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1290:            sb.Append(y < 0 ? '-' : '+').Append(Math.Abs(y).ToString("000000", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1292:            sb.Append(y.ToString("0000", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1294:        sb.Append('-').Append(mo.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1295:          .Append('-').Append(d.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1296:          .Append('T').Append(h.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1297:          .Append(':').Append(mi.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1301:            sb.Append(':').Append(s.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1307:                    sb.Append('.').Append(fraction.ToString("000000000", CultureInfo.InvariantCulture).TrimEnd('0'));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:1311:                sb.Append('.').Append(fraction.ToString("000000000", CultureInfo.InvariantCulture).Substring(0, fracDigits));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:785:        var month = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs:808:            !int.TryParse(code.AsSpan(1, 2), NumberStyles.None, CultureInfo.InvariantCulture, out var month) ||
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:320:        var month = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:497:            var fy = int.Parse(full.Groups["y"].Value, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:498:            var fm = int.Parse(full.Groups["mo"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:499:            var fd = int.Parse(full.Groups["d"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:535:        var month = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:536:        var day = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:584:                sb.Append(referenceISOYear < 0 ? '-' : '+').Append(Math.Abs(referenceISOYear).ToString("000000", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:586:                sb.Append(referenceISOYear.ToString("0000", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:590:        sb.Append(isoMonth.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs:591:          .Append('-').Append(isoDay.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:377:        sb.Append(h.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:378:          .Append(':').Append(mi.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:381:        sb.Append(':').Append(s.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:383:            sb.Append('.').Append(fraction.ToString("000000000", CultureInfo.InvariantCulture).Substring(0, fracDigits));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:581:        var oh = int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:582:        var om = m.Groups[2].Success ? int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:583:        var os = m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:635:        var h = int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:636:        var mi = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:637:        var s = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:643:            ms = int.Parse(digits.Substring(0, 3), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:644:            us = int.Parse(digits.Substring(3, 3), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:645:            ns = int.Parse(digits.Substring(6, 3), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:664:        if (ym.Success && int.Parse(ym.Groups[1].Value, CultureInfo.InvariantCulture) is >= 1 and <= 12)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:670:            var month = int.Parse(md.Groups[1].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:671:            var day = int.Parse(md.Groups[2].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:736:        sb.Append(hour.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:737:          .Append(':').Append(minute.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:738:          .Append(':').Append(second.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs:743:            var digits = fraction.ToString("000000000", CultureInfo.InvariantCulture).TrimEnd('0');
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:258:        return (int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture), match.Groups[2].Value == "L");
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:541:        var month = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:717:        var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:718:        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:735:            var day = match.Groups["d"].Success ? int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture) : 1;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:808:            sb.Append(isoYear < 0 ? '-' : '+').Append(Math.Abs(isoYear).ToString("000000", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:810:            sb.Append(isoYear.ToString("0000", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:812:        sb.Append('-').Append(isoMonth.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs:819:            sb.Append('-').Append(referenceISODay.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1531:        var hours = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1532:        var minutes = m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1533:        var seconds = m.Groups[4].Success ? int.Parse(m.Groups[4].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1645:        var hours = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1646:        var minutes = m.Groups[3].Success ? int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1700:        var month = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1822:        var hours = int.Parse(m.Groups["h"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1823:        var minutes = m.Groups["m"].Success ? int.Parse(m.Groups["m"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1824:        var seconds = m.Groups["s"].Success ? int.Parse(m.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1825:        var fractionNs = m.Groups["f"].Success ? long.Parse(m.Groups["f"].Value.PadRight(9, '0'), CultureInfo.InvariantCulture) : 0L;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1892:        var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1893:        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1894:        var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1895:        var hour = match.Groups["h"].Success ? int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1896:        var minute = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1897:        var second = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1904:            ms = int.Parse(digits.Substring(0, 3), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1905:            us = int.Parse(digits.Substring(3, 3), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1906:            ns = int.Parse(digits.Substring(6, 3), CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1934:            var oh = int.Parse(match.Groups["oh"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1935:            var om = match.Groups["om"].Success ? int.Parse(match.Groups["om"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1936:            var os = match.Groups["os"].Success ? int.Parse(match.Groups["os"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1940:                ? long.Parse(match.Groups["of"].Value.PadRight(9, '0'), CultureInfo.InvariantCulture) : 0L;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:2021:        sb.Append(sign).Append(hours.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:2022:          .Append(':').Append(minutes.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:2024:            sb.Append(':').Append(seconds.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:2046:            hours.ToString("00", CultureInfo.InvariantCulture),
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:2048:            minutes.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:2074:            sb.Append(y < 0 ? '-' : '+').Append(Math.Abs(y).ToString("000000", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:2076:            sb.Append(y.ToString("0000", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:2078:        sb.Append('-').Append(mo.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:2079:          .Append('-').Append(d.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:2080:          .Append('T').Append(h.ToString("00", CultureInfo.InvariantCulture))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:2081:          .Append(':').Append(mi.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:2085:            sb.Append(':').Append(s.ToString("00", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalArithmeticCalendar.cs:219:        var e = era.ToLowerInvariant();
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalIsoString.cs:308:        var year = int.Parse(yearText, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalIsoString.cs:309:        var month = int.Parse(monthText, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalIsoString.cs:310:        var day = int.Parse(dayText, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalIsoString.cs:316:        var hour = int.Parse(m.Groups["h"].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalIsoString.cs:317:        var minute = m.Groups["mi"].Success ? int.Parse(m.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalIsoString.cs:318:        var second = m.Groups["s"].Success ? int.Parse(m.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalIsoString.cs:60:        var hour = int.Parse(h.Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalIsoString.cs:61:        var minute = m.Groups["tmin"].Success ? int.Parse(m.Groups["tmin"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalIsoString.cs:62:        var second = m.Groups["tsec"].Success ? int.Parse(m.Groups["tsec"].Value, CultureInfo.InvariantCulture) : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs:594:        return (int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture), match.Groups[2].Value == "L");
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalSolarHijriCalendar.cs:122:        if (era.ToLowerInvariant() is "ap" or "persian") return eraYear;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/Tz/IanaTimeZoneDatabase.cs:126:            foreach (var name in zones.Keys) folded[name.ToUpperInvariant()] = name;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/Tz/IanaTimeZoneDatabase.cs:127:            foreach (var alias in links.Keys) folded[alias.ToUpperInvariant()] = alias;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/Tz/IanaTimeZoneDatabase.cs:38:        if (id != null && _foldedNames.TryGetValue(id.ToUpperInvariant(), out canonical))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/Tz/IanaTimeZoneDatabase.cs:50:        if (id == null || !_foldedNames.TryGetValue(id.ToUpperInvariant(), out var properCase))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/Tz/IanaTimeZoneDatabase.cs:61:        if (id == null || !_foldedNames.TryGetValue(id.ToUpperInvariant(), out var properCase))
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitArrayExpression.cs:129:                builder.Append(text.Length.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitArrayExpression.cs:136:                builder.Append(BitConverter.DoubleToInt64Bits(literal.NumericValue).ToString("X16", CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.Compiler/Expressions/FastCompiler.VisitArrayExpression.cs:95:        builder.Append(arrayExpression.Elements.Count.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.Modules/JSModuleNamespace.cs:58:    private static string NameOf(uint index) => index.ToString(System.Globalization.CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:627:                        if (char.IsDigit(Next()))
+Broiler.JS/Broiler.JavaScript.Parser/FastScanner.cs:651:                if (char.IsDigit(peek))
+Broiler.JS/Broiler.JavaScript.Portable.Compiler/PortableCompiler.cs:108:                output.Append(", System.BitConverter.UInt64BitsToDouble(0x").Append(bits.ToString("X16", CultureInfo.InvariantCulture)).Append("UL)");
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:108:        int n1 = int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:109:        int n2 = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:110:        int n3 = int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:198:        if (!DateTimeOffset.TryParseExact(text, formats, CultureInfo.InvariantCulture, assume, out var instant))
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:201:        var marked = DateTime.TryParseExact(text, formats, CultureInfo.InvariantCulture, Marked(assume), out var clock);
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:206:    private static bool TryParse(string text, CultureInfo culture, out EcmaParsedDate parsed)
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:250:        if (TryParse(text, CultureInfo.CurrentCulture, out result))
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:254:        return TryParse(text, CultureInfo.InvariantCulture, out result) ? result : Invalid;
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:48:        var year = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
+Broiler.JS/Broiler.JavaScript.Runtime/DateParser.cs:50:            return year.ToString("D4", CultureInfo.InvariantCulture) + text.Substring(m.Length);
+Broiler.JS/Broiler.JavaScript.Runtime/JSUndefined.cs:96:    public override string ToLocaleString(string format, CultureInfo culture) => "";
+Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs:1682:    public virtual string ToLocaleString(string format, CultureInfo culture) => throw new NotImplementedException();
+Broiler.JS/Broiler.JavaScript.Runtime/JSVariable.cs:101:        => PrepareAnonymousFunctionName(value, "get " + name.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.Runtime/JSVariable.cs:104:        => PrepareAnonymousFunctionName(value, "set " + name.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.Runtime/JSVariable.cs:114:            KeyType.UInt => propertyKey.Index.ToString(CultureInfo.InvariantCulture),
+Broiler.JS/Broiler.JavaScript.Runtime/JSVariable.cs:82:        => PrepareAnonymousFunctionName(value, name.ToString(CultureInfo.InvariantCulture));
+Broiler.JS/Broiler.JavaScript.Runtime/NullishAccess.cs:321:            if (char.IsWhiteSpace(c))
+Broiler.JS/Broiler.JavaScript.Runtime/NumberParser.cs:32:            if (char.IsDigit(next))
+Broiler.JS/CHANGELOG.md:124:  the runtime's `StringInfo`'s.
+Broiler.JS/CHANGELOG.md:130:`char.IsLetter` and `char.IsLetterOrDigit`; every native name is ASCII, so nothing changes (I4).
+Broiler.JS/CHANGELOG.md:31:class of `Broiler.Unicode.Properties` over the runtime's data and the host's `CultureInfo`; `CharExtensions`'
+Broiler.JS/CHANGELOG.md:33:names' copy of them; `char.IsWhiteSpace` in the scanner and `RegExp.escape`; the loose `\p{…}` lookups of
+Broiler.JS/CHANGELOG.md:35:`Intl.Segmenter`'s grapheme enumeration over the runtime's `StringInfo`, its word heuristic and its
+Broiler.JS/CHANGELOG.md:82:  read .NET's `char.IsWhiteSpace`. The segmenter's word boundaries no longer read it either (G2).
+Broiler.JS/CHANGELOG.md:94:  `'i'.toLocaleUpperCase(['tr', 'en'])` is `İ`, where the joined list reached `CultureInfo` and threw a
+Broiler.JS/samples/Broiler.JavaScript.NativeAotSample/Program.cs:10:    $"\"dynamicCodeSupported\":{dynamicCodeSupported.ToString().ToLowerInvariant()}," +
+Broiler.JS/samples/Broiler.JavaScript.NativeAotSample/Program.cs:11:    $"\"dynamicCodeCompiled\":{dynamicCodeCompiled.ToString().ToLowerInvariant()}}}");
+

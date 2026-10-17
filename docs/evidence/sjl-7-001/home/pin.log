@@ -1,0 +1,41 @@
+# SJL-7.6, this engine's Unicode pin (data/unicode/pins/) at a34b1f78cc4bda6bcdfe68ed943af6cc069c1b71, against the owner's data/unicode/pins/ at 6e14f93ad753094c99f0013d22269b47550ae552, the commit Broiler.Unicode's 0.1.0-preview.4 packages were published from.
+# Two files of the owner's are not copied, as the pin's README says: its README and broiler-vm/.
+# A file is byte-identical when its git blob is.
+
+files here: 29
+unicode.pin: sha256 7eb0f08f0b408d278f1c08b29ea93d17a3216c02c45d6dfbe4bbd440cbcd51b0
+owner's files: 31
+byte-identical: 28
+differ: README.md
+only here: none
+only the owner's: broiler-vm/README.md, broiler-vm/unicode.pin
+
+19e13e0bba7f56905e1b051a1ee6da68f5937555  README.md
+73f188a282b1cd0bb85fd7e8202c731577fb4420  ecma262/ECMA-alternative-copyright-notice.txt
+1b6479a126902e04394f8bb684e7d3740bde608e  ecma262/table-binary-unicode-properties-of-strings.html
+8ab11640ed8bd6234a3c2b42a36a99847eee76ef  ecma262/table-binary-unicode-properties.html
+2bf328116d7085f3e220c8325d0fb737b3bd19a6  ecma262/table-nonbinary-unicode-properties.html
+5457b28db166e14ff22a59911217f1c895ac92bc  emoji-17.0.0/emoji-sequences.txt
+0259b8ec0aaf37dee0f5a610701cf3e67f2637bd  emoji-17.0.0/emoji-zwj-sequences.txt
+a0b0f07fd64598e698fc7da3e55ca72077dd6071  ucd-17.0.0/CaseFolding.txt
+f327784bf3956436efeb85e213fc637d7b3c0207  ucd-17.0.0/DerivedCoreProperties.txt
+448ba69d639987e3108ab46fd6fa3fdf49db269d  ucd-17.0.0/DerivedNormalizationProps.txt
+97b4e4e6202e595f88f07e3a94e8e71b180f66be  ucd-17.0.0/NormalizationTest.txt
+e64b4224d7271c8463b4c5f80fd6e9dbb5865fbb  ucd-17.0.0/PropList.txt
+f0b4be12b91ed1fa37709726841444d92ffe0dea  ucd-17.0.0/PropertyAliases.txt
+b92662eda2867baed56e55440e5187d52c1cb341  ucd-17.0.0/PropertyValueAliases.txt
+98b8d0fb06e5ed7c3c2f20e0202f6cccf8a984e4  ucd-17.0.0/ScriptExtensions.txt
+5574fdd6ae35ddc074397fdc60fbe2e27e795713  ucd-17.0.0/Scripts.txt
+1013344a6f203ff4dc05e9769ff8e9545f8435a8  ucd-17.0.0/SpecialCasing.txt
+fca68e3e154e62e49727ecf69f1df442582bfa96  ucd-17.0.0/UnicodeData.txt
+19b13571f347af21a499eeb5ac0f27fc4602dacd  ucd-17.0.0/auxiliary/GraphemeBreakProperty.txt
+e1215547c58f959a0eec9928e1915901c168f6a9  ucd-17.0.0/auxiliary/GraphemeBreakTest.txt
+c06f4e26ae0fdaf8f6fcafa84d679300ce4c4df5  ucd-17.0.0/auxiliary/SentenceBreakProperty.txt
+b4bef0f402a0c15c45f47e11a1ecd04dc7f86e9c  ucd-17.0.0/auxiliary/SentenceBreakTest.txt
+20fa24e375caea1e92797a001606bceffe3c42e3  ucd-17.0.0/auxiliary/WordBreakProperty.txt
+042b02e77ae8e94e78792d4ade32a765e98206ac  ucd-17.0.0/auxiliary/WordBreakTest.txt
+450252c4df3fc9477f6df6635f7b4aaf61db5a0f  ucd-17.0.0/emoji/emoji-data.txt
+fa328ca5f24a57f08b2b0756c77d7bdcc5ffdf60  ucd-17.0.0/extracted/DerivedBinaryProperties.txt
+41996d6348fdcd7f1a88127766b7e6b21b6159e3  ucd-17.0.0/extracted/DerivedGeneralCategory.txt
+56da58912807030b451a4700687d5bd02c72d6ed  unicode-LICENSE.txt
+5171452dab5e3048aa2e3e38ee1037ccb45141c7  unicode.pin
