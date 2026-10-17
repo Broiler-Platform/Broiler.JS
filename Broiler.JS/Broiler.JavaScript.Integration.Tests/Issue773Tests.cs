@@ -8,8 +8,9 @@ namespace Broiler.JavaScript.Integration.Tests;
 //   * Problem 2 — the "japanese" calendar (Gregorian-family, mid-year regnal eras).
 //   * Problems 4/6–9 — the arithmetic calendars hebrew / coptic / ethiopic /
 //     islamic-civil / islamic-tbla (TemporalArithmeticCalendar, pure epoch-day math).
-//   * Problems 3/5 — the lunisolar calendars chinese / dangi (TemporalLunisolarCalendar,
-//     backed by .NET's astronomical EastAsianLunisolarCalendar, valid ~1901–2100).
+//   * Problems 3/5 — the lunisolar calendars chinese / dangi, then backed by .NET's astronomical
+//     lunisolar calendars (valid ~1901–2100); since milestone SJL-8.6 their years are the shared
+//     calendar tables' (ICU4X's), from the data home.
 //   * Problem 1 — dynamic import() in a plain script no longer throws "undefined is not a
 //     function"; it returns a promise (a fresh one each call), ToString-coercing the
 //     specifier (abrupt completion rejecting rather than throwing) and forwarding to the
@@ -353,8 +354,8 @@ public class Issue773Tests
             FromCal("hebrew", "{ era: 'am', eraYear: 0, monthCode: 'M01', day: 1 }", "{ overflow: 'reject' }"));
 
     // ────────────────── Chinese / dangi lunisolar (Problems 3, 5) ──────────────────
-    // Backed by .NET's astronomical EastAsianLunisolarCalendar (valid ~1901–2100). `year` is the
-    // Gregorian year of the new-year day; there is no era; leap months use "M##L" codes.
+    // The years are the shared calendar tables' (milestone SJL-8.6). `year` is the Gregorian year of
+    // the new-year day; there is no era; leap months use "M##L" codes.
 
     [Fact] // year is the Gregorian year; Chinese New Year 2024 = 2024-02-10; no era
     public void ChineseNewYearMapsToIso()
@@ -398,9 +399,9 @@ public class Issue773Tests
             Eval(@"var d = Temporal.PlainDate.from({year:2024, month:1, day:1, calendar:'dangi'});
                    d.withCalendar('iso8601').toString() + ',' + Temporal.PlainDate.from({year:2025,month:1,day:1,calendar:'dangi'}).inLeapYear"));
 
-    [Fact] // chinese years below the .NET calendar's span (≤1900) are served by the astronomical
-           // fallback (issue #794); CNY 1500 = 1500-02-09
-    public void ChineseBelowDotNetRange_UsesAstronomicalFallback()
+    [Fact] // chinese years before the tables' (before 1900) are ICU4X's approximation (issue #794 first
+           // served them by an astronomical fallback); CNY 1500 = 1500-02-09
+    public void ChineseBeforeTheTables_UsesTheApproximation()
         => Assert.Equal("1500-02-09",
             Eval(@"Temporal.PlainDate.from({year:1500, month:1, day:1, calendar:'chinese'})
                      .withCalendar('iso8601').toString()"));

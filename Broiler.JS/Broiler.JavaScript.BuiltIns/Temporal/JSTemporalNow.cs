@@ -6,9 +6,11 @@ using Broiler.JavaScript.Engine.Core;
 namespace Broiler.JavaScript.BuiltIns.Temporal;
 
 // Temporal.Now (Temporal proposal §2): a namespace exposing the current instant / date / time.
-// The host clock is DateTimeOffset.UtcNow; the default time zone is the system local zone
-// (resolved to an IANA id). The zoned/plain ISO variants are derived by interpreting the
-// current instant in the requested (or system) zone via Temporal.ZonedDateTime.
+// The host clock is DateTimeOffset.UtcNow; the default time zone is SystemTimeZoneIdentifier, the
+// host's zone resolved through the shared time zone database to its primary identifier, or UTC
+// where the database does not hold it (milestone SJL-8.6): the zone Date's local time and the
+// default Intl.DateTimeFormat zone read too. The zoned/plain ISO variants are derived by
+// interpreting the current instant in the requested (or system) zone via Temporal.ZonedDateTime.
 internal static class JSTemporalNow
 {
     private static BigInteger CurrentEpochNanoseconds()
@@ -18,24 +20,7 @@ internal static class JSTemporalNow
         return new BigInteger(ticks) * 100;
     }
 
-    internal static string SystemTimeZoneId()
-    {
-        try
-        {
-            var local = TimeZoneInfo.Local;
-            // The system default is a PRIMARY time-zone identifier: a host whose IANA zone is
-            // "Etc/UTC" surfaces as "UTC" (test262 DateTimeFormat/resolvedOptions/basic requires a
-            // canonical zone), so Temporal.Now.timeZoneId() agrees with the zone of
-            // Temporal.Now.zonedDateTimeISO() and with Intl.DateTimeFormat. (An explicitly supplied
-            // identifier is preserved instead — only the default is resolved to its primary.)
-            if (local.HasIanaId)
-                return JSTemporalZonedDateTime.PrimaryTimeZoneIdentifier(local.Id);
-            if (TimeZoneInfo.TryConvertWindowsIdToIanaId(local.Id, out var iana))
-                return JSTemporalZonedDateTime.PrimaryTimeZoneIdentifier(iana);
-        }
-        catch { /* fall through */ }
-        return "UTC";
-    }
+    internal static string SystemTimeZoneId() => TemporalTimeZones.SystemTimeZoneIdentifier();
 
     private static string ResolveTimeZoneArg(JSValue arg)
     {

@@ -42,8 +42,8 @@ from generate_number_vectors import double_expression, f64, js_string_literal, s
 # retired the Date area's divergences (generate_date_vectors.py), nor revision 18, which added the Unicode
 # area (generate_unicode_vectors.py), nor revision 19, which classified its divergences, nor revision 20, which
 # retired them, nor revision 21, which added the time-zone area (generate_time_zone_vectors.py), nor revision 22,
-# which classified its divergences.
-CORPUS_REVISION = 22
+# which classified its divergences, nor revision 23, which retired them.
+CORPUS_REVISION = 23
 FIRST_REVISION = 6
 GENERATOR = "ref:numericsref@1"
 SPEC = "spec:es2026@0248456c"

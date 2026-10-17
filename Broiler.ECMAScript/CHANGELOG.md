@@ -12,14 +12,21 @@ follow semantic versioning under [convention 16](docs/conventions.md):
 Each entry has the headings **Added**, **Changed**, **Observable changes** and **Data**, and says
 "none" under a heading with nothing to report. A release without an entry here is not published.
 
-## Unreleased
+## 0.1.0-preview.5 — published to nuget.org
 
-To be published as `0.1.0-preview.5`, the stream keeping its `0.1.0` prefix while it is a preview. Broiler.VM's
-cut-over (SJL-8.5) admits the package packed at `2d37a38` under that version from its committed feed before it is
-published, which is the owner's to choose. The source's suffix stays `preview.4` until then: the engine's packages
-depend on the shared library at the suffix's version, and CI restores them from nuget.org. *(Revised 2026-10-17,
-at SJL-8.5; read "Not yet packed under a version of its own: the stream's next version is set when this entry is
-published.")*
+*(Heading corrected 2026-10-17, when the entry was published; read "Unreleased". This entry was published
+as `0.1.0-preview.5` by `Publish shared libraries`, run 39064131506, from `a04cd44`, whose library code is
+`2d37a38`'s.)*
+
+Packed as `0.1.0-preview.5`, the stream keeping its `0.1.0` prefix while it is a preview. Broiler.VM's cut-over
+(SJL-8.5) admitted the packages packed at `2d37a38` from its committed feed before they were published, and its
+feed now holds them as published. The source's suffix is `preview.5` since the publication. *(Corrected
+2026-10-17, when the entry was published; read "To be published as `0.1.0-preview.5`, the stream keeping its
+`0.1.0` prefix while it is a preview. Broiler.VM's cut-over (SJL-8.5) admits the package packed at `2d37a38`
+under that version from its committed feed before it is published, which is the owner's to choose. The source's
+suffix stays `preview.4` until then: the engine's packages depend on the shared library at the suffix's version,
+and CI restores them from nuget.org." That read, until SJL-8.5, "Not yet packed under a version of its own: the
+stream's next version is set when this entry is published.")*
 
 ### Added
 

@@ -47,6 +47,9 @@ bytes are the table's. They are byte for byte the data Broiler.VM's `JsTzdbTable
   Broiler.VM's generated files.
 - **`tzdb/check-zic.py`** compares the zone table with the host's `zic -b fat` over the nine pinned files,
   1800 to 2037 (milestone SJL-8's data-home exit clause 3).
+- **Broiler.JS embeds the files of `generated/` in `Broiler.JavaScript.BuiltIns`**, linked from here and never
+  copied, and its `SharedTimeZoneTests` holds each embedded file to this directory's bytes and to the manifest's
+  digests. *(Added 2026-10-17, at milestone SJL-8.6.)*
 
 A table never changes alone: a change to one is a change of a pin, or of the generator, recorded with the
 decision that makes it, in both repositories.

@@ -118,6 +118,14 @@ publish-and-run gate decide whether the hypotheses become the target.
 - `Ast` references the shared `Broiler.ECMAScript.Algorithms`, as `Parser`, `Runtime`, `BuiltIns`,
   `Storage` and `Expressions` do: `StringSpan`'s obsolete trims forward to its white-space set. *(Added
   2026-10-16, at milestone SJL-7.5.)*
+- `BuiltIns` embeds the time data home's tables, linked from
+  [`Broiler.ECMAScript/data/time/generated/`](../../Broiler.ECMAScript/data/time/README.md): the IANA time
+  zone tables (tzdb 2026e) and the calendar tables, which `Broiler.ECMAScript.Generation` writes from the
+  home's pins. `Temporal`, `Intl` and `Date`'s local time read them through `Broiler.ECMAScript.Algorithms`'
+  `TimeZoneDatabase`, `ZonedTime` and `CalendarYears`. No project embeds a copy of them and no package
+  carries them (decision SJL-D-6 (c)); no engine project references the generator.
+  `SharedTimeZoneTests` holds the embedded files to the home's bytes. *(Added 2026-10-17, at milestone
+  SJL-8.6, when `BuiltIns`' own `tzdata.bin`, a build host's compiled zoneinfo, was retired.)*
 - A shared `Broiler.ECMAScript.*` library references no `Broiler.JavaScript.*` project or package
   and nothing in Broiler.VM (the programme's rule SL1); this engine references it as any consumer
   does.

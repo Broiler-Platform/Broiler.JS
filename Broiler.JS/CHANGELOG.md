@@ -10,6 +10,161 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### The time-zone and calendar area moves to the data home's tables (2026-10-17, milestone SJL-8.6)
+
+`Temporal`, `Intl` and `Date`'s local time read one time zone dataset and one set of calendar tables: the
+time data home's, [`Broiler.ECMAScript/data/time/`](../Broiler.ECMAScript/data/time/README.md), which
+`Broiler.ECMAScript.Generation` writes from IANA tzdb 2026e, CLDR 48.2.0's `bcp47/timezone.json` and ICU4X's
+`icu_calendar` 2.3.0 and `calendrical_calculations` 0.2.4. `Broiler.JavaScript.BuiltIns` embeds the generated
+tables, linked from the home and never copied, and hands them to `Broiler.ECMAScript.Algorithms`' members under
+`Broiler.ECMAScript.Time` (Broiler.VM's JSD-0076; decisions SJL-D-6 (c), SJL-D-20 and SJL-D-21):
+
+- identifier lookup, primary identifiers and a region's zones (`TimeZoneDatabase`);
+- offset zones (`OffsetTimeZones`);
+- a zone's offset at an instant, the possible instants of a wall-clock time, their disambiguation, the start
+  of a day and the next and previous transitions (`ZonedTime`);
+- the years of `chinese`, `dangi`, `islamic-umalqura` and `persian` (`CalendarTables`, `CalendarYears`).
+
+**Where they were**, each deleted: the embedded `tzdata.bin`, a DEFLATE pack of a build host's compiled
+zoneinfo (tzdb 2025b), with its `EmbeddedResource` item and its generator `scripts/tzdata/generate_tzdata.py`;
+`IanaTimeZone`, `IanaTimeZoneDatabase` and `TzifReader`; `JSTemporalZonedDateTime`'s offset, candidate,
+disambiguation, start-of-day and transition helpers; `JSIntl`'s offset-zone normalisation and its region
+table; the formatting engine's offset parser and zone fallback; `TemporalLunisolarCalendar` and
+`TemporalSolarHijriCalendar`, over .NET's `ChineseLunisolarCalendar`, `KoreanLunisolarCalendar` and
+`PersianCalendar`; the Umm al-Qura and .NET dispatch of `TemporalArithmeticCalendar` and
+`TemporalCalendarMath`; and this engine's uses of the CLDR package's `CldrChineseCalendar` and `CldrUmmAlQura`.
+**This is Broiler.JS's record of the `tzdata.bin` retirement** (milestone SJL-8's records).
+
+The built-ins keep their argument reading and its order, the parsing of ISO strings and their annotations,
+their errors, the formatter's resolved `timeZone`, zone display names, and the arithmetic over calendars with
+the formula calendars (`coptic`, `ethiopic`, `ethioaa`, `islamic`, `islamic-civil`, `islamic-tbla`, `hebrew`,
+`indian`), which are milestone SJL-10's.
+
+**Corrections the corpus names.** Each was a `divergence.broiler-js` field of the shared corpus
+(`conformance/vectors/time-zones`, revision 22), under its reason in
+`scripts/conformance/time-zone-divergences.txt`, with the row of bundle `sjl-8-001`'s correspondence from code
+(Broiler.VM's `docs/evidence/sjl-8-001/correspondence.md`). They are corrections under decision SJL-D-16 (a).
+Every one of the area's 1,161 fields, these and the policy changes' below, reports that it no longer holds in the
+engine-level run on revision 22 after the cut-over. Corpus revision 23 retires the 1,161 fields, and
+[`docs/evidence/sjl-8-001/engine/retired-divergences-revision-23.tsv`](../docs/evidence/sjl-8-001/engine/retired-divergences-revision-23.tsv)
+lists every retired vector under its reason.
+
+- **A name matches by its ASCII case only** (Z10, 13 vectors of `time-zones/fold` and `time-zones/iso-string`,
+  reason `js-z10-lookup`): `America/Loſ_Angeles` (U+017F) is a `RangeError` in the `ZonedDateTime` constructor,
+  `Intl.DateTimeFormat` and `toZonedDateTimeISO`, where .NET's invariant upper-casing read it as
+  `America/Los_Angeles`. `eUrOpE/bErLiN` still matches.
+- **An ISO date-time string is not the formatter's `timeZone`** (Z11, 4 vectors of `time-zones/iso-string`,
+  `js-z11-formatter-iso`): `new Intl.DateTimeFormat('en', { timeZone: '2020-01-01T00:00[Europe/Berlin]' })`
+  and `{ timeZone: '2020-01-01T00:00Z' }` are `RangeError`s, where they read `Europe/Berlin` and `UTC`.
+  Temporal's `ToTemporalTimeZoneIdentifier` still reads a zone out of an ISO string.
+- **`Intl.Locale.prototype.getTimeZones` answers the region's zones** (Z12, 10 vectors of `time-zones/region`,
+  `js-z12-regions`): `zone.tab`'s zones in code-unit order, 29 for `US`, `Europe/Berlin,Europe/Busingen` for
+  `DE`, `Europe/Kyiv,Europe/Simferopol` for `UA`, and none for `ZZ`, where a hand table of fourteen regions
+  answered one zone each and `UTC` for every other region.
+- **An offset with non-ASCII digits is a `RangeError`** (A13, 21 vectors of `time-zones/offset-digits`,
+  `js-a13-digits`): `+٠٥:٣٠` (U+0660 to U+0669) as the `ZonedDateTime` constructor's zone or the formatter's
+  `timeZone`, where .NET's `\d` matched it and `int.Parse` threw a `FormatException` that surfaced as an
+  `Error`. The `offset` of a `ZonedDateTime` property bag, of `with` and of a `relativeTo` bag is read by the
+  same grammar, ECMA-262's `UTCOffset`, so it too is a `RangeError` there, as is an hour above 23.
+
+**Corrections with no vector**, under the same decision, held by `SharedTimeZoneTests`,
+`SharedTimeZoneHostTests` and `SharedCalendarTableTests`:
+
+- **The host's zone is validated** (A16): `Temporal.Now.timeZoneId()`, the default formatter's `timeZone` and
+  `Date`'s local time read the host's IANA name resolved through the shared database to its primary
+  identifier, and **`UTC` where the database does not hold it**. Under `TZ=posixrules`, `Temporal.Now`
+  answered `posixrules` while `Intl.DateTimeFormat().resolvedOptions()` and `Temporal.Now.zonedDateTimeISO()`
+  threw a `RangeError`; under `TZ=Factory` it answered `Factory`. Both now read `UTC`, and so does `Date`, which
+  read the host's data for that name. A host name reads as its CLDR primary: `TZ=Europe/Bratislava` reads
+  `Europe/Bratislava`, where it read tzdb's link target `Europe/Prague` (Z7). The specification's
+  SystemTimeZoneIdentifier returns an offset or a primary identifier; this engine's choice of `UTC` for a
+  zone it cannot name is recorded here.
+- **`chinese` 2057** (K2): its ninth month begins on 2057-09-28, as the Hong Kong Observatory's table and
+  ICU4X have it, where .NET's table began it a day later; `{ year: 2057, monthCode: 'M09', day: 1 }` is
+  2057-09-28. It is the one year inside Table 1's published range in which the sources differed.
+- **Far lunisolar dates are valid dates** (K7): `chinese` and `dangi` dates out to the limits are dates of 29-
+  and 30-day months, `-271821-04-19` being `M03` 17, where the CLDR package's computation threw a .NET
+  `IndexOutOfRangeException` at ±50000, −150000, −250000 and +100000 to +250000, an exception that ended the
+  shell's process when nothing caught it, and gave months of 22 to 42 days elsewhere.
+- **Each ISO date is one `persian` date** (K12): 0622-03-21 is 1/`M01`/1 and 0622-03-22 is 1/`M01`/2, and
+  +010000-01-01 is 9378/`M10`/11, where 0622-03-21 and 0622-03-22 were both 1/`M01`/1 and the first three days
+  of +010000 repeated the last three of 9999, at the seams between .NET's calendar and the 33-year rule.
+
+**Code no input reached, deleted** (A6, A11): the zero offset an unknown zone name read, the formatter's
+fallback to the host's zone for an unknown name, and start of day's fallback to local midnight when no
+transition follows a skipped midnight. Every entry point validates a name before reading it, and no gap in
+the data lacks a following transition; a day with no start is now a `RangeError`, never midnight.
+
+**Data policy by decision.** The shared dataset replaces this engine's, under decisions SJL-D-20 and SJL-D-21;
+the bundle's rule counts each as class C5.
+
+- **The release is tzdb 2026e** (Z1, Z2, Z15, 309 vectors of `time-zones/release`, `js-z1-z2-release`), where
+  `tzdata.bin` was 2025b, copied from a build host and not reproducible: Baja California 1953 and 1961 to 1975
+  (2025c), Moldova (2026a), British Columbia's permanent −07:00 (2026b), Alberta's permanent −06:00 and
+  Morocco's permanent +00:00 (2026c), the Northwest Territories, Colombia 1992 and Iran 1979 (2026d), and
+  Manitoba and Ireland 1925 (2026e). America/Vancouver at 2027-01-15 is −07:00, where it was −08:00.
+- **No backzone** (Z3, 463 vectors of `time-zones/backzone`, `js-z3-backzone`): the names that are Links in
+  the default build read their target's history before 1970, Europe/Amsterdam in 1937 being +01:00 where it was
+  +01:20, and `Arctic/Longyearbyen` reading Berlin's history, not Oslo's.
+- **No 2037 cliff** (Z4, A5, A7, A10, 310 vectors of `time-zones/extrapolation-offset`, `-format`, `-wall`,
+  `-day` and `-transition` and one of `time-zones/offset`, reasons `js-z4-extrapolation`,
+  `js-a5-extrapolation-wall`, `js-a7-extrapolation-day` and `js-a10-extrapolation-transitions`): each zone's
+  recurring rules continue it after its last listed transition, without limit, where the offset after 2037 was
+  frozen, on standard time in the north and on daylight time in the south. America/New_York in July 2040 is
+  −04:00, where it was −05:00, and America/Santiago −04:00, where it was −03:00; 2040-03-11T02:30 in New York is
+  skipped, and `reject` refuses it; New York's next transition after 2037-12-01 is 2038-03-14, where there was
+  none.
+- **No `Factory`** (Z5, 10 vectors of `time-zones/factory` and 2 of `time-zones/supported`, `js-z5-factory` and
+  `js-z5-z7-listed`): `Factory` is a `RangeError` in Temporal and the formatter, and
+  `Intl.supportedValuesOf('timeZone')` no longer lists it.
+- **CLDR's primary identifiers** (Z7, 19 vectors of `time-zones/primary` and `time-zones/supported`,
+  `js-z7-primaries`): `Intl.supportedValuesOf('timeZone')` lists 445 names, where it listed 435 and `Factory`,
+  and twelve names that CLDR keeps as keys and tzdb links away are their own primaries, so
+  `Europe/Bratislava` no longer equals `Europe/Prague` (`America/Kralendijk`, `Lower_Princes`, `Marigot`,
+  `St_Barthelemy`, `Arctic/Longyearbyen`, `Atlantic/Jan_Mayen`, `Europe/Bratislava`, `Busingen`,
+  `Mariehamn`, `Podgorica`, `San_Marino`, `Vatican`). `Asia/Calcutta` still equals `Asia/Kolkata`.
+- **The calendar years that change source** (K4, K5, K6, K11, K14; no vector): every year of the four
+  calendars is ICU4X's, where it was the installed .NET runtime's or the CLDR package's. Table 1 of the Intl era
+  and month code proposal leaves each of these years to an implementation-defined approximation.
+  - `dangi` after 2050 is ICU4X's Korean year, reckoned at UTC+9, where it was the Chinese computation at
+    Beijing's meridian; 25 of the 52 years differ, 2061 beginning on 2061-01-22 where it began on 01-21, and
+    2099's leap month being `M03L` where it was `M02L` (K4).
+  - `dangi` 918 to 1899 is ICU4X's approximation, where it was .NET's Korean table: 918 has 354 days, where
+    it had 355 (K5).
+  - `chinese` and `dangi` outside the tables, 1880 to 1899 and after 2102, are ICU4X's approximation, where they
+    were the CLDR computation: `chinese` 2104 begins on 2104-01-27 with the leap month `M06L`, where it began on
+    01-28 with `M05L` (K6).
+  - `persian` outside Table 1's range follows the 33-year rule with `calendrical_calculations`' corrections,
+    where it was .NET's astronomy: 1535 is a leap year, its Esfand 30 being 2157-03-20, and 1536 begins on
+    2157-03-21, where it began a day earlier; 2,582 of the years 1 to 9378 change, 12 of them in 1178 to 3000
+    (K11).
+  - No calendar answer depends on the installed runtime's patch any more (K14).
+  - A `chinese` or `dangi` `PlainMonthDay`'s reference date reads the years 1900 to 2035 only, as Table 6 of
+    the proposal does, where it read 1898 to 2101; so ICU4X's years outside that span, such as 1898's `M01L`
+    and `dangi` 2052's 30-day `M08L`, do not give a month-day a reference date Table 6 does not give it.
+
+`islamic-umalqura` reads the same KACST data from the shared table that it read from the CLDR package's, and the
+same civil arithmetic outside it, so no answer changes (K8, K9); `persian` keeps every year of 1178 to 1534
+AP, Table 1's 1206 to 1498 among them (K10).
+
+**The host's zone has one dataset** (A15, decision SJL-D-19). `Date`'s local-time provider reads the host's
+zone from the shared database, as `Temporal` and the default formatter do, where it read the host's
+`TimeZoneInfo`, whose release and rules could differ from `Temporal`'s for the same zone. Its offsets are the
+database's to the second, so a local mean time keeps its seconds: in America/New_York,
+`new Date(1850, 0, 1).getTimezoneOffset()` is 296.03333333333336 (−4:56:02), where it was 296. Its names, which
+`toString` writes in parentheses, stay the host's display names, the standard or the daylight one as the
+shared database's daylight flag reads it. The CLR views `JSDate.Value` and `JSDate.DateTime` keep the host's
+offset ([`docs/public-api.md`](../docs/public-api.md)).
+
+**Not this milestone's.** The formatter's resolved `timeZone` keeps the name it was given, as `canonical-tz`
+asks, until the specification edition both engines pin settles it (Z8); and a `longOffset` name still drops
+an offset's seconds, which is zone display and milestone SJL-9's.
+
+Tests: `SharedTimeZoneTests` (the embedded tables, held to the home's files and to the manifest's digests, and
+every time-zone row above), `SharedTimeZoneHostTests` (A15, A16) and `SharedCalendarTableTests` (the calendar
+rows) in `Broiler.JavaScript.BuiltIns.Tests`; `Issue783Tests` compares `persian` with .NET's calendar over
+1178 to 1534 AP, where the two agree.
+
 ### A regular-expression literal's group names and classes are checked at parse time (2026-10-17)
 
 The parser's early check of a regular-expression literal now makes the constructor's group-name checks. Both
