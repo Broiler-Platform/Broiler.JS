@@ -18,11 +18,13 @@ JSD-0076 and its correspondence from code, retained in Broiler.VM's bundle of th
 **Owner:** the Broiler.JS maintainer. One person holds every role (the programme's EX-30, recorded in Broiler.VM).
 **Reviewer:** none, and nothing here has been read by anyone but its author.
 
-**State, 2026-10-17, at SJL-8.3:**
+**State, 2026-10-17, at SJL-8.4:**
 - The data home is in place, with the shared decoder and algorithms over its tables (sections 1 and 2).
 - No engine reads them yet. Broiler.VM's cut-over is SJL-8.5 and this engine's is SJL-8.6.
-- The bases of parts A and B are dispatched at the rule's commit. Part C's base follows SJL-8.4, which copies the
-  datasets.
+- The bases of all three parts are taken at the rule's commit `15a1bd8f` (section 3).
+
+*(Revised 2026-10-17, at SJL-8.4. The state read "at SJL-8.3", and its last item "The bases of parts A and B are
+dispatched at the rule's commit. Part C's base follows SJL-8.4, which copies the datasets.")*
 
 **Nothing here is a verdict.**
 
