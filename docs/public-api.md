@@ -64,7 +64,7 @@ profile. They are not part of the `Broiler.JavaScript.*` set above and do not sh
 
 | Package | State | Public surface |
 | --- | --- | --- |
-| `Broiler.ECMAScript.Algorithms` | `0.1.0-preview.1` to `0.1.0-preview.4` published, the numerics area from `0.1.0-preview.2`, the text area from `0.1.0-preview.3` and the Date area from `0.1.0-preview.4` *(corrected 2026-10-16; read "`0.1.0-preview.1` and `0.1.0-preview.2`, with the numerics area, published; `0.1.0-preview.3`, with the text area, the next"; corrected 2026-10-14, read "`0.2.0`, with the numerics area, the next version (Broiler.VM's committed feed holds its `0.2.0-preview.1`)")*; this engine's `Ast`, `Parser`, `Runtime`, `BuiltIns`, `Storage` and `Expressions` reference it *(`Ast` added 2026-10-16, at milestone SJL-7.5, for `StringSpan`'s obsolete trims)* | The contract types `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`; the number-conversion area, namespace `Broiler.ECMAScript.Numbers`: `NumberText`, `NumberParsing`, `NumericLiterals`, `NumericKeys`; the numerics area, in the same namespace: `IntegerConversions`, `Float16`, `MathKernels`, `PreciseSum`, `ExactRounding` with `RoundingMode` and `UnsignedRoundingMode`, `BigIntMath`, `BigIntText` and `BigIntPolicy`; the text area, namespace `Broiler.ECMAScript.Text`: `Utf16` with `CodePointRecord`, `StringPadding` with `PadPlacement`, `RelativeIndex`, `ReplacementTemplate` with `ReplacementPart` and `ReplacementPartKind`, `UriCodec`, `Base64Codec` with `Base64Alphabet` and `LastChunkHandling`, `JsonReader` with `JsonToken`, and `JsonText`; and the Date area, namespace `Broiler.ECMAScript.Time`: `EcmaTime`, `IsoCalendarMath`, `ILocalTimeProvider` with `FixedOffsetLocalTimeProvider` and `EcmaLocalTime`, `EcmaDateParser` with `DateParseDialect`, `EcmaParsedKind` and `EcmaParsedDate`, and `EcmaDateFormatter` *(added 2026-10-16)* |
+| `Broiler.ECMAScript.Algorithms` | `0.1.0-preview.1` to `0.1.0-preview.4` published, the numerics area from `0.1.0-preview.2`, the text area from `0.1.0-preview.3` and the Date area from `0.1.0-preview.4` *(corrected 2026-10-16; read "`0.1.0-preview.1` and `0.1.0-preview.2`, with the numerics area, published; `0.1.0-preview.3`, with the text area, the next"; corrected 2026-10-14, read "`0.2.0`, with the numerics area, the next version (Broiler.VM's committed feed holds its `0.2.0-preview.1`)")*; this engine's `Ast`, `Parser`, `Runtime`, `BuiltIns`, `Storage` and `Expressions` reference it *(`Ast` added 2026-10-16, at milestone SJL-7.5, for `StringSpan`'s obsolete trims)* | The contract types `WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit` and `DepthLimit`; the number-conversion area, namespace `Broiler.ECMAScript.Numbers`: `NumberText`, `NumberParsing`, `NumericLiterals`, `NumericKeys`; the numerics area, in the same namespace: `IntegerConversions`, `Float16`, `MathKernels`, `PreciseSum`, `ExactRounding` with `RoundingMode` and `UnsignedRoundingMode`, `BigIntMath`, `BigIntText` and `BigIntPolicy`; the text area, namespace `Broiler.ECMAScript.Text`: `Utf16` with `CodePointRecord`, `StringPadding` with `PadPlacement`, `RelativeIndex`, `ReplacementTemplate` with `ReplacementPart` and `ReplacementPartKind`, `UriCodec`, `Base64Codec` with `Base64Alphabet` and `LastChunkHandling`, `JsonReader` with `JsonToken`, and `JsonText`; and the Date area, namespace `Broiler.ECMAScript.Time`: `EcmaTime`, `IsoCalendarMath`, `ILocalTimeProvider` with `FixedOffsetLocalTimeProvider` and `EcmaLocalTime`, `EcmaDateParser` with `DateParseDialect`, `EcmaParsedKind` and `EcmaParsedDate`, and `EcmaDateFormatter` *(added 2026-10-16)*; and, in the stream's next version `0.1.0-preview.5`, not yet published, the time-zone and calendar area in the same namespace: `ITimeZoneDatabase` and `TimeZoneDatabase` with `TimeZoneId`, `ITimeZoneRules` and `FixedOffsetTimeZoneRules`, `OffsetTimeZones`, `ZonedTime` with `IsoDate`, `IsoTime`, `IsoDateTime`, `Disambiguation` and `TimeStatus`, and `ICalendarTables`, `CalendarTables`, `CalendarYears`, `CalendarYear` and `TableCalendar`, which this engine's `BuiltIns` calls from milestone SJL-8.6 *(added 2026-10-17)* |
 | `Broiler.ECMAScript.Conformance` | Test-only; not packed at this version | The corpus reader, the validator, the engine-level and library-level runners and their report |
 
 **Their compatibility promise is stronger than this engine's**, and it is enforced rather than stated
@@ -97,6 +97,51 @@ row's second cell read "`0.1.0-preview.1`, the first version the stream will pub
 "`NumericKeys`".* *Revised again 2026-10-15, at milestone SJL-5.5, when the text area moved in: the
 row's second cell began "`0.1.0-preview.1` published; `0.1.0-preview.2`, with the numerics area, the
 next", and its third cell ended at "`BigIntText` and `BigIntPolicy`".*
+
+## Public API changes, 2026-10-17 (the time-zone and calendar area moves to the data home's tables)
+
+Milestone SJL-8.6 moves the time-zone and calendar area onto the time data home's tables, which `BuiltIns`
+embeds from [`Broiler.ECMAScript/data/time/generated/`](../Broiler.ECMAScript/data/time/README.md), and onto
+`Broiler.ECMAScript.Algorithms`' `Broiler.ECMAScript.Time` members over them: `TimeZoneDatabase`,
+`OffsetTimeZones`, `ZonedTime`, `CalendarTables` and `CalendarYears` (Broiler.VM's JSD-0076; decisions
+SJL-D-20 and SJL-D-21). It applies decision SJL-D-25 to each public member the move changes. **No public
+member is removed or emptied**: every member the area's deletion list names is internal. The observable
+corrections and policy changes are in [`Broiler.JS/CHANGELOG.md`](../Broiler.JS/CHANGELOG.md).
+
+| Member | Assembly | Disposition | What it does now |
+| --- | --- | --- | --- |
+| `JSTemporalZonedDateTime` and its exported members, and `JSTemporalInstant`'s, `JSTemporalPlainDate`'s and `JSTemporalPlainDateTime`'s members that take a time zone | `BuiltIns` | kept, results corrected | A zone's offsets, possible instants, disambiguation, start of day and transitions are the shared library's over tzdb 2026e with CLDR's primaries, no backzone, no `Factory` and no 2037 cliff; a name matches by its ASCII case only, and an offset with non-ASCII digits is a `RangeError` (correspondence rows Z1 to Z5, Z7, Z10, A5, A7, A10, A13) |
+| The members of `JSTemporalPlainDate`, `JSTemporalPlainDateTime`, `JSTemporalPlainYearMonth`, `JSTemporalPlainMonthDay` and `JSTemporalZonedDateTime` that read a `chinese`, `dangi`, `islamic-umalqura` or `persian` date | `BuiltIns` | kept, results corrected | Each year is the shared calendar tables', ICU4X's, where it was .NET's lunisolar and persian calendars' or the CLDR package's (K2, K4 to K7, K11, K12) |
+| `JSIntlLocale.GetTimeZonesPrototype(in Arguments)` | `BuiltIns` | kept, results corrected | The region's zones from `zone.tab`, in code-unit order, and none for a region `zone.tab` does not list, where it answered one zone of a hand table of fourteen regions or `UTC` (Z12) |
+| `JSIntlDateTimeFormat`'s constructor and `ResolvedOptionsPrototype(in Arguments)` | `BuiltIns` | kept, results corrected | The `timeZone` option is an offset string without seconds or an available name; an ISO date-time string is a `RangeError` (Z11). The default zone is the host's, resolved through the shared database to its primary identifier, or `UTC` (A16) |
+| `JSDate`'s local-time members, through the internal provider `HostLocalTimeProvider` | `BuiltIns` | kept, results corrected | Local time reads the host's zone from the shared database, at full second precision and with the zone's recurring rules after its last listed transition, where it read the host's `TimeZoneInfo` (A15) |
+| `JSDate.Value`, `JSDate.DateTime`, `JSDate.ConvertTo(Type, out object)` | `BuiltIns` | kept, unchanged | Still the instant at the host's `TimeZoneInfo.Local` offset: a `DateTimeOffset` holds whole minutes only, so the CLR views keep the host's offset, as their 2026-10-16 entry below records |
+
+**Removed internal and private members**, with no public surface:
+
+- *The tz data:* the internal types `IanaTimeZone`, `IanaTimeZoneDatabase` and `TzifReader` (namespace
+  `Broiler.JavaScript.BuiltIns.Temporal.Tz`), and the resource `Broiler.JavaScript.BuiltIns.Temporal.Tz.tzdata.bin`.
+- *Zone algorithms:* `JSTemporalZonedDateTime`'s `OffsetNanosecondsForInstant`, `GetOffsetForLocal`,
+  `CandidateOffsetsForLocal`, `StartOfDayEpochNs`, `FindTransition`, `TryFixedOffset` with `OffsetIdPattern`,
+  `ResolveNamedZone`, `TimeZoneEquals`, `PrimaryTimeZoneIdentifier`, `AvailablePrimaryTimeZoneIdentifiers`,
+  `TryCanonicalizeTimeZoneIdentifier`, `TryOffsetTimeZoneIdentifier` with its expression,
+  `ValidateTimeZoneIdentifier`, `CanonicalizeTimeZoneId` and `FormatOffsetString`; `JSIntl`'s
+  `TryNormalizeOffsetTimeZone` with its expression; `JSIntlLocale`'s `RegionPrimaryTimeZone`; the formatting
+  engine's `TryParseOffset`.
+- *Calendars:* the internal types `TemporalLunisolarCalendar` and `TemporalSolarHijriCalendar`, and
+  `TemporalArithmeticCalendar`'s Umm al-Qura branch, `UmalquraTable`.
+
+The new internal members are, in `BuiltIns`, `TemporalTimeData` (the provider of the embedded tables),
+`TemporalTimeZones` (the zone adapter, with the host's zone) and `TemporalTableCalendar` (this engine's
+arithmetic over the shared years, until SJL-10).
+
+**Packages.** `BuiltIns` references `Broiler.ECMAScript.Algorithms`, as before; the area's members are in
+its next version, `0.1.0-preview.5`, which the shared stream has not published, so `BuiltIns` needs that
+version or later. The engine's packages carry the embedded tables in `Broiler.JavaScript.BuiltIns.dll`; no
+package carries them separately. `Broiler.Unicode.Cldr.LocaleData` stays a dependency for its locale data;
+the engine no longer calls its `CldrChineseCalendar` or `CldrUmmAlQura`.
+
+**Compatibility.** Binary-compatible: every public member is kept with its signature. Source-compatible.
 
 ## Public API changes, 2026-10-16 (the Unicode area moves to Broiler.Unicode's packages)
 
