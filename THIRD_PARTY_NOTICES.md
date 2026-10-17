@@ -173,6 +173,31 @@ from milestone SJL-8.6, when this section's tables also join the engine's data a
 *Added 2026-10-17, at milestone SJL-8.2, when the data home's inputs and generator were added. Broiler.VM's
 `THIRD_PARTY_NOTICES.md` carries the same three inputs' entries for its own copies.*
 
+## The reference datasets (`conformance/datasets/time/`)
+
+[`conformance/datasets/time/`](conformance/datasets/time/README.md) holds byte-for-byte copies of two programs
+of Broiler.VM, each with the answer a reference implementation gave for it and Broiler.VM's divergences from that
+answer, all as Broiler.VM's commit `9508bd5` holds them and held by their SHA-256 in `datasets.pin`. Bundle
+`sjl-8-001`'s rule, part C, runs them in this engine's shell. **They are test material only: no project builds,
+packs or embeds them.**
+
+- **The programs**, `timezones.js` and `temporal.js`, and **the divergences files** are Broiler.VM's, by the same
+  contributors as this repository, under the Apache License 2.0, whose text is in [`LICENSE`](LICENSE).
+- **`timezones.icu-77.1.txt`** is the output of `timezones.js` run on Node 22.22.0, whose ICU is 77.1, with
+  CLDR 47.0 and tzdb 2025b. ICU and CLDR are © Unicode, Inc., under the Unicode License v3 below. The file holds
+  what ICU printed for the program, one line per name: time zone identifiers and UTC offsets in the GMT format,
+  and the identifiers it lists. It reproduces none of ICU's code and no CLDR file. Broiler.VM's notices record
+  the polyfill's answers, the next item, and not this file; this entry records both, so that a reader finds
+  every reference the copies were produced by in one file.
+- **`temporal.polyfill-e8cc03fc.txt`** is the output of `temporal.js` run under the Temporal proposal's
+  reference polyfill, `polyfill/lib` of [tc39/proposal-temporal](https://github.com/tc39/proposal-temporal) at
+  `e8cc03fc970a65a3359e8870e3b35e687ac94e55`, which is licensed under the ISC licence, on Node 22.22.0. The
+  polyfill was installed outside Broiler.VM's repository for the run and is not in this one. The file holds the
+  answers the polyfill gave, one per line; it reproduces none of the polyfill's code or text, so no licence
+  text travels with it. Broiler.VM's notices say the same of its copy.
+
+*Added 2026-10-17, at milestone SJL-8.4, when the copies were added.*
+
 ## Sources the engine's own code cites
 
 - `JSMath.Clz32` (`Broiler.JavaScript.BuiltIns`) links Jurassic's `MathObject.cs`

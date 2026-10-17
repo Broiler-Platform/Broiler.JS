@@ -1,0 +1,2 @@
+# Lines of temporal.polyfill-e8cc03fc.txt on which the profile answers otherwise, each as the
+# profile answers it, under its reason. There are none: every line answers as the polyfill did.
