@@ -1494,8 +1494,7 @@ area: time-zones
 op: GetOffsetNanosecondsFor
 in: str:"Australia/Sydney" bigint:8640000000000000000000
 out: value: f64:0x42C05EF39B200000
-class: divergence
-divergence.broiler-js: row Z4: Broiler.JS reads only the TZif data block and keeps the offset of the last transition of 2037 for every later instant, so northern zones stay on standard time and southern ones on daylight time, where SJL-D-20 continues the recurring rules without limit; policy difference under SJL-D-20 (extrapolation), answered by SJL-8.6
+class: normative
 prov: spec:es2026@0248456c#sec-time-zone-identifiers spec:es2026@0248456c#sec-getnamedtimezoneoffsetnanoseconds ref:tzref@1
 script: Temporal.Instant.fromEpochNanoseconds(8640000000000000000000n).toZonedDateTimeISO("Australia/Sydney").offsetNanoseconds
 note: row A1's cell; at +275760-09-13T00:00:00Z
