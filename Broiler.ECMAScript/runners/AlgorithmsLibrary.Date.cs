@@ -138,7 +138,7 @@ internal sealed partial class AlgorithmsLibrary
                     - IsoCalendarMath.EpochDays((long)inputs[0].Integer, (int)inputs[1].Integer, (int)inputs[2].Integer));
         }
 
-        return EmptyLibrary.NotImplemented;
+        return TimeZoneArea(operation, inputs);
     }
 
     // ---------------------------------------------------------------------------------------------
