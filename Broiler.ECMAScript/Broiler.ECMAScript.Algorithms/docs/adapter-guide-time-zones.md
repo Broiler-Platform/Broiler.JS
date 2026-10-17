@@ -20,8 +20,14 @@ calendar tables.
   2.3.0 and `calendrical_calculations` 0.2.4 (decision SJL-D-21).
 - **Consumers:** listed here at the cut-overs, milestones SJL-8.5 (Broiler.VM) and SJL-8.6 (Broiler.JS);
   JSD-0076's X6 lists the members each replaces.
-- **Vectors:** none yet; SJL-8.4 adds the area's. Until then the library's tests and the differential
-  check against Broiler.VM's code (milestone SJL-8.3) are its evidence.
+- **Vectors:** `conformance/vectors/time-zones/`, corpus revision 21 or later, whose expected values are
+  `scripts/conformance/tzref.py`'s, computed from the pinned release with the host's `zic` and no code of this
+  library or of the data home's generator. The library-level runner,
+  `Broiler.ECMAScript/runners/AlgorithmsLibrary.TimeZones.cs`, is also the reference adapter: every operation
+  below is called there as an engine calls it, over the data home's generated tables read from disk, and it
+  answers every vector of the area. *(Revised 2026-10-17, at milestone SJL-8.4. The bullet read: "**Vectors:**
+  none yet; SJL-8.4 adds the area's. Until then the library's tests and the differential check against
+  Broiler.VM's code (milestone SJL-8.3) are its evidence.")*
 
 **What no operation here does**, by convention 2: no `ToString` of a zone argument, no reading of a
 `Temporal` object's slots, no option reading (`disambiguation`, `offset`), no `RangeError`, no host zone and

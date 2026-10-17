@@ -1,0 +1,11 @@
+# SHA-256 of each shard's list of the shell's binaries; one distinct digest means one shell.
+44fcc24ba92ef706a69f648bf7e8b781f14b25a75cb6498dfdc1c2909a051bba  shell-hashes/shell-binaries-shard-0.sha256
+44fcc24ba92ef706a69f648bf7e8b781f14b25a75cb6498dfdc1c2909a051bba  shell-hashes/shell-binaries-shard-1.sha256
+44fcc24ba92ef706a69f648bf7e8b781f14b25a75cb6498dfdc1c2909a051bba  shell-hashes/shell-binaries-shard-2.sha256
+44fcc24ba92ef706a69f648bf7e8b781f14b25a75cb6498dfdc1c2909a051bba  shell-hashes/shell-binaries-shard-3.sha256
+44fcc24ba92ef706a69f648bf7e8b781f14b25a75cb6498dfdc1c2909a051bba  shell-hashes/shell-binaries-shard-4.sha256
+44fcc24ba92ef706a69f648bf7e8b781f14b25a75cb6498dfdc1c2909a051bba  shell-hashes/shell-binaries-shard-5.sha256
+44fcc24ba92ef706a69f648bf7e8b781f14b25a75cb6498dfdc1c2909a051bba  shell-hashes/shell-binaries-shard-6.sha256
+44fcc24ba92ef706a69f648bf7e8b781f14b25a75cb6498dfdc1c2909a051bba  shell-hashes/shell-binaries-shard-7.sha256
+shards: 8; distinct lists: 1
+the re-run's shell hashes as the shards' did

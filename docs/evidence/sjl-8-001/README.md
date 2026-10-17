@@ -18,11 +18,13 @@ JSD-0076 and its correspondence from code, retained in Broiler.VM's bundle of th
 **Owner:** the Broiler.JS maintainer. One person holds every role (the programme's EX-30, recorded in Broiler.VM).
 **Reviewer:** none, and nothing here has been read by anyone but its author.
 
-**State, 2026-10-17, at SJL-8.3:**
+**State, 2026-10-17, at SJL-8.4:**
 - The data home is in place, with the shared decoder and algorithms over its tables (sections 1 and 2).
 - No engine reads them yet. Broiler.VM's cut-over is SJL-8.5 and this engine's is SJL-8.6.
-- The bases of parts A and B are dispatched at the rule's commit. Part C's base follows SJL-8.4, which copies the
-  datasets.
+- The bases of all three parts are taken at the rule's commit `15a1bd8f` (section 3).
+
+*(Revised 2026-10-17, at SJL-8.4. The state read "at SJL-8.3", and its last item "The bases of parts A and B are
+dispatched at the rule's commit. Part C's base follows SJL-8.4, which copies the datasets.")*
 
 **Nothing here is a verdict.**
 
@@ -130,5 +132,125 @@ Parts A and B's bases were dispatched by `test262 evidence` at the rule's commit
 - part A in the runner's zone, UTC: run 39038217145;
 - part B in `America/New_York`: run 39038219059.
 
-They are imported here when they complete. Part C's base is taken at the rule's commit through the harness SJL-8.4
-commits beside the datasets' copies.
+Both are imported unchanged, with the digest of each zip as downloaded, which is the digest GitHub records:
+[`test262/base/`](test262/base/imported.txt) and [`test262/base-new-york/`](test262/base-new-york/imported.txt).
+- **What ran.** Each run tested `15a1bd8f`, dispatched from `main` at `bfafa77e`. The workflow and
+  `scripts/compliance/` there are byte-identical to the rule commit's.
+- **Completeness.** Each run has:
+  - all eight shards reported, with no configuration failure;
+  - one suite revision, `ccaac100`;
+  - one shell, shown by one distinct list of binaries, with the re-run's shell the same;
+  - `includeNegative` true in `run.txt`, the merged results and the re-run.
+- **The zone.**
+  - Part A's record reads TZ unset and UTC +0000 at both instants.
+  - Part B's reads TZ `America/New_York`, EST -0500 and EDT -0400.
+  - Each run records one tzdata release, 2026c, and every shard is as expected.
+- **Taken.** Part A ran from 13:50Z to 15:25Z on 2026-10-17, and part B from 13:50Z to 15:28Z.
+
+| Run | Passed | Failed | Timed out | Not applicable | Of |
+|---|---|---|---|---|---|
+| Part A, UTC | 98,181 | 2,004 | 2 | 5,871 | 106,058 rows (53,029 paths, two variants) |
+| Part B, `America/New_York` | 98,181 | 2,004 | 2 | 5,871 | 106,058 rows |
+
+The totals are equal in both zones, and the parts compare per row, never with each other. Against bundle
+`sjl-7-001`'s after run (98,146 passed), 35 more rows pass: the fixes merged since, #1041's and the move to
+Broiler.Unicode `0.1.0-preview.5`.
+
+**Part C's base** ([`datasets/`](datasets/README.md)) was taken at the rule's commit.
+- **The population.** Broiler.VM's two programs, with their retained answers and divergences files, are copied
+  byte for byte from Broiler.VM's `9508bd5` into
+  [`conformance/datasets/time/`](../../../conformance/datasets/time/README.md). `datasets.pin` holds each file's
+  length, SHA-256 and Git blob id, and the harness refuses a copy whose digest differs.
+- **The harness** is [`scripts/conformance/run_reference_datasets.py`](../../../scripts/conformance/run_reference_datasets.py),
+  with its tests.
+  - It evaluates each program's text by indirect eval in the Release shell, with no `LANG` and `TZ=UTC`, and
+    prints the completion value.
+  - It builds the expected answer exactly as Broiler.VM's slice checks do: the same line split, divergence keys
+    and replacement, as `IntlChecks.cs` at `9508bd5` has them.
+  - It compares line by line, and it compares an after run with a base run.
+  - It assigns no class.
+
+  Its expected answer for `timezones.js` equals Broiler.VM's own recorded answer, from the correspondence's run,
+  on all 610 lines.
+- **The base** used the shell built in Release from a clean checkout of `15a1bd8f`.
+
+  | Program | Lines | Equal to the expected answer | Differing |
+  |---|---|---|---|
+  | `timezones.js` | 610 | 51 | 559 |
+  | `temporal.js` | 1,629 | 1,622 | 7 |
+
+  Each negative control showed its changed line as a difference. Both programs completed with nothing on
+  standard error. The `timezones.js` answer is byte-identical to the correspondence's run of the program in this
+  engine. A check at the harness's own commit gave byte-identical answers: no file of the engine differs.
+- **What the differing lines look like.** This is an observation, not a classification; the rule's classes are
+  assigned after the cut-over. [`datasets/base/observations.txt`](datasets/base/observations.txt) has it.
+  - **`timezones.js`:**
+    - 404 lines differ by the offset's display without its seconds (Z16, SJL-9's);
+    - 201 by the offset in 2150 (Z4, and the release, Z1);
+    - 152 by the resolved identifier (Z8);
+    - 110 by an offset before 1970 (Z3);
+    - 7 by the region lists (Z12);
+    - 1 by the list of identifiers (Z7, Z5).
+  - **`temporal.js`:** the 7 lines are one `Duration.round` to months relative to `2020-01-31`, in 7 of 9 rounding
+    modes. It reads no zone and no calendar table year, so it looks like class D3's. D3 admits it only if its answer
+    after equals its answer at the base.
+
+## 4. The vectors (SJL-8.4)
+
+**Corpus revision 21** (`09fa9ac5`) adds the time-zone area: 3,969 vectors in seven files under
+[`conformance/vectors/time-zones/`](../../../conformance/vectors/time-zones/), written by
+[`scripts/conformance/generate_time_zone_vectors.py`](../../../scripts/conformance/generate_time_zone_vectors.py).
+- **The reference.** Every expected value is [`scripts/conformance/tzref.py`](../../../scripts/conformance/tzref.py)'s
+  (`ref:tzref@1`). It shares no code with the data home's generator or with `Broiler.ECMAScript.Algorithms`, and it
+  reads none of the generated tables. It:
+  - checks the pinned tarball and CLDR file against their pins;
+  - compiles the nine default source files with the host's `zic -b fat`;
+  - reads every compiled file with its own TZif reader;
+  - evaluates each footer's POSIX TZ string itself after the last listed transition;
+  - applies SJL-D-20's policy.
+
+  Its tests check its reader against Python's `zoneinfo` at about 877,000 instants across all 597 zones.
+- **What the vectors pin.** Instants on both sides of every policy difference and correction JSD-0076 lists:
+  - the release;
+  - backzone;
+  - extrapolation after 2037;
+  - the identifiers, `Factory` and the primaries;
+  - lookup by ASCII case only;
+  - ISO strings as a formatter's zone;
+  - offset identifiers;
+  - a sample of ordinary offsets, transitions, gaps, overlaps and starts of day.
+- **Classes.** 3,800 vectors are `normative` and 169 `impl-defined`. The `impl-defined` ones are the formatter's
+  resolved name (Z8) and a region's zones (Z12).
+
+**The library answers every one.** The library-level runner `Broiler.ECMAScript/runners/AlgorithmsLibrary.TimeZones.cs`
+answers every time-zone vector through `Broiler.ECMAScript.Time`, over the data home's tables, under the JIT and
+under Native AOT. The probe's reports are byte-identical, and a mutated vector is caught.
+
+**This engine's first runs** of `Broiler.JS/Broiler.JavaScript.Vectors.Tests` in Release ([`engine/`](engine/)) were
+taken under `TZ=UTC` and under `TZ=America/New_York`, whose reports are byte-identical.
+
+| Revision | Match | Classified divergences | Unclassified | Not implemented |
+|---|---|---|---|---|
+| 21 | 91,269 | 4 (the number area's, SJL-14's) | 1,161, all in the time-zone area | 0 |
+| 22 | 91,269 | 1,165 | 0 | 0 |
+
+Each run's negative control flagged exactly its mutated vector. **Revision 22** (`4ce20ac7`) classifies the 1,161
+under the correspondence's rows. The reasons are in
+[`scripts/conformance/time-zone-divergences.txt`](../../../scripts/conformance/time-zone-divergences.txt).
+
+| Class | Rows | Vectors |
+|---|---|---|
+| Policy, SJL-D-20 | Z1, Z2 (the release) | 309 |
+| | Z3 (backzone) | 463 |
+| | Z4, A5, A7, A10 (the 2037 freeze) | 310 |
+| | Z5 (`Factory`), Z7 (the primaries) | 31 |
+| Correction, SJL-D-16 (a) | Z10 (lookup by invariant upper-casing) | 13 |
+| | Z11 (ISO strings as a formatter's zone) | 4 |
+| | Z12 (the region lists) | 10 |
+| | A13 (non-ASCII offset digits: a .NET `FormatException` escapes, rendered `abort:`) | 21 |
+
+**Every difference falls under a row the area verdict names, and the vectors falsify none of it.** Every vector of
+the rows it calls agreement matches. SJL-8.6, this engine's cut-over, answers each one.
+
+**Broiler.VM's runs** (observed, its bundle of the same name) match every vector at revision 21 and at revision 22,
+on a pin moved to revision 22.

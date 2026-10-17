@@ -14,7 +14,12 @@ Each entry has the headings **Added**, **Changed**, **Observable changes** and *
 
 ## Unreleased
 
-Not yet packed under a version of its own: the stream's next version is set when this entry is published.
+To be published as `0.1.0-preview.5`, the stream keeping its `0.1.0` prefix while it is a preview. Broiler.VM's
+cut-over (SJL-8.5) admits the package packed at `2d37a38` under that version from its committed feed before it is
+published, which is the owner's to choose. The source's suffix stays `preview.4` until then: the engine's packages
+depend on the shared library at the suffix's version, and CI restores them from nuget.org. *(Revised 2026-10-17,
+at SJL-8.5; read "Not yet packed under a version of its own: the stream's next version is set when this entry is
+published.")*
 
 ### Added
 

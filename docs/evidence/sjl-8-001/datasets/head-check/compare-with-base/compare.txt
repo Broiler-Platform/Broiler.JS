@@ -1,0 +1,17 @@
+Reference datasets, bundle sjl-8-001's rule, part C: an after run against a base run
+
+base: base, shell commit 15a1bd8f329f12238b093def5d1ddcd3e1dffe3d, BroilerJS.dll d431979497a5f6733a4d4225dbdb15ade327f00dcd0b5f8f745e8bac56396889
+after: head-check, shell commit 90ff6ab18d1ffbf140a30f66679c0d27aea45e01, BroilerJS.dll 27d2ef24eff22a2fe07aab66e0cf90b10dc8b8b3c2432a4f5e4e7306b3d486e9
+copies: Broiler.VM 9508bd5b9b6d0f6d009418dda351fb0e7d846745, the same SHA-256 in both runs
+
+timezones: base completed yes, after completed yes
+  lines: 610; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 51; differing: 559
+  of those differing, the same as at the base: 559; moved since the base: 0
+  differing at the base and equal after: 0; equal at the base and differing after: 0
+
+temporal: base completed yes, after completed yes
+  lines: 1629; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 1622; differing: 7
+  of those differing, the same as at the base: 7; moved since the base: 0
+  differing at the base and equal after: 0; equal at the base and differing after: 0

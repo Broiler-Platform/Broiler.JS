@@ -1,0 +1,55 @@
+Observations on a run of the reference datasets (bundle sjl-8-001's rule, part C)
+
+The differing lines grouped by what each difference looks like, with the rows of Broiler.VM's
+correspondence they seem to be cases of. An observation, written by observe.py from the lines reports
+beside it; not a classification. It assigns none of the rule's classes, and the base is not judged.
+
+timezones.js: 610 lines, 51 equal to the expected answer, 559 differing
+
+Each facet, with the number of lines that show it (a line may show several):
+   404  display: the offset shown to the nearest minute where the expected answer shows its seconds, the same offset otherwise (GMT-00:16 for GMT-00:16:08)
+        seems to be row Z16: the longOffset name's seconds, zone display, SJL-9's
+   201  at 2150: the offset at 2150 differs
+        seems to be row Z4: offsets frozen after 2037; and Z1, the release, for the names 2025c to 2026e changed
+   152  identifier: the resolved identifier: this engine keeps the name it was given where the expected answer has the primary identifier
+        seems to be row Z8: the formatter's resolved timeZone of a non-primary name
+   110  before 1970: an offset before 1970 (1850, 1900 or 1940) differs by more than the display
+        seems to be row Z3: backzone
+     0  any other offset (1975, 2000, January or July 2026)
+  Offsets that differ beyond the display, per instant: 1850 110, 1900 95, 1940 46, 1975 0, 2000 0, 2026-01-15 0, 2026-07-15 0, 2150 201.
+  Of the lines whose 2150 offset differs, 17 are names whose offsets tzdb 2025c to 2026e changed: Africa/Casablanca Africa/El_Aaiun America/Edmonton America/Ensenada America/Inuvik America/Rainy_River America/Santa_Isabel America/Tijuana America/Vancouver America/Winnipeg America/Yellowknife Canada/Central Canada/Mountain Canada/Pacific Europe/Chisinau Europe/Tiraspol Mexico/BajaNorte.
+
+Each differing identifier line once, by the facets it shows, with its first names:
+   186  display: Africa/Abidjan Africa/Algiers Africa/Bissau Africa/Juba Africa/Khartoum ...
+    99  display + at 2150: Africa/Cairo Africa/Casablanca Africa/Ceuta Africa/El_Aaiun America/Adak ...
+    83  before 1970: Africa/Accra Africa/Addis_Ababa Africa/Asmara Africa/Bamako Africa/Bangui ...
+    64  identifier + display + at 2150: America/Atka America/Ensenada America/Fort_Wayne America/Godthab America/Indianapolis ...
+    54  identifier + display: America/Argentina/ComodRivadavia America/Buenos_Aires America/Catamarca America/Cordoba America/Jujuy ...
+    19  identifier: Etc/GMT Etc/GMT+0 Etc/GMT-0 Etc/GMT0 Etc/Greenwich ...
+    16  before 1970 + at 2150: America/Nassau Antarctica/McMurdo Arctic/Longyearbyen Europe/Amsterdam Europe/Copenhagen ...
+    14  at 2150: America/Cambridge_Bay America/Inuvik America/Iqaluit America/Matamoros America/Rankin_Inlet ...
+     8  identifier + before 1970: Africa/Asmera Africa/Timbuktu America/Coral_Harbour America/Virgin Iceland ...
+     5  identifier + at 2150: America/Pangnirtung Europe/Belfast GB GB-Eire Poland
+     2  identifier + before 1970 + at 2150: Antarctica/South_Pole Atlantic/Jan_Mayen
+     1  display + before 1970 + at 2150: Europe/Monaco
+
+The other lines that differ (8):
+     8  the lists: zones of US zones of DE zones of AT zones of UA zones of AQ zones of CN zones of ZZ listed
+        the region lines seem to be row Z12 (this engine's hand table of one zone per region); `listed`, row Z7 (the primary identifiers), with Z5 (this engine lists Factory)
+     0  any other line
+  No line differs by an error: the lines on lookup and errors (upper case, unknown, non-ASCII) are equal.
+
+In sum, of the differing lines:
+   259  differ only by the resolved identifier, the display of the offset, or both (19 + 186 + 54)
+   292  have an offset that differs (offset and transition data), with or without those
+     8  are lists
+
+temporal.js: 1629 lines, 1622 equal to the expected answer, 7 differing
+
+     7  duration P1Y2M3W4DT5H6M7.008009010S round month <mode> rel 2020-01-31
+        modes: ceil expand halfCeil halfEven halfExpand halfFloor halfTrunc; P1Y3M expected, P1Y2M30D answered (7)
+        the same operation in the other modes is equal: line 15, P1Y2M; line 17, P1Y2M
+        It rounds a duration to months relative to a plain date in the ISO calendar: it reads no zone and
+        no calendar table year. It is duration rounding. No row of the correspondence names temporal.js;
+        the nearest is K17, which names the arithmetic and rounding lines of Broiler.VM's retained calendar
+        dataset (temporal-calendars.js, not part C's population) SJL-10's.

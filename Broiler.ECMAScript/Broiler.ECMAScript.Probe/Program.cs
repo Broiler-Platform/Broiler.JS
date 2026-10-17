@@ -50,7 +50,8 @@ internal static class Program
         // the numerics area the operations the library does not share and the width-policy vectors are
         // engine-level, and not implemented here either; in the text area, the vectors whose outcome is an
         // engine's conversions, options, validation, raw-JSON brand or string ceiling; in the Date area, the
-        // setters' conversions and their order, and the sequences of local setter calls.
+        // setters' conversions and their order, and the sequences of local setter calls. Every time-zone vector is
+        // the library's, over the data home's generated tables, which the runner reads from disk (milestone SJL-8.4).
         var library = new AlgorithmsLibrary();
         var results = LibraryRun.Run(corpus.Records, library);
         foreach (var result in results)
@@ -61,6 +62,7 @@ internal static class Program
                 "numerics" => !IsEngineLevel(result.Vector),
                 "text" => !AlgorithmsLibrary.IsEngineLevelText(result.Vector["op"] ?? string.Empty),
                 "date" => !AlgorithmsLibrary.IsEngineLevelDate(result.Vector["op"] ?? string.Empty),
+                "time-zones" => true,
                 _ => false,
             };
             if (implemented ? result.Verdict != Verdict.Match : result.Verdict != Verdict.NotImplemented)

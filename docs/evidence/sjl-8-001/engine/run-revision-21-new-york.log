@@ -1,0 +1,39 @@
+== start 2026-10-17T15:32:32Z TZ=America/New_York at 2474bef2393c1f164a4aaff11b290825c1fdb265 (clean tree; built once beforehand in Release, run with --no-build)
+Test run for /home/user/broiler.js-sjl84v/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:37:31.63]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [37 m 25 s]
+  Error Message:
+   1161 of 92434 vectors differ and nothing classifies them:
+time-zones/backzone/0001: expected value: f64:0xC26C2C297A000000, rendered value: f64:0xC22836E210000000
+time-zones/backzone/0002: expected value: f64:0x0000000000000000, rendered value: f64:0x427176592E000000
+time-zones/backzone/0005: expected value: bigint:-1830383032000000000, rendered value: bigint:-1709337548000000000
+time-zones/backzone/0006: expected value: bigint:-1830383032000000000, rendered value: bigint:-441844200000000000
+time-zones/backzone/0007: expected value: f64:0x3FF0000000000000, rendered value: f64:0x404E800000000000
+time-zones/backzone/0008: expected value: f64:0x42A0129548500000, rendered value: f64:0x42A0E50FE1A00000
+time-zones/backzone/0009: expected value: f64:0x42A2020BF7700000, rendered value: f64:0x42A3A52453C00000
+time-zones/backzone/0012: expected value: bigint:-1946168836000000000, rendered value: bigint:-3155682888000000000
+time-zones/backzone/0013: expected value: bigint:-865305900000000000, rendered value: bigint:-1062210920000000000
+time-zones/backzone/0014: expected value: f64:0x4014000000000000, rendered value: f64:0x4000000000000000
+time-zones/backzone/0015: expected value: f64:0x42A0129548500000, rendered value: f64:0x42A0F98D17100000
+time-zones/backzone/0016: expected value: f64:0x42A2020BF7700000, rendered value: f64:0x42A3A52453C00000
+time-zones/backzone/0019: expected value: bigint:-1946168836000000000, rendered value: bigint:-2524530932000000000
+time-zones/backzone/0020: expected value: bigint:-865305900000000000, rendered value: bigint:-1062210920000000000
+time-zones/backzone/0021: expected value: f64:0x4014000000000000, rendered value: f64:0x4000000000000000
+time-zones/backzone/0022: expected value: f64:0x42A0129548500000, rendered value: f64:0x42A0F98D17100000
+time-zones/backzone/0023: expected value: f64:0x42A2020BF7700000, rendered value: f64:0x42A3A52453C00000
+time-zones/backzone/0026: expected value: bigint:-1946168836000000000, rendered value: bigint:-2524530932000000000
+time-zones/backzone/0027: expected value: bigint:-865305900000000000, rendered value: bigint:-1062210920000000000
+time-zones/backzone/0028: expected value: f64:0x4014000000000000, rendered value: f64:0x4000000000000000
+time-zones/backzone/0029: expected value: f64:0xC26C2C297A000000, rendered value: f64:0xC27BF08EB0000000
+time-zones/backzone/0030: expected value: f64:0x0000000000000000, rendered value: f64:0xC28A3185C5000000
+time-zones/backzone/0031: expected value: f64:0x0000000000000000, rendered value: f64:0xC28A3185C5000000
+time-zones/backzone/0033: expected value: bigint:-1830383032000000000, rendered value: bigint:-1830382080000000000
+time-zones/backzone/0034: expected value: bigint:-1830383032000000000, rendered value: bigint:-300841200000000000
+  Stack Trace:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /home/user/broiler.js-sjl84v/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 31
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     3, Skipped:     0, Total:     4, Duration: 37 m 48 s - Broiler.JavaScript.Vectors.Tests.dll (net10.0)
+== end 2026-10-17T16:10:23Z

@@ -89,6 +89,25 @@ public class LibraryRunTests
         Assert.All(engineLevel, static v => Assert.True(AlgorithmsLibrary.IsEngineLevelDate(v["op"]!), v.Id + " is not answered by the library"));
     }
 
+    /// <summary>
+    /// Every time-zone vector passes against the library (milestone SJL-8.4), over the data home's generated tables,
+    /// and the library answers every one: the area has no engine-level vector. The library is Broiler.VM's behaviour
+    /// (the differential check of milestone SJL-8.3), and the vectors' expected values are the independent reference
+    /// computation's, <c>scripts/conformance/tzref.py</c>, so a difference here is a defect of one or the other.
+    /// </summary>
+    [Fact]
+    public void Every_time_zone_vector_passes_against_the_algorithms_library()
+    {
+        var vectors = Home.Corpus.Records.Where(static v => v["area"] == "time-zones").ToList();
+        var results = LibraryRun.Run(vectors, new AlgorithmsLibrary());
+
+        Assert.NotEmpty(vectors);
+        var differences = results.Where(static r => r.Verdict != Verdict.Match)
+            .Select(static r => r.Vector.Id + " " + r.Vector["op"] + " in: " + r.Vector["in"] + " expected: " + r.Expected + " got: " + r.Rendered)
+            .ToList();
+        Assert.True(differences.Count == 0, differences.Count + " differences:\n" + string.Join("\n", differences.Take(60)));
+    }
+
     [Fact]
     public void Against_the_empty_library_every_vector_is_not_implemented()
     {
