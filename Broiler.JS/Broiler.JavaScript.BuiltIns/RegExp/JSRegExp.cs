@@ -780,14 +780,14 @@ public partial class JSRegExp : JSObject, IJSRegExp
             if (unicode && !RegExpUnicodeValidator.IsValidUnicodePattern(pattern))
                 throw JSEngine.NewSyntaxError("Invalid regular expression: invalid pattern in Unicode mode");
 
-            // ES2025 permits two named groups to share a name only when they are in
-            // separate alternatives of a disjunction; the same name twice in a single
-            // alternative (`(?<x>a)(?<x>b)`) is a SyntaxError.
-            ValidateDuplicateNamedGroups(pattern);
-
-            // Each (?<name>…) GroupSpecifier must be a valid RegExpIdentifierName; an exotic name
-            // such as (?<🦊>…) or (?<𝟚the>…) (an ID_Continue-only first character) is a SyntaxError.
-            ValidateNamedGroupNames(pattern);
+            // The group names' early errors, the same check the parser makes of a literal: ES2025
+            // permits two named groups to share a name only when they are in separate alternatives
+            // of a disjunction, so the same name twice in a single alternative (`(?<x>a)(?<x>b)`) is
+            // a SyntaxError; each (?<name>…) GroupSpecifier must be a valid RegExpIdentifierName, so
+            // an exotic name such as (?<🦊>…) or (?<𝟚the>…) (an ID_Continue-only first character) is
+            // one; and where group names are parsed, a `\k` must be a complete `\k<name>`.
+            if (RegExpGroupNames.FirstError(pattern, unicode || unicodeSets, unicodeSets) is { } groupError)
+                throw JSEngine.NewSyntaxError($"Invalid regular expression: {groupError}");
 
             // Under u or v, every \p{…} and \P{…} must name a property or value of ECMA-262's tables
             // exactly as they write it (22.2.2.9), checked by Broiler.Unicode's lookup before Broiler.Regex
@@ -1295,12 +1295,12 @@ public partial class JSRegExp : JSObject, IJSRegExp
         var orderedNames = new List<string>();
         var anyNamed = false;
 
-        ScanCaptureGroups(pattern, (index, name) =>
+        RegExpGroupNames.Scan(pattern, (index, name) =>
         {
             // A GroupName's RegExpIdentifierName always uses Unicode escape rules — \u{…}
             // and \u-escaped surrogate pairs are valid even in a non-u/v regex — so decode
             // it with unicode rules regardless of the pattern's flags, matching
-            // ValidateNamedGroupNames (test262: named-groups/non-unicode-property-names-valid).
+            // RegExpGroupNames.IsValid (test262: named-groups/non-unicode-property-names-valid).
             var decodedName = DecodeGroupName(name, unicode: true);
             originalNames.Add(decodedName);
             if (decodedName == null)
@@ -1809,227 +1809,19 @@ public partial class JSRegExp : JSObject, IJSRegExp
         return -1;
     }
 
-    // ES2025 allows duplicate named capture groups only in SEPARATE alternatives of a
-    // disjunction (so at most one participates in any match). Two GroupSpecifiers with
-    // the same name reachable together in a single match (same alternative / nested /
-    // inside a lookaround of that alternative) are a SyntaxError. Walks the pattern with
-    // a stack of group-nesting frames; each frame tracks the names live in its CURRENT
-    // alternative branch and the union over all its alternatives (folded in at `|` and on
-    // close). Adding a name to a branch that already contains it — directly or bubbled up
-    // from a closed child group — is the error.
-    private static void ValidateDuplicateNamedGroups(string pattern)
-    {
-        if (string.IsNullOrEmpty(pattern) || pattern.IndexOf("(?<", StringComparison.Ordinal) < 0)
-            return;
-
-        static void Conflict(string name)
-            => throw JSEngine.NewSyntaxError($"Invalid regular expression: Duplicate capture group name '{name}'");
-
-        var stack = new Stack<(HashSet<string> Current, HashSet<string> All)>();
-        stack.Push((new HashSet<string>(StringComparer.Ordinal), new HashSet<string>(StringComparer.Ordinal)));
-        var inClass = false;
-
-        for (var i = 0; i < pattern.Length; i++)
-        {
-            var c = pattern[i];
-
-            if (c == '\\') { i++; continue; }
-            if (inClass) { if (c == ']') inClass = false; continue; }
-            if (c == '[') { inClass = true; continue; }
-
-            if (c == '|')
-            {
-                var top = stack.Peek();
-                top.All.UnionWith(top.Current);
-                top.Current.Clear();
-                continue;
-            }
-
-            if (c == ')')
-            {
-                if (stack.Count > 1)
-                {
-                    var closed = stack.Pop();
-                    closed.All.UnionWith(closed.Current);
-                    var parent = stack.Peek();
-                    foreach (var n in closed.All)
-                        if (!parent.Current.Add(n))
-                            Conflict(n);
-                }
-                continue;
-            }
-
-            if (c != '(')
-                continue;
-
-            // A named capture (?<name>…), distinguished from lookbehind (?<= / (?<!.
-            if (i + 2 < pattern.Length && pattern[i + 1] == '?' && pattern[i + 2] == '<'
-                && (i + 3 >= pattern.Length || (pattern[i + 3] != '=' && pattern[i + 3] != '!')))
-            {
-                var nameEnd = pattern.IndexOf('>', i + 3);
-                if (nameEnd > i + 3)
-                {
-                    var name = pattern.Substring(i + 3, nameEnd - (i + 3));
-                    if (!stack.Peek().Current.Add(name))
-                        Conflict(name);
-                    i = nameEnd;
-                }
-            }
-
-            // Every grouping ( … ) — capturing, non-capturing or lookaround — opens a
-            // nested alternation frame whose names bubble up to the current alternative.
-            stack.Push((new HashSet<string>(StringComparer.Ordinal), new HashSet<string>(StringComparer.Ordinal)));
-        }
-    }
-
-    // Walks the pattern invoking onGroup(index, name) for each capturing group in
-    // source order (name is null for unnamed groups). Mirrors the group-detection
-    // in RewriteCaptureGroups' second pass so the assigned indices stay in lockstep.
-    private static void ScanCaptureGroups(string pattern, Action<int, string> onGroup)
-    {
-        var inClass = false;
-        var index = 0;
-        for (var i = 0; i < pattern.Length; i++)
-        {
-            var c = pattern[i];
-
-            if (c == '\\' && i + 1 < pattern.Length)
-            {
-                i++;
-                continue;
-            }
-            if (c == '[')
-            {
-                inClass = true;
-                continue;
-            }
-            if (c == ']')
-            {
-                inClass = false;
-                continue;
-            }
-            if (c != '(' || inClass)
-                continue;
-
-            if (i + 2 < pattern.Length && pattern[i + 1] == '?' && pattern[i + 2] == '<'
-                && (i + 3 >= pattern.Length || (pattern[i + 3] != '=' && pattern[i + 3] != '!')))
-            {
-                var nameEnd = pattern.IndexOf('>', i + 3);
-                var name = nameEnd > i + 3 ? pattern.Substring(i + 3, nameEnd - (i + 3)) : string.Empty;
-                onGroup(++index, name);
-                if (nameEnd > i + 3)
-                    i = nameEnd;
-                continue;
-            }
-
-            if (i + 1 < pattern.Length && pattern[i + 1] == '?')
-                continue;  // non-capturing (?:…) / lookaround / modifier
-
-            onGroup(++index, null);
-        }
-    }
-
-    // Validates every named-capture GroupSpecifier (?<name>…): the name must be a RegExpIdentifierName
-    // (first code point a RegExpIdentifierStart, the rest RegExpIdentifierParts), throwing a
-    // SyntaxError otherwise.
-    private static void ValidateNamedGroupNames(string pattern)
-    {
-        ScanCaptureGroups(pattern, (_, name) =>
-        {
-            if (name != null && !IsValidGroupName(name))
-                throw JSEngine.NewSyntaxError($"Invalid regular expression: invalid capture group name \"{name}\"");
-        });
-    }
-
-    // A GroupName's RegExpIdentifierName always uses Unicode escape rules (\u{…} and \u-escaped
-    // surrogate pairs are accepted) regardless of the regex's u/v flag.
-    private static bool IsValidGroupName(string name)
-    {
-        if (!TryDecodeGroupName(name, unicode: true, out var codePoints) || codePoints.Count == 0)
-            return false;
-        // RegExpIdentifierStart and RegExpIdentifierPart are IdentifierStartChar and IdentifierPartChar
-        // (ECMA-262 22.2.1), Broiler.Unicode's over the pinned Unicode 17.0.0 tables (SJL-7.5), so a group
-        // name and an identifier admit the same code points.
-        if (!JSUnicode.IsIdentifierStart(codePoints[0]))
-            return false;
-        for (var k = 1; k < codePoints.Count; k++)
-            if (!JSUnicode.IsIdentifierPart(codePoints[k]))
-                return false;
-        return true;
-    }
-
-    // Decodes a group-name's source text into Unicode code points: \uXXXX and (only in u/v mode)
-    // \u{…} escapes are resolved, and literal surrogate pairs are combined. Returns false for a
-    // malformed escape, a stray backslash, or a lone surrogate (none of which can appear in a name).
-    private static bool TryDecodeGroupName(string name, bool unicode, out List<int> codePoints)
-    {
-        codePoints = new List<int>(name.Length);
-        for (var i = 0; i < name.Length; i++)
-        {
-            var c = name[i];
-            if (c == '\\')
-            {
-                if (i + 1 >= name.Length || name[i + 1] != 'u') return false; // only \u escapes are legal
-                i += 2;
-                if (i < name.Length && name[i] == '{')
-                {
-                    if (!unicode) return false; // \u{…} is a u/v-mode-only escape
-                    var close = name.IndexOf('}', i + 1);
-                    if (close < 0 || close == i + 1) return false;
-                    if (!int.TryParse(name.AsSpan(i + 1, close - (i + 1)), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var cp) || cp > 0x10FFFF)
-                        return false;
-                    codePoints.Add(cp);
-                    i = close;
-                }
-                else
-                {
-                    if (i + 4 > name.Length ||
-                        !int.TryParse(name.AsSpan(i, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var unit))
-                        return false;
-                    i += 3;
-                    // In u/v mode a \u-escaped lead surrogate may pair with a following \u-escaped trail.
-                    if (unicode && unit is >= 0xD800 and <= 0xDBFF
-                        && i + 6 < name.Length && name[i + 1] == '\\' && name[i + 2] == 'u'
-                        && int.TryParse(name.AsSpan(i + 3, 4), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var trail)
-                        && trail is >= 0xDC00 and <= 0xDFFF)
-                    {
-                        codePoints.Add(char.ConvertToUtf32((char)unit, (char)trail));
-                        i += 6;
-                    }
-                    else if (unit is >= 0xD800 and <= 0xDFFF)
-                    {
-                        return false; // a lone surrogate is not a valid identifier code point
-                    }
-                    else codePoints.Add(unit);
-                }
-            }
-            else if (char.IsHighSurrogate(c) && i + 1 < name.Length && char.IsLowSurrogate(name[i + 1]))
-            {
-                codePoints.Add(char.ConvertToUtf32(c, name[i + 1]));
-                i++;
-            }
-            else if (char.IsSurrogate(c))
-            {
-                return false; // a lone surrogate
-            }
-            else codePoints.Add(c);
-        }
-        return true;
-    }
-
     // Resolves \uXXXX (and, in u/v mode, \u{…}) escapes inside a regex named-group source
     // to the runtime string the test code reaches via groups[name]. Without this the
     // captureMap keys (and \k<name> lookups) used the raw source — so /(?<_‌>a)/'s
     // group was stored as "_\\u200C" and groups["_‌"] (an identifier resolving to
     // "_" + U+200C) found nothing (test262 RegExp/named-groups/non-unicode-property-names).
     // Returns null when decoding fails — the caller falls back to the raw name (which
-    // would have already been rejected by ValidateNamedGroupNames if it were malformed).
+    // would have already been rejected by RegExpGroupNames.FirstError if it were malformed).
     private static string DecodeGroupName(string rawName, bool unicode)
     {
         if (string.IsNullOrEmpty(rawName) || rawName.IndexOf('\\') < 0)
             return rawName;
 
-        if (!TryDecodeGroupName(rawName, unicode, out var codePoints))
+        if (!RegExpGroupNames.TryDecode(rawName, unicode, out var codePoints))
             return rawName;
 
         var sb = new StringBuilder(rawName.Length);

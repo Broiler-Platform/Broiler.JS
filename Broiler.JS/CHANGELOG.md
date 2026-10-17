@@ -10,6 +10,43 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### A regular-expression literal's group names and classes are checked at parse time (2026-10-17)
+
+The parser's early check of a regular-expression literal now makes the constructor's group-name checks. Both
+call one implementation (`RegExpGroupNames`). The parser also gains two class checks that neither made
+before. Each fix corrects test262 rows at `ccaac100` that failed both before and after milestone SJL-7's
+cut-over, as section 6 of bundle `sjl-7-001` records.
+
+- **A group name that is not a RegExpIdentifierName is an early SyntaxError.** Its code points are
+  classified by `JSUnicode` (Broiler.Unicode's `EcmaScriptLexical`), as an identifier's are.
+  - These no longer parse: `/(?<42a>a)/`, `/(?<a:>a)/u`, `/(?<❤>a)/`, `/(?<𐒤>a)/u` (ID_Continue but not
+    ID_Start), `/(?<a\uD801>.)/u` and `/(?<a\>.)/`.
+  - test262: `language/literals/regexp/named-groups/invalid-non-id-start-*`, `invalid-non-id-continue-*`,
+    `invalid-numeric-*` and `invalid-punctuator-*` (20 paths).
+- **A name declared twice in one alternative is an early SyntaxError**, as it already was in the
+  constructor: `/(?<a>a)(?<a>a)/`. `/(?<a>a)|(?<a>b)/` still parses (`invalid-duplicate-groupspecifier*`,
+  4 paths).
+- **Where group names are parsed, every `\k` must be a complete `\k<GroupName>`.** That is the case under
+  `u` or `v`, or when the pattern declares a group name.
+  - `/(?<a>.)\k/`, `/\k(?<a>.)/` and `/(?<a>.)[\k]/` are now SyntaxErrors both as literals and through the
+    constructor, which used to build them (`invalid-incomplete-groupname.js` and
+    `invalid-incomplete-groupname-6.js`).
+  - Otherwise `/\k/` is still Annex B's letter `k`.
+- **Under `v`, a negated class that may contain strings is an early SyntaxError**, by ECMA-262's
+  MayContainStrings.
+  - `/[^\p{RGI_Emoji}]/v` and `/[^\q{ab}]/v` no longer parse.
+  - `/[^\p{RGI_Emoji}&&a]/v`, an intersection with a single character, still does.
+  - test262: `built-ins/RegExp/property-escapes/generated/strings/*-negative-CharacterClass.js` (7 paths).
+- **Under `u`, a property escape at either end of a class range is a SyntaxError**, as `\d` or `\w`
+  already was.
+  - `/[--\p{Hex}]/u` and `/[\p{Hex}-￿]/u` are refused as literals and through the constructor, which
+    used to build the second (`property-escapes/character-class-range-end.js` and
+    `character-class-range-no-dash-start.js`).
+  - The class is now read range by range. So `/[a\-\d]/u`, where an escaped `-` stands beside a class
+    escape and forms no range, is now admitted; it used to be refused.
+
+`RegExpLiteralEarlyErrorTests` (parser) and `RegExpConstructorEarlyErrorTests` (built-ins) hold the cases.
+
 ### The CLR binding's names do not read the host's culture (2026-10-17)
 
 - **.NET member names and the keys matched to them are now lower-cased with invariant casing.** This
