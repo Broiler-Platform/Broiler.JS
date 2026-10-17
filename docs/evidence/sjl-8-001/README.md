@@ -130,5 +130,43 @@ Parts A and B's bases were dispatched by `test262 evidence` at the rule's commit
 - part A in the runner's zone, UTC: run 39038217145;
 - part B in `America/New_York`: run 39038219059.
 
-They are imported here when they complete. Part C's base is taken at the rule's commit through the harness SJL-8.4
-commits beside the datasets' copies.
+They are imported here when they complete.
+
+**Part C's base** ([`datasets/`](datasets/README.md)) was taken at the rule's commit.
+- **The population.** Broiler.VM's two programs, with their retained answers and divergences files, are copied
+  byte for byte from Broiler.VM's `9508bd5` into
+  [`conformance/datasets/time/`](../../../conformance/datasets/time/README.md). `datasets.pin` holds each file's
+  length, SHA-256 and Git blob id, and the harness refuses a copy whose digest differs.
+- **The harness** is [`scripts/conformance/run_reference_datasets.py`](../../../scripts/conformance/run_reference_datasets.py),
+  with its tests.
+  - It evaluates each program's text by indirect eval in the Release shell, with no `LANG` and `TZ=UTC`, and
+    prints the completion value.
+  - It builds the expected answer exactly as Broiler.VM's slice checks do: the same line split, divergence keys
+    and replacement, as `IntlChecks.cs` at `9508bd5` has them.
+  - It compares line by line, and it compares an after run with a base run.
+  - It assigns no class.
+
+  Its expected answer for `timezones.js` equals Broiler.VM's own recorded answer, from the correspondence's run,
+  on all 610 lines.
+- **The base** used the shell built in Release from a clean checkout of `15a1bd8f`.
+
+  | Program | Lines | Equal to the expected answer | Differing |
+  |---|---|---|---|
+  | `timezones.js` | 610 | 51 | 559 |
+  | `temporal.js` | 1,629 | 1,622 | 7 |
+
+  Each negative control showed its changed line as a difference. Both programs completed with nothing on
+  standard error. The `timezones.js` answer is byte-identical to the correspondence's run of the program in this
+  engine. A check at the harness's own commit gave byte-identical answers: no file of the engine differs.
+- **What the differing lines look like.** This is an observation, not a classification; the rule's classes are
+  assigned after the cut-over. [`datasets/base/observations.txt`](datasets/base/observations.txt) has it.
+  - **`timezones.js`:**
+    - 404 lines differ by the offset's display without its seconds (Z16, SJL-9's);
+    - 201 by the offset in 2150 (Z4, and the release, Z1);
+    - 152 by the resolved identifier (Z8);
+    - 110 by an offset before 1970 (Z3);
+    - 7 by the region lists (Z12);
+    - 1 by the list of identifiers (Z7, Z5).
+  - **`temporal.js`:** the 7 lines are one `Duration.round` to months relative to `2020-01-31`, in 7 of 9 rounding
+    modes. It reads no zone and no calendar table year, so it looks like class D3's. D3 admits it only if its answer
+    after equals its answer at the base.
