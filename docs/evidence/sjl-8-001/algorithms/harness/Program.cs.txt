@@ -1,0 +1,631 @@
+// The SJL-8.3 differential check: Broiler.VM's current zone and calendar code (copied verbatim into VmRef)
+// against the shared library in the sjl-8-3 worktree, over the same table bytes. Throwaway; not committed.
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Linq;
+using System.Numerics;
+using System.Text;
+using Broiler.ECMAScript.Time;
+using VmRef;
+
+internal static class Program
+{
+    private static readonly SortedDictionary<string, (long Compared, long Differences)> Counts = new(StringComparer.Ordinal);
+    private static readonly List<string> Examples = [];
+    private static readonly BigInteger NsPerSecond = 1_000_000_000;
+    private static readonly BigInteger NsPerDay = 86_400_000_000_000;
+
+    private static void Check(string section, bool same, Func<string> describe)
+    {
+        var (compared, differences) = Counts.TryGetValue(section, out var c) ? c : (0, 0);
+        compared++;
+        if (!same)
+        {
+            differences++;
+            if (Examples.Count(e => e.StartsWith(section + ":", StringComparison.Ordinal)) < 12)
+                Examples.Add(section + ": " + describe());
+        }
+
+        Counts[section] = (compared, differences);
+    }
+
+    private static string Outcome(Func<object?> run)
+    {
+        try
+        {
+            return "ok:" + Render(run());
+        }
+        catch (VmError e)
+        {
+            return "error:" + Classify(e.Message);
+        }
+        catch (Exception e)
+        {
+            return "crash:" + e.GetType().Name;
+        }
+    }
+
+    private static string Classify(string message) =>
+        message.Contains("ambiguous", StringComparison.Ordinal) ? "Ambiguous"
+        : message.Contains("does not exist", StringComparison.Ordinal) ? "Skipped"
+        : message.Contains("start of the day", StringComparison.Ordinal) ? "NoStartOfDay"
+        : message.Contains("outside the representable range", StringComparison.Ordinal) ? "OutOfRange"
+        : message.Contains("cannot have seconds", StringComparison.Ordinal) ? "OffsetWithSeconds"
+        : message.Contains("is not an available time zone", StringComparison.Ordinal) ? "Unavailable"
+        : "other(" + message + ")";
+
+    private static string Render(object? value) => value switch
+    {
+        null => "null",
+        BigInteger b => b.ToString(CultureInfo.InvariantCulture),
+        IEnumerable<BigInteger> list => "[" + string.Join(",", list.Select(b => b.ToString(CultureInfo.InvariantCulture))) + "]",
+        long l => l.ToString(CultureInfo.InvariantCulture),
+        int i => i.ToString(CultureInfo.InvariantCulture),
+        _ => Convert.ToString(value, CultureInfo.InvariantCulture) ?? "?",
+    };
+
+    private static string Shared(TimeStatus status, object? value) =>
+        status == TimeStatus.Completed ? "ok:" + Render(value) : "error:" + status;
+
+    private static JsIsoDateTime VmDateTime(BigInteger wallNs) => JsTemporalCore.FromEpochNs(wallNs);
+
+    private static IsoDateTime SharedDateTime(JsIsoDateTime d) =>
+        new(new IsoDate(d.Date.Year, d.Date.Month, d.Date.Day),
+            new IsoTime(d.Time.Hour, d.Time.Minute, d.Time.Second, d.Time.Millisecond, d.Time.Microsecond, d.Time.Nanosecond));
+
+    private static long Seconds(int year, int month, int day) => IsoCalendarMath.EpochDays(year, month, day) * 86400L;
+
+    private static string Ascii(string text, Func<char, char> map) => new(text.Select(map).ToArray());
+
+    internal static int Main(string[] args)
+    {
+        var clock = Stopwatch.StartNew();
+        var engine = new JsEngine { Intl = new JsIntlTables() };
+        var vm = engine.Intl!.TimeZones;
+        var db = new TimeZoneDatabase(JsTzdbTables.Version, JsTzdbTables.TimeZones, JsTzdbTables.TimeZoneIds, JsTzdbTables.TimeZoneRegions);
+        var calendars = new CalendarTables(JsCalendarTables.Calendars);
+
+        var names = Encoding.ASCII.GetString(JsTzdbTables.TimeZoneIds).Split('\n').Where(l => l.Length > 0).Select(l => l.Split('|')[0]).ToArray();
+        var regionCodes = Encoding.ASCII.GetString(JsTzdbTables.TimeZoneRegions).Split('\n').Where(l => l.Length > 0).Select(l => l.Split('|')[0]).ToArray();
+
+        Identifiers(vm, db, names, regionCodes);
+        Console.Error.WriteLine("identifiers done " + clock.Elapsed);
+        Offsets(vm, db, names);
+        Console.Error.WriteLine("offsets done " + clock.Elapsed);
+        var transitions = Transitions(engine, vm, db, names);
+        Console.Error.WriteLine("transitions done " + clock.Elapsed);
+        Wall(engine, vm, db, names, transitions);
+        Console.Error.WriteLine("wall times done " + clock.Elapsed);
+        OffsetIdentifiers(engine, db, names);
+        Console.Error.WriteLine("offset identifiers done " + clock.Elapsed);
+        Equality(engine, db, names);
+        Console.Error.WriteLine("equality done " + clock.Elapsed);
+        Calendars(engine, calendars);
+        Console.Error.WriteLine("calendars done " + clock.Elapsed);
+
+        var report = new StringBuilder();
+        report.Append("SJL-8.3 differential check: Broiler.VM's current code (copied from /home/user/Broiler.VM at ")
+            .Append(args.Length > 0 ? args[0] : "?").Append(") against Broiler.ECMAScript.Algorithms in the sjl-8-3 worktree (")
+            .Append(args.Length > 1 ? args[1] : "?").Append("), over Broiler.VM's tzdb ").Append(JsTzdbTables.Version)
+            .Append(" and calendar tables.\n\n");
+        long total = 0, totalDifferences = 0;
+        foreach (var (section, (compared, differences)) in Counts)
+        {
+            report.Append(section.PadRight(64)).Append(compared.ToString("N0", CultureInfo.InvariantCulture).PadLeft(14))
+                .Append(" compared, ").Append(differences.ToString("N0", CultureInfo.InvariantCulture)).Append(" differ\n");
+            total += compared;
+            totalDifferences += differences;
+        }
+
+        report.Append("\nTotal: ").Append(total.ToString("N0", CultureInfo.InvariantCulture)).Append(" comparisons, ")
+            .Append(totalDifferences.ToString("N0", CultureInfo.InvariantCulture)).Append(" differences.\n");
+        if (Examples.Count > 0)
+        {
+            report.Append("\nFirst differences:\n");
+            foreach (var example in Examples)
+                report.Append("  ").Append(example).Append('\n');
+        }
+
+        report.Append("\nRun time: ").Append(clock.Elapsed.TotalSeconds.ToString("F0", CultureInfo.InvariantCulture)).Append(" s\n");
+        Console.Out.Write(report.ToString());
+        return totalDifferences == 0 ? 0 : 1;
+    }
+
+    // ---- A. Identifiers, primaries, the primary list and the regions ------------------------------------
+
+    private static void Identifiers(JsTimeZones vm, TimeZoneDatabase db, string[] names, string[] regionCodes)
+    {
+        var probes = new List<string>();
+        foreach (var name in names)
+        {
+            probes.Add(name);
+            probes.Add(Ascii(name, c => c is >= 'a' and <= 'z' ? (char)(c - 32) : c));
+            probes.Add(Ascii(name, c => c is >= 'A' and <= 'Z' ? (char)(c + 32) : c));
+            probes.Add(Ascii(name, c => c is >= 'a' and <= 'z' ? (char)(c - 32) : c is >= 'A' and <= 'Z' ? (char)(c + 32) : c));
+            probes.Add(name + " ");
+            probes.Add(name + "\0");
+            probes.Add(name.Replace('s', 'ſ'));
+            probes.Add(name.Replace('i', 'ı'));
+            probes.Add(name.Replace('I', 'İ'));
+            probes.Add(name.Replace('K', 'K'));
+        }
+
+        probes.AddRange([
+            "Mars/Olympus", "Etc/Unknown", "", "America/New York", "EST5", "Etc/GMT+13", "Etc/GMT-15", "Etc/GMT+05", "Factory", "factory",
+            "America/Loſ_Angeles", "Europe/Berlın", "Europe/Kıev", "Europe/İstanbul", "UTC", "utc", "Utc", "etc/utc", "GMT", "z", "+05:30",
+            "-00:00", "America/", "/", "America/New_York/", "é", "America\u0000/New_York",
+        ]);
+
+        foreach (var probe in probes)
+        {
+            var record = vm.Find(probe);
+            var found = db.TryFind(probe, out var id);
+            var vmText = record is null ? "none" : record.Identifier + "|" + record.Primary;
+            var sharedText = found ? id.Identifier + "|" + db.Primary(id).Identifier : "none";
+            Check("A1 identifier lookup and primary (597 names x 10 forms + 27)", vmText == sharedText, () => "'" + probe + "': VM " + vmText + ", shared " + sharedText);
+        }
+
+        Check("A2 primary identifier list", vm.PrimaryIdentifiers.SequenceEqual(db.PrimaryIdentifiers),
+            () => "VM " + vm.PrimaryIdentifiers.Count + " names, shared " + db.PrimaryIdentifiers.Count);
+
+        foreach (var region in regionCodes.Concat(["ZZ", "us", "", "USA", "U", "AQ", "001"]))
+        {
+            var a = string.Join(" ", vm.Region(region));
+            var b = string.Join(" ", db.RegionTimeZones(region));
+            Check("A3 region zones (247 regions + 7)", a == b, () => region + ": VM [" + a + "], shared [" + b + "]");
+        }
+    }
+
+    // ---- B. Offsets and the daylight flag ---------------------------------------------------------------
+
+    private static void Offsets(JsTimeZones vm, TimeZoneDatabase db, string[] names)
+    {
+        var from = Seconds(1800, 1, 1);
+        var to = Seconds(2200, 1, 1);
+        foreach (var name in names)
+        {
+            var zone = vm.Zone(vm.Find(name)!);
+            db.TryFind(name, out var id);
+            var rules = db.Rules(id);
+
+            foreach (var t in zone.Transitions)
+            {
+                foreach (var s in new[] { t - 1, t })
+                {
+                    Check("B1 offset at every listed transition and the second before", zone.OffsetAt(s) == rules.OffsetSecondsAt(s),
+                        () => name + " @" + s + ": VM " + zone.OffsetAt(s) + ", shared " + rules.OffsetSecondsAt(s));
+                    Check("B2 daylight flag at every listed transition and the second before", zone.DaylightAt(s) == rules.IsDaylightAt(s),
+                        () => name + " @" + s + ": VM " + zone.DaylightAt(s) + ", shared " + rules.IsDaylightAt(s));
+                }
+            }
+
+            var jitter = 0L;
+            for (var s = from; s < to; s += 3 * 86400 + jitter)
+            {
+                jitter = (jitter * 7919 + 104729) % 86400;
+                Check("B3 offset, 1800-2200 every 3 to 4 days", zone.OffsetAt(s) == rules.OffsetSecondsAt(s),
+                    () => name + " @" + s + ": VM " + zone.OffsetAt(s) + ", shared " + rules.OffsetSecondsAt(s));
+                Check("B4 daylight flag, 1800-2200 every 3 to 4 days", zone.DaylightAt(s) == rules.IsDaylightAt(s),
+                    () => name + " @" + s + ": VM " + zone.DaylightAt(s) + ", shared " + rules.IsDaylightAt(s));
+            }
+
+            foreach (var s in new[] { -8_640_000_000_000L, -8_639_999_999_999L, -1L, 0L, 2_147_483_647L, 2_147_483_648L, 8_639_999_999_999L, 8_640_000_000_000L })
+            {
+                Check("B5 offset and flag at the range's edges and 2038", zone.OffsetAt(s) == rules.OffsetSecondsAt(s) && zone.DaylightAt(s) == rules.IsDaylightAt(s),
+                    () => name + " @" + s);
+            }
+        }
+    }
+
+    // ---- C. Next and previous transitions --------------------------------------------------------------
+
+    private static Dictionary<string, List<long>> Transitions(JsEngine engine, JsTimeZones vm, TimeZoneDatabase db, string[] names)
+    {
+        const long Limit = 8_640_000_000_000L;
+        var found = new Dictionary<string, List<long>>(StringComparer.Ordinal);
+        var from = Seconds(1850, 1, 1);
+        var to = Seconds(2150, 1, 1);
+        foreach (var name in names)
+        {
+            var zone = vm.Zone(vm.Find(name)!);
+            db.TryFind(name, out var id);
+            var rules = db.Rules(id);
+
+            var jitter = 0L;
+            for (var s = from; s < to; s += 30 * 86400 + jitter)
+            {
+                jitter = (jitter * 7919 + 104729) % 86400;
+                var a = Filter(zone.NextTransition(s, Limit), Limit);
+                var b = rules.NextTransition(s, Limit, daylightFlag: false);
+                Check("C1 next transition, 1850-2150 every 30 to 31 days", a == b, () => name + " after " + s + ": VM " + a + ", shared " + b);
+
+                var near = s + (184 * 86400);
+                a = Filter(zone.NextTransition(s, near, daylight: true), near);
+                b = rules.NextTransition(s, near, daylightFlag: true);
+                Check("C2 next transition or daylight change within 184 days, same grid", a == b, () => name + " after " + s + ": VM " + a + ", shared " + b);
+
+                a = zone.PreviousTransition(s);
+                b = rules.PreviousTransition(s, daylightFlag: false);
+                Check("C3 previous transition, same grid", a == b, () => name + " before " + s + ": VM " + a + ", shared " + b);
+
+                a = zone.PreviousTransition(s + 1, daylight: true);
+                b = rules.PreviousTransition(s + 1, daylightFlag: true);
+                Check("C4 previous transition or daylight change, same grid", a == b, () => name + " before " + s + ": VM " + a + ", shared " + b);
+
+                foreach (var ns in new[] { s * NsPerSecond, s * NsPerSecond + 123_456_789, s * NsPerSecond - 1 })
+                {
+                    var x = Outcome(() => JsTemporal.NextTransition(engine, name, ns));
+                    var y = Outcome(() => ZonedTime.GetNextTransition(rules, ns));
+                    Check("C5 GetNamedTimeZoneNextTransition in nanoseconds, same grid x 3", x == y, () => name + " after " + ns + ": VM " + x + ", shared " + y);
+                    x = Outcome(() => JsTemporal.PreviousTransition(engine, name, ns));
+                    y = Outcome(() => ZonedTime.GetPreviousTransition(rules, ns));
+                    Check("C6 GetNamedTimeZonePreviousTransition in nanoseconds, same grid x 3", x == y, () => name + " before " + ns + ": VM " + x + ", shared " + y);
+                }
+            }
+
+            // EVERY TRANSITION from 1800 to 2200, walked forward and back in both.
+            var list = new List<long>();
+            long? at = Seconds(1800, 1, 1);
+            var end = Seconds(2200, 1, 1);
+            while (at is { } current && current < end)
+            {
+                var a = Filter(zone.NextTransition(current, Limit), Limit);
+                var b = rules.NextTransition(current, Limit, daylightFlag: false);
+                Check("C7 every transition 1800-2200, walked forward", a == b, () => name + " after " + current + ": VM " + a + ", shared " + b);
+                if (a is { } t && t < end)
+                {
+                    list.Add(t);
+                    Check("C8 offset at every walked transition and the second before",
+                        zone.OffsetAt(t) == rules.OffsetSecondsAt(t) && zone.OffsetAt(t - 1) == rules.OffsetSecondsAt(t - 1), () => name + " @" + t);
+                }
+
+                at = a;
+            }
+
+            at = end;
+            var back = 0;
+            while (at is { } current && current > Seconds(1800, 1, 1))
+            {
+                var a = zone.PreviousTransition(current);
+                var b = rules.PreviousTransition(current, daylightFlag: false);
+                Check("C9 every transition 1800-2200, walked back", a == b, () => name + " before " + current + ": VM " + a + ", shared " + b);
+                if (a is { } t && t > Seconds(1800, 1, 1))
+                    back++;
+                at = a;
+            }
+
+            Check("C10 the walks forward and back meet the same transitions", back == list.Count, () => name + ": forward " + list.Count + ", back " + back);
+            found[name] = list;
+
+            foreach (var ns in new[] { -8_640_000_000_000_000_000_000m, -8_639_999_999_999_999_999_999m, 0m, 8_639_999_999_999_999_999_999m, 8_640_000_000_000_000_000_000m })
+            {
+                var value = new BigInteger(ns);
+                var x = Outcome(() => JsTemporal.NextTransition(engine, name, value)) + Outcome(() => JsTemporal.PreviousTransition(engine, name, value));
+                var y = Outcome(() => ZonedTime.GetNextTransition(rules, value)) + Outcome(() => ZonedTime.GetPreviousTransition(rules, value));
+                Check("C11 transitions from the range's edges", x == y, () => name + " @" + value + ": VM " + x + ", shared " + y);
+            }
+        }
+
+        return found;
+    }
+
+    private static long? Filter(long? found, long limit) => found is { } t && t <= limit ? t : null;
+
+    // ---- D, E. Wall times: possible instants, the four disambiguations, the start of the day ------------
+
+    private static readonly string[] Interesting =
+    [
+        "America/New_York", "Europe/London", "Europe/Dublin", "Australia/Lord_Howe", "Pacific/Apia", "Pacific/Kiritimati", "Africa/Monrovia",
+        "America/Santiago", "America/Havana", "Asia/Beirut", "America/Toronto", "America/Sao_Paulo", "America/Asuncion", "America/Juneau",
+        "Europe/Berlin", "Europe/Paris", "Asia/Kolkata", "Asia/Kathmandu", "America/St_Johns", "Africa/Casablanca", "Asia/Tehran",
+        "America/Bogota", "Europe/Moscow", "Antarctica/Troll", "Antarctica/Casey", "America/Nuuk", "Pacific/Chatham", "Australia/Sydney",
+        "Asia/Gaza", "Europe/Chisinau", "America/Vancouver", "America/Winnipeg", "Africa/Cairo", "Asia/Jerusalem", "America/Mexico_City",
+        "Pacific/Norfolk", "Asia/Pyongyang", "America/Caracas", "Atlantic/Azores", "America/Metlakatla", "Pacific/Fakaofo", "Pacific/Kwajalein",
+        "America/Adak", "Europe/Lisbon", "Asia/Manila", "EST5EDT", "Etc/GMT+5", "Etc/GMT-14", "UTC", "Etc/GMT",
+    ];
+
+    private static readonly string[] Modes = ["compatible", "earlier", "later", "reject"];
+
+    private static void Wall(JsEngine engine, JsTimeZones vm, TimeZoneDatabase db, string[] names, Dictionary<string, List<long>> transitions)
+    {
+        var interesting = new HashSet<string>(Interesting.Where(n => vm.Find(n) is not null), StringComparer.Ordinal);
+        Check("D0 interesting zones present", interesting.Count == Interesting.Length, () => string.Join(",", Interesting.Where(n => !interesting.Contains(n))));
+        var from = Seconds(1900, 1, 1);
+        var to = Seconds(2100, 1, 1);
+
+        foreach (var name in names)
+        {
+            db.TryFind(name, out var id);
+            var rules = db.Rules(id);
+            var zone = vm.Zone(vm.Find(name)!);
+            var fine = interesting.Contains(name);
+            var walls = new SortedSet<BigInteger>();
+            var days = new SortedSet<BigInteger>();
+            foreach (var t in transitions[name].Where(t => t >= from && t < to))
+            {
+                long before = zone.OffsetAt(t - 1), after = zone.OffsetAt(t);
+                var low = Math.Min(before, after);
+                var high = Math.Max(before, after);
+                if (fine)
+                {
+                    for (var w = t + low - 7200; w <= t + high + 7200; w += 900)
+                        walls.Add(w * NsPerSecond);
+                }
+                else
+                {
+                    foreach (var w in new[] { t + before - 3600, t + low + (high - low) / 2, t + after + 3600 })
+                        walls.Add(w * NsPerSecond);
+                }
+
+                foreach (var edge in new[] { t + before, t + after })
+                {
+                    walls.Add(edge * NsPerSecond - 1);
+                    walls.Add(edge * NsPerSecond);
+                    walls.Add(edge * NsPerSecond + 1);
+                }
+
+                foreach (var w in new[] { t + before - 86400, t + before, t + after, t + after + 86400 })
+                    days.Add(Math.DivRem(w, 86400L) is var (q, r) && r < 0 ? q - 1 : q);
+            }
+
+            if (fine)
+            {
+                // Every day from 2037 to 2041 at 02:30 and its start, beyond the listed years.
+                for (var d = IsoCalendarMath.EpochDays(2037, 1, 1); d < IsoCalendarMath.EpochDays(2041, 1, 1); d++)
+                {
+                    walls.Add((d * 86400 + 9000) * NsPerSecond);
+                    days.Add(d);
+                }
+            }
+
+            // THE INSTANT RANGE'S LIMITS (A8): wall times and days at both ends.
+            foreach (var w in new[] { -8_640_000_000_000L - 86400, -8_640_000_000_000L - 1, -8_640_000_000_000L, -8_640_000_000_000L + 3600,
+                         8_640_000_000_000L - 3600, 8_640_000_000_000L, 8_640_000_000_000L + 1, 8_640_000_000_000L + 86399 })
+            {
+                walls.Add(w * NsPerSecond);
+                walls.Add(w * NsPerSecond + 1);
+                walls.Add(w * NsPerSecond - 1);
+            }
+
+            foreach (var d in new long[] { -100_000_001, -100_000_000, -99_999_999, 99_999_999, 100_000_000, 100_000_001 })
+                days.Add(d);
+
+            var section = fine ? "D1 wall times around every transition 1900-2100, 50 zones, 15-minute grid" : "D2 wall times around every transition 1900-2100, other zones, 9 points";
+            foreach (var wall in walls)
+                CompareWall(engine, name, rules, wall, section);
+
+            foreach (var day in days)
+            {
+                var date = new JsIsoDate(IsoCalendarMath.FromEpochDays((long)day));
+                var x = Outcome(() => JsTemporal.StartOfDay(engine, name, date));
+                var y = Outcome(() => Shared(ZonedTime.GetStartOfDay(rules, new IsoDate(date.Year, date.Month, date.Day), out var ns), ns))[3..];
+                Check("E1 start of day, each day either side of every transition 1900-2100 and the limits", x == y,
+                    () => name + " " + date + ": VM " + x + ", shared " + y);
+            }
+        }
+
+        // OFFSET ZONES through FixedOffsetTimeZoneRules.
+        foreach (var minutes in new[] { 0, 330, -330, 1439, -1439, -720, 60, -60 })
+        {
+            var identifier = OffsetTimeZones.FormatOffsetIdentifier(minutes);
+            var rules = new FixedOffsetTimeZoneRules(minutes * 60);
+            var walls = new List<BigInteger>();
+            for (var w = -8_640_000_000_000L - 2 * 86400; w <= -8_640_000_000_000L + 2 * 86400; w += 1800)
+                walls.Add(w * NsPerSecond);
+            for (var w = 8_640_000_000_000L - 2 * 86400; w <= 8_640_000_000_000L + 2 * 86400; w += 1800)
+                walls.Add(w * NsPerSecond);
+            for (var w = 0L; w < 86400L * 3; w += 3599)
+                walls.Add(w * NsPerSecond + 7);
+            foreach (var wall in walls)
+                CompareWall(engine, identifier, rules, wall, "D3 wall times in offset zones near the limits and the epoch");
+
+            foreach (var day in new long[] { -100_000_001, -100_000_000, -99_999_999, 0, 99_999_999, 100_000_000, 100_000_001 })
+            {
+                var date = new JsIsoDate(IsoCalendarMath.FromEpochDays(day));
+                var x = Outcome(() => JsTemporal.StartOfDay(engine, identifier, date));
+                var y = Outcome(() => Shared(ZonedTime.GetStartOfDay(rules, new IsoDate(date.Year, date.Month, date.Day), out var ns), ns))[3..];
+                Check("E2 start of day in offset zones at the limits", x == y, () => identifier + " " + date + ": VM " + x + ", shared " + y);
+                var ns = (BigInteger)day * NsPerDay;
+                x = Outcome(() => JsTemporal.NextTransition(engine, identifier, ns)) + Outcome(() => JsTemporal.PreviousTransition(engine, identifier, ns))
+                    + Outcome(() => JsTemporal.OffsetNanosecondsFor(engine, identifier, ns));
+                y = Outcome(() => ZonedTime.GetNextTransition(rules, ns)) + Outcome(() => ZonedTime.GetPreviousTransition(rules, ns))
+                    + Outcome(() => ZonedTime.GetOffsetNanosecondsFor(rules, ns));
+                Check("E3 offset zones' offsets and transitions", x == y, () => identifier + " " + ns + ": VM " + x + ", shared " + y);
+            }
+        }
+    }
+
+    private static void CompareWall(JsEngine engine, string name, ITimeZoneRules rules, BigInteger wall, string section)
+    {
+        var dt = VmDateTime(wall);
+        var local = SharedDateTime(dt);
+        List<BigInteger>? vmPossible = null;
+        var x = Outcome(() => vmPossible = JsTemporal.PossibleEpochNs(engine, name, dt));
+        var buffer = new BigInteger[ZonedTime.MaxPossibleEpochNanoseconds];
+        var status = ZonedTime.GetPossibleEpochNanoseconds(rules, local, buffer, out var count);
+        var y = Shared(status, buffer.Take(count).ToList());
+        Check(section + ": possible instants", x == y, () => name + " " + dt + ": VM " + x + ", shared " + y);
+
+        foreach (var mode in Modes)
+        {
+            var sharedMode = mode switch { "compatible" => Disambiguation.Compatible, "earlier" => Disambiguation.Earlier, "later" => Disambiguation.Later, _ => Disambiguation.Reject };
+            x = Outcome(() => JsTemporal.EpochNsFor(engine, name, dt, mode));
+            y = Outcome(() => Shared(ZonedTime.GetEpochNanosecondsFor(rules, local, sharedMode, out var ns), ns))[3..];
+            Check(section + ": GetEpochNanosecondsFor x 4 modes", x == y, () => name + " " + dt + " " + mode + ": VM " + x + ", shared " + y);
+
+            if (vmPossible is not null)
+            {
+                x = Outcome(() => JsTemporal.Disambiguate(engine, vmPossible, name, dt, mode));
+                y = Outcome(() => Shared(ZonedTime.DisambiguatePossibleEpochNanoseconds(rules, vmPossible.ToArray(), local, sharedMode, out var ns), ns))[3..];
+                Check(section + ": DisambiguatePossibleEpochNanoseconds x 4 modes", x == y, () => name + " " + dt + " " + mode + ": VM " + x + ", shared " + y);
+            }
+        }
+
+        if (count > 0)
+        {
+            foreach (var instant in buffer.Take(count))
+            {
+                x = Outcome(() => JsTemporal.OffsetNanosecondsFor(engine, name, instant));
+                y = Outcome(() => ZonedTime.GetOffsetNanosecondsFor(rules, instant));
+                Check(section + ": GetOffsetNanosecondsFor each instant", x == y, () => name + " " + instant + ": VM " + x + ", shared " + y);
+            }
+        }
+    }
+
+    // ---- G. Offset identifiers, the formatter's resolution and Etc/GMT -----------------------------------
+
+    private static void OffsetIdentifiers(JsEngine engine, TimeZoneDatabase db, string[] names)
+    {
+        var probes = new HashSet<string>(StringComparer.Ordinal);
+        string[] signs = ["+", "-", "−", "", "a"];
+        string[] hours = ["00", "05", "23", "24", "99", "5", "٠٥", "0٥", "０５"];
+        string[] seps = ["", ":"];
+        string[] minutes = ["", "00", "30", "59", "60", "3", "٣٠"];
+        string[] secondsList = ["", "00", "15", "59", "60", "1"];
+        string[] fractions = ["", ".5", ",123456789", ".1234567890", ".", ".a", ",٥"];
+        foreach (var sign in signs)
+        foreach (var hour in hours)
+        foreach (var sep1 in seps)
+        foreach (var minute in minutes)
+        foreach (var sep2 in seps)
+        foreach (var second in secondsList)
+        foreach (var fraction in fractions)
+            probes.Add(sign + hour + sep1 + minute + sep2 + second + fraction);
+
+        var random = new Random(0x5A1);
+        const string Alphabet = "+-0123459:.,٥ ";
+        for (var i = 0; i < 200_000; i++)
+        {
+            var length = random.Next(0, 11);
+            var chars = new char[length];
+            for (var j = 0; j < length; j++)
+                chars[j] = Alphabet[random.Next(Alphabet.Length)];
+            probes.Add(new string(chars));
+        }
+
+        foreach (var probe in probes.OrderBy(p => p, StringComparer.Ordinal))
+        {
+            // TEMPORAL: IsTimeZoneIdentifier, then ParseZone's offset branch and FormatOffsetTimeZoneIdentifier.
+            var vmTemporal = JsTemporalParser.IsTimeZoneIdentifier(probe) && probe.Length > 0 && probe[0] is '+' or '-'
+                ? "offset:" + JsTemporalCore.FormatOffsetMinutes(JsTemporal.ParseZone(probe).OffsetMinutes)
+                : "not";
+            var sharedTemporal = OffsetTimeZones.TryParseOffsetIdentifier(probe, out var m) ? "offset:" + OffsetTimeZones.FormatOffsetIdentifier(m) : "not";
+            Check("G1 offset identifiers (Temporal's ParseTimeZoneIdentifier)", vmTemporal == sharedTemporal, () => "'" + probe + "': VM " + vmTemporal + ", shared " + sharedTemporal);
+
+            var vmOk = DateTimeFormatZones.Offset(probe, out var vmMinutes, out var vmSeconds);
+            var sharedOk = OffsetTimeZones.IsTimeZoneOffsetString(probe);
+            var sharedIdentifier = OffsetTimeZones.TryParseOffsetIdentifier(probe, out var sharedMinutes);
+            var same = vmOk == sharedOk && (!vmOk || (vmSeconds == !sharedIdentifier && (vmSeconds || vmMinutes == sharedMinutes)));
+            Check("G2 offset strings (ECMA-402's IsTimeZoneOffsetString branch)", same, () => "'" + probe + "': VM " + vmOk + "/" + vmSeconds + "/" + vmMinutes + ", shared " + sharedOk + "/" + sharedIdentifier + "/" + sharedMinutes);
+        }
+
+        // THE FORMATTER'S RESOLUTION: ResolveTimeZone against the shared pieces it is rebuilt from.
+        var resolveProbes = names.Concat(names.Select(n => n.ToUpperInvariant())).Concat(probes.Take(5000))
+            .Concat(["UTC", "utc", "Etc/UTC", "GMT", "Etc/GMT0", "Etc/GMT-0", "GMT+0", "GMT0", "etc/gmt+5", "Etc/GMT+12", "Etc/GMT-14", "Etc/GMT+13", "Mars/Olympus"]);
+        foreach (var probe in resolveProbes)
+        {
+            var x = Outcome(() =>
+            {
+                var r = DateTimeFormatZones.Resolve(engine, probe);
+                return r.Identifier + "|" + r.Offset + "|" + r.Kind + "|" + (r.Zone is null ? "-" : "zone");
+            });
+            var y = Outcome(() => SharedResolve(db, probe));
+            Check("G3 the formatter's ResolveTimeZone core (names, cases, offsets, Etc/GMT)", x == y, () => "'" + probe + "': VM " + x + ", shared " + y);
+        }
+    }
+
+    private static string SharedResolve(TimeZoneDatabase db, string text)
+    {
+        if (OffsetTimeZones.IsTimeZoneOffsetString(text))
+        {
+            if (!OffsetTimeZones.TryParseOffsetIdentifier(text, out var minutes))
+                throw new VmError("RangeError", "a time zone offset cannot have seconds");
+            return OffsetTimeZones.FormatOffsetIdentifier(minutes) + "|" + minutes + "|" + (minutes == 0 ? "Gmt" : "Offset") + "|-";
+        }
+
+        if (!db.TryFind(text, out var id))
+            throw new VmError("RangeError", "is not an available time zone");
+
+        var primary = db.Primary(id).Identifier;
+        if (primary == "UTC")
+            return "UTC|0|Utc|-";
+        if (OffsetTimeZones.TryGetEtcGmtOffset(primary, out var etc))
+            return primary + "|" + etc + "|Offset|-";
+        return primary + "|0|Named|zone";
+    }
+
+    // ---- H. TimeZoneEquals ------------------------------------------------------------------------------
+
+    private static void Equality(JsEngine engine, TimeZoneDatabase db, string[] names)
+    {
+        var all = names.Concat(["+05:30", "-05:30", "+00:00", "-12:00"]).ToArray();
+        foreach (var one in all)
+        {
+            foreach (var two in all)
+            {
+                var x = JsTemporal.TimeZoneEquals(engine, one, two);
+                var y = ZonedTime.TimeZoneEquals(db, one, two);
+                Check("H1 TimeZoneEquals, every pair of 601 identifiers", x == y, () => one + " = " + two + ": VM " + x + ", shared " + y);
+            }
+        }
+    }
+
+    // ---- I. Calendar years -----------------------------------------------------------------------------
+
+    private static void Calendars(JsEngine engine, CalendarTables calendars)
+    {
+        foreach (var (id, calendar) in new[] { ("chinese", TableCalendar.Chinese), ("dangi", TableCalendar.Dangi), ("islamic-umalqura", TableCalendar.IslamicUmmAlQura), ("persian", TableCalendar.Persian) })
+        {
+            var system = engine.Intl!.Calendars.For(id);
+            var years = Enumerable.Range(-300_000, 600_001).Select(y => (long)y)
+                .Concat([-300_001, 300_001, -1_000_000, 1_000_000, long.MinValue / 2, long.MaxValue / 2]);
+            foreach (var year in years)
+            {
+                var x = Outcome(() => Year(JsTemporal.CalendarYear(engine, system, year)));
+                var y = Outcome(() => CalendarYears.GetYear(calendars, calendar, year, out var result) == TimeStatus.Completed
+                    ? Year(result)
+                    : throw new VmError("RangeError", "Temporal: the year is outside the representable range"));
+                Check("I1 calendar year (new year, months, lengths, leap month, status), -300000..300000 and beyond: " + id, x == y,
+                    () => id + " " + year + ": VM " + x + ", shared " + y);
+            }
+        }
+
+        // THE TABLES DIRECTLY, inside and around their ranges.
+        var data = new JsCalendarData(JsCalendarTables.Calendars);
+        for (var year = 1700L; year <= 2300; year++)
+        {
+            foreach (var korean in new[] { false, true })
+            {
+                var a = data.EastAsianYear(korean, year) is { } v ? Year(v) : "none";
+                var b = calendars.TryGetEastAsianYear(korean ? TableCalendar.Dangi : TableCalendar.Chinese, year, out var s) ? Year(s) : "none";
+                Check("I2 the Chinese, Korean and Qing tables, 1700-2300", a == b, () => (korean ? "dangi " : "chinese ") + year + ": VM " + a + ", shared " + b);
+            }
+        }
+
+        for (var year = 1200L; year <= 1700; year++)
+        {
+            var a = data.UmmAlQuraYear(year) is { } v ? Year(v) : "none";
+            var b = calendars.TryGetUmmAlQuraYear(year, out var s) ? Year(s) : "none";
+            Check("I3 the Umm al-Qura table, 1200-1700 AH", a == b, () => year + ": VM " + a + ", shared " + b);
+        }
+
+        var corrections = new HashSet<int>(data.PersianNonLeapYears);
+        for (var year = -10L; year <= 4000; year++)
+            Check("I4 the Persian corrections, -10-4000 AP", corrections.Contains((int)year) == calendars.IsPersianNonLeapYear(year), () => year.ToString(CultureInfo.InvariantCulture));
+    }
+
+    private static string Year(JsCalendarYear year)
+    {
+        var lengths = string.Concat(Enumerable.Range(1, year.Months).Select(m => year.DaysInMonth(m).ToString(CultureInfo.InvariantCulture) + " "));
+        return year.Year + " start " + year.Start + " months " + year.Months + " days " + year.Days + " leap " + year.LeapMonth + " [" + lengths + "]";
+    }
+
+    private static string Year(CalendarYear year)
+    {
+        var lengths = string.Concat(Enumerable.Range(1, year.MonthsInYear).Select(m => year.DaysInMonth(m).ToString(CultureInfo.InvariantCulture) + " "));
+        return year.Year + " start " + year.NewYearEpochDays + " months " + year.MonthsInYear + " days " + year.DaysInYear + " leap " + year.LeapMonth + " [" + lengths + "]";
+    }
+}
+

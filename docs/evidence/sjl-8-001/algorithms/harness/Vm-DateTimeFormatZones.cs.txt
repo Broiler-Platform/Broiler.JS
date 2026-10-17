@@ -1,0 +1,170 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+
+namespace VmRef;
+
+internal static partial class DateTimeFormatZones
+{
+    /// <summary>
+    /// The time zone an option names: UTC by default, an offset string by its <c>+HH:MM</c> or <c>-HH:MM</c> form,
+    /// and otherwise an IANA Zone or Link name, matched without regard to ASCII case and resolved to its
+    /// primary identifier (ECMA-402 11.1.2 steps 29 to 36, JSD-0053): a name resolving to UTC as
+    /// <c>UTC</c>, an <c>Etc/GMT</c> zone with an hour as its fixed offset, and any other as the zone.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=938A63
+    // Broiler-Human:        PENDING
+    private static (string Identifier, int Offset, JsZoneKind Kind, JsZone? Zone) ResolveTimeZone(JsEngine engine, JsValue value)
+    {
+        if (value.Type == JsType.Undefined)
+        {
+            return ("UTC", 0, JsZoneKind.Utc, null);
+        }
+
+        var text = engine.ToStringValue(value);
+
+        if (ParseOffset(text, out var minutes, out var hasSeconds))
+        {
+            if (hasSeconds)
+            {
+                throw engine.Error("RangeError", "Intl.DateTimeFormat: a time zone offset cannot have seconds: " + text);
+            }
+
+            var identifier = (minutes < 0 ? "-" : "+") +
+                (Math.Abs(minutes) / 60).ToString("00", CultureInfo.InvariantCulture) + ":" +
+                (Math.Abs(minutes) % 60).ToString("00", CultureInfo.InvariantCulture);
+            return (identifier, minutes, minutes == 0 ? JsZoneKind.Gmt : JsZoneKind.Offset, null);
+        }
+
+        if (engine.Intl!.TimeZones.Find(text) is not { } record)
+        {
+            throw engine.Error("RangeError", "Intl.DateTimeFormat: " + text + " is not an available time zone");
+        }
+
+        if (record.Primary == "UTC")
+        {
+            return ("UTC", 0, JsZoneKind.Utc, null);
+        }
+
+        // IANA'S ETC/GMT ZONES WITH AN HOUR ARE FIXED OFFSETS by definition, with POSIX's inverted sign.
+        foreach (var (Name, Offset) in EtcGmtZones())
+        {
+            if (string.Equals(Name, record.Primary, StringComparison.Ordinal))
+            {
+                return (Name, Offset, JsZoneKind.Offset, null);
+            }
+        }
+
+        return (record.Primary, 0, JsZoneKind.Named, engine.Intl.TimeZones.Zone(record));
+    }
+
+    /// <summary>IANA's <c>Etc/GMT+1</c> to <c>Etc/GMT+12</c> and <c>Etc/GMT-1</c> to <c>Etc/GMT-14</c>, with each one's offset in minutes.</summary>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=164680
+    // Broiler-Human:        PENDING
+    private static IEnumerable<(string Name, int Offset)> EtcGmtZones()
+    {
+        for (var hours = 1; hours <= 14; hours++)
+        {
+            var text = hours.ToString(CultureInfo.InvariantCulture);
+
+            if (hours <= 12)
+            {
+                yield return ("Etc/GMT+" + text, -hours * 60);
+            }
+
+            yield return ("Etc/GMT-" + text, hours * 60);
+        }
+    }
+
+    /// <summary>ECMA-262's UTCOffset grammar: a sign, two-digit hours, and optionally minutes and seconds, all extended or all basic.</summary>
+    // Broiler-AI:           Origin=AI; IP=Low; Security=Low; Resources=1; Fingerprint=5BAFE6
+    // Broiler-Human:        PENDING
+    private static bool ParseOffset(string text, out int minutes, out bool hasSeconds)
+    {
+        minutes = 0;
+        hasSeconds = false;
+
+        if (text.Length < 3 || text[0] is not ('+' or '-'))
+        {
+            return false;
+        }
+
+        static bool TwoDigits(string text, int at, int maximum, out int value)
+        {
+            value = 0;
+
+            if (at + 2 > text.Length || !char.IsAsciiDigit(text[at]) || !char.IsAsciiDigit(text[at + 1]))
+            {
+                return false;
+            }
+
+            value = ((text[at] - '0') * 10) + (text[at + 1] - '0');
+            return value <= maximum;
+        }
+
+        if (!TwoDigits(text, 1, 23, out var hours))
+        {
+            return false;
+        }
+
+        var at = 3;
+        var minute = 0;
+
+        if (at < text.Length)
+        {
+            var extended = text[at] == ':';
+
+            if (extended)
+            {
+                at++;
+            }
+
+            if (!TwoDigits(text, at, 59, out minute))
+            {
+                return false;
+            }
+
+            at += 2;
+
+            if (at < text.Length)
+            {
+                if ((text[at] == ':') != extended)
+                {
+                    return false;
+                }
+
+                if (extended)
+                {
+                    at++;
+                }
+
+                if (!TwoDigits(text, at, 59, out _))
+                {
+                    return false;
+                }
+
+                at += 2;
+                hasSeconds = true;
+
+                if (at < text.Length)
+                {
+                    if (text[at] is not ('.' or ',') || at + 1 == text.Length || text.Length - at - 1 > 9)
+                    {
+                        return false;
+                    }
+
+                    for (var digit = at + 1; digit < text.Length; digit++)
+                    {
+                        if (!char.IsAsciiDigit(text[digit]))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        minutes = ((hours * 60) + minute) * (text[0] == '-' ? -1 : 1);
+        return true;
+    }
+}

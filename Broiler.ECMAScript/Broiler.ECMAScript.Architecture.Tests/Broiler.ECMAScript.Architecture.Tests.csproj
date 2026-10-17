@@ -26,6 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
     <ProjectReference Include="..\Broiler.ECMAScript.Conformance\Broiler.ECMAScript.Conformance.csproj" />
+    <ProjectReference Include="..\Broiler.ECMAScript.Generation\Broiler.ECMAScript.Generation.csproj" />
     <!-- Built first, read from its own output: an executable is not referenced as an assembly. -->
     <ProjectReference Include="..\Broiler.ECMAScript.Probe\Broiler.ECMAScript.Probe.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
@@ -34,6 +35,8 @@
     <Compile Include="..\runners\AlgorithmsLibrary.cs" Link="AlgorithmsLibrary.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.Text.cs" Link="AlgorithmsLibrary.Text.cs" />
     <Compile Include="..\runners\AlgorithmsLibrary.Date.cs" Link="AlgorithmsLibrary.Date.cs" />
+    <!-- Rule SL7 regenerates the time data home's tables with the generator, which reads no file itself. -->
+    <Compile Include="..\runners\TimeDataHome.cs" Link="TimeDataHome.cs" />
     <None Include="rules.register.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

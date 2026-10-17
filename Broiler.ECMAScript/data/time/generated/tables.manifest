@@ -1,0 +1,17 @@
+# broiler-js time data tables 1
+#
+# GENERATED - DO NOT EDIT. Broiler.ECMAScript.Generation writes this file and the tables beside it
+# from the pins in ../tzdb/, ../cldr/ and ../calendars/. Rule SL7 regenerates every file of this
+# directory and compares it byte for byte; run the architecture tests with
+# BROILER_ECMASCRIPT_TIME_WRITE=1 to write them instead. No package carries these files (decision
+# SJL-D-6 (c)): each engine embeds them. A `table` line is `table <file> <bytes> <sha256>`.
+
+tzdb-release 2026e
+cldr-version 48.2.0
+icu_calendar 2.3.0
+calendrical_calculations 0.2.4
+
+table calendars.bin 1958 dc368c81f83865b20a48bee7a6efc9458e07c8c0d04a27b7d048e7d80793ad47
+table time-zone-ids.txt 14056 c68c5d8e9a5677f071017efbdd0bb1be3e8d58042022c05908f2fcf42c29f296
+table time-zone-regions.txt 7627 8cf869e9f19f00117a1cbb9899cf8130043688684d98996c3a56759e4d1f5045
+table time-zones.bin 78428 f0993da914d6ffed2a4f3f3a4a3016af4d4e33ec213cf138656b43f0f0892853

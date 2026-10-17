@@ -2,7 +2,8 @@ name: Shared libraries
 
 # The shared JavaScript libraries' own gate (Broiler.ECMAScript/, milestones SJL-2.11 to SJL-2.14),
 # run on every change, as convention 12 asks of the Native AOT probe:
-#   - the folder builds under its conventions and its tests pass, the SL rules among them;
+#   - the folder builds under its conventions and its tests pass, the SL rules among them, and on
+#     Linux the time data home's zone table agrees with the host's zic (milestone SJL-8.2);
 #   - the Native AOT probe publishes with Broiler.VM's root settings and no warning, runs the whole
 #     vector corpus, and gives the report the same probe gives under the JIT;
 #   - the Broiler Code Assurance check holds the folder to its generated artefacts (rule SL8);
@@ -63,6 +64,11 @@ jobs:
         run: dotnet test Broiler.ECMAScript.slnf -c Release --no-build --nologo
       - name: The corpus generator's own tests
         run: python -m unittest discover -s scripts/conformance/tests -v
+      # Milestone SJL-8's data-home exit clause 3: the generated zone table against the host's zic -b fat
+      # over the nine pinned tz files, 1800 to 2037. Linux runners have zic; Windows has none.
+      - name: The zone table against zic (Linux)
+        if: runner.os == 'Linux'
+        run: python -I Broiler.ECMAScript/data/time/tzdb/check-zic.py
 
   native-aot-probe:
     name: Native AOT probe (${{ matrix.rid }})

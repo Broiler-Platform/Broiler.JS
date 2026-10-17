@@ -12,6 +12,76 @@ follow semantic versioning under [convention 16](docs/conventions.md):
 Each entry has the headings **Added**, **Changed**, **Observable changes** and **Data**, and says
 "none" under a heading with nothing to report. A release without an entry here is not published.
 
+## Unreleased
+
+Not yet packed under a version of its own: the stream's next version is set when this entry is published.
+
+### Added
+
+- `Broiler.ECMAScript.Generation`, a new test-only package: the time data home's generator (milestone
+  SJL-8.2; Broiler.VM's decision JSD-0076, decisions SJL-D-1 (b-iii), SJL-D-6 (c), SJL-D-20 and SJL-D-21),
+  namespace `Broiler.ECMAScript.Generation.Time`. Ported from Broiler.VM's architecture tests with their
+  behaviour unchanged:
+  - `TzdbPin`, `CldrPin` and `CalendarPin`, with `TzdbPinMember`, `CldrPinEntry`, `CalendarPinArchive` and
+    `CalendarPinMember`: each pin parsed from the text its caller hands in, and every archive, member and
+    stated version compared with it before anything is read;
+  - `TzdbCompiler`, the compiler of the nine default tz source files equivalent to `zic`, with
+    `TzdbSource`, `TzdbRule`, `TzdbZoneLine`, `TzdbZone`, `TzdbTransition` and `TzdbFinalRules`;
+  - `TzdbTableGenerator.Generate` and its `TzdbTables`: the compact zone table, the identifier table with
+    CLDR's primaries, the Links and the UTC family, and `zone.tab`'s regions;
+  - `CalendarTableGenerator.Generate` and its `CalendarTables`: the Qing, Chinese and Korean years, the Umm
+    al-Qura years and the Persian corrections. Broiler.VM's regular expressions over ICU4X's Rust sources
+    are replaced by readers written by hand, which the package's tests hold to those expressions;
+  - `TzdbTableSource.Write` and `CalendarTableSource.Write`, with `TableSourceOptions`: the tables as a C#
+    file for a namespace and class the caller chooses, which with Broiler.VM's options writes its
+    `JsTzdbTables.g.cs` and `JsCalendarTables.g.cs` byte for byte;
+  - `TimeDataVersions`: `TzdbRelease` (`2026e`), `CldrVersion` (`48.2.0`), `IcuCalendarVersion` (`2.3.0`)
+    and `CalendricalCalculationsVersion` (`0.2.4`).
+
+  The package reads no file and carries no table and no pinned input (SJL-D-6 (c)): those are files of
+  this repository, under [`data/time/`](data/time/README.md).
+
+- `Broiler.ECMAScript.Algorithms`: the time-zone and calendar area, namespace `Broiler.ECMAScript.Time`
+  (milestone SJL-8.3, JSD-0076; adapter guide
+  [`docs/adapter-guide-time-zones.md`](Broiler.ECMAScript.Algorithms/docs/adapter-guide-time-zones.md)):
+  - `ITimeZoneDatabase`, `ITimeZoneRules` and `TimeZoneId`, the area design's section 3.2 shape, and
+    `TimeZoneDatabase`, the decoder of the data home's compact tables over the bytes an engine hands in:
+    lookup under decision SJL-D-20's ASCII case rule, CLDR primaries, the primary identifiers, the zones of a
+    region, and each zone's offset, daylight flag and next and previous transitions, its recurring rules
+    continuing it with no 2037 cliff;
+  - `OffsetTimeZones`: `IsTimeZoneOffsetString`, the offset time zone identifiers with ASCII digits only and
+    their formatting, and the `Etc/GMT±n` zones as fixed offsets; and `FixedOffsetTimeZoneRules`;
+  - `ZonedTime`: `GetOffsetNanosecondsFor`, `GetPossibleEpochNanoseconds` (sampled at the wall time and a day
+    either side), `DisambiguatePossibleEpochNanoseconds` and `GetEpochNanosecondsFor` in all four modes,
+    `GetStartOfDay`, `GetNextTransition`, `GetPreviousTransition` and `TimeZoneEquals`, over `IsoDate`,
+    `IsoTime` and `IsoDateTime`, each failure a `TimeStatus`;
+  - `ICalendarTables`, `CalendarTables`, the decoder of the calendar table, and `CalendarYears.GetYear`: a
+    `chinese`, `dangi`, `islamic-umalqura` or `persian` year from the table inside its range and from ICU4X's
+    approximation, the civil tabular year or the 33-year rule outside, as a `CalendarYear`.
+
+  Each is ported from Broiler.VM's `JsTimeZones`, `JsTemporal.Zones`, `JsRealm.DateTimeFormat`'s zone
+  resolution and `JsCalendars`, with its behaviour unchanged, which a differential check against that code
+  over its own tables showed. Nothing in the area charges (JSD-0076's X3), and the library embeds no table.
+
+### Changed
+
+None.
+
+### Observable changes
+
+None: no engine reads the generator, the area or the tables yet. Broiler.VM regenerates its tables with the
+generator and cuts over to the area at milestone SJL-8.5, and Broiler.JS embeds the tables and cuts over at
+SJL-8.6, whose own records list what each observes.
+
+### Data
+
+- The time data home, [`data/time/`](data/time/README.md), outside every package: IANA tzdb **2026e**,
+  CLDR **48.2.0**'s `bcp47/timezone.json`, and ICU4X's `icu_calendar` **2.3.0** and
+  `calendrical_calculations` **0.2.4**, each pin a byte-for-byte copy of Broiler.VM's at `9508bd5`; and the
+  four tables generated from them with their manifest, byte for byte the data Broiler.VM's generated files
+  hold at that commit. Rule SL7 regenerates them. The algorithms library embeds no table: each engine
+  hands its tables to the decoders.
+
 ## 0.1.0-preview.4 — published to nuget.org
 
 *(Heading corrected 2026-10-15, when the entry was published; read "Unreleased". This entry was published

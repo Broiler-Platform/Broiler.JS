@@ -1,0 +1,42 @@
+# broiler-tzdb data pin 1
+#
+# The IANA Time Zone Database release the JavaScript profile's time zone data is generated from.
+# Phase F8 (Temporal) opens with it: the repository owner chose on 2026-10-05 to start F8 by
+# archiving and pinning tzdb, which answers JSD-0027's owner decision (d) - whether IANA tzdb is
+# ever in scope - and JSD-0053 records the boundary. Rule N29 holds the archive to this file.
+#
+# WHAT IS HERE. The release's data tarball as IANA publishes it, one file, unmodified. A reader
+# checks `archive-sha256` without a network. The `member` lines name the files inside it that a
+# generator may read, each with its length and SHA-256 after extraction: the nine source files zic
+# compiles by default (no `backzone`), `zone.tab` for each country's zones, the `version` file, which
+# states the release, and `LICENSE`, which puts the data in the public domain.
+#
+# HOW IT WAS TAKEN. Retrieved twice on 2026-10-05 from `https://data.iana.org/time-zones/releases/`,
+# into two files; `cmp` found them byte-identical, and the first is archived. `archive-sha512` is
+# the same file's SHA-512 in the base64 form the npm pins use. IANA also publishes a detached PGP
+# signature, `tzdata2026e.tar.gz.asc`; it was not checked, because no key this repository trusts
+# signs it, and it is not archived.
+
+data iana-time-zone-database
+version 2026e
+upstream https://data.iana.org/time-zones/releases/tzdata2026e.tar.gz
+retrieved 2026-10-05
+retrievals 2 byte-identical
+archived yes
+archive tzdata2026e.tar.gz 481989
+archive-sha256 b26882805f26aac59d5b222978e6580484b834ccdc98be89df2f05a6dc53a652
+archive-sha512 W+L4dfc7deV4PEdL96bHaOQzzJAoP4/Gp149Bb2Srsl5NuilXMyl6IC12swYumWTK6sOeD4e1dKvSjpN+VUSvg==
+licence public-domain
+
+member LICENSE 252 0613408568889f5739e5ae252b722a2659c02002839ad970a63dc5e9174b27cf
+member africa 58273 f2851d4be4a4925cbdc9d56e10d780bccadb89d6ffb9aed78c3e35f97c200aed
+member antarctica 14080 e410ad71c9450828c592d21419301d41ac79ce50159fd0ac2d6c5031cb6bdfe6
+member asia 193525 02b69728085f6b0c999da70de2f1f9a2d8952b533a450d53bb41e03eb7d0e92e
+member australasia 98595 846ba455578e3e0f9eb850f05be3cc06d02ff51bbe4b726f755be9dc765f16c9
+member backward 14051 b8296b9ef1ece72d813878132c0f17e2c52b26af6004eeb9c37d049b64cd9401
+member etcetera 3124 7281f095b42c13c4ae36b8bcba884e81dbb38127221fc1d9805c4dbf852487db
+member europe 188472 fec11bf6c6bd0619a8777bbdaa2ecd184fde291cb4b97efa87d334c7145ba3c2
+member northamerica 183813 c0c5da0dc337444d80709cf9f8d8011719b789df160ce107a5c38c90e73dc54c
+member southamerica 95484 13be56a242da3c1a4a6d12050e5fd48b1753c8c1dc237cbc2edb40eac636be7f
+member version 6 af35b79aa1b21f258217dc39db156c783db83fd78afd095c5426061993877063
+member zone.tab 18809 e2e8e31c4e10f44576c79345e76060591dbb3eef6ce14e006afc8a373caa9593

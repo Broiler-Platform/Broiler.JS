@@ -709,6 +709,28 @@ This repository's part of it:
   Its admitted classes name every correction and policy change above by row. Both test262 bases are taken at the
   rule's commit with negative tests, as bundle `sjl-7-001`'s were.
 
+**The data home and the algorithms (SJL-8.2 and SJL-8.3), 2026-10-17.**
+- **The data home** is [`Broiler.ECMAScript/data/time/`](../../Broiler.ECMAScript/data/time/README.md), with its
+  generator `Broiler.ECMAScript.Generation`, a test-only package. It holds IANA tzdb 2026e's data tarball, CLDR
+  48.2.0's `bcp47/timezone.json`, and ICU4X's `icu_calendar` 2.3.0 and `calendrical_calculations` 0.2.4 crates.
+  - Each pin and archive is a byte-for-byte copy of Broiler.VM's at `9508bd5`.
+  - The four tables the generator writes from them are byte for byte the data Broiler.VM's generated files hold
+    at that commit. Rule SL7 regenerates them.
+  - The `zic` comparison passes across 1800 to 2037.
+  - `TimeDataVersions` names the four versions.
+  - **No package carries a table or an input** (SJL-D-6 (c)).
+  - Bundle [`sjl-8-001`](../evidence/sjl-8-001/README.md), section 1, reads the six data-home clauses.
+- **The algorithms** are in `Broiler.ECMAScript.Algorithms`, under `Broiler.ECMAScript.Time`:
+  - the database and rules interfaces, and the decoder of the home's tables over the bytes an engine hands in;
+  - offset zones;
+  - the zone algorithms, each failure a status, and start of day never falling back to local midnight;
+  - the table-backed calendars' years.
+
+  Each is ported from Broiler.VM's code. A differential check against that code, over its own tables, made
+  82,514,651 comparisons and found no difference (bundle `sjl-8-001`, section 2).
+- **Nothing is cut over yet.** Broiler.VM's cut-over (SJL-8.5) follows on the shared stream's next version, and
+  this engine's (SJL-8.6) after it. SJL-8.4's vectors and the reference datasets' copies come first.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

@@ -14,9 +14,13 @@ Filed 2026-10-12, at milestone SJL-2.10.
 ## Scope
 
 - **A shared library** is a project below `Broiler.ECMAScript/` whose output is a library and that
-  is not a test project: `Broiler.ECMAScript.Algorithms` and the test-only
-  `Broiler.ECMAScript.Conformance` today, and the frontend, Intl and data generators as the
-  milestones that create them add them. Every convention applies to each one.
+  is not a test project: `Broiler.ECMAScript.Algorithms`, the test-only
+  `Broiler.ECMAScript.Conformance` and, from milestone SJL-8.2, the test-only data generator
+  `Broiler.ECMAScript.Generation` today, and the frontend, Intl and further data generators as the
+  milestones that create them add them. Every convention applies to each one. *(Revised 2026-10-17,
+  at SJL-8.2, when the time data home's generator was added. The list read "`Broiler.ECMAScript.Algorithms`
+  and the test-only `Broiler.ECMAScript.Conformance` today, and the frontend, Intl and data generators as
+  the milestones that create them add them".)*
 - **The Native AOT probe**, `Broiler.ECMAScript.Probe`, is an executable. It reads the corpus from
   disk, so convention 8's I/O clause does not hold for it; conventions 12 and 17 do.
 - **Test projects** are held to convention 17's style rules, and to nothing that would stop xunit

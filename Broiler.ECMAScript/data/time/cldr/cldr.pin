@@ -1,0 +1,28 @@
+# broiler-js cldr time zone keys pin 1
+#
+# The one file of the Unicode Common Locale Data Repository the time data home's generator reads:
+# CLDR 48.2.0's bcp47/timezone.json, whose time zone keys give every tz identifier its primary
+# identifier, as ECMA-402 6.5's note recommends. Broiler.VM's decision JSD-0076 (milestone SJL-8.1 of
+# the shared JavaScript libraries programme) puts it beside the tz archive "as a copy of this
+# family's pinned member".
+#
+# WHERE IT CAME FROM. The file is a byte-for-byte copy of Broiler.VM's
+# src/tests/cldr/pins/cldr-48.2.0/json/cldr-bcp47/bcp47/timezone.json at Broiler.VM 9508bd5, kept at
+# the same path below its pin's directory, and the `file` line below is that repository's cldr.pin's
+# own line for it, unchanged. The other lines are that pin's, for the one package this file is from.
+# Broiler.VM's pin records how it was taken: the npm package cldr-bcp47 at 48.2.0, its tarball checked
+# against the registry's sha512 integrity below before it was unpacked, retrieved twice on 2026-10-04
+# into two directories that `diff -r` found byte-identical. Nothing was retrieved again for this copy.
+#
+# WHAT A LINE MEANS. `file <path relative to this directory> <bytes> <sha256>`, as in Broiler.VM's
+# cldr.pin. The bcp47 files carry no version and are held by their hash alone.
+
+data unicode-common-locale-data-repository
+version 48.2.0
+json-source https://registry.npmjs.org/<package>/-/<package>-48.2.0.tgz
+json-integrity cldr-bcp47 sha512-ks3zN+Wbg1zMqvJNeDai1zA0JBGHbAnxv2Ko4rjVohvXscDGmTa7VNy1T+QRlQw3QVPzQcCm2EOiEtAfOU4d+g==
+retrieved 2026-10-04
+retrievals 2 byte-identical
+archived yes
+licence Unicode-3.0
+file cldr-48.2.0/json/cldr-bcp47/bcp47/timezone.json 59702 c11423884420f00cf52733c854de5c898ddb6657ce560334c638a2bd994a1448

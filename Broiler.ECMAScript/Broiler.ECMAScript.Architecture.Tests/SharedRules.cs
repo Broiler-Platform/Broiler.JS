@@ -30,6 +30,11 @@ internal static class SharedRules
 
         // Test-only; reads the corpus its caller hands it.
         ["Broiler.ECMAScript.Conformance"] = [],
+
+        // Test-only; the time data home's generator (milestone SJL-8.2), reading the pins and archives
+        // its caller hands it. It references no other shared library: the shared decoder of its tables
+        // is the algorithms library's, and the generator is never in an engine's product closure.
+        ["Broiler.ECMAScript.Generation"] = [],
     }.ToFrozenDictionary(StringComparer.Ordinal);
 
     /// <summary>The component packages a shared library may reference at all, where the layering lets it.</summary>
@@ -505,5 +510,52 @@ internal static class SharedRules
         var at = Array.IndexOf(content, (byte)'\r');
         if (at >= 0)
             yield return relativePath + " holds a CR at byte " + at.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>The folder where binary data may live: pinned archives and generated binary tables, never a source.</summary>
+    internal const string DataFolder = FolderNamePrefix + "data/";
+
+    private const string FolderNamePrefix = "Broiler.ECMAScript/";
+
+    /// <summary>
+    /// The patterns .gitattributes declares <c>binary</c> below the shared folder's data folder (milestone
+    /// SJL-8.2): the files SL10's line-ending half does not read, because their bytes are an archive's or a
+    /// table's and a CR in them is data. A pattern outside the data folder exempts nothing.
+    /// </summary>
+    internal static IReadOnlyList<string> BinaryDataPatterns(IEnumerable<string> attributeLines) =>
+        attributeLines
+            .Select(static line => line.Trim())
+            .Where(static line => line.Length > 0 && line[0] != '#')
+            .Select(static line => line.Split((char[])[' ', '\t'], StringSplitOptions.RemoveEmptyEntries))
+            .Where(static fields => fields.Length == 2 && fields[1] == "binary" && fields[0].StartsWith(DataFolder, StringComparison.Ordinal))
+            .Select(static fields => fields[0])
+            .ToList();
+
+    /// <summary>Whether a repository-relative path matches one of the patterns, as Git matches a pattern with a slash: <c>*</c> within a segment, <c>**</c> across them.</summary>
+    internal static bool IsDeclaredBinary(string relativePath, IReadOnlyList<string> patterns) =>
+        relativePath.StartsWith(DataFolder, StringComparison.Ordinal)
+        && patterns.Any(pattern => System.Text.RegularExpressions.Regex.IsMatch(relativePath, GlobExpression(pattern)));
+
+    private static string GlobExpression(string pattern)
+    {
+        var expression = new System.Text.StringBuilder("^");
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            if (pattern[i] == '*' && i + 1 < pattern.Length && pattern[i + 1] == '*')
+            {
+                expression.Append(".*");
+                i++;
+            }
+            else if (pattern[i] == '*')
+            {
+                expression.Append("[^/]*");
+            }
+            else
+            {
+                expression.Append(System.Text.RegularExpressions.Regex.Escape(pattern[i].ToString()));
+            }
+        }
+
+        return expression.Append('$').ToString();
     }
 }

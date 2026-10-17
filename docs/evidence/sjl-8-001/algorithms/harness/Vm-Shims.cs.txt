@@ -1,0 +1,79 @@
+// Minimal stand-ins for the engine types the copied Broiler.VM members name. Nothing here computes.
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace VmRef;
+
+internal sealed class VmError(string type, string message) : Exception(type + ": " + message)
+{
+    public string Type { get; } = type;
+}
+
+internal enum JsType { Undefined, String }
+
+internal readonly record struct JsValue(JsType Type, string? Text)
+{
+    internal static JsValue Of(string? text) => text is null ? new(JsType.Undefined, null) : new(JsType.String, text);
+}
+
+internal enum JsZoneKind { Utc, Gmt, Offset, Named }
+
+internal sealed class JsIntlTables
+{
+    internal JsIntlTables()
+    {
+        // As JsIntlTables.Lines reads a text table: ASCII, split at line feeds, empty lines skipped.
+        static List<string> Lines(ReadOnlySpan<byte> table)
+        {
+            var lines = new List<string>();
+            foreach (var line in Encoding.ASCII.GetString(table).Split('\n'))
+            {
+                if (line.Length != 0)
+                    lines.Add(line);
+            }
+
+            return lines;
+        }
+
+        TimeZones = new JsTimeZones(Lines(JsTzdbTables.TimeZoneIds), Lines(JsTzdbTables.TimeZoneRegions), JsTzdbTables.TimeZones);
+        Calendars = new JsCalendars(JsCalendarTables.Calendars);
+    }
+
+    internal JsTimeZones TimeZones { get; }
+
+    internal JsCalendars Calendars { get; }
+}
+
+internal sealed class JsEngine
+{
+    internal JsIntlTables? Intl { get; init; }
+
+    internal Exception Error(string type, string message) => new VmError(type, message);
+
+    internal string ToStringValue(JsValue value) => value.Text!;
+}
+
+internal static partial class DateTimeFormatZones
+{
+    internal static (string Identifier, int Offset, JsZoneKind Kind, JsZone? Zone) Resolve(JsEngine engine, string? text) =>
+        ResolveTimeZone(engine, JsValue.Of(text));
+
+    internal static bool Offset(string text, out int minutes, out bool hasSeconds) => ParseOffset(text, out minutes, out hasSeconds);
+}
+
+internal static partial class JsTemporal
+{
+    // JsTemporal.CalendarNonIso's guard, verbatim in effect: a year beyond YearBound is a RangeError before it is computed.
+    private const long YearBound = 300_000;
+
+    internal static JsCalendarYear CalendarYear(JsEngine engine, JsCalendarSystem system, double year)
+    {
+        if (System.Math.Abs(year) > YearBound)
+        {
+            throw engine.Error("RangeError", "Temporal: the year is outside the representable range");
+        }
+
+        return system.Year((long)year);
+    }
+}

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    The time data home's generator (milestone SJL-8.2; Broiler.VM's decision JSD-0076, decisions
+    SJL-D-1 (b-iii), SJL-D-6 (c), SJL-D-20 and SJL-D-21): the readers of the pinned tz archive, the
+    CLDR time zone keys and the calendar crates, the tz compiler, and the generators of the compact
+    time zone tables and the calendar year table, ported from Broiler.VM's architecture tests with
+    their behaviour unchanged. Each generator is split into its data - the bytes and text an engine
+    embeds - and a source writer that wraps that data into a C# file for a namespace and class the
+    caller chooses, as Broiler.Unicode.Generation's UnicodeTableGenerator and UnicodeTableSource are.
+
+    It is test-only in the way that package is: each engine's tests call it to regenerate the tables
+    that engine embeds and hold them byte for byte, and it never reaches a product closure. It reads
+    no file itself: the caller hands it each pin's text and each archive's bytes. It carries no
+    table and no pinned input (SJL-D-6 (c)): those are files of this repository, under
+    Broiler.ECMAScript/data/time/, never package content.
+  -->
+  <PropertyGroup>
+    <RootNamespace>Broiler.ECMAScript.Generation</RootNamespace>
+    <AssemblyName>Broiler.ECMAScript.Generation</AssemblyName>
+    <PackageId>Broiler.ECMAScript.Generation</PackageId>
+    <Description>Test-only: the generator of the Broiler JavaScript engines' time zone and calendar tables from the pinned IANA tz release, CLDR's time zone keys and ICU4X's calendar crates - the pin readers, a tz compiler equivalent to zic, the compact zone, identifier and region tables, the calendar year table, and source writers that wrap them into C# - for engines that embed the tables and hold them byte for byte. It carries no table and no pinned input.</Description>
+    <PackageTags>broiler;ecmascript;javascript;shared;generator;tzdb;calendars;test</PackageTags>
+    <EnablePackageValidation>true</EnablePackageValidation>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The tests call the compiler's internal steps (the ON-field and rule-event readers) directly. -->
+    <InternalsVisibleTo Include="Broiler.ECMAScript.Generation.Tests" />
+  </ItemGroup>
+</Project>

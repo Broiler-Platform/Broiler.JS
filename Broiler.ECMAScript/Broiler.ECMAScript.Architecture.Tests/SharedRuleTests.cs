@@ -25,7 +25,7 @@ public class SharedRuleTests
     [Fact]
     public void The_rules_read_every_shared_library_and_the_probe()
     {
-        Assert.Equal(["Broiler.ECMAScript.Algorithms", "Broiler.ECMAScript.Conformance"], SharedTree.Libraries.Select(static p => p.Name));
+        Assert.Equal(["Broiler.ECMAScript.Algorithms", "Broiler.ECMAScript.Conformance", "Broiler.ECMAScript.Generation"], SharedTree.Libraries.Select(static p => p.Name));
         Assert.Single(SharedTree.Projects, static p => p.Kind == SharedProjectKind.Probe);
         Assert.All(LibraryAssemblies, static a => Assert.NotEmpty(a.TypeReferences));
     }
@@ -323,6 +323,7 @@ public class SharedRuleTests
         }
 
         WhiteSpaceTable();
+        TimeDataTables();
 
         static Dictionary<string, byte[]> Read(string directory) =>
             Directory.EnumerateFiles(directory, "*.vectors").ToDictionary(static p => Path.GetFileName(p), File.ReadAllBytes, StringComparer.Ordinal);
@@ -397,6 +398,43 @@ public class SharedRuleTests
         }
     }
 
+    /// <summary>
+    /// SL7's third generated area, from milestone SJL-8.2: the time data home's tables,
+    /// Broiler.ECMAScript/data/time/generated/, which Broiler.ECMAScript.Generation writes from the pins
+    /// beside them. <see cref="TimeDataHome.WriteVariable"/> set to 1 writes the area instead of comparing it,
+    /// as the API baseline's variable does for SL6.
+    /// </summary>
+    private static void TimeDataTables()
+    {
+        var home = TimeDataHome.Current;
+        var generated = TimeDataHome.Generate(home);
+        Assert.Equal(5, generated.Count);
+        Assert.All(generated.Values, static bytes => Assert.NotEmpty(bytes));
+
+        if (Environment.GetEnvironmentVariable(TimeDataHome.WriteVariable) == "1")
+            TimeDataHome.Write(home, generated);
+
+        var committed = TimeDataHome.Committed(home);
+        Assert.Empty(SharedRules.SL7(committed, generated));
+
+        // The witness: a file written by hand into the generated area, and one byte changed in a generated table.
+        var edited = new Dictionary<string, byte[]>(committed, StringComparer.Ordinal)
+        {
+            ["hand-written.vectors"] = File.ReadAllBytes(Witness.PathOf("SL7-hand-written-file-in-a-generated-area.vectors.witness")),
+        };
+        var changed = (byte[])committed[TimeDataHome.TimeZonesFile].Clone();
+        changed[changed.Length / 2] ^= 1;
+        edited[TimeDataHome.TimeZonesFile] = changed;
+        var violations = SharedRules.SL7(edited, generated).ToList();
+        Assert.Contains("hand-written.vectors is committed in a generated area, and the generator does not write it", violations);
+        Assert.Contains(TimeDataHome.TimeZonesFile + " differs from what the generator writes", violations);
+
+        // And a table the generator writes that is not committed.
+        var missing = new Dictionary<string, byte[]>(committed, StringComparer.Ordinal);
+        missing.Remove(TimeDataHome.CalendarsFile);
+        Assert.Contains(TimeDataHome.CalendarsFile + " is written by the generator and not committed", SharedRules.SL7(missing, generated));
+    }
+
     /// <summary>One run of the corpus through a library: the corpus read and validated afresh, then the library-level runner's report.</summary>
     private static string Run(IVectorLibrary library)
     {
@@ -440,12 +478,23 @@ public class SharedRuleTests
         Assert.Contains(sources, static s => s.EndsWith("WorkCharge.cs", StringComparison.Ordinal));
         Assert.Empty(sources.SelectMany(static p => SharedRules.SL10Directives(SharedTree.Relative(p), File.ReadAllText(p))));
 
-        var text = SharedTree.SourceFiles("*").Where(static p => !p.EndsWith(".png", StringComparison.Ordinal)).ToList();
-        Assert.Empty(text.SelectMany(static p => SharedRules.SL10LineEndings(SharedTree.Relative(p), File.ReadAllBytes(p))));
-
         // Read by line: Git checks .gitattributes out with the platform's line endings.
         var attributes = File.ReadAllLines(Path.Combine(SharedTree.Root, ".gitattributes"));
         Assert.Contains("Broiler.ECMAScript/** text eol=lf", attributes);
+
+        // The data folder's archives and binary tables are bytes, not text (milestone SJL-8.2): a file
+        // .gitattributes declares binary below Broiler.ECMAScript/data/ is not read for a CR, and nothing
+        // outside that folder can be exempted that way.
+        var binary = SharedRules.BinaryDataPatterns(attributes);
+        var files = SharedTree.SourceFiles("*").Where(static p => !p.EndsWith(".png", StringComparison.Ordinal)).ToList();
+        var text = files.Where(p => !SharedRules.IsDeclaredBinary(SharedTree.Relative(p), binary)).ToList();
+        Assert.Empty(text.SelectMany(static p => SharedRules.SL10LineEndings(SharedTree.Relative(p), File.ReadAllBytes(p))));
+
+        // Not vacuous: the exemption holds the pinned tz archive, and only files of the data folder.
+        var exempted = files.Except(text).Select(SharedTree.Relative).ToList();
+        Assert.Contains("Broiler.ECMAScript/data/time/tzdb/tzdata2026e.tar.gz", exempted);
+        Assert.All(exempted, static p => Assert.StartsWith(SharedRules.DataFolder, p, StringComparison.Ordinal));
+        Assert.Contains(text, static p => p.EndsWith("tzdb.pin", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -455,6 +504,13 @@ public class SharedRuleTests
         Assert.Equal(["w.cs:7: #if DEBUG", "w.cs:9: #else", "w.cs:11: #endif", "w.cs:13: #pragma warning disable CS0618", "w.cs:15: #pragma warning restore CS0618"], directives);
 
         Assert.NotEmpty(SharedRules.SL10LineEndings("w.cs", File.ReadAllBytes(Witness.PathOf("SL10-crlf-line-endings.cs.witness"))));
+
+        // A binary declaration exempts the data folder's files only: the same pattern over a source is not honoured.
+        var patterns = SharedRules.BinaryDataPatterns(["Broiler.ECMAScript/data/time/tzdb/*.tar.gz binary", "Broiler.ECMAScript/** binary", "# a/b binary"]);
+        Assert.Equal(["Broiler.ECMAScript/data/time/tzdb/*.tar.gz"], patterns);
+        Assert.True(SharedRules.IsDeclaredBinary("Broiler.ECMAScript/data/time/tzdb/tzdata2026e.tar.gz", patterns));
+        Assert.False(SharedRules.IsDeclaredBinary("Broiler.ECMAScript/data/time/tzdb/nested/tzdata2026e.tar.gz", patterns));
+        Assert.False(SharedRules.IsDeclaredBinary("Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/WorkCharge.cs", ["Broiler.ECMAScript/**"]));
     }
 }
 
