@@ -109,24 +109,6 @@ public partial class JSTemporalZonedDateTime : JSObject
     private static IsoDateTime IsoDateTimeOf(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns)
         => TemporalAdapter.IsoDateTimeOf(y, mo, d, h, mi, s, ms, us, ns);
 
-    // ToRelativeTemporalObject for a property bag carrying a timeZone: build the ZonedDateTime
-    // relativeTo (DST-aware) from already-validated bag fields. The wall clock resolves with the
-    // "compatible" disambiguation a relativeTo always uses, or — when the bag supplied an offset (which
-    // the caller has already validated as matching the zone) — that exact offset. Mirrors the string
-    // relativeTo (FromParsed), so a property-bag relativeTo is no longer a 24-hour-day fallback
-    // (test262 Duration round/total/compare casts-relativeTo-to-ZonedDateTime-from-object).
-    internal static JSTemporalZonedDateTime BuildRelative(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns, string timeZoneId, string offsetString, string calendarId)
-    {
-        BigInteger epoch;
-        if (offsetString != null && TemporalAdapter.TryParseOffsetString(offsetString, out var offsetNs))
-            epoch = LocalNanoseconds(y, mo, d, h, mi, s, ms, us, ns) - offsetNs;
-        else
-            epoch = DisambiguateEpochNs(timeZoneId, y, mo, d, h, mi, s, ms, us, ns, "compatible");
-        if (!IsValid(epoch))
-            throw JSEngine.NewRangeError("Temporal.Duration: relativeTo is outside the representable range");
-        return new JSTemporalZonedDateTime(epoch, timeZoneId, calendarId, ZonedDateTimePrototype);
-    }
-
     // GetStartOfDay for a date in a zone (Temporal.PlainDate.prototype.toZonedDateTime with no
     // plainTime): the first instant of the day, which across a gap covering midnight is the transition
     // instant rather than midnight.
@@ -1074,21 +1056,6 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (value == null || !value.IsString)
             throw JSEngine.NewTypeError("Temporal: time zone must be a string identifier");
         return TemporalAdapter.ToTimeZoneIdentifier(value.ToString());
-    }
-
-    // ToRelativeTemporalObject for a property-bag relativeTo that carries a timeZone: the offset field,
-    // when present, must EXACTLY match one of the zone's offsets for the given local wall clock — a
-    // property bag uses match-exactly, with no minute rounding (unlike the string form, where
-    // ParseZonedDateTimeString allows the match-minutes fallback). A mismatch is a RangeError, so e.g.
-    // { offset: "-00:45", timeZone: "Africa/Monrovia" } is rejected (the zone offset is -00:44:30).
-    internal static void ValidateBagOffsetMatchesZone(string timeZoneId, int y, int mo, int d, int h, int mi, int s, string offsetString)
-    {
-        if (!TemporalAdapter.TryParseOffsetString(offsetString, out var offsetNs))
-            throw JSEngine.NewRangeError($"Temporal: invalid offset string \"{offsetString}\"");
-        var local = IsoDateTimeOf(y, mo, d, h, mi, s, 0, 0, 0);
-        var possible = TemporalTimeZones.PossibleEpochNanoseconds(timeZoneId, local);
-        if (!TryMatchZoneOffset(possible, LocalNanoseconds(y, mo, d, h, mi, s, 0, 0, 0), offsetNs, matchMinutes: false, out _))
-            throw JSEngine.NewRangeError($"Temporal: offset \"{offsetString}\" does not match the time zone \"{timeZoneId}\"");
     }
 
     // InterpretISODateTimeOffset offset-matching for the "prefer"/"reject" options: does the explicit

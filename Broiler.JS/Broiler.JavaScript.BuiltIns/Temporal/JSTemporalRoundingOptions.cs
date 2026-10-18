@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Temporal;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
 
@@ -146,4 +147,22 @@ internal static class TemporalRoundingOptions
             ExactRounding.GetUnsignedRoundingMode(mode, sign < 0));
         return rounded == end;
     }
+
+    // GetTemporalUnitValuedOption: undefined is unset (or, where the option is required, the RangeError); any other
+    // value is converted with ToString and must be a unit's singular or plural name or "auto" (the library's
+    // TemporalOptionRules.TryParseUnit), else the RangeError. Which units an operation allows is its rule's, checked
+    // after its last read.
+    internal static TemporalUnit GetUnit(JSObject options, string key, string typeName, bool required = false)
+    {
+        var v = options[KeyStrings.GetOrCreate(key)];
+        if (v.IsUndefined)
+            return required ? throw JSEngine.NewRangeError($"{typeName}: {key} is required") : TemporalUnit.Unset;
+
+        return ParseUnit(v.StringValue, key, typeName);
+    }
+
+    // The value of a unit-valued option already converted to a String (a round or total argument that is a String names
+    // its one option): a unit's singular or plural name or "auto", else the RangeError.
+    internal static TemporalUnit ParseUnit(string text, string key, string typeName) =>
+        TemporalOptionRules.TryParseUnit(text, out var unit) ? unit : throw JSEngine.NewRangeError($"{typeName}: invalid {key} \"{text}\"");
 }

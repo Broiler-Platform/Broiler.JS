@@ -16,7 +16,8 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 /// <para>
 /// The class is split by concern: the records, limits, balancing, regulation and addition here; the grammar in
 /// <c>TemporalAdapter.Grammar.cs</c>; serialization and its options in <c>TemporalAdapter.Serialization.cs</c>; the
-/// calendars, their identifiers and PrepareCalendarFields' reads in <c>TemporalAdapter.Calendars.cs</c>.
+/// calendars, their identifiers and PrepareCalendarFields' reads in <c>TemporalAdapter.Calendars.cs</c>; the durations,
+/// rounding, differences, <c>relativeTo</c> and their options in <c>TemporalAdapter.Durations.cs</c>.
 /// </para>
 /// <para>
 /// <b>The records are SJL-8's</b> <see cref="IsoDate"/>, <see cref="IsoTime"/> and <see cref="IsoDateTime"/>

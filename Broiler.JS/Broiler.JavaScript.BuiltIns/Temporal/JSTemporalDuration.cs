@@ -1,5 +1,4 @@
 using System;
-using System.Numerics;
 using Broiler.ECMAScript.Numbers;
 using Broiler.ECMAScript.Temporal;
 using Broiler.JavaScript.BuiltIns.Function;
@@ -12,11 +11,10 @@ using Broiler.JavaScript.Engine.Core;
 namespace Broiler.JavaScript.BuiltIns.Temporal;
 
 // Temporal.Duration (Temporal proposal §7). A Duration is an immutable record of ten signed
-// integer components (years … nanoseconds) sharing one sign. This implements construction,
-// from()/compare(), the component/sign/blank accessors, with()/negated()/abs(), and ISO-8601
-// string round-tripping. Calendar-dependent arithmetic (round/total/add with a relativeTo
-// that needs a calendar) is only supported for the calendar-independent (time + days) case;
-// otherwise a RangeError is raised, matching the spec's "relativeTo is required" paths.
+// integer components (years … nanoseconds) sharing one sign. Its validity, sign, addition,
+// compare, round and total, with and without relativeTo in any calendar and zone, are the shared
+// library's DurationMath (milestone SJL-10.5, part C); what stays here is each method's reads, in
+// the specification's order, and the RangeError each status is, through TemporalAdapter.
 //
 // Registered under the Temporal namespace (not as a global) via Register = false.
 [JSClassGenerator("Duration", Register = false)]
@@ -54,6 +52,11 @@ public partial class JSTemporalDuration : JSObject
         this.seconds = NoNegativeZero(seconds); this.milliseconds = NoNegativeZero(milliseconds);
         this.microseconds = NoNegativeZero(microseconds); this.nanoseconds = NoNegativeZero(nanoseconds);
     }
+
+    // A duration of the shared library's record, every field already a Number.
+    internal JSTemporalDuration(DurationFields fields, JSObject prototype)
+        : this(fields.Years, fields.Months, fields.Weeks, fields.Days, fields.Hours, fields.Minutes, fields.Seconds,
+            fields.Milliseconds, fields.Microseconds, fields.Nanoseconds, prototype) { }
 
     private static double NoNegativeZero(double v) => v == 0 ? 0.0 : v;
 
@@ -180,19 +183,100 @@ public partial class JSTemporalDuration : JSObject
     public JSValue ValueOf(in Arguments a)
         => throw JSEngine.NewTypeError("Called Temporal.Duration.prototype.valueOf, which is not supported. Use Temporal.Duration.compare for comparison.");
 
-    // add / subtract / round / total: the calendar-independent (time + 24h-day) cases are
-    // implemented in JSTemporalDuration.Arithmetic.cs; calendar-unit / relativeTo cases throw.
     [JSExport("add", Length = 1)]
-    public JSValue Add(in Arguments a) => AddSubtract(a.GetAt(0), a.GetAt(1), 1);
+    public JSValue Add(in Arguments a) => AddDurations(a.GetAt(0), subtract: false);
 
     [JSExport("subtract", Length = 1)]
-    public JSValue Subtract(in Arguments a) => AddSubtract(a.GetAt(0), a.GetAt(1), -1);
+    public JSValue Subtract(in Arguments a) => AddDurations(a.GetAt(0), subtract: true);
 
+    // AddDurations (s7.5.41): ToTemporalDuration of the one argument - the pinned revision's add and subtract take one
+    // parameter, so a second argument is never read (row D3) - negated for subtract, then the library's sum: years,
+    // months or weeks in either duration are the RangeError, and the sum past the limits too.
+    private JSValue AddDurations(JSValue otherValue, bool subtract)
+    {
+        var other = ((JSTemporalDuration)ToTemporalDuration(otherValue)).Fields;
+        if (subtract)
+            other = DurationMath.Negate(other);
+
+        TemporalAdapter.CheckArithmetic(DurationMath.AddDurations(Fields, other, out var result), "Temporal.Duration",
+            "Temporal.Duration.prototype.add/subtract: a duration with years, months or weeks cannot be added or subtracted");
+        return TemporalAdapter.DurationOf(result);
+    }
+
+    // Temporal.Duration.prototype.round (s7.3.20): a String is { smallestUnit }, undefined the TypeError; then the reads in
+    // code unit order - largestUnit, relativeTo (GetTemporalRelativeToOption), roundingIncrement, roundingMode (default
+    // halfExpand), smallestUnit - each converted as it is read; then the units' rules (TryGetDurationRoundUnits) and the
+    // library's rounding: relative to a zoned instant over its zone's real days, to a plain date in its calendar, and
+    // otherwise in days of 24 hours.
     [JSExport("round", Length = 1)]
-    public JSValue Round(in Arguments a) => RoundImpl(a.GetAt(0));
+    public JSValue Round(in Arguments a)
+    {
+        const string typeName = "Temporal.Duration.prototype.round";
+        var roundTo = a.GetAt(0);
+        if (roundTo == null || roundTo.IsUndefined)
+            throw JSEngine.NewTypeError("Temporal.Duration.prototype.round requires an options argument");
 
+        var largestUnit = TemporalUnit.Unset;
+        var relativeTo = RelativeTo.None;
+        var roundingIncrement = TemporalOptionRules.DefaultRoundingIncrement;
+        var roundingMode = TemporalOptionRules.DefaultRoundRoundingMode;
+        TemporalUnit smallestUnit;
+        if (roundTo.IsString)
+        {
+            smallestUnit = TemporalRoundingOptions.ParseUnit(roundTo.StringValue, "smallestUnit", typeName);
+        }
+        else if (roundTo is JSObject options)
+        {
+            largestUnit = TemporalRoundingOptions.GetUnit(options, "largestUnit", typeName);
+            relativeTo = TemporalAdapter.RelativeToOption(options);
+            roundingIncrement = TemporalRoundingOptions.GetRoundingIncrement(options);
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, TemporalOptionRules.DefaultRoundRoundingMode);
+            smallestUnit = TemporalRoundingOptions.GetUnit(options, "smallestUnit", typeName);
+        }
+        else
+        {
+            throw JSEngine.NewTypeError("Temporal.Duration.prototype.round requires an options object or string");
+        }
+
+        if (!TemporalOptionRules.TryGetDurationRoundUnits(Fields, largestUnit, roundingIncrement, smallestUnit, out var largest, out var smallest))
+            throw JSEngine.NewRangeError($"{typeName}: the largestUnit, smallestUnit and roundingIncrement options are not valid together");
+
+        TemporalAdapter.CheckArithmetic(DurationMath.Round(Fields, largest, roundingIncrement, smallest, roundingMode, relativeTo, out var result), typeName);
+        return TemporalAdapter.DurationOf(result);
+    }
+
+    // Temporal.Duration.prototype.total (s7.3.21): a String is { unit }, undefined the TypeError; then relativeTo, then the
+    // required unit, a unit of any group; then the library's total, an exact ratio rounded once.
     [JSExport("total", Length = 1)]
-    public JSValue Total(in Arguments a) => TotalImpl(a.GetAt(0));
+    public JSValue Total(in Arguments a)
+    {
+        const string typeName = "Temporal.Duration.prototype.total";
+        var totalOf = a.GetAt(0);
+        if (totalOf == null || totalOf.IsUndefined)
+            throw JSEngine.NewTypeError("Temporal.Duration.prototype.total requires an options argument");
+
+        var relativeTo = RelativeTo.None;
+        TemporalUnit unit;
+        if (totalOf.IsString)
+        {
+            unit = TemporalRoundingOptions.ParseUnit(totalOf.StringValue, "unit", typeName);
+        }
+        else if (totalOf is JSObject options)
+        {
+            relativeTo = TemporalAdapter.RelativeToOption(options);
+            unit = TemporalRoundingOptions.GetUnit(options, "unit", typeName, required: true);
+        }
+        else
+        {
+            throw JSEngine.NewTypeError("Temporal.Duration.prototype.total requires an options object or string");
+        }
+
+        if (!TemporalOptionRules.IsValidTotalUnit(unit))
+            throw JSEngine.NewRangeError($"{typeName}: invalid unit");
+
+        TemporalAdapter.CheckArithmetic(DurationMath.Total(Fields, unit, relativeTo, out var total), typeName);
+        return new JSNumber(total);
+    }
 
     // ── statics ─────────────────────────────────────────────────────────────────
 
@@ -206,88 +290,23 @@ public partial class JSTemporalDuration : JSObject
         return ToTemporalDuration(item);
     }
 
+    // Temporal.Duration.compare (s7.2.3): both ToTemporalDurations, GetOptionsObject and GetTemporalRelativeToOption -
+    // relativeTo is resolved, and refused if invalid, even where the comparison does not need it - then the library's
+    // comparison: equal fields are 0; relative to a zoned instant, each added to it; relative to a plain date, by
+    // DateDurationDays, which adds only the years, months and weeks (row D4); otherwise in days of 24 hours.
     [JSExport("compare", Length = 2)]
     internal static JSValue Compare(in Arguments a)
     {
-        var one = ToTemporalDuration(a.GetAt(0));
-        var two = ToTemporalDuration(a.GetAt(1));
+        var one = (JSTemporalDuration)ToTemporalDuration(a.GetAt(0));
+        var two = (JSTemporalDuration)ToTemporalDuration(a.GetAt(1));
+        var options = TemporalAdapter.OptionsObject(a.GetAt(2), "Temporal.Duration.compare");
+        var relativeTo = options == null ? RelativeTo.None : TemporalAdapter.RelativeToOption(options);
 
-        var d1 = (JSTemporalDuration)one;
-        var d2 = (JSTemporalDuration)two;
-
-        var options = a.GetAt(2);
-
-        var calendarUnits = d1.years != 0 || d1.months != 0 || d1.weeks != 0
-            || d2.years != 0 || d2.months != 0 || d2.weeks != 0;
-
-        // ToRelativeTemporalObject resolves (and validates) relativeTo whenever it is present, even when
-        // the comparison itself does not need it — an unparsable or otherwise invalid relativeTo string
-        // is a RangeError regardless of the durations' units. The spec resolves relativeTo before the
-        // identical-durations short-circuit below, so an invalid relativeTo still throws here. The
-        // `relativeTo` property is read exactly once (test262 Duration/compare order-of-operations).
-        JSTemporalZonedDateTime relZoned = null;
-        JSTemporalPlainDate relDate = null;
-        var hasRelativeTo = TryResolveRelativeTo(options, out relZoned, out relDate);
-
-        // If the two durations are identical in every field, the result is +0 regardless of relativeTo.
-        // The spec applies this short-circuit before the calendar-units requirement, so comparing a
-        // duration that has calendar units to itself returns 0 rather than throwing for a missing relativeTo.
-        if (d1.years == d2.years && d1.months == d2.months && d1.weeks == d2.weeks
-            && d1.days == d2.days && d1.hours == d2.hours && d1.minutes == d2.minutes
-            && d1.seconds == d2.seconds && d1.milliseconds == d2.milliseconds
-            && d1.microseconds == d2.microseconds && d1.nanoseconds == d2.nanoseconds)
-            return new JSNumber(0);
-
-        if (calendarUnits && !hasRelativeTo)
-            throw JSEngine.NewRangeError("Temporal.Duration.compare with calendar units requires a relativeTo option");
-
-        // The spec only adds each duration to the zoned relativeTo when one of the durations has a
-        // date-category largest unit (a non-zero year/month/week/day); a purely time-based comparison
-        // never touches the relativeTo, so a boundary relativeTo whose instant is representable does not
-        // overflow even though adding the time would (test262 compare/relativeto-string-limits).
-        var dateUnits = calendarUnits || d1.days != 0 || d2.days != 0;
-
-        if (relZoned != null && dateUnits)
-        {
-            // Add each duration to the (shared) zoned relativeTo and compare the resulting instants,
-            // so a day spans its real DST-adjusted length.
-            var e1 = relZoned.AddDurationEpochNs(d1);
-            var e2 = relZoned.AddDurationEpochNs(d2);
-            return new JSNumber(e1 < e2 ? -1 : e1 > e2 ? 1 : 0);
-        }
-
-        if (calendarUnits)
-        {
-            // Add each duration's date part to the (shared) relativeTo date and compare the resulting
-            // instants on the 24-hour-day timeline. Each endpoint must be a representable PlainDateTime
-            // (spec: adding the 24-hour days + normalized time runs through RejectDateTimeRange) — e.g. a
-            // duration carrying ~2^53 seconds reaches far beyond the range and is a RangeError.
-            var (end1, start1, _) = d1.RelativeEndpoints(relDate);
-            var (end2, start2, _) = d2.RelativeEndpoints(relDate);
-            ValidateRelativeEndpoints(start1, end1);
-            ValidateRelativeEndpoints(start2, end2);
-            return new JSNumber(end1 < end2 ? -1 : end1 > end2 ? 1 : 0);
-        }
-
-        var ns1 = d1.TotalNanoseconds();
-        var ns2 = d2.TotalNanoseconds();
-        return new JSNumber(ns1 < ns2 ? -1 : ns1 > ns2 ? 1 : 0);
+        TemporalAdapter.CheckArithmetic(DurationMath.Compare(one.Fields, two.Fields, relativeTo, out var result), "Temporal.Duration.compare");
+        return new JSNumber(result);
     }
 
     // ── helpers ─────────────────────────────────────────────────────────────────
-
-    // Total nanoseconds for the calendar-independent part (days treated as 24h).
-    private BigInteger TotalNanoseconds()
-    {
-        BigInteger ToBig(double v) => new(v);
-        return ToBig(days) * 86_400_000_000_000
-            + ToBig(hours) * 3_600_000_000_000
-            + ToBig(minutes) * 60_000_000_000
-            + ToBig(seconds) * 1_000_000_000
-            + ToBig(milliseconds) * 1_000_000
-            + ToBig(microseconds) * 1_000
-            + ToBig(nanoseconds);
-    }
 
     private static double ToIntegerIfIntegral(JSValue value)
     {

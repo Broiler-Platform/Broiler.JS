@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using Broiler.ECMAScript.Temporal;
 using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.Engine.Core;
 
@@ -32,6 +33,9 @@ internal static class TemporalTimeZones
 {
     // The rules of each canonical identifier read so far: at most every name and every offset of a day.
     private static readonly ConcurrentDictionary<string, ITimeZoneRules> RulesById = new(StringComparer.Ordinal);
+
+    // The shared Temporal core's provider of each canonical identifier read so far, one per zone.
+    private static readonly ConcurrentDictionary<string, TemporalTimeZone> ArithmeticById = new(StringComparer.Ordinal);
 
     private static SystemZone? system;
 
@@ -92,6 +96,14 @@ internal static class TemporalTimeZones
     /// <summary>The rules of a canonical identifier: a fixed offset, or the named zone's, which is its primary's.</summary>
     internal static ITimeZoneRules Rules(string timeZone) =>
         RulesById.TryGetValue(timeZone, out var rules) ? rules : RulesById.GetOrAdd(timeZone, Resolve(timeZone));
+
+    /// <summary>
+    /// A canonical identifier as the shared Temporal core's zone provider (<see cref="ITimeZoneArithmetic"/>, the adapter
+    /// guide's part C): the library's <see cref="TemporalTimeZone"/> over the zone's <see cref="Rules"/>, one per zone. The
+    /// zoned additions, the relative rounding, the zoned differences and the day lengths compute through it.
+    /// </summary>
+    internal static ITimeZoneArithmetic Arithmetic(string timeZone) =>
+        ArithmeticById.TryGetValue(timeZone, out var zone) ? zone : ArithmeticById.GetOrAdd(timeZone, new TemporalTimeZone(Rules(timeZone)));
 
     /// <summary>The offset in force at an instant: <c>GetOffsetNanosecondsFor</c>.</summary>
     internal static long OffsetNanoseconds(string timeZone, BigInteger epochNanoseconds) =>
