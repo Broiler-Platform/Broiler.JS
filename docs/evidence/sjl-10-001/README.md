@@ -23,11 +23,14 @@ area's rules run test262 `ccaac100` (decision D2).
 **Owner:** the Broiler.JS maintainer. One person holds every role (the programme's EX-30, recorded in Broiler.VM).
 **Reviewer:** none, and nothing here has been read by anyone but its author.
 
-**State, 2026-10-18, at SJL-10.2:**
+**State, 2026-10-18, at SJL-10.3:**
 - The bases of all three parts are taken at the rule's commit `1d27064d` (section 1).
+- The library holds the area, and the library-level runner answers its vectors (section 3).
 - The after runs follow SJL-10.5's cut-over.
 
 **Nothing here is a verdict.**
+
+*(Revised 2026-10-18, at SJL-10.3: the state read "at SJL-10.2", and had no item on the library.)*
 
 *(Revised 2026-10-18, at SJL-10.2, twice. The state read "at SJL-10.1: the rule only. Nothing here is a verdict,
 and nothing has been taken.", and its first two items "The bases of parts A and B are taken at the rule's commit
@@ -181,7 +184,7 @@ it.
 - **No library answers the area yet.** `Broiler.ECMAScript.Algorithms` holds no Temporal code until SJL-10.3, so
   there is no library-level runner for it: SJL-8.4's `942f8cd3` has no counterpart here yet. The Native AOT probe
   reports every Temporal vector as not implemented, as it should for an area the library does not hold. Its report
-  equals the JIT's.
+  equals the JIT's. *(SJL-10.3 adds the library and its runner: section 3.)*
 
 **This engine's runs** of `Broiler.JS/Broiler.JavaScript.Vectors.Tests` are in [`engine/`](engine/). Each was taken
 in Release, built once and run with `--no-build` from a clean tree, under `TZ=UTC` and under `TZ=America/New_York`,
@@ -249,3 +252,118 @@ more difference.
   stays a correction under the row.
 - **Row R6 counts five faulting cases.** The vectors find a sixth of the same cause, `new PlainDateTime` with a year
   of 2^53 + 2.
+
+## 3. The library (SJL-10.3)
+
+`Broiler.ECMAScript.Algorithms` gains the Temporal core under `Broiler.ECMAScript.Temporal`, in three parts joined on
+one branch. The adapter guide is
+[`adapter-guide-temporal.md`](../../../Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md).
+- **Part A: records, balancing, grammar and serialization.**
+  - `TemporalLimits`, each limit a `TemporalStatus` and none throwing (decision D9);
+  - `IsoArithmetic`: balancing, regulation under both overflows, ISO addition and the rounding of points;
+  - `TemporalGrammar`, Broiler.VM's linear parser, with no regular expression, each refusal a `TemporalParseError`;
+  - `TemporalFormat`, every string form; and `TemporalOptionRules`' rules of the `toString` options.
+- **Part B: the calendars.** `CalendarId`, `MonthCode` and `CalendarFields`; `TemporalCalendars` over SJL-8's
+  calendar years, with the formula calendars, the table calendars, Table 2's eras, Table 3's month codes and Table
+  6's reference years; and `ICalendarArithmetic`, the calendar provider. The calendars' private limits were unified
+  onto part A's when the parts were joined, with no answer changed.
+- **Part C: durations, rounding and differences.**
+  - `DurationMath`: sign, the default largest unit, the internal records, addition, `compare`, `round` and `total`
+    with and without `relativeTo`, and `RoundRelativeDuration` and `TotalRelativeDuration` with the nudges and
+    bubbling, over exact rationals;
+  - `TemporalDifferences`: `until` and `since` of every type;
+  - `ITimeZoneArithmetic`, the zone provider, one zone per instance, with `TemporalTimeZone` over SJL-8's
+    `ZonedTime`; `RelativeTo`; and `TemporalOptionRules`' rounding and difference rules;
+  - decision D7 at row D8: the pinned text's nudge after a shifted window. JSD-0054 section 4's named places stand.
+- **Nothing in the area charges** (JSD-0078's X3), and the library embeds no table.
+
+**The differential check against Broiler.VM's code.** A harness ran Broiler.VM's own code beside the library, over the
+data home's tables.
+- **What ran:** `JsTemporalCore`, `JsTemporalParser`, `JsTemporal.Conversions`, `JsTemporal.Durations`,
+  `JsTemporal.Options`, `JsTemporal.Calendar`, `JsTemporal.CalendarNonIso`, `JsTemporal.Zones` and `JsCalendars`,
+  each copied from Broiler.VM's `src/Broiler.VM.Profile.JavaScript/` at `14072b0` with its namespace changed, the
+  members that read engine values removed and `DifferenceSettings`' reads made parameters; and the realm files'
+  duration and difference methods after their reads, extracted.
+- **The result:** **76,814,791 comparisons, 0 differences**, at seed 20261018 and scale 2. They cover:
+  - the grammar over 2,616,164 generated strings, in every goal;
+  - the records' limits, balancing, regulation, ISO addition, the rounding of points and every string form;
+  - durations' sign, shape, internal records, addition and `compare`;
+  - `round` and `total` with no `relativeTo`, relative to a plain date and relative to a zoned instant, in
+    every calendar, and from a month's end, where the shifted window lives;
+  - the option rules and `until` and `since` of every type.
+- **Row D12, one case counted apart.** Pacific/Apia skipped 2011-12-30. A day nudge window back from 2011-12-31 ends
+  on that day, which `compatible` moves onto the window's start, so the window has no length and cannot hold the
+  destination, which the specification asserts:
+  - Broiler.VM's code ends the invocation with a .NET `ArgumentOutOfRangeException`;
+  - the reference polyfill fails its own assertion, with a plain `Error`;
+  - the library answers `OutOfRange`, a `RangeError` in both engines.
+
+  The correspondence read row D12 as code no input reaches, and decision D12 let the library assert there or answer
+  a status. The input reaches it, so the library answers a status (`cc3e3076`). It is the one place the library does
+  not answer as Broiler.VM's code does.
+- **The negative control:** with the polyfill's nudge after a shifted window in place of decision D7's, the
+  durations sections find 94 differences.
+
+  The summary is [`algorithms/differential-summary.txt`](algorithms/differential-summary.txt). The harness and its
+  extracted code are in [`algorithms/harness/`](algorithms/harness/), retained as text. The verbatim copies are
+  named there by their git blobs at `14072b0`, with every edit
+  ([`Vm-copies.txt`](algorithms/harness/Vm-copies.txt)).
+
+**Broiler.VM's recorded answers, at library level.** The library's tests compute, through the runner's Temporal
+adapter, the lines of Broiler.VM's answer files for the correspondence's probes, copied from Broiler.VM with their
+digests into `Temporal/Correspondence/`:
+- the calendar rows C1 to C18: 4,416 lines; the 21 lines of row C13 that lend an object's slot are the engine's;
+- the duration rows D1 to D11 and difference rows F1 to F8, with R7 and B5: 366 lines; one, a function's `length`,
+  is the engine's.
+
+Every computed line answers as Broiler.VM does.
+
+**The retained datasets, at library level.** `temporal.js` answers all 1,629 lines as its expected answer, the
+polyfill's, from which Broiler.VM diverges on none. `temporal-calendars.js` answers all 3,999 lines as its expected
+answer, the polyfill's with Broiler.VM's 70 divergences.
+
+**The vectors, at library level.** `runners/AlgorithmsLibrary.Temporal.cs` answers the Temporal area of corpus
+revision 25, as SJL-8.4's `942f8cd3` answered the time-zone area: each operation's inputs are read back into the
+call, and the call goes through the adapter to the library. The calendar table is read from the data home and
+held to its manifest.
+
+| File | Vectors | Answered, all matching | Engine-level |
+|---|---|---|---|
+| `balancing.vectors` | 309 | 309 | 0 |
+| `calendars.vectors` | 3,598 | 3,574 | 24 |
+| `differences.vectors` | 244 | 244 | 0 |
+| `durations.vectors` | 65 | 62 | 3 |
+| `grammar.vectors` | 1,904 | 1,904 | 0 |
+| `rounding.vectors` | 4,758 | 4,758 | 0 |
+| **All** | **10,878** | **10,851** | **27** |
+
+- **Engine-level** by operation, as the other areas name theirs:
+  - `Function.prototype.length`, a built-in's own property (2);
+  - the properties `Duration.prototype.add`'s second argument is read for, which only a script observes (1);
+  - the calendar an object lends from its internal slot, the object given by a description (row C13, 24).
+- **The negative control:** with the polyfill's nudge in place of decision D7's, 35 vectors differ.
+- **The Native AOT probe** expects every answered Temporal vector to match. It publishes with no warning, and runs
+  over the whole corpus with 0 failures: 65,328 of 103,312 vectors match and 37,984 are not implemented. Its report
+  is byte for byte the JIT's (SHA-256 `372306119101e2a85372f50213cea18e4f82c263710af386c0ba4784fb016dda`).
+
+**The tests.** Against the data home's tables, after a clean Release build with no warning:
+
+| Project | Tests |
+|---|---|
+| `Broiler.ECMAScript.Algorithms.Tests` | 1,294 (747 of them the Temporal core's, 69 part C's) |
+| `Broiler.ECMAScript.Architecture.Tests` (SL1 to SL10) | 32 |
+| `Broiler.ECMAScript.Conformance.Tests` | 133 |
+| `Broiler.ECMAScript.Generation.Tests` | 28 |
+
+All pass. `assurance check` reports no violation.
+
+**What the library's contract adds to Broiler.VM's.**
+- Every failure is a status, and an option value off its rule is a `false`. Each engine raises its own error, at
+  the specification's moment, so no caller observes the change.
+- Row R6: a limit check answers `OutOfRange` for a year past 2^53, where Broiler.VM's constructors ended the
+  invocation (decision D9). It is Broiler.VM's one correction, made at SJL-10.4.
+- Row D12: a day the zone skips answers `OutOfRange`, where Broiler.VM's code ended the invocation with a .NET
+  exception (above).
+
+**Nothing is cut over yet.** Broiler.VM's cut-over (SJL-10.4) follows on the shared stream's next version, which it
+sets, as SJL-8.5's `2d37a38a` did, and this engine's (SJL-10.5) after it.
