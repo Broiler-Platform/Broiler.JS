@@ -20,8 +20,11 @@ rule fixes it. The two parts' runs are never compared with each other. Part C, t
 by its own harness, scripts/conformance/run_reference_datasets.py, as the base was (datasets/README.md).
 
 THE AFTER ARM IS A CHECKOUT, NOT THIS TREE. Every local build and run is taken at `--tree`, a clean checkout of
-the after commit, the merge that lands SJL-8.6's cut-over and corpus revision 23; the identity step lists every
-product file there that differs from the cut-over's last commit.
+the after commit. That is the merge that lands SJL-8.6's last correction, row Z16 (4d558ee1, Broiler.JS PR #1048),
+which the owner brought into SJL-8.6 on 2026-10-18 after part C's run at 5f96cd40, the merge of the cut-over and
+corpus revision 23, was observed; the runs at 5f96cd40 are observed and not judged. The identity step lists every
+product file at the after commit that differs from the cut-over's last commit, from the Z16 correction and from
+5f96cd40.
 
 IT REUSES BUNDLE SJL-7-001'S COLLECTOR, and through it sjl-6-001's, sjl-5-001's, sjl-4-001's, sjl-3-001's and
 sjl-0-001's, for its helpers, the import of a workflow's run, the comparison and its checks, the completeness
@@ -105,11 +108,15 @@ DATASET_FILES = ("scripts/conformance/run_reference_datasets.py", "scripts/confo
 DATASETS_COMMIT = "584caa2f32f0a2f903ebb794a512db9588ebfc17"
 # The rule's commit, which carries the three parts' bases.
 BASE_COMMIT = "15a1bd8f329f12238b093def5d1ddcd3e1dffe3d"
-# The merge that lands SJL-8.6's cut-over and corpus revision 23, which both after runs name.
-AFTER_COMMIT = "5f96cd4090a08565044ce29503733a0cc051fc87"
-# SJL-8.6's first and last commits that change product sources.
+# The merge that lands SJL-8.6's last correction, row Z16, which both after runs name.
+AFTER_COMMIT = "79a0506c870302cefa6d7105146c65feab898879"
+# SJL-8.6's cut-over, its first and last commits that change product sources; and row Z16's correction, which the
+# owner brought into SJL-8.6 on 2026-10-18.
 CUT_OVER_FIRST = "f58f9b491542bee1b373e4db40de9681cd666a59"
 CUT_OVER = "eb2ab599d9d98f62ddce0fa8ecdd58b0125ea31d"
+Z16_COMMIT = "4d558ee1d8af2cdd45a66ec416854f8881781ef3"
+# The merge of the cut-over and corpus revision 23, where the first after runs were taken: observed, not judged.
+OBSERVED_COMMIT = "5f96cd4090a08565044ce29503733a0cc051fc87"
 PRODUCT_PATHS = ("Broiler.JS", "Broiler.ECMAScript", "Directory.Packages.props", "Directory.Build.props",
                  "Directory.Build.targets", "NuGet.config", "global.json")
 # The shared stream's version this engine depends on, published to nuget.org from PUBLISHED_FROM, whose library
@@ -144,14 +151,14 @@ PARTS = {
 STEPS = ("identity", "home", "area", "probe", "vectors", "test262", "compare", "consumer", "simplification",
          "manifest")
 PROBE = "Broiler.ECMAScript/Broiler.ECMAScript.Probe"
-# The area's tests in this engine, by project, as the changelog's SJL-8.6 section names them: the embedded tables
+# The area's tests in this engine, by project, as the changelog's SJL-8.6 sections name them: the embedded tables
 # held to the home's bytes and the manifest's digests, every time-zone row, the host zone (A15, A16) and the
-# calendar rows, and the integration tests the cut-over changed.
+# calendar rows, the integration tests the cut-over changed, and those row Z16's correction changed.
 AREA_TESTS = {
     "Broiler.JS/Broiler.JavaScript.BuiltIns.Tests": ("SharedTimeZoneTests", "SharedTimeZoneHostTests",
                                                      "SharedCalendarTableTests"),
     "Broiler.JS/Broiler.JavaScript.Integration.Tests": ("Issue773Tests", "Issue775Tests", "Issue783Tests",
-                                                        "Issue794Tests"),
+                                                        "Issue794Tests", "Issue786Tests"),
 }
 
 # The area's Broiler.JS deletion list: Broiler.VM docs/javascript-shared-libraries/milestones/
@@ -221,9 +228,9 @@ DUPLICATE_SEARCHES = (
      r"(?i)new ?moon|solar ?term|\blongitude\b|\bastronom|33-year|\b(227015|226896|1948320|1948439)\b|"
      r"mean.?motion|\bICU4X\b"),
 )
-# The pristine consumer's checks of the area: each a correction or a policy change of the cut-over, run from the
-# packages restored into the consumer's isolated cache, with TZ=America/New_York. Each is a JavaScript
-# expression that must be true.
+# The pristine consumer's checks of the area: each a correction or a policy change of SJL-8.6, its cut-over and
+# row Z16's correction, run from the packages restored into the consumer's isolated cache, with
+# TZ=America/New_York. Each is a JavaScript expression that must be true.
 TIME_CHECKS = (
     ("Z1", "Temporal.Instant.from('2027-01-15T12:00Z').toZonedDateTimeISO('America/Vancouver').offset === '-07:00'"),
     ("Z3", "Temporal.Instant.from('1937-07-01T12:00Z').toZonedDateTimeISO('Europe/Amsterdam').offset === '+01:00'"),
@@ -249,6 +256,8 @@ TIME_CHECKS = (
             "Temporal.PlainDate.from('0622-03-22').withCalendar('persian').day === 2"),
     ("A15", "Temporal.Now.timeZoneId() === 'America/New_York' && new Date(1850, 0, 1).getTimezoneOffset() === "
             "296.03333333333336 && new Date(2040, 6, 1, 12).getTimezoneOffset() === 240"),
+    ("Z16", "new Intl.DateTimeFormat('en-US', { timeZone: 'Africa/Abidjan', timeZoneName: 'longOffset' })"
+            ".format(Date.UTC(1900, 0, 1)) === '12/31/1899 GMT-00:16:08'"),
 )
 CHECKS_ZONE = "America/New_York"
 
@@ -310,6 +319,15 @@ class Collector(unicode.Collector):
         lines.append(f"files under {', '.join(PRODUCT_PATHS)} that differ between the cut-over's last commit and "
                      "the after commit:")
         changed = self.git(self.tree, "diff", "--name-only", CUT_OVER, after, "--", *PRODUCT_PATHS).splitlines()
+        lines += [f"  {p}" for p in changed] or ["  none"]
+        lines.append(f"row Z16's correction, brought into SJL-8.6 at the owner's direction: {Z16_COMMIT}, an ancestor "
+                     f"of the after commit: {self.is_ancestor(Z16_COMMIT, after)}")
+        lines.append("files that differ between it and the after commit: ")
+        changed = self.git(self.tree, "diff", "--name-only", Z16_COMMIT, after).splitlines()
+        lines[-1] += ", ".join(changed) if changed else "none"
+        lines.append(f"files that differ between {OBSERVED_COMMIT[:8]} (the first after runs, observed and not judged) "
+                     "and the after commit:")
+        changed = self.git(self.tree, "diff", "--name-only", OBSERVED_COMMIT, after).splitlines()
         lines += [f"  {p}" for p in changed] or ["  none"]
         lines += [
             f"bases: test262/base/ (part A) and test262/base-new-york/ (part B), and datasets/base/ (part C), all "
@@ -556,8 +574,9 @@ class Collector(unicode.Collector):
         (after / "imported.txt").write_text("\n".join([
             "# imported: the after run was taken by .github/workflows/test262-evidence.yml, not locally",
             f"workflow run: {self.run_url}, {self.run_times}",
-            f"tested commit: {tested} (the merge that lands SJL-8.6's cut-over and corpus revision 23), whose "
-            f"product sources are {CUT_OVER[:8]}'s but for the files identity.txt lists",
+            f"tested commit: {tested} (the merge that lands row Z16's correction, the last of SJL-8.6, after its "
+            f"cut-over and corpus revision 23), whose product sources are {Z16_COMMIT[:8]}'s; identity.txt lists "
+            "every file",
             f"configuration: {configuration}, with negative-metadata tests (include_negative true); includeNegative "
             f"{fields.get('includeNegative', '(not in run.txt)')} in run.txt",
             f"artifact: test262-evidence, id {self.artifact_id}, {self.artifact_zip.stat().st_size:,} bytes, "
@@ -819,6 +838,8 @@ if (!result.StartsWith("ok ", StringComparison.Ordinal))
             "baseCommit": BASE_COMMIT,
             "afterCommit": self.after(),
             "cutOverCommit": CUT_OVER,
+            "z16Commit": Z16_COMMIT,
+            "observedCommit": OBSERVED_COMMIT,
             "ruleCommit": self.rule_commit(),
             "sharedVersion": SHARED_VERSION,
             "sharedPublishedFrom": PUBLISHED_FROM,

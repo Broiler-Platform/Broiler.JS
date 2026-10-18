@@ -1,0 +1,24 @@
+$ dotnet build Broiler.ECMAScript.slnf -c Release --nologo
+# cwd <tree>; started 2026-10-18T07:23:02Z; exit 0
+  Determining projects to restore...
+  Restored <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/Broiler.ECMAScript.Algorithms.Tests.csproj (in 313 ms).
+  Restored <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/Broiler.ECMAScript.Generation.Tests.csproj (in 328 ms).
+  Restored <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Generation/Broiler.ECMAScript.Generation.csproj (in 378 ms).
+  Restored <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/Broiler.ECMAScript.Conformance.Tests.csproj (in 3 ms).
+  Restored <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/Broiler.ECMAScript.Architecture.Tests.csproj (in 15 ms).
+  Restored <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Probe/Broiler.ECMAScript.Probe.csproj (in 544 ms).
+  2 of 8 projects are up-to-date for restore.
+  Broiler.ECMAScript.Conformance -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/bin/Release/net10.0/Broiler.ECMAScript.Conformance.dll
+  Broiler.ECMAScript.Algorithms -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Generation -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Generation/bin/Release/net10.0/Broiler.ECMAScript.Generation.dll
+  Broiler.ECMAScript.Algorithms.Tests -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms.Tests/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.Tests.dll
+  Broiler.ECMAScript.Generation.Tests -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Generation.Tests/bin/Release/net10.0/Broiler.ECMAScript.Generation.Tests.dll
+  Broiler.ECMAScript.Probe -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll
+  Broiler.ECMAScript.Conformance.Tests -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Conformance.Tests/bin/Release/net10.0/Broiler.ECMAScript.Conformance.Tests.dll
+  Broiler.ECMAScript.Architecture.Tests -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Architecture.Tests/bin/Release/net10.0/Broiler.ECMAScript.Architecture.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:15.06

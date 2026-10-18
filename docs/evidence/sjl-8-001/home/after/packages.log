@@ -1,0 +1,56 @@
+# SJL-8.7: Broiler.ECMAScript's packages at 0.1.0-preview.5 as nuget.org serves them, published from a04cd447af3424951eb767524812b5b310d71da3; the library code there is 2d37a38a2560b076ebf2ca29989bfe20db64ed64's, and identity.txt lists any file of it that differs at the after commit
+
+## Broiler.ECMAScript.Algorithms 0.1.0-preview.5
+nuget.org serves https://api.nuget.org/v3-flatcontainer/broiler.ecmascript.algorithms/0.1.0-preview.5/broiler.ecmascript.algorithms.0.1.0-preview.5.nupkg: 170,942 bytes; sha512 377ffd3df3dccde41b3b07623db1140c463a900d78a578a14556de196582ea2d44e6e72a3a42f902ccc7a8fdff0bb186766561a517a9dc28d01cda64c963a190
+$ dotnet nuget verify --all <scratch>/nuget-org/broiler.ecmascript.algorithms.0.1.0-preview.5.nupkg
+# cwd <tree>; started 2026-10-18T07:24:35Z; exit 0
+
+Verifying Broiler.ECMAScript.Algorithms.0.1.0-preview.5
+Content hash: fi/eRdQ5I2CUFg/HTWX0Js03+rgPwDK4+0q5x4AvM3Aqi57mkxz9Z0ykwuXNYe6Cd/h67+6pZcBwcVokD0FLmA==
+
+Signature type: Repository
+  Subject Name: CN=NuGet.org Repository by Microsoft, O=NuGet.org Repository by Microsoft, L=Redmond, S=Washington, C=US
+  SHA256 hash: 1F4B311D9ACC115C8DC8018B5A49E00FCE6DA8E2855F9F014CA6F34570BC482D
+  Valid from: 02/23/2024 00:00:00 to 05/18/2027 23:59:59
+nuspec repository: <repository type="git" url="https://github.com/Broiler-Platform/Broiler.JS" branch="refs/heads/claude/busy-lamport-m3yprr" commit="a04cd447af3424951eb767524812b5b310d71da3" />
+nuspec dependencies: none
+entries (10):
+  f08a3aa5772e313a52c2694f75933d5ced32bb8997983498ea4305a18b2d6ac1      12986  .signature.p7s
+  5747e580e38e18033dfa6323fa5c51b6f138a83df78dd610bf4fde16c1ba858f       2085  Broiler.ECMAScript.Algorithms.nuspec
+  2fcd4b776d56549936c6f7af86b546bd5f9157743f4da0da57f0498a5766194b       7283  README.md
+  efed2798bb9b5cddfb04d2befc5b21ef4225049178de92e0528efea54f842975      27824  THIRD_PARTY_NOTICES.md
+  b858fadd5794c5a53fcbaa7a45db7aa5f6ab1fd173ba71cc2625214ee1509c6a        644  [Content_Types].xml
+  6d78da7627fc52f2f708a7a6ccd70b264ae4e56aa064d2f56f710fdf0bd4256a        492  _rels/.rels
+  87c6144d2ecbeb49324da505fc13765feca466561e40750af4c587f29e2ba1b1      22842  icon.png
+  7290f10b18ce7f9b7b195c22724ad104651839d1abe24c62662893d72492685c     141824  lib/net10.0/Broiler.ECMAScript.Algorithms.dll
+  0c034b27501c2c95d3367ba17a1f31294dedc05fa4d3cee301363e458cfe21eb     282390  lib/net10.0/Broiler.ECMAScript.Algorithms.xml
+  51d22603eb01a8d2950e2001f0267f92b4967ae106ebc60356d78b7be432f4be       1807  package/services/metadata/core-properties/nuget.psmdcp
+entries holding 32 bytes taken from the start, the middle or the end of a generated table or a pinned archive: none
+
+## Broiler.ECMAScript.Generation 0.1.0-preview.5
+nuget.org serves https://api.nuget.org/v3-flatcontainer/broiler.ecmascript.generation/0.1.0-preview.5/broiler.ecmascript.generation.0.1.0-preview.5.nupkg: 106,059 bytes; sha512 eed89c226dd204aa6aa87d4e421bef689684a2d893fadce60c5579e20170100628cbdff71cc01db711b589b3325e4365d02c308245f9effe894633956d024d21
+$ dotnet nuget verify --all <scratch>/nuget-org/broiler.ecmascript.generation.0.1.0-preview.5.nupkg
+# cwd <tree>; started 2026-10-18T07:24:36Z; exit 0
+
+Verifying Broiler.ECMAScript.Generation.0.1.0-preview.5
+Content hash: hSr6pHU/u/hy5WfVA/CDI4GojJH4SsZAf3zhsVWWpCmwa4jjvey+1CLHGb9KLZfvcFTy98+lTMZtRvOcLQ4ncg==
+
+Signature type: Repository
+  Subject Name: CN=NuGet.org Repository by Microsoft, O=NuGet.org Repository by Microsoft, L=Redmond, S=Washington, C=US
+  SHA256 hash: 1F4B311D9ACC115C8DC8018B5A49E00FCE6DA8E2855F9F014CA6F34570BC482D
+  Valid from: 02/23/2024 00:00:00 to 05/18/2027 23:59:59
+nuspec repository: <repository type="git" url="https://github.com/Broiler-Platform/Broiler.JS" branch="refs/heads/claude/busy-lamport-m3yprr" commit="a04cd447af3424951eb767524812b5b310d71da3" />
+nuspec dependencies: none
+entries (10):
+  d5ca939a935eec50e5d4e6516b84f876e2a0ed7bd28a732e3372faa2223d0b08      12987  .signature.p7s
+  23cb6285ce59a1df320c01c91ac4e076e1ee8a52c52bab509da32f1c2d7daef2       1417  Broiler.ECMAScript.Generation.nuspec
+  2fcd4b776d56549936c6f7af86b546bd5f9157743f4da0da57f0498a5766194b       7283  README.md
+  efed2798bb9b5cddfb04d2befc5b21ef4225049178de92e0528efea54f842975      27824  THIRD_PARTY_NOTICES.md
+  b858fadd5794c5a53fcbaa7a45db7aa5f6ab1fd173ba71cc2625214ee1509c6a        644  [Content_Types].xml
+  4040f9615dbc87d4f5633f7fcd6bc71802bd2d63d0c7dc6dc05cec0e7ef9fae7        492  _rels/.rels
+  87c6144d2ecbeb49324da505fc13765feca466561e40750af4c587f29e2ba1b1      22842  icon.png
+  b44608df2195ca3fa706d7cafdd9bf1f7ba9986d668ffe55f06c1c9788ff1bce      95232  lib/net10.0/Broiler.ECMAScript.Generation.dll
+  706d5032465a2c1225fcb09ae7dba7c84ff5f32c2bdc3cd7e1c39f2412e799e8      86769  lib/net10.0/Broiler.ECMAScript.Generation.xml
+  f27e2552cab849ca563d1fe451b586f50096bb60565a738152d782a79cd032c9       1139  package/services/metadata/core-properties/nuget.psmdcp
+entries holding 32 bytes taken from the start, the middle or the end of a generated table or a pinned archive: none
+

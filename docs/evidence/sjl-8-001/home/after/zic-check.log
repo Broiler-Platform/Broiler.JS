@@ -1,0 +1,16 @@
+$ /usr/bin/python3 -I Broiler.ECMAScript/data/time/tzdb/check-zic.py
+# cwd <tree>; started 2026-10-18T07:24:28Z; exit 0
+zic: zic (Ubuntu GLIBC 2.39-0ubuntu8.9) 2.39
+tzdb 2026e, tzdata archive SHA-256 b26882805f26aac59d5b222978e6580484b834ccdc98be89df2f05a6dc53a652; nine source files: africa antarctica asia australasia europe northamerica southamerica etcetera backward
+zone table: 344 zones; identifier table: 597 identifiers
+range: 1800-01-01T00:00:00Z to 2038-01-01T00:00:00Z, at every instant either side changes the offset and the second before
+
+THE ENGINE'S READING (identifier -> CLDR primary -> zone): identifiers compared: 597 ; differing from zic -b fat of the same nine files, 1800-2037: 4
+   CST6CDT reads America/Chicago: first at 1800-01-01T00:00:00, table -21036, zic -21600 (88 instants, the last at 1966-10-30T06:59:59) - EXPECTED: its CLDR primary by design
+   EST5EDT reads America/New_York: first at 1800-01-01T00:00:00, table -17762, zic -18000 (88 instants, the last at 1966-10-30T05:59:59) - EXPECTED: its CLDR primary by design
+   MST7MDT reads America/Denver: first at 1800-01-01T00:00:00, table -25196, zic -25200 (10 instants, the last at 1966-10-30T07:59:59) - EXPECTED: its CLDR primary by design
+   PST8PDT reads America/Los_Angeles: first at 1800-01-01T00:00:00, table -28378, zic -28800 (38 instants, the last at 1966-10-30T08:59:59) - EXPECTED: its CLDR primary by design
+
+THE TABLE'S OWN ZONES (identifier -> its own Zone or its Link's target): identifiers compared: 597 ; differing from zic -b fat: 0
+
+PASS: 593 of 597 identifiers agree with zic -b fat from 1800 to 2037 as an engine reads them; the 4 others (CST6CDT, EST5EDT, MST7MDT, PST8PDT) read their CLDR primaries by design and differ only before 1966-10-31; all 597 of the table's own zones agree.
