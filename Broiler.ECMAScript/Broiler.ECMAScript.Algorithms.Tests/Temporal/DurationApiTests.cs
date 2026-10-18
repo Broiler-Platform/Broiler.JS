@@ -414,20 +414,48 @@ public class DurationApiTests
     }
 
     [Fact]
-    public void A_week_or_day_window_that_misses_its_destination_is_a_broken_assertion()
+    public void A_week_or_day_window_that_misses_its_destination_is_out_of_range()
     {
-        // ROW D12: a calendar provider that adds nothing makes the week window [origin, origin], which cannot hold a
-        // destination ten days on; only inconsistent providers reach this.
+        // ROW D12, AS REVISED: the specification asserts that a week or day window holds the destination. A calendar
+        // provider that adds nothing makes the week window [origin, origin], which cannot hold a destination ten days on.
         var origin = new IsoDateTime(new IsoDate(2020, 1, 1), default);
         var originNs = IsoArithmetic.GetUtcEpochNanoseconds(origin);
         var duration = new InternalDuration(new DateDuration(0, 0, 1, 3), BigInteger.Zero);
-        Assert.Throws<InvalidOperationException>(() => DurationMath.RoundRelativeDuration(
+        Assert.Equal(TemporalStatus.OutOfRange, DurationMath.RoundRelativeDuration(
             duration, originNs, originNs + (10 * NsPerDay), origin, null, new StuckCalendars(), CalendarId.Iso8601, TemporalUnit.Week, 1, TemporalUnit.Week,
             RoundingMode.Trunc, out _));
+        Assert.Equal(TemporalStatus.OutOfRange, DurationMath.TotalRelativeDuration(
+            duration, originNs, originNs + (10 * NsPerDay), origin, null, new StuckCalendars(), CalendarId.Iso8601, TemporalUnit.Week, out _));
         Assert.Equal(TemporalStatus.Completed, DurationMath.RoundRelativeDuration(
             duration, originNs, originNs + (10 * NsPerDay), origin, null, Calendars, CalendarId.Iso8601, TemporalUnit.Week, 1, TemporalUnit.Week,
             RoundingMode.Trunc, out var rounded));
         Assert.Equal(new InternalDuration(new DateDuration(0, 0, 1, 0), BigInteger.Zero), rounded);
+    }
+
+    [Fact]
+    public void A_day_the_zone_skips_reaches_the_day_windows_assertion_and_answers_out_of_range()
+    {
+        // ROW D12, AS REVISED: Pacific/Apia skipped 2011-12-30. Back from 2011-12-31T16:15+14:00, the day window's end
+        // is 2011-12-30T16:15, which the zone skipped, so it moves onto the window's start and the window has no length.
+        // The reference polyfill fails its own assertion ("day was 0 days long") and Broiler.VM ends the invocation with
+        // a .NET exception; the library answers OutOfRange, which each engine throws as a RangeError.
+        var zone = Zone("Pacific/Apia");
+        var one = BigInteger.Parse("1325297700000000000", System.Globalization.CultureInfo.InvariantCulture); // 2011-12-31T16:15+14:00
+        var two = BigInteger.Parse("1325239200000000000", System.Globalization.CultureInfo.InvariantCulture); // 2011-12-31T00:00+14:00
+        Assert.True(TemporalOptionRules.TryGetDifferenceSettings(
+            TemporalType.ZonedDateTime, DifferenceOperation.Since, TemporalUnit.Day, 1, RoundingMode.HalfEven, TemporalUnit.Day, out var settings));
+        Assert.Equal(TemporalStatus.OutOfRange, TemporalDifferences.DifferenceTemporalZonedDateTime(
+            DifferenceOperation.Since, one, two, zone, Calendars, CalendarId.Iso8601, settings, out _));
+        var relativeTo = RelativeTo.FromZoned(one, zone, Calendars, CalendarId.Iso8601);
+        Assert.Equal(TemporalStatus.OutOfRange, DurationMath.Round(D(hours: -16, minutes: -15), TemporalUnit.Day, 1, TemporalUnit.Day, RoundingMode.HalfExpand, relativeTo, out _));
+        Assert.Equal(TemporalStatus.OutOfRange, DurationMath.Total(D(hours: -16, minutes: -15), TemporalUnit.Day, relativeTo, out _));
+
+        // Forward, the window is the next day, and the answer is the polyfill's.
+        Assert.True(TemporalOptionRules.TryGetDifferenceSettings(
+            TemporalType.ZonedDateTime, DifferenceOperation.Until, TemporalUnit.Day, 1, RoundingMode.HalfEven, TemporalUnit.Day, out settings));
+        Assert.Equal(TemporalStatus.Completed, TemporalDifferences.DifferenceTemporalZonedDateTime(
+            DifferenceOperation.Until, two, one, zone, Calendars, CalendarId.Iso8601, settings, out var forward));
+        Assert.Equal(D(days: 1), forward);
     }
 
     [Fact]

@@ -50,14 +50,12 @@ public static partial class DurationMath
     /// <param name="result">The rounded duration; the default unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns>
     /// <see cref="TemporalStatus.Completed"/>; <see cref="TemporalStatus.InvalidDuration"/> where a window's duration or the
-    /// rounded time is not valid; <see cref="TemporalStatus.OutOfRange"/> where a window passes the limits.
+    /// rounded time is not valid; <see cref="TemporalStatus.OutOfRange"/> where a window passes the limits, or where a
+    /// week or day window does not hold the destination, which the specification asserts and a day the zone skips
+    /// reaches (row D12: Pacific/Apia's 2011-12-30 makes a day window back from 2011-12-31 of no length).
     /// </returns>
     /// <exception cref="ArgumentNullException">The calendar provider is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">A unit is unset or auto, the smallest is larger than the largest, or the increment is not positive.</exception>
-    /// <exception cref="InvalidOperationException">
-    /// The specification's assertion that a week or day window holds the destination does not hold, which no input reaches
-    /// (row D12) unless a provider's answers are inconsistent.
-    /// </exception>
     // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.38, JSD-0078 decision D7 via Broiler.VM JsTemporal.RoundRelativeDuration; IP=Low; Security=Medium; Resources=2; Fingerprint=3660BA
     // Broiler-Human:        PENDING
     public static TemporalStatus RoundRelativeDuration(
@@ -121,11 +119,11 @@ public static partial class DurationMath
     /// <param name="total">The total; zero unless the status is <see cref="TemporalStatus.Completed"/>.</param>
     /// <returns>
     /// <see cref="TemporalStatus.Completed"/>; <see cref="TemporalStatus.InvalidDuration"/> or
-    /// <see cref="TemporalStatus.OutOfRange"/> where a window is not valid or passes the limits.
+    /// <see cref="TemporalStatus.OutOfRange"/> where a window is not valid or passes the limits, or where a week or day
+    /// window does not hold the destination (row D12; see <see cref="RoundRelativeDuration"/>).
     /// </returns>
     /// <exception cref="ArgumentNullException">The calendar provider is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The unit is unset or auto.</exception>
-    /// <exception cref="InvalidOperationException">A week or day window does not hold the destination (row D12; see <see cref="RoundRelativeDuration"/>).</exception>
     // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.39 via Broiler.VM JsTemporal.TotalRelativeDuration; IP=Low; Security=Medium; Resources=2; Fingerprint=423228
     // Broiler-Human:        PENDING
     public static TemporalStatus TotalRelativeDuration(
@@ -293,7 +291,7 @@ public static partial class DurationMath
     }
 
     // The proposal's NudgeToCalendarUnit (s7.5.34): the nudge, and the exact total TotalRelativeDuration reads.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.34, JSD-0078 decisions D7 and D12 via Broiler.VM JsTemporal.NudgeToCalendarUnit; IP=Low; Security=Medium; Resources=2; Fingerprint=AACC21
+    // Broiler-AI:           Origin=Ported; Spec=Temporal s7.5.34, JSD-0078 decisions D7 and D12 via Broiler.VM JsTemporal.NudgeToCalendarUnit; IP=Low; Security=Medium; Resources=2; Fingerprint=E2CC43
     // Broiler-Human:        PENDING
     private static TemporalStatus NudgeToCalendarUnit(
         int sign, InternalDuration duration, BigInteger originEpochNanoseconds, BigInteger destinationEpochNanoseconds, IsoDateTime dateTime,
@@ -313,9 +311,13 @@ public static partial class DurationMath
 
         if (!Inside(window))
         {
-            // ROW D12: no input reaches a week or day window that misses the destination; the specification asserts it.
+            // ROW D12: the specification asserts that a week or day window holds the destination, and a day the zone
+            // skips breaks it: back from Pacific/Apia's 2011-12-31, the day before is 2011-12-30, which the zone skipped,
+            // so the window's end is moved onto its start. The reference polyfill fails its own assertion there and
+            // Broiler.VM ends the invocation with a .NET exception; the library answers a status, a RangeError in both
+            // engines (decision D12 as revised at SJL-10.3, part C).
             if (unit is TemporalUnit.Week or TemporalUnit.Day)
-                throw new InvalidOperationException("A week or day nudge window does not hold the destination (row D12): the providers' answers are inconsistent.");
+                return TemporalStatus.OutOfRange;
 
             status = ComputeNudgeWindow(sign, duration, originEpochNanoseconds, dateTime, timeZone, calendars, calendar, increment, unit, true, out window);
             if (status != TemporalStatus.Completed)
