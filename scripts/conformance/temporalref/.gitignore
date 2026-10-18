@@ -1,0 +1,4 @@
+# The polyfill this directory is set up to hold is not part of the repository: generate_temporal_vectors.py
+# checks lib/ against the blob ids its header records, and node_modules/ against package-lock.json.
+/lib/
+/node_modules/
