@@ -115,3 +115,137 @@ it.
     are the rows the rule names, each with the count the correspondence's run found.
   - **No other line differs**, so nothing here is a finding against the rule's sentence that the correspondence
     classifies no other difference on these programs.
+
+## 2. The vectors (SJL-10.2)
+
+**Corpus revision 24** (`2890294f`) adds the Temporal area: 10,878 vectors in six files under
+[`conformance/vectors/temporal/`](../../../conformance/vectors/temporal/), written by
+[`scripts/conformance/generate_temporal_vectors.py`](../../../scripts/conformance/generate_temporal_vectors.py), all
+`normative`.
+
+| File | Vectors | What it pins |
+|---|---|---|
+| `grammar.vectors` | 1,904 | The ISO 8601 and RFC 9557 grammar through every type's `from()`; duration, calendar, time zone, offset and `relativeTo` strings; the area design's table and JSD-0078's G rows (G1 to G24) |
+| `rounding.vectors` | 4,758 | `Duration.prototype.round` in all nine modes and every increment of every time unit; days of 24 hours; the calendar units with increments, relative to plain dates; nudging, bubbling and the shifted window; a zoned `relativeTo` across New York's 2026 transitions; totals; other calendars (D5 to D12) |
+| `calendars.vectors` | 3,598 | Identifiers and aliases; month codes in every calendar under both overflows; eras; month-day reference dates with Table 6; the formula calendars at their edges; the table calendars at their tables' edges, where Table 1 publishes them; the calendar an object lends; fields past 32 bits; the conversions (C1 to C18) |
+| `balancing.vectors` | 309 | The records' limits; integers beyond the engines' fields; narrowing in addition; balancing, regulation, addition and the rounding of points at the limits (R1 to R8, B1 to B9) |
+| `differences.vectors` | 244 | `until` and `since` in every type: the settings, rounding in every calendar, New York's transitions and the limits (F1 to F8) |
+| `durations.vectors` | 65 | Sign and shape, the largest unit, addition with calendar units, and `compare` (D1 to D4) |
+
+- **The reference (decision D10).** Every expected value is the answer of the proposal's own polyfill at `e8cc03fc`
+  (`ref:temporalref@1`).
+  - The generator holds `polyfill/lib`'s 24 files to their git blob ids.
+  - [`scripts/conformance/temporalref.mjs`](../../../scripts/conformance/temporalref.mjs) imports it under Node
+    22.22.0, which carries ICU4C 77.1 and tzdb 2025b.
+  - Its 92 npm packages are at the versions
+    [`scripts/conformance/temporalref/package-lock.json`](../../../scripts/conformance/temporalref/package-lock.json)
+    pins: big-integer 1.6.52, call-bind 1.0.9, es-abstract 1.24.2 and their own dependencies.
+
+  Neither engine's code is consulted.
+- **The inputs** are the correspondence's probes, with the edges of its rows:
+  - every row with a behavioural difference (R6, R7, B5, D3, D4, D6 to D8, D11, F4, F7, G3, G4, G6, G8, G9, G11 to
+    G13, G16 to G20, G22, C2, C5, C6, C9, C12, C13 and C15 to C17);
+  - the rows of agreement beside them.
+
+  Each vector's note names its rows.
+- **Decision D7: where the pinned text and its polyfill disagree, the text rules.** 73 vectors take the text's answer
+  and record the polyfill's as `overruled:temporalref@1=<outcome>`. The generator lists each one.
+
+  | Where | Vectors | The text | The polyfill |
+  |---|---|---|---|
+  | Row D8: NudgeToCalendarUnit after a shifted window (seven modes; a plain and a zoned `relativeTo`, and `until`) | 28 | P11M | P1Y |
+  | Two spaces as the date-time separator | 12 | `RangeError` | accepted |
+  | An offset's decimal separator with no digit | 8 | `RangeError` | accepted |
+  | The month-days `02-30` and `04-31` | 2 | `RangeError` (DateSpecMonthDay's early error) | accepted |
+  | Calendar strings that are only a year-month or month-day with a calendar | 6 | `RangeError` | the calendar |
+  | Time zone strings that are a time, year-month or month-day with an offset or annotation | 10 | the offset or zone | `RangeError` |
+  | Era aliases the era proposal removed on 2025-11-21 (decision D4) | 6 | `RangeError` | accepted |
+  | A regnal era read leniently (`reiwa` 1 on 2019-01-01, Heisei 31) | 1 | accepted | `RangeError` |
+
+  How each was found:
+  - **The first row**: every script is run again with the polyfill's statement replaced by the text's.
+  - **The others**: by reading the texts, where the polyfill's own parser and era table answer otherwise. The
+    correspondence did not run its grammar and calendar probes under the polyfill, so it could not see them.
+- **Seven vectors keep the polyfill's answer** where ComputeNudgeWindow's text, read literally (its `r1 = 0` test),
+  would not. Broiler.VM's JSD-0054 section 4 records that the text does not do what it means there. Both engines and
+  the polyfill test the start duration instead. Each note says what the literal text answers.
+- **Not vectored.** The polyfill reckons these through ICU4C or JavaScript's `Date`, so it is no source for them:
+  - the table calendars' implementation-defined approximations outside Table 1's published years;
+  - the Hebrew years before AM 1, and 5806 and 5807, where Calendrical Calculations' arithmetic and Broiler.VM agree
+    against ICU4C;
+  - a non-ISO calendar's fields at the ISO limits.
+- **The schema** widens, dated in `SCHEMA.md` section 6:
+  - `proposal:` cites a clause of a pinned proposal's text (`sources/temporal.pin`, `sources/intl-era-monthcode.pin`);
+  - `overruled:` records an answer a vector does not take;
+  - the validator refuses a vector with no source (`no-source`, with its negative control).
+- **No library answers the area yet.** `Broiler.ECMAScript.Algorithms` holds no Temporal code until SJL-10.3, so
+  there is no library-level runner for it: SJL-8.4's `942f8cd3` has no counterpart here yet. The Native AOT probe
+  reports every Temporal vector as not implemented, as it should for an area the library does not hold. Its report
+  equals the JIT's.
+
+**This engine's runs** of `Broiler.JS/Broiler.JavaScript.Vectors.Tests` are in [`engine/`](engine/). Each was taken
+in Release, built once and run with `--no-build` from a clean tree, under `TZ=UTC` and under `TZ=America/New_York`,
+with no `LANG`. The product code is `d3464413`'s. At each revision the two zones' reports are byte for byte the
+same. Every value revision 25's runs render is the one revision 24's runs rendered.
+
+| Revision | Vectors | Match | Classified divergences | Unclassified | Not implemented |
+|---|---|---|---|---|---|
+| 24 | 103,312 | 102,835 | 4 (the number area's, SJL-14's) | 473, all in the Temporal area | 0 |
+| 25 | 103,312 | 102,835 | 477 (the area's 473 and the number area's 4) | 0 | 0 |
+
+Each run's negative control changes one expected value of `numbers/to-fixed.vectors` in a copy of the corpus. It is
+reported as the one unclassified difference, `numbers/to-fixed/0001`.
+
+**One revision-24 attempt was discarded.** In the first attempt at revision 24, one vector of the text area in each
+zone found no completion within the runner's 5 s, a different vector in each: `text/from-base64/4186` under UTC and
+`3604` under New York. Each is a one-line `Uint8Array.fromBase64` that the other zone's run answered, on a machine
+other work shared. The runs were taken again with nothing changed. The first attempt's logs are retained as
+`discarded-run-revision-24-*.log`, and the lines its reports differ in as `discarded-run-revision-24.txt`.
+
+**Revision 25** (`5af5d320`) classifies every difference under the correspondence's rows. The reasons are in
+[`scripts/conformance/temporal-divergences.txt`](../../../scripts/conformance/temporal-divergences.txt). JSD-0078
+lists every one as a correction. SJL-10.5, this engine's cut-over, answers this engine's, and SJL-10.4 Broiler.VM's.
+
+| Engine | Sub-area | Rows (vectors) | Vectors |
+|---|---|---|---|
+| Broiler.JS | Records and limits, balancing | R7 (14), B5 (5) | 19 |
+| | Durations and rounding | D3 (9), D4 (3), D6 (7), D7 (23), D8 (7), D11 (15) | 64 |
+| | Differences | F4 (20), F7 (11) | 31 |
+| | The grammar | G3 (7), G4 (6), G6 (2), G8 (12), G9 (45), G11 (13), G12 (48), G13 (15), G16 (4), G17 (32), G18 (16), G19 (4), G20 (6), G22 (3) | 213 |
+| | Calendars | C2 (12), C5 (29), C6 (23), C9 (24), C12 (11), C13 (3), C15 (30), C16 (12), C17 (2) | 146 |
+| | **All** | | **473** |
+| Broiler.VM | Records and limits | R6 (6) | 6 |
+
+- **G9 and C6.** In 41 of G9's vectors and all 23 of C6's, a .NET `FormatException` escapes the evaluation, rendered
+  `abort:`.
+- **D7 and D8.** Every one of their vectors expects the text's P11M. This engine answers P10M29D relative to a plain
+  date (D7, 23) and P1Y relative to a zoned one (D8, 7). Its two `until`s answer P11M, as row D8 records.
+
+**Broiler.VM** was run locally, from a scratch archive and pin of each revision, through its conformance root built
+in Release at `14072b0` (`--vectors <archive> --expect <pin>`).
+- At revision 24 it matches 103,306 of 103,312 vectors.
+- The six others are row R6, its one correction, which SJL-10.4 answers. Revision 25 classifies them as
+  `divergence.broiler-vm`.
+- At revision 25 it matches every other vector and classifies those six.
+
+The runs are retained in [`engine/`](engine/) (`broiler-vm-*`), with their scratch pins, as the basis of those
+fields. They are not a reading of Broiler.VM's half: its own bundle judges that, and takes its runs when its pin
+moves to a merged revision. Each negative control changes `temporal/grammar/0004` in memory, and is reported as one
+more difference.
+
+**What the vectors say of the area record.**
+- **Every difference falls under a row the area verdict names.** Every vector of the rows it calls agreement matches
+  in both engines. Every row it lists as a correction that changes an answer is confirmed by at least one vector. C10,
+  which changes no answer, is not.
+- **The record's "the one case found is row D8"** (decision D7) no longer holds: 45 vectors find the polyfill's own
+  parser and era table at odds with the pinned texts. Broiler.VM answers as the texts on all 45, and this engine on
+  35. Its other 10 answer as the polyfill does, and are corrections the verdict already lists: calendar strings (G17,
+  6) and removed era aliases (C9, 4). So no class changes.
+- **Decision D7's general wording reaches JSD-0054 section 4's two places.** There the pinned text does not do what
+  it means, and Broiler.VM, by its record, follows the polyfill. The vectors read D7 as naming row D8, and keep the
+  polyfill's answer at ComputeNudgeWindow (seven vectors). The owner's record should say which it means.
+- **Row D11 is refined.** The row says a `relativeTo` in another calendar is refused with a plain `Error`. A Coptic
+  `ZonedDateTime` `relativeTo` is not refused: it is rounded in ISO months, P1M14D where the answer is P1M15D. It
+  stays a correction under the row.
+- **Row R6 counts five faulting cases.** The vectors find a sixth of the same cause, `new PlainDateTime` with a year
+  of 2^53 + 2.
