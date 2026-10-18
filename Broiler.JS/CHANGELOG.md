@@ -10,6 +10,24 @@ vector or test262 path that names it. Earlier changes are recorded in the histor
 
 ## Unreleased
 
+### An offset's GMT name keeps its seconds (2026-10-18, milestone SJL-8.6)
+
+`Intl.DateTimeFormat`'s `timeZoneName` `longOffset` and `shortOffset`, and the GMT name a zone with no CLDR name
+is written with, keep an offset's seconds after its minutes, as CLDR's localized GMT format does in ICU and as
+Broiler.VM's formatter writes it (correspondence row Z16). A local mean time is the offset that has them: in
+`Africa/Abidjan` before 1912 the `longOffset` name is `GMT-00:16:08` and the `shortOffset` name `GMT-0:16:08`,
+where they were `GMT-00:16` and `GMT-0:16`; in `America/New_York` before 1883 they are `GMT-04:56:02` and
+`GMT-4:56:02`, where they were `GMT-04:56` and `GMT-4:56`. An offset of whole minutes is written as before.
+
+**Brought into SJL-8.6 by the owner's direction of 2026-10-18.** The correspondence and the area verdict left
+row Z16 to milestone SJL-9, zone display. Part C of bundle `sjl-8-001`'s rule admits a line whose difference is
+only Z16 (D2) or only the resolved identifier (Z8, D1). At `5f96cd40`, 128 lines of `timezones.js` differed by
+both, so part C was not met as written there. The owner chose to make the correction here rather than revise
+the rule: with it, those 128 lines differ by Z8 alone.
+
+Tests: `Issue786Tests.DateTimeFormat_RendersTimeZoneName` gains both offset styles for both zones' local mean
+time, and an offset of whole minutes that is not whole hours.
+
 ### The time-zone and calendar area moves to the data home's tables (2026-10-17, milestone SJL-8.6)
 
 `Temporal`, `Intl` and `Date`'s local time read one time zone dataset and one set of calendar tables: the
@@ -157,8 +175,9 @@ shared database's daylight flag reads it. The CLR views `JSDate.Value` and `JSDa
 offset ([`docs/public-api.md`](../docs/public-api.md)).
 
 **Not this milestone's.** The formatter's resolved `timeZone` keeps the name it was given, as `canonical-tz`
-asks, until the specification edition both engines pin settles it (Z8); and a `longOffset` name still drops
-an offset's seconds, which is zone display and milestone SJL-9's.
+asks, until the specification edition both engines pin settles it (Z8). *(Revised 2026-10-18, when row Z16 was
+brought into SJL-8.6, entry above; the paragraph ended "; and a `longOffset` name still drops an offset's
+seconds, which is zone display and milestone SJL-9's.")*
 
 Tests: `SharedTimeZoneTests` (the embedded tables, held to the home's files and to the manifest's digests, and
 every time-zone row above), `SharedTimeZoneHostTests` (A15, A16) and `SharedCalendarTableTests` (the calendar

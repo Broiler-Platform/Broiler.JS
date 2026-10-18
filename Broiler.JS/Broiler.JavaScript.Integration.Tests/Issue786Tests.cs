@@ -247,6 +247,12 @@ public class Issue786Tests
     [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'long', timeZone:'UTC'}).format(new Date(0))", "1/1/1970 Coordinated Universal Time")]
     [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'shortOffset', timeZone:'America/New_York'}).format(new Date(0))", "12/31/1969 GMT-5")]
     [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'longOffset', timeZone:'America/New_York'}).format(new Date(0))", "12/31/1969 GMT-05:00")]
+    // A local mean time's seconds follow the minutes, in both offset styles (row Z16).
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'longOffset', timeZone:'Africa/Abidjan'}).format(Date.UTC(1900, 0, 1))", "12/31/1899 GMT-00:16:08")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'shortOffset', timeZone:'Africa/Abidjan'}).format(Date.UTC(1900, 0, 1))", "12/31/1899 GMT-0:16:08")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'longOffset', timeZone:'America/New_York'}).format(Date.UTC(1850, 0, 1))", "12/31/1849 GMT-04:56:02")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'shortOffset', timeZone:'America/New_York'}).format(Date.UTC(1850, 0, 1))", "12/31/1849 GMT-4:56:02")]
+    [InlineData("new Intl.DateTimeFormat('en-US', {timeZoneName:'shortOffset', timeZone:'Asia/Kolkata'}).format(new Date(0))", "1/1/1970 GMT+5:30")]
     public void DateTimeFormat_RendersTimeZoneName(string code, string expected)
         => Assert.Equal(expected, Eval(code));
 

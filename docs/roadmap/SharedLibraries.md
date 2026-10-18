@@ -823,6 +823,26 @@ every vector of it has the result its class expects in this engine's runs in UTC
 reports are byte for byte the same (bundle [`sjl-8-001`](../evidence/sjl-8-001/README.md), section 4), and in
 Broiler.VM's, whose pin moves to it.
 
+**2026-10-18: row Z16 comes into SJL-8.6, at the owner's direction.** Part C's after run at `5f96cd40`, the commit
+that merged the cut-over, was observed before any after run was judged:
+- `temporal.js` answered as at the base.
+- `timezones.js` answered 84 of its 610 lines as Broiler.VM expects. Of the 526 others, 24 differed only by
+  the resolved identifier (Z8, class D1), 374 only by the `longOffset` name's dropped seconds (Z16, class D2),
+  and 128 by both.
+- Part C admits a line whose difference is *only* one of those, so the 128 fall in no class, and part C was
+  not met as written there.
+
+Offered a dated revision of part C that would admit them (weaker evidence), leaving the clause open until
+SJL-9, or making the correction now, the owner chose the correction.
+- **What changes.** An offset's GMT name keeps its seconds (`Broiler.JS/CHANGELOG.md`, 2026-10-18). With it,
+  `timezones.js` answers 458 lines as Broiler.VM expects, and the 152 others differ by Z8 alone.
+- **The after commit.** The rule's after runs are "at the commit that lands SJL-8.6's cut-over". With Z16 part
+  of SJL-8.6, that is the commit that lands this correction. All three parts are taken there.
+- **The rule itself is not revised.** D2 stays in it and admits what it admitted.
+- **Not judged.** The runs at `5f96cd40` are recorded in bundle `sjl-8-001` as observed and not judged.
+- **What else moves.** Z16 leaves milestone SJL-9's list. Broiler.VM's formatter already writes the seconds,
+  so nothing moves there.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
