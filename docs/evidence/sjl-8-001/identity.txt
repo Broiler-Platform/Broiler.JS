@@ -1,0 +1,98 @@
+bundle: sjl-8-001 (Broiler.JS), its after arm
+after commit: 79a0506c870302cefa6d7105146c65feab898879
+after commit is the one parts A's and B's after runs name (79a0506c870302cefa6d7105146c65feab898879): True
+after tree clean: True
+cut-over: SJL-8.6, f58f9b49 to eb2ab599; its commits that change product sources:
+  f58f9b491542bee1b373e4db40de9681cd666a59 SJL-8.6: Temporal's zones read the shared TimeZoneDatabase
+  76ec819ef4339eaf54dddd376d2f80a34ee0228d SJL-8.6: the table-backed calendars' years are the shared CalendarYears
+  022d30742af71af4145eff248cb60c1b67f5ceb4 SJL-8.6: a Duration rounding that requests none builds no next-day boundary
+  eb2ab599d9d98f62ddce0fa8ecdd58b0125ea31d SJL-8.6: chinese and dangi month-day reference dates read Table 6's span
+commits between the cut-over's last (eb2ab599) and the after commit, with the files each changes (merges by subject only):
+  83ffacf35e146d74288a3d503e6b6b89d9f84847 SJL-8.6: the records of this engine's time-zone and calendar cut-over
+    Broiler.ECMAScript/data/time/README.md
+    Broiler.JS/CHANGELOG.md
+    THIRD_PARTY_NOTICES.md
+    docs/architecture/dependencies.md
+    docs/public-api.md
+    docs/roadmap/SharedLibraries.md
+    docs/roadmap/SharedLibraries.status.md
+  b5cf663bd17d2339749b2e49e1fe35b78a7ef4a9 Broiler.ECMAScript 0.1.0-preview.5 is published to nuget.org
+    Broiler.ECMAScript/CHANGELOG.md
+    Broiler.ECMAScript/Directory.Build.props
+    docs/roadmap/SharedLibraries.md
+    docs/roadmap/SharedLibraries.status.md
+  2d496a5544937e1fcf39b59d45e7eee95ecccd2b SJL-8.6: corpus revision 23 retires the time-zone area's divergences
+    conformance/vectors/REVISIONS.md
+    conformance/vectors/time-zones/backzone.vectors
+    conformance/vectors/time-zones/extrapolation.vectors
+    conformance/vectors/time-zones/identifiers.vectors
+    conformance/vectors/time-zones/lookup.vectors
+    conformance/vectors/time-zones/release.vectors
+    conformance/vectors/time-zones/transitions.vectors
+    docs/evidence/sjl-8-001/engine/retired-divergences-revision-23.tsv
+    scripts/conformance/generate_date_vectors.py
+    scripts/conformance/generate_number_vectors.py
+    scripts/conformance/generate_numerics_vectors.py
+    scripts/conformance/generate_text_vectors.py
+    scripts/conformance/generate_time_zone_vectors.py
+    scripts/conformance/generate_unicode_vectors.py
+    scripts/conformance/time-zone-divergences.txt
+  65a8740403ba3904daf8122e0a3dd5b5ef720895 SJL-8.6: this engine's runs on corpus revision 23
+    docs/evidence/sjl-8-001/README.md
+    docs/evidence/sjl-8-001/engine/negative-control-revision-23-new-york.tsv
+    docs/evidence/sjl-8-001/engine/negative-control-revision-23-utc.tsv
+    docs/evidence/sjl-8-001/engine/run-revision-23-new-york.log
+    docs/evidence/sjl-8-001/engine/run-revision-23-new-york.tsv.gz
+    docs/evidence/sjl-8-001/engine/run-revision-23-utc.log
+    docs/evidence/sjl-8-001/engine/run-revision-23-utc.tsv.gz
+  d5b6422ce754c24bd530422784ecff11164b90c1 SJL-8.6: the records note corpus revision 23
+    Broiler.JS/CHANGELOG.md
+    docs/roadmap/SharedLibraries.md
+    docs/roadmap/SharedLibraries.status.md
+  4d558ee1d8af2cdd45a66ec416854f8881781ef3 SJL-8.6: an offset's GMT name keeps its seconds (row Z16, at the owner's direction)
+    Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs
+    Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue786Tests.cs
+    Broiler.JS/CHANGELOG.md
+    docs/roadmap/SharedLibraries.md
+    docs/roadmap/SharedLibraries.status.md
+  merge: a04cd447af3424951eb767524812b5b310d71da3 Merge pull request #1046 from Broiler-Platform/claude/busy-lamport-m3yprr
+  merge: f0eae5b3a903de157f125a59423cacf4b6d1a256 Merge SJL-8.6: this engine's time zones and calendar years are the shared library's
+  merge: 5f96cd4090a08565044ce29503733a0cc051fc87 Merge pull request #1047 from Broiler-Platform/claude/busy-lamport-m3yprr
+  merge: 79a0506c870302cefa6d7105146c65feab898879 Merge pull request #1048 from Broiler-Platform/claude/busy-lamport-m3yprr
+files under Broiler.JS, Broiler.ECMAScript, Directory.Packages.props, Directory.Build.props, Directory.Build.targets, NuGet.config, global.json that differ between the cut-over's last commit and the after commit:
+  Broiler.ECMAScript/CHANGELOG.md
+  Broiler.ECMAScript/Directory.Build.props
+  Broiler.ECMAScript/data/time/README.md
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs
+  Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue786Tests.cs
+  Broiler.JS/CHANGELOG.md
+row Z16's correction, brought into SJL-8.6 at the owner's direction: 4d558ee1d8af2cdd45a66ec416854f8881781ef3, an ancestor of the after commit: True
+files that differ between it and the after commit: none
+files that differ between 5f96cd40 (the first after runs, observed and not judged) and the after commit:
+  Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs
+  Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue786Tests.cs
+  Broiler.JS/CHANGELOG.md
+  docs/roadmap/SharedLibraries.md
+  docs/roadmap/SharedLibraries.status.md
+bases: test262/base/ (part A) and test262/base-new-york/ (part B), and datasets/base/ (part C), all taken at 15a1bd8f329f12238b093def5d1ddcd3e1dffe3d
+rule commit: 15a1bd8f329f12238b093def5d1ddcd3e1dffe3d (the commit that added docs/evidence/sjl-8-001/decision-rule.md)
+rule commit is the base commit: True
+rule commit an ancestor of the after commit: True
+files the rule fixes, changed between the rule commit and the after commit:
+  none
+part C's harness and copies, changed between their commit (584caa2f) and the after commit:
+  none
+  2f8119033fd7281d6edb78d2e7ddf9e100b85f65e1d96a6a93863a1615b5f4de  scripts/conformance/run_reference_datasets.py
+  3bec8b599ea039d5cf9f60904d4934259372251e75555a4d3134f9f880803493  scripts/conformance/reference_dataset_driver.js
+the shared library's code, changed between 2d37a38a (the code 0.1.0-preview.5 was published from, at a04cd447) and the after commit:
+  none
+collector: docs/evidence/sjl-8-001/collect.py, sha256 e2f6a8dad85afe89fa131d9ac343349954f28973295c201718649162c953cef7, run from <repo> at 55f51135494fb234b7b2d548a1ed7961740c8991, committed with this bundle
+dotnet --version: 10.0.401
+dotnet --list-runtimes: Microsoft.AspNetCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.AspNetCore.App]
+Microsoft.NETCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.NETCore.App]
+node --version: v22.22.0
+machine: x86_64; Linux-6.18.44-fc-v139-x86_64-with-glibc2.39; logical processors 4
+cpu: Intel(R) Xeon(R) Processor @ 2.10GHz
+memory: 16479424 kB
+suite revision: ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e
+collected: 2026-10-18T07:28:38Z
