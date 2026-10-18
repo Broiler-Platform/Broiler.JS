@@ -1,0 +1,256 @@
+// The records, limits, balancing and serialization half of the differential check (rows R, B and S): JsTemporalCore and
+// the engine-free helpers of JsTemporal.Calendar, .Durations, .Conversions and .Options (all copied in Vm/) against the
+// library, part A's scratch sections of 2026-10-18 carried over onto the verbatim copies. Duration.prototype.toString's
+// steps after its reads are copied from JsRealm.TemporalDuration.cs (VmToString below).
+using System;
+using System.Linq;
+using System.Numerics;
+using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Temporal;
+using Broiler.ECMAScript.Time;
+using VmRef;
+using TU = Broiler.ECMAScript.Temporal.TemporalUnit;
+using VU = VmRef.TemporalUnit;
+
+internal static class Core
+{
+    private static readonly string[] Shows = ["auto", "always", "never", "critical"];
+    private static readonly string[] Calendars = ["iso8601", "gregory", "hebrew", "chinese"];
+    private static readonly string[] Zones = ["UTC", "America/New_York", "Asia/Kolkata", "Australia/Lord_Howe", "+05:30", "-00:44", "Europe/London"];
+
+    private static string S(IsoDate d) => d.Year + "-" + d.Month + "-" + d.Day;
+
+    private static string S(JsIsoDate d) => d.Year + "-" + d.Month + "-" + d.Day;
+
+    private static string S(IsoTime t) => $"{t.Hour}:{t.Minute}:{t.Second}.{t.Millisecond}.{t.Microsecond}.{t.Nanosecond}";
+
+    private static string S(JsTimeRecord t) => $"{t.Hour}:{t.Minute}:{t.Second}.{t.Millisecond}.{t.Microsecond}.{t.Nanosecond}";
+
+    private static JsIsoDate V(IsoDate d) => new(d.Year, d.Month, d.Day);
+
+    private static JsTimeRecord V(IsoTime t) => new(0, t.Hour, t.Minute, t.Second, t.Millisecond, t.Microsecond, t.Nanosecond);
+
+    // Duration.prototype.toString after its reads (JsRealm.TemporalDuration.cs, "toString"); HARNESS EDIT: the reads and
+    // ValidateUnit's and the hour/minute refusal are the caller's, the precision their result.
+    private static string VmToString(JsEngine engine, double[] fields, JsPrecision precision, RoundingMode mode)
+    {
+        if (precision.Unit == VU.Nanosecond && precision.Increment == 1)
+        {
+            return JsTemporalCore.DurationToString(fields, precision.Precision);
+        }
+
+        var largest = JsTemporalCore.DefaultLargestUnit(fields);
+        var internalDuration = JsTemporalCore.ToInternal(fields);
+        var time = JsTemporal.RoundTimeDuration(engine, internalDuration.Time, precision.Increment, precision.Unit, mode);
+        var rounded = JsTemporal.FromInternal(engine, internalDuration with { Time = time }, JsTemporalCore.Larger(largest, VU.Second));
+        return JsTemporalCore.DurationToString(rounded.Fields, precision.Precision);
+    }
+
+    internal static void Run(JsEngine engine, Tally tally, ulong seed, int count)
+    {
+        var r = new Rng(seed);
+        long Long(long lo, long hi) => lo + (long)((((ulong)r.Next(int.MaxValue) << 31) | (ulong)r.Next(int.MaxValue)) % (ulong)(hi - lo + 1));
+        IsoDate Date(long lo = -280000, long hi = 280000)
+        {
+            var year = Long(lo, hi);
+            var month = 1 + r.Next(12);
+            return new IsoDate(year, month, 1 + r.Next(IsoCalendarMath.DaysInMonth(year, month)));
+        }
+
+        IsoTime Time() => new(r.Next(24), r.Next(60), r.Next(60), r.Next(1000), r.Next(1000), r.Next(1000));
+        BigInteger Ns() => r.Next(4) switch
+        {
+            0 => new BigInteger(Long(-200_000_000_000_000_000, 200_000_000_000_000_000)) * Long(1, 50_000),
+            1 => ZonedTime.MaxEpochNanoseconds - Long(-100_000_000_000_000, 100_000_000_000_000),
+            2 => ZonedTime.MinEpochNanoseconds + Long(-100_000_000_000_000, 100_000_000_000_000),
+            _ => Long(-10_000_000_000_000, 10_000_000_000_000),
+        };
+        double Field() => r.Next(6) switch
+        {
+            0 => 0,
+            1 => Long(-30, 30),
+            2 => Long(-5_000_000_000, 5_000_000_000),
+            3 => r.Next(2) == 0 ? 1e20 : -1e20,
+            4 => (Long(-1000, 1000) * 4294967296.0) + Long(-3, 3),
+            _ => Long(-70, 70),
+        };
+
+        void Same(string section, Func<string> vm, Func<string> lib, Func<string> describe)
+        {
+            string a, b;
+            try
+            {
+                a = vm();
+            }
+            catch (JsThrow e)
+            {
+                a = e.Type;
+            }
+            catch (Exception e)
+            {
+                a = "crash " + e.GetType().Name;
+            }
+
+            try
+            {
+                b = lib();
+            }
+            catch (Exception e)
+            {
+                b = "crash " + e.GetType().Name + " " + e.Message;
+            }
+
+            tally.Record(section, a == b, a == "RangeError", () => describe() + "\n     vm:  " + a + "\n     lib: " + b);
+        }
+
+        for (var i = 0; i < count; i++)
+        {
+            var date = Date();
+            var time = Time();
+            var dateTime = new IsoDateTime(date, time);
+            var vdt = new JsIsoDateTime(V(date), V(time));
+            var ns = Ns();
+            var mode = (RoundingMode)r.Next(9);
+            var unit = (TU)(3 + r.Next(7));
+            var increment = r.Next(3) switch { 0 => 1L, 1 => Long(1, 1000), _ => Long(1, 1_000_000_000) };
+
+            var other = Date();
+            Same("B CompareISODate", () => JsTemporalCore.Compare(V(date), V(other)).ToString(), () => IsoArithmetic.CompareIsoDate(date, other).ToString(), () => S(date) + " " + S(other));
+            var otherTime = Time();
+            Same("B CompareTimeRecord", () => JsTemporalCore.Compare(V(time), V(otherTime)).ToString(), () => IsoArithmetic.CompareTime(time, otherTime).ToString(), () => S(time));
+            Same("B DifferenceTime", () => JsTemporalCore.DifferenceTime(V(time), V(otherTime)).ToString(), () => IsoArithmetic.DifferenceTime(time, otherTime).ToString(), () => S(time));
+
+            // Limits: years well inside 2^53, where Broiler.VM answers (row R6 is the library's correction beyond).
+            var anyDate = r.Next(3) == 0 ? Date(-300_000_000, 300_000_000) : Date();
+            var anyDateTime = new IsoDateTime(anyDate, time);
+            Same("R1 ISODateWithinLimits", () => JsTemporalCore.DateWithinLimits(V(anyDate)).ToString(), () => (TemporalLimits.CheckIsoDate(anyDate) == TemporalStatus.Completed).ToString(), () => S(anyDate));
+            Same("R2 ISODateTimeWithinLimits", () => JsTemporalCore.DateTimeWithinLimits(new JsIsoDateTime(V(anyDate), V(time))).ToString(), () => (TemporalLimits.CheckIsoDateTime(anyDateTime) == TemporalStatus.Completed).ToString(), () => S(anyDate));
+            Same("R3 ISOYearMonthWithinLimits", () => JsTemporalCore.YearMonthWithinLimits(V(anyDate)).ToString(), () => (TemporalLimits.CheckIsoYearMonth(anyDate) == TemporalStatus.Completed).ToString(), () => S(anyDate));
+            Same("R1 CheckISODaysRange", () => JsTemporalCore.DaysWithinRange(V(anyDate)).ToString(), () => (TemporalLimits.CheckIsoDaysRange(anyDate) == TemporalStatus.Completed).ToString(), () => S(anyDate));
+            Same("R4 IsValidEpochNanoseconds", () => JsTemporalCore.IsValidEpochNs(ns).ToString(), () => (TemporalLimits.CheckEpochNanoseconds(ns) == TemporalStatus.Completed).ToString(), () => ns.ToString());
+
+            // Balancing.
+            var big = r.Next(2) == 0 ? ns : new BigInteger(Long(-1_000_000_000_000_000, 1_000_000_000_000_000));
+            Same("B1 BalanceTime", () => { var b = JsTemporalCore.BalanceTime(big); return b.Days + " " + S(b); }, () => { var b = IsoArithmetic.BalanceTime(big, out var d); return d + " " + S(b); }, () => big.ToString());
+            Same("B1 AddTime", () => { var b = JsTemporalCore.AddTime(V(time), big); return b.Days + " " + S(b); }, () => { var b = IsoArithmetic.AddTime(time, big, out var d); return d + " " + S(b); }, () => big.ToString());
+            double h = Long(-100000, 100000), mi = Long(-100000, 100000), se = Long(-1000000, 1000000), ms = Long(-10000000, 10000000), us = Long(-10000000, 10000000), nn = Long(-10000000, 10000000);
+            Same("B1 BalanceTime (six fields)", () => { var b = JsTemporalCore.BalanceTime(h, mi, se, ms, us, nn); return b.Days + " " + S(b); }, () => { var b = IsoArithmetic.BalanceTime(h, mi, se, ms, us, nn, out var d); return d + " " + S(b); }, () => h + " " + mi);
+            var days = Long(-200_000_000, 200_000_000);
+            Same("B2 AddDaysToISODate", () => S(JsTemporalCore.AddDays(V(date), days)), () => S(IsoArithmetic.AddDaysToIsoDate(date, days)), () => S(date) + " " + days);
+            var small = new BigInteger(Long(-500_000_000_000_000_000, 500_000_000_000_000_000));
+            Same("B2 BalanceISODateTime", () => { var b = JsTemporalCore.BalanceDateTime(V(date), small); return S(b.Date) + " " + S(b.Time); }, () => { var b = IsoArithmetic.BalanceIsoDateTime(date, small); return S(b.Date) + " " + S(b.Time); }, () => S(date));
+            Same("B2 GetISOPartsFromEpoch", () => { var b = JsTemporalCore.FromEpochNs(ns); return S(b.Date) + " " + S(b.Time); }, () => { var b = IsoArithmetic.GetIsoPartsFromEpoch(ns); return S(b.Date) + " " + S(b.Time); }, () => ns.ToString());
+            Same("B2 GetUTCEpochNanoseconds", () => JsTemporalCore.UtcEpochNs(vdt).ToString(), () => IsoArithmetic.GetUtcEpochNanoseconds(dateTime).ToString(), () => S(date));
+
+            // Regulation (Broiler.VM's RegulateDate and RegulateTime, verbatim).
+            double ry = Long(-1_000_000, 1_000_000), rm = Field(), rd = Field();
+            var reject = r.Next(2) == 0;
+            Same("B4 RegulateISODate", () => S(JsTemporal.RegulateDate(engine, ry, rm, rd, reject)),
+                () => IsoArithmetic.RegulateIsoDate((long)ry, rm, rd, reject ? TemporalOverflow.Reject : TemporalOverflow.Constrain, out var d) == TemporalStatus.Completed ? S(d) : "RangeError",
+                () => ry + " " + rm + " " + rd + " " + reject);
+            double[] tf = [Field(), Field(), Field(), Field(), Field(), Field()];
+            if (r.Next(2) == 0)
+                tf = [r.Next(26) - 1, r.Next(62) - 1, r.Next(62) - 1, r.Next(1002) - 1, r.Next(1002) - 1, r.Next(1002) - 1];
+            Same("B4 RegulateTime", () => S(JsTemporal.RegulateTime(engine, tf[0], tf[1], tf[2], tf[3], tf[4], tf[5], reject)),
+                () => IsoArithmetic.RegulateTime(tf[0], tf[1], tf[2], tf[3], tf[4], tf[5], reject ? TemporalOverflow.Reject : TemporalOverflow.Constrain, out var t) == TemporalStatus.Completed ? S(t) : "RangeError",
+                () => string.Join(",", tf));
+
+            // The ISO CalendarDateAdd (Broiler.VM's DateAdd, verbatim), from a date within the limits.
+            var limitDate = r.Next(4) == 0 ? new IsoDate(r.Next(2) == 0 ? -271821 : 275760, r.Next(2) == 0 ? 4 : 9, 1 + r.Next(28)) : Date(-271820, 275759);
+            if (TemporalLimits.CheckIsoDate(limitDate) == TemporalStatus.Completed)
+            {
+                var sign = r.Next(2) == 0 ? 1 : -1;
+                double Part() => sign * (r.Next(12) switch { 0 or 1 or 2 or 3 => 0, 4 or 5 or 6 => Long(0, 30), 7 or 8 => Long(0, 3000), 9 => Long(0, 3_000_000), 10 => Long(0, 1_500_000_000), _ => r.Next(2) == 0 ? 1e9 : 1e11 });
+                var dd = new DateDuration(Part(), Part(), Part(), Part());
+                Same("B3 CalendarDateAdd (iso8601)", () => S(JsTemporal.DateAdd(engine, "iso8601", V(limitDate), new JsDateDuration(dd.Years, dd.Months, dd.Weeks, dd.Days), reject)),
+                    () => IsoArithmetic.AddIsoDate(limitDate, dd, reject ? TemporalOverflow.Reject : TemporalOverflow.Constrain, out var d) == TemporalStatus.Completed ? S(d) : "RangeError",
+                    () => S(limitDate) + " " + dd + " " + reject);
+            }
+
+            // Rounding of points.
+            var timeUnit = (TU)(3 + r.Next(7));
+            var smallIncrement = timeUnit == TU.Day ? 1 : Long(1, 1000);
+            Same("B9 RoundTime", () => { var b = JsTemporalCore.RoundTime(V(time), smallIncrement, (VU)(int)timeUnit, mode); return b.Days + " " + S(b); },
+                () => { var b = IsoArithmetic.RoundTime(time, smallIncrement, timeUnit, mode, out var d); return d + " " + S(b); }, () => S(time) + " " + smallIncrement + " " + timeUnit + " " + mode);
+            Same("B9 RoundISODateTime", () => { var b = JsTemporalCore.RoundDateTime(vdt, smallIncrement, (VU)(int)timeUnit, mode); return S(b.Date) + " " + S(b.Time); },
+                () => { var b = IsoArithmetic.RoundIsoDateTime(dateTime, smallIncrement, timeUnit, mode); return S(b.Date) + " " + S(b.Time); }, () => S(date));
+            Same("B9 RoundTemporalInstant", () => JsTemporal.RoundInstant(ns, increment, (VU)(int)unit, mode).ToString(), () => IsoArithmetic.RoundTemporalInstant(ns, increment, unit, mode).ToString(), () => ns + " " + increment + " " + unit + " " + mode);
+
+            // Strings (Broiler.VM's string members, verbatim).
+            var show = Shows[r.Next(4)];
+            var showEnum = (ShowCalendarName)Array.IndexOf(Shows, show);
+            var calendar = Calendars[r.Next(4)];
+            var precision = r.Next(12) - 2;
+            var anyYearDate = r.Next(2) == 0 ? date : new IsoDate(Long(-2_000_000_000, 2_000_000_000), date.Month, Math.Min(date.Day, 28));
+            Same("S1 TemporalDateToString", () => JsTemporal.DateString(V(anyYearDate), calendar, show), () => TemporalFormat.DateToString(anyYearDate, calendar, showEnum), () => S(anyYearDate));
+            Same("S1 ISODateTimeToString", () => JsTemporal.DateTimeString(new JsIsoDateTime(V(anyYearDate), V(time)), calendar, precision, show),
+                () => TemporalFormat.DateTimeToString(new IsoDateTime(anyYearDate, time), calendar, precision, showEnum), () => S(anyYearDate));
+            Same("S1 TemporalYearMonthToString", () => JsTemporal.YearMonthString(V(anyYearDate), calendar, show), () => TemporalFormat.YearMonthToString(anyYearDate, calendar, showEnum), () => S(anyYearDate));
+            Same("S1 TemporalMonthDayToString", () => JsTemporal.MonthDayString(V(anyYearDate), calendar, show), () => TemporalFormat.MonthDayToString(anyYearDate, calendar, showEnum), () => S(anyYearDate));
+            Same("S1 TimeRecordToString", () => JsTemporalCore.TimeToString(V(time), precision), () => TemporalFormat.TimeToString(time, precision), () => S(time));
+            if (TemporalLimits.CheckEpochNanoseconds(ns) == TemporalStatus.Completed)
+            {
+                var zone = r.Next(3) == 0 ? null : Zones[r.Next(Zones.Length)];
+                Same("S6 TemporalInstantToString", () => JsTemporal.InstantString(engine, ns, zone, precision),
+                    () => TemporalFormat.InstantToString(ns, zone is null ? null : ZonedTime.GetOffsetNanosecondsFor(Rules(engine, zone), ns), precision), () => ns + " " + zone);
+                var showTz = new[] { "auto", "never", "critical" }[r.Next(3)];
+                var showOff = new[] { "auto", "never" }[r.Next(2)];
+                var zonedZone = Zones[r.Next(Zones.Length)];
+                Same("S7 TemporalZonedDateTimeToString", () => JsTemporal.ZonedDateTimeString(engine, new JsZonedDateTimeObject(ns, zonedZone, calendar), precision, show, showTz, showOff),
+                    () => TemporalFormat.ZonedDateTimeToString(ns, ZonedTime.GetOffsetNanosecondsFor(Rules(engine, zonedZone), ns), zonedZone, calendar, precision, showEnum,
+                        (ShowTimeZoneName)Array.IndexOf(new[] { "auto", "never", "critical" }, showTz), (ShowOffset)Array.IndexOf(new[] { "auto", "never" }, showOff)),
+                    () => ns + " " + zonedZone);
+            }
+
+            var offset = r.Next(3) switch { 0 => 0L, 1 => Long(-86_399, 86_399) * 1_000_000_000L, _ => Long(-86_399_999_999_999, 86_399_999_999_999) };
+            if (Math.Abs(offset) >= 86_369_000_000_000)
+                offset /= 2; // no zone has an offset that rounds to a day: Broiler.VM's identifier formatter refuses one
+            Same("S8 FormatUTCOffsetNanoseconds", () => JsTemporalCore.FormatOffsetNs(offset), () => TemporalFormat.FormatUtcOffsetNanoseconds(offset), () => offset.ToString());
+            Same("S8 FormatDateTimeUTCOffsetRounded", () => JsTemporalCore.FormatOffsetRounded(offset), () => TemporalFormat.FormatDateTimeUtcOffsetRounded(offset), () => offset.ToString());
+            Same("S1 PadISOYear", () => JsTemporalCore.PadYear(anyYearDate.Year), () => TemporalFormat.PadIsoYear(anyYearDate.Year), () => anyYearDate.Year.ToString());
+
+            // Precision (Broiler.VM's Precision, verbatim).
+            var digits = r.Next(11) - 1;
+            var smallest = r.Next(3) == 0 ? TU.Unset : (TU)(5 + r.Next(5));
+            Same("S4 ToSecondsStringPrecisionRecord", () => JsTemporal.Precision(smallest == TU.Unset ? VU.Unset : (VU)(int)smallest, digits).ToString().Replace("VmRef.", string.Empty, StringComparison.Ordinal),
+                () => { var p = TemporalOptionRules.ToSecondsStringPrecisionRecord(smallest, digits); return new JsPrecision(p.Precision, (VU)(int)p.Unit, p.Increment).ToString().Replace("VmRef.", string.Empty, StringComparison.Ordinal); },
+                () => smallest + " " + digits);
+
+            // Durations: validity and the strings, unrounded and rounded.
+            var sgn = r.Next(2) == 0 ? 1 : -1;
+            double DF() => sgn * (r.Next(6) switch { 0 => 0, 1 => Long(0, 100), 2 => Long(0, 5_000_000_000), 3 => Long(0, 9_007_199_254_740_991), 4 => Long(0, 1000), _ => 0 });
+            double[] f = [DF(), DF(), DF(), DF(), DF(), DF(), DF(), DF(), DF(), DF()];
+            if (r.Next(3) == 0)
+            {
+                for (var k = 0; k < 4; k++)
+                    f[k] = 0;
+            }
+
+            if (r.Next(10) == 0)
+                f[r.Next(10)] = -f[r.Next(10)] + 1;
+            var fields = new DurationFields(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9]);
+            var valid = JsTemporalCore.IsValidDuration(f);
+            Same("R8 IsValidDuration", () => valid.ToString(), () => (TemporalLimits.CheckDuration(fields) == TemporalStatus.Completed).ToString(), () => fields.ToString());
+            if (valid)
+            {
+                var durationDigits = r.Next(11) - 1;
+                var durationSmallest = r.Next(3) == 0 ? TU.Unset : (TU)(6 + r.Next(4));
+                var vp = JsTemporal.Precision(durationSmallest == TU.Unset ? VU.Unset : (VU)(int)durationSmallest, durationDigits);
+                var mp = TemporalOptionRules.ToSecondsStringPrecisionRecord(durationSmallest, durationDigits);
+                Same("S9 TemporalDurationToString", () => JsTemporalCore.DurationToString(f, vp.Precision), () => TemporalFormat.DurationToString(fields, mp.Precision), () => fields.ToString());
+                Same("S9 Duration.prototype.toString (rounded)", () => VmToString(engine, f, vp, mode),
+                    () => TemporalFormat.TryDurationToString(fields, mp, mode, out var text) == TemporalStatus.Completed ? text! : "RangeError",
+                    () => fields + " " + mp + " " + mode);
+            }
+        }
+    }
+
+    private static ITimeZoneRules Rules(JsEngine engine, string zone)
+    {
+        if (OffsetTimeZones.TryParseOffsetIdentifier(zone, out var minutes))
+            return new FixedOffsetTimeZoneRules(minutes * 60);
+
+        var database = engine.Intl!.TimeZones;
+        return database.TryFind(zone, out var id) ? database.Rules(id) : throw new InvalidOperationException(zone);
+    }
+}

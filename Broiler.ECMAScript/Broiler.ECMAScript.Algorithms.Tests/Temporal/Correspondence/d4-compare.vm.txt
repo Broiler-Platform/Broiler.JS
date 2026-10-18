@@ -1,0 +1,16 @@
+compare({hours: 24}, {days: 1}) => 0
+compare({days: 1}, {hours: 25}) => -1
+compare({months: 1}, {days: 30}) => THROWS RangeError: Temporal.Duration.compare: comparing years, months or weeks needs a relativeTo date
+compare({months: 1}, {days: 30}, {relativeTo: "2020-02-01"}) => -1
+compare({months: 1}, {days: 30}, {relativeTo: "2020-01-01"}) => 1
+compare({days: 1}, {hours: 24}, {relativeTo: NY spring day}) => -1
+compare({days: 1}, {hours: 23}, {relativeTo: NY spring day}) => 0
+compare({months: 1}, {months: 1}) (identical, no relativeTo) => 0
+compare({months: 1}, {months: 1}, {relativeTo: "bad"}) => THROWS RangeError: Temporal: cannot parse 'bad'
+compare({years: 1, seconds: 9e15}, {years: 1}, {relativeTo: "2020-01-01"}) => 1
+compare({years: 1, seconds: 9e15}, {years: 1, seconds: 9e15 - 1}, {relativeTo: "2020-01-01"}) => 1
+compare({years: 1, seconds: 9007199254740991 - 31622399}, {years: 1}, {relativeTo: "2020-01-01"}) => THROWS RangeError: Temporal: the time duration is too large
+compare({days: 200000000}, {days: 1}, {relativeTo: "2020-01-01"}) => 1
+compare({weeks: 1}, {days: 7}, {relativeTo: "2020-01-01"}) => 0
+compare({years: 1}, {days: 365}, {relativeTo: "2020-01-01[u-ca=hebrew]"}) => -1
+compare({months: 1}, {days: 29}, {relativeTo: PlainDate hebrew 5780-05-01}) => 1

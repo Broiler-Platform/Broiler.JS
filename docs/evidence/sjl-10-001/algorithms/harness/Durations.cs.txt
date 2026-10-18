@@ -1,0 +1,689 @@
+// The durations, rounding and differences half of the SJL-10.3 differential check (rows D1 to D12 and F1 to F8): every
+// operation of part C run through Broiler.VM's copied code (VmRef, Vm/) and through the library, over a generated
+// population, each answer rendered the same way: the fields' bit patterns, a total's bits, a comparison's sign, or
+// "RangeError" for Broiler.VM's RangeError and for any status the library answers other than Completed.
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Numerics;
+using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Temporal;
+using Broiler.ECMAScript.Time;
+using VmRef;
+using TU = Broiler.ECMAScript.Temporal.TemporalUnit;
+using VU = VmRef.TemporalUnit;
+
+internal sealed class Durations
+{
+    private static readonly string[] CalendarIds =
+    [
+        "iso8601", "gregory", "japanese", "buddhist", "roc", "coptic", "ethiopic", "ethioaa", "indian", "islamic-civil",
+        "islamic-tbla", "islamic-umalqura", "persian", "hebrew", "chinese", "dangi",
+    ];
+
+    private static readonly string[] ZoneIds =
+    [
+        "UTC", "America/New_York", "Europe/London", "Australia/Lord_Howe", "Pacific/Apia", "America/St_Johns", "Asia/Kolkata",
+        "Europe/Moscow", "America/Sao_Paulo", "+05:30", "-08:00", "+00:00", "-00:44",
+    ];
+
+    private readonly JsEngine engine;
+    private readonly TemporalCalendars calendars;
+    private readonly TimeZoneDatabase database;
+    private readonly Dictionary<string, TemporalTimeZone> zones = new(StringComparer.Ordinal);
+    private readonly Tally tally;
+    private readonly Rng r;
+
+    internal Durations(JsEngine engine, TemporalCalendars calendars, TimeZoneDatabase database, Tally tally, ulong seed)
+    {
+        this.engine = engine;
+        this.calendars = calendars;
+        this.database = database;
+        this.tally = tally;
+        r = new Rng(seed);
+        foreach (var id in ZoneIds)
+        {
+            ITimeZoneRules rules = OffsetTimeZones.TryParseOffsetIdentifier(id, out var minutes)
+                ? new FixedOffsetTimeZoneRules(minutes * 60)
+                : database.Rules(database.TryFind(id, out var found) ? found : throw new InvalidOperationException(id));
+            zones[id] = new TemporalTimeZone(rules);
+        }
+    }
+
+    // ---- Rendering ---------------------------------------------------------------------------------------------
+
+    private static string Fields(double[] f) => string.Join(",", f.Select(Bits));
+
+    private static string Fields(DurationFields d) =>
+        string.Join(",", new[] { d.Years, d.Months, d.Weeks, d.Days, d.Hours, d.Minutes, d.Seconds, d.Milliseconds, d.Microseconds, d.Nanoseconds }.Select(Bits));
+
+    private static string Bits(double x) => BitConverter.DoubleToInt64Bits(x).ToString("X16", CultureInfo.InvariantCulture);
+
+    private static string Lib(TemporalStatus status, Func<string> value) => status == TemporalStatus.Completed ? value() : "RangeError";
+
+    private static double[] Array10(DurationFields d) =>
+        [d.Years, d.Months, d.Weeks, d.Days, d.Hours, d.Minutes, d.Seconds, d.Milliseconds, d.Microseconds, d.Nanoseconds];
+
+    private static DurationFields FromArray(double[] f) => new(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8], f[9]);
+
+    private static JsIsoDate V(IsoDate d) => new(d.Year, d.Month, d.Day);
+
+    private static JsTimeRecord V(IsoTime t) => new(0, t.Hour, t.Minute, t.Second, t.Millisecond, t.Microsecond, t.Nanosecond);
+
+    private static JsIsoDateTime V(IsoDateTime d) => new(V(d.Date), V(d.Time));
+
+    private static VU V(TU unit) => (VU)(int)unit;
+
+    // ---- Generation --------------------------------------------------------------------------------------------
+
+    private long Long(long lo, long hi) => lo + (long)((((ulong)r.Next(int.MaxValue) << 31) | (ulong)r.Next(int.MaxValue)) % (ulong)(hi - lo + 1));
+
+    private T Pick<T>(IReadOnlyList<T> options) => options[r.Next(options.Count)];
+
+    private IsoDate Date()
+    {
+        long year = r.Next(10) switch
+        {
+            < 5 => Long(1900, 2100),
+            5 or 6 => Long(-5000, 5000),
+            7 => Long(-271000, 275000),
+            8 => r.Next(2) == 0 ? Long(-271821, -271815) : Long(275755, 275760),
+            _ => Long(1, 3000),
+        };
+        var month = 1 + r.Next(12);
+        var days = IsoCalendarMath.DaysInMonth(year, month);
+        var day = r.Next(3) == 0 ? days - r.Next(3) : 1 + r.Next(days);
+        var date = new IsoDate(year, month, Math.Max(1, day));
+        return TemporalLimits.CheckIsoDate(date) == TemporalStatus.Completed ? date : new IsoDate(2020, 2, 29);
+    }
+
+    private IsoDate NearDate(IsoDate date)
+    {
+        var span = r.Next(5) switch { 0 => 3L, 1 => 40L, 2 => 400L, 3 => 4000L, _ => 200_000L };
+        var moved = IsoArithmetic.AddDaysToIsoDate(date, Long(-span, span));
+        return TemporalLimits.CheckIsoDate(moved) == TemporalStatus.Completed ? moved : date;
+    }
+
+    private IsoTime Time() => r.Next(4) == 0
+        ? new IsoTime(0, 0, 0, 0, 0, 0)
+        : r.Next(3) == 0 ? new IsoTime(r.Next(24), r.Next(4) * 15, 0, 0, 0, 0) : new IsoTime(r.Next(24), r.Next(60), r.Next(60), r.Next(1000), r.Next(1000), r.Next(1000));
+
+    private double Field(int index, int sign)
+    {
+        // Years, months, weeks below 2^32; days and time far larger.
+        double magnitude = r.Next(16) switch
+        {
+            < 6 => 0,
+            6 or 7 or 8 => Long(1, 12),
+            9 or 10 => Long(1, 400),
+            11 => Long(1, 100_000),
+            12 => index < 3 ? Long(1, 4_294_967_295) : Long(1, 300_000_000),
+            13 => index < 3 ? 4294967295 : index == 3 ? 104249991374 : Long(1, 9_007_199_254_740_991),
+            14 => Long(1, 60),
+            _ => Long(1, 1000),
+        };
+        return sign * magnitude;
+    }
+
+    private DurationFields Duration(bool valid = true)
+    {
+        for (var attempt = 0; ; attempt++)
+        {
+            var sign = r.Next(2) == 0 ? 1 : -1;
+            var shape = r.Next(6);
+            var f = new double[10];
+            for (var i = 0; i < 10; i++)
+            {
+                var allowed = shape switch
+                {
+                    0 => i >= 4, // time only
+                    1 => i == 3 || i >= 4, // days and time
+                    2 => i <= 3, // date only
+                    3 => i is 1 or 3 or 4, // months, days, hours
+                    _ => true,
+                };
+                f[i] = allowed ? Field(i, sign) : 0;
+            }
+
+            if (r.Next(25) == 0)
+                f[r.Next(10)] = -sign * Long(1, 5);
+
+            var d = FromArray(f);
+            if (!valid || TemporalLimits.CheckDuration(d) == TemporalStatus.Completed || attempt > 20)
+                return d;
+        }
+    }
+
+    private TU AnyUnit() => (TU)r.Next(10);
+
+    // An increment that divides the unit's maximum where it has one, any increment otherwise.
+    private long ValidIncrement(TU unit)
+    {
+        long? maximum = unit switch { TU.Hour => 24, TU.Minute or TU.Second => 60, >= TU.Millisecond and <= TU.Nanosecond => 1000, _ => null };
+        if (maximum is not { } max)
+            return r.Next(3) == 0 ? Increment() : 1;
+
+        var divisors = Enumerable.Range(1, (int)max - 1).Where(d => max % d == 0).ToArray();
+        return r.Next(3) == 0 ? 1 : divisors[r.Next(divisors.Length)];
+    }
+
+    // A pair of units in a group, the largest at least the smallest, mostly valid together.
+    private (TU Largest, TU Smallest) Units(TU first, TU last)
+    {
+        var smallest = (TU)((int)first + r.Next((int)last - (int)first + 1));
+        var largest = (TU)((int)first + r.Next((int)smallest - (int)first + 1));
+        return (r.Next(6) == 0 ? TU.Auto : r.Next(8) == 0 ? TU.Unset : largest, r.Next(8) == 0 ? TU.Unset : smallest);
+    }
+
+    private TU LargestOption() => r.Next(5) switch { 0 => TU.Unset, 1 => TU.Auto, _ => AnyUnit() };
+
+    private TU SmallestOption() => r.Next(5) switch { 0 => TU.Unset, _ => AnyUnit() };
+
+    private long Increment() => r.Next(12) switch
+    {
+        < 6 => 1,
+        6 => 2,
+        7 => Pick(new long[] { 3, 4, 5, 6, 10, 12, 15, 20, 30 }),
+        8 => Pick(new long[] { 7, 24, 25, 60, 100, 500, 1000 }),
+        9 => Long(1, 1000),
+        10 => Pick(new long[] { 1_000_000_000, 999_999_999, 86400 }),
+        _ => Long(1, 50),
+    };
+
+    private RoundingMode Mode() => (RoundingMode)r.Next(9);
+
+    private string CalendarId() => r.Next(3) == 0 ? "iso8601" : Pick(CalendarIds);
+
+    private CalendarId Lib(string calendar) => TemporalCalendars.Canonicalize(calendar, out var id) == CalendarStatus.Completed ? id : throw new InvalidOperationException(calendar);
+
+    private BigInteger Instant(IsoDateTime dateTime) => IsoArithmetic.GetUtcEpochNanoseconds(dateTime);
+
+    // A zoned instant for a wall clock in a zone, or null where the zone has none within the limits.
+    private BigInteger? ZonedInstant(string zone, IsoDateTime local)
+    {
+        if (zones[zone].GetEpochNanosecondsFor(local, Disambiguation.Compatible, out var ns) != TimeStatus.Completed)
+            return null;
+
+        return TemporalLimits.CheckEpochNanoseconds(ns) == TemporalStatus.Completed ? ns : null;
+    }
+
+    private (JsRelativeTo Vm, RelativeTo Lib, string Text) RelativeToOption()
+    {
+        var kind = r.Next(4);
+        var calendar = CalendarId();
+        if (kind == 0)
+            return (default, RelativeTo.None, "none");
+
+        var date = Date();
+        if (kind is 1 or 2)
+            return (new JsRelativeTo(V(date), null, null, calendar), RelativeTo.FromPlainDate(date, calendars, Lib(calendar)), "plain " + date + " " + calendar);
+
+        var zone = Pick(ZoneIds);
+        var ns = ZonedInstant(zone, new IsoDateTime(date, Time()));
+        if (ns is null)
+            return (default, RelativeTo.None, "none");
+
+        return (new JsRelativeTo(null, ns, zone, calendar), RelativeTo.FromZoned(ns.Value, zones[zone], calendars, Lib(calendar)), "zoned " + ns + " " + zone + " " + calendar);
+    }
+
+    // ---- The comparisons -------------------------------------------------------------------------------------------
+
+    private void Same(string section, Func<string> vm, Func<string> lib, Func<string> describe)
+    {
+        string a, b;
+        try
+        {
+            a = vm();
+        }
+        catch (JsThrow e)
+        {
+            a = e.Type;
+        }
+        catch (Exception e)
+        {
+            a = "crash " + e.GetType().Name;
+            if (Environment.GetEnvironmentVariable("HARNESS_STACK") is not null)
+                Console.Error.WriteLine(e);
+        }
+
+        try
+        {
+            b = lib();
+        }
+        catch (Exception e)
+        {
+            b = "crash " + e.GetType().Name + " " + e.Message;
+        }
+
+        // ROW D12, AS REVISED: where Broiler.VM ends the invocation with a .NET exception and the library answers a
+        // RangeError, the case is counted apart and listed, neither an agreement nor an unexplained difference.
+        if (a.StartsWith("crash ", StringComparison.Ordinal) && b == "RangeError")
+        {
+            tally.RecordFault(section, () => describe() + "\n     vm:  " + a + "\n     lib: " + b);
+            return;
+        }
+
+        tally.Record(section, a == b, a == "RangeError", () => describe() + "\n     vm:  " + a + "\n     lib: " + b);
+    }
+
+    internal void Run(int count)
+    {
+        for (var i = 0; i < count; i++)
+        {
+            Basic();
+            Add();
+            Compare();
+            Round();
+            Total();
+            DifferencePlainDate();
+            DifferencePlainDateTime();
+            DifferencePlainTime();
+            DifferenceInstant();
+            DifferenceZoned();
+            DifferenceYearMonth();
+            RoundOptions();
+            MonthEndRound();
+            MonthEndDifference();
+        }
+    }
+
+    // A date at or near the end of its month, where calendar windows clamp (rows D6 to D8, F3 and F5).
+    private IsoDate MonthEnd()
+    {
+        var year = r.Next(4) == 0 ? Long(-2000, 4000) : Long(1990, 2030);
+        var month = 1 + r.Next(12);
+        var days = IsoCalendarMath.DaysInMonth(year, month);
+        return new IsoDate(year, month, days - (r.Next(3) == 0 ? r.Next(3) : 0));
+    }
+
+    // D6 to D8: rounding relative to a month's end, to years, months, weeks and days, where the destination lies past the
+    // first window and the nudge's direction decides the bubble (the pinned text against the polyfill, decision D7).
+    private void MonthEndRound()
+    {
+        var sign = r.Next(3) == 0 ? -1 : 1;
+        var d = new DurationFields(sign * (r.Next(3) == 0 ? r.Next(3) : 0), sign * r.Next(14), sign * (r.Next(5) == 0 ? r.Next(5) : 0), sign * (r.Next(3) == 0 ? r.Next(32) : 20 + r.Next(12)),
+            sign * (r.Next(2) == 0 ? 12 : r.Next(24)), sign * r.Next(60), 0, 0, 0, 0);
+        var smallest = (TU)r.Next(4);
+        var largest = r.Next(4) == 0 ? TU.Auto : (TU)r.Next((int)smallest + 1);
+        var increment = r.Next(6) == 0 ? 2 + r.Next(3) : 1;
+        if (largest != smallest && largest != TU.Auto)
+            increment = 1;
+        var mode = Mode();
+        var date = MonthEnd();
+        var calendar = r.Next(4) == 0 ? CalendarId() : "iso8601";
+        (JsRelativeTo Vm, RelativeTo Lib, string Text) relativeTo = (new JsRelativeTo(V(date), null, null, calendar), RelativeTo.FromPlainDate(date, calendars, Lib(calendar)), "plain " + date + " " + calendar);
+        if (r.Next(3) == 0)
+        {
+            var zone = r.Next(2) == 0 ? "UTC" : Pick(ZoneIds);
+            if (ZonedInstant(zone, new IsoDateTime(date, r.Next(2) == 0 ? default : Time())) is { } ns)
+                relativeTo = (new JsRelativeTo(null, ns, zone, calendar), RelativeTo.FromZoned(ns, zones[zone], calendars, Lib(calendar)), "zoned " + ns + " " + zone + " " + calendar);
+        }
+
+        Same("D6-D8 round relative to a month's end" + (relativeTo.Lib.IsZoned ? " (zoned)" : " (plain)"),
+            () => Fields(VmMethods.DurationRound(engine, Array10(d), V(largest), relativeTo.Vm, increment, mode, V(smallest)).Fields),
+            () => TemporalOptionRules.TryGetDurationRoundUnits(d, largest, increment, smallest, out var l, out var s)
+                ? Lib(DurationMath.Round(d, l, increment, s, mode, relativeTo.Lib, out var x), () => Fields(x))
+                : "RangeError",
+            () => d + " largest " + largest + " smallest " + smallest + " increment " + increment + " " + mode + " " + relativeTo.Text);
+        Same("D6-D8 total relative to a month's end" + (relativeTo.Lib.IsZoned ? " (zoned)" : " (plain)"),
+            () => Bits(VmMethods.DurationTotal(engine, Array10(d), relativeTo.Vm, V(smallest))),
+            () => Lib(DurationMath.Total(d, smallest, relativeTo.Lib, out var x), () => Bits(x)),
+            () => d + " " + smallest + " " + relativeTo.Text);
+    }
+
+    // F3, F5, F7: differences from a month's end to near another's, rounded to calendar units.
+    private void MonthEndDifference()
+    {
+        var since = r.Next(2) == 0;
+        var smallest = (TU)r.Next(4);
+        var largest = r.Next(4) == 0 ? TU.Auto : (TU)r.Next((int)smallest + 1);
+        var increment = r.Next(6) == 0 ? 2 + r.Next(3) : 1;
+        var mode = Mode();
+        var one = MonthEnd();
+        var two = IsoArithmetic.AddDaysToIsoDate(one, (r.Next(3) == 0 ? -1 : 1) * Long(25, 800));
+        var calendar = r.Next(4) == 0 ? CalendarId() : "iso8601";
+        var oneTime = r.Next(2) == 0 ? default : new IsoTime(r.Next(24), r.Next(4) * 15, 0, 0, 0, 0);
+        var twoTime = r.Next(2) == 0 ? new IsoTime(12, 0, 0, 0, 0, 0) : new IsoTime(r.Next(24), r.Next(4) * 15, 0, 0, 0, 0);
+        var oneDateTime = new IsoDateTime(one, oneTime);
+        var twoDateTime = new IsoDateTime(two, twoTime);
+        JsDifferenceSettings vm;
+        try
+        {
+            vm = JsTemporal.DifferenceSettings(engine, since, JsTemporal.UnitGroup.DateTime, [], VU.Nanosecond, VU.Day, V(largest), increment, mode, V(smallest));
+        }
+        catch (JsThrow)
+        {
+            return;
+        }
+
+        if (!TemporalOptionRules.TryGetDifferenceSettings(TemporalType.PlainDateTime, Op(since), largest, increment, mode, smallest, out var lib))
+        {
+            tally.Record("F1 GetDifferenceSettings", false, false, () => "month end " + largest + " " + smallest);
+            return;
+        }
+
+        var options = "largest " + largest + " smallest " + smallest + " increment " + increment + " " + mode + " " + (since ? "since" : "until");
+        Same("F3-F5 PlainDateTime until/since from a month's end", () => Fields(VmMethods.DifferenceTemporalPlainDateTime(engine, V(oneDateTime), calendar, V(twoDateTime), since, vm)),
+            () => Lib(TemporalDifferences.DifferenceTemporalPlainDateTime(Op(since), calendars, Lib(calendar), oneDateTime, twoDateTime, lib, out var x), () => Fields(x)),
+            () => oneDateTime + " " + twoDateTime + " " + calendar + " " + options);
+
+        var zone = r.Next(2) == 0 ? "UTC" : Pick(ZoneIds);
+        if (ZonedInstant(zone, oneDateTime) is not { } ns1 || ZonedInstant(zone, twoDateTime) is not { } ns2)
+            return;
+
+        JsDifferenceSettings zonedVm;
+        try
+        {
+            zonedVm = JsTemporal.DifferenceSettings(engine, since, JsTemporal.UnitGroup.DateTime, [], VU.Nanosecond, VU.Hour, V(largest), increment, mode, V(smallest));
+        }
+        catch (JsThrow)
+        {
+            return;
+        }
+
+        TemporalOptionRules.TryGetDifferenceSettings(TemporalType.ZonedDateTime, Op(since), largest, increment, mode, smallest, out var zonedLib);
+        Same("F7 ZonedDateTime until/since from a month's end", () => Fields(VmMethods.DifferenceTemporalZonedDateTime(engine, ns1, ns2, zone, calendar, since, zonedVm)),
+            () => Lib(TemporalDifferences.DifferenceTemporalZonedDateTime(Op(since), ns1, ns2, zones[zone], calendars, Lib(calendar), zonedLib, out var x), () => Fields(x)),
+            () => ns1 + " " + ns2 + " " + zone + " " + calendar + " " + options);
+    }
+
+    // D1, D2: sign, the default largest unit, the internal records and their balance, negation.
+    private void Basic()
+    {
+        var d = Duration(valid: r.Next(5) != 0);
+        var f = Array10(d);
+        Same("D1 IsValidDuration", () => JsTemporalCore.IsValidDuration(f).ToString(), () => (TemporalLimits.CheckDuration(d) == TemporalStatus.Completed).ToString(), () => d.ToString());
+        if (TemporalLimits.CheckDuration(d) != TemporalStatus.Completed)
+            return;
+
+        Same("D1 DurationSign", () => JsTemporalCore.DurationSign(f).ToString(), () => DurationMath.Sign(d).ToString(), () => d.ToString());
+        Same("D1 CreateNegatedTemporalDuration", () => Fields(JsTemporal.Negated(f)), () => Fields(DurationMath.Negate(d)), () => d.ToString());
+        Same("D2 DefaultTemporalLargestUnit", () => ((int)JsTemporalCore.DefaultLargestUnit(f)).ToString(), () => ((int)DurationMath.DefaultLargestUnit(d)).ToString(), () => d.ToString());
+        Same("D2 ToInternalDurationRecord", () => { var x = JsTemporalCore.ToInternal(f); return x.Date + " " + x.Time; },
+            () => { var x = DurationMath.ToInternal(d); return new JsDateDuration(x.Date.Years, x.Date.Months, x.Date.Weeks, x.Date.Days) + " " + x.TimeNanoseconds; }, () => d.ToString());
+        Same("D2 ToInternalDurationRecordWith24HourDays", () => { var x = JsTemporalCore.ToInternalWith24HourDays(f); return x.Date + " " + x.Time; },
+            () => { var x = DurationMath.ToInternalWith24HourDays(d); return new JsDateDuration(x.Date.Years, x.Date.Months, x.Date.Weeks, x.Date.Days) + " " + x.TimeNanoseconds; }, () => d.ToString());
+        var largest = AnyUnit();
+        Same("D2 TemporalDurationFromInternal", () => Fields(JsTemporal.FromInternal(engine, JsTemporalCore.ToInternal(f), V(largest)).Fields),
+            () => Lib(DurationMath.FromInternal(DurationMath.ToInternal(d), largest, out var x), () => Fields(x)), () => d + " " + largest);
+        var timeUnit = (TU)(3 + r.Next(7));
+        var increment = Increment();
+        var mode = Mode();
+        var time = JsTemporalCore.ToInternalWith24HourDays(f).Time;
+        Same("D5 RoundTimeDuration", () => JsTemporal.RoundTimeDuration(engine, time, increment, V(timeUnit), mode).ToString(),
+            () => Lib(DurationMath.RoundTimeDuration(time, increment, timeUnit, mode, out var x), () => x.ToString()), () => time + " " + increment + " " + timeUnit + " " + mode);
+        Same("D10 TotalTimeDuration", () => Bits(JsTemporal.TotalTimeDuration(time, V(timeUnit)).ToDouble()), () => Bits(DurationMath.TotalTimeDuration(time, timeUnit)), () => time + " " + timeUnit);
+    }
+
+    // D2, D3: AddDurations, with subtract.
+    private void Add()
+    {
+        var one = r.Next(4) == 0 ? Duration() : TimeDuration();
+        var two = r.Next(3) == 0 ? (r.Next(4) == 0 ? Duration() : TimeDuration()) : DurationLike(one);
+        var subtract = r.Next(2) == 0;
+        Same("D3 AddDurations", () => Fields(VmMethods.AddDurations(engine, Array10(one), Array10(two), subtract).Fields),
+            () => Lib(DurationMath.AddDurations(one, subtract ? DurationMath.Negate(two) : two, out var x), () => Fields(x)), () => one + " " + two + " " + subtract);
+    }
+
+    // A duration of the same shape as another, so that sums and comparisons meet each other's units.
+    private DurationFields DurationLike(DurationFields d)
+    {
+        var f = Array10(d);
+        for (var i = 0; i < 10; i++)
+        {
+            if (f[i] != 0 && r.Next(2) == 0)
+                f[i] = Math.Sign(f[i]) * Math.Max(0, Math.Abs(f[i]) + Long(-3, 3));
+        }
+
+        var other = FromArray(f);
+        return TemporalLimits.CheckDuration(other) == TemporalStatus.Completed ? other : d;
+    }
+
+    // D4: compare.
+    private void Compare()
+    {
+        var one = Duration();
+        var two = r.Next(2) == 0 ? DurationLike(one) : Duration();
+        var relativeTo = RelativeToOption();
+        Same("D4 compare", () => VmMethods.DurationCompare(engine, Array10(one), Array10(two), relativeTo.Vm).ToString(CultureInfo.InvariantCulture),
+            () => Lib(DurationMath.Compare(one, two, relativeTo.Lib, out var x), () => ((double)x).ToString(CultureInfo.InvariantCulture)),
+            () => one + " " + two + " " + relativeTo.Text);
+    }
+
+    // D5 to D12: round, with and without relativeTo, every unit, increment and mode.
+    private void Round()
+    {
+        var relativeTo = RelativeToOption();
+        var timeOnly = !relativeTo.Lib.IsPlain && !relativeTo.Lib.IsZoned && r.Next(4) != 0;
+        var d = timeOnly ? TimeDuration() : Duration();
+        TU largest, smallest;
+        long increment;
+        if (r.Next(4) == 0)
+        {
+            largest = LargestOption();
+            smallest = SmallestOption();
+            increment = Increment();
+        }
+        else
+        {
+            (largest, smallest) = Units(timeOnly ? TU.Day : TU.Year, TU.Nanosecond);
+            increment = largest == smallest || smallest > TU.Day ? ValidIncrement(smallest) : 1;
+        }
+
+        var mode = Mode();
+        Same("D5-D12 round" + (relativeTo.Lib.IsZoned ? " (zoned)" : relativeTo.Lib.IsPlain ? " (plain)" : string.Empty),
+            () => Fields(VmMethods.DurationRound(engine, Array10(d), V(largest), relativeTo.Vm, increment, mode, V(smallest)).Fields),
+            () =>
+            {
+                if (!TemporalOptionRules.TryGetDurationRoundUnits(d, largest, increment, smallest, out var resolvedLargest, out var resolvedSmallest))
+                    return "RangeError";
+
+                return Lib(DurationMath.Round(d, resolvedLargest, increment, resolvedSmallest, mode, relativeTo.Lib, out var x), () => Fields(x));
+            },
+            () => d + " largest " + largest + " smallest " + smallest + " increment " + increment + " " + mode + " " + relativeTo.Text);
+    }
+
+    // A valid duration of days and time units only, which needs no relativeTo.
+    private DurationFields TimeDuration()
+    {
+        var d = Duration();
+        var f = Array10(d);
+        f[0] = f[1] = f[2] = 0;
+        if (r.Next(2) == 0)
+            f[3] = 0;
+        var time = FromArray(f);
+        return TemporalLimits.CheckDuration(time) == TemporalStatus.Completed ? time : default;
+    }
+
+    // D10, D11: total.
+    private void Total()
+    {
+        var relativeTo = RelativeToOption();
+        var timeOnly = !relativeTo.Lib.IsPlain && !relativeTo.Lib.IsZoned && r.Next(4) != 0;
+        var d = timeOnly ? TimeDuration() : Duration();
+        var unit = r.Next(20) == 0 ? TU.Auto : timeOnly ? (TU)(3 + r.Next(7)) : AnyUnit();
+        Same("D10 total" + (relativeTo.Lib.IsZoned ? " (zoned)" : relativeTo.Lib.IsPlain ? " (plain)" : string.Empty),
+            () => Bits(VmMethods.DurationTotal(engine, Array10(d), relativeTo.Vm, V(unit))),
+            () => !TemporalOptionRules.IsValidTotalUnit(unit) ? "RangeError" : Lib(DurationMath.Total(d, unit, relativeTo.Lib, out var x), () => Bits(x)),
+            () => d + " " + unit + " " + relativeTo.Text);
+    }
+
+    // F1: GetDifferenceSettings, through Broiler.VM's after its reads and the library's rule.
+    private (JsDifferenceSettings? Vm, DifferenceSettings? Lib, string VmText, string LibText, string Options) Settings(
+        TemporalType type, bool since, JsTemporal.UnitGroup group, VU[] disallowed, VU fallback, VU largestDefault)
+    {
+        TU largest, smallest;
+        long increment;
+        if (r.Next(4) == 0)
+        {
+            largest = LargestOption();
+            smallest = SmallestOption();
+            if (r.Next(30) == 0)
+                smallest = TU.Auto;
+            increment = Increment();
+        }
+        else
+        {
+            var (first, last) = group switch
+            {
+                JsTemporal.UnitGroup.Date => (TU.Year, disallowed.Length > 0 ? TU.Month : TU.Day),
+                JsTemporal.UnitGroup.Time => (TU.Hour, TU.Nanosecond),
+                _ => (TU.Year, TU.Nanosecond),
+            };
+            (largest, smallest) = Units(first, last);
+            increment = ValidIncrement(smallest == TU.Unset ? (TU)(int)fallback : smallest);
+        }
+
+        var mode = Mode();
+        string vmText;
+        JsDifferenceSettings? vm = null;
+        try
+        {
+            vm = JsTemporal.DifferenceSettings(engine, since, group, disallowed, fallback, largestDefault, V(largest), increment, mode, V(smallest));
+            vmText = vm.Value.ToString().Replace("VmRef.", string.Empty, StringComparison.Ordinal);
+        }
+        catch (JsThrow)
+        {
+            vmText = "RangeError";
+        }
+
+        DifferenceSettings? lib = null;
+        string libText;
+        if (TemporalOptionRules.TryGetDifferenceSettings(type, since ? DifferenceOperation.Since : DifferenceOperation.Until, largest, increment, mode, smallest, out var s))
+        {
+            lib = s;
+            libText = new JsDifferenceSettings(V(s.SmallestUnit), V(s.LargestUnit), s.RoundingMode, s.RoundingIncrement).ToString().Replace("VmRef.", string.Empty, StringComparison.Ordinal);
+        }
+        else
+        {
+            libText = "RangeError";
+        }
+
+        var options = type + " " + (since ? "since" : "until") + " largest " + largest + " smallest " + smallest + " increment " + increment + " " + mode;
+        tally.Record("F1 GetDifferenceSettings", vmText == libText, vmText == "RangeError", () => options + "\n     vm:  " + vmText + "\n     lib: " + libText);
+        return (vm, lib, vmText, libText, options);
+    }
+
+    private static DifferenceOperation Op(bool since) => since ? DifferenceOperation.Since : DifferenceOperation.Until;
+
+    // F2, F3, F4: PlainDate.
+    private void DifferencePlainDate()
+    {
+        var since = r.Next(2) == 0;
+        var settings = Settings(TemporalType.PlainDate, since, JsTemporal.UnitGroup.Date, [], VU.Day, VU.Day);
+        if (settings.Vm is not { } vm || settings.Lib is not { } lib)
+            return;
+
+        var one = Date();
+        var two = NearDate(one);
+        var calendar = CalendarId();
+        Same("F2-F4 PlainDate until/since", () => Fields(VmMethods.DifferenceTemporalPlainDate(engine, V(one), calendar, V(two), since, vm)),
+            () => Lib(TemporalDifferences.DifferenceTemporalPlainDate(Op(since), calendars, Lib(calendar), one, two, lib, out var x), () => Fields(x)),
+            () => one + " " + two + " " + calendar + " " + settings.Options);
+    }
+
+    // F4, F5: PlainDateTime.
+    private void DifferencePlainDateTime()
+    {
+        var since = r.Next(2) == 0;
+        var settings = Settings(TemporalType.PlainDateTime, since, JsTemporal.UnitGroup.DateTime, [], VU.Nanosecond, VU.Day);
+        if (settings.Vm is not { } vm || settings.Lib is not { } lib)
+            return;
+
+        var one = new IsoDateTime(Date(), Time());
+        var two = new IsoDateTime(r.Next(4) == 0 ? one.Date : NearDate(one.Date), Time());
+        if (TemporalLimits.CheckIsoDateTime(one) != TemporalStatus.Completed || TemporalLimits.CheckIsoDateTime(two) != TemporalStatus.Completed)
+            return;
+
+        var calendar = CalendarId();
+        Same("F4-F5 PlainDateTime until/since", () => Fields(VmMethods.DifferenceTemporalPlainDateTime(engine, V(one), calendar, V(two), since, vm)),
+            () => Lib(TemporalDifferences.DifferenceTemporalPlainDateTime(Op(since), calendars, Lib(calendar), one, two, lib, out var x), () => Fields(x)),
+            () => one + " " + two + " " + calendar + " " + settings.Options);
+    }
+
+    // F6: PlainTime.
+    private void DifferencePlainTime()
+    {
+        var since = r.Next(2) == 0;
+        var settings = Settings(TemporalType.PlainTime, since, JsTemporal.UnitGroup.Time, [], VU.Nanosecond, VU.Hour);
+        if (settings.Vm is not { } vm || settings.Lib is not { } lib)
+            return;
+
+        var one = Time();
+        var two = Time();
+        Same("F6 PlainTime until/since", () => Fields(VmMethods.DifferenceTemporalPlainTime(engine, V(one), V(two), since, vm)),
+            () => Lib(TemporalDifferences.DifferenceTemporalPlainTime(Op(since), one, two, lib, out var x), () => Fields(x)),
+            () => one + " " + two + " " + settings.Options);
+    }
+
+    // F6: Instant.
+    private void DifferenceInstant()
+    {
+        var since = r.Next(2) == 0;
+        var settings = Settings(TemporalType.Instant, since, JsTemporal.UnitGroup.Time, [], VU.Nanosecond, VU.Second);
+        if (settings.Vm is not { } vm || settings.Lib is not { } lib)
+            return;
+
+        var one = r.Next(10) == 0 ? (r.Next(2) == 0 ? ZonedTime.MinEpochNanoseconds : ZonedTime.MaxEpochNanoseconds) : Instant(new IsoDateTime(Date(), Time()));
+        var two = r.Next(10) == 0 ? (r.Next(2) == 0 ? ZonedTime.MinEpochNanoseconds : ZonedTime.MaxEpochNanoseconds) : one + Long(-100_000_000_000_000_000, 100_000_000_000_000_000);
+        if (TemporalLimits.CheckEpochNanoseconds(one) != TemporalStatus.Completed || TemporalLimits.CheckEpochNanoseconds(two) != TemporalStatus.Completed)
+            return;
+
+        Same("F6 Instant until/since", () => Fields(VmMethods.DifferenceTemporalInstant(engine, one, two, since, vm)),
+            () => Lib(TemporalDifferences.DifferenceTemporalInstant(Op(since), one, two, lib, out var x), () => Fields(x)),
+            () => one + " " + two + " " + settings.Options);
+    }
+
+    // F7: ZonedDateTime, over zones with transitions.
+    private void DifferenceZoned()
+    {
+        var since = r.Next(2) == 0;
+        var settings = Settings(TemporalType.ZonedDateTime, since, JsTemporal.UnitGroup.DateTime, [], VU.Nanosecond, VU.Hour);
+        if (settings.Vm is not { } vm || settings.Lib is not { } lib)
+            return;
+
+        var zone = Pick(ZoneIds);
+        var oneDate = Date();
+        var one = ZonedInstant(zone, new IsoDateTime(oneDate, Time()));
+        var two = ZonedInstant(zone, new IsoDateTime(r.Next(4) == 0 ? oneDate : NearDate(oneDate), Time()));
+        if (one is null || two is null)
+            return;
+
+        var calendar = CalendarId();
+        Same("F7 ZonedDateTime until/since", () => Fields(VmMethods.DifferenceTemporalZonedDateTime(engine, one.Value, two.Value, zone, calendar, since, vm)),
+            () => Lib(TemporalDifferences.DifferenceTemporalZonedDateTime(Op(since), one.Value, two.Value, zones[zone], calendars, Lib(calendar), lib, out var x), () => Fields(x)),
+            () => one + " " + two + " " + zone + " " + calendar + " " + settings.Options);
+    }
+
+    // F8: PlainYearMonth.
+    private void DifferenceYearMonth()
+    {
+        var since = r.Next(2) == 0;
+        var settings = Settings(TemporalType.PlainYearMonth, since, JsTemporal.UnitGroup.Date, [VU.Week, VU.Day], VU.Month, VU.Year);
+        if (settings.Vm is not { } vm || settings.Lib is not { } lib)
+            return;
+
+        var one = Date();
+        var two = NearDate(one);
+        if (TemporalLimits.CheckIsoYearMonth(one) != TemporalStatus.Completed || TemporalLimits.CheckIsoYearMonth(two) != TemporalStatus.Completed)
+            return;
+
+        var calendar = CalendarId();
+        Same("F8 PlainYearMonth until/since", () => Fields(VmMethods.DifferenceTemporalPlainYearMonth(engine, V(one), calendar, V(two), since, vm)),
+            () => Lib(TemporalDifferences.DifferenceTemporalPlainYearMonth(Op(since), calendars, Lib(calendar), one, two, lib, out var x), () => Fields(x)),
+            () => one + " " + two + " " + calendar + " " + settings.Options);
+    }
+
+    // D5's rules of round for the four points: units and increments.
+    private void RoundOptions()
+    {
+        var types = new[] { (TemporalType.PlainTime, "PlainTime"), (TemporalType.PlainDateTime, "PlainDateTime"), (TemporalType.Instant, "Instant"), (TemporalType.ZonedDateTime, "ZonedDateTime") };
+        var (type, name) = Pick(types);
+        var smallest = r.Next(15) == 0 ? TU.Auto : AnyUnit();
+        var increment = Increment();
+        Same("D5 round options of the points", () => { VmMethods.RoundOptions(engine, name, V(smallest), increment); return "valid"; },
+            () => TemporalOptionRules.IsValidRoundOptions(type, smallest, increment) ? "valid" : "RangeError",
+            () => name + " " + smallest + " " + increment);
+    }
+}

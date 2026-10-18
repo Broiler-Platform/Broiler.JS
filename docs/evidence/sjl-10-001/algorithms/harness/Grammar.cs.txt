@@ -1,0 +1,358 @@
+// The grammar half of the differential check (rows G1 to G24): Broiler.VM's JsTemporalParser (copied in Vm/) against
+// TemporalGrammar, part A's scratch harness of 2026-10-18 carried over: every string parsed under eight goal lists and
+// read by the small entry points. The population is the grammar vectors' strings, strings generated around the
+// grammar's productions, and mutations of both.
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
+using Broiler.ECMAScript.Temporal;
+using Broiler.ECMAScript.Time;
+
+internal static class Grammar
+{
+    private static VmRef.JsEngine Engine = null!;
+    private static Tally tally = null!;
+
+    private static readonly TemporalGoal[][] GoalLists =
+    [
+        [TemporalGoal.DateTime], [TemporalGoal.ZonedDateTime], [TemporalGoal.Instant], [TemporalGoal.Time],
+        [TemporalGoal.YearMonth], [TemporalGoal.MonthDay], [TemporalGoal.ZonedDateTime, TemporalGoal.DateTime],
+        [TemporalGoal.ZonedDateTime, TemporalGoal.DateTime, TemporalGoal.Instant, TemporalGoal.Time, TemporalGoal.MonthDay, TemporalGoal.YearMonth],
+    ];
+
+    internal static void Run(VmRef.JsEngine engine, Tally counts, string vectors, ulong seed, int count)
+    {
+        Engine = engine;
+        tally = counts;
+        var corpus = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var line in File.ReadLines(vectors))
+        {
+            if (!line.StartsWith("in: ", StringComparison.Ordinal))
+                continue;
+            foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(line, "str:(\"(?:[^\"\\\\]|\\\\.)*\")"))
+                corpus.Add(JsonSerializer.Deserialize<string>(m.Groups[1].Value)!);
+        }
+
+        var random = new Rng(seed);
+        var probes = corpus.ToArray();
+        for (var i = 0; i < count; i++)
+            corpus.Add(Generate(random));
+        for (var i = 0; i < count; i++)
+            corpus.Add(Mutate(random, probes[random.Next(probes.Length)]));
+        for (var i = 0; i < count / 4; i++)
+            corpus.Add(GenerateDuration(random));
+        for (var i = 0; i < count; i++)
+        {
+            var valid = GenerateValid(random);
+            corpus.Add(valid);
+            corpus.Add(Mutate(random, valid));
+        }
+
+        var all = corpus.ToArray();
+        foreach (var s in all)
+            corpus.Add(Mutate(random, s));
+
+        Console.WriteLine("grammar: " + corpus.Count + " strings");
+        foreach (var text in corpus)
+        {
+            foreach (var goals in GoalLists)
+                CompareParse(text, goals);
+
+            CompareSmall(text);
+        }
+    }
+
+    private static void Differ(string what, string text, string vm, string mine) =>
+        tally.Record("G " + what, false, false, () => JsonSerializer.Serialize(text) + "\n     vm:  " + vm + "\n     lib: " + mine);
+
+    private static bool CompareParse(string text, TemporalGoal[] goals)
+    {
+        string vm;
+        try
+        {
+            var vmGoals = goals.Select(g => (VmRef.TemporalGoal)(int)g).ToArray();
+            var r = VmRef.JsTemporalParser.Parse(Engine, text, vmGoals);
+            var time = r.Time is { } t ? $"{t.Hour}:{t.Minute}:{t.Second}.{t.Millisecond}.{t.Microsecond}.{t.Nanosecond}" : "sod";
+            vm = $"ok y={r.Year?.ToString() ?? "-"} m={r.Month} d={r.Day} hd={r.HasDay} t={time} z={r.Z} off={r.Offset ?? "-"} tz={r.TimeZone ?? "-"} cal={r.Calendar ?? "-"}";
+            if (r.Offset is not null)
+                vm += " ons=" + VmRef.JsTemporalParser.OffsetNanoseconds(r.Offset);
+        }
+        catch (VmRef.JsThrow e)
+        {
+            vm = "err " + (e.Message.Contains("conflicts", StringComparison.Ordinal) ? "CriticalCalendarConflict"
+                : e.Message.Contains("is not recognized", StringComparison.Ordinal) ? "UnknownCriticalAnnotation"
+                : e.Message.Contains("year-month without", StringComparison.Ordinal) ? "YearMonthOutsideIsoCalendar"
+                : e.Message.Contains("month-day without", StringComparison.Ordinal) ? "MonthDayOutsideIsoCalendar"
+                : e.Message.Contains("cannot parse", StringComparison.Ordinal) ? "Malformed" : "?" + e.Message);
+        }
+        catch (Exception e)
+        {
+            vm = "crash " + e.GetType().Name;
+        }
+
+        string mine;
+        try
+        {
+            if (TemporalGrammar.TryParse(text, goals, out var r, out var error))
+            {
+                var time = r.Time is { } t ? $"{t.Hour}:{t.Minute}:{t.Second}.{t.Millisecond}.{t.Microsecond}.{t.Nanosecond}" : "sod";
+                mine = $"ok y={r.Year?.ToString() ?? "-"} m={r.Month} d={r.Day} hd={r.HasDay} t={time} z={r.Z} off={r.Offset ?? "-"} tz={r.TimeZone ?? "-"} cal={r.Calendar ?? "-"}";
+                if (r.Offset is not null)
+                    mine += " ons=" + r.OffsetNanoseconds;
+
+                // The annotations: every key-value one, in order; the calendar the first u-ca's.
+                var first = r.Annotations.FirstOrDefault(a => a.Key == "u-ca");
+                if ((first.Key is null ? null : first.Value) != r.Calendar)
+                    mine += " ANNOTATIONS-DISAGREE";
+                if (r.Offset is not null && r.OffsetHasSeconds != (r.Offset.TakeWhile(c => c is not ('.' or ',')).Count(char.IsAsciiDigit) > 4))
+                    mine += " HASSECONDS-DISAGREE";
+                if (!goals.Contains(r.Goal))
+                    mine += " GOAL";
+            }
+            else
+            {
+                mine = "err " + error;
+            }
+        }
+        catch (Exception e)
+        {
+            mine = "crash " + e.GetType().Name + " " + e.Message;
+        }
+
+        if (vm != mine)
+            Differ("TryParse (eight goal lists)", text, vm, mine);
+        else
+            tally.Record("G TryParse (eight goal lists)", true, vm.StartsWith("err", StringComparison.Ordinal), () => string.Empty);
+
+        return vm.StartsWith("ok", StringComparison.Ordinal);
+    }
+
+    private static void CompareSmall(string text)
+    {
+        Same("IsTimeZoneIdentifier", text, () => VmRef.JsTemporalParser.IsTimeZoneIdentifier(text).ToString(), () => TemporalGrammar.IsTimeZoneIdentifier(text).ToString());
+        Same("IsUtcOffset(true)", text, () => VmRef.JsTemporalParser.IsUtcOffset(text, true).ToString(), () => TemporalGrammar.IsUtcOffset(text, true).ToString());
+        Same("IsUtcOffset(false)", text, () => VmRef.JsTemporalParser.IsUtcOffset(text, false).ToString(), () => TemporalGrammar.IsUtcOffset(text, false).ToString());
+        Same("IsAnnotationValue", text, () => VmRef.JsTemporalParser.IsAnnotationValue(text).ToString(), () => TemporalGrammar.IsAnnotationValue(text).ToString());
+        Same("OffsetString", text,
+            () => VmRef.JsTemporalParser.IsUtcOffset(text, true) ? VmRef.JsTemporalParser.OffsetNanoseconds(text).ToString() : "refused",
+            () => TemporalGrammar.TryParseOffsetString(text, out var ns) ? ns.ToString() : "refused");
+        Same("Duration", text,
+            () => VmRef.JsTemporalParser.Duration(text) is { } f ? string.Join(",", f.Select(d => BitConverter.DoubleToInt64Bits(d))) : "refused",
+            () => TemporalGrammar.TryParseDuration(text, out var d, out _)
+                ? string.Join(",", new[] { d.Years, d.Months, d.Weeks, d.Days, d.Hours, d.Minutes, d.Seconds, d.Milliseconds, d.Microseconds, d.Nanoseconds }.Select(x => BitConverter.DoubleToInt64Bits(x)))
+                : "refused");
+        Same("CalendarString", text, () => VmCalendarString(text), () => TemporalGrammar.TryParseCalendarString(text, out var c, out _) ? c! : "refused");
+        Same("TimeZoneString", text, () => VmTimeZoneString(text), () => TemporalGrammar.TryParseTimeZoneString(text, out var z, out _) ? (z.Name ?? "offset " + z.OffsetMinutes) : "refused");
+        Same("TimeZoneIdentifier", text,
+            () => VmRef.JsTemporalParser.IsTimeZoneIdentifier(text) ? VmZone(text) : "refused",
+            () => TemporalGrammar.TryParseTimeZoneIdentifier(text, out var z) ? (z.Name ?? "offset " + z.OffsetMinutes) : "refused");
+    }
+
+    // Broiler.VM's ParseCalendarString (JsTemporal.Calendar.cs:269-293).
+    private static string VmCalendarString(string text)
+    {
+        try
+        {
+            var parsed = VmRef.JsTemporalParser.Parse(Engine, text, VmRef.TemporalGoal.ZonedDateTime, VmRef.TemporalGoal.DateTime, VmRef.TemporalGoal.Instant,
+                VmRef.TemporalGoal.Time, VmRef.TemporalGoal.MonthDay, VmRef.TemporalGoal.YearMonth);
+            return parsed.Calendar ?? "iso8601";
+        }
+        catch (VmRef.JsThrow)
+        {
+            return VmRef.JsTemporalParser.IsAnnotationValue(text) ? text : "refused";
+        }
+    }
+
+    // Broiler.VM's ToTimeZoneIdentifier's string branch (JsTemporal.Zones.cs:65-117), without the named lookup.
+    private static string VmTimeZoneString(string text)
+    {
+        if (VmRef.JsTemporalParser.IsTimeZoneIdentifier(text))
+            return VmZone(text);
+
+        try
+        {
+            var parsed = VmRef.JsTemporalParser.Parse(Engine, text, VmRef.TemporalGoal.ZonedDateTime, VmRef.TemporalGoal.DateTime, VmRef.TemporalGoal.Instant,
+                VmRef.TemporalGoal.Time, VmRef.TemporalGoal.MonthDay, VmRef.TemporalGoal.YearMonth);
+            if (parsed.TimeZone is { } annotation)
+                return VmZone(annotation);
+            if (parsed.Z)
+                return "UTC";
+            if (parsed.Offset is { } offset)
+                return VmRef.JsTemporalParser.IsUtcOffset(offset, false) ? "offset " + (VmRef.JsTemporalParser.OffsetNanoseconds(offset) / 60_000_000_000L) : "refused";
+            return "refused";
+        }
+        catch (VmRef.JsThrow)
+        {
+            return "refused";
+        }
+    }
+
+    private static string VmZone(string identifier) =>
+        OffsetTimeZones.TryParseOffsetIdentifier(identifier, out var minutes) ? "offset " + minutes : identifier;
+
+    private static void Same(string what, string text, Func<string> vm, Func<string> mine)
+    {
+        string a, b;
+        try { a = vm(); } catch (Exception e) { a = "crash " + e.GetType().Name; }
+        try { b = mine(); } catch (Exception e) { b = "crash " + e.GetType().Name + " " + e.Message; }
+        if (a != b)
+            Differ(what, text, a, b);
+        else
+            tally.Record("G " + what, true, false, () => string.Empty);
+    }
+
+    // ---- generation ------------------------------------------------------------------------------------------
+
+    private static readonly string[] Years = ["2020", "0000", "9999", "1972", "1900", "2000", "2021", "+002020", "-002020", "-000000", "+000000", "+275760", "-271821", "+999999", "-999999", "020", "02020", "+0020", "２０２０", "−002020", "-000001", "+010000"];
+    private static readonly string[] Months = ["01", "02", "04", "12", "13", "00", "1", "09"];
+    private static readonly string[] Days = ["01", "15", "28", "29", "30", "31", "32", "00", "1"];
+    private static readonly string[] Seps = ["-", "-", "", "", "--"];
+    private static readonly string[] Designators = ["T", "T", "t", " ", "", "TT"];
+    private static readonly string[] Hours = ["00", "12", "23", "24", "1", "20", "05"];
+    private static readonly string[] MinSec = ["00", "30", "59", "60", "61", "45", "5"];
+    private static readonly string[] TimeSeps = [":", ":", "", ""];
+    private static readonly string[] Fractions = ["", "", ".5", ",5", ".123456789", ".1234567890", ".", ".000000001", ",12", "."];
+    private static readonly string[] Offsets = ["", "", "Z", "z", "+01:00", "-05:30", "+0100", "+01", "-00", "-00:00", "+00:00", "+01:00:00", "+01:00:00.5", "+0100:00", "+01:0000", "+24:00", "+23:60", "+23:59:60", "+1", "+001", "−01:00", "+01:00Z", "+01:00:00,123456789", "-00:44:30", "+01:00:00.1234567890", "+235959", "-0044", "+05:30:00.000000001"];
+    private static readonly string[] Annotations = ["[u-ca=iso8601]", "[!u-ca=iso8601]", "[u-ca=gregory]", "[!u-ca=gregory]", "[u-ca=japanese]", "[foo=bar]", "[!foo=bar]", "[U-CA=iso8601]", "[u-ca=ISO8601]", "[u-ca=iso_8601]", "[u-ca=]", "[=iso8601]", "[]", "[!]", "[u-ca=iso8601", "u-ca=iso8601]", "]", "[[u-ca=iso8601]", "[UTC]", "[!UTC]", "[Europe/Berlin]", "[Mars/Olympus]", "[Mars Olympus]", "[+01:00]", "[+01:00:00]", "[-07:00:01]", "[+0100]", "[+01]", "[+24:00]", "[a=b]", "[_x=y]", "[x-y=z]", "[1a=b]", "[-a=b]", "[a=b-c]", "[a=b--c]", "[a=-b]", "[a=b-]", "[a=b_c]", "[aBc=d]", "[a=b=c]", "[.]", "[..]", "[a/./b]", "[Etc/GMT+5]", "[EST5EDT]", "[a..b]", "[/a]", "[a/]", "[a//b]", "[9a]", "[a-b+c_d.e]", "[ UTC]", "[UTC ]", "[u-ca=١]", "[u-ca=hebrew]", "[!u-ca=hebrew]", "[u-ca=chinese]"];
+
+    private static string Pick(Rng random, string[] options) => options[random.Next(options.Length)];
+
+    private static string Generate(Rng random)
+    {
+        var text = new StringBuilder();
+        var shape = random.Next(6);
+        if (shape <= 2)
+        {
+            var sep = Pick(random, Seps);
+            text.Append(Pick(random, Years)).Append(sep).Append(Pick(random, Months));
+            if (shape != 2)
+                text.Append(random.Next(4) == 0 ? Pick(random, Seps) : sep).Append(Pick(random, Days));
+        }
+        else if (shape == 3)
+        {
+            text.Append(random.Next(2) == 0 ? "--" : random.Next(3) == 0 ? "-" : string.Empty).Append(Pick(random, Months)).Append(random.Next(2) == 0 ? "-" : string.Empty).Append(Pick(random, Days));
+        }
+
+        if (shape != 3 && random.Next(3) != 0 || shape >= 4)
+        {
+            text.Append(shape >= 4 && random.Next(2) == 0 ? string.Empty : Pick(random, Designators));
+            var sep = Pick(random, TimeSeps);
+            text.Append(Pick(random, Hours));
+            if (random.Next(5) != 0)
+            {
+                text.Append(sep).Append(Pick(random, MinSec));
+                if (random.Next(3) != 0)
+                {
+                    text.Append(random.Next(5) == 0 ? Pick(random, TimeSeps) : sep).Append(Pick(random, MinSec)).Append(Pick(random, Fractions));
+                }
+            }
+            else if (random.Next(3) == 0)
+            {
+                text.Append(Pick(random, Fractions));
+            }
+
+            text.Append(Pick(random, Offsets));
+        }
+
+        var annotations = random.Next(4);
+        for (var i = 0; i < annotations; i++)
+            text.Append(Pick(random, Annotations));
+        return text.ToString();
+    }
+
+    private static readonly string[] VYears = ["2020", "1972", "+002020", "-002020", "+275760", "-271821", "0000", "2021", "1900"];
+    private static readonly string[] VMonths = ["01", "02", "09", "12"];
+    private static readonly string[] VDays = ["01", "28", "29", "13"];
+    private static readonly string[] VOffsets = ["", "Z", "+01:00", "-05:30", "+0100", "+01", "-00:44:30", "+01:00:00.5", "-0544", "+235959.123"];
+    private static readonly string[] VAnnotations = ["[u-ca=iso8601]", "[u-ca=gregory]", "[!u-ca=hebrew]", "[UTC]", "[Europe/Berlin]", "[+01:00]", "[foo=bar]", "[!UTC]", "[a-b=c-d]"];
+
+    private static string GenerateValid(Rng random)
+    {
+        var text = new StringBuilder();
+        var shape = random.Next(5);
+        var extended = random.Next(2) == 0;
+        if (shape <= 2)
+        {
+            text.Append(Pick(random, VYears)).Append(extended ? "-" : "").Append(Pick(random, VMonths));
+            if (shape != 2)
+                text.Append(extended ? "-" : "").Append(Pick(random, VDays));
+        }
+        else if (shape == 3)
+        {
+            text.Append(random.Next(2) == 0 ? "--" : "").Append(Pick(random, VMonths)).Append(extended ? "-" : "").Append(Pick(random, VDays));
+        }
+
+        if (shape <= 1 && random.Next(2) == 0 || shape == 4)
+        {
+            if (shape != 4 || random.Next(2) == 0)
+                text.Append(random.Next(3) == 0 ? " " : "T");
+            var te = random.Next(2) == 0;
+            text.Append(Pick(random, ["00", "12", "23"]));
+            if (random.Next(4) != 0)
+            {
+                text.Append(te ? ":" : "").Append(Pick(random, ["00", "30", "59"]));
+                if (random.Next(2) == 0)
+                    text.Append(te ? ":" : "").Append(Pick(random, ["00", "45", "60"])).Append(Pick(random, ["", ".5", ",123", ".123456789"]));
+            }
+
+            text.Append(Pick(random, VOffsets));
+        }
+
+        var n = random.Next(3);
+        for (var i = 0; i < n; i++)
+            text.Append(Pick(random, VAnnotations));
+        return text.ToString();
+    }
+
+    private static readonly string[] DurationParts = ["1", "0", "12", "4294967295", "4294967296", "9007199254740991", "00000000000000000000001", "1.5", "1,5", "0.000000001", "1.1234567890", "2.", "١"];
+
+    private static string GenerateDuration(Rng random)
+    {
+        var text = new StringBuilder();
+        text.Append(random.Next(4) switch { 0 => "-", 1 => "+", 2 => "−", _ => string.Empty });
+        text.Append(random.Next(8) == 0 ? "p" : "P");
+        var date = random.Next(4);
+        string[] dateDesignators = ["Y", "M", "W", "D", "y", "m", "w", "d", "H"];
+        for (var i = 0; i < date; i++)
+            text.Append(Pick(random, DurationParts)).Append(Pick(random, dateDesignators));
+        if (random.Next(3) != 0)
+        {
+            text.Append(random.Next(5) == 0 ? "t" : "T");
+            var time = random.Next(4);
+            string[] timeDesignators = ["H", "M", "S", "h", "m", "s", "D"];
+            for (var i = 0; i < time; i++)
+                text.Append(Pick(random, DurationParts)).Append(Pick(random, timeDesignators));
+        }
+
+        return text.ToString();
+    }
+
+    private const string Alphabet = "0123456789-:+.,TtZz[]=!/_ u-caPpYMWDHSiso8601UTC−٠０";
+
+    private static string Mutate(Rng random, string text)
+    {
+        var chars = new StringBuilder(text);
+        var edits = 1 + random.Next(3);
+        for (var i = 0; i < edits; i++)
+        {
+            var at = chars.Length == 0 ? 0 : random.Next(chars.Length + 1);
+            switch (random.Next(3))
+            {
+                case 0 when chars.Length > 0 && at < chars.Length:
+                    chars.Remove(at, 1);
+                    break;
+                case 1 when chars.Length > 0 && at < chars.Length:
+                    chars[at] = Alphabet[random.Next(Alphabet.Length)];
+                    break;
+                default:
+                    chars.Insert(at, Alphabet[random.Next(Alphabet.Length)]);
+                    break;
+            }
+        }
+
+        return chars.ToString();
+    }
+}

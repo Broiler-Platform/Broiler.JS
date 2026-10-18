@@ -1,0 +1,15 @@
+Duration({minutes: 30}).add({minutes: 90}) => Temporal.Duration PT120M
+Duration({hours: 1}).add({minutes: 90}) => Temporal.Duration PT2H30M
+Duration({days: 1}).add({hours: 24}) => Temporal.Duration P2D
+Duration({days: 1}).add({hours: 25}) => Temporal.Duration P2DT1H
+Duration({seconds: 59}).add({milliseconds: 1001}) => Temporal.Duration PT60.001S
+Duration({microseconds: 1}).add({nanoseconds: 2000}) => Temporal.Duration PT0.000003S
+Duration({hours: 1}).subtract({hours: 2}) => Temporal.Duration -PT1H
+Duration({days: 1, hours: -0}).subtract({days: 1}) => Temporal.Duration PT0S
+Duration({seconds: 2**53 - 1}).add({nanoseconds: 999999999}) => Temporal.Duration PT9007199254740991.999999999S
+Duration({nanoseconds: 2**53 - 1}).add({nanoseconds: 2}) => 9007199254740992
+Duration({nanoseconds: 2**53 - 1}).add({nanoseconds: 4}) => 9007199254740996
+Duration({milliseconds: 2**53 - 1}).add({milliseconds: 2**53 - 1}).milliseconds => 18014398509481982
+Duration({seconds: 2**53 - 1}).add({seconds: 1}) => THROWS RangeError: Temporal: the time duration is too large
+Duration({days: 104249991374}).add({days: 1}) => THROWS RangeError: Temporal: the time duration is too large
+Duration({days: 104249991374}).add({hours: 1}) => Temporal.Duration P104249991374DT1H

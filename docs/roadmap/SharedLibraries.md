@@ -1013,7 +1013,7 @@ This repository's part of it:
   - the Hebrew years before AM 1, and 5806 and 5807;
   - a non-ISO calendar's fields at the ISO limits.
 - **No library answers the area yet**: SJL-8.4's library-level runner, `942f8cd3`, has no counterpart until SJL-10.3
-  adds the Temporal code.
+  adds the Temporal code. *(SJL-10.3 adds it: "The library (SJL-10.3)" below.)*
 - **Revision 25** classifies every difference under a row of the area verdict:
   - this engine's 473, in both zones, all corrections SJL-10.5 answers;
   - Broiler.VM's 6, from a local run, all row R6, which SJL-10.4 answers.
@@ -1021,6 +1021,48 @@ This repository's part of it:
   The vectors falsify no class. They refine row D11: a Coptic `ZonedDateTime` `relativeTo` is rounded in ISO months,
   not refused. They also find a sixth case of row R6, which counts five: `new PlainDateTime` with a year of 2^53 + 2.
   Bundle [`sjl-10-001`](../evidence/sjl-10-001/README.md), section 2, has the runs.
+
+**The library (SJL-10.3), 2026-10-18.** The Temporal core is in `Broiler.ECMAScript.Algorithms`, under
+`Broiler.ECMAScript.Temporal`, written in three parts and joined on one branch. Its adapter guide is
+[`adapter-guide-temporal.md`](../../Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md).
+- **Part A** holds the records and limits, balancing, the grammar and serialization, with their options' rules.
+- **Part B** holds the calendars, with `ICalendarArithmetic`, the calendar provider. Its private limits were unified
+  onto part A's when the parts were joined, with no answer changed.
+- **Part C** holds the durations, rounding and differences:
+  - `DurationMath`, with and without `relativeTo`, and the relative machinery over exact rationals;
+  - `TemporalDifferences`, `until` and `since` of every type;
+  - `ITimeZoneArithmetic`, the zone provider, with `TemporalTimeZone` over SJL-8's algorithms;
+  - `RelativeTo`, and the rules of the rounding and difference options.
+- **Each part is ported from Broiler.VM's code**, and held to it:
+  - Broiler.VM's recorded answers to the correspondence's calendar, duration and difference rows, computed at
+    library level: 4,782 lines, every one Broiler.VM's;
+  - both retained datasets at library level, every line as expected;
+  - a differential check against its code at `14072b0`: 76,814,791 comparisons, no difference but row D12's case
+    below.
+- **The library-level runner answers the Temporal area**, as SJL-8.4's `942f8cd3` answers the time-zone area. Of corpus
+  revision 25's 10,878 Temporal vectors, it answers 10,851, and every one matches. The other 27 are engine-level: a
+  built-in's `length`, a getter's reads, and the calendar an object lends (row C13). The Native AOT probe expects
+  them so, and its report is byte for byte the JIT's.
+- **Row D12 is reached.** The correspondence read the specification's assertion, that a week or day nudge window
+  holds the destination, as code no input reaches. A zone's skipped day reaches it: Pacific/Apia's 2011-12-30
+  leaves a day window back from 2011-12-31 with no length.
+  - Broiler.VM's code ends the invocation with a .NET exception there.
+  - This engine answers `PT0S`, from its own day arithmetic, which never reaches the assertion.
+  - The reference polyfill fails its own assertion.
+  - The correspondence's open point on row D12 let the library assert or answer a status. It answers `OutOfRange`,
+    a `RangeError` in both engines. JSD-0078 records this as the owner's decision D11 of 2026-10-18, taken under
+    the same direction as decisions D1 to D10.
+
+  It is the one place the library does not answer as Broiler.VM's code does. Broiler.VM's answer there is a
+  correction its cut-over (SJL-10.4) makes. This engine's moves from `PT0S` to a `RangeError` at SJL-10.5, a policy
+  change its changelog lists then.
+- **The decisions taken** are in the guide, under each part, within JSD-0078's X3. Part C's: the design's names; the
+  zone provider one zone per instance, where the design passed a zone with each call, as an offset zone has no
+  identifier; `RelativeTo` carrying its providers; a new status, `RelativeToRequired`; the zones' equality left to the
+  adapter; the year-month difference taking the calendars themselves; and row D12's status.
+- **Nothing is cut over yet**, and the shared stream's version is unchanged. Broiler.VM's cut-over, SJL-10.4, sets the
+  next version, as SJL-8.5's `2d37a38a` did, and this engine's, SJL-10.5, follows it. Bundle
+  [`sjl-10-001`](../evidence/sjl-10-001/README.md), section 3, has the evidence.
 
 ## Invariants
 

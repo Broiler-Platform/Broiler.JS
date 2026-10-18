@@ -1,0 +1,138 @@
+SJL-10.3 DIFFERENTIAL CHECK - summary
+=====================================
+
+What was compared
+- Reference: Broiler.VM's own Temporal code at 14072b0, copied into the harness (no Broiler.VM build was run):
+  JsTemporalCore, JsTemporalParser, JsTemporal.Conversions, JsTemporal.Durations, JsTemporal.Options,
+  JsTemporal.Calendar, JsTemporal.CalendarNonIso, JsTemporal.Zones and JsCalendars, each with its namespace
+  changed and the members that read engine values removed, and DifferenceSettings' four option reads made
+  parameters (harness/Vm-copies.txt names every copy by its git blob and lists every edit); and the arithmetic of
+  the realm files' duration and difference methods after their reads (harness/Vm-Methods.cs.txt, each edit marked
+  HARNESS EDIT). Engine types are stand-ins that compute nothing (harness/Vm-Shims.cs.txt); the realm's Intl data
+  is the data home's tables.
+- Candidate: Broiler.ECMAScript.Algorithms in the sjl-10-3 worktree at cc3e3076 (parts A, B and C joined, with
+  row D12's status), reading the same table bytes (Broiler.ECMAScript/data/time/generated/).
+- Harness: harness/Program.cs.txt and the sections in Grammar.cs.txt (the grammar, part A's generator: the
+  probes, their mutations and generated durations), Core.cs.txt (records, limits, balancing, rounding of points,
+  serialization and options, part A's sections) and Durations.cs.txt (part C: durations, rounding with and
+  without relativeTo, totals, differences in every type, over random durations, dates, instants, zones and
+  calendars, and populations from a month's end where the shifted window lives). Run as
+  `Harness <worktree> 20261018 2` (seed, scale). An answer is compared exactly: a Number by its bits, a
+  duration field by field, a string as it is; an error by its class (Broiler.VM's RangeError against the
+  library's status).
+
+Result
+Seed 20261018, scale 2.
+
+Section                                                          Compared  RangeError (both)   Differ
+B CompareISODate                                                  800,000                  0        0
+B CompareTimeRecord                                               800,000                  0        0
+B DifferenceTime                                                  800,000                  0        0
+B1 AddTime                                                        800,000                  0        0
+B1 BalanceTime                                                    800,000                  0        0
+B1 BalanceTime (six fields)                                       800,000                  0        0
+B2 AddDaysToISODate                                               800,000                  0        0
+B2 BalanceISODateTime                                             800,000                  0        0
+B2 GetISOPartsFromEpoch                                           800,000                  0        0
+B2 GetUTCEpochNanoseconds                                         800,000                  0        0
+B3 CalendarDateAdd (iso8601)                                      740,732            450,295        0
+B4 RegulateISODate                                                800,000            398,679        0
+B4 RegulateTime                                                   800,000            228,074        0
+B9 RoundISODateTime                                               800,000                  0        0
+B9 RoundTemporalInstant                                           800,000                  0        0
+B9 RoundTime                                                      800,000                  0        0
+D1 CreateNegatedTemporalDuration                                  194,168                  0        0
+D1 DurationSign                                                   194,168                  0        0
+D1 IsValidDuration                                                200,000                  0        0
+D10 TotalTimeDuration                                             194,168                  0        0
+D10 total                                                          50,212             10,873        0
+D10 total (plain)                                                 100,430             32,864        0
+D10 total (zoned)                                                  49,358             16,154        0
+D2 DefaultTemporalLargestUnit                                     194,168                  0        0
+D2 TemporalDurationFromInternal                                   194,168                  0        0
+D2 ToInternalDurationRecord                                       194,168                  0        0
+D2 ToInternalDurationRecordWith24HourDays                         194,168                  0        0
+D3 AddDurations                                                   200,000             40,114        0
+D4 compare                                                        200,000             76,602        0
+D5 RoundTimeDuration                                              194,168                394        0
+D5 round options of the points                                    200,000            117,699        0
+D5-D12 round                                                       49,703             17,208        0
+D5-D12 round (plain)                                              100,261             39,009        0
+D5-D12 round (zoned)                                               50,036             19,815        0
+D6-D8 round relative to a month's end (plain)                     133,311              2,897        0
+D6-D8 round relative to a month's end (zoned)                      66,689              1,430        0
+D6-D8 total relative to a month's end (plain)                     133,311                  0        0
+D6-D8 total relative to a month's end (zoned)                      66,689                  0        0
+F1 GetDifferenceSettings                                        1,200,000            190,951        0
+F2-F4 PlainDate until/since                                       164,854              2,490        0
+F3-F5 PlainDateTime until/since from a month's end                200,000                  0        0
+F4-F5 PlainDateTime until/since                                   178,008              1,272        0
+F6 Instant until/since                                            155,339                  0        0
+F6 PlainTime until/since                                          164,437                  0        0
+F7 ZonedDateTime until/since                                      178,283              1,685        0
+F7 ZonedDateTime until/since from a month's end                   200,000                  0        0
+F8 PlainYearMonth until/since                                     159,046              3,947        0
+G CalendarString                                                2,616,164                  0        0
+G Duration                                                      2,616,164                  0        0
+G IsAnnotationValue                                             2,616,164                  0        0
+G IsTimeZoneIdentifier                                          2,616,164                  0        0
+G IsUtcOffset(false)                                            2,616,164                  0        0
+G IsUtcOffset(true)                                             2,616,164                  0        0
+G OffsetString                                                  2,616,164                  0        0
+G TimeZoneIdentifier                                            2,616,164                  0        0
+G TimeZoneString                                                2,616,164                  0        0
+G TryParse (eight goal lists)                                  20,929,312         20,099,768        0
+R1 CheckISODaysRange                                              800,000                  0        0
+R1 ISODateWithinLimits                                            800,000                  0        0
+R2 ISODateTimeWithinLimits                                        800,000                  0        0
+R3 ISOYearMonthWithinLimits                                       800,000                  0        0
+R4 IsValidEpochNanoseconds                                        800,000                  0        0
+R8 IsValidDuration                                                800,000                  0        0
+S1 ISODateTimeToString                                            800,000                  0        0
+S1 PadISOYear                                                     800,000                  0        0
+S1 TemporalDateToString                                           800,000                  0        0
+S1 TemporalMonthDayToString                                       800,000                  0        0
+S1 TemporalYearMonthToString                                      800,000                  0        0
+S1 TimeRecordToString                                             800,000                  0        0
+S4 ToSecondsStringPrecisionRecord                                 800,000                  0        0
+S6 TemporalInstantToString                                        598,718                  0        0
+S7 TemporalZonedDateTimeToString                                  598,718                  0        0
+S8 FormatDateTimeUTCOffsetRounded                                 800,000                  0        0
+S8 FormatUTCOffsetNanoseconds                                     800,000                  0        0
+S9 Duration.prototype.toString (rounded)                          324,262                  0        0
+S9 TemporalDurationToString                                       324,262                  0        0
+
+Total: 76,814,791 comparisons (21,752,220 where Broiler.VM throws a RangeError), 0 differences.
+
+Row D12, as revised (one case, counted apart above and below)
+- Where Broiler.VM's code ends the invocation with a .NET exception and the library answers a RangeError
+  status, the harness counts the case apart rather than as an agreement or a difference, and lists it:
+  Where Broiler.VM ends the invocation with a .NET exception and the library answers a RangeError (row D12, as revised): 1.
+  F7 ZonedDateTime until/since: 1325297700000000000 1325239200000000000 Pacific/Apia iso8601 ZonedDateTime since largest Day smallest Day increment 1 HalfEven
+       vm:  crash ArgumentOutOfRangeException
+       lib: RangeError
+- The case: Pacific/Apia skipped 2011-12-30. ZonedDateTime 2011-12-31T16:15+14:00 since 2011-12-31T00:00+14:00,
+  largestUnit and smallestUnit day: the day window back from the receiver ends on the skipped day, which
+  GetEpochNanosecondsFor (compatible) moves onto the window's start, so the window has no length and cannot
+  hold the destination, which the specification asserts. Broiler.VM's RoundRelativeDuration hands the zero
+  span to ExactRounding.ApplyUnsignedRoundingMode, whose ArgumentOutOfRangeException ("the denominator is not
+  positive") escapes. The reference polyfill at e8cc03fc fails its own assertion ("assertion failure: day was 0
+  days long", a plain Error) for since in each of the six modes tried, for the receiver's until, and for
+  Duration.round and total of -PT16H15M to a day relative to the receiver; the forward until answers P1D. The library answers OutOfRange (commit cc3e3076).
+- So the correspondence's row D12, "code no input reaches", does not hold for the day window: an input reaches
+  it through a zone's skipped day. No other population member reached it.
+
+Negative control
+- With the library's nudge after a shifted window replaced by the polyfill's (the window's end where the
+  window was shifted, which decision D7 overrules), the durations sections at scale 0.3 found 94 differences:
+  rounding relative to a month's end, plain 30 and zoned 19; differences from a month's end, PlainDateTime 21
+  and ZonedDateTime 21; and 1 each in the random round (plain and zoned) and PlainDateTime sections. The
+  library was restored afterwards and rebuilt.
+
+Earlier runs
+- A run at scale 1 before the month's-end populations were added found no difference in 38,883,596
+  comparisons; the random populations alone did not detect the negative control above, so the month's-end
+  populations were added, and with them the control is found.
+- The first run at scale 2 found the row D12 case, then counted as a difference (Broiler.VM's
+  ArgumentOutOfRangeException against the library's InvalidOperationException, the assertion part C first
+  wrote). The library now answers a status there, and the harness counts the case apart.

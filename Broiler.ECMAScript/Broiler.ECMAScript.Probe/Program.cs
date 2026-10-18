@@ -52,6 +52,8 @@ internal static class Program
         // engine's conversions, options, validation, raw-JSON brand or string ceiling; in the Date area, the
         // setters' conversions and their order, and the sequences of local setter calls. Every time-zone vector is
         // the library's, over the data home's generated tables, which the runner reads from disk (milestone SJL-8.4).
+        // Every Temporal vector is the library's through the runner's Temporal adapter, over the same tables, but a
+        // built-in's length, the properties an engine reads, and the calendar an object lends (milestone SJL-10.3).
         var library = new AlgorithmsLibrary();
         var results = LibraryRun.Run(corpus.Records, library);
         foreach (var result in results)
@@ -63,6 +65,7 @@ internal static class Program
                 "text" => !AlgorithmsLibrary.IsEngineLevelText(result.Vector["op"] ?? string.Empty),
                 "date" => !AlgorithmsLibrary.IsEngineLevelDate(result.Vector["op"] ?? string.Empty),
                 "time-zones" => true,
+                "temporal" => !AlgorithmsLibrary.IsEngineLevelTemporal(result.Vector["op"] ?? string.Empty),
                 _ => false,
             };
             if (implemented ? result.Verdict != Verdict.Match : result.Verdict != Verdict.NotImplemented)

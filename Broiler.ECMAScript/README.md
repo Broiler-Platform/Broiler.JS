@@ -13,7 +13,7 @@ The programme that creates them is owned in the Broiler.VM repository, under
 
 | Package | Holds | State |
 |---|---|---|
-| `Broiler.ECMAScript.Algorithms` | The language algorithms: number conversion, numerics, text, Date, the Temporal core, the time-zone algorithms. References the base class library only, and carries no data but the white-space set's generated `Space_Separator` table. | The contract types (`WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit`, `DepthLimit`), **the number-conversion area** of milestone SJL-3 (`Broiler.ECMAScript.Numbers`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-numbers.md)), **the numerics area** of milestone SJL-4 (the same namespace; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-numerics.md)) , **the text area** of milestone SJL-5 (`Broiler.ECMAScript.Text`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-text.md)), **the Date area** of milestone SJL-6 (`Broiler.ECMAScript.Time`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-date.md)) and **the time-zone and calendar area** of milestone SJL-8, the decoder of the data home's tables over the bytes an engine hands in, the zone algorithms and the table-backed calendars' years (the same namespace; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-time-zones.md)). |
+| `Broiler.ECMAScript.Algorithms` | The language algorithms: number conversion, numerics, text, Date, the Temporal core, the time-zone algorithms. References the base class library only, and carries no data but the white-space set's generated `Space_Separator` table. | The contract types (`WorkCharge`, `ResultStatus`, `Failure`, `LengthLimit`, `DepthLimit`), **the number-conversion area** of milestone SJL-3 (`Broiler.ECMAScript.Numbers`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-numbers.md)), **the numerics area** of milestone SJL-4 (the same namespace; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-numerics.md)) , **the text area** of milestone SJL-5 (`Broiler.ECMAScript.Text`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-text.md)), **the Date area** of milestone SJL-6 (`Broiler.ECMAScript.Time`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-date.md)), **the time-zone and calendar area** of milestone SJL-8, the decoder of the data home's tables over the bytes an engine hands in, the zone algorithms and the table-backed calendars' years (the same namespace; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-time-zones.md)) and **the Temporal core** of milestone SJL-10.3: its records and limits, balancing, grammar and serialization (part A), its calendars, the identifiers, the formula calendars and the table calendars over those years, month codes, eras, reference years, and calendar addition and difference (part B), and its durations, rounding and differences, with and without `relativeTo`, over calendar and time-zone providers (part C) (`Broiler.ECMAScript.Temporal`; [adapter guide](Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md)). |
 | `Broiler.ECMAScript.Conformance` | The shared conformance vectors' reader, validator and runners. Test-only. | Not packed at this version; the corpus itself is [`conformance/vectors/`](../conformance/vectors/README.md). |
 | `Broiler.ECMAScript.Generation` | The time data home's generator: the tz, CLDR and calendar pin readers, a tz compiler equivalent to `zic`, the compact time zone and calendar tables, and source writers that wrap them into C#. Test-only, as Broiler.Unicode.Generation is: engines' tests run it, and it carries no table. | **The time data home** of milestone SJL-8.2 (`Broiler.ECMAScript.Generation.Time`), ported from Broiler.VM's architecture tests; its inputs and tables are [`data/time/`](data/time/README.md). Not yet published. |
 
@@ -37,6 +37,9 @@ them.")*
   `calendrical_calculations` 0.2.4 (`TimeDataVersions`), pinned in [`data/time/`](data/time/README.md)
   as copies of Broiler.VM's pins, with the tables `Broiler.ECMAScript.Generation` writes from them. No
   package carries them; rule SL7 regenerates the tables byte for byte. *(Added 2026-10-17, at SJL-8.2.)*
+- **Temporal:** `tc39/proposal-temporal@e8cc03fc`, the revision both engines follow (Broiler.VM's JSD-0078,
+  decision D1); where its text and its polyfill disagree, the text rules (decision D7). *(Added 2026-10-18, at
+  SJL-10.3.)*
 
 ## Conventions
 
@@ -86,9 +89,21 @@ SJL-5. The package table's state for the algorithms library read "..., **the num
 SJL-4 (...) and **the text area** of milestone SJL-5 (...)", and the Broiler.VM row read
 "`Broiler.ECMAScript.Algorithms` `0.1.0-preview.2`".)*
 
+*(Corrected 2026-10-18, at milestone SJL-10.3, part C, for the Temporal durations, rounding and differences. The package
+table's state for the algorithms library read "... and its calendars, the identifiers, ..., and calendar addition and
+difference (part B) (`Broiler.ECMAScript.Temporal`; ...)", with "its records and limits, ... (part A)," before it.)*
+
+*(Corrected 2026-10-18, at milestone SJL-10.3, part B, for the Temporal calendars. The package table's state for the
+algorithms library read "..., **the Date area** of milestone SJL-6 (...) and **the time-zone and calendar area** of
+milestone SJL-8, ... (the same namespace; ...)".)*
+
 *(Corrected 2026-10-17, at milestone SJL-8.3, for the time-zone and calendar area. The package table's state
 for the algorithms library read "..., **the text area** of milestone SJL-5 (...) and **the Date area** of
 milestone SJL-6 (...)".)*
+
+*(Corrected 2026-10-18, at milestone SJL-10.3, for the Temporal core's first part. The package table's state for
+the algorithms library read "..., **the Date area** of milestone SJL-6 (...) and **the time-zone and calendar
+area** of milestone SJL-8, ... (the same namespace; [adapter guide](...))".)*
 
 ## Licence
 

@@ -1,0 +1,11 @@
+2019-05 until 2021-03 largest month => Temporal.Duration P22M
+2019-05 until 2021-03 smallest year halfExpand => Temporal.Duration P2Y
+2021-03 since 2019-05 smallest year halfExpand => Temporal.Duration P2Y
+2019-05 since 2021-03 smallest year floor => Temporal.Duration -P2Y
+2019-05 until 2021-03 smallest month increment 5 halfExpand => Temporal.Duration P1Y10M
+-271821-04 until -271821-05 => THROWS RangeError: Temporal: the date is outside the representable range
+-271821-05 until -271821-04 => THROWS RangeError: Temporal: the date is outside the representable range
+-271821-04 until -271821-04 => Temporal.Duration PT0S
++275760-09 since +275760-08 => Temporal.Duration P1M
++275760-08 until +275760-09 smallest year ceil => THROWS RangeError: Temporal: the date is outside the representable range
+2019-05 until 2021-03 other calendar => THROWS RangeError: Temporal: the calendars iso8601 and gregory differ

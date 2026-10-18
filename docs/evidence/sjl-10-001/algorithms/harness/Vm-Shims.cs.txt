@@ -1,0 +1,57 @@
+// The engine stand-ins the copied Broiler.VM sources need, which compute nothing of the area: an error is an exception
+// carrying the message Broiler.VM gives, the realm's Intl data is the data home's tables, and a Duration object is its
+// fields after CreateTemporalDuration's validity test (JsTemporal.Durations.cs's CreateDuration, its object creation left out).
+using System;
+using System.IO;
+using Broiler.ECMAScript.Time;
+
+namespace VmRef;
+
+internal class JsThrow(string type, string message) : Exception(message)
+{
+    internal string Type { get; } = type;
+}
+
+internal sealed class VmIntl(JsCalendars calendars, ITimeZoneDatabase timeZones)
+{
+    internal JsCalendars Calendars { get; } = calendars;
+    internal ITimeZoneDatabase TimeZones { get; } = timeZones;
+}
+
+internal sealed class JsEngine(VmIntl intl)
+{
+    internal VmIntl? Intl { get; } = intl;
+
+    internal JsThrow Error(string type, string message) => new(type, message);
+}
+
+internal sealed class JsDurationObject(double[] fields)
+{
+    internal double[] Fields { get; } = fields;
+}
+
+internal static partial class JsTemporal
+{
+    // JsTemporal.Durations.cs's CreateDuration (s7.5.19): the validity test and the zeros made positive.
+    internal static JsDurationObject CreateDuration(JsEngine engine, double[] fields)
+    {
+        if (!JsTemporalCore.IsValidDuration(fields))
+        {
+            throw engine.Error("RangeError", "Temporal: the duration is not valid: mixed signs, or too large");
+        }
+
+        for (var i = 0; i < fields.Length; i++)
+        {
+            fields[i] += 0.0;
+        }
+
+        return new JsDurationObject(fields);
+    }
+}
+
+internal sealed class JsZonedDateTimeObject(System.Numerics.BigInteger epochNanoseconds, string timeZone, string calendar)
+{
+    internal System.Numerics.BigInteger EpochNanoseconds { get; } = epochNanoseconds;
+    internal string TimeZone { get; } = timeZone;
+    internal string Calendar { get; } = calendar;
+}

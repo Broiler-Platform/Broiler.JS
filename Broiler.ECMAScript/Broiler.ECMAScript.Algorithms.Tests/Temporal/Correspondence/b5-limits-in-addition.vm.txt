@@ -1,0 +1,17 @@
+PlainDate("+275760-09-13").add({days: 1}) => THROWS RangeError: Temporal: the date is outside the representable range
+PlainDate("-271821-04-19").subtract({days: 1}) => THROWS RangeError: Temporal: the date is outside the representable range
+PlainDate("1970-01-01").add({days: 100000000}) => Temporal.PlainDate +275760-09-13
+PlainDate("1970-01-01").add({days: 100000001}) => THROWS RangeError: Temporal: the date is outside the representable range
+PlainDate("-271821-04-19").add({days: 0}) => Temporal.PlainDate -271821-04-19
+PlainDateTime("+275760-09-13T00:00").add({hours: 23, minutes: 59}) => Temporal.PlainDateTime +275760-09-13T23:59:00
+PlainDateTime("+275760-09-13T00:00").add({days: 1}) => THROWS RangeError: Temporal: the date is outside the representable range
+PlainDateTime("-271821-04-19T00:00:00.000000001").subtract({nanoseconds: 1}) => THROWS RangeError: Temporal: the date-time is outside the representable range
+PlainYearMonth("+275760-09").add({months: 1}) => THROWS RangeError: Temporal: the date is outside the representable range
+PlainYearMonth("-271821-04").add({months: 0}) => THROWS RangeError: Temporal: the date is outside the representable range
+PlainYearMonth("-271821-05").subtract({months: 1}) => THROWS RangeError: Temporal: the date is outside the representable range
+PlainYearMonth("+275760-08").add({months: 1}) => Temporal.PlainYearMonth +275760-09
+Instant("+275760-09-13T00:00Z").add({nanoseconds: 1}) => THROWS RangeError: Temporal: the result is outside the representable range of instants
+ZonedDateTime(max, "UTC").add({nanoseconds: 1}) => THROWS RangeError: Temporal: the result is outside the representable range of instants
+ZonedDateTime(max - 1n, "UTC").add({days: 0, nanoseconds: 1}) => Temporal.ZonedDateTime +275760-09-13T00:00:00+00:00[UTC]
+ZonedDateTime("+275760-09-12T12:00[UTC]").add({days: 1}) => THROWS RangeError: Temporal: the date-time is outside the representable range
+ZonedDateTime("+275760-09-12T00:00[UTC]").add({days: 1}) => Temporal.ZonedDateTime +275760-09-13T00:00:00+00:00[UTC]

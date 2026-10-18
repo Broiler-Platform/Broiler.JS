@@ -1,0 +1,7 @@
+Duration round month/year trunc, relativeTo "2019-03-31" => Temporal.Duration P11M
+Duration round month/year trunc, relativeTo "2019-03-31T00:00[UTC]" => Temporal.Duration P11M
+Duration round month/year trunc, relativeTo ZonedDateTime 2019-03-31[UTC] => Temporal.Duration P11M
+PlainDateTime 2019-03-31T00:00 until 2020-02-29T12:00 month/year trunc => Temporal.Duration P11M
+ZonedDateTime 2019-03-31T00:00[UTC] until 2020-02-29T12:00[UTC] month/year trunc => Temporal.Duration P11M
+Duration total month, relativeTo "2019-03-31" => 11.016129032258064
+2019-03-31 + P1Y => Temporal.PlainDate 2020-03-31

@@ -1,0 +1,118 @@
+// The SJL-10.3 differential check: Broiler.VM's Temporal code at 14072b0, copied into Vm/ (each file's edits recorded
+// in it), against Broiler.ECMAScript.Algorithms, over generated populations:
+//   grammar     - JsTemporalParser against TemporalGrammar (part A's generator: probes, mutations, durations);
+//   core        - JsTemporalCore and the engine-free helpers against TemporalLimits, IsoArithmetic, TemporalFormat and
+//                 TemporalOptionRules (part A's sections);
+//   durations   - JsTemporal.Durations, the rule half of JsTemporal.Options and the realm methods' arithmetic after their
+//                 reads against DurationMath, TemporalDifferences and TemporalOptionRules (part C).
+// Usage: Harness <worktree> [seed] [scale]. It prints each section's counts and exits 1 on any difference.
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using Broiler.ECMAScript.Temporal;
+using Broiler.ECMAScript.Time;
+using VmRef;
+
+internal static class Program
+{
+    internal static int Main(string[] args)
+    {
+        var worktree = args.Length > 0 ? args[0] : "/home/user/js-sjl103";
+        var seed = args.Length > 1 ? ulong.Parse(args[1]) : 20261018UL;
+        var scale = args.Length > 2 ? double.Parse(args[2], System.Globalization.CultureInfo.InvariantCulture) : 1;
+        var sections = args.Length > 3 ? args[3] : "grammar,core,durations";
+        var generated = Path.Combine(worktree, "Broiler.ECMAScript/data/time/generated");
+        var calendarTable = File.ReadAllBytes(Path.Combine(generated, "calendars.bin"));
+        var database = new TimeZoneDatabase(
+            "2026e",
+            File.ReadAllBytes(Path.Combine(generated, "time-zones.bin")),
+            File.ReadAllBytes(Path.Combine(generated, "time-zone-ids.txt")),
+            File.ReadAllBytes(Path.Combine(generated, "time-zone-regions.txt")));
+        var engine = new JsEngine(new VmIntl(new JsCalendars(calendarTable), database));
+        var calendars = new TemporalCalendars(new CalendarTables(calendarTable));
+        var tally = new Tally();
+        var clock = Stopwatch.StartNew();
+
+        if (sections.Contains("grammar", StringComparison.Ordinal))
+            Grammar.Run(engine, tally, Path.Combine(worktree, "conformance/vectors/temporal/grammar.vectors"), seed, (int)(200_000 * scale));
+        if (sections.Contains("core", StringComparison.Ordinal))
+            Core.Run(engine, tally, seed + 1, (int)(400_000 * scale));
+        if (sections.Contains("durations", StringComparison.Ordinal))
+            new Durations(engine, calendars, database, tally, seed + 2).Run((int)(100_000 * scale));
+
+        Console.WriteLine();
+        tally.Print(seed, scale, clock.Elapsed);
+        return tally.Differences == 0 ? 0 : 1;
+    }
+}
+
+/// <summary>The counts of each section: comparisons, differences, and how many of them Broiler.VM answered with a RangeError.</summary>
+internal sealed class Tally
+{
+    private readonly SortedDictionary<string, (long Compared, long Differences, long Errors)> counts = new(StringComparer.Ordinal);
+    private readonly List<string> examples = [];
+
+    internal long Differences { get; private set; }
+
+    private readonly List<string> faults = [];
+
+    /// <summary>A case where Broiler.VM ends the invocation with a .NET exception and the library answers a RangeError.</summary>
+    internal void RecordFault(string section, Func<string> describe) => faults.Add(section + ": " + describe());
+
+    internal void Record(string section, bool same, bool error, Func<string> describe)
+    {
+        var (compared, differences, errors) = counts.TryGetValue(section, out var c) ? c : (0, 0, 0);
+        compared++;
+        if (error)
+            errors++;
+        if (!same)
+        {
+            differences++;
+            Differences++;
+            if (examples.Count < 300)
+                examples.Add(section + ": " + describe());
+        }
+
+        counts[section] = (compared, differences, errors);
+    }
+
+    internal void Print(ulong seed, double scale, TimeSpan elapsed)
+    {
+        long total = 0, errors = 0;
+        Console.WriteLine($"Seed {seed}, scale {scale}.");
+        Console.WriteLine();
+        Console.WriteLine($"{"Section",-58} {"Compared",14} {"RangeError (both)",18} {"Differ",8}");
+        foreach (var (section, (compared, differences, errs)) in counts)
+        {
+            Console.WriteLine($"{section,-58} {compared,14:N0} {errs,18:N0} {differences,8:N0}");
+            total += compared;
+            errors += errs;
+        }
+
+        Console.WriteLine();
+        Console.WriteLine($"Total: {total:N0} comparisons ({errors:N0} where Broiler.VM throws a RangeError), {Differences:N0} differences.");
+        Console.WriteLine($"Run time: {elapsed.TotalSeconds:F0} s");
+        foreach (var example in examples)
+            Console.WriteLine(example);
+
+        Console.WriteLine();
+        Console.WriteLine($"Where Broiler.VM ends the invocation with a .NET exception and the library answers a RangeError (row D12, as revised): {faults.Count:N0}.");
+        foreach (var fault in faults)
+            Console.WriteLine(fault);
+    }
+}
+
+internal sealed class Rng(ulong seed)
+{
+    private ulong state = seed;
+
+    public int Next(int bound)
+    {
+        var z = state += 0x9E3779B97F4A7C15;
+        z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9;
+        z = (z ^ (z >> 27)) * 0x94D049BB133111EB;
+        z ^= z >> 31;
+        return (int)(z % (ulong)bound);
+    }
+}

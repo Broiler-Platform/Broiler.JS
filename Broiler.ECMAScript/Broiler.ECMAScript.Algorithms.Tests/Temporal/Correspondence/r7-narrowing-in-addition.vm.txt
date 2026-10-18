@@ -1,0 +1,20 @@
+PlainDateTime("2020-06-15T12:00").add({years: 4294967295}) => THROWS RangeError: Temporal: the result is outside the representable range
+PlainDateTime("2020-06-15T12:00").subtract({years: 4294967295}) => THROWS RangeError: Temporal: the result is outside the representable range
+PlainDateTime("2020-06-15T12:00").add({years: 4294967295 - 2020 - 1000}) => THROWS RangeError: Temporal: the result is outside the representable range
+PlainDateTime("2020-06-15T12:00").add({months: 4294967295}) => THROWS RangeError: Temporal: the date is outside the representable range
+PlainYearMonth("2020-06").add({years: 4294967295}) => THROWS RangeError: Temporal: the result is outside the representable range
+PlainYearMonth("2020-06").subtract({years: 4294967295}) => THROWS RangeError: Temporal: the result is outside the representable range
+PlainDate("2020-06-15").add({years: 4294967295}) => THROWS RangeError: Temporal: the result is outside the representable range
+ZonedDateTime("2020-06-15T12:00[UTC]").add({years: 4294967295}) => THROWS RangeError: Temporal: the result is outside the representable range
+PlainDate("2020-06-15[u-ca=hebrew]").add({years: 4294967295}) => THROWS RangeError: Temporal: the result is outside the representable range
+PlainDate("2020-06-15[u-ca=coptic]").subtract({years: 4294967295}) => THROWS RangeError: Temporal: the result is outside the representable range
+PlainDate("2020-01-01").add({nanoseconds: 9e24}) => THROWS RangeError: Temporal: the result is outside the representable range
+PlainDate("2020-01-01").add({microseconds: 9e21}) => THROWS RangeError: Temporal: the result is outside the representable range
+PlainDate("2020-01-01").add({milliseconds: 9e18}) => THROWS RangeError: Temporal: the result is outside the representable range
+PlainDateTime("2020-01-01T00:00").add({nanoseconds: 9e24}) => THROWS RangeError: Temporal: the result is outside the representable range
+PlainDateTime("2020-01-01T00:00").add({microseconds: 9e21}) => THROWS RangeError: Temporal: the result is outside the representable range
+ZonedDateTime("2020-01-01T00:00[UTC]").add({nanoseconds: 9e24}) => THROWS RangeError: Temporal: the result is outside the representable range of instants
+Duration({nanoseconds: 9e24}).round({smallestUnit: "second", relativeTo: "2020-01-01"}) => THROWS RangeError: Temporal: the result is outside the representable range
+Duration({nanoseconds: 9e24}).round({largestUnit: "year", relativeTo: "2020-01-01"}) => THROWS RangeError: Temporal: the result is outside the representable range
+Duration({nanoseconds: 9e24}).total({unit: "day", relativeTo: "2020-01-01"}) => THROWS RangeError: Temporal: the result is outside the representable range
+Duration({nanoseconds: 9e24}).total("day") => 104166666666.66667

@@ -1,0 +1,104 @@
+The verbatim copies of the SJL-10.3 differential check, and the edits made to each (the harness's Vm/ directory).
+Each source is Broiler.VM's src/Broiler.VM.Profile.JavaScript/<file> at 14072b02027cde4c0fa83e5a0d2f1ac7e68b1f36 (14072b0); its git blob is given so
+that the copy can be made again: `git show 14072b0:src/Broiler.VM.Profile.JavaScript/<file>`, the namespace changed, and the members
+listed removed with prune.py (their doc comments, annotation lines and bodies). A HARNESS EDIT is quoted whole.
+Shims.cs and Methods.cs are the harness's own and are retained beside this file.
+
+== JsCalendars.cs
+   source: src/Broiler.VM.Profile.JavaScript/JsCalendars.cs at 14072b0, git blob 7429a9b3aba0b9cef25b3d8d64050954e83e3cca
+   edits: the namespace Broiler.VM.Profile.JavaScript became VmRef; nothing else.
+
+== JsTemporal.Calendar.cs
+   source: src/Broiler.VM.Profile.JavaScript/JsTemporal.Calendar.cs at 14072b0, git blob a38b033aa8abd0ab44df2c24722e6751151bd76f
+   edits: the namespace Broiler.VM.Profile.JavaScript became VmRef; members removed:
+     - internal static string? CalendarOf(JsObject? item) => item switch
+     - internal static string ToCalendarIdentifier(JsEngine engine, JsValue value)
+     - private static string ParseCalendarString(JsEngine engine, string text)
+     - internal static string CalendarWithIsoDefault(JsEngine engine, JsObject item)
+     - internal static JsCalendarFields PrepareFields(
+     - private static string MonthCodeOf(JsEngine engine, JsValue value)
+
+== JsTemporal.CalendarNonIso.cs
+   source: src/Broiler.VM.Profile.JavaScript/JsTemporal.CalendarNonIso.cs at 14072b0, git blob e7238086d0c1d49373ec0237e846a8428ddfc828
+   edits: the namespace Broiler.VM.Profile.JavaScript became VmRef; nothing else.
+
+== JsTemporal.Conversions.cs
+   source: src/Broiler.VM.Profile.JavaScript/JsTemporal.Conversions.cs at 14072b0, git blob aab656d587bbd2c5fdf7c7514b29b9a3274cfb20
+   edits: the namespace Broiler.VM.Profile.JavaScript became VmRef; members removed:
+     - private static JsObject PrototypeFor(JsEngine engine, JsValue newTarget, JsObject fallback) =>
+     - internal static JsInstantObject CreateInstant(JsEngine engine, BigInteger epochNs, JsValue newTarget = default) =>
+     - internal static JsPlainDateObject CreatePlainDate(JsEngine engine, JsIsoDate date, string calendar, JsValue newTarget = default)
+     - internal static JsPlainTimeObject CreatePlainTime(JsEngine engine, JsTimeRecord time, JsValue newTarget = default) =>
+     - internal static JsPlainDateTimeObject CreatePlainDateTime(JsEngine engine, JsIsoDateTime dateTime, string calendar, JsValue newTarget = default)
+     - internal static JsZonedDateTimeObject CreateZonedDateTime(JsEngine engine, BigInteger epochNs, string timeZone, string calendar, JsValue newTarget = default) =>
+     - internal static JsPlainYearMonthObject CreateYearMonth(JsEngine engine, JsIsoDate date, string calendar, JsValue newTarget = default)
+     - internal static JsPlainMonthDayObject CreateMonthDay(JsEngine engine, JsIsoDate date, string calendar, JsValue newTarget = default)
+     - internal static BigInteger EpochNsFromMilliseconds(JsEngine engine, double milliseconds) =>
+     - internal static BigInteger ToInstant(JsEngine engine, JsValue item)
+     - private static void ValidateOverflow(JsEngine engine, JsValue options) =>
+     - internal static JsPlainDateObject ToPlainDate(JsEngine engine, JsValue item, JsValue options = default)
+     - internal static double?[] ToTimeRecord(JsEngine engine, JsValue value, bool partial)
+     - internal static JsTimeRecord ToPlainTime(JsEngine engine, JsValue item, JsValue options = default)
+     - internal static JsTimeRecord ToTimeOrMidnight(JsEngine engine, JsValue item) =>
+     - internal static JsPlainDateTimeObject ToPlainDateTime(JsEngine engine, JsValue item, JsValue options = default)
+     - internal static JsZonedDateTimeObject ToZonedDateTime(JsEngine engine, JsValue item, JsValue options = default)
+     - internal static JsPlainYearMonthObject ToYearMonth(JsEngine engine, JsValue item, JsValue options = default)
+     - internal static JsPlainMonthDayObject ToMonthDay(JsEngine engine, JsValue item, JsValue options = default)
+
+== JsTemporal.Durations.cs
+   source: src/Broiler.VM.Profile.JavaScript/JsTemporal.Durations.cs at 14072b0, git blob 2bd87d301596c3737dbd110712916c5a7112c4db
+   edits: the namespace Broiler.VM.Profile.JavaScript became VmRef; members removed:
+     - internal static JsDurationObject CreateDuration(JsEngine engine, double[] fields, JsValue newTarget = default)
+     - internal static double[] ToPartialDuration(JsEngine engine, JsValue value)
+     - internal static double[] ToDuration(JsEngine engine, JsValue item)
+     - internal static JsRelativeTo RelativeToOption(JsEngine engine, JsObject options)
+
+== JsTemporal.Options.cs
+   source: src/Broiler.VM.Profile.JavaScript/JsTemporal.Options.cs at 14072b0, git blob 42488b2d082cf07446fdc5a0ccc32249c2c5bad9
+   edits: the namespace Broiler.VM.Profile.JavaScript became VmRef; members removed:
+     - internal static JsObject OptionsObject(JsEngine engine, JsValue options)
+     - internal static string? StringOption(JsEngine engine, JsObject options, string property, string[] values, string? fallback, bool required = false)
+     - internal static bool Reject(JsEngine engine, JsObject options) =>
+     - internal static string Disambiguation(JsEngine engine, JsObject options) =>
+     - internal static string OffsetOption(JsEngine engine, JsObject options, string fallback) =>
+     - internal static string ShowCalendar(JsEngine engine, JsObject options) =>
+     - internal static string ShowTimeZone(JsEngine engine, JsObject options) =>
+     - internal static string ShowOffset(JsEngine engine, JsObject options) =>
+     - internal static RoundingMode RoundingModeOption(JsEngine engine, JsObject options, RoundingMode fallback)
+     - internal static long RoundingIncrement(JsEngine engine, JsObject options)
+     - internal static int FractionalSecondDigits(JsEngine engine, JsObject options)
+     - internal static TemporalUnit UnitOption(JsEngine engine, JsObject options, string key, bool required)
+     - internal static double IntegerWithTruncation(JsEngine engine, JsValue argument)
+     - internal static double PositiveIntegerWithTruncation(JsEngine engine, JsValue argument)
+     - internal static double IntegerIfIntegral(JsEngine engine, JsValue argument)
+     - internal static string OffsetString(JsEngine engine, JsValue argument)
+   DifferenceSettings' parameters and reads edited (the diff, Broiler.VM's lines marked <, the copy's >):
+     315d141
+     <         JsObject options,
+     319c145,150
+     <         TemporalUnit smallestLargestDefault)
+     ---
+     >         TemporalUnit smallestLargestDefault,
+     >         // HARNESS EDIT (SJL-10.3): the four reads are the caller's; the values they read are these parameters.
+     >         TemporalUnit largest,
+     >         long increment,
+     >         RoundingMode mode,
+     >         TemporalUnit smallest)
+     321,324d151
+     <         var largest = UnitOption(engine, options, "largestUnit", required: false);
+     <         var increment = RoundingIncrement(engine, options);
+     <         var mode = RoundingModeOption(engine, options, RoundingMode.Trunc);
+     <         var smallest = UnitOption(engine, options, "smallestUnit", required: false);
+
+== JsTemporal.Zones.cs
+   source: src/Broiler.VM.Profile.JavaScript/JsTemporal.Zones.cs at 14072b0, git blob a7c4c34602bf488444a8aaafecaff2246be1395d
+   edits: the namespace Broiler.VM.Profile.JavaScript became VmRef; members removed:
+     - internal static string ToTimeZoneIdentifier(JsEngine engine, JsValue value)
+
+== JsTemporalCore.cs
+   source: src/Broiler.VM.Profile.JavaScript/JsTemporalCore.cs at 14072b0, git blob 96e8b59f08984d821f618f78227c53773f201590
+   edits: the namespace Broiler.VM.Profile.JavaScript became VmRef; nothing else.
+
+== JsTemporalParser.cs
+   source: src/Broiler.VM.Profile.JavaScript/JsTemporalParser.cs at 14072b0, git blob 2243905308c759811cd1828bf916209903775ec1
+   edits: the namespace Broiler.VM.Profile.JavaScript became VmRef; nothing else.

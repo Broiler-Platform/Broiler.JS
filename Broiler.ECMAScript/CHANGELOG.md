@@ -12,6 +12,134 @@ follow semantic versioning under [convention 16](docs/conventions.md):
 Each entry has the headings **Added**, **Changed**, **Observable changes** and **Data**, and says
 "none" under a heading with nothing to report. A release without an entry here is not published.
 
+## Unreleased
+
+Not yet packed under a version of its own: the stream's next version is set when this entry is published.
+
+### Added
+
+- `Broiler.ECMAScript.Algorithms`: the Temporal core's first part - its records and limits, balancing,
+  grammar and serialization - in a new namespace, `Broiler.ECMAScript.Temporal` (milestone SJL-10.3, part A;
+  Broiler.VM's JSD-0078, following `tc39/proposal-temporal@e8cc03fc` by its decision D1; adapter guide
+  [`docs/adapter-guide-temporal.md`](Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md)). The
+  records are SJL-8's `IsoDate`, `IsoTime` and `IsoDateTime`, extended and not redeclared (decision D8):
+  - **records and limits**: `TemporalUnit`, `TemporalStatus`, `TemporalOverflow`, `DateDuration`,
+    `InternalDuration` and `DurationFields`; `TemporalLimits`, whose `CheckIsoDate`, `CheckIsoDateTime`,
+    `CheckIsoYearMonth`, `CheckIsoDaysRange`, `CheckEpochNanoseconds` and `CheckDuration` take any record and
+    answer a status, none throwing (decision D9), with `IsValidTime`, `MaxTimeDuration` and the limits'
+    constants;
+  - **balancing, regulation and addition**: `IsoArithmetic` - `CompareIsoDate`, `CompareTime`,
+    `CompareIsoDateTime`, `TimeToNanoseconds`, `BalanceIsoDate`, `AddDaysToIsoDate`, `BalanceTime` (its
+    overflow days answered beside the `IsoTime`), `AddTime`, `DifferenceTime`, `RegulateIsoDate` and
+    `RegulateTime` under both overflows, `AddIsoDate` (the ISO 8601 `CalendarDateAdd`),
+    `GetUtcEpochNanoseconds`, `GetIsoPartsFromEpoch`, `BalanceIsoDateTime`, `RoundTime`, `RoundIsoDateTime`,
+    `RoundTemporalInstant` and `AddInstant`;
+  - **the grammar**: `TemporalGrammar` - `TryParse` for every goal (`TemporalGoal`) into an `IsoParseResult`
+    with its `TemporalAnnotation`s, `TryParseInstant`, `TryParseTimeZoneString`, `TryParseTimeZoneIdentifier`
+    (with `TimeZoneIdentifierRecord`), `TryParseCalendarString`, `TryParseOffsetString`, `TryParseDuration`,
+    `IsTimeZoneIdentifier`, `IsUtcOffset` and `IsAnnotationValue`, each refusal a `TemporalParseError`, each
+    member whose work grows with its input charging the caller's meter the text's length;
+  - **serialization**: `TemporalFormat` - every string form (`DateToString`, `TimeToString`,
+    `DateTimeToString`, `YearMonthToString`, `MonthDayToString`, `InstantToString`, `ZonedDateTimeToString`
+    and `DurationToString`), `PadIsoYear`, `FormatFractionalSeconds`, `FormatTimeString`,
+    `FormatCalendarAnnotation`, `FormatUtcOffsetNanoseconds` and `FormatDateTimeUtcOffsetRounded`, and the
+    steps after the option reads of `PlainTime`, `PlainDateTime` and `Duration`'s `toString`;
+  - **the options' rules of these sub-areas**: `TemporalOptionRules` - `overflow`, and the `toString` options
+    `calendarName`, `timeZoneName`, `offset`, `fractionalSecondDigits`, `smallestUnit` with
+    `ToSecondsStringPrecisionRecord` and its `SecondsStringPrecision`, `roundingMode`'s default, and
+    `IsValidRoundingIncrement`; `ShowCalendarName`, `ShowTimeZoneName` and `ShowOffset`.
+
+  Each is ported from Broiler.VM's `JsTemporalCore`, `JsTemporalParser`, `JsTemporal.Conversions`, and the
+  engine-free arithmetic of `JsTemporal.Calendar`, `JsTemporal.Durations` and `JsTemporal.Options`, with its
+  behaviour unchanged, which a differential check against that code showed, but for row R6: a limit check
+  answers `OutOfRange` for a year past 2^53, where Broiler.VM's constructors ended the invocation (decision
+  D9). The grammar is that engine's linear parser, with no regular expression, and refuses every string of
+  the correspondence's rows G1 to G24 that it refuses.
+
+- `Broiler.ECMAScript.Algorithms`: the Temporal calendars, namespace `Broiler.ECMAScript.Temporal` (milestone
+  SJL-10.3, part B; JSD-0078's calendar sub-area; adapter guide
+  [`docs/adapter-guide-temporal.md`](Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md), section
+  "Calendars"):
+  - `CalendarId`, the sixteen calendar types of the Intl era and month code proposal's Table 1, and
+    `TemporalCalendars.Canonicalize` and `Identifier`: CanonicalizeCalendar over the types and the two aliases
+    `ethiopic-amete-alem` and `islamicc`, ASCII case folded, with `gregorian`, `minguo` and `islamic` refused
+    (JSD-0078, decision D5);
+  - `MonthCode` and `MonthCode.Parse`, ParseMonthCode with ASCII digits only; `CalendarFields`, the calendar half of a
+    Calendar Fields Record, and `TemporalCalendars.MergeFields`, CalendarMergeFields with the keys each field
+    entails, Japanese eras included; `TemporalCalendars.SupportsEra`;
+  - `TemporalCalendars` over SJL-8's `ICalendarTables`: the formula calendars (the Gregorian family with Table 2's
+    eras and the Japanese eras from Meiji 6, Coptic, Ethiopic and Amete Alem, Indian, the civil and astronomical
+    tabular Hijri calendars and Hebrew) and the table calendars over `CalendarYears` (Chinese, Korean, Umm al-Qura and
+    Persian); `IsoToDate`, the Calendar Date Record `CalendarDate`; `DateToFields`; `DateFromFields`,
+    `YearMonthFromFields` and `MonthDayFromFields` under `CalendarOverflow`, with Table 3's month codes, the
+    constraint of a missing leap month and the eras of Table 2 matched exactly (decision D4); and the month-day
+    reference dates, Table 6 for `chinese` and `dangi` and the 1900 to 2035 rule elsewhere, an ISO month-day's year
+    past 10^9 reduced modulo 400;
+  - `ICalendarArithmetic`, the calendar provider of the durations sub-area, with `DateAdd` and `DateUntil` over
+    `CalendarDuration` and `CalendarUnit`, which `TemporalCalendars` implements for every calendar, ISO 8601
+    included; and the calendar steps of `toPlainYearMonth`, `toPlainMonthDay` and both `toPlainDate`s
+    (`DateToYearMonth`, `DateToMonthDay`, `MonthDayToDate`, `YearMonthToDate`);
+  - `CalendarStatus`, each failure a status, with `TemporalCalendars.IsTypeError` naming the four that are the
+    specification's `TypeError`.
+
+  Each is ported from Broiler.VM's `JsCalendars`, the core of `JsTemporal.Calendar` and `JsTemporal.CalendarNonIso`,
+  with its behaviour unchanged: the library's tests replay Broiler.VM's recorded answers to correspondence
+  `sjl-10-001`'s calendar rows C1 to C18 (4,416 lines) and 3,894 lines of the retained calendar dataset at library
+  level, and every one answers as Broiler.VM does. Nothing in the area charges (JSD-0078's X3), and the library
+  embeds no table.
+
+- `Broiler.ECMAScript.Algorithms`: the Temporal durations, rounding and differences, namespace
+  `Broiler.ECMAScript.Temporal` (milestone SJL-10.3, part C; JSD-0078's durations and rounding sub-area and its
+  differences sub-area; adapter guide
+  [`docs/adapter-guide-temporal.md`](Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md), section
+  "Durations, rounding and differences"):
+  - `DurationMath`: `Sign` (DurationSign, DateDurationSign, InternalDurationSign), `DefaultLargestUnit`,
+    `ToInternal`, `ToInternalWith24HourDays` and `FromInternal`, `Negate` and `Abs`, `CreateDateDurationRecord`,
+    `AddTimeDuration`, `Add24HourDaysToTimeDuration`, `RoundTimeDurationToIncrement`, `RoundTimeDuration` and
+    `TotalTimeDuration`; `AddDurations` (calendar units refused whatever the second argument), `Compare`, `Round` and
+    `Total` after the methods' reads, `DateDurationDays` and `AddZonedDateTime`; and the relative machinery,
+    `RoundRelativeDuration` with its nudge window, nudges and bubbling and `TotalRelativeDuration`, over exact
+    rationals and `ExactRounding`, the pinned text's nudge after a shifted window (decision D7, row D8);
+  - `TemporalDifferences`: `DifferenceTemporalPlainDate`, `…PlainDateTime`, `…PlainTime`, `…Instant`,
+    `…ZonedDateTime` and `…PlainYearMonth`, with `DifferenceInstant`, `DifferenceIsoDateTime`,
+    `DifferenceZonedDateTime` and their `WithRounding` and `WithTotal` forms, the calendars' through part B's
+    `ICalendarArithmetic`;
+  - `ITimeZoneArithmetic`, the time-zone provider of the zoned arithmetic, one zone per instance, and
+    `TemporalTimeZone`, its implementation over SJL-8's `ZonedTime` and `ITimeZoneRules`; `RelativeTo`, the resolved
+    `relativeTo` with its providers; `DifferenceSettings`, `DifferenceOperation`, `TemporalType` and
+    `TemporalUnitGroup`;
+  - `TemporalOptionRules`' rules of the rounding and difference options after an engine's reads:
+    `TryParseRoundingIncrement`, `IsCalendarUnit`, `IsDateUnit`, `LargerOfTwoUnits`, `MaximumRoundingIncrement`,
+    `IsValidUnit`, `TryGetDifferenceSettings` (GetDifferenceSettings for each type), `TryGetDurationRoundUnits`,
+    `IsValidTotalUnit` and `IsValidRoundOptions`, with the defaults' constants;
+  - `TemporalStatus.RelativeToRequired`.
+
+  Each is ported from Broiler.VM's `JsTemporal.Durations`, the duration members of `JsTemporalCore`, the rule half of
+  `JsTemporal.Options` and the arithmetic of its realm files' duration and difference methods, with its behaviour
+  unchanged, which the library's tests and a differential check against that code show, but at row D12: where a
+  zone's skipped day leaves a day nudge window with no length (Pacific/Apia's 2011-12-30), which the specification
+  asserts cannot happen, the library answers `OutOfRange`, where Broiler.VM's code ends the invocation with a .NET
+  exception and the reference polyfill fails its own assertion. The tests replay Broiler.VM's recorded answers to
+  the correspondence's duration and difference rows, run both retained datasets whole at library level, and the
+  library-level runner answers 10,851 of corpus revision 25's 10,878 Temporal vectors, every one as expected. Nothing
+  in the area charges.
+
+### Changed
+
+None.
+
+### Observable changes
+
+None: the area is new, and no engine reads it yet. Broiler.VM cuts over at milestone SJL-10.4, correcting row
+R6 there, and Broiler.JS at SJL-10.5, whose own records list what each observes; Broiler.JS's corrections on
+the calendar rows are JSD-0078's C2, C5, C6, C9, C12, C13, C15, C16 and C17, and on the duration and difference rows
+D3, D4, D6, D7, D8, D11, F4 and F7. Row D12's case, a day the zone skips, becomes a `RangeError` in both engines at
+their cut-overs.
+
+### Data
+
+None. The table calendars read SJL-8's calendar table, which each engine hands in; its versions are unchanged.
+
 ## 0.1.0-preview.5 — published to nuget.org
 
 *(Heading corrected 2026-10-17, when the entry was published; read "Unreleased". This entry was published
