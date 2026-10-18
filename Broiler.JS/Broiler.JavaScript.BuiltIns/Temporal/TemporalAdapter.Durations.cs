@@ -93,6 +93,43 @@ internal static partial class TemporalAdapter
         return settings;
     }
 
+    /// <summary>
+    /// The options of a point's <c>round</c> (<c>PlainTime</c>, <c>PlainDateTime</c>, <c>Instant</c>, <c>ZonedDateTime</c>):
+    /// undefined is the <c>TypeError</c>; a String names <c>smallestUnit</c>; an object is read in code unit order -
+    /// <c>roundingIncrement</c>, <c>roundingMode</c> (default <c>halfExpand</c>), then the required <c>smallestUnit</c> -
+    /// each converted as it is read; anything else is the <c>TypeError</c>. Then the type's rule, the library's
+    /// <see cref="TemporalOptionRules.IsValidRoundOptions"/>, whose refusal is the <c>RangeError</c>.
+    /// </summary>
+    internal static (long Increment, RoundingMode Mode, TemporalUnit Unit) RoundOptions(TemporalType type, JSValue roundTo, string typeName)
+    {
+        long increment;
+        RoundingMode mode;
+        TemporalUnit unit;
+        if (roundTo == null || roundTo.IsUndefined)
+            throw JSEngine.NewTypeError($"{typeName}.prototype.round requires an options argument");
+
+        if (roundTo.IsString)
+        {
+            increment = TemporalOptionRules.DefaultRoundingIncrement;
+            mode = TemporalOptionRules.DefaultRoundRoundingMode;
+            unit = TemporalRoundingOptions.ParseUnit(roundTo.StringValue, "smallestUnit", typeName);
+        }
+        else if (roundTo is JSObject options)
+        {
+            increment = TemporalRoundingOptions.GetRoundingIncrement(options);
+            mode = TemporalRoundingOptions.GetRoundingMode(options, TemporalOptionRules.DefaultRoundRoundingMode);
+            unit = TemporalRoundingOptions.GetUnit(options, "smallestUnit", typeName, required: true);
+        }
+        else
+        {
+            throw JSEngine.NewTypeError($"{typeName}.prototype.round requires an options object or string");
+        }
+
+        if (!TemporalOptionRules.IsValidRoundOptions(type, unit, increment))
+            throw JSEngine.NewRangeError($"{typeName}.prototype.round: the smallestUnit and roundingIncrement options are not valid together");
+        return (increment, mode, unit);
+    }
+
     // ── relativeTo ───────────────────────────────────────────────────────────────
 
     /// <summary>
@@ -224,6 +261,20 @@ internal static partial class TemporalAdapter
 
         if (!IsValidEpochNanoseconds(epochNanoseconds))
             throw JSEngine.NewRangeError("Temporal.Duration: relativeTo is outside the representable range");
+        return epochNanoseconds;
+    }
+
+    // ── zoned days ───────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// GetStartOfDay (s11.1.14) through the zone's provider: the first instant of a day, the instant limits tested. The
+    /// zoned rounding to a day and <c>hoursInDay</c> measure a day's real length with it.
+    /// </summary>
+    internal static BigInteger StartOfDay(string timeZoneId, IsoDate date, string typeName)
+    {
+        if (TemporalTimeZones.Arithmetic(timeZoneId).GetStartOfDay(date, out var epochNanoseconds) != TimeStatus.Completed
+            || !IsValidEpochNanoseconds(epochNanoseconds))
+            throw JSEngine.NewRangeError($"{typeName}: start of day is outside the representable range");
         return epochNanoseconds;
     }
 }

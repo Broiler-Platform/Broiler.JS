@@ -12,10 +12,9 @@ using Broiler.JavaScript.Engine.Core;
 namespace Broiler.JavaScript.BuiltIns.Temporal;
 
 // Temporal.PlainTime (Temporal proposal §4): a wall-clock time of day with no date, calendar,
-// or time zone — six integer fields (hour…nanosecond). Everything here is calendar- and
-// zone-independent, so the full surface (construction, from/compare, with/add/subtract/
-// until/since/round/equals, ISO string round-tripping) is implementable. Arithmetic wraps
-// modulo 24 h (the day overflow is discarded, since a PlainTime has no date).
+// or time zone — six integer fields (hour…nanosecond). Its regulation, addition, rounding and
+// differences are the shared library's, through TemporalAdapter. Arithmetic wraps modulo 24 h (the
+// day overflow is discarded, since a PlainTime has no date).
 //
 // Registered under the Temporal namespace (not as a global) via Register = false.
 [JSClassGenerator("PlainTime", Register = false)]
@@ -171,14 +170,6 @@ public partial class JSTemporalPlainTime : JSObject
     [JSExport("since", Length = 1)]
     public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), DifferenceOperation.Since);
 
-    // MaximumTemporalDurationRoundingIncrement for a time unit.
-    private static long MaximumRoundingIncrement(string unit) => unit switch
-    {
-        "hour" => 24,
-        "minute" or "second" => 60,
-        _ => 1000, // millisecond / microsecond / nanosecond
-    };
-
     // DifferenceTemporalPlainTime (s4.5.17): ToTemporalTime, then GetDifferenceSettings' reads and rules (time units
     // only), then the shared library's difference: the time difference rounded to the smallest unit and increment and
     // balanced up to the largest unit, negated for since.
@@ -194,10 +185,12 @@ public partial class JSTemporalPlainTime : JSObject
     [JSExport("round", Length = 1)]
     public JSValue Round(in Arguments a)
     {
-        var (unit, increment, roundingMode) = ReadRoundTo(a.GetAt(0));
+        // The reads - roundingIncrement, roundingMode, the required smallestUnit - then the library's rule: a time unit
+        // whose increment divides the next unit and does not reach it (round to hours allows 1, 2, 3, 4, 6, 8 and 12).
+        var (increment, roundingMode, unit) = TemporalAdapter.RoundOptions(TemporalType.PlainTime, a.GetAt(0), "Temporal.PlainTime");
 
         // RoundTime, the shared library's; a time rounded up to midnight wraps (a PlainTime has no date).
-        return new JSTemporalPlainTime(IsoArithmetic.RoundTime(IsoTime, increment, TemporalAdapter.Unit(unit), roundingMode, out _), PlainTimePrototype);
+        return new JSTemporalPlainTime(IsoArithmetic.RoundTime(IsoTime, increment, unit, roundingMode, out _), PlainTimePrototype);
     }
 
     [JSExport("equals", Length = 1)]
@@ -354,40 +347,4 @@ public partial class JSTemporalPlainTime : JSObject
     // time zone) and an offset out of range; a leap second (:60) reads as :59, and an offset's value is unused.
     private static JSValue ParseTemporalTimeString(string text)
         => new JSTemporalPlainTime(TemporalAdapter.ParseIsoString(text, [TemporalGoal.Time], "Temporal.PlainTime").Time!.Value, PlainTimePrototype);
-
-    private static (string unit, int increment, RoundingMode roundingMode) ReadRoundTo(JSValue roundTo)
-    {
-        string smallestUnit;
-        var increment = 1;
-        var roundingMode = RoundingMode.HalfExpand;
-
-        if (roundTo.IsString)
-        {
-            smallestUnit = roundTo.ToString();
-        }
-        else if (roundTo is JSObject obj)
-        {
-            // GetRoundingIncrementOption and GetRoundingModeOption are read before the (required)
-            // smallestUnit, matching the spec's option-reading order.
-            increment = TemporalRoundingOptions.GetRoundingIncrement(obj);
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(obj, RoundingMode.HalfExpand);
-
-            var unitValue = obj[KeyStrings.GetOrCreate("smallestUnit")];
-            if (unitValue.IsUndefined)
-                throw JSEngine.NewRangeError("Temporal.PlainTime.round requires a smallestUnit");
-            smallestUnit = unitValue.StringValue;
-        }
-        else
-        {
-            throw JSEngine.NewTypeError("Temporal.PlainTime.round requires an options object or string");
-        }
-
-        smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(smallestUnit, allowAuto: false);
-
-        // ValidateTemporalRoundingIncrement: the increment must divide the next unit evenly and not
-        // reach it (e.g. round to "hour" allows 1,2,3,4,6,8,12 but not 24).
-        TemporalRoundingOptions.ValidateRoundingIncrement(increment, MaximumRoundingIncrement(smallestUnit), inclusive: false);
-
-        return (smallestUnit, increment, roundingMode);
-    }
 }

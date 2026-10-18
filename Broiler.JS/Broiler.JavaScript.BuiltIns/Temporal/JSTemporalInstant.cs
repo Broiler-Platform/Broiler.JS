@@ -14,7 +14,8 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 
 // Temporal.Instant (Temporal proposal §8): an exact point on the UTC timeline, stored as a
 // signed integer count of nanoseconds since the epoch. Valid instants lie within ±10^8 days
-// of the epoch (±8.64e21 ns). Registered under the Temporal namespace (Register = false).
+// of the epoch (±8.64e21 ns). Its addition, rounding and differences are the shared library's,
+// through TemporalAdapter. Registered under the Temporal namespace (Register = false).
 [JSClassGenerator("Instant", Register = false)]
 public partial class JSTemporalInstant : JSObject
 {
@@ -143,47 +144,12 @@ public partial class JSTemporalInstant : JSObject
     [JSExport("round", Length = 1)]
     public JSValue Round(in Arguments a)
     {
-        var roundTo = a.GetAt(0) ?? JSUndefined.Value;
-        if (roundTo.IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.Instant.prototype.round requires an argument");
-
-        string smallestUnit;
-        var increment = 1;
-        var roundingMode = RoundingMode.HalfExpand;
-
-        if (roundTo.IsString)
-        {
-            smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(roundTo.StringValue, allowAuto: false);
-        }
-        else if (roundTo is JSObject options)
-        {
-            // The increment and mode are read before smallestUnit, matching the spec ordering
-            // (so a bad roundingIncrement / roundingMode is reported before "missing smallestUnit").
-            increment = TemporalRoundingOptions.GetRoundingIncrement(options);
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, RoundingMode.HalfExpand);
-
-            var su = options[KeyStrings.GetOrCreate("smallestUnit")];
-            if (su.IsUndefined)
-                throw JSEngine.NewRangeError("Temporal.Instant.round requires a smallestUnit");
-            smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
-        }
-        else throw JSEngine.NewTypeError("Temporal.Instant.round requires an options object or string");
-
-        // Instant rounding is relative to a whole day, so the increment may go up to the number of
-        // smallestUnits in a day (inclusive) and must divide it evenly.
-        var dayUnits = smallestUnit switch
-        {
-            "hour" => 24L,
-            "minute" => 1440L,
-            "second" => 86400L,
-            "millisecond" => 86_400_000L,
-            "microsecond" => 86_400_000_000L,
-            _ => 86_400_000_000_000L, // nanosecond
-        };
-        TemporalRoundingOptions.ValidateRoundingIncrement(increment, dayUnits, inclusive: true);
+        // The reads - roundingIncrement, roundingMode, the required smallestUnit - then the library's rule: a time unit
+        // whose increment divides a day, a day's worth of the unit included.
+        var (increment, roundingMode, smallestUnit) = TemporalAdapter.RoundOptions(TemporalType.Instant, a.GetAt(0), "Temporal.Instant");
 
         // RoundTemporalInstant, the shared library's.
-        var rounded = IsoArithmetic.RoundTemporalInstant(epochNanoseconds, increment, TemporalAdapter.Unit(smallestUnit), roundingMode);
+        var rounded = IsoArithmetic.RoundTemporalInstant(epochNanoseconds, increment, smallestUnit, roundingMode);
         if (!IsValid(rounded))
             throw JSEngine.NewRangeError("Temporal.Instant.round: result is out of range");
 

@@ -14,8 +14,9 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 // Temporal.PlainDateTime (Temporal proposal §5): a calendar date plus a wall-clock time, with
 // no time zone. It is the combination of PlainDate (year/month/day) and PlainTime (hour …
 // nanosecond); its calendar fields, field resolution and date addition are the shared library's
-// calendars, through TemporalAdapter. Registered under the Temporal namespace (not as a global)
-// via Register = false.
+// calendars, and its rounding and differences, rounded in any calendar, the shared library's
+// IsoArithmetic and TemporalDifferences, through TemporalAdapter. Registered under the Temporal
+// namespace (not as a global) via Register = false.
 [JSClassGenerator("PlainDateTime", Register = false)]
 public partial class JSTemporalPlainDateTime : JSObject
 {
@@ -289,11 +290,14 @@ public partial class JSTemporalPlainDateTime : JSObject
     [JSExport("round", Length = 1)]
     public JSValue Round(in Arguments a)
     {
-        var (unit, increment, roundingMode) = ReadRoundTo(a.GetAt(0));
+        // The reads - roundingIncrement, roundingMode, the required smallestUnit - then the library's rule (a time unit
+        // whose increment divides the next unit, or a day of increment 1), all before any rounding (test262
+        // round/options-read-before-algorithmic-validation).
+        var (increment, roundingMode, unit) = TemporalAdapter.RoundOptions(TemporalType.PlainDateTime, a.GetAt(0), "Temporal.PlainDateTime");
 
         // RoundISODateTime, the shared library's: the time rounded and its days carried into the date. The
         // result can pass the representable range (test262 round/limits), which is the RangeError.
-        var rounded = IsoArithmetic.RoundIsoDateTime(IsoDateTime, increment, TemporalAdapter.Unit(unit), roundingMode);
+        var rounded = IsoArithmetic.RoundIsoDateTime(IsoDateTime, increment, unit, roundingMode);
         if (!TemporalAdapter.IsoDateTimeWithinLimits(rounded))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: date-time is out of range");
         return new JSTemporalPlainDateTime(rounded, calendarId, PlainDateTimePrototype);
@@ -515,48 +519,5 @@ public partial class JSTemporalPlainDateTime : JSObject
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDateTime from \"{text}\"");
 
         return new JSTemporalPlainDateTime(dateTime, calendarId, PlainDateTimePrototype);
-    }
-
-    private static (string unit, int increment, RoundingMode roundingMode) ReadRoundTo(JSValue roundTo)
-    {
-        string smallestUnit;
-        var increment = 1;
-        var roundingMode = RoundingMode.HalfExpand;
-
-        if (roundTo.IsString) smallestUnit = roundTo.ToString();
-        else if (roundTo is JSObject obj)
-        {
-            // GetRoundingIncrementOption, then GetRoundingModeOption, then the REQUIRED
-            // smallestUnit are read (and coerced) in that order, and all BEFORE the increment
-            // is validated against the unit, so a bad increment is reported only after every
-            // option getter has fired (test262 round/options-read-before-algorithmic-validation).
-            increment = TemporalRoundingOptions.GetRoundingIncrement(obj);
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(obj, RoundingMode.HalfExpand);
-
-            var unitValue = obj[KeyStrings.GetOrCreate("smallestUnit")];
-            if (unitValue.IsUndefined)
-                throw JSEngine.NewRangeError("Temporal.PlainDateTime.round requires a smallestUnit");
-            smallestUnit = unitValue.StringValue;
-        }
-        else throw JSEngine.NewTypeError("Temporal.PlainDateTime.round requires an options object or string");
-
-        smallestUnit = smallestUnit switch
-        {
-            "day" or "days" => "day",
-            "hour" or "hours" => "hour",
-            "minute" or "minutes" => "minute",
-            "second" or "seconds" => "second",
-            "millisecond" or "milliseconds" => "millisecond",
-            "microsecond" or "microseconds" => "microsecond",
-            "nanosecond" or "nanoseconds" => "nanosecond",
-            _ => throw JSEngine.NewRangeError($"Temporal.PlainDateTime.round: invalid smallestUnit \"{smallestUnit}\""),
-        };
-
-        // ValidateTemporalRoundingIncrement: the increment must divide the unit's maximum (a "day"
-        // allows only 1); e.g. roundingIncrement 25 with smallestUnit "hour" is a RangeError.
-        var maximum = smallestUnit == "day" ? 1 : TemporalRoundingOptions.MaximumRoundingIncrement(smallestUnit);
-        TemporalRoundingOptions.ValidateRoundingIncrement(increment, maximum, inclusive: smallestUnit == "day");
-
-        return (smallestUnit, increment, roundingMode);
     }
 }

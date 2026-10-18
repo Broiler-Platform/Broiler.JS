@@ -39,22 +39,6 @@ internal static partial class TemporalAdapter
     internal static TemporalOverflow Overflow(string overflow) =>
         overflow == "reject" ? TemporalOverflow.Reject : TemporalOverflow.Constrain;
 
-    /// <summary>A unit as this engine names it, singular (<c>"day"</c> … <c>"nanosecond"</c>), as the library's.</summary>
-    internal static TemporalUnit Unit(string unit) => unit switch
-    {
-        "year" => TemporalUnit.Year,
-        "month" => TemporalUnit.Month,
-        "week" => TemporalUnit.Week,
-        "day" => TemporalUnit.Day,
-        "hour" => TemporalUnit.Hour,
-        "minute" => TemporalUnit.Minute,
-        "second" => TemporalUnit.Second,
-        "millisecond" => TemporalUnit.Millisecond,
-        "microsecond" => TemporalUnit.Microsecond,
-        "nanosecond" => TemporalUnit.Nanosecond,
-        _ => throw new ArgumentOutOfRangeException(nameof(unit), unit, "Not a Temporal unit."),
-    };
-
     // ── limits ───────────────────────────────────────────────────────────────────
 
     /// <summary>ISODateWithinLimits of a year, month and day that may not be a date: false for a non-date too.</summary>
