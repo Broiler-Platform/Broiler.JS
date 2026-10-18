@@ -1,0 +1,31 @@
+harness: scripts/conformance/run_reference_datasets.py, format 2, for docs/evidence/sjl-10-001/decision-rule.md, part C
+bundle: sjl-10-001; programs: temporal, temporal-calendars
+label: base
+started (UTC): 2026-10-18T11:56:56+00:00
+shell tree: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl102b/js-base-1d27064d
+shell commit: 1d27064d0a1f57608a7af20e37eac91bd8887baa
+shell commit subject: SJL-10.1: the Temporal core's area verdict here, the proposal revision this engine now follows, and bundle sjl-10-001's rule
+shell tree clean (git status --porcelain --untracked-files=all is empty): yes
+shell: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl102b/js-base-1d27064d/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+shell BroilerJS.dll SHA-256: fb17d8ae760d0f0da0b83770f3d917b820cf5a45445ecb76905896d7999c7ce2
+shell binaries: shell-binaries.sha256, every *.dll beside it
+shell built by the harness: yes, `dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release` in the shell tree
+dotnet SDK: 10.0.401
+dotnet runtime: Microsoft.NETCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.NETCore.App]
+machine: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v139 x86_64; Intel(R) Xeon(R) Processor @ 2.10GHz; 4 logical CPUs
+child environment: TZ=UTC; LANG, LANGUAGE and every LC_ variable removed
+harness environment: TZ=(unset), LANG=(unset), LC_ALL=(unset)
+DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: (unset)
+host ICU: libicuuc.so.74
+host tzdata: 2026c
+harness commit: 80dff79f80a981e92175dd0cd2c0916b13ad606b
+harness, driver and copies unchanged from that commit: yes
+harness SHA-256: 498b4243887c0ef029c52042dac07589f70eab5838c96b9ca41fefed37a85c80
+driver template SHA-256: 18aad752c1bc164639cc696b5f8472a11d79c547d13b8770cf5f326d0b4b542a
+datasets: /home/user/js-sjl102b/conformance/datasets/time, every copy equal to datasets.pin; the run's population, copies of Broiler.VM at the commits it names:
+  temporal.js 12180 91e1e5a4fe33785c1430f967b727680ead50406ee98a479a5e0f081b75a869db (Broiler.VM 9508bd5:src/tests/temporal/temporal.js)
+  temporal.polyfill-e8cc03fc.txt 119864 ebf380dda41192c160347c4ddf8f33f40101bfc75b44589ae348241322ad5fec (Broiler.VM 9508bd5:src/tests/temporal/temporal.polyfill-e8cc03fc.txt)
+  temporal.divergences.txt 190 271ae88cc6b5ad1c4f5c768551c8e925f0830b15528a48e899fb2b308939daa8 (Broiler.VM 9508bd5:src/tests/temporal/divergences.txt)
+  temporal-calendars.js 8211 bfef1cf45f3da8abea8f8d8630385607b5e9478b243969537323776adf719032 (Broiler.VM 14072b0:src/tests/temporal/calendars/temporal-calendars.js)
+  temporal-calendars.polyfill-e8cc03fc.txt 236681 911f403a66c7dbe74ca70558b5184f7440fe46cb119a012a8a19d5752ccdadb6 (Broiler.VM 14072b0:src/tests/temporal/calendars/temporal-calendars.polyfill-e8cc03fc.txt)
+  temporal-calendars.divergences.txt 5157 aad6cae3e0a94418e688536e53aa0b7608a017d7d8a9643c362d8972bca038ef (Broiler.VM 14072b0:src/tests/temporal/calendars/divergences.txt)

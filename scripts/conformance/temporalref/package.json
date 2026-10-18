@@ -1,0 +1,11 @@
+{
+  "name": "temporalref",
+  "private": true,
+  "type": "commonjs",
+  "description": "The runtime dependencies of tc39/proposal-temporal's polyfill at e8cc03fc, for scripts/conformance/temporalref.mjs",
+  "dependencies": {
+    "big-integer": "^1.6.52",
+    "call-bind": "^1.0.9",
+    "es-abstract": "^1.24.2"
+  }
+}

@@ -1,0 +1,6 @@
+== negative control at Broiler.VM 14072b02027cde4c0fa83e5a0d2f1ac7e68b1f36, 2026-10-18T12:41:41Z
+broiler-js-conformance: vectors broiler-js-vectors Broiler-Platform/broiler.js@2890294f3f4b7aeb70b9f0d6b91346115c741a11 content sha256 d5758591271dd4beba7e164683d45c67812b82cbedfb9ef789dd2b45ea06ad29 over 57 files - archived at <scratch>/vm-pin-24/broiler-js-vectors-2890294f3f4b7aeb70b9f0d6b91346115c741a11.tar.gz
+broiler-js-conformance: negative control: temporal/grammar/0004 expects `value: str:"2020-01-010"`
+broiler-js-conformance: 103312 vectors: 103305 match, 0 classified divergences, 7 unclassified differences
+exit code: 1
+== end 2026-10-18T12:46:03Z

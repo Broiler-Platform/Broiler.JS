@@ -71,8 +71,9 @@ from generate_number_vectors import js_string_body, string_value  # noqa: E402
 # every difference of both engines' first runs on revision 18 (unicode-divergences.txt), and revision 20 retires
 # every one of them, which Broiler.JS's cut-over, milestone SJL-7.5, corrects. Revision 21 adds the time-zone
 # area (generate_time_zone_vectors.py) and changes nothing here, nor does revision 22, which classifies its
-# divergences, nor revision 23, which retires them.
-CORPUS_REVISION = 23
+# divergences, nor revision 23, which retires them, nor revision 24, which adds the Temporal area
+# (generate_temporal_vectors.py), nor revision 25, which classifies its differences.
+CORPUS_REVISION = 25
 FIRST_REVISION = 18
 GENERATOR = "ref:unicoderef@1"
 SPEC = "spec:es2026@0248456c"

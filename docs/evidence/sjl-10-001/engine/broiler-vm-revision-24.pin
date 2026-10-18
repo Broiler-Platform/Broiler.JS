@@ -1,0 +1,16 @@
+# broiler-js-conformance retained suite pin 1
+#
+# A scratch pin of corpus revision 24 (Broiler.JS 2890294f3f4b7aeb70b9f0d6b91346115c741a11, branch sjl-10-2-vectors, not yet merged), for this family's
+# first run on the Temporal area (milestone SJL-10.2), taken locally so that the next revision can classify its
+# differences. Taken on 2026-10-18 with git archive of that commit, twice, the two files byte-identical; the
+# second extracted and its files hashed there. Not committed in Broiler.VM: its pin moves after the change merges.
+
+suite broiler-js-vectors
+upstream Broiler-Platform/broiler.js
+revision 2890294f3f4b7aeb70b9f0d6b91346115c741a11
+archive git archive --format=tar.gz 2890294f3f4b7aeb70b9f0d6b91346115c741a11 -- conformance/vectors :(exclude)conformance/vectors/controls
+archive-sha256 a95993d6dcebc7afab60954366bfcc17c52c18cc4b129f492c7e4ca441b97239
+content-sha256 d5758591271dd4beba7e164683d45c67812b82cbedfb9ef789dd2b45ea06ad29
+files 57
+archived yes
+archived-at /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl102v/vm-pin-24/broiler-js-vectors-2890294f3f4b7aeb70b9f0d6b91346115c741a11.tar.gz

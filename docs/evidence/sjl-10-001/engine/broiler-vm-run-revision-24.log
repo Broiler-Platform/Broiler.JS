@@ -1,0 +1,5 @@
+== run at Broiler.VM 14072b02027cde4c0fa83e5a0d2f1ac7e68b1f36 (clean tree; its Release build), pin revision-24.pin sha256=fd7dc5ca026e38c4187efef55a4d27d10ed4ae1d89d203bd9d9cc0ecb4de0608, 2026-10-18T12:37:14Z
+broiler-js-conformance: vectors broiler-js-vectors Broiler-Platform/broiler.js@2890294f3f4b7aeb70b9f0d6b91346115c741a11 content sha256 d5758591271dd4beba7e164683d45c67812b82cbedfb9ef789dd2b45ea06ad29 over 57 files - archived at <scratch>/vm-pin-24/broiler-js-vectors-2890294f3f4b7aeb70b9f0d6b91346115c741a11.tar.gz
+broiler-js-conformance: 103312 vectors: 103306 match, 0 classified divergences, 6 unclassified differences
+exit code: 1
+== end 2026-10-18T12:41:41Z

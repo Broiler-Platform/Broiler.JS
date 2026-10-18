@@ -19,3 +19,4 @@ its name gives.
 | `future-revision.vectors` | A `since` beyond the corpus's revision |
 | `no-schema.vectors` | No `schema: 1` line |
 | `engine-observed.vectors` | A vector whose only provenance is `observed:broiler-js` |
+| `no-source.vectors` | A vector whose only provenance is an `overruled:` entry, an answer the vector does not take *(added 2026-10-18, at corpus revision 24)* |

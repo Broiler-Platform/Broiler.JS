@@ -1,0 +1,33 @@
+# The TC39 proposal the corpus's `proposal:temporal@...` provenance names (corpus revision 24, milestone SJL-10.2).
+#
+# Every `proposal:temporal@e8cc03fc#<clause-id>` entry is a clause of this proposal's specification text, the
+# files below, at the revision both engines follow (Broiler.VM's JSD-0053, and Broiler.JS by JSD-0078's decision D1).
+# The pinned ECMA-262 edition (ecma262.pin) does not contain Temporal, so the Temporal area cites this text instead.
+# Its polyfill at the same revision, `polyfill/lib`, is the area's reference computation (`ref:temporalref@1`,
+# decision D10), which scripts/conformance/generate_temporal_vectors.py holds to the git blob id of each of its 24
+# files; where the text and the polyfill disagree, the text rules (decision D7) and the vector's provenance records
+# the polyfill's answer as `overruled:temporalref@1=<outcome>`.
+#
+# The corpus archives none of these files and quotes no text of them. They were read from a blobless clone of the
+# proposal taken on 2026-10-18 at SJL-10.1; each is named by its length and SHA-256, so a copy can be verified:
+#
+#   git -C <proposal-temporal> show e8cc03fc970a65a3359e8870e3b35e687ac94e55:spec/duration.html | sha256sum
+
+proposal temporal
+source tc39/proposal-temporal
+revision e8cc03fc970a65a3359e8870e3b35e687ac94e55
+date 2026-07-27
+file spec/abstractops.html 91388 88fa3d01faba3ff7f2a814e88833e8fc29cdece5b6154e7b2a9e1c7b7c3e2bf8
+file spec/calendar.html 72350 0593bd8be23d75e0c0b05e1e614fcde93dfa5bfcab21f5a5c7ca196a6eb94b88
+file spec/duration.html 107845 0d28363744f18f0860a50fa7cf9193bdb4fa2e99e066035343f8c7ebe86063a2
+file spec/instant.html 29071 318fafed3bdbf0fc99104a432f045d473fa7f0050af85528384e1206cb7ca65e
+file spec/intl.html 110956 460bb14c336d2bbe53e2566ffa97c1a1234d18ca564b0a727028d450d2be8ad2
+file spec/mainadditions.html 47143 6d96912730e80cd9b9c2b8b3259a6fbd8dd7067452c148d7c39fbfbc6893d900
+file spec/plaindate.html 48302 a250d98f3725227f4053bd9e0d1ae1846ddcce38e482b5054015d213c571b4c8
+file spec/plaindatetime.html 59132 b8042b46bf50e850a745753a47a9da80bf164d8dbd029ebb3e7b6c5a5ca8df1e
+file spec/plainmonthday.html 19509 eeb35abc976bc6cceaa9c79b2e62c3334b8eb02d28058f81917bbf2f8d035c2c
+file spec/plaintime.html 45982 35f13fd04e22844d0cf3b4c38025ecb5e8df9eaafed8c47cad20764150f1a6bb
+file spec/plainyearmonth.html 34433 3f1b6760e7f7399a87bba2963e379c861d11e1b5b5cf67e4d9fe7ef7f62c3257
+file spec/temporal.html 10205 702ecb289966e67890950b5eae1ce0f92946ebe1fac4f25306b04d1b79269a9a
+file spec/timezone.html 25545 e0245e7208ed253b3174867a4f442ef5f036d9415920f7b601c8fdc307d5297a
+file spec/zoneddatetime.html 73019 4ce8a884c7efc164d04c9307bbfedb1241843c277572d23813cb1c7713fb637c

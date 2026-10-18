@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   19
-// Annotated:        19/19
+// Relevant units:   20
+// Annotated:        20/20
 // Exempt:           4
-// Human-reviewed:   0/19
+// Human-reviewed:   0/20
 // IP risk:          Low
 // Security risk:    Low
 // Criteria:         0/0
 // Resource impact:  9/10 max
-// Unverified:       19
+// Unverified:       20
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -238,11 +238,12 @@ public sealed class VectorValidator
             report(code, line, message);
     }
 
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=3; Fingerprint=28FB66
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=3; Fingerprint=E26139
     // Broiler-Human:        PENDING
     private void ValidateProvenance(string provenance, int line, Action<string, int, string> report)
     {
         var independent = false;
+        var observed = false;
         var seen = new HashSet<string>(StringComparer.Ordinal);
         foreach (var entry in provenance.Split(' '))
         {
@@ -265,12 +266,18 @@ public sealed class VectorValidator
             else if (kind == "observed" && !Engines.Contains(detail))
                 report("bad-provenance", line, "'" + entry + "' does not name broiler-js or broiler-vm");
 
-            if (kind != "observed")
+            // An overruled reference records an answer the vector does not take, so it is no source of the
+            // expected value (SCHEMA.md section 6, corpus revision 24).
+            if (kind == "observed")
+                observed = true;
+            else if (kind != "overruled")
                 independent = true;
         }
 
-        if (!independent)
+        if (!independent && observed)
             report("engine-observed", line, "the expected value has no source independent of both engines");
+        else if (!independent)
+            report("no-source", line, "the expected value has no source: an overruled reference is not one");
     }
 
     /// <summary>
@@ -282,9 +289,12 @@ public sealed class VectorValidator
     /// <c>spec:[a-z0-9]+@(?&lt;revision&gt;[0-9a-f]{7,40})#[a-z0-9.%-]+</c>,
     /// <c>test262:[A-Za-z0-9_./-]+\.js</c>, <c>ref:[a-z0-9-]+@[0-9]+</c>,
     /// <c>ucd:(?&lt;version&gt;[0-9]+\.[0-9]+\.[0-9]+)/[A-Za-z0-9_.-]+</c> and
-    /// <c>observed:(?&lt;engine&gt;[a-z0-9-]+)</c>.
+    /// <c>observed:(?&lt;engine&gt;[a-z0-9-]+)</c>. Corpus revision 24 adds
+    /// <c>proposal:[a-z0-9-]+@[0-9a-f]{7,40}#[a-z0-9.%-]+</c>, a clause of a pinned TC39 proposal's text, and
+    /// <c>overruled:[a-z0-9-]+@[0-9]+=</c> followed by an outcome written without the space after its kind, the
+    /// answer of a reference computation the vector does not take.
     /// </remarks>
-    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=4; Fingerprint=8305E3
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=4; Fingerprint=AB4BFB
     // Broiler-Human:        PENDING
     private static bool TryParseProvenance(string entry, out string kind, out string detail)
     {
@@ -333,9 +343,45 @@ public sealed class VectorValidator
                     return false;
                 detail = body.ToString();
                 return true;
+            case "proposal":
+            {
+                var at = body.IndexOf('@');
+                if (at < 0 || !Ascii.All(body[..at], static c => IsLowerAlphanumeric(c) || c == '-'))
+                    return false;
+                var rest = body[(at + 1)..];
+                var hash = rest.IndexOf('#');
+                return hash >= 7 && hash <= 40 && Ascii.All(rest[..hash], Ascii.IsLowerHex) && Ascii.All(rest[(hash + 1)..], IsClauseCharacter);
+            }
+
+            case "overruled":
+            {
+                var equals = body.IndexOf('=');
+                if (equals < 0)
+                    return false;
+                var reference = body[..equals];
+                var at = reference.IndexOf('@');
+                if (at < 0 || !Ascii.All(reference[..at], static c => IsLowerAlphanumeric(c) || c == '-') || !Ascii.All(reference[(at + 1)..], Ascii.IsDigit))
+                    return false;
+                return IsCompactOutcome(body[(equals + 1)..].ToString());
+            }
+
             default:
                 return false;
         }
+    }
+
+    /// <summary>
+    /// One outcome of the schema's section 4 written without the space after its kind, as an <c>overruled:</c>
+    /// entry holds it: <c>value:str:"P1Y"</c> for <c>value: str:"P1Y"</c>.
+    /// </summary>
+    // Broiler-AI:           Origin=AI; Spec=conformance/vectors/SCHEMA.md; IP=Low; Security=Low; Resources=1; Fingerprint=B94301
+    // Broiler-Human:        PENDING
+    private static bool IsCompactOutcome(string text)
+    {
+        var colon = text.IndexOf(':', StringComparison.Ordinal);
+        if (colon <= 0 || colon == text.Length - 1 || text[colon + 1] == ' ')
+            return false;
+        return Outcome.TryParseAlternatives(text[..colon] + ": " + text[(colon + 1)..], out var outcomes, out _, out _) && outcomes.Count == 1;
     }
 
     /// <summary><c>[0-9]+\.[0-9]+\.[0-9]+</c>.</summary>

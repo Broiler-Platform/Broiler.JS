@@ -1,0 +1,86 @@
+# The lines of temporal-calendars.js on which the profile answers otherwise than the reference
+# polyfill, each as the profile answers it. The polyfill computes every calendar but ISO 8601 through
+# Node 22.22.0's ICU4C 77.1; on each of these lines ICU4X 2.3.0 answers as the profile does, and
+# temporal-calendars.icu4x-2.3.0.txt retains its answer.
+#
+# 1. Chinese and Korean years outside the published ones (1900 to 2102): Table 1 of the Intl era and
+#    month code proposal leaves them to an implementation-defined approximation. ICU4C reckons them
+#    astronomically; the profile, as ICU4X does, by mean new moons and mean solar terms (64 lines).
+chinese 1850-01-01 => ,,1849,12,M11,18,343,29,384,13,true
+chinese 1853-05-11 => ,,1853,4,M04,4,92,30,354,12,false
+chinese 1856-09-18 => ,,1856,8,M08,19,226,29,355,12,false
+chinese 1858-05-24 => ,,1858,4,M04,12,101,30,355,12,false
+chinese 1866-10-14 => ,,1866,9,M09,6,242,30,354,12,false
+chinese 1868-06-18 => ,,1868,5,M04,28,146,29,384,13,true
+chinese 1870-02-21 => ,,1870,1,M01,21,21,29,384,13,true
+chinese 1871-10-27 => ,,1871,9,M09,14,250,30,354,12,false
+chinese 1873-07-01 => ,,1873,6,M06,7,154,30,383,13,true
+chinese 1875-03-06 => ,,1875,1,M01,29,29,29,354,12,false
+chinese 1876-11-08 => ,,1876,10,M09,22,288,29,384,13,true
+chinese 1878-07-14 => ,,1878,6,M06,15,163,30,384,13,true
+chinese 1880-03-18 => ,,1880,2,M02,8,37,30,354,12,false
+chinese 1881-11-21 => ,,1881,11,M10,1,296,30,384,13,true
+chinese 1883-07-27 => ,,1883,6,M06,23,171,30,355,12,false
+chinese 1885-03-31 => ,,1885,2,M02,16,45,30,354,12,false
+chinese 1886-12-04 => ,,1886,11,M11,9,304,30,354,12,false
+chinese 1888-08-08 => ,,1888,7,M07,2,179,30,355,12,false
+chinese 1890-04-13 => ,,1890,2,M02,24,53,30,354,12,false
+chinese 1891-12-17 => ,,1891,11,M11,17,312,30,354,12,false
+chinese 1893-08-21 => ,,1893,7,M07,10,187,30,355,12,false
+chinese 1895-04-26 => ,,1895,4,M04,3,91,30,384,13,true
+chinese 1896-12-29 => ,,1896,11,M11,25,320,30,354,12,false
+chinese 1898-09-03 => ,,1898,8,M07,18,224,30,383,13,true
+chinese -000500-07-01 => ,,-500,6,M05,9,156,30,384,13,true
+chinese 0000-01-01 => ,,-1,12,M12,9,333,30,383,13,true
+chinese 0001-01-01 => ,,0,11,M11,20,316,29,355,12,false
+chinese 0622-07-19 => ,,622,6,M06,3,151,29,355,12,false
+chinese 1582-10-15 => ,,1582,9,M09,19,255,30,354,12,false
+chinese 1700-03-01 => ,,1700,1,M01,11,11,29,354,12,false
+chinese 3000-09-01 => ,,3000,8,M07,11,218,30,384,13,true
+chinese +010000-01-01 => ,,9999,12,M12,2,327,30,355,12,false
+dangi 1850-01-01 => ,,1849,12,M11,18,343,29,384,13,true
+dangi 1853-05-11 => ,,1853,4,M04,4,92,30,354,12,false
+dangi 1856-09-18 => ,,1856,8,M08,19,226,29,355,12,false
+dangi 1858-05-24 => ,,1858,4,M04,12,101,30,355,12,false
+dangi 1866-10-14 => ,,1866,9,M09,6,242,30,354,12,false
+dangi 1868-06-18 => ,,1868,5,M04,28,146,29,384,13,true
+dangi 1870-02-21 => ,,1870,1,M01,21,21,29,384,13,true
+dangi 1871-10-27 => ,,1871,9,M09,14,250,30,354,12,false
+dangi 1873-07-01 => ,,1873,6,M06,7,154,30,383,13,true
+dangi 1875-03-06 => ,,1875,1,M01,29,29,29,354,12,false
+dangi 1876-11-08 => ,,1876,10,M09,22,288,29,384,13,true
+dangi 1878-07-14 => ,,1878,6,M06,15,163,30,384,13,true
+dangi 1880-03-18 => ,,1880,2,M02,8,37,30,354,12,false
+dangi 1881-11-21 => ,,1881,11,M10,1,296,30,384,13,true
+dangi 1883-07-27 => ,,1883,6,M06,23,171,30,355,12,false
+dangi 1885-03-31 => ,,1885,2,M02,16,45,30,354,12,false
+dangi 1886-12-04 => ,,1886,11,M11,9,304,30,354,12,false
+dangi 1888-08-08 => ,,1888,7,M07,2,179,30,355,12,false
+dangi 1890-04-13 => ,,1890,2,M02,24,53,30,354,12,false
+dangi 1891-12-17 => ,,1891,11,M11,17,312,30,354,12,false
+dangi 1893-08-21 => ,,1893,7,M07,10,187,30,355,12,false
+dangi 1895-04-26 => ,,1895,4,M04,3,91,30,384,13,true
+dangi 1896-12-29 => ,,1896,11,M11,25,320,30,354,12,false
+dangi 1898-09-03 => ,,1898,8,M07,18,224,30,383,13,true
+dangi -000500-07-01 => ,,-500,6,M05,9,156,30,384,13,true
+dangi 0000-01-01 => ,,-1,12,M12,9,333,30,383,13,true
+dangi 0001-01-01 => ,,0,11,M11,20,316,29,355,12,false
+dangi 0622-07-19 => ,,622,6,M06,3,151,29,355,12,false
+dangi 1582-10-15 => ,,1582,9,M09,19,255,30,354,12,false
+dangi 1700-03-01 => ,,1700,1,M01,11,11,29,354,12,false
+dangi 3000-09-01 => ,,3000,8,M07,11,218,30,384,13,true
+dangi +010000-01-01 => ,,9999,12,M12,2,327,30,355,12,false
+#
+# 2. Chinese years within the published ones where ICU4C's astronomy differs from the Purple
+#    Mountain and Hong Kong observatories' calendars, which the profile reads from ICU4X: the
+#    twelfth month of 1953, the leap month of 1987 (ICU-13195; test262's chinese-calendar-dates.js
+#    expects M06L) and the years 2026, 2027 and 2029 (ICU-23285) (5 lines).
+chinese 1954-01-22 => ,,1953,12,M12,18,343,29,354,12,false
+chinese 1987-08-17 => ,,1987,7,M06L,23,201,29,384,13,true
+chinese 2026-03-24 => ,,2026,2,M02,6,36,29,354,12,false
+chinese 2027-11-27 => ,,2027,10,M10,30,295,30,354,12,false
+chinese 2029-08-01 => ,,2029,6,M06,22,170,30,355,12,false
+#
+# 3. The Hebrew year 5806: ICU4C gives it 385 days; the calendar's arithmetic (the molad of Tishrei
+#    and its postponements), and ICU4X, give 384, so 2046-05-14 is 8 Iyar (1 line).
+hebrew 2046-05-14 => am,5806,5806,9,M08,8,245,29,384,13,true

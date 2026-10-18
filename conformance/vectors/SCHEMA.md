@@ -97,6 +97,8 @@ is a dated entry in [REVISIONS.md](REVISIONS.md), in a new corpus revision.
 | `ref:<generator>@<version>` | An independent computation in exact arithmetic, by a generator in `scripts/conformance/` |
 | `ucd:<version>/<file>` | A file of the pinned Unicode Character Database ([sources/unicode.pin](sources/unicode.pin)) |
 | `observed:<engine>` | An engine was seen to produce the outcome |
+| `proposal:<proposal>@<revision>#<clause-id>` | A clause of a pinned TC39 proposal's specification text, for an operation the pinned edition does not contain: `temporal` ([sources/temporal.pin](sources/temporal.pin)) and `intl-era-monthcode` ([sources/intl-era-monthcode.pin](sources/intl-era-monthcode.pin)). The revision is 7 to 40 lower-case hexadecimal digits of the pinned commit, and the clause id is written as a `spec:` entry's is |
+| `overruled:<generator>@<version>=<outcome>` | The answer of a reference computation that the vector **does not** take, because a recorded decision rules against it there: the outcome as section 4 writes it with the space after its kind removed (`value:str:"P1Y"`, `error:RangeError`), so it may hold no other space. It is a record, not a source of the expected value |
 
 A clause id is the clause's id in the pinned edition's HTML: lower-case letters, digits, `.`, `-` and
 `%`, which the ids of the intrinsics' clauses hold, such as `sec-%typedarray%.prototype.slice`.
@@ -104,7 +106,16 @@ A clause id is the clause's id in the pinned edition's HTML: lower-case letters,
 letters, digits, `.` and `-`, and refused revision 10's citations of four such clauses.)*
 
 **A vector's outcome must have a source independent of both engines**: at least one entry that is not
-`observed:`. The validator refuses a vector whose provenance is only engine-observed.
+`observed:` or `overruled:`. The validator refuses a vector whose provenance is only engine-observed, and one whose
+provenance names no source at all.
+
+*(Added 2026-10-18, at corpus revision 24, for the Temporal area: the `proposal:` and `overruled:` entries, and the
+second refusal, `no-source`, with its negative control. Temporal is not in the pinned ECMA-262 edition, so its
+vectors cite the pinned proposal's text by `proposal:`; their reference computation is the proposal's own polyfill
+(`ref:temporalref@1`), and where the pinned text and the polyfill disagree the vector takes the text's answer under
+decision D7 of bundle sjl-10-001 and records the polyfill's as `overruled:temporalref@1=<outcome>`. Until then the
+section listed five kinds, and its paragraph above read "at least one entry that is not `observed:`. The validator
+refuses a vector whose provenance is only engine-observed.")*
 
 ## 7. Engine-level evaluation and the rendering rule
 

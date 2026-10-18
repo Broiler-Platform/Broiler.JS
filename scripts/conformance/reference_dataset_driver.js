@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // The driver of run_reference_datasets.py, the harness of bundle sjl-8-001's rule, part C (milestone
-// SJL-8.4). For each program the harness writes one copy of this file, with the program's file name as a
-// JSON string where the marker below stands, and runs it as `dotnet BroilerJS.dll --script-host <copy>` in
-// the directory that holds conformance/datasets/time/'s copies, with TZ=UTC and no LANG.
+// SJL-8.4), and of bundle sjl-10-001's, which runs it over temporal.js and temporal-calendars.js (milestone
+// SJL-10.2; nothing below is specific to a program). For each program the harness writes one copy of this
+// file, with the program's file name as a JSON string where the marker below stands, and runs it as
+// `dotnet BroilerJS.dll --script-host <copy>` in the directory that holds conformance/datasets/time/'s
+// copies, with TZ=UTC and no LANG.
 //
 // It does what Broiler.VM's reference command does in Node, `(0, eval)(fs.readFileSync(file, 'utf8'))`:
 // it reads the program's text with the shell's `read` and evaluates it by indirect eval, so the program

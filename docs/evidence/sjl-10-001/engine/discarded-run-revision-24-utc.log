@@ -1,0 +1,39 @@
+== start 2026-10-18T12:46:40Z TZ=UTC at 2890294f3f4b7aeb70b9f0d6b91346115c741a11 (clean tree; built once beforehand in Release, run with --no-build)
+Test run for /home/user/js-sjl102v/Broiler.JS/Broiler.JavaScript.Vectors.Tests/bin/Release/net10.0/Broiler.JavaScript.Vectors.Tests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+[xUnit.net 00:42:09.03]     Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [FAIL]
+  Failed Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified [42 m 2 s]
+  Error Message:
+   474 of 103312 vectors differ and nothing classifies them:
+temporal/balancing/0107: expected error: RangeError, rendered value: str:"2019-06-15T12:00:00"
+temporal/balancing/0108: expected error: RangeError, rendered value: str:"2021-06-15T12:00:00"
+temporal/balancing/0109: expected error: RangeError, rendered value: str:"2019-06"
+temporal/balancing/0110: expected error: RangeError, rendered value: str:"2021-06"
+temporal/balancing/0115: expected error: RangeError, rendered value: str:"2019-06-26[u-ca=hebrew]"
+temporal/balancing/0116: expected error: RangeError, rendered value: str:"2021-06-03[u-ca=hebrew]"
+temporal/balancing/0117: expected error: RangeError, rendered value: str:"2019-06-15[u-ca=coptic]"
+temporal/balancing/0118: expected error: RangeError, rendered value: str:"2021-06-15[u-ca=coptic]"
+temporal/balancing/0119: expected error: RangeError, rendered value: str:"-001001-06-15T12:00:00"
+temporal/balancing/0123: expected error: RangeError, rendered value: str:"2312-04-11"
+temporal/balancing/0126: expected error: RangeError, rendered value: str:"2312-04-11T23:47:16.854775807"
+temporal/balancing/0132: expected error: RangeError, rendered value: str:"PT9223372037S"
+temporal/balancing/0133: expected error: RangeError, rendered value: str:"P292Y3M10DT23H47M16.854775807S"
+temporal/balancing/0134: expected error: RangeError, rendered value: f64:0x40FA0FFFDBD23E52
+temporal/balancing/0228: expected error: RangeError, rendered value: str:"-271821-04"
+temporal/balancing/0230: expected error: RangeError, rendered value: str:"-271821-04"
+temporal/balancing/0231: expected error: RangeError, rendered value: str:"-271821-04"
+temporal/balancing/0232: expected error: RangeError, rendered value: str:"-271821-04"
+temporal/balancing/0233: expected error: RangeError, rendered value: str:"-271821-04"
+temporal/calendars/0032: expected error: RangeError, rendered value: str:"gregory"
+temporal/calendars/0033: expected error: RangeError, rendered value: str:"roc"
+temporal/calendars/0050: expected error: RangeError, rendered value: str:"gregory"
+temporal/calendars/0051: expected error: RangeError, rendered value: str:"gregory"
+temporal/calendars/0194: expected error: RangeError, rendered value: str:"1739/M01/1;1;2022-09-11"
+temporal/calendars/0216: expected error: RangeError, rendered value: str:"1739/M13/1;13;2023-09-06"
+  Stack Trace:
+     at Broiler.JavaScript.Vectors.Tests.EngineRunTests.Every_difference_from_the_corpus_is_classified() in /home/user/js-sjl102v/Broiler.JS/Broiler.JavaScript.Vectors.Tests/EngineRunTests.cs:line 31
+   at System.Reflection.MethodBaseInvoker.InterpretedInvoke_Method(Object obj, IntPtr* args)
+   at System.Reflection.MethodBaseInvoker.InvokeWithNoArgs(Object obj, BindingFlags invokeAttr)
+
+Failed!  - Failed:     1, Passed:     3, Skipped:     0, Total:     4, Duration: 42 m 23 s - Broiler.JavaScript.Vectors.Tests.dll (net10.0)
+== end 2026-10-18T13:29:06Z

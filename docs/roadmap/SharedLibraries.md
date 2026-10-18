@@ -919,6 +919,7 @@ This repository's part of it:
 - **The area's rules run test262 `ccaac100`** (decision D2), the suite this repository's workflows run. A move to the
   proposal's own submodule, `227d9055`, is a separate dated change outside SJL-10.
 - **Where the pinned text and its polyfill disagree, the text rules** (decision D7). The one case found is row D8.
+  *(SJL-10.2's vectors find 45 more, in the polyfill's parser and era table; see "The vectors (SJL-10.2)" below.)*
 - **The corrections**, each listed in `Broiler.JS/CHANGELOG.md` at SJL-10.5 under decision SJL-D-16 (a), with the
   correspondence's row:
   - **the milestone's listed ones, as the rows confirm them:**
@@ -987,6 +988,39 @@ This repository's part of it:
 
   Its admitted classes name every correction above by row. Both test262 bases are taken at the rule's commit with
   negative tests, as bundle `sjl-8-001`'s were.
+
+**The vectors (SJL-10.2), 2026-10-18.**
+- **Corpus revision 24** adds the Temporal area: 10,878 vectors under decision D10. Every expected value is the
+  proposal's own polyfill's at `e8cc03fc`, run under Node 22.22.0 by `scripts/conformance/temporalref.mjs`, with its
+  npm packages pinned. It shares no code with either engine.
+- **Decision D7 is applied to 73 vectors**, each listed in the generator. Each takes the pinned text's answer and
+  records the polyfill's:
+  - row D8's nudge, 28;
+  - 45 where the polyfill's own parser and era table read the pinned texts otherwise: a separator of two spaces, an
+    offset's separator with no digit, the month-days `02-30` and `04-31`, year-month and month-day calendar strings,
+    time zone strings that are a time or a partial date, the era aliases removed on 2025-11-21, and a regnal era read
+    leniently. The correspondence did not run its grammar and calendar probes under the polyfill, so it could not
+    see them.
+
+  **So "The one case found is row D8" above no longer holds.** Broiler.VM answers as the texts on all 45, and this
+  engine on 35. Its other 10 answer as the polyfill does and are corrections already listed (G17, C9), so no class
+  changes.
+- **Seven vectors keep the polyfill's answer** at ComputeNudgeWindow, where Broiler.VM's JSD-0054 section 4 records
+  that the text does not do what it means. The vectors read decision D7 as naming row D8; the owner's record should
+  say whether it reaches these.
+- **Not vectored**, where the polyfill reckons through ICU4C or JavaScript's `Date` and so is no source:
+  - the table calendars outside Table 1's published years;
+  - the Hebrew years before AM 1, and 5806 and 5807;
+  - a non-ISO calendar's fields at the ISO limits.
+- **No library answers the area yet**: SJL-8.4's library-level runner, `942f8cd3`, has no counterpart until SJL-10.3
+  adds the Temporal code.
+- **Revision 25** classifies every difference under a row of the area verdict:
+  - this engine's 473, in both zones, all corrections SJL-10.5 answers;
+  - Broiler.VM's 6, from a local run, all row R6, which SJL-10.4 answers.
+
+  The vectors falsify no class. They refine row D11: a Coptic `ZonedDateTime` `relativeTo` is rounded in ISO months,
+  not refused. They also find a sixth case of row R6, which counts five: `new PlainDateTime` with a year of 2^53 + 2.
+  Bundle [`sjl-10-001`](../evidence/sjl-10-001/README.md), section 2, has the runs.
 
 ## Invariants
 

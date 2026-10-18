@@ -53,8 +53,9 @@ from generate_number_vectors import js_string_body, string_value  # noqa: E402
 # The corpus revision this generator writes, and the revision its vectors were added in. Revision 22 classifies every
 # difference of Broiler.JS's first engine-level runs on revision 21, under UTC and America/New_York
 # (time-zone-divergences.txt); no expected value changes. Revision 23 retires every one of them, which Broiler.JS's
-# cut-over, milestone SJL-8.6, corrects.
-CORPUS_REVISION = 23
+# cut-over, milestone SJL-8.6, corrects. Revision 24 adds the Temporal area (generate_temporal_vectors.py) and
+# changes nothing here, nor does revision 25, which classifies its differences.
+CORPUS_REVISION = 25
 FIRST_REVISION = 21
 GENERATOR = T.GENERATOR
 SPEC = "spec:es2026@0248456c"

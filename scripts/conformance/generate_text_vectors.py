@@ -39,8 +39,9 @@ from generate_number_vectors import f64, js_string_literal, splitmix64, string_v
 # added the Unicode area (generate_unicode_vectors.py) and changed nothing here either, nor did revision 19,
 # which classified its divergences, nor revision 20, which retired them, nor revision 21, which added the
 # time-zone area (generate_time_zone_vectors.py), nor revision 22, which classified its divergences, nor revision
-# 23, which retired them.
-CORPUS_REVISION = 23
+# 23, which retired them, nor revision 24, which added the Temporal area (generate_temporal_vectors.py) and widened
+# the schema's provenance, nor revision 25, which classified its differences.
+CORPUS_REVISION = 25
 FIRST_REVISION = 10
 GENERATOR = "ref:textref@1"
 SPEC = "spec:es2026@0248456c"
