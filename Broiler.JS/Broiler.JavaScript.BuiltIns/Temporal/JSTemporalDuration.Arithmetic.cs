@@ -324,7 +324,7 @@ public partial class JSTemporalDuration
         // A PlainDateTime relativeTo contributes only its date (a fixed 24-hour day).
         if (rel is JSTemporalPlainDateTime pdt)
         {
-            if (TemporalCalendarMath.IsNonIso(pdt.calendarId))
+            if (!TemporalAdapter.SharesIsoArithmetic(pdt.calendarId))
                 throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{pdt.calendarId}\" calendar is not yet implemented");
             date = JSTemporalPlainDate.FromIso(pdt.isoYear, pdt.isoMonth, pdt.isoDay, pdt.calendarId);
             return true;
@@ -345,13 +345,13 @@ public partial class JSTemporalDuration
             if (parsed.TimeZone != null)
             {
                 zoned = JSTemporalZonedDateTime.FromParsed(parsed, s, null);
-                if (TemporalCalendarMath.IsNonIso(zoned.calendarId))
+                if (!TemporalAdapter.SharesIsoArithmetic(zoned.calendarId))
                     throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{zoned.calendarId}\" calendar is not yet implemented");
                 return true;
             }
 
             date = JSTemporalPlainDate.FromParsed(parsed, s);
-            if (TemporalCalendarMath.IsNonIso(date.calendarId))
+            if (!TemporalAdapter.SharesIsoArithmetic(date.calendarId))
                 throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{date.calendarId}\" calendar is not yet implemented");
             return true;
         }
@@ -403,7 +403,7 @@ public partial class JSTemporalDuration
             // A relativeTo property bag with a timeZone is a ZonedDateTime relativeTo (DST-aware): a day
             // may be 23/24/25 hours, exactly like an object or string ZonedDateTime relativeTo — not a
             // fixed 24-hour PlainDate (test262 Duration round/total/compare casts-relativeTo-from-object).
-            if (TemporalCalendarMath.IsNonIso(bagDateTime.calendarId))
+            if (!TemporalAdapter.SharesIsoArithmetic(bagDateTime.calendarId))
                 throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{bagDateTime.calendarId}\" calendar is not yet implemented");
             zoned = JSTemporalZonedDateTime.BuildRelative(
                 bagDateTime.isoYear, bagDateTime.isoMonth, bagDateTime.isoDay,
@@ -416,7 +416,7 @@ public partial class JSTemporalDuration
         ValidateRelativeBagTimeFields(rel);
 
         date = JSTemporalPlainDate.ToRelativeDate(rel);
-        if (TemporalCalendarMath.IsNonIso(date.calendarId))
+        if (!TemporalAdapter.SharesIsoArithmetic(date.calendarId))
             throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{date.calendarId}\" calendar is not yet implemented");
         return true;
     }
@@ -521,8 +521,7 @@ public partial class JSTemporalDuration
         else
             calendarId = null; // a Temporal object's calendar slot, resolved later; keep era fields.
 
-        var readEraFields = calendarId == null
-            || (calendarId != "iso8601" && TemporalCalendarMath.HasEra(calendarId));
+        var readEraFields = calendarId == null || TemporalAdapter.SupportsEra(calendarId);
 
         CopyNumber("day");
         if (readEraFields)

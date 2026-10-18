@@ -15,7 +15,8 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 /// <remarks>
 /// <para>
 /// The class is split by concern: the records, limits, balancing, regulation and addition here; the grammar in
-/// <c>TemporalAdapter.Grammar.cs</c>; serialization and its options in <c>TemporalAdapter.Serialization.cs</c>.
+/// <c>TemporalAdapter.Grammar.cs</c>; serialization and its options in <c>TemporalAdapter.Serialization.cs</c>; the
+/// calendars, their identifiers and PrepareCalendarFields' reads in <c>TemporalAdapter.Calendars.cs</c>.
 /// </para>
 /// <para>
 /// <b>The records are SJL-8's</b> <see cref="IsoDate"/>, <see cref="IsoTime"/> and <see cref="IsoDateTime"/>
@@ -156,16 +157,5 @@ internal static partial class TemporalAdapter
     {
         var result = AddIsoDate(new IsoDate(year, month, day), new DateDuration(years, months, weeks, days), overflow, typeName);
         return ((int)result.Year, result.Month, result.Day);
-    }
-
-    /// <summary>
-    /// A year a calendar's own arithmetic reached, narrowed to the <see cref="int"/> its fields hold: a year past that
-    /// range is past every limit, so it is the <c>RangeError</c> rather than a wrapped year (row R7).
-    /// </summary>
-    internal static int CalendarYear(long year)
-    {
-        if (year is < int.MinValue or > int.MaxValue)
-            throw JSEngine.NewRangeError("Temporal: result is out of range");
-        return (int)year;
     }
 }

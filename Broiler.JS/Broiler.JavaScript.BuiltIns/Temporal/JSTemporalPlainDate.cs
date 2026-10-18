@@ -1,6 +1,4 @@
 using System;
-using System.Globalization;
-using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
 using Broiler.ECMAScript.Temporal;
 using Broiler.ECMAScript.Time;
@@ -13,11 +11,9 @@ using Broiler.JavaScript.Engine.Core;
 
 namespace Broiler.JavaScript.BuiltIns.Temporal;
 
-// Temporal.PlainDate (Temporal proposal §3): a calendar date with no time or zone. Only the
-// ISO 8601 calendar is supported — its arithmetic (leap years, month lengths, date add /
-// difference) is pure, data-free math, so the full date surface is implementable. The
-// CLDR submodule has no calendar arithmetic (only day-period formatting strings), and the
-// non-ISO calendars / localized output it could feed are out of scope.
+// Temporal.PlainDate (Temporal proposal §3): a calendar date with no time or zone, held as its ISO
+// date and calendar identifier. Its calendar fields, field resolution, addition and the calendar
+// half of its differences are the shared library's calendars, through TemporalAdapter.
 //
 // Registered under the Temporal namespace (not as a global) via Register = false.
 [JSClassGenerator("PlainDate", Register = false)]
@@ -49,6 +45,9 @@ public partial class JSTemporalPlainDate : JSObject
         this.calendarId = calendarId;
     }
 
+    internal JSTemporalPlainDate(IsoDate date, string calendarId, JSObject prototype)
+        : this((int)date.Year, date.Month, date.Day, calendarId, prototype) { }
+
     // The date's slots as the shared library's record.
     internal IsoDate IsoDate => new(isoYear, isoMonth, isoDay);
 
@@ -70,76 +69,32 @@ public partial class JSTemporalPlainDate : JSObject
 
     [JSExport("calendarId")] public JSValue CalendarId => new JSString(calendarId);
 
-    // True for the non-Gregorian calendars whose month/day structure differs from ISO (the
-    // arithmetic family coptic / ethiopic / islamic-* / hebrew and the lunisolar chinese / dangi),
-    // so every field is derived from the epoch day via TemporalCalendarMath.
-    private bool NonIso => TemporalCalendarMath.IsNonIso(calendarId);
+    // CalendarISOToDate, the shared library's: the calendar's fields of the date, which every getter reads.
+    private CalendarDate CalendarDate => TemporalAdapter.CalendarDateOf(calendarId, IsoDate);
 
-    // The stored ISO date projected into the active calendar's (year, month, day) — identical to
-    // the ISO fields for the Gregorian family.
-    private (int y, int m, int d) CalendarYmd() => NonIso
-        ? TemporalCalendarMath.YmdFromEpochDays(calendarId, IsoCalendarMath.EpochDays(isoYear, isoMonth, isoDay))
-        : (isoYear, isoMonth, isoDay);
+    // Whether the calendar's dates are not the ISO dates (neither iso8601 nor the Gregorian family): the differences'
+    // rounding, part C's, still runs on ISO arithmetic for those alone.
+    private bool NonIso => !TemporalAdapter.SharesIsoArithmetic(calendarId);
 
-    // The ISO 8601 calendar has no eras (era / eraYear are undefined); the gregory / buddhist / roc /
-    // japanese calendars and the arithmetic non-Gregorian calendars map the year onto an era + era-
-    // year, while the lunisolar chinese / dangi calendars are also era-less.
-    [JSExport("era")] public JSValue Era
-    {
-        get
-        {
-            if (!NonIso) return TemporalCalendar.Era(calendarId, isoYear, isoMonth, isoDay);
-            if (!TemporalCalendarMath.HasEra(calendarId)) return JSUndefined.Value;
-            return new JSString(TemporalCalendarMath.Era(calendarId, CalendarYmd().y).code);
-        }
-    }
-    [JSExport("eraYear")] public JSValue EraYear
-    {
-        get
-        {
-            if (!NonIso) return TemporalCalendar.EraYear(calendarId, isoYear, isoMonth, isoDay);
-            if (!TemporalCalendarMath.HasEra(calendarId)) return JSUndefined.Value;
-            return new JSNumber(TemporalCalendarMath.Era(calendarId, CalendarYmd().y).eraYear);
-        }
-    }
-    [JSExport("year")] public double YearValue => NonIso ? CalendarYmd().y : TemporalCalendar.Year(calendarId, isoYear);
-    [JSExport("month")] public double MonthValue => NonIso ? CalendarYmd().m : isoMonth;
-    [JSExport("monthCode")] public JSValue MonthCode
-    {
-        get { if (NonIso) { var c = CalendarYmd(); return new JSString(TemporalCalendarMath.MonthCode(calendarId, c.y, c.m)); } return new JSString($"M{isoMonth:00}"); }
-    }
-    [JSExport("day")] public double DayValue => NonIso ? CalendarYmd().d : isoDay;
+    // era and eraYear are undefined in the calendars without eras (iso8601, chinese, dangi).
+    [JSExport("era")] public JSValue Era => TemporalAdapter.EraValue(CalendarDate);
+    [JSExport("eraYear")] public JSValue EraYear => TemporalAdapter.EraYearValue(CalendarDate);
+    [JSExport("year")] public double YearValue => CalendarDate.Year;
+    [JSExport("month")] public double MonthValue => CalendarDate.Month;
+    [JSExport("monthCode")] public JSValue MonthCode => new JSString(CalendarDate.MonthCode.ToString());
+    [JSExport("day")] public double DayValue => CalendarDate.Day;
 
-    [JSExport("dayOfWeek")] public double DayOfWeek => IsoCalendarMath.DayOfWeek(isoYear, isoMonth, isoDay);
-    [JSExport("dayOfYear")] public double DayOfYear
-    {
-        get
-        {
-            if (NonIso) { var c = CalendarYmd(); return TemporalCalendarMath.DayOfYear(calendarId, c.y, c.m, c.d); }
-            return IsoCalendarMath.DayOfYear(isoYear, isoMonth, isoDay);
-        }
-    }
+    [JSExport("dayOfWeek")] public double DayOfWeek => CalendarDate.DayOfWeek;
+    [JSExport("dayOfYear")] public double DayOfYear => CalendarDate.DayOfYear;
     [JSExport("daysInWeek")] public double DaysInWeek => 7;
-    [JSExport("daysInMonth")] public double DaysInMonth
-    {
-        get { if (NonIso) { var c = CalendarYmd(); return TemporalCalendarMath.DaysInMonth(calendarId, c.y, c.m); } return IsoCalendarMath.DaysInMonth(isoYear, isoMonth); }
-    }
-    [JSExport("daysInYear")] public double DaysInYear => NonIso
-        ? TemporalCalendarMath.DaysInYear(calendarId, CalendarYmd().y)
-        : IsoCalendarMath.DaysInYear(isoYear);
-    [JSExport("monthsInYear")] public double MonthsInYear => NonIso
-        ? TemporalCalendarMath.MonthsInYear(calendarId, CalendarYmd().y)
-        : 12;
-    [JSExport("inLeapYear")] public bool InLeapYear => NonIso
-        ? TemporalCalendarMath.InLeapYear(calendarId, CalendarYmd().y)
-        : IsoCalendarMath.IsLeapYear(isoYear);
+    [JSExport("daysInMonth")] public double DaysInMonth => CalendarDate.DaysInMonth;
+    [JSExport("daysInYear")] public double DaysInYear => CalendarDate.DaysInYear;
+    [JSExport("monthsInYear")] public double MonthsInYear => CalendarDate.MonthsInYear;
+    [JSExport("inLeapYear")] public bool InLeapYear => CalendarDate.InLeapYear;
 
-    // Only the ISO calendar defines a week-numbering system; every other calendar (including the
-    // Gregorian-family gregory/buddhist/roc/japanese) returns undefined for week-of-year fields.
-    [JSExport("weekOfYear")] public JSValue WeekOfYear
-        => calendarId == "iso8601" ? new JSNumber(IsoCalendarMath.WeekOfYear(isoYear, isoMonth, isoDay).Week) : JSUndefined.Value;
-    [JSExport("yearOfWeek")] public JSValue YearOfWeek
-        => calendarId == "iso8601" ? new JSNumber(IsoCalendarMath.WeekOfYear(isoYear, isoMonth, isoDay).Year) : JSUndefined.Value;
+    // Only the ISO calendar defines a week-numbering system; every other calendar returns undefined.
+    [JSExport("weekOfYear")] public JSValue WeekOfYear => TemporalAdapter.WeekOfYearValue(CalendarDate);
+    [JSExport("yearOfWeek")] public JSValue YearOfWeek => TemporalAdapter.YearOfWeekValue(CalendarDate);
 
     // ── statics ─────────────────────────────────────────────────────────────────
 
@@ -164,105 +119,22 @@ public partial class JSTemporalPlainDate : JSObject
             throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.with requires an object");
 
         // The with()-bag must be a plain fields object: not a Temporal object and without a
-        // calendar / timeZone property (RejectObjectWithCalendarOrTimeZone).
+        // calendar / timeZone property (IsPartialTemporalObject).
         TemporalAdapter.RejectObjectWithCalendarOrTimeZone(obj);
 
-        // The non-Gregorian calendars merge the with-bag fields onto the receiver's calendar fields
-        // and re-resolve in calendar space (see TemporalNonIso.WithToIso).
-        if (NonIso)
-        {
-            var nonIsoOverflow = ReadOverflow(a.GetAt(1));
-            var (ny, nm, nd) = TemporalNonIso.WithToIso(obj, calendarId, nonIsoOverflow, "Temporal.PlainDate", isoYear, isoMonth, isoDay);
-            return new JSTemporalPlainDate(ny, nm, nd, calendarId, PlainDatePrototype);
-        }
-
-        var any = false;
-        var month = isoMonth;
-        var day = isoDay;
-
-        // PrepareCalendarFields reads the recognised fields in alphabetical order —
-        // day, [era, eraYear,] month, monthCode, year — coercing each as it is read.
-        // (ResolveWithYear reads year, and era/eraYear for calendars with eras, last.)
-        var dayValue = obj[KeyStrings.GetOrCreate("day")];
-        if (!dayValue.IsUndefined) { day = ToPositiveIntegerWithTruncation(dayValue); any = true; }
-
-        var monthValue = obj[KeyStrings.GetOrCreate("month")];
-        var monthFromMonth = -1;
-        if (!monthValue.IsUndefined) { monthFromMonth = ToPositiveIntegerWithTruncation(monthValue); any = true; }
-
-        // Coerce monthCode to a string now (PrepareCalendarFields); defer parsing/validating
-        // it against the calendar until after the overflow option is read, so an invalid month
-        // code is rejected only once every option getter has fired (test262
-        // .../with options-read-before-algorithmic-validation).
-        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthCodeStr = TemporalAdapter.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDate");
-        if (monthCodeStr != null) any = true;
-
-        var newIsoYear = ResolveWithYear(obj, ref any);
-
-        if (!any)
+        // ISODateToFields, then PrepareCalendarFields of the partial bag in property order - day, [era, eraYear,]
+        // month, monthCode, year - each converted as it is read; then the overflow option, after every field; then
+        // CalendarMergeFields and CalendarDateFromFields, the shared library's.
+        var fields = TemporalAdapter.DateToFields(calendarId, IsoDate, CalendarFieldsType.Date);
+        var partial = new TemporalAdapter.CalendarFieldReader(obj, calendarId, "Temporal.PlainDate");
+        partial.DateFields();
+        if (!partial.Any)
             throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.with requires at least one date property");
 
-        // GetTemporalOverflowOption runs only after the partial fields have been read and coerced, so
-        // an invalid field value (e.g. day -1) is a RangeError before a non-object options is a
-        // TypeError.
         var overflow = ReadOverflow(a.GetAt(1));
-
-        if (monthCodeStr != null) month = MonthFromCode(monthCodeStr);
-
-        if (monthFromMonth != -1)
-        {
-            if (monthCodeStr != null && monthFromMonth != month)
-                throw JSEngine.NewRangeError("Temporal.PlainDate.with: month and monthCode disagree");
-            month = monthFromMonth;
-        }
-
-        return RegulateISODate(newIsoYear, month, day, overflow, calendarId);
-    }
-
-    // Resolves the receiver's new ISO year from a with()-bag's year / era / eraYear fields,
-    // defaulting to the receiver's current year when none are present. Providing a calendar
-    // `year` overrides any era pair (and vice versa); era and eraYear must be supplied *together* —
-    // a partial pair is a TypeError (it is not completed from the receiver).
-    private int ResolveWithYear(JSObject obj, ref bool any)
-    {
-        var yearValue = obj[KeyStrings.GetOrCreate("year")];
-
-        // The ISO calendar has no eras: era / eraYear are not fields, so they are ignored and only
-        // `year` (defaulting to the receiver's) resolves the year.
-        if (calendarId == "iso8601")
-        {
-            if (yearValue.IsUndefined) return isoYear;
-            any = true;
-            return ToIntegerWithTruncation(yearValue);
-        }
-
-        var eraValue = obj[KeyStrings.GetOrCreate("era")];
-        var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
-
-        if (yearValue.IsUndefined && eraValue.IsUndefined && eraYearValue.IsUndefined)
-            return isoYear;
-
-        any = true;
-        var hasYear = !yearValue.IsUndefined;
-        var hasEra = !eraValue.IsUndefined;
-        var hasEraYear = !eraYearValue.IsUndefined;
-
-        string era = null;
-        var eraYear = 0;
-        if (hasYear)
-        {
-            hasEra = hasEraYear = false; // a provided calendar year supersedes the era pair
-        }
-        else if (hasEra || hasEraYear)
-        {
-            era = hasEra ? eraValue.StringValue : null;
-            eraYear = hasEraYear ? ToIntegerWithTruncation(eraYearValue) : 0;
-        }
-
-        return TemporalCalendar.ResolveIsoYear(calendarId,
-            hasYear, hasYear ? ToIntegerWithTruncation(yearValue) : 0,
-            hasEra, era, hasEraYear, eraYear);
+        var date = TemporalAdapter.DateFromFields(calendarId, TemporalAdapter.MergeFields(calendarId, fields, partial.Fields), overflow,
+            "Temporal.PlainDate");
+        return new JSTemporalPlainDate(date, calendarId, PlainDatePrototype);
     }
 
     [JSExport("withCalendar", Length = 1)]
@@ -290,18 +162,10 @@ public partial class JSTemporalPlainDate : JSObject
         // 24-hour days, its whole days truncated toward zero (row R7: no field is narrowed first).
         var days = (long)(TemporalAdapter.TimeDurationWith24HourDays(d) / TemporalLimits.NanosecondsPerDay);
 
-        if (NonIso)
-        {
-            var c = CalendarYmd();
-            var (ny, nm, nd) = TemporalNonIso.AddToIso(calendarId, c.y, c.m, c.d,
-                sign * (long)d.YearsValue, sign * (long)d.MonthsValue,
-                sign * (long)d.WeeksValue, sign * days, overflow);
-            return new JSTemporalPlainDate(ny, nm, nd, calendarId, PlainDatePrototype);
-        }
-
-        var added = TemporalAdapter.AddIsoDate(IsoDate,
-            new DateDuration(sign * d.YearsValue, sign * d.MonthsValue, sign * d.WeeksValue, sign * days), overflow, "Temporal.PlainDate");
-        return new JSTemporalPlainDate((int)added.Year, added.Month, added.Day, calendarId, PlainDatePrototype);
+        // CalendarDateAdd, the shared library's, in the date's calendar (row R7: no year is narrowed first).
+        var added = TemporalAdapter.CalendarDateAdd(calendarId, IsoDate,
+            sign * d.YearsValue, sign * d.MonthsValue, sign * d.WeeksValue, sign * days, overflow, "Temporal.PlainDate");
+        return new JSTemporalPlainDate(added, calendarId, PlainDatePrototype);
     }
 
     [JSExport("until", Length = 1)]
@@ -312,8 +176,8 @@ public partial class JSTemporalPlainDate : JSObject
 
     // until/since honor largestUnit (day[default]/week/month/year) and round to smallestUnit at the
     // given roundingIncrement / roundingMode (GetDifferenceSettings + RoundRelativeDuration). Rounding
-    // to a unit coarser than "day" (or with a non-1 increment) is applied for the ISO calendar only;
-    // the arithmetic calendars still return the unrounded largestUnit-balanced difference.
+    // to a unit coarser than "day" (or with a non-1 increment) is applied for iso8601 and the Gregorian
+    // family only; the other calendars return CalendarDateUntil's unrounded difference (row F4, part C's).
     private JSValue Difference(JSValue other, JSValue options, int sign)
     {
         var target = RequireDate(ToTemporalDate(other));
@@ -324,21 +188,18 @@ public partial class JSTemporalPlainDate : JSObject
         // `since` is `-(this.until(other))`: the difference is always measured *from the receiver*
         // (so the year/month balancing anchors on the receiver's day-of-month), then negated for
         // since. Swapping the operands instead would re-anchor on the other date and give the wrong
-        // result at month boundaries. Computed in calendar space for the arithmetic calendars.
-        var self = CalendarYmd();
-        var othr = target.CalendarYmd();
-
+        // result at month boundaries. CalendarDateUntil, the shared library's, outside the ISO dates.
         double years, months, weeks, days;
         if (NonIso)
         {
-            (years, months, weeks, days) = TemporalNonIso.Difference(calendarId, self.y, self.m, self.d, othr.y, othr.m, othr.d, largestUnit);
+            (years, months, weeks, days) = TemporalAdapter.CalendarDateUntil(calendarId, IsoDate, target.IsoDate, largestUnit);
         }
         else
         {
             // The rounding mode is negated for "since" (the operands are negated), then the rounded
             // result is negated back below.
             var mode = sign == -1 ? ExactRounding.Negate(roundingMode) : roundingMode;
-            (years, months, weeks, days) = DifferenceISODateRounded(self.y, self.m, self.d, othr.y, othr.m, othr.d,
+            (years, months, weeks, days) = DifferenceISODateRounded(isoYear, isoMonth, isoDay, target.isoYear, target.isoMonth, target.isoDay,
                 largestUnit, smallestUnit, increment, mode);
         }
 
@@ -388,33 +249,19 @@ public partial class JSTemporalPlainDate : JSObject
             t.hour, t.minute, t.second, t.millisecond, t.microsecond, t.nanosecond, calendarId, JSTemporalPlainDateTime.PlainDateTimePrototype);
     }
 
+    // toPlainYearMonth: ISODateToFields and CalendarYearMonthFromFields under constrain, the shared library's - the
+    // first day of the calendar month, in the date's calendar (row C15).
     [JSExport("toPlainYearMonth", Length = 0)]
     public JSValue ToPlainYearMonth(in Arguments a)
-    {
-        // CalendarYearMonthFromFields canonicalizes the reference day: for the ISO calendar the
-        // year-month's reference ISO day is always 1 (so every date in a month maps to the same
-        // PlainYearMonth), independent of this date's day-of-month.
-        var referenceDay = calendarId == "iso8601" ? 1 : isoDay;
-        return new JSTemporalPlainYearMonth(isoYear, isoMonth, referenceDay, calendarId, JSTemporalPlainYearMonth.PlainYearMonthPrototype);
-    }
+        => new JSTemporalPlainYearMonth(TemporalAdapter.DateToYearMonth(calendarId, IsoDate), calendarId,
+            JSTemporalPlainYearMonth.PlainYearMonthPrototype);
 
+    // toPlainMonthDay: ISODateToFields and CalendarMonthDayFromFields under constrain, the shared library's - the
+    // calendar's reference date, and the date's calendar, the Gregorian family's included (row C16).
     [JSExport("toPlainMonthDay", Length = 0)]
     public JSValue ToPlainMonthDay(in Arguments a)
-    {
-        // For a non-ISO calendar the month-day must be re-projected onto the
-        // calendar's reference year (the canonical ISO reference date for this
-        // calendar's monthCode/day), not the date's own ISO month/day. Mirrors
-        // Temporal.PlainMonthDay.from({calendar, monthCode, day}).
-        if (NonIso)
-        {
-            var (cy, cm, cd) = CalendarYmd();
-            var code = TemporalCalendarMath.MonthCode(calendarId, cy, cm);
-            var (ny, nm, nd) = TemporalNonIso.MonthDayFromCode(calendarId, code, cd, "constrain");
-            return new JSTemporalPlainMonthDay(nm, nd, ny, calendarId, JSTemporalPlainMonthDay.PlainMonthDayPrototype);
-        }
-
-        return new JSTemporalPlainMonthDay(isoMonth, isoDay, 1972, JSTemporalPlainMonthDay.PlainMonthDayPrototype);
-    }
+        => new JSTemporalPlainMonthDay(TemporalAdapter.DateToMonthDay(calendarId, IsoDate), calendarId,
+            JSTemporalPlainMonthDay.PlainMonthDayPrototype);
 
     // toZonedDateTime(timeZone | { timeZone, plainTime }): combine this date with a time
     // (default midnight) and interpret it in the given zone.
@@ -458,70 +305,11 @@ public partial class JSTemporalPlainDate : JSObject
     private static JSTemporalPlainDate RequireDate(JSValue value)
         => value as JSTemporalPlainDate ?? throw JSEngine.NewTypeError("expected a Temporal.PlainDate");
 
-    private static int ToIntegerWithTruncation(JSValue value)
-    {
-        if (value == null || value.IsUndefined)
-            return 0;
-
-        return (int)TemporalRoundingOptions.ToIntegerWithTruncation(value, "Temporal.PlainDate: date component must be finite");
-    }
-
     // The PlainDate constructor's positional arguments are required: each is coerced with
     // ToIntegerWithTruncation, which does ToNumber first, so an absent / undefined argument (NaN) — or
-    // a non-numeric string — is a RangeError rather than silently defaulting to 0. (The field-bag
-    // overload above keeps the undefined→0 shortcut for optional fields.)
+    // a non-numeric string — is a RangeError rather than silently defaulting to 0.
     private static int ToIntegerWithTruncationArgument(JSValue value)
         => (int)TemporalRoundingOptions.ToIntegerWithTruncation(value ?? JSUndefined.Value, "Temporal.PlainDate: date component must be finite");
-
-
-    private static int MonthFromCode(string code)
-    {
-        var match = System.Text.RegularExpressions.Regex.Match(code, @"^M(\d{2})$");
-        if (!match.Success)
-            throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
-
-        // These ISO-based (12-month) calendar paths reject a well-formed but out-of-range code such
-        // as "M00" / "M13" up front — monthCode is never subject to the overflow option, so it must
-        // throw rather than be constrained.
-        var month = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
-        if (month is < 1 or > 12)
-            throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
-        return month;
-    }
-
-    // A well-formed monthCode is "M" + two digits + an optional leap-month "L" marker. This SYNTAX is
-    // validated when the field is read (before the year is coerced), so an ill-formed code such as
-    // "L99M" / "m1" / "M1" is a RangeError ahead of a bad year type — while a well-formed code's
-    // SUITABILITY for the calendar (MonthFromCodeIso) is a separate check made afterwards.
-    private static readonly System.Text.RegularExpressions.Regex MonthCodeSyntaxPattern = new(@"^M\d{2}L?$", RegexOptions.CultureInvariant);
-
-    private static void ValidateMonthCodeSyntax(string code)
-    {
-        if (!MonthCodeSyntaxPattern.IsMatch(code))
-            throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\"");
-    }
-
-    // A monthCode for the ISO calendar must be "M01".."M12" with no leap-month marker; a well-formed
-    // code outside that range (e.g. "M00", "M13", "M99L") references a month that does not exist.
-    // Assumes the syntax has already been validated by ValidateMonthCodeSyntax.
-    private static int MonthFromCodeIso(string code)
-    {
-        if (code.EndsWith("L", StringComparison.Ordinal) ||
-            !int.TryParse(code.AsSpan(1, 2), NumberStyles.None, CultureInfo.InvariantCulture, out var month) ||
-            month is < 1 or > 12)
-            throw JSEngine.NewRangeError($"Temporal: invalid monthCode \"{code}\" for the iso8601 calendar");
-        return month;
-    }
-
-    // month / day fields must be a positive (≥ 1) integer (RangeError otherwise, regardless of the
-    // overflow option); only the upper bound is subject to constrain / reject.
-    private static int ToPositiveIntegerWithTruncation(JSValue value)
-    {
-        var n = ToIntegerWithTruncation(value);
-        if (n < 1)
-            throw JSEngine.NewRangeError("Temporal.PlainDate: month and day must be positive");
-        return n;
-    }
 
     private static string ReadOverflow(JSValue options)
     {
@@ -625,68 +413,17 @@ public partial class JSTemporalPlainDate : JSObject
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainDate: invalid value");
 
+        // GetTemporalCalendarIdentifierWithISODefault, then PrepareCalendarFields in property order - day,
+        // [era, eraYear,] month, monthCode, year - each converted as it is read; then the overflow option; then
+        // CalendarDateFromFields, the shared library's, whose missing-field TypeErrors and RangeErrors follow the
+        // option.
         var calendarId = TemporalAdapter.CalendarWithIsoDefault(obj);
-
-        if (TemporalCalendarMath.IsNonIso(calendarId))
-        {
-            var nonIsoOverflow = ReadOverflow(options);
-            return ToNonIsoCalendarDate(obj, calendarId, nonIsoOverflow);
-        }
-
-        // PrepareCalendarFields: read each recognised field in alphabetical order — day, [era, eraYear,]
-        // month, monthCode, year — coercing it as it is read, so the property accesses are observed in
-        // that order. The iso8601 calendar has no eras, so era / eraYear are not fields and are not read
-        // for it. A malformed monthCode is rejected (RangeError) as it is read, before the year is
-        // coerced; a well-formed-but-unsuitable code's value is validated later in MonthFromCodeIso, so
-        // a bad year *type* is a TypeError ahead of it.
-        var hasEras = calendarId != "iso8601";
-
-        var dayValue = obj[KeyStrings.GetOrCreate("day")];
-        var day = dayValue.IsUndefined ? 0 : ToPositiveIntegerWithTruncation(dayValue);
-
-        JSValue eraValue = JSUndefined.Value;
-        JSValue eraYearValue = JSUndefined.Value;
-        string eraStr = null;
-        var eraYearInt = 0;
-        if (hasEras)
-        {
-            eraValue = obj[KeyStrings.GetOrCreate("era")];
-            eraStr = eraValue.IsUndefined ? null : eraValue.StringValue;
-            eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
-            eraYearInt = eraYearValue.IsUndefined ? 0 : ToIntegerWithTruncation(eraYearValue);
-        }
-
-        var monthValue = obj[KeyStrings.GetOrCreate("month")];
-        var monthFromMonth = monthValue.IsUndefined ? -1 : ToPositiveIntegerWithTruncation(monthValue);
-
-        var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthCodeStr = TemporalAdapter.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDate");
-        if (monthCodeStr != null)
-            ValidateMonthCodeSyntax(monthCodeStr);
-
-        var yearValue = obj[KeyStrings.GetOrCreate("year")];
-        var yearInt = yearValue.IsUndefined ? 0 : ToIntegerWithTruncation(yearValue);
-
-        var hasYear = !yearValue.IsUndefined;
-        var hasEra = !eraValue.IsUndefined;
-        var hasEraYear = !eraYearValue.IsUndefined;
-        if (!hasYear && !(hasEra && hasEraYear))
-            throw JSEngine.NewTypeError("Temporal.PlainDate: missing year (or era and eraYear)");
-        if (dayValue.IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.PlainDate: missing day");
-        if (monthValue.IsUndefined && monthCodeValue.IsUndefined)
-            throw JSEngine.NewTypeError("Temporal.PlainDate: missing month / monthCode");
+        var fields = new TemporalAdapter.CalendarFieldReader(obj, calendarId, "Temporal.PlainDate");
+        fields.DateFields();
 
         var overflow = ReadOverflow(options);
-
-        var isoYear = TemporalCalendar.ResolveIsoYear(calendarId,
-            hasYear, yearInt, hasEra, eraStr, hasEraYear, eraYearInt);
-
-        var month = monthCodeValue.IsUndefined ? monthFromMonth : MonthFromCodeIso(monthCodeStr);
-        if (monthFromMonth != -1 && !monthCodeValue.IsUndefined && monthFromMonth != month)
-            throw JSEngine.NewRangeError("Temporal.PlainDate: month and monthCode disagree");
-
-        return RegulateISODate(isoYear, month, day, overflow, calendarId);
+        return new JSTemporalPlainDate(TemporalAdapter.DateFromFields(calendarId, fields.Fields, overflow, "Temporal.PlainDate"),
+            calendarId, PlainDatePrototype);
     }
 
     // ParseISODateTime with the TemporalDateTimeString[~Zoned] goal: the shared library's grammar.
@@ -703,24 +440,6 @@ public partial class JSTemporalPlainDate : JSObject
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDate from \"{text}\"");
 
         return new JSTemporalPlainDate((int)date.Year, date.Month, date.Day, calendarId, PlainDatePrototype);
-    }
-
-    // RegulateISODate, then CreateTemporalDate's ISODateWithinLimits: the shared library's.
-    private static JSValue RegulateISODate(int year, int month, int day, string overflow, string calendarId = "iso8601")
-    {
-        var date = TemporalAdapter.RegulateIsoDate(year, month, day, overflow, "Temporal.PlainDate: date is out of range");
-        TemporalAdapter.Check(TemporalLimits.CheckIsoDate(date), "Temporal.PlainDate: date is out of range");
-        return new JSTemporalPlainDate((int)date.Year, date.Month, date.Day, calendarId, PlainDatePrototype);
-    }
-
-    // ── non-Gregorian calendar resolution / arithmetic ──────────────────────────
-
-    // Resolves a property bag for one of the non-Gregorian calendars to the stored ISO date
-    // (see TemporalNonIso for the shared resolution shared with Temporal.PlainDateTime).
-    private static JSValue ToNonIsoCalendarDate(JSObject obj, string calendarId, string overflow)
-    {
-        var (y, m, d) = TemporalNonIso.ToIsoFromBag(obj, calendarId, overflow, "Temporal.PlainDate");
-        return new JSTemporalPlainDate(y, m, d, calendarId, PlainDatePrototype);
     }
 
     // ── ISO 8601 calendar arithmetic ────────────────────────────────────────────

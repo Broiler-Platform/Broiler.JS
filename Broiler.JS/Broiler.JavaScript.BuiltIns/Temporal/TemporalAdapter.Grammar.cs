@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Temporal;
 using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.Runtime;
@@ -150,21 +149,5 @@ internal static partial class TemporalAdapter
         if (!value.IsString)
             throw JSEngine.NewTypeError($"{typeName}: {field} must be a string");
         return value.StringValue;
-    }
-
-    // The calendar-independent monthCode syntax: "M", two digits and an optional leap-month "L" ("M01", "M05L").
-    private static readonly System.Text.RegularExpressions.Regex MonthCodeSyntaxPattern = new(@"^M\d{2}L?$", RegexOptions.CultureInvariant);
-
-    /// <summary>
-    /// The monthCode syntax, checked as the field is read: an ill-formed code such as <c>L99M</c> is a
-    /// <c>RangeError</c> before sibling fields like <c>year</c> are converted and before the calendar's own check of
-    /// a well-formed code (so <c>L99M</c> with a Symbol year is a <c>RangeError</c>, and a well-formed <c>M99L</c>
-    /// with a Symbol year is the year's <c>TypeError</c>). The calendars' check, which part B of SJL-10.5 moves to
-    /// the shared library's <c>MonthCode.Parse</c>.
-    /// </summary>
-    internal static void RequireWellFormedMonthCode(string code, string typeName)
-    {
-        if (code != null && !MonthCodeSyntaxPattern.IsMatch(code))
-            throw JSEngine.NewRangeError($"{typeName}: invalid monthCode \"{code}\"");
     }
 }

@@ -81,10 +81,13 @@ public class Issue777Tests
             Eval(@"var d = Temporal.PlainDateTime.from({year:1922, month:1, day:1, hour:5, calendar:'indian'});
                    [d.year, d.monthCode, d.era, d.eraYear].join(',')"));
 
-    [Fact] // era resolution: { era:'saka', eraYear } resolves the year
+    [Fact] // era resolution: { era:'shaka', eraYear } resolves the year. The calendar's era is "shaka"; the "saka"
+           // spelling is refused, an era being matched exactly against Table 2 (row C9 of bundle sjl-10-001's
+           // correspondence, decision D4 of JSD-0078).
     public void IndianFromEra()
-        => Assert.Equal("2000-03-21",
-            Eval("Temporal.PlainDate.from({era:'saka', eraYear:1922, month:1, day:1, calendar:'indian'}).withCalendar('iso8601').toString()"));
+        => Assert.Equal("2000-03-21|RangeError",
+            Eval("Temporal.PlainDate.from({era:'shaka', eraYear:1922, month:1, day:1, calendar:'indian'}).withCalendar('iso8601').toString()") + "|" +
+            ErrorName("Temporal.PlainDate.from({era:'saka', eraYear:1922, month:1, day:1, calendar:'indian'})"));
 
     // ───────────────── PlainYearMonth non-ISO calendars (Problems 3/4/6/7/9) ─────────────────
 
