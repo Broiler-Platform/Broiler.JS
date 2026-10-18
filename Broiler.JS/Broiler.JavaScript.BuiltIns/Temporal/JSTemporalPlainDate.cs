@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
 using Broiler.ECMAScript.Temporal;
@@ -357,33 +356,17 @@ public partial class JSTemporalPlainDate : JSObject
             ? BooleanTrue : BooleanFalse;
     }
 
+    // TemporalDateToString, the shared library's, with the calendarName option.
     [JSExport("toString", Length = 0)]
-    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString(ReadCalendarName(a.GetAt(0))));
+    public JSValue ToStringMethod(in Arguments a)
+        => new JSString(TemporalFormat.DateToString(IsoDate, calendarId, TemporalAdapter.ReadShowCalendarName(a.GetAt(0))));
 
     [JSExport("toJSON", Length = 0)]
-    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToJSON(in Arguments a) => new JSString(TemporalFormat.DateToString(IsoDate, calendarId, ShowCalendarName.Auto));
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
         => Intl.JSIntlDateTimeFormat.TemporalToLocaleString(this, a.GetAt(0), a.GetAt(1));
-
-    // GetTemporalShowCalendarNameOption.
-    private static string ReadCalendarName(JSValue options)
-    {
-        if (options == null || options.IsUndefined) return "auto";
-        if (options is not JSObject optionsObject)
-            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-
-        var v = optionsObject[KeyStrings.GetOrCreate("calendarName")];
-        if (v.IsUndefined) return "auto";
-
-        var name = v.StringValue;
-        return name switch
-        {
-            "auto" or "always" or "never" or "critical" => name,
-            _ => throw JSEngine.NewRangeError($"Temporal: invalid calendarName \"{name}\""),
-        };
-    }
 
     [JSExport("valueOf", Length = 0)]
     public JSValue ValueOf(in Arguments a)
@@ -1064,31 +1047,4 @@ public partial class JSTemporalPlainDate : JSObject
     // Negates a duration component, mapping +0 to +0 (rather than -0) so a zero field of a `since`
     // result compares SameValue with the +0 the spec produces.
     internal static double Negate(double v) => v == 0 ? 0d : -v;
-
-    // YYYY-MM-DD, with a ±YYYYYY expanded year outside 0000–9999. The ISO calendar gets no
-    // "[u-ca=…]" annotation under the default calendarName "auto".
-    private string ToISOString(string showCalendar = "auto")
-    {
-        var sb = new StringBuilder();
-        if (isoYear < 0 || isoYear > 9999)
-            sb.Append(isoYear < 0 ? '-' : '+').Append(Math.Abs(isoYear).ToString("000000", CultureInfo.InvariantCulture));
-        else
-            sb.Append(isoYear.ToString("0000", CultureInfo.InvariantCulture));
-
-        sb.Append('-').Append(isoMonth.ToString("00", CultureInfo.InvariantCulture))
-          .Append('-').Append(isoDay.ToString("00", CultureInfo.InvariantCulture));
-
-        sb.Append(FormatCalendarAnnotation(calendarId, showCalendar));
-        return sb.ToString();
-    }
-
-    // FormatCalendarAnnotation: the [u-ca=…] suffix shown for a non-ISO calendar (auto), or always
-    // / never / critically per the calendarName option.
-    internal static string FormatCalendarAnnotation(string calendarId, string showCalendar) => showCalendar switch
-    {
-        "never" => "",
-        "always" => $"[u-ca={calendarId}]",
-        "critical" => $"[!u-ca={calendarId}]",
-        _ => calendarId == "iso8601" ? "" : $"[u-ca={calendarId}]", // auto
-    };
 }

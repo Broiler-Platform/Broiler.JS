@@ -126,37 +126,6 @@ internal static class TemporalRoundingOptions
             throw JSEngine.NewRangeError($"Temporal: roundingIncrement {increment} does not divide evenly into the next unit");
     }
 
-    // GetTemporalFractionalSecondDigitsOption: returns -1 for "auto", otherwise 0 … 9.
-    internal static int GetFractionalSecondDigits(JSObject options)
-    {
-        var v = options[KeyStrings.GetOrCreate("fractionalSecondDigits")];
-        if (v.IsUndefined) return -1;
-
-        if (!v.IsNumber)
-        {
-            if (v.StringValue != "auto")
-                throw JSEngine.NewRangeError("Temporal: fractionalSecondDigits must be \"auto\" or an integer 0..9");
-            return -1;
-        }
-
-        var n = v.DoubleValue;
-        if (double.IsNaN(n) || double.IsInfinity(n))
-            throw JSEngine.NewRangeError("Temporal: fractionalSecondDigits must be finite");
-
-        var digits = (int)Math.Floor(n);
-        if (digits < 0 || digits > 9)
-            throw JSEngine.NewRangeError("Temporal: fractionalSecondDigits out of range (0..9)");
-        return digits;
-    }
-
-    // 10^exponent for 0 ≤ exponent ≤ 9, as a nanosecond count.
-    internal static long Pow10(int exponent)
-    {
-        long result = 1;
-        for (var i = 0; i < exponent; i++) result *= 10;
-        return result;
-    }
-
     // NudgeToCalendarUnit (Temporal): total = r1 + progress × increment × sign, as an exact ratio,
     // where progress = progressed / span is the destination's distance from the window's start over
     // the window's length (both magnitudes, span > 0).

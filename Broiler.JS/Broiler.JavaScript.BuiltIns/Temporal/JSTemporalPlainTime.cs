@@ -1,8 +1,5 @@
 using System;
-using System.Globalization;
 using System.Numerics;
-using System.Text;
-using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
 using Broiler.ECMAScript.Temporal;
 using Broiler.ECMAScript.Time;
@@ -297,83 +294,23 @@ public partial class JSTemporalPlainTime : JSObject
     {
         var options = a.GetAt(0);
         if (options == null || options.IsUndefined)
-            return new JSString(ToISOString());
+            return ToJSON(a);
         if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
 
-        // Option-reading order per TemporalTimeToString: fractionalSecondDigits, roundingMode, then
-        // smallestUnit.
-        var digits = TemporalRoundingOptions.GetFractionalSecondDigits(o);
+        // The options are read in alphabetical order — fractionalSecondDigits, roundingMode, smallestUnit — each
+        // validated by its rule as it is read, the unit's group after the last read.
+        var digits = TemporalAdapter.ReadFractionalSecondDigits(o);
         var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, RoundingMode.Trunc);
+        var precision = TemporalAdapter.ToStringPrecision(TemporalAdapter.ReadSmallestUnitText(o), digits, duration: false, "Temporal.PlainTime");
 
-        var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
-        string smallestUnit = null;
-        if (!smallestRaw.IsUndefined)
-        {
-            smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(smallestRaw.StringValue, allowAuto: false);
-            if (smallestUnit == "hour")
-                throw JSEngine.NewRangeError("Temporal.PlainTime.toString: smallestUnit \"hour\" is not allowed");
-        }
-
-        // ToSecondsStringPrecisionRecord: a smallestUnit fixes both the displayed precision and the
-        // rounding increment; otherwise fractionalSecondDigits ("auto" → trimmed) is used.
-        long incrementNs; int fracDigits; var minutePrecision = false;
-        if (smallestUnit != null)
-        {
-            switch (smallestUnit)
-            {
-                case "minute": minutePrecision = true; incrementNs = 60_000_000_000; fracDigits = 0; break;
-                case "second": incrementNs = 1_000_000_000; fracDigits = 0; break;
-                case "millisecond": incrementNs = 1_000_000; fracDigits = 3; break;
-                case "microsecond": incrementNs = 1_000; fracDigits = 6; break;
-                default: incrementNs = 1; fracDigits = 9; break; // nanosecond
-            }
-        }
-        else if (digits < 0) // "auto"
-        {
-            return new JSString(ToISOString());
-        }
-        else
-        {
-            fracDigits = digits;
-            incrementNs = TemporalRoundingOptions.Pow10(9 - digits);
-        }
-
-        // Round the time-of-day to the increment; an overflow past midnight wraps (PlainTime has no
-        // date component to carry into).
-        var wrapped = TotalNanoseconds();
-        if (incrementNs > 1)
-        {
-            wrapped = (long)ExactRounding.RoundNumberToIncrement(TotalNanoseconds(), BigInteger.One, incrementNs, roundingMode) % NanosecondsPerDay;
-            if (wrapped < 0) wrapped += NanosecondsPerDay;
-        }
-
-        return new JSString(FormatTime(wrapped, fracDigits, minutePrecision));
-    }
-
-    // TemporalTimeToString with an explicit precision: "HH:MM" (minute precision) or "HH:MM:SS" plus a
-    // fixed number of fractional-second digits.
-    private static string FormatTime(long ns, int fracDigits, bool minutePrecision)
-    {
-        var totalSeconds = ns / 1_000_000_000;
-        var fraction = ns % 1_000_000_000;
-        var h = (int)(totalSeconds / 3600);
-        var mi = (int)(totalSeconds / 60 % 60);
-        var s = (int)(totalSeconds % 60);
-
-        var sb = new StringBuilder();
-        sb.Append(h.ToString("00", CultureInfo.InvariantCulture))
-          .Append(':').Append(mi.ToString("00", CultureInfo.InvariantCulture));
-        if (minutePrecision) return sb.ToString();
-
-        sb.Append(':').Append(s.ToString("00", CultureInfo.InvariantCulture));
-        if (fracDigits > 0)
-            sb.Append('.').Append(fraction.ToString("000000000", CultureInfo.InvariantCulture).Substring(0, fracDigits));
-        return sb.ToString();
+        // RoundTime then TimeRecordToString, the shared library's: a time rounded up to midnight wraps (a
+        // PlainTime has no date to carry into).
+        return new JSString(TemporalFormat.PlainTimeToString(IsoTime, precision, roundingMode));
     }
 
     [JSExport("toJSON", Length = 0)]
-    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToJSON(in Arguments a) => new JSString(TemporalFormat.TimeToString(IsoTime, TemporalFormat.AutoPrecision));
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
@@ -548,22 +485,4 @@ public partial class JSTemporalPlainTime : JSObject
         "microsecond" => 1_000,
         _ => 1,
     };
-
-    // TemporalTimeToString with auto precision: "HH:MM:SS" plus the trimmed fractional second.
-    private string ToISOString()
-    {
-        var sb = new StringBuilder();
-        sb.Append(hour.ToString("00", CultureInfo.InvariantCulture))
-          .Append(':').Append(minute.ToString("00", CultureInfo.InvariantCulture))
-          .Append(':').Append(second.ToString("00", CultureInfo.InvariantCulture));
-
-        var fraction = millisecond * 1_000_000 + microsecond * 1_000 + nanosecond;
-        if (fraction != 0)
-        {
-            var digits = fraction.ToString("000000000", CultureInfo.InvariantCulture).TrimEnd('0');
-            sb.Append('.').Append(digits);
-        }
-
-        return sb.ToString();
-    }
 }

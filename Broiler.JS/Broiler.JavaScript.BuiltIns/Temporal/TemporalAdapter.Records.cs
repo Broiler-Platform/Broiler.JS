@@ -89,7 +89,7 @@ internal static partial class TemporalAdapter
     // ── records ──────────────────────────────────────────────────────────────────
 
     /// <summary>A date-time record of a date's and a time's fields.</summary>
-    internal static IsoDateTime DateTime(long year, int month, int day, int hour, int minute, int second, int millisecond, int microsecond, int nanosecond) =>
+    internal static IsoDateTime IsoDateTimeOf(long year, int month, int day, int hour, int minute, int second, int millisecond, int microsecond, int nanosecond) =>
         new(new IsoDate(year, month, day), new IsoTime(hour, minute, second, millisecond, microsecond, nanosecond));
 
     /// <summary>

@@ -1,8 +1,5 @@
 using System;
-using System.Globalization;
 using System.Numerics;
-using System.Text;
-using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
 using Broiler.ECMAScript.Temporal;
 using Broiler.JavaScript.BuiltIns.Function;
@@ -146,7 +143,7 @@ public partial class JSTemporalDuration : JSObject
     public JSValue ToStringMethod(in Arguments a)
     {
         var optionsArg = a.GetAt(0);
-        var digits = -1; // "auto"
+        var digits = TemporalFormat.AutoPrecision;
         var roundingMode = RoundingMode.Trunc;
         string smallestUnit = null;
 
@@ -155,40 +152,25 @@ public partial class JSTemporalDuration : JSObject
             if (optionsArg is not JSObject options)
                 throw JSEngine.NewTypeError("Temporal.Duration.toString options must be an object or undefined");
 
-            digits = TemporalRoundingOptions.GetFractionalSecondDigits(options);
+            // The options are read in alphabetical order — fractionalSecondDigits, roundingMode, smallestUnit —
+            // each validated by its rule as it is read, the unit's group (no hour, no minute) after the last read.
+            digits = TemporalAdapter.ReadFractionalSecondDigits(options);
             roundingMode = TemporalRoundingOptions.GetRoundingMode(options, RoundingMode.Trunc);
-
-            var su = options[KeyStrings.GetOrCreate("smallestUnit")];
-            if (!su.IsUndefined)
-            {
-                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(su.StringValue, allowAuto: false);
-                if (smallestUnit is "hour" or "minute")
-                    throw JSEngine.NewRangeError($"Temporal.Duration.toString: smallestUnit \"{smallestUnit}\" is not supported");
-            }
+            smallestUnit = TemporalAdapter.ReadSmallestUnitText(options);
         }
 
-        // ToSecondsStringPrecisionRecord: precision -1 = auto, 0..9 = fixed fractional-second
-        // digits; incrementNs is the rounding step applied to the seconds field.
-        int precision;
-        long incrementNs;
-        if (smallestUnit != null)
-        {
-            (precision, incrementNs) = smallestUnit switch
-            {
-                "second" => (0, 1_000_000_000L),
-                "millisecond" => (3, 1_000_000L),
-                "microsecond" => (6, 1_000L),
-                _ => (9, 1L), // nanosecond
-            };
-        }
-        else if (digits == -1) { precision = -1; incrementNs = 1; }
-        else { precision = digits; incrementNs = TemporalRoundingOptions.Pow10(9 - digits); }
+        var precision = TemporalAdapter.ToStringPrecision(smallestUnit, digits, duration: true, "Temporal.Duration");
 
-        return new JSString(ToISOString(precision, incrementNs, roundingMode));
+        // The time part rounded (RoundTimeDuration), balanced up to the larger of the default largest unit and
+        // second, its validity checked, and TemporalDurationToString: the shared library's. Rounding up can push
+        // the duration past its limits, a RangeError.
+        TemporalAdapter.Check(TemporalFormat.TryDurationToString(Fields, precision, roundingMode, out var text),
+            "Temporal.Duration: rounded duration is out of range");
+        return new JSString(text);
     }
 
     [JSExport("toJSON", Length = 0)]
-    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString(-1, 1, RoundingMode.Trunc));
+    public JSValue ToJSON(in Arguments a) => new JSString(TemporalFormat.DurationToString(Fields, TemporalFormat.AutoPrecision));
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
@@ -365,137 +347,5 @@ public partial class JSTemporalDuration : JSObject
         TemporalAdapter.CheckDuration(d);
         return new JSTemporalDuration(d.Years, d.Months, d.Weeks, d.Days, d.Hours, d.Minutes, d.Seconds, d.Milliseconds, d.Microseconds,
             d.Nanoseconds, DurationPrototype);
-    }
-
-    // TemporalDurationToString: ISO-8601 with the seconds field assembled from seconds/ms/us/ns.
-    // `precision` controls the fractional-second digits (-1 = auto, 0..9 = fixed); `incrementNs`
-    // and `roundingMode` round the combined seconds value to that precision.
-    private string ToISOString(int precision, long incrementNs, RoundingMode roundingMode)
-    {
-        var sign = DurationSign();
-        var sb = new StringBuilder();
-        if (sign < 0) sb.Append('-');
-        sb.Append('P');
-
-        void DatePart(BigInteger v, char unit)
-        {
-            if (!v.IsZero) sb.Append(v.ToString(CultureInfo.InvariantCulture)).Append(unit);
-        }
-
-        var absDays = new BigInteger(Math.Abs(days));
-
-        // The whole-seconds and sub-second components combined into a nanosecond magnitude.
-        var secondsNs = new BigInteger(Math.Abs(seconds)) * 1_000_000_000
-            + new BigInteger(Math.Abs(milliseconds)) * 1_000_000
-            + new BigInteger(Math.Abs(microseconds)) * 1_000
-            + new BigInteger(Math.Abs(nanoseconds));
-
-        BigInteger hoursOut = new(Math.Abs(hours));
-        BigInteger minutesOut = new(Math.Abs(minutes));
-        BigInteger wholeSeconds = secondsNs / 1_000_000_000;
-        var fraction = (long)(secondsNs % 1_000_000_000);
-        var daysOut = absDays;
-
-        if (incrementNs > 1)
-        {
-            // Round the WHOLE time portion (hours + minutes + seconds + sub-seconds) to the
-            // requested precision, then balance the result back up to (at most) the
-            // duration's largest unit, floored at "second" — TemporalDurationToString uses
-            // roundedLargestUnit = LargerOfTwoTemporalUnits(DefaultTemporalLargestUnit, "second").
-            // So rounding can cross unit boundaries: seconds into minutes/hours and, when the
-            // largest unit is day or larger, into days — but never up into weeks/months/years.
-            var timeNs = hoursOut * 3_600_000_000_000
-                + minutesOut * 60_000_000_000
-                + secondsNs;
-
-            var signed = sign < 0 ? -timeNs : timeNs;
-            signed = ExactRounding.RoundNumberToIncrement(signed, BigInteger.One, incrementNs, roundingMode);
-            timeNs = BigInteger.Abs(signed);
-
-            // TemporalDurationFromInternal: the rounded duration must still be valid — rounding the
-            // time up (ceil/expand) can push the total elapsed time to/over the 2^53-second limit.
-            var roundedTimeNs = absDays * 86_400_000_000_000 + timeNs;
-            if (roundedTimeNs >= (BigInteger)9007199254740992d * 1_000_000_000)
-                throw JSEngine.NewRangeError("Temporal.Duration: rounded duration is out of range");
-
-            fraction = (long)(timeNs % 1_000_000_000);
-            var totalSeconds = timeNs / 1_000_000_000;
-
-            // cap = the rank of LargerOfTwoTemporalUnits(DefaultTemporalLargestUnit, "second").
-            // Ranks: day=6, hour=5, minute=4, second(+finer)=3.
-            var cap = Math.Max(DefaultLargestUnitRank(), 3);
-            if (cap >= 6) // day or larger: time balances all the way into days
-            {
-                wholeSeconds = totalSeconds % 60;
-                var totalMinutes = totalSeconds / 60;
-                minutesOut = totalMinutes % 60;
-                var totalHours = totalMinutes / 60;
-                hoursOut = totalHours % 24;
-                daysOut = absDays + totalHours / 24;
-            }
-            else if (cap == 5) // hour: balance up to (uncapped) hours
-            {
-                wholeSeconds = totalSeconds % 60;
-                var totalMinutes = totalSeconds / 60;
-                minutesOut = totalMinutes % 60;
-                hoursOut = totalMinutes / 60;
-            }
-            else if (cap == 4) // minute: balance up to (uncapped) minutes
-            {
-                wholeSeconds = totalSeconds % 60;
-                minutesOut = totalSeconds / 60;
-                hoursOut = BigInteger.Zero;
-            }
-            else // second or finer: seconds stay as a single (possibly >= 60) value
-            {
-                wholeSeconds = totalSeconds;
-                minutesOut = BigInteger.Zero;
-                hoursOut = BigInteger.Zero;
-            }
-        }
-
-        DatePart(new BigInteger(Math.Abs(years)), 'Y');
-        DatePart(new BigInteger(Math.Abs(months)), 'M');
-        DatePart(new BigInteger(Math.Abs(weeks)), 'W');
-        DatePart(daysOut, 'D');
-
-        // With a fixed precision the seconds field is always emitted; with auto it appears only
-        // when nonzero.
-        var showSeconds = !wholeSeconds.IsZero || fraction != 0 || precision >= 0;
-        var hasTime = !hoursOut.IsZero || !minutesOut.IsZero || showSeconds;
-        if (hasTime)
-        {
-            sb.Append('T');
-            if (!hoursOut.IsZero) sb.Append(hoursOut.ToString(CultureInfo.InvariantCulture)).Append('H');
-            if (!minutesOut.IsZero) sb.Append(minutesOut.ToString(CultureInfo.InvariantCulture)).Append('M');
-            if (showSeconds)
-            {
-                sb.Append(wholeSeconds.ToString(CultureInfo.InvariantCulture));
-                JSTemporalInstant.AppendFraction(sb, fraction, precision);
-                sb.Append('S');
-            }
-        }
-
-        // The zero duration is "PT0S".
-        if (sb.Length == (sign < 0 ? 2 : 1))
-            sb.Append("T0S");
-
-        return sb.ToString();
-    }
-
-    // DefaultTemporalLargestUnit rank: the largest unit with a nonzero value.
-    // year=9, month=8, week=7, day=6, hour=5, minute=4, second=3, ms=2, us=1, ns=0.
-    private int DefaultLargestUnitRank()
-    {
-        if (years != 0) return 9;
-        if (months != 0) return 8;
-        if (weeks != 0) return 7;
-        if (days != 0) return 6;
-        if (hours != 0) return 5;
-        if (minutes != 0) return 4;
-        if (seconds != 0) return 3;
-        if (milliseconds != 0) return 2;
-        if (microseconds != 0) return 1;
-        return 0;
     }
 }

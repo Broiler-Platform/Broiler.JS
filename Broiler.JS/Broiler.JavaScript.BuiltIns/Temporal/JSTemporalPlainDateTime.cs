@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using System.Numerics;
-using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
 using Broiler.ECMAScript.Temporal;
@@ -84,7 +83,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         int hour, int minute, int second, int millisecond, int microsecond, int nanosecond,
         string calendarId, JSObject prototype)
     {
-        if (!TemporalAdapter.IsoDateTimeWithinLimits(TemporalAdapter.DateTime(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond)))
+        if (!TemporalAdapter.IsoDateTimeWithinLimits(TemporalAdapter.IsoDateTimeOf(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond)))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: date-time is out of range");
         return new JSTemporalPlainDateTime(
             isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond, calendarId, prototype);
@@ -371,7 +370,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     // earliest in-range time, so a midnight time may push it out of range).
     private JSValue CombineWithTime(int h, int mi, int s, int ms, int us, int ns)
     {
-        if (!TemporalAdapter.IsoDateTimeWithinLimits(TemporalAdapter.DateTime(isoYear, isoMonth, isoDay, h, mi, s, ms, us, ns)))
+        if (!TemporalAdapter.IsoDateTimeWithinLimits(TemporalAdapter.IsoDateTimeOf(isoYear, isoMonth, isoDay, h, mi, s, ms, us, ns)))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: date-time is out of range");
         return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, h, mi, s, ms, us, ns, calendarId, PlainDateTimePrototype);
     }
@@ -572,90 +571,32 @@ public partial class JSTemporalPlainDateTime : JSObject
     {
         var options = a.GetAt(0);
         if (options == null || options.IsUndefined)
-            return new JSString(ToISOString());
+            return ToJSON(a);
         if (options is not JSObject o)
             throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
 
-        // Option-reading order per TemporalDateTimeToString: calendarName, fractionalSecondDigits,
-        // roundingMode, then smallestUnit.
-        var showCalendar = ReadCalendarName(options);
-        var digits = TemporalRoundingOptions.GetFractionalSecondDigits(o);
+        // The options are read in alphabetical order — calendarName, fractionalSecondDigits, roundingMode,
+        // smallestUnit — each validated by its rule as it is read, the unit's group after the last read.
+        var showCalendar = TemporalAdapter.ReadShowCalendarName(o);
+        var digits = TemporalAdapter.ReadFractionalSecondDigits(o);
         var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, RoundingMode.Trunc);
+        var precision = TemporalAdapter.ToStringPrecision(TemporalAdapter.ReadSmallestUnitText(o), digits, duration: false, "Temporal.PlainDateTime");
 
-        var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
-        string smallestUnit = null;
-        if (!smallestRaw.IsUndefined)
-        {
-            smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(smallestRaw.StringValue, allowAuto: false);
-            if (smallestUnit == "hour")
-                throw JSEngine.NewRangeError("Temporal.PlainDateTime.toString: smallestUnit \"hour\" is not allowed");
-        }
-
-        // ToSecondsStringPrecisionRecord: a smallestUnit fixes both the displayed precision and the
-        // rounding increment; otherwise fractionalSecondDigits ("auto" → trimmed) is used.
-        long incrementNs; int fracDigits; var minutePrecision = false;
-        if (smallestUnit != null)
-        {
-            switch (smallestUnit)
-            {
-                case "minute": minutePrecision = true; incrementNs = 60_000_000_000; fracDigits = 0; break;
-                case "second": incrementNs = 1_000_000_000; fracDigits = 0; break;
-                case "millisecond": incrementNs = 1_000_000; fracDigits = 3; break;
-                case "microsecond": incrementNs = 1_000; fracDigits = 6; break;
-                default: incrementNs = 1; fracDigits = 9; break; // nanosecond
-            }
-        }
-        else if (digits < 0) // "auto"
-        {
-            return new JSString(ToISOString(showCalendar));
-        }
-        else
-        {
-            fracDigits = digits;
-            incrementNs = TemporalRoundingOptions.Pow10(9 - digits);
-        }
-
-        // RoundISODateTime: round the wall-clock time to the increment, carrying any day overflow
-        // into the date.
-        var dateTime = IsoDateTime;
-        if (incrementNs > 1)
-        {
-            var rounded = ExactRounding.RoundNumberToIncrement(TimeNanoseconds(), BigInteger.One, incrementNs, roundingMode);
-            dateTime = IsoArithmetic.BalanceIsoDateTime(IsoDate, rounded);
-
-            // Rounding can carry the wall clock past the representable range (test262
-            // toString/rounding-edge-of-range): reject an out-of-limits result.
-            if (!TemporalAdapter.IsoDateTimeWithinLimits(dateTime))
-                throw JSEngine.NewRangeError("Temporal.PlainDateTime.toString: result is out of range");
-        }
-
-        return new JSString(FormatISOString(dateTime, showCalendar, fracDigits, minutePrecision));
+        // RoundISODateTime, ISODateTimeWithinLimits and ISODateTimeToString: the shared library's. Rounding can
+        // carry the wall clock past the representable range (test262 toString/rounding-edge-of-range).
+        TemporalAdapter.Check(
+            TemporalFormat.TryPlainDateTimeToString(IsoDateTime, calendarId, precision, roundingMode, showCalendar, out var text),
+            "Temporal.PlainDateTime.toString: result is out of range");
+        return new JSString(text);
     }
 
     [JSExport("toJSON", Length = 0)]
-    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToJSON(in Arguments a)
+        => new JSString(TemporalFormat.DateTimeToString(IsoDateTime, calendarId, TemporalFormat.AutoPrecision, ShowCalendarName.Auto));
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
         => Intl.JSIntlDateTimeFormat.TemporalToLocaleString(this, a.GetAt(0), a.GetAt(1));
-
-    // GetTemporalShowCalendarNameOption (shared shape with PlainDate).
-    private static string ReadCalendarName(JSValue options)
-    {
-        if (options == null || options.IsUndefined) return "auto";
-        if (options is not JSObject optionsObject)
-            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-
-        var v = optionsObject[KeyStrings.GetOrCreate("calendarName")];
-        if (v.IsUndefined) return "auto";
-
-        var name = v.StringValue;
-        return name switch
-        {
-            "auto" or "always" or "never" or "critical" => name,
-            _ => throw JSEngine.NewRangeError($"Temporal: invalid calendarName \"{name}\""),
-        };
-    }
 
     [JSExport("valueOf", Length = 0)]
     public JSValue ValueOf(in Arguments a)
@@ -1111,49 +1052,5 @@ public partial class JSTemporalPlainDateTime : JSObject
         TemporalRoundingOptions.ValidateRoundingIncrement(increment, maximum, inclusive: smallestUnit == "day");
 
         return (smallestUnit, increment, roundingMode);
-    }
-
-    // YYYY-MM-DDTHH:MM:SS with auto fractional-second precision, plus the calendar annotation.
-    private string ToISOString(string showCalendar = "auto")
-        => FormatISOString(IsoDateTime, showCalendar, fracDigits: -1, minutePrecision: false);
-
-    // Formats an ISO date-time string. fracDigits < 0 trims trailing zeros (auto precision);
-    // fracDigits == 0 omits the fractional second; a positive count pads/truncates to that many
-    // digits. minutePrecision omits the seconds component entirely.
-    private string FormatISOString(IsoDateTime dateTime, string showCalendar, int fracDigits, bool minutePrecision)
-    {
-        var y = (int)dateTime.Date.Year; var mo = dateTime.Date.Month; var d = dateTime.Date.Day;
-        var (h, mi, s, ms, us, ns) = (dateTime.Time.Hour, dateTime.Time.Minute, dateTime.Time.Second,
-            dateTime.Time.Millisecond, dateTime.Time.Microsecond, dateTime.Time.Nanosecond);
-
-        var sb = new StringBuilder();
-        if (y < 0 || y > 9999)
-            sb.Append(y < 0 ? '-' : '+').Append(Math.Abs(y).ToString("000000", CultureInfo.InvariantCulture));
-        else
-            sb.Append(y.ToString("0000", CultureInfo.InvariantCulture));
-
-        sb.Append('-').Append(mo.ToString("00", CultureInfo.InvariantCulture))
-          .Append('-').Append(d.ToString("00", CultureInfo.InvariantCulture))
-          .Append('T').Append(h.ToString("00", CultureInfo.InvariantCulture))
-          .Append(':').Append(mi.ToString("00", CultureInfo.InvariantCulture));
-
-        if (!minutePrecision)
-        {
-            sb.Append(':').Append(s.ToString("00", CultureInfo.InvariantCulture));
-
-            var fraction = ms * 1_000_000 + us * 1_000 + ns;
-            if (fracDigits < 0)
-            {
-                if (fraction != 0)
-                    sb.Append('.').Append(fraction.ToString("000000000", CultureInfo.InvariantCulture).TrimEnd('0'));
-            }
-            else if (fracDigits > 0)
-            {
-                sb.Append('.').Append(fraction.ToString("000000000", CultureInfo.InvariantCulture).Substring(0, fracDigits));
-            }
-        }
-
-        sb.Append(JSTemporalPlainDate.FormatCalendarAnnotation(calendarId, showCalendar));
-        return sb.ToString();
     }
 }

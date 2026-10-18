@@ -1,11 +1,7 @@
 using System;
-using System.Globalization;
 using System.Numerics;
-using System.Text;
-using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
 using Broiler.ECMAScript.Temporal;
-using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
@@ -279,7 +275,7 @@ public partial class JSTemporalInstant : JSObject
     public JSValue ToStringMethod(in Arguments a)
     {
         var optionsArg = a.GetAt(0);
-        var digits = -1; // "auto"
+        var digits = TemporalFormat.AutoPrecision;
         var roundingMode = RoundingMode.Trunc;
         string smallestUnit = null;
         string timeZoneId = null;
@@ -289,68 +285,36 @@ public partial class JSTemporalInstant : JSObject
             if (optionsArg is not JSObject options)
                 throw JSEngine.NewTypeError("Temporal.Instant.toString options must be an object or undefined");
 
-            // The options are read in alphabetical order — fractionalSecondDigits,
-            // roundingMode, smallestUnit, timeZone — and EVERY option is read (its getter
-            // fired and value coerced) before any algorithmic validation runs, so a date
-            // smallestUnit such as "month" is rejected only after timeZone has been read
-            // (test262 Instant/prototype/toString options-read-before-algorithmic-validation).
-            digits = TemporalRoundingOptions.GetFractionalSecondDigits(options);
+            // The options are read in alphabetical order — fractionalSecondDigits, roundingMode,
+            // smallestUnit, timeZone — and EVERY option is read (its getter fired and value coerced)
+            // before the unit's group is validated, so a date smallestUnit such as "month" is rejected
+            // only after timeZone has been read (test262 Instant/prototype/toString
+            // options-read-before-algorithmic-validation).
+            digits = TemporalAdapter.ReadFractionalSecondDigits(options);
             roundingMode = TemporalRoundingOptions.GetRoundingMode(options, RoundingMode.Trunc);
-
-            // Coerce smallestUnit to a string now (firing its toString); defer the
-            // time-unit validation until after timeZone is read.
-            var su = options[KeyStrings.GetOrCreate("smallestUnit")];
-            var smallestUnitRaw = su.IsUndefined ? null : su.StringValue;
+            smallestUnit = TemporalAdapter.ReadSmallestUnitText(options);
 
             // A timeZone option displays the instant in that zone (with its numeric offset) instead of
             // UTC; it must be a valid time-zone identifier — a bare date-time string is a RangeError.
             var tz = options[KeyStrings.GetOrCreate("timeZone")];
             if (!tz.IsUndefined)
                 timeZoneId = JSTemporalZonedDateTime.ToTimeZoneIdentifier(tz);
-
-            if (smallestUnitRaw != null)
-                smallestUnit = TemporalRoundingOptions.NormalizeTimeUnit(smallestUnitRaw, allowAuto: false);
-
-            if (smallestUnit == "hour")
-                throw JSEngine.NewRangeError("Temporal.Instant.toString: smallestUnit cannot be \"hour\"");
         }
 
-        // ToSecondsStringPrecisionRecord: precision -2 = minutes (no seconds), -1 = auto,
-        // 0..9 = a fixed number of fractional-second digits; incrementNs is the rounding step.
-        int precision;
-        long incrementNs;
-        if (smallestUnit != null)
-        {
-            (precision, incrementNs) = smallestUnit switch
-            {
-                "minute" => (-2, 60_000_000_000L),
-                "second" => (0, 1_000_000_000L),
-                "millisecond" => (3, 1_000_000L),
-                "microsecond" => (6, 1_000L),
-                _ => (9, 1L), // nanosecond
-            };
-        }
-        else if (digits == -1) { precision = -1; incrementNs = 1; }
-        else { precision = digits; incrementNs = TemporalRoundingOptions.Pow10(9 - digits); }
+        var precision = TemporalAdapter.ToStringPrecision(smallestUnit, digits, duration: false, "Temporal.Instant");
 
-        var rounded = ExactRounding.RoundNumberToIncrementAsIfPositive(epochNanoseconds, BigInteger.One, incrementNs, roundingMode);
+        // RoundTemporalInstant, then TemporalInstantToString with the offset in force at the rounded instant:
+        // the shared library's.
+        var rounded = IsoArithmetic.RoundTemporalInstant(epochNanoseconds, precision.Increment, precision.Unit, roundingMode);
         if (!IsValid(rounded))
             throw JSEngine.NewRangeError("Temporal.Instant.toString: result is out of range");
 
-        if (timeZoneId == null)
-            return new JSString(FormatISO(rounded, precision));
-
-        // Display the instant in the requested zone: shift to its local wall clock and append the
-        // numeric UTC offset in place of the "Z" designator.
-        var offsetNs = TemporalTimeZones.OffsetNanoseconds(timeZoneId, rounded);
-        var localFraction = FormatISO(rounded + offsetNs, precision);
-        // Replace the trailing "Z" with the offset string.
-        return new JSString(localFraction.Substring(0, localFraction.Length - 1)
-            + JSTemporalZonedDateTime.FormatOffsetRounded(offsetNs));
+        long? offsetNs = timeZoneId == null ? null : TemporalTimeZones.OffsetNanoseconds(timeZoneId, rounded);
+        return new JSString(TemporalFormat.InstantToString(rounded, offsetNs, precision.Precision));
     }
 
     [JSExport("toJSON", Length = 0)]
-    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToJSON(in Arguments a) => new JSString(TemporalFormat.InstantToString(epochNanoseconds, null, TemporalFormat.AutoPrecision));
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
@@ -407,73 +371,9 @@ public partial class JSTemporalInstant : JSObject
         _ => 1,
     };
 
-    private static BigInteger FloorDiv(BigInteger a, BigInteger b)
-    {
-        var q = BigInteger.DivRem(a, b, out var r);
-        if (r != 0 && (r < 0) != (b < 0))
-            q -= 1;
-        return q;
-    }
-
     // ParseTemporalInstant, the shared library's grammar: a date-time that must carry Z or a UTC offset (to
     // sub-minute precision), its annotations checked and their payload ignored, the offset applied, and the
     // instant within the representable range.
     private static JSValue ParseTemporalInstant(string text)
         => new JSTemporalInstant(TemporalAdapter.ParseInstant(text), InstantPrototype);
-
-    private string ToISOString() => FormatISO(epochNanoseconds, precision: -1);
-
-    // Renders epoch nanoseconds as an ISO-8601 UTC string. `precision` controls the seconds field:
-    // -2 omits seconds (minute precision), -1 emits the minimal (auto) fractional part, and 0..9
-    // emits exactly that many fractional digits.
-    private static string FormatISO(BigInteger ns, int precision)
-    {
-        var totalSeconds = FloorDiv(ns, 1_000_000_000);
-        var fraction = ns - totalSeconds * 1_000_000_000; // [0, 1e9)
-
-        var days = (long)FloorDiv(totalSeconds, 86400);
-        var secondsOfDay = (long)(totalSeconds - new BigInteger(days) * 86400);
-
-        var (y, m, d) = IsoCalendarMath.FromEpochDays(days);
-        var hour = secondsOfDay / 3600;
-        var minute = secondsOfDay % 3600 / 60;
-        var second = secondsOfDay % 60;
-
-        var sb = new StringBuilder();
-        if (y < 0 || y > 9999)
-            sb.Append(y < 0 ? '-' : '+').Append(Math.Abs(y).ToString("000000", CultureInfo.InvariantCulture));
-        else
-            sb.Append(y.ToString("0000", CultureInfo.InvariantCulture));
-
-        sb.Append('-').Append(m.ToString("00", CultureInfo.InvariantCulture))
-          .Append('-').Append(d.ToString("00", CultureInfo.InvariantCulture))
-          .Append('T').Append(hour.ToString("00", CultureInfo.InvariantCulture))
-          .Append(':').Append(minute.ToString("00", CultureInfo.InvariantCulture));
-
-        if (precision != -2)
-        {
-            sb.Append(':').Append(second.ToString("00", CultureInfo.InvariantCulture));
-            AppendFraction(sb, (long)fraction, precision);
-        }
-
-        sb.Append('Z');
-        return sb.ToString();
-    }
-
-    // Appends the fractional-second part for a 0..999_999_999 nanosecond value. precision -1 trims
-    // trailing zeros (and omits the field entirely when zero); 0 omits it; 1..9 zero-pads to width.
-    internal static void AppendFraction(StringBuilder sb, long fractionNs, int precision)
-    {
-        if (precision == 0) return;
-        if (precision < 0)
-        {
-            if (fractionNs == 0) return;
-            var frac = fractionNs.ToString("000000000", CultureInfo.InvariantCulture).TrimEnd('0');
-            sb.Append('.').Append(frac);
-            return;
-        }
-
-        var digits = fractionNs.ToString("000000000", CultureInfo.InvariantCulture).Substring(0, precision);
-        sb.Append('.').Append(digits);
-    }
 }

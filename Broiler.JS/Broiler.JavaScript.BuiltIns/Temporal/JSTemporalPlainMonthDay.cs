@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Temporal;
 using Broiler.ECMAScript.Time;
@@ -247,29 +246,14 @@ public partial class JSTemporalPlainMonthDay : JSObject
         return new JSTemporalPlainDate(year, isoMonth, day, calendarId, JSTemporalPlainDate.PlainDatePrototype);
     }
 
+    // TemporalMonthDayToString, the shared library's, with the calendarName option: the reference year is
+    // written where the calendar is not iso8601 or the annotation is forced.
     [JSExport("toString", Length = 0)]
-    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString(ReadCalendarName(a.GetAt(0))));
-
-    // GetTemporalShowCalendarNameOption (shared shape with PlainDate).
-    private static string ReadCalendarName(JSValue options)
-    {
-        if (options == null || options.IsUndefined) return "auto";
-        if (options is not JSObject optionsObject)
-            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-
-        var v = optionsObject[KeyStrings.GetOrCreate("calendarName")];
-        if (v.IsUndefined) return "auto";
-
-        var name = v.StringValue;
-        return name switch
-        {
-            "auto" or "always" or "never" or "critical" => name,
-            _ => throw JSEngine.NewRangeError($"Temporal: invalid calendarName \"{name}\""),
-        };
-    }
+    public JSValue ToStringMethod(in Arguments a)
+        => new JSString(TemporalFormat.MonthDayToString(IsoDate, calendarId, TemporalAdapter.ReadShowCalendarName(a.GetAt(0))));
 
     [JSExport("toJSON", Length = 0)]
-    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToJSON(in Arguments a) => new JSString(TemporalFormat.MonthDayToString(IsoDate, calendarId, ShowCalendarName.Auto));
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
@@ -510,34 +494,5 @@ public partial class JSTemporalPlainMonthDay : JSObject
 
         // The resolved value is always stored against the canonical leap-year reference (1972).
         return new JSTemporalPlainMonthDay(date.Month, date.Day, DefaultReferenceYear, calendarId, PlainMonthDayPrototype);
-    }
-
-    // ── ISO helpers ───────────────────────────────────────────────────────────────
-
-    private string ToISOString() => ToISOString("auto");
-
-    // MM-DD for the ISO calendar. Per TemporalMonthDayToString the reference year is prefixed
-    // (YYYY-MM-DD) when showCalendar forces the calendar to appear (always/critical) or when a
-    // non-ISO calendar is attached (so the value round-trips). The calendar is annotated when
-    // showCalendar forces it (always/critical) or, for "auto", when it is not iso8601.
-    private string ToISOString(string showCalendar)
-    {
-        var nonIsoCalendar = calendarId != "iso8601";
-        var sb = new StringBuilder();
-        if (showCalendar is "always" or "critical" || nonIsoCalendar)
-        {
-            if (referenceISOYear < 0 || referenceISOYear > 9999)
-                sb.Append(referenceISOYear < 0 ? '-' : '+').Append(Math.Abs(referenceISOYear).ToString("000000", CultureInfo.InvariantCulture));
-            else
-                sb.Append(referenceISOYear.ToString("0000", CultureInfo.InvariantCulture));
-            sb.Append('-');
-        }
-
-        sb.Append(isoMonth.ToString("00", CultureInfo.InvariantCulture))
-          .Append('-').Append(isoDay.ToString("00", CultureInfo.InvariantCulture));
-
-        if (showCalendar is "always" or "critical" || (showCalendar == "auto" && nonIsoCalendar))
-            sb.Append(showCalendar == "critical" ? $"[!u-ca={calendarId}]" : $"[u-ca={calendarId}]");
-        return sb.ToString();
     }
 }

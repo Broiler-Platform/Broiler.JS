@@ -1,6 +1,5 @@
 using System;
 using System.Globalization;
-using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
 using Broiler.ECMAScript.Temporal;
@@ -469,33 +468,18 @@ public partial class JSTemporalPlainYearMonth : JSObject
         return new JSTemporalPlainDate(isoYear, isoMonth, day, calendarId, JSTemporalPlainDate.PlainDatePrototype);
     }
 
+    // TemporalYearMonthToString, the shared library's, with the calendarName option: the reference day is
+    // written where the calendar is not iso8601 or the annotation is forced.
     [JSExport("toString", Length = 0)]
-    public JSValue ToStringMethod(in Arguments a) => new JSString(ToISOString(ReadCalendarName(a.GetAt(0))));
+    public JSValue ToStringMethod(in Arguments a)
+        => new JSString(TemporalFormat.YearMonthToString(IsoDate, calendarId, TemporalAdapter.ReadShowCalendarName(a.GetAt(0))));
 
     [JSExport("toJSON", Length = 0)]
-    public JSValue ToJSON(in Arguments a) => new JSString(ToISOString());
+    public JSValue ToJSON(in Arguments a) => new JSString(TemporalFormat.YearMonthToString(IsoDate, calendarId, ShowCalendarName.Auto));
 
     [JSExport("toLocaleString", Length = 0)]
     public JSValue ToLocaleString(in Arguments a)
         => Intl.JSIntlDateTimeFormat.TemporalToLocaleString(this, a.GetAt(0), a.GetAt(1));
-
-    // GetTemporalShowCalendarNameOption.
-    private static string ReadCalendarName(JSValue options)
-    {
-        if (options == null || options.IsUndefined) return "auto";
-        if (options is not JSObject optionsObject)
-            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-
-        var v = optionsObject[KeyStrings.GetOrCreate("calendarName")];
-        if (v.IsUndefined) return "auto";
-
-        var name = v.StringValue;
-        return name switch
-        {
-            "auto" or "always" or "never" or "critical" => name,
-            _ => throw JSEngine.NewRangeError($"Temporal: invalid calendarName \"{name}\""),
-        };
-    }
 
     [JSExport("valueOf", Length = 0)]
     public JSValue ValueOf(in Arguments a)
@@ -717,33 +701,5 @@ public partial class JSTemporalPlainYearMonth : JSObject
         var date = TemporalAdapter.RegulateIsoDate(year, month, 1, overflow, "Temporal.PlainYearMonth: month is out of range");
         TemporalAdapter.Check(TemporalLimits.CheckIsoYearMonth(date), "Temporal.PlainYearMonth: year-month is out of range");
         return new JSTemporalPlainYearMonth((int)date.Year, date.Month, 1, calendarId, PlainYearMonthPrototype);
-    }
-
-    // TemporalYearMonthToString: "YYYY-MM" (expanding to ±YYYYYY outside 0000–9999). For a
-    // non-ISO calendar the reference ISO day is ALWAYS appended (the day is required to
-    // round-trip a YYYY-MM date through the calendar's month-day projection) regardless of
-    // the calendarName option; only the optional [u-ca=…] annotation responds to
-    // showCalendar (always / critical / auto / never).
-    private string ToISOString(string showCalendar = "auto")
-    {
-        var sb = new StringBuilder();
-        if (isoYear < 0 || isoYear > 9999)
-            sb.Append(isoYear < 0 ? '-' : '+').Append(Math.Abs(isoYear).ToString("000000", CultureInfo.InvariantCulture));
-        else
-            sb.Append(isoYear.ToString("0000", CultureInfo.InvariantCulture));
-
-        sb.Append('-').Append(isoMonth.ToString("00", CultureInfo.InvariantCulture));
-
-        var isNonIso = calendarId != "iso8601";
-        var showAnnotation = showCalendar is "always" or "critical" || (showCalendar == "auto" && isNonIso);
-        // The reference day is appended whenever the calendar is shown OR when the calendar
-        // is non-ISO (so the day round-trips even with calendarName: "never").
-        if (showAnnotation || isNonIso)
-            sb.Append('-').Append(referenceISODay.ToString("00", CultureInfo.InvariantCulture));
-        if (showAnnotation)
-            sb.Append(JSTemporalPlainDate.FormatCalendarAnnotation(calendarId,
-                showCalendar == "critical" ? "critical" : "always"));
-
-        return sb.ToString();
     }
 }
