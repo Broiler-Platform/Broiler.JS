@@ -870,6 +870,124 @@ the rule as written:
 None of it is accepted: no second holder exists to review it. Broiler.VM's clauses 12 to 17 are judged in its own
 bundle, and SJL-8 may not meet its gate before SJL-3 meets SJL-3's.
 
+**The Temporal core (SJL-10.1), filed 2026-10-18: all seven sub-areas accepted, `tc39/proposal-temporal@e8cc03fc`
+the revision both engines follow, and the owner's decisions of 2026-10-18 recorded.**
+- **The records.** Broiler.VM's record is
+  `Broiler.VM/src/Broiler.VM.Profile.JavaScript/docs/decisions/0078-the-temporal-core-moves-to-the-shared-algorithms-library.md`
+  (JSD-0078). It states each condition of the extraction gate for records and limits, balancing, durations and
+  rounding, differences, the grammar, calendars and serialization, each on its own.
+- **Its input** is `Broiler.VM/docs/evidence/sjl-10-001/correspondence.md`: the correspondence from code, read at this
+  repository's `d3464413`. It names every member by file and line and numbers each difference (R, B, D, F, G, C, S).
+  Every cell of this engine's that a row rests on was run through the shell, the probes of the four core sub-areas
+  also under the proposal's polyfill, and every probe and answer is retained beside it. It was written in two halves
+  on 2026-10-18 and merged.
+- **SJL-10 started before SJL-6 and SJL-8, which it waits on, met their gates**, at the owner's direction, which the
+  programme's ledger records. SJL-10 may not meet its gate before they meet theirs, and so not before SJL-3 meets
+  SJL-3's.
+- **The owner's direction.** On 2026-10-18 the owner wrote: "Please do all recommended decisions and skip waiting for
+  review." Each decision the correspondence left open is taken as it recommends, and recorded as the owner's dated
+  decision, D1 to D9 in JSD-0078; and the programme proceeds through SJL-10's work packages without pausing for the
+  owner between them. **It changes no rule**: nothing is accepted without review, and the gate waits as above. In
+  this record a decision is "decision Dn" and a row of the correspondence "row Dn".
+
+This repository's part of it:
+- **The sub-area verdicts.** Each sub-area moves to `Broiler.ECMAScript.Algorithms`, beside SJL-8's records in
+  `Broiler.ECMAScript.Time`:
+  - **records and limits**: the ISO records are SJL-8's `IsoDate`, `IsoTime` and `IsoDateTime`, with no parallel types
+    (decision D8), beside the duration records; every limit check takes any year an engine hands it and answers a
+    status (decision D9);
+  - **balancing**: balancing, regulation, addition and the rounding of points, with `overflow`'s rule;
+  - **durations and rounding**: validity, sign, the default largest unit, addition, comparison, rounding with nudging
+    and bubbling, and totals with exact fractions, over calendar and time-zone provider interfaces, with the units,
+    increments and rounding modes as rules;
+  - **differences**: `until` and `since` for every type, through the same providers, with the difference settings as
+    rules;
+  - **the grammar**: a linear parser of the proposal's grammar, a `TryParse` that answers a record or an error code;
+  - **calendars**: the formula calendars, the arithmetic over SJL-8's table years, month codes, eras, and the
+    reference dates with the proposal's Table 6;
+  - **serialization**: every string form, with the rules of its options.
+
+  This engine keeps its `JSTemporal*` objects, the reads in specification order, coercion, `relativeTo` resolution,
+  its errors, and `Temporal.Now`'s clock and host zone (SJL-D-19). Intl formatting of Temporal objects is SJL-9's.
+  SJL-10.3 settles the library's names.
+- **The proposal revision this engine now follows is `tc39/proposal-temporal@e8cc03fc`** (decision D1), the Stage 4
+  state of 2026-07-27, which Broiler.VM has followed since its JSD-0053. Until now this engine pinned none. Its
+  behaviour was that revision's on every marker probed but two, both corrected below: the era names (C9) and
+  `Duration.prototype.add`'s read of a `relativeTo` the revision no longer has (D3). Its calendars follow the era and
+  month code proposal's Tables 1, 2, 3 and 6 as they stand at `5833eae`, as Broiler.VM's do. A later revision moves
+  both engines together, by a dated record.
+- **The area's rules run test262 `ccaac100`** (decision D2), the suite this repository's workflows run. A move to the
+  proposal's own submodule, `227d9055`, is a separate dated change outside SJL-10.
+- **Where the pinned text and its polyfill disagree, the text rules** (decision D7). The one case found is row D8.
+- **The corrections**, each listed in `Broiler.JS/CHANGELOG.md` at SJL-10.5 under decision SJL-D-16 (a), with the
+  correspondence's row:
+  - **the milestone's listed ones, as the rows confirm them:**
+    - lenient grammar acceptances: G3, G4, G6, G8, G9, G11, G12, G13, G16, G17, G18, G19, G20 and G22;
+    - integer narrowing in arithmetic, which wraps at four sites and saturates at three (R7), and an ISO month-day's
+      year past 2^31, which saturates and loses its leap year (C12);
+    - `Duration.prototype.add` with calendar units (D3);
+    - rounding options ignored in non-ISO differences (F4);
+    - day rounding on 24-hour days in `ZonedDateTime` `until` and `since` (F7). `round`, `hoursInDay` and rounding
+      relative to a zoned date already use real day lengths (D9);
+    - invalid month codes silently constrained (C5);
+    - reference years computed without the proposal's table, which move to the table with no answer changed (C10);
+  - **found beyond them:**
+    - a year-month subtraction at the lower limit (B5);
+    - `compare`'s range check (D4);
+    - rounding to months re-derived through a clamped difference (D6, D7);
+    - the nudge after a shifted window, where this engine answers P1Y, P11M or P10M29D by path and the text P11M (D8,
+      decision D7);
+    - a `relativeTo` in another calendar (D11);
+    - the calendar aliases `gregorian` and `minguo`, refused as the pinned revision and Broiler.VM refuse them (C2,
+      decision D5);
+    - month codes with digits other than ASCII (C6);
+    - era names: the era codes of the pinned revision are adopted, and the codes from before the era proposal's change
+      of 2025-06-30, the aliases it removed on 2025-11-21, and `incarnation` are refused (C9, decision D4);
+    - the calendar a `PlainMonthDay` lends (C13);
+    - the three conversions: `toPlainYearMonth`'s day, `toPlainMonthDay`'s calendar in the Gregorian family, and
+      `toPlainDate`'s year in `buddhist` and `roc` (C15, C16, C17).
+- **The policy changes**, each listed in the changelog with its decision: the proposal revision (decision D1), and the
+  text where it and its polyfill disagree (decision D7). Neither changes an answer the corrections above do not list.
+- **Code no input reaches is deleted with its file**: the zoned machinery's shift of years and months, its
+  "inconsistent Instants" branch and its fourth day correction (D12); the handling of U+2212 after a match (G10); the
+  `islamic` entry (C3) and the reference-date search's upper year (C10); the offset getter's dropped fraction of a
+  second (S8); `RejectIncompatibleStyle`, `NotImplementedArithmetic`, `ReadLargestUnit` and the unused
+  `AddYearsMonths`.
+- **The deletion list**, as JSD-0078's X6 states it (the correspondence's section 11):
+  - the per-type validity, regulation, addition and balancing copies, and the small copies beside them:
+    `CompareISODate`, `FloorDiv` and the unit-length tables;
+  - the three separate relative-rounding implementations, `compare`'s arithmetic, and `AddSubtract` with its "not yet
+    implemented" `Error`;
+  - `JSTemporalRoundingOptions`' arithmetic. Its rules become the library's, and its reads stay as adapter code;
+  - every type's difference copies and the settings' rules, each type keeping only its reads, which become one
+    adapter;
+  - the eight per-type regular-expression parsers, the string fallback of `CanonicalizeTimeZone`, and
+    `TemporalIsoString`, whose coercing members become adapter code and whose dead `RejectIncompatibleStyle` is
+    removed;
+  - the per-type formatters, the `toString` bodies' precision arithmetic, and the five `ReadCalendarName` copies, which
+    become one adapter;
+  - `TemporalNonIso`'s calendar parts, whose coercions and property reads become adapter code;
+  - **by decision D3, the other calendar copies**: `TemporalArithmeticCalendar`, `TemporalTableCalendar`'s arithmetic
+    over the shared years, `TemporalCalendarMath`, the Gregorian family's identifiers, years and era tables in
+    `JSTemporalCalendar.cs`, and the five per-type month-code copies. SJL-8 kept the first and the third "for the
+    formula calendars" (JSD-0076's X6, and SJL-8.7's reading of clause 7); SJL-10 takes the formula calendars, so they
+    go. The milestone's SJL-10.5 list is revised to name them, with its superseded text quoted.
+
+  **Every type in it is `internal` or `private`**, so no public type is emptied. The public `JSTemporal*` classes stay
+  as shells (SJL-D-25).
+- **Broiler.VM's one correction**, row R6, is made at its cut-over, SJL-10.4 (decision D9). This engine's
+  constructors already answer as the proposal does there.
+- **The rule**, [`docs/evidence/sjl-10-001/decision-rule.md`](../evidence/sjl-10-001/decision-rule.md), is committed
+  before any code of the area. Its parts are:
+  - test262 per path in UTC, with negative-metadata tests;
+  - test262 per path in `America/New_York`;
+  - Broiler.VM's reference datasets `temporal.js` and `temporal-calendars.js`, run in this engine against Broiler.VM's
+    answers. The first is in [`conformance/datasets/time/`](../../conformance/datasets/time/README.md) since SJL-8.4;
+    the second is copied there at SJL-10.2.
+
+  Its admitted classes name every correction above by row. Both test262 bases are taken at the rule's commit with
+  negative tests, as bundle `sjl-8-001`'s were.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a
