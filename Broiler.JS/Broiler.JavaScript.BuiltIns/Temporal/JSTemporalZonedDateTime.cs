@@ -88,7 +88,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     {
         if (!IsValid(epochNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: epoch nanoseconds out of range");
-        return new JSTemporalZonedDateTime(epochNs, CanonicalizeTimeZone(timeZone), ZonedDateTimePrototype);
+        return new JSTemporalZonedDateTime(epochNs, TemporalAdapter.ToTimeZoneIdentifier(timeZone), ZonedDateTimePrototype);
     }
 
     // Builds a ZonedDateTime from a local wall-clock datetime in the given zone (used by the
@@ -97,7 +97,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     // gap wall-clock time.
     internal static JSValue FromLocal(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns, string timeZone, string calendarId = "iso8601", string disambiguation = "compatible")
     {
-        var tz = CanonicalizeTimeZone(timeZone);
+        var tz = TemporalAdapter.ToTimeZoneIdentifier(timeZone);
         var epochNs = DisambiguateEpochNs(tz, y, mo, d, h, mi, s, ms, us, ns, disambiguation);
         if (!IsValid(epochNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: out of range");
@@ -122,7 +122,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     internal static JSTemporalZonedDateTime BuildRelative(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns, string timeZoneId, string offsetString, string calendarId)
     {
         BigInteger epoch;
-        if (offsetString != null && TryParseOffsetString(offsetString, out var offsetNs))
+        if (offsetString != null && TemporalAdapter.TryParseOffsetString(offsetString, out var offsetNs))
             epoch = LocalNanoseconds(y, mo, d, h, mi, s, ms, us, ns) - offsetNs;
         else
             epoch = DisambiguateEpochNs(timeZoneId, y, mo, d, h, mi, s, ms, us, ns, "compatible");
@@ -136,7 +136,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     // instant rather than midnight.
     internal static JSValue StartOfDayFor(int y, int mo, int d, string timeZone, string calendarId = "iso8601")
     {
-        var tz = CanonicalizeTimeZone(timeZone);
+        var tz = TemporalAdapter.ToTimeZoneIdentifier(timeZone);
         var epochNs = TemporalTimeZones.StartOfDay(tz, new IsoDate(y, mo, d));
         if (!IsValid(epochNs))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: start of day is out of range");
@@ -310,7 +310,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var tz = a.GetAt(0);
         if (tz == null || !tz.IsString)
             throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.withTimeZone: time zone must be a string");
-        return new JSTemporalZonedDateTime(epochNanoseconds, CanonicalizeTimeZone(tz.ToString()), calendarId, ZonedDateTimePrototype);
+        return new JSTemporalZonedDateTime(epochNanoseconds, TemporalAdapter.ToTimeZoneIdentifier(tz.ToString()), calendarId, ZonedDateTimePrototype);
     }
 
     [JSExport("withCalendar", Length = 1)]
@@ -691,7 +691,7 @@ public partial class JSTemporalZonedDateTime : JSObject
             overflowReader: ReadOptions,
             hasExtraField: () => offsetPresent);
 
-        if (offsetPresent && !TryParseOffsetString(offsetString, out candidateOffset))
+        if (offsetPresent && !TemporalAdapter.TryParseOffsetString(offsetString, out candidateOffset))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.with: invalid offset");
 
         return MergeWith(updated, candidateOffset, offsetOption, disambiguation);
@@ -713,7 +713,7 @@ public partial class JSTemporalZonedDateTime : JSObject
             var offsetPrimitive = offsetField is JSObject offsetObj ? offsetObj.ToStringPrimitive() : offsetField;
             if (!offsetPrimitive.IsString)
                 throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.with: the offset field must be a string");
-            if (!TryParseOffsetString(offsetPrimitive.StringValue, out candidateOffset))
+            if (!TemporalAdapter.TryParseOffsetString(offsetPrimitive.StringValue, out candidateOffset))
                 throw JSEngine.NewRangeError("Temporal.ZonedDateTime.prototype.with: invalid offset");
         }
 
@@ -1226,7 +1226,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (value is JSTemporalZonedDateTime zdt) return zdt.timeZoneId;
         if (value == null || !value.IsString)
             throw JSEngine.NewTypeError("Temporal: time zone must be a string identifier");
-        return CanonicalizeTimeZone(value.ToString());
+        return TemporalAdapter.ToTimeZoneIdentifier(value.ToString());
     }
 
     // ToRelativeTemporalObject for a property-bag relativeTo that carries a timeZone: the offset field,
@@ -1236,7 +1236,7 @@ public partial class JSTemporalZonedDateTime : JSObject
     // { offset: "-00:45", timeZone: "Africa/Monrovia" } is rejected (the zone offset is -00:44:30).
     internal static void ValidateBagOffsetMatchesZone(string timeZoneId, int y, int mo, int d, int h, int mi, int s, string offsetString)
     {
-        if (!TryParseOffsetString(offsetString, out var offsetNs))
+        if (!TemporalAdapter.TryParseOffsetString(offsetString, out var offsetNs))
             throw JSEngine.NewRangeError($"Temporal: invalid offset string \"{offsetString}\"");
         var local = IsoDateTimeOf(y, mo, d, h, mi, s, 0, 0, 0);
         var possible = TemporalTimeZones.PossibleEpochNanoseconds(timeZoneId, local);
@@ -1271,24 +1271,6 @@ public partial class JSTemporalZonedDateTime : JSObject
     private const long NanosecondsPerMinute = 60_000_000_000L;
 
     private (int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) Local() => LocalAt(epochNanoseconds);
-
-    // ToTemporalTimeZoneIdentifier for a String: a bare time-zone identifier (an offset, normalized to
-    // ±HH:MM, or an available name, case-normalized and keeping its own name — "asia/calcutta" stays
-    // "Asia/Calcutta" rather than resolving to "Asia/Kolkata") or a full Temporal ISO string, in which case
-    // its time-zone designator — a [TimeZone] annotation, a Z (UTC) designator, or a numeric UTC offset —
-    // is extracted and read so. Anything else, an unknown name or a sub-minute offset zone such as
-    // "-00:44:30" among them, is a RangeError.
-    private static string CanonicalizeTimeZone(string id)
-    {
-        if (TemporalTimeZones.TryCanonicalize(id, out var canonical))
-            return canonical;
-
-        if (TemporalIsoString.TryExtractTimeZone(id, out var designator) &&
-            TemporalTimeZones.TryCanonicalize(designator, out canonical))
-            return canonical;
-
-        throw JSEngine.NewRangeError($"Temporal: unknown time zone \"{id}\"");
-    }
 
     // The date-time field names PrepareCalendarFields recognizes for PlainDateTime.with;
     // `offset` (and `timeZone`) are ZonedDateTime-only and handled separately.
@@ -1367,7 +1349,7 @@ public partial class JSTemporalZonedDateTime : JSObject
             var offsetPrimitive = offsetValue is JSObject offsetObj ? offsetObj.ToStringPrimitive() : offsetValue;
             if (!offsetPrimitive.IsString)
                 throw JSEngine.NewTypeError("Temporal.ZonedDateTime: the offset field must be a string");
-            if (!TryParseOffsetString(offsetPrimitive.StringValue, out explicitOffset))
+            if (!TemporalAdapter.TryParseOffsetString(offsetPrimitive.StringValue, out explicitOffset))
                 throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: invalid offset string \"{offsetPrimitive.StringValue}\"");
             hasExplicitOffset = true;
         }
@@ -1381,7 +1363,7 @@ public partial class JSTemporalZonedDateTime : JSObject
                 tzValue = new JSString(nestedZdt.timeZoneId);
             if (!tzValue.IsString)
                 throw JSEngine.NewTypeError("Temporal.ZonedDateTime: timeZone must be a string");
-            timeZoneId = CanonicalizeTimeZone(tzValue.ToString());
+            timeZoneId = TemporalAdapter.ToTimeZoneIdentifier(tzValue.ToString());
         }
 
         // After all the bag's fields are read, the options are read in alphabetical order —
@@ -1442,152 +1424,44 @@ public partial class JSTemporalZonedDateTime : JSObject
     private static BigInteger LocalNanoseconds(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns)
         => IsoArithmetic.GetUtcEpochNanoseconds(IsoDateTimeOf(y, mo, d, h, mi, s, ms, us, ns));
 
-    // A UTC offset *value* (the offset field of a property bag, or a "with" offset): ±HH[:MM[:SS[.fff]]],
-    // which — unlike an offset time-zone *identifier* (OffsetIdPattern) — may carry sub-minute and
-    // fractional-second precision.
-    // The minute/second separators must be used consistently: an offset is either fully
-    // colon-separated (±HH:MM[:SS[.fff]]) or fully unseparated (±HHMM[SS[.fff]]). A mixed form
-    // such as "+00:0000" is not a valid UTCOffset (test262 from/offset-string-invalid), so the
-    // two forms are spelled as separate alternatives sharing the m/s/f capture names.
-    private static readonly System.Text.RegularExpressions.Regex OffsetValuePattern = new(
-        @"^(?<sign>[+-])(?<h>\d{2})(?::(?<m>\d{2})(?::(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?|(?<m>\d{2})(?:(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?$",
-        RegexOptions.CultureInvariant);
-
-    private static bool TryParseOffsetString(string text, out long offsetNs)
-    {
-        offsetNs = 0;
-        if (string.Equals(text, "Z", StringComparison.OrdinalIgnoreCase)) return true;
-        // ECMA-262's UTCOffset grammar (IsTimeZoneOffsetString, the shared library's): ASCII digits only, so
-        // an offset written with other decimal digits is a RangeError rather than a .NET FormatException,
-        // and hours, minutes and seconds within their ranges (row A13).
-        if (!OffsetTimeZones.IsTimeZoneOffsetString(text)) return false;
-        var m = OffsetValuePattern.Match(text);
-        if (!m.Success) return false;
-        var sign = m.Groups["sign"].Value is "-" or "−" ? -1 : 1;
-        var hours = int.Parse(m.Groups["h"].Value, CultureInfo.InvariantCulture);
-        var minutes = m.Groups["m"].Success ? int.Parse(m.Groups["m"].Value, CultureInfo.InvariantCulture) : 0;
-        var seconds = m.Groups["s"].Success ? int.Parse(m.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
-        var fractionNs = m.Groups["f"].Success ? long.Parse(m.Groups["f"].Value.PadRight(9, '0'), CultureInfo.InvariantCulture) : 0L;
-        offsetNs = (long)sign * (((long)hours * 3600 + minutes * 60 + seconds) * 1_000_000_000 + fractionNs);
-        return true;
-    }
-
     // ── parsing the ISO string ────────────────────────────────────────────────────
 
-    // The date-time + optional UTC-offset core of a ZonedDateTime string (the trailing RFC 9557
-    // annotations are peeled off and validated separately). The date may use the extended
-    // ("1976-11-18") or basic ("19761118") form, and the offset may carry sub-minute precision,
-    // including a fractional-seconds part (e.g. +01:35:00.000000000).
-    private const string YearField = @"\d{4}|\+\d{6}|-(?!000000)\d{6}";
-    private static readonly System.Text.RegularExpressions.Regex ZonedCorePattern = new(
-        @"^(?:(?<y>" + YearField + @")-(?<mo>\d{2})-(?<d>\d{2})|(?<y>" + YearField + @")(?<mo>\d{2})(?<d>\d{2}))" +
-        // Time and offset must each use a consistent separator style (all ':' or none): "00:0000" or
-        // an offset "+00:0000" is rejected. TimeCore covers the wall clock; the offset is spelled out
-        // here because its sub-fields (osign/oh/om/os/of) are captured for later resolution.
-        @"(?:[Tt ]" + TemporalIsoString.TimeCore +
-        @"(?:(?<z>[Zz])|(?<off>(?<osign>[+-])(?<oh>\d{2})(?::(?<om>\d{2})(?::(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?|(?<om>\d{2})(?:(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?)?))?)?$",
-        RegexOptions.CultureInvariant);
-
-    private static readonly System.Text.RegularExpressions.Regex ZonedTrailingAnnotation = new(@"\[(!?)([^\]]*)\]$", RegexOptions.CultureInvariant);
-
-    // `options` (ZonedDateTime.from) is read *after* the string has been fully parsed and
-    // validated — an invalid string is a RangeError before any option getter runs (test262
-    // ZonedDateTime/from observable-get-overflow-argument-string-invalid). When null (internal
-    // callers) no options are read and the offset behaviour defaults to "reject".
+    // ParseISODateTime with the TemporalDateTimeString[+Zoned] goal, the shared library's grammar, whose
+    // annotations are checked (a time zone annotation is required, and stands first). `options`
+    // (ZonedDateTime.from) is read *after* the string has been fully parsed and validated — an invalid
+    // string is a RangeError before any option getter runs (test262 ZonedDateTime/from
+    // observable-get-overflow-argument-string-invalid). When null (internal callers) no options are read
+    // and the offset behaviour defaults to "reject".
     private static JSValue ParseZonedDateTimeString(string text, JSValue options = null)
+        => FromParsed(TemporalAdapter.ParseIsoString(text, [TemporalGoal.ZonedDateTime], "Temporal.ZonedDateTime"), text, options);
+
+    // ToTemporalZonedDateTime's steps after ParseISODateTime (a ZonedDateTime string, or a relativeTo string
+    // with a time zone annotation): ToTemporalTimeZoneIdentifier of the annotation, the calendar annotation
+    // canonicalized, the options, then InterpretISODateTimeOffset.
+    internal static JSTemporalZonedDateTime FromParsed(IsoParseResult parsed, string text, JSValue options)
     {
-        // Validate the trailing annotations (multiple/critical calendar, malformed key=value, critical
-        // unknown key, sub-minute offset annotation) before decomposing them.
-        TemporalIsoString.RejectMultipleCalendarAnnotations(text);
-        TemporalIsoString.RejectMalformedAnnotations(text);
-        TemporalIsoString.RejectInvalidAnnotations(text);
+        var timeZoneId = TemporalAdapter.ToTimeZoneIdentifier(parsed.TimeZone!);
+        var calendarId = TemporalAdapter.CalendarOf(parsed);
 
-        // Peel the trailing [..] annotations off the date/time core. A ZonedDateTime requires exactly
-        // one time-zone annotation (the bracket whose contents carry no '='); the first [u-ca=…] sets
-        // the calendar and any further (non-critical) annotations are ignored.
-        var core = text;
-        var annotations = new List<(bool Critical, string Content)>();
-        while (true)
-        {
-            var am = ZonedTrailingAnnotation.Match(core);
-            if (!am.Success || am.Index + am.Length != core.Length) break;
-            annotations.Add((am.Groups[1].Value == "!", am.Groups[2].Value));
-            core = core.Substring(0, am.Index);
-        }
-        annotations.Reverse(); // restore left-to-right order so the first annotation of each kind wins
-
-        string timeZoneAnnotation = null, calendarValue = null;
-        foreach (var (_, content) in annotations)
-        {
-            var eq = content.IndexOf('=');
-            if (eq < 0) timeZoneAnnotation ??= content;
-            else if (content.Substring(0, eq).Equals("u-ca", StringComparison.Ordinal))
-                calendarValue ??= content.Substring(eq + 1);
-        }
-
-        if (timeZoneAnnotation == null)
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
-
-        var match = ZonedCorePattern.Match(core);
-        if (!match.Success)
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
-
-        var calendarId = calendarValue != null ? TemporalCalendar.Canonicalize(calendarValue, includeArithmetic: true) : "iso8601";
-
-        var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
-        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
-        var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
-        var hour = match.Groups["h"].Success ? int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture) : 0;
-        var minute = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
-        var second = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
-        if (second == 60) second = 59; // leap second collapses
-
-        int ms = 0, us = 0, ns = 0;
-        if (match.Groups["f"].Success)
-        {
-            var digits = match.Groups["f"].Value.PadRight(9, '0');
-            ms = int.Parse(digits.Substring(0, 3), CultureInfo.InvariantCulture);
-            us = int.Parse(digits.Substring(3, 3), CultureInfo.InvariantCulture);
-            ns = int.Parse(digits.Substring(6, 3), CultureInfo.InvariantCulture);
-        }
-
-        if (!IsoCalendarMath.IsValidIsoDate(year, month, day) || hour > 23 || minute > 59 || second > 59)
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
-
-        var timeZoneId = CanonicalizeTimeZone(timeZoneAnnotation);
+        var date = TemporalAdapter.DateOf(parsed);
+        var (year, month, day) = ((int)date.Year, date.Month, date.Day);
+        var time = parsed.Time ?? default;
+        var (hour, minute, second, ms, us, ns) = (time.Hour, time.Minute, time.Second, time.Millisecond, time.Microsecond, time.Nanosecond);
         var localNs = LocalNanoseconds(year, month, day, hour, minute, second, ms, us, ns);
 
         // A date-only ZonedDateTime string (no time component, hence no offset/Z) resolves to the
         // zone's start of day — GetStartOfDay, which across a gap covering midnight is the transition
         // instant, not midnight-with-disambiguation.
-        var hasTime = match.Groups["h"].Success;
+        var hasTime = parsed.Time.HasValue;
 
-        var hasZ = match.Groups["z"].Success;
-        var hasNumericOffset = match.Groups["off"].Success;
+        var hasZ = parsed.Z;
+        var hasNumericOffset = parsed.Offset != null;
 
-        // Parse and validate the explicit numeric offset (if any) — an invalid offset string
-        // is a RangeError here, before any option getter runs.
-        long explicitOffset = 0;
-        var matchMinutes = false;
-        if (hasNumericOffset)
-        {
-            // The offset must use consistent separators (e.g. "+00:0000" mixes ':' with bare digits).
-            if (!TemporalIsoString.IsStrictOffset(match.Groups["off"].Value))
-                throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
-
-            var sign = match.Groups["osign"].Value is "-" or "−" ? -1 : 1;
-            var oh = int.Parse(match.Groups["oh"].Value, CultureInfo.InvariantCulture);
-            var om = match.Groups["om"].Success ? int.Parse(match.Groups["om"].Value, CultureInfo.InvariantCulture) : 0;
-            var os = match.Groups["os"].Success ? int.Parse(match.Groups["os"].Value, CultureInfo.InvariantCulture) : 0;
-            if (oh > 23 || om > 59 || os > 59)
-                throw JSEngine.NewRangeError($"Cannot parse Temporal.ZonedDateTime from \"{text}\"");
-            var offsetFractionNs = match.Groups["of"].Success
-                ? long.Parse(match.Groups["of"].Value.PadRight(9, '0'), CultureInfo.InvariantCulture) : 0L;
-            explicitOffset = (long)sign * ((long)(oh * 3600 + om * 60 + os) * 1_000_000_000 + offsetFractionNs);
-            // An offset string carrying a seconds (or fractional-seconds) component must match a
-            // candidate exactly; one with only hours/minutes precision uses match-minutes rounding.
-            matchMinutes = !match.Groups["os"].Success && !match.Groups["of"].Success;
-        }
+        // The explicit numeric offset's value; an offset string carrying a seconds (or fractional-seconds)
+        // component must match a candidate exactly, one with only hours/minutes precision uses
+        // match-minutes rounding.
+        var explicitOffset = parsed.OffsetNanoseconds;
+        var matchMinutes = !parsed.OffsetHasSeconds;
 
         // The string is now fully parsed and validated; read the options (disambiguation,
         // offset, overflow) in alphabetical order before resolving the offset.

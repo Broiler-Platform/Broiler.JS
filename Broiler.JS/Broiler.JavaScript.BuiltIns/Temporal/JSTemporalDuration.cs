@@ -356,61 +356,15 @@ public partial class JSTemporalDuration : JSObject
         return new JSTemporalDuration(y, mo, w, dd, h, mi, s, ms, us, ns, DurationPrototype);
     }
 
-    private static readonly System.Text.RegularExpressions.Regex DurationPattern = new(
-        @"^([+-])?[Pp](?:(\d+)[Yy])?(?:(\d+)[Mm])?(?:(\d+)[Ww])?(?:(\d+)[Dd])?(?:[Tt](?:(\d+)(?:[.,](\d{1,9}))?[Hh])?(?:(\d+)(?:[.,](\d{1,9}))?[Mm])?(?:(\d+)(?:[.,](\d{1,9}))?[Ss])?)?$",
-        RegexOptions.CultureInvariant);
-
+    // ParseTemporalDurationString, the shared library's grammar (each part exact, a fraction carried into the
+    // smaller units exactly, and a time designator with no time part refused), then CreateTemporalDuration's
+    // IsValidDuration.
     private static JSValue ParseTemporalDurationString(string text)
     {
-        var match = DurationPattern.Match(text);
-        if (!match.Success)
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.Duration from \"{text}\"");
-
-        double G(int i) => match.Groups[i].Success ? double.Parse(match.Groups[i].Value, CultureInfo.InvariantCulture) : 0;
-        bool Has(int i) => match.Groups[i].Success;
-
-        // At least one component must be present, and a `T` with no time component is invalid.
-        if (!Has(2) && !Has(3) && !Has(4) && !Has(5) && !Has(6) && !Has(8) && !Has(10))
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.Duration from \"{text}\"");
-
-        // A fraction may only appear on the smallest provided time unit; cascade it down.
-        if ((Has(7) && (Has(8) || Has(10))) || (Has(9) && Has(10)))
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.Duration from \"{text}\"");
-
-        var sign = match.Groups[1].Value is "-" or "−" ? -1 : 1;
-
-        var years = G(2); var months = G(3); var weeks = G(4); var days = G(5);
-        var hours = G(6); var minutes = G(8); var seconds = G(10);
-        double milliseconds = 0, microseconds = 0, nanoseconds = 0;
-
-        // Distribute the (single) fractional part to nanosecond resolution.
-        BigInteger fractionNs = 0;
-        if (Has(7)) fractionNs = FractionToNanoseconds(match.Groups[7].Value, 3_600_000_000_000);
-        else if (Has(9)) fractionNs = FractionToNanoseconds(match.Groups[9].Value, 60_000_000_000);
-        else if (Has(11)) fractionNs = FractionToNanoseconds(match.Groups[11].Value, 1_000_000_000);
-
-        if (fractionNs != 0)
-        {
-            minutes += (double)(fractionNs / 60_000_000_000); fractionNs %= 60_000_000_000;
-            seconds += (double)(fractionNs / 1_000_000_000); fractionNs %= 1_000_000_000;
-            milliseconds = (double)(fractionNs / 1_000_000); fractionNs %= 1_000_000;
-            microseconds = (double)(fractionNs / 1_000); fractionNs %= 1_000;
-            nanoseconds = (double)fractionNs;
-        }
-
-        TemporalAdapter.CheckDuration(new DurationFields(sign * years, sign * months, sign * weeks, sign * days, sign * hours,
-            sign * minutes, sign * seconds, sign * milliseconds, sign * microseconds, sign * nanoseconds));
-
-        return new JSTemporalDuration(sign * years, sign * months, sign * weeks, sign * days, sign * hours,
-            sign * minutes, sign * seconds, sign * milliseconds, sign * microseconds, sign * nanoseconds, DurationPrototype);
-    }
-
-    // digits/10^len of unitNs, as an exact nanosecond count.
-    private static BigInteger FractionToNanoseconds(string digits, long unitNs)
-    {
-        var numerator = BigInteger.Parse(digits, CultureInfo.InvariantCulture) * unitNs;
-        var denominator = BigInteger.Pow(10, digits.Length);
-        return numerator / denominator;
+        var d = TemporalAdapter.ParseDuration(text);
+        TemporalAdapter.CheckDuration(d);
+        return new JSTemporalDuration(d.Years, d.Months, d.Weeks, d.Days, d.Hours, d.Minutes, d.Seconds, d.Milliseconds, d.Microseconds,
+            d.Nanoseconds, DurationPrototype);
     }
 
     // TemporalDurationToString: ISO-8601 with the seconds field assembled from seconds/ms/us/ns.

@@ -415,82 +415,11 @@ public partial class JSTemporalInstant : JSObject
         return q;
     }
 
-    // A Temporal.Instant string is a date-time that *must* carry a UTC designator — either Z or a
-    // numeric UTC offset (which may run down to sub-minute precision with a fractional part). The
-    // date may use the extended ("1976-11-18") or basic ("19761118") form, the minutes/seconds of
-    // both the wall clock and the offset are optional, and any trailing RFC 9557 [..] annotations
-    // (time-zone and/or key=value) are permitted and ignored here.
-    private const string YearField = @"\d{4}|\+\d{6}|-(?!000000)\d{6}";
-    private static readonly System.Text.RegularExpressions.Regex InstantPattern = new(
-        @"^(?:(?<y>" + YearField + @")-(?<mo>\d{2})-(?<d>\d{2})|(?<y>" + YearField + @")(?<mo>\d{2})(?<d>\d{2}))" +
-        @"[Tt ](?<h>\d{2})(?::?(?<mi>\d{2})(?::?(?<s>\d{2})(?:[.,](?<f>\d{1,9}))?)?)?" +
-        @"(?:(?<z>[Zz])|(?<off>(?<osign>[+-])(?<oh>\d{2})(?::?(?<om>\d{2})(?::?(?<os>\d{2})(?:[.,](?<of>\d{1,9}))?)?)?))" +
-        TemporalIsoString.AnnotationsTail + "$",
-        RegexOptions.CultureInvariant);
-
+    // ParseTemporalInstant, the shared library's grammar: a date-time that must carry Z or a UTC offset (to
+    // sub-minute precision), its annotations checked and their payload ignored, the offset applied, and the
+    // instant within the representable range.
     private static JSValue ParseTemporalInstant(string text)
-    {
-        // The trailing annotations are validated even though their payload is ignored: more than one
-        // calendar/time-zone annotation, a malformed key=value, or a critical unknown key is a
-        // RangeError (shared with the other Temporal string parsers).
-        TemporalIsoString.RejectMultipleCalendarAnnotations(text);
-        TemporalIsoString.RejectMalformedAnnotations(text);
-        TemporalIsoString.RejectInvalidAnnotations(text);
-
-        var match = InstantPattern.Match(text);
-        if (!match.Success)
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.Instant from \"{text}\"");
-
-        var year = int.Parse(match.Groups["y"].Value, CultureInfo.InvariantCulture);
-        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
-        var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
-        var hour = int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture);
-        var minute = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
-        var second = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
-        if (second == 60) second = 59; // a leap second collapses to :59
-
-        if (!IsoCalendarMath.IsValidIsoDate(year, month, day)
-            || hour > 23 || minute > 59 || second > 59)
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.Instant from \"{text}\"");
-
-        var fractionNs = BigInteger.Zero;
-        if (match.Groups["f"].Success)
-        {
-            var digits = match.Groups["f"].Value.PadRight(9, '0');
-            fractionNs = BigInteger.Parse(digits, CultureInfo.InvariantCulture);
-        }
-
-        var days = IsoCalendarMath.EpochDays(year, month, day);
-        var secondsOfDay = (long)hour * 3600 + (long)minute * 60 + second;
-        var ns = (new BigInteger(days) * 86400 + secondsOfDay) * 1_000_000_000 + fractionNs;
-
-        // Apply the UTC offset (subtract to convert local → UTC); a Z designator means a zero offset.
-        if (match.Groups["off"].Success)
-        {
-            // The offset must use consistent separators (e.g. "+00:0000" mixes ':' with bare digits).
-            if (!TemporalIsoString.IsStrictOffset(match.Groups["off"].Value))
-                throw JSEngine.NewRangeError($"Cannot parse Temporal.Instant from \"{text}\"");
-
-            var offsetSign = match.Groups["osign"].Value == "-" ? -1 : 1;
-            var offsetHours = int.Parse(match.Groups["oh"].Value, CultureInfo.InvariantCulture);
-            var offsetMinutes = match.Groups["om"].Success ? int.Parse(match.Groups["om"].Value, CultureInfo.InvariantCulture) : 0;
-            var offsetSeconds = match.Groups["os"].Success ? int.Parse(match.Groups["os"].Value, CultureInfo.InvariantCulture) : 0;
-            if (offsetHours > 23 || offsetMinutes > 59 || offsetSeconds > 59)
-                throw JSEngine.NewRangeError($"Cannot parse Temporal.Instant from \"{text}\"");
-
-            var offsetFractionNs = BigInteger.Zero;
-            if (match.Groups["of"].Success)
-                offsetFractionNs = BigInteger.Parse(match.Groups["of"].Value.PadRight(9, '0'), CultureInfo.InvariantCulture);
-
-            var offsetNs = ((long)(offsetHours * 3600 + offsetMinutes * 60 + offsetSeconds) * 1_000_000_000 + offsetFractionNs) * offsetSign;
-            ns -= offsetNs;
-        }
-
-        if (!IsValid(ns))
-            throw JSEngine.NewRangeError("Temporal.Instant: parsed value is out of range");
-
-        return new JSTemporalInstant(ns, InstantPrototype);
-    }
+        => new JSTemporalInstant(TemporalAdapter.ParseInstant(text), InstantPrototype);
 
     private string ToISOString() => FormatISO(epochNanoseconds, precision: -1);
 

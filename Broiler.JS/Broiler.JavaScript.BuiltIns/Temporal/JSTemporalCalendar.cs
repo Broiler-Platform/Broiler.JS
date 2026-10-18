@@ -150,19 +150,11 @@ internal static class TemporalCalendar
         return CanonicalizeIdentifierOrIsoString(calendar.StringValue, includeArithmetic);
     }
 
-    // ParseTemporalCalendarString: a calendar slot value supplied as a String is either a bare
-    // calendar identifier or a full Temporal ISO string, in which case its [u-ca=…] annotation is
-    // adopted (defaulting to iso8601). An unrecognized non-ISO string is a RangeError.
+    // ParseTemporalCalendarString, the shared library's grammar: a calendar slot value supplied as a String
+    // is a full Temporal ISO string, whose first [u-ca=…] annotation is adopted (defaulting to iso8601), or
+    // else a bare calendar identifier; anything else is a RangeError. The identifier is then canonicalized.
     private static string CanonicalizeIdentifierOrIsoString(string value, bool includeArithmetic)
-    {
-        if (TryCanonicalizeName(value, includeArithmetic, out var canonical))
-            return canonical;
-
-        if (TemporalIsoString.TryExtractCalendar(value, out var annotation))
-            return annotation == null ? "iso8601" : Canonicalize(annotation, includeArithmetic);
-
-        throw JSEngine.NewRangeError($"Temporal: unsupported calendar \"{value}\"");
-    }
+        => Canonicalize(TemporalAdapter.ParseCalendarString(value), includeArithmetic);
 
     internal static bool IsSupported(string id)
     {

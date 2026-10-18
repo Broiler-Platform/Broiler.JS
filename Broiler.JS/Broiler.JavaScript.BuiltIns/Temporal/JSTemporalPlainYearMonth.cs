@@ -154,7 +154,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         // Coerce monthCode now; defer parsing/validating it against the calendar until after
         // the overflow option is read (test262 .../with options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainYearMonth");
+        var monthCodeStr = TemporalAdapter.RequireMonthCodeString(monthCodeValue, "Temporal.PlainYearMonth");
         if (monthCodeStr != null) any = true;
 
         var year = ResolveWithYear(obj, ref any);
@@ -212,7 +212,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         }
 
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthCodeStrW = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainYearMonth");
+        var monthCodeStrW = TemporalAdapter.RequireMonthCodeString(monthCodeValue, "Temporal.PlainYearMonth");
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         int month;
         if (monthCodeStrW != null)
@@ -662,11 +662,11 @@ public partial class JSTemporalPlainYearMonth : JSObject
         // Coerce monthCode now; defer parsing/validating it against the calendar until after
         // the overflow option is read (test262 from/options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainYearMonth");
+        var monthCodeStr = TemporalAdapter.RequireMonthCodeString(monthCodeValue, "Temporal.PlainYearMonth");
         // Validate monthCode *syntax* (well-formedness) as soon as it is read — before the `year`
         // field below is coerced — so an ill-formed code is a RangeError regardless of the year's
         // type (test262 .../from/monthcode-invalid "syntax is validated before year type").
-        TemporalIsoString.RequireWellFormedMonthCode(monthCodeStr, "Temporal.PlainYearMonth");
+        TemporalAdapter.RequireWellFormedMonthCode(monthCodeStr, "Temporal.PlainYearMonth");
 
         var yearValue = obj[KeyStrings.GetOrCreate("year")];
         var yearInt = yearValue.IsUndefined ? 0 : ToIntegerWithTruncation(yearValue);
@@ -692,60 +692,24 @@ public partial class JSTemporalPlainYearMonth : JSObject
         return RegulateYearMonth(isoYear, month, overflow, calendarId);
     }
 
-    // The date hyphens are all-or-nothing: the extended form "1976-11(-18)?" and the basic form
-    // "197611(18)?" are both valid, but a mixed "1976-1118" is not. Two alternatives (with / without
-    // separators) capture the year/month/day under shared names so a mixed form matches neither.
-    private const string Year = @"\d{4}|\+\d{6}|-(?!000000)\d{6}";
-    private static readonly System.Text.RegularExpressions.Regex YearMonthPattern = new(
-        @"^(?:(?<y>" + Year + @")-(?<mo>\d{2})(?:-(?<d>\d{2}))?|(?<y>" + Year + @")(?<mo>\d{2})(?<d>\d{2})?)" +
-        TemporalIsoString.TimeAndOffsetTail + TemporalIsoString.AnnotationsTail + "$",
-        RegexOptions.CultureInvariant);
-
+    // ParseISODateTime with the TemporalYearMonthString goal (the shared library's grammar, which refuses a
+    // year-month without a day in a calendar other than iso8601), the calendar annotation canonicalized, then
+    // ISOYearMonthWithinLimits.
     private static JSValue ParseTemporalYearMonthString(string text)
     {
-        // Only the ASCII hyphen-minus is a valid sign; reject the U+2212 variant the time/offset
-        // tail would otherwise accept.
-        if (text.Contains('−'))
+        var parsed = TemporalAdapter.ParseIsoString(text, [TemporalGoal.YearMonth], "Temporal.PlainYearMonth");
+        var calendarId = TemporalAdapter.CalendarOf(parsed);
+        var date = TemporalAdapter.DateOf(parsed);
+        if (TemporalLimits.CheckIsoYearMonth(date) != TemporalStatus.Completed)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainYearMonth from \"{text}\"");
-
-        TemporalIsoString.RejectMultipleCalendarAnnotations(text);
-        TemporalIsoString.RejectMalformedAnnotations(text);
-        TemporalIsoString.RejectInvalidAnnotations(text);
-
-        var match = YearMonthPattern.Match(text);
-        if (!match.Success)
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainYearMonth from \"{text}\"");
-
-        TemporalIsoString.RejectTimeTailForCalendarOnly(match, text);
-
-        var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
-        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
-
-        if (month is < 1 or > 12 || !TemporalAdapter.IsoYearMonthWithinLimits(year, month))
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainYearMonth from \"{text}\"");
-
-        var calMatch = CalendarAnnotation.Match(text);
-        var calendarId = calMatch.Success ? TemporalCalendar.Canonicalize(calMatch.Groups[1].Value, includeArithmetic: true) : "iso8601";
-
-        // The bare year-month format (no day component) can only carry the iso8601 calendar; any
-        // other calendar needs a reference day, i.e. the full date format (YYYY-MM-DD[u-ca=…]).
-        if (!match.Groups["d"].Success && calendarId != "iso8601")
-            throw JSEngine.NewRangeError($"Temporal.PlainYearMonth: a non-iso8601 calendar requires a day in \"{text}\"");
 
         // For a non-Gregorian calendar the parsed ISO date (with its reference day) is projected to
         // the calendar year-month and re-anchored on day 1 of that month.
         if (TemporalCalendarMath.IsNonIso(calendarId))
-        {
-            var day = match.Groups["d"].Success ? int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture) : 1;
-            if (!IsoCalendarMath.IsValidIsoDate(year, month, day))
-                throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainYearMonth from \"{text}\"");
-            return YearMonthFromIsoDate(year, month, day, calendarId);
-        }
+            return YearMonthFromIsoDate((int)date.Year, date.Month, date.Day, calendarId);
 
-        return new JSTemporalPlainYearMonth(year, month, 1, calendarId, PlainYearMonthPrototype);
+        return new JSTemporalPlainYearMonth((int)date.Year, date.Month, 1, calendarId, PlainYearMonthPrototype);
     }
-
-    private static readonly System.Text.RegularExpressions.Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
 
     // RegulateISODate of the month (day 1), then ISOYearMonthWithinLimits: the shared library's.
     private static JSValue RegulateYearMonth(int year, int month, string overflow, string calendarId = "iso8601")

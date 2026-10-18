@@ -221,7 +221,7 @@ internal static class TemporalNonIso
         var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, typeName);
+        var monthCodeStr = TemporalAdapter.RequireMonthCodeString(monthCodeValue, typeName);
 
         var hasYear = !yearValue.IsUndefined
             || (TemporalCalendarMath.HasEra(calendarId) && !eraValue.IsUndefined && !eraYearValue.IsUndefined);
@@ -316,7 +316,7 @@ internal static class TemporalNonIso
         var eraYearValue = obj[KeyStrings.GetOrCreate("eraYear")];
         var monthValue = obj[KeyStrings.GetOrCreate("month")];
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, typeName);
+        var monthCodeStr = TemporalAdapter.RequireMonthCodeString(monthCodeValue, typeName);
 
         var hasYear = !yearValue.IsUndefined;
         var hasEra = !eraValue.IsUndefined;

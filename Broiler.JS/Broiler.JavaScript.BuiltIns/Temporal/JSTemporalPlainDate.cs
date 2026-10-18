@@ -196,7 +196,7 @@ public partial class JSTemporalPlainDate : JSObject
         // code is rejected only once every option getter has fired (test262
         // .../with options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDate");
+        var monthCodeStr = TemporalAdapter.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDate");
         if (monthCodeStr != null) any = true;
 
         var newIsoYear = ResolveWithYear(obj, ref any);
@@ -690,7 +690,7 @@ public partial class JSTemporalPlainDate : JSObject
         var monthFromMonth = monthValue.IsUndefined ? -1 : ToPositiveIntegerWithTruncation(monthValue);
 
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDate");
+        var monthCodeStr = TemporalAdapter.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDate");
         if (monthCodeStr != null)
             ValidateMonthCodeSyntax(monthCodeStr);
 
@@ -719,43 +719,20 @@ public partial class JSTemporalPlainDate : JSObject
         return RegulateISODate(isoYear, month, day, overflow, calendarId);
     }
 
-    // The date may use the extended (YYYY-MM-DD) or basic (YYYYMMDD) form, but not a mix.
-    private static readonly System.Text.RegularExpressions.Regex DatePattern = new(
-        @"^(?:(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})-(?<mo>\d{2})-(?<d>\d{2})" +
-        @"|(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})(?<mo>\d{2})(?<d>\d{2}))" +
-        TemporalIsoString.TimeAndOffsetTail + TemporalIsoString.AnnotationsTail + "$",
-        RegexOptions.CultureInvariant);
-
-    private static readonly System.Text.RegularExpressions.Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
-
+    // ParseISODateTime with the TemporalDateTimeString[~Zoned] goal: the shared library's grammar.
     private static JSValue ParseTemporalDateString(string text)
+        => FromParsed(TemporalAdapter.ParseIsoString(text, [TemporalGoal.DateTime], "Temporal.PlainDate"), text);
+
+    // ToTemporalDate's steps after ParseISODateTime (a PlainDate string, or a relativeTo string without a time
+    // zone): the calendar annotation canonicalized, then CreateTemporalDate's ISODateWithinLimits.
+    internal static JSTemporalPlainDate FromParsed(IsoParseResult parsed, string text)
     {
-        // Only the ASCII hyphen-minus is a valid sign; the date itself is parsed strictly below, but
-        // the time/offset tail would otherwise let a U+2212 variant minus sign slip through.
-        if (text.Contains('−'))
+        var calendarId = TemporalAdapter.CalendarOf(parsed);
+        var date = TemporalAdapter.DateOf(parsed);
+        if (TemporalLimits.CheckIsoDate(date) != TemporalStatus.Completed)
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDate from \"{text}\"");
 
-        TemporalIsoString.RejectMultipleCalendarAnnotations(text);
-        TemporalIsoString.RejectMalformedAnnotations(text);
-        TemporalIsoString.RejectInvalidAnnotations(text);
-
-        var match = DatePattern.Match(text);
-        if (!match.Success)
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDate from \"{text}\"");
-
-        TemporalIsoString.RejectTimeTailForCalendarOnly(match, text);
-
-        var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
-        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
-        var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
-
-        if (!TemporalAdapter.IsoDateWithinLimits(year, month, day))
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDate from \"{text}\"");
-
-        var calMatch = CalendarAnnotation.Match(text);
-        var calendarId = calMatch.Success ? TemporalCalendar.Canonicalize(calMatch.Groups[1].Value, includeArithmetic: true) : "iso8601";
-
-        return new JSTemporalPlainDate(year, month, day, calendarId, PlainDatePrototype);
+        return new JSTemporalPlainDate((int)date.Year, date.Month, date.Day, calendarId, PlainDatePrototype);
     }
 
     // RegulateISODate, then CreateTemporalDate's ISODateWithinLimits: the shared library's.

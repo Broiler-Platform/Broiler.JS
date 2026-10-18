@@ -330,30 +330,30 @@ public partial class JSTemporalDuration
             return true;
         }
 
-        // ToRelativeTemporalObject for a string: validate the relativeTo grammar. An unparsable string,
-        // a UTC (Z) designator with no time-zone annotation, or a malformed offset is a RangeError.
+        // ToRelativeTemporalObject for a string: ParseISODateTime with the TemporalDateTimeString[+Zoned]
+        // and [~Zoned] goals, the shared library's grammar. An unparsable string, a UTC (Z) designator with
+        // no time-zone annotation, an annotation out of order or a malformed offset is a RangeError.
         if (rel.IsString)
         {
             var s = rel.ToString();
-            if (!TemporalIsoString.TryParseRelative(s, out var tz, out var hasZ, out var offset))
-                throw JSEngine.NewRangeError($"Temporal.Duration: cannot parse relativeTo \"{s}\"");
+            var parsed = TemporalAdapter.ParseIsoString(s, [TemporalGoal.ZonedDateTime, TemporalGoal.DateTime], "a Temporal.Duration relativeTo");
 
-            // A string with a [TimeZone] annotation is a ZonedDateTime relativeTo: parse it as a full
-            // ZonedDateTime (DST-aware, range-validated, honouring a Z designator / numeric offset) and
-            // resolve it through the zoned timeline, so that adding the duration to a boundary instant
-            // overflows exactly as AddZonedDateTime requires (test262 relativeto-string-limits).
-            if (tz != null)
+            // A string with a [TimeZone] annotation is a ZonedDateTime relativeTo (DST-aware, range-validated,
+            // honouring a Z designator / numeric offset), resolved through the zoned timeline, so that adding
+            // the duration to a boundary instant overflows exactly as AddZonedDateTime requires (test262
+            // relativeto-string-limits).
+            if (parsed.TimeZone != null)
             {
-                zoned = JSTemporalZonedDateTime.ParseRelativeZoned(s);
+                zoned = JSTemporalZonedDateTime.FromParsed(parsed, s, null);
                 if (TemporalCalendarMath.IsNonIso(zoned.calendarId))
                     throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{zoned.calendarId}\" calendar is not yet implemented");
                 return true;
             }
 
-            if (hasZ)
-                throw JSEngine.NewRangeError("Temporal.Duration: relativeTo with a UTC (Z) designator requires a time-zone annotation");
-            if (offset != null && !TemporalIsoString.IsStrictOffset(offset))
-                throw JSEngine.NewRangeError($"Temporal.Duration: invalid UTC offset in relativeTo \"{s}\"");
+            date = JSTemporalPlainDate.FromParsed(parsed, s);
+            if (TemporalCalendarMath.IsNonIso(date.calendarId))
+                throw JSEngine.NewError($"Temporal.Duration: a relativeTo with the \"{date.calendarId}\" calendar is not yet implemented");
+            return true;
         }
 
         // A genuine property bag (not a recognised Temporal object): read every relativeTo field once,
@@ -376,7 +376,7 @@ public partial class JSTemporalDuration
             {
                 if (!off.IsString)
                     throw JSEngine.NewTypeError("Temporal.Duration: the relativeTo offset field must be a string");
-                if (!TemporalIsoString.IsStrictOffset(off.StringValue))
+                if (!TemporalAdapter.TryParseOffsetString(off.StringValue, out _))
                     throw JSEngine.NewRangeError($"Temporal.Duration: invalid offset string \"{off.StringValue}\"");
                 offsetString = off.StringValue;
             }
@@ -486,7 +486,7 @@ public partial class JSTemporalDuration
         void CopyRequiredString(string field)
         {
             var v = rel[KeyStrings.GetOrCreate(field)];
-            var s = TemporalIsoString.RequireOffsetString(v, "Temporal.Duration");
+            var s = TemporalAdapter.RequireOffsetString(v, "Temporal.Duration");
             if (s != null) snapshot[KeyStrings.GetOrCreate(field)] = new JSString(s);
         }
 

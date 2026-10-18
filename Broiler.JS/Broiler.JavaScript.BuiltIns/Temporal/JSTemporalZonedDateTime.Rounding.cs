@@ -479,11 +479,4 @@ public partial class JSTemporalZonedDateTime
             return new JSTemporalZonedDateTime(z.epochNanoseconds, z.timeZoneId, z.calendarId, ZonedDateTimePrototype);
         return null;
     }
-
-    // A Temporal.Duration relativeTo string that carries a time-zone annotation is a ZonedDateTime
-    // string: parse it as a full ZonedDateTime relativeTo (DST-aware, and validating the representable
-    // instant range), so that adding the duration to the boundary instant overflows exactly as the
-    // spec's AddZonedDateTime requires. Used by Temporal.Duration round/total/compare.
-    internal static JSTemporalZonedDateTime ParseRelativeZoned(string text)
-        => (JSTemporalZonedDateTime)ParseZonedDateTimeString(text);
 }

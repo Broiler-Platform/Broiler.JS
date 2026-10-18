@@ -249,7 +249,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         // month code is rejected only once every option getter has fired (test262
         // .../with options-read-before-algorithmic-validation).
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDateTime");
+        var monthCodeStr = TemporalAdapter.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDateTime");
         if (monthCodeStr != null) any = true;
 
         var ns = Read("nanosecond", nanosecond);
@@ -944,7 +944,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         var monthFromMonth = monthValue.IsUndefined ? -1 : ToPositiveIntegerWithTruncation(monthValue);
 
         var monthCodeValue = obj[KeyStrings.GetOrCreate("monthCode")];
-        var monthCodeStr = TemporalIsoString.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDateTime");
+        var monthCodeStr = TemporalAdapter.RequireMonthCodeString(monthCodeValue, "Temporal.PlainDateTime");
         if (monthCodeStr != null)
             ValidateMonthCodeSyntax(monthCodeStr);
 
@@ -995,58 +995,18 @@ public partial class JSTemporalPlainDateTime : JSObject
         return new JSTemporalPlainDateTime(dateTime, calendarId, PlainDateTimePrototype);
     }
 
-    // The calendar date may be written in extended (YYYY-MM-DD) or basic (YYYYMMDD) form; the two
-    // halves of the date must agree (both separators or neither). The time-of-day and the UTC offset
-    // each carry the same consistent-separator rule (TimeCore / OffsetCore), so a mixed form such as
-    // "00:0000" or an offset "+00:0000" is rejected.
-    private static readonly System.Text.RegularExpressions.Regex DateTimePattern = new(
-        @"^(?<y>\d{4}|\+\d{6}|-(?!000000)\d{6})(?:-(?<mo>\d{2})-(?<d>\d{2})|(?<mo>\d{2})(?<d>\d{2}))(?:[Tt ]"
-        + TemporalIsoString.TimeCore + @"(?:(?<z>[Zz])|" + TemporalIsoString.OffsetCore + @")?)?(?:\[[^\]]*\])*$",
-        RegexOptions.CultureInvariant);
-
+    // ParseISODateTime with the TemporalDateTimeString[~Zoned] goal (the shared library's grammar), the calendar
+    // annotation canonicalized, then CreateTemporalDateTime's ISODateTimeWithinLimits.
     private static JSValue ParseTemporalDateTimeString(string text)
     {
-        TemporalIsoString.RejectMultipleCalendarAnnotations(text);
-        TemporalIsoString.RejectMalformedAnnotations(text);
-        TemporalIsoString.RejectInvalidAnnotations(text);
-
-        var match = DateTimePattern.Match(text);
-        if (!match.Success)
+        var parsed = TemporalAdapter.ParseIsoString(text, [TemporalGoal.DateTime], "Temporal.PlainDateTime");
+        var calendarId = TemporalAdapter.CalendarOf(parsed);
+        var dateTime = new IsoDateTime(TemporalAdapter.DateOf(parsed), parsed.Time ?? default);
+        if (!TemporalAdapter.IsoDateTimeWithinLimits(dateTime))
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDateTime from \"{text}\"");
 
-        // A bare UTC (Z) designator denotes an exact instant with no wall-clock interpretation, so it
-        // is invalid for the calendar-date-time (non-zoned) grammar a PlainDateTime parses from. (A
-        // numeric UTC offset is allowed and simply ignored.)
-        if (match.Groups["z"].Success)
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDateTime from \"{text}\": a UTC (Z) designator requires a time zone");
-
-        var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
-        var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
-        var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
-        var h = match.Groups["h"].Success ? int.Parse(match.Groups["h"].Value, CultureInfo.InvariantCulture) : 0;
-        var mi = match.Groups["mi"].Success ? int.Parse(match.Groups["mi"].Value, CultureInfo.InvariantCulture) : 0;
-        var s = match.Groups["s"].Success ? int.Parse(match.Groups["s"].Value, CultureInfo.InvariantCulture) : 0;
-
-        int ms = 0, us = 0, ns = 0;
-        if (match.Groups["f"].Success)
-        {
-            var digits = match.Groups["f"].Value.PadRight(9, '0');
-            ms = int.Parse(digits.Substring(0, 3), CultureInfo.InvariantCulture);
-            us = int.Parse(digits.Substring(3, 3), CultureInfo.InvariantCulture);
-            ns = int.Parse(digits.Substring(6, 3), CultureInfo.InvariantCulture);
-        }
-
-        if (s == 60) s = 59; // ISO leap second collapses to :59.
-        if (!TemporalAdapter.IsoDateTimeWithinLimits(TemporalAdapter.DateTime(year, month, day, h, mi, s, ms, us, ns)))
-            throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDateTime from \"{text}\"");
-
-        var calMatch = CalendarAnnotation.Match(text);
-        var calendarId = calMatch.Success ? TemporalCalendar.Canonicalize(calMatch.Groups[1].Value, includeArithmetic: true) : "iso8601";
-
-        return new JSTemporalPlainDateTime(year, month, day, h, mi, s, ms, us, ns, calendarId, PlainDateTimePrototype);
+        return new JSTemporalPlainDateTime(dateTime, calendarId, PlainDateTimePrototype);
     }
-
-    private static readonly System.Text.RegularExpressions.Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
 
     private static (double, double, double, double, double, double, double, double, double, double) DifferenceISODateTime(
         JSTemporalPlainDateTime a, JSTemporalPlainDateTime b, string largestUnit)
