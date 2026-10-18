@@ -1,0 +1,154 @@
+Observations on a run of the reference datasets (bundle sjl-10-001's rule, part C)
+
+The differing lines grouped by the row of Broiler.VM's correspondence each seems to be a case of, by
+the shape of its operation. An observation, written by observe.py from the lines reports beside it;
+not a classification. The rule admits no class, and the base is read, not judged.
+
+temporal.js: 1629 lines, 1622 equal to the expected answer, 7 differing
+
+Each row the rule names, with the lines whose operation has its shape, and the number the
+correspondence's run of the program found under it:
+  D6      7  (the correspondence: 7) round with a plain-date relativeTo: the total months added to relativeTo and re-derived, where the nudge's end duration is kept (P1Y3M expected, P1Y2M30D answered)
+  none    0  differing lines no row's shape matches
+
+D6, line by line (number, operation: expected, then this engine's answer):
+     14 duration P1Y2M3W4DT5H6M7.008009010S round month ceil rel 2020-01-31: P1Y3M | P1Y2M30D
+     16 duration P1Y2M3W4DT5H6M7.008009010S round month expand rel 2020-01-31: P1Y3M | P1Y2M30D
+     18 duration P1Y2M3W4DT5H6M7.008009010S round month halfCeil rel 2020-01-31: P1Y3M | P1Y2M30D
+     19 duration P1Y2M3W4DT5H6M7.008009010S round month halfFloor rel 2020-01-31: P1Y3M | P1Y2M30D
+     20 duration P1Y2M3W4DT5H6M7.008009010S round month halfExpand rel 2020-01-31: P1Y3M | P1Y2M30D
+     21 duration P1Y2M3W4DT5H6M7.008009010S round month halfTrunc rel 2020-01-31: P1Y3M | P1Y2M30D
+     22 duration P1Y2M3W4DT5H6M7.008009010S round month halfEven rel 2020-01-31: P1Y3M | P1Y2M30D
+
+temporal-calendars.js: 3999 lines, 3896 equal to the expected answer, 103 differing
+
+Each row the rule names, with the lines whose operation has its shape, and the number the
+correspondence's run of the program found under it:
+  C5      5  (the correspondence: 5) invalid month codes constrained: M13 where the calendar has no thirteenth month
+             calendars: indian 1 islamic-civil 1 islamic-tbla 1 islamic-umalqura 1 persian 1
+  C15    15  (the correspondence: 15) the year-month a date gives: the date's own ISO day, not the calendar month's first
+             calendars: buddhist 1 chinese 1 coptic 1 dangi 1 ethioaa 1 ethiopic 1 gregory 1 hebrew 1 indian 1 islamic-civil 1 islamic-tbla 1 islamic-umalqura 1 japanese 1 persian 1 roc 1
+  C16     4  (the correspondence: 4) the month-day a date gives in the Gregorian family: iso8601, not the date's calendar
+             calendars: buddhist 1 gregory 1 japanese 1 roc 1
+  C17     2  (the correspondence: 2) the date a month-day gives in buddhist and roc: the calendar year read as an ISO year
+             calendars: buddhist 1 roc 1
+  F4     55  (the correspondence: 55) differences in another calendar with rounding options: the rounding ignored
+             calendars: chinese 5 coptic 5 dangi 5 ethioaa 5 ethiopic 5 hebrew 5 indian 5 islamic-civil 5 islamic-tbla 5 islamic-umalqura 5 persian 5
+  D11    22  (the correspondence: 22) round and total relative to a date in another calendar: a plain Error
+             calendars: chinese 2 coptic 2 dangi 2 ethioaa 2 ethiopic 2 hebrew 2 indian 2 islamic-civil 2 islamic-tbla 2 islamic-umalqura 2 persian 2
+  none    0  differing lines no row's shape matches
+
+C5, line by line (number, operation: expected, then this engine's answer):
+   2711 indian from M13: throws RangeError | 2023-02-20[u-ca=indian]
+   2793 islamic-civil from M13: throws RangeError | 2023-06-20[u-ca=islamic-civil]
+   2875 islamic-tbla from M13: throws RangeError | 2023-06-19[u-ca=islamic-tbla]
+   2957 islamic-umalqura from M13: throws RangeError | 2023-06-19[u-ca=islamic-umalqura]
+   3121 persian from M13: throws RangeError | 2023-02-20[u-ca=persian]
+
+C15, line by line (number, operation: expected, then this engine's answer):
+   2129 buddhist toPlainYearMonth: 2023-03-01[u-ca=buddhist] | 2023-03-15[u-ca=buddhist]
+   2208 chinese toPlainYearMonth: 2023-02-20[u-ca=chinese] | 2023-03-15[u-ca=chinese]
+   2290 coptic toPlainYearMonth: 2023-03-10[u-ca=coptic] | 2023-03-15[u-ca=coptic]
+   2369 dangi toPlainYearMonth: 2023-02-20[u-ca=dangi] | 2023-03-15[u-ca=dangi]
+   2451 ethioaa toPlainYearMonth: 2023-03-10[u-ca=ethioaa] | 2023-03-15[u-ca=ethioaa]
+   2533 ethiopic toPlainYearMonth: 2023-03-10[u-ca=ethiopic] | 2023-03-15[u-ca=ethiopic]
+   2615 gregory toPlainYearMonth: 2023-03-01[u-ca=gregory] | 2023-03-15[u-ca=gregory]
+   2697 hebrew toPlainYearMonth: 2023-02-22[u-ca=hebrew] | 2023-03-15[u-ca=hebrew]
+   2779 indian toPlainYearMonth: 2023-02-20[u-ca=indian] | 2023-03-15[u-ca=indian]
+   2861 islamic-civil toPlainYearMonth: 2023-02-22[u-ca=islamic-civil] | 2023-03-15[u-ca=islamic-civil]
+   2943 islamic-tbla toPlainYearMonth: 2023-02-21[u-ca=islamic-tbla] | 2023-03-15[u-ca=islamic-tbla]
+   3025 islamic-umalqura toPlainYearMonth: 2023-02-21[u-ca=islamic-umalqura] | 2023-03-15[u-ca=islamic-umalqura]
+   3107 japanese toPlainYearMonth: 2023-03-01[u-ca=japanese] | 2023-03-15[u-ca=japanese]
+   3189 persian toPlainYearMonth: 2023-02-20[u-ca=persian] | 2023-03-15[u-ca=persian]
+   3271 roc toPlainYearMonth: 2023-03-01[u-ca=roc] | 2023-03-15[u-ca=roc]
+
+C16, line by line (number, operation: expected, then this engine's answer):
+   2130 buddhist toPlainMonthDay: 1972-03-15[u-ca=buddhist] | 03-15
+   2616 gregory toPlainMonthDay: 1972-03-15[u-ca=gregory] | 03-15
+   3108 japanese toPlainMonthDay: 1972-03-15[u-ca=japanese] | 03-15
+   3272 roc toPlainMonthDay: 1972-03-15[u-ca=roc] | 03-15
+
+C17, line by line (number, operation: expected, then this engine's answer):
+   3327 buddhist month-day to date: 2001-02-10[u-ca=buddhist] | 2544-02-10[u-ca=buddhist]
+   3999 roc month-day to date: 2001-02-10[u-ca=roc] | 0090-02-10[u-ca=roc]
+
+F4, line by line (number, operation: expected, then this engine's answer):
+   2180 chinese until 1999-01-01 round months: -P24Y3M | -P24Y3M10D
+   2186 chinese until 2023-03-14 round months: PT0S | -P1D
+   2192 chinese until 2024-02-29 round months: P12M | P11M26D
+   2198 chinese until 2030-12-31 round months: P7Y9M | P7Y9M13D
+   2204 chinese until 1850-06-06 round months: -P172Y10M | -P172Y9M27D
+   2262 coptic until 1999-01-01 round months: -P24Y2M | -P24Y2M13D
+   2268 coptic until 2023-03-14 round months: PT0S | -P1D
+   2274 coptic until 2024-02-29 round months: P1Y | P12M15D
+   2280 coptic until 2030-12-31 round months: P7Y11M | P7Y10M16D
+   2286 coptic until 1850-06-06 round months: -P172Y10M | -P172Y10M6D
+   2341 dangi until 1999-01-01 round months: -P24Y3M | -P24Y3M10D
+   2347 dangi until 2023-03-14 round months: PT0S | -P1D
+   2353 dangi until 2024-02-29 round months: P12M | P11M26D
+   2359 dangi until 2030-12-31 round months: P7Y9M | P7Y9M13D
+   2365 dangi until 1850-06-06 round months: -P172Y10M | -P172Y9M27D
+   2423 ethioaa until 1999-01-01 round months: -P24Y2M | -P24Y2M13D
+   2429 ethioaa until 2023-03-14 round months: PT0S | -P1D
+   2435 ethioaa until 2024-02-29 round months: P1Y | P12M15D
+   2441 ethioaa until 2030-12-31 round months: P7Y11M | P7Y10M16D
+   2447 ethioaa until 1850-06-06 round months: -P172Y10M | -P172Y10M6D
+   2505 ethiopic until 1999-01-01 round months: -P24Y2M | -P24Y2M13D
+   2511 ethiopic until 2023-03-14 round months: PT0S | -P1D
+   2517 ethiopic until 2024-02-29 round months: P1Y | P12M15D
+   2523 ethiopic until 2030-12-31 round months: P7Y11M | P7Y10M16D
+   2529 ethiopic until 1850-06-06 round months: -P172Y10M | -P172Y10M6D
+   2669 hebrew until 1999-01-01 round months: -P24Y2M | -P24Y2M9D
+   2675 hebrew until 2023-03-14 round months: PT0S | -P1D
+   2681 hebrew until 2024-02-29 round months: P12M | P11M28D
+   2687 hebrew until 2030-12-31 round months: P7Y9M | P7Y9M13D
+   2693 hebrew until 1850-06-06 round months: -P172Y10M | -P172Y9M26D
+   2751 indian until 1999-01-01 round months: -P24Y2M | -P24Y2M13D
+   2757 indian until 2023-03-14 round months: PT0S | -P1D
+   2763 indian until 2024-02-29 round months: P1Y | P11M16D
+   2769 indian until 2030-12-31 round months: P7Y10M | P7Y9M16D
+   2775 indian until 1850-06-06 round months: -P172Y9M | -P172Y9M8D
+   2833 islamic-civil until 1999-01-01 round months: -P24Y11M | -P24Y11M9D
+   2839 islamic-civil until 2023-03-14 round months: PT0S | -P1D
+   2845 islamic-civil until 2024-02-29 round months: P1Y | P11M27D
+   2851 islamic-civil until 2030-12-31 round months: P8Y | P8Y13D
+   2857 islamic-civil until 1850-06-06 round months: -P178Y1M | -P178Y27D
+   2915 islamic-tbla until 1999-01-01 round months: -P24Y11M | -P24Y11M9D
+   2921 islamic-tbla until 2023-03-14 round months: PT0S | -P1D
+   2927 islamic-tbla until 2024-02-29 round months: P1Y | P11M27D
+   2933 islamic-tbla until 2030-12-31 round months: P8Y | P8Y13D
+   2939 islamic-tbla until 1850-06-06 round months: -P178Y1M | -P178Y27D
+   2997 islamic-umalqura until 1999-01-01 round months: -P24Y11M | -P24Y11M10D
+   3003 islamic-umalqura until 2023-03-14 round months: PT0S | -P1D
+   3009 islamic-umalqura until 2024-02-29 round months: P1Y | P11M25D
+   3015 islamic-umalqura until 2030-12-31 round months: P8Y | P8Y12D
+   3021 islamic-umalqura until 1850-06-06 round months: -P178Y1M | -P178Y28D
+   3161 persian until 1999-01-01 round months: -P24Y2M | -P24Y2M13D
+   3167 persian until 2023-03-14 round months: PT0S | -P1D
+   3173 persian until 2024-02-29 round months: P1Y | P11M16D
+   3179 persian until 2030-12-31 round months: P7Y10M | P7Y9M16D
+   3185 persian until 1850-06-06 round months: -P172Y9M | -P172Y9M8D
+
+D11, line by line (number, operation: expected, then this engine's answer):
+   2214 chinese duration round relativeTo: P2Y8M26D | throws Error
+   2215 chinese duration total relativeTo: 33.86666666666667 | throws Error
+   2296 coptic duration round relativeTo: P2Y9M24D | throws Error
+   2297 coptic duration total relativeTo: 35.8 | throws Error
+   2375 dangi duration round relativeTo: P2Y8M26D | throws Error
+   2376 dangi duration total relativeTo: 33.86666666666667 | throws Error
+   2457 ethioaa duration round relativeTo: P2Y9M24D | throws Error
+   2458 ethioaa duration total relativeTo: 35.8 | throws Error
+   2539 ethiopic duration round relativeTo: P2Y9M24D | throws Error
+   2540 ethiopic duration total relativeTo: 35.8 | throws Error
+   2703 hebrew duration round relativeTo: P2Y8M26D | throws Error
+   2704 hebrew duration total relativeTo: 33.89655172413793 | throws Error
+   2785 indian duration round relativeTo: P2Y8M24D | throws Error
+   2786 indian duration total relativeTo: 32.8 | throws Error
+   2867 islamic-civil duration round relativeTo: P2Y9M26D | throws Error
+   2868 islamic-civil duration total relativeTo: 33.86666666666667 | throws Error
+   2949 islamic-tbla duration round relativeTo: P2Y9M26D | throws Error
+   2950 islamic-tbla duration total relativeTo: 33.86666666666667 | throws Error
+   3031 islamic-umalqura duration round relativeTo: P2Y9M25D | throws Error
+   3032 islamic-umalqura duration total relativeTo: 33.833333333333336 | throws Error
+   3195 persian duration round relativeTo: P2Y8M24D | throws Error
+   3196 persian duration total relativeTo: 32.8 | throws Error
