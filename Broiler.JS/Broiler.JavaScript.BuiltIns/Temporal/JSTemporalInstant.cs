@@ -123,95 +123,21 @@ public partial class JSTemporalInstant : JSObject
     }
 
     [JSExport("until", Length = 1)]
-    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), 1);
+    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), DifferenceOperation.Until);
 
     [JSExport("since", Length = 1)]
-    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), -1);
+    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), DifferenceOperation.Since);
 
-    // DifferenceTemporalInstant: the difference between two instants, expressed as a Duration of
-    // time units. The options bag (largestUnit / smallestUnit / roundingIncrement / roundingMode)
-    // is honored per GetDifferenceSettings; only time units are valid (an Instant has no date).
-    private JSValue Difference(JSValue other, JSValue optionsArg, int sign)
+    // DifferenceTemporalInstant (s8.5.9): ToTemporalInstant, then GetDifferenceSettings' reads and rules (time units
+    // only, largest second by default), then the shared library's DifferenceInstant: the nanoseconds rounded to the
+    // smallest unit and increment and balanced up to the largest unit, negated for since.
+    private JSValue Difference(JSValue other, JSValue options, DifferenceOperation operation)
     {
+        const string typeName = "Temporal.Instant";
         var target = RequireInstant(ToTemporalInstant(other));
-
-        var largestUnit = "auto";
-        var smallestUnit = "nanosecond";
-        var roundingMode = RoundingMode.Trunc;
-        var increment = 1;
-
-        if (optionsArg != null && !optionsArg.IsUndefined)
-        {
-            if (optionsArg is not JSObject options)
-                throw JSEngine.NewTypeError("Temporal.Instant difference options must be an object or undefined");
-
-            // GetDifferenceSettings reads every option — largestUnit, roundingIncrement, roundingMode,
-            // smallestUnit, in that order — and coerces each (calendar units included) before any is
-            // validated against the allowed group, so a disallowed unit is reported only afterwards.
-            var lu = options[KeyStrings.GetOrCreate("largestUnit")];
-            if (!lu.IsUndefined)
-                largestUnit = TemporalRoundingOptions.NormalizeAnyUnit(lu.StringValue, allowAuto: true);
-
-            increment = TemporalRoundingOptions.GetRoundingIncrement(options);
-            roundingMode = TemporalRoundingOptions.GetRoundingMode(options, RoundingMode.Trunc);
-
-            var su = options[KeyStrings.GetOrCreate("smallestUnit")];
-            if (!su.IsUndefined)
-                smallestUnit = TemporalRoundingOptions.NormalizeAnyUnit(su.StringValue, allowAuto: false);
-
-            // Only time units (hour … nanosecond) are valid for an Instant difference.
-            if (largestUnit != "auto" && TemporalRoundingOptions.UnitIndex(largestUnit) < TemporalRoundingOptions.UnitIndex("hour"))
-                throw JSEngine.NewRangeError($"Temporal.Instant: invalid largestUnit \"{largestUnit}\"");
-            if (TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex("hour"))
-                throw JSEngine.NewRangeError($"Temporal.Instant: invalid smallestUnit \"{smallestUnit}\"");
-        }
-
-        // largestUnit defaults to the larger of "second" and the chosen smallestUnit.
-        if (largestUnit == "auto")
-            largestUnit = TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex("second")
-                ? smallestUnit : "second";
-
-        if (TemporalRoundingOptions.UnitIndex(largestUnit) > TemporalRoundingOptions.UnitIndex(smallestUnit))
-            throw JSEngine.NewRangeError("Temporal.Instant: largestUnit must be larger than or equal to smallestUnit");
-
-        var maxIncrement = smallestUnit switch
-        {
-            "hour" => 24L,
-            "minute" or "second" => 60L,
-            _ => 1000L, // millisecond / microsecond / nanosecond
-        };
-        TemporalRoundingOptions.ValidateRoundingIncrement(increment, maxIncrement, inclusive: false);
-
-        // The "since" direction is the negation of "until"; rounding a negated value with the
-        // requested mode is equivalent to negating both the mode and the rounded result.
-        var diff = (target.epochNanoseconds - epochNanoseconds) * sign;
-        var unitNs = (BigInteger)UnitNanoseconds(smallestUnit) * increment;
-        var rounded = ExactRounding.RoundNumberToIncrement(diff, BigInteger.One, unitNs, roundingMode);
-        return BalanceTimeDuration(rounded, largestUnit);
-    }
-
-    // BalanceTimeDuration: distribute a signed nanosecond total into time components, from
-    // `largestUnit` (hour … nanosecond) downward.
-    private static JSValue BalanceTimeDuration(BigInteger totalNs, string largestUnit)
-    {
-        var sign = totalNs.Sign;
-        var ns = BigInteger.Abs(totalNs);
-        var li = TemporalRoundingOptions.UnitIndex(largestUnit);
-
-        BigInteger hours = 0, minutes = 0, seconds = 0, millis = 0, micros = 0;
-        if (li <= TemporalRoundingOptions.UnitIndex("hour")) { hours = ns / 3_600_000_000_000; ns %= 3_600_000_000_000; }
-        if (li <= TemporalRoundingOptions.UnitIndex("minute")) { minutes = ns / 60_000_000_000; ns %= 60_000_000_000; }
-        if (li <= TemporalRoundingOptions.UnitIndex("second")) { seconds = ns / 1_000_000_000; ns %= 1_000_000_000; }
-        if (li <= TemporalRoundingOptions.UnitIndex("millisecond")) { millis = ns / 1_000_000; ns %= 1_000_000; }
-        if (li <= TemporalRoundingOptions.UnitIndex("microsecond")) { micros = ns / 1_000; ns %= 1_000; }
-        var nanos = ns;
-
-        // Each component is the ℝ→𝔽 nearest double (ties to even), not .NET's
-        // (double)BigInteger which truncates toward zero — observable for the very large
-        // components a near-limit difference produces (#818 Problems 18/19).
-        double S(BigInteger v) => sign * ExactRounding.ToDouble(v, BigInteger.One);
-        return new JSTemporalDuration(0, 0, 0, 0, S(hours), S(minutes), S(seconds), S(millis), S(micros), S(nanos),
-            JSTemporalDuration.DurationPrototype);
+        var settings = TemporalAdapter.DifferenceSettings(TemporalType.Instant, operation, options, typeName);
+        return TemporalAdapter.DurationOf(TemporalDifferences.DifferenceTemporalInstant(operation, epochNanoseconds, target.epochNanoseconds, settings,
+            out var result), result, typeName);
     }
 
     [JSExport("round", Length = 1)]
@@ -360,16 +286,6 @@ public partial class JSTemporalInstant : JSObject
 
         throw JSEngine.NewTypeError("Temporal.Instant: invalid value");
     }
-
-    private static long UnitNanoseconds(string unit) => unit switch
-    {
-        "hour" => 3_600_000_000_000,
-        "minute" => 60_000_000_000,
-        "second" => 1_000_000_000,
-        "millisecond" => 1_000_000,
-        "microsecond" => 1_000,
-        _ => 1,
-    };
 
     // ParseTemporalInstant, the shared library's grammar: a date-time that must carry Z or a UTC offset (to
     // sub-minute precision), its annotations checked and their payload ignored, the offset applied, and the

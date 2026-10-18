@@ -23,8 +23,6 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 [JSClassGenerator("ZonedDateTime", Register = false)]
 public partial class JSTemporalZonedDateTime : JSObject
 {
-    private const long NanosecondsPerDay = 86_400_000_000_000;
-
     internal readonly BigInteger epochNanoseconds;
     internal readonly string timeZoneId;
     internal readonly string calendarId;
@@ -427,10 +425,10 @@ public partial class JSTemporalZonedDateTime : JSObject
     public JSValue Subtract(in Arguments a) => AddDuration(a.GetAt(0), a.GetAt(1), -1);
 
     [JSExport("until", Length = 1)]
-    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), 1);
+    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), DifferenceOperation.Until);
 
     [JSExport("since", Length = 1)]
-    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), -1);
+    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), DifferenceOperation.Since);
 
     [JSExport("round", Length = 1)]
     public JSValue Round(in Arguments a)
@@ -693,274 +691,24 @@ public partial class JSTemporalZonedDateTime : JSObject
         return result;
     }
 
-    // DifferenceTemporalZonedDateTime: the signed difference between two instants in this zone,
-    // expressed as a Duration. When `largestUnit` is a time unit the result is the plain
-    // epoch-nanosecond difference, rounded to smallestUnit × roundingIncrement and balanced into
-    // time components; otherwise it is the DST-aware calendar difference (a "day" may be 23 h or
-    // 25 h across a transition), to which the rounding options are not yet applied.
-    private JSValue Difference(JSValue otherValue, JSValue options, int sign)
+    // DifferenceTemporalZonedDateTime (s6.5.9): ToTemporalZonedDateTime, the calendars equal, GetDifferenceSettings' reads
+    // and rules, and - for a date largest unit - the zones equal (TimeZoneEquals, by primary identifier, so that
+    // Asia/Calcutta and Asia/Kolkata are one zone); then the shared library's difference: an instant's below a day, and from
+    // a day up the wall clocks' in the zone, rounded over its real days (row F7) in the calendar (row F4).
+    private JSValue Difference(JSValue otherValue, JSValue options, DifferenceOperation operation)
     {
+        const string typeName = "Temporal.ZonedDateTime";
         var other = Require(ToZonedDateTime(otherValue));
         if (calendarId != other.calendarId)
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: cannot compute the difference between date-times of different calendars");
-        var (largestUnit, smallestUnit, increment, roundingMode) = ReadZonedDifferenceSettings(options);
 
-        // A calendar-unit largestUnit (year/month/week/day) differences the dates in the receiver's
-        // time zone, which is only meaningful when both operands share that zone; the identifiers are
-        // compared by their primary identifiers (so e.g. "Asia/Calcutta" and "Asia/Kolkata" are the same zone).
-        if (!IsTimeUnit(largestUnit) && !TemporalTimeZones.Equal(timeZoneId, other.timeZoneId))
+        var settings = TemporalAdapter.DifferenceSettings(TemporalType.ZonedDateTime, operation, options, typeName);
+        if (TemporalOptionRules.IsDateUnit(settings.LargestUnit) && !TemporalTimeZones.Equal(timeZoneId, other.timeZoneId))
             throw JSEngine.NewRangeError("Temporal.ZonedDateTime: cannot compute a calendar-unit difference between date-times in different time zones");
 
-        // `since` is `-(until)`, so it rounds the (this→other) difference with the negated mode and
-        // negates the result below — matching the PlainDate/PlainDateTime difference.
-        var diffMode = sign < 0 ? ExactRounding.Negate(roundingMode) : roundingMode;
-        JSTemporalDuration result;
-        if (IsTimeUnit(largestUnit))
-        {
-            result = DifferenceTimeOnly(epochNanoseconds, other.epochNanoseconds, largestUnit, smallestUnit, increment, diffMode);
-        }
-        else
-        {
-            // DifferenceCalendar applies the rounding options itself for a calendar smallestUnit
-            // (year/month/week/day). For a TIME smallestUnit it returns the unrounded calendar
-            // difference, so round it through the relative-duration algorithm — which rounds the
-            // time part to smallestUnit and bubbles any day/calendar overflow up to largestUnit
-            // (e.g. since/until across a unit boundary: 1971-12-31T23:59:59.999999999 rounded up to
-            // a microsecond balances to 2 years). The modern path's bubble is ISO-only, so a
-            // non-ISO calendar keeps DifferenceCalendar's (still unrounded) time-unit result.
-            result = DifferenceCalendar(epochNanoseconds, other.epochNanoseconds, largestUnit, smallestUnit, increment, diffMode);
-            if (IsTimeUnit(smallestUnit) && (smallestUnit != "nanosecond" || increment != 1)
-                && TemporalAdapter.SharesIsoArithmetic(calendarId))
-                result = (JSTemporalDuration)RoundDurationRelative(result, smallestUnit, largestUnit, increment, diffMode);
-        }
-
-        if (sign < 0)
-            result = new JSTemporalDuration(
-                -result.YearsValue, -result.MonthsValue, -result.WeeksValue, -result.DaysValue,
-                -result.HoursValue, -result.MinutesValue, -result.SecondsValue,
-                -result.MillisecondsValue, -result.MicrosecondsValue, -result.NanosecondsValue,
-                JSTemporalDuration.DurationPrototype);
-
-        return result;
+        return TemporalAdapter.DurationOf(TemporalDifferences.DifferenceTemporalZonedDateTime(operation, epochNanoseconds, other.epochNanoseconds,
+            TemporalTimeZones.Arithmetic(timeZoneId), TemporalAdapter.Calendars, TemporalAdapter.CalendarIdOf(calendarId), settings, out var result), result, typeName);
     }
-
-    private static bool IsTimeUnit(string unit) => unit is "hour" or "minute" or "second"
-        or "millisecond" or "microsecond" or "nanosecond";
-
-    // The difference as a pure time duration (no calendar units): the (ns2 − ns1) nanosecond
-    // difference rounded to smallestUnit × increment (with the caller's — for "since", negated —
-    // rounding mode), then balanced from `largestUnit` down.
-    private static JSTemporalDuration DifferenceTimeOnly(BigInteger ns1, BigInteger ns2, string largestUnit,
-        string smallestUnit, int increment, RoundingMode roundingMode)
-    {
-        var unitNs = (BigInteger)TimeUnitNanoseconds(smallestUnit) * increment;
-        var rounded = ExactRounding.RoundNumberToIncrement(ns2 - ns1, BigInteger.One, unitNs, roundingMode);
-        return BalanceTimeDuration(rounded, largestUnit);
-    }
-
-    private static long TimeUnitNanoseconds(string unit) => unit switch
-    {
-        "hour" => 3_600_000_000_000,
-        "minute" => 60_000_000_000,
-        "second" => 1_000_000_000,
-        "millisecond" => 1_000_000,
-        "microsecond" => 1_000,
-        _ => 1, // nanosecond
-    };
-
-    // DifferenceZonedDateTime for a calendar `largestUnit` (year/month/week/day). Follows the
-    // proposal's day-correction loop: the wall-clock time-of-day difference is combined with a
-    // calendar date difference, correcting the intermediate date until the residual real time
-    // runs in the same direction as the overall difference (which absorbs DST offset shifts).
-    private JSTemporalDuration DifferenceCalendar(BigInteger ns1, BigInteger ns2, string largestUnit,
-        string smallestUnit = "nanosecond", int increment = 1, RoundingMode roundingMode = RoundingMode.Trunc)
-    {
-        if (ns1 == ns2)
-            return new JSTemporalDuration(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, JSTemporalDuration.DurationPrototype);
-
-        var start = LocalAt(ns1);
-        var end = LocalAt(ns2);
-        var sign = ns2 > ns1 ? 1 : -1;
-
-        int iy = end.y, im = end.mo, id = end.d;
-        BigInteger residual;
-
-        // Same calendar day: the date difference is zero and the whole difference is the
-        // epoch-nanosecond remainder. Running the day-correction loop would re-resolve the wall
-        // clock through EpochNsForLocal, which across a DST fall-back disambiguates the repeated
-        // hour to a different offset than the operands and spuriously adds a day (proposal-temporal
-        // #3141: same ISO date, opposite-sign wall-clock vs epoch deltas).
-        if (start.y == end.y && start.mo == end.mo && start.d == end.d)
-        {
-            residual = ns2 - ns1;
-        }
-        else
-        {
-            var timeNs = TimeOfDayNs(end) - TimeOfDayNs(start);
-            var dayCorrection = Math.Sign(timeNs) == -sign ? 1 : 0;
-            while (true)
-            {
-                var epochDay = IsoCalendarMath.EpochDays(end.y, end.mo, end.d) - (long)dayCorrection * sign;
-                var (cy, cm, cd) = IsoCalendarMath.FromEpochDays(epochDay);
-                iy = (int)cy; im = cm; id = cd;
-
-                var intermediateNs = EpochNsForLocal(iy, im, id, start.h, start.mi, start.s, start.ms, start.us, start.ns);
-                residual = ns2 - intermediateNs;
-                if (residual == 0 || residual.Sign == sign)
-                    break;
-
-                dayCorrection++;
-                if (dayCorrection > 3) // the loop is guaranteed to settle within two corrections
-                    break;
-            }
-        }
-
-        // The date portion is differenced in the instance's calendar: the ISO start / intermediate
-        // dates are projected to the calendar's (year, month, day) so a non-ISO calendar counts whole
-        // years/months by its own month lengths and leap months, not the ISO ones.
-        double years, months, weeks, days;
-        if (!TemporalAdapter.SharesIsoArithmetic(calendarId))
-        {
-            (years, months, weeks, days) = TemporalAdapter.CalendarDateUntil(calendarId,
-                new IsoDate(start.y, start.mo, start.d), new IsoDate(iy, im, id), largestUnit);
-        }
-        else
-        {
-            (years, months, weeks, days) = DifferenceISODate(start.y, start.mo, start.d, iy, im, id, largestUnit);
-
-            // RoundRelativeDuration (calendar smallestUnit): round the date difference toward the
-            // requested unit, with the time-of-day folded into the boundary progress. This reuses the
-            // PlainDateTime day-axis nudge, which is exact when the day is 24 h (UTC / fixed-offset
-            // zones); a DST day length is not yet modelled here. Range-check the rounded boundary so an
-            // increment that pushes the end date past the representable range is a RangeError.
-            if (smallestUnit is "year" or "month" or "week" or "day")
-            {
-                if (smallestUnit == "day")
-                {
-                    // The nudge consults the end boundary (anchor + the next day-increment multiple)
-                    // only when the difference does not land exactly on it; building that boundary as a
-                    // date past the representable range (±10^8 days from the epoch) is a RangeError, per
-                    // AddDateTime in NudgeToCalendarUnit.
-                    var exact = residual == 0 && years == 0 && months == 0 && weeks == 0
-                        && (long)days % increment == 0;
-                    if (!exact)
-                    {
-                        var r1Days = JSTemporalPlainDate.AddDateGetDays(start.y, start.mo, start.d,
-                            (long)years, (long)months, (long)weeks, (long)days);
-                        var boundaryDays = r1Days + (long)increment * sign;
-                        if (boundaryDays is < -100_000_000 or > 100_000_000)
-                            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: rounding result is out of range");
-                    }
-                }
-
-                var (ry, rmo, rw, rd) = JSTemporalPlainDate.RoundDateTimeDateDifference(
-                    start.y, start.mo, start.d, (long)years, (long)months, (long)weeks, (long)days,
-                    end.y, end.mo, end.d, TimeOfDayNs(start), TimeOfDayNs(end),
-                    largestUnit, smallestUnit, increment, roundingMode);
-                return new JSTemporalDuration(ry, rmo, rw, rd, 0, 0, 0, 0, 0, 0, JSTemporalDuration.DurationPrototype);
-            }
-        }
-        var time = BalanceTimeDuration(residual, "hour");
-
-        return new JSTemporalDuration(years, months, weeks, days,
-            time.HoursValue, time.MinutesValue, time.SecondsValue,
-            time.MillisecondsValue, time.MicrosecondsValue, time.NanosecondsValue,
-            JSTemporalDuration.DurationPrototype);
-    }
-
-    // Distributes a signed nanosecond total into time components, from `largestUnit` downward.
-    private static JSTemporalDuration BalanceTimeDuration(BigInteger totalNs, string largestUnit)
-    {
-        var sign = totalNs.Sign;
-        var ns = BigInteger.Abs(totalNs);
-
-        BigInteger hours = 0, minutes = 0, seconds = 0, millis = 0, micros = 0;
-        bool At(string u) => UnitRank(largestUnit) <= UnitRank(u);
-        if (At("hour")) { hours = ns / 3_600_000_000_000; ns %= 3_600_000_000_000; }
-        if (At("minute")) { minutes = ns / 60_000_000_000; ns %= 60_000_000_000; }
-        if (At("second")) { seconds = ns / 1_000_000_000; ns %= 1_000_000_000; }
-        if (At("millisecond")) { millis = ns / 1_000_000; ns %= 1_000_000; }
-        if (At("microsecond")) { micros = ns / 1_000; ns %= 1_000; }
-        var nanos = ns;
-
-        // ℝ→𝔽 nearest double (ties to even), not .NET's truncating (double)BigInteger
-        // (#818 Problems 18/19).
-        double S(BigInteger v) => sign * ExactRounding.ToDouble(v, BigInteger.One);
-        return new JSTemporalDuration(0, 0, 0, 0, S(hours), S(minutes), S(seconds), S(millis), S(micros), S(nanos),
-            JSTemporalDuration.DurationPrototype);
-    }
-
-    private static readonly string[] UnitRankOrder =
-        ["year", "month", "week", "day", "hour", "minute", "second", "millisecond", "microsecond", "nanosecond"];
-
-    private static int UnitRank(string unit) => System.Array.IndexOf(UnitRankOrder, unit);
-
-    // GetDifferenceSettings for a ZonedDateTime since/until: reads largestUnit, roundingIncrement,
-    // roundingMode and smallestUnit (in that spec order, every unit coerced before validation), then
-    // validates that largestUnit is not finer than smallestUnit and that a sub-day smallestUnit's
-    // increment divides its unit evenly. The defaults are smallestUnit "nanosecond" and largestUnit
-    // = the larger of "hour" and smallestUnit. (The rounding the options request is validated here
-    // but, like the PlainDate/PlainDateTime difference, not yet applied to the result.)
-    private static (string largestUnit, string smallestUnit, int increment, RoundingMode roundingMode) ReadZonedDifferenceSettings(JSValue options)
-    {
-        if (options == null || options.IsUndefined)
-            return ("hour", "nanosecond", 1, RoundingMode.Trunc);
-        if (options is not JSObject o)
-            throw JSEngine.NewTypeError("Temporal.ZonedDateTime difference options must be an object or undefined");
-
-        var largestRaw = o[KeyStrings.GetOrCreate("largestUnit")];
-        var largestUnit = largestRaw.IsUndefined ? null : TemporalRoundingOptions.NormalizeAnyUnit(largestRaw.StringValue, allowAuto: true);
-        if (largestUnit == "auto") largestUnit = null;
-
-        var increment = TemporalRoundingOptions.GetRoundingIncrement(o);
-        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, RoundingMode.Trunc);
-
-        var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
-        var smallestUnit = smallestRaw.IsUndefined ? "nanosecond" : TemporalRoundingOptions.NormalizeAnyUnit(smallestRaw.StringValue, allowAuto: false);
-
-        var hourIndex = TemporalRoundingOptions.UnitIndex("hour");
-        largestUnit ??= TemporalRoundingOptions.UnitIndex(smallestUnit) < hourIndex ? smallestUnit : "hour";
-
-        if (TemporalRoundingOptions.UnitIndex(smallestUnit) < TemporalRoundingOptions.UnitIndex(largestUnit))
-            throw JSEngine.NewRangeError("Temporal.ZonedDateTime: smallestUnit must not be larger than largestUnit");
-
-        var max = TemporalRoundingOptions.MaximumRoundingIncrement(smallestUnit);
-        if (max > 0)
-            TemporalRoundingOptions.ValidateRoundingIncrement(increment, max, inclusive: false);
-
-        return (largestUnit, smallestUnit, increment, roundingMode);
-    }
-
-    private static string ReadLargestUnit(JSValue options, string defaultUnit)
-    {
-        if (options == null || options.IsUndefined)
-            return defaultUnit;
-        if (options is not JSObject optionsObject)
-            throw JSEngine.NewTypeError("Temporal.ZonedDateTime difference options must be an object or undefined");
-        var v = optionsObject[KeyStrings.GetOrCreate("largestUnit")];
-        if (v.IsUndefined || v.StringValue == "auto")
-            return defaultUnit;
-        return NormalizeUnit(v.StringValue);
-    }
-
-    private static string NormalizeUnit(string u) => u switch
-    {
-        "year" or "years" => "year",
-        "month" or "months" => "month",
-        "week" or "weeks" => "week",
-        "day" or "days" => "day",
-        "hour" or "hours" => "hour",
-        "minute" or "minutes" => "minute",
-        "second" or "seconds" => "second",
-        "millisecond" or "milliseconds" => "millisecond",
-        "microsecond" or "microseconds" => "microsecond",
-        "nanosecond" or "nanoseconds" => "nanosecond",
-        _ => throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: invalid unit \"{u}\""),
-    };
-
-    // The wall-clock time of day, in nanoseconds since local midnight.
-    private static long TimeOfDayNs((int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) l)
-        => ((((long)l.h * 60 + l.mi) * 60 + l.s) * 1000L + l.ms) * 1_000_000L + (long)l.us * 1000 + l.ns;
 
     // Local wall-clock components for an arbitrary epoch instant in this zone: GetISODateTimeFor, the
     // shared library's GetISOPartsFromEpoch of the instant plus its offset.
@@ -974,56 +722,6 @@ public partial class JSTemporalZonedDateTime : JSObject
     // The epoch instant for a local wall-clock datetime in this zone ("compatible" disambiguation).
     private BigInteger EpochNsForLocal(int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns)
         => DisambiguateEpochNs(timeZoneId, y, mo, d, h, mi, s, ms, us, ns, "compatible");
-
-    // DifferenceISODate from a start to an end date (ISO calendar), per the chosen largestUnit.
-    private static (double years, double months, double weeks, double days) DifferenceISODate(
-        int ay, int am, int ad, int by, int bm, int bd, string largestUnit)
-    {
-        var startEpoch = IsoCalendarMath.EpochDays(ay, am, ad);
-        var endEpoch = IsoCalendarMath.EpochDays(by, bm, bd);
-
-        if (largestUnit is "day" or "week")
-        {
-            var totalDays = endEpoch - startEpoch;
-            if (largestUnit == "week")
-                return (0, 0, totalDays / 7, totalDays % 7);
-            return (0, 0, 0, totalDays);
-        }
-
-        var sign = IsoArithmetic.CompareIsoDate(new IsoDate(ay, am, ad), new IsoDate(by, bm, bd));
-        if (sign == 0) return (0, 0, 0, 0);
-        var step = -sign; // +1 when the end is after the start
-
-        // Each candidate year/month offset is measured from the *original* start date, keeping its
-        // *unconstrained* day, not by stepping a constrained intermediate forward. This both avoids
-        // stranding the day at a short month in between (e.g. Dec 30 + N months landing on Feb 28 and
-        // over-counting the residual days) and makes a wrap such as Jan 29 + 1 month = Feb 29 surpass
-        // Feb 28, so it is not counted as a whole month. (Mirrors PlainDate's ISODateSurpasses.)
-        bool Surpasses(long yy, long mm)
-        {
-            var (ny, nm) = IsoCalendarMath.BalanceYearMonth(ay + yy, (long)am + mm);
-            if (ny != by) return step * (ny - by) > 0;
-            if (nm != bm) return step * (nm - bm) > 0;
-            return step * (ad - bd) > 0;
-        }
-
-        long years = 0;
-        var candidateYears = (long)by - ay;
-        if (candidateYears != 0) candidateYears -= step;
-        while (!Surpasses(candidateYears, 0)) { years = candidateYears; candidateYears += step; }
-
-        long months = 0;
-        var candidateMonths = (long)step;
-        while (!Surpasses(years, candidateMonths)) { months = candidateMonths; candidateMonths += step; }
-
-        if (largestUnit == "month") { months += years * 12; years = 0; }
-
-        // The intermediate date, its day constrained to the month (BalanceISOYearMonth, then RegulateISODate).
-        var (iy, im) = IsoCalendarMath.BalanceYearMonth(ay + years, (long)am + months);
-        var id = Math.Min(ad, IsoCalendarMath.DaysInMonth(iy, im));
-        var days = IsoCalendarMath.EpochDays(by, bm, bd) - IsoCalendarMath.EpochDays(iy, im, id);
-        return (years, months, 0, days);
-    }
 
     // ── time-zone offset resolution ───────────────────────────────────────────────
 

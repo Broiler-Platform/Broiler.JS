@@ -14,7 +14,8 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 // Temporal.PlainYearMonth (Temporal proposal §9): a calendar year and month (e.g. "2024-06"),
 // stored as the ISO date of day 1 of that calendar month (the reference ISO day round-trips the
 // month for the non-ISO calendars). Its calendar fields, field resolution and addition are the
-// shared library's calendars, through TemporalAdapter. Registered under the Temporal namespace via
+// shared library's calendars, and its differences, rounded in any calendar, the shared library's
+// TemporalDifferences, through TemporalAdapter. Registered under the Temporal namespace via
 // Register = false.
 [JSClassGenerator("PlainYearMonth", Register = false)]
 public partial class JSTemporalPlainYearMonth : JSObject
@@ -70,10 +71,6 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
     // CalendarISOToDate of the reference date, the shared library's: the calendar's fields, which every getter reads.
     private CalendarDate CalendarDate => TemporalAdapter.CalendarDateOf(calendarId, IsoDate);
-
-    // Whether the calendar's dates are not the ISO dates (neither iso8601 nor the Gregorian family): the
-    // differences' rounding, part C's, still runs on ISO arithmetic for those alone.
-    private bool NonIso => !TemporalAdapter.SharesIsoArithmetic(calendarId);
 
     [JSExport("era")] public JSValue Era => TemporalAdapter.EraValue(CalendarDate);
     [JSExport("eraYear")] public JSValue EraYear => TemporalAdapter.EraYearValue(CalendarDate);
@@ -159,75 +156,26 @@ public partial class JSTemporalPlainYearMonth : JSObject
     }
 
     [JSExport("until", Length = 1)]
-    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), 1);
+    public JSValue Until(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), DifferenceOperation.Until);
 
     [JSExport("since", Length = 1)]
-    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), -1);
+    public JSValue Since(in Arguments a) => Difference(a.GetAt(0), a.GetAt(1), DifferenceOperation.Since);
 
-    // until/since honor largestUnit (year[default]/month) and round to smallestUnit at the given
-    // roundingIncrement / roundingMode. Both year-months are anchored at day 1 of their month (per
-    // DifferenceTemporalPlainYearMonth), so the difference reduces to a date difference. Rounding is
-    // applied for the ISO calendar only; the arithmetic calendars return the unrounded difference.
-    private JSValue Difference(JSValue other, JSValue options, int sign)
+    // DifferenceTemporalPlainYearMonth (s9.5.7): ToTemporalYearMonth, the calendars equal, GetDifferenceSettings' reads and
+    // rules (years and months only), then the shared library's difference: equal ISO dates are zero; otherwise each
+    // year-month's first day in the calendar (within the date limits: row B5), the calendar's DateUntil from the
+    // receiver's, rounded relative to it where the smallest unit or the increment asks, in every calendar (row F4), and
+    // negated for since.
+    private JSValue Difference(JSValue other, JSValue options, DifferenceOperation operation)
     {
+        const string typeName = "Temporal.PlainYearMonth";
         var target = Require(ToTemporalYearMonth(other));
         if (calendarId != target.calendarId)
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: cannot compute the difference between year-months of different calendars");
-        var (largestUnit, smallestUnit, increment, roundingMode) = ReadDifferenceSettings(options);
 
-        if (NonIso)
-        {
-            // The difference is always measured *from the receiver* (anchoring the year/month count on
-            // the receiver's month-day), then negated for "since" — swapping the operands instead would
-            // re-anchor on the other year-month and miscount at leap-month boundaries. Each year-month's
-            // first day, then CalendarDateUntil, the shared library's; its rounding is part C's (row F4).
-            double cy = 0, cm = 0;
-            if (IsoArithmetic.CompareIsoDate(IsoDate, target.IsoDate) != 0)
-            {
-                var one = TemporalAdapter.YearMonthFirstDay(calendarId, IsoDate, "Temporal.PlainYearMonth");
-                var two = TemporalAdapter.YearMonthFirstDay(calendarId, target.IsoDate, "Temporal.PlainYearMonth");
-                (cy, cm, _, _) = TemporalAdapter.CalendarDateUntil(calendarId, one, two, largestUnit);
-            }
-            if (sign == -1) { cy = JSTemporalPlainDate.Negate(cy); cm = JSTemporalPlainDate.Negate(cm); }
-            return new JSTemporalDuration(cy, cm, 0, 0, 0, 0, 0, 0, 0, 0, JSTemporalDuration.DurationPrototype);
-        }
-
-        // DifferenceTemporalPlainYearMonth anchors both year-months at day 1 and forms an intermediate
-        // PlainDate for each, which must lie within the representable ISO date range. At the boundary
-        // months the year-month range is wider than the date range (e.g. -271821-04 is a valid
-        // year-month but -271821-04-01 is not a valid date), so a difference against a different
-        // year-month throws RangeError. Equal year-months short-circuit to a zero duration below
-        // (no intermediate date is formed), so they never reach this check.
-        var sameYearMonth = isoYear == target.isoYear && isoMonth == target.isoMonth;
-        if (!sameYearMonth
-            && (!TemporalAdapter.IsoDateWithinLimits(isoYear, isoMonth, 1) || !TemporalAdapter.IsoDateWithinLimits(target.isoYear, target.isoMonth, 1)))
-            throw JSEngine.NewRangeError("Temporal.PlainYearMonth: difference is outside the supported ISO date range");
-
-        // The difference is measured from the receiver (day 1) and negated for "since"; the rounding mode
-        // is correspondingly negated before rounding (GetDifferenceSettings).
-        var mode = sign == -1 ? ExactRounding.Negate(roundingMode) : roundingMode;
-
-        double years, months;
-        if (smallestUnit == "month" && increment == 1)
-        {
-            // DifferenceTemporalPlainYearMonth step 16 only invokes RoundRelativeDuration when
-            // smallestUnit ≠ month OR roundingIncrement ≠ 1. Both year-months sit on day 1, so the
-            // difference is already exact in whole months: skip rounding entirely. This also avoids
-            // building the next-increment rounding boundary, which for a year-month at the ISO limit
-            // (e.g. since('+275760-09')) would be out of range (issue #794) — whereas a coarser unit or
-            // a larger increment DOES round and a boundary past the limit then throws (issue #857).
-            (years, months, _, _) = JSTemporalPlainDate.DiffCalendarDate(
-                isoYear, isoMonth, 1, target.isoYear, target.isoMonth, 1, largestUnit);
-        }
-        else
-        {
-            (years, months, _, _) = JSTemporalPlainDate.DifferenceISODateRounded(
-                isoYear, isoMonth, 1, target.isoYear, target.isoMonth, 1, largestUnit, smallestUnit, increment, mode);
-        }
-
-        if (sign == -1) { years = -years; months = -months; }
-
-        return new JSTemporalDuration(years, months, 0, 0, 0, 0, 0, 0, 0, 0, JSTemporalDuration.DurationPrototype);
+        var settings = TemporalAdapter.DifferenceSettings(TemporalType.PlainYearMonth, operation, options, typeName);
+        return TemporalAdapter.DurationOf(TemporalDifferences.DifferenceTemporalPlainYearMonth(operation, TemporalAdapter.Calendars,
+            TemporalAdapter.CalendarIdOf(calendarId), IsoDate, target.IsoDate, settings, out var result), result, typeName);
     }
 
     [JSExport("equals", Length = 1)]
@@ -298,47 +246,6 @@ public partial class JSTemporalPlainYearMonth : JSObject
             throw JSEngine.NewRangeError($"Temporal: invalid overflow \"{overflow}\"");
         return overflow;
     }
-
-    // GetDifferenceSettings for until/since: the only valid units are year (largest) and month
-    // (smallest). Validates largestUnit/smallestUnit (smallestUnit must not be larger than largestUnit),
-    // roundingIncrement and roundingMode, and returns all four (rounding is applied in Difference for the
-    // ISO calendar).
-    private static (string largestUnit, string smallestUnit, int increment, RoundingMode roundingMode) ReadDifferenceSettings(JSValue options)
-    {
-        if (options == null || options.IsUndefined) return ("year", "month", 1, RoundingMode.Trunc);
-        if (options is not JSObject o)
-            throw JSEngine.NewTypeError("Temporal options must be an object or undefined");
-
-        // GetDifferenceSettings reads largestUnit, roundingIncrement, roundingMode, smallestUnit in that
-        // order, coercing each unit (week/day/time units included) before any is validated against the
-        // allowed group, so a disallowed-unit RangeError is reported only after every option is read.
-        var largestRaw = o[KeyStrings.GetOrCreate("largestUnit")];
-        var largestUnit = largestRaw.IsUndefined ? null : TemporalRoundingOptions.NormalizeAnyUnit(largestRaw.StringValue, allowAuto: true);
-        if (largestUnit == "auto") largestUnit = null;
-
-        var increment = TemporalRoundingOptions.GetRoundingIncrement(o);
-        var roundingMode = TemporalRoundingOptions.GetRoundingMode(o, RoundingMode.Trunc);
-
-        var smallestRaw = o[KeyStrings.GetOrCreate("smallestUnit")];
-        var smallestUnit = smallestRaw.IsUndefined ? "month" : TemporalRoundingOptions.NormalizeAnyUnit(smallestRaw.StringValue, allowAuto: false);
-
-        // Only "year" and "month" are valid for a PlainYearMonth difference.
-        if (largestUnit is not (null or "year" or "month"))
-            throw JSEngine.NewRangeError($"Temporal.PlainYearMonth: invalid largestUnit \"{largestUnit}\"");
-        if (smallestUnit is not ("year" or "month"))
-            throw JSEngine.NewRangeError($"Temporal.PlainYearMonth: invalid smallestUnit \"{smallestUnit}\"");
-
-        // largestUnit "auto"/absent resolves to the larger of "year" and smallestUnit, i.e. "year".
-        largestUnit ??= "year";
-
-        // year ranks above month; smallestUnit must not be larger (rank smaller) than largestUnit.
-        if (UnitRank(smallestUnit) < UnitRank(largestUnit))
-            throw JSEngine.NewRangeError("Temporal.PlainYearMonth: smallestUnit must not be larger than largestUnit");
-
-        return (largestUnit, smallestUnit, increment, roundingMode);
-    }
-
-    private static int UnitRank(string unit) => unit == "year" ? 0 : 1;
 
     private static JSValue ToTemporalYearMonth(JSValue item) => ToTemporalYearMonth(item, JSUndefined.Value);
 

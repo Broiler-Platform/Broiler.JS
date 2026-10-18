@@ -72,14 +72,6 @@ internal static partial class TemporalAdapter
     internal static bool SupportsEra(string calendarId) => TemporalCalendars.SupportsEra(CalendarIdOf(calendarId));
 
     /// <summary>
-    /// Whether a calendar's dates are the ISO dates, its years only numbered differently: <c>iso8601</c> and the
-    /// Gregorian family (<c>gregory</c>, <c>buddhist</c>, <c>roc</c>, <c>japanese</c>). The differences' rounding and the
-    /// relative durations, which part C of SJL-10.5 moves to the library, still run on ISO arithmetic for these alone.
-    /// </summary>
-    internal static bool SharesIsoArithmetic(string calendarId) =>
-        CalendarIdOf(calendarId) is CalendarId.Iso8601 or CalendarId.Gregory or CalendarId.Buddhist or CalendarId.Roc or CalendarId.Japanese;
-
-    /// <summary>
     /// A constructor's calendar argument: undefined is <c>iso8601</c>, a value that is not a String is the
     /// <c>TypeError</c>, and the String is canonicalized as an identifier, never parsed as an ISO string.
     /// </summary>
@@ -261,16 +253,6 @@ internal static partial class TemporalAdapter
     private static CalendarOverflow CalendarOverflowOf(string overflow) =>
         overflow == "reject" ? CalendarOverflow.Reject : CalendarOverflow.Constrain;
 
-    /// <summary>A date unit as this engine names it (<c>"year"</c> … <c>"day"</c>), as the calendars take it.</summary>
-    private static CalendarUnit CalendarUnitOf(string unit) => unit switch
-    {
-        "year" => CalendarUnit.Year,
-        "month" => CalendarUnit.Month,
-        "week" => CalendarUnit.Week,
-        "day" => CalendarUnit.Day,
-        _ => throw new ArgumentOutOfRangeException(nameof(unit), unit, "Not a date unit."),
-    };
-
     /// <summary>
     /// Each status but <see cref="CalendarStatus.Completed"/> as this engine's error: a missing field is the
     /// <c>TypeError</c> (<see cref="TemporalCalendars.IsTypeError"/>), every other status the <c>RangeError</c>, with
@@ -368,18 +350,6 @@ internal static partial class TemporalAdapter
             throw JSEngine.NewRangeError($"{typeName}: day out of range for resulting month");
         CheckCalendar(status, calendarId, typeName, $"{typeName}: result is out of range");
         return result;
-    }
-
-    /// <summary>
-    /// CalendarDateUntil (s12.3.9), the library's <see cref="ICalendarArithmetic"/>: the years, months, weeks and days
-    /// from one date to another, up to the largest unit (<c>"year"</c> … <c>"day"</c>), each of one sign.
-    /// </summary>
-    internal static (double Years, double Months, double Weeks, double Days) CalendarDateUntil(
-        string calendarId, IsoDate one, IsoDate two, string largestUnit)
-    {
-        CheckCalendar(Calendars.DateUntil(CalendarIdOf(calendarId), one, two, CalendarUnitOf(largestUnit), out var result),
-            calendarId, "Temporal", "Temporal: date is out of range");
-        return (result.Years, result.Months, result.Weeks, result.Days);
     }
 
     /// <summary><c>PlainDate.prototype.toPlainYearMonth</c>'s calendar steps: the first day of the calendar month (row C15).</summary>

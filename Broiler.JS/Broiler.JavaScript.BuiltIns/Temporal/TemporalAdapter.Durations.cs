@@ -66,6 +66,33 @@ internal static partial class TemporalAdapter
         return options as JSObject ?? throw JSEngine.NewTypeError($"{typeName}: options must be an object or undefined");
     }
 
+    /// <summary>
+    /// GetDifferenceSettings (s13.43) of an <c>until</c> or <c>since</c>: GetOptionsObject, then the four reads in code unit
+    /// order - <c>largestUnit</c>, <c>roundingIncrement</c>, <c>roundingMode</c> (default <c>trunc</c>), <c>smallestUnit</c> -
+    /// each converted as it is read, then the type's rules, the library's <see cref="TemporalOptionRules.TryGetDifferenceSettings(TemporalType, DifferenceOperation, TemporalUnit, long, RoundingMode, TemporalUnit, out DifferenceSettings)"/>:
+    /// the unit group, the disallowed units, the defaults, the largest unit at least the smallest, the increment for the
+    /// smallest unit's maximum, and <c>since</c>'s negated mode. A refusal is the <c>RangeError</c>.
+    /// </summary>
+    internal static DifferenceSettings DifferenceSettings(TemporalType type, DifferenceOperation operation, JSValue options, string typeName)
+    {
+        var largestUnit = TemporalUnit.Unset;
+        var roundingIncrement = TemporalOptionRules.DefaultRoundingIncrement;
+        var roundingMode = TemporalOptionRules.DefaultDifferenceRoundingMode;
+        var smallestUnit = TemporalUnit.Unset;
+
+        if (OptionsObject(options, typeName) is { } resolved)
+        {
+            largestUnit = TemporalRoundingOptions.GetUnit(resolved, "largestUnit", typeName);
+            roundingIncrement = TemporalRoundingOptions.GetRoundingIncrement(resolved);
+            roundingMode = TemporalRoundingOptions.GetRoundingMode(resolved, TemporalOptionRules.DefaultDifferenceRoundingMode);
+            smallestUnit = TemporalRoundingOptions.GetUnit(resolved, "smallestUnit", typeName);
+        }
+
+        if (!TemporalOptionRules.TryGetDifferenceSettings(type, operation, largestUnit, roundingIncrement, roundingMode, smallestUnit, out var settings))
+            throw JSEngine.NewRangeError($"{typeName}: the largestUnit, smallestUnit and roundingIncrement options are not valid together");
+        return settings;
+    }
+
     // ── relativeTo ───────────────────────────────────────────────────────────────
 
     /// <summary>

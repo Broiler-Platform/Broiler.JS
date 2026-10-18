@@ -14,7 +14,7 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The class is split by concern: the records, limits, balancing, regulation and addition here; the grammar in
+/// The class is split by concern: the records, limits, balancing and regulation here; the grammar in
 /// <c>TemporalAdapter.Grammar.cs</c>; serialization and its options in <c>TemporalAdapter.Serialization.cs</c>; the
 /// calendars, their identifiers and PrepareCalendarFields' reads in <c>TemporalAdapter.Calendars.cs</c>; the durations,
 /// rounding, differences, <c>relativeTo</c> and their options in <c>TemporalAdapter.Durations.cs</c>.
@@ -114,7 +114,7 @@ internal static partial class TemporalAdapter
     /// </summary>
     internal static long YearForRegulation(double year) => Math.Abs(year) <= 1e9 ? (long)year : (long)(year % 400);
 
-    // ── regulation and addition ──────────────────────────────────────────────────
+    // ── regulation ───────────────────────────────────────────────────────────────
 
     /// <summary>
     /// RegulateISODate under the <c>overflow</c> option; a date the fields are not under <c>reject</c> is the
@@ -132,31 +132,5 @@ internal static partial class TemporalAdapter
     {
         Check(IsoArithmetic.RegulateTime(hour, minute, second, millisecond, microsecond, nanosecond, Overflow(overflow), out var time), message);
         return time;
-    }
-
-    /// <summary>
-    /// The ISO 8601 calendar's CalendarDateAdd: the years and months balanced, the day regulated under the
-    /// <c>overflow</c> option, then the weeks and days added, and the result tested against ISODateWithinLimits.
-    /// A day the month lacks under <c>reject</c> and a result past the limits are each the <c>RangeError</c>.
-    /// </summary>
-    /// <param name="date">The date, valid.</param>
-    /// <param name="duration">The date duration, each field a finite integer.</param>
-    /// <param name="overflow">The <c>overflow</c> option.</param>
-    /// <param name="typeName">The type the message names, for example <c>Temporal.PlainDate</c>.</param>
-    internal static IsoDate AddIsoDate(IsoDate date, DateDuration duration, string overflow, string typeName)
-    {
-        var status = IsoArithmetic.AddIsoDate(date, duration, Overflow(overflow), out var result);
-        if (status == TemporalStatus.InvalidDate)
-            throw JSEngine.NewRangeError($"{typeName}: day out of range for resulting month");
-        Check(status, $"{typeName}: result is out of range");
-        return result;
-    }
-
-    /// <summary>The ISO 8601 calendar's CalendarDateAdd, as <see cref="AddIsoDate(IsoDate, DateDuration, string, string)"/>, over a date's fields.</summary>
-    internal static (int Year, int Month, int Day) AddIsoDate(
-        int year, int month, int day, long years, long months, long weeks, long days, string overflow, string typeName)
-    {
-        var result = AddIsoDate(new IsoDate(year, month, day), new DateDuration(years, months, weeks, days), overflow, typeName);
-        return ((int)result.Year, result.Month, result.Day);
     }
 }
