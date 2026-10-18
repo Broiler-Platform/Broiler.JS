@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 1113 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 1225 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -49,13 +49,13 @@ did, which is the narrower and the more useful of the two.
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 87 |
-| Code units | 1507 |
-| Relevant | 1113 |
-| Exempt | 394 |
-| Assessed | 1113 of 1113 (100%) |
-| Human reviewed | 0 of 1113 (0%) |
-| Unverified | 1113 |
+| Files scanned | 94 |
+| Code units | 1642 |
+| Relevant | 1225 |
+| Exempt | 417 |
+| Assessed | 1225 of 1225 (100%) |
+| Human reviewed | 0 of 1225 (0%) |
+| Unverified | 1225 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 1113 |
+| HUMAN_PENDING | 1225 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 394 |
+| EXEMPT | 417 |
 
 ## 5. Aliases In The Tree
 
@@ -129,12 +129,19 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Algorithms/Temporal/Calendars/PersianCalendarSystem.cs` | 10 | 8 | 2 | 8 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Algorithms/Temporal/Calendars/TemporalCalendars.cs` | 74 | 60 | 14 | 60 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Algorithms/Temporal/DurationCore.cs` | 8 | 8 | 0 | 8 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.Relative.cs` | 18 | 18 | 0 | 18 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationMath.cs` | 36 | 36 | 0 | 36 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Durations/DurationRecords.cs` | 32 | 11 | 21 | 11 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Durations/ITimeZoneArithmetic.cs` | 4 | 4 | 0 | 4 | None | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalDifferences.cs` | 22 | 22 | 0 | 22 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Durations/TemporalTimeZone.cs` | 6 | 5 | 1 | 5 | None | Low | 0/0 |
 | `Broiler.ECMAScript.Algorithms/Temporal/IsoArithmetic.cs` | 27 | 27 | 0 | 27 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Algorithms/Temporal/TemporalFormat.cs` | 28 | 28 | 0 | 28 | Low | Low | 0/0 |
 | `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` | 103 | 56 | 47 | 56 | Low | High | 36/36 |
 | `Broiler.ECMAScript.Algorithms/Temporal/TemporalLimits.cs` | 18 | 18 | 0 | 18 | Low | Medium | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/TemporalOptionRules.Durations.cs` | 16 | 16 | 0 | 16 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Algorithms/Temporal/TemporalOptionRules.cs` | 27 | 18 | 9 | 18 | Low | Medium | 0/0 |
-| `Broiler.ECMAScript.Algorithms/Temporal/TemporalRecords.cs` | 25 | 6 | 19 | 6 | Low | None | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/TemporalRecords.cs` | 26 | 6 | 20 | 6 | Low | None | 0/0 |
 | `Broiler.ECMAScript.Algorithms/Text/Base64Codec.cs` | 20 | 13 | 7 | 13 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Algorithms/Text/JsonReader.cs` | 51 | 19 | 32 | 19 | Low | High | 6/6 |
 | `Broiler.ECMAScript.Algorithms/Text/JsonText.cs` | 8 | 7 | 1 | 7 | Low | Medium | 0/0 |
@@ -454,5 +461,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-488 of the 1113 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+521 of the 1225 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

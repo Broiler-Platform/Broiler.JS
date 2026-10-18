@@ -5,7 +5,7 @@
 // ----------------------
 // Relevant units:   6
 // Annotated:        6/6
-// Exempt:           19
+// Exempt:           20
 // Human-reviewed:   0/6
 // IP risk:          Low
 // Security risk:    None
@@ -70,7 +70,7 @@ public enum TemporalUnit
 /// maps a status other than <see cref="Completed"/> to its own error, a <c>RangeError</c> in both today, at the
 /// moment the specification throws it.
 /// </summary>
-// Broiler-AI:           Origin=AI; Spec=JSD-0078 X3 and decision D9; IP=Low; Security=None; Resources=0; Fingerprint=E93601
+// Broiler-AI:           Origin=AI; Spec=JSD-0078 X3 and decision D9; IP=Low; Security=None; Resources=0; Fingerprint=371A22
 // Broiler-Human:        PENDING
 public enum TemporalStatus
 {
@@ -94,8 +94,19 @@ public enum TemporalStatus
     /// <summary>The fields are not a time of day (<c>IsValidTime</c>): a regulation under <c>reject</c>, or a record handed to a limit check.</summary>
     InvalidTime = 3,
 
-    /// <summary>The fields are not a valid duration (<c>IsValidDuration</c>): mixed signs, a value that is not finite, or a value too large.</summary>
+    /// <summary>
+    /// The fields are not a valid duration (<c>IsValidDuration</c>): mixed signs, a value that is not finite, or a value
+    /// too large; or a time duration past <see cref="TemporalLimits.MaxTimeDuration"/> (<c>AddTimeDuration</c>,
+    /// <c>RoundTimeDurationToIncrement</c>).
+    /// </summary>
     InvalidDuration = 4,
+
+    /// <summary>
+    /// A duration's years, months or weeks, or a calendar unit to round or total to, need a <c>relativeTo</c> date the
+    /// call does not have: <c>AddDurations</c>, <c>Temporal.Duration.compare</c>, <c>round</c> and <c>total</c>
+    /// (the durations sub-area, SJL-10.3's part C).
+    /// </summary>
+    RelativeToRequired = 5,
 }
 
 /// <summary>The proposal's <c>overflow</c> option (<c>GetTemporalOverflowOption</c>): how a field outside its range is treated.</summary>
