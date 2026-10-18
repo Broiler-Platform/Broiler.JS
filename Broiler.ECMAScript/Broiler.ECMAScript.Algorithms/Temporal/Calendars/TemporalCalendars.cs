@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   58
-// Annotated:        58/58
+// Relevant units:   60
+// Annotated:        60/60
 // Exempt:           14
-// Human-reviewed:   0/58
+// Human-reviewed:   0/60
 // IP risk:          Low
 // Security risk:    High
 // Criteria:         1/1
 // Resource impact:  2/10 max
-// Unverified:       58
+// Unverified:       60
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -81,6 +81,11 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.24 via Broiler.VM JsTemporal.MonthDayFromFields; IP=Low; Security=None; Resources=0; Fingerprint=63C0A3
     // Broiler-Human:        PENDING
     private const long IsoReferenceYear = 1972;
+
+    /// <summary>A year bound beyond every calendar's years within the ISO limits (the Hijri ones reach 283,583): the shared sources'.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=JSD-0076 via Broiler.VM JsTemporal.YearBound; IP=Low; Security=Low; Resources=0; Fingerprint=48419E
+    // Broiler-Human:        PENDING
+    private const long YearBound = CalendarYears.MaxYearMagnitude;
 
     // Every calendar but ISO 8601, by CalendarId; the first element is unused.
     private readonly CalendarSystem?[] systems;
@@ -288,13 +293,13 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <param name="result">The calendar's date; <see langword="default"/> unless the status is <see cref="CalendarStatus.Completed"/>.</param>
     /// <returns><see cref="CalendarStatus.Completed"/>, or <see cref="CalendarStatus.OutOfRange"/> for a date whose year is outside -271821 to 275760.</returns>
     /// <exception cref="ArgumentOutOfRangeException">The calendar is not a member of <see cref="CalendarId"/>, or the month and day are not an ISO date's.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.26, Intl era and month code proposal 4.1.14 via Broiler.VM JsTemporal.IsoToDate; IP=Low; Security=Medium; Resources=1; Fingerprint=38C081
+    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.26, Intl era and month code proposal 4.1.14 via Broiler.VM JsTemporal.IsoToDate; IP=Low; Security=Medium; Resources=1; Fingerprint=C503E6
     // Broiler-Human:        PENDING
     public CalendarStatus IsoToDate(CalendarId calendar, IsoDate date, out CalendarDate result)
     {
         CheckCalendar(calendar);
         result = default;
-        if (!CalendarLimits.IsComputable(date))
+        if (!IsComputable(date))
             return CalendarStatus.OutOfRange;
 
         if (calendar == CalendarId.Iso8601)
@@ -389,7 +394,7 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <see cref="CalendarStatus.OutOfRange"/>.
     /// </returns>
     /// <exception cref="ArgumentOutOfRangeException">The calendar or overflow is not a member of its enumeration, or a field is outside what its conversion gives.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.12 via Broiler.VM JsTemporal.DateFromFields; IP=Low; Security=Medium; Resources=1; Fingerprint=57EC97
+    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.12 via Broiler.VM JsTemporal.DateFromFields; IP=Low; Security=Medium; Resources=1; Fingerprint=93D229
     // Broiler-Human:        PENDING
     public CalendarStatus DateFromFields(CalendarId calendar, CalendarFields fields, CalendarOverflow overflow, out IsoDate result)
     {
@@ -402,7 +407,7 @@ public sealed class TemporalCalendars : ICalendarArithmetic
         if (status == CalendarStatus.Completed)
             status = calendar == CalendarId.Iso8601 ? IsoDateToIso(working, reject, out result) : NonIsoDateToIso(SystemOf(calendar), working, reject, out result);
 
-        if (status == CalendarStatus.Completed && !CalendarLimits.DateWithinLimits(IsoCalendarMath.EpochDays(result.Year, result.Month, result.Day)))
+        if (status == CalendarStatus.Completed && !TemporalLimits.DateWithinLimits(IsoCalendarMath.EpochDays(result.Year, result.Month, result.Day)))
             status = CalendarStatus.OutOfRange;
 
         if (status != CalendarStatus.Completed)
@@ -422,7 +427,7 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     /// <param name="result">The reference date; <see langword="default"/> unless the status is <see cref="CalendarStatus.Completed"/>.</param>
     /// <returns>As <see cref="DateFromFields"/>, with <see cref="CalendarStatus.OutOfRange"/> outside the year-month limits.</returns>
     /// <exception cref="ArgumentOutOfRangeException">As <see cref="DateFromFields"/>.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.13 via Broiler.VM JsTemporal.YearMonthFromFields; IP=Low; Security=Medium; Resources=1; Fingerprint=6C5899
+    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.13 via Broiler.VM JsTemporal.YearMonthFromFields; IP=Low; Security=Medium; Resources=1; Fingerprint=F9713B
     // Broiler-Human:        PENDING
     public CalendarStatus YearMonthFromFields(CalendarId calendar, CalendarFields fields, CalendarOverflow overflow, out IsoDate result)
     {
@@ -435,7 +440,7 @@ public sealed class TemporalCalendars : ICalendarArithmetic
         if (status == CalendarStatus.Completed)
             status = calendar == CalendarId.Iso8601 ? IsoDateToIso(working, reject, out result) : NonIsoDateToIso(SystemOf(calendar), working, reject, out result);
 
-        if (status == CalendarStatus.Completed && !CalendarLimits.YearMonthWithinLimits(result))
+        if (status == CalendarStatus.Completed && !TemporalLimits.YearMonthWithinLimits(result))
             status = CalendarStatus.OutOfRange;
 
         if (status != CalendarStatus.Completed)
@@ -491,14 +496,14 @@ public sealed class TemporalCalendars : ICalendarArithmetic
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentOutOfRangeException">The calendar or overflow is not a member of its enumeration, or the month and day are not an ISO date's.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=Medium; Resources=1; Fingerprint=C62260
+    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=Medium; Resources=1; Fingerprint=DF6F4B
     // Broiler-Human:        PENDING
     public CalendarStatus DateAdd(CalendarId calendar, IsoDate date, CalendarDuration duration, CalendarOverflow overflow, out IsoDate result)
     {
         CheckCalendar(calendar);
         var reject = IsReject(overflow);
         result = default;
-        if (!CalendarLimits.IsComputable(date) ||
+        if (!IsComputable(date) ||
             Math.Abs((double)duration.Years) > MaxAddedYears || Math.Abs((double)duration.Months) > MaxAddedMonths ||
             Math.Abs((double)duration.Weeks) > MaxAddedWeeks || Math.Abs((double)duration.Days) > MaxAddedDays)
         {
@@ -516,7 +521,7 @@ public sealed class TemporalCalendars : ICalendarArithmetic
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentOutOfRangeException">The calendar or largest unit is not a member of its enumeration, or a month and day are not an ISO date's.</exception>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.9 via Broiler.VM JsTemporal.DateUntil; IP=Low; Security=Medium; Resources=2; Fingerprint=7898DD
+    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.9 via Broiler.VM JsTemporal.DateUntil; IP=Low; Security=Medium; Resources=2; Fingerprint=BE5756
     // Broiler-Human:        PENDING
     public CalendarStatus DateUntil(CalendarId calendar, IsoDate one, IsoDate two, CalendarUnit largestUnit, out CalendarDuration result)
     {
@@ -525,10 +530,10 @@ public sealed class TemporalCalendars : ICalendarArithmetic
             throw new ArgumentOutOfRangeException(nameof(largestUnit), largestUnit, "The largest unit is not a date unit.");
 
         result = default;
-        if (!CalendarLimits.IsComputable(one) || !CalendarLimits.IsComputable(two))
+        if (!IsComputable(one) || !IsComputable(two))
             return CalendarStatus.OutOfRange;
 
-        var sign = -CalendarLimits.Compare(one, two);
+        var sign = -IsoArithmetic.CompareIsoDate(one, two);
         if (sign == 0)
             return CalendarStatus.Completed;
 
@@ -669,7 +674,7 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // CalendarDateAdd (s12.3.7) for ISO 8601: years and months balanced, the day regulated, then weeks and days.
-    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=Low; Resources=1; Fingerprint=B08445
+    // Broiler-AI:           Origin=Ported; Spec=Temporal s12.3.7 via Broiler.VM JsTemporal.DateAdd; IP=Low; Security=Low; Resources=1; Fingerprint=8C7DF4
     // Broiler-Human:        PENDING
     private static CalendarStatus IsoDateAdd(IsoDate date, CalendarDuration duration, bool reject, out IsoDate result)
     {
@@ -680,7 +685,7 @@ public sealed class TemporalCalendars : ICalendarArithmetic
             return status;
 
         var days = IsoCalendarMath.EpochDays(intermediate.Year, intermediate.Month, intermediate.Day) + duration.Days + (7 * duration.Weeks);
-        if (!CalendarLimits.DateWithinLimits(days))
+        if (!TemporalLimits.DateWithinLimits(days))
             return CalendarStatus.OutOfRange;
 
         result = FromEpochDays(days);
@@ -805,11 +810,11 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // A calendar year from the fields' year, refused beyond every year a date within the limits lies in.
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsTemporal.CalendarYear; IP=Low; Security=Low; Resources=1; Fingerprint=AB16AD
+    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1 via Broiler.VM JsTemporal.CalendarYear; IP=Low; Security=Low; Resources=1; Fingerprint=893FCB
     // Broiler-Human:        PENDING
     private static CalendarStatus CalendarYear(CalendarSystem system, double year, out CalendarSystemYear result)
     {
-        if (Math.Abs(year) > CalendarLimits.YearBound)
+        if (Math.Abs(year) > YearBound)
         {
             result = null!;
             return CalendarStatus.OutOfRange;
@@ -848,7 +853,7 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // NonISOResolveFields (the era proposal's 4.1.24).
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.24 via Broiler.VM JsTemporal.NonIsoResolveFields; IP=Low; Security=Low; Resources=1; Fingerprint=85A805
+    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.24 via Broiler.VM JsTemporal.NonIsoResolveFields; IP=Low; Security=Low; Resources=1; Fingerprint=175C32
     // Broiler-Human:        PENDING
     private static CalendarStatus NonIsoResolveFields(CalendarSystem system, ref Fields fields, CalendarFieldsType type)
     {
@@ -866,7 +871,7 @@ public sealed class TemporalCalendars : ICalendarArithmetic
 
         if (system.HasEras && fields.EraYear is { } eraYear)
         {
-            if (Math.Abs(eraYear) > 2 * CalendarLimits.YearBound)
+            if (Math.Abs(eraYear) > 2 * YearBound)
                 return CalendarStatus.OutOfRange;
 
             if (system.YearForEra(fields.Era!, (long)eraYear) is not { } year)
@@ -943,7 +948,7 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     }
 
     // NonISOMonthDayToISOReferenceDate (the era proposal's 4.1.21), with Table 6 for the Chinese and Korean calendars.
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.21, Table 6 via Broiler.VM JsTemporal.NonIsoMonthDayToReferenceDate; IP=Low; Security=Low; Resources=2; Fingerprint=709992
+    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.21, Table 6 via Broiler.VM JsTemporal.NonIsoMonthDayToReferenceDate; IP=Low; Security=Low; Resources=2; Fingerprint=8DF4A2
     // Broiler-Human:        PENDING
     private static CalendarStatus NonIsoMonthDayToReferenceDate(CalendarSystem system, Fields fields, bool reject, out IsoDate result)
     {
@@ -957,7 +962,7 @@ public sealed class TemporalCalendars : ICalendarArithmetic
             if (status != CalendarStatus.Completed)
                 return status;
 
-            if (year.Start + year.Days <= CalendarLimits.MinDay || year.Start > CalendarLimits.MaxDay)
+            if (year.Start + year.Days <= TemporalLimits.MinDateEpochDays || year.Start > TemporalLimits.MaxEpochDays)
                 return CalendarStatus.OutOfRange;
 
             status = Regulated(fields.Month!.Value, year.Months, reject, out var month);
@@ -1059,12 +1064,12 @@ public sealed class TemporalCalendars : ICalendarArithmetic
     // of a year names, or null when that year is beyond the bound. The Chinese and Korean calendars count months from
     // their years, which the shared sources answer only within it (JSD-0077): a balance that would read a year past
     // it reaches a year no date within the ISO limits is in, and is null, as an estimate past it is.
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.16 via Broiler.VM JsTemporal.BalanceMonths; IP=Low; Security=Low; Resources=1; Fingerprint=423B22
+    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.16 via Broiler.VM JsTemporal.BalanceMonths; IP=Low; Security=Low; Resources=1; Fingerprint=08C706
     // Broiler-Human:        PENDING
     private static (long Year, int Month)? BalanceMonths(CalendarSystem system, long year, long month)
     {
         var estimate = year + (long)Math.Floor((month - 1) / system.MeanMonths);
-        if (Math.Abs(estimate) > CalendarLimits.YearBound)
+        if (Math.Abs(estimate) > YearBound)
             return null;
 
         var total = system.MonthsBefore(year) + month - 1;
@@ -1074,13 +1079,13 @@ public sealed class TemporalCalendars : ICalendarArithmetic
         while (system.MonthsBefore(y) > total)
         {
             y--;
-            if (bounded && y < -CalendarLimits.YearBound)
+            if (bounded && y < -YearBound)
                 return null;
         }
 
         while (true)
         {
-            if (bounded && y + 1 > CalendarLimits.YearBound)
+            if (bounded && y + 1 > YearBound)
                 return null;
 
             if (system.MonthsBefore(y + 1) > total)
@@ -1100,7 +1105,7 @@ public sealed class TemporalCalendars : ICalendarArithmetic
             throw new InvalidOperationException("A difference between dates within the limits balanced months past the calendar year sources' bound.");
 
     // NonISODateAdd (the era proposal's 4.1.18).
-    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.18 via Broiler.VM JsTemporal.NonIsoDateAdd; IP=Low; Security=Low; Resources=1; Fingerprint=F0B1D3
+    // Broiler-AI:           Origin=Ported; Spec=Intl era and month code proposal 4.1.18 via Broiler.VM JsTemporal.NonIsoDateAdd; IP=Low; Security=Low; Resources=1; Fingerprint=B57796
     // Broiler-Human:        PENDING
     private static CalendarStatus NonIsoDateAdd(CalendarSystem system, IsoDate date, CalendarDuration duration, bool reject, out IsoDate result)
     {
@@ -1125,7 +1130,7 @@ public sealed class TemporalCalendars : ICalendarArithmetic
             return status;
 
         var days = target.Start + target.DaysBefore(endMonth) + regulated - 1 + (7 * duration.Weeks) + duration.Days;
-        if (!CalendarLimits.DateWithinLimits(days))
+        if (!TemporalLimits.DateWithinLimits(days))
             return CalendarStatus.OutOfRange;
 
         result = FromEpochDays(days);
@@ -1319,5 +1324,27 @@ public sealed class TemporalCalendars : ICalendarArithmetic
             value is { } v && (!double.IsFinite(v) || Math.Truncate(v) != v || v < minimum)
                 ? throw new ArgumentOutOfRangeException(name, v, "The field is not a value its conversion gives.")
                 : value;
+    }
+
+    /// <summary>
+    /// Whether an ISO date is one a calendar operation computes over: a valid ISO date whose year is within
+    /// <see cref="TemporalLimits.MinYear"/> to <see cref="TemporalLimits.MaxYear"/>, which holds every date and every
+    /// year-month's reference date within the limits.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">The month is outside 1 to 12, or the day is not one of the month's.</exception>
+    // Broiler-AI:           Origin=AI; Spec=Temporal s3.5.12 and s9.5.2; IP=Low; Security=Low; Resources=1; Fingerprint=578876
+    // Broiler-Human:        PENDING
+    private static bool IsComputable(IsoDate date)
+    {
+        if (date.Month is < 1 or > 12 || date.Day is < 1 or > 31)
+            throw new ArgumentOutOfRangeException(nameof(date), date, "The month and day are not an ISO date's.");
+
+        if (date.Year is < TemporalLimits.MinYear or > TemporalLimits.MaxYear)
+            return false;
+
+        if (date.Day > IsoCalendarMath.DaysInMonth(date.Year, date.Month))
+            throw new ArgumentOutOfRangeException(nameof(date), date, "The day is not one of the month's.");
+
+        return true;
     }
 }

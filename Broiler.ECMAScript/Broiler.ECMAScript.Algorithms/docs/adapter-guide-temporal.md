@@ -608,8 +608,11 @@ direction of 2026-10-18, part B took these, within JSD-0078's X3:
    same purpose, part C converts field by field, or a later change unifies them.
 4. **`ICalendarArithmetic` is the design's two members**, each answering a `CalendarStatus`, implemented for ISO
    8601 too, so that part C has one path for every calendar.
-5. **The calendars keep private copies of the limits they test** (`CalendarLimits`), so that they take no dependency
-   on part A; the published limit checks are part A's.
+5. **The calendars test the limits through part A's `TemporalLimits`**, whose internal day and year-month forms they
+   call, and its `IsoArithmetic.CompareIsoDate`; the published limit checks are part A's. *(Revised 2026-10-18, when
+   the parts were joined: the private copies were unified onto part A's, with no answer changed. The decision read
+   "The calendars keep private copies of the limits they test (`CalendarLimits`), so that they take no dependency on
+   part A; the published limit checks are part A's.")*
 6. **An input date outside the years the calendars compute over** (an ISO year outside -271821 to 275760, which holds
    every date and year-month reference date within the limits) **is `OutOfRange`**; a month or day that is no ISO
    date's, and a field outside its conversion's range, are broken preconditions.

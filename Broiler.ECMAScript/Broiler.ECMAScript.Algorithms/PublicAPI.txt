@@ -314,9 +314,103 @@ Broiler.ECMAScript.Temporal.CalendarUnit.Month = 1
 Broiler.ECMAScript.Temporal.CalendarUnit.Week = 2
 Broiler.ECMAScript.Temporal.CalendarUnit.Year = 0
 Broiler.ECMAScript.Temporal.CalendarUnit.value__ field System.Int32
+Broiler.ECMAScript.Temporal.DateDuration struct : System.IEquatable`1<Broiler.ECMAScript.Temporal.DateDuration>
+Broiler.ECMAScript.Temporal.DateDuration..ctor(System.Double, System.Double, System.Double, System.Double) method System.Void
+Broiler.ECMAScript.Temporal.DateDuration.Deconstruct(System.Double&, System.Double&, System.Double&, System.Double&) method System.Void
+Broiler.ECMAScript.Temporal.DateDuration.Equals(Broiler.ECMAScript.Temporal.DateDuration) method System.Boolean
+Broiler.ECMAScript.Temporal.DateDuration.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Temporal.DateDuration.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Temporal.DateDuration.ToString() method virtual System.String
+Broiler.ECMAScript.Temporal.DateDuration.get_Days() method System.Double
+Broiler.ECMAScript.Temporal.DateDuration.get_Months() method System.Double
+Broiler.ECMAScript.Temporal.DateDuration.get_Weeks() method System.Double
+Broiler.ECMAScript.Temporal.DateDuration.get_Years() method System.Double
+Broiler.ECMAScript.Temporal.DateDuration.op_Equality(Broiler.ECMAScript.Temporal.DateDuration, Broiler.ECMAScript.Temporal.DateDuration) method static System.Boolean
+Broiler.ECMAScript.Temporal.DateDuration.op_Inequality(Broiler.ECMAScript.Temporal.DateDuration, Broiler.ECMAScript.Temporal.DateDuration) method static System.Boolean
+Broiler.ECMAScript.Temporal.DateDuration.set_Days(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.DateDuration.set_Months(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.DateDuration.set_Weeks(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.DateDuration.set_Years(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.DurationFields struct : System.IEquatable`1<Broiler.ECMAScript.Temporal.DurationFields>
+Broiler.ECMAScript.Temporal.DurationFields..ctor(System.Double, System.Double, System.Double, System.Double, System.Double, System.Double, System.Double, System.Double, System.Double, System.Double) method System.Void
+Broiler.ECMAScript.Temporal.DurationFields.Deconstruct(System.Double&, System.Double&, System.Double&, System.Double&, System.Double&, System.Double&, System.Double&, System.Double&, System.Double&, System.Double&) method System.Void
+Broiler.ECMAScript.Temporal.DurationFields.Equals(Broiler.ECMAScript.Temporal.DurationFields) method System.Boolean
+Broiler.ECMAScript.Temporal.DurationFields.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Temporal.DurationFields.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Temporal.DurationFields.ToString() method virtual System.String
+Broiler.ECMAScript.Temporal.DurationFields.get_Days() method System.Double
+Broiler.ECMAScript.Temporal.DurationFields.get_Hours() method System.Double
+Broiler.ECMAScript.Temporal.DurationFields.get_Microseconds() method System.Double
+Broiler.ECMAScript.Temporal.DurationFields.get_Milliseconds() method System.Double
+Broiler.ECMAScript.Temporal.DurationFields.get_Minutes() method System.Double
+Broiler.ECMAScript.Temporal.DurationFields.get_Months() method System.Double
+Broiler.ECMAScript.Temporal.DurationFields.get_Nanoseconds() method System.Double
+Broiler.ECMAScript.Temporal.DurationFields.get_Seconds() method System.Double
+Broiler.ECMAScript.Temporal.DurationFields.get_Weeks() method System.Double
+Broiler.ECMAScript.Temporal.DurationFields.get_Years() method System.Double
+Broiler.ECMAScript.Temporal.DurationFields.op_Equality(Broiler.ECMAScript.Temporal.DurationFields, Broiler.ECMAScript.Temporal.DurationFields) method static System.Boolean
+Broiler.ECMAScript.Temporal.DurationFields.op_Inequality(Broiler.ECMAScript.Temporal.DurationFields, Broiler.ECMAScript.Temporal.DurationFields) method static System.Boolean
+Broiler.ECMAScript.Temporal.DurationFields.set_Days(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.DurationFields.set_Hours(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.DurationFields.set_Microseconds(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.DurationFields.set_Milliseconds(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.DurationFields.set_Minutes(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.DurationFields.set_Months(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.DurationFields.set_Nanoseconds(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.DurationFields.set_Seconds(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.DurationFields.set_Weeks(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.DurationFields.set_Years(System.Double) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Temporal.ICalendarArithmetic interface
 Broiler.ECMAScript.Temporal.ICalendarArithmetic.DateAdd(Broiler.ECMAScript.Temporal.CalendarId, Broiler.ECMAScript.Time.IsoDate, Broiler.ECMAScript.Temporal.CalendarDuration, Broiler.ECMAScript.Temporal.CalendarOverflow, Broiler.ECMAScript.Time.IsoDate&) method abstract Broiler.ECMAScript.Temporal.CalendarStatus
 Broiler.ECMAScript.Temporal.ICalendarArithmetic.DateUntil(Broiler.ECMAScript.Temporal.CalendarId, Broiler.ECMAScript.Time.IsoDate, Broiler.ECMAScript.Time.IsoDate, Broiler.ECMAScript.Temporal.CalendarUnit, Broiler.ECMAScript.Temporal.CalendarDuration&) method abstract Broiler.ECMAScript.Temporal.CalendarStatus
+Broiler.ECMAScript.Temporal.InternalDuration struct : System.IEquatable`1<Broiler.ECMAScript.Temporal.InternalDuration>
+Broiler.ECMAScript.Temporal.InternalDuration..ctor(Broiler.ECMAScript.Temporal.DateDuration, System.Numerics.BigInteger) method System.Void
+Broiler.ECMAScript.Temporal.InternalDuration.Deconstruct(Broiler.ECMAScript.Temporal.DateDuration&, System.Numerics.BigInteger&) method System.Void
+Broiler.ECMAScript.Temporal.InternalDuration.Equals(Broiler.ECMAScript.Temporal.InternalDuration) method System.Boolean
+Broiler.ECMAScript.Temporal.InternalDuration.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Temporal.InternalDuration.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Temporal.InternalDuration.ToString() method virtual System.String
+Broiler.ECMAScript.Temporal.InternalDuration.get_Date() method Broiler.ECMAScript.Temporal.DateDuration
+Broiler.ECMAScript.Temporal.InternalDuration.get_TimeNanoseconds() method System.Numerics.BigInteger
+Broiler.ECMAScript.Temporal.InternalDuration.op_Equality(Broiler.ECMAScript.Temporal.InternalDuration, Broiler.ECMAScript.Temporal.InternalDuration) method static System.Boolean
+Broiler.ECMAScript.Temporal.InternalDuration.op_Inequality(Broiler.ECMAScript.Temporal.InternalDuration, Broiler.ECMAScript.Temporal.InternalDuration) method static System.Boolean
+Broiler.ECMAScript.Temporal.InternalDuration.set_Date(Broiler.ECMAScript.Temporal.DateDuration) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.InternalDuration.set_TimeNanoseconds(System.Numerics.BigInteger) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.IsoArithmetic static class
+Broiler.ECMAScript.Temporal.IsoArithmetic.AddDaysToIsoDate(Broiler.ECMAScript.Time.IsoDate, System.Int64) method static Broiler.ECMAScript.Time.IsoDate
+Broiler.ECMAScript.Temporal.IsoArithmetic.AddInstant(System.Numerics.BigInteger, System.Numerics.BigInteger, System.Numerics.BigInteger&) method static Broiler.ECMAScript.Temporal.TemporalStatus
+Broiler.ECMAScript.Temporal.IsoArithmetic.AddIsoDate(Broiler.ECMAScript.Time.IsoDate, Broiler.ECMAScript.Temporal.DateDuration, Broiler.ECMAScript.Temporal.TemporalOverflow, Broiler.ECMAScript.Time.IsoDate&) method static Broiler.ECMAScript.Temporal.TemporalStatus
+Broiler.ECMAScript.Temporal.IsoArithmetic.AddTime(Broiler.ECMAScript.Time.IsoTime, System.Numerics.BigInteger, System.Int64&) method static Broiler.ECMAScript.Time.IsoTime
+Broiler.ECMAScript.Temporal.IsoArithmetic.BalanceIsoDate(System.Int64, System.Int64, System.Int64) method static Broiler.ECMAScript.Time.IsoDate
+Broiler.ECMAScript.Temporal.IsoArithmetic.BalanceIsoDateTime(Broiler.ECMAScript.Time.IsoDate, System.Numerics.BigInteger) method static Broiler.ECMAScript.Time.IsoDateTime
+Broiler.ECMAScript.Temporal.IsoArithmetic.BalanceTime(System.Double, System.Double, System.Double, System.Double, System.Double, System.Double, System.Int64&) method static Broiler.ECMAScript.Time.IsoTime
+Broiler.ECMAScript.Temporal.IsoArithmetic.BalanceTime(System.Numerics.BigInteger, System.Int64&) method static Broiler.ECMAScript.Time.IsoTime
+Broiler.ECMAScript.Temporal.IsoArithmetic.CompareIsoDate(Broiler.ECMAScript.Time.IsoDate, Broiler.ECMAScript.Time.IsoDate) method static System.Int32
+Broiler.ECMAScript.Temporal.IsoArithmetic.CompareIsoDateTime(Broiler.ECMAScript.Time.IsoDateTime, Broiler.ECMAScript.Time.IsoDateTime) method static System.Int32
+Broiler.ECMAScript.Temporal.IsoArithmetic.CompareTime(Broiler.ECMAScript.Time.IsoTime, Broiler.ECMAScript.Time.IsoTime) method static System.Int32
+Broiler.ECMAScript.Temporal.IsoArithmetic.DifferenceTime(Broiler.ECMAScript.Time.IsoTime, Broiler.ECMAScript.Time.IsoTime) method static System.Numerics.BigInteger
+Broiler.ECMAScript.Temporal.IsoArithmetic.GetIsoPartsFromEpoch(System.Numerics.BigInteger) method static Broiler.ECMAScript.Time.IsoDateTime
+Broiler.ECMAScript.Temporal.IsoArithmetic.GetUtcEpochNanoseconds(Broiler.ECMAScript.Time.IsoDateTime) method static System.Numerics.BigInteger
+Broiler.ECMAScript.Temporal.IsoArithmetic.RegulateIsoDate(System.Int64, System.Double, System.Double, Broiler.ECMAScript.Temporal.TemporalOverflow, Broiler.ECMAScript.Time.IsoDate&) method static Broiler.ECMAScript.Temporal.TemporalStatus
+Broiler.ECMAScript.Temporal.IsoArithmetic.RegulateTime(System.Double, System.Double, System.Double, System.Double, System.Double, System.Double, Broiler.ECMAScript.Temporal.TemporalOverflow, Broiler.ECMAScript.Time.IsoTime&) method static Broiler.ECMAScript.Temporal.TemporalStatus
+Broiler.ECMAScript.Temporal.IsoArithmetic.RoundIsoDateTime(Broiler.ECMAScript.Time.IsoDateTime, System.Int64, Broiler.ECMAScript.Temporal.TemporalUnit, Broiler.ECMAScript.Numbers.RoundingMode) method static Broiler.ECMAScript.Time.IsoDateTime
+Broiler.ECMAScript.Temporal.IsoArithmetic.RoundTemporalInstant(System.Numerics.BigInteger, System.Int64, Broiler.ECMAScript.Temporal.TemporalUnit, Broiler.ECMAScript.Numbers.RoundingMode) method static System.Numerics.BigInteger
+Broiler.ECMAScript.Temporal.IsoArithmetic.RoundTime(Broiler.ECMAScript.Time.IsoTime, System.Int64, Broiler.ECMAScript.Temporal.TemporalUnit, Broiler.ECMAScript.Numbers.RoundingMode, System.Int64&) method static Broiler.ECMAScript.Time.IsoTime
+Broiler.ECMAScript.Temporal.IsoArithmetic.TimeToNanoseconds(Broiler.ECMAScript.Time.IsoTime) method static System.Int64
+Broiler.ECMAScript.Temporal.IsoParseResult sealed class
+Broiler.ECMAScript.Temporal.IsoParseResult.get_Annotations() method System.Collections.Generic.IReadOnlyList`1<Broiler.ECMAScript.Temporal.TemporalAnnotation>
+Broiler.ECMAScript.Temporal.IsoParseResult.get_Calendar() method System.String
+Broiler.ECMAScript.Temporal.IsoParseResult.get_Day() method System.Int32
+Broiler.ECMAScript.Temporal.IsoParseResult.get_Goal() method Broiler.ECMAScript.Temporal.TemporalGoal
+Broiler.ECMAScript.Temporal.IsoParseResult.get_HasDay() method System.Boolean
+Broiler.ECMAScript.Temporal.IsoParseResult.get_Month() method System.Int32
+Broiler.ECMAScript.Temporal.IsoParseResult.get_Offset() method System.String
+Broiler.ECMAScript.Temporal.IsoParseResult.get_OffsetHasSeconds() method System.Boolean
+Broiler.ECMAScript.Temporal.IsoParseResult.get_OffsetNanoseconds() method System.Int64
+Broiler.ECMAScript.Temporal.IsoParseResult.get_Time() method System.Nullable`1<Broiler.ECMAScript.Time.IsoTime>
+Broiler.ECMAScript.Temporal.IsoParseResult.get_TimeZone() method System.String
+Broiler.ECMAScript.Temporal.IsoParseResult.get_Year() method System.Nullable`1<System.Int64>
+Broiler.ECMAScript.Temporal.IsoParseResult.get_Z() method System.Boolean
 Broiler.ECMAScript.Temporal.MonthCode struct : System.IEquatable`1<Broiler.ECMAScript.Temporal.MonthCode>
 Broiler.ECMAScript.Temporal.MonthCode..ctor(System.Int32, System.Boolean) method System.Void
 Broiler.ECMAScript.Temporal.MonthCode.Equals(Broiler.ECMAScript.Temporal.MonthCode) method System.Boolean
@@ -328,6 +422,51 @@ Broiler.ECMAScript.Temporal.MonthCode.get_IsLeapMonth() method System.Boolean
 Broiler.ECMAScript.Temporal.MonthCode.get_Number() method System.Int32
 Broiler.ECMAScript.Temporal.MonthCode.op_Equality(Broiler.ECMAScript.Temporal.MonthCode, Broiler.ECMAScript.Temporal.MonthCode) method static System.Boolean
 Broiler.ECMAScript.Temporal.MonthCode.op_Inequality(Broiler.ECMAScript.Temporal.MonthCode, Broiler.ECMAScript.Temporal.MonthCode) method static System.Boolean
+Broiler.ECMAScript.Temporal.SecondsStringPrecision struct : System.IEquatable`1<Broiler.ECMAScript.Temporal.SecondsStringPrecision>
+Broiler.ECMAScript.Temporal.SecondsStringPrecision..ctor(System.Int32, Broiler.ECMAScript.Temporal.TemporalUnit, System.Int64) method System.Void
+Broiler.ECMAScript.Temporal.SecondsStringPrecision.Deconstruct(System.Int32&, Broiler.ECMAScript.Temporal.TemporalUnit&, System.Int64&) method System.Void
+Broiler.ECMAScript.Temporal.SecondsStringPrecision.Equals(Broiler.ECMAScript.Temporal.SecondsStringPrecision) method System.Boolean
+Broiler.ECMAScript.Temporal.SecondsStringPrecision.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Temporal.SecondsStringPrecision.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Temporal.SecondsStringPrecision.ToString() method virtual System.String
+Broiler.ECMAScript.Temporal.SecondsStringPrecision.get_Increment() method System.Int64
+Broiler.ECMAScript.Temporal.SecondsStringPrecision.get_Precision() method System.Int32
+Broiler.ECMAScript.Temporal.SecondsStringPrecision.get_Unit() method Broiler.ECMAScript.Temporal.TemporalUnit
+Broiler.ECMAScript.Temporal.SecondsStringPrecision.op_Equality(Broiler.ECMAScript.Temporal.SecondsStringPrecision, Broiler.ECMAScript.Temporal.SecondsStringPrecision) method static System.Boolean
+Broiler.ECMAScript.Temporal.SecondsStringPrecision.op_Inequality(Broiler.ECMAScript.Temporal.SecondsStringPrecision, Broiler.ECMAScript.Temporal.SecondsStringPrecision) method static System.Boolean
+Broiler.ECMAScript.Temporal.SecondsStringPrecision.set_Increment(System.Int64) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.SecondsStringPrecision.set_Precision(System.Int32) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.SecondsStringPrecision.set_Unit(Broiler.ECMAScript.Temporal.TemporalUnit) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.ShowCalendarName enum
+Broiler.ECMAScript.Temporal.ShowCalendarName.Always = 1
+Broiler.ECMAScript.Temporal.ShowCalendarName.Auto = 0
+Broiler.ECMAScript.Temporal.ShowCalendarName.Critical = 3
+Broiler.ECMAScript.Temporal.ShowCalendarName.Never = 2
+Broiler.ECMAScript.Temporal.ShowCalendarName.value__ field System.Int32
+Broiler.ECMAScript.Temporal.ShowOffset enum
+Broiler.ECMAScript.Temporal.ShowOffset.Auto = 0
+Broiler.ECMAScript.Temporal.ShowOffset.Never = 1
+Broiler.ECMAScript.Temporal.ShowOffset.value__ field System.Int32
+Broiler.ECMAScript.Temporal.ShowTimeZoneName enum
+Broiler.ECMAScript.Temporal.ShowTimeZoneName.Auto = 0
+Broiler.ECMAScript.Temporal.ShowTimeZoneName.Critical = 2
+Broiler.ECMAScript.Temporal.ShowTimeZoneName.Never = 1
+Broiler.ECMAScript.Temporal.ShowTimeZoneName.value__ field System.Int32
+Broiler.ECMAScript.Temporal.TemporalAnnotation struct : System.IEquatable`1<Broiler.ECMAScript.Temporal.TemporalAnnotation>
+Broiler.ECMAScript.Temporal.TemporalAnnotation..ctor(System.Boolean, System.String, System.String) method System.Void
+Broiler.ECMAScript.Temporal.TemporalAnnotation.Deconstruct(System.Boolean&, System.String&, System.String&) method System.Void
+Broiler.ECMAScript.Temporal.TemporalAnnotation.Equals(Broiler.ECMAScript.Temporal.TemporalAnnotation) method System.Boolean
+Broiler.ECMAScript.Temporal.TemporalAnnotation.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Temporal.TemporalAnnotation.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Temporal.TemporalAnnotation.ToString() method virtual System.String
+Broiler.ECMAScript.Temporal.TemporalAnnotation.get_Critical() method System.Boolean
+Broiler.ECMAScript.Temporal.TemporalAnnotation.get_Key() method System.String
+Broiler.ECMAScript.Temporal.TemporalAnnotation.get_Value() method System.String
+Broiler.ECMAScript.Temporal.TemporalAnnotation.op_Equality(Broiler.ECMAScript.Temporal.TemporalAnnotation, Broiler.ECMAScript.Temporal.TemporalAnnotation) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalAnnotation.op_Inequality(Broiler.ECMAScript.Temporal.TemporalAnnotation, Broiler.ECMAScript.Temporal.TemporalAnnotation) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalAnnotation.set_Critical(System.Boolean) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.TemporalAnnotation.set_Key(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.TemporalAnnotation.set_Value(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Temporal.TemporalCalendars sealed class : Broiler.ECMAScript.Temporal.ICalendarArithmetic
 Broiler.ECMAScript.Temporal.TemporalCalendars..ctor(Broiler.ECMAScript.Time.ICalendarTables) method System.Void
 Broiler.ECMAScript.Temporal.TemporalCalendars.Canonicalize(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.Temporal.CalendarId&) method static Broiler.ECMAScript.Temporal.CalendarStatus
@@ -346,6 +485,121 @@ Broiler.ECMAScript.Temporal.TemporalCalendars.MonthDayToDate(Broiler.ECMAScript.
 Broiler.ECMAScript.Temporal.TemporalCalendars.SupportsEra(Broiler.ECMAScript.Temporal.CalendarId) method static System.Boolean
 Broiler.ECMAScript.Temporal.TemporalCalendars.YearMonthFromFields(Broiler.ECMAScript.Temporal.CalendarId, Broiler.ECMAScript.Temporal.CalendarFields, Broiler.ECMAScript.Temporal.CalendarOverflow, Broiler.ECMAScript.Time.IsoDate&) method Broiler.ECMAScript.Temporal.CalendarStatus
 Broiler.ECMAScript.Temporal.TemporalCalendars.YearMonthToDate(Broiler.ECMAScript.Temporal.CalendarId, Broiler.ECMAScript.Time.IsoDate, Broiler.ECMAScript.Temporal.CalendarFields, Broiler.ECMAScript.Time.IsoDate&) method Broiler.ECMAScript.Temporal.CalendarStatus
+Broiler.ECMAScript.Temporal.TemporalFormat static class
+Broiler.ECMAScript.Temporal.TemporalFormat.AutoPrecision field static const System.Int32 = -1
+Broiler.ECMAScript.Temporal.TemporalFormat.DateTimeToString(Broiler.ECMAScript.Time.IsoDateTime, System.String, System.Int32, Broiler.ECMAScript.Temporal.ShowCalendarName) method static System.String
+Broiler.ECMAScript.Temporal.TemporalFormat.DateToString(Broiler.ECMAScript.Time.IsoDate, System.String, Broiler.ECMAScript.Temporal.ShowCalendarName) method static System.String
+Broiler.ECMAScript.Temporal.TemporalFormat.DurationToString(Broiler.ECMAScript.Temporal.DurationFields, System.Int32) method static System.String
+Broiler.ECMAScript.Temporal.TemporalFormat.FormatCalendarAnnotation(System.String, Broiler.ECMAScript.Temporal.ShowCalendarName) method static System.String
+Broiler.ECMAScript.Temporal.TemporalFormat.FormatDateTimeUtcOffsetRounded(System.Int64) method static System.String
+Broiler.ECMAScript.Temporal.TemporalFormat.FormatFractionalSeconds(System.Int32, System.Int32) method static System.String
+Broiler.ECMAScript.Temporal.TemporalFormat.FormatTimeString(System.Int32, System.Int32, System.Int32, System.Int32, System.Int32) method static System.String
+Broiler.ECMAScript.Temporal.TemporalFormat.FormatUtcOffsetNanoseconds(System.Int64) method static System.String
+Broiler.ECMAScript.Temporal.TemporalFormat.InstantToString(System.Numerics.BigInteger, System.Nullable`1<System.Int64>, System.Int32) method static System.String
+Broiler.ECMAScript.Temporal.TemporalFormat.MinutePrecision field static const System.Int32 = -2
+Broiler.ECMAScript.Temporal.TemporalFormat.MonthDayToString(Broiler.ECMAScript.Time.IsoDate, System.String, Broiler.ECMAScript.Temporal.ShowCalendarName) method static System.String
+Broiler.ECMAScript.Temporal.TemporalFormat.PadIsoYear(System.Int64) method static System.String
+Broiler.ECMAScript.Temporal.TemporalFormat.PlainTimeToString(Broiler.ECMAScript.Time.IsoTime, Broiler.ECMAScript.Temporal.SecondsStringPrecision, Broiler.ECMAScript.Numbers.RoundingMode) method static System.String
+Broiler.ECMAScript.Temporal.TemporalFormat.TimeToString(Broiler.ECMAScript.Time.IsoTime, System.Int32) method static System.String
+Broiler.ECMAScript.Temporal.TemporalFormat.TryDurationToString(Broiler.ECMAScript.Temporal.DurationFields, Broiler.ECMAScript.Temporal.SecondsStringPrecision, Broiler.ECMAScript.Numbers.RoundingMode, System.String&) method static Broiler.ECMAScript.Temporal.TemporalStatus
+Broiler.ECMAScript.Temporal.TemporalFormat.TryPlainDateTimeToString(Broiler.ECMAScript.Time.IsoDateTime, System.String, Broiler.ECMAScript.Temporal.SecondsStringPrecision, Broiler.ECMAScript.Numbers.RoundingMode, Broiler.ECMAScript.Temporal.ShowCalendarName, System.String&) method static Broiler.ECMAScript.Temporal.TemporalStatus
+Broiler.ECMAScript.Temporal.TemporalFormat.YearMonthToString(Broiler.ECMAScript.Time.IsoDate, System.String, Broiler.ECMAScript.Temporal.ShowCalendarName) method static System.String
+Broiler.ECMAScript.Temporal.TemporalFormat.ZonedDateTimeToString(System.Numerics.BigInteger, System.Int64, System.String, System.String, System.Int32, Broiler.ECMAScript.Temporal.ShowCalendarName, Broiler.ECMAScript.Temporal.ShowTimeZoneName, Broiler.ECMAScript.Temporal.ShowOffset) method static System.String
+Broiler.ECMAScript.Temporal.TemporalGoal enum
+Broiler.ECMAScript.Temporal.TemporalGoal.DateTime = 0
+Broiler.ECMAScript.Temporal.TemporalGoal.Instant = 2
+Broiler.ECMAScript.Temporal.TemporalGoal.MonthDay = 5
+Broiler.ECMAScript.Temporal.TemporalGoal.Time = 3
+Broiler.ECMAScript.Temporal.TemporalGoal.YearMonth = 4
+Broiler.ECMAScript.Temporal.TemporalGoal.ZonedDateTime = 1
+Broiler.ECMAScript.Temporal.TemporalGoal.value__ field System.Int32
+Broiler.ECMAScript.Temporal.TemporalGrammar static class
+Broiler.ECMAScript.Temporal.TemporalGrammar.IsAnnotationValue(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.WorkCharge) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalGrammar.IsTimeZoneIdentifier(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.WorkCharge) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalGrammar.IsUtcOffset(System.ReadOnlySpan`1<System.Char>, System.Boolean) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalGrammar.TryParse(System.ReadOnlySpan`1<System.Char>, System.ReadOnlySpan`1<Broiler.ECMAScript.Temporal.TemporalGoal>, Broiler.ECMAScript.Temporal.IsoParseResult&, Broiler.ECMAScript.Temporal.TemporalParseError&, Broiler.ECMAScript.WorkCharge) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseCalendarString(System.ReadOnlySpan`1<System.Char>, System.String&, Broiler.ECMAScript.Temporal.TemporalParseError&, Broiler.ECMAScript.WorkCharge) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseDuration(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.Temporal.DurationFields&, Broiler.ECMAScript.Temporal.TemporalParseError&, Broiler.ECMAScript.WorkCharge) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseInstant(System.ReadOnlySpan`1<System.Char>, System.Numerics.BigInteger&, Broiler.ECMAScript.Temporal.TemporalParseError&, Broiler.ECMAScript.WorkCharge) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseOffsetString(System.ReadOnlySpan`1<System.Char>, System.Int64&) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseTimeZoneIdentifier(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord&, Broiler.ECMAScript.WorkCharge) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseTimeZoneString(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord&, Broiler.ECMAScript.Temporal.TemporalParseError&, Broiler.ECMAScript.WorkCharge) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalLimits static class
+Broiler.ECMAScript.Temporal.TemporalLimits.CalendarDurationLimit field static const System.Double = 0x41F0000000000000
+Broiler.ECMAScript.Temporal.TemporalLimits.CheckDuration(Broiler.ECMAScript.Temporal.DurationFields) method static Broiler.ECMAScript.Temporal.TemporalStatus
+Broiler.ECMAScript.Temporal.TemporalLimits.CheckEpochNanoseconds(System.Numerics.BigInteger) method static Broiler.ECMAScript.Temporal.TemporalStatus
+Broiler.ECMAScript.Temporal.TemporalLimits.CheckIsoDate(Broiler.ECMAScript.Time.IsoDate) method static Broiler.ECMAScript.Temporal.TemporalStatus
+Broiler.ECMAScript.Temporal.TemporalLimits.CheckIsoDateTime(Broiler.ECMAScript.Time.IsoDateTime) method static Broiler.ECMAScript.Temporal.TemporalStatus
+Broiler.ECMAScript.Temporal.TemporalLimits.CheckIsoDaysRange(Broiler.ECMAScript.Time.IsoDate) method static Broiler.ECMAScript.Temporal.TemporalStatus
+Broiler.ECMAScript.Temporal.TemporalLimits.CheckIsoYearMonth(Broiler.ECMAScript.Time.IsoDate) method static Broiler.ECMAScript.Temporal.TemporalStatus
+Broiler.ECMAScript.Temporal.TemporalLimits.IsValidTime(Broiler.ECMAScript.Time.IsoTime) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalLimits.MaxEpochDays field static const System.Int64 = 100000000
+Broiler.ECMAScript.Temporal.TemporalLimits.MaxTimeDuration field static readonly System.Numerics.BigInteger
+Broiler.ECMAScript.Temporal.TemporalLimits.MaxYear field static const System.Int64 = 275760
+Broiler.ECMAScript.Temporal.TemporalLimits.MinYear field static const System.Int64 = -271821
+Broiler.ECMAScript.Temporal.TemporalLimits.NanosecondsPerDay field static const System.Int64 = 86400000000000
+Broiler.ECMAScript.Temporal.TemporalOptionRules static class
+Broiler.ECMAScript.Temporal.TemporalOptionRules.DefaultOverflow field static const Broiler.ECMAScript.Temporal.TemporalOverflow = 0
+Broiler.ECMAScript.Temporal.TemporalOptionRules.DefaultToStringRoundingMode field static const Broiler.ECMAScript.Numbers.RoundingMode = 3
+Broiler.ECMAScript.Temporal.TemporalOptionRules.IsFractionalSecondDigitsAuto(System.ReadOnlySpan`1<System.Char>) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalOptionRules.IsValidRoundingIncrement(System.Int64, System.Int64, System.Boolean) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalOptionRules.IsValidToStringSmallestUnit(Broiler.ECMAScript.Temporal.TemporalUnit, System.Boolean) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalOptionRules.ToSecondsStringPrecisionRecord(Broiler.ECMAScript.Temporal.TemporalUnit, System.Int32) method static Broiler.ECMAScript.Temporal.SecondsStringPrecision
+Broiler.ECMAScript.Temporal.TemporalOptionRules.TryParseFractionalSecondDigits(System.Double, System.Int32&) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalOptionRules.TryParseOverflow(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.Temporal.TemporalOverflow&) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalOptionRules.TryParseShowCalendarName(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.Temporal.ShowCalendarName&) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalOptionRules.TryParseShowOffset(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.Temporal.ShowOffset&) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalOptionRules.TryParseShowTimeZoneName(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.Temporal.ShowTimeZoneName&) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalOptionRules.TryParseUnit(System.ReadOnlySpan`1<System.Char>, Broiler.ECMAScript.Temporal.TemporalUnit&) method static System.Boolean
+Broiler.ECMAScript.Temporal.TemporalOverflow enum
+Broiler.ECMAScript.Temporal.TemporalOverflow.Constrain = 0
+Broiler.ECMAScript.Temporal.TemporalOverflow.Reject = 1
+Broiler.ECMAScript.Temporal.TemporalOverflow.value__ field System.Int32
+Broiler.ECMAScript.Temporal.TemporalParseError enum
+Broiler.ECMAScript.Temporal.TemporalParseError.CriticalCalendarConflict = 2
+Broiler.ECMAScript.Temporal.TemporalParseError.Malformed = 1
+Broiler.ECMAScript.Temporal.TemporalParseError.MonthDayOutsideIsoCalendar = 5
+Broiler.ECMAScript.Temporal.TemporalParseError.NoTimeZone = 7
+Broiler.ECMAScript.Temporal.TemporalParseError.None = 0
+Broiler.ECMAScript.Temporal.TemporalParseError.OutOfRange = 6
+Broiler.ECMAScript.Temporal.TemporalParseError.SubMinuteTimeZoneOffset = 8
+Broiler.ECMAScript.Temporal.TemporalParseError.UnknownCriticalAnnotation = 3
+Broiler.ECMAScript.Temporal.TemporalParseError.YearMonthOutsideIsoCalendar = 4
+Broiler.ECMAScript.Temporal.TemporalParseError.value__ field System.Int32
+Broiler.ECMAScript.Temporal.TemporalStatus enum
+Broiler.ECMAScript.Temporal.TemporalStatus.Completed = 0
+Broiler.ECMAScript.Temporal.TemporalStatus.InvalidDate = 2
+Broiler.ECMAScript.Temporal.TemporalStatus.InvalidDuration = 4
+Broiler.ECMAScript.Temporal.TemporalStatus.InvalidTime = 3
+Broiler.ECMAScript.Temporal.TemporalStatus.OutOfRange = 1
+Broiler.ECMAScript.Temporal.TemporalStatus.value__ field System.Int32
+Broiler.ECMAScript.Temporal.TemporalUnit enum
+Broiler.ECMAScript.Temporal.TemporalUnit.Auto = 11
+Broiler.ECMAScript.Temporal.TemporalUnit.Day = 3
+Broiler.ECMAScript.Temporal.TemporalUnit.Hour = 4
+Broiler.ECMAScript.Temporal.TemporalUnit.Microsecond = 8
+Broiler.ECMAScript.Temporal.TemporalUnit.Millisecond = 7
+Broiler.ECMAScript.Temporal.TemporalUnit.Minute = 5
+Broiler.ECMAScript.Temporal.TemporalUnit.Month = 1
+Broiler.ECMAScript.Temporal.TemporalUnit.Nanosecond = 9
+Broiler.ECMAScript.Temporal.TemporalUnit.Second = 6
+Broiler.ECMAScript.Temporal.TemporalUnit.Unset = 10
+Broiler.ECMAScript.Temporal.TemporalUnit.Week = 2
+Broiler.ECMAScript.Temporal.TemporalUnit.Year = 0
+Broiler.ECMAScript.Temporal.TemporalUnit.value__ field System.Int32
+Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord struct : System.IEquatable`1<Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord>
+Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord..ctor(System.String, System.Int32) method System.Void
+Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord.Deconstruct(System.String&, System.Int32&) method System.Void
+Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord.Equals(Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord) method System.Boolean
+Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord.Equals(System.Object) method virtual System.Boolean
+Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord.GetHashCode() method virtual System.Int32
+Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord.ToString() method virtual System.String
+Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord.get_Name() method System.String
+Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord.get_OffsetMinutes() method System.Int32
+Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord.op_Equality(Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord, Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord) method static System.Boolean
+Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord.op_Inequality(Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord, Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord) method static System.Boolean
+Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord.set_Name(System.String) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
+Broiler.ECMAScript.Temporal.TimeZoneIdentifierRecord.set_OffsetMinutes(System.Int32) method System.Void modreq(System.Runtime.CompilerServices.IsExternalInit)
 Broiler.ECMAScript.Text.Base64Alphabet enum
 Broiler.ECMAScript.Text.Base64Alphabet.Base64 = 0
 Broiler.ECMAScript.Text.Base64Alphabet.Base64Url = 1

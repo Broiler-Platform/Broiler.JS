@@ -3,15 +3,15 @@
 //
 // Broiler Code Assurance
 // ----------------------
-// Relevant units:   15
-// Annotated:        15/15
+// Relevant units:   18
+// Annotated:        18/18
 // Exempt:           0
-// Human-reviewed:   0/15
+// Human-reviewed:   0/18
 // IP risk:          Low
 // Security risk:    Medium
 // Criteria:         0/0
 // Resource impact:  1/10 max
-// Unverified:       15
+// Unverified:       18
 //
 // GENERATED - DO NOT EDIT MANUALLY
 
@@ -64,6 +64,11 @@ public static class TemporalLimits
     // Broiler-AI:           Origin=Ported; Spec=Temporal CheckISODaysRange via Broiler.VM JsTemporalCore.DaysWithinRange; IP=Low; Security=None; Resources=0; Fingerprint=ED9DFC
     // Broiler-Human:        PENDING
     public const long MaxEpochDays = 100_000_000;
+
+    /// <summary>The epoch days of -271821-04-19, the first date ISODateWithinLimits admits: 10^8 days and one before the epoch.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.12 via Broiler.VM JsTemporalCore.MinDay; IP=Low; Security=Low; Resources=0; Fingerprint=12A107
+    // Broiler-Human:        PENDING
+    internal const long MinDateEpochDays = -MaxEpochDays - 1;
 
     /// <summary>The bound a duration's years, months and weeks stay below in magnitude: 2^32.</summary>
     // Broiler-AI:           Origin=Ported; Spec=Temporal IsValidDuration via Broiler.VM JsTemporalCore.IsValidDuration; IP=Low; Security=None; Resources=0; Fingerprint=6CD076
@@ -133,17 +138,30 @@ public static class TemporalLimits
     /// <see cref="TemporalStatus.Completed"/>; <see cref="TemporalStatus.InvalidDate"/> where the fields are not a date;
     /// <see cref="TemporalStatus.OutOfRange"/> where the year and month are outside the limits.
     /// </returns>
-    // Broiler-AI:           Origin=Ported; Spec=Temporal ISOYearMonthWithinLimits via Broiler.VM JsTemporalCore.YearMonthWithinLimits; IP=Low; Security=Low; Resources=1; Fingerprint=5DBEDC
+    // Broiler-AI:           Origin=Ported; Spec=Temporal ISOYearMonthWithinLimits via Broiler.VM JsTemporalCore.YearMonthWithinLimits; IP=Low; Security=Low; Resources=1; Fingerprint=86B367
     // Broiler-Human:        PENDING
     public static TemporalStatus CheckIsoYearMonth(IsoDate yearMonth)
     {
         if (!IsoCalendarMath.IsValidIsoDate(yearMonth.Year, yearMonth.Month, yearMonth.Day))
             return TemporalStatus.InvalidDate;
 
-        var within = yearMonth.Year is >= MinYear and <= MaxYear &&
-            !(yearMonth.Year == MinYear && yearMonth.Month < 4) && !(yearMonth.Year == MaxYear && yearMonth.Month > 9);
-        return within ? TemporalStatus.Completed : TemporalStatus.OutOfRange;
+        return YearMonthWithinLimits(yearMonth) ? TemporalStatus.Completed : TemporalStatus.OutOfRange;
     }
+
+    /// <summary>ISOYearMonthWithinLimits over a valid date's year and month: April -271821 to September 275760.</summary>
+    // Broiler-AI:           Origin=Ported; Spec=Temporal ISOYearMonthWithinLimits via Broiler.VM JsTemporalCore.YearMonthWithinLimits; IP=Low; Security=Low; Resources=0; Fingerprint=4E349A
+    // Broiler-Human:        PENDING
+    internal static bool YearMonthWithinLimits(IsoDate yearMonth) =>
+        yearMonth.Year is >= MinYear and <= MaxYear &&
+        !(yearMonth.Year == MinYear && yearMonth.Month < 4) && !(yearMonth.Year == MaxYear && yearMonth.Month > 9);
+
+    /// <summary>
+    /// ISODateWithinLimits over a valid date's epoch days: from -271821-04-19 (<see cref="MinDateEpochDays"/>) to
+    /// +275760-09-13 (<see cref="MaxEpochDays"/>), the form the calendars test.
+    /// </summary>
+    // Broiler-AI:           Origin=Ported; Spec=Temporal s3.5.12 via Broiler.VM JsTemporalCore.DateWithinLimits; IP=Low; Security=Low; Resources=0; Fingerprint=E90CB3
+    // Broiler-Human:        PENDING
+    internal static bool DateWithinLimits(long epochDays) => epochDays is >= MinDateEpochDays and <= MaxEpochDays;
 
     /// <summary>
     /// Whether a date is within 10^8 days of 1970-01-01: the proposal's <c>CheckISODaysRange</c>, which guards
