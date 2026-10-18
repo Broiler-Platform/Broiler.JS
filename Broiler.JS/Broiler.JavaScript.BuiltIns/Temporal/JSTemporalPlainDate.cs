@@ -32,7 +32,7 @@ public partial class JSTemporalPlainDate : JSObject
         isoYear = ToIntegerWithTruncationArgument(a.GetAt(0));
         isoMonth = ToIntegerWithTruncationArgument(a.GetAt(1));
         isoDay = ToIntegerWithTruncationArgument(a.GetAt(2));
-        calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(3), "Temporal.PlainDate");
+        calendarId = TemporalAdapter.CalendarArgument(a.GetAt(3), "Temporal.PlainDate");
 
         if (TemporalLimits.CheckIsoDate(IsoDate) != TemporalStatus.Completed)
             throw JSEngine.NewRangeError("Temporal.PlainDate: invalid ISO date");
@@ -165,7 +165,7 @@ public partial class JSTemporalPlainDate : JSObject
 
         // The with()-bag must be a plain fields object: not a Temporal object and without a
         // calendar / timeZone property (RejectObjectWithCalendarOrTimeZone).
-        TemporalCalendar.RejectObjectWithCalendarOrTimeZone(obj);
+        TemporalAdapter.RejectObjectWithCalendarOrTimeZone(obj);
 
         // The non-Gregorian calendars merge the with-bag fields onto the receiver's calendar fields
         // and re-resolve in calendar space (see TemporalNonIso.WithToIso).
@@ -271,7 +271,7 @@ public partial class JSTemporalPlainDate : JSObject
         var arg = a.GetAt(0);
         if (arg == null || arg.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainDate.prototype.withCalendar requires a calendar");
-        return new JSTemporalPlainDate(isoYear, isoMonth, isoDay, TemporalCalendar.ToSlotValue(arg, includeArithmetic: true), PlainDatePrototype);
+        return new JSTemporalPlainDate(isoYear, isoMonth, isoDay, TemporalAdapter.ToCalendarIdentifier(arg), PlainDatePrototype);
     }
 
     [JSExport("add", Length = 1)]
@@ -473,19 +473,6 @@ public partial class JSTemporalPlainDate : JSObject
     private static int ToIntegerWithTruncationArgument(JSValue value)
         => (int)TemporalRoundingOptions.ToIntegerWithTruncation(value ?? JSUndefined.Value, "Temporal.PlainDate: date component must be finite");
 
-    // Resolves a calendar argument to a canonical id. A missing calendar defaults to iso8601;
-    // anything else is a calendar-identifier String (a non-String is a TypeError, an unknown
-    // identifier — including an ISO date string that happens to parse — is a RangeError).
-    // Used by the `calendar` PROPERTY of a from/with property bag, which per ToTemporalCalendarSlotValue
-    // accepts a Temporal object's calendar slot too.
-    private static string CanonicalizeCalendar(JSValue calendar)
-    {
-        if (calendar == null || calendar.IsUndefined)
-            return "iso8601";
-
-        return TemporalCalendar.ToSlotValue(calendar, includeArithmetic: true);
-    }
-
 
     private static int MonthFromCode(string code)
     {
@@ -638,7 +625,7 @@ public partial class JSTemporalPlainDate : JSObject
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainDate: invalid value");
 
-        var calendarId = CanonicalizeCalendar(obj[KeyStrings.GetOrCreate("calendar")]);
+        var calendarId = TemporalAdapter.CalendarWithIsoDefault(obj);
 
         if (TemporalCalendarMath.IsNonIso(calendarId))
         {

@@ -39,7 +39,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         millisecond = ToIntegerWithTruncation(a.GetAt(6));
         microsecond = ToIntegerWithTruncation(a.GetAt(7));
         nanosecond = ToIntegerWithTruncation(a.GetAt(8));
-        calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(9), "Temporal.PlainDateTime");
+        calendarId = TemporalAdapter.CalendarArgument(a.GetAt(9), "Temporal.PlainDateTime");
 
         if (!TemporalLimits.IsValidTime(IsoTime))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: time component out of range");
@@ -212,7 +212,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         // internal-slot check BEFORE any "calendar"/"timeZone" property Get fires — observable when
         // those are throwing getters (test262 .../with/calendar-temporal-object-throws). The shared
         // helper does the brand check first, then the calendar/timeZone own/inherited-property check.
-        TemporalCalendar.RejectObjectWithCalendarOrTimeZone(obj);
+        TemporalAdapter.RejectObjectWithCalendarOrTimeZone(obj);
 
         if (NonIso)
             return WithNonIso(obj, ReadOverflow(a.GetAt(1)));
@@ -382,7 +382,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (arg == null || arg.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime.prototype.withCalendar requires a calendar");
         return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond,
-            TemporalCalendar.ToSlotValue(arg, includeArithmetic: true), PlainDateTimePrototype);
+            TemporalAdapter.ToCalendarIdentifier(arg), PlainDateTimePrototype);
     }
 
     [JSExport("add", Length = 1)]
@@ -671,13 +671,6 @@ public partial class JSTemporalPlainDateTime : JSObject
     private static int ToIntegerWithTruncationArgument(JSValue value)
         => (int)TemporalRoundingOptions.ToIntegerWithTruncation(value ?? JSUndefined.Value, "Temporal.PlainDateTime: component must be finite");
 
-    private static string CanonicalizeCalendar(JSValue calendar)
-    {
-        if (calendar == null || calendar.IsUndefined)
-            return "iso8601";
-        return TemporalCalendar.ToSlotValue(calendar, includeArithmetic: true);
-    }
-
     private static int MonthFromCode(string code)
     {
         var match = System.Text.RegularExpressions.Regex.Match(code, @"^M(\d{2})$");
@@ -834,7 +827,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainDateTime: invalid value");
 
-        var calendarId = CanonicalizeCalendar(obj[KeyStrings.GetOrCreate("calendar")]);
+        var calendarId = TemporalAdapter.CalendarWithIsoDefault(obj);
 
         int Field(string name) { var v = obj[KeyStrings.GetOrCreate(name)]; return v.IsUndefined ? 0 : ToIntegerWithTruncation(v); }
 

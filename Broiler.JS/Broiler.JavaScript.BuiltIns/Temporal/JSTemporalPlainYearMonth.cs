@@ -29,7 +29,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
     {
         isoYear = ToIntegerWithTruncationArgument(a.GetAt(0));
         isoMonth = ToIntegerWithTruncationArgument(a.GetAt(1));
-        calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(2), "Temporal.PlainYearMonth");
+        calendarId = TemporalAdapter.CalendarArgument(a.GetAt(2), "Temporal.PlainYearMonth");
         var refDay = a.GetAt(3);
         referenceISODay = refDay == null || refDay.IsUndefined ? 1 : ToIntegerWithTruncation(refDay);
 
@@ -135,7 +135,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
     {
         if (a.GetAt(0) is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainYearMonth.prototype.with requires an object");
-        TemporalCalendar.RejectObjectWithCalendarOrTimeZone(obj);
+        TemporalAdapter.RejectObjectWithCalendarOrTimeZone(obj);
 
         if (NonIso)
             return WithNonIso(obj, ReadOverflow(a.GetAt(1)));
@@ -511,12 +511,6 @@ public partial class JSTemporalPlainYearMonth : JSObject
         return n;
     }
 
-    private static string CanonicalizeCalendar(JSValue calendar)
-    {
-        if (calendar == null || calendar.IsUndefined) return "iso8601";
-        return TemporalCalendar.ToSlotValue(calendar, includeArithmetic: true);
-    }
-
     private static int MonthFromCode(string code)
     {
         var match = System.Text.RegularExpressions.Regex.Match(code, @"^M(\d{2})$");
@@ -609,7 +603,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainYearMonth: invalid value");
 
-        var calendarId = CanonicalizeCalendar(obj[KeyStrings.GetOrCreate("calendar")]);
+        var calendarId = TemporalAdapter.CalendarWithIsoDefault(obj);
 
         if (TemporalCalendarMath.IsNonIso(calendarId))
         {

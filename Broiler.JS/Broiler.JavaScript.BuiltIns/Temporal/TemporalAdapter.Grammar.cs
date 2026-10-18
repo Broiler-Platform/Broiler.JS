@@ -45,10 +45,10 @@ internal static partial class TemporalAdapter
 
     /// <summary>
     /// The calendar of a parse record: its first <c>u-ca</c> annotation, or <c>iso8601</c> where it has none,
-    /// canonicalized by this engine's calendars (a <c>RangeError</c> for one they do not know).
+    /// canonicalized by the shared library's calendars (a <c>RangeError</c> for one they do not know).
     /// </summary>
     internal static string CalendarOf(IsoParseResult parsed) =>
-        parsed.Calendar is null ? "iso8601" : TemporalCalendar.Canonicalize(parsed.Calendar, includeArithmetic: true);
+        parsed.Calendar is null ? "iso8601" : CanonicalizeCalendar(parsed.Calendar);
 
     /// <summary>
     /// The proposal's ParseTemporalInstant, the shared library's: the instant a string names, its offset applied. A

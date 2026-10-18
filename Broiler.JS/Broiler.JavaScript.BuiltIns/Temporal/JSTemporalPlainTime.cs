@@ -126,7 +126,7 @@ public partial class JSTemporalPlainTime : JSObject
         // fields, which ToTemporalTimeRecord then reads in alphabetical order — hour,
         // microsecond, millisecond, minute, nanosecond, second — coercing each as read;
         // the overflow option is read last (test262 PlainTime/prototype/with order-of-operations).
-        TemporalCalendar.RejectObjectWithCalendarOrTimeZone(obj);
+        TemporalAdapter.RejectObjectWithCalendarOrTimeZone(obj);
 
         var any = false;
         int Read(string name, int current)

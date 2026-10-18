@@ -50,7 +50,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         if (!TemporalTimeZones.TryCanonicalize(tzArg.ToString(), out var canonicalTimeZone))
             throw JSEngine.NewRangeError($"Temporal.ZonedDateTime: invalid time zone identifier \"{tzArg}\"");
         timeZoneId = canonicalTimeZone;
-        calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(2), "Temporal.ZonedDateTime");
+        calendarId = TemporalAdapter.CalendarArgument(a.GetAt(2), "Temporal.ZonedDateTime");
     }
 
     internal JSTemporalZonedDateTime(BigInteger epochNanoseconds, string timeZoneId, JSObject prototype)
@@ -318,7 +318,7 @@ public partial class JSTemporalZonedDateTime : JSObject
         var arg = a.GetAt(0);
         if (arg == null || arg.IsUndefined)
             throw JSEngine.NewTypeError("Temporal.ZonedDateTime.prototype.withCalendar requires a calendar");
-        return new JSTemporalZonedDateTime(epochNanoseconds, timeZoneId, TemporalCalendar.ToSlotValue(arg, includeArithmetic: true), ZonedDateTimePrototype);
+        return new JSTemporalZonedDateTime(epochNanoseconds, timeZoneId, TemporalAdapter.ToCalendarIdentifier(arg), ZonedDateTimePrototype);
     }
 
     [JSExport("startOfDay", Length = 0)]
@@ -1243,12 +1243,6 @@ public partial class JSTemporalZonedDateTime : JSObject
             if (!bag[KeyStrings.GetOrCreate(name)].IsUndefined)
                 return true;
         return false;
-    }
-
-    private static string CanonicalizeCalendar(JSValue calendar)
-    {
-        if (calendar == null || calendar.IsUndefined) return "iso8601";
-        return TemporalCalendar.ToSlotValue(calendar, includeArithmetic: true);
     }
 
     private static string ReadOverflow(JSValue options)

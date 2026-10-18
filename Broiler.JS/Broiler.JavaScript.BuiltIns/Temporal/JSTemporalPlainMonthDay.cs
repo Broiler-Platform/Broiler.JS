@@ -30,7 +30,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
     {
         isoMonth = ToIntegerWithTruncation(a.GetAt(0));
         isoDay = ToIntegerWithTruncation(a.GetAt(1));
-        calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(2), "Temporal.PlainMonthDay");
+        calendarId = TemporalAdapter.CalendarArgument(a.GetAt(2), "Temporal.PlainMonthDay");
         var refYear = a.GetAt(3);
         referenceISOYear = refYear == null || refYear.IsUndefined ? DefaultReferenceYear : ToIntegerWithTruncation(refYear);
 
@@ -91,7 +91,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
     {
         if (a.GetAt(0) is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay.prototype.with requires an object");
-        TemporalCalendar.RejectObjectWithCalendarOrTimeZone(obj);
+        TemporalAdapter.RejectObjectWithCalendarOrTimeZone(obj);
 
         // PrepareCalendarFields: read the recognised fields « day, month, monthCode, year »
         // in alphabetical order, coercing each immediately as it is read (day/month positive
@@ -288,15 +288,6 @@ public partial class JSTemporalPlainMonthDay : JSObject
         return n;
     }
 
-    // ToTemporalCalendarSlotValue: the ISO 8601 and Gregorian-family calendars share the ISO
-    // month/day structure (stored directly); the arithmetic and lunisolar non-ISO calendars store an
-    // ISO reference date whose calendar projection carries the requested month-day.
-    private static string ResolveCalendar(JSValue calendar)
-    {
-        if (calendar == null || calendar.IsUndefined) return "iso8601";
-        return TemporalCalendar.ToSlotValue(calendar, includeArithmetic: true);
-    }
-
     private static int MonthFromCode(string code)
     {
         var match = System.Text.RegularExpressions.Regex.Match(code, @"^M(\d{2})$");
@@ -348,7 +339,7 @@ public partial class JSTemporalPlainMonthDay : JSObject
         if (item is not JSObject obj)
             throw JSEngine.NewTypeError("Temporal.PlainMonthDay: invalid value");
 
-        var calendarId = ResolveCalendar(obj[KeyStrings.GetOrCreate("calendar")]);
+        var calendarId = TemporalAdapter.CalendarWithIsoDefault(obj);
 
         if (TemporalCalendarMath.IsNonIso(calendarId))
         {

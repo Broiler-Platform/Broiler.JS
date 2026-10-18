@@ -515,8 +515,8 @@ public partial class JSTemporalDuration
             // A bare identifier string; canonicalize to classify it. An unrecognised value is left
             // for the later ToRelativeDate to reject — assume it may use eras so the fields are
             // still read (preserving the pre-existing validation behaviour).
-            try { calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(calendarValue, "Temporal.Duration"); }
-            catch { calendarId = null; }
+            if (!TemporalAdapter.TryCanonicalizeCalendar(calendarValue.StringValue, out calendarId))
+                calendarId = null;
         }
         else
             calendarId = null; // a Temporal object's calendar slot, resolved later; keep era fields.

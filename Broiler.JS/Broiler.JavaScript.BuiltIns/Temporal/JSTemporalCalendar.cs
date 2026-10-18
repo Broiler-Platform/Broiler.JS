@@ -9,27 +9,10 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 // arithmetic and differs only in how the proleptic-Gregorian year is *numbered* and split into
 // an era + era-year. The japanese calendar additionally splits the same proleptic-Gregorian
 // timeline into regnal eras whose boundaries fall mid-year, so its era / eraYear depend on the
-// full date (year/month/day) rather than the year alone. The lunisolar and 13-month Intl
-// calendars (chinese, dangi, hebrew, islamic-*, ethiopic, coptic, …) use a different month/day
-// structure and are not implemented; Canonicalize rejects them with a RangeError.
+// full date (year/month/day) rather than the year alone. The calendar identifiers are the shared
+// library's (TemporalAdapter.Calendars.cs).
 internal static class TemporalCalendar
 {
-    // RejectObjectWithCalendarOrTimeZone: a plain-object argument to a calendar type's with() (or
-    // similar) must not itself be a Temporal object (it carries its own calendar / time-zone), nor
-    // carry a "calendar" or "timeZone" own/inherited property — any of these is a TypeError.
-    internal static void RejectObjectWithCalendarOrTimeZone(JSObject obj)
-    {
-        if (obj is JSTemporalPlainDate or JSTemporalPlainDateTime or JSTemporalPlainMonthDay
-            or JSTemporalPlainTime or JSTemporalPlainYearMonth or JSTemporalZonedDateTime)
-            throw JSEngine.NewTypeError("Temporal: a Temporal object is not a valid fields object");
-
-        if (!obj[KeyStrings.GetOrCreate("calendar")].IsUndefined)
-            throw JSEngine.NewTypeError("Temporal: a fields object must not have a calendar property");
-
-        if (!obj[KeyStrings.GetOrCreate("timeZone")].IsUndefined)
-            throw JSEngine.NewTypeError("Temporal: a fields object must not have a timeZone property");
-    }
-
     // Japanese regnal eras (ICU4X / Temporal `Intl.Era-monthcode`). Each modern era begins on a
     // specific proleptic-Gregorian date (`y`/`m`/`d`); listed newest-first so the first match wins.
     // `baseYear` is the Gregorian year of era-year 1 (eraYear = isoYear − baseYear + 1). For every
@@ -51,117 +34,6 @@ internal static class TemporalCalendar
         if (m1 != m2) return m1 < m2 ? -1 : 1;
         if (d1 != d2) return d1 < d2 ? -1 : 1;
         return 0;
-    }
-
-    // Canonicalizes a calendar identifier (case-insensitively, folding aliases). Throws a
-    // RangeError for any unsupported calendar. The non-Gregorian calendars (the arithmetic
-    // coptic / ethiopic / islamic-* / hebrew and the lunisolar chinese / dangi) are only
-    // implemented for Temporal.PlainDate, so they are accepted only when `includeArithmetic` is
-    // set; the other Temporal types reject them.
-    internal static string Canonicalize(string id, bool includeArithmetic = false)
-    {
-        if (TryCanonicalizeName(id, includeArithmetic, out var canonical))
-            return canonical;
-
-        throw JSEngine.NewRangeError($"Temporal: unsupported calendar \"{id}\"");
-    }
-
-    // The positional `calendar` argument of a Temporal type constructor is more restrictive than
-    // a from / with property bag's `calendar` field: it must be a bare calendar identifier String,
-    // NOT a full Temporal ISO string. Per ECMA-262 (Temporal.PlainDate(..., calendar) and
-    // friends): undefined → iso8601, a non-String → TypeError, an unknown identifier (including
-    // an ISO date / date-time string that happens to parse) → RangeError. test262
-    // built-ins/Temporal/<Type>/calendar-invalid-iso-string covers every Temporal type.
-    internal static string ResolveCalendarIdentifierArgument(JSValue calendar, string typeName, bool includeArithmetic = true)
-    {
-        if (calendar == null || calendar.IsUndefined)
-            return "iso8601";
-        if (!calendar.IsString)
-            throw JSEngine.NewTypeError($"{typeName}: calendar must be a calendar identifier string");
-        return Canonicalize(calendar.StringValue, includeArithmetic);
-    }
-
-    // Folds a bare calendar identifier to its canonical form, returning false (rather than throwing)
-    // for anything unrecognized — used both by Canonicalize and by the slot-value path, which falls
-    // back to parsing the value as a Temporal ISO string.
-    private static bool TryCanonicalizeName(string id, bool includeArithmetic, out string canonical)
-    {
-        var lower = id.ToLowerInvariant();
-        switch (lower)
-        {
-            case "iso8601": canonical = "iso8601"; return true;
-            case "gregory":
-            case "gregorian": canonical = "gregory"; return true;
-            case "buddhist": canonical = "buddhist"; return true;
-            case "roc":
-            case "minguo": canonical = "roc"; return true;
-            case "japanese": canonical = "japanese"; return true;
-        }
-
-        if (includeArithmetic)
-        {
-            switch (lower)
-            {
-                case "coptic": canonical = "coptic"; return true;
-                case "ethiopic": canonical = "ethiopic"; return true;
-                case "ethioaa":
-                case "ethiopic-amete-alem": canonical = "ethioaa"; return true;
-                // The bare "islamic" identifier resolves to a locale-preferred variant in
-                // Intl.DateTimeFormat, but Temporal requires an unambiguous calendar id; the
-                // suffixed forms ("islamic-civil", "islamic-tbla", "islamic-umalqura") must be
-                // used instead (test262 intl402/Temporal/*/from/islamic).
-                case "islamic-civil":
-                case "islamicc": canonical = "islamic-civil"; return true;
-                case "islamic-tbla": canonical = "islamic-tbla"; return true;
-                case "islamic-umalqura": canonical = "islamic-umalqura"; return true;
-                case "hebrew": canonical = "hebrew"; return true;
-                case "persian": canonical = "persian"; return true;
-                case "indian": canonical = "indian"; return true;
-                case "chinese": canonical = "chinese"; return true;
-                case "dangi": canonical = "dangi"; return true;
-            }
-        }
-
-        canonical = null;
-        return false;
-    }
-
-    // ToTemporalCalendarSlotValue: resolves a calendar argument (a `calendar` property-bag field, a
-    // constructor's calendar argument, or a withCalendar argument) to a canonical calendar id. The
-    // value must either be a Temporal object that carries a calendar — in which case its calendar is
-    // adopted directly, without coercion — or a calendar-identifier String. Anything else (null, a
-    // number, a bigint, a Symbol, a plain object, or a Temporal type without a calendar such as
-    // Temporal.Duration) is a TypeError; an unrecognized identifier String is a RangeError.
-    internal static string ToSlotValue(JSValue calendar, bool includeArithmetic = false)
-    {
-        switch (calendar)
-        {
-            case JSTemporalPlainDate d: return d.calendarId;
-            case JSTemporalPlainDateTime dt: return dt.calendarId;
-            case JSTemporalPlainYearMonth ym: return ym.calendarId;
-            case JSTemporalZonedDateTime zdt: return zdt.calendarId;
-            case JSTemporalPlainMonthDay: return "iso8601";
-        }
-
-        if (calendar == null || !calendar.IsString)
-            throw JSEngine.NewTypeError(
-                "Temporal: calendar must be a calendar identifier string or a Temporal object with a calendar");
-
-        return CanonicalizeIdentifierOrIsoString(calendar.StringValue, includeArithmetic);
-    }
-
-    // ParseTemporalCalendarString, the shared library's grammar: a calendar slot value supplied as a String
-    // is a full Temporal ISO string, whose first [u-ca=…] annotation is adopted (defaulting to iso8601), or
-    // else a bare calendar identifier; anything else is a RangeError. The identifier is then canonicalized.
-    private static string CanonicalizeIdentifierOrIsoString(string value, bool includeArithmetic)
-        => Canonicalize(TemporalAdapter.ParseCalendarString(value), includeArithmetic);
-
-    internal static bool IsSupported(string id)
-    {
-        var lower = id.ToLowerInvariant();
-        return lower is "iso8601" or "gregory" or "gregorian" or "buddhist" or "roc" or "minguo" or "japanese"
-            or "coptic" or "ethiopic" or "ethioaa" or "ethiopic-amete-alem" or "islamic-civil" or "islamicc"
-            or "islamic-tbla" or "islamic-umalqura" or "hebrew" or "persian" or "indian" or "chinese" or "dangi";
     }
 
     // The calendar's displayed year for a proleptic-Gregorian (ISO) year. The japanese calendar's
