@@ -16,14 +16,16 @@
     dialects and the Date renderings; and from SJL-8, time zones and calendar years in the same
     namespace - the decoder of the data home's time-zone and calendar tables over the bytes an engine
     hands in, the zone algorithms over it, the offset time zones, and the table-backed calendars'
-    years. It embeds no table. Its preview pre-releases reach Broiler.VM through that repository's
+    years; and from SJL-10, the Temporal core (Broiler.ECMAScript.Temporal) - from part A of SJL-10.3,
+    its records and limits, balancing, regulation and addition, grammar and serialization. It embeds no
+    table. Its preview pre-releases reach Broiler.VM through that repository's
     committed feed (decision SJL-D-4 (c)).
   -->
   <PropertyGroup>
     <RootNamespace>Broiler.ECMAScript</RootNamespace>
     <AssemblyName>Broiler.ECMAScript.Algorithms</AssemblyName>
     <PackageId>Broiler.ECMAScript.Algorithms</PackageId>
-    <Description>The language algorithms shared by the Broiler JavaScript engines: number conversion (Number::toString at every radix, toFixed, toExponential, toPrecision, StringToNumber, parseInt, parseFloat, numeric literal values, numeric keys and the string white-space set), numerics (the integer conversions, Float16, the Math kernels, exact rounding and the BigInt kernel) and text (UTF-16, padding and relative indices, replacement templates, the URI, base64 and hex codecs, and JSON's grammar, quoting and gap) and Date (the time-value arithmetic, the ISO calendar's civil-day helpers, the local-time provider with LocalTime and UTC, Date.parse's grammar in a strict and a Broiler.VM dialect, and the Date renderings) and time zones and calendar years (the decoder of the time-zone and calendar tables an engine hands in, lookup and primary identifiers, offsets and transitions with no 2037 cliff, possible instants, disambiguation, the start of a day, the offset time zones, and the Chinese, Korean, Umm al-Qura and Persian years), with the WorkCharge metering delegate, the ResultStatus enumeration and the limit records every shared operation uses.</Description>
+    <Description>The language algorithms shared by the Broiler JavaScript engines: number conversion (Number::toString at every radix, toFixed, toExponential, toPrecision, StringToNumber, parseInt, parseFloat, numeric literal values, numeric keys and the string white-space set), numerics (the integer conversions, Float16, the Math kernels, exact rounding and the BigInt kernel) and text (UTF-16, padding and relative indices, replacement templates, the URI, base64 and hex codecs, and JSON's grammar, quoting and gap) and Date (the time-value arithmetic, the ISO calendar's civil-day helpers, the local-time provider with LocalTime and UTC, Date.parse's grammar in a strict and a Broiler.VM dialect, and the Date renderings) and time zones and calendar years (the decoder of the time-zone and calendar tables an engine hands in, lookup and primary identifiers, offsets and transitions with no 2037 cliff, possible instants, disambiguation, the start of a day, the offset time zones, and the Chinese, Korean, Umm al-Qura and Persian years) and the Temporal core's records and limits, balancing, regulation and addition, ISO 8601 / RFC 9557 grammar and string forms, with the WorkCharge metering delegate, the ResultStatus enumeration and the limit records every shared operation uses.</Description>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
   <ItemGroup>
