@@ -1,6 +1,7 @@
 using System;
 using System.Numerics;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Temporal;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.Runtime;
 using Broiler.JavaScript.Engine.Core;
@@ -104,8 +105,8 @@ public partial class JSTemporalDuration
 
         // The balanced result must itself be a valid duration (e.g. the combined time must not
         // overflow the 2^53-seconds limit); otherwise this is a RangeError.
-        RejectDuration(result.years, result.months, result.weeks, result.days, result.hours,
-            result.minutes, result.seconds, result.milliseconds, result.microseconds, result.nanoseconds);
+        TemporalAdapter.CheckDuration(new DurationFields(result.years, result.months, result.weeks, result.days, result.hours,
+            result.minutes, result.seconds, result.milliseconds, result.microseconds, result.nanoseconds));
         return result;
     }
 
@@ -292,9 +293,8 @@ public partial class JSTemporalDuration
         return q;
     }
 
-    private BigInteger TimeComponentsNs()
-        => ((((((BigInteger)(long)hours * 60 + (long)minutes) * 60 + (long)seconds) * 1000
-              + (long)milliseconds) * 1000 + (long)microseconds) * 1000) + (long)nanoseconds;
+    // The six time fields as one exact time duration (row R7: no field is narrowed to a long first).
+    private BigInteger TimeComponentsNs() => TemporalAdapter.TimeDuration(this);
 
     // ToRelativeTemporalObject. Resolves relativeTo to either a ZonedDateTime (DST-aware) or an
     // ISO/Gregorian-family PlainDate (a day = 24 h). Returns false when relativeTo is absent. A non-ISO
@@ -838,7 +838,7 @@ public partial class JSTemporalDuration
         // and the assembled duration must still be valid — the nearest double can round a large component
         // up past the maximum time-duration limit, which is then a RangeError (test262 round/
         // result-out-of-range, round/out-of-range-when-converting-from-normalized-duration).
-        RejectDuration(0, 0, 0, rDays, rHours, rMinutes, rSeconds, rMillis, rMicros, rNanos);
+        TemporalAdapter.CheckDuration(new DurationFields(0, 0, 0, rDays, rHours, rMinutes, rSeconds, rMillis, rMicros, rNanos));
         return new JSTemporalDuration(0, 0, 0, rDays, rHours, rMinutes, rSeconds, rMillis, rMicros, rNanos, DurationPrototype);
     }
 

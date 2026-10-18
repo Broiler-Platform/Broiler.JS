@@ -53,7 +53,7 @@ public partial class JSTemporalZonedDateTime
     {
         var years = (long)d.YearsValue; var months = (long)d.MonthsValue;
         var weeks = (long)d.WeeksValue; var days = (long)d.DaysValue;
-        var timeNs = DurationTimeNanoseconds(d);
+        var timeNs = TemporalAdapter.TimeDuration(d);
 
         BigInteger result;
         if (years == 0 && months == 0 && weeks == 0 && days == 0)
@@ -61,7 +61,7 @@ public partial class JSTemporalZonedDateTime
         else
         {
             var l = Local();
-            var (ry, rm, rd) = AddISODate(l.y, l.mo, l.d, years, months, weeks, days, "constrain");
+            var (ry, rm, rd) = TemporalAdapter.AddIsoDate(l.y, l.mo, l.d, years, months, weeks, days, "constrain", "Temporal.ZonedDateTime");
             result = EpochNsForLocal(ry, rm, rd, l.h, l.mi, l.s, l.ms, l.us, l.ns) + timeNs;
         }
         if (!IsValid(result))
@@ -265,7 +265,7 @@ public partial class JSTemporalZonedDateTime
             }
             case "week":
             {
-                var (ws_y, ws_mo, ws_d) = AddISODate(o.y, o.mo, o.d, dur.Years, dur.Months, 0, 0, "constrain");
+                var (ws_y, ws_mo, ws_d) = TemporalAdapter.AddIsoDate(o.y, o.mo, o.d, dur.Years, dur.Months, 0, 0, "constrain", "Temporal.ZonedDateTime");
                 var (we_y, we_mo, we_d) = IsoCalendarMath.FromEpochDays(IsoCalendarMath.EpochDays(ws_y, ws_mo, ws_d) + dur.Days);
                 var until = DifferenceISODate(ws_y, ws_mo, ws_d, (int)we_y, we_mo, we_d, "week");
                 var weeks = TruncateToIncrement(dur.Weeks + (long)until.weeks, increment);
@@ -307,14 +307,14 @@ public partial class JSTemporalZonedDateTime
         {
             var unitNsTime = (BigInteger)TimeUnitNs(unit) * increment;
             var roundedTime = ExactRounding.RoundNumberToIncrement(dur.Time, BigInteger.One, unitNsTime, roundingMode);
-            var (ty, tm, td) = AddISODate(o.y, o.mo, o.d, dur.Years, dur.Months, dur.Weeks, dur.Days, "constrain");
+            var (ty, tm, td) = TemporalAdapter.AddIsoDate(o.y, o.mo, o.d, dur.Years, dur.Months, dur.Weeks, dur.Days, "constrain", "Temporal.ZonedDateTime");
             var startNsTime = EpochNsForLocal(ty, tm, td, o.h, o.mi, o.s, o.ms, o.us, o.ns);
             return new NudgeResult(
                 new InternalDuration(dur.Years, dur.Months, dur.Weeks, dur.Days, roundedTime),
                 startNsTime + roundedTime, false, null);
         }
 
-        var (sy, sm, sd) = AddISODate(o.y, o.mo, o.d, dur.Years, dur.Months, dur.Weeks, dur.Days, "constrain");
+        var (sy, sm, sd) = TemporalAdapter.AddIsoDate(o.y, o.mo, o.d, dur.Years, dur.Months, dur.Weeks, dur.Days, "constrain", "Temporal.ZonedDateTime");
         var startEpochNs = EpochNsForLocal(sy, sm, sd, o.h, o.mi, o.s, o.ms, o.us, o.ns);
         var (ey, em, ed) = IsoCalendarMath.FromEpochDays(IsoCalendarMath.EpochDays(sy, sm, sd) + sign);
         var endEpochNs = EpochNsForLocal((int)ey, em, ed, o.h, o.mi, o.s, o.ms, o.us, o.ns);
@@ -401,7 +401,7 @@ public partial class JSTemporalZonedDateTime
     private BigInteger DateAddEpochNs((int y, int mo, int d, int h, int mi, int s, int ms, int us, int ns) o,
         long years, long months, long weeks, long days)
     {
-        var (ny, nm, nd) = AddISODate(o.y, o.mo, o.d, years, months, weeks, days, "constrain");
+        var (ny, nm, nd) = TemporalAdapter.AddIsoDate(o.y, o.mo, o.d, years, months, weeks, days, "constrain", "Temporal.ZonedDateTime");
         var result = EpochNsForLocal(ny, nm, nd, o.h, o.mi, o.s, o.ms, o.us, o.ns);
         // A nudge-window boundary (e.g. the next-day start used to measure a calendar/day
         // unit) is the result of AddZonedDateTime and must be a representable instant. A

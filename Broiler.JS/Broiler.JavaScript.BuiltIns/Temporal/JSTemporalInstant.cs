@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Temporal;
 using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.BigInt;
 using Broiler.JavaScript.BuiltIns.Function;
@@ -21,10 +22,6 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 [JSClassGenerator("Instant", Register = false)]
 public partial class JSTemporalInstant : JSObject
 {
-    // ±10^8 days from epoch, in nanoseconds.
-    private static readonly BigInteger MaxEpochNanoseconds = BigInteger.Parse("8640000000000000000000");
-    private static readonly BigInteger MinEpochNanoseconds = -MaxEpochNanoseconds;
-
     internal readonly BigInteger epochNanoseconds;
 
     [JSExport(Length = 1)]
@@ -54,12 +51,13 @@ public partial class JSTemporalInstant : JSObject
     // `globalThis.Temporal.Instant` holds now: guest code may replace the namespace or its members.
     internal static JSObject InstantPrototype => Intrinsics.TemporalPrototype(InstantIntrinsicKey);
 
-    private static bool IsValid(BigInteger ns) => ns >= MinEpochNanoseconds && ns <= MaxEpochNanoseconds;
+    // IsValidEpochNanoseconds, the shared library's: within ±10^8 days of the epoch.
+    private static bool IsValid(BigInteger ns) => TemporalAdapter.IsValidEpochNanoseconds(ns);
 
     // ── accessors ───────────────────────────────────────────────────────────────
 
     [JSExport("epochMilliseconds")]
-    public double EpochMilliseconds => (double)FloorDiv(epochNanoseconds, 1_000_000);
+    public double EpochMilliseconds => TemporalAdapter.EpochMilliseconds(epochNanoseconds);
 
     [JSExport("epochNanoseconds")]
     public JSValue EpochNanoseconds => new JSBigInt(epochNanoseconds);
@@ -121,10 +119,9 @@ public partial class JSTemporalInstant : JSObject
         if (duration.YearsValue != 0 || duration.MonthsValue != 0 || duration.WeeksValue != 0 || duration.DaysValue != 0)
             throw JSEngine.NewRangeError("Temporal.Instant arithmetic does not support calendar units (years, months, weeks, days)");
 
-        var deltaNs = TimeDurationNanoseconds(duration) * sign;
-        var result = epochNanoseconds + deltaNs;
-        if (!IsValid(result))
-            throw JSEngine.NewRangeError("Temporal.Instant: result is out of range");
+        // AddInstant, the shared library's, of the exact time duration.
+        TemporalAdapter.Check(IsoArithmetic.AddInstant(epochNanoseconds, sign * TemporalAdapter.TimeDuration(duration), out var result),
+            "Temporal.Instant: result is out of range");
 
         return new JSTemporalInstant(result, InstantPrototype);
     }
@@ -263,8 +260,8 @@ public partial class JSTemporalInstant : JSObject
         };
         TemporalRoundingOptions.ValidateRoundingIncrement(increment, dayUnits, inclusive: true);
 
-        var unitNs = (BigInteger)UnitNanoseconds(smallestUnit) * increment;
-        var rounded = ExactRounding.RoundNumberToIncrementAsIfPositive(epochNanoseconds, BigInteger.One, unitNs, roundingMode);
+        // RoundTemporalInstant, the shared library's.
+        var rounded = IsoArithmetic.RoundTemporalInstant(epochNanoseconds, increment, TemporalAdapter.Unit(smallestUnit), roundingMode);
         if (!IsValid(rounded))
             throw JSEngine.NewRangeError("Temporal.Instant.round: result is out of range");
 
@@ -399,14 +396,6 @@ public partial class JSTemporalInstant : JSObject
 
         throw JSEngine.NewTypeError("Temporal.Instant: invalid value");
     }
-
-    private static BigInteger TimeDurationNanoseconds(JSTemporalDuration d)
-        => new BigInteger(d.HoursValue) * 3_600_000_000_000
-         + new BigInteger(d.MinutesValue) * 60_000_000_000
-         + new BigInteger(d.SecondsValue) * 1_000_000_000
-         + new BigInteger(d.MillisecondsValue) * 1_000_000
-         + new BigInteger(d.MicrosecondsValue) * 1_000
-         + new BigInteger(d.NanosecondsValue);
 
     private static long UnitNanoseconds(string unit) => unit switch
     {

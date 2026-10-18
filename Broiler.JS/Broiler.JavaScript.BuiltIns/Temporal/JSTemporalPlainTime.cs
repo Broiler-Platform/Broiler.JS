@@ -4,6 +4,8 @@ using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Temporal;
+using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -37,26 +39,23 @@ public partial class JSTemporalPlainTime : JSObject
         microsecond = ToIntegerWithTruncation(a.GetAt(4));
         nanosecond = ToIntegerWithTruncation(a.GetAt(5));
 
-        if (!IsValidTime(hour, minute, second, millisecond, microsecond, nanosecond))
+        if (!TemporalLimits.IsValidTime(IsoTime))
             throw JSEngine.NewRangeError("Temporal.PlainTime: time component out of range");
     }
 
     // Factory used by sibling Temporal types (PlainDateTime.toPlainTime) to build a
     // PlainTime from already-validated components without going through `new`.
     internal static JSTemporalPlainTime Create(int h, int mi, int s, int ms, int us, int ns)
-        => new JSTemporalPlainTime(
-            ((((long)h * 60 + mi) * 60 + s) * 1000L + ms) * 1_000_000L + (long)us * 1000 + ns,
-            PlainTimePrototype);
+        => new JSTemporalPlainTime(new IsoTime(h, mi, s, ms, us, ns), PlainTimePrototype);
 
-    private JSTemporalPlainTime(long totalNanoseconds, JSObject prototype) : base(prototype)
+    private JSTemporalPlainTime(IsoTime time, JSObject prototype) : base(prototype)
     {
-        nanosecond = (int)(totalNanoseconds % 1000); totalNanoseconds /= 1000;
-        microsecond = (int)(totalNanoseconds % 1000); totalNanoseconds /= 1000;
-        millisecond = (int)(totalNanoseconds % 1000); totalNanoseconds /= 1000;
-        second = (int)(totalNanoseconds % 60); totalNanoseconds /= 60;
-        minute = (int)(totalNanoseconds % 60); totalNanoseconds /= 60;
-        hour = (int)totalNanoseconds;
+        hour = time.Hour; minute = time.Minute; second = time.Second;
+        millisecond = time.Millisecond; microsecond = time.Microsecond; nanosecond = time.Nanosecond;
     }
+
+    // The slots as the shared library's record.
+    internal IsoTime IsoTime => new(hour, minute, second, millisecond, microsecond, nanosecond);
 
     private static JSObject ResolvePrototype()
     {
@@ -92,7 +91,7 @@ public partial class JSTemporalPlainTime : JSObject
         if (item is JSTemporalPlainTime t)
         {
             ReadOverflow(options); // GetTemporalOverflowOption still validates the options bag.
-            return new JSTemporalPlainTime(t.TotalNanoseconds(), PlainTimePrototype);
+            return new JSTemporalPlainTime(t.IsoTime, PlainTimePrototype);
         }
 
         // ParseISODateTime runs before the options are validated, so an invalid string — e.g. one
@@ -115,9 +114,7 @@ public partial class JSTemporalPlainTime : JSObject
     {
         var one = RequireTime(ToTemporalTime(a.GetAt(0), "constrain"));
         var two = RequireTime(ToTemporalTime(a.GetAt(1), "constrain"));
-        var n1 = one.TotalNanoseconds();
-        var n2 = two.TotalNanoseconds();
-        return new JSNumber(n1 < n2 ? -1 : n1 > n2 ? 1 : 0);
+        return new JSNumber(IsoArithmetic.CompareTime(one.IsoTime, two.IsoTime));
     }
 
     // ── methods ─────────────────────────────────────────────────────────────────
@@ -168,18 +165,10 @@ public partial class JSTemporalPlainTime : JSObject
     {
         var d = (JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(durationLike);
 
-        // Only the time components participate; years/months/weeks/days are ignored because
-        // a PlainTime has no date, and any 24 h overflow wraps.
-        var durationNs = new BigInteger(d.HoursValue) * 3_600_000_000_000
-            + new BigInteger(d.MinutesValue) * 60_000_000_000
-            + new BigInteger(d.SecondsValue) * 1_000_000_000
-            + new BigInteger(d.MillisecondsValue) * 1_000_000
-            + new BigInteger(d.MicrosecondsValue) * 1_000
-            + new BigInteger(d.NanosecondsValue);
-
-        var total = TotalNanoseconds() + durationNs * sign;
-        var wrapped = (long)(((total % NanosecondsPerDay) + NanosecondsPerDay) % NanosecondsPerDay);
-        return new JSTemporalPlainTime(wrapped, PlainTimePrototype);
+        // AddDurationToTime: only the time components participate (years/months/weeks/days are
+        // ignored because a PlainTime has no date), added by the shared library's AddTime, whose
+        // carried days are dropped.
+        return new JSTemporalPlainTime(IsoArithmetic.AddTime(IsoTime, sign * TemporalAdapter.TimeDuration(d), out _), PlainTimePrototype);
     }
 
     [JSExport("until", Length = 1)]
@@ -291,17 +280,16 @@ public partial class JSTemporalPlainTime : JSObject
     public JSValue Round(in Arguments a)
     {
         var (unit, increment, roundingMode) = ReadRoundTo(a.GetAt(0));
-        var unitNs = UnitNanoseconds(unit) * increment;
-        var rounded = (long)ExactRounding.RoundNumberToIncrement(TotalNanoseconds(), BigInteger.One, unitNs, roundingMode) % NanosecondsPerDay;
-        if (rounded < 0) rounded += NanosecondsPerDay;
-        return new JSTemporalPlainTime(rounded, PlainTimePrototype);
+
+        // RoundTime, the shared library's; a time rounded up to midnight wraps (a PlainTime has no date).
+        return new JSTemporalPlainTime(IsoArithmetic.RoundTime(IsoTime, increment, TemporalAdapter.Unit(unit), roundingMode, out _), PlainTimePrototype);
     }
 
     [JSExport("equals", Length = 1)]
     public JSValue Equals(in Arguments a)
     {
         var other = RequireTime(ToTemporalTime(a.GetAt(0), "constrain"));
-        return TotalNanoseconds() == other.TotalNanoseconds() ? BooleanTrue : BooleanFalse;
+        return IsoArithmetic.CompareTime(IsoTime, other.IsoTime) == 0 ? BooleanTrue : BooleanFalse;
     }
 
     [JSExport("toString", Length = 0)]
@@ -401,9 +389,8 @@ public partial class JSTemporalPlainTime : JSObject
 
     // ── helpers ─────────────────────────────────────────────────────────────────
 
-    internal long TotalNanoseconds()
-        => ((((long)hour * 60 + minute) * 60 + second) * 1000L + millisecond) * 1000L * 1000L
-           + (long)microsecond * 1000 + nanosecond;
+    // The time's nanoseconds since midnight, the shared library's.
+    internal long TotalNanoseconds() => IsoArithmetic.TimeToNanoseconds(IsoTime);
 
     private static JSTemporalPlainTime RequireTime(JSValue value)
         => value as JSTemporalPlainTime ?? throw JSEngine.NewTypeError("expected a Temporal.PlainTime");
@@ -420,10 +407,6 @@ public partial class JSTemporalPlainTime : JSObject
 
         return (int)TemporalRoundingOptions.ToIntegerWithTruncation(value, "Temporal.PlainTime: time component must be finite");
     }
-
-    private static bool IsValidTime(int h, int mi, int s, int ms, int us, int ns)
-        => h is >= 0 and <= 23 && mi is >= 0 and <= 59 && s is >= 0 and <= 59
-           && ms is >= 0 and <= 999 && us is >= 0 and <= 999 && ns is >= 0 and <= 999;
 
     private static string ReadOverflow(JSValue options)
     {
@@ -443,27 +426,10 @@ public partial class JSTemporalPlainTime : JSObject
         return overflow;
     }
 
-    // RegulateTime: either constrain each component into range, or reject an out-of-range value.
+    // RegulateTime, the shared library's: constrain each component into range, or reject an out-of-range value.
     private static JSValue RegulateTime(int h, int mi, int s, int ms, int us, int ns, string overflow)
-    {
-        if (overflow == "reject")
-        {
-            if (!IsValidTime(h, mi, s, ms, us, ns))
-                throw JSEngine.NewRangeError("Temporal.PlainTime: time component out of range");
-        }
-        else
-        {
-            h = Math.Clamp(h, 0, 23);
-            mi = Math.Clamp(mi, 0, 59);
-            s = Math.Clamp(s, 0, 59);
-            ms = Math.Clamp(ms, 0, 999);
-            us = Math.Clamp(us, 0, 999);
-            ns = Math.Clamp(ns, 0, 999);
-        }
-
-        var total = ((((long)h * 60 + mi) * 60 + s) * 1000L + ms) * 1000L * 1000L + (long)us * 1000 + ns;
-        return new JSTemporalPlainTime(total, PlainTimePrototype);
-    }
+        => new JSTemporalPlainTime(
+            TemporalAdapter.RegulateTime(h, mi, s, ms, us, ns, overflow, "Temporal.PlainTime: time component out of range"), PlainTimePrototype);
 
     private static JSValue ToTemporalTime(JSValue item, string overflow)
         => ToTemporalTime(item, () => overflow);
@@ -479,7 +445,7 @@ public partial class JSTemporalPlainTime : JSObject
             // every source kind, including those whose time comes from internal slots — only the
             // property-bag form reads time fields (test262 PlainTime/from order-of-operations).
             readOverflow();
-            return new JSTemporalPlainTime(t.TotalNanoseconds(), PlainTimePrototype);
+            return new JSTemporalPlainTime(t.IsoTime, PlainTimePrototype);
         }
 
         // ToTemporalTime fast path: a PlainDateTime carries its time in internal slots, so
@@ -650,7 +616,7 @@ public partial class JSTemporalPlainTime : JSObject
         if (s == 60) s = 59;
 
         // A time string is parsed strictly (no constrain) otherwise; 24:00 etc. is invalid.
-        if (!IsValidTime(h, mi, s, ms, us, ns))
+        if (!TemporalLimits.IsValidTime(new IsoTime(h, mi, s, ms, us, ns)))
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainTime from \"{text}\"");
 
         return RegulateTime(h, mi, s, ms, us, ns, "reject");

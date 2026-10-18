@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Temporal;
 using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
@@ -23,10 +24,6 @@ namespace Broiler.JavaScript.BuiltIns.Temporal;
 [JSClassGenerator("PlainDate", Register = false)]
 public partial class JSTemporalPlainDate : JSObject
 {
-    // ISODateTimeWithinLimits bounds: -271821-04-19 … +275760-09-13 (±~10^8 days).
-    private static readonly long MinEpochDays = IsoCalendarMath.EpochDays(-271821, 4, 19);
-    private static readonly long MaxEpochDays = IsoCalendarMath.EpochDays(275760, 9, 13);
-
     internal readonly int isoYear, isoMonth, isoDay;
     internal readonly string calendarId;
 
@@ -38,7 +35,7 @@ public partial class JSTemporalPlainDate : JSObject
         isoDay = ToIntegerWithTruncationArgument(a.GetAt(2));
         calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(3), "Temporal.PlainDate");
 
-        if (!IsoCalendarMath.IsValidIsoDate(isoYear, isoMonth, isoDay) || !WithinLimits(isoYear, isoMonth, isoDay))
+        if (TemporalLimits.CheckIsoDate(IsoDate) != TemporalStatus.Completed)
             throw JSEngine.NewRangeError("Temporal.PlainDate: invalid ISO date");
     }
 
@@ -52,6 +49,9 @@ public partial class JSTemporalPlainDate : JSObject
         this.isoDay = isoDay;
         this.calendarId = calendarId;
     }
+
+    // The date's slots as the shared library's record.
+    internal IsoDate IsoDate => new(isoYear, isoMonth, isoDay);
 
     private static JSObject ResolvePrototype()
     {
@@ -153,7 +153,7 @@ public partial class JSTemporalPlainDate : JSObject
     {
         var one = RequireDate(ToTemporalDate(a.GetAt(0)));
         var two = RequireDate(ToTemporalDate(a.GetAt(1)));
-        return new JSNumber(CompareISODate(one.isoYear, one.isoMonth, one.isoDay, two.isoYear, two.isoMonth, two.isoDay));
+        return new JSNumber(IsoArithmetic.CompareIsoDate(one.IsoDate, two.IsoDate));
     }
 
     // ── methods ─────────────────────────────────────────────────────────────────
@@ -287,30 +287,22 @@ public partial class JSTemporalPlainDate : JSObject
         var d = (JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(durationLike);
         var overflow = ReadOverflow(options);
 
-        // A PlainDate balances the duration's time components down to whole (24 h) days, then
-        // performs calendar date arithmetic. The running nanosecond total uses BigInteger because a
-        // near-maximum duration (e.g. ~1.7e13 seconds) overflows Int64 once scaled to nanoseconds.
-        var timeNanoseconds =
-            (System.Numerics.BigInteger)(long)d.HoursValue * 3_600_000_000_000
-            + (System.Numerics.BigInteger)(long)d.MinutesValue * 60_000_000_000
-            + (System.Numerics.BigInteger)(long)d.SecondsValue * 1_000_000_000
-            + (System.Numerics.BigInteger)(long)d.MillisecondsValue * 1_000_000
-            + (System.Numerics.BigInteger)(long)d.MicrosecondsValue * 1_000
-            + (long)d.NanosecondsValue;
-        var extraDays = (long)(timeNanoseconds / 86_400_000_000_000);
+        // ToDateDurationRecordWithoutTime: the days and the time fields as one exact time duration of
+        // 24-hour days, its whole days truncated toward zero (row R7: no field is narrowed first).
+        var days = (long)(TemporalAdapter.TimeDurationWith24HourDays(d) / TemporalLimits.NanosecondsPerDay);
 
         if (NonIso)
         {
             var c = CalendarYmd();
             var (ny, nm, nd) = TemporalNonIso.AddToIso(calendarId, c.y, c.m, c.d,
                 sign * (long)d.YearsValue, sign * (long)d.MonthsValue,
-                sign * (long)d.WeeksValue, sign * ((long)d.DaysValue + extraDays), overflow);
+                sign * (long)d.WeeksValue, sign * days, overflow);
             return new JSTemporalPlainDate(ny, nm, nd, calendarId, PlainDatePrototype);
         }
 
-        return AddISODate(isoYear, isoMonth, isoDay,
-            sign * (long)d.YearsValue, sign * (long)d.MonthsValue,
-            sign * (long)d.WeeksValue, sign * ((long)d.DaysValue + extraDays), overflow, calendarId);
+        var added = TemporalAdapter.AddIsoDate(IsoDate,
+            new DateDuration(sign * d.YearsValue, sign * d.MonthsValue, sign * d.WeeksValue, sign * days), overflow, "Temporal.PlainDate");
+        return new JSTemporalPlainDate((int)added.Year, added.Month, added.Day, calendarId, PlainDatePrototype);
     }
 
     [JSExport("until", Length = 1)]
@@ -757,7 +749,7 @@ public partial class JSTemporalPlainDate : JSObject
         var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
         var day = int.Parse(match.Groups["d"].Value, CultureInfo.InvariantCulture);
 
-        if (!IsoCalendarMath.IsValidIsoDate(year, month, day) || !WithinLimits(year, month, day))
+        if (!TemporalAdapter.IsoDateWithinLimits(year, month, day))
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDate from \"{text}\"");
 
         var calMatch = CalendarAnnotation.Match(text);
@@ -766,23 +758,12 @@ public partial class JSTemporalPlainDate : JSObject
         return new JSTemporalPlainDate(year, month, day, calendarId, PlainDatePrototype);
     }
 
-    // RegulateISODate: constrain each field into range, or reject an out-of-range value.
+    // RegulateISODate, then CreateTemporalDate's ISODateWithinLimits: the shared library's.
     private static JSValue RegulateISODate(int year, int month, int day, string overflow, string calendarId = "iso8601")
     {
-        if (overflow == "reject")
-        {
-            if (!IsoCalendarMath.IsValidIsoDate(year, month, day) || !WithinLimits(year, month, day))
-                throw JSEngine.NewRangeError("Temporal.PlainDate: date is out of range");
-        }
-        else
-        {
-            month = Math.Clamp(month, 1, 12);
-            day = Math.Clamp(day, 1, IsoCalendarMath.DaysInMonth(year, month));
-            if (!IsoCalendarMath.IsValidIsoDate(year, month, day) || !WithinLimits(year, month, day))
-                throw JSEngine.NewRangeError("Temporal.PlainDate: date is out of range");
-        }
-
-        return new JSTemporalPlainDate(year, month, day, calendarId, PlainDatePrototype);
+        var date = TemporalAdapter.RegulateIsoDate(year, month, day, overflow, "Temporal.PlainDate: date is out of range");
+        TemporalAdapter.Check(TemporalLimits.CheckIsoDate(date), "Temporal.PlainDate: date is out of range");
+        return new JSTemporalPlainDate((int)date.Year, date.Month, date.Day, calendarId, PlainDatePrototype);
     }
 
     // ── non-Gregorian calendar resolution / arithmetic ──────────────────────────
@@ -796,49 +777,6 @@ public partial class JSTemporalPlainDate : JSObject
     }
 
     // ── ISO 8601 calendar arithmetic ────────────────────────────────────────────
-
-    // ISODateWithinLimits for a valid ISO date (IsoCalendarMath.IsValidIsoDate checks the fields).
-    private static bool WithinLimits(int year, int month, int day)
-    {
-        var epoch = IsoCalendarMath.EpochDays(year, month, day);
-        return epoch >= MinEpochDays && epoch <= MaxEpochDays;
-    }
-
-    private static int CompareISODate(int y1, int m1, int d1, int y2, int m2, int d2)
-    {
-        if (y1 != y2) return y1 < y2 ? -1 : 1;
-        if (m1 != m2) return m1 < m2 ? -1 : 1;
-        if (d1 != d2) return d1 < d2 ? -1 : 1;
-        return 0;
-    }
-
-    private static JSValue AddISODate(int year, int month, int day, long years, long months, long weeks, long days, string overflow, string calendarId = "iso8601")
-    {
-        // Add years and months, balancing the month into 1..12, then constrain/reject the day.
-        var total = (long)month - 1 + months;
-        var newYear = year + years + FloorDiv(total, 12);
-        var newMonth = (int)(((total % 12) + 12) % 12) + 1;
-
-        var maxDay = IsoCalendarMath.DaysInMonth(newYear, newMonth);
-        var regulatedDay = day;
-        if (overflow == "reject")
-        {
-            if (day > maxDay)
-                throw JSEngine.NewRangeError("Temporal.PlainDate: day out of range for resulting month");
-        }
-        else
-        {
-            regulatedDay = Math.Min(day, maxDay);
-        }
-
-        // Add weeks + days as a plain day offset via the epoch-day axis.
-        var epoch = IsoCalendarMath.EpochDays(newYear, newMonth, regulatedDay) + days + weeks * 7;
-        if (epoch < MinEpochDays || epoch > MaxEpochDays)
-            throw JSEngine.NewRangeError("Temporal.PlainDate: result is out of range");
-
-        var (ry, rm, rd) = IsoCalendarMath.FromEpochDays(epoch);
-        return new JSTemporalPlainDate((int)ry, rm, rd, calendarId, PlainDatePrototype);
-    }
 
     // DifferenceISODate from a (start) to b (end), both with a >= b or a <= b resolved by sign.
     private static (double years, double months, double weeks, double days) DifferenceISODate(
@@ -860,7 +798,7 @@ public partial class JSTemporalPlainDate : JSObject
         // the end when the *unconstrained* (start.day-preserving) date passes it, so e.g. Jan 29 + 1
         // month is treated as Feb 29 (which surpasses Feb 28) and does not count as a whole month —
         // the residual is then measured from the day-constrained intermediate.
-        var sign = -CompareISODate(ay, am, ad, by, bm, bd); // +1 when end is after start
+        var sign = -IsoArithmetic.CompareIsoDate(new IsoDate(ay, am, ad), new IsoDate(by, bm, bd)); // +1 when end is after start
         if (sign == 0) return (0, 0, 0, 0);
 
         long years = 0;
@@ -929,8 +867,8 @@ public partial class JSTemporalPlainDate : JSObject
     // The epoch-day number reached by adding a calendar date duration to the start date (constrain).
     internal static long AddDateGetDays(int sy, int sm, int sd, long y, long mo, long w, long d)
     {
-        var r = (JSTemporalPlainDate)AddISODate(sy, sm, sd, y, mo, w, d, "constrain");
-        return IsoCalendarMath.EpochDays(r.isoYear, r.isoMonth, r.isoDay);
+        var r = TemporalAdapter.AddIsoDate(new IsoDate(sy, sm, sd), new DateDuration(y, mo, w, d), "constrain", "Temporal.PlainDate");
+        return IsoCalendarMath.EpochDays(r.Year, r.Month, r.Day);
     }
 
     // NudgeToCalendarUnit + BubbleRelativeDuration: bracket the difference between the start (r1) and end
@@ -1111,16 +1049,6 @@ public partial class JSTemporalPlainDate : JSObject
         return false;
     }
 
-    // Adds whole years and months with the ISO "constrain" overflow (clamp day to month).
-    private static (int y, int m, int d) AddYearsMonths(int year, int month, int day, long years, long months)
-    {
-        var total = (long)month - 1 + months;
-        var newYear = (int)(year + years + FloorDiv(total, 12));
-        var newMonth = (int)(((total % 12) + 12) % 12) + 1;
-        var newDay = Math.Min(day, IsoCalendarMath.DaysInMonth(newYear, newMonth));
-        return (newYear, newMonth, newDay);
-    }
-
     // ── internal calendar primitives reused by Temporal.Duration relativeTo rounding ──────────
     // These expose the (already-tested) ISO epoch-day arithmetic for the ISO and Gregorian-family
     // calendars, which share the ISO month/day structure.
@@ -1148,8 +1076,8 @@ public partial class JSTemporalPlainDate : JSObject
     internal static (int y, int m, int d) AddCalendarDate(int year, int month, int day,
         long years, long months, long weeks, long days)
     {
-        var r = (JSTemporalPlainDate)AddISODate(year, month, day, years, months, weeks, days, "constrain");
-        return (r.isoYear, r.isoMonth, r.isoDay);
+        var r = TemporalAdapter.AddIsoDate(new IsoDate(year, month, day), new DateDuration(years, months, weeks, days), "constrain", "Temporal.PlainDate");
+        return ((int)r.Year, r.Month, r.Day);
     }
 
     internal static (double years, double months, double weeks, double days) DiffCalendarDate(
@@ -1159,13 +1087,6 @@ public partial class JSTemporalPlainDate : JSObject
     // Negates a duration component, mapping +0 to +0 (rather than -0) so a zero field of a `since`
     // result compares SameValue with the +0 the spec produces.
     internal static double Negate(double v) => v == 0 ? 0d : -v;
-
-    private static long FloorDiv(long a, long b)
-    {
-        var q = a / b;
-        if (a % b != 0 && (a < 0) != (b < 0)) q -= 1;
-        return q;
-    }
 
     // YYYY-MM-DD, with a ±YYYYYY expanded year outside 0000–9999. The ISO calendar gets no
     // "[u-ca=…]" annotation under the default calendarName "auto".

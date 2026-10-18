@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Temporal;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
 using Broiler.JavaScript.ExpressionCompiler;
@@ -40,7 +41,7 @@ public partial class JSTemporalDuration : JSObject
         microseconds = ToIntegerIfIntegral(a.GetAt(8));
         nanoseconds = ToIntegerIfIntegral(a.GetAt(9));
 
-        RejectDuration(years, months, weeks, days, hours, minutes, seconds, milliseconds, microseconds, nanoseconds);
+        TemporalAdapter.CheckDuration(new DurationFields(years, months, weeks, days, hours, minutes, seconds, milliseconds, microseconds, nanoseconds));
     }
 
     internal JSTemporalDuration(
@@ -58,6 +59,9 @@ public partial class JSTemporalDuration : JSObject
     }
 
     private static double NoNegativeZero(double v) => v == 0 ? 0.0 : v;
+
+    // The ten fields as the shared library's record.
+    internal DurationFields Fields => new(years, months, weeks, days, hours, minutes, seconds, milliseconds, microseconds, nanoseconds);
 
     private static JSObject ResolvePrototype()
     {
@@ -90,7 +94,7 @@ public partial class JSTemporalDuration : JSObject
     [JSExport("sign")] public double Sign => DurationSign();
     [JSExport("blank")] public bool Blank => DurationSign() == 0;
 
-    private int DurationSign() => DurationSign(years, months, weeks, days, hours, minutes, seconds, milliseconds, microseconds, nanoseconds);
+    private int DurationSign() => DurationMath.Sign(Fields);
 
     // ── methods ─────────────────────────────────────────────────────────────────
 
@@ -134,7 +138,7 @@ public partial class JSTemporalDuration : JSObject
         if (!any)
             throw JSEngine.NewTypeError("Temporal.Duration.prototype.with requires at least one duration property");
 
-        RejectDuration(y, mo, w, d, h, mi, s, ms, us, ns);
+        TemporalAdapter.CheckDuration(new DurationFields(y, mo, w, d, h, mi, s, ms, us, ns));
         return new JSTemporalDuration(y, mo, w, d, h, mi, s, ms, us, ns, DurationPrototype);
     }
 
@@ -318,57 +322,6 @@ public partial class JSTemporalDuration : JSObject
         return number == 0 ? 0 : number; // normalize -0 → 0
     }
 
-    private static int DurationSign(params double[] components)
-    {
-        foreach (var v in components)
-        {
-            if (v < 0) return -1;
-            if (v > 0) return 1;
-        }
-        return 0;
-    }
-
-    // RejectDuration / IsValidDuration: every component must share the duration's sign, and
-    // the magnitudes must stay within the spec limits (years…days < 2^32, and the total
-    // time in seconds < 2^53).
-    private static void RejectDuration(
-        double years, double months, double weeks, double days, double hours,
-        double minutes, double seconds, double milliseconds, double microseconds, double nanoseconds)
-    {
-        var sign = DurationSign(years, months, weeks, days, hours, minutes, seconds, milliseconds, microseconds, nanoseconds);
-
-        void Check(double v)
-        {
-            if (!double.IsFinite(v))
-                throw JSEngine.NewRangeError("Temporal.Duration field must be finite");
-            if (v < 0 && sign > 0)
-                throw JSEngine.NewRangeError("Temporal.Duration fields must have a consistent sign");
-            if (v > 0 && sign < 0)
-                throw JSEngine.NewRangeError("Temporal.Duration fields must have a consistent sign");
-        }
-
-        Check(years); Check(months); Check(weeks); Check(days); Check(hours);
-        Check(minutes); Check(seconds); Check(milliseconds); Check(microseconds); Check(nanoseconds);
-
-        // Only years, months and weeks are bounded by 2^32; days are limited only by the total-time
-        // bound below (a duration may carry up to ~1.04e11 days — 2^53 seconds — of elapsed time).
-        if (Math.Abs(years) >= 4294967296d || Math.Abs(months) >= 4294967296d || Math.Abs(weeks) >= 4294967296d)
-            throw JSEngine.NewRangeError("Temporal.Duration date fields are out of range");
-
-        // The total elapsed time (days + the time components) must be under 2^53 seconds. The
-        // components are integer-valued, so the sum is computed exactly in nanoseconds via BigInteger
-        // to honour the precise mathematical boundary (a floating-point sum would round near 2^53).
-        var totalNs = (BigInteger)days * 86_400_000_000_000
-            + (BigInteger)hours * 3_600_000_000_000
-            + (BigInteger)minutes * 60_000_000_000
-            + (BigInteger)seconds * 1_000_000_000
-            + (BigInteger)milliseconds * 1_000_000
-            + (BigInteger)microseconds * 1_000
-            + (BigInteger)nanoseconds;
-        if (BigInteger.Abs(totalNs) >= (BigInteger)9007199254740992d * 1_000_000_000) // 2^53 seconds
-            throw JSEngine.NewRangeError("Temporal.Duration is out of range");
-    }
-
     internal static JSValue ToTemporalDuration(JSValue item)
     {
         if (item is JSTemporalDuration d)
@@ -399,7 +352,7 @@ public partial class JSTemporalDuration : JSObject
         if (!any)
             throw JSEngine.NewTypeError("Temporal.Duration: object has no duration properties");
 
-        RejectDuration(y, mo, w, dd, h, mi, s, ms, us, ns);
+        TemporalAdapter.CheckDuration(new DurationFields(y, mo, w, dd, h, mi, s, ms, us, ns));
         return new JSTemporalDuration(y, mo, w, dd, h, mi, s, ms, us, ns, DurationPrototype);
     }
 
@@ -445,8 +398,8 @@ public partial class JSTemporalDuration : JSObject
             nanoseconds = (double)fractionNs;
         }
 
-        RejectDuration(sign * years, sign * months, sign * weeks, sign * days, sign * hours,
-            sign * minutes, sign * seconds, sign * milliseconds, sign * microseconds, sign * nanoseconds);
+        TemporalAdapter.CheckDuration(new DurationFields(sign * years, sign * months, sign * weeks, sign * days, sign * hours,
+            sign * minutes, sign * seconds, sign * milliseconds, sign * microseconds, sign * nanoseconds));
 
         return new JSTemporalDuration(sign * years, sign * months, sign * weeks, sign * days, sign * hours,
             sign * minutes, sign * seconds, sign * milliseconds, sign * microseconds, sign * nanoseconds, DurationPrototype);

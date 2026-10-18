@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Temporal;
 using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
@@ -23,11 +24,6 @@ public partial class JSTemporalPlainDateTime : JSObject
 {
     private const long NanosecondsPerDay = 86_400_000_000_000;
 
-    // ISODateTimeWithinLimits: |epoch ns| <= 8.64e21 + one day of slack.
-    private static readonly BigInteger MaxEpochNanoseconds =
-        BigInteger.Parse("8640000086400000000000");
-    private static readonly BigInteger MinEpochNanoseconds = -MaxEpochNanoseconds;
-
     internal readonly int isoYear, isoMonth, isoDay;
     internal readonly int hour, minute, second, millisecond, microsecond, nanosecond;
     internal readonly string calendarId;
@@ -46,9 +42,9 @@ public partial class JSTemporalPlainDateTime : JSObject
         nanosecond = ToIntegerWithTruncation(a.GetAt(8));
         calendarId = TemporalCalendar.ResolveCalendarIdentifierArgument(a.GetAt(9), "Temporal.PlainDateTime");
 
-        if (!IsValidTime(hour, minute, second, millisecond, microsecond, nanosecond))
+        if (!TemporalLimits.IsValidTime(IsoTime))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: time component out of range");
-        if (!IsValidISODateTime(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond))
+        if (!TemporalAdapter.IsoDateTimeWithinLimits(IsoDateTime))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: invalid ISO date-time");
     }
 
@@ -69,6 +65,16 @@ public partial class JSTemporalPlainDateTime : JSObject
         this.calendarId = calendarId;
     }
 
+    internal JSTemporalPlainDateTime(IsoDateTime dateTime, string calendarId, JSObject prototype)
+        : this((int)dateTime.Date.Year, dateTime.Date.Month, dateTime.Date.Day,
+            dateTime.Time.Hour, dateTime.Time.Minute, dateTime.Time.Second,
+            dateTime.Time.Millisecond, dateTime.Time.Microsecond, dateTime.Time.Nanosecond, calendarId, prototype) { }
+
+    // The slots as the shared library's records.
+    internal IsoDate IsoDate => new(isoYear, isoMonth, isoDay);
+    internal IsoTime IsoTime => new(hour, minute, second, millisecond, microsecond, nanosecond);
+    internal IsoDateTime IsoDateTime => new(IsoDate, IsoTime);
+
     // CreateTemporalDateTime (Temporal §5.5.x): build a PlainDateTime, throwing a RangeError when
     // the ISO date-time falls outside the representable limits. Internal constructors do not run
     // this check, so call sites that combine fields into a new value (e.g. PlainDate.toPlainDateTime
@@ -78,7 +84,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         int hour, int minute, int second, int millisecond, int microsecond, int nanosecond,
         string calendarId, JSObject prototype)
     {
-        if (!IsValidISODateTime(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond))
+        if (!TemporalAdapter.IsoDateTimeWithinLimits(TemporalAdapter.DateTime(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond)))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: date-time is out of range");
         return new JSTemporalPlainDateTime(
             isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond, calendarId, prototype);
@@ -365,7 +371,7 @@ public partial class JSTemporalPlainDateTime : JSObject
     // earliest in-range time, so a midnight time may push it out of range).
     private JSValue CombineWithTime(int h, int mi, int s, int ms, int us, int ns)
     {
-        if (!IsValidISODateTime(isoYear, isoMonth, isoDay, h, mi, s, ms, us, ns))
+        if (!TemporalAdapter.IsoDateTimeWithinLimits(TemporalAdapter.DateTime(isoYear, isoMonth, isoDay, h, mi, s, ms, us, ns)))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: date-time is out of range");
         return new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, h, mi, s, ms, us, ns, calendarId, PlainDateTimePrototype);
     }
@@ -392,36 +398,30 @@ public partial class JSTemporalPlainDateTime : JSObject
         var d = (JSTemporalDuration)JSTemporalDuration.ToTemporalDuration(durationLike);
         var overflow = ReadOverflow(options);
 
-        // AddDateTime: add the time first (carrying any day overflow into the date arithmetic). The
-        // time total is computed in BigInteger so large sub-second durations (e.g. milliseconds at
-        // Number.MAX_SAFE_INTEGER) do not overflow before the result range is validated.
-        var timeNs = (BigInteger)TimeNanoseconds() + sign * DurationTimeNanosecondsBig(d);
-        var dayspillBig = FloorDiv(timeNs, NanosecondsPerDay);
-        var wrapped = (long)(timeNs - dayspillBig * NanosecondsPerDay);
-        if (dayspillBig < long.MinValue || dayspillBig > long.MaxValue)
-            throw JSEngine.NewRangeError("Temporal.PlainDateTime: result is out of range");
-        var dayspill = (long)dayspillBig;
+        // AddDurationToDateTime: the days and time fields as one exact time duration of 24-hour days (row R7: no
+        // field is narrowed first), added to the wall-clock time by AddTime, whose whole days carry into the date
+        // arithmetic; then the result is tested against ISODateTimeWithinLimits. The shared library's.
+        var time = IsoArithmetic.AddTime(IsoTime, sign * TemporalAdapter.TimeDurationWith24HourDays(d), out var days);
 
-        int ny, nm, nd;
+        IsoDate date;
         if (NonIso)
         {
             var c = CalendarYmd();
-            (ny, nm, nd) = TemporalNonIso.AddToIso(calendarId, c.y, c.m, c.d,
-                sign * (long)d.YearsValue, sign * (long)d.MonthsValue,
-                sign * (long)d.WeeksValue, sign * (long)d.DaysValue + dayspill, overflow);
+            var (ny, nm, nd) = TemporalNonIso.AddToIso(calendarId, c.y, c.m, c.d,
+                sign * (long)d.YearsValue, sign * (long)d.MonthsValue, sign * (long)d.WeeksValue, days, overflow);
+            date = new IsoDate(ny, nm, nd);
         }
         else
         {
-            (ny, nm, nd) = AddISODate(isoYear, isoMonth, isoDay,
-                sign * (long)d.YearsValue, sign * (long)d.MonthsValue,
-                sign * (long)d.WeeksValue, sign * (long)d.DaysValue + dayspill, overflow);
+            date = TemporalAdapter.AddIsoDate(IsoDate,
+                new DateDuration(sign * d.YearsValue, sign * d.MonthsValue, sign * d.WeeksValue, days), overflow, "Temporal.PlainDateTime");
         }
 
-        var (h, mi, s, ms, us, ns) = FromTimeNanoseconds(wrapped);
-        if (!IsValidISODateTime(ny, nm, nd, h, mi, s, ms, us, ns))
+        var result = new IsoDateTime(date, time);
+        if (!TemporalAdapter.IsoDateTimeWithinLimits(result))
             throw JSEngine.NewRangeError("Temporal.PlainDateTime: result is out of range");
 
-        return new JSTemporalPlainDateTime(ny, nm, nd, h, mi, s, ms, us, ns, calendarId, PlainDateTimePrototype);
+        return new JSTemporalPlainDateTime(result, calendarId, PlainDateTimePrototype);
     }
 
     [JSExport("until", Length = 1)]
@@ -524,9 +524,9 @@ public partial class JSTemporalPlainDateTime : JSObject
             years = (long)by; months = (long)bm; weeks = (long)bw; days = (long)bd;
         }
 
-        var (rh, rmi, rs, rms, rus, rns) = FromTimeNanoseconds(Math.Abs(residual));
+        var r = IsoArithmetic.BalanceTime(Math.Abs(residual), out _);
         var sgn = Math.Sign(residual);
-        return (years, months, weeks, days, sgn * rh, sgn * rmi, sgn * rs, sgn * rms, sgn * rus, sgn * rns);
+        return (years, months, weeks, days, sgn * r.Hour, sgn * r.Minute, sgn * r.Second, sgn * r.Millisecond, sgn * r.Microsecond, sgn * r.Nanosecond);
     }
 
     // Distributes a signed nanosecond total into time components from largestUnit downward.
@@ -552,25 +552,12 @@ public partial class JSTemporalPlainDateTime : JSObject
     {
         var (unit, increment, roundingMode) = ReadRoundTo(a.GetAt(0));
 
-        if (unit == "day")
-        {
-            var total = TimeNanoseconds();
-            var roundedDays = (long)ExactRounding.RoundNumberToIncrement(total, BigInteger.One, NanosecondsPerDay, roundingMode) / NanosecondsPerDay;
-            var epoch = IsoCalendarMath.EpochDays(isoYear, isoMonth, isoDay) + roundedDays;
-            var (ry, rm, rd) = IsoCalendarMath.FromEpochDays(epoch);
-            return Create((int)ry, rm, rd, 0, 0, 0, 0, 0, 0, calendarId, PlainDateTimePrototype);
-        }
-
-        var unitNs = UnitNanoseconds(unit) * increment;
-        var rounded = (long)ExactRounding.RoundNumberToIncrement(TimeNanoseconds(), BigInteger.One, unitNs, roundingMode);
-        var dayspill = rounded / NanosecondsPerDay;
-        var wrapped = rounded - dayspill * NanosecondsPerDay;
-        var ep = IsoCalendarMath.EpochDays(isoYear, isoMonth, isoDay) + dayspill;
-        var (cy, cm, cd) = IsoCalendarMath.FromEpochDays(ep);
-        var (hh, mm, ss, l, mc, nn) = FromTimeNanoseconds(wrapped);
-        // RoundISODateTime can push the result past the representable range (test262
-        // round/limits); Create performs the ISODateTimeWithinLimits RangeError check.
-        return Create((int)cy, cm, cd, hh, mm, ss, l, mc, nn, calendarId, PlainDateTimePrototype);
+        // RoundISODateTime, the shared library's: the time rounded and its days carried into the date. The
+        // result can pass the representable range (test262 round/limits), which is the RangeError.
+        var rounded = IsoArithmetic.RoundIsoDateTime(IsoDateTime, increment, TemporalAdapter.Unit(unit), roundingMode);
+        if (!TemporalAdapter.IsoDateTimeWithinLimits(rounded))
+            throw JSEngine.NewRangeError("Temporal.PlainDateTime: date-time is out of range");
+        return new JSTemporalPlainDateTime(rounded, calendarId, PlainDateTimePrototype);
     }
 
     [JSExport("equals", Length = 1)]
@@ -630,24 +617,19 @@ public partial class JSTemporalPlainDateTime : JSObject
 
         // RoundISODateTime: round the wall-clock time to the increment, carrying any day overflow
         // into the date.
-        int ry = isoYear, rm = isoMonth, rd = isoDay;
-        var wrapped = TimeNanoseconds();
+        var dateTime = IsoDateTime;
         if (incrementNs > 1)
         {
-            var rounded = (long)ExactRounding.RoundNumberToIncrement(TimeNanoseconds(), BigInteger.One, incrementNs, roundingMode);
-            var dayspill = FloorDiv(rounded, NanosecondsPerDay);
-            wrapped = rounded - dayspill * NanosecondsPerDay;
-            var (cy, cm, cd) = IsoCalendarMath.FromEpochDays(IsoCalendarMath.EpochDays(isoYear, isoMonth, isoDay) + dayspill);
-            ry = (int)cy; rm = cm; rd = cd;
+            var rounded = ExactRounding.RoundNumberToIncrement(TimeNanoseconds(), BigInteger.One, incrementNs, roundingMode);
+            dateTime = IsoArithmetic.BalanceIsoDateTime(IsoDate, rounded);
 
             // Rounding can carry the wall clock past the representable range (test262
             // toString/rounding-edge-of-range): reject an out-of-limits result.
-            var (vh, vmi, vs, vms, vus, vns) = FromTimeNanoseconds(wrapped);
-            if (!IsValidISODateTime(ry, rm, rd, vh, vmi, vs, vms, vus, vns))
+            if (!TemporalAdapter.IsoDateTimeWithinLimits(dateTime))
                 throw JSEngine.NewRangeError("Temporal.PlainDateTime.toString: result is out of range");
         }
 
-        return new JSString(FormatISOString(ry, rm, rd, wrapped, showCalendar, fracDigits, minutePrecision));
+        return new JSString(FormatISOString(dateTime, showCalendar, fracDigits, minutePrecision));
     }
 
     [JSExport("toJSON", Length = 0)]
@@ -723,28 +705,10 @@ public partial class JSTemporalPlainDateTime : JSObject
     internal JSTemporalPlainDateTime Clone()
         => new JSTemporalPlainDateTime(isoYear, isoMonth, isoDay, hour, minute, second, millisecond, microsecond, nanosecond, calendarId, PlainDateTimePrototype);
 
-    internal long TimeNanoseconds()
-        => ((((long)hour * 60 + minute) * 60 + second) * 1000L + millisecond) * 1_000_000L
-           + (long)microsecond * 1000 + nanosecond;
+    // The wall-clock time's nanoseconds since midnight, the shared library's.
+    internal long TimeNanoseconds() => IsoArithmetic.TimeToNanoseconds(IsoTime);
 
-    private int CompareTo(JSTemporalPlainDateTime other)
-    {
-        var c = CompareISODate(isoYear, isoMonth, isoDay, other.isoYear, other.isoMonth, other.isoDay);
-        if (c != 0) return c;
-        var t1 = TimeNanoseconds();
-        var t2 = other.TimeNanoseconds();
-        return t1 < t2 ? -1 : t1 > t2 ? 1 : 0;
-    }
-
-    private static (int h, int mi, int s, int ms, int us, int ns) FromTimeNanoseconds(long t)
-    {
-        var ns = (int)(t % 1000); t /= 1000;
-        var us = (int)(t % 1000); t /= 1000;
-        var ms = (int)(t % 1000); t /= 1000;
-        var s = (int)(t % 60); t /= 60;
-        var mi = (int)(t % 60); t /= 60;
-        return ((int)t, mi, s, ms, us, ns);
-    }
+    private int CompareTo(JSTemporalPlainDateTime other) => IsoArithmetic.CompareIsoDateTime(IsoDateTime, other.IsoDateTime);
 
     private static JSTemporalPlainDateTime RequireDateTime(JSValue value)
         => value as JSTemporalPlainDateTime ?? throw JSEngine.NewTypeError("expected a Temporal.PlainDateTime");
@@ -1015,30 +979,20 @@ public partial class JSTemporalPlainDateTime : JSObject
             hour, minute, second, millisecond, microsecond, nanosecond, overflow, calendarId);
     }
 
-    // When dateAlreadyResolved is true the (year, month, day) are an ISO date already regulated in
-    // calendar space (the non-Gregorian path), so only the time component is constrained here.
+    // RegulateISODate and RegulateTime, then ISODateTimeWithinLimits: the shared library's. When
+    // dateAlreadyResolved is true the (year, month, day) are an ISO date already regulated in calendar space
+    // (the non-Gregorian path), so only the time is regulated here.
     private static JSValue RegulateDateTime(int year, int month, int day, int h, int mi, int s, int ms, int us, int ns, string overflow, string calendarId = "iso8601", bool dateAlreadyResolved = false)
     {
-        if (overflow == "reject")
-        {
-            if (!IsoCalendarMath.IsValidIsoDate(year, month, day) || !IsValidTime(h, mi, s, ms, us, ns))
-                throw JSEngine.NewRangeError("Temporal.PlainDateTime: date-time is out of range");
-        }
-        else
-        {
-            if (!dateAlreadyResolved)
-            {
-                month = Math.Clamp(month, 1, 12);
-                day = Math.Clamp(day, 1, IsoCalendarMath.DaysInMonth(year, month));
-            }
-            h = Math.Clamp(h, 0, 23); mi = Math.Clamp(mi, 0, 59); s = Math.Clamp(s, 0, 59);
-            ms = Math.Clamp(ms, 0, 999); us = Math.Clamp(us, 0, 999); ns = Math.Clamp(ns, 0, 999);
-        }
+        const string message = "Temporal.PlainDateTime: date-time is out of range";
+        var date = dateAlreadyResolved ? new IsoDate(year, month, day) : TemporalAdapter.RegulateIsoDate(year, month, day, overflow, message);
+        var time = TemporalAdapter.RegulateTime(h, mi, s, ms, us, ns, overflow, message);
 
-        if (!IsValidISODateTime(year, month, day, h, mi, s, ms, us, ns))
-            throw JSEngine.NewRangeError("Temporal.PlainDateTime: date-time is out of range");
+        var dateTime = new IsoDateTime(date, time);
+        if (!TemporalAdapter.IsoDateTimeWithinLimits(dateTime))
+            throw JSEngine.NewRangeError(message);
 
-        return new JSTemporalPlainDateTime(year, month, day, h, mi, s, ms, us, ns, calendarId, PlainDateTimePrototype);
+        return new JSTemporalPlainDateTime(dateTime, calendarId, PlainDateTimePrototype);
     }
 
     // The calendar date may be written in extended (YYYY-MM-DD) or basic (YYYYMMDD) form; the two
@@ -1083,8 +1037,7 @@ public partial class JSTemporalPlainDateTime : JSObject
         }
 
         if (s == 60) s = 59; // ISO leap second collapses to :59.
-        if (!IsoCalendarMath.IsValidIsoDate(year, month, day) || !IsValidTime(h, mi, s, ms, us, ns)
-            || !IsValidISODateTime(year, month, day, h, mi, s, ms, us, ns))
+        if (!TemporalAdapter.IsoDateTimeWithinLimits(TemporalAdapter.DateTime(year, month, day, h, mi, s, ms, us, ns)))
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainDateTime from \"{text}\"");
 
         var calMatch = CalendarAnnotation.Match(text);
@@ -1095,17 +1048,12 @@ public partial class JSTemporalPlainDateTime : JSObject
 
     private static readonly System.Text.RegularExpressions.Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
 
-    private static BigInteger DurationTimeNanosecondsBig(JSTemporalDuration d)
-        => (BigInteger)(long)d.HoursValue * 3_600_000_000_000 + (BigInteger)(long)d.MinutesValue * 60_000_000_000
-         + (BigInteger)(long)d.SecondsValue * 1_000_000_000 + (BigInteger)(long)d.MillisecondsValue * 1_000_000
-         + (BigInteger)(long)d.MicrosecondsValue * 1_000 + (long)d.NanosecondsValue;
-
     private static (double, double, double, double, double, double, double, double, double, double) DifferenceISODateTime(
         JSTemporalPlainDateTime a, JSTemporalPlainDateTime b, string largestUnit)
     {
         // a <= b expected by caller's sign handling; compute end - start.
         var timeDiff = b.TimeNanoseconds() - a.TimeNanoseconds();
-        var dateSign = CompareISODate(a.isoYear, a.isoMonth, a.isoDay, b.isoYear, b.isoMonth, b.isoDay);
+        var dateSign = IsoArithmetic.CompareIsoDate(a.IsoDate, b.IsoDate);
 
         var by = b.isoYear; var bm = b.isoMonth; var bd = b.isoDay;
         if (timeDiff < 0 && dateSign < 0)
@@ -1162,75 +1110,6 @@ public partial class JSTemporalPlainDateTime : JSObject
         return TemporalNonIso.Difference(calendarId, a.y, a.m, a.d, b.y, b.m, b.d, largestUnit);
     }
 
-    // ── ISO 8601 calendar arithmetic (shared with PlainDate) ──────────────────────
-
-    private static bool IsValidTime(int h, int mi, int s, int ms, int us, int ns)
-        => h is >= 0 and <= 23 && mi is >= 0 and <= 59 && s is >= 0 and <= 59
-           && ms is >= 0 and <= 999 && us is >= 0 and <= 999 && ns is >= 0 and <= 999;
-
-    private static bool IsValidISODateTime(int year, int month, int day, int h, int mi, int s, int ms, int us, int ns)
-    {
-        if (!IsoCalendarMath.IsValidIsoDate(year, month, day)) return false;
-        var dayNs = new BigInteger(IsoCalendarMath.EpochDays(year, month, day)) * NanosecondsPerDay
-                    + ((((long)h * 60 + mi) * 60 + s) * 1000L + ms) * 1_000_000L + (long)us * 1000 + ns;
-        // ISODateTimeWithinLimits compares strictly against nsMinInstant − nsPerDay / nsMaxInstant +
-        // nsPerDay, so a date-time exactly one day outside the instant limits (e.g. midnight at the
-        // boundary date) is out of range; only the boundary date with a non-zero sub-day part fits.
-        return dayNs > MinEpochNanoseconds && dayNs < MaxEpochNanoseconds;
-    }
-
-    private static int CompareISODate(int y1, int m1, int d1, int y2, int m2, int d2)
-    {
-        if (y1 != y2) return y1 < y2 ? -1 : 1;
-        if (m1 != m2) return m1 < m2 ? -1 : 1;
-        if (d1 != d2) return d1 < d2 ? -1 : 1;
-        return 0;
-    }
-
-    private static (int y, int m, int d) AddISODate(int year, int month, int day, long years, long months, long weeks, long days, string overflow)
-    {
-        var total = (long)month - 1 + months;
-        var newYear = (int)(year + years + FloorDiv(total, 12));
-        var newMonth = (int)(((total % 12) + 12) % 12) + 1;
-
-        var maxDay = IsoCalendarMath.DaysInMonth(newYear, newMonth);
-        var regulatedDay = day;
-        if (overflow == "reject")
-        {
-            if (day > maxDay)
-                throw JSEngine.NewRangeError("Temporal.PlainDateTime: day out of range for resulting month");
-        }
-        else regulatedDay = Math.Min(day, maxDay);
-
-        var epoch = IsoCalendarMath.EpochDays(newYear, newMonth, regulatedDay) + days + weeks * 7;
-        var (ry, rm, rd) = IsoCalendarMath.FromEpochDays(epoch);
-        return ((int)ry, rm, rd);
-    }
-
-    private static long FloorDiv(long a, long b)
-    {
-        var q = a / b;
-        if (a % b != 0 && (a < 0) != (b < 0)) q -= 1;
-        return q;
-    }
-
-    private static BigInteger FloorDiv(BigInteger a, BigInteger b)
-    {
-        var q = BigInteger.DivRem(a, b, out var r);
-        if (r != 0 && (a.Sign < 0) != (b.Sign < 0)) q -= 1;
-        return q;
-    }
-
-    private static long UnitNanoseconds(string unit) => unit switch
-    {
-        "hour" => 3_600_000_000_000,
-        "minute" => 60_000_000_000,
-        "second" => 1_000_000_000,
-        "millisecond" => 1_000_000,
-        "microsecond" => 1_000,
-        _ => 1,
-    };
-
     private static (string unit, int increment, RoundingMode roundingMode) ReadRoundTo(JSValue roundTo)
     {
         string smallestUnit;
@@ -1276,14 +1155,16 @@ public partial class JSTemporalPlainDateTime : JSObject
 
     // YYYY-MM-DDTHH:MM:SS with auto fractional-second precision, plus the calendar annotation.
     private string ToISOString(string showCalendar = "auto")
-        => FormatISOString(isoYear, isoMonth, isoDay, TimeNanoseconds(), showCalendar, fracDigits: -1, minutePrecision: false);
+        => FormatISOString(IsoDateTime, showCalendar, fracDigits: -1, minutePrecision: false);
 
     // Formats an ISO date-time string. fracDigits < 0 trims trailing zeros (auto precision);
     // fracDigits == 0 omits the fractional second; a positive count pads/truncates to that many
     // digits. minutePrecision omits the seconds component entirely.
-    private string FormatISOString(int y, int mo, int d, long timeNs, string showCalendar, int fracDigits, bool minutePrecision)
+    private string FormatISOString(IsoDateTime dateTime, string showCalendar, int fracDigits, bool minutePrecision)
     {
-        var (h, mi, s, ms, us, ns) = FromTimeNanoseconds(timeNs);
+        var y = (int)dateTime.Date.Year; var mo = dateTime.Date.Month; var d = dateTime.Date.Day;
+        var (h, mi, s, ms, us, ns) = (dateTime.Time.Hour, dateTime.Time.Minute, dateTime.Time.Second,
+            dateTime.Time.Millisecond, dateTime.Time.Microsecond, dateTime.Time.Nanosecond);
 
         var sb = new StringBuilder();
         if (y < 0 || y > 9999)

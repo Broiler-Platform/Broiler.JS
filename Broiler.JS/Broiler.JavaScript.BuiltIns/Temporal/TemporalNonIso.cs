@@ -460,24 +460,14 @@ internal static class TemporalNonIso
         return (year, (int)month);
     }
 
-    // Adds whole years then whole months in calendar space, clamping the month into the resulting
-    // year and the day into the resulting month.
-    private static (int y, int m, int d) AddCalendarYearsMonths(string calendarId, int year, int month, int day, long years, long months)
-    {
-        var y = (int)(year + years);
-        var m = Math.Min(month, TemporalCalendarMath.MonthsInYear(calendarId, y));
-        (y, m) = AddCalendarMonths(calendarId, y, m, months);
-        var d = Math.Min(day, TemporalCalendarMath.DaysInMonth(calendarId, y, m));
-        return (y, m, d);
-    }
-
     // Adds a duration in a non-Gregorian calendar: years + months in calendar space (with the day
     // constrained to the resulting month), then weeks + days on the epoch-day axis. Inputs are the
     // active-calendar (year, month, day); the result is an ISO date.
     internal static (int y, int m, int d) AddToIso(string calendarId, int year, int month, int day,
         long years, long months, long weeks, long days, string overflow)
     {
-        var newYear = (int)(year + years);
+        // Row R7: a year past int's range is the RangeError, not a wrapped year.
+        var newYear = TemporalAdapter.CalendarYear(year + years);
         var newMonth = ResolveMonthAfterYearShift(calendarId, year, month, newYear, overflow);
         (newYear, newMonth) = AddCalendarMonths(calendarId, newYear, newMonth, months);
 

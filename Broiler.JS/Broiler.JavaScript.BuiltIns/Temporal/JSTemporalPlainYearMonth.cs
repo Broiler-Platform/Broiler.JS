@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Temporal;
 using Broiler.ECMAScript.Time;
 using Broiler.JavaScript.BuiltIns.Function;
 using Broiler.JavaScript.BuiltIns.Number;
@@ -33,7 +34,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         var refDay = a.GetAt(3);
         referenceISODay = refDay == null || refDay.IsUndefined ? 1 : ToIntegerWithTruncation(refDay);
 
-        if (!IsoCalendarMath.IsValidIsoDate(isoYear, isoMonth, referenceISODay) || !ISOYearMonthWithinLimits(isoYear, isoMonth))
+        if (TemporalLimits.CheckIsoYearMonth(IsoDate) != TemporalStatus.Completed)
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: invalid ISO year-month");
     }
 
@@ -45,6 +46,9 @@ public partial class JSTemporalPlainYearMonth : JSObject
         this.isoYear = isoYear; this.isoMonth = isoMonth; this.referenceISODay = referenceISODay;
         this.calendarId = calendarId;
     }
+
+    // The year-month's ISO date, its day the reference day, as the shared library's record.
+    internal IsoDate IsoDate => new(isoYear, isoMonth, referenceISODay);
 
     private static JSObject ResolvePrototype()
     {
@@ -122,8 +126,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
     {
         var one = Require(ToTemporalYearMonth(a.GetAt(0)));
         var two = Require(ToTemporalYearMonth(a.GetAt(1)));
-        return new JSNumber(CompareISODate(one.isoYear, one.isoMonth, one.referenceISODay,
-            two.isoYear, two.isoMonth, two.referenceISODay));
+        return new JSNumber(IsoArithmetic.CompareIsoDate(one.IsoDate, two.IsoDate));
     }
 
     // ── methods ─────────────────────────────────────────────────────────────────
@@ -244,7 +247,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
             throw JSEngine.NewTypeError("Temporal.PlainYearMonth.prototype.with requires at least one field");
 
         var (iy, im, id) = TemporalNonIso.RegulateToIso(calendarId, year, month, 1, overflow, enforceIsoDateRange: false);
-        if (!ISOYearMonthWithinLimits(iy, im))
+        if (!TemporalAdapter.IsoYearMonthWithinLimits(iy, im))
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: year-month is out of range");
         return new JSTemporalPlainYearMonth(iy, im, id, calendarId, PlainYearMonthPrototype);
     }
@@ -339,15 +342,16 @@ public partial class JSTemporalPlainYearMonth : JSObject
         // within the representable range — the boundary months -271821-04 and +275760-09 only partially
         // overlap it, so e.g. (-271821-04).add(zero) starts from -271821-04-01, which is before the
         // minimum ISO date and is a RangeError.
-        const int startDay = 1;
-        if (!IsWithinIsoDateLimits(isoYear, isoMonth, startDay))
+        var start = new IsoDate(isoYear, isoMonth, 1);
+        if (TemporalLimits.CheckIsoDate(start) != TemporalStatus.Completed)
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: date is out of range");
 
-        var total = (long)isoMonth - 1 + months;
-        var ny = (int)(isoYear + years + FloorDiv(total, 12));
-        var nm = (int)(((total % 12) + 12) % 12) + 1;
-
-        return RegulateYearMonth(ny, nm, overflow, calendarId);
+        // CalendarDateAdd, the shared library's, from that first day: its result is a date within the
+        // limits (row B5: -271821-05 minus a month is -271821-04-01, before the first date, a RangeError),
+        // and a year is never narrowed before the limits are tested (row R7).
+        var added = TemporalAdapter.AddIsoDate(start, new DateDuration(sign * d.YearsValue, sign * d.MonthsValue, 0, 0), overflow,
+            "Temporal.PlainYearMonth");
+        return new JSTemporalPlainYearMonth((int)added.Year, added.Month, 1, calendarId, PlainYearMonthPrototype);
     }
 
     // Builds a PlainYearMonth from an ISO date by taking the calendar (year, month) that ISO date
@@ -356,7 +360,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
     {
         var c = TemporalNonIso.CalendarYmd(calendarId, isoY, isoM, isoD);
         var (iy, im, id) = TemporalNonIso.RegulateToIso(calendarId, c.y, c.m, 1, "constrain", enforceIsoDateRange: false);
-        if (!ISOYearMonthWithinLimits(iy, im))
+        if (!TemporalAdapter.IsoYearMonthWithinLimits(iy, im))
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: year-month is out of range");
         return new JSTemporalPlainYearMonth(iy, im, id, calendarId, PlainYearMonthPrototype);
     }
@@ -399,7 +403,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         // (no intermediate date is formed), so they never reach this check.
         var sameYearMonth = isoYear == target.isoYear && isoMonth == target.isoMonth;
         if (!sameYearMonth
-            && (!IsWithinIsoDateLimits(isoYear, isoMonth, 1) || !IsWithinIsoDateLimits(target.isoYear, target.isoMonth, 1)))
+            && (!TemporalAdapter.IsoDateWithinLimits(isoYear, isoMonth, 1) || !TemporalAdapter.IsoDateWithinLimits(target.isoYear, target.isoMonth, 1)))
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth: difference is outside the supported ISO date range");
 
         // The difference is measured from the receiver (day 1) and negated for "since"; the rounding mode
@@ -452,7 +456,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         {
             var c = CalendarYmd();
             var (iy, im, id) = TemporalNonIso.RegulateToIso(calendarId, c.y, c.m, day, "constrain");
-            if (!IsWithinIsoDateLimits(iy, im, id))
+            if (!TemporalAdapter.IsoDateWithinLimits(iy, im, id))
                 throw JSEngine.NewRangeError("Temporal.PlainYearMonth.prototype.toPlainDate: result is outside the supported ISO date range");
             return new JSTemporalPlainDate(iy, im, id, calendarId, JSTemporalPlainDate.PlainDatePrototype);
         }
@@ -460,7 +464,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         // The combined date can fall outside the representable ISO range even when the
         // year-month itself is in range (the year-month limit is wider than the date limit
         // at the boundary months, e.g. -271821-04 is valid but -271821-04-18 is not).
-        if (!IsWithinIsoDateLimits(isoYear, isoMonth, day))
+        if (!TemporalAdapter.IsoDateWithinLimits(isoYear, isoMonth, day))
             throw JSEngine.NewRangeError("Temporal.PlainYearMonth.prototype.toPlainDate: result is outside the supported ISO date range");
         return new JSTemporalPlainDate(isoYear, isoMonth, day, calendarId, JSTemporalPlainDate.PlainDatePrototype);
     }
@@ -629,7 +633,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
             var (iy, im, id) = TemporalNonIso.YearMonthToIso(obj, calendarId, nonIsoOverflow, "Temporal.PlainYearMonth");
             // A PlainYearMonth is bounded by ISOYearMonthWithinLimits (year/month), not the day-precise
             // ISO date range, so this is validated here rather than during the reference-day conversion.
-            if (!ISOYearMonthWithinLimits(iy, im))
+            if (!TemporalAdapter.IsoYearMonthWithinLimits(iy, im))
                 throw JSEngine.NewRangeError("Temporal.PlainYearMonth: year-month is out of range");
             return new JSTemporalPlainYearMonth(iy, im, id, calendarId, PlainYearMonthPrototype);
         }
@@ -717,7 +721,7 @@ public partial class JSTemporalPlainYearMonth : JSObject
         var year = int.Parse(match.Groups["y"].Value.Replace('−', '-'), CultureInfo.InvariantCulture);
         var month = int.Parse(match.Groups["mo"].Value, CultureInfo.InvariantCulture);
 
-        if (month is < 1 or > 12 || !ISOYearMonthWithinLimits(year, month))
+        if (month is < 1 or > 12 || !TemporalAdapter.IsoYearMonthWithinLimits(year, month))
             throw JSEngine.NewRangeError($"Cannot parse Temporal.PlainYearMonth from \"{text}\"");
 
         var calMatch = CalendarAnnotation.Match(text);
@@ -743,57 +747,12 @@ public partial class JSTemporalPlainYearMonth : JSObject
 
     private static readonly System.Text.RegularExpressions.Regex CalendarAnnotation = new(@"\[!?u-ca=([^\]]+)\]", RegexOptions.CultureInvariant);
 
+    // RegulateISODate of the month (day 1), then ISOYearMonthWithinLimits: the shared library's.
     private static JSValue RegulateYearMonth(int year, int month, string overflow, string calendarId = "iso8601")
     {
-        if (overflow == "reject")
-        {
-            if (month is < 1 or > 12)
-                throw JSEngine.NewRangeError("Temporal.PlainYearMonth: month is out of range");
-        }
-        else month = Math.Clamp(month, 1, 12);
-
-        if (!ISOYearMonthWithinLimits(year, month))
-            throw JSEngine.NewRangeError("Temporal.PlainYearMonth: year-month is out of range");
-
-        return new JSTemporalPlainYearMonth(year, month, 1, calendarId, PlainYearMonthPrototype);
-    }
-
-    // ── ISO arithmetic ───────────────────────────────────────────────────────────
-
-    // ISODateWithinLimits: the full date (not just the year-month) must lie within the representable
-    // instant range, −271821-04-19 … +275760-09-13.
-    private static readonly long MinIsoEpochDays = IsoCalendarMath.EpochDays(-271821, 4, 19);
-    private static readonly long MaxIsoEpochDays = IsoCalendarMath.EpochDays(275760, 9, 13);
-    private static bool IsWithinIsoDateLimits(int year, int month, int day)
-    {
-        if (!IsoCalendarMath.IsValidIsoDate(year, month, day)) return false;
-        var epoch = IsoCalendarMath.EpochDays(year, month, day);
-        return epoch >= MinIsoEpochDays && epoch <= MaxIsoEpochDays;
-    }
-
-    // ISOYearMonthWithinLimits: the reference-day-1 of the month must lie within the
-    // representable instant range, i.e. -271821-04 … +275760-09.
-    private static bool ISOYearMonthWithinLimits(int year, int month)
-    {
-        if (year is < -271821 or > 275760) return false;
-        if (year == -271821 && month < 4) return false;
-        if (year == 275760 && month > 9) return false;
-        return true;
-    }
-
-    private static int CompareISODate(int y1, int m1, int d1, int y2, int m2, int d2)
-    {
-        if (y1 != y2) return y1 < y2 ? -1 : 1;
-        if (m1 != m2) return m1 < m2 ? -1 : 1;
-        if (d1 != d2) return d1 < d2 ? -1 : 1;
-        return 0;
-    }
-
-    private static long FloorDiv(long a, long b)
-    {
-        var q = a / b;
-        if (a % b != 0 && (a < 0) != (b < 0)) q -= 1;
-        return q;
+        var date = TemporalAdapter.RegulateIsoDate(year, month, 1, overflow, "Temporal.PlainYearMonth: month is out of range");
+        TemporalAdapter.Check(TemporalLimits.CheckIsoYearMonth(date), "Temporal.PlainYearMonth: year-month is out of range");
+        return new JSTemporalPlainYearMonth((int)date.Year, date.Month, 1, calendarId, PlainYearMonthPrototype);
     }
 
     // TemporalYearMonthToString: "YYYY-MM" (expanding to ±YYYYYY outside 0000–9999). For a
