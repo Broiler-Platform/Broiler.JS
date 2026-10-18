@@ -67,6 +67,12 @@ contain three pieces of third-party code and one set of public-domain formulas, 
   `JsTemporalParser`, `JsTemporal.Conversions` and the engine-free arithmetic of `JsTemporal.Calendar`,
   `JsTemporal.Durations` and `JsTemporal.Options`). Each records its origin in its assurance annotation or
   its source.
+- The Temporal calendars, at milestone SJL-10.3 (`Temporal/Calendars/`), are ported from Broiler.VM under the
+  same licence and by the same contributors: the calendar systems from `JsCalendars`, and the calendar operations
+  from the core of `JsTemporal.Calendar` and `JsTemporal.CalendarNonIso`. The Coptic, Ethiopian, Hebrew, Persian and
+  tabular Hijri calendars are Calendrical Calculations' arithmetic, as Broiler.VM's are; the month-day reference
+  years of `chinese` and `dangi` are the Intl era and month code proposal's Table 6. Each unit records its origin in
+  its assurance annotation.
 - `Broiler.ECMAScript.Generation` holds the time data home's generator (milestone SJL-8.2): the tz pin
   reader, the tz compiler and the time zone table generator, the calendar pin reader and the calendar
   table generator, ported from Broiler.VM's architecture tests under the same licence and by the same
@@ -99,7 +105,10 @@ contain three pieces of third-party code and one set of public-domain formulas, 
   and retired the same way; arm J is this engine's code and arm V Broiler.VM's, as above, and the Date arms'
   civil copies implement Hinnant's formulas, above. Its time-zone and calendar tests (milestone SJL-8.3)
   read the data home's generated tables from disk, under the time data section below, and hold no copy of
-  them.
+  them. Its Temporal calendar tests (milestone SJL-10.3) hold, under `Temporal/Correspondence/`, byte-for-byte
+  copies of ten of Broiler.VM's answer files of correspondence `sjl-10-001`, under the same licence and by the same
+  contributors, and read the retained dataset `conformance/datasets/time/temporal-calendars.js` and its answers in
+  place.
 
 Code that later moves into a shared library records its origin unit by unit, and code whose licence
 is share-alike or unclear is rewritten from the specification rather than moved (the programme's
@@ -141,10 +150,13 @@ ported from Broiler.VM read "so is the Date area's reading of strings in Broiler
 SJL-6.3 (`EcmaDateParser.cs`, from `DateParseText` and `DateParseTextual`). Each records its origin in its
 assurance annotation or its source."; and the bullet on `Broiler.ECMAScript.Algorithms.Tests` ended at "the
 Date arms' civil copies implement Hinnant's formulas, above.". Revised again 2026-10-18, at milestone SJL-10.3,
-when the Temporal core's first part moved in: the first bullet read "holds the contract types and the
-number-conversion, numerics, text, Date and time-zone and calendar areas written for the shared libraries
-programme"; and the bullet on the code ported from Broiler.VM read "..., whose Persian and tabular Hijri years
-are Calendrical Calculations' arithmetic. Each records its origin in its assurance annotation or its source.".
+when the Temporal core moved in, in two parts. At part A, its records and limits, balancing, grammar and
+serialization: the first bullet read "holds the contract types and the number-conversion, numerics, text, Date
+and time-zone and calendar areas written for the shared libraries programme"; and the bullet on the code ported
+from Broiler.VM read "..., whose Persian and tabular Hijri years are Calendrical Calculations' arithmetic. Each
+records its origin in its assurance annotation or its source.". At part B, its calendars: the bullet on them was
+added after the bullet on the code ported from Broiler.VM, and the bullet on
+`Broiler.ECMAScript.Algorithms.Tests` ended at "and hold no copy of them.".
 
 ## The time data home (`Broiler.ECMAScript/data/time/`)
 
