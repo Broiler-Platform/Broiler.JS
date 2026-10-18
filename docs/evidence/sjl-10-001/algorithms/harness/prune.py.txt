@@ -1,0 +1,57 @@
+# Removes named members from a copied Broiler.VM source: the member's doc comment and annotation lines above it,
+# its signature and its body (brace-matched, or an expression body to its semicolon). Prints what it removed.
+import re, sys
+path = sys.argv[1]
+names = sys.argv[2:]
+lines = open(path, encoding='utf-8').read().split('\n')
+def find(name):
+    pat = re.compile(r'^    (internal|private|public)[^=;(]*\b' + re.escape(name) + r'\s*\(')
+    for i, l in enumerate(lines):
+        if pat.search(l):
+            return i
+    raise SystemExit('not found: ' + name)
+for name in names:
+    i = find(name)
+    start = i
+    while start > 0 and (lines[start-1].strip().startswith('///') or lines[start-1].strip().startswith('// Broiler-')):
+        start -= 1
+    # body
+    j = i
+    depth = 0
+    seen = False
+    while True:
+        l = lines[j]
+        if not seen and '=>' in l and '{' not in l.split('=>')[0]:
+            # expression body: up to the line ending with ';' at depth 0
+            k = j
+            while not lines[k].rstrip().endswith(';'):
+                k += 1
+            end = k
+            # a switch expression body spans braces; extend to the closing '};'
+            if '=> ' in l and l.rstrip().endswith('switch'):
+                pass
+            break
+        depth += l.count('{') - l.count('}')
+        if '{' in l:
+            seen = True
+        if seen and depth == 0:
+            end = j
+            break
+        j += 1
+    # an expression body that is a switch: track braces
+    seg = '\n'.join(lines[i:end+1])
+    if seg.count('{') != seg.count('}'):
+        k = end
+        d = seg.count('{') - seg.count('}')
+        while d != 0:
+            k += 1
+            d += lines[k].count('{') - lines[k].count('}')
+        while not lines[k].rstrip().endswith(';'):
+            k += 1
+        end = k
+    removed = lines[start:end+1]
+    del lines[start:end+1]
+    if start < len(lines) and lines[start].strip() == '' and start > 0 and lines[start-1].strip() == '':
+        del lines[start]
+    print(f'{path}: removed {name} ({len(removed)} lines)')
+open(path, 'w', encoding='utf-8').write('\n'.join(lines))

@@ -1,0 +1,418 @@
+// Broiler.VM's realm methods after their reads, copied from JsRealm.TemporalDuration.cs, JsRealm.TemporalPlainDate.cs,
+// JsRealm.TemporalPlainDateTime.cs, JsRealm.TemporalPlainTime.cs, JsRealm.TemporalInstant.cs,
+// JsRealm.TemporalZonedDateTime.cs and JsRealm.TemporalYearMonthDay.cs at 14072b0. Each body is the method's, unchanged,
+// but where a HARNESS EDIT comment says otherwise: an option read, a ToTemporal… conversion of the argument, an equality
+// check of calendars or zones and the object creation are the caller's, and their values are parameters.
+using Broiler.ECMAScript.Numbers;
+
+namespace VmRef;
+
+internal static class VmMethods
+{
+    /// <summary>Temporal.Duration.compare (s7.2.3).</summary>
+    // HARNESS EDIT: the two ToDuration conversions and RelativeToOption are the caller's.
+    internal static double DurationCompare(JsEngine engine, double[] one, double[] two, JsRelativeTo relativeTo)
+    {
+        if (System.MemoryExtensions.SequenceEqual<double>(one, two))
+        {
+            return 0;
+        }
+
+        var largest1 = JsTemporalCore.DefaultLargestUnit(one);
+        var largest2 = JsTemporalCore.DefaultLargestUnit(two);
+        var duration1 = JsTemporalCore.ToInternal(one);
+        var duration2 = JsTemporalCore.ToInternal(two);
+
+        if (relativeTo.IsZoned && (JsTemporalCore.IsDateUnit(largest1) || JsTemporalCore.IsDateUnit(largest2)))
+        {
+            var after1 = JsTemporal.AddZonedDateTime(engine, relativeTo.ZonedNs!.Value, relativeTo.TimeZone!, relativeTo.Calendar, duration1, reject: false);
+            var after2 = JsTemporal.AddZonedDateTime(engine, relativeTo.ZonedNs!.Value, relativeTo.TimeZone!, relativeTo.Calendar, duration2, reject: false);
+            return after1.CompareTo(after2) switch { > 0 => 1, < 0 => -1, _ => 0 };
+        }
+
+        double days1;
+        double days2;
+
+        if (JsTemporalCore.IsCalendarUnit(largest1) || JsTemporalCore.IsCalendarUnit(largest2))
+        {
+            if (!relativeTo.IsPlain)
+            {
+                throw engine.Error("RangeError", "Temporal.Duration.compare: comparing years, months or weeks needs a relativeTo date");
+            }
+
+            days1 = JsTemporal.DateDurationDays(engine, relativeTo.Calendar, duration1.Date, relativeTo.PlainDate!.Value);
+            days2 = JsTemporal.DateDurationDays(engine, relativeTo.Calendar, duration2.Date, relativeTo.PlainDate!.Value);
+        }
+        else
+        {
+            days1 = one[3];
+            days2 = two[3];
+        }
+
+        var time1 = JsTemporal.Add24HourDays(engine, duration1.Time, days1);
+        var time2 = JsTemporal.Add24HourDays(engine, duration2.Time, days2);
+        return time1.CompareTo(time2) switch { > 0 => 1, < 0 => -1, _ => 0 };
+    }
+
+    /// <summary>The proposal's AddDurations (s7.5.41).</summary>
+    // HARNESS EDIT: ToDuration of the argument is the caller's; the receiver is its fields.
+    internal static JsDurationObject AddDurations(JsEngine engine, double[] durationFields, double[] otherFields, bool subtract)
+    {
+        if (subtract)
+        {
+            otherFields = JsTemporal.Negated(otherFields);
+        }
+
+        var largest = JsTemporalCore.Larger(JsTemporalCore.DefaultLargestUnit(durationFields), JsTemporalCore.DefaultLargestUnit(otherFields));
+
+        if (JsTemporalCore.IsCalendarUnit(largest))
+        {
+            throw engine.Error("RangeError", "Temporal.Duration: adding years, months or weeks needs a relative date; use add on a date instead");
+        }
+
+        var d1 = JsTemporalCore.ToInternalWith24HourDays(durationFields);
+        var d2 = JsTemporalCore.ToInternalWith24HourDays(otherFields);
+        var time = JsTemporal.AddTimeDuration(engine, d1.Time, d2.Time);
+        return JsTemporal.FromInternal(engine, new JsInternalDuration(default, time), largest);
+    }
+
+    /// <summary>Temporal.Duration.prototype.round (s7.3.20).</summary>
+    // HARNESS EDIT: StringOrOptions and the five reads are the caller's; their values are the parameters after the fields.
+    internal static JsDurationObject DurationRound(
+        JsEngine engine, double[] durationFields, TemporalUnit largest, JsRelativeTo relativeTo, long increment, RoundingMode mode, TemporalUnit smallest)
+    {
+        var smallestPresent = true;
+        var largestPresent = true;
+        JsTemporal.ValidateUnit(engine, smallest, JsTemporal.UnitGroup.DateTime);
+
+        if (smallest == TemporalUnit.Unset)
+        {
+            smallestPresent = false;
+            smallest = TemporalUnit.Nanosecond;
+        }
+
+        var existingLargest = JsTemporalCore.DefaultLargestUnit(durationFields);
+        var defaultLargest = JsTemporalCore.Larger(existingLargest, smallest);
+
+        if (largest == TemporalUnit.Unset)
+        {
+            largestPresent = false;
+            largest = defaultLargest;
+        }
+        else if (largest == TemporalUnit.Auto)
+        {
+            largest = defaultLargest;
+        }
+
+        if (!smallestPresent && !largestPresent)
+        {
+            throw engine.Error("RangeError", "Temporal.Duration.prototype.round: smallestUnit or largestUnit is required");
+        }
+
+        if (JsTemporalCore.Larger(largest, smallest) != largest)
+        {
+            throw engine.Error("RangeError", "Temporal.Duration.prototype.round: largestUnit must be at least as large as smallestUnit");
+        }
+
+        var maximum = JsTemporalCore.MaximumIncrement(smallest);
+
+        if (maximum != 0)
+        {
+            JsTemporal.ValidateIncrement(engine, increment, maximum, inclusive: false);
+        }
+
+        if (increment > 1 && largest != smallest && JsTemporalCore.IsDateUnit(smallest))
+        {
+            throw engine.Error("RangeError", "Temporal.Duration.prototype.round: a date unit rounds by an increment only when it is also the largest unit");
+        }
+
+        if (relativeTo.IsZoned)
+        {
+            var internalDuration = JsTemporalCore.ToInternal(durationFields);
+            var origin = relativeTo.ZonedNs!.Value;
+            var target = JsTemporal.AddZonedDateTime(engine, origin, relativeTo.TimeZone!, relativeTo.Calendar, internalDuration, reject: false);
+            internalDuration = JsTemporal.DifferenceZonedDateTimeWithRounding(
+                engine, origin, target, relativeTo.TimeZone!, relativeTo.Calendar, largest, increment, smallest, mode);
+
+            if (JsTemporalCore.IsDateUnit(largest))
+            {
+                largest = TemporalUnit.Hour;
+            }
+
+            return JsTemporal.FromInternal(engine, internalDuration, largest);
+        }
+
+        if (relativeTo.IsPlain)
+        {
+            var internalDuration = JsTemporalCore.ToInternalWith24HourDays(durationFields);
+            var targetTime = JsTemporalCore.AddTime(JsTimeRecord.Midnight, internalDuration.Time);
+            var dateDuration = JsTemporal.AdjustDate(engine, internalDuration.Date, targetTime.Days);
+            var plain = relativeTo.PlainDate!.Value;
+            var targetDate = JsTemporal.DateAdd(engine, relativeTo.Calendar, plain, dateDuration, reject: false);
+            internalDuration = JsTemporal.DifferencePlainDateTimeWithRounding(
+                engine,
+                new JsIsoDateTime(plain, JsTimeRecord.Midnight),
+                new JsIsoDateTime(targetDate, targetTime with { Days = 0 }),
+                relativeTo.Calendar,
+                largest,
+                increment,
+                smallest,
+                mode);
+            return JsTemporal.FromInternal(engine, internalDuration, largest);
+        }
+
+        if (JsTemporalCore.IsCalendarUnit(existingLargest) || JsTemporalCore.IsCalendarUnit(largest))
+        {
+            throw engine.Error("RangeError", "Temporal.Duration.prototype.round: rounding years, months or weeks needs a relativeTo date");
+        }
+
+        var balanced = JsTemporalCore.ToInternalWith24HourDays(durationFields);
+        JsInternalDuration result;
+
+        if (smallest == TemporalUnit.Day)
+        {
+            var days = ExactRounding.RoundNumberToIncrement(balanced.Time, JsTemporalCore.NsPerDay, increment, mode);
+            var dateDuration = JsTemporal.DateDurationRecord(engine, 0, 0, 0, ExactRounding.ToDouble(days, System.Numerics.BigInteger.One));
+            result = new JsInternalDuration(dateDuration, 0);
+        }
+        else
+        {
+            result = new JsInternalDuration(default, JsTemporal.RoundTimeDuration(engine, balanced.Time, increment, smallest, mode));
+        }
+
+        return JsTemporal.FromInternal(engine, result, largest);
+    }
+
+    /// <summary>Temporal.Duration.prototype.total (s7.3.21).</summary>
+    // HARNESS EDIT: StringOrOptions, RelativeToOption and the unit's read are the caller's.
+    internal static double DurationTotal(JsEngine engine, double[] durationFields, JsRelativeTo relativeTo, TemporalUnit unit)
+    {
+        JsTemporal.ValidateUnit(engine, unit, JsTemporal.UnitGroup.DateTime);
+
+        if (relativeTo.IsZoned)
+        {
+            var internalDuration = JsTemporalCore.ToInternal(durationFields);
+            var origin = relativeTo.ZonedNs!.Value;
+            var target = JsTemporal.AddZonedDateTime(engine, origin, relativeTo.TimeZone!, relativeTo.Calendar, internalDuration, reject: false);
+            return JsTemporal.DifferenceZonedDateTimeWithTotal(engine, origin, target, relativeTo.TimeZone!, relativeTo.Calendar, unit).ToDouble();
+        }
+
+        if (relativeTo.IsPlain)
+        {
+            var internalDuration = JsTemporalCore.ToInternalWith24HourDays(durationFields);
+            var targetTime = JsTemporalCore.AddTime(JsTimeRecord.Midnight, internalDuration.Time);
+            var dateDuration = JsTemporal.AdjustDate(engine, internalDuration.Date, targetTime.Days);
+            var plain = relativeTo.PlainDate!.Value;
+            var targetDate = JsTemporal.DateAdd(engine, relativeTo.Calendar, plain, dateDuration, reject: false);
+            return JsTemporal.DifferencePlainDateTimeWithTotal(
+                engine,
+                new JsIsoDateTime(plain, JsTimeRecord.Midnight),
+                new JsIsoDateTime(targetDate, targetTime with { Days = 0 }),
+                relativeTo.Calendar,
+                unit).ToDouble();
+        }
+
+        var largest = JsTemporalCore.DefaultLargestUnit(durationFields);
+
+        if (JsTemporalCore.IsCalendarUnit(largest) || JsTemporalCore.IsCalendarUnit(unit))
+        {
+            throw engine.Error("RangeError", "Temporal.Duration.prototype.total: a total in years, months or weeks needs a relativeTo date");
+        }
+
+        return JsTemporal.TotalTimeDuration(JsTemporalCore.ToInternalWith24HourDays(durationFields).Time, unit).ToDouble();
+    }
+
+    /// <summary>The proposal's DifferenceTemporalPlainDate (s3.5.14).</summary>
+    // HARNESS EDIT: ToPlainDate, RequireSameCalendar, OptionsObject and the settings' reads are the caller's; the settings
+    // are computed by DifferenceSettings from the values read, and the result is the fields CreateDuration validates.
+    internal static double[] DifferenceTemporalPlainDate(JsEngine engine, JsIsoDate date, string calendar, JsIsoDate other, bool since, JsDifferenceSettings settings)
+    {
+        if (JsTemporalCore.Compare(date, other) == 0)
+        {
+            return JsTemporal.CreateDuration(engine, new double[10]).Fields;
+        }
+
+        var duration = new JsInternalDuration(JsTemporal.DateUntil(engine, calendar, date, other, settings.LargestUnit), 0);
+
+        if (settings.SmallestUnit != TemporalUnit.Day || settings.RoundingIncrement != 1)
+        {
+            var origin = new JsIsoDateTime(date, JsTimeRecord.Midnight);
+            var destination = new JsIsoDateTime(other, JsTimeRecord.Midnight);
+            duration = JsTemporal.RoundRelativeDuration(
+                engine,
+                duration,
+                JsTemporalCore.UtcEpochNs(origin),
+                JsTemporalCore.UtcEpochNs(destination),
+                origin,
+                null,
+                calendar,
+                settings.LargestUnit,
+                settings.RoundingIncrement,
+                settings.SmallestUnit,
+                settings.RoundingMode);
+        }
+
+        var result = JsTemporalCore.FromInternal(duration, TemporalUnit.Day);
+        return JsTemporal.CreateDuration(engine, since ? JsTemporal.Negated(result) : result).Fields;
+    }
+
+    /// <summary>The proposal's DifferenceTemporalPlainDateTime (s5.5.15).</summary>
+    // HARNESS EDIT: as for DifferenceTemporalPlainDate.
+    internal static double[] DifferenceTemporalPlainDateTime(JsEngine engine, JsIsoDateTime dateTime, string calendar, JsIsoDateTime other, bool since, JsDifferenceSettings settings)
+    {
+        if (JsTemporalCore.Compare(dateTime, other) == 0)
+        {
+            return JsTemporal.CreateDuration(engine, new double[10]).Fields;
+        }
+
+        var internalDuration = JsTemporal.DifferencePlainDateTimeWithRounding(
+            engine, dateTime, other, calendar, settings.LargestUnit, settings.RoundingIncrement, settings.SmallestUnit, settings.RoundingMode);
+        var result = JsTemporalCore.FromInternal(internalDuration, settings.LargestUnit);
+        return JsTemporal.CreateDuration(engine, since ? JsTemporal.Negated(result) : result).Fields;
+    }
+
+    /// <summary>The proposal's DifferenceTemporalPlainTime (s4.5.17).</summary>
+    // HARNESS EDIT: ToPlainTime, OptionsObject and the settings' reads are the caller's.
+    internal static double[] DifferenceTemporalPlainTime(JsEngine engine, JsTimeRecord plainTime, JsTimeRecord other, bool since, JsDifferenceSettings settings)
+    {
+        var time = JsTemporalCore.DifferenceTime(plainTime, other);
+        time = JsTemporal.RoundTimeDuration(engine, time, settings.RoundingIncrement, settings.SmallestUnit, settings.RoundingMode);
+        var result = JsTemporalCore.FromInternal(new JsInternalDuration(default, time), settings.LargestUnit);
+        return JsTemporal.CreateDuration(engine, since ? JsTemporal.Negated(result) : result).Fields;
+    }
+
+    /// <summary>The proposal's DifferenceTemporalInstant (s8.5.9).</summary>
+    // HARNESS EDIT: ToInstant, OptionsObject and the settings' reads are the caller's.
+    internal static double[] DifferenceTemporalInstant(JsEngine engine, System.Numerics.BigInteger instant, System.Numerics.BigInteger other, bool since, JsDifferenceSettings settings)
+    {
+        var internalDuration = JsTemporal.DifferenceInstant(
+            engine, instant, other, settings.RoundingIncrement, settings.SmallestUnit, settings.RoundingMode);
+        var result = JsTemporalCore.FromInternal(internalDuration, settings.LargestUnit);
+        return JsTemporal.CreateDuration(engine, since ? JsTemporal.Negated(result) : result).Fields;
+    }
+
+    /// <summary>The proposal's DifferenceTemporalZonedDateTime (s6.5.9).</summary>
+    // HARNESS EDIT: ToZonedDateTime, RequireSameCalendar, OptionsObject and the settings' reads are the caller's, and both
+    // values are in one zone, so TimeZoneEquals holds.
+    internal static double[] DifferenceTemporalZonedDateTime(
+        JsEngine engine, System.Numerics.BigInteger zoned, System.Numerics.BigInteger other, string timeZone, string calendar, bool since, JsDifferenceSettings settings)
+    {
+        double[] result;
+
+        if (!JsTemporalCore.IsDateUnit(settings.LargestUnit))
+        {
+            var instantDifference = JsTemporal.DifferenceInstant(
+                engine, zoned, other, settings.RoundingIncrement, settings.SmallestUnit, settings.RoundingMode);
+            result = JsTemporalCore.FromInternal(instantDifference, settings.LargestUnit);
+            return JsTemporal.CreateDuration(engine, since ? JsTemporal.Negated(result) : result).Fields;
+        }
+
+        if (zoned == other)
+        {
+            return JsTemporal.CreateDuration(engine, new double[10]).Fields;
+        }
+
+        var internalDuration = JsTemporal.DifferenceZonedDateTimeWithRounding(
+            engine,
+            zoned,
+            other,
+            timeZone,
+            calendar,
+            settings.LargestUnit,
+            settings.RoundingIncrement,
+            settings.SmallestUnit,
+            settings.RoundingMode);
+        result = JsTemporalCore.FromInternal(internalDuration, TemporalUnit.Hour);
+        return JsTemporal.CreateDuration(engine, since ? JsTemporal.Negated(result) : result).Fields;
+    }
+
+    /// <summary>The proposal's DifferenceTemporalPlainYearMonth (s9.5.7).</summary>
+    // HARNESS EDIT: ToYearMonth, RequireSameCalendar, OptionsObject and the settings' reads are the caller's.
+    internal static double[] DifferenceTemporalPlainYearMonth(JsEngine engine, JsIsoDate yearMonth, string calendar, JsIsoDate other, bool since, JsDifferenceSettings settings)
+    {
+        if (JsTemporalCore.Compare(yearMonth, other) == 0)
+        {
+            return JsTemporal.CreateDuration(engine, new double[10]).Fields;
+        }
+
+        var thisFields = JsTemporal.DateToFields(engine, calendar, yearMonth, JsTemporal.FieldsType.YearMonth);
+        thisFields.Day = 1;
+        var thisDate = JsTemporal.DateFromFields(engine, calendar, thisFields, reject: false);
+        var otherFields = JsTemporal.DateToFields(engine, calendar, other, JsTemporal.FieldsType.YearMonth);
+        otherFields.Day = 1;
+        var otherDate = JsTemporal.DateFromFields(engine, calendar, otherFields, reject: false);
+        var dateDifference = JsTemporal.DateUntil(engine, calendar, thisDate, otherDate, settings.LargestUnit);
+        var duration = new JsInternalDuration(JsTemporal.AdjustDate(engine, dateDifference, 0, 0), 0);
+
+        if (settings.SmallestUnit != TemporalUnit.Month || settings.RoundingIncrement != 1)
+        {
+            var origin = new JsIsoDateTime(thisDate, JsTimeRecord.Midnight);
+            var destination = new JsIsoDateTime(otherDate, JsTimeRecord.Midnight);
+            duration = JsTemporal.RoundRelativeDuration(
+                engine,
+                duration,
+                JsTemporalCore.UtcEpochNs(origin),
+                JsTemporalCore.UtcEpochNs(destination),
+                origin,
+                null,
+                calendar,
+                settings.LargestUnit,
+                settings.RoundingIncrement,
+                settings.SmallestUnit,
+                settings.RoundingMode);
+        }
+
+        var result = JsTemporalCore.FromInternal(duration, TemporalUnit.Day);
+        return JsTemporal.CreateDuration(engine, since ? JsTemporal.Negated(result) : result).Fields;
+    }
+
+    /// <summary>The round options of PlainTime, PlainDateTime, Instant and ZonedDateTime (their round methods' option steps).</summary>
+    // HARNESS EDIT: the four methods' validation steps after their reads, copied from each method, with the type a parameter.
+    internal static void RoundOptions(JsEngine engine, string type, TemporalUnit smallest, long increment)
+    {
+        switch (type)
+        {
+            case "PlainTime":
+                // JsRealm.TemporalPlainTime.cs, round.
+                JsTemporal.ValidateUnit(engine, smallest, JsTemporal.UnitGroup.Time);
+                JsTemporal.ValidateIncrement(engine, increment, JsTemporalCore.MaximumIncrement(smallest), inclusive: false);
+                break;
+            case "Instant":
+                // JsRealm.TemporalInstant.cs, round.
+                JsTemporal.ValidateUnit(engine, smallest, JsTemporal.UnitGroup.Time);
+                var maximum = (long)(JsTemporalCore.NsPerDay / JsTemporalCore.UnitLength(smallest));
+                JsTemporal.ValidateIncrement(engine, increment, maximum, inclusive: true);
+                break;
+            case "PlainDateTime":
+                // JsRealm.TemporalPlainDateTime.cs, round.
+                if (smallest != TemporalUnit.Day)
+                {
+                    JsTemporal.ValidateUnit(engine, smallest, JsTemporal.UnitGroup.Time);
+                }
+
+                if (smallest == TemporalUnit.Day)
+                {
+                    JsTemporal.ValidateIncrement(engine, increment, 1, inclusive: true);
+                }
+                else
+                {
+                    JsTemporal.ValidateIncrement(engine, increment, JsTemporalCore.MaximumIncrement(smallest), inclusive: false);
+                }
+
+                break;
+            default:
+                // JsRealm.TemporalZonedDateTime.cs, ZonedDateTimeRound.
+                if (smallest == TemporalUnit.Day)
+                {
+                    JsTemporal.ValidateIncrement(engine, increment, 1, inclusive: true);
+                }
+                else
+                {
+                    JsTemporal.ValidateUnit(engine, smallest, JsTemporal.UnitGroup.Time);
+                    JsTemporal.ValidateIncrement(engine, increment, JsTemporalCore.MaximumIncrement(smallest), inclusive: false);
+                }
+
+                break;
+        }
+    }
+}
