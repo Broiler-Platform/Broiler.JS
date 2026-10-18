@@ -23,16 +23,18 @@ area's rules run test262 `ccaac100` (decision D2).
 **Owner:** the Broiler.JS maintainer. One person holds every role (the programme's EX-30, recorded in Broiler.VM).
 **Reviewer:** none, and nothing here has been read by anyone but its author.
 
-**State, 2026-10-18, at SJL-10.2: the rule and part C's base. Nothing here is a verdict.**
-- The bases of parts A and B are dispatched at the rule's commit by `test262 evidence`, with `include_negative`
-  true, and are imported when they complete (section 1).
-- Part C's base is taken at the rule's commit `1d27064d`, after SJL-10.2 copied the calendars dataset (section 1).
+**State, 2026-10-18, at SJL-10.2:**
+- The bases of all three parts are taken at the rule's commit `1d27064d` (section 1).
 - The after runs follow SJL-10.5's cut-over.
 
-*(Revised 2026-10-18, at SJL-10.2. The state read "at SJL-10.1: the rule only. Nothing here is a verdict, and
-nothing has been taken.", and its first two items "The bases of parts A and B are taken at the rule's commit by
-`test262 evidence`, with `include_negative` true." and "Part C's base follows SJL-10.2, which copies the calendars
-dataset.")*
+**Nothing here is a verdict.**
+
+*(Revised 2026-10-18, at SJL-10.2, twice. The state read "at SJL-10.1: the rule only. Nothing here is a verdict,
+and nothing has been taken.", and its first two items "The bases of parts A and B are taken at the rule's commit
+by `test262 evidence`, with `include_negative` true." and "Part C's base follows SJL-10.2, which copies the
+calendars dataset." When part C's base was taken it read "at SJL-10.2: the rule and part C's base", with the bases
+of parts A and B "dispatched at the rule's commit by `test262 evidence`, with `include_negative` true, and ...
+imported when they complete".)*
 
 The owner's direction of 2026-10-18, "Please do all recommended decisions and skip waiting for review.", under which
 JSD-0078 records its decisions, changes no rule: nothing is accepted without review, and SJL-10 may not meet its gate
@@ -47,7 +49,35 @@ digits, with negative-metadata tests:
 - part A in the runner's zone, UTC: run 39123945598;
 - part B in `America/New_York`: run 39123948554.
 
-They were still running when part C's base was taken, and are imported here when they complete.
+Both are imported unchanged, with the digest of each zip as downloaded, which is the digest GitHub records:
+[`test262/base/`](test262/base/imported.txt) and [`test262/base-new-york/`](test262/base-new-york/imported.txt).
+- **What ran.** Each run tested `1d27064d`, dispatched from `main` at `d3464413`, with suite `ccaac100`. The
+  workflow and `scripts/compliance/` there are byte-identical to the rule commit's: `git diff --stat d3464413
+  1d27064d -- .github scripts` prints nothing, and the two commits differ only in four documents.
+- **Completeness.** Each run has:
+  - all eight shards reported, with no configuration failure, no incomplete shard and no retried one;
+  - one suite revision, `ccaac100`;
+  - one shell, shown by one distinct list of binaries, with the re-run's shell the same. The list's digest,
+    `faed2c5a…`, is the same in both runs;
+  - `includeNegative` true in `run.txt`, the merged results and the re-run.
+- **The zone.**
+  - Part A's record reads TZ unset and UTC +0000 at both instants.
+  - Part B's reads TZ `America/New_York`, EST -0500 at 2021-01-15T12:00:00Z and EDT -0400 at 2021-07-15T12:00:00Z.
+  - Each run records one tzdata release, 2026c, and every shard is as expected.
+- **Timeouts.** In each run one path timed out in both variants,
+  `test/staging/sm/regress/regress-1507322-deep-weakmap.js`. The workflow ran it again alone, with one worker,
+  and it timed out again; both the run and the re-run are retained, as the rule's timeouts clause asks.
+- **Taken.** Part A ran from 11:37Z to 13:12Z on 2026-10-18, and part B from 11:37Z to 13:17Z, each on image
+  `ubuntu24` 20261012.334.1.
+
+| Run | Passed | Failed | Timed out | Not applicable | Of |
+|---|---|---|---|---|---|
+| Part A, UTC | 98,181 | 2,004 | 2 | 5,871 | 106,058 rows (53,029 paths, two variants) |
+| Part B, `America/New_York` | 98,181 | 2,004 | 2 | 5,871 | 106,058 rows |
+
+The totals are equal in both zones, and the parts compare per row, never with each other. Each part's base gives
+every one of its 106,058 rows the verdict that bundle `sjl-8-001`'s after run in the same zone, at `79a0506c`, gave
+it.
 
 **Part C's base** ([`datasets/`](datasets/README.md)) was taken at the rule's commit.
 - **The population.** SJL-8.4 copied `temporal.js`, with its answer and divergences, from Broiler.VM's `9508bd5`,
