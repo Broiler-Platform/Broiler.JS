@@ -45,10 +45,6 @@ internal static partial class TemporalAdapter
     internal static bool IsoDateWithinLimits(long year, int month, int day) =>
         TemporalLimits.CheckIsoDate(new IsoDate(year, month, day)) == TemporalStatus.Completed;
 
-    /// <summary>ISOYearMonthWithinLimits of a year and month: April -271821 to September 275760.</summary>
-    internal static bool IsoYearMonthWithinLimits(long year, int month) =>
-        TemporalLimits.CheckIsoYearMonth(new IsoDate(year, month, 1)) == TemporalStatus.Completed;
-
     /// <summary>ISODateTimeWithinLimits of a date-time that may not be one: false for a non-date or non-time too.</summary>
     internal static bool IsoDateTimeWithinLimits(IsoDateTime dateTime) =>
         TemporalLimits.CheckIsoDateTime(dateTime) == TemporalStatus.Completed;
