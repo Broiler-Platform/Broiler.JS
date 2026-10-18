@@ -1,0 +1,209 @@
+Reference datasets, bundle sjl-8-001's rule, part C: one run
+
+harness: scripts/conformance/run_reference_datasets.py, format 1, for docs/evidence/sjl-8-001/decision-rule.md, part C
+label: after
+started (UTC): 2026-10-18T07:20:40+00:00
+shell tree: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl87-js2/after-tree
+shell commit: 79a0506c870302cefa6d7105146c65feab898879
+shell commit subject: Merge pull request #1048 from Broiler-Platform/claude/busy-lamport-m3yprr
+shell tree clean (git status --porcelain --untracked-files=all is empty): yes
+shell: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl87-js2/after-tree/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+shell BroilerJS.dll SHA-256: 2bab2f8442b40928f8eac4bc2ee71fa06c75be47bace8d43d68ab71016db0587
+shell binaries: shell-binaries.sha256, every *.dll beside it
+shell built by the harness: yes, `dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release` in the shell tree
+dotnet SDK: 10.0.401
+dotnet runtime: Microsoft.NETCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.NETCore.App]
+machine: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v139 x86_64; Intel(R) Xeon(R) Processor @ 2.10GHz; 4 logical CPUs
+child environment: TZ=UTC; LANG, LANGUAGE and every LC_ variable removed
+harness environment: TZ=(unset), LANG=(unset), LC_ALL=(unset)
+DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: (unset)
+host ICU: libicuuc.so.74
+host tzdata: 2026c
+harness commit: 79a0506c870302cefa6d7105146c65feab898879
+harness, driver and copies unchanged from that commit: yes
+harness SHA-256: 2f8119033fd7281d6edb78d2e7ddf9e100b85f65e1d96a6a93863a1615b5f4de
+driver template SHA-256: 3bec8b599ea039d5cf9f60904d4934259372251e75555a4d3134f9f880803493
+datasets: /home/user/js-sjl87b/conformance/datasets/time, copies of Broiler.VM 9508bd5b9b6d0f6d009418dda351fb0e7d846745, every one equal to datasets.pin
+  timezones.js 13368 901a74066cec6ed13c160c941fd874d52ed390f74b1dc22974debd2c1954cbc1 (Broiler.VM src/tests/cldr/timezones/timezones.js)
+  timezones.icu-77.1.txt 77558 d3da1c10f7a87cb5fc5b6125f5b83648e4cfb4130b194848196a0a42f854473f (Broiler.VM src/tests/cldr/timezones/timezones.icu-77.1.txt)
+  timezones.divergences.txt 15224 b020772f515fb822de8a7edb06e41649e167f31e437e03420be62c921b387a58 (Broiler.VM src/tests/cldr/timezones/divergences.txt)
+  temporal.js 12180 91e1e5a4fe33785c1430f967b727680ead50406ee98a479a5e0f081b75a869db (Broiler.VM src/tests/temporal/temporal.js)
+  temporal.polyfill-e8cc03fc.txt 119864 ebf380dda41192c160347c4ddf8f33f40101bfc75b44589ae348241322ad5fec (Broiler.VM src/tests/temporal/temporal.polyfill-e8cc03fc.txt)
+  temporal.divergences.txt 190 271ae88cc6b5ad1c4f5c768551c8e925f0830b15528a48e899fb2b308939daa8 (Broiler.VM src/tests/temporal/divergences.txt)
+
+timezones (timezones.js, expected: timezones.icu-77.1.txt with timezones.divergences.txt)
+  completed: yes
+  shell exit code 0, 0.869 s
+  lines: 610 compared (610 retained, 610 answered)
+  equal to the expected answer: 458; differing: 152
+  divergences: 51 entries, 51 used
+  negative control: line 1's expected text changed in memory; shown as a difference: yes; every other line unchanged: yes
+  differing lines (152), by number and key; timezones.lines.tsv has each one's expected and actual text:
+    6	Africa/Asmera
+    51	Africa/Timbuktu
+    62	America/Argentina/ComodRivadavia
+    76	America/Atka
+    86	America/Buenos_Aires
+    91	America/Catamarca
+    97	America/Coral_Harbour
+    98	America/Cordoba
+    113	America/Ensenada
+    115	America/Fort_Wayne
+    118	America/Godthab
+    137	America/Indianapolis
+    141	America/Jujuy
+    145	America/Knox_IN
+    150	America/Louisville
+    159	America/Mendoza
+    168	America/Montreal
+    172	America/Nipigon
+    181	America/Pangnirtung
+    186	America/Porto_Acre
+    190	America/Rainy_River
+    196	America/Rosario
+    197	America/Santa_Isabel
+    203	America/Shiprock
+    214	America/Thunder_Bay
+    219	America/Virgin
+    223	America/Yellowknife
+    232	Antarctica/South_Pole
+    244	Asia/Ashkhabad
+    254	Asia/Calcutta
+    256	Asia/Choibalsan
+    257	Asia/Chongqing
+    258	Asia/Chungking
+    260	Asia/Dacca
+    268	Asia/Harbin
+    274	Asia/Istanbul
+    281	Asia/Kashgar
+    283	Asia/Katmandu
+    290	Asia/Macao
+    307	Asia/Rangoon
+    309	Asia/Saigon
+    320	Asia/Tel_Aviv
+    321	Asia/Thimbu
+    325	Asia/Ujung_Pandang
+    327	Asia/Ulan_Bator
+    340	Atlantic/Faeroe
+    342	Atlantic/Jan_Mayen
+    348	Australia/ACT
+    352	Australia/Canberra
+    353	Australia/Currie
+    357	Australia/LHI
+    361	Australia/NSW
+    362	Australia/North
+    364	Australia/Queensland
+    365	Australia/South
+    367	Australia/Tasmania
+    368	Australia/Victoria
+    369	Australia/West
+    370	Australia/Yancowinna
+    371	Brazil/Acre
+    372	Brazil/DeNoronha
+    373	Brazil/East
+    374	Brazil/West
+    375	CET
+    376	CST6CDT
+    377	Canada/Atlantic
+    378	Canada/Central
+    379	Canada/Eastern
+    380	Canada/Mountain
+    381	Canada/Newfoundland
+    382	Canada/Pacific
+    383	Canada/Saskatchewan
+    384	Canada/Yukon
+    385	Chile/Continental
+    386	Chile/EasterIsland
+    387	Cuba
+    388	EET
+    389	EST
+    390	EST5EDT
+    391	Egypt
+    392	Eire
+    393	Etc/GMT
+    394	Etc/GMT+0
+    407	Etc/GMT-0
+    422	Etc/GMT0
+    423	Etc/Greenwich
+    424	Etc/UCT
+    425	Etc/UTC
+    426	Etc/Universal
+    427	Etc/Zulu
+    432	Europe/Belfast
+    450	Europe/Kiev
+    463	Europe/Nicosia
+    480	Europe/Tiraspol
+    482	Europe/Uzhgorod
+    490	Europe/Zaporozhye
+    492	GB
+    493	GB-Eire
+    494	GMT
+    495	GMT+0
+    496	GMT-0
+    497	GMT0
+    498	Greenwich
+    499	HST
+    500	Hongkong
+    501	Iceland
+    513	Iran
+    514	Israel
+    515	Jamaica
+    516	Japan
+    517	Kwajalein
+    518	Libya
+    519	MET
+    520	MST
+    521	MST7MDT
+    522	Mexico/BajaNorte
+    523	Mexico/BajaSur
+    524	Mexico/General
+    525	NZ
+    526	NZ-CHAT
+    527	Navajo
+    528	PRC
+    529	PST8PDT
+    537	Pacific/Enderbury
+    546	Pacific/Johnston
+    562	Pacific/Ponape
+    566	Pacific/Samoa
+    570	Pacific/Truk
+    573	Pacific/Yap
+    574	Poland
+    575	Portugal
+    576	ROC
+    577	ROK
+    578	Singapore
+    579	Turkey
+    580	UCT
+    581	US/Alaska
+    582	US/Aleutian
+    583	US/Arizona
+    584	US/Central
+    585	US/East-Indiana
+    586	US/Eastern
+    587	US/Hawaii
+    588	US/Indiana-Starke
+    589	US/Michigan
+    590	US/Mountain
+    591	US/Pacific
+    592	US/Samoa
+    594	Universal
+    595	W-SU
+    596	WET
+    597	Zulu
+
+temporal (temporal.js, expected: temporal.polyfill-e8cc03fc.txt with temporal.divergences.txt)
+  completed: yes
+  shell exit code 0, 1.202 s
+  lines: 1629 compared (1629 retained, 1629 answered)
+  equal to the expected answer: 1622; differing: 7
+  divergences: 0 entries, 0 used
+  negative control: line 1's expected text changed in memory; shown as a difference: yes; every other line unchanged: yes
+  differing lines (7), by number and key; temporal.lines.tsv has each one's expected and actual text:
+    14	duration P1Y2M3W4DT5H6M7.008009010S round month ceil rel 2020-01-31
+    16	duration P1Y2M3W4DT5H6M7.008009010S round month expand rel 2020-01-31
+    18	duration P1Y2M3W4DT5H6M7.008009010S round month halfCeil rel 2020-01-31
+    19	duration P1Y2M3W4DT5H6M7.008009010S round month halfFloor rel 2020-01-31
+    20	duration P1Y2M3W4DT5H6M7.008009010S round month halfExpand rel 2020-01-31
+    21	duration P1Y2M3W4DT5H6M7.008009010S round month halfTrunc rel 2020-01-31
+    22	duration P1Y2M3W4DT5H6M7.008009010S round month halfEven rel 2020-01-31

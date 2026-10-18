@@ -1,0 +1,50 @@
+# SJL-8.7 search for a host zone or a .NET calendar (clause 8), Broiler.JS at 79a0506c870302cefa6d7105146c65feab898879: Temporal
+# (Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal), then the rest of the engine's product sources
+# (Broiler.JS/; test projects, benchmarks and samples excluded), with git grep -E. Each hit is
+# reviewed in the bundle's README.
+
+## Temporal: the host's zone, .NET's calendars and the CLDR package's calendars
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal: TimeZoneInfo|\bTimeZone\.CurrentTimeZone\b|DateTimeOffset\.Now|DateTime\.Now|ToLocalTime\(|ToUniversalTime\(|\bnew [A-Za-z.]*Calendar *\(|System\.Globalization\.[A-Za-z]*Calendar|\b(Chinese|Korean|Japanese|Taiwan)LunisolarCalendar\b|\b(Persian|UmAlQura|Hijri|Hebrew|Gregorian|Julian|Japanese|Taiwan|ThaiBuddhist|Korean)Calendar\b|(Culture|DateTimeFormat|Format)[A-Za-z]*\.Calendar\b|\.OptionalCalendars\b|CldrChineseCalendar|CldrUmmAlQura|UnicodeCldr
+# hits: 7
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:164:        TimeZoneInfo local;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:167:            local = TimeZoneInfo.Local;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:171:            local = TimeZoneInfo.Utc;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:184:    private static SystemZone ResolveHost(TimeZoneInfo local)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:189:        else if (TimeZoneInfo.TryConvertWindowsIdToIanaId(local.Id, out var iana))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:198:        return new SystemZone(local, "UTC", Rules("UTC"), TimeZoneInfo.Utc);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:243:    internal sealed record SystemZone(TimeZoneInfo Host, string Identifier, ITimeZoneRules Rules, TimeZoneInfo Names);
+
+## Temporal: the System.Globalization members each file names (a summary per file, not every line)
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal: \b(CultureInfo|NumberStyles|NumberFormatInfo|DateTimeFormatInfo|DateTimeStyles|CompareInfo|TextInfo|CharUnicodeInfo|UnicodeCategory|StringInfo|RegionInfo|IdnMapping|CalendarWeekRule)\b
+# hits: 134
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalDuration.cs: CultureInfo
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalInstant.cs: CultureInfo
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs: CultureInfo, NumberStyles
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDateTime.cs: CultureInfo, NumberStyles
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainMonthDay.cs: CultureInfo, NumberStyles
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainTime.cs: CultureInfo
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainYearMonth.cs: CultureInfo
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs: CultureInfo
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalIsoString.cs: CultureInfo
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs: CultureInfo
+
+## the rest of the engine: the host's zone and .NET's calendars outside Temporal
+# in Broiler.JS: TimeZoneInfo|\b(Chinese|Korean|Japanese|Taiwan)LunisolarCalendar\b|\b(Persian|UmAlQura|Hijri|Hebrew|Gregorian|Julian|Japanese|Taiwan|ThaiBuddhist|Korean)Calendar\b|CldrChineseCalendar|CldrUmmAlQura|\.ToLocalTime\(|DateTimeOffset\.Now\b|DateTime\.Now\b
+# hits: 16
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/HostLocalTimeProvider.cs:13:/// The host's zone is <see cref="TimeZoneInfo.Local"/>'s IANA name, resolved through the database to its
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/HostLocalTimeProvider.cs:19:/// changes it, or clears <see cref="TimeZoneInfo"/>'s cache, is seen at the next one.
+Broiler.JS/Broiler.JavaScript.BuiltIns/Date/JSDate.cs:71:        var local = TimeZoneInfo.ConvertTime(instant, TimeZoneInfo.Local);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:164:        TimeZoneInfo local;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:167:            local = TimeZoneInfo.Local;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:171:            local = TimeZoneInfo.Utc;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:184:    private static SystemZone ResolveHost(TimeZoneInfo local)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:189:        else if (TimeZoneInfo.TryConvertWindowsIdToIanaId(local.Id, out var iana))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:198:        return new SystemZone(local, "UTC", Rules("UTC"), TimeZoneInfo.Utc);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:243:    internal sealed record SystemZone(TimeZoneInfo Host, string Identifier, ITimeZoneRules Rules, TimeZoneInfo Names);
+Broiler.JS/CHANGELOG.md:51:`TemporalSolarHijriCalendar`, over .NET's `ChineseLunisolarCalendar`, `KoreanLunisolarCalendar` and
+Broiler.JS/CHANGELOG.md:52:`PersianCalendar`; the Umm al-Qura and .NET dispatch of `TemporalArithmeticCalendar` and
+Broiler.JS/CHANGELOG.md:53:`TemporalCalendarMath`; and this engine's uses of the CLDR package's `CldrChineseCalendar` and `CldrUmmAlQura`.
+Broiler.JS/CHANGELOG.md:170:`TimeZoneInfo`, whose release and rules could differ from `Temporal`'s for the same zone. Its offsets are the
+Broiler.JS/CHANGELOG.md:417:  zone through `DateTimeOffset.ToLocalTime()`, bypassing this engine's provider of the host's zone
+Broiler.JS/CHANGELOG.md:436:  times, over this engine's provider of the host's zone: `TimeZoneInfo.Local`, read at each instant with
+

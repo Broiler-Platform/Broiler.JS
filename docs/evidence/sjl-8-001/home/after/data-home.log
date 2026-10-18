@@ -1,0 +1,47 @@
+# SJL-8.7: the data home (Broiler.ECMAScript/data/time/) at 79a0506c870302cefa6d7105146c65feab898879
+
+## files changed between 19e74588 (section 1's reading) and the after commit
+  Broiler.ECMAScript/data/time/README.md | 3 +++
+   1 file changed, 3 insertions(+)
+
+## every file, by git blob
+  f69cde1bcd802a5495bca2af3b494d89587bc421  Broiler.ECMAScript/data/time/README.md
+  6bb6064a21e6121aec4738e539b685abe188cf87  Broiler.ECMAScript/data/time/calendars/README.md
+  a82ba7e5b58e6f45672d09268aec71cba1ca7ab0  Broiler.ECMAScript/data/time/calendars/calendars.pin
+  7a098fa2e8050af892457b4657ffa72ebb0d957f  Broiler.ECMAScript/data/time/calendars/calendrical_calculations-0.2.4.crate
+  3d96185bfd2bc276b95596865facdebd07183a36  Broiler.ECMAScript/data/time/calendars/icu_calendar-2.3.0.crate
+  6d16f4b223f8acc47a6af372121d8b8f150a5199  Broiler.ECMAScript/data/time/cldr/README.md
+  872582ca99c4f5b475f2500b61b67be891623e5f  Broiler.ECMAScript/data/time/cldr/cldr-48.2.0/json/cldr-bcp47/bcp47/timezone.json
+  983eebc494da4ddae2c11d0876cfd4b60a3fbcd7  Broiler.ECMAScript/data/time/cldr/cldr-LICENSE.txt
+  02822460ce177397ba5374caaf37e8a661056a5d  Broiler.ECMAScript/data/time/cldr/cldr.pin
+  112b02602508664121a4762ed5e9af8bb861e0e1  Broiler.ECMAScript/data/time/generated/calendars.bin
+  bdd13a49d25a2da04fe8c0282092c99f9a38961b  Broiler.ECMAScript/data/time/generated/tables.manifest
+  8bd11e1f36af8eab1037e030f44cf9d08de54ee0  Broiler.ECMAScript/data/time/generated/time-zone-ids.txt
+  1d0d4a8ea539868edabbd741c1597f6b46c33be8  Broiler.ECMAScript/data/time/generated/time-zone-regions.txt
+  49aa57ade44a0631736861dac64507141b093efc  Broiler.ECMAScript/data/time/generated/time-zones.bin
+  78f3e14edf81f4373644650d9e8b236d46aa54c6  Broiler.ECMAScript/data/time/tzdb/README.md
+  4780d01f29e97bc10ba33dcd7fc03bbd4d4c1cb4  Broiler.ECMAScript/data/time/tzdb/check-zic.py
+  b21a2c81e583e239c560a1eb099df44161abef0d  Broiler.ECMAScript/data/time/tzdb/tzdata2026e.tar.gz
+  c831ab514762503ccf2d82f73cd303cafa20e419  Broiler.ECMAScript/data/time/tzdb/tzdb.pin
+
+## the generated files, SHA-256 and length
+  dc368c81f83865b20a48bee7a6efc9458e07c8c0d04a27b7d048e7d80793ad47      1958  calendars.bin
+  ed1299dd3e6c577176b9c7e5499cb03c74f8de2e310a8fc53f976fd7370afa88       961  tables.manifest
+  c68c5d8e9a5677f071017efbdd0bb1be3e8d58042022c05908f2fcf42c29f296     14056  time-zone-ids.txt
+  8cf869e9f19f00117a1cbb9899cf8130043688684d98996c3a56759e4d1f5045      7627  time-zone-regions.txt
+  f0993da914d6ffed2a4f3f3a4a3016af4d4e33ec213cf138656b43f0f0892853     78428  time-zones.bin
+
+## the pins and inputs against Broiler.VM's at 638e0f7eab0f51fc9456b6d7c8c2e0d9775487c5
+  identical  Broiler.ECMAScript/data/time/tzdb/tzdb.pin  ef9c7443115a802db68895b29ad6c584ddec666280120b61e38061fcf5215f6f
+  identical  Broiler.ECMAScript/data/time/tzdb/tzdata2026e.tar.gz  b26882805f26aac59d5b222978e6580484b834ccdc98be89df2f05a6dc53a652
+  identical  Broiler.ECMAScript/data/time/calendars/calendars.pin  53c5b2d380a8c69b06648ed2b57db76684619d8fd3493582c196942423d795da
+  identical  Broiler.ECMAScript/data/time/calendars/icu_calendar-2.3.0.crate  58655df2f728e46e4eee80bddebefacf52ec3e77cdb925014b47c5a5905eb55c
+  identical  Broiler.ECMAScript/data/time/calendars/calendrical_calculations-0.2.4.crate  5abbd6eeda6885048d357edc66748eea6e0268e3dd11f326fff5bd248d779c26
+  identical  Broiler.ECMAScript/data/time/cldr/cldr-48.2.0/json/cldr-bcp47/bcp47/timezone.json  c11423884420f00cf52733c854de5c898ddb6657ce560334c638a2bd994a1448
+
+## the public versions in the generator's API baseline (PublicAPI.txt)
+  Broiler.ECMAScript/Broiler.ECMAScript.Generation/PublicAPI.txt:110:Broiler.ECMAScript.Generation.Time.TimeDataVersions static class
+  Broiler.ECMAScript/Broiler.ECMAScript.Generation/PublicAPI.txt:111:Broiler.ECMAScript.Generation.Time.TimeDataVersions.CalendricalCalculationsVersion field static const System.String = "0.2.4"
+  Broiler.ECMAScript/Broiler.ECMAScript.Generation/PublicAPI.txt:112:Broiler.ECMAScript.Generation.Time.TimeDataVersions.CldrVersion field static const System.String = "48.2.0"
+  Broiler.ECMAScript/Broiler.ECMAScript.Generation/PublicAPI.txt:113:Broiler.ECMAScript.Generation.Time.TimeDataVersions.IcuCalendarVersion field static const System.String = "2.3.0"
+  Broiler.ECMAScript/Broiler.ECMAScript.Generation/PublicAPI.txt:114:Broiler.ECMAScript.Generation.Time.TimeDataVersions.TzdbRelease field static const System.String = "2026e"

@@ -1,0 +1,121 @@
+# SJL-8.7 deletion check, Broiler.JS at 79a0506c870302cefa6d7105146c65feab898879: every entry of the time-zone and calendar area's
+# Broiler.JS deletion list (Broiler.VM docs/javascript-shared-libraries/milestones/
+# sjl-8-time-zones-and-calendars.md, SJL-8.6, as JSD-0076's X6 reads and extends it), searched in the
+# file or folder that held it with git grep -E, test projects included where the folder holds them,
+# each pattern naming the members the entry held at the rule's commit. An entry with no line is
+# absent; a line that remains is a call to the library, an adapter, a comment or another member of
+# the same name, which the bundle's README reads. The files that held whole entries are listed too.
+
+## files at the after commit under the paths that held whole entries
+# Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/Tz: no file
+# scripts/tzdata: no file
+# Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalLunisolarCalendar.cs: no file
+# Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalSolarHijriCalendar.cs: no file
+# any tzdata.bin in the tree: none
+
+## Temporal/Tz/IanaTimeZone, IanaTimeZoneDatabase and TzifReader
+# in Broiler.JS: \bIanaTimeZone\b|\bIanaTimeZoneDatabase\b|\bTzifReader\b|Temporal\.Tz\b|\bTz\.|namespace [A-Za-z.]*\.Tz\b|TZif
+# hits: 2
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedTimeZoneTests.cs:90:        foreach (var name in new[] { "IanaTimeZone", "IanaTimeZoneDatabase", "TzifReader" })
+Broiler.JS/CHANGELOG.md:48:`IanaTimeZone`, `IanaTimeZoneDatabase` and `TzifReader`; `JSTemporalZonedDateTime`'s offset, candidate,
+
+## the embedded tzdata.bin and its EmbeddedResource item
+# in Broiler.JS: tzdata\.bin|tzdata
+# hits: 6
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedTimeZoneTests.cs:79:    // The deletion list: no tzdata.bin, and none of the types that read it (the exit gate's clause 7).
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedTimeZoneTests.cs:85:            BuiltIns.GetManifestResourceNames().Where(static name => name.Contains("TimeData", StringComparison.Ordinal) || name.Contains("tzdata", StringComparison.Ordi
+Broiler.JS/CHANGELOG.md:46:**Where they were**, each deleted: the embedded `tzdata.bin`, a DEFLATE pack of a build host's compiled
+Broiler.JS/CHANGELOG.md:47:zoneinfo (tzdb 2025b), with its `EmbeddedResource` item and its generator `scripts/tzdata/generate_tzdata.py`;
+Broiler.JS/CHANGELOG.md:54:**This is Broiler.JS's record of the `tzdata.bin` retirement** (milestone SJL-8's records).
+Broiler.JS/CHANGELOG.md:120:  `tzdata.bin` was 2025b, copied from a build host and not reproducible: Baja California 1953 and 1961 to 1975
+
+## scripts/tzdata/generate_tzdata.py
+# in scripts, .github, Broiler.JS, eng: generate_tzdata|scripts/tzdata|zoneinfo/tzdata\.zi
+# hits: 4
+.github/workflows/test262-evidence.yml:179:            echo "tzdata: $(sed -n '1s/^# version //p' /usr/share/zoneinfo/tzdata.zi 2>/dev/null || true)"
+.github/workflows/test262-evidence.yml:342:            echo "tzdata: $(sed -n '1s/^# version //p' /usr/share/zoneinfo/tzdata.zi 2>/dev/null || true)"
+Broiler.JS/CHANGELOG.md:47:zoneinfo (tzdb 2025b), with its `EmbeddedResource` item and its generator `scripts/tzdata/generate_tzdata.py`;
+scripts/conformance/run_reference_datasets.py:583:        first = Path("/usr/share/zoneinfo/tzdata.zi").read_text(encoding="utf-8").split("\n", 1)[0]
+
+## JSTemporalZonedDateTime's offset, candidate, disambiguation, start-of-day and transition helpers, with the zero offset and the local-midnight fallback
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal: \b(FindTransition|GetOffsetNanosecondsFor|OffsetNanosecondsForInstant|GetOffsetForLocal|CandidateOffsetsForLocal|TryMatchZoneOffset|StartOfDayEpochNs|TryFixedOffset|OffsetIdPattern|ResolveNamedZone|TryCanonicalizeTimeZoneIdentifier|OffsetTimeZoneIdentifierPattern|TryOffsetTimeZoneIdentifier|GetPossibleEpochNanoseconds|DisambiguatePossibleEpochNanoseconds)\b
+# hits: 21
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:109:    // GetPossibleEpochNanoseconds and DisambiguatePossibleEpochNanoseconds.
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:637:        var resolved = GetOffsetNanosecondsFor(candidate) == oldOffset
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:789:            if (GetOffsetNanosecondsFor(candidateEpoch) == candidateOffset)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1192:        var local = epochNs + GetOffsetNanosecondsFor(epochNs);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1297:    private long OffsetNanoseconds() => GetOffsetNanosecondsFor(epochNanoseconds);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1299:    // GetOffsetNanosecondsFor: the shared library's, over this zone's rules.
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1300:    private long GetOffsetNanosecondsFor(BigInteger epochNs) => TemporalTimeZones.OffsetNanoseconds(timeZoneId, epochNs);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1324:        if (!TryMatchZoneOffset(possible, LocalNanoseconds(y, mo, d, h, mi, s, 0, 0, 0), offsetNs, matchMinutes: false, out _))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1329:    // offset match the offset of one of the wall clock's possible instants (GetPossibleEpochNanoseconds,
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1336:    private static bool TryMatchZoneOffset(BigInteger[] possible, BigInteger localNs, long explicitOffset, bool matchMinutes, out BigInteger matched)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1356:        var local = epochNanoseconds + GetOffsetNanosecondsFor(epochNanoseconds);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1525:            if (TryMatchZoneOffset(possible, localNs, explicitOffset, matchMinutes: false, out var matched))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1544:    // which — unlike an offset time-zone *identifier* (OffsetIdPattern) — may carry sub-minute and
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1722:            if (TryMatchZoneOffset(possible, localNs, explicitOffset, matchMinutes, out var matched))
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalZonedDateTime.cs:1803:        var offsetNs = GetOffsetNanosecondsFor(epoch);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:96:    /// <summary>The offset in force at an instant: <c>GetOffsetNanosecondsFor</c>.</summary>
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:98:        ZonedTime.GetOffsetNanosecondsFor(Rules(timeZone), epochNanoseconds);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:101:    /// The instants a wall-clock time names, ascending (<c>GetPossibleEpochNanoseconds</c>): one, two in an
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:107:        Check(ZonedTime.GetPossibleEpochNanoseconds(Rules(timeZone), local, possible, out var count));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:122:    /// <c>DisambiguatePossibleEpochNanoseconds</c> over instants <see cref="PossibleEpochNanoseconds"/> gave.
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTimeZones.cs:126:        Check(ZonedTime.DisambiguatePossibleEpochNanoseconds(Rules(timeZone), possible, local, ToDisambiguation(disambiguation), out var epochNanoseconds));
+
+## JSIntl's offset-zone normalisation and its region table for getTimeZones (Z12)
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Intl: \b(OffsetTimeZonePattern|TryNormalizeOffsetTimeZone|RegionPrimaryTimeZone)\b|Region.IANA|not bundled
+# hits: 1
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntl.cs:4272:        // (Monday = 1 … Sunday = 7). CLDR's full per-region data is not bundled, so this uses
+
+## the formatting engine's zone helpers, with their host-zone fallback for an unknown name
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs: \bTryParseOffset\b|IanaTimeZoneDatabase|EcmaLocalTime\.LocalTime\(clippedMs, JSDate\.Zone\)|TemporalTimeZones\.(Rules|Database|Host)
+# hits: 4
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:94:        var database = Temporal.TemporalTimeZones.Database;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:119:        return Temporal.TemporalTimeZones.Rules(timeZone).IsDaylightAt((long)Math.Floor(clamped / 1000.0));
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:707:            return EcmaLocalTime.LocalTime(clippedMs, JSDate.Zone);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Intl/JSIntlDateTimeFormatEngine.cs:710:        var offsetSeconds = Temporal.TemporalTimeZones.Rules(timeZone).OffsetSecondsAt((long)Math.Floor(clamped / 1000.0));
+
+## TemporalLunisolarCalendar and TemporalSolarHijriCalendar
+# in Broiler.JS: \bTemporalLunisolarCalendar\b|\bTemporalSolarHijriCalendar\b|\bIsLunisolar\b|\bIsSolarHijri\b
+# hits: 12
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedCalendarTableTests.cs:19:            "TemporalLunisolarCalendar", "TemporalSolarHijriCalendar", "CldrChineseCalendar", "CldrUmmAlQura",
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:20:    internal static bool HasLeapMonths(string id) => id == "hebrew" || TemporalTableCalendar.IsLunisolar(id);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:50:    internal static bool HasEra(string id) => !TemporalTableCalendar.IsLunisolar(id);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs:118:    private static bool IsLunisolar(string calendarId) => calendarId is "chinese" or "dangi";
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs:126:        => IsLunisolar(calendarId)
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalNonIso.cs:162:            if (IsLunisolar(calendarId) && epoch > LunisolarSearchLastEpochDay) continue;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTableCalendar.cs:26:    internal static bool IsLunisolar(string id) => id is "chinese" or "dangi";
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTableCalendar.cs:99:        var leap = IsLunisolar(id) ? Year(id, year).LeapMonth : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTableCalendar.cs:110:        var leap = IsLunisolar(id) ? Year(id, year).LeapMonth : 0;
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalTableCalendar.cs:116:        if (!IsLunisolar(id))
+Broiler.JS/CHANGELOG.md:50:table; the formatting engine's offset parser and zone fallback; `TemporalLunisolarCalendar` and
+Broiler.JS/CHANGELOG.md:51:`TemporalSolarHijriCalendar`, over .NET's `ChineseLunisolarCalendar`, `KoreanLunisolarCalendar` and
+
+## the Umm al-Qura and .NET dispatch of TemporalArithmeticCalendar and TemporalCalendarMath
+# in Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalArithmeticCalendar.cs, Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs: umalqura|UmmAlQura|UmAlQura|Lunisolar|SolarHijri|Persian|System\.Globalization|UnicodeCldr|TemporalTableCalendar
+# hits: 18
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalArithmeticCalendar.cs:23:// calendar's own arithmetic. The table-backed calendars (chinese, dangi, islamic-umalqura, persian) read
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalArithmeticCalendar.cs:24:// their years from the shared calendar tables instead (TemporalTableCalendar, milestone SJL-8.6).
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:6:// the table-backed calendars (TemporalTableCalendar — chinese / dangi / islamic-umalqura / persian), whose
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:12:        => TemporalArithmeticCalendar.IsArithmetic(id) || TemporalTableCalendar.IsTableCalendar(id);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:14:    private static bool Table(string id) => TemporalTableCalendar.IsTableCalendar(id);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:20:    internal static bool HasLeapMonths(string id) => id == "hebrew" || TemporalTableCalendar.IsLunisolar(id);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:23:        => Table(id) ? TemporalTableCalendar.MonthsInYear(id, year) : TemporalArithmeticCalendar.MonthsInYear(id, year);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:26:        => Table(id) ? TemporalTableCalendar.InLeapYear(id, year) : TemporalArithmeticCalendar.InLeapYear(id, year);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:29:        => Table(id) ? TemporalTableCalendar.DaysInYear(id, year) : TemporalArithmeticCalendar.DaysInYear(id, year);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:32:        => Table(id) ? TemporalTableCalendar.DaysInMonth(id, year, month) : TemporalArithmeticCalendar.DaysInMonth(id, year, month);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:35:        => Table(id) ? TemporalTableCalendar.EpochDaysFromYmd(id, year, month, day) : TemporalArithmeticCalendar.EpochDaysFromYmd(id, year, month, day);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:38:        => Table(id) ? TemporalTableCalendar.YmdFromEpochDays(id, epoch) : TemporalArithmeticCalendar.YmdFromEpochDays(id, epoch);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:41:        => Table(id) ? TemporalTableCalendar.DayOfYear(id, year, month, day) : TemporalArithmeticCalendar.DayOfYear(id, year, month, day);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:44:        => Table(id) ? TemporalTableCalendar.MonthCode(id, year, month) : TemporalArithmeticCalendar.MonthCode(id, year, month);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:47:        => Table(id) ? TemporalTableCalendar.OrdinalFromMonthCode(id, year, codeNumber, leapMonth) : TemporalArithmeticCalendar.OrdinalFromMonthCode(id, year, codeNu
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:50:    internal static bool HasEra(string id) => !TemporalTableCalendar.IsLunisolar(id);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:53:        => Table(id) ? TemporalTableCalendar.Era(id, year) : TemporalArithmeticCalendar.Era(id, year);
+Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:56:        => Table(id) ? TemporalTableCalendar.YearFromEra(id, era, eraYear) : TemporalArithmeticCalendar.YearFromEra(id, era, eraYear);
+
+## this engine's uses of the CLDR package's CldrChineseCalendar and CldrUmmAlQura
+# in Broiler.JS: \bCldrChineseCalendar\b|\bCldrUmmAlQura\b|\bChineseYear\b
+# hits: 2
+Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/SharedCalendarTableTests.cs:19:            "TemporalLunisolarCalendar", "TemporalSolarHijriCalendar", "CldrChineseCalendar", "CldrUmmAlQura",
+Broiler.JS/CHANGELOG.md:53:`TemporalCalendarMath`; and this engine's uses of the CLDR package's `CldrChineseCalendar` and `CldrUmmAlQura`.
+

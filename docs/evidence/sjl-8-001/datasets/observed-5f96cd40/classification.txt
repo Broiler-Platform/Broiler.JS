@@ -1,0 +1,5 @@
+timezones.js: 526 differing lines; temporal.js: 7 differing lines
+  resolved-only-Z8: 24
+  resolved-only-Z8 and seconds-only-Z16: 128
+  seconds-only-Z16: 374
+  temporal: after equals base: 7

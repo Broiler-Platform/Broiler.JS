@@ -1,0 +1,151 @@
+Reference datasets, bundle sjl-8-001's rule, part C: an after run against a base run
+
+base: base, shell commit 15a1bd8f329f12238b093def5d1ddcd3e1dffe3d, BroilerJS.dll d431979497a5f6733a4d4225dbdb15ade327f00dcd0b5f8f745e8bac56396889
+after: after, shell commit 79a0506c870302cefa6d7105146c65feab898879, BroilerJS.dll 2bab2f8442b40928f8eac4bc2ee71fa06c75be47bace8d43d68ab71016db0587
+copies: Broiler.VM 9508bd5b9b6d0f6d009418dda351fb0e7d846745, the same SHA-256 in both runs
+
+timezones: base completed yes, after completed yes
+  lines: 610; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 458; differing: 152
+  of those differing, the same as at the base: 19; moved since the base: 133
+  differing at the base and equal after: 407; equal at the base and differing after: 0
+  differing lines that moved since the base (133), by number and key:
+    6	Africa/Asmera
+    51	Africa/Timbuktu
+    62	America/Argentina/ComodRivadavia
+    76	America/Atka
+    86	America/Buenos_Aires
+    91	America/Catamarca
+    97	America/Coral_Harbour
+    98	America/Cordoba
+    113	America/Ensenada
+    115	America/Fort_Wayne
+    118	America/Godthab
+    137	America/Indianapolis
+    141	America/Jujuy
+    145	America/Knox_IN
+    150	America/Louisville
+    159	America/Mendoza
+    168	America/Montreal
+    172	America/Nipigon
+    181	America/Pangnirtung
+    186	America/Porto_Acre
+    190	America/Rainy_River
+    196	America/Rosario
+    197	America/Santa_Isabel
+    203	America/Shiprock
+    214	America/Thunder_Bay
+    219	America/Virgin
+    223	America/Yellowknife
+    232	Antarctica/South_Pole
+    244	Asia/Ashkhabad
+    254	Asia/Calcutta
+    256	Asia/Choibalsan
+    257	Asia/Chongqing
+    258	Asia/Chungking
+    260	Asia/Dacca
+    268	Asia/Harbin
+    274	Asia/Istanbul
+    281	Asia/Kashgar
+    283	Asia/Katmandu
+    290	Asia/Macao
+    307	Asia/Rangoon
+    309	Asia/Saigon
+    320	Asia/Tel_Aviv
+    321	Asia/Thimbu
+    325	Asia/Ujung_Pandang
+    327	Asia/Ulan_Bator
+    340	Atlantic/Faeroe
+    342	Atlantic/Jan_Mayen
+    348	Australia/ACT
+    352	Australia/Canberra
+    353	Australia/Currie
+    357	Australia/LHI
+    361	Australia/NSW
+    362	Australia/North
+    364	Australia/Queensland
+    365	Australia/South
+    367	Australia/Tasmania
+    368	Australia/Victoria
+    369	Australia/West
+    370	Australia/Yancowinna
+    371	Brazil/Acre
+    372	Brazil/DeNoronha
+    373	Brazil/East
+    374	Brazil/West
+    375	CET
+    376	CST6CDT
+    377	Canada/Atlantic
+    378	Canada/Central
+    379	Canada/Eastern
+    380	Canada/Mountain
+    381	Canada/Newfoundland
+    382	Canada/Pacific
+    383	Canada/Saskatchewan
+    384	Canada/Yukon
+    385	Chile/Continental
+    386	Chile/EasterIsland
+    387	Cuba
+    388	EET
+    389	EST
+    390	EST5EDT
+    391	Egypt
+    392	Eire
+    432	Europe/Belfast
+    450	Europe/Kiev
+    463	Europe/Nicosia
+    480	Europe/Tiraspol
+    482	Europe/Uzhgorod
+    490	Europe/Zaporozhye
+    492	GB
+    493	GB-Eire
+    499	HST
+    500	Hongkong
+    501	Iceland
+    513	Iran
+    514	Israel
+    515	Jamaica
+    516	Japan
+    517	Kwajalein
+    518	Libya
+    519	MET
+    520	MST
+    521	MST7MDT
+    522	Mexico/BajaNorte
+    523	Mexico/BajaSur
+    524	Mexico/General
+    525	NZ
+    526	NZ-CHAT
+    527	Navajo
+    528	PRC
+    529	PST8PDT
+    546	Pacific/Johnston
+    562	Pacific/Ponape
+    566	Pacific/Samoa
+    570	Pacific/Truk
+    573	Pacific/Yap
+    574	Poland
+    575	Portugal
+    577	ROK
+    578	Singapore
+    579	Turkey
+    581	US/Alaska
+    582	US/Aleutian
+    583	US/Arizona
+    584	US/Central
+    585	US/East-Indiana
+    586	US/Eastern
+    587	US/Hawaii
+    588	US/Indiana-Starke
+    589	US/Michigan
+    590	US/Mountain
+    591	US/Pacific
+    592	US/Samoa
+    595	W-SU
+    596	WET
+
+temporal: base completed yes, after completed yes
+  lines: 1629; expected text the same in both runs on every line: yes
+  after, equal to the expected answer: 1622; differing: 7
+  of those differing, the same as at the base: 7; moved since the base: 0
+  differing at the base and equal after: 0; equal at the base and differing after: 0

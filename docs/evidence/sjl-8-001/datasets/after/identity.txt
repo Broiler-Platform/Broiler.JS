@@ -1,0 +1,30 @@
+harness: scripts/conformance/run_reference_datasets.py, format 1, for docs/evidence/sjl-8-001/decision-rule.md, part C
+label: after
+started (UTC): 2026-10-18T07:20:40+00:00
+shell tree: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl87-js2/after-tree
+shell commit: 79a0506c870302cefa6d7105146c65feab898879
+shell commit subject: Merge pull request #1048 from Broiler-Platform/claude/busy-lamport-m3yprr
+shell tree clean (git status --porcelain --untracked-files=all is empty): yes
+shell: /tmp/claude-0/-home-user/0a6f6b61-1da7-5ce6-9020-88003835d4eb/scratchpad/sjl87-js2/after-tree/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+shell BroilerJS.dll SHA-256: 2bab2f8442b40928f8eac4bc2ee71fa06c75be47bace8d43d68ab71016db0587
+shell binaries: shell-binaries.sha256, every *.dll beside it
+shell built by the harness: yes, `dotnet build Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj -c Release` in the shell tree
+dotnet SDK: 10.0.401
+dotnet runtime: Microsoft.NETCore.App 10.0.12 [/root/.dotnet/shared/Microsoft.NETCore.App]
+machine: Ubuntu 24.04.5 LTS; Linux 6.18.44-fc-v139 x86_64; Intel(R) Xeon(R) Processor @ 2.10GHz; 4 logical CPUs
+child environment: TZ=UTC; LANG, LANGUAGE and every LC_ variable removed
+harness environment: TZ=(unset), LANG=(unset), LC_ALL=(unset)
+DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: (unset)
+host ICU: libicuuc.so.74
+host tzdata: 2026c
+harness commit: 79a0506c870302cefa6d7105146c65feab898879
+harness, driver and copies unchanged from that commit: yes
+harness SHA-256: 2f8119033fd7281d6edb78d2e7ddf9e100b85f65e1d96a6a93863a1615b5f4de
+driver template SHA-256: 3bec8b599ea039d5cf9f60904d4934259372251e75555a4d3134f9f880803493
+datasets: /home/user/js-sjl87b/conformance/datasets/time, copies of Broiler.VM 9508bd5b9b6d0f6d009418dda351fb0e7d846745, every one equal to datasets.pin
+  timezones.js 13368 901a74066cec6ed13c160c941fd874d52ed390f74b1dc22974debd2c1954cbc1 (Broiler.VM src/tests/cldr/timezones/timezones.js)
+  timezones.icu-77.1.txt 77558 d3da1c10f7a87cb5fc5b6125f5b83648e4cfb4130b194848196a0a42f854473f (Broiler.VM src/tests/cldr/timezones/timezones.icu-77.1.txt)
+  timezones.divergences.txt 15224 b020772f515fb822de8a7edb06e41649e167f31e437e03420be62c921b387a58 (Broiler.VM src/tests/cldr/timezones/divergences.txt)
+  temporal.js 12180 91e1e5a4fe33785c1430f967b727680ead50406ee98a479a5e0f081b75a869db (Broiler.VM src/tests/temporal/temporal.js)
+  temporal.polyfill-e8cc03fc.txt 119864 ebf380dda41192c160347c4ddf8f33f40101bfc75b44589ae348241322ad5fec (Broiler.VM src/tests/temporal/temporal.polyfill-e8cc03fc.txt)
+  temporal.divergences.txt 190 271ae88cc6b5ad1c4f5c768551c8e925f0830b15528a48e899fb2b308939daa8 (Broiler.VM src/tests/temporal/divergences.txt)

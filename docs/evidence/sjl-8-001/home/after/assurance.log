@@ -1,0 +1,4 @@
+# Broiler.Code at afd4ffb23842207ca13237c2c9e10a3ddbbd58b5, its CLI as built there
+$ dotnet <code>/src/Broiler.Code.Review.Cli/bin/Release/net10.0/Broiler.Code.Review.Cli.dll assurance check --root <tree>/Broiler.ECMAScript
+# cwd <tree>; started 2026-10-18T07:24:29Z; exit 0
+Broiler.ECMAScript: no violations.

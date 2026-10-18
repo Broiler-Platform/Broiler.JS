@@ -1,0 +1,23 @@
+# managed assemblies in the publish directory: none
+$ <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/linux-x64/publish/Broiler.ECMAScript.Probe conformance/vectors --report <scratch>/probe-aot.tsv
+# cwd <tree>; started 2026-10-18T07:26:13Z; exit 0
+Broiler.ECMAScript.Probe: corpus revision 23, 43 files, 92434 vectors, 0 failures
+$ dotnet build Broiler.ECMAScript/Broiler.ECMAScript.Probe -c Release --nologo
+# cwd <tree>; started 2026-10-18T07:26:16Z; exit 0
+  Determining projects to restore...
+  Restored <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/Broiler.ECMAScript.Algorithms.csproj (in 362 ms).
+  Restored <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Probe/Broiler.ECMAScript.Probe.csproj (in 358 ms).
+  Restored <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/Broiler.ECMAScript.Conformance.csproj (in 354 ms).
+  Broiler.ECMAScript.Algorithms -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.ECMAScript.Conformance -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Conformance/bin/Release/net10.0/Broiler.ECMAScript.Conformance.dll
+  Broiler.ECMAScript.Probe -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.89
+$ dotnet <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Probe/bin/Release/net10.0/Broiler.ECMAScript.Probe.dll conformance/vectors --report <scratch>/probe-jit.tsv
+# cwd <tree>; started 2026-10-18T07:26:18Z; exit 0
+Broiler.ECMAScript.Probe: corpus revision 23, 43 files, 92434 vectors, 0 failures
+# the Native AOT report is byte-identical to the JIT's: True

@@ -1,0 +1,72 @@
+$ dotnet build Broiler.JS/Broiler.JavaScript.BuiltIns.Tests -c Release --nologo
+# cwd <tree>; started 2026-10-18T07:25:29Z; exit 0
+  Determining projects to restore...
+  Restored <tree>/Broiler.JS/Broiler.JavaScript.Feature.Sample/Broiler.JavaScript.Feature.Sample.csproj (in 343 ms).
+  Restored <tree>/Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/Broiler.JavaScript.BuiltIns.Tests.csproj (in 362 ms).
+  16 of 18 projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> <tree>/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.ExpressionCompiler -> <tree>/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.Ast -> <tree>/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Storage -> <tree>/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.JSClassGenerator -> <tree>/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> <tree>/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Feature.Sample -> <tree>/Broiler.JS/Broiler.JavaScript.Feature.Sample/bin/Release/net10.0/Broiler.JavaScript.Feature.Sample.dll
+  Broiler.JavaScript.Parser -> <tree>/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Engine -> <tree>/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> <tree>/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Compiler -> <tree>/Broiler.JS/Broiler.JavaScript.Compiler/bin/Release/net10.0/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.Extensions -> <tree>/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.BuiltIns -> <tree>/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Modules -> <tree>/Broiler.JS/Broiler.JavaScript.Modules/bin/Release/net10.0/Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Clr -> <tree>/Broiler.JS/Broiler.JavaScript.Clr/bin/Release/net10.0/Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.Globals -> <tree>/Broiler.JS/Broiler.JavaScript.Globals/bin/Release/net10.0/Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.BuiltIns.Tests -> <tree>/Broiler.JS/Broiler.JavaScript.BuiltIns.Tests/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.Tests.dll
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:06.56
+$ dotnet build Broiler.JS/Broiler.JavaScript.Integration.Tests -c Release --nologo
+# cwd <tree>; started 2026-10-18T07:25:36Z; exit 0
+  Determining projects to restore...
+  Restored <tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj (in 491 ms).
+  17 of 18 projects are up-to-date for restore.
+  Broiler.ECMAScript.Algorithms -> <tree>/Broiler.ECMAScript/Broiler.ECMAScript.Algorithms/bin/Release/net10.0/Broiler.ECMAScript.Algorithms.dll
+  Broiler.JavaScript.Expressions -> <tree>/Broiler.JS/Broiler.JavaScript.Expressions/bin/Release/net10.0/Broiler.JavaScript.Expressions.dll
+  Broiler.JavaScript.Ast -> <tree>/Broiler.JS/Broiler.JavaScript.Ast/bin/Release/net10.0/Broiler.JavaScript.Ast.dll
+  Broiler.JavaScript.Storage -> <tree>/Broiler.JS/Broiler.JavaScript.Storage/bin/Release/net10.0/Broiler.JavaScript.Storage.dll
+  Broiler.JavaScript.ExpressionCompiler -> <tree>/Broiler.JS/Broiler.JavaScript.ExpressionCompiler/bin/Release/net10.0/Broiler.JavaScript.ExpressionCompiler.dll
+  Broiler.JavaScript.JSClassGenerator -> <tree>/Broiler.JS/Broiler.JavaScript.JSClassGenerator/bin/Release/netstandard2.0/Broiler.JavaScript.JSClassGenerator.dll
+  Broiler.JavaScript.Runtime -> <tree>/Broiler.JS/Broiler.JavaScript.Runtime/bin/Release/net10.0/Broiler.JavaScript.Runtime.dll
+  Broiler.JavaScript.Parser -> <tree>/Broiler.JS/Broiler.JavaScript.Parser/bin/Release/net10.0/Broiler.JavaScript.Parser.dll
+  Broiler.JavaScript.Engine -> <tree>/Broiler.JS/Broiler.JavaScript.Engine/bin/Release/net10.0/Broiler.JavaScript.Engine.dll
+  Broiler.JavaScript.LinqExpressions -> <tree>/Broiler.JS/Broiler.JavaScript.LinqExpressions/bin/Release/net10.0/Broiler.JavaScript.LinqExpressions.dll
+  Broiler.JavaScript.Extensions -> <tree>/Broiler.JS/Broiler.JavaScript.Extensions/bin/Release/net10.0/Broiler.JavaScript.Extensions.dll
+  Broiler.JavaScript.Compiler -> <tree>/Broiler.JS/Broiler.JavaScript.Compiler/bin/Release/net10.0/Broiler.JavaScript.Compiler.dll
+  Broiler.JavaScript.BuiltIns -> <tree>/Broiler.JS/Broiler.JavaScript.BuiltIns/bin/Release/net10.0/Broiler.JavaScript.BuiltIns.dll
+  Broiler.JavaScript.Clr -> <tree>/Broiler.JS/Broiler.JavaScript.Clr/bin/Release/net10.0/Broiler.JavaScript.Clr.dll
+  Broiler.JavaScript.Modules -> <tree>/Broiler.JS/Broiler.JavaScript.Modules/bin/Release/net10.0/Broiler.JavaScript.Modules.dll
+  Broiler.JavaScript.Globals -> <tree>/Broiler.JS/Broiler.JavaScript.Globals/bin/Release/net10.0/Broiler.JavaScript.Globals.dll
+  Broiler.JavaScript.ModuleExtensions -> <tree>/Broiler.JS/Broiler.JavaScript.ModuleExtensions/bin/Release/net10.0/Broiler.JavaScript.ModuleExtensions.dll
+<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/AsyncGeneratorExclusionTests.cs(85,21): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj]
+<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/ExecutionExclusionTests.cs(54,21): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj]
+<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/ExecutionExclusionTests.cs(118,14): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj]
+<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/BlockingHostWaitTests.cs(217,31): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj]
+<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/BlockingHostWaitTests.cs(218,38): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj]
+<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue845ClusterTests3.cs(79,55): warning xUnit1026: Theory method 'CopyWithinShrinkDuringCoercion' on test class 'Issue845ClusterTests3' does not use parameter 'newLen'. Use the parameter, or remove the parameter and associated data. (https://xunit.net/xunit.analyzers/rules/xUnit1026) [<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj]
+  Broiler.JavaScript.Integration.Tests -> <tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/bin/Release/net10.0/Broiler.JavaScript.Integration.Tests.dll
+
+Build succeeded.
+
+<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/AsyncGeneratorExclusionTests.cs(85,21): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj]
+<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/ExecutionExclusionTests.cs(54,21): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj]
+<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/ExecutionExclusionTests.cs(118,14): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj]
+<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/BlockingHostWaitTests.cs(217,31): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj]
+<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/BlockingHostWaitTests.cs(218,38): warning xUnit1031: Test methods should not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead. (https://xunit.net/xunit.analyzers/rules/xUnit1031) [<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj]
+<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Issue845ClusterTests3.cs(79,55): warning xUnit1026: Theory method 'CopyWithinShrinkDuringCoercion' on test class 'Issue845ClusterTests3' does not use parameter 'newLen'. Use the parameter, or remove the parameter and associated data. (https://xunit.net/xunit.analyzers/rules/xUnit1026) [<tree>/Broiler.JS/Broiler.JavaScript.Integration.Tests/Broiler.JavaScript.Integration.Tests.csproj]
+    6 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:07.38

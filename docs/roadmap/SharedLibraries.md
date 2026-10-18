@@ -843,6 +843,33 @@ SJL-9, or making the correction now, the owner chose the correction.
 - **What else moves.** Z16 leaves milestone SJL-9's list. Broiler.VM's formatter already writes the seconds,
   so nothing moves there.
 
+**The evidence (SJL-8.7), 2026-10-18.** Bundle [`sjl-8-001`](../evidence/sjl-8-001/README.md) reads this
+engine's clauses at the after commit `79a0506c`, the merge that lands row Z16's correction, the last change of
+SJL-8.6, whose product sources are `4d558ee1`'s. **Every clause of this engine's, 1 to 11, is met**, each part of
+the rule as written:
+- **The data home's clauses 1 to 6 still hold**: the generator's `PinTests`, rule SL7's regeneration, the `zic`
+  comparison, the public versions in the API baseline and SL1 to SL10 all pass, and the pins are Broiler.VM's byte
+  for byte. The packages nuget.org serves at `0.1.0-preview.5` hold the after commit's library code, and no entry
+  of either holds a table's or a pinned archive's bytes.
+- **Clause 9, test262 per path, is met under parts A and B**: in UTC and in `America/New_York`, with
+  negative-metadata tests, each of the whole suite's 106,058 rows gives its base's verdict. No row changed, so none
+  regressed and no class lists a row. The runners' tzdata, 2026c, did not move between the bases and the after
+  runs.
+- **Clause 10, the reference datasets, is met under part C**: `timezones.js` answers 458 of its 610 lines as
+  Broiler.VM expects, and each of the other 152 differs only by the formatter's resolved identifier (Z8, class D1);
+  `temporal.js`'s 7 are an unchanged `Duration.round` (D3).
+- **Clauses 7, 8 and 11 are met** as the bundle's section 6 reads them: the deletion list is absent as JSD-0076's
+  X6 reads it, with `TemporalArithmeticCalendar` and `TemporalCalendarMath` kept for the formula calendars;
+  `Temporal` names no .NET calendar and reads only the host zone's name from the host; and every correction and
+  policy change is listed in the changelog, Z16 among them.
+- **Every vector of corpus revision 23** has the result its class expects at the after commit, in both zones, and
+  a pristine consumer of the engine runs fifteen of SJL-8.6's corrections and policy changes from its own package
+  cache, where the rule's commit fails every one.
+- **The runs at `5f96cd40`** are recorded in the bundle as observed and not judged, and the rule is not revised.
+
+None of it is accepted: no second holder exists to review it. Broiler.VM's clauses 12 to 17 are judged in its own
+bundle, and SJL-8 may not meet its gate before SJL-3 meets SJL-3's.
+
 ## Invariants
 
 1. **No edge between the engines, in either direction.** No shared project references a

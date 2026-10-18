@@ -1,0 +1,27 @@
+# the pristine consumer's checks, run as one program (print(<the checks>)) in each shell with TZ=America/New_York and no LANG; at the rule's commit and at the after commit
+
+## rule's commit: 15a1bd8f329f12238b093def5d1ddcd3e1dffe3d, shell BroilerJS.dll sha256 f6cb65657d0bf4337f8a20467fb8506df7d9564e92d050d6d687ab9910950755; exit 0
+failed Z1 (false), Z3 (false), Z4 (false), A10 (TypeError: Cannot get property toString of null (evaluating 'Temporal.ZonedDateTime.from(\'2037-12-01T00:00[America/New_York]\').getTimeZoneTransition(\'next\').…')), Z5 (false), Z7 (false), Z10 (false), Z11 (false), Z12 (false), A13 (false), K2 (false), K7 (Error: System.IndexOutOfRangeException: Index was outside the bounds of the array.
+   at UnicodeCldr.LocaleData.ChineseYear.DaysInMonth(Int32 ordinalMonth)
+   at UnicodeCldr.LocaleData.CldrChineseCalendar.FromEpochDay(Int64 epochDay)
+   at Broiler.JavaScript.BuiltIns.Temporal.TemporalLunisolarCalendar.YmdFromEpochDays(String id, Int64 epoch) in <base>/Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalLunisolarCalendar.cs:line 93
+   at Broiler.JavaScript.BuiltIns.Temporal.TemporalCalendarMath.YmdFromEpochDays(String id, Int64 epoch) in <base>/Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/TemporalCalendarMath.cs:line 44
+   at Broiler.JavaScript.BuiltIns.Temporal.JSTemporalPlainDate.CalendarYmd() in <base>/Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:line 81
+   at Broiler.JavaScript.BuiltIns.Temporal.JSTemporalPlainDate.get_MonthCode() in <base>/Broiler.JS/Broiler.JavaScript.BuiltIns/Temporal/JSTemporalPlainDate.cs:line 110
+   at Broiler.JavaScript.BuiltIns.Temporal.JSTemporalPlainDate.<>c.<CreateClass>b__113_6(Arguments& a) in <base>/Broiler.JS/Broiler.JavaScript.BuiltIns/obj/Release/net10.0/Broiler.JavaScript.JSClassGenerator/Broiler.JavaScript.JSClassGenerator.JSClassGenerator/Broiler.JavaScript.BuiltIns.Temporal.JSTemporalPlainDate.g.cs:line 78
+   at Broiler.JavaScript.BuiltIns.Function.JSFunction.InvokeFunction(Arguments& a) in <base>/Broiler.JS/Broiler.JavaScript.BuiltIns/Function/JSFunction.cs:line 1024
+   at Broiler.JavaScript.Engine.Core.JSValueCoreExtensions.<>c.<InitializeFactories>b__0_2(IPropertyAccessor getter, JSValue receiver) in <base>/Broiler.JS/Broiler.JavaScript.Engine/Core/JSValueCoreExtensions.cs:line 33
+   at Broiler.JavaScript.Runtime.JSObject.GetValue(KeyString key, JSValue receiver, Boolean throwError) in <base>/Broiler.JS/Broiler.JavaScript.Runtime/JSObject.PropertyStorage.cs:line 1642
+   at Broiler.JavaScript.Runtime.JSValue.GetValue(KeyString key, JSValue receiver, Boolean throwError) in <base>/Broiler.JS/Broiler.JavaScript.Runtime/JSValue.cs:line 1307
+   at Broiler.JavaScript.Runtime.JSObject.GetValue(KeyString key, JSValue receiver, Boolean throwError) in <base>/Broiler.JS/Broiler.JavaScript.Runtime/JSObject.PropertyStorage.cs:line 1654
+   at Broiler.JavaScript.Runtime.JSObject.get_Item(KeyString name) in <base>/Broiler.JS/Broiler.JavaScript.Runtime/JSObject.PropertyStorage.cs:line 739
+   at Broiler.JavaScript.Runtime.PropertyInlineCacheSite.PropertyInlineCache.Get(Int32 site, JSValue target, KeyString& property) in <base>/Broiler.JS/Broiler.JavaScript.Runtime/ObjectShape.cs:line 844
+   at inline-<scratch>/time-checks-control.js:14,17(Closures, Arguments&)
+   at Broiler.JavaScript.BuiltIns.Function.JSFunction.InvokeFunction(Arguments& a) in <base>/Broiler.JS/Broiler.JavaScript.BuiltIns/Function/JSFunction.cs:line 1024
+   at inline-<scratch>/time-checks-control.js:1,8(Closures, Arguments&)), K12 (false), A15 (false), Z16 (false)
+
+
+## after commit: 79a0506c870302cefa6d7105146c65feab898879, shell BroilerJS.dll sha256 2bab2f8442b40928f8eac4bc2ee71fa06c75be47bace8d43d68ab71016db0587; exit 0
+ok 15
+
+
