@@ -1,0 +1,32 @@
+The first attempt at corpus revision 24, discarded: the two runs of 2026-10-18 from 12:46Z to 13:29Z, at the same
+commit, build and settings as the retained ones (discarded-run-revision-24-*.log). Each report differs from the
+retained report of its zone only in the lines below: one vector of the text area that found no completion within
+the runner's 5 s, a different one in each zone, and the counts.
+
+== utc: diff of the retained report (<) and the discarded one (>)
+45483c45483
+< text/from-base64/4186	normative	error: SyntaxError	error: SyntaxError	match
+---
+> text/from-base64/4186	normative	error: SyntaxError	abort: no completion within 5 s	difference
+4c4
+< # match: 102835
+---
+> # match: 102834
+6c6
+< # difference: 473
+---
+> # difference: 474
+
+== new-york: diff of the retained report (<) and the discarded one (>)
+44901c44901
+< text/from-base64/3604	normative	error: SyntaxError	error: SyntaxError	match
+---
+> text/from-base64/3604	normative	error: SyntaxError	abort: no completion within 5 s	difference
+4c4
+< # match: 102835
+---
+> # match: 102834
+6c6
+< # difference: 473
+---
+> # difference: 474
