@@ -23,9 +23,13 @@ rounding, differences and their options' rules.
   SJL-D-21).
 - **Consumers:** listed here at the cut-overs, milestones SJL-10.4 (Broiler.VM) and SJL-10.5 (Broiler.JS);
   JSD-0078's X6 lists the members each replaces.
-- **Vectors:** `conformance/vectors/temporal/`, corpus revision 24 or later (SJL-10.2). Until a runner reads
-  them, the library's tests hold every row R, B, G and S of bundle `sjl-10-001`'s correspondence, and replay
-  Broiler.VM's recorded answers to its calendar rows' probes and the retained calendar dataset at library level.
+- **Vectors:** `conformance/vectors/temporal/`, corpus revision 24 or later (SJL-10.2). The library-level runner
+  answers 10,851 of revision 25's 10,878 and every one matches; the other 27 are engine-level (part C's Evidence).
+  The library's tests also hold every row R, B, G and S of bundle `sjl-10-001`'s correspondence, and replay
+  Broiler.VM's recorded answers to its calendar, duration and difference rows' probes and both retained datasets at
+  library level. *(Revised 2026-10-18, when part C added the runner; read "Until a runner reads them, the library's
+  tests hold every row R, B, G and S of bundle `sjl-10-001`'s correspondence, and replay Broiler.VM's recorded answers
+  to its calendar rows' probes and the retained calendar dataset at library level.")*
 
 ---
 
@@ -589,7 +593,8 @@ values and `CalendarUnit` the four date units. Part C's records convert to them 
   the 21 lines of row C13 that lend an object's slot named as the engine's.
 - `CalendarDatasetTests.cs` runs the retained dataset, `conformance/datasets/time/temporal-calendars.js`, against its
   expected answer (the polyfill's at `e8cc03fc` with Broiler.VM's 70 divergences): 3,894 of its 3,999 lines are
-  calendar operations and answer as expected; the 105 that round or total relative to a date are part C's.
+  calendar operations and answer as expected; the 105 that round or total relative to a date are part C's, and answer
+  as expected through part C's operations. *(Revised 2026-10-18, when part C joined; the bullet ended "are part C's.")*
 - `CalendarApiTests.cs` holds the contract: identifiers, month codes, statuses, merging, preconditions, the interface,
   the round trip of a difference in every calendar, and concurrent use.
 
@@ -629,5 +634,341 @@ reference-date search's upper year in C10) is deleted with its file.
 
 ---
 
-*Added 2026-10-18, at milestone SJL-10.3: parts A and B each wrote a section, and their preambles were combined
+## Durations, rounding and differences (SJL-10.3, part C)
+
+JSD-0078's durations and rounding sub-area and its differences sub-area, with the rules of their options: a
+duration's validity, sign and default largest unit; the internal duration records; addition, `compare`, `round` and
+`total`, with and without `relativeTo`; the relative machinery (`RoundRelativeDuration` with its nudges and bubbling,
+`TotalRelativeDuration`) over exact rationals and SJL-4's `ExactRounding`; and `until` and `since` of every type.
+Ported from Broiler.VM's `JsTemporal.Durations`, the duration members of `JsTemporalCore`, the rule half of
+`JsTemporal.Options` and the arithmetic of its realm files' duration and difference methods after their reads, with
+their behaviour unchanged: the tests hold every line of the duration rows D1 to D11 and difference rows F1 to F8 (with
+R7 and B5) to Broiler.VM's recorded answer, the retained datasets at library level, every answered vector of corpus
+revision 25, and a differential check against that code (Evidence, below).
+
+**What no operation here does**, by convention 2: no property read of a duration-like or an options bag; no
+`ToTemporalDuration`, `ToTemporalDate` or other conversion of an argument; no resolution of `relativeTo` (its reads,
+its parse, its `InterpretISODateTimeOffset`); no check that two calendars or two zones are equal; no Temporal object;
+no `RangeError` and no `TypeError`. The adapter does those, in the order the specification gives, and only then calls
+the library.
+
+**What stays in the engines** (JSD-0078's X6): the `Duration` objects and their slots; each method's option reads, in
+the specification's order (GetDifferenceSettings reads `largestUnit`, `roundingIncrement`, `roundingMode` and
+`smallestUnit`, alphabetically); GetTemporalRelativeToOption's reads and its classification of the value; the
+calendar and zone lookups behind the providers; the mapping of each status to an error, and its message.
+
+**Failure is data** (X3). An invalid duration, a time duration past `TemporalLimits.MaxTimeDuration`, a calendar unit
+with no `relativeTo`, a result past a limit, and a provider's failure each answer a `TemporalStatus`, in the order the
+specification meets them. A calendar provider's `FieldOutOfRange` or `MonthNotInYear` (an addition under `reject`) is
+`InvalidDate`; its other failures, and every time-zone failure, are `OutOfRange`. A library exception is a broken
+precondition, listed below.
+
+**Charges**: none. Every member's work is bounded by the limits: a relative rounding adds a duration to a date at most
+a few times, and a bubble walks at most the four date units (X3: there is no class C2).
+
+### The types
+
+```csharp
+namespace Broiler.ECMAScript.Temporal;
+
+public enum TemporalStatus { Completed, OutOfRange, InvalidDate, InvalidTime, InvalidDuration, RelativeToRequired }
+public enum TemporalUnitGroup { Date, Time, DateTime }                       // ValidateTemporalUnitValue's groups
+public enum DifferenceOperation { Until, Since }
+public enum TemporalType { PlainDate, PlainDateTime, PlainTime, PlainYearMonth, Instant, ZonedDateTime }
+public readonly record struct DifferenceSettings(TemporalUnit SmallestUnit, TemporalUnit LargestUnit,
+    RoundingMode RoundingMode, long RoundingIncrement);                       // GetDifferenceSettings' record
+
+public readonly struct RelativeTo : IEquatable<RelativeTo>                   // GetTemporalRelativeToOption's record
+{
+    public static RelativeTo None { get; }                                    // also the default
+    public static RelativeTo FromPlainDate(IsoDate date, ICalendarArithmetic calendars, CalendarId calendar);
+    public static RelativeTo FromZoned(BigInteger epochNanoseconds, ITimeZoneArithmetic timeZone,
+        ICalendarArithmetic calendars, CalendarId calendar);
+    public bool IsPlain { get; }
+    public bool IsZoned { get; }
+    public IsoDate PlainDate { get; }
+    public BigInteger EpochNanoseconds { get; }
+    public ITimeZoneArithmetic? TimeZone { get; }
+    public ICalendarArithmetic? Calendars { get; }
+    public CalendarId Calendar { get; }
+}
+```
+
+`RelativeToRequired` is part C's addition to part A's status, so that each engine keeps its own message for it.
+`RelativeTo` is what the engine resolved: none, a plain date within the limits, or a zoned instant with its zone, each
+with the calendar provider its calendar computes through.
+
+### `ITimeZoneArithmetic` and `TemporalTimeZone` — the zone provider
+
+```csharp
+public interface ITimeZoneArithmetic
+{
+    long GetOffsetNanosecondsFor(BigInteger epochNanoseconds);                                   // s11.1.9
+    TimeStatus GetEpochNanosecondsFor(IsoDateTime dateTime, Disambiguation disambiguation,
+        out BigInteger epochNanoseconds);                                                         // s11.1.11
+    TimeStatus GetStartOfDay(IsoDate date, out BigInteger epochNanoseconds);                      // s11.1.14
+}
+
+public sealed class TemporalTimeZone : ITimeZoneArithmetic
+{
+    public TemporalTimeZone(ITimeZoneRules rules);
+    public ITimeZoneRules Rules { get; }
+}
+```
+
+This is the area design's `ITimeZoneArithmetic`, the time-zone provider of the zoned addition, the relative rounding
+and the zoned differences, beside part B's `ICalendarArithmetic`. **An instance is one zone**, as an engine's
+`ZonedDateTime` holds one: the engine resolves the identifier once and hands the library the zone. `TemporalTimeZone`
+implements it over SJL-8's algorithms (`ZonedTime`), for a named zone's `TimeZoneDatabase.Rules(id)` or an offset
+zone's `FixedOffsetTimeZoneRules`; an engine may hand in its own implementation, which answers a `TimeStatus` for every
+input it can reach and is safe to call concurrently. `TemporalTimeZone` is immutable, and an engine may keep one per
+zone.
+
+### `DurationMath` — the durations
+
+```csharp
+public static partial class DurationMath
+{
+    public static int Sign(DurationFields duration);                         // DurationSign
+    public static int Sign(DateDuration duration);                           // DateDurationSign
+    public static int Sign(InternalDuration duration);                       // InternalDurationSign
+    public static TemporalUnit DefaultLargestUnit(DurationFields duration);
+    public static InternalDuration ToInternal(DurationFields duration);
+    public static InternalDuration ToInternalWith24HourDays(DurationFields duration);
+    public static TemporalStatus FromInternal(InternalDuration duration, TemporalUnit largestUnit, out DurationFields result);
+    public static DurationFields Negate(DurationFields duration);
+    public static DurationFields Abs(DurationFields duration);
+    public static TemporalStatus CreateDateDurationRecord(double years, double months, double weeks, double days, out DateDuration result);
+    public static TemporalStatus AddTimeDuration(BigInteger one, BigInteger two, out BigInteger result);
+    public static TemporalStatus Add24HourDaysToTimeDuration(BigInteger time, double days, out BigInteger result);
+    public static TemporalStatus RoundTimeDurationToIncrement(BigInteger duration, BigInteger increment, RoundingMode mode, out BigInteger result);
+    public static TemporalStatus RoundTimeDuration(BigInteger duration, long increment, TemporalUnit unit, RoundingMode mode, out BigInteger result);
+    public static double TotalTimeDuration(BigInteger duration, TemporalUnit unit);
+
+    // The methods' arithmetic, after their reads.
+    public static TemporalStatus AddDurations(DurationFields one, DurationFields two, out DurationFields result);
+    public static TemporalStatus Compare(DurationFields one, DurationFields two, RelativeTo relativeTo, out int result);
+    public static TemporalStatus Round(DurationFields duration, TemporalUnit largestUnit, long roundingIncrement,
+        TemporalUnit smallestUnit, RoundingMode roundingMode, RelativeTo relativeTo, out DurationFields result);
+    public static TemporalStatus Total(DurationFields duration, TemporalUnit unit, RelativeTo relativeTo, out double total);
+    public static TemporalStatus DateDurationDays(ICalendarArithmetic calendars, CalendarId calendar, DateDuration duration,
+        IsoDate relativeTo, out double days);
+    public static TemporalStatus AddZonedDateTime(BigInteger epochNanoseconds, ITimeZoneArithmetic timeZone,
+        ICalendarArithmetic calendars, CalendarId calendar, InternalDuration duration, TemporalOverflow overflow, out BigInteger result);
+
+    // The relative machinery.
+    public static TemporalStatus RoundRelativeDuration(InternalDuration duration, BigInteger originEpochNanoseconds,
+        BigInteger destinationEpochNanoseconds, IsoDateTime dateTime, ITimeZoneArithmetic? timeZone, ICalendarArithmetic calendars,
+        CalendarId calendar, TemporalUnit largestUnit, long roundingIncrement, TemporalUnit smallestUnit, RoundingMode roundingMode,
+        out InternalDuration result);
+    public static TemporalStatus TotalRelativeDuration(InternalDuration duration, BigInteger originEpochNanoseconds,
+        BigInteger destinationEpochNanoseconds, IsoDateTime dateTime, ITimeZoneArithmetic? timeZone, ICalendarArithmetic calendars,
+        CalendarId calendar, TemporalUnit unit, out double total);
+}
+```
+
+| Member | Operation | Rows |
+|---|---|---|
+| `Sign`, `DefaultLargestUnit` | DurationSign (s7.5.13), DateDurationSign (s7.5.14), InternalDurationSign (s7.5.15), DefaultTemporalLargestUnit (s7.5.17) | D1, D2 |
+| `ToInternal`, `ToInternalWith24HourDays`, `FromInternal` | ToInternalDurationRecord (s7.5.5), its form with days of 24 hours (s7.5.6), TemporalDurationFromInternal (s7.5.8) with CreateTemporalDuration's validity test, every field a Number made once and every zero positive | D2 |
+| `Negate`, `Abs` | CreateNegatedTemporalDuration (s7.5.20), `abs`'s fields; zeros stay +0 | D1 |
+| `CreateDateDurationRecord` | s7.5.9, with IsValidDuration | |
+| `AddTimeDuration`, `Add24HourDaysToTimeDuration` | s7.5.22, s7.5.23: exact nanoseconds, `InvalidDuration` past the time duration's limit | D2, B5 |
+| `RoundTimeDurationToIncrement`, `RoundTimeDuration`, `TotalTimeDuration` | s7.5.28, s7.5.30, s7.5.31: exact, a total an exact ratio rounded once | D5, D10 |
+| `AddDurations` | AddDurations (s7.5.41) after `ToTemporalDuration`: `RelativeToRequired` where either has years, months or weeks, whatever the second argument (the pinned `add` takes one parameter) | D2, D3 |
+| `Compare` | `Temporal.Duration.compare` (s7.2.3) after its reads: equal fields answer 0 first; relative to a zoned instant by adding each; relative to a plain date by `DateDurationDays`, which adds only the years, months and weeks; otherwise in days of 24 hours | D4, D11 |
+| `Round` | `Temporal.Duration.prototype.round` (s7.3.20) after its reads and `TryGetDurationRoundUnits`: zoned through DifferenceZonedDateTimeWithRounding, plain through DifferencePlainDateTimeWithRounding, otherwise in days of 24 hours | D5 to D9, D11 |
+| `Total` | `Temporal.Duration.prototype.total` (s7.3.21) after its reads, the same three ways, an exact ratio rounded once | D10, D11 |
+| `DateDurationDays` | s7.5.29 | D4 |
+| `AddZonedDateTime` | s6.5.5: the date part on the wall clock in the calendar, made an instant again (compatible), then the time part exactly | B6, D9, F7 |
+| `RoundRelativeDuration` | s7.5.38 with ComputeNudgeWindow (s7.5.33), NudgeToCalendarUnit (s7.5.34), NudgeToZonedTime (s7.5.35), NudgeToDayOrTime (s7.5.36) and BubbleRelativeDuration (s7.5.37) | D6 to D9, F3 to F7 |
+| `TotalRelativeDuration` | s7.5.39: NudgeToCalendarUnit's exact total for a calendar unit, or a day with a zone; otherwise the time with days of 24 hours | D10 |
+
+**Decision D7 (row D8).** Rounded down after a shifted window, the nudged instant is the window's start, as the pinned
+text says; the polyfill takes its end. From 2019-03-31, `{months: 10, days: 29, hours: 12}` rounded to months is
+`P11M`, not `P1Y`. **JSD-0054 section 4's first named place stands**: ComputeNudgeWindow's start is the origin when the
+start duration is zero, as Broiler.VM and the polyfill test it (the text's literal `r1 = 0` would not).
+
+### `TemporalDifferences` — `until` and `since`
+
+```csharp
+public static class TemporalDifferences
+{
+    public static TemporalStatus DifferenceTemporalPlainDate(DifferenceOperation operation, ICalendarArithmetic calendars,
+        CalendarId calendar, IsoDate one, IsoDate two, DifferenceSettings settings, out DurationFields result);
+    public static TemporalStatus DifferenceTemporalPlainDateTime(DifferenceOperation operation, ICalendarArithmetic calendars,
+        CalendarId calendar, IsoDateTime one, IsoDateTime two, DifferenceSettings settings, out DurationFields result);
+    public static TemporalStatus DifferenceTemporalPlainTime(DifferenceOperation operation, IsoTime one, IsoTime two,
+        DifferenceSettings settings, out DurationFields result);
+    public static TemporalStatus DifferenceTemporalInstant(DifferenceOperation operation, BigInteger one, BigInteger two,
+        DifferenceSettings settings, out DurationFields result);
+    public static TemporalStatus DifferenceTemporalZonedDateTime(DifferenceOperation operation, BigInteger one, BigInteger two,
+        ITimeZoneArithmetic timeZone, ICalendarArithmetic calendars, CalendarId calendar, DifferenceSettings settings,
+        out DurationFields result);
+    public static TemporalStatus DifferenceTemporalPlainYearMonth(DifferenceOperation operation, TemporalCalendars calendars,
+        CalendarId calendar, IsoDate one, IsoDate two, DifferenceSettings settings, out DurationFields result);
+
+    // The operations under them.
+    public static TemporalStatus DifferenceInstant(BigInteger one, BigInteger two, long roundingIncrement,
+        TemporalUnit smallestUnit, RoundingMode roundingMode, out InternalDuration result);
+    public static TemporalStatus DifferenceIsoDateTime(ICalendarArithmetic calendars, CalendarId calendar, IsoDateTime one,
+        IsoDateTime two, TemporalUnit largestUnit, out InternalDuration result);
+    public static TemporalStatus DifferencePlainDateTimeWithRounding(…, out InternalDuration result);
+    public static TemporalStatus DifferencePlainDateTimeWithTotal(…, TemporalUnit unit, out double total);
+    public static TemporalStatus DifferenceZonedDateTime(BigInteger one, BigInteger two, ITimeZoneArithmetic timeZone,
+        ICalendarArithmetic calendars, CalendarId calendar, TemporalUnit largestUnit, out InternalDuration result);
+    public static TemporalStatus DifferenceZonedDateTimeWithRounding(…, out InternalDuration result);
+    public static TemporalStatus DifferenceZonedDateTimeWithTotal(…, TemporalUnit unit, out double total);
+}
+```
+
+| Member | Operation | Rows |
+|---|---|---|
+| `DifferenceTemporalPlainDate` | s3.5.14: the calendar's `DateUntil` in the largest unit, anchored on the receiver; rounded relative to it where the smallest unit is not a day of increment 1 | F1 to F4 |
+| `DifferenceTemporalPlainDateTime` | s5.5.15: DifferenceISODateTime (s5.5.12), the borrowed day, then DifferencePlainDateTimeWithRounding (s5.5.13) | F4, F5, D8 |
+| `DifferenceTemporalPlainTime` | s4.5.17: time units only | F6 |
+| `DifferenceTemporalInstant` | s8.5.9 with DifferenceInstant (s8.5.6) | F6 |
+| `DifferenceTemporalZonedDateTime` | s6.5.9: below a day, exact as an instant's; from a day up, DifferenceZonedDateTime (s6.5.6) on the wall clock and DifferenceZonedDateTimeWithRounding (s6.5.7) over the zone's real days | F7, D8, D9 |
+| `DifferenceTemporalPlainYearMonth` | s9.5.7: the first days of both months in the calendar (`DateToFields` with the day 1, `DateFromFields` under constrain), `DateUntil`, rounded relative to the first | F8 |
+| `…WithTotal` | s5.5.14, s6.5.8: the totals `Duration.prototype.total` takes relative to a date | D10 |
+
+`since` negates the rounding mode (GetDifferenceSettings does it, in `DifferenceSettings`) and the result. The year-month
+difference takes `TemporalCalendars` itself: it needs `DateToFields` and `DateFromFields`, which `ICalendarArithmetic`
+does not carry.
+
+### The options' rules — `TemporalOptionRules`, part C
+
+```csharp
+public static partial class TemporalOptionRules
+{
+    public const long DefaultRoundingIncrement = 1;
+    public const long MaxRoundingIncrement = 1_000_000_000;
+    public const RoundingMode DefaultRoundRoundingMode = RoundingMode.HalfExpand;        // every round
+    public const RoundingMode DefaultDifferenceRoundingMode = RoundingMode.Trunc;       // every until and since
+    public static bool TryParseRoundingIncrement(double value, out long increment);   // after the engine's ToNumber
+    public static bool IsCalendarUnit(TemporalUnit unit);
+    public static bool IsDateUnit(TemporalUnit unit);
+    public static TemporalUnit LargerOfTwoUnits(TemporalUnit one, TemporalUnit two);
+    public static long? MaximumRoundingIncrement(TemporalUnit unit);                   // 24, 60, 60, 1000, … ; null for a date unit
+    public static bool IsValidUnit(TemporalUnit unit, TemporalUnitGroup group, bool allowAuto);
+    public static bool TryGetDifferenceSettings(TemporalType type, DifferenceOperation operation, TemporalUnit largestUnit,
+        long roundingIncrement, RoundingMode roundingMode, TemporalUnit smallestUnit, out DifferenceSettings settings);
+    public static bool TryGetDifferenceSettings(DifferenceOperation operation, TemporalUnitGroup group,
+        ReadOnlySpan<TemporalUnit> disallowedUnits, TemporalUnit fallbackSmallestUnit, TemporalUnit smallestLargestDefaultUnit,
+        TemporalUnit largestUnit, long roundingIncrement, RoundingMode roundingMode, TemporalUnit smallestUnit,
+        out DifferenceSettings settings);
+    public static bool TryGetDurationRoundUnits(DurationFields duration, TemporalUnit largestUnit, long roundingIncrement,
+        TemporalUnit smallestUnit, out TemporalUnit resolvedLargestUnit, out TemporalUnit resolvedSmallestUnit);
+    public static bool IsValidTotalUnit(TemporalUnit unit);
+    public static bool IsValidRoundOptions(TemporalType type, TemporalUnit smallestUnit, long roundingIncrement);
+}
+```
+
+A `false` is the specification's `RangeError`. Each type's difference rules are GetDifferenceSettings' (s13.43)
+arguments: `PlainDate` (date; smallest default day, largest default day), `PlainDateTime` (datetime; nanosecond, day),
+`PlainTime` (time; nanosecond, hour), `PlainYearMonth` (date without week and day; month, year), `Instant` (time;
+nanosecond, second) and `ZonedDateTime` (datetime; nanosecond, hour). An increment must divide the smallest unit's
+maximum and be below it; a date unit's increment is unbounded but 10^9. `round` of a point: `PlainTime` a time unit;
+`PlainDateTime` and `ZonedDateTime` a time unit or a day of increment 1; `Instant` a time unit whose increment divides a
+day.
+
+### What the caller must have done first
+
+| Built-in | What the adapter does before the library |
+|---|---|
+| `new Temporal.Duration`, `Duration.from`, `with` | each field's `ToIntegerIfIntegral`; ToTemporalPartialDurationRecord's ten reads in code unit order, a `TypeError` for none; part A's `TemporalLimits.CheckDuration` |
+| `Duration.prototype.add`, `subtract` | `ToTemporalDuration` of the one argument (the second is never read: row D3); `Negate` for `subtract`; then `AddDurations` |
+| `Duration.compare` | both `ToTemporalDuration`s; GetOptionsObject; GetTemporalRelativeToOption (below); then `Compare` |
+| `Duration.prototype.round` | a string is `{smallestUnit}`, undefined a `TypeError`; GetOptionsObject; the reads `largestUnit`, `relativeTo`, `roundingIncrement` (`ToNumber`, then `TryParseRoundingIncrement`), `roundingMode` (default `HalfExpand`), `smallestUnit`, in that order, each unit through part A's `TryParseUnit`; `TryGetDurationRoundUnits`; then `Round` |
+| `Duration.prototype.total` | a string is `{unit}`, undefined a `TypeError`; `relativeTo`, then `unit` (required: undefined is a `RangeError`) and `IsValidTotalUnit`; then `Total` |
+| GetTemporalRelativeToOption (s13.19) | undefined is `RelativeTo.None`. A `ZonedDateTime` is `FromZoned` with its zone's provider; a `PlainDate` or `PlainDateTime` is `FromPlainDate` of its date. A bag: its calendar, PrepareCalendarFields with the time, `offset` and `timeZone`, InterpretTemporalDateTimeFields under `constrain`; with a zone, InterpretISODateTimeOffset (`compatible`, offset `reject`, minutes matched) and `FromZoned`, else `CheckIsoDate` and `FromPlainDate`. A string: ParseISODateTime for the zoned and date-time goals, then the same two ways |
+| `until`, `since` of every type | the argument's `ToTemporal…`; the calendars equal, else a `RangeError`; GetOptionsObject and GetDifferenceSettings' four reads (`largestUnit`, `roundingIncrement`, `roundingMode`, `smallestUnit`); `TryGetDifferenceSettings` for the type; for a `ZonedDateTime` whose largest unit is a date unit, the zones equal by SJL-8's `ZonedTime.TimeZoneEquals`, else a `RangeError`; then the type's `DifferenceTemporal…` |
+| `ZonedDateTime.prototype.add`, `subtract` | the duration, `overflow`; `AddZonedDateTime` with `ToInternal` of the fields |
+| `ZonedDateTime.prototype.round` to a day, `hoursInDay` | the zone's starts of day (`GetStartOfDay`); `RoundTimeDurationToIncrement` within the day; `TotalTimeDuration` in hours |
+| `round` of `PlainTime`, `PlainDateTime`, `Instant`, `ZonedDateTime` | the reads (`roundingIncrement`, `roundingMode`, `smallestUnit` required); `IsValidRoundOptions`; then part A's rounding of points |
+
+### Preconditions
+
+- A `DurationFields`, `DateDuration` or day count handed in has every field finite; otherwise
+  `ArgumentOutOfRangeException`. A duration's validity is part A's `CheckDuration`, which the adapter has run.
+- A unit the operation needs resolved is year to nanosecond (never `Unset` or `Auto`), the smallest no larger than the
+  largest, and an increment positive; a time-duration operation takes a time unit. A `DifferenceSettings` is the one
+  `TryGetDifferenceSettings` gave for the type. Otherwise `ArgumentOutOfRangeException`.
+- Each provider is not `null`; otherwise `ArgumentNullException`. A `RelativeTo` is made by its factories, from a date
+  within the limits or a valid epoch.
+- The library throws no other exception. Where a week or day nudge window does not hold the destination, which the
+  specification asserts, `RoundRelativeDuration` and `TotalRelativeDuration` answer `OutOfRange` (row D12, below). A
+  year or month window that misses is the specification's second window, not a failure.
+
+### What the caller does with each status
+
+| Status | Meaning | The specification's error | Broiler.JS | Broiler.VM |
+|---|---|---|---|---|
+| `Completed` | the result is valid | — | the value | the value |
+| `RelativeToRequired` | years, months or weeks, or a calendar unit to round or total to, with no `relativeTo` date; and `add` of calendar units | `RangeError` | its `RangeError` (row D3's correction: `add` no longer takes a `relativeTo`) | `RangeError`, "… needs a relativeTo date" |
+| `InvalidDuration` | a result that is no valid duration, or a time duration past the limit | `RangeError` | its `RangeError` | `RangeError`, "the duration is not valid" |
+| `InvalidDate` | an addition under `reject` to a day or leap month the target lacks | `RangeError` | its `RangeError` | its `RangeError` |
+| `OutOfRange` | a date, date-time or instant past the limits; any other failure of a provider; a week or day nudge window that does not hold the destination (row D12) | `RangeError` | its `RangeError` | `RangeError`, "… is outside the representable range"; at row D12, the invocation ends with a .NET `ArgumentOutOfRangeException` until SJL-10.4 |
+
+### Evidence
+
+- `Broiler.ECMAScript.Algorithms.Tests/Temporal/DurationCorrespondenceTests.cs` replays Broiler.VM's answers to the
+  probes of rows D1 to D11 and F1 to F8, with R7 and B5 (correspondence `sjl-10-001`, `correspondence-runs/core/`,
+  twenty files copied by their digests into `Temporal/Correspondence/`): 366 lines computed through the runner's
+  Temporal adapter over the library, every one Broiler.VM's answer, and one line, `Duration.prototype.add.length`,
+  named as the engine's.
+- `TemporalDatasetTests.cs` runs the retained dataset `conformance/datasets/time/temporal.js` line for line: its 1,629
+  lines answer as its expected answer, the polyfill's at `e8cc03fc`, from which Broiler.VM diverges on none.
+  `CalendarDatasetTests.cs` now computes the 105 lines of `temporal-calendars.js` part B left to part C.
+- `DurationApiTests.cs` holds the contract: the option rules, the statuses, the preconditions, an engine's own zone and
+  calendar providers answering as the library's, a refusing zone, row D12 (an inconsistent provider, and Pacific/Apia's
+  skipped day), and concurrent use.
+- **At library level**, `runners/AlgorithmsLibrary.Temporal.cs` answers 10,851 of corpus revision 25's 10,878 Temporal
+  vectors, and every one matches; 27 are engine-level (bundle `sjl-10-001`, section 3).
+- A differential check against Broiler.VM's code at `14072b0`, over generated populations, found no difference but
+  row D12's case above (bundle `sjl-10-001`, section 3).
+
+### Decisions taken at SJL-10.3, part C
+
+Under the owner's direction of 2026-10-18, part C took these, within JSD-0078's X3:
+
+1. **The design's names**: `DurationMath` for the duration arithmetic and the relative machinery, `TemporalDifferences`
+   for `until` and `since`, and part A's partial `TemporalOptionRules` for their options' rules; the records beside
+   them in `Temporal/Durations/`.
+2. **`ITimeZoneArithmetic` is one zone per instance**, where the design passed a zone with each call: an offset zone
+   has no identifier in SJL-8's database, and an engine's `ZonedDateTime` already holds its zone. `TemporalTimeZone`
+   implements it over SJL-8's `ITimeZoneRules`.
+3. **`RelativeTo` carries its providers**, so that `Compare`, `Round` and `Total` take one record; the engine resolves
+   it.
+4. **The statuses**: part A's `TemporalStatus` gains `RelativeToRequired`; a calendar provider's `FieldOutOfRange` and
+   `MonthNotInYear` map to `InvalidDate`, its other failures and every `TimeStatus` failure to `OutOfRange`. Every one
+   is a `RangeError` in both engines.
+5. **The zones' equality stays the adapter's**, through SJL-8's `ZonedTime.TimeZoneEquals` over its database: the
+   provider has no identifier to compare.
+6. **The year-month difference takes `TemporalCalendars`**, which has the fields operations it needs, and
+   `ICalendarArithmetic` keeps the design's two members.
+7. **Row D12 is reached, and answers a status.** The correspondence read it as code no input reaches, and decision
+   D12 let the library assert there or answer a status. The differential check found an input that reaches it: Pacific/Apia
+   skipped 2011-12-30, so a day window back from 2011-12-31 ends on that skipped day, which `compatible` moves onto
+   the window's start, and the window has no length. `ZonedDateTime.from("2011-12-31T16:15+14:00[Pacific/Apia]")`
+   `.since("2011-12-31T00:00+14:00[Pacific/Apia]", {largestUnit: "day", smallestUnit: "day"})` meets it, as does
+   rounding `-PT16H15M` to a day relative to the first. The reference polyfill fails its own assertion ("day was 0 days
+   long", a plain `Error`); Broiler.VM ends the invocation with a .NET `ArgumentOutOfRangeException` from
+   `ExactRounding`; the library answers `OutOfRange`, a `RangeError` in both engines, so that no engine faults. It is
+   the one place the library does not answer as Broiler.VM's code. A date-duration field beyond 4×10^18, which no
+   valid duration has, is `OutOfRange` before a calendar is called.
+8. **Decision D7 is applied at row D8**, and JSD-0054 section 4's named places stand, as above.
+9. **The runner's Temporal adapter** (`runners/TemporalAdapter.cs`) is written once, the engine-side steps around the
+   library as Broiler.VM's realm files take them, and linked into the tests and the Native AOT probe; it is never a
+   library's.
+
+### Engine-specific behaviour
+
+None is a parameter. Broiler.JS's differences from Broiler.VM on the duration and difference rows are corrections its
+cut-over makes by calling the library (JSD-0078: D3, D4, D6, D7, D8, D11, F4, F7); Broiler.VM changes no answer here.
+
+---
+
+*Added 2026-10-18, at milestone SJL-10.3: parts A, B and C each wrote a section, and their preambles were combined
 when the parts were joined. Revisions of this guide are dated in place, quoting the text they replace.*
+*(Revised 2026-10-18, when part C joined: the note read "parts A and B each wrote a section".)*

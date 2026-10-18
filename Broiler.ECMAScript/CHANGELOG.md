@@ -88,6 +88,42 @@ Not yet packed under a version of its own: the stream's next version is set when
   level, and every one answers as Broiler.VM does. Nothing in the area charges (JSD-0078's X3), and the library
   embeds no table.
 
+- `Broiler.ECMAScript.Algorithms`: the Temporal durations, rounding and differences, namespace
+  `Broiler.ECMAScript.Temporal` (milestone SJL-10.3, part C; JSD-0078's durations and rounding sub-area and its
+  differences sub-area; adapter guide
+  [`docs/adapter-guide-temporal.md`](Broiler.ECMAScript.Algorithms/docs/adapter-guide-temporal.md), section
+  "Durations, rounding and differences"):
+  - `DurationMath`: `Sign` (DurationSign, DateDurationSign, InternalDurationSign), `DefaultLargestUnit`,
+    `ToInternal`, `ToInternalWith24HourDays` and `FromInternal`, `Negate` and `Abs`, `CreateDateDurationRecord`,
+    `AddTimeDuration`, `Add24HourDaysToTimeDuration`, `RoundTimeDurationToIncrement`, `RoundTimeDuration` and
+    `TotalTimeDuration`; `AddDurations` (calendar units refused whatever the second argument), `Compare`, `Round` and
+    `Total` after the methods' reads, `DateDurationDays` and `AddZonedDateTime`; and the relative machinery,
+    `RoundRelativeDuration` with its nudge window, nudges and bubbling and `TotalRelativeDuration`, over exact
+    rationals and `ExactRounding`, the pinned text's nudge after a shifted window (decision D7, row D8);
+  - `TemporalDifferences`: `DifferenceTemporalPlainDate`, `…PlainDateTime`, `…PlainTime`, `…Instant`,
+    `…ZonedDateTime` and `…PlainYearMonth`, with `DifferenceInstant`, `DifferenceIsoDateTime`,
+    `DifferenceZonedDateTime` and their `WithRounding` and `WithTotal` forms, the calendars' through part B's
+    `ICalendarArithmetic`;
+  - `ITimeZoneArithmetic`, the time-zone provider of the zoned arithmetic, one zone per instance, and
+    `TemporalTimeZone`, its implementation over SJL-8's `ZonedTime` and `ITimeZoneRules`; `RelativeTo`, the resolved
+    `relativeTo` with its providers; `DifferenceSettings`, `DifferenceOperation`, `TemporalType` and
+    `TemporalUnitGroup`;
+  - `TemporalOptionRules`' rules of the rounding and difference options after an engine's reads:
+    `TryParseRoundingIncrement`, `IsCalendarUnit`, `IsDateUnit`, `LargerOfTwoUnits`, `MaximumRoundingIncrement`,
+    `IsValidUnit`, `TryGetDifferenceSettings` (GetDifferenceSettings for each type), `TryGetDurationRoundUnits`,
+    `IsValidTotalUnit` and `IsValidRoundOptions`, with the defaults' constants;
+  - `TemporalStatus.RelativeToRequired`.
+
+  Each is ported from Broiler.VM's `JsTemporal.Durations`, the duration members of `JsTemporalCore`, the rule half of
+  `JsTemporal.Options` and the arithmetic of its realm files' duration and difference methods, with its behaviour
+  unchanged, which the library's tests and a differential check against that code show, but at row D12: where a
+  zone's skipped day leaves a day nudge window with no length (Pacific/Apia's 2011-12-30), which the specification
+  asserts cannot happen, the library answers `OutOfRange`, where Broiler.VM's code ends the invocation with a .NET
+  exception and the reference polyfill fails its own assertion. The tests replay Broiler.VM's recorded answers to
+  the correspondence's duration and difference rows, run both retained datasets whole at library level, and the
+  library-level runner answers 10,851 of corpus revision 25's 10,878 Temporal vectors, every one as expected. Nothing
+  in the area charges.
+
 ### Changed
 
 None.
@@ -96,7 +132,9 @@ None.
 
 None: the area is new, and no engine reads it yet. Broiler.VM cuts over at milestone SJL-10.4, correcting row
 R6 there, and Broiler.JS at SJL-10.5, whose own records list what each observes; Broiler.JS's corrections on
-the calendar rows are JSD-0078's C2, C5, C6, C9, C12, C13, C15, C16 and C17.
+the calendar rows are JSD-0078's C2, C5, C6, C9, C12, C13, C15, C16 and C17, and on the duration and difference rows
+D3, D4, D6, D7, D8, D11, F4 and F7. Row D12's case, a day the zone skips, becomes a `RangeError` in both engines at
+their cut-overs.
 
 ### Data
 
