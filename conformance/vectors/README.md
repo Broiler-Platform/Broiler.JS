@@ -29,6 +29,7 @@ rule for its own engine is [`docs/evidence/sjl-1-001/decision-rule.md`](../../do
 | `date/` | The Date area: MakeTime, MakeDay, TimeClip, MakeFullYear and the setters' range and order; field extraction; the Date Time String Format and each engine's dialect; the renderings; local time through relations that hold in every time zone; and the ISO calendar's civil-day helpers (through Temporal); and, from revision 16, strings outside the format on which the engines' readings differ *(added 2026-10-15, at corpus revision 14; the last clause at revision 16, the same day)* |
 | `unicode/` | The Unicode area: `normalize` over Unicode's NormalizationTest.txt and the correspondence's cells; `toUpperCase`, `toLowerCase` and the language-sensitive `toLocaleUpperCase` and `toLocaleLowerCase`, and case folding through RegExp's `i` flag; `\p{…}` acceptance and membership under `u` and `v`, properties of strings included; identifier acceptance through escaped identifiers, and white space; and `Intl.Segmenter` over Unicode's three break tests *(added 2026-10-16, at corpus revision 18)* |
 | `time-zones/` | The time-zone area: offsets, next and previous transitions, the instants of a wall-clock time and each disambiguation, start of day and the hours in a day, through Temporal, over the data home's pinned tz database under decision SJL-D-20, at instants on both sides of every policy difference and correction of the area's verdict (the release, backzone, extrapolation after 2037, CLDR primaries, `Factory`, lookup by ASCII case only, offsets with ASCII digits); the identifiers and primaries, through Temporal and ECMA-402; and a sample of ordinary transitions, gaps and overlaps *(added 2026-10-17, at corpus revision 21)* |
+| `temporal/` | The Temporal area: the ISO 8601 and RFC 9557 grammar through every goal's `from()`, duration, calendar, time zone, offset and `relativeTo` strings, with every accept and refuse case of the area design's table and of its rows G1 to G24; duration rounding in every mode and every increment of every unit, with and without `relativeTo`, nudging, bubbling and the shifted window, totals and comparison; the records' limits, and balancing, regulation and addition at them; `until` and `since` in every type and calendar; and the calendars: identifiers, month codes, eras, month-day reference dates, the formula calendars at their edges and the table calendars at their tables' edges where Table 1 publishes them *(added 2026-10-18, at corpus revision 24)* |
 | [`controls/`](controls/README.md) | Malformed files the validator must refuse. **Not part of the corpus.** |
 
 ## Running it
@@ -52,6 +53,10 @@ python3 -I scripts/conformance/generate_unicode_vectors.py --ucd <Broiler.Unicod
 # The time-zone area compiles the data home's pinned tz database with the host's zic (tzref.py); its tests are skipped
 # where zic is absent.
 python3 -I scripts/conformance/generate_time_zone_vectors.py --out conformance/vectors/time-zones
+# The Temporal area runs the proposal's own polyfill at e8cc03fc under Node 22.22.0, set up as the generator's header
+# says (its lib/ and node_modules/ in scripts/conformance/temporalref/, or a directory given by --polyfill); its tests
+# that regenerate the area read BROILER_TEMPORAL_POLYFILL and BROILER_NODE and are skipped where the reference is absent.
+python3 -I scripts/conformance/generate_temporal_vectors.py --out conformance/vectors/temporal --node <Node 22.22.0>
 python3 -m unittest discover -s scripts/conformance/tests
 # The Unicode area's tests that read the pinned data look for it in BROILER_UNICODE_PINS, or in a Broiler.Unicode
 # checkout beside this repository, and are skipped where it is absent.
@@ -118,5 +123,15 @@ Broiler.JS/Broiler.JavaScript.Vectors.Tests -c Release".)*
   never used.
 - **The numerics area** (revision 6) follows the same rule: its inputs are milestone SJL-4.2's populations, with seeded random values (SplitMix64, the seeds in the generator), and every expected value is `scripts/conformance/numericsref.py`'s, in exact arithmetic. Its rounding vectors run through Temporal, which the pinned ECMA-262 edition does not contain, so their provenance is that computation alone; the generator names the proposal's operations it follows.
 - **Time zones.** The time-zone area (revision 21) reads the data home's pinned tz database and CLDR file, `Broiler.ECMAScript/data/time/tzdb/` and `cldr/`, by their pins, and copies neither: every expected value is `scripts/conformance/tzref.py`'s (`ref:tzref@1`), which compiles the pinned release with the host's `zic`, reads the compiled files with its own reader and applies decision SJL-D-20's policy, and shares no code with the data home's generator or the algorithms library it judges.
+- **Temporal.** The Temporal area (revision 24) cites the Temporal proposal's specification text and the Intl era and
+  month code proposal's at the revisions both engines follow, by `proposal:` entries and the pins
+  [`sources/temporal.pin`](sources/temporal.pin) and [`sources/intl-era-monthcode.pin`](sources/intl-era-monthcode.pin),
+  and archives and quotes neither. Every expected value is the answer of the proposal's own polyfill at
+  `e8cc03fc` (`ref:temporalref@1`, decision D10 of bundle `sjl-10-001`), run under Node 22.22.0 by
+  `scripts/conformance/temporalref.mjs` with its npm dependencies at the versions `scripts/conformance/temporalref/package-lock.json`
+  pins; the corpus holds the answers, not the polyfill. Where the pinned text and the polyfill disagree the text rules
+  (decision D7): the vector takes the text's answer and records the polyfill's as `overruled:temporalref@1=<outcome>`.
+  Where the polyfill reckons a calendar through ICU4C or JavaScript's Date and so is not the specification's, the input
+  is not vectored; the generator's header lists each such kind.
 - **test262.** No vector of revision 1 is derived from a test262 test. A vector that is will cite the
   test with `test262:<path>`, and the corpus will then carry test262's licence notice.

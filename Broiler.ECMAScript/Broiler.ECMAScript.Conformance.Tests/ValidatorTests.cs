@@ -34,7 +34,8 @@ public class ValidatorTests
     {
         // The validator refuses the opposite; this states the property of the corpus as it stands.
         Assert.All(Home.Corpus.Records, vector =>
-            Assert.Contains(vector["prov"]!.Split(' '), entry => !entry.StartsWith("observed:", StringComparison.Ordinal)));
+            Assert.Contains(vector["prov"]!.Split(' '), entry => !entry.StartsWith("observed:", StringComparison.Ordinal)
+                && !entry.StartsWith("overruled:", StringComparison.Ordinal)));
     }
 
     public static TheoryData<string> Controls()
@@ -83,6 +84,7 @@ public class ValidatorTests
     [InlineData("class", "optional", "bad-class")]
     [InlineData("since", "0", "bad-since")]
     [InlineData("prov", "observed:broiler-vm", "engine-observed")]
+    [InlineData("prov", "overruled:temporalref@1=value:str:\"P1Y\"", "no-source")]
     [InlineData("prov", "spec:es2026@deadbeef#sec-x", "bad-provenance")]
     [InlineData("prov", "ucd:16.0.0/PropList.txt", "bad-provenance")]
     [InlineData("area", "number", "bad-area")]

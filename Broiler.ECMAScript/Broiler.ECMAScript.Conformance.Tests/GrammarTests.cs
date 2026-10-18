@@ -34,6 +34,10 @@ public class GrammarTests
     [InlineData("ref:numref@1")]
     [InlineData("ref:a-b@0")]
     [InlineData("observed:broiler-js ref:numref@1")]
+    [InlineData("proposal:temporal@e8cc03fc#sec-temporal-nudgetocalendarunit")]
+    [InlineData("proposal:intl-era-monthcode@5833eae6c9079ffbb06a9ab7cc5128ebbf6e9ac7#table-eras")]
+    [InlineData("proposal:temporal@e8cc03fc#sec-temporal.duration.prototype.round overruled:temporalref@1=value:str:\"P1Y\"")]
+    [InlineData("ref:temporalref@1 overruled:temporalref@1=error:RangeError")]
     public void A_provenance_entry_the_schema_defines_is_accepted(string provenance)
         => Assert.DoesNotContain(Validate("prov", provenance), d => d.Code is "bad-provenance" or "engine-observed");
 
@@ -68,6 +72,20 @@ public class GrammarTests
     [InlineData("observed:Broiler-JS")]
     [InlineData("unknown:x")]
     [InlineData("spec")]
+    [InlineData("proposal:Temporal@e8cc03fc#sec-x")]
+    [InlineData("proposal:temporal@e8cc03#sec-x")] // six hexadecimal digits
+    [InlineData("proposal:temporal@E8CC03FC#sec-x")]
+    [InlineData("proposal:temporal@e8cc03fc")]
+    [InlineData("proposal:temporal@e8cc03fc#")]
+    [InlineData("proposal:@e8cc03fc#sec-x")]
+    [InlineData("overruled:temporalref@1")]
+    [InlineData("overruled:temporalref@1=")]
+    [InlineData("overruled:temporalref@1=value:")]
+    [InlineData("overruled:temporalref@1=value:1")]
+    [InlineData("overruled:temporalref@1=error:Oops")]
+    [InlineData("overruled:temporalref@x=error:RangeError")]
+    [InlineData("overruled:@1=error:RangeError")]
+    [InlineData("overruled:temporalref=error:RangeError")]
     public void A_provenance_entry_the_schema_does_not_define_is_refused(string provenance)
         => Assert.Contains(Validate("prov", provenance + " ref:numref@1"), d => d.Code == "bad-provenance");
 

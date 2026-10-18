@@ -1,0 +1,17 @@
+# The TC39 proposal the corpus's `proposal:intl-era-monthcode@...` provenance names (corpus revision 24, milestone
+# SJL-10.2).
+#
+# Every `proposal:intl-era-monthcode@5833eae#<clause-id>` entry is a clause or table of the Intl era and month code
+# proposal's specification text at its Stage 4 draft of 19 March 2026, the revision SJL-8.1 and SJL-10.1 read and
+# both engines' calendars follow (its Table 1 of calendar types, Table 2 of eras, Table 3 of month codes and Table 6
+# of Chinese and Korean reference years). The Temporal area's calendar vectors cite it beside temporal.pin.
+#
+# The corpus archives no copy and quotes no text of it. It was read from a clone taken on 2026-10-18 at SJL-10.1:
+#
+#   git -C <proposal-intl-era-monthcode> show 5833eae6c9079ffbb06a9ab7cc5128ebbf6e9ac7:spec.emu | sha256sum
+
+proposal intl-era-monthcode
+source tc39/proposal-intl-era-monthcode
+revision 5833eae6c9079ffbb06a9ab7cc5128ebbf6e9ac7
+date 2026-03-19
+file spec.emu 84845 1f7288233d28907e90de44c9ab8952270fccf317b2b377a604f88bac758382f3
