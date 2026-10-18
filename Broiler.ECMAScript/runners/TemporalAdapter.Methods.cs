@@ -177,18 +177,23 @@ internal sealed partial class TemporalAdapter
             partial[8] ?? 0, partial[9] ?? 0));
     }
 
-    private static readonly string[] DurationKeys = ["days", "hours", "microseconds", "milliseconds", "minutes", "months", "nanoseconds", "seconds", "weeks", "years"];
+    private static ReadOnlySpan<int> DurationKeyIndex => [3, 4, 8, 7, 5, 1, 9, 6, 2, 0];
 
-    private static readonly int[] DurationKeyIndex = [3, 4, 8, 7, 5, 1, 9, 6, 2, 0];
+    // The ten duration properties in code unit order.
+    private static string DurationKey(int at) => at switch
+    {
+        0 => "days", 1 => "hours", 2 => "microseconds", 3 => "milliseconds", 4 => "minutes", 5 => "months", 6 => "nanoseconds",
+        7 => "seconds", 8 => "weeks", _ => "years",
+    };
 
     /// <summary>ToTemporalPartialDurationRecord (s7.5.18): the ten properties in code unit order.</summary>
     internal static double?[] ToPartialDuration(Bag bag)
     {
         var result = new double?[10];
         var any = false;
-        for (var i = 0; i < DurationKeys.Length; i++)
+        for (var i = 0; i < DurationKeyIndex.Length; i++)
         {
-            if (bag.Get(DurationKeys[i]) is { } value)
+            if (bag.Get(DurationKey(i)) is { } value)
             {
                 result[DurationKeyIndex[i]] = ToIntegerIfIntegral(value);
                 any = true;
@@ -1149,4 +1154,209 @@ internal sealed partial class TemporalAdapter
     /// <summary>Temporal.ZonedDateTime.prototype.startOfDay.</summary>
     internal ZonedDateTime StartOfDay(ZonedDateTime zoned) =>
         new(StartOfDay(zoned.TimeZone, IsoDateTimeFor(zoned.TimeZone, zoned.EpochNanoseconds).Date), zoned.TimeZone, zoned.Calendar);
+
+    /// <summary>Temporal.PlainYearMonth.prototype.toString with options: calendarName.</summary>
+    internal string ToString(PlainYearMonth yearMonth, object? options) =>
+        TemporalFormat.YearMonthToString(yearMonth.Date, TemporalCalendars.Identifier(yearMonth.Calendar), ShowCalendarOption(OptionsObject(options)));
+
+    /// <summary>Temporal.PlainMonthDay.prototype.toString with options: calendarName.</summary>
+    internal string ToString(PlainMonthDay monthDay, object? options) =>
+        TemporalFormat.MonthDayToString(monthDay.Date, TemporalCalendars.Identifier(monthDay.Calendar), ShowCalendarOption(OptionsObject(options)));
+
+    // ---- Constructors ---------------------------------------------------------------------------------------------
+
+    // IsValidISODate over the constructors' integers, which may be of any magnitude: a year beyond 10^9 is no date
+    // within the limits, so the RangeError CreateTemporalDate would throw comes first and alike.
+    private static IsoDate ValidIsoDate(double year, double month, double day)
+    {
+        if (!(Math.Abs(year) <= 1e9))
+            throw new RangeError();
+
+        Check(IsoArithmetic.RegulateIsoDate((long)year, month, day, TemporalOverflow.Reject, out var date));
+        return date;
+    }
+
+    // An argument of a constructor: ToIntegerWithTruncation, undefined as the default where the parameter has one.
+    private static double IntegerArgument(object?[] arguments, int at, double? fallback = null) =>
+        at < arguments.Length && arguments[at] is { } value ? ToIntegerWithTruncation(value) : fallback ?? ToIntegerWithTruncation(null);
+
+    private static object? Argument(object?[] arguments, int at) => at < arguments.Length ? arguments[at] : null;
+
+    /// <summary>new Temporal.PlainDate(isoYear, isoMonth, isoDay, calendar).</summary>
+    internal static PlainDate NewPlainDate(params object?[] arguments)
+    {
+        var year = IntegerArgument(arguments, 0);
+        var month = IntegerArgument(arguments, 1);
+        var day = IntegerArgument(arguments, 2);
+        var calendar = CalendarArgument(Argument(arguments, 3));
+        var date = ValidIsoDate(year, month, day);
+        Check(TemporalLimits.CheckIsoDate(date));
+        return new PlainDate(date, calendar);
+    }
+
+    /// <summary>new Temporal.PlainDateTime(isoYear, isoMonth, isoDay, hour, …, nanosecond, calendar).</summary>
+    internal static PlainDateTime NewPlainDateTime(params object?[] arguments)
+    {
+        var values = new double[9];
+        for (var i = 0; i < 9; i++)
+            values[i] = IntegerArgument(arguments, i, i >= 3 ? 0 : null);
+
+        var calendar = CalendarArgument(Argument(arguments, 9));
+        var date = ValidIsoDate(values[0], values[1], values[2]);
+        Check(IsoArithmetic.RegulateTime(values[3], values[4], values[5], values[6], values[7], values[8], TemporalOverflow.Reject, out var time));
+        return CreatePlainDateTime(new IsoDateTime(date, time), calendar);
+    }
+
+    /// <summary>new Temporal.PlainTime(hour, minute, second, millisecond, microsecond, nanosecond).</summary>
+    internal static PlainTime NewPlainTime(params object?[] arguments)
+    {
+        var values = new double[6];
+        for (var i = 0; i < 6; i++)
+            values[i] = IntegerArgument(arguments, i, 0);
+
+        Check(IsoArithmetic.RegulateTime(values[0], values[1], values[2], values[3], values[4], values[5], TemporalOverflow.Reject, out var time));
+        return new PlainTime(time);
+    }
+
+    /// <summary>new Temporal.PlainYearMonth(isoYear, isoMonth, calendar, referenceISODay).</summary>
+    internal static PlainYearMonth NewPlainYearMonth(params object?[] arguments)
+    {
+        var year = IntegerArgument(arguments, 0);
+        var month = IntegerArgument(arguments, 1);
+        var calendar = CalendarArgument(Argument(arguments, 2));
+        var day = IntegerArgument(arguments, 3, 1);
+        var date = ValidIsoDate(year, month, day);
+        Check(TemporalLimits.CheckIsoYearMonth(date));
+        return new PlainYearMonth(date, calendar);
+    }
+
+    /// <summary>new Temporal.PlainMonthDay(isoMonth, isoDay, calendar, referenceISOYear).</summary>
+    internal static PlainMonthDay NewPlainMonthDay(params object?[] arguments)
+    {
+        var month = IntegerArgument(arguments, 0);
+        var day = IntegerArgument(arguments, 1);
+        var calendar = CalendarArgument(Argument(arguments, 2));
+        var year = IntegerArgument(arguments, 3, 1972);
+        var date = ValidIsoDate(year, month, day);
+        Check(TemporalLimits.CheckIsoDate(date));
+        return new PlainMonthDay(date, calendar);
+    }
+
+    /// <summary>Temporal.Instant.fromEpochNanoseconds: ToBigInt, then the limits.</summary>
+    internal static Instant InstantFromEpochNanoseconds(object? value)
+    {
+        if (value is not BigInteger epoch)
+            throw new TypeError();
+
+        Check(TemporalLimits.CheckEpochNanoseconds(epoch));
+        return new Instant(epoch);
+    }
+
+    /// <summary>Temporal.Instant.fromEpochMilliseconds: ToNumber, NumberToBigInt (an integral Number), a million times, the limits.</summary>
+    internal static Instant InstantFromEpochMilliseconds(object? value)
+    {
+        var milliseconds = ToNumber(value);
+        if (!double.IsFinite(milliseconds) || Math.Truncate(milliseconds) != milliseconds)
+            throw new RangeError();
+
+        var epoch = new BigInteger(milliseconds) * 1_000_000;
+        Check(TemporalLimits.CheckEpochNanoseconds(epoch));
+        return new Instant(epoch);
+    }
+
+    // ---- Conversions between the types --------------------------------------------------------------------------
+
+    /// <summary>Temporal.PlainDate.prototype.toPlainDateTime: the time (or midnight) on the date, within the limits.</summary>
+    internal PlainDateTime ToPlainDateTime(PlainDate date, object? time) =>
+        CreatePlainDateTime(new IsoDateTime(date.Date, time is null ? default : ToPlainTime(time).Time), date.Calendar);
+
+    /// <summary>Temporal.PlainDate.prototype.toPlainMonthDay (s3.3.32).</summary>
+    internal PlainMonthDay DateToPlainMonthDay(PlainDate date)
+    {
+        Check(Calendars.DateToMonthDay(date.Calendar, date.Date, out var result));
+        return new PlainMonthDay(result, date.Calendar);
+    }
+
+    /// <summary>Temporal.ZonedDateTime.prototype.toPlainDateTime: the wall clock, within the date-time limits.</summary>
+    internal PlainDateTime ZonedToPlainDateTime(ZonedDateTime zoned) =>
+        CreatePlainDateTime(IsoDateTimeFor(zoned.TimeZone, zoned.EpochNanoseconds), zoned.Calendar);
+
+    /// <summary>Temporal.ZonedDateTime.prototype.toPlainDate: the wall clock's date, within the date limits.</summary>
+    internal PlainDate ZonedToPlainDate(ZonedDateTime zoned)
+    {
+        var date = IsoDateTimeFor(zoned.TimeZone, zoned.EpochNanoseconds).Date;
+        Check(TemporalLimits.CheckIsoDate(date));
+        return new PlainDate(date, zoned.Calendar);
+    }
+
+    // ---- with -----------------------------------------------------------------------------------------------------
+
+    // The partial argument of a with: an object that is not a Temporal object and has no calendar or timeZone.
+    private static Bag PartialTemporalObject(object? like)
+    {
+        if (like is not Bag bag)
+            throw new TypeError();
+        if (bag.Get("calendar") is not null || bag.Get("timeZone") is not null)
+            throw new TypeError(); // RejectTemporalLikeObject
+
+        return bag;
+    }
+
+    /// <summary>Temporal.PlainDateTime.prototype.with: the date's fields and the time merged with a partial bag's.</summary>
+    internal PlainDateTime With(PlainDateTime dateTime, object? like, object? options)
+    {
+        var bag = PartialTemporalObject(like);
+        Check(Calendars.DateToFields(dateTime.Calendar, dateTime.DateTime.Date, CalendarFieldsType.Date, out var own));
+        var partial = PrepareFields(dateTime.Calendar, bag, date: true, time: true, offset: false, zone: false, partial: true);
+        var time = dateTime.DateTime.Time;
+        var merged = new Fields
+        {
+            Calendar = TemporalCalendars.MergeFields(dateTime.Calendar, own, partial.Calendar),
+            Hour = partial.Hour ?? time.Hour,
+            Minute = partial.Minute ?? time.Minute,
+            Second = partial.Second ?? time.Second,
+            Millisecond = partial.Millisecond ?? time.Millisecond,
+            Microsecond = partial.Microsecond ?? time.Microsecond,
+            Nanosecond = partial.Nanosecond ?? time.Nanosecond,
+        };
+        var overflow = OverflowOption(OptionsObject(options));
+        return CreatePlainDateTime(InterpretDateTimeFields(dateTime.Calendar, merged, overflow), dateTime.Calendar);
+    }
+
+    /// <summary>Temporal.PlainTime.prototype.with: the time's fields merged with a partial bag's, then regulated.</summary>
+    internal PlainTime With(PlainTime time, object? like, object? options)
+    {
+        var bag = PartialTemporalObject(like);
+        var partial = PrepareFields(CalendarId.Iso8601, bag, date: false, time: true, offset: false, zone: false, partial: true);
+        var overflow = OverflowOption(OptionsObject(options));
+        var own = time.Time;
+        Check(IsoArithmetic.RegulateTime(
+            partial.Hour ?? own.Hour, partial.Minute ?? own.Minute, partial.Second ?? own.Second, partial.Millisecond ?? own.Millisecond,
+            partial.Microsecond ?? own.Microsecond, partial.Nanosecond ?? own.Nanosecond, overflow, out var result));
+        return new PlainTime(result);
+    }
+
+    /// <summary>Temporal.PlainYearMonth.prototype.with: the year-month's fields merged with a partial bag's.</summary>
+    internal PlainYearMonth With(PlainYearMonth yearMonth, object? like, object? options)
+    {
+        var bag = PartialTemporalObject(like);
+        Check(Calendars.DateToFields(yearMonth.Calendar, yearMonth.Date, CalendarFieldsType.YearMonth, out var own));
+        var partial = PrepareFields(yearMonth.Calendar, bag, date: true, time: false, offset: false, zone: false, yearMonth: true, partial: true);
+        var merged = TemporalCalendars.MergeFields(yearMonth.Calendar, own, partial.Calendar);
+        var overflow = OverflowOption(OptionsObject(options));
+        Check(Calendars.YearMonthFromFields(yearMonth.Calendar, merged, ToCalendar(overflow), out var result));
+        return new PlainYearMonth(result, yearMonth.Calendar);
+    }
+
+    /// <summary>Temporal.PlainMonthDay.prototype.with: the month-day's fields merged with a partial bag's.</summary>
+    internal PlainMonthDay With(PlainMonthDay monthDay, object? like, object? options)
+    {
+        var bag = PartialTemporalObject(like);
+        Check(Calendars.DateToFields(monthDay.Calendar, monthDay.Date, CalendarFieldsType.MonthDay, out var own));
+        var partial = PrepareFields(monthDay.Calendar, bag, date: true, time: false, offset: false, zone: false, partial: true);
+        var merged = TemporalCalendars.MergeFields(monthDay.Calendar, own, partial.Calendar);
+        var overflow = OverflowOption(OptionsObject(options));
+        Check(Calendars.MonthDayFromFields(monthDay.Calendar, merged, ToCalendar(overflow), out var result));
+        return new PlainMonthDay(result, monthDay.Calendar);
+    }
 }

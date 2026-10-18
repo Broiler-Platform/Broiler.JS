@@ -173,7 +173,7 @@ internal sealed partial class TemporalAdapter
         bool b => b ? "true" : "false",
         double d => NumberText.ToString(d),
         string s => s,
-        BigInteger i => i.ToString(CultureInfo.InvariantCulture),
+        BigInteger i => i.ToString(NumberFormatInfo.InvariantInfo),
         Bag => "[object Object]",
         _ => Render(value),
     };

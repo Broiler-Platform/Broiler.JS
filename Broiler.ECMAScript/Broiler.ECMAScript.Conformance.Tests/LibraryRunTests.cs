@@ -108,6 +108,31 @@ public class LibraryRunTests
         Assert.True(differences.Count == 0, differences.Count + " differences:\n" + string.Join("\n", differences.Take(60)));
     }
 
+    /// <summary>
+    /// Every Temporal vector passes against the library (milestone SJL-10.3), through the runner's Temporal adapter over
+    /// the data home's generated tables, but the engine-level ones: a built-in's <c>length</c>, the properties an engine
+    /// reads, and the calendar an object lends from its slot (row C13). The expected values are the reference
+    /// polyfill's, with the pinned text's where decision D7 rules, so a difference here is a defect of the library, the
+    /// adapter or the reference.
+    /// </summary>
+    [Fact]
+    public void Every_Temporal_vector_passes_against_the_algorithms_library()
+    {
+        var vectors = Home.Corpus.Records.Where(static v => v["area"] == "temporal").ToList();
+        var results = LibraryRun.Run(vectors, new AlgorithmsLibrary());
+
+        Assert.NotEmpty(vectors);
+        var differences = results.Where(static r => r.Verdict == Verdict.Difference)
+            .Select(static r => r.Vector.Id + " " + r.Vector["op"] + " in: " + r.Vector["in"] + " expected: " + r.Expected + " got: " + r.Rendered)
+            .ToList();
+        Assert.True(differences.Count == 0, differences.Count + " differences:\n" + string.Join("\n", differences.Take(60)));
+
+        var engineLevel = results.Where(static r => r.Verdict == Verdict.NotImplemented).Select(static r => r.Vector).ToList();
+        Assert.All(engineLevel, static v => Assert.True(AlgorithmsLibrary.IsEngineLevelTemporal(v["op"]!), v.Id + " is not answered by the library"));
+        Assert.Equal(27, engineLevel.Count);
+        Assert.Equal(10878 - 27, results.Count(static r => r.Verdict == Verdict.Match));
+    }
+
     [Fact]
     public void Against_the_empty_library_every_vector_is_not_implemented()
     {

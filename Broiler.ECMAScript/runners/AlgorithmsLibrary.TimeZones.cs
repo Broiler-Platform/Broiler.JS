@@ -161,7 +161,7 @@ internal sealed partial class AlgorithmsLibrary
             }
         }
 
-        return EmptyLibrary.NotImplemented;
+        return TemporalArea(operation, inputs);
     }
 
     private const string RangeError = "error: RangeError";
