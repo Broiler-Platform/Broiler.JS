@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Broiler.ECMAScript.Numbers;
+using Broiler.ECMAScript.Runners;
 using Broiler.ECMAScript.Temporal;
 using Broiler.ECMAScript.Time;
 using Xunit;
 using static Broiler.ECMAScript.Algorithms.Tests.CalendarTestSupport;
+using static Broiler.ECMAScript.Algorithms.Tests.DurationTestSupport;
 
 namespace Broiler.ECMAScript.Algorithms.Tests;
 
@@ -19,9 +22,9 @@ namespace Broiler.ECMAScript.Algorithms.Tests;
 /// as an engine's adapter would call them, and written in the string forms the program prints.
 /// </summary>
 /// <remarks>
-/// Left to the durations sub-area (SJL-10.3, part C): the lines that round a difference to months and that round or
-/// total a duration relative to a date, 7 to a calendar. Every other line is computed, and a line no pattern below
-/// matches fails the test.
+/// The lines that round a difference to months and that round or total a duration relative to a date, 7 to a
+/// calendar, are the durations sub-area's (SJL-10.3, part C), and are computed through the runner's Temporal adapter.
+/// Every line is computed, and a line no pattern below matches fails the test.
 /// </remarks>
 public class CalendarDatasetTests
 {
@@ -89,7 +92,6 @@ public class CalendarDatasetTests
 
         var mismatches = new List<string>();
         var computed = 0;
-        var leftToDurations = 0;
 
         foreach (var (label, answer) in expected)
         {
@@ -142,11 +144,6 @@ public class CalendarDatasetTests
                 var m = line.Match(label);
                 Assert.True(m.Success, label);
                 mine = Other(Id(m.Groups["cal"].Value), m.Groups["what"].Value);
-                if (mine is null)
-                {
-                    leftToDurations++;
-                    continue;
-                }
             }
 
             computed++;
@@ -155,12 +152,33 @@ public class CalendarDatasetTests
         }
 
         Assert.True(mismatches.Count == 0, mismatches.Count + " of " + computed + " lines differ:\n" + string.Join('\n', mismatches.Take(40)));
-        Assert.Equal(15 * 7, leftToDurations);
-        Assert.Equal(3999 - (15 * 7), computed);
+        Assert.Equal(3999, computed);
+    }
+
+    private static readonly Regex RoundMonths = new("^until (?<other>\\d{4}-\\d\\d-\\d\\d) round months$");
+
+    // The base date as the program's Temporal.PlainDate in the calendar.
+    private static TemporalAdapter.PlainDate BasePlainDate(CalendarId calendar) => new(BaseDate, calendar);
+
+    // A line computed through the runner's adapter, a refusal written as the program writes it.
+    private static string Relative(Func<string> line)
+    {
+        try
+        {
+            return line();
+        }
+        catch (TemporalAdapter.RangeError)
+        {
+            return "throws RangeError";
+        }
+        catch (TemporalAdapter.TypeError)
+        {
+            return "throws TypeError";
+        }
     }
 
     // The lines of one calendar's arithmetic that are not fields, additions, differences or month-days.
-    private static string? Other(CalendarId calendar, string what)
+    private static string Other(CalendarId calendar, string what)
     {
         var parts = Parts(calendar, BaseDate);
         var year = (double)parts.Year;
@@ -259,11 +277,20 @@ public class CalendarDatasetTests
                 return Date(status, result, calendar);
             }
 
+            case "duration round relativeTo":
+                // The durations sub-area (part C): 1,000 days balanced to years relative to the date.
+                return Relative(() => Adapter.Render(Adapter.Round(
+                    Adapter.ToDuration(Bag(("days", 1000.0))), Bag(("largestUnit", "years"), ("relativeTo", BasePlainDate(calendar))))));
+            case "duration total relativeTo":
+                return Relative(() => NumberText.ToString(Adapter.Total(
+                    Adapter.ToDuration(Bag(("days", 1000.0))), Bag(("unit", "months"), ("relativeTo", BasePlainDate(calendar))))));
             default:
-                // THE DURATIONS SUB-AREA'S: a difference rounded to months, and a duration rounded or totalled
-                // relative to the date.
-                Assert.True(what.EndsWith(" round months", StringComparison.Ordinal) || what is "duration round relativeTo" or "duration total relativeTo", what);
-                return null;
+                // The durations sub-area (part C): the difference to another date in the calendar, rounded to months.
+                var round = RoundMonths.Match(what);
+                Assert.True(round.Success, what);
+                return Relative(() => Adapter.Render(Adapter.Difference(
+                    DifferenceOperation.Until, BasePlainDate(calendar), new TemporalAdapter.PlainDate(ParseIso(round.Groups["other"].Value), calendar),
+                    Bag(("largestUnit", "years"), ("smallestUnit", "months"), ("roundingMode", "halfExpand")))));
         }
     }
 }

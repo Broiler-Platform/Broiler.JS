@@ -1,0 +1,10 @@
+new Duration(0,0,0,0,0,0,0,0,0,-1).sign => -1
+new Duration().sign => 0
+new Duration().blank => true
+Duration("P1D").negated() => Temporal.Duration -P1D
+Object.is(Duration("P1D").negated().hours, 0) => true
+Object.is(new Duration().negated().years, 0) => true
+Duration("-P1DT1H").abs() => Temporal.Duration P1DT1H
+Duration("P1D").with({hours: -1}) => THROWS RangeError: Temporal: the duration is not valid: mixed signs, or too large
+Duration("P1D").with({days: -1}).sign => -1
+Duration("P1D").with({}) => THROWS TypeError: Temporal: a duration-like object needs at least one duration property

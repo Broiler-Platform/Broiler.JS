@@ -26,4 +26,10 @@
   <ItemGroup>
     <ProjectReference Include="..\Broiler.ECMAScript.Algorithms\Broiler.ECMAScript.Algorithms.csproj" />
   </ItemGroup>
+  <!-- The Temporal adapter the library-level runner uses, linked so that the correspondence and dataset tests of the
+       durations sub-area (milestone SJL-10.3, part C) compute through the same engine-side steps. -->
+  <ItemGroup>
+    <Compile Include="..\runners\TemporalAdapter.cs" Link="Temporal\TemporalAdapter.cs" />
+    <Compile Include="..\runners\TemporalAdapter.Methods.cs" Link="Temporal\TemporalAdapter.Methods.cs" />
+  </ItemGroup>
 </Project>
