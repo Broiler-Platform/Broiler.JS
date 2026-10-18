@@ -12,6 +12,12 @@ applied, which Broiler.VM's slice checks hold its own answer equal to". Its comp
 line, the line after against its expected answer; and per line that still differs, the line after against
 the same line at the base".
 
+**Two rules, since SJL-10.2.** Bundle sjl-10-001's rule, part C (docs/evidence/sjl-10-001/decision-rule.md),
+takes the same configuration and comparison over another population, temporal.js and temporal-calendars.js,
+"through scripts/conformance/run_reference_datasets.py and its driver ... the harness extended at SJL-10.2 to
+the second program". A run names its bundle with ``--bundle``, which fixes the rule it is taken for and the
+programs it runs (``BUNDLES``); its outputs name both, and ``compare`` joins only two runs of one bundle.
+
 Two commands do that:
 
 - ``run`` builds the shell in Release (``--build``) or takes the one already built, checks every copy
@@ -26,7 +32,8 @@ Two commands do that:
 ``IntlChecks.RetainedMatches`` in Broiler.VM's
 ``src/compositions/Broiler.VM.Composition.JavaScript.SliceCompiler/IntlChecks.cs`` at 9508bd5, which the
 checks ``tzdb/time-zone-offsets-match-icu`` and ``temporal/t1/temporal-matches-the-reference-polyfill``
-run:
+run, and which ``temporal/t3/calendars-match-the-reference-polyfill`` runs the same way at 14072b0 and
+99c9c9f:
 
 - the retained answer is ``File.ReadAllText(retained).TrimEnd('\\n').Split('\\n')``: every LF at its end
   removed, then split at each LF (``split_retained``);
@@ -42,7 +49,7 @@ run:
   ``compare_answers``).
 
 Broiler.VM's check also asks that every divergence be used and that the retained answer have more lines
-than a floor (600 and 1,500); both are reported here as facts about the copies, not as part of a
+than a floor (600, 1,500 and 3,500); both are reported here as facts about the copies, not as part of a
 comparison.
 
 **What it decides.** Nothing. It reports equal and different lines and their counts; the rule's classes
@@ -72,13 +79,28 @@ DRIVER_TEMPLATE = SCRIPTS / "reference_dataset_driver.js"
 DRIVER_MARKER = "/*PROGRAM_FILE*/"
 SHELL_PROJECT = Path("Broiler.JS/Broiler.JavaScript/Broiler.JavaScript.csproj")
 SHELL_DLL = Path("Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll")
-RULE = "docs/evidence/sjl-8-001/decision-rule.md, part C"
-FORMAT = 1
+# Format 2 (SJL-10.2): a run names its bundle, and its copies are its population's, each with its commit.
+FORMAT = 2
 
 # IntlChecks.RetainedMatches's text for a line past the end of either answer.
 NO_LINE = "(no line)"
 # The `least` each of the two checks passes to RetainedMatches: the retained answer must have more lines.
-VM_LEAST = {"timezones": 600, "temporal": 1500}
+VM_LEAST = {"timezones": 600, "temporal": 1500, "temporal-calendars": 3500}
+
+
+@dataclass(frozen=True)
+class Bundle:
+    """An evidence bundle whose rule's part C this harness runs: the rule, and the programs it takes."""
+    name: str
+    rule: str
+    programs: tuple[str, ...]
+
+
+BUNDLES = {
+    "sjl-8-001": Bundle("sjl-8-001", "docs/evidence/sjl-8-001/decision-rule.md, part C", ("timezones", "temporal")),
+    "sjl-10-001": Bundle("sjl-10-001", "docs/evidence/sjl-10-001/decision-rule.md, part C",
+                         ("temporal", "temporal-calendars")),
+}
 
 DRIVER_LINE = "reference-dataset-driver"
 COMPLETION_LINE = "reference-dataset-completion"
@@ -685,8 +707,14 @@ def write_program_outputs(run: ProgramRun, out: Path) -> dict:
     }
 
 
-def identity_lines(label: str, tree: Path, dll: Path, built: list[str] | None, directory: Path, pin: Pin,
-                   started: str) -> list[str]:
+def population(pin: Pin, programs: Sequence[Program]) -> list[PinnedFile]:
+    """The copies the programs read: each one's program, retained answer and divergences, in pin order."""
+    names = {name for p in programs for name in (p.program, p.answer, p.divergences)}
+    return [pinned for pinned in pin.files.values() if pinned.name in names]
+
+
+def identity_lines(bundle: Bundle, label: str, tree: Path, dll: Path, built: list[str] | None, directory: Path,
+                   pin: Pin, programs: Sequence[Program], started: str) -> list[str]:
     commit = git(tree, "rev-parse", "HEAD")
     status = git(tree, "status", "--porcelain", "--untracked-files=all")
     harness_commit = git(REPOSITORY, "rev-parse", "HEAD")
@@ -695,7 +723,8 @@ def identity_lines(label: str, tree: Path, dll: Path, built: list[str] | None, d
     runtimes = [line for line in command_output("dotnet", "--list-runtimes").splitlines()
                 if line.startswith("Microsoft.NETCore.App ")]
     lines = [
-        f"harness: scripts/conformance/run_reference_datasets.py, format {FORMAT}, for {RULE}",
+        f"harness: scripts/conformance/run_reference_datasets.py, format {FORMAT}, for {bundle.rule}",
+        f"bundle: {bundle.name}; programs: {', '.join(p.name for p in programs)}",
         f"label: {label}",
         f"started (UTC): {started}",
         f"shell tree: {tree}",
@@ -719,9 +748,10 @@ def identity_lines(label: str, tree: Path, dll: Path, built: list[str] | None, d
         f"harness, driver and copies unchanged from that commit: {yes_no(bool(harness_commit) and harness_status == '')}",
         f"harness SHA-256: {sha256_file(Path(__file__))}",
         f"driver template SHA-256: {sha256_file(DRIVER_TEMPLATE)}",
-        f"datasets: {directory}, copies of Broiler.VM at the commits {PIN_NAME} names, every one equal to it",
+        f"datasets: {directory}, every copy equal to {PIN_NAME}; the run's population, copies of Broiler.VM at the"
+        " commits it names:",
     ]
-    for pinned in pin.files.values():
+    for pinned in population(pin, programs):
         lines.append(f"  {pinned.name} {pinned.length} {pinned.sha256} (Broiler.VM {pinned.source_commit[:7]}:{pinned.source_path})")
     return lines
 
@@ -742,23 +772,31 @@ def command_run(arguments: argparse.Namespace) -> int:
         for binary in sorted(dll.parent.glob("*.dll")):
             handle.write(f"{sha256_file(binary)}  {binary.name}\n")
 
-    selected = [p for p in pin.programs if not arguments.program or p.name in arguments.program]
-    if arguments.program and len(selected) != len(set(arguments.program)):
-        raise HarnessError("--program names a program the pin does not")
+    bundle = BUNDLES[arguments.bundle]
+    named = {p.name for p in pin.programs}
+    missing = [name for name in bundle.programs if name not in named]
+    if missing:
+        raise HarnessError(f"bundle {bundle.name}'s programs {missing} are not in {PIN_NAME}")
+    if arguments.program and not set(arguments.program) <= set(bundle.programs):
+        raise HarnessError(f"--program names a program bundle {bundle.name}'s rule does not take; it takes "
+                           f"{', '.join(bundle.programs)}")
+    selected = [pin.program(name) for name in bundle.programs if not arguments.program or name in arguments.program]
+    copies = population(pin, selected)
 
-    identity = identity_lines(arguments.label, tree, dll, built, directory, pin, started)
+    identity = identity_lines(bundle, arguments.label, tree, dll, built, directory, pin, selected, started)
     summary = {
         "format": FORMAT,
-        "rule": RULE,
+        "bundle": bundle.name,
+        "rule": bundle.rule,
         "label": arguments.label,
         "started": started,
         "shellCommit": git(tree, "rev-parse", "HEAD") or "unknown",
         "shellSha256": sha256_file(dll),
-        "datasetsSourceCommits": {p.name: p.source_commit for p in pin.files.values()},
-        "copies": {p.name: p.sha256 for p in pin.files.values()},
+        "datasetsSourceCommits": {p.name: p.source_commit for p in copies},
+        "copies": {p.name: p.sha256 for p in copies},
         "programs": {},
     }
-    report = ["Reference datasets, bundle sjl-8-001's rule, part C: one run", ""] + identity + [""]
+    report = [f"Reference datasets, bundle {bundle.name}'s rule, part C: one run", ""] + identity + [""]
     failed = False
     for program in selected:
         run = run_program(dll, directory, program, out, arguments.timeout)
@@ -832,6 +870,11 @@ def compare_rows(base: Sequence[dict[str, str]], after: Sequence[dict[str, str]]
     return rows, counts
 
 
+def bundle_of(summary: dict) -> str:
+    """A run's bundle; a run of format 1 was bundle sjl-8-001's, the only one there was."""
+    return summary.get("bundle", "sjl-8-001")
+
+
 def source_commits(summary: dict) -> dict[str, str]:
     """A run's copies' Broiler.VM commits: per copy from pin 2 on, and one for every copy in a run of format 1."""
     if "datasetsSourceCommits" in summary:
@@ -845,16 +888,19 @@ def command_compare(arguments: argparse.Namespace) -> int:
     out = Path(arguments.out).resolve()
     base = json.loads((base_dir / "summary.json").read_text(encoding="utf-8"))
     after = json.loads((after_dir / "summary.json").read_text(encoding="utf-8"))
+    if bundle_of(base) != bundle_of(after):
+        raise HarnessError(f"the base is a run for bundle {bundle_of(base)} and the after run for {bundle_of(after)}")
     if base["copies"] != after["copies"] or source_commits(base) != source_commits(after):
         raise HarnessError("the two runs did not read the same copies, so they are not runs of one population")
     if set(base["programs"]) != set(after["programs"]):
         raise HarnessError(f"the base ran {sorted(base['programs'])} and the after run {sorted(after['programs'])}")
     out.mkdir(parents=True, exist_ok=True)
-    result = {"format": FORMAT, "rule": RULE, "base": {"label": base["label"], "shellCommit": base["shellCommit"],
-              "shellSha256": base["shellSha256"]},
+    bundle = BUNDLES[bundle_of(after)]
+    result = {"format": FORMAT, "bundle": bundle.name, "rule": bundle.rule,
+              "base": {"label": base["label"], "shellCommit": base["shellCommit"], "shellSha256": base["shellSha256"]},
               "after": {"label": after["label"], "shellCommit": after["shellCommit"], "shellSha256": after["shellSha256"]},
               "copies": after["copies"], "programs": {}}
-    text = ["Reference datasets, bundle sjl-8-001's rule, part C: an after run against a base run", "",
+    text = [f"Reference datasets, bundle {bundle.name}'s rule, part C: an after run against a base run", "",
             f"base: {base['label']}, shell commit {base['shellCommit']}, BroilerJS.dll {base['shellSha256']}",
             f"after: {after['label']}, shell commit {after['shellCommit']}, BroilerJS.dll {after['shellSha256']}",
             f"copies: Broiler.VM {' '.join(sorted(set(source_commits(after).values())))}, the same SHA-256 in both runs", ""]
@@ -896,12 +942,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     commands = parser.add_subparsers(dest="command", required=True)
 
     run = commands.add_parser("run", help="run the programs in one shell and compare each line with its expected answer")
+    run.add_argument("--bundle", required=True, choices=sorted(BUNDLES),
+                     help="the bundle whose rule's part C the run is taken for, which fixes the programs it runs")
     run.add_argument("--tree", default=str(REPOSITORY), help="the checkout whose shell runs (default: this one)")
     run.add_argument("--build", action="store_true", help="build the shell in Release in that checkout first")
     run.add_argument("--shell", help="a BroilerJS.dll to run instead of the checkout's Release build")
     run.add_argument("--out", required=True, help="the directory the run's outputs are written to")
     run.add_argument("--label", default="run", help="a name for the run, such as base or after")
-    run.add_argument("--program", action="append", help="run only this program (repeatable)")
+    run.add_argument("--program", action="append", help="run only this one of the bundle's programs (repeatable)")
     run.add_argument("--timeout", type=float, default=1800.0, help="seconds each program may take (default 1800)")
     run.add_argument("--datasets", default=str(DATASETS), help=argparse.SUPPRESS)
     run.set_defaults(handler=command_run)

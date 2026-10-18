@@ -73,8 +73,11 @@ That expected answer is the one each rule compares this engine with.
 ## Running them
 
 [`scripts/conformance/run_reference_datasets.py`](../../../scripts/conformance/run_reference_datasets.py) is
-the harness the rule names, with its driver,
-[`reference_dataset_driver.js`](../../../scripts/conformance/reference_dataset_driver.js). For each program it
+the harness both rules name, with its driver,
+[`reference_dataset_driver.js`](../../../scripts/conformance/reference_dataset_driver.js). A run names its
+bundle with `--bundle`, which fixes the rule it is taken for and the programs it runs: `sjl-8-001` runs
+`timezones.js` and `temporal.js`, and `sjl-10-001` runs `temporal.js` and `temporal-calendars.js` (milestone
+SJL-10.2 extended the harness to the second). For each program it
 starts `dotnet BroilerJS.dll --script-host` on the driver, in this directory, with `TZ=UTC` and with `LANG`,
 `LANGUAGE` and every `LC_` variable removed. The driver reads the program's text with the shell's `read`,
 evaluates it by indirect eval, `(0, eval)(text)`, as the reference commands above do in Node, and prints the
@@ -83,7 +86,7 @@ by line, exactly as `RetainedMatches` does; its docstring states each step with 
 
 ```bash
 # One run, in the shell built in Release from a checkout (this one by default); --build builds it first:
-python3 scripts/conformance/run_reference_datasets.py run --tree <checkout> --build --label base --out <dir>
+python3 scripts/conformance/run_reference_datasets.py run --bundle sjl-10-001 --tree <checkout> --build --label base --out <dir>
 # An after run against a base run, line by line:
 python3 scripts/conformance/run_reference_datasets.py compare --base <base dir> --after <after dir> --out <dir>
 # The copies against datasets.pin:
@@ -93,16 +96,20 @@ python3 scripts/conformance/run_reference_datasets.py verify
 A run writes, per program, `<program>.lines.tsv` (every line: its number, whether it is equal, whether its
 expected text is the retained line or a divergence, its key, the expected text and the shell's), the answer as
 `<program>.answer.txt`, the shell's standard error, and the driver it ran; and for the run, `summary.json`,
-`report.txt`, `identity.txt` (the shell's commit, its binaries' digests, the SDK, the machine, the zone and
-locale variables, the copies' digests) and `shell-binaries.sha256`. Each run also changes one line of the
+`report.txt`, `identity.txt` (the bundle and its rule, the shell's commit, its binaries' digests, the SDK, the
+machine, the zone and locale variables, the digests of the copies its programs read and the Broiler.VM commit
+of each) and `shell-binaries.sha256`. Each run also changes one line of the
 expected answer in memory and records that the comparison shows it as a difference. A compare writes, per
 program, `<program>.compare.tsv`: each line after against its expected answer and against the same line at the
-base, with the counts in `compare.json` and `compare.txt`.
+base, with the counts in `compare.json` and `compare.txt`; it refuses two runs of different bundles or copies.
+Runs before SJL-10.2 (format 1) were all bundle `sjl-8-001`'s, and `compare` reads them as such.
 
-**The harness decides nothing.** It counts equal and differing lines. The rule's classes D1, D2 and D3 are
-assigned by a person, and the base run, retained in
+**The harness decides nothing.** It counts equal and differing lines. Bundle `sjl-8-001`'s classes D1, D2
+and D3 are assigned by a person, and its base run, retained in
 [`docs/evidence/sjl-8-001/datasets/base/`](../../../docs/evidence/sjl-8-001/datasets/base/), is read but not
-judged.
+judged. Bundle `sjl-10-001`'s rule admits no class: its base run, retained in
+[`docs/evidence/sjl-10-001/datasets/base/`](../../../docs/evidence/sjl-10-001/datasets/base/), is read but not
+judged, and its after run is judged line by line.
 
 ## Licence
 

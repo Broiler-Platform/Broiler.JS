@@ -1,4 +1,4 @@
-"""Tests of the reference datasets' copies and their harness (bundle sjl-8-001's rule, part C).
+"""Tests of the reference datasets' copies and their harness (bundles sjl-8-001's and sjl-10-001's rules, part C).
 
 The copies are held to datasets.pin on every run; the harness's line split, divergences and comparison are
 held to what Broiler.VM's IntlChecks.RetainedMatches does; its transport from the driver, its reports and its
@@ -226,6 +226,17 @@ class TheDatasetsTests(unittest.TestCase):
         self.assertIn("Asia/Calcutta => Asia/Kolkata | GMT+05:53:28 GMT+05:21:10 GMT+05:30 GMT+05:30 GMT+05:30 GMT+05:30 GMT+05:30 GMT+05:30",
                       expected.lines)
 
+    def test_temporal_calendars_expects_3999_lines_and_uses_each_of_its_70_divergences_once(self) -> None:
+        program = self.programs["temporal-calendars"]
+        retained = H.split_retained(read_copy(program.answer))
+        replaced = H.read_divergences(read_copy(program.divergences))
+        expected = H.expected_answer(retained, replaced, len(retained))
+        self.assertEqual(3999, len(retained))
+        self.assertGreater(len(retained), H.VM_LEAST["temporal-calendars"])
+        self.assertEqual(70, len(replaced))
+        self.assertEqual(70, expected.used)
+        self.assertEqual(70, expected.sources.count("divergence"))
+
     def test_temporal_expects_1629_lines_and_has_no_divergence(self) -> None:
         program = self.programs["temporal"]
         retained = H.split_retained(read_copy(program.answer))
@@ -261,6 +272,28 @@ class TheDatasetsTests(unittest.TestCase):
         control = H.negative_control(expected, ["A => 0", "B => 2", "C => 3"], results)
         self.assertEqual((2, "B => X", True, True), (control["line"], control["expectedChangedTo"],
                                                      control["shownAsDifference"], control["otherLinesUnchanged"]))
+
+
+class BundleTests(unittest.TestCase):
+    """Each bundle names its rule, a file of this repository, and programs the pin holds."""
+
+    def test_each_bundle_s_rule_and_programs(self) -> None:
+        pin = H.load_datasets(H.DATASETS)
+        self.assertEqual({"sjl-8-001": ("timezones", "temporal"), "sjl-10-001": ("temporal", "temporal-calendars")},
+                         {name: bundle.programs for name, bundle in H.BUNDLES.items()})
+        for name, bundle in H.BUNDLES.items():
+            self.assertEqual(name, bundle.name)
+            self.assertEqual(f"docs/evidence/{name}/decision-rule.md, part C", bundle.rule)
+            self.assertTrue((H.REPOSITORY / bundle.rule.split(",")[0]).is_file(), bundle.rule)
+            for program in bundle.programs:
+                self.assertIn(program, H.VM_LEAST)
+                pin.program(program)
+
+    def test_a_bundle_s_population_is_its_programs_three_files_each(self) -> None:
+        pin = H.load_datasets(H.DATASETS)
+        programs = [pin.program(name) for name in H.BUNDLES["sjl-10-001"].programs]
+        self.assertEqual(["temporal.js", "temporal.polyfill-e8cc03fc.txt", "temporal.divergences.txt", *COPIES_SJL_10],
+                         [pinned.name for pinned in H.population(pin, programs)])
 
 
 class TransportTests(unittest.TestCase):
@@ -390,6 +423,12 @@ class CompareTests(unittest.TestCase):
             self.assertEqual(1, len(H.read_tsv(root / "out" / "p.compare.tsv")))
 
             summary = json.loads((root / "after" / "summary.json").read_text(encoding="utf-8"))
+            summary["bundle"] = "sjl-10-001"
+            (root / "after" / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
+            with mock.patch("sys.stderr"):
+                self.assertEqual(2, H.main(["compare", "--base", str(root / "base"), "--after", str(root / "after"),
+                                            "--out", str(root / "out3")]))
+            del summary["bundle"]
             summary["copies"] = {"a": "2"}
             (root / "after" / "summary.json").write_text(json.dumps(summary), encoding="utf-8")
             with mock.patch("sys.stderr"):
@@ -400,6 +439,69 @@ class CompareTests(unittest.TestCase):
 class RunTests(unittest.TestCase):
     """The run command end to end, with a stand-in for the shell that answers as Broiler.VM does, but for
     one changed line of temporal.js."""
+
+    def run_bundle(self, root: Path, *options: str) -> tuple[int, list[tuple[str, str | None, bool]]]:
+        pin = H.load_datasets(H.DATASETS)
+        answers = {p.program: "\n".join(vm_answer(p)) for p in pin.programs}
+        answers["temporal.js"] = answers["temporal.js"].replace(" => 1/false", " => 1/true", 1)
+        calls = []
+
+        def fake_run(command, **kwargs):
+            if command[0] == "dotnet" and "--script-host" in command:
+                driver = Path(command[-1]).read_text(encoding="utf-8")
+                program = json.loads(driver.split("var file = ", 1)[1].split(";", 1)[0])
+                text = H.read_all_text((Path(kwargs["cwd"]) / program).read_bytes())
+                calls.append((program, kwargs["env"].get("TZ"), "LANG" in kwargs["env"]))
+                stdout = driver_stdout(program, text, answers[program]).encode()
+                return subprocess.CompletedProcess(command, 0, stdout, b"")
+            return subprocess.CompletedProcess(command, 1, "" if kwargs.get("text") else b"",
+                                               "" if kwargs.get("text") else b"")
+
+        shell = root / "bin" / "BroilerJS.dll"
+        shell.parent.mkdir(exist_ok=True)
+        shell.write_bytes(b"not a shell")
+        with mock.patch.object(H.subprocess, "run", fake_run), mock.patch("sys.stdout"), mock.patch("sys.stderr"):
+            code = H.main(["run", "--tree", str(root), "--shell", str(shell), "--out", str(root / "out"),
+                           "--label", "test", *options])
+        return code, calls
+
+    def test_a_run_of_bundle_sjl_10_001_runs_temporal_and_temporal_calendars(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            code, calls = self.run_bundle(root, "--bundle", "sjl-10-001")
+            self.assertEqual(0, code)
+            self.assertEqual([("temporal.js", "UTC", False), ("temporal-calendars.js", "UTC", False)], calls)
+            summary = json.loads((root / "out" / "summary.json").read_text(encoding="utf-8"))
+            self.assertEqual((2, "sjl-10-001", "docs/evidence/sjl-10-001/decision-rule.md, part C"),
+                             (summary["format"], summary["bundle"], summary["rule"]))
+            self.assertEqual(["temporal.js", "temporal.polyfill-e8cc03fc.txt", "temporal.divergences.txt", *COPIES_SJL_10],
+                             list(summary["copies"]))
+            self.assertEqual({**{name: BROILER_VM_9508BD5 for name in COPIES_SJL_8[3:]},
+                              **{name: BROILER_VM_14072B0 for name in COPIES_SJL_10}}, summary["datasetsSourceCommits"])
+            calendars, temporal = summary["programs"]["temporal-calendars"], summary["programs"]["temporal"]
+            self.assertEqual((3999, 3999, 0, 70, 3500), (calendars["comparedLines"], calendars["equal"],
+                                                          calendars["differing"], calendars["divergencesUsed"],
+                                                          calendars["vmLeast"]))
+            self.assertEqual((1629, 1628, 1), (temporal["comparedLines"], temporal["equal"], temporal["differing"]))
+            self.assertTrue(calendars["negativeControl"]["shownAsDifference"])
+            identity = (root / "out" / "identity.txt").read_text(encoding="utf-8")
+            self.assertIn("for docs/evidence/sjl-10-001/decision-rule.md, part C", identity)
+            self.assertIn("bundle: sjl-10-001; programs: temporal, temporal-calendars", identity)
+            self.assertIn("(Broiler.VM 14072b0:src/tests/temporal/calendars/divergences.txt)", identity)
+            self.assertNotIn("timezones.js", identity)
+            report = (root / "out" / "report.txt").read_text(encoding="utf-8")
+            self.assertTrue(report.startswith("Reference datasets, bundle sjl-10-001's rule, part C: one run"))
+
+    def test_a_run_names_its_bundle_and_only_that_bundle_s_programs(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            code, calls = self.run_bundle(Path(scratch), "--bundle", "sjl-10-001", "--program", "timezones")
+            self.assertEqual((2, []), (code, calls))
+        with tempfile.TemporaryDirectory() as scratch:
+            with self.assertRaises(SystemExit):
+                self.run_bundle(Path(scratch))
+        with tempfile.TemporaryDirectory() as scratch:
+            code, calls = self.run_bundle(Path(scratch), "--bundle", "sjl-10-001", "--program", "temporal-calendars")
+            self.assertEqual((0, [("temporal-calendars.js", "UTC", False)]), (code, calls))
 
     def test_a_run_writes_every_line_and_its_counts(self) -> None:
         pin = H.load_datasets(H.DATASETS)
@@ -424,11 +526,10 @@ class RunTests(unittest.TestCase):
             shell.parent.mkdir()
             shell.write_bytes(b"not a shell")
             with mock.patch.object(H.subprocess, "run", fake_run), mock.patch("sys.stdout"):
-                code = H.main(["run", "--tree", str(root), "--shell", str(shell), "--out", str(root / "out"),
-                               "--label", "test"])
+                code = H.main(["run", "--bundle", "sjl-8-001", "--tree", str(root), "--shell", str(shell),
+                               "--out", str(root / "out"), "--label", "test"])
             self.assertEqual(0, code)
-            self.assertEqual([("timezones.js", "UTC", False), ("temporal.js", "UTC", False),
-                              ("temporal-calendars.js", "UTC", False)], calls)
+            self.assertEqual([("timezones.js", "UTC", False), ("temporal.js", "UTC", False)], calls)
             summary = json.loads((root / "out" / "summary.json").read_text(encoding="utf-8"))
             timezones, temporal = summary["programs"]["timezones"], summary["programs"]["temporal"]
             self.assertEqual((610, 610, 0, 51), (timezones["comparedLines"], timezones["equal"],
