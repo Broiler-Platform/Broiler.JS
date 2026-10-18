@@ -1,0 +1,48 @@
+{
+  "format": 1,
+  "rule": "docs/evidence/sjl-8-001/decision-rule.md, part C",
+  "base": {
+    "label": "base",
+    "shellCommit": "15a1bd8f329f12238b093def5d1ddcd3e1dffe3d",
+    "shellSha256": "d431979497a5f6733a4d4225dbdb15ade327f00dcd0b5f8f745e8bac56396889"
+  },
+  "after": {
+    "label": "after",
+    "shellCommit": "79a0506c870302cefa6d7105146c65feab898879",
+    "shellSha256": "2bab2f8442b40928f8eac4bc2ee71fa06c75be47bace8d43d68ab71016db0587"
+  },
+  "copies": {
+    "timezones.js": "901a74066cec6ed13c160c941fd874d52ed390f74b1dc22974debd2c1954cbc1",
+    "timezones.icu-77.1.txt": "d3da1c10f7a87cb5fc5b6125f5b83648e4cfb4130b194848196a0a42f854473f",
+    "timezones.divergences.txt": "b020772f515fb822de8a7edb06e41649e167f31e437e03420be62c921b387a58",
+    "temporal.js": "91e1e5a4fe33785c1430f967b727680ead50406ee98a479a5e0f081b75a869db",
+    "temporal.polyfill-e8cc03fc.txt": "ebf380dda41192c160347c4ddf8f33f40101bfc75b44589ae348241322ad5fec",
+    "temporal.divergences.txt": "271ae88cc6b5ad1c4f5c768551c8e925f0830b15528a48e899fb2b308939daa8"
+  },
+  "programs": {
+    "timezones": {
+      "lines": 610,
+      "afterEqual": 458,
+      "afterDiffering": 152,
+      "differingSameAsBase": 19,
+      "differingMovedSinceBase": 133,
+      "baseDifferingAfterEqual": 407,
+      "baseEqualAfterDiffering": 0,
+      "expectedDiffers": 0,
+      "baseCompleted": true,
+      "afterCompleted": true
+    },
+    "temporal": {
+      "lines": 1629,
+      "afterEqual": 1622,
+      "afterDiffering": 7,
+      "differingSameAsBase": 7,
+      "differingMovedSinceBase": 0,
+      "baseDifferingAfterEqual": 0,
+      "baseEqualAfterDiffering": 0,
+      "expectedDiffers": 0,
+      "baseCompleted": true,
+      "afterCompleted": true
+    }
+  }
+}
