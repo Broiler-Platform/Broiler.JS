@@ -5,7 +5,7 @@ GENERATED - DO NOT EDIT MANUALLY. Regenerate with
 `CODE-ASSURANCE.md`, `assurance.manifest.json` and every generated source header from the
 product tree.
 
-> **Status: PENDING.** Human-reviewed: 0 of 948 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
+> **Status: PENDING.** Human-reviewed: 0 of 959 relevant units. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript --release`
 > fails while any relevant unit is without a decision bound to its current fingerprint.
 
 ## 1. How To Use This File
@@ -49,13 +49,13 @@ did, which is the narrower and the more useful of the two.
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 67 |
-| Code units | 1249 |
-| Relevant | 948 |
-| Exempt | 301 |
-| Assessed | 948 of 948 (100%) |
-| Human reviewed | 0 of 948 (0%) |
-| Unverified | 948 |
+| Files scanned | 81 |
+| Code units | 1278 |
+| Relevant | 959 |
+| Exempt | 319 |
+| Assessed | 959 of 959 (100%) |
+| Human reviewed | 0 of 959 (0%) |
+| Unverified | 959 |
 | Aliases naming a decision | 0 |
 
 ## 4. Review States
@@ -67,11 +67,11 @@ annotations and the current fingerprints; nothing stores them.
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 948 |
+| HUMAN_PENDING | 959 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 301 |
+| EXEMPT | 319 |
 
 ## 5. Aliases In The Tree
 
@@ -108,13 +108,27 @@ relevant units in a state that blocks a release.
 | `Broiler.ECMAScript.Algorithms/Numbers/ShortestDecimal.cs` | 13 | 13 | 0 | 13 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Algorithms/Numbers/StrWhiteSpace.cs` | 4 | 4 | 0 | 4 | Low | Medium | 0/0 |
 | `Broiler.ECMAScript.Algorithms/ResultStatus.cs` | 4 | 1 | 3 | 1 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Algorithms/Temporal/DurationCore.cs` | 8 | 8 | 0 | 8 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Algorithms/Temporal/IsoArithmetic.cs` | 27 | 27 | 0 | 27 | Low | Medium | 0/0 |
-| `Broiler.ECMAScript.Algorithms/Temporal/TemporalFormat.cs` | 28 | 28 | 0 | 28 | Low | Low | 0/0 |
-| `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` | 103 | 56 | 47 | 56 | Low | High | 36/36 |
-| `Broiler.ECMAScript.Algorithms/Temporal/TemporalLimits.cs` | 15 | 15 | 0 | 15 | Low | Medium | 0/0 |
-| `Broiler.ECMAScript.Algorithms/Temporal/TemporalOptionRules.cs` | 27 | 18 | 9 | 18 | Low | Medium | 0/0 |
-| `Broiler.ECMAScript.Algorithms/Temporal/TemporalRecords.cs` | 25 | 6 | 19 | 6 | Low | None | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarDate.cs` | 2 | 1 | 1 | 1 | None | None | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarDuration.cs` | 1 | 1 | 0 | 1 | None | None | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarFields.cs` | 7 | 1 | 6 | 1 | None | None | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarFieldsType.cs` | 4 | 1 | 3 | 1 | None | None | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarId.cs` | 17 | 1 | 16 | 1 | None | None | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarLimits.cs` | 10 | 10 | 0 | 10 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarOverflow.cs` | 3 | 1 | 2 | 1 | None | None | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarStatus.cs` | 15 | 1 | 14 | 1 | None | None | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarSystem.cs` | 20 | 12 | 8 | 12 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarSystemYear.cs` | 13 | 8 | 5 | 8 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/CalendarUnit.cs` | 5 | 1 | 4 | 1 | None | None | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/CopticCalendarSystem.cs` | 14 | 10 | 4 | 10 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/EastAsianCalendarSystem.cs` | 14 | 10 | 4 | 10 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/GregorianCalendarSystem.cs` | 9 | 7 | 2 | 7 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/HebrewCalendarSystem.cs` | 16 | 14 | 2 | 14 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/HijriCalendarSystem.cs` | 12 | 9 | 3 | 9 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/ICalendarArithmetic.cs` | 3 | 3 | 0 | 3 | None | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/IndianCalendarSystem.cs` | 8 | 7 | 1 | 7 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/MonthCode.cs` | 7 | 5 | 2 | 5 | Low | High | 1/1 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/PersianCalendarSystem.cs` | 10 | 8 | 2 | 8 | Low | Low | 0/0 |
+| `Broiler.ECMAScript.Algorithms/Temporal/Calendars/TemporalCalendars.cs` | 72 | 58 | 14 | 58 | Low | High | 1/1 |
 | `Broiler.ECMAScript.Algorithms/Text/Base64Codec.cs` | 20 | 13 | 7 | 13 | Low | High | 2/2 |
 | `Broiler.ECMAScript.Algorithms/Text/JsonReader.cs` | 51 | 19 | 32 | 19 | Low | High | 6/6 |
 | `Broiler.ECMAScript.Algorithms/Text/JsonText.cs` | 8 | 7 | 1 | 7 | Low | Medium | 0/0 |
@@ -248,78 +262,10 @@ written out, so a unit that becomes `High` joins it at the next generation.
   - Falsified if: a text that is not exactly one NumericLiteral completes, or a legacy form in strict mode code completes
 - `Broiler.ECMAScript.Numbers.NumericLiterals.BigInt(ReadOnlySpan<char>, int, NumericLiteralForm, LengthLimit, WorkCharge?, out NumericLiteral, out Failure)` in `Broiler.ECMAScript.Algorithms/Numbers/NumericLiterals.cs` - Security=High, Spec=ECMA-262 12.9.3 via Broiler.VM JsParser.TryBigIntValue, `E930F3`, PENDING
   - Falsified if: a BigInt literal wider than the caller's limit is converted before it is refused, or one within the limit is refused
-- `Broiler.ECMAScript.Temporal.TemporalGrammar` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal ISO 8601 grammar via Broiler.VM JsTemporalParser, `4DD523`, PENDING
-  - Falsified if: a string Broiler.VM's JsTemporalParser refuses is accepted for a goal, a string it accepts is refused, or an accepted string answers a field other than Broiler.VM's
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.TryParse(ReadOnlySpan<char>, ReadOnlySpan<TemporalGoal>, out IsoParseResult?, out TemporalParseError, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal ParseISODateTime via Broiler.VM JsTemporalParser.Parse, `2B62FC`, PENDING
-  - Falsified if: the meter is charged other than the text's length before the first character is read, a later goal is tried after an earlier one matched, or a calendar other than the first u-ca annotation's is answered
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseInstant(ReadOnlySpan<char>, out BigInteger, out TemporalParseError, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal ParseTemporalInstant via Broiler.VM JsTemporal.ToInstant, `3765EF`, PENDING
-  - Falsified if: an instant string within the range is refused, or one outside it, or more than 10^8 days from the epoch after its offset, is accepted
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseTimeZoneString(ReadOnlySpan<char>, out TimeZoneIdentifierRecord, out TemporalParseError, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal ParseTemporalTimeZoneString via Broiler.VM JsTemporal.ToTimeZoneIdentifier, `E00095`, PENDING
-  - Falsified if: a string that is neither a time zone identifier nor an ISO string of one of the six goals names a zone, or the zone answered is not the annotation's, then UTC for Z, then the offset's
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseTimeZoneIdentifier(ReadOnlySpan<char>, out TimeZoneIdentifierRecord, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal ParseTimeZoneIdentifier via Broiler.VM JsTemporal.TimeZoneFromIdentifier, `232199`, PENDING
-  - Falsified if: a string the grammar's TimeZoneIdentifier does not match whole is accepted, or an offset identifier answers a name
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseCalendarString(ReadOnlySpan<char>, out string?, out TemporalParseError, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal ParseTemporalCalendarString via Broiler.VM JsTemporal.ParseCalendarString, `41C0C1`, PENDING
-  - Falsified if: a string that neither ParseISODateTime over the six goals nor AnnotationValue accepts is accepted, or the calendar answered is not the first u-ca annotation's
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseOffsetString(ReadOnlySpan<char>, out long)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal ToOffsetString and ParseDateTimeUTCOffset via Broiler.VM JsTemporal.OffsetString and JsTemporalParser.OffsetNanoseconds, `880839`, PENDING
-  - Falsified if: a string other than a whole UTCOffset with sub-minute precision is accepted, or an accepted offset answers other than its exact nanoseconds
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseDuration(ReadOnlySpan<char>, out DurationFields, out TemporalParseError, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal ParseTemporalDurationString via Broiler.VM JsTemporalParser.Duration, `38C6AC`, PENDING
-  - Falsified if: a string the TemporalDurationString grammar refuses is accepted (a time designator with no part, a fraction not on the last time part, parts out of order), or a part is not its exact value rounded once
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.IsTimeZoneIdentifier(ReadOnlySpan<char>, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal TimeZoneIdentifier via Broiler.VM JsTemporalParser.IsTimeZoneIdentifier, `FADD2D`, PENDING
-  - Falsified if: a string other than a whole UTCOffset without seconds or a TimeZoneIANAName is accepted
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.IsUtcOffset(ReadOnlySpan<char>, bool)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal UTCOffset via Broiler.VM JsTemporalParser.IsUtcOffset, `1F7E11`, PENDING
-  - Falsified if: a string other than a whole UTCOffset of the precision is accepted, including Z, U+2212 or a digit other than ASCII
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.IsAnnotationValue(ReadOnlySpan<char>, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal AnnotationValue via Broiler.VM JsTemporalParser.IsAnnotationValue, `E3B3B1`, PENDING
-  - Falsified if: an empty string, an empty component or a character other than an ASCII letter, digit or separating hyphen is accepted
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parse(ReadOnlySpan<char>, ReadOnlySpan<TemporalGoal>, out IsoParseResult?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal ParseISODateTime via Broiler.VM JsTemporalParser.Parse, `DB3BE7`, PENDING
-  - Falsified if: the annotation checks are applied to a goal other than the first matched, or the record's fields are not the matched parse nodes'
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.IsWholeTimeZoneIdentifier(ReadOnlySpan<char>)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal TimeZoneIdentifier via Broiler.VM JsTemporalParser.IsTimeZoneIdentifier, `2684CF`, PENDING
-  - Falsified if: a string other than a whole UTCOffset without seconds or a TimeZoneIANAName is accepted
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.IsAnnotationValueCore(ReadOnlySpan<char>)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal AnnotationValue via Broiler.VM JsTemporalParser.IsAnnotationValue, `B98621`, PENDING
-  - Falsified if: an empty string, an empty component or a character other than an ASCII letter, digit or separating hyphen is accepted
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.IsAnnotationKey(ReadOnlySpan<char>)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal AnnotationKey via Broiler.VM JsTemporalParser.IsAnnotationKey, `4375B0`, PENDING
-  - Falsified if: a key that is empty, starts other than with a lower-case ASCII letter or an underscore, or holds a character outside the key's set is accepted
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Duration(ReadOnlySpan<char>, out DurationFields)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal ParseTemporalDurationString via Broiler.VM JsTemporalParser.Duration, `A6B684`, PENDING
-  - Falsified if: a string the TemporalDurationString grammar refuses is accepted, or a part answers other than its exact value rounded once to a Number
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal ISO 8601 grammar productions via Broiler.VM JsTemporalParser, `E21966`, PENDING
-  - Falsified if: a production matches text its grammar rule does not derive, fails on text it derives where Broiler.VM's matches, or leaves the position other than after its match or at its start
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.AnnotatedDateTime(bool, bool, bool)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal AnnotatedDateTime via Broiler.VM JsTemporalParser.AnnotatedDateTime, `30151F`, PENDING
-  - Falsified if: a date-time without its required time, offset or zone annotation matches, Z matches where the goal has no Z, or text remains after the match
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.AnnotatedTime()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal AnnotatedTime and its early errors via Broiler.VM JsTemporalParser.AnnotatedTime, `8D86A1`, PENDING
-  - Falsified if: a designator-less time that is also a whole DateSpecMonthDay or DateSpecYearMonth matches, or Z matches
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.AnnotatedYearMonth()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal AnnotatedYearMonth via Broiler.VM JsTemporalParser.AnnotatedYearMonth, `45E67D`, PENDING
-  - Falsified if: a year-month followed by anything but annotations matches
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.AnnotatedMonthDay()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal AnnotatedMonthDay via Broiler.VM JsTemporalParser.AnnotatedMonthDay, `0C76E0`, PENDING
-  - Falsified if: a month-day followed by anything but annotations matches
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.DateYear()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal DateYear via Broiler.VM JsTemporalParser.DateYear, `4FFA3B`, PENDING
-  - Falsified if: a year other than four ASCII digits or an ASCII sign and six is matched, or -000000 is
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.DateMonth()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal DateMonth via Broiler.VM JsTemporalParser.DateMonth, `60B3B8`, PENDING
-  - Falsified if: a month other than two ASCII digits from 01 to 12 is matched
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.DateDay()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal DateDay via Broiler.VM JsTemporalParser.DateDay, `21B999`, PENDING
-  - Falsified if: a day other than two ASCII digits from 01 to 31 is matched
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.DateSpec()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal DateSpec and IsValidDate via Broiler.VM JsTemporalParser.DateSpec, `3F3E7B`, PENDING
-  - Falsified if: a date mixing the extended and basic separators, or a date that is not a valid ISO date, matches
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.DateSpecYearMonth()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal DateSpecYearMonth via Broiler.VM JsTemporalParser.DateSpecYearMonth, `313B7C`, PENDING
-  - Falsified if: a year-month other than a DateYear, an optional hyphen and a DateMonth matches
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.DateSpecMonthDay()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal DateSpecMonthDay and IsValidMonthDay via Broiler.VM JsTemporalParser.DateSpecMonthDay, `14CC14`, PENDING
-  - Falsified if: a month-day that is not a day of 1972 matches, or one with a single leading hyphen
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.Fraction(bool)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal TemporalDecimalFraction via Broiler.VM JsTemporalParser.Fraction, `B60AF2`, PENDING
-  - Falsified if: a fraction of no digit or of ten or more digits matches
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.TimeSpec()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal TimeSpec via Broiler.VM JsTemporalParser.TimeSpec, `BC60CA`, PENDING
-  - Falsified if: a time mixing the extended and basic separators matches beyond its hour and minute, an hour above 23, a minute above 59 or a second above 60 matches
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.UtcOffset(bool, out bool)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal UTCOffset via Broiler.VM JsTemporalParser.UtcOffset, `A4AF4D`, PENDING
-  - Falsified if: an offset with a sign other than ASCII + or -, an hour above 23, a minute or second above 59, or seconds without sub-minute precision matches
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.TimeZoneIanaName()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal TimeZoneIANAName via Broiler.VM JsTemporalParser.TimeZoneIanaName, `B4B31D`, PENDING
-  - Falsified if: a name with an empty component, a component starting with a digit, a hyphen or a plus sign, or a character outside ASCII letters, digits and . _ - + / matches
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.TimeZoneIdentifier()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal TimeZoneIdentifier via Broiler.VM JsTemporalParser.TimeZoneIdentifier, `4F1405`, PENDING
-  - Falsified if: an identifier other than a UTCOffset without seconds or a TimeZoneIANAName matches
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.Annotations()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal TimeZoneAnnotation and Annotations via Broiler.VM JsTemporalParser.Annotations, `91C026`, PENDING
-  - Falsified if: an empty or flag-only annotation, a zone annotation after another annotation or one the TimeZoneIdentifier grammar refuses, or a key or value off the grammar matches
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.DateTimeOffset(bool)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal DateTimeUTCOffset via Broiler.VM JsTemporalParser.DateTimeOffset, `A9D204`, PENDING
-  - Falsified if: Z or z matches where the goal has no UTCDesignator
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.Digits(int)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal DecimalDigit via Broiler.VM JsTemporalParser.Digits, `A86237`, PENDING
-  - Falsified if: a character other than an ASCII digit is read as one
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.Bounded(int)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, Spec=Temporal Hour and MinuteSecond via Broiler.VM JsTemporalParser.Bounded, `757D0F`, PENDING
-  - Falsified if: two digits above the maximum are read
+- `Broiler.ECMAScript.Temporal.MonthCode.Parse(ReadOnlySpan<char>, out MonthCode)` in `Broiler.ECMAScript.Algorithms/Temporal/Calendars/MonthCode.cs` - Security=High, Spec=Temporal s12.2.1 via Broiler.VM JsTemporal.MonthCodeOf, `6D1E6C`, PENDING
+  - Falsified if: a string other than M, two ASCII digits and an optional L, or the string M00, parses as a month code
+- `Broiler.ECMAScript.Temporal.TemporalCalendars.Canonicalize(ReadOnlySpan<char>, out CalendarId)` in `Broiler.ECMAScript.Algorithms/Temporal/Calendars/TemporalCalendars.cs` - Security=High, Spec=Temporal s12.1.1, Intl era and month code proposal 1.1.1 via Broiler.VM JsTemporal.CanonicalizeCalendar, `E8A556`, PENDING
+  - Falsified if: an identifier that differs from a Table 1 type or alias in anything but the case of ASCII letters canonicalises to a calendar
 - `Broiler.ECMAScript.Text.Base64Codec.FromBase64(ReadOnlySpan<char>, Base64Alphabet, LastChunkHandling, Span<byte>, out int, out int, out Failure, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Text/Base64Codec.cs` - Security=High, Spec=ECMA-262 Uint8Array base64, `2974B4`, PENDING
   - Falsified if: a decode writes past the destination, reports a read count other than the clauses', or completes or fails where the clauses do not
 - `Broiler.ECMAScript.Text.Base64Codec.FromHex(ReadOnlySpan<char>, Span<byte>, out int, out int, out Failure, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Text/Base64Codec.cs` - Security=High, Spec=ECMA-262 Uint8Array base64, `C63508`, PENDING
@@ -430,5 +376,5 @@ An assessment is a comment, so changing one moves no fingerprint anywhere, and n
 mechanical checks that it is right; the check holds its values to their vocabularies and no
 further.
 
-469 of the 948 assessed units declare `Origin=AI`. Reading a declaration is the only thing
+476 of the 959 assessed units declare `Origin=AI`. Reading a declaration is the only thing
 that makes it read.

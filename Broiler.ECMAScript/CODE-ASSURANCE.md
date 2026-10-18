@@ -13,15 +13,15 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Files scanned | 67 |
+| Files scanned | 81 |
 | Files not covered | 0 |
-| Files carrying an annotation | 67 |
-| Code units | 1249 |
-| Relevant | 948 |
-| Exempt by predicate | 301 |
-| Annotated | 948 of 948 (100%) |
-| Human reviewed | 0 of 948 (0%) |
-| Unverified | 948 |
+| Files carrying an annotation | 81 |
+| Code units | 1278 |
+| Relevant | 959 |
+| Exempt by predicate | 319 |
+| Annotated | 959 of 959 (100%) |
+| Human reviewed | 0 of 959 (0%) |
+| Unverified | 959 |
 
 ## Review states
 
@@ -29,18 +29,18 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | NEW | 0 |
 | AI_ASSESSED | 0 |
-| HUMAN_PENDING | 948 |
+| HUMAN_PENDING | 959 |
 | HUMAN_APPROVED_PENDING_FINGERPRINT | 0 |
 | VERIFIED | 0 |
 | STALE | 0 |
-| EXEMPT | 301 |
+| EXEMPT | 319 |
 
 ## IP risk
 
 | Value | Units |
 |---|---:|
-| None | 0 |
-| Low | 992 |
+| None | 13 |
+| Low | 987 |
 | Medium | 8 |
 | High | 0 |
 | Unknown | 0 |
@@ -50,10 +50,10 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Value | Units |
 |---|---:|
-| None | 26 |
-| Low | 483 |
-| Medium | 368 |
-| High | 123 |
+| None | 18 |
+| Low | 548 |
+| Medium | 353 |
+| High | 89 |
 | Critical | 0 |
 | *not annotated* | 0 |
 
@@ -63,7 +63,7 @@ and the figures below are the measurement of how far from that claim the per-uni
 |---|---:|
 | Maximum | 9 / 10 |
 | Average over annotated units | 1.3 / 10 |
-| Units scored | 948 |
+| Units scored | 959 |
 
 ## High-security review areas
 
@@ -107,42 +107,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 - `Broiler.ECMAScript.Numbers.NumberParsing.Integer(ReadOnlySpan<char>, int)` in `Broiler.ECMAScript.Algorithms/Numbers/NumberParsing.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Numbers.NumericLiterals.Evaluate(ReadOnlySpan<char>, bool, LengthLimit, out NumericLiteral, out Failure, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Numbers/NumericLiterals.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Numbers.NumericLiterals.BigInt(ReadOnlySpan<char>, int, NumericLiteralForm, LengthLimit, WorkCharge?, out NumericLiteral, out Failure)` in `Broiler.ECMAScript.Algorithms/Numbers/NumericLiterals.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.TryParse(ReadOnlySpan<char>, ReadOnlySpan<TemporalGoal>, out IsoParseResult?, out TemporalParseError, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseInstant(ReadOnlySpan<char>, out BigInteger, out TemporalParseError, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseTimeZoneString(ReadOnlySpan<char>, out TimeZoneIdentifierRecord, out TemporalParseError, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseTimeZoneIdentifier(ReadOnlySpan<char>, out TimeZoneIdentifierRecord, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseCalendarString(ReadOnlySpan<char>, out string?, out TemporalParseError, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseOffsetString(ReadOnlySpan<char>, out long)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.TryParseDuration(ReadOnlySpan<char>, out DurationFields, out TemporalParseError, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.IsTimeZoneIdentifier(ReadOnlySpan<char>, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.IsUtcOffset(ReadOnlySpan<char>, bool)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.IsAnnotationValue(ReadOnlySpan<char>, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parse(ReadOnlySpan<char>, ReadOnlySpan<TemporalGoal>, out IsoParseResult?)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.IsWholeTimeZoneIdentifier(ReadOnlySpan<char>)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.IsAnnotationValueCore(ReadOnlySpan<char>)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.IsAnnotationKey(ReadOnlySpan<char>)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Duration(ReadOnlySpan<char>, out DurationFields)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.AnnotatedDateTime(bool, bool, bool)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.AnnotatedTime()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.AnnotatedYearMonth()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.AnnotatedMonthDay()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.DateYear()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.DateMonth()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.DateDay()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.DateSpec()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.DateSpecYearMonth()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.DateSpecMonthDay()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.Fraction(bool)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.TimeSpec()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.UtcOffset(bool, out bool)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.TimeZoneIanaName()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.TimeZoneIdentifier()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.Annotations()` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.DateTimeOffset(bool)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.Digits(int)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
-- `Broiler.ECMAScript.Temporal.TemporalGrammar.Parser.Bounded(int)` in `Broiler.ECMAScript.Algorithms/Temporal/TemporalGrammar.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Temporal.MonthCode.Parse(ReadOnlySpan<char>, out MonthCode)` in `Broiler.ECMAScript.Algorithms/Temporal/Calendars/MonthCode.cs` - Security=High, human line PENDING
+- `Broiler.ECMAScript.Temporal.TemporalCalendars.Canonicalize(ReadOnlySpan<char>, out CalendarId)` in `Broiler.ECMAScript.Algorithms/Temporal/Calendars/TemporalCalendars.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Text.Base64Codec.FromBase64(ReadOnlySpan<char>, Base64Alphabet, LastChunkHandling, Span<byte>, out int, out int, out Failure, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Text/Base64Codec.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Text.Base64Codec.FromHex(ReadOnlySpan<char>, Span<byte>, out int, out int, out Failure, WorkCharge?)` in `Broiler.ECMAScript.Algorithms/Text/Base64Codec.cs` - Security=High, human line PENDING
 - `Broiler.ECMAScript.Text.JsonReader` in `Broiler.ECMAScript.Algorithms/Text/JsonReader.cs` - Security=High, human line PENDING
@@ -195,8 +161,8 @@ and the figures below are the measurement of how far from that claim the per-uni
 
 | Metric | Value |
 |---|---:|
-| Units carrying a criterion | 123 |
-| Units required to carry one | 123 |
+| Units carrying a criterion | 89 |
+| Units required to carry one | 89 |
 | Required and missing | 0 |
 
 A `Broiler-Falsified-If:` line states, at the declaration, the observation that would make
@@ -217,14 +183,14 @@ that the rule is reviewable in one place rather than in several hundred.
 
 | Case | Units |
 |---|---:|
-| TrivialPropertyOrAccessor | 67 |
+| TrivialPropertyOrAccessor | 42 |
 | ParameterAssigningConstructor | 6 |
-| TrivialExpressionBodiedMember | 13 |
-| CompilerSuppliedRecordOrEnumMember | 22 |
+| TrivialExpressionBodiedMember | 30 |
+| CompilerSuppliedRecordOrEnumMember | 30 |
 | DelegatingOverrideOrOperator | 0 |
 | InsideAssemblyMarker | 0 |
-| FieldDeclaringStorage | 50 |
-| EnumMemberOfADeclaredVocabulary | 143 |
+| FieldDeclaringStorage | 65 |
+| EnumMemberOfADeclaredVocabulary | 146 |
 | DeclaredInSource | 0 |
 
 ## Per-unit exemptions
@@ -248,14 +214,14 @@ through a `<Compile Include>` it states, is left out of the record.
 ## Change detection
 
 `assurance.manifest.json` lists **every** code unit in the 3 covered assemblies -
-1249 of them, exempt and relevant alike - with the fingerprint of its declaration.
+1278 of them, exempt and relevant alike - with the fingerprint of its declaration.
 This manifest is a change-detection record, not a review. A unit listed there is watched, not reviewed:
 the entry records what the declaration's tokens hashed to when the generator last ran, and
 nothing else. What the manifest adds is that a unit the exemption predicate treats as
 trivial is no longer invisible: a semantic change to one moves a value in a generated file
 the check compares byte for byte. `dotnet run --project Broiler.Code/src/Broiler.Code.Review.Cli -c Release -- assurance check --root Broiler.JS/Broiler.ECMAScript` holds the manifest to the tree.
 
-Beside the units it lists **every covered file** - 67 of them - with a
+Beside the units it lists **every covered file** - 81 of them - with a
 fingerprint over the complete token stream of its compilation unit. A unit entry exists only
 for a declaration kind the scanner enumerates, and an enumeration is a whitelist: an
 `[assembly: ...]` attribute is a member of nothing and can be in no unit at all.
