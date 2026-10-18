@@ -1,0 +1,29 @@
+# Part A's completeness conditions for each run, read from the files the workflow wrote:
+# every expected shard reported, no configuration failure, one suite revision, one shell, every
+# shard in the zone, includeNegative true.
+
+## base: test262/base/
+tested commit (run.txt): 15a1bd8f329f12238b093def5d1ddcd3e1dffe3d
+workflow run (run.txt): https://github.com/Broiler-Platform/Broiler.JS/actions/runs/39038217145 (attempt 1)
+runner (run.txt): ubuntu24 20261012.334.1; Linux X64; logical processors 4; dotnetVersion 10.0.402
+expected shards: [0, 1, 2, 3, 4, 5, 6, 7]; reported: [0, 1, 2, 3, 4, 5, 6, 7]; incomplete: []; retried: []; status files: 8
+configuration failures: []
+suite revisions (suiteRefs): ['ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e']
+includeNegative: run.txt True; merged results True; re-run True
+selection: all-script-host-verifiable; workers 4; timeout 30.0 s; memory limit 0; minifier terser 5.50.0
+shell: shards: 8; distinct lists: 1; the re-run's shell hashes as the shards' did
+zone: expected: TZ: unset; expected: 2021-01-15T12:00:00Z: UTC +0000; expected: 2021-07-15T12:00:00Z: UTC +0000; expected: tzdata: 2026c; shards: 8; in the expected zone: 8
+summary: {"executed": 100187, "failed": 2004, "notApplicable": 5871, "notApplicableByKind": {"minifier-changed-semantics": 160, "minifier-invalid-output": 15, "minifier-not-applicable": 5309, "minifier-unsupported-syntax": 387}, "passed": 98181, "skipped": 5871, "timedOut": 2, "total": 106058, "uniquePaths": 53029}
+
+## after: test262/after/
+tested commit (run.txt): 79a0506c870302cefa6d7105146c65feab898879
+workflow run (run.txt): https://github.com/Broiler-Platform/Broiler.JS/actions/runs/39107043317 (attempt 1)
+runner (run.txt): ubuntu24 20261012.334.1; Linux X64; logical processors 4; dotnetVersion 10.0.402
+expected shards: [0, 1, 2, 3, 4, 5, 6, 7]; reported: [0, 1, 2, 3, 4, 5, 6, 7]; incomplete: []; retried: []; status files: 8
+configuration failures: []
+suite revisions (suiteRefs): ['ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e']
+includeNegative: run.txt True; merged results True; re-run True
+selection: all-script-host-verifiable; workers 4; timeout 30.0 s; memory limit 0; minifier terser 5.50.0
+shell: shards: 8; distinct lists: 1; the re-run's shell hashes as the shards' did
+zone: expected: TZ: unset; expected: 2021-01-15T12:00:00Z: UTC +0000; expected: 2021-07-15T12:00:00Z: UTC +0000; expected: tzdata: 2026c; shards: 8; in the expected zone: 8
+summary: {"executed": 100187, "failed": 2004, "notApplicable": 5871, "notApplicableByKind": {"minifier-changed-semantics": 160, "minifier-invalid-output": 15, "minifier-not-applicable": 5309, "minifier-unsupported-syntax": 387}, "passed": 98181, "skipped": 5871, "timedOut": 2, "total": 106058, "uniquePaths": 53029}

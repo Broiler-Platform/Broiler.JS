@@ -1,0 +1,12 @@
+[test262] Starting test262 run for suite ref ccaac100ff49d81e9ff47a75ff4c60e0bd3f262e using local suite root /home/runner/work/Broiler.JS/Broiler.JS/.cache/test262
+[test262] Selected 1 runnable test(s) for shard 1/1 from 1 selected file(s) and 1 candidate path(s) using mode requested.
+[test262] Using Broiler script host at /home/runner/work/Broiler.JS/Broiler.JS/Broiler.JS/Broiler.JavaScript/bin/Release/net10.0/BroilerJS.dll
+[test262] Running 1 test(s) for shard 1/1.
+[test262] Per-test timeout is 30s; POSIX memory cap is disabled.
+[test262] Each path will run as original and terser variants (test262-safe-mangle-v2, version 5.50.0).
+[test262] A failing minified case is cross-checked against node v22.23.3 before it counts as an engine failure. It accepts --harmony-temporal --harmony-shadow-realm --harmony-intl-duration-format --js-float16array, so it can speak about those features.
+[test262] Timeout 1 at test/staging/sm/regress/regress-1507322-deep-weakmap.js [original] after 30s
+[test262] Timeout 2 at test/staging/sm/regress/regress-1507322-deep-weakmap.js [terser] after 30s
+[test262] Completed 1/1 path(s), 2 variant case(s) (passed=0, failed=0, skipped=0, timedOut=2).
+[test262] Wrote machine-readable summary to shard-out/test262-rerun-shard-0.json
+[test262] Finished test262 run: variantCases=2, executed=2, passed=0, failed=0, skipped=0, timedOut=2
