@@ -103,6 +103,7 @@ class PinnedFile:
     sha256: str
     blob: str
     source_path: str
+    source_commit: str
 
 
 @dataclass(frozen=True)
@@ -115,14 +116,20 @@ class Program:
 
 @dataclass(frozen=True)
 class Pin:
-    source_commit: str
+    source_commits: tuple[str, ...]
     files: dict[str, PinnedFile]
     programs: tuple[Program, ...]
 
+    def program(self, name: str) -> Program:
+        return next(p for p in self.programs if p.name == name)
+
 
 def read_pin(text: str) -> Pin:
-    """Reads datasets.pin's lines; comments and blank lines are skipped."""
+    """Reads datasets.pin's lines; comments and blank lines are skipped. A `source-commit` line names the
+    Broiler.VM commit of the `file` lines after it, up to the next one (pin 2, milestone SJL-10.2: the copies
+    of bundle sjl-8-001's rule came from Broiler.VM's 9508bd5, and SJL-10.2's from its 14072b0)."""
     source_commit = ""
+    source_commits: list[str] = []
     files: dict[str, PinnedFile] = {}
     programs: list[Program] = []
     for number, raw in enumerate(text.split("\n"), start=1):
@@ -131,23 +138,30 @@ def read_pin(text: str) -> Pin:
         fields = raw.split(" ")
         if fields[0] == "source-commit" and len(fields) == 2:
             source_commit = fields[1]
+            if source_commit in source_commits:
+                raise HarnessError(f"{PIN_NAME} line {number}: source commit {source_commit} opens a second block")
+            source_commits.append(source_commit)
         elif fields[0] == "file":
             if len(fields) != 6 or not fields[2].isdigit():
                 raise HarnessError(f"{PIN_NAME} line {number}: a file line is `file <name> <bytes> <sha256> <blob> <path>`")
+            if not source_commit:
+                raise HarnessError(f"{PIN_NAME} line {number}: a file line comes before any source-commit line")
             if fields[1] in files:
                 raise HarnessError(f"{PIN_NAME} line {number}: {fields[1]} is pinned twice")
-            files[fields[1]] = PinnedFile(fields[1], int(fields[2]), fields[3], fields[4], fields[5])
+            files[fields[1]] = PinnedFile(fields[1], int(fields[2]), fields[3], fields[4], fields[5], source_commit)
         elif fields[0] == "program":
             if len(fields) != 5:
                 raise HarnessError(f"{PIN_NAME} line {number}: a program line is `program <name> <program> <answer> <divergences>`")
+            if any(p.name == fields[1] for p in programs):
+                raise HarnessError(f"{PIN_NAME} line {number}: program {fields[1]} is named twice")
             programs.append(Program(*fields[1:]))
-    if not source_commit or not files or not programs:
+    if not source_commits or not files or not programs:
         raise HarnessError(f"{PIN_NAME} names no source commit, no file or no program")
     for program in programs:
         for name in (program.program, program.answer, program.divergences):
             if name not in files:
                 raise HarnessError(f"{PIN_NAME}: program {program.name} names {name}, which no file line pins")
-    return Pin(source_commit, files, tuple(programs))
+    return Pin(tuple(source_commits), files, tuple(programs))
 
 
 def sha256_bytes(data: bytes) -> str:
@@ -705,10 +719,10 @@ def identity_lines(label: str, tree: Path, dll: Path, built: list[str] | None, d
         f"harness, driver and copies unchanged from that commit: {yes_no(bool(harness_commit) and harness_status == '')}",
         f"harness SHA-256: {sha256_file(Path(__file__))}",
         f"driver template SHA-256: {sha256_file(DRIVER_TEMPLATE)}",
-        f"datasets: {directory}, copies of Broiler.VM {pin.source_commit}, every one equal to {PIN_NAME}",
+        f"datasets: {directory}, copies of Broiler.VM at the commits {PIN_NAME} names, every one equal to it",
     ]
     for pinned in pin.files.values():
-        lines.append(f"  {pinned.name} {pinned.length} {pinned.sha256} (Broiler.VM {pinned.source_path})")
+        lines.append(f"  {pinned.name} {pinned.length} {pinned.sha256} (Broiler.VM {pinned.source_commit[:7]}:{pinned.source_path})")
     return lines
 
 
@@ -740,7 +754,7 @@ def command_run(arguments: argparse.Namespace) -> int:
         "started": started,
         "shellCommit": git(tree, "rev-parse", "HEAD") or "unknown",
         "shellSha256": sha256_file(dll),
-        "datasetsSourceCommit": pin.source_commit,
+        "datasetsSourceCommits": {p.name: p.source_commit for p in pin.files.values()},
         "copies": {p.name: p.sha256 for p in pin.files.values()},
         "programs": {},
     }
@@ -818,13 +832,20 @@ def compare_rows(base: Sequence[dict[str, str]], after: Sequence[dict[str, str]]
     return rows, counts
 
 
+def source_commits(summary: dict) -> dict[str, str]:
+    """A run's copies' Broiler.VM commits: per copy from pin 2 on, and one for every copy in a run of format 1."""
+    if "datasetsSourceCommits" in summary:
+        return summary["datasetsSourceCommits"]
+    return {name: summary["datasetsSourceCommit"] for name in summary["copies"]}
+
+
 def command_compare(arguments: argparse.Namespace) -> int:
     base_dir = Path(arguments.base).resolve()
     after_dir = Path(arguments.after).resolve()
     out = Path(arguments.out).resolve()
     base = json.loads((base_dir / "summary.json").read_text(encoding="utf-8"))
     after = json.loads((after_dir / "summary.json").read_text(encoding="utf-8"))
-    if base["copies"] != after["copies"] or base["datasetsSourceCommit"] != after["datasetsSourceCommit"]:
+    if base["copies"] != after["copies"] or source_commits(base) != source_commits(after):
         raise HarnessError("the two runs did not read the same copies, so they are not runs of one population")
     if set(base["programs"]) != set(after["programs"]):
         raise HarnessError(f"the base ran {sorted(base['programs'])} and the after run {sorted(after['programs'])}")
@@ -836,7 +857,7 @@ def command_compare(arguments: argparse.Namespace) -> int:
     text = ["Reference datasets, bundle sjl-8-001's rule, part C: an after run against a base run", "",
             f"base: {base['label']}, shell commit {base['shellCommit']}, BroilerJS.dll {base['shellSha256']}",
             f"after: {after['label']}, shell commit {after['shellCommit']}, BroilerJS.dll {after['shellSha256']}",
-            f"copies: Broiler.VM {after['datasetsSourceCommit']}, the same SHA-256 in both runs", ""]
+            f"copies: Broiler.VM {' '.join(sorted(set(source_commits(after).values())))}, the same SHA-256 in both runs", ""]
     for name in after["programs"]:
         rows, counts = compare_rows(read_tsv(base_dir / f"{name}.lines.tsv"), read_tsv(after_dir / f"{name}.lines.tsv"))
         write_tsv(out / f"{name}.compare.tsv", COMPARE_COLUMNS, rows)
@@ -865,7 +886,7 @@ def command_verify(arguments: argparse.Namespace) -> int:
     directory = Path(arguments.datasets).resolve()
     pin = load_datasets(directory)
     for pinned in pin.files.values():
-        print(f"{pinned.sha256}  {pinned.name}  ({pinned.length} bytes, Broiler.VM {pin.source_commit[:7]}:{pinned.source_path})")
+        print(f"{pinned.sha256}  {pinned.name}  ({pinned.length} bytes, Broiler.VM {pinned.source_commit[:7]}:{pinned.source_path})")
     print(f"every copy equals {PIN_NAME}")
     return 0
 

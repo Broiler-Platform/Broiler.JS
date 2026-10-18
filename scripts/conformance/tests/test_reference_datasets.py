@@ -24,8 +24,13 @@ if str(CONFORMANCE_DIR) not in sys.path:
 
 import run_reference_datasets as H  # noqa: E402
 
-COPIES = ("timezones.js", "timezones.icu-77.1.txt", "timezones.divergences.txt",
-          "temporal.js", "temporal.polyfill-e8cc03fc.txt", "temporal.divergences.txt")
+COPIES_SJL_8 = ("timezones.js", "timezones.icu-77.1.txt", "timezones.divergences.txt",
+                "temporal.js", "temporal.polyfill-e8cc03fc.txt", "temporal.divergences.txt")
+COPIES_SJL_10 = ("temporal-calendars.js", "temporal-calendars.polyfill-e8cc03fc.txt",
+                 "temporal-calendars.divergences.txt")
+COPIES = COPIES_SJL_8 + COPIES_SJL_10
+BROILER_VM_9508BD5 = "9508bd5b9b6d0f6d009418dda351fb0e7d846745"
+BROILER_VM_14072B0 = "14072b02027cde4c0fa83e5a0d2f1ac7e68b1f36"
 
 
 def driver_escape(text: str) -> str:
@@ -63,14 +68,38 @@ class PinTests(unittest.TestCase):
         H.load_datasets(H.DATASETS)
 
     def test_the_pin_names_broiler_vm_9508bd5_and_the_six_files(self) -> None:
-        self.assertEqual("9508bd5b9b6d0f6d009418dda351fb0e7d846745", self.pin.source_commit)
+        self.assertEqual((BROILER_VM_9508BD5, BROILER_VM_14072B0), self.pin.source_commits)
         self.assertEqual(set(COPIES), set(self.pin.files))
         self.assertEqual(
             [("timezones", "timezones.js", "timezones.icu-77.1.txt", "timezones.divergences.txt"),
-             ("temporal", "temporal.js", "temporal.polyfill-e8cc03fc.txt", "temporal.divergences.txt")],
+             ("temporal", "temporal.js", "temporal.polyfill-e8cc03fc.txt", "temporal.divergences.txt"),
+             ("temporal-calendars", "temporal-calendars.js", "temporal-calendars.polyfill-e8cc03fc.txt",
+              "temporal-calendars.divergences.txt")],
             [(p.name, p.program, p.answer, p.divergences) for p in self.pin.programs])
         self.assertEqual("src/tests/cldr/timezones/divergences.txt", self.pin.files["timezones.divergences.txt"].source_path)
         self.assertEqual("src/tests/temporal/divergences.txt", self.pin.files["temporal.divergences.txt"].source_path)
+        for name in COPIES_SJL_8:
+            self.assertEqual(BROILER_VM_9508BD5, self.pin.files[name].source_commit, name)
+
+    def test_sjl_10_2_adds_temporal_calendars_from_broiler_vm_14072b0(self) -> None:
+        for name in COPIES_SJL_10:
+            self.assertEqual(BROILER_VM_14072B0, self.pin.files[name].source_commit, name)
+        self.assertEqual("src/tests/temporal/calendars/temporal-calendars.js",
+                         self.pin.files["temporal-calendars.js"].source_path)
+        self.assertEqual("src/tests/temporal/calendars/divergences.txt",
+                         self.pin.files["temporal-calendars.divergences.txt"].source_path)
+
+    def test_a_file_line_takes_the_source_commit_above_it(self) -> None:
+        text = ("source-commit a\nprogram p p.js p.txt p.div\nfile p.js 1 s b x/p.js\nfile p.txt 1 s b x/p.txt\n"
+                "source-commit b\nfile p.div 1 s b x/divergences.txt\n")
+        pin = H.read_pin(text)
+        self.assertEqual(("a", "b"), pin.source_commits)
+        self.assertEqual(["a", "a", "b"], [pin.files[n].source_commit for n in ("p.js", "p.txt", "p.div")])
+        for bad in ("file p.js 1 s b x/p.js\nsource-commit a\nprogram p p.js p.js p.js\n",
+                    "source-commit a\nfile p.js 1 s b x\nsource-commit a\nprogram p p.js p.js p.js\n",
+                    "source-commit a\nfile p.js 1 s b x\nprogram p p.js p.js p.js\nprogram p p.js p.js p.js\n"):
+            with self.assertRaises(H.HarnessError, msg=bad):
+                H.read_pin(bad)
 
     def test_each_git_blob_id_is_the_copy_s_own(self) -> None:
         # The blob id the pin records is the one Broiler.VM's tree at 9508bd5 names, and it is a digest of
@@ -398,7 +427,8 @@ class RunTests(unittest.TestCase):
                 code = H.main(["run", "--tree", str(root), "--shell", str(shell), "--out", str(root / "out"),
                                "--label", "test"])
             self.assertEqual(0, code)
-            self.assertEqual([("timezones.js", "UTC", False), ("temporal.js", "UTC", False)], calls)
+            self.assertEqual([("timezones.js", "UTC", False), ("temporal.js", "UTC", False),
+                              ("temporal-calendars.js", "UTC", False)], calls)
             summary = json.loads((root / "out" / "summary.json").read_text(encoding="utf-8"))
             timezones, temporal = summary["programs"]["timezones"], summary["programs"]["temporal"]
             self.assertEqual((610, 610, 0, 51), (timezones["comparedLines"], timezones["equal"],

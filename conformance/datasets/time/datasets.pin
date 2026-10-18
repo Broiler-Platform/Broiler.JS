@@ -1,27 +1,42 @@
-# broiler-js reference datasets pin 1
+# broiler-js reference datasets pin 2
 #
-# Broiler.VM's two reference datasets of the time-zone and calendar area, which part C of bundle
-# sjl-8-001's rule (docs/evidence/sjl-8-001/decision-rule.md, committed at 15a1bd8f) takes as its
-# population: "Broiler.VM's src/tests/cldr/timezones/timezones.js and src/tests/temporal/temporal.js,
-# byte for byte as Broiler.VM's commit 9508bd5 holds them, with Broiler.VM's retained answer and
-# divergences file for each; SJL-8.4 copies them into this repository with their digests, and a copy
-# whose digest differs is not the population".
+# Broiler.VM's reference datasets of the time area, in two blocks, each the population of part C of an
+# evidence bundle's rule:
 #
-# WHERE THEY CAME FROM. Each file below was written by `git cat-file blob 9508bd5:<path>` in a Broiler.VM
-# checkout, from the commit's object and not from a working tree, on 2026-10-17 (milestone SJL-8.4). Its
-# Git blob id is the one Broiler.VM's tree at that commit names for the path, so
-# `git -C <Broiler.VM> rev-parse 9508bd5:<path>` prints it. Broiler.VM's 431c20e, the commit its own
-# rule's bases were taken at, holds the same six blobs: `git diff --stat 9508bd5 431c20e --
-# src/tests/cldr/timezones src/tests/temporal` prints nothing. The two divergences files are renamed
-# here, each after its program, because both are `divergences.txt` in Broiler.VM; nothing else is
-# renamed, and no byte is changed.
+# - Bundle sjl-8-001's rule (docs/evidence/sjl-8-001/decision-rule.md, committed at 15a1bd8f) takes
+#   "Broiler.VM's src/tests/cldr/timezones/timezones.js and src/tests/temporal/temporal.js, byte for byte
+#   as Broiler.VM's commit 9508bd5 holds them, with Broiler.VM's retained answer and divergences file for
+#   each; SJL-8.4 copies them into this repository with their digests, and a copy whose digest differs is
+#   not the population". The first block holds them, copied on 2026-10-17 (milestone SJL-8.4).
+# - Bundle sjl-10-001's rule (docs/evidence/sjl-10-001/decision-rule.md, committed at 1d27064d) takes
+#   "Broiler.VM's src/tests/temporal/temporal.js and src/tests/temporal/calendars/temporal-calendars.js,
+#   byte for byte as Broiler.VM's commit 14072b0 holds them, each with Broiler.VM's retained polyfill
+#   answer and divergences file", the first as the first block holds it, "copied from Broiler.VM's
+#   9508bd5, whose three blobs are 14072b0's", and the second copied "at SJL-10.2 with its digests, and
+#   datasets.pin gains its lines". The second block holds the second, copied on 2026-10-18 (milestone
+#   SJL-10.2); the first block's lines are unchanged.
 #
-# WHAT A LINE MEANS. `file <name in this directory> <bytes> <sha256> <git blob id> <Broiler.VM path at
-# source-commit>`. `program` lines say which three files make one program's dataset:
-# `program <name> <program> <retained answer> <divergences>`. The harness,
-# scripts/conformance/run_reference_datasets.py, refuses to run when a file's length or SHA-256
-# differs from its line, and its tests hold every file to its line on every run of the conformance
-# scripts' tests. To check by hand, in this directory:
+# WHERE THEY CAME FROM. Each file below was written by `git cat-file blob <source-commit>:<path>` in a
+# Broiler.VM checkout, from the commit's object and not from a working tree, where <source-commit> is the
+# one its block names. Its Git blob id is the one Broiler.VM's tree at that commit names for the path, so
+# `git -C <Broiler.VM> rev-parse <source-commit>:<path>` prints it. Broiler.VM's 431c20e, the commit its
+# own SJL-8 rule's bases were taken at, holds the first block's six blobs: `git diff --stat 9508bd5
+# 431c20e -- src/tests/cldr/timezones src/tests/temporal` prints nothing. Broiler.VM's 14072b0 holds the
+# three blobs of temporal.js's dataset that the first block pins, as the SJL-10 rule says, and its
+# 99c9c9f, the commit that carries Broiler.VM's own SJL-10 rule, holds the same blobs of both programs:
+# `git diff --stat 9508bd5 14072b0 -- src/tests/temporal/temporal.js
+# src/tests/temporal/temporal.polyfill-e8cc03fc.txt src/tests/temporal/divergences.txt` and `git diff
+# --stat 14072b0 99c9c9f -- src/tests/temporal` print nothing. The divergences files are renamed here,
+# each after its program, because each is `divergences.txt` in Broiler.VM; nothing else is renamed, and
+# no byte is changed.
+#
+# WHAT A LINE MEANS. `source-commit <commit>` names the Broiler.VM commit of the `file` lines after it, up
+# to the next `source-commit` line; `copied` says when that block was copied. `file <name in this
+# directory> <bytes> <sha256> <git blob id> <Broiler.VM path at the block's source-commit>`. `program`
+# lines say which three files make one program's dataset: `program <name> <program> <retained answer>
+# <divergences>`. The harness, scripts/conformance/run_reference_datasets.py, refuses to run when a
+# file's length or SHA-256 differs from its line, and its tests hold every file to its line on every run
+# of the conformance scripts' tests. To check by hand, in this directory:
 #
 #   awk '$1 == "file" { print $4 "  " $2 }' datasets.pin | sha256sum -c
 
@@ -38,3 +53,10 @@ file timezones.divergences.txt 15224 b020772f515fb822de8a7edb06e41649e167f31e437
 file temporal.js 12180 91e1e5a4fe33785c1430f967b727680ead50406ee98a479a5e0f081b75a869db 831d39435b6c8d18b75e6ef51961ae9ae581848c src/tests/temporal/temporal.js
 file temporal.polyfill-e8cc03fc.txt 119864 ebf380dda41192c160347c4ddf8f33f40101bfc75b44589ae348241322ad5fec a05bf1d813774ef01655d02b685805dae01f06b9 src/tests/temporal/temporal.polyfill-e8cc03fc.txt
 file temporal.divergences.txt 190 271ae88cc6b5ad1c4f5c768551c8e925f0830b15528a48e899fb2b308939daa8 652ed4ed07ea7795f46ea7533b25b2c7c9cc3643 src/tests/temporal/divergences.txt
+
+source-commit 14072b02027cde4c0fa83e5a0d2f1ac7e68b1f36
+copied 2026-10-18
+program temporal-calendars temporal-calendars.js temporal-calendars.polyfill-e8cc03fc.txt temporal-calendars.divergences.txt
+file temporal-calendars.js 8211 bfef1cf45f3da8abea8f8d8630385607b5e9478b243969537323776adf719032 7a093f5d1e4278eca006059e5f967e1c609b0d82 src/tests/temporal/calendars/temporal-calendars.js
+file temporal-calendars.polyfill-e8cc03fc.txt 236681 911f403a66c7dbe74ca70558b5184f7440fe46cb119a012a8a19d5752ccdadb6 efe9951f59e4066b8a91868429b41601e1e74cd1 src/tests/temporal/calendars/temporal-calendars.polyfill-e8cc03fc.txt
+file temporal-calendars.divergences.txt 5157 aad6cae3e0a94418e688536e53aa0b7608a017d7d8a9643c362d8972bca038ef 8758096bb9f5b72b1ee7fe8e6538599f0f4b6ffe src/tests/temporal/calendars/divergences.txt

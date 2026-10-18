@@ -175,14 +175,16 @@ from milestone SJL-8.6, when this section's tables also join the engine's data a
 
 ## The reference datasets (`conformance/datasets/time/`)
 
-[`conformance/datasets/time/`](conformance/datasets/time/README.md) holds byte-for-byte copies of two programs
+[`conformance/datasets/time/`](conformance/datasets/time/README.md) holds byte-for-byte copies of three programs
 of Broiler.VM, each with the answer a reference implementation gave for it and Broiler.VM's divergences from that
-answer, all as Broiler.VM's commit `9508bd5` holds them and held by their SHA-256 in `datasets.pin`. Bundle
-`sjl-8-001`'s rule, part C, runs them in this engine's shell. **They are test material only: no project builds,
-packs or embeds them.**
+answer: the first two as Broiler.VM's commit `9508bd5` holds them, the third as its `14072b0` does, all held by
+their SHA-256 in `datasets.pin`. Bundle `sjl-8-001`'s rule, part C, runs the first two in this engine's shell, and
+bundle `sjl-10-001`'s rule, part C, `temporal.js` and the third. **They are test material only: no project
+builds, packs or embeds them.**
 
-- **The programs**, `timezones.js` and `temporal.js`, and **the divergences files** are Broiler.VM's, by the same
-  contributors as this repository, under the Apache License 2.0, whose text is in [`LICENSE`](LICENSE).
+- **The programs**, `timezones.js`, `temporal.js` and `temporal-calendars.js`, and **the divergences files** are
+  Broiler.VM's, by the same contributors as this repository, under the Apache License 2.0, whose text is in
+  [`LICENSE`](LICENSE).
 - **`timezones.icu-77.1.txt`** is the output of `timezones.js` run on Node 22.22.0, whose ICU is 77.1, with
   CLDR 47.0 and tzdb 2025b. ICU and CLDR are © Unicode, Inc., under the Unicode License v3 below. The file holds
   what ICU printed for the program, one line per name: time zone identifiers and UTC offsets in the GMT format,
@@ -195,8 +197,14 @@ packs or embeds them.**
   polyfill was installed outside Broiler.VM's repository for the run and is not in this one. The file holds the
   answers the polyfill gave, one per line; it reproduces none of the polyfill's code or text, so no licence
   text travels with it. Broiler.VM's notices say the same of its copy.
+- **`temporal-calendars.polyfill-e8cc03fc.txt`** is the output of `temporal-calendars.js` run under the same
+  polyfill at the same revision on Node 22.22.0. The polyfill computes every calendar but ISO 8601 by formatting
+  dates with Node's `Intl.DateTimeFormat`, whose ICU4C is 77.1, so the calendar fields it holds are what ICU
+  computed for those dates. It holds the answers, one per line, and reproduces none of the polyfill's or ICU's
+  code or text. Broiler.VM's notices say the same of its copy.
 
-*Added 2026-10-17, at milestone SJL-8.4, when the copies were added.*
+*Added 2026-10-17, at milestone SJL-8.4, when the copies were added; the third program and its answer were added
+on 2026-10-18, at milestone SJL-10.2.*
 
 ## Sources the engine's own code cites
 
