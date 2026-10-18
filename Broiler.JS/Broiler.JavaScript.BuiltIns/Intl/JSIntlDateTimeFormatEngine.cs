@@ -119,17 +119,21 @@ internal static class JSIntlDateTimeFormatEngine
         return Temporal.TemporalTimeZones.Rules(timeZone).IsDaylightAt((long)Math.Floor(clamped / 1000.0));
     }
 
-    // "GMT", "GMT-8", "GMT+5:30" (short) / "GMT-08:00", "GMT+05:30" (long); zero offset is "GMT".
+    // "GMT", "GMT-8", "GMT+5:30" (short) / "GMT-08:00", "GMT+05:30" (long); zero offset is "GMT". An offset
+    // with seconds, a local mean time's, writes them after the minutes, as CLDR's localized GMT format does
+    // in ICU: "GMT-0:16:08" (short) / "GMT-00:16:08" (long) (row Z16, brought into milestone SJL-8.6).
     private static string GmtOffset(double offsetMs, bool longForm)
     {
-        var minutes = (int)(Math.Round(offsetMs / 60000.0));
-        if (minutes == 0) return "GMT";
-        var sign = minutes < 0 ? "-" : "+";
-        minutes = Math.Abs(minutes);
-        var h = minutes / 60;
-        var m = minutes % 60;
-        if (longForm) return $"GMT{sign}{h:D2}:{m:D2}";
-        return m == 0 ? $"GMT{sign}{h}" : $"GMT{sign}{h}:{m:D2}";
+        var seconds = (int)Math.Round(offsetMs / 1000.0);
+        if (seconds == 0) return "GMT";
+        var sign = seconds < 0 ? "-" : "+";
+        seconds = Math.Abs(seconds);
+        var h = seconds / 3600;
+        var m = seconds / 60 % 60;
+        var s = seconds % 60;
+        var tail = s == 0 ? "" : $":{s:D2}";
+        if (longForm) return $"GMT{sign}{h:D2}:{m:D2}{tail}";
+        return m == 0 && s == 0 ? $"GMT{sign}{h}" : $"GMT{sign}{h}:{m:D2}{tail}";
     }
 
     internal readonly struct Token
